@@ -77,7 +77,6 @@ import { computed, defineComponent, ref } from "vue";
 import dayjs from "dayjs";
 import { useScenarioStore } from "../stores/scenarioStore";
 import { formatDateString } from "../geo/utils";
-import TestPopover from "./TestPopover.vue";
 import InputDateModal from "./InputDateModal.vue";
 import { useUiStore } from "../stores/uiStore";
 import { inputEventFilter } from "./helpers";
@@ -87,7 +86,6 @@ export default defineComponent({
   name: "TimeController",
   components: {
     InputDateModal,
-    TestPopover,
     ChevronLeftIcon,
     ChevronRightIcon,
     CalendarIcon,

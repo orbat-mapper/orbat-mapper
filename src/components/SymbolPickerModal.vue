@@ -53,7 +53,6 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, Ref, ref, watch } from "vue";
 import MilSymbol from "./MilSymbol.vue";
-import TestDrop from "./TestDrop.vue";
 import PrimaryButton from "./PrimaryButton.vue";
 // import { ms2525d as symbology } from "../symbology/standards/milstd2525";
 import { app6d as symbology } from "../symbology/standards/app6d";
@@ -85,7 +84,6 @@ export default defineComponent({
     SimpleModal,
     SymbolCodeSelect,
     PrimaryButton,
-    TestDrop,
     MilSymbol,
   },
   props: {
