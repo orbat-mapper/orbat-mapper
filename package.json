@@ -1,6 +1,9 @@
 {
-  "name": "orbat-map",
-  "version": "0.0.0",
+  "name": "orbat-mapper",
+  "description": "Order of Battle Mapper",
+  "private": true,
+  "version": "0.5.0",
+  "repository": "github:kjellmf/orbat-mapper",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit --skipLibCheck && vite build",
