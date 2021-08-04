@@ -1,0 +1,213 @@
+<template>
+  <li>
+    <div
+      class="
+        flex
+        items-center
+        hover:bg-gray-200
+        py-2
+        pl-2
+        group
+        justify-between
+        relative
+      "
+      @dblclick="isOpen = !isOpen"
+      @click="onUnitClick"
+    >
+      <div class="flex items-center space-x-1">
+        <div class="w-6 h-6">
+          <button
+            v-if="isParent"
+            @click.stop="isOpen = !isOpen"
+            class=""
+            @dragenter.prevent="isOpen = true"
+          >
+            <ChevronRightIcon
+              class="
+                h-6
+                w-6
+                transform
+                transition-transform
+                group-hover:text-gray-900
+                text-gray-500
+              "
+              :class="{
+                'rotate-90': isOpen,
+                'text-red-600': hasActiveChildren,
+              }"
+            />
+          </button>
+        </div>
+        <button class="flex space-x-1 items-center">
+          <div
+            class="flex space-x-1 items-center"
+            draggable="true"
+            @dragstart="dragStart"
+            @dragend="dragEnd"
+            :class="{ 'opacity-10': isDragged }"
+          >
+            <div class="flex-shrink-0 w-8 flex justify-center cursor-move">
+              <MilSymbol
+                :sidc="unit.sidc"
+                :size="20"
+                class=""
+                @click.stop.prevent=""
+              />
+            </div>
+            <span
+              class="flex-auto"
+              :class="{ 'font-bold': isActiveUnit }"
+              @dragover.prevent
+              @drop.prevent="onDrop"
+              >{{ unit.name }}</span
+            >
+          </div>
+        </button>
+      </div>
+
+      <DotsMenu
+        class="flex-shrink-0 pr-2"
+        :items="menuItems"
+        @action="onUnitMenuAction(unit, $event)"
+      />
+    </div>
+    <ul v-if="isOpen" class="ml-6" ref="subTree">
+      <OrbatTreeItem
+        :ref="setItemRef"
+        :item="subUnit"
+        v-for="subUnit in item.children"
+        :key="subUnit.unit.id"
+        @action="onUnitMenuAction"
+      />
+    </ul>
+  </li>
+</template>
+
+<script lang="ts">
+import {
+  computed,
+  defineComponent,
+  nextTick,
+  onBeforeUpdate,
+  PropType,
+  ref,
+  watch,
+} from "vue";
+import MilSymbol from "./MilSymbol.vue";
+import { OrbatItemData, Unit } from "../types/models";
+//@ts-ignore
+import { ChevronRightIcon } from "@heroicons/vue/solid";
+import { useActiveUnitStore, useDragStore } from "../stores/dragStore";
+import { DragOperations, UnitActions } from "../types/constants";
+import DotsMenu from "./DotsMenu.vue";
+import { useExpandTree } from "./helpers";
+import { useUnitMenu } from "../composables/scenarioActions";
+import { useUnitManipulationStore } from "../stores/scenarioManipulation";
+
+export default defineComponent({
+  name: "OrbatTreeItem",
+  components: {
+    DotsMenu,
+    MilSymbol,
+    ChevronRightIcon,
+  },
+  props: {
+    item: { type: Object as PropType<OrbatItemData>, required: true },
+  },
+  emits: ["action"],
+  setup(props, { emit }) {
+    let isOpen = ref(props.item.isOpen);
+    let isDragged = ref(false);
+    let subTree = ref();
+
+    const dragStore = useDragStore();
+    const dragStart = (ev: DragEvent) => {
+      const { dataTransfer } = ev;
+      if (dataTransfer) {
+        dataTransfer.setData("text", DragOperations.OrbatDrag);
+        dataTransfer.dropEffect = "copy";
+      }
+      dragStore.draggedUnit = props.item.unit;
+      setTimeout(() => (isDragged.value = true), 10);
+    };
+
+    const dragEnd = (ev: DragEvent) => {
+      dragStore.draggedUnit = null;
+      isDragged.value = false;
+    };
+
+    const onDrop = (ev: DragEvent) => {
+      if (
+        !(
+          ev.dataTransfer?.getData("text") === DragOperations.OrbatDrag &&
+          dragStore.draggedUnit
+        )
+      )
+        return;
+      if (dragStore.draggedUnit.id === props.item.unit.id) return;
+      const unitManipulationStore = useUnitManipulationStore();
+      unitManipulationStore.changeUnitParent(
+        dragStore.draggedUnit,
+        props.item.unit
+      );
+      isOpen.value = true;
+    };
+
+    const activeUnitStore = useActiveUnitStore();
+
+    const onUnitMenuAction = async (unit: Unit, action: UnitActions) => {
+      if (action === UnitActions.Expand) {
+        await expandChildren();
+      } else {
+        emit("action", unit, action);
+      }
+    };
+
+    const onUnitClick = () => {
+      activeUnitStore.activeUnit = props.item.unit;
+    };
+
+    const isActiveUnit = computed(
+      () => activeUnitStore.activeUnit === props.item.unit
+    );
+
+    const hasActiveChildren = computed(() =>
+      Boolean(activeUnitStore?.activeUnitParents?.includes(props.item.unit.id))
+    );
+
+    const { unitMenuItems: menuItems } = useUnitMenu(props.item);
+
+    const { setItemRef, expandChildren } = useExpandTree(isOpen);
+
+    const unit = computed(() => props.item.unit);
+    watch(
+      () => props.item.isOpen,
+      (v) => (isOpen.value = v)
+    );
+
+    return {
+      isOpen,
+      isDragged,
+      isActiveUnit,
+      dragStart,
+      dragEnd,
+      onDrop,
+      menuItems,
+      onUnitMenuAction,
+      onUnitClick,
+      subTree,
+      setItemRef,
+      expandChildren,
+      unit,
+      hasActiveChildren,
+    };
+  },
+
+  computed: {
+    isParent(): boolean {
+      return Boolean(this.item.children && this.item.children.length);
+    },
+  },
+  methods: {},
+});
+</script>

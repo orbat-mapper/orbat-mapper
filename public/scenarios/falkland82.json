@@ -1,0 +1,795 @@
+{
+  "type": "ScenarioViewer",
+  "name": "The Falklands War",
+  "description": "The Falklands War (Spanish: Guerra de las Malvinas), also known as the Falklands Conflict, Falklands Crisis, South Atlantic Conflict, and the Guerra del Atlántico Sur (Spanish for \"South Atlantic War\"), was a ten-week war between Argentina and the United Kingdom over two British overseas territories in the South Atlantic: the Falkland Islands, and South Georgia and the South Sandwich Islands. It began on Friday, 2 April 1982, when Argentina invaded and occupied the Falkland Islands (and, the following day, South Georgia and the South Sandwich Islands) in an attempt to establish the sovereignty it had claimed over them. On 5 April, the British government dispatched a naval task force to engage the Argentine Navy and Air Force before making an amphibious assault on the islands. The conflict lasted 74 days and ended with the Argentine surrender on 14 June 1982, returning the islands to British control. In total, 649 Argentine military personnel, 255 British military personnel, and three Falkland Islanders died during the hostilities.",
+  "startTime": 386467200000,
+  "timeZone": "Atlantic/Stanley",
+  "sides": [
+    {
+      "name": "Great Britain",
+      "id": "v8CMB5OIz_0wx3NFZIVCL",
+      "standardIdentity": "3",
+      "groups": [
+        {
+          "name": "Operation Rosario",
+          "id": "sdfsdsdf2",
+          "units": [
+            {
+              "name": "Naval Party 8901",
+              "sidc": "10031000141211004600",
+              "subUnits": [
+                {
+                  "name": "NP A",
+                  "sidc": "10031000131211004600",
+                  "state": [
+                    {
+                      "t": 386632800000,
+                      "coordinates": [-57.883186, -51.705864]
+                    },
+                    {
+                      "t": 386719200000,
+                      "coordinates": [-57.87279, -51.69186]
+                    },
+                    {
+                      "t": 386805600000,
+                      "coordinates": null
+                    }
+                  ],
+                  "id": "mFFoHYTQvBP_MJIJ9Trlb"
+                },
+                {
+                  "name": "NP B",
+                  "sidc": "10031000131211004600",
+                  "state": [
+                    {
+                      "t": 386632800000,
+                      "coordinates": [-57.843876, -51.699906]
+                    },
+                    {
+                      "t": 386719200000,
+                      "coordinates": [-57.87249, -51.69188]
+                    },
+                    {
+                      "t": 386805600000,
+                      "coordinates": null
+                    }
+                  ],
+                  "id": "qPpTHmxnFpihGgZHt_AFH"
+                },
+                {
+                  "name": "NP C",
+                  "sidc": "10031000131211004600",
+                  "state": [
+                    {
+                      "t": 386632800000,
+                      "coordinates": [-57.799072, -51.700225]
+                    },
+                    {
+                      "t": 386719200000,
+                      "coordinates": [-57.872758, -51.691993]
+                    },
+                    {
+                      "t": 386805600000,
+                      "coordinates": null
+                    }
+                  ],
+                  "subUnits": [],
+                  "id": "DCMDNndnjaQa7X9tAW0vD"
+                },
+                {
+                  "name": "NP D",
+                  "sidc": "10031000131211004600",
+                  "state": [
+                    {
+                      "t": 386632800000,
+                      "coordinates": [-57.768173, -51.68618]
+                    },
+                    {
+                      "t": 386719200000,
+                      "coordinates": [-57.872522, -51.691986]
+                    },
+                    {
+                      "t": 386805600000,
+                      "coordinates": null
+                    }
+                  ],
+                  "subUnits": [],
+                  "id": "8XobhOSrlkq_oTOcUHERe"
+                }
+              ],
+              "state": [
+                {
+                  "t": 386467200000,
+                  "coordinates": [-57.920222, -51.683998]
+                },
+                {
+                  "t": 386632800000,
+                  "coordinates": null
+                },
+                {
+                  "t": 386805600000,
+                  "coordinates": [-57.872586, -51.6919]
+                }
+              ],
+              "id": "ZcsBI6kKkDawpUEn3j9VJ"
+            },
+            {
+              "name": "HMS Endurance",
+              "sidc": "10033000001205001900",
+              "state": [
+                {
+                  "t": 385574400000,
+                  "coordinates": [-57.83023237124096, -51.68840202070351]
+                },
+                {
+                  "t": 385833600000,
+                  "coordinates": [-36.4509482464316, -54.01594276935968]
+                },
+                {
+                  "t": 386467200000,
+                  "coordinates": [-36.502246419189454, -54.2834671249464]
+                }
+              ],
+              "subUnits": [
+                {
+                  "name": "NP E",
+                  "sidc": "10031000131211004600",
+                  "state": [
+                    {
+                      "t": 386467200000,
+                      "coordinates": [-36.509564, -54.280661]
+                    },
+                    {
+                      "t": 386640000000,
+                      "coordinates": [-36.493835, -54.282815]
+                    }
+                  ],
+                  "subUnits": [],
+                  "id": "DRQ8JYJ0nUJYYZx5kSea4"
+                }
+              ],
+              "id": "7xJ~ZOBnMRqkwaw~EiNFB",
+              "externalUrl": "https://en.wikipedia.org/wiki/HMS_Endurance_(1967)"
+            }
+          ]
+        },
+        {
+          "id": "sdfsdsdf3",
+          "name": "Task Force",
+          "units": [
+            {
+              "name": "TG 317.1 LG",
+              "sidc": "10031004001211000000",
+              "subUnits": [
+                {
+                  "name": "3 Cdo Bde",
+                  "sidc": "10031000181211004600",
+                  "subUnits": [
+                    {
+                      "name": "40 Cdo",
+                      "sidc": "10031000161211004600",
+                      "state": [],
+                      "id": "u0xGEGuOLzIcIirsioK0h",
+                      "subUnits": [
+                        {
+                          "name": "A",
+                          "sidc": "10031000151211004600",
+                          "id": "IZI2tUkYvhmVxShmC8~n~",
+                          "state": []
+                        },
+                        {
+                          "name": "B",
+                          "sidc": "10031000151211004600",
+                          "id": "bJewqRWgkcxt3Lt53sz_c",
+                          "state": []
+                        },
+                        {
+                          "name": "C",
+                          "sidc": "10031000151211004600",
+                          "id": "1ytAWaNFpcrYFLuGetut1",
+                          "state": []
+                        }
+                      ]
+                    },
+                    {
+                      "name": "42 Cdo",
+                      "sidc": "10031000161211004600",
+                      "state": [],
+                      "id": "xcEG3htG0iZEuisD9IhGY",
+                      "subUnits": [
+                        {
+                          "name": "J",
+                          "sidc": "10031000151211004600",
+                          "id": "Yfj4qs4nUyG3DOLwzG8hY",
+                          "state": []
+                        },
+                        {
+                          "name": "K",
+                          "sidc": "10031000151211004600",
+                          "id": "Od6fwg9FD5upCkXDIBalQ",
+                          "state": []
+                        },
+                        {
+                          "name": "L",
+                          "sidc": "10031000151211004600",
+                          "id": "jdXcqNaLkNJxH97rVmUP_",
+                          "state": []
+                        }
+                      ]
+                    },
+                    {
+                      "name": "45 Cdo",
+                      "sidc": "10031000161211004600",
+                      "state": [],
+                      "id": "0fm4O5tSvrVwjnv9~6ECy",
+                      "subUnits": [
+                        {
+                          "name": "X",
+                          "sidc": "10031000151211004600",
+                          "id": "7yI8rtwPIXI07Ag1Qyuem",
+                          "state": []
+                        },
+                        {
+                          "name": "Y",
+                          "sidc": "10031000151211004600",
+                          "id": "QrSxdjL5eV~w1mJkRhUzH",
+                          "state": []
+                        },
+                        {
+                          "name": "Z",
+                          "sidc": "10031000151211004600",
+                          "id": "~WAhIuR0DjOs6vxdNmTcn",
+                          "state": []
+                        }
+                      ]
+                    },
+                    {
+                      "name": "29 Cdo RA",
+                      "sidc": "10031000161303000000",
+                      "state": [],
+                      "id": "qF9mX0pKVgtu7cVHjsXy5"
+                    },
+                    {
+                      "name": "2 Para",
+                      "sidc": "10031000161211000001",
+                      "subUnits": [
+                        {
+                          "name": "29 FB",
+                          "sidc": "10031000151303000000",
+                          "state": [],
+                          "id": "vydX8pjg7sB1t37a5pBN1",
+                          "subUnits": []
+                        },
+                        {
+                          "name": "43 AD",
+                          "sidc": "10031000141301020000",
+                          "state": [],
+                          "id": "peqkxwOqZXYkpSsx4KRCj"
+                        },
+                        {
+                          "name": "A COY",
+                          "sidc": "10031000151211000001",
+                          "id": "wbPe8yifmaTgAxT2oD1Ff",
+                          "state": [],
+                          "shortName": "A"
+                        },
+                        {
+                          "name": "B COY",
+                          "sidc": "10031000151211000001",
+                          "id": "rVxn2~0XEf8E7WeuPxUe6",
+                          "state": [],
+                          "shortName": "B"
+                        },
+                        {
+                          "name": "C COY",
+                          "sidc": "10031000151213000001",
+                          "id": "vu2TRMUpnGI2klzs19BgZ",
+                          "state": [],
+                          "shortName": "C"
+                        },
+                        {
+                          "name": "D COY",
+                          "sidc": "10031000151211000001",
+                          "id": "~78NfpA426AitI60JeWSa",
+                          "state": [],
+                          "shortName": "D"
+                        }
+                      ],
+                      "state": [],
+                      "id": "QyZAnvqo5EXsjcNis_GSE"
+                    },
+                    {
+                      "name": "3 Para",
+                      "sidc": "10031000161211000001",
+                      "subUnits": [
+                        {
+                          "name": "A COY",
+                          "sidc": "10031000151211000001",
+                          "id": "INGH8mxuQMnN7LBZhXV_y",
+                          "state": [],
+                          "shortName": "A"
+                        },
+                        {
+                          "name": "B COY",
+                          "sidc": "10031000151211000001",
+                          "id": "~8cVJd3hQNPr8exESXML9",
+                          "state": [],
+                          "shortName": "B"
+                        },
+                        {
+                          "name": "C COY",
+                          "sidc": "10031000151211000001",
+                          "id": "bsMEfBAVOxvYu86qvP0Wq",
+                          "state": [],
+                          "shortName": "C"
+                        },
+                        {
+                          "name": "D COY",
+                          "sidc": "10031000151213000001",
+                          "id": "uUlcvH2~mvagZr1QGoZcP",
+                          "state": [],
+                          "shortName": "D"
+                        }
+                      ],
+                      "state": [],
+                      "id": "UlbrqVz6kysuUCzz7hSTu"
+                    }
+                  ],
+                  "state": [],
+                  "id": "yeyNm2QTCh_yivrfpnv0N"
+                },
+                {
+                  "name": "5 Inf Bde",
+                  "sidc": "10031000181211000000",
+                  "state": [],
+                  "id": "LurqqM75Avg1_t0AjxUgi",
+                  "subUnits": [
+                    {
+                      "name": "2nd Bn Scots Guards",
+                      "sidc": "10031000161211000000",
+                      "id": "ZZhPAmDQzAT6JWhesPzQ2",
+                      "state": [],
+                      "shortName": "SG",
+                      "subUnits": [
+                        {
+                          "name": "Left Flank",
+                          "sidc": "10031000151211000000",
+                          "id": "ZAWfVIlG0e0m1InBT3IT4",
+                          "state": []
+                        },
+                        {
+                          "name": "Right Flank",
+                          "sidc": "10031000151211000000",
+                          "id": "yzpHFOCCRimBYvqSVrX4L",
+                          "state": []
+                        },
+                        {
+                          "name": "G",
+                          "sidc": "10031000151211000000",
+                          "id": "9FVjQSncFLH79op7Qkxf8",
+                          "state": []
+                        }
+                      ]
+                    },
+                    {
+                      "name": "1st Bn Welsh Guards",
+                      "sidc": "10031000161211000000",
+                      "id": "gkcIswEB_vLPW_a3NCJzx",
+                      "state": [],
+                      "subUnits": [
+                        {
+                          "name": "A",
+                          "sidc": "10031000151211000000",
+                          "id": "KpUf09vznddzJFYui~VqB",
+                          "state": []
+                        },
+                        {
+                          "name": "B",
+                          "sidc": "10031000151211000000",
+                          "id": "tHQUyvAwEeHM3b6oqs_sx",
+                          "state": []
+                        },
+                        {
+                          "name": "C",
+                          "sidc": "10031000151211000000",
+                          "id": "AVTtTTl74B4vb0~0Sgh2G",
+                          "state": []
+                        }
+                      ],
+                      "shortName": "WG"
+                    },
+                    {
+                      "name": "1st Bn 7th Gurkha Rifles",
+                      "sidc": "10031000161211000000",
+                      "id": "ugu_gHIyde1iuwHYC34_k",
+                      "state": [],
+                      "subUnits": [
+                        {
+                          "name": "A",
+                          "sidc": "10031000151211000000",
+                          "id": "VLIG7n45M~rRSQwYxH_hG",
+                          "state": []
+                        },
+                        {
+                          "name": "B",
+                          "sidc": "10031000151211000000",
+                          "id": "qF_DjGeGKaOtIId4p_kAS",
+                          "state": []
+                        },
+                        {
+                          "name": "C",
+                          "sidc": "10031000151211000000",
+                          "id": "9weLN4wM97mOy97TCvykV",
+                          "state": []
+                        },
+                        {
+                          "name": "D",
+                          "sidc": "10031000151211000000",
+                          "id": "DAVyXZm9T3iQ5jay5JQZq",
+                          "state": []
+                        }
+                      ],
+                      "shortName": "7 GR"
+                    },
+                    {
+                      "name": "36 Engineer Regiment",
+                      "sidc": "10031000161407000000",
+                      "id": "kkfnLWpc2cK1uw2qX6XwB",
+                      "state": [],
+                      "shortName": "36 Eng"
+                    },
+                    {
+                      "name": "63 AD Squadron",
+                      "sidc": "10031000151301020000",
+                      "id": "qhZBaHDgQYOvP4fCSqMXZ",
+                      "state": [],
+                      "shortName": "63 AD"
+                    },
+                    {
+                      "name": "97 Field Battery",
+                      "sidc": "10031000151303000000",
+                      "id": "5yU8AvSZGcNDLjGpCZJJC",
+                      "state": [],
+                      "shortName": "97 FB"
+                    }
+                  ]
+                }
+              ],
+              "state": [],
+              "id": "Apc~4XNmoJDViPTPdcoJS"
+            },
+            {
+              "name": "TG 317.8 CVG",
+              "sidc": "10033000001210030000",
+              "subUnits": [
+                {
+                  "name": "HMS Hermes",
+                  "sidc": "10033000001201000000",
+                  "subUnits": [
+                    {
+                      "name": "H1",
+                      "sidc": "10030100001101050000",
+                      "state": [],
+                      "id": "NRKyQ2BQ6SuK5zokH5l9d"
+                    }
+                  ],
+                  "state": [],
+                  "id": "7PzaRoGKhIW96pSQQMJA0",
+                  "shortName": "Hermes",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Hermes_(R12)"
+                },
+                {
+                  "name": "HMS Invincible",
+                  "sidc": "10033000001201000000",
+                  "state": [],
+                  "id": "keMfWw0quLXJCDCLwl4xY",
+                  "shortName": "Invincible",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Invincible_(R05)"
+                },
+                {
+                  "name": "HMS Glamorgan",
+                  "sidc": "10033000001202030000",
+                  "state": [],
+                  "id": "~y20tZKRCGHJF7SvooJTu",
+                  "shortName": "Glamorgan",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Glamorgan_(D19)"
+                }
+              ],
+              "state": [],
+              "id": "b1quuSsVd5eC3lUykZayJ"
+            },
+            {
+              "name": "TG 324.3 SS",
+              "sidc": "10033000001210030000",
+              "subUnits": [
+                {
+                  "name": "SSN",
+                  "sidc": "10033500001101000006",
+                  "state": [],
+                  "id": "0h09CGo7tIGIAQ58vKCGT"
+                }
+              ],
+              "state": [],
+              "id": "MAzkbClTp_5rXVTFa9udy"
+            },
+            {
+              "name": "BG South Georgia",
+              "sidc": "10031004151211004600",
+              "subUnits": [
+                {
+                  "name": "M Coy",
+                  "sidc": "10031000151211004600",
+                  "id": "FTGfbxYCfmtwyuR8y2vLD",
+                  "state": []
+                },
+                {
+                  "name": "D Sq SAS",
+                  "sidc": "10031000151211006300",
+                  "id": "Fwm8qrBL1Hjr4s~TzVfmd",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "2 Sec SBS",
+                  "sidc": "10031000141218030000",
+                  "id": "C2lYIp5kmzrSxAQvWCfDv",
+                  "state": [],
+                  "subUnits": []
+                }
+              ],
+              "state": [],
+              "id": "g3n1NTl_5OuFYjsRfd_2G"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Argentina",
+      "id": "2z_VnZcgikjkTzSOFibbE",
+      "standardIdentity": "7",
+      "groups": [
+        {
+          "id": "sdfsdsdfsdf32",
+          "name": "Operation Rosario",
+          "units": [
+            {
+              "name": "TG 40",
+              "sidc": "10073000001210030000",
+              "subUnits": [
+                {
+                  "name": "TG 40.1",
+                  "sidc": "10071004001211000000",
+                  "state": [],
+                  "id": "yfstrSnutHFfE5HvXKT_b"
+                },
+                {
+                  "name": "ARA Cabo San Antonio",
+                  "sidc": "10073000001203070000",
+                  "state": [
+                    {
+                      "t": 386546400000,
+                      "coordinates": [-57.776155, -51.667871]
+                    },
+                    {
+                      "t": 386632800000,
+                      "coordinates": [-57.800875, -51.678995]
+                    }
+                  ],
+                  "id": "1CErmjoqxB5t4WQBpM6yW"
+                },
+                {
+                  "name": "ARA Santisima Trinidad",
+                  "sidc": "10073000001202030000",
+                  "state": [
+                    {
+                      "t": 386546400000,
+                      "coordinates": [-57.829628, -51.737022]
+                    },
+                    {
+                      "t": 386632800000,
+                      "coordinates": [-57.857437, -51.725912]
+                    }
+                  ],
+                  "subUnits": [],
+                  "id": "DOcTMUcoX9LLzuyRPmKOs"
+                },
+                {
+                  "name": "ARA Santa Fe",
+                  "sidc": "10073500001101000000",
+                  "state": [],
+                  "subUnits": [],
+                  "id": "cIMXbLAS~uZNUIUhLwHga"
+                }
+              ],
+              "state": [],
+              "id": "XpFQeOSfcsI1xDEBjn0O8"
+            },
+            {
+              "name": "TF 60",
+              "sidc": "10073000001210030000",
+              "subUnits": [
+                {
+                  "name": "ARA Guerrico",
+                  "sidc": "10073000001202050000",
+                  "state": [
+                    {
+                      "t": 386640000000,
+                      "coordinates": [-36.49641, -54.285671]
+                    }
+                  ],
+                  "subUnits": [],
+                  "id": "Hd0jvhPwPxFEDy92ZbSjW"
+                },
+                {
+                  "name": "ARA Almirante Irízar",
+                  "sidc": "10073000001301001900",
+                  "state": [
+                    {
+                      "t": 386640000000,
+                      "coordinates": [-36.474094, -54.286774]
+                    }
+                  ],
+                  "subUnits": [
+                    {
+                      "name": "H1",
+                      "sidc": "10070100001102000703",
+                      "state": [],
+                      "id": "ZFVuLJghv6_maxmA5WTCS"
+                    },
+                    {
+                      "name": "H2",
+                      "sidc": "10070100001102000703",
+                      "state": [],
+                      "subUnits": [],
+                      "id": "2OhtKWD1IG7qP0Zm3job~"
+                    }
+                  ],
+                  "id": "BR7oviOZGg8vqWZ5_Ey88"
+                },
+                {
+                  "name": "ARA Bahia Buen Suceso",
+                  "sidc": "10073000001301060000",
+                  "state": [],
+                  "id": "9WgmjOqlkkcMhZD0ymVQR"
+                }
+              ],
+              "state": [],
+              "id": "XjTbIv_HVxn4RrSsmb6bm"
+            }
+          ]
+        },
+        {
+          "id": "sdfsf4562",
+          "name": "Falklands war",
+          "units": [
+            {
+              "name": "3 Mech Inf Bde",
+              "sidc": "10071000181211020000",
+              "subUnits": [
+                {
+                  "name": "4th Inf Reg",
+                  "sidc": "10071000171211000000",
+                  "subUnits": [
+                    {
+                      "name": "AA1",
+                      "sidc": "10071500001110010000",
+                      "state": [],
+                      "id": "S8HiybYrw3nltWK8mRxa2"
+                    },
+                    {
+                      "name": "AA2",
+                      "sidc": "10071500001105000000",
+                      "state": [],
+                      "id": "FPQDB6l0kJyYU7D0If3Xd"
+                    }
+                  ],
+                  "state": [],
+                  "id": "5ZGScG_A93gnb5rCK5eA9"
+                },
+                {
+                  "name": "12th Inf Reg",
+                  "sidc": "10071000171211000000",
+                  "state": [],
+                  "id": "INhWepbYKkrXg96Q42M7_"
+                },
+                {
+                  "name": "5th Inf Reg",
+                  "sidc": "10071000171211000000",
+                  "state": [],
+                  "id": "TPGeVJGtW~cgc~RNWQRcx"
+                },
+                {
+                  "name": "8th Inf Reg",
+                  "sidc": "10071000171211000000",
+                  "state": [],
+                  "id": "aRo41A87htuoqh11uHTMN"
+                }
+              ],
+              "state": [],
+              "id": "3hUlR8mIemL0xBdtwWAJ1"
+            },
+            {
+              "name": "10 Mech Inf Bde",
+              "sidc": "10071000181211040000",
+              "state": [],
+              "id": "5JlH0deHdlPdZIgT2gLpk"
+            }
+          ]
+        },
+        {
+          "id": "AddI6qfpPYwQich60xxeC",
+          "name": "Infrastructure",
+          "units": [
+            {
+              "name": "Airbases",
+              "sidc": "10072000001208000000",
+              "id": "UH-uBXF33EwmesxCJcDK0",
+              "state": [],
+              "subUnits": [
+                {
+                  "name": "Rio Grande",
+                  "sidc": "10072000001213010000",
+                  "id": "syO2U3AlPZz1uEIDriyMc",
+                  "state": [
+                    {
+                      "t": 386467200000,
+                      "coordinates": [-67.75590454496876, -53.777518083637915]
+                    }
+                  ],
+                  "subUnits": []
+                },
+                {
+                  "name": "Rio Gallego",
+                  "sidc": "10072000001213010000",
+                  "id": "704bzd7YhNVcXHAS6-TxT",
+                  "state": [
+                    {
+                      "t": 386467200000,
+                      "coordinates": [-69.30725832955693, -51.60882330522812]
+                    }
+                  ],
+                  "subUnits": []
+                }
+              ]
+            },
+            {
+              "name": "Naval bases",
+              "sidc": "10072000001208000000",
+              "id": "_gekfd66JeR4Bvs--HDCG",
+              "state": [],
+              "subUnits": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "title": "Operation \"Rosario\"",
+      "subTitle": "Invasion of the Falklands islands",
+      "startTime": 386467200000,
+      "uiActions": [],
+      "id": "zB5mW4qieAn_k6oRj8t9q"
+    },
+    {
+      "title": "South Georgia invasion",
+      "startTime": 386640000000,
+      "uiActions": [],
+      "id": "rKWYMOrJITfT08_iagIya"
+    },
+    {
+      "title": "Sinking of \"General Belgrano\"",
+      "startTime": 389145600000,
+      "uiActions": [],
+      "id": "CAm5DrJOFQ8FUQw_7TMfc"
+    },
+    {
+      "title": "Battle of Goose Green",
+      "startTime": 391305600000,
+      "uiActions": [],
+      "id": "L7sLKYe3xMRELH2bEA7Da"
+    }
+  ]
+}

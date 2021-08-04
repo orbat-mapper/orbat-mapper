@@ -1,0 +1,47 @@
+{
+  "name": "orbat-map",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit --skipLibCheck && vite build",
+    "v-build": "vite build",
+    "v-tsc": "vue-tsc --noEmit",
+    "serve": "vite preview",
+    "lint-fix": "prettier --write ."
+  },
+  "dependencies": {
+    "@headlessui/vue": "^1.4.0",
+    "@heroicons/vue": "^1.0.3",
+    "@vueuse/core": "^5.2.0",
+    "dayjs": "^1.10.6",
+    "file-saver": "^2.0.5",
+    "formatcoords": "^1.1.3",
+    "fuse.js": "^6.4.6",
+    "markdown-it": "^12.2.0",
+    "mdue": "^0.1.4",
+    "milsymbol": "^2.0.0",
+    "nanoid": "^3.1.23",
+    "ol": "^6.6.1",
+    "pinia": "^2.0.0-rc.1",
+    "vue": "^3.2.0-0",
+    "vue-global-events": "^2.1.0",
+    "vue-router": "^4.0.10"
+  },
+  "devDependencies": {
+    "@tailwindcss/aspect-ratio": "^0.2.1",
+    "@tailwindcss/forms": "^0.3.3",
+    "@tailwindcss/typography": "^0.4.1",
+    "@types/file-saver": "^2.0.3",
+    "@types/geojson": "^7946.0.8",
+    "@types/markdown-it": "^12.0.3",
+    "@vitejs/plugin-vue": "^1.3.0",
+    "@vue/compiler-sfc": "^3.1.5",
+    "autoprefixer": "^10.3.1",
+    "postcss": "^8.3.6",
+    "prettier": "^2.3.2",
+    "tailwindcss": "^2.2.7",
+    "typescript": "^4.3.5",
+    "vite": "^2.4.4",
+    "vue-tsc": "^0.2.2"
+  }
+}

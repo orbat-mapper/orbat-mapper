@@ -1,0 +1,111 @@
+{
+  "name": "Battles of Narvik",
+  "type": "ScenarioViewer",
+  "timeZone": "Europe/Oslo",
+  "description": "The Battles of Narvik were fought from 9 April to 8 June 1940 as a naval battle in the Ofotfjord and as a land battle in the mountains surrounding the north Norwegian town of Narvik as part of the Norwegian Campaign of the Second World War. ",
+  "sides": [
+    {
+      "id": "gjNibxLX9gQrtAiX9fv_F",
+      "name": "Allied forces",
+      "standardIdentity": "3",
+      "groups": [
+        {
+          "id": "UNE1ZseylpfxbqMtDc0RG",
+          "name": "Norwegian units",
+          "units": [
+            {
+              "name": "Eidsvold",
+              "sidc": "10033000001205000000",
+              "id": "EaPcn0Sv5yfULEaLgVpgN",
+              "state": [
+                {
+                  "t": 1627460083412,
+                  "coordinates": [17.358257428615413, 68.43648675269745]
+                }
+              ],
+              "subUnits": [],
+              "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold"
+            },
+            {
+              "name": "Norge",
+              "sidc": "10033000001205000000",
+              "id": "gIm8WMiQbrOSM-8qe_iC5",
+              "state": [
+                {
+                  "t": 1627460083412,
+                  "coordinates": [17.36531822155043, 68.42695781002979]
+                }
+              ],
+              "subUnits": [],
+              "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold"
+            }
+          ]
+        },
+        {
+          "id": "wh392PHVn1sHm6p99wWt4",
+          "name": "British forces",
+          "units": [
+            {
+              "name": "Naval units",
+              "sidc": "10033004001200000000",
+              "id": "84T0TIJw3uzI4owhauV57",
+              "state": [],
+              "subUnits": [
+                {
+                  "name": "Hardy",
+                  "sidc": "10033000001202030000",
+                  "id": "RjhMI5jVDqdnozd9CWF2c",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Hotspur",
+                  "sidc": "10033000001202030000",
+                  "id": "fAK5DNvzkEee-Bprww6Nn",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Hostile",
+                  "sidc": "10033000001202030000",
+                  "id": "WrV9f5KQLDt3dbBJIWNWX",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Hunter",
+                  "sidc": "10033000001202030000",
+                  "id": "2jGbCsiwmZ-xau6MJuMuI",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Havock",
+                  "sidc": "10033000001202030000",
+                  "id": "ERVsIaBmNfyTvW-Df5XaL",
+                  "state": [],
+                  "subUnits": []
+                }
+              ]
+            }
+          ],
+          "_isNew": false
+        }
+      ]
+    },
+    {
+      "id": "L4_UjyaC7-9mdAkZ5CBeK",
+      "name": "Axis forces",
+      "standardIdentity": "6",
+      "groups": [
+        {
+          "id": "pl-AgS8PgCCqNBTifV9y9",
+          "name": "Units",
+          "units": []
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "startTime": -938221200000
+}
