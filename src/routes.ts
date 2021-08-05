@@ -1,5 +1,6 @@
-import { createRouter, createWebHistory } from "vue-router";
-// import MainView from "./views/MainView.vue";
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 const MainView = () => import("./views/MainView.vue");
 import LandingPage from "./views/LandingPage.vue";
 
@@ -7,8 +8,29 @@ export const SCENARIO_ROUTE = "ScenarioRoute";
 export const LANDING_PAGE_ROUTE = "LandingPageRoute";
 
 const routes = [
-  { path: "/scenario", name: SCENARIO_ROUTE, component: MainView },
+  {
+    path: "/scenario",
+    name: SCENARIO_ROUTE,
+    component: MainView,
+    beforeEnter: (to, from) => {
+      NProgress.start();
+    },
+  },
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
-];
+] as RouteRecordRaw[];
 
 export const router = createRouter({ history: createWebHistory(), routes });
+
+// router.beforeEach((to, from, next) => {
+//   // If this isn't an initial page load.
+//   if (to.name) {
+//     // Start the route progress bar.
+//     NProgress.start()
+//   }
+//   next()
+// })
+
+router.afterEach((to, from) => {
+  // Complete the animation of the route progress bar.
+  NProgress.done();
+});
