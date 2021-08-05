@@ -1,5 +1,6 @@
 <template>
-  <div class="bg-gray-50 py-5">
+  <div class="bg-gray-50 py-5 relative">
+    <p class="absolute right-6 top-2 z-10"><WipBadge /></p>
     <section class="max-w-7xl mx-auto p-6">
       <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
         <li
@@ -95,6 +96,7 @@ import { MailIcon, PhoneIcon } from "@heroicons/vue/solid";
 import ProseSection from "../components/ProseSection.vue";
 import { useRouter } from "vue-router";
 import { SCENARIO_ROUTE } from "../routes";
+import WipBadge from "../components/WipBadge.vue";
 
 const scenarios = [
   {
@@ -122,6 +124,7 @@ const scenarios = [
 
 export default {
   components: {
+    WipBadge,
     ProseSection,
     MailIcon,
     PhoneIcon,

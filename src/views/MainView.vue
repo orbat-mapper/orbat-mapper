@@ -31,9 +31,9 @@
           items-center
         "
       >
-        <router-link to="/" class="ml-2"
-          ><HomeIcon class="w-5 h-5 text-gray-500"
-        /></router-link>
+        <router-link to="/" class="ml-2">
+          <HomeIcon class="w-5 h-5 text-gray-500" />
+        </router-link>
         <TimeController class="" />
       </footer>
     </aside>
@@ -71,6 +71,9 @@
     <ShortcutsModal v-model="shortcutsModalVisible" />
     <SlideOver v-model="isOpen" />
     <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
+    <div class="fixed top-6 left-60 z-10">
+      <WipBadge />
+    </div>
   </div>
 </template>
 
@@ -109,10 +112,12 @@ import { useUiStore } from "../stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
 import { useTitle } from "@vueuse/core";
 import { useUnitManipulationStore } from "../stores/scenarioManipulation";
+import WipBadge from "../components/WipBadge.vue";
 
 export default defineComponent({
   name: "MainView",
   components: {
+    WipBadge,
     SearchModal,
     PlainButton,
     SlideOver,
