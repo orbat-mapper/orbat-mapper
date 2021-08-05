@@ -24,7 +24,7 @@ import { OSM, XYZ } from "ol/source";
 function createBaseLayers() {
   const openStreetmapLayer = new TileLayer({
     source: new OSM(),
-    visible: false,
+    visible: true,
   });
   openStreetmapLayer.set("title", "OSM");
   const lightGrayLayer = new TileLayer({
@@ -49,6 +49,7 @@ function createBaseLayers() {
       attributions:
         'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
     }),
+    visible: false,
   });
 
   openTopoMap.set("title", "Open topo map");
@@ -103,6 +104,7 @@ export default defineComponent({
     onMounted(() => {
       olMap = new OLMap({
         target: mapRoot.value,
+        maxTilesLoading: 200,
         layers: createBaseLayers(),
         view: new View({
           zoom: props.zoom,
