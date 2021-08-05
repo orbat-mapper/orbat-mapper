@@ -15,7 +15,14 @@
         tab-class=""
         class="mt-3 min-h-0"
       >
-        <TabItem label="ORBAT">
+        <TabItem label="ORBAT" class="relative">
+          <button
+            @click="showSearch = true"
+            class="absolute -top-1 right-6 text-gray-500 hover:text-gray-900"
+          >
+            <span class="sr-only">Search units</span>
+            <SearchIcon class="h-5 w-5" />
+          </button>
           <OrbatPanel class="pb-12" />
         </TabItem>
         <TabItem label="Scenario info">
@@ -103,7 +110,7 @@ import TimeController from "../components/TimeController.vue";
 import SlideOver from "../components/SlideOver.vue";
 import PlainButton from "../components/PlainButton.vue";
 
-import { MenuIcon } from "@heroicons/vue/outline";
+import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
 import { inputEventFilter } from "../components/helpers";
 import SearchModal from "../components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -135,6 +142,7 @@ export default defineComponent({
     OrbatPanel,
     MenuIcon,
     HomeIcon,
+    SearchIcon,
   },
 
   setup(props) {

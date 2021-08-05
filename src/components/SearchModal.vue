@@ -55,7 +55,7 @@
       v-if="open"
       @keydown.arrow-down="doKbd('down')"
       @keydown.arrow-up="doKbd('up')"
-      @keydown.enter="onSelect()"
+      @keydown.enter.prevent="onSelect()"
     >
     </GlobalEvents>
   </SimpleModal>
