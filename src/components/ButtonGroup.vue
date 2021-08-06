@@ -47,7 +47,7 @@ export interface ButtonGroupItem {
 export default defineComponent({
   name: "ButtonGroup",
   props: {
-    items: { type: Array as PropType<ButtonGroupItem[]> },
+    items: { type: Array as PropType<ButtonGroupItem[]>, required: true },
     small: { type: Boolean, default: false },
   },
 });

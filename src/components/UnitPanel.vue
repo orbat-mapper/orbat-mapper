@@ -65,7 +65,7 @@
     </div>
     <ButtonGroup :items="buttonItems.slice(0, 4)" small />
     <ButtonGroup class="mt-1" :items="buttonItems.slice(4)" small />
-    <UnitPanelState v-if="unit.state.length" :state="unit.state" />
+    <UnitPanelState v-if="unit?.state?.length" :state="unit.state" />
     <GlobalEvents :filter="eventFilter" @keyup.e="doFormFocus" />
     <SymbolPickerModal
       v-model:is-visible="showSymbolPicker"
