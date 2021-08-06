@@ -63,13 +63,9 @@
         <div class="prose prose-sm" v-html="hDescription"></div>
       </DescriptionItem>
     </div>
-    <PlainButton @click="onZoom" class="">Zoom to</PlainButton>
-    <PlainButton @click="toggleEditMode()" class=""
-      >Toggle edit mode</PlainButton
-    >
-
-    <UnitPanelState v-if="unit.state" :state="unit.state" />
-
+    <ButtonGroup :items="buttonItems.slice(0, 4)" small />
+    <ButtonGroup class="mt-1" :items="buttonItems.slice(4)" small />
+    <UnitPanelState v-if="unit.state.length" :state="unit.state" />
     <GlobalEvents :filter="eventFilter" @keyup.e="doFormFocus" />
     <SymbolPickerModal
       v-model:is-visible="showSymbolPicker"
@@ -80,20 +76,19 @@
 
 <script lang="ts">
 import {
-  defineComponent,
-  PropType,
-  watch,
-  ref,
-  defineAsyncComponent,
-  nextTick,
   computed,
+  defineAsyncComponent,
+  defineComponent,
+  nextTick,
+  PropType,
+  ref,
+  watch,
 } from "vue";
 import { Unit } from "../types/models";
 import InputGroup from "./InputGroup.vue";
 import PrimaryButton from "./PrimaryButton.vue";
 import PlainButton from "./PlainButton.vue";
 import { formatDateString, formatPosition } from "../geo/utils";
-import { useScenarioStore } from "../stores/scenarioStore";
 import { useGeoStore } from "../stores/geoStore";
 import MilSymbol from "./MilSymbol.vue";
 import { GlobalEvents } from "vue-global-events";
@@ -104,11 +99,15 @@ import DescriptionItem from "./DescriptionItem.vue";
 import { useToggle } from "@vueuse/core";
 import { renderMarkdown } from "../composables/formatting";
 import UnitPanelState from "./UnitPanelState.vue";
+import ButtonGroup from "./ButtonGroup.vue";
+import { useUnitActions } from "../composables/scenarioActions";
+import { UnitActions } from "../types/constants";
 // import SymbolPickerModal from "./SymbolPickerModal.vue";
 
 export default defineComponent({
   name: "UnitPanel",
   components: {
+    ButtonGroup,
     UnitPanelState,
     DescriptionItem,
     SimpleMarkdownInput,
@@ -143,7 +142,6 @@ export default defineComponent({
     const toggleEditMode = useToggle(isEditMode);
     const showSymbolPicker = ref(false);
 
-    const onZoom = () => geoStore.zoomToUnit(props.unit, 500);
     const doFormFocus = async () => {
       isEditMode.value = true;
       await nextTick();
@@ -153,6 +151,10 @@ export default defineComponent({
 
     const hDescription = computed(() =>
       renderMarkdown(props.unit?.description || "")
+    );
+
+    const hasPosition = computed(() =>
+      Boolean(props.unit?._state?.coordinates)
     );
 
     watch(
@@ -168,18 +170,49 @@ export default defineComponent({
       { immediate: true }
     );
 
+    const { onUnitAction } = useUnitActions();
+
+    const buttonItems = computed(() => [
+      { label: "Edit", onClick: toggleEditMode },
+      {
+        label: "Move up",
+        onClick: () => onUnitAction(props.unit, UnitActions.MoveUp),
+      },
+      {
+        label: "Move down",
+        onClick: () => onUnitAction(props.unit, UnitActions.MoveDown),
+      },
+      {
+        label: "Duplicate",
+        onClick: () => onUnitAction(props.unit, UnitActions.Clone),
+      },
+      {
+        label: "Create subordinate",
+        onClick: () => onUnitAction(props.unit, UnitActions.AddSubordinate),
+      },
+      {
+        label: "Zoom",
+        onClick: () => onUnitAction(props.unit, UnitActions.Zoom),
+        disabled: !hasPosition.value,
+      },
+      {
+        label: "Pan",
+        onClick: () => onUnitAction(props.unit, UnitActions.Pan),
+        disabled: !hasPosition.value,
+      },
+    ]);
+
     return {
       onFormSubmit,
       form,
       formatPosition,
       formatDateString,
-      onZoom,
       doFormFocus,
       eventFilter: inputEventFilter,
       showSymbolPicker,
       isEditMode,
-      toggleEditMode,
       hDescription,
+      buttonItems,
     };
   },
 });

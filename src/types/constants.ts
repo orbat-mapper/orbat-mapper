@@ -13,6 +13,7 @@ export const enum UnitActions {
   Clone = "Clone",
   MoveUp = "MoveUp",
   MoveDown = "MoveDown",
+  Pan = "Pan",
 }
 
 export const enum SideActions {

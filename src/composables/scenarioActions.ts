@@ -12,15 +12,14 @@ export function useUnitActions() {
   const unitManipulationStore = useUnitManipulationStore();
   const geoStore = useGeoStore();
   const activeUnitStore = useActiveUnitStore();
-  const onUnitAction = (unit: Unit, action: UnitActions) => {
+  const onUnitAction = (unit: Unit | undefined, action: UnitActions) => {
+    if (!unit) return;
     if (action === UnitActions.AddSubordinate) {
       unitManipulationStore.createSubordinateUnit(unit);
     }
 
-    if (action === UnitActions.Zoom) {
-      geoStore.zoomToUnit(unit);
-    }
-
+    if (action === UnitActions.Zoom) geoStore.zoomToUnit(unit, 500);
+    if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);
     if (action === UnitActions.Edit) {
       activeUnitStore.setActiveUnit(unit);
     }
