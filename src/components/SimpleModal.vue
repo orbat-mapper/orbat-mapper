@@ -12,7 +12,7 @@
       <div
         class="
           flex
-          items-end
+          items-start
           justify-center
           min-h-screen
           pt-4
@@ -67,7 +67,9 @@
               transition-all
               sm:my-8
               md:my-16
-              sm:align-middle sm:max-w-lg sm:w-full sm:p-6
+              sm:align-middle sm:max-w-lg
+              w-full
+              sm:p-6
             "
           >
             <div class="">
@@ -81,7 +83,7 @@
                 <slot></slot>
               </div>
             </div>
-            <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
+            <div class="sm:block absolute top-0 right-0 pt-4 pr-4">
               <button
                 type="button"
                 class="
