@@ -49,7 +49,7 @@ export default defineComponent({
   components: { SearchIcon },
   setup(props) {
     const inputValue = useVModel(props, "modelValue");
-    const updateValue = (event: InputEvent) => {
+    const updateValue = (event: Event) => {
       inputValue.value = (<HTMLInputElement>event.target).value;
     };
     return { inputValue, updateValue };
