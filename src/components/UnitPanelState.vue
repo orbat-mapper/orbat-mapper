@@ -3,7 +3,10 @@
   <ul class="mt-2 border-t border-b border-gray-200 divide-y divide-gray-200">
     <li v-for="(s, index) in state" class="py-4 flex items-center">
       <div class="flex-auto min-w-0 text-sm flex flex-col">
-        <p class="text-gray-500 font-medium">
+        <p
+          class="text-gray-500 font-medium"
+          :class="{ 'text-gray-900 font-bold': isActive(s, index) }"
+        >
           {{ formatDateString(s.t, scenarioStore.timeZone) }}
         </p>
         <p>{{ formatPosition(s.coordinates) }}</p>
@@ -38,7 +41,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from "vue";
-import { Unit } from "../types/models";
+import { State, Unit } from "../types/models";
 import { formatDateString, formatPosition } from "../geo/utils";
 import { XIcon } from "@heroicons/vue/solid";
 import { useScenarioStore } from "../stores/scenarioStore";
@@ -55,12 +58,20 @@ export default defineComponent({
       scenarioStore.deleteUnitStateEntry(props.unit, index);
     };
 
+    const isActive = (s: State, index: number) => {
+      if (!state.value?.length) return;
+      const nextUnitTimestamp = state.value[index + 1]?.t || Number.MAX_VALUE;
+      const currentTime = scenarioStore.currentTime;
+      return s.t <= currentTime && nextUnitTimestamp > currentTime;
+    };
+
     return {
       formatPosition,
       formatDateString,
       deleteState,
       scenarioStore,
       state,
+      isActive,
     };
   },
 });
