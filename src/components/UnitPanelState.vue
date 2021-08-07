@@ -12,46 +12,38 @@
         <p>{{ formatPosition(s.coordinates) }}</p>
       </div>
 
-      <div class="flex-shrink-0 px-4">
-        <button
-          type="button"
-          @click="deleteState(index)"
-          class="
-            inline-flex
-            items-center
-            p-1
-            border border-transparent
-            rounded-full
-            shadow-sm
-            text-white
-            bg-indigo-300
-            hover:bg-indigo-700
-            focus:outline-none
-            focus:ring-2
-            focus:ring-offset-2
-            focus:ring-indigo-500
-          "
-        >
+      <div class="flex-0 flex space-x-0">
+        <IconButton @click="changeToState(s)" class="bg-gray-50">
+          <CrosshairsGps class="h-5 w-5" aria-hidden="true" />
+          <span class="sr-only">Delete entry</span>
+        </IconButton>
+        <IconButton @click="deleteState(index)" class="bg-gray-50">
           <XIcon class="h-5 w-5" aria-hidden="true" />
-        </button>
+          <span class="sr-only">Delete entry</span>
+        </IconButton>
       </div>
     </li>
   </ul>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from "vue";
+import { computed, defineComponent, nextTick, PropType } from "vue";
 import { State, Unit } from "../types/models";
 import { formatDateString, formatPosition } from "../geo/utils";
+import { CrosshairsGps } from "mdue";
 import { XIcon } from "@heroicons/vue/solid";
 import { useScenarioStore } from "../stores/scenarioStore";
+import IconButton from "./IconButton.vue";
+import { useUnitActions } from "../composables/scenarioActions";
+import { UnitActions } from "../types/constants";
 
 export default defineComponent({
   name: "UnitPanelState",
   props: { unit: { type: Object as PropType<Unit>, required: true } },
-  components: { XIcon },
+  components: { IconButton, XIcon, CrosshairsGps },
   setup(props) {
     const scenarioStore = useScenarioStore();
+    const { onUnitAction } = useUnitActions();
     const state = computed(() => props.unit.state);
 
     const deleteState = (index: number) => {
@@ -65,6 +57,13 @@ export default defineComponent({
       return s.t <= currentTime && nextUnitTimestamp > currentTime;
     };
 
+    const changeToState = (stateEntry: State) => {
+      scenarioStore.setCurrentTime(stateEntry.t);
+      if (stateEntry.coordinates) {
+        onUnitAction(props.unit, UnitActions.Pan);
+      }
+    };
+
     return {
       formatPosition,
       formatDateString,
@@ -72,6 +71,7 @@ export default defineComponent({
       scenarioStore,
       state,
       isActive,
+      changeToState,
     };
   },
 });
