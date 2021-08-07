@@ -275,6 +275,13 @@ export const useScenarioStore = defineStore({
       this.currentTime = timestamp;
     },
 
+    deleteUnitStateEntry(unit: Unit, index: number) {
+      const _unit = this.getUnitById(unit.id);
+      if (!_unit) return;
+      _unit.state?.splice(index, 1);
+      this.updateUnitState(_unit);
+    },
+
     updateUnitState(unit: Unit) {
       const timestamp = this.currentTime;
       if (!unit.state || !unit.state.length) {

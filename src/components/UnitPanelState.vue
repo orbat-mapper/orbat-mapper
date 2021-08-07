@@ -38,7 +38,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from "vue";
-import { State, Unit } from "../types/models";
+import { Unit } from "../types/models";
 import { formatDateString, formatPosition } from "../geo/utils";
 import { XIcon } from "@heroicons/vue/solid";
 import { useScenarioStore } from "../stores/scenarioStore";
@@ -52,9 +52,9 @@ export default defineComponent({
     const state = computed(() => props.unit.state);
 
     const deleteState = (index: number) => {
-      state.value?.splice(index, 1);
-      scenarioStore.updateUnitState(props.unit);
+      scenarioStore.deleteUnitStateEntry(props.unit, index);
     };
+
     return {
       formatPosition,
       formatDateString,
