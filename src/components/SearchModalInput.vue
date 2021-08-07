@@ -11,7 +11,7 @@
       <input
         id="search-field"
         :value="inputValue"
-        @input="inputValue = $event.target.value"
+        @input="updateValue"
         name="search-field"
         class="
           block
@@ -49,7 +49,10 @@ export default defineComponent({
   components: { SearchIcon },
   setup(props) {
     const inputValue = useVModel(props, "modelValue");
-    return { inputValue };
+    const updateValue = (event: InputEvent) => {
+      inputValue.value = (<HTMLInputElement>event.target).value;
+    };
+    return { inputValue, updateValue };
   },
 });
 </script>
