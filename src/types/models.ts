@@ -90,6 +90,8 @@ export interface ScenarioInfo {
 
 export interface Scenario extends ScenarioInfo {
   type: string;
+  version: string;
+  symbologyStandard?: "MILSTD-2525" | "APP-6";
   sides: Side[];
   events: ScenarioEvent[];
 }

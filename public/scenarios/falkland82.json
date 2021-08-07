@@ -1,5 +1,7 @@
 {
   "type": "ScenarioViewer",
+  "version": "0.5.0",
+  "symbologyStandard": "APP-6",
   "name": "The Falklands War",
   "description": "The Falklands War (Spanish: Guerra de las Malvinas), also known as the Falklands Conflict, Falklands Crisis, South Atlantic Conflict, and the Guerra del Atlántico Sur (Spanish for \"South Atlantic War\"), was a ten-week war between Argentina and the United Kingdom over two British overseas territories in the South Atlantic: the Falkland Islands, and South Georgia and the South Sandwich Islands. It began on Friday, 2 April 1982, when Argentina invaded and occupied the Falkland Islands (and, the following day, South Georgia and the South Sandwich Islands) in an attempt to establish the sovereignty it had claimed over them. On 5 April, the British government dispatched a naval task force to engage the Argentine Navy and Air Force before making an amphibious assault on the islands. The conflict lasted 74 days and ended with the Argentine surrender on 14 June 1982, returning the islands to British control. In total, 649 Argentine military personnel, 255 British military personnel, and three Falkland Islanders died during the hostilities.",
   "startTime": 386467200000,

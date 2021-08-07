@@ -142,6 +142,8 @@ export const useScenarioStore = defineStore({
       const scn: Scenario = {
         name: "New scenario",
         type: "ScenarioViewer",
+        symbologyStandard: "APP-6",
+        version: "0.5.0",
         description: "Empty scenario description",
         sides: [],
         events: [],
