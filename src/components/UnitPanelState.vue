@@ -37,27 +37,30 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
-import { State } from "../types/models";
+import { computed, defineComponent, PropType } from "vue";
+import { State, Unit } from "../types/models";
 import { formatDateString, formatPosition } from "../geo/utils";
 import { XIcon } from "@heroicons/vue/solid";
 import { useScenarioStore } from "../stores/scenarioStore";
 
 export default defineComponent({
   name: "UnitPanelState",
-  props: { state: { type: Object as PropType<State[]>, required: true } },
+  props: { unit: { type: Object as PropType<Unit>, required: true } },
   components: { XIcon },
   setup(props) {
     const scenarioStore = useScenarioStore();
+    const state = computed(() => props.unit.state);
 
     const deleteState = (index: number) => {
-      props.state.splice(index, 1);
+      state.value?.splice(index, 1);
+      scenarioStore.updateUnitState(props.unit);
     };
     return {
       formatPosition,
       formatDateString,
       deleteState,
       scenarioStore,
+      state,
     };
   },
 });

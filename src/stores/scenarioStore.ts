@@ -275,6 +275,23 @@ export const useScenarioStore = defineStore({
       this.currentTime = timestamp;
     },
 
+    updateUnitState(unit: Unit) {
+      const timestamp = this.currentTime;
+      if (!unit.state || !unit.state.length) {
+        unit._state = null;
+        return;
+      }
+      let tmpstate: State | null = null;
+      for (const s of unit.state) {
+        if (s.t <= timestamp) {
+          tmpstate = s;
+        } else {
+          break;
+        }
+      }
+      unit._state = tmpstate;
+    },
+
     updateSide(sideData: Partial<Side>) {
       if (!sideData.id) return;
       let side = this.sideMap.get(sideData.id);
