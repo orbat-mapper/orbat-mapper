@@ -183,10 +183,15 @@ export default defineComponent({
     if (route.query.load) {
       loadDemoScenario(route.query.load as string);
     } else {
-      scenarioStore.loadEmptyScenario();
+      if (!scenarioStore.isLoaded) scenarioStore.loadEmptyScenario();
     }
 
     async function loadDemoScenario(name: string) {
+      if (name === "empty") {
+        scenarioStore.loadEmptyScenario();
+        await router.replace("");
+        return;
+      }
       await scenarioIO.loadDemoScenario(name as string);
       await router.replace("");
     }

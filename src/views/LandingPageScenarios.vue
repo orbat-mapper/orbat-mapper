@@ -136,7 +136,7 @@ export default {
     };
 
     const newScenario = () => {
-      router.push({ name: SCENARIO_ROUTE });
+      router.push({ name: SCENARIO_ROUTE, query: { load: "empty" } });
     };
     return {
       scenarios,
