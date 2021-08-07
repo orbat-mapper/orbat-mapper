@@ -10,7 +10,8 @@
       </div>
       <input
         id="search-field"
-        v-model="inputValue"
+        :value="inputValue"
+        @input="inputValue = $event.target.value"
         name="search-field"
         class="
           block
