@@ -6,6 +6,7 @@
   "repository": "github:kjellmf/orbat-mapper",
   "scripts": {
     "dev": "vite",
+    "dev-host": "vite --host",
     "build": "vue-tsc --noEmit --skipLibCheck && vite build",
     "v-build": "vite build",
     "v-tsc": "vue-tsc --noEmit",

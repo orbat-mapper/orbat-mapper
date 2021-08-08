@@ -14,6 +14,7 @@ import {
 
 import MapEvent from "ol/MapEvent";
 import OLMap from "ol/Map";
+import { defaults as defaultControls } from "ol/control";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import "ol/ol.css";
@@ -110,6 +111,11 @@ export default defineComponent({
           zoom: props.zoom,
           center: fromLonLat(props.center),
           constrainResolution: true,
+        }),
+        controls: defaultControls({
+          attributionOptions: {
+            collapsible: true,
+          },
         }),
       });
       olMap.on("moveend", moveendHandler);

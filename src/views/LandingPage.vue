@@ -15,6 +15,8 @@
       <LandingPageScenarios />
 
       <ProseSection class="">
+        <router-link to="/storymode" class="">Story mode test</router-link>
+
         <!--        <h2>Features</h2>-->
         <!--        <h2>Credits</h2>-->
       </ProseSection>
