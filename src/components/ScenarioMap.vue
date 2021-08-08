@@ -50,16 +50,17 @@ import GeometryLayout from "ol/geom/GeometryLayout";
 import VectorSource from "ol/source/Vector";
 import { inputEventFilter } from "./helpers";
 import { useUiStore } from "../stores/uiStore";
+import { useUnitLayer } from "../composables/geomap";
 
 export default defineComponent({
   name: "ScenarioMap",
   components: { MapContainer, GlobalEvents },
   setup() {
     let mapRef: OLMap;
-    let unitLayer: VectorLayer<VectorSource<Point>>;
     let selectedFeatures: Collection<Feature<Point>> = new Collection<
       Feature<Point>
     >();
+    const { unitLayer, drawUnits } = useUnitLayer();
     const activeUnitStore = useActiveUnitStore();
     const historyLayer = createHistoryLayer();
 
@@ -68,7 +69,6 @@ export default defineComponent({
     const uiStore = useUiStore();
     const onMapReady = (olMap: OLMap) => {
       mapRef = olMap;
-      unitLayer = createUnitLayer();
       const unitLayerGroup = new LayerGroup({
         layers: [unitLayer],
       });
@@ -106,14 +106,6 @@ export default defineComponent({
       const extent = unitLayer.getSource().getExtent();
       if (extent && !unitLayer.getSource().isEmpty())
         mapRef.getView().fit(extent, { padding: [10, 10, 10, 10] });
-    };
-
-    const drawUnits = () => {
-      unitLayer.getSource().clear();
-      const units = scenarioStore.everyVisibleUnits.map((unit) => {
-        return createUnitFeatureAt(unit._state!.coordinates!, unit);
-      });
-      unitLayer.getSource().addFeatures(units);
     };
 
     const drawHistory = () => {
