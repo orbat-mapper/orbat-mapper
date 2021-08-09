@@ -5,11 +5,24 @@
     </header>
     <div class="md:flex-auto md:min-h-0 md:flex">
       <section
-        class="w-full md:h-full sticky md:static top-0 h-[45vh] bg-white z-10"
+        class="
+          w-full
+          md:h-full
+          sticky
+          md:static
+          top-0
+          h-[45vh]
+          bg-white
+          z-10
+          shadow-md
+          md:shadow-none
+        "
       >
         <MapContainer @ready="onMapReady" />
       </section>
-      <section class="bg-gray-50 w-full md:max-w-sm overflow-auto border">
+      <section
+        class="bg-gray-50 w-full md:max-w-sm lg:max-w-lg overflow-auto border"
+      >
         <StoryModeContent />
       </section>
     </div>
@@ -32,6 +45,9 @@ import { useScenarioIO } from "../stores/scenarioIO";
 import OLMap from "ol/Map";
 import { useUnitLayer } from "../composables/geomap";
 import StoryModeContent from "./StoryModeContent.vue";
+import { chapter } from "../testdata/testStory";
+import { fromLonLat } from "ol/proj";
+import dayjs from "dayjs";
 
 export default defineComponent({
   name: "StoryModeView",
@@ -66,10 +82,20 @@ export default defineComponent({
     }
 
     whenever(and(mapIsReady, scenarioLoaded), () => {
+      const view = mapInstance.getView();
+      const { center, ...rest } = chapter.view;
+      const time = dayjs.utc(chapter.startTime);
+      scenarioStore.setCurrentTime(time.valueOf());
       drawUnits();
-      const extent = unitLayer.getSource().getExtent();
-      if (extent && !unitLayer.getSource().isEmpty())
-        mapInstance.getView().fit(extent, { padding: [10, 10, 10, 10] });
+
+      view.animate({
+        ...rest,
+        center: fromLonLat(center, view.getProjection()),
+        duration: 0,
+      });
+      // const extent = unitLayer.getSource().getExtent();
+      // if (extent && !unitLayer.getSource().isEmpty())
+      //   mapInstance.getView().fit(extent, { padding: [10, 10, 10, 10] });
     });
 
     return { scenario, onMapReady };

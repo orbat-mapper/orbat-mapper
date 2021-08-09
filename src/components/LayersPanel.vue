@@ -27,6 +27,11 @@
         </li>
       </ul>
     </div>
+
+    <div class="mt-4">
+      <p>For debugging:</p>
+      <pre class="text-sm">{{ mapView }}</pre>
+    </div>
   </div>
 </template>
 
@@ -51,6 +56,7 @@ import BaseLayerSwitcher from "./BaseLayerSwitcher.vue";
 import { AnyTileLayer, AnyVectorLayer, PointVectorLayer } from "../geo/types";
 import TileSource from "ol/source/Tile";
 import VectorSource from "ol/source/Vector";
+import { toLonLat } from "ol/proj";
 
 export interface LayerInfo<T extends BaseLayer = BaseLayer> {
   title: string;
@@ -70,6 +76,15 @@ export default defineComponent({
     let tileLayers = shallowRef<LayerInfo<TileLayer<TileSource>>[]>([]);
     let vectorLayers = ref<LayerInfo<PointVectorLayer>[]>([]);
     let activeBaseLayer = shallowRef<LayerInfo<TileLayer<TileSource>>>();
+
+    const mapView = computed(() => {
+      if (!geoStore.olMap) return;
+      const view = geoStore.olMap.getView();
+      return {
+        center: toLonLat(view.getCenter(), view.getProjection()),
+        zoom: view.getZoom(),
+      };
+    });
 
     onMounted(() => {
       if (geoStore.olMap) updateLayers();
@@ -139,6 +154,7 @@ export default defineComponent({
       toggleLayer,
       baseLayers,
       activeBaseLayer,
+      mapView,
     };
   },
 });

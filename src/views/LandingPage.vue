@@ -8,15 +8,17 @@
         <p>
           Follow the development of
           <a href="https://github.com/kjellmf/orbat-mapper"
-            >ORBAT Mapper on GitHub <GithubIcon class="w-10 h-10 inline" /> </a
+            >ORBAT Mapper on GitHub
+            <GithubIcon class="w-10 h-10 inline" /> </a
           >.
+        </p>
+        <p>
+          <router-link to="/storymode" class="">Story mode test</router-link>
         </p>
       </ProseSection>
       <LandingPageScenarios />
 
       <ProseSection class="">
-        <router-link to="/storymode" class="">Story mode test</router-link>
-
         <!--        <h2>Features</h2>-->
         <!--        <h2>Credits</h2>-->
       </ProseSection>
