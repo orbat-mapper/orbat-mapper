@@ -17,7 +17,14 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onUnmounted, ref, toRef } from "vue";
+import {
+  computed,
+  defineComponent,
+  onMounted,
+  onUnmounted,
+  ref,
+  toRef,
+} from "vue";
 import MapContainer from "../components/MapContainer.vue";
 import { useScenarioStore } from "../stores/scenarioStore";
 import { and, toRefs, useTitle, whenever } from "@vueuse/core";
@@ -38,6 +45,10 @@ export default defineComponent({
     let mapInstance: OLMap;
 
     useTitle(windowTitle);
+
+    onMounted(() => {
+      window.scrollTo(0, 0);
+    });
 
     onUnmounted(() => {
       useTitle(originalTitle);
