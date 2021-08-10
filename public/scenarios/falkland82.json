@@ -152,6 +152,19 @@
               ],
               "id": "7xJ~ZOBnMRqkwaw~EiNFB",
               "externalUrl": "https://en.wikipedia.org/wiki/HMS_Endurance_(1967)"
+            },
+            {
+              "name": "BAS",
+              "sidc": "10031100111100000000",
+              "id": "R0aM0ePhKjOe1z1mg5KBV",
+              "state": [
+                {
+                  "t": 385394400000,
+                  "coordinates": [-36.68852253064409, -54.14715926640066]
+                }
+              ],
+              "subUnits": [],
+              "shortName": "BAS"
             }
           ]
         },
@@ -652,7 +665,12 @@
                 {
                   "name": "ARA Bahia Buen Suceso",
                   "sidc": "10073000001301060000",
-                  "state": [],
+                  "state": [
+                    {
+                      "t": 385394400000,
+                      "coordinates": [-36.6833405589705, -54.14092108867432]
+                    }
+                  ],
                   "id": "9WgmjOqlkkcMhZD0ymVQR"
                 }
               ],
@@ -716,6 +734,18 @@
               "sidc": "10071000181211040000",
               "state": [],
               "id": "5JlH0deHdlPdZIgT2gLpk"
+            },
+            {
+              "name": "Workers",
+              "sidc": "10071000111211004600",
+              "id": "HxaawJT7ymu1m2gpLEV-o",
+              "state": [
+                {
+                  "t": 385394400000,
+                  "coordinates": [-36.68911416889803, -54.14095696852837]
+                }
+              ],
+              "subUnits": []
             }
           ]
         },

@@ -11,7 +11,17 @@ export interface StoryChapter {
 }
 
 export const content = `
-# Iterum ritus et maius erit lanugine
+# Invasion of South Georgia
+
+[From Wikipedia, the free encyclopedia](https://en.wikipedia.org/wiki/Invasion_of_South_Georgia)
+
+The Argentine invasion had begun on 19 March, when a group of civilian scrap metal workers arrived at Leith Harbour on board the transport ship ARA Bahía Buen Suceso without the required landing clearance and then raised the Argentine flag. The scrap workers had been infiltrated by Argentine marines posing as civilian scientists.
+
+[![Leith whaling station](https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Leith_whaling_station.JPG/1024px-Leith_whaling_station.JPG)](https://commons.wikimedia.org/wiki/File:Leith_whaling_station.JPG "Markabq, Public domain, via Wikimedia Commons")
+
+The only British presence at Leith on 19 March was a British Antarctic Survey (BAS) team, whose leader Trefor Edwards handed a message from London to the commander of Buen Suceso, captain Briatore, demanding the removal of the Argentine flag and the departure of the party. At the same time, the Argentine crew had to report to the top BAS commander in Grytviken, Steve Martin. Briatore replied that the mission had the approval of the British embassy in Buenos Aires.
+
+Eventually, the Argentine captain ordered the lowering of the flag, but failed to report to Grytviken. The BAS commander sent a message to the Governor of the Falkland Islands, Rex Hunt (South Georgia being run as a dependency of the Falklands). After consulting London, Hunt was instructed to dispatch HMS Endurance to South Georgia with a detachment of 22 Royal Marines.
 
 ## Promissaque pluribus tigres ab enim semina decem
 
@@ -63,14 +73,18 @@ draconi loca iuvenum, et licet admoti modo.
 `;
 
 export const chapter: StoryChapter = {
-  startTime: "1982-03-21T12:00:00-04:00",
+  startTime: "1982-03-19T12:00:00-04:00",
   content: content,
   // view: {
   //   center: [-36.68777893929655, -54.14052681464578],
   //   zoom: 16,
   // },
+  // view: {
+  //   center: [-59.551720366539094, -52.18537397937206],
+  //   zoom: 7,
+  // },
   view: {
-    center: [-59.551720366539094, -52.18537397937206],
-    zoom: 7,
+    center: [-36.68397072927164, -54.1422473704292],
+    zoom: 14,
   },
 };
