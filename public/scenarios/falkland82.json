@@ -155,7 +155,7 @@
             },
             {
               "name": "BAS",
-              "sidc": "10031100111100000000",
+              "sidc": "10031100001100000000",
               "id": "R0aM0ePhKjOe1z1mg5KBV",
               "state": [
                 {
@@ -165,12 +165,26 @@
               ],
               "subUnits": [],
               "shortName": "BAS"
+            },
+            {
+              "name": "British Antarctic Survey",
+              "sidc": "10031102001100000000",
+              "id": "Y-pOTn1wiQvWzI5Ubq8Fz",
+              "state": [
+                {
+                  "t": 385394400000,
+                  "coordinates": [-36.49445470967382, -54.283293554297046]
+                }
+              ],
+              "subUnits": [],
+              "shortName": "BAS",
+              "externalUrl": "https://en.wikipedia.org/wiki/British_Antarctic_Survey"
             }
           ]
         },
         {
           "id": "sdfsdsdf3",
-          "name": "Task Force",
+          "name": "Operation Corporate",
           "units": [
             {
               "name": "TG 317.1 LG",
@@ -555,7 +569,8 @@
               "state": [],
               "id": "g3n1NTl_5OuFYjsRfd_2G"
             }
-          ]
+          ],
+          "_isNew": false
         }
       ]
     },
