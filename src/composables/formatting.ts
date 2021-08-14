@@ -1,10 +1,13 @@
 import MarkdownIt from "markdown-it";
+import MarkdownItContainer from "markdown-it-container";
 
 // Remember old renderer, if overridden, or proxy to default renderer
 
 const md = new MarkdownIt();
+md.use(MarkdownItContainer, "scroll-step");
+
 // from https://github.com/markdown-it/markdown-it/blob/master/docs/architecture.md#renderer
-var defaultRender =
+const defaultRender =
   md.renderer.rules.link_open ||
   function (tokens, idx, options, env, self) {
     return self.renderToken(tokens, idx, options);

@@ -23,7 +23,7 @@
       <section
         class="bg-gray-50 w-full md:max-w-sm lg:max-w-lg overflow-auto border"
       >
-        <StoryModeContent />
+        <StoryModeContent @update-state="onUpdateState" />
       </section>
     </div>
   </div>
@@ -45,7 +45,7 @@ import { useScenarioIO } from "../stores/scenarioIO";
 import OLMap from "ol/Map";
 import { useUnitLayer } from "../composables/geomap";
 import StoryModeContent from "./StoryModeContent.vue";
-import { chapter } from "../testdata/testStory";
+import { chapter, StoryStateChange } from "../testdata/testStory";
 import { fromLonLat } from "ol/proj";
 import dayjs from "dayjs";
 
@@ -98,7 +98,27 @@ export default defineComponent({
       //   mapInstance.getView().fit(extent, { padding: [10, 10, 10, 10] });
     });
 
-    return { scenario, onMapReady };
+    function onUpdateState(state: StoryStateChange) {
+      if (state.time) {
+        const time = dayjs.utc(state.time);
+        scenarioStore.setCurrentTime(time.valueOf());
+        drawUnits();
+      }
+      if (state.view) {
+        const view = mapInstance.getView();
+        const { center, ...rest } = state.view;
+
+        view.animate({
+          duration: 2000,
+          ...rest,
+          center: center && fromLonLat(center, view.getProjection()),
+        });
+      }
+
+      console.log("On update state", state);
+    }
+
+    return { scenario, onMapReady, onUpdateState };
   },
 });
 </script>

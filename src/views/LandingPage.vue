@@ -8,8 +8,7 @@
         <p>
           Follow the development of
           <a href="https://github.com/kjellmf/orbat-mapper"
-            >ORBAT Mapper on GitHub
-            <GithubIcon class="w-10 h-10 inline" /> </a
+            >ORBAT Mapper on GitHub <GithubIcon class="w-10 h-10 inline" /> </a
           >.
         </p>
         <p>

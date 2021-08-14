@@ -26,6 +26,7 @@ function createBaseLayers() {
   const openStreetmapLayer = new TileLayer({
     source: new OSM(),
     visible: true,
+    preload: Infinity,
   });
   openStreetmapLayer.set("title", "OSM");
   const lightGrayLayer = new TileLayer({
