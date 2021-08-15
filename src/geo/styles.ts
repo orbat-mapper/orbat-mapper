@@ -4,7 +4,7 @@ import { Unit } from "../types/models";
 import { symbolGenerator } from "../symbology/milsymbwrapper";
 import { Symbol as MilSymbol } from "milsymbol";
 import IconAnchorUnits from "ol/style/IconAnchorUnits";
-import { Geometry, LineString, Point } from "ol/geom";
+import { LineString, Point } from "ol/geom";
 import CircleStyle from "ol/style/Circle";
 import { formatDateString } from "./utils";
 
@@ -34,6 +34,8 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style {
     const milSymbol = symbolGenerator(sidc, {
       size: 30,
       uniqueDesignation: name,
+      outlineColor: "white",
+      outlineWidth: 8,
     });
     const style = createMilSymbolStyle(milSymbol);
     selectedUnitStyleCache.set(key, style);
