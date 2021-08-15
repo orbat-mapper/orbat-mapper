@@ -73,7 +73,7 @@ export default defineComponent({
     scenarioIO.loadDemoScenario("falkland82");
     const scenarioLoaded = computed(() => scenarioStore.isLoaded);
     const scenario = toRef(scenarioStore, "scenario");
-    const { unitLayer, drawUnits } = useUnitLayer();
+    const { unitLayer, drawUnits, animateUnits } = useUnitLayer();
 
     function onMapReady(olMap: OLMap) {
       mapInstance = olMap;
@@ -102,7 +102,7 @@ export default defineComponent({
       if (state.time) {
         const time = dayjs.utc(state.time);
         scenarioStore.setCurrentTime(time.valueOf());
-        drawUnits();
+        animateUnits();
       }
       if (state.view) {
         const view = mapInstance.getView();
