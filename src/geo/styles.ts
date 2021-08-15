@@ -15,6 +15,7 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
   const { x, y } = milSymbol.getAnchor();
   const { width, height } = milSymbol.getSize();
   const image = new Icon({
+    // color: "white",
     scale: 1,
     anchor: [x, y],
     anchorXUnits: IconAnchorUnits.PIXELS,
@@ -57,6 +58,7 @@ export function createSelectedUnitStyleFromFeature(
     });
     const style = createMilSymbolStyle(milSymbol);
     style.setZIndex(10);
+
     unitStyleCache.set(key, style);
     return style;
   } else return unitStyleCache.get(key);

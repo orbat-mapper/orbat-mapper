@@ -1,5 +1,6 @@
 import { createUnitFeatureAt, createUnitLayer } from "../geo/layers";
 import { useScenarioStore } from "../stores/scenarioStore";
+import Fade from "ol-ext/featureanimation/Fade";
 
 export function useUnitLayer() {
   const scenarioStore = useScenarioStore();
@@ -10,6 +11,8 @@ export function useUnitLayer() {
       return createUnitFeatureAt(unit._state!.coordinates!, unit);
     });
     unitLayer.getSource().addFeatures(units);
+    //@ts-ignore
+    units.forEach((f) => unitLayer.animateFeature(f, new Fade()));
   };
 
   return { unitLayer, drawUnits };
