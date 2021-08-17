@@ -95,8 +95,8 @@ export const chapter: StoryChapter = {
   //   zoom: 7,
   // },
   view: {
-    center: [-36.68397072927164, -54.1422473704292],
-    zoom: 14,
+    center: [-59.705733218869675, -51.850240848550705],
+    zoom: 7,
   },
 };
 
@@ -105,6 +105,7 @@ export const actions: StoryStateChange[] = [
     view: {
       center: [-36.68397072927164, -54.1422473704292],
       zoom: 14,
+      duration: 0,
     },
   },
   {

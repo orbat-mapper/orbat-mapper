@@ -10,6 +10,7 @@ import {
   createUnitStyleFromFeature,
 } from "./styles";
 import { PointVectorLayer } from "./types";
+import View from "ol/View";
 
 export function createUnitLayer(): PointVectorLayer {
   return new VectorLayer({
@@ -38,4 +39,51 @@ export function createUnitFeatureAt(
   const feature = new Feature<Point>({ geometry, sidc, name, id });
   feature.setId(id);
   return feature;
+}
+
+// Based on https://openlayers.org/en/latest/examples/animation.html
+export function flyTo(
+  view: View,
+  {
+    location,
+    zoom,
+    duration = 2000,
+  }: { location: number[]; zoom?: number; duration?: number }
+): Promise<boolean> {
+  const zoom_ = zoom || view.getZoom();
+  let parts = 2;
+  let called = false;
+
+  return new Promise((resolve) => {
+    function callback(complete: boolean) {
+      --parts;
+      if (called) {
+        return;
+      }
+      if (parts === 0 || !complete) {
+        called = true;
+        resolve(complete);
+      }
+    }
+
+    view.animate(
+      {
+        center: location,
+        duration: duration,
+      },
+      callback
+    );
+
+    view.animate(
+      {
+        zoom: zoom_ - 1,
+        duration: duration / 2,
+      },
+      {
+        zoom: zoom_,
+        duration: duration / 2,
+      },
+      callback
+    );
+  });
 }

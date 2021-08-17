@@ -40,7 +40,7 @@ import {
 } from "vue";
 import MapContainer from "../components/MapContainer.vue";
 import { useScenarioStore } from "../stores/scenarioStore";
-import { and, toRefs, useTitle, whenever } from "@vueuse/core";
+import { and, invoke, toRefs, until, useTitle, whenever } from "@vueuse/core";
 import { useScenarioIO } from "../stores/scenarioIO";
 import OLMap from "ol/Map";
 import { useUnitLayer } from "../composables/geomap";
@@ -48,6 +48,7 @@ import StoryModeContent from "./StoryModeContent.vue";
 import { chapter, StoryStateChange } from "../testdata/testStory";
 import { fromLonLat } from "ol/proj";
 import dayjs from "dayjs";
+import { flyTo } from "../geo/layers";
 
 export default defineComponent({
   name: "StoryModeView",
@@ -106,13 +107,27 @@ export default defineComponent({
       }
       if (state.view) {
         const view = mapInstance.getView();
-        const { center, ...rest } = state.view;
+        const { center, zoom, duration, ...rest } = state.view;
 
-        view.animate({
-          duration: 2000,
-          ...rest,
-          center: center && fromLonLat(center, view.getProjection()),
-        });
+        // view.animate(
+        //   {
+        //     duration: 2000,
+        //     ...rest,
+        //     center: center && fromLonLat(center, view.getProjection()),
+        //   },
+        //   () => (doneAnimating.value = true)
+        // );
+
+        if (center)
+          invoke(async () => {
+            await flyTo(view, {
+              location: fromLonLat(center, view.getProjection()),
+              zoom,
+              duration,
+            });
+            // await until(doneAnimating).toBe(true);
+            console.log("done animating");
+          });
       }
 
       console.log("On update state", state);

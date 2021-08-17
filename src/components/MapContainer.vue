@@ -25,7 +25,7 @@ import { OSM, XYZ } from "ol/source";
 function createBaseLayers() {
   const openStreetmapLayer = new TileLayer({
     source: new OSM(),
-    visible: true,
+    visible: false,
     preload: Infinity,
   });
   openStreetmapLayer.set("title", "OSM");
@@ -58,7 +58,7 @@ function createBaseLayers() {
 
   const esriWorldImagery = new TileLayer({
     preload: Infinity,
-    visible: false,
+    visible: true,
     source: new XYZ({
       attributions:
         "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
