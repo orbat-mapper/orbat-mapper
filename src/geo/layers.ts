@@ -15,6 +15,8 @@ export function createUnitLayer(): PointVectorLayer {
   return new VectorLayer({
     source: new VectorSource(),
     style: createUnitStyleFromFeature,
+    updateWhileInteracting: true,
+    updateWhileAnimating: true,
   });
 }
 
