@@ -55,7 +55,7 @@ import { computed, defineComponent } from "vue";
 import MilSymbol from "./MilSymbol.vue";
 import PrimaryButton from "./PrimaryButton.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
-import { useVModel } from "@vueuse/core";
+import { useVModel, whenever } from "@vueuse/core";
 import SimpleModal from "./SimpleModal.vue";
 import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
 import { useSymbolItems } from "../composables/symbolData";
@@ -77,11 +77,13 @@ export default defineComponent({
   emits: ["update:isVisible", "update:sidc"],
   setup(props, { emit }) {
     const open = useVModel(props, "isVisible");
-    NProgress.done();
 
-    const { csidc, ...symbolItems } = useSymbolItems(
+    const { csidc, loadData, isLoaded, ...symbolItems } = useSymbolItems(
       computed(() => props.sidc || "")
     );
+    loadData();
+
+    whenever(isLoaded, () => NProgress.done());
 
     const onSubmit = () => {
       emit("update:sidc", csidc.value);
@@ -91,6 +93,7 @@ export default defineComponent({
     return {
       open,
       csidc,
+      isLoaded,
       ...symbolItems,
       onSubmit,
     };

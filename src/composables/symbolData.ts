@@ -1,5 +1,5 @@
 import { app6d } from "../symbology/standards/app6d";
-import { computed, ref, Ref, watch } from "vue";
+import { computed, ref, Ref, shallowRef, watch } from "vue";
 import { SymbolItem, SymbolValue } from "../types/constants";
 import {
   CONTROL_MEASURE_SYMBOLSET_VALUE,
@@ -16,11 +16,28 @@ import {
   UNIT_SYMBOLSET_VALUE,
 } from "../symbology/values";
 import { Sidc } from "../symbology/sidc";
+import { SymbolSetMap } from "../symbology/types";
+
+const symbology = shallowRef<SymbolSetMap | undefined>();
+const isLoaded = ref(false);
 
 function useSymbologyData() {
-  const isLoaded = ref(true);
+  async function loadData(loadApp6 = true) {
+    if (symbology.value) return;
 
-  return { isLoaded, symbology: app6d };
+    isLoaded.value = false;
+    if (loadApp6) {
+      const { app6d } = await import("../symbology/standards/app6d");
+      symbology.value = app6d;
+    } else {
+      const { ms2525d } = await import("../symbology/standards/milstd2525");
+      symbology.value = ms2525d;
+    }
+
+    isLoaded.value = true;
+  }
+
+  return { isLoaded, symbology, loadData };
 }
 
 export function useSymbolItems(sidc: Ref<string>) {
@@ -36,10 +53,10 @@ export function useSymbolItems(sidc: Ref<string>) {
     mod2Value,
   } = useSymbolValues(sidc);
 
-  const { symbology, isLoaded } = useSymbologyData();
+  const { symbology, isLoaded, loadData } = useSymbologyData();
 
   const symbolSets = computed(() => {
-    const symbSets = Object.entries(symbology).map(([k, v]) => {
+    const symbSets = Object.entries(symbology.value || {}).map(([k, v]) => {
       return {
         code: k,
         text: v.name,
@@ -74,8 +91,9 @@ export function useSymbolItems(sidc: Ref<string>) {
   });
 
   const icons = computed(() => {
+    if (!isLoaded.value) return [];
     const symbolSetCode = symbolSetValue.value || "01";
-    let mis = symbology[symbolSetCode].mainIcon;
+    let mis = (symbology.value || {})[symbolSetCode].mainIcon;
     if (symbolSetCode === CONTROL_MEASURE_SYMBOLSET_VALUE)
       mis = mis.filter((v) => v.geometry === "Point");
     return mis.map((mi) => {
@@ -129,7 +147,8 @@ export function useSymbolItems(sidc: Ref<string>) {
   });
 
   const mod1Items = computed(() => {
-    return symbology[symbolSetValue.value].modifierOne.map(
+    if (!symbology.value) return [];
+    return symbology.value[symbolSetValue.value].modifierOne.map(
       ({ code, modifier }): SymbolItem => {
         return {
           code,
@@ -147,7 +166,8 @@ export function useSymbolItems(sidc: Ref<string>) {
   });
 
   const mod2Items = computed(() => {
-    return symbology[symbolSetValue.value].modifierTwo.map(
+    if (!symbology.value) return [];
+    return symbology.value[symbolSetValue.value].modifierTwo.map(
       ({ code, modifier }): SymbolItem => {
         return {
           code,
@@ -182,6 +202,7 @@ export function useSymbolItems(sidc: Ref<string>) {
     mod2Items,
     csidc,
     isLoaded,
+    loadData,
   };
 }
 
