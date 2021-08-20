@@ -5,7 +5,7 @@
     </div>
 
     <div class="flex-shrink-0 self-end">
-      <PlainButton @click="showSymbolPicker = true" class="flex-shrink-0 h-10"
+      <PlainButton @click="openModal" class="flex-shrink-0 h-10"
         >edit
       </PlainButton>
     </div>
@@ -23,6 +23,7 @@ import { useVModel } from "@vueuse/core";
 import InputGroup from "./InputGroup.vue";
 import PlainButton from "./PlainButton.vue";
 import { biSyncDelayedRef } from "../composables/utils";
+import NProgress from "nprogress";
 
 export default defineComponent({
   name: "SymbolPickerInput",
@@ -43,6 +44,7 @@ export default defineComponent({
     biSyncDelayedRef(showSymbolPicker, showSymbolPickerDelayed);
 
     const openModal = async () => {
+      NProgress.start();
       showSymbolPicker.value = true;
     };
     return { sidcValue, showSymbolPicker, openModal, showSymbolPickerDelayed };

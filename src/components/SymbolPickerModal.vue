@@ -59,6 +59,7 @@ import { useVModel } from "@vueuse/core";
 import SimpleModal from "./SimpleModal.vue";
 import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
 import { useSymbolItems } from "../composables/symbolData";
+import NProgress from "nprogress";
 
 export default defineComponent({
   name: "SymbolPickerModal",
@@ -76,7 +77,7 @@ export default defineComponent({
   emits: ["update:isVisible", "update:sidc"],
   setup(props, { emit }) {
     const open = useVModel(props, "isVisible");
-    console.log("mounted");
+    NProgress.done();
 
     const { csidc, ...symbolItems } = useSymbolItems(
       computed(() => props.sidc || "")
