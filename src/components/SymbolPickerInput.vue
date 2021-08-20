@@ -33,7 +33,7 @@ export default defineComponent({
       () => import("./SymbolPickerModal.vue")
     ),
   },
-  props: { modelValue: { type: String, required: true } },
+  props: { modelValue: { type: String } },
   emits: ["update:modelValue"],
   setup(props) {
     const sidcValue = useVModel(props, "modelValue");
