@@ -76,6 +76,7 @@ export default defineComponent({
   emits: ["update:isVisible", "update:sidc"],
   setup(props, { emit }) {
     const open = useVModel(props, "isVisible");
+    console.log("mounted");
 
     const { csidc, ...symbolItems } = useSymbolItems(
       computed(() => props.sidc || "")
