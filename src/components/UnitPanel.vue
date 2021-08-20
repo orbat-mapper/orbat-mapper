@@ -22,18 +22,8 @@
         description=""
         v-model="form.externalUrl"
       />
-      <div class="flex w-full space-x-1">
-        <div class="flex-auto">
-          <InputGroup label="SIDC" v-model="form.sidc" />
-        </div>
-
-        <div class="flex-shrink-0 self-end">
-          <PlainButton
-            @click="showSymbolPicker = true"
-            class="flex-shrink-0 h-10"
-            >edit
-          </PlainButton>
-        </div>
+      <div class="w-full">
+        <SymbolPickerInput v-model="form.sidc" />
       </div>
       <SimpleMarkdownInput
         label="Description"
@@ -67,10 +57,6 @@
     <ButtonGroup class="mt-1" :items="buttonItems.slice(4)" small />
     <UnitPanelState v-if="unit?.state?.length" :unit="unit" />
     <GlobalEvents :filter="eventFilter" @keyup.e="doFormFocus" />
-    <SymbolPickerModal
-      v-model:is-visible="showSymbolPicker"
-      v-model:sidc="form.sidc"
-    />
   </div>
 </template>
 
@@ -102,19 +88,17 @@ import UnitPanelState from "./UnitPanelState.vue";
 import ButtonGroup from "./ButtonGroup.vue";
 import { useUnitActions } from "../composables/scenarioActions";
 import { UnitActions } from "../types/constants";
-// import SymbolPickerModal from "./SymbolPickerModal.vue";
+import SymbolPickerInput from "./SymbolPickerInput.vue";
 
 export default defineComponent({
   name: "UnitPanel",
   components: {
+    SymbolPickerInput,
     ButtonGroup,
     UnitPanelState,
     DescriptionItem,
     SimpleMarkdownInput,
     TextAreaGroup,
-    SymbolPickerModal: defineAsyncComponent(
-      () => import("./SymbolPickerModal.vue")
-    ),
     MilSymbol,
     PlainButton,
     PrimaryButton,
