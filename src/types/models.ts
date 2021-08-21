@@ -86,6 +86,7 @@ export interface ScenarioInfo {
   description?: string;
   startTime?: number;
   timeZone?: string;
+  symbologyStandard?: SymbologyStandard;
 }
 
 export type SymbologyStandard = "2525" | "app6";
@@ -93,7 +94,6 @@ export type SymbologyStandard = "2525" | "app6";
 export interface Scenario extends ScenarioInfo {
   type: string;
   version: string;
-  symbologyStandard?: SymbologyStandard;
   sides: Side[];
   events: ScenarioEvent[];
 }

@@ -18,10 +18,14 @@
         </PlainButton>
       </DescriptionItem>
       <InputGroup label="Time zone" v-model="form.timeZone" />
+      <RadioGroupList
+        :settings="standardSettings"
+        v-model="form.symbologyStandard"
+      />
       <div class="flex justify-end space-x-2">
         <PlainButton type="button" @click="toggleEditMode()"
-          >Cancel</PlainButton
-        >
+          >Cancel
+        </PlainButton>
         <PrimaryButton type="submit">Update</PrimaryButton>
       </div>
       <InputDateModal
@@ -43,6 +47,10 @@
       <DescriptionItem label="Time zone name"
         >{{ scenario.timeZone }}
       </DescriptionItem>
+      <DescriptionItem label="Symbology standard"
+        >{{ scenario.symbologyStandard }}
+      </DescriptionItem>
+
       <div class="flex space-x-2">
         <PlainButton @click="toggleEditMode()">Edit mode</PlainButton>
         <SecondaryButton @click="onDownload">Download</SecondaryButton>
@@ -70,10 +78,26 @@ import InputGroup from "./InputGroup.vue";
 import SimpleMarkdownInput from "./SimpleMarkdownInput.vue";
 import dayjs from "dayjs";
 import InputDateModal from "./InputDateModal.vue";
+import RadioGroupList from "./RadioGroupList.vue";
+import { useSettingsStore } from "../stores/settingsStore";
+
+const standardSettings = [
+  {
+    value: "2525",
+    name: "MIL-STD-2525D",
+    description: "US version",
+  },
+  {
+    value: "app6",
+    name: "APP-6",
+    description: "NATO version",
+  },
+];
 
 export default defineComponent({
   name: "ScenarioInfoPanel",
   components: {
+    RadioGroupList,
     InputDateModal,
     SimpleMarkdownInput,
     InputGroup,
@@ -85,6 +109,7 @@ export default defineComponent({
   setup() {
     const scenarioStore = useScenarioStore();
     const scenarioIO = useScenarioIO();
+    const settingsStore = useSettingsStore();
     const { scenario } = toRefs(scenarioStore);
     const { description, startTime } = toRefs(scenario);
 
@@ -102,13 +127,21 @@ export default defineComponent({
       description: "",
       startTime: 0,
       timeZone: "UTC",
+      symbologyStandard: "2525",
     });
 
     watch(
       scenario,
       (scn) => {
-        const { name, description, startTime, timeZone } = scn;
-        form.value = { name, description, startTime, timeZone };
+        const { name, description, startTime, timeZone, symbologyStandard } =
+          scn;
+        form.value = {
+          name,
+          description,
+          startTime,
+          timeZone,
+          symbologyStandard,
+        };
       },
       { immediate: true }
     );
@@ -140,6 +173,8 @@ export default defineComponent({
 
     function onFormSubmit() {
       Object.assign(scenario.value, form.value);
+      if (scenario.value.symbologyStandard)
+        settingsStore.symbologyStandard = scenario.value.symbologyStandard;
       isEditMode.value = false;
     }
 
@@ -156,6 +191,7 @@ export default defineComponent({
       onFormSubmit,
       computedStartTime,
       showTimeModal,
+      standardSettings,
     };
   },
 });
