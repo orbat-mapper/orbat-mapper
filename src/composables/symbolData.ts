@@ -17,21 +17,32 @@ import {
 } from "../symbology/values";
 import { Sidc } from "../symbology/sidc";
 import { SymbolSetMap } from "../symbology/types";
+import { useSettingsStore } from "../stores/settingsStore";
+import { SymbologyStandard } from "../types/models";
 
 const symbology = shallowRef<SymbolSetMap | undefined>();
 const isLoaded = ref(false);
+const currentSymbologyStandard = ref<SymbologyStandard | undefined>();
 
 function useSymbologyData() {
-  async function loadData(loadApp6 = true) {
-    if (symbology.value) return;
+  async function loadData() {
+    const settingsStore = useSettingsStore();
+
+    if (
+      symbology.value &&
+      currentSymbologyStandard.value === settingsStore.symbologyStandard
+    )
+      return;
 
     isLoaded.value = false;
-    if (loadApp6) {
+    if (settingsStore.symbologyStandard === "app6") {
       const { app6d } = await import("../symbology/standards/app6d");
       symbology.value = app6d;
+      currentSymbologyStandard.value = "app6";
     } else {
       const { ms2525d } = await import("../symbology/standards/milstd2525");
       symbology.value = ms2525d;
+      currentSymbologyStandard.value = "2525";
     }
 
     isLoaded.value = true;

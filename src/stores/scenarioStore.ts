@@ -14,6 +14,7 @@ import { SID_INDEX, Sidc } from "../symbology/sidc";
 import { setCharAt } from "../components/helpers";
 import { SID } from "../symbology/values";
 import dayjs from "dayjs";
+import { useSettingsStore } from "./settingsStore";
 
 /**
  * Visit every unit and apply callback
@@ -126,9 +127,12 @@ export const useScenarioStore = defineStore("scenario", {
   }),
   actions: {
     loadScenario(demoScenario: Scenario) {
+      const settingsStore = useSettingsStore();
       const { scenario, unitMap, sideMap, sideGroupMap } =
         prepareScenario(demoScenario);
       this.scenario = scenario;
+      if (scenario.symbologyStandard)
+        settingsStore.symbologyStandard = scenario.symbologyStandard;
       this.unitMap = unitMap;
       this.sideMap = sideMap;
       this.sideGroupMap = sideGroupMap;
@@ -138,10 +142,11 @@ export const useScenarioStore = defineStore("scenario", {
     },
 
     loadEmptyScenario() {
+      const settingsStore = useSettingsStore();
       const scn: Scenario = {
         name: "New scenario",
         type: "ScenarioViewer",
-        symbologyStandard: "APP-6",
+        symbologyStandard: settingsStore.symbologyStandard,
         version: "0.5.0",
         description: "Empty scenario description",
         sides: [],

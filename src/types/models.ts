@@ -88,10 +88,12 @@ export interface ScenarioInfo {
   timeZone?: string;
 }
 
+export type SymbologyStandard = "2525" | "app6";
+
 export interface Scenario extends ScenarioInfo {
   type: string;
   version: string;
-  symbologyStandard?: "MILSTD-2525" | "APP-6";
+  symbologyStandard?: SymbologyStandard;
   sides: Side[];
   events: ScenarioEvent[];
 }
