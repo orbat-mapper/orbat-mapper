@@ -49,7 +49,7 @@
             <div class="flex-shrink-0 w-8 flex justify-center cursor-move">
               <MilSymbol
                 :sidc="unit.sidc"
-                :size="20"
+                :size="settingsStore.orbatIconSize"
                 class=""
                 @click.stop.prevent=""
               />
@@ -95,6 +95,7 @@ import DotsMenu from "./DotsMenu.vue";
 import { useExpandTree } from "./helpers";
 import { useUnitMenu } from "../composables/scenarioActions";
 import { useUnitManipulationStore } from "../stores/scenarioManipulation";
+import { useSettingsStore } from "../stores/settingsStore";
 
 export default defineComponent({
   name: "OrbatTreeItem",
@@ -113,6 +114,8 @@ export default defineComponent({
     let subTree = ref();
 
     const dragStore = useDragStore();
+    const settingsStore = useSettingsStore();
+
     const dragStart = (ev: DragEvent) => {
       const { dataTransfer } = ev;
       if (dataTransfer) {
@@ -193,6 +196,7 @@ export default defineComponent({
       expandChildren,
       unit,
       hasActiveChildren,
+      settingsStore,
     };
   },
 

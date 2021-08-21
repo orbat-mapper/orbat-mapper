@@ -34,7 +34,10 @@ import {
 import VectorLayer from "ol/layer/Vector";
 import { Collection, Feature, MapBrowserEvent } from "ol";
 import { Modify, Select } from "ol/interaction";
-import { createSelectedUnitStyleFromFeature } from "../geo/styles";
+import {
+  clearStyleCache,
+  createSelectedUnitStyleFromFeature,
+} from "../geo/styles";
 import { SelectEvent } from "ol/interaction/Select";
 import { click } from "ol/events/condition";
 import { Point, LineString } from "ol/geom";
@@ -51,6 +54,7 @@ import VectorSource from "ol/source/Vector";
 import { inputEventFilter } from "./helpers";
 import { useUiStore } from "../stores/uiStore";
 import { useUnitLayer } from "../composables/geomap";
+import { useSettingsStore } from "../stores/settingsStore";
 
 export default defineComponent({
   name: "ScenarioMap",
@@ -67,6 +71,7 @@ export default defineComponent({
     const scenarioStore = useScenarioStore();
     const geoStore = useGeoStore();
     const uiStore = useUiStore();
+    const settingsStore = useSettingsStore();
     const onMapReady = (olMap: OLMap) => {
       mapRef = olMap;
       const unitLayerGroup = new LayerGroup({
@@ -125,6 +130,11 @@ export default defineComponent({
         drawHistory();
       }
     );
+
+    watch(settingsStore, () => {
+      clearStyleCache();
+      drawUnits();
+    });
 
     // watch(
     //   () => scenarioStore.currentTime,

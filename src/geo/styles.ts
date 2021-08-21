@@ -7,9 +7,15 @@ import IconAnchorUnits from "ol/style/IconAnchorUnits";
 import { LineString, Point } from "ol/geom";
 import CircleStyle from "ol/style/Circle";
 import { formatDateString } from "./utils";
+import { useSettingsStore } from "../stores/settingsStore";
 
 const unitStyleCache = new Map();
 const selectedUnitStyleCache = new Map();
+
+export function clearStyleCache() {
+  unitStyleCache.clear();
+  selectedUnitStyleCache.clear();
+}
 
 function createMilSymbolStyle(milSymbol: MilSymbol) {
   const { x, y } = milSymbol.getAnchor();
@@ -33,8 +39,9 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style {
   const { sidc, name } = feature.getProperties() as Unit;
   const key = sidc + name;
   if (!selectedUnitStyleCache.has(key)) {
+    const settingsStore = useSettingsStore();
     const milSymbol = symbolGenerator(sidc, {
-      size: 30,
+      size: settingsStore.mapIconSize,
       uniqueDesignation: name,
       outlineColor: "white",
       outlineWidth: 8,
@@ -51,8 +58,9 @@ export function createSelectedUnitStyleFromFeature(
   const { sidc, name } = feature.getProperties() as Unit;
   const key = sidc + name;
   if (!unitStyleCache.has(key)) {
+    const settingsStore = useSettingsStore();
     const milSymbol = symbolGenerator(sidc, {
-      size: 30,
+      size: settingsStore.mapIconSize,
       outlineColor: "Yellow",
       outlineWidth: 20,
       uniqueDesignation: name,

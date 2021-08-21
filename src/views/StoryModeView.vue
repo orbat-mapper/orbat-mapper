@@ -37,6 +37,7 @@ import {
   onUnmounted,
   ref,
   toRef,
+  watch,
 } from "vue";
 import MapContainer from "../components/MapContainer.vue";
 import { useScenarioStore } from "../stores/scenarioStore";
@@ -49,6 +50,8 @@ import { chapter, StoryStateChange } from "../testdata/testStory";
 import { fromLonLat } from "ol/proj";
 import dayjs from "dayjs";
 import { flyTo } from "../geo/layers";
+import { useSettingsStore } from "../stores/settingsStore";
+import { clearStyleCache } from "../geo/styles";
 
 export default defineComponent({
   name: "StoryModeView",
@@ -60,6 +63,8 @@ export default defineComponent({
     const windowTitle = computed(() => scenarioStore.scenario.name);
     const mapIsReady = ref(false);
     let mapInstance: OLMap;
+
+    const settingsStore = useSettingsStore();
 
     useTitle(windowTitle);
 
@@ -132,6 +137,11 @@ export default defineComponent({
 
       console.log("On update state", state);
     }
+
+    watch(settingsStore, () => {
+      clearStyleCache();
+      drawUnits();
+    });
 
     return { scenario, onMapReady, onUpdateState };
   },
