@@ -51,7 +51,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, onUnmounted } from "vue";
 import MilSymbol from "./MilSymbol.vue";
 import PrimaryButton from "./PrimaryButton.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
@@ -83,7 +83,7 @@ export default defineComponent({
     );
     loadData();
 
-    whenever(isLoaded, () => NProgress.done());
+    whenever(isLoaded, () => NProgress.done(), { immediate: true });
 
     const onSubmit = () => {
       emit("update:sidc", csidc.value);
