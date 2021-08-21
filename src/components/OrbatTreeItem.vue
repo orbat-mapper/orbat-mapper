@@ -50,6 +50,7 @@
               <MilSymbol
                 :sidc="unit.sidc"
                 :size="settingsStore.orbatIconSize"
+                :modifiers="{ standard: settingsStore.symbologyStandard }"
                 class=""
                 @click.stop.prevent=""
               />

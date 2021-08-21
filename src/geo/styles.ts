@@ -45,6 +45,7 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style {
       uniqueDesignation: name,
       outlineColor: "white",
       outlineWidth: 8,
+      standard: settingsStore.symbologyStandard,
     });
     const style = createMilSymbolStyle(milSymbol);
     selectedUnitStyleCache.set(key, style);
