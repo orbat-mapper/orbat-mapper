@@ -65,6 +65,7 @@ export function createSelectedUnitStyleFromFeature(
       outlineColor: "Yellow",
       outlineWidth: 20,
       uniqueDesignation: name,
+      standard: settingsStore.symbologyStandard,
     });
     const style = createMilSymbolStyle(milSymbol);
     style.setZIndex(10);
