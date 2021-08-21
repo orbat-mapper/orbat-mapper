@@ -112,8 +112,7 @@ function prepareScenario(scenario: Scenario) {
   return { scenario, unitMap, sideMap, sideGroupMap };
 }
 
-export const useScenarioStore = defineStore({
-  id: "scenario",
+export const useScenarioStore = defineStore("scenario", {
   state: () => ({
     scenario: {} as Scenario,
     unitMap: new Map<string | number, Unit>(),

@@ -3,8 +3,7 @@ import { until, useFetch, useLocalStorage } from "@vueuse/core";
 import { useScenarioStore } from "./scenarioStore";
 import { ObjectMapping, Scenario } from "../types/models";
 
-export const useScenarioIO = defineStore({
-  id: "scenarioIO",
+export const useScenarioIO = defineStore("scenarioIO", {
   actions: {
     saveToLocalStorage(key = "orbat-scenario") {
       const scn = useLocalStorage(key, "");

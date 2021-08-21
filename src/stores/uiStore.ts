@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 
-export const useUiStore = defineStore({
-  id: "ui",
+export const useUiStore = defineStore("ui", {
   state: () => ({
     modalOpen: false,
   }),

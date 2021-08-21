@@ -2,8 +2,7 @@ import { defineStore } from "pinia";
 import { useScenarioStore, walkSide } from "./scenarioStore";
 import dayjs, { OpUnitType } from "dayjs";
 
-export const useScenarioTime = defineStore({
-  id: "scenarioTime",
+export const useScenarioTime = defineStore("scenarioTime", {
   actions: {
     jumpToNextEvent() {
       const scenarioStore = useScenarioStore();

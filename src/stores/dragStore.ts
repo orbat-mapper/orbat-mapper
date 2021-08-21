@@ -4,15 +4,13 @@ import { defineStore } from "pinia";
 import { Unit } from "../types/models";
 import { useScenarioStore } from "./scenarioStore";
 
-export const useDragStore = defineStore({
-  id: "drag",
+export const useDragStore = defineStore("drag", {
   state: () => ({
     draggedUnit: null as Unit | null,
   }),
 });
 
-export const useActiveUnitStore = defineStore({
-  id: "activeUnit",
+export const useActiveUnitStore = defineStore("activeUnit", {
   state: () => ({
     activeUnit: null as Unit | null,
   }),

@@ -17,8 +17,7 @@ export function moveElement<T>(array: T[], element: T, delta: number) {
   array.splice(indexes[0], 2, array[indexes[1]], array[indexes[0]]);
 }
 
-export const useUnitManipulationStore = defineStore({
-  id: "unitManipulationStore",
+export const useUnitManipulationStore = defineStore("unitManipulationStore", {
   actions: {
     changeUnitParent(unit: Unit, newParent: Unit | SideGroup) {
       const scenarioStore = useScenarioStore();

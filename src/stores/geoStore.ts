@@ -7,8 +7,7 @@ import BaseVectorLayer from "ol/layer/BaseVector";
 import { Unit } from "../types/models";
 import { fromLonLat } from "ol/proj";
 
-export const useGeoStore = defineStore({
-  id: "geo",
+export const useGeoStore = defineStore("geo", {
   state: () => ({
     olMap: null as OLMap | null,
     layers: null as unknown as Collection<
