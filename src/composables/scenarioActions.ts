@@ -30,7 +30,12 @@ export function useUnitActions() {
     action === UnitActions.MoveDown &&
       unitManipulationStore.reorderUnit(unit, "down");
 
-    action === UnitActions.Delete && scenarioStore.deleteUnit(unit);
+    if (action === UnitActions.Delete) {
+      if (activeUnitStore.activeUnit === unit) {
+        activeUnitStore.clearActiveUnit();
+      }
+      scenarioStore.deleteUnit(unit);
+    }
   };
   return { onUnitAction };
 }
