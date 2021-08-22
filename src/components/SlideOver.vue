@@ -35,7 +35,7 @@
                 <div class="px-4 sm:px-6">
                   <div class="flex items-start justify-between">
                     <DialogTitle class="text-lg font-medium text-gray-900">
-                      Layers
+                      <slot name="title">{{ title }}</slot>
                     </DialogTitle>
                     <div class="ml-3 h-7 flex items-center">
                       <button
@@ -58,9 +58,7 @@
                   </div>
                 </div>
                 <div class="mt-6 relative flex-1 px-4 sm:px-6">
-                  <!-- Replace with your content -->
-                  <LayersPanel />
-                  <!-- /End replace -->
+                  <slot />
                 </div>
               </div>
             </div>
@@ -72,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watch } from "vue";
+import { computed, defineComponent } from "vue";
 import {
   Dialog,
   DialogOverlay,
@@ -81,11 +79,9 @@ import {
   TransitionRoot,
 } from "@headlessui/vue";
 import { XIcon } from "@heroicons/vue/outline";
-import LayersPanel from "./LayersPanel.vue";
 
 export default defineComponent({
   components: {
-    LayersPanel,
     Dialog,
     DialogOverlay,
     DialogTitle,
@@ -93,7 +89,7 @@ export default defineComponent({
     TransitionRoot,
     XIcon,
   },
-  props: { modelValue: { type: Boolean, default: false } },
+  props: { modelValue: { type: Boolean, default: false }, title: String },
   emits: ["update:modelValue"],
   setup(props, { emit }) {
     const open = computed({

@@ -86,7 +86,9 @@
       @keyup.prevent.alt.k="showSearch = true"
     />
     <ShortcutsModal v-model="shortcutsModalVisible" />
-    <SlideOver v-model="isOpen" />
+    <SlideOver v-model="isOpen" title="Layers">
+      <LayersPanel />
+    </SlideOver>
     <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
     <div class="fixed top-6 left-60 z-10">
       <WipBadge />
