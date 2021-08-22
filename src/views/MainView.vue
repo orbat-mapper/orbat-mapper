@@ -86,9 +86,9 @@
       @keyup.prevent.alt.k="showSearch = true"
     />
     <ShortcutsModal v-model="shortcutsModalVisible" />
-    <SlideOver v-model="isOpen" title="Layers">
-      <LayersPanel />
-    </SlideOver>
+
+    <MainViewSlideOver v-model="isOpen" />
+
     <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
     <div class="fixed top-6 left-60 z-10">
       <WipBadge />
@@ -115,11 +115,9 @@ import TabView from "../components/TabView.vue";
 import TabItem from "../components/TabItem.vue";
 import InputGroup from "../components/InputGroup.vue";
 import SecondaryButton from "../components/SecondaryButton.vue";
-import LayersPanel from "../components/LayersPanel.vue";
 import ScenarioInfoPanel from "../components/ScenarioInfoPanel.vue";
 import ShortcutsModal from "../components/ShortcutsModal.vue";
 import TimeController from "../components/TimeController.vue";
-import SlideOver from "../components/SlideOver.vue";
 import PlainButton from "../components/PlainButton.vue";
 
 import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
@@ -133,19 +131,19 @@ import { Keyboard as KeyboardIcon } from "mdue";
 import { useTitle } from "@vueuse/core";
 import { useUnitManipulationStore } from "../stores/scenarioManipulation";
 import WipBadge from "../components/WipBadge.vue";
+import MainViewSlideOver from "../components/MainViewSlideOver.vue";
 
 export default defineComponent({
   name: "MainView",
   components: {
+    MainViewSlideOver,
     WipBadge,
     SearchModal,
     PlainButton,
-    SlideOver,
     TimeController,
     ShortcutsModal,
     GlobalEvents,
     ScenarioInfoPanel,
-    LayersPanel,
     SecondaryButton,
     InputGroup,
     TabItem,
