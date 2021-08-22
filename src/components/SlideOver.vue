@@ -4,14 +4,14 @@
     <Dialog
       as="div"
       static
-      class="fixed inset-0 overflow-hidden"
+      class="fixed inset-0 overflow-hidden z-40"
       @close="open = false"
       :open="open"
     >
       <div class="absolute inset-0 overflow-hidden">
         <DialogOverlay class="absolute inset-0" />
 
-        <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+        <div class="fixed inset-y-0 right-0 sm:pl-16 max-w-full flex">
           <TransitionChild
             as="template"
             enter="transform transition ease-in-out duration-500 sm:duration-500"
@@ -21,7 +21,7 @@
             leave-from="translate-x-0"
             leave-to="translate-x-full"
           >
-            <div class="w-screen max-w-md">
+            <div class="w-screen max-w-xs sm:max-w-md">
               <div
                 class="
                   h-full
