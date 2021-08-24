@@ -17,21 +17,9 @@ export const useActiveUnitStore = defineStore("activeUnit", {
   getters: {
     activeUnitParents(state) {
       if (!state.activeUnit) return [];
-      const { unitMap } = useScenarioStore();
-      const parents: Unit[] = [];
-
-      function helper(u: Unit) {
-        const pid = u._pid;
-        const parent = pid && unitMap.get(pid);
-        if (parent) {
-          parents.push(parent);
-          helper(parent);
-        }
-      }
-
-      helper(state.activeUnit);
-
-      return parents.reverse().map((p) => p.id);
+      const scenarioStore = useScenarioStore();
+      const { parents } = scenarioStore.getUnitHierarchy(state.activeUnit);
+      return parents.map((p) => p.id);
     },
   },
   actions: {

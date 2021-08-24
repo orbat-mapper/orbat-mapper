@@ -225,6 +225,27 @@ export const useScenarioStore = defineStore("scenario", {
       return this.unitMap.get(unit._pid!) || this.sideGroupMap.get(unit._pid!);
     },
 
+    getUnitHierarchy(unit: Unit | SideGroup) {
+      const parents: Unit[] = [];
+
+      const helper = (u: Unit | SideGroup) => {
+        const pid = u._pid;
+        const parent = pid && this.unitMap.get(pid);
+        if (parent) {
+          parents.push(parent);
+          helper(parent);
+        }
+      };
+
+      helper(unit);
+      parents.reverse();
+      const sideGroup =
+        this.sideGroupMap.get(parents[0]?._pid! || unit._pid!) ||
+        this.sideGroupMap.get(unit.id);
+      const side = sideGroup && this.sideMap.get(sideGroup._pid!);
+      return { side, sideGroup, parents };
+    },
+
     deleteUnit(unit: Unit) {
       const parent = this.getUnitParent(unit);
       if (parent) {
