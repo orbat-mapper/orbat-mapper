@@ -64,7 +64,11 @@ export function walkSide(side: Side, callback: WalkSideCallback) {
   }
 }
 
-export function walkSubUnits(parentUnit: Unit, callback: WalkSubUnitCallback) {
+export function walkSubUnits(
+  parentUnit: Unit,
+  callback: WalkSubUnitCallback,
+  includeParent = false
+) {
   function helper(currentUnit: Unit) {
     callback(currentUnit);
     if (currentUnit.subUnits) {
@@ -73,6 +77,8 @@ export function walkSubUnits(parentUnit: Unit, callback: WalkSubUnitCallback) {
       }
     }
   }
+
+  if (includeParent) callback(parentUnit);
 
   if (!parentUnit.subUnits) {
     return;

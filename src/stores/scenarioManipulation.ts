@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
 import { SideGroup, Unit } from "../types/models";
-import { useScenarioStore } from "./scenarioStore";
-import { Sidc } from "../symbology/sidc";
+import { useScenarioStore, walkSubUnits } from "./scenarioStore";
+import { SID_INDEX, Sidc } from "../symbology/sidc";
 import { nanoid } from "nanoid";
+import { setCharAt } from "../components/helpers";
 
 let counter = 1;
 
@@ -32,6 +33,20 @@ export const useUnitManipulationStore = defineStore("unitManipulationStore", {
         oldParent.units.splice(index, 1);
       }
 
+      // update standard identity if necessary
+      const { side } = scenarioStore.getUnitHierarchy(newParent);
+
+      if (side) {
+        walkSubUnits(
+          unit,
+          (u) => {
+            if (u.sidc[SID_INDEX] !== side.standardIdentity) {
+              u.sidc = setCharAt(u.sidc, SID_INDEX, side.standardIdentity);
+            }
+          },
+          true
+        );
+      }
       scenarioStore.addUnit(unit, newParent);
     },
 
