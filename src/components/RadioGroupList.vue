@@ -5,7 +5,7 @@
       <RadioGroupOption
         as="template"
         v-for="(setting, settingIdx) in settings"
-        :key="setting.title"
+        :key="setting.value"
         :value="setting.value"
         v-slot="{ checked, active }"
       >
