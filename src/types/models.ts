@@ -17,6 +17,7 @@ export interface Unit {
   _state?: State | null;
   id: string;
   _pid?: string;
+  _isOpen?: boolean;
 }
 
 export interface SideData {
@@ -127,5 +128,4 @@ export type UnitOrSide = Unit | Side;
 export interface OrbatItemData {
   unit: Unit;
   children: OrbatItemData[];
-  isOpen: boolean;
 }

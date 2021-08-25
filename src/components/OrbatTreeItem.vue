@@ -110,9 +110,18 @@ export default defineComponent({
   },
   emits: ["action"],
   setup(props, { emit }) {
-    let isOpen = ref(props.item.isOpen);
     let isDragged = ref(false);
     let subTree = ref();
+
+    const unit = computed(() => props.item.unit);
+    const isOpen = computed({
+      get(): boolean {
+        return !!props.item.unit._isOpen;
+      },
+      set(v: boolean) {
+        props.item.unit._isOpen = v;
+      },
+    });
 
     const dragStore = useDragStore();
     const settingsStore = useSettingsStore();
@@ -175,12 +184,6 @@ export default defineComponent({
     const { unitMenuItems: menuItems } = useUnitMenu(props.item);
 
     const { setItemRef, expandChildren } = useExpandTree(isOpen);
-
-    const unit = computed(() => props.item.unit);
-    watch(
-      () => props.item.isOpen,
-      (v) => (isOpen.value = v)
-    );
 
     return {
       isOpen,

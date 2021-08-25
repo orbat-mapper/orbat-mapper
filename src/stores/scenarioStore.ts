@@ -104,6 +104,7 @@ function prepareScenario(scenario: Scenario) {
     }
 
     unit._pid = parent.id;
+    unit._isOpen = false;
     unitMap.set(unit.id, unit);
   }
 
@@ -179,6 +180,7 @@ export const useScenarioStore = defineStore("scenario", {
         unit.id = nanoid();
       }
       unit._pid = parent.id;
+      unit._isOpen = false;
       this.unitMap.set(unit.id, unit);
       // Is it a unit?
       if ("sidc" in parent && this.unitMap.has(parent.id)) {

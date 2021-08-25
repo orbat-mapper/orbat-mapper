@@ -52,17 +52,17 @@ function filterUnits(
     let oi: OrbatItemData = {
       unit: currentUnit,
       children: [],
-      isOpen: !!query,
     };
+    oi.unit._isOpen = !!query;
     let matched = false;
     let childMatched = false;
     const hasPosition = Boolean(currentUnit?._state?.coordinates);
     let children = [];
     if (currentUnit.name.search(re) >= 0) {
       matched = locationFilter ? hasPosition : true;
-      oi.isOpen = !!query;
+      oi.unit._isOpen = !!query;
     } else if (parentMatched) {
-      oi.isOpen = false;
+      oi.unit._isOpen = false;
     }
     if (currentUnit.subUnits) {
       for (const subUnit of currentUnit.subUnits) {
