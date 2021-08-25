@@ -104,6 +104,7 @@ import {
   computed,
   watch,
   onUnmounted,
+  nextTick,
 } from "vue";
 import { GlobalEvents } from "vue-global-events";
 import OrbatPanel from "../components/OrbatPanel.vue";
@@ -223,6 +224,12 @@ export default defineComponent({
         activeUnit.value = unit;
         const { parents } = scenarioStore.getUnitHierarchy(unit);
         parents.forEach((p) => (p._isOpen = true));
+        nextTick(() => {
+          const el = document.getElementById(`o-${unitId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        });
       }
     };
 
