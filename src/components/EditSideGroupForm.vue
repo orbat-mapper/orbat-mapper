@@ -4,7 +4,7 @@
       <InputGroup label="Group name" v-model="form.name" :id="focusId" />
 
       <div class="flex justify-end space-x-2">
-        <PlainButton @click="$emit('close')">Close</PlainButton>
+        <PlainButton @click="$emit('close')">Cancel</PlainButton>
         <PrimaryButton type="submit">Update</PrimaryButton>
       </div>
     </form>
@@ -34,7 +34,7 @@ export default defineComponent({
   },
   props: { sideGroupId: { type: String } },
   emits: ["close"],
-  setup(props) {
+  setup(props, { emit }) {
     let form = ref<Partial<SideGroup>>({ name: "Units" });
     const { getSideGroupById, updateSideGroup } = useScenarioStore();
     const sideGroup = computed(() =>
@@ -53,6 +53,7 @@ export default defineComponent({
 
     const onFormSubmit = () => {
       updateSideGroup({ id: props.sideGroupId, ...form.value });
+      emit("close");
     };
 
     const { focusId } = useFocusOnMount();

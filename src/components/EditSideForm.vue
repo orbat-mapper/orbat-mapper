@@ -9,7 +9,7 @@
       />
 
       <div class="flex justify-end space-x-2">
-        <PlainButton @click="$emit('close')">Close</PlainButton>
+        <PlainButton @click="$emit('close')">Cancel</PlainButton>
         <PrimaryButton type="submit">Update</PrimaryButton>
       </div>
     </form>
@@ -17,15 +17,7 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineComponent,
-  nextTick,
-  onMounted,
-  PropType,
-  ref,
-  watch,
-} from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import InputGroup from "./InputGroup.vue";
 import PlainButton from "./PlainButton.vue";
 import PrimaryButton from "./PrimaryButton.vue";
@@ -35,7 +27,6 @@ import InlineFormPanel from "./InlineFormPanel.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
 import { standardIdentityValues } from "../symbology/values";
 import { SymbolItem } from "../types/constants";
-import { nanoid } from "nanoid";
 import { useFocusOnMount } from "./helpers";
 
 export default defineComponent({
@@ -49,7 +40,7 @@ export default defineComponent({
   },
   props: { sideId: { type: String } },
   emits: ["close"],
-  setup(props) {
+  setup(props, { emit }) {
     let form = ref<Partial<Side>>({ name: "New side", standardIdentity: "3" });
     const { getSideById, updateSide } = useScenarioStore();
     const side = computed(() =>
@@ -68,6 +59,7 @@ export default defineComponent({
 
     const onFormSubmit = () => {
       updateSide({ id: props.sideId, ...form.value });
+      emit("close");
     };
     const sidItems = standardIdentityValues.map(
       ({ code, text }): SymbolItem => {
