@@ -227,7 +227,7 @@ export default defineComponent({
         nextTick(() => {
           const el = document.getElementById(`o-${unitId}`);
           if (el) {
-            el.scrollIntoView({ behavior: "smooth" });
+            el.scrollIntoView();
           }
         });
       }
