@@ -219,7 +219,11 @@ export default defineComponent({
 
     const onUnitSelect = (unitId: string) => {
       const unit = scenarioStore.getUnitById(unitId);
-      if (unit) activeUnit.value = unit;
+      if (unit) {
+        activeUnit.value = unit;
+        const { parents } = scenarioStore.getUnitHierarchy(unit);
+        parents.forEach((p) => (p._isOpen = true));
+      }
     };
 
     return {
