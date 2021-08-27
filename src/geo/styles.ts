@@ -36,13 +36,13 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
 }
 
 export function createUnitStyleFromFeature(feature: FeatureLike): Style {
-  const { sidc, name } = feature.getProperties() as Unit;
+  const { sidc, name, shortName } = feature.getProperties() as Unit;
   const key = sidc + name;
   if (!selectedUnitStyleCache.has(key)) {
     const settingsStore = useSettingsStore();
     const milSymbol = symbolGenerator(sidc, {
       size: settingsStore.mapIconSize,
-      uniqueDesignation: name,
+      uniqueDesignation: shortName || name,
       outlineColor: "white",
       outlineWidth: 8,
       standard: settingsStore.symbologyStandard,
@@ -56,7 +56,7 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style {
 export function createSelectedUnitStyleFromFeature(
   feature: FeatureLike
 ): Style {
-  const { sidc, name } = feature.getProperties() as Unit;
+  const { sidc, name, shortName } = feature.getProperties() as Unit;
   const key = sidc + name;
   if (!unitStyleCache.has(key)) {
     const settingsStore = useSettingsStore();
@@ -64,7 +64,7 @@ export function createSelectedUnitStyleFromFeature(
       size: settingsStore.mapIconSize,
       outlineColor: "Yellow",
       outlineWidth: 20,
-      uniqueDesignation: name,
+      uniqueDesignation: name || shortName,
       standard: settingsStore.symbologyStandard,
     });
     const style = createMilSymbolStyle(milSymbol);
