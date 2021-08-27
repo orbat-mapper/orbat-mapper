@@ -364,6 +364,7 @@ export const useScenarioStore = defineStore("scenario", {
           if (name === "_pid") {
             return undefined;
           }
+          if (name === "_isOpen") return undefined;
 
           return val;
         },
