@@ -259,6 +259,7 @@ function createHistoryFeature(unit: Unit): Feature<LineString> {
   const state = [{ location: unit.location }, ...(unit.state || [])].filter(
     (s) => s?.location
   );
+  // @ts-ignore
   const geometry = state.map((s) => [...s.location!, s.t]);
   const t = new LineString(geometry, GeometryLayout.XYM);
   t.transform("EPSG:4326", "EPSG:3857");
