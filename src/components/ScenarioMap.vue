@@ -256,8 +256,8 @@ function useSelectInteraction(
 }
 
 function createHistoryFeature(unit: Unit): Feature<LineString> {
-  const state = (unit.state || []).filter((s) => s.coordinates);
-  const geometry = state.map((s) => [...s.coordinates!, s.t]);
+  const state = (unit.state || []).filter((s) => s.location);
+  const geometry = state.map((s) => [...s.location!, s.t]);
   const t = new LineString(geometry, GeometryLayout.XYM);
   t.transform("EPSG:4326", "EPSG:3857");
   return new Feature(t);

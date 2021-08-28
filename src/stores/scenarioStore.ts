@@ -274,7 +274,7 @@ export const useScenarioStore = defineStore("scenario", {
       const u = this.unitMap.get(unit.id);
       if (!u) return;
       const t = this.currentTime;
-      const newState: State = { t, coordinates };
+      const newState: State = { t, location: coordinates };
       u._state = newState;
       if (!u.state) u.state = [];
       for (let i = 0, len = u.state.length; i < len; i++) {
@@ -380,7 +380,7 @@ export const useScenarioStore = defineStore("scenario", {
         const nn = { side, units };
         vUnits.push(nn);
         walkSide(side, (unit) => {
-          if (unit._state && unit._state.coordinates) {
+          if (unit._state && unit._state.location) {
             units.push(unit);
           }
         });
@@ -392,7 +392,7 @@ export const useScenarioStore = defineStore("scenario", {
       const vUnits: Unit[] = [];
       for (const side of state.scenario.sides) {
         walkSide(side, (unit) => {
-          if (unit._state && unit._state.coordinates) {
+          if (unit._state && unit._state.location) {
             vUnits.push(unit);
           }
         });

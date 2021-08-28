@@ -137,9 +137,7 @@ export default defineComponent({
       renderMarkdown(props.unit?.description || "")
     );
 
-    const hasPosition = computed(() =>
-      Boolean(props.unit?._state?.coordinates)
-    );
+    const hasPosition = computed(() => Boolean(props.unit?._state?.location));
 
     watch(
       () => props.unit,

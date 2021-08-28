@@ -111,7 +111,7 @@ export default defineComponent({
       return hits
         .filter((h) => {
           if (limitToPosition.value)
-            return scenarioStore.getUnitById(h.id)?._state?.coordinates;
+            return scenarioStore.getUnitById(h.id)?._state?.location;
           return true;
         })
         .slice(0, 10)

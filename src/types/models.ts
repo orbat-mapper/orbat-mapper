@@ -2,7 +2,7 @@ export type Position = number[];
 
 export interface State {
   t: number;
-  coordinates?: Position;
+  location?: Position;
   sidc?: string;
 }
 

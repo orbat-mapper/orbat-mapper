@@ -9,7 +9,7 @@
         >
           {{ formatDateString(s.t, scenarioStore.timeZone) }}
         </p>
-        <p>{{ formatPosition(s.coordinates) }}</p>
+        <p>{{ formatPosition(s.location) }}</p>
       </div>
 
       <div class="flex-0 flex space-x-0">
@@ -59,7 +59,7 @@ export default defineComponent({
 
     const changeToState = (stateEntry: State) => {
       scenarioStore.setCurrentTime(stateEntry.t);
-      if (stateEntry.coordinates) {
+      if (stateEntry.location) {
         onUnitAction(props.unit, UnitActions.Pan);
       }
     };

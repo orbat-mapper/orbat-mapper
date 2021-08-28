@@ -8,7 +8,7 @@ export function useUnitLayer() {
   const drawUnits = () => {
     unitLayer.getSource().clear();
     const units = scenarioStore.everyVisibleUnits.map((unit) => {
-      return createUnitFeatureAt(unit._state!.coordinates!, unit);
+      return createUnitFeatureAt(unit._state!.location!, unit);
     });
     unitLayer.getSource().addFeatures(units);
   };
@@ -16,7 +16,7 @@ export function useUnitLayer() {
   const animateUnits = () => {
     unitLayer.getSource().clear();
     const units = scenarioStore.everyVisibleUnits.map((unit) => {
-      return createUnitFeatureAt(unit._state!.coordinates!, unit);
+      return createUnitFeatureAt(unit._state!.location!, unit);
     });
     unitLayer.getSource().addFeatures(units);
     units.forEach((f) =>

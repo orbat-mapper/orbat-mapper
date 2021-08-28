@@ -16,7 +16,7 @@ export const useGeoStore = defineStore("geo", {
   }),
   actions: {
     zoomToUnit(unit?: Unit | null, duration = 900) {
-      const location = unit?._state?.coordinates;
+      const location = unit?._state?.location;
       if (!location) return;
       const view = this.olMap!.getView();
       view.animate({
@@ -27,7 +27,7 @@ export const useGeoStore = defineStore("geo", {
     },
 
     panToUnit(unit?: Unit | null, duration = 900) {
-      const location = unit?._state?.coordinates;
+      const location = unit?._state?.location;
       if (!location) return;
       const view = this.olMap!.getView();
       view.animate({

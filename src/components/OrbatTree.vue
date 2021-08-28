@@ -56,7 +56,7 @@ function filterUnits(
     oi.unit._isOpen = !!query;
     let matched = false;
     let childMatched = false;
-    const hasPosition = Boolean(currentUnit?._state?.coordinates);
+    const hasPosition = Boolean(currentUnit?._state?.location);
     let children = [];
     if (currentUnit.name.search(re) >= 0) {
       matched = locationFilter ? hasPosition : true;

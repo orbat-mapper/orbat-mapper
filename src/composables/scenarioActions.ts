@@ -62,7 +62,7 @@ export function useUnitMenu(item: OrbatItemData | Unit) {
       {
         label: "Zoom to",
         action: UnitActions.Zoom,
-        disabled: !unit._state?.coordinates,
+        disabled: !unit._state?.location,
       },
       // { label: "Copy", action: UnitActions.Copy },
       // { label: "Paste", action: UnitActions.Paste },
