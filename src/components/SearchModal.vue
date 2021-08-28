@@ -96,7 +96,7 @@ export default defineComponent({
     const fuseRef = computed(
       () =>
         new Fuse(scenarioStore.units, {
-          keys: ["name"],
+          keys: ["name", "shortName"],
           useExtendedSearch: false,
         })
     );
