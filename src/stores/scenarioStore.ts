@@ -89,6 +89,12 @@ export function walkSubUnits(
   }
 }
 
+function createInitialState(unit: Unit): State | null {
+  if (unit.location)
+    return { t: Number.MIN_SAFE_INTEGER, location: unit.location };
+  return null;
+}
+
 function prepareScenario(scenario: Scenario) {
   const unitMap = new Map<string, Unit>();
   const sideMap = new Map<string, Side>();
@@ -293,10 +299,10 @@ export const useScenarioStore = defineStore("scenario", {
       for (const side of this.scenario.sides) {
         walkSide(side, (unit) => {
           if (!unit.state || !unit.state.length) {
-            unit._state = null;
+            unit._state = createInitialState(unit);
             return;
           }
-          let tmpstate: State | null = null;
+          let tmpstate: State | null = createInitialState(unit);
           for (const s of unit.state) {
             if (s.t <= timestamp) {
               tmpstate = s;

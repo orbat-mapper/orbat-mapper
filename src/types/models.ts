@@ -7,15 +7,17 @@ export interface State {
 }
 
 export interface Unit {
+  id: string;
   name: string;
   sidc: string;
   shortName?: string;
   description?: string;
   externalUrl?: string;
   subUnits?: Unit[];
+  location?: Position;
   state?: State[];
+  // internal runtime only state
   _state?: State | null;
-  id: string;
   _pid?: string;
   _isOpen?: boolean;
 }
