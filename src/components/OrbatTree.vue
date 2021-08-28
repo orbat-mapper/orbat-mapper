@@ -53,14 +53,14 @@ function filterUnits(
       unit: currentUnit,
       children: [],
     };
-    oi.unit._isOpen = !!query;
+    if (query) oi.unit._isOpen = true;
     let matched = false;
     let childMatched = false;
     const hasPosition = Boolean(currentUnit?._state?.location);
     let children = [];
     if (currentUnit.name.search(re) >= 0) {
       matched = locationFilter ? hasPosition : true;
-      oi.unit._isOpen = !!query;
+      // oi.unit._isOpen = !!query;
     } else if (parentMatched) {
       oi.unit._isOpen = false;
     }
