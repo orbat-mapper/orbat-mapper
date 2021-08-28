@@ -1,13 +1,55 @@
 <template>
   <div class="flex">
-    <div class="flex-auto">
-      <InputGroup label="SIDC" v-model="sidcValue" />
-    </div>
-
-    <div class="flex-shrink-0 self-end">
-      <PlainButton @click="openModal" class="flex-shrink-0 h-10"
-        >edit
-      </PlainButton>
+    <div>
+      <label for="sidc" class="block text-sm font-medium text-gray-700"
+        >Symbol code</label
+      >
+      <div class="mt-1 flex rounded-md shadow-sm">
+        <div class="relative flex items-stretch flex-grow focus-within:z-10">
+          <input
+            type="text"
+            v-model="sidcValue"
+            name="sidc"
+            id="sid"
+            class="
+              focus:ring-indigo-500 focus:border-indigo-500
+              block
+              w-full
+              rounded-none rounded-l-md
+              sm:text-sm
+              border-gray-300
+            "
+            placeholder="John Doe"
+          />
+        </div>
+        <button
+          type="button"
+          @click="openModal"
+          class="
+            -ml-px
+            relative
+            inline-flex
+            items-center
+            space-x-2
+            px-4
+            py-2
+            border border-gray-300
+            text-sm
+            font-medium
+            rounded-r-md
+            text-gray-700
+            bg-gray-50
+            hover:bg-gray-100
+            focus:outline-none
+            focus:ring-1
+            focus:ring-indigo-500
+            focus:border-indigo-500
+          "
+        >
+          <MenuAlt3Icon class="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <span>Select</span>
+        </button>
+      </div>
     </div>
     <SymbolPickerModal
       v-if="showSymbolPicker"
@@ -23,6 +65,7 @@ import { useVModel } from "@vueuse/core";
 import InputGroup from "./InputGroup.vue";
 import PlainButton from "./PlainButton.vue";
 import { biSyncDelayedRef } from "../composables/utils";
+import { MenuAlt3Icon } from "@heroicons/vue/solid";
 import NProgress from "nprogress";
 
 export default defineComponent({
@@ -30,6 +73,7 @@ export default defineComponent({
   components: {
     PlainButton,
     InputGroup,
+    MenuAlt3Icon,
     SymbolPickerModal: defineAsyncComponent(
       () => import("./SymbolPickerModal.vue")
     ),
