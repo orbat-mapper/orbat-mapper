@@ -194,7 +194,7 @@ export default defineComponent({
         return;
       }
       await scenarioIO.loadDemoScenario(name as string);
-      await router.replace("");
+      // await router.replace("");
     }
 
     watch(
