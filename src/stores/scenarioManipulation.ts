@@ -25,6 +25,14 @@ export const useUnitManipulationStore = defineStore("unitManipulationStore", {
       const oldParent = scenarioStore.getUnitParent(unit);
       if (!oldParent) return;
 
+      const { side, parents } = scenarioStore.getUnitHierarchy(newParent);
+      if (parents.includes(unit)) {
+        console.warn(
+          `Operation not allowed. Unit ${newParent.name} is a child of ${unit.name}`
+        );
+        return;
+      }
+
       if ("sidc" in oldParent) {
         const index = (oldParent as Unit).subUnits!.indexOf(unit);
         oldParent.subUnits!.splice(index, 1);
@@ -34,7 +42,6 @@ export const useUnitManipulationStore = defineStore("unitManipulationStore", {
       }
 
       // update standard identity if necessary
-      const { side } = scenarioStore.getUnitHierarchy(newParent);
 
       if (side) {
         walkSubUnits(
