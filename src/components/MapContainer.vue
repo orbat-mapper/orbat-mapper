@@ -131,3 +131,11 @@ export default defineComponent({
   },
 });
 </script>
+
+<style>
+.ol-rotate {
+  left: 0.5em;
+  top: 5.5em;
+  right: initial;
+}
+</style>
