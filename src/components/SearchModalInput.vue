@@ -28,7 +28,7 @@
         "
         autocomplete="off"
         spellcheck="false"
-        placeholder="Search for anything"
+        :placeholder="placeholder"
         type="search"
         @keydown.arrow-down.prevent
         @keydown.arrow-up.prevent
@@ -44,7 +44,10 @@ import { SearchIcon } from "@heroicons/vue/solid";
 
 export default defineComponent({
   name: "SearchModalInput",
-  props: { modelValue: String },
+  props: {
+    modelValue: String,
+    placeholder: { type: String, default: "Search for anything" },
+  },
   emits: ["update:modelValue"],
   components: { SearchIcon },
   setup(props) {
