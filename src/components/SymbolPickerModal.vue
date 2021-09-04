@@ -122,13 +122,11 @@ import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
 import { useSymbolItems } from "../composables/symbolData";
 import NProgress from "nprogress";
 import SearchModalInput from "./SearchModalInput.vue";
-import TestPopover from "./TestPopover.vue";
 import { GlobalEvents } from "vue-global-events";
 
 export default defineComponent({
   name: "SymbolPickerModal",
   components: {
-    TestPopover,
     SearchModalInput,
     SymbolCodeMultilineSelect,
     SimpleModal,
