@@ -32,6 +32,7 @@
         type="search"
         @keydown.arrow-down.prevent
         @keydown.arrow-up.prevent
+        v-bind="$attrs"
       />
     </div>
   </form>
@@ -50,6 +51,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   components: { SearchIcon },
+  inheritAttrs: false,
   setup(props) {
     const inputValue = useVModel(props, "modelValue");
     const updateValue = (event: Event) => {

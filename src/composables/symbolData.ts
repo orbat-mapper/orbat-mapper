@@ -19,6 +19,7 @@ import { Sidc } from "../symbology/sidc";
 import { SymbolSetMap } from "../symbology/types";
 import { useSettingsStore } from "../stores/settingsStore";
 import { SymbologyStandard } from "../types/models";
+import Fuse from "fuse.js";
 
 const symbology = shallowRef<SymbolSetMap | undefined>();
 const isLoaded = ref(false);
@@ -48,7 +49,49 @@ function useSymbologyData() {
     isLoaded.value = true;
   }
 
-  return { isLoaded, symbology, loadData };
+  const fuseSymbolRef = computed(() => {
+    return (
+      symbology.value &&
+      new Fuse(
+        Object.values(symbology.value)
+          .map((ss) => {
+            return ss.mainIcon.map((e) => ({
+              symbolSet: ss.symbolSet,
+              name: ss.name,
+              ...e,
+            }));
+          })
+          .flat()
+          .filter((e) =>
+            e.symbolSet === CONTROL_MEASURE_SYMBOLSET_VALUE
+              ? e.geometry === "Point"
+              : true
+          )
+          .map((e) => {
+            const { entity, entityType, entitySubtype } = e;
+            return {
+              ...e,
+              text: `${entity} ${entityType} ${entitySubtype}`.replaceAll(
+                "/",
+                " "
+              ),
+            };
+          }),
+        {
+          useExtendedSearch: false,
+          includeScore: true,
+          ignoreLocation: true,
+          // ignoreFieldNorm: true,
+          // threshold:0.5,
+          // threshold:0.5,
+          // distance:0,
+          keys: ["text"],
+        }
+      )
+    );
+  });
+
+  return { isLoaded, symbology, loadData, fuseSymbolRef };
 }
 
 export function useSymbolItems(sidc: Ref<string>) {
@@ -64,7 +107,7 @@ export function useSymbolItems(sidc: Ref<string>) {
     mod2Value,
   } = useSymbolValues(sidc);
 
-  const { symbology, isLoaded, loadData } = useSymbologyData();
+  const { symbology, isLoaded, loadData, fuseSymbolRef } = useSymbologyData();
 
   const symbolSets = computed(() => {
     const symbSets = Object.entries(symbology.value || {}).map(([k, v]) => {
@@ -214,6 +257,7 @@ export function useSymbolItems(sidc: Ref<string>) {
     csidc,
     isLoaded,
     loadData,
+    fuseSymbolRef,
   };
 }
 
