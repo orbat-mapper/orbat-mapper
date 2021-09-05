@@ -11,7 +11,7 @@
       v-model="searchQuery"
       @keydown.tab="onTab"
       @keydown.esc.stop="hitsIsOpen ? (hitsIsOpen = false) : (open = false)"
-      @keydown.enter="!hitsIsOpen && onSubmit()"
+      @keydown.enter.prevent="!hitsIsOpen && onSubmit()"
     />
 
     <div class="relative" v-if="hits?.length && hitsIsOpen" ref="hitsRef">
