@@ -6,10 +6,10 @@
     </header>
 
     <SearchModalInput
-      class="py-3"
+      class="pb-3"
       placeholder="Search for symbol"
       v-model="searchQuery"
-      @blur="hitsIsOpen = false"
+      @keydown.tab="onTab"
       @keydown.esc.stop="hitsIsOpen ? (hitsIsOpen = false) : (open = false)"
       @keydown.enter="!hitsIsOpen && onSubmit()"
     />
@@ -37,10 +37,20 @@
       >
         <li
           v-for="(item, index) in hits"
-          class="text-sm p-2 py-3 flex items-center"
+          class="
+            text-sm
+            p-2
+            py-3
+            flex
+            items-center
+            cursor-default
+            hover:bg-gray-200
+          "
+          tabindex="-1"
           :class="{ 'bg-gray-200': index === currentIndex }"
           :key="item.sidc"
           :id="item.sidc"
+          @click="onSelect(index)"
         >
           <p class="flex-shrink-0 h-7 w-9 flex justify-center">
             <MilSymbol :size="25" :sidc="item.sidc" />
@@ -181,10 +191,17 @@ export default defineComponent({
     });
 
     watch(hits, (v) => {
+      if (!v?.length) return;
       hitsIsOpen.value = true;
       currentIndex.value = 0;
     });
-    // console.log("ff", fuseSymbolRef.value?.search("heavy tank").reverse());
+
+    const onTab = (event: KeyboardEvent) => {
+      if (hitsIsOpen.value) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+    };
 
     const onSubmit = () => {
       emit("update:sidc", csidc.value);
@@ -238,6 +255,7 @@ export default defineComponent({
       onSelect,
       hitsIsOpen,
       hitsRef,
+      onTab,
     };
   },
 });

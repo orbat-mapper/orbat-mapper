@@ -1,5 +1,5 @@
 <template>
-  <form class="w-full flex md:ml-0" @submit.prevent>
+  <form class="w-full flex md:ml-0" @submit.prevent :class="class">
     <label for="search-field" class="sr-only">Search</label>
     <div class="relative w-full text-gray-400 focus-within:text-gray-600">
       <div
@@ -48,6 +48,7 @@ export default defineComponent({
   props: {
     modelValue: String,
     placeholder: { type: String, default: "Search for anything" },
+    class: { type: [String, Object, Array] },
   },
   emits: ["update:modelValue"],
   components: { SearchIcon },
