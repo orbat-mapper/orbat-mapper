@@ -152,18 +152,14 @@
                 }
               ],
               "id": "7xJ~ZOBnMRqkwaw~EiNFB",
-              "externalUrl": "https://en.wikipedia.org/wiki/HMS_Endurance_(1967)"
+              "externalUrl": "https://en.wikipedia.org/wiki/HMS_Endurance_(1967)",
+              "description": "A Royal Navy ice patrol vessel that served from 1967 to 1991. "
             },
             {
               "name": "British Antarctic Survey",
               "sidc": "10031102001100000000",
               "id": "Y-pOTn1wiQvWzI5Ubq8Fz",
-              "state": [
-                {
-                  "t": 385394400000,
-                  "location": [-36.49445470967382, -54.283293554297046]
-                }
-              ],
+              "location": [-36.49445470967382, -54.283293554297046],
               "subUnits": [
                 {
                   "name": "BAS Team",
@@ -180,7 +176,9 @@
                 }
               ],
               "shortName": "BAS",
-              "externalUrl": "https://en.wikipedia.org/wiki/British_Antarctic_Survey"
+              "externalUrl": "https://en.wikipedia.org/wiki/British_Antarctic_Survey",
+              "state": [],
+              "description": "The British Antarctic Survey (BAS) is the United Kingdom's national polar research institute. It has a dual purpose, to conduct polar science, enabling better understanding of global issues, and to provide an active presence in the Antarctic on behalf of the UK. "
             }
           ]
         },
@@ -717,6 +715,18 @@
               ],
               "state": [],
               "id": "XjTbIv_HVxn4RrSsmb6bm"
+            },
+            {
+              "name": "Workers",
+              "sidc": "10071000111211004600",
+              "id": "HxaawJT7ymu1m2gpLEV-o",
+              "state": [
+                {
+                  "t": 385394400000,
+                  "location": [-36.68911416889803, -54.14095696852837]
+                }
+              ],
+              "subUnits": []
             }
           ]
         },
@@ -775,18 +785,6 @@
               "sidc": "10071000181211040000",
               "state": [],
               "id": "5JlH0deHdlPdZIgT2gLpk"
-            },
-            {
-              "name": "Workers",
-              "sidc": "10071000111211004600",
-              "id": "HxaawJT7ymu1m2gpLEV-o",
-              "state": [
-                {
-                  "t": 385394400000,
-                  "location": [-36.68911416889803, -54.14095696852837]
-                }
-              ],
-              "subUnits": []
             }
           ]
         },
@@ -798,11 +796,11 @@
               "name": "Puerto Belgrano",
               "sidc": "10072000001213090000",
               "id": "pKit-j6gGPi4CWXfCoIMr",
-
               "location": [-62.10458968984189, -38.88794287445259],
               "subUnits": [],
               "shortName": "",
-              "externalUrl": "https://en.wikipedia.org/wiki/Port_Belgrano_Naval_Base"
+              "externalUrl": "https://en.wikipedia.org/wiki/Port_Belgrano_Naval_Base",
+              "state": []
             },
             {
               "name": "Rio Gallego",
