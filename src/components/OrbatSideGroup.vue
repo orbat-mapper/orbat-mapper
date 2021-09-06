@@ -6,8 +6,10 @@
       >
         <p
           class="font-medium text-base text-gray-600 hover:text-gray-900"
-          @dragover.prevent
+          :class="{ 'font-bold underline': isDragOver }"
+          @dragover.prevent="isDragOver = true"
           @drop.prevent="onDrop"
+          @dragleave="isDragOver = false"
         >
           {{ group.name || "Units" }}
         </p>
@@ -97,8 +99,8 @@ export default defineComponent({
     let treeRef = ref<InstanceType<typeof OrbatTree>>();
     let treeRefs: InstanceType<typeof OrbatTree>[] = [];
     const dragStore = useDragStore();
-    const scenarioStore = useScenarioStore();
     const unitManipulationStore = useUnitManipulationStore();
+    const isDragOver = ref(false);
 
     const showEditForm = ref(false);
     if (props.group._isNew) {
@@ -143,6 +145,7 @@ export default defineComponent({
         )
       )
         return;
+      isDragOver.value = false;
       const unitManipulationStore = useUnitManipulationStore();
       unitManipulationStore.changeUnitParent(
         dragStore.draggedUnit,
@@ -160,6 +163,7 @@ export default defineComponent({
       addGroupUnit,
       showEditForm,
       onDrop,
+      isDragOver,
     };
   },
 });

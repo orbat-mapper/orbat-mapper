@@ -57,9 +57,13 @@
             </div>
             <span
               class="flex-auto"
-              :class="{ 'font-bold': isActiveUnit }"
-              @dragover.prevent
+              :class="{
+                'font-bold': isActiveUnit,
+                'font-bold underline': isDragOver,
+              }"
+              @dragover.prevent="isDragOver = true"
               @drop.prevent="onDrop"
+              @dragleave="isDragOver = false"
               >{{ unit.name }}</span
             >
           </div>
@@ -112,7 +116,7 @@ export default defineComponent({
   setup(props, { emit }) {
     let isDragged = ref(false);
     let subTree = ref();
-
+    const isDragOver = ref(false);
     const unit = computed(() => props.item.unit);
     const isOpen = computed({
       get(): boolean {
@@ -149,6 +153,7 @@ export default defineComponent({
         )
       )
         return;
+      isDragOver.value = false;
       if (dragStore.draggedUnit.id === props.item.unit.id) return;
       const unitManipulationStore = useUnitManipulationStore();
       unitManipulationStore.changeUnitParent(
@@ -201,6 +206,7 @@ export default defineComponent({
       unit,
       hasActiveChildren,
       settingsStore,
+      isDragOver,
     };
   },
 
