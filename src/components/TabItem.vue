@@ -7,11 +7,11 @@
 <script>
 import {
   defineComponent,
-  ref,
   inject,
   onBeforeMount,
-  watch,
   onBeforeUnmount,
+  ref,
+  watch,
 } from "vue";
 
 export default defineComponent({

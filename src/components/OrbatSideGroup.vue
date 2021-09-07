@@ -68,7 +68,6 @@ import { ChevronUpIcon } from "@heroicons/vue/solid";
 import { SideGroup } from "../types/models";
 import { DragOperations, SideActions } from "../types/constants";
 import { useDragStore } from "../stores/dragStore";
-import { useScenarioStore } from "../stores/scenarioStore";
 import InputGroup from "./InputGroup.vue";
 import PlainButton from "./PlainButton.vue";
 import SecondaryButton from "./SecondaryButton.vue";

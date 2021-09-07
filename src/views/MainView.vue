@@ -98,13 +98,13 @@
 
 <script lang="ts">
 import {
-  defineComponent,
-  toRefs,
-  ref,
   computed,
-  watch,
-  onUnmounted,
+  defineComponent,
   nextTick,
+  onUnmounted,
+  ref,
+  toRefs,
+  watch,
 } from "vue";
 import { GlobalEvents } from "vue-global-events";
 import OrbatPanel from "../components/OrbatPanel.vue";

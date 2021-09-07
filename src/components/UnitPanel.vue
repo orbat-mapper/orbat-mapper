@@ -61,15 +61,7 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  defineComponent,
-  nextTick,
-  PropType,
-  ref,
-  watch,
-} from "vue";
+import { computed, defineComponent, nextTick, PropType, ref, watch } from "vue";
 import { Unit } from "../types/models";
 import InputGroup from "./InputGroup.vue";
 import PrimaryButton from "./PrimaryButton.vue";

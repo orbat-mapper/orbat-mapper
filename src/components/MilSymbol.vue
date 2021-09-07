@@ -1,5 +1,5 @@
 <script lang="ts">
-import { h, defineComponent } from "vue";
+import { defineComponent, h } from "vue";
 
 import { symbolGenerator } from "../symbology/milsymbwrapper";
 

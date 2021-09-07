@@ -12,16 +12,13 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import InputGroup from "./InputGroup.vue";
 import PlainButton from "./PlainButton.vue";
 import PrimaryButton from "./PrimaryButton.vue";
-import { Side, SideGroup } from "../types/models";
+import { SideGroup } from "../types/models";
 import { useScenarioStore } from "../stores/scenarioStore";
 import InlineFormPanel from "./InlineFormPanel.vue";
-import SymbolCodeSelect from "./SymbolCodeSelect.vue";
-import { standardIdentityValues } from "../symbology/values";
-import { SymbolItem } from "../types/constants";
 import { useFocusOnMount } from "./helpers";
 
 export default defineComponent({

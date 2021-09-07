@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, Ref } from "vue";
+import { defineComponent, PropType } from "vue";
 
 export interface ButtonGroupItem {
   label: string;

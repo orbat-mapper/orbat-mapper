@@ -110,14 +110,7 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineComponent,
-  onUnmounted,
-  PropType,
-  ref,
-  watch,
-} from "vue";
+import { defineComponent, onUnmounted, PropType, watch } from "vue";
 import {
   Dialog,
   DialogOverlay,

@@ -65,7 +65,6 @@
 import { computed, defineComponent, ref, watch } from "vue";
 import { useScenarioStore } from "../stores/scenarioStore";
 import DescriptionItem from "./DescriptionItem.vue";
-import { formatDateString } from "../geo/utils";
 import * as FileSaver from "file-saver";
 import PrimaryButton from "./PrimaryButton.vue";
 import SecondaryButton from "./SecondaryButton.vue";

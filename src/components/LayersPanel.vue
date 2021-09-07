@@ -55,7 +55,6 @@ import { EyeIcon, EyeOffIcon } from "@heroicons/vue/solid";
 import BaseLayerSwitcher from "./BaseLayerSwitcher.vue";
 import { AnyTileLayer, AnyVectorLayer, PointVectorLayer } from "../geo/types";
 import TileSource from "ol/source/Tile";
-import VectorSource from "ol/source/Vector";
 import { toLonLat } from "ol/proj";
 
 export interface LayerInfo<T extends BaseLayer = BaseLayer> {

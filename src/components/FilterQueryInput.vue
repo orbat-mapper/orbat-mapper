@@ -79,11 +79,11 @@
 import { computed, defineComponent } from "vue";
 import { nanoid } from "nanoid";
 import {
-  FilterVariant,
-  FilterVariantPlus,
   Close as CloseIcon,
   CrosshairsGps,
   CrosshairsOff,
+  FilterVariant,
+  FilterVariantPlus,
 } from "mdue";
 import { Switch } from "@headlessui/vue";
 import { useVModel } from "@vueuse/core";

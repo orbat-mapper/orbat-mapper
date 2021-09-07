@@ -10,7 +10,7 @@ import {
   UnitOrSide,
 } from "../types/models";
 import { nanoid } from "nanoid";
-import { SID_INDEX, Sidc } from "../symbology/sidc";
+import { SID_INDEX } from "../symbology/sidc";
 import { setCharAt } from "../components/helpers";
 import { SID } from "../symbology/values";
 import dayjs from "dayjs";

@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
+import LandingPage from "./views/LandingPage.vue";
 
 const MainView = () => import("./views/MainView.vue");
 const StoryModeView = () => import("./views/StoryModeView.vue");
-import LandingPage from "./views/LandingPage.vue";
 
 export const SCENARIO_ROUTE = "ScenarioRoute";
 export const LANDING_PAGE_ROUTE = "LandingPageRoute";

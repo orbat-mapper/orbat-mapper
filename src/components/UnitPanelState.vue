@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, nextTick, PropType } from "vue";
+import { computed, defineComponent, PropType } from "vue";
 import { State, Unit } from "../types/models";
 import { formatDateString, formatPosition } from "../geo/utils";
 import { CrosshairsGps } from "mdue";

@@ -66,15 +66,14 @@
 
 <script>
 import {
+  CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  CalendarIcon,
 } from "@heroicons/vue/solid";
 
 import { ChevronLeft, ChevronRight, SkipNext, SkipPrevious } from "mdue";
 import { GlobalEvents } from "vue-global-events";
 import { computed, defineComponent, ref } from "vue";
-import dayjs from "dayjs";
 import { useScenarioStore } from "../stores/scenarioStore";
 import { formatDateString } from "../geo/utils";
 import InputDateModal from "./InputDateModal.vue";

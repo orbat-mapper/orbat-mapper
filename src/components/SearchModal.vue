@@ -68,7 +68,6 @@ import { GlobalEvents } from "vue-global-events";
 import SimpleModal from "./SimpleModal.vue";
 import { useDebounce, useVModel } from "@vueuse/core";
 import SearchModalInput from "./SearchModalInput.vue";
-import { Unit } from "../types/models";
 import { useScenarioStore } from "../stores/scenarioStore";
 import MilSymbol from "./MilSymbol.vue";
 import ToggleField from "./ToggleField.vue";

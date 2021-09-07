@@ -3,7 +3,7 @@ import VectorSource from "ol/source/Vector";
 import { Coordinate } from "ol/coordinate";
 import { Unit } from "../types/models";
 import { Feature } from "ol";
-import { Geometry, LineString, MultiPoint, Point } from "ol/geom";
+import { LineString, Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import {
   createHistoryStylesFromFeature,

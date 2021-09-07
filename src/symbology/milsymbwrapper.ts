@@ -3,8 +3,8 @@
  *
  */
 
-import { SymbolOptions, Symbol as MilSymbol } from "milsymbol";
 import * as ms from "milsymbol";
+import { Symbol as MilSymbol, SymbolOptions } from "milsymbol";
 
 const customColorMode = ms.getColorMode("Light");
 customColorMode.Friend = "rgb(170, 176, 116)";

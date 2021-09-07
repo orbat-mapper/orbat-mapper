@@ -1,6 +1,6 @@
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
-import { LineString, Point } from "ol/geom";
+import { Point } from "ol/geom";
 import TileLayer from "ol/layer/Tile";
 
 export type PointVectorLayer = VectorLayer<VectorSource<Point>>;

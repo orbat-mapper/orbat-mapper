@@ -52,9 +52,8 @@ import SimpleModal from "./SimpleModal.vue";
 import { useVModel } from "@vueuse/core";
 import { Switch, SwitchGroup, SwitchLabel } from "@headlessui/vue";
 
-import { computed, defineComponent, onMounted, ref, watch } from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import { useScenarioStore } from "../stores/scenarioStore";
-import { formatDateString } from "../geo/utils";
 import dayjs from "dayjs";
 import PrimaryButton from "./PrimaryButton.vue";
 import InputGroup from "./InputGroup.vue";

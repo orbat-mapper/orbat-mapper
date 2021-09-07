@@ -11,28 +11,16 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineComponent,
-  markRaw,
-  nextTick,
-  Ref,
-  toRaw,
-  watch,
-} from "vue";
+import { computed, defineComponent, markRaw, nextTick, Ref, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { GlobalEvents } from "vue-global-events";
 import { fromLonLat, toLonLat } from "ol/proj";
 import { useActiveUnitStore, useDragStore } from "../stores/dragStore";
 import { DragOperations } from "../types/constants";
-import {
-  createHistoryLayer,
-  createUnitFeatureAt,
-  createUnitLayer,
-} from "../geo/layers";
+import { createHistoryLayer, createUnitFeatureAt } from "../geo/layers";
 import VectorLayer from "ol/layer/Vector";
-import { Collection, Feature, MapBrowserEvent } from "ol";
+import { Collection, Feature } from "ol";
 import { Modify, Select } from "ol/interaction";
 import {
   clearStyleCache,
@@ -40,15 +28,12 @@ import {
 } from "../geo/styles";
 import { SelectEvent } from "ol/interaction/Select";
 import { click } from "ol/events/condition";
-import { Point, LineString } from "ol/geom";
+import { LineString, Point } from "ol/geom";
 import { useScenarioStore } from "../stores/scenarioStore";
 import { Unit } from "../types/models";
 import { useGeoStore } from "../stores/geoStore";
 import LayerGroup from "ol/layer/Group";
 import { ModifyEvent } from "ol/interaction/Modify";
-
-import { Feature as GFeature } from "geojson";
-import { GeoJSON } from "ol/format";
 import GeometryLayout from "ol/geom/GeometryLayout";
 import VectorSource from "ol/source/Vector";
 import { inputEventFilter } from "./helpers";

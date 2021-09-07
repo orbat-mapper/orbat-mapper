@@ -19,7 +19,7 @@ import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import "ol/ol.css";
 import { Coordinate } from "ol/coordinate";
-import { fromLonLat, toLonLat } from "ol/proj";
+import { fromLonLat } from "ol/proj";
 import { OSM, XYZ } from "ol/source";
 
 function createBaseLayers() {

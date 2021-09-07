@@ -30,14 +30,14 @@
 import {
   computed,
   defineComponent,
-  onMounted,
-  VNode,
-  reactive,
-  provide,
   onBeforeMount,
-  toRefs,
-  watch,
+  onMounted,
+  provide,
+  reactive,
   ref,
+  toRefs,
+  VNode,
+  watch,
 } from "vue";
 
 interface TabProps {

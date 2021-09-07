@@ -89,7 +89,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, PropType, ref } from "vue";
 import MilSymbol from "./MilSymbol.vue";
 import { OrbatItemData, Unit } from "../types/models";
 //@ts-ignore
