@@ -1,48 +1,61 @@
 <template>
-  <section class="pl-6">
-    <header
-      class="
-        flex
-        items-center
-        justify-between
-        relative
-        block
-        -ml-6
-        pl-6
-        bg-gray-200
-        border-b-2 border-t-2
-        py-1
-        border-gray-300
-      "
-    >
-      <h4 class="font-medium text-base text-gray-900">{{ side.name }}</h4>
-      <DotsMenu
-        :items="sideMenuItems"
-        @action="onSideAction"
-        class="flex-shrink-0 pr-2"
-      />
-    </header>
-    <EditSideForm
-      v-if="showEditSideForm"
-      :side-id="side.id"
-      @close="showEditSideForm = false"
-      class="-ml-6"
-    />
-    <div class="mt-4 mr-10">
-      <FilterQueryInput
-        v-model="filterQuery"
-        v-model:location-filter="hasLocationFilter"
-      />
-    </div>
-    <div v-for="group in side.groups" :key="group.id">
-      <OrbatSideGroup
-        :group="group"
-        :filter-query="debouncedFilterQuery"
-        :has-location-filter="hasLocationFilter"
+  <Disclosure v-slot="{ open }" default-open>
+    <section class="pl-6">
+      <header
+        class="
+          flex
+          items-center
+          justify-between
+          relative
+          block
+          -ml-6
+          pl-6
+          bg-gray-200
+          border-b-2 border-t-2
+          py-1
+          border-gray-300
+        "
       >
-      </OrbatSideGroup>
-    </div>
-  </section>
+        <DisclosureButton
+          class="w-full text-left flex items-center justify-between"
+        >
+          <h4 class="font-medium text-base text-gray-900">{{ side.name }}</h4>
+          <ChevronUpIcon
+            :class="open ? 'transform rotate-180' : ''"
+            class="w-6 h-6 text-gray-400 group-hover:text-gray-900"
+          />
+        </DisclosureButton>
+
+        <DotsMenu
+          :items="sideMenuItems"
+          @action="onSideAction"
+          class="flex-shrink-0 pr-2"
+        />
+      </header>
+      <EditSideForm
+        v-if="showEditSideForm"
+        :side-id="side.id"
+        @close="showEditSideForm = false"
+        class="-ml-6"
+      />
+      <DisclosurePanel>
+        <div class="mt-4 mr-10">
+          <FilterQueryInput
+            v-model="filterQuery"
+            v-model:location-filter="hasLocationFilter"
+          />
+        </div>
+        <div v-for="group in side.groups" :key="group.id">
+          <OrbatSideGroup
+            :group="group"
+            :filter-query="debouncedFilterQuery"
+            :has-location-filter="hasLocationFilter"
+          >
+          </OrbatSideGroup>
+        </div>
+      </DisclosurePanel>
+    </section>
+  </Disclosure>
 </template>
 <script lang="ts">
 import DotsMenu, { MenuItemData } from "./DotsMenu.vue";
