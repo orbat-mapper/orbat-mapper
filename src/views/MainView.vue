@@ -242,11 +242,21 @@ export default defineComponent({
 
     const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
       { label: "Add new side", action: ScenarioActions.AddSide },
+      { label: "Save to local storage", action: ScenarioActions.Save },
+      { label: "Load from local storage", action: ScenarioActions.Load },
     ];
 
     function onScenarioAction(action: ScenarioActions) {
       if (action === ScenarioActions.AddSide) {
         scenarioStore.addSide();
+      }
+
+      if (action === ScenarioActions.Save) {
+        scenarioIO.saveToLocalStorage();
+      }
+
+      if (action === ScenarioActions.Load) {
+        scenarioIO.loadFromLocalStorage();
       }
     }
 
