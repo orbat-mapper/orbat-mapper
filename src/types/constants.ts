@@ -25,6 +25,10 @@ export const enum SideActions {
   Add = "Add",
 }
 
+export const enum ScenarioActions {
+  AddSide = "AddSide",
+}
+
 export interface SymbolValue {
   code: string;
   text: string;

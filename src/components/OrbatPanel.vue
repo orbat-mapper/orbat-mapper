@@ -37,7 +37,6 @@ export default defineComponent({
 
     const onAdd = () => {
       scenarioStore.addSide();
-      console.log("on add");
     };
 
     return {

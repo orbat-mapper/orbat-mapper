@@ -28,6 +28,13 @@
         <TabItem label="Scenario info">
           <ScenarioInfoPanel />
         </TabItem>
+        <template #extra>
+          <DotsMenu
+            :items="scenarioMenuItems"
+            class="pt-2 -mr-2 relative"
+            @action="onScenarioAction"
+          />
+        </template>
       </TabView>
       <footer
         class="
@@ -90,9 +97,6 @@
     <MainViewSlideOver v-model="isOpen" />
 
     <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
-    <div class="fixed top-6 left-60 z-10">
-      <WipBadge />
-    </div>
   </div>
 </template>
 
@@ -133,10 +137,13 @@ import { useTitle } from "@vueuse/core";
 import { useUnitManipulationStore } from "../stores/scenarioManipulation";
 import WipBadge from "../components/WipBadge.vue";
 import MainViewSlideOver from "../components/MainViewSlideOver.vue";
+import DotsMenu, { MenuItemData } from "../components/DotsMenu.vue";
+import { ScenarioActions } from "../types/constants";
 
 export default defineComponent({
   name: "MainView",
   components: {
+    DotsMenu,
     MainViewSlideOver,
     WipBadge,
     SearchModal,
@@ -233,6 +240,16 @@ export default defineComponent({
       }
     };
 
+    const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
+      { label: "Add new side", action: ScenarioActions.AddSide },
+    ];
+
+    function onScenarioAction(action: ScenarioActions) {
+      if (action === ScenarioActions.AddSide) {
+        scenarioStore.addSide();
+      }
+    }
+
     return {
       activeUnit,
       currentTab,
@@ -246,6 +263,8 @@ export default defineComponent({
       onUnitSelect,
       scenarioStore,
       duplicateUnit,
+      scenarioMenuItems,
+      onScenarioAction,
     };
   },
 

@@ -26,7 +26,7 @@
     >
       <MenuItems
         class="
-          z-10
+          z-20
           mx-3
           origin-top-right
           absolute
@@ -77,7 +77,6 @@ import {
   TransitionChild,
   TransitionRoot,
 } from "@headlessui/vue";
-//@ts-ignore
 import { ChevronRightIcon, DotsVerticalIcon } from "@heroicons/vue/solid";
 
 export interface MenuItemData<T = string> {
@@ -101,8 +100,6 @@ export default defineComponent({
     TransitionChild,
     TransitionRoot,
   },
-  setup(props) {
-    let a = props.items[0];
-  },
+  setup(props) {},
 });
 </script>
