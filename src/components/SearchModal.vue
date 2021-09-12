@@ -3,8 +3,8 @@
   <SimpleModal v-model="open">
     <SearchModalInput v-model="query" />
     <ToggleField class="my-4" v-model="limitToPosition"
-      >Show only units with a position</ToggleField
-    >
+      >Show only units with a position
+    </ToggleField>
     <section v-if="unitHits.length">
       <p class="font-medium text-gray-700">Units</p>
       <ul class="space-y-2 mt-2">
@@ -18,6 +18,7 @@
               p-2
               rounded
               focus:ring
+              border border-transparent
               hover:bg-red-100 hover:border hover:border-army
             "
             :class="index === currentHitIndex ? 'bg-blue-200' : 'bg-gray-100'"
