@@ -20,7 +20,8 @@ import TileLayer from "ol/layer/Tile";
 import "ol/ol.css";
 import { Coordinate } from "ol/coordinate";
 import { fromLonLat } from "ol/proj";
-import { OSM, XYZ } from "ol/source";
+import OSM from "ol/source/OSM";
+import XYZ from "ol/source/XYZ";
 
 function createBaseLayers() {
   const openStreetmapLayer = new TileLayer({
