@@ -124,6 +124,7 @@ export default defineComponent({
   },
   props: {
     items: { type: Array as PropType<ButtonGroupItem[]>, required: true },
+    static: { type: Boolean, default: false },
   },
   setup(props) {
     let [trigger, container] = usePopper({
@@ -134,11 +135,11 @@ export default defineComponent({
 
     const activeItem = ref(props.items[0]);
     const menuItems = computed(() =>
-      props.items.filter((e) => e !== activeItem.value)
+      props.items.filter((e) => e.label !== activeItem.value.label)
     );
 
     const onClick = (item: ButtonGroupItem) => {
-      activeItem.value = item;
+      if (!props.static) activeItem.value = item;
       item.onClick();
     };
     return {
