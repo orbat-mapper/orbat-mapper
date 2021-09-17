@@ -54,7 +54,7 @@
       </DescriptionItem>
     </div>
     <div class="flex">
-      <PlainButton @click="toggleEditMode">Edit</PlainButton>
+      <PlainButton @click="toggleEditMode()">Edit</PlainButton>
       <SplitButton class="ml-2" :items="buttonItems" />
     </div>
     <UnitPanelState v-if="unit?.state?.length" :unit="unit" />
