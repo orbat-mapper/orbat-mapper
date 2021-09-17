@@ -163,7 +163,7 @@
               "subUnits": [
                 {
                   "name": "BAS Team",
-                  "sidc": "10031100001100000000",
+                  "sidc": "10031100001103000000",
                   "id": "R0aM0ePhKjOe1z1mg5KBV",
                   "state": [
                     {
@@ -703,14 +703,24 @@
                 },
                 {
                   "name": "ARA Bahia Buen Suceso",
-                  "sidc": "10073000001301060000",
+                  "sidc": "10073000001301000000",
                   "state": [
                     {
                       "t": 385394400000,
                       "location": [-36.6833405589705, -54.14092108867432]
                     }
                   ],
-                  "id": "9WgmjOqlkkcMhZD0ymVQR"
+                  "id": "9WgmjOqlkkcMhZD0ymVQR",
+                  "subUnits": [
+                    {
+                      "name": "ARA Bahia Buen Suceso1",
+                      "sidc": "10073000001301060000",
+                      "id": "PpFWmOlgXaOh1C009jVI2",
+                      "state": [],
+                      "subUnits": []
+                    }
+                  ],
+                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Buen_Suceso"
                 }
               ],
               "state": [],
@@ -718,7 +728,7 @@
             },
             {
               "name": "Workers",
-              "sidc": "10071000111211004600",
+              "sidc": "10071100001104000000",
               "id": "HxaawJT7ymu1m2gpLEV-o",
               "state": [
                 {
