@@ -37,12 +37,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
-
-export interface ButtonGroupItem {
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-}
+import { ButtonGroupItem } from "./types";
 
 export default defineComponent({
   name: "ButtonGroup",

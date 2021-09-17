@@ -53,8 +53,10 @@
         <div class="prose prose-sm" v-html="hDescription"></div>
       </DescriptionItem>
     </div>
-    <ButtonGroup :items="buttonItems.slice(0, 4)" small />
-    <ButtonGroup class="mt-1" :items="buttonItems.slice(4)" small />
+    <div class="flex">
+      <PlainButton @click="toggleEditMode">Edit</PlainButton>
+      <SplitButton class="ml-2" :items="buttonItems" />
+    </div>
     <UnitPanelState v-if="unit?.state?.length" :unit="unit" />
     <GlobalEvents :filter="eventFilter" @keyup.e="doFormFocus" />
   </div>
@@ -81,10 +83,12 @@ import ButtonGroup from "./ButtonGroup.vue";
 import { useUnitActions } from "../composables/scenarioActions";
 import { UnitActions } from "../types/constants";
 import SymbolPickerInput from "./SymbolPickerInput.vue";
+import SplitButton from "./SplitButton.vue";
 
 export default defineComponent({
   name: "UnitPanel",
   components: {
+    SplitButton,
     SymbolPickerInput,
     ButtonGroup,
     UnitPanelState,
@@ -147,7 +151,10 @@ export default defineComponent({
     const { onUnitAction } = useUnitActions();
 
     const buttonItems = computed(() => [
-      { label: "Edit", onClick: toggleEditMode },
+      {
+        label: "Duplicate",
+        onClick: () => onUnitAction(props.unit, UnitActions.Clone),
+      },
       {
         label: "Move up",
         onClick: () => onUnitAction(props.unit, UnitActions.MoveUp),
@@ -155,10 +162,6 @@ export default defineComponent({
       {
         label: "Move down",
         onClick: () => onUnitAction(props.unit, UnitActions.MoveDown),
-      },
-      {
-        label: "Duplicate",
-        onClick: () => onUnitAction(props.unit, UnitActions.Clone),
       },
       {
         label: "Create subordinate",
@@ -187,6 +190,7 @@ export default defineComponent({
       isEditMode,
       hDescription,
       buttonItems,
+      toggleEditMode,
     };
   },
 });
