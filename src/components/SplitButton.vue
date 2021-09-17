@@ -87,7 +87,7 @@
                   :class="[
                     active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                     'flex w-full px-4 py-2 text-sm',
-                    item.disabled ? 'opacity-60' : '',
+                    item.disabled ? 'opacity-60 hover:cursor-default' : '',
                   ]"
                 >
                   {{ item.label }}
