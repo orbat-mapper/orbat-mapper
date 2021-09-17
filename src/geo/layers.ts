@@ -74,16 +74,17 @@ export function flyTo(
       callback
     );
 
-    view.animate(
-      {
-        zoom: zoom_ - 1,
-        duration: duration / 2,
-      },
-      {
-        zoom: zoom_,
-        duration: duration / 2,
-      },
-      callback
-    );
+    if (zoom_)
+      view.animate(
+        {
+          zoom: zoom_ - 1,
+          duration: duration / 2,
+        },
+        {
+          zoom: zoom_,
+          duration: duration / 2,
+        },
+        callback
+      );
   });
 }

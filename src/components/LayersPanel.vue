@@ -80,7 +80,7 @@ export default defineComponent({
       if (!geoStore.olMap) return;
       const view = geoStore.olMap.getView();
       return {
-        center: toLonLat(view.getCenter(), view.getProjection()),
+        center: toLonLat(view.getCenter() || [0, 0], view.getProjection()),
         zoom: view.getZoom(),
       };
     });
