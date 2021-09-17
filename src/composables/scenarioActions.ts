@@ -15,6 +15,7 @@ export function useUnitActions() {
   const onUnitAction = (unit: Unit | undefined, action: UnitActions) => {
     if (!unit) return;
     if (action === UnitActions.AddSubordinate) {
+      unit._isOpen = true;
       unitManipulationStore.createSubordinateUnit(unit);
     }
 

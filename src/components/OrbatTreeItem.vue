@@ -166,7 +166,6 @@ export default defineComponent({
     const activeUnitStore = useActiveUnitStore();
 
     const onUnitMenuAction = async (unit: Unit, action: UnitActions) => {
-      if (action === UnitActions.AddSubordinate) isOpen.value = true;
       if (action === UnitActions.Expand) {
         await expandChildren();
       } else {
