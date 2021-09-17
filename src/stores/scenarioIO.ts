@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { until, useFetch, useLocalStorage } from "@vueuse/core";
 import { useScenarioStore } from "./scenarioStore";
 import { ObjectMapping, Scenario } from "../types/models";
+import * as FileSaver from "file-saver";
 
 export const useScenarioIO = defineStore("scenarioIO", {
   actions: {
@@ -46,6 +47,16 @@ export const useScenarioIO = defineStore("scenarioIO", {
         return;
       }
       await this.loadFromUrl(url);
+    },
+
+    async downloadAsJson(fileName = "scenario.json") {
+      const scenario = useScenarioStore();
+      FileSaver.saveAs(
+        new Blob([scenario.stringify()], {
+          type: "application/json",
+        }),
+        fileName
+      );
     },
   },
 });

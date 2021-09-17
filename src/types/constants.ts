@@ -29,6 +29,7 @@ export const enum ScenarioActions {
   AddSide = "AddSide",
   Save = "Save",
   Load = "Load",
+  ExportJson = "ExportJson",
 }
 
 export interface SymbolValue {

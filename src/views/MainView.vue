@@ -244,6 +244,7 @@ export default defineComponent({
       { label: "Add new side", action: ScenarioActions.AddSide },
       { label: "Save to local storage", action: ScenarioActions.Save },
       { label: "Load from local storage", action: ScenarioActions.Load },
+      { label: "Download as JSON", action: ScenarioActions.ExportJson },
     ];
 
     function onScenarioAction(action: ScenarioActions) {
@@ -257,6 +258,10 @@ export default defineComponent({
 
       if (action === ScenarioActions.Load) {
         scenarioIO.loadFromLocalStorage();
+      }
+
+      if (action === ScenarioActions.ExportJson) {
+        scenarioIO.downloadAsJson();
       }
     }
 

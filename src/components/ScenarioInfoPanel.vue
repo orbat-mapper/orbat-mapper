@@ -65,7 +65,6 @@
 import { computed, defineComponent, ref, watch } from "vue";
 import { useScenarioStore } from "../stores/scenarioStore";
 import DescriptionItem from "./DescriptionItem.vue";
-import * as FileSaver from "file-saver";
 import PrimaryButton from "./PrimaryButton.vue";
 import SecondaryButton from "./SecondaryButton.vue";
 import { renderMarkdown } from "../composables/formatting";
@@ -154,12 +153,7 @@ export default defineComponent({
     });
 
     function onDownload() {
-      FileSaver.saveAs(
-        new Blob([scenarioStore.stringify()], {
-          type: "application/json",
-        }),
-        "scenario.json"
-      );
+      scenarioIO.downloadAsJson();
     }
 
     function onSave() {
