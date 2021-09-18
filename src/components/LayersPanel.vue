@@ -8,6 +8,7 @@
       class="mt-4"
       :settings="tileLayers"
       v-model="activeBaseLayer"
+      @update:layer-opacity="updateOpacity"
     />
 
     <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mt-4">
@@ -18,11 +19,20 @@
       <ul class="divide-y divide-gray-200">
         <li v-for="layer in vectorLayers" :key="layer.title" class="px-6 py-4">
           <div class="flex items-center justify-between">
-            <p class="text-sm">{{ layer.title }}</p>
-            <button class="h-5 w-5 text-gray-500" @click="toggleLayer(layer)">
-              <EyeIcon v-if="layer.visible" />
-              <EyeOffIcon v-else />
-            </button>
+            <p class="text-sm flex-auto truncate">{{ layer.title }}</p>
+            <div class="flex items-center flex-shrink-0 ml-2">
+              <OpacityInput
+                :model-value="layer.opacity"
+                @update:model-value="updateOpacity(layer, $event)"
+              />
+              <button
+                class="h-5 w-5 text-gray-500 ml-4"
+                @click="toggleLayer(layer)"
+              >
+                <EyeIcon v-if="layer.visible" />
+                <EyeOffIcon v-else />
+              </button>
+            </div>
           </div>
         </li>
       </ul>
@@ -47,7 +57,6 @@ import {
 } from "vue";
 import { useGeoStore } from "../stores/geoStore";
 import BaseLayer from "ol/layer/Base";
-import { EventsKey } from "ol/events";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import LayerGroup from "ol/layer/Group";
@@ -56,6 +65,7 @@ import BaseLayerSwitcher from "./BaseLayerSwitcher.vue";
 import { AnyTileLayer, AnyVectorLayer, PointVectorLayer } from "../geo/types";
 import TileSource from "ol/source/Tile";
 import { toLonLat } from "ol/proj";
+import OpacityInput from "./OpacityInput.vue";
 
 export interface LayerInfo<T extends BaseLayer = BaseLayer> {
   title: string;
@@ -64,15 +74,20 @@ export interface LayerInfo<T extends BaseLayer = BaseLayer> {
   opacity: number;
   layer: T;
   subLayers?: LayerInfo<T>[];
+  description?: string;
 }
 
 export default defineComponent({
   name: "LayersPanel",
-  components: { BaseLayerSwitcher, EyeIcon, EyeOffIcon },
+  components: {
+    OpacityInput,
+    BaseLayerSwitcher,
+    EyeIcon,
+    EyeOffIcon,
+  },
   setup() {
     const geoStore = useGeoStore();
-    let listeners: EventsKey[] = [];
-    let tileLayers = shallowRef<LayerInfo<TileLayer<TileSource>>[]>([]);
+    let tileLayers = ref<LayerInfo<TileLayer<TileSource>>[]>([]);
     let vectorLayers = ref<LayerInfo<PointVectorLayer>[]>([]);
     let activeBaseLayer = shallowRef<LayerInfo<TileLayer<TileSource>>>();
 
@@ -101,6 +116,7 @@ export default defineComponent({
       if (!layerInfo) return;
       tileLayers.value.forEach((l) => {
         const isVisible = l.title === layerInfo.title;
+        l.layer.setOpacity(layerInfo.opacity);
         l.visible = isVisible;
         l.layer.setVisible(isVisible);
       });
@@ -138,14 +154,20 @@ export default defineComponent({
       ) as LayerInfo<AnyVectorLayer>[];
     };
 
-    const toggleLayer = (l: any) => {
+    const toggleLayer = (l: LayerInfo<any>) => {
       l.visible = !l.visible;
+      l.layer.setOpacity(l.opacity);
       l.layer.setVisible(l.visible);
     };
 
     const baseLayers = computed(() =>
-      tileLayers.value.map((l) => ({ name: l.title, description: "" }))
+      tileLayers.value.map((l) => ({ ...l, name: l.title, description: "" }))
     );
+
+    function updateOpacity(l: LayerInfo<any>, opacity: number) {
+      l.opacity = opacity;
+      l.layer.setOpacity(opacity);
+    }
 
     return {
       vectorLayers,
@@ -154,6 +176,7 @@ export default defineComponent({
       baseLayers,
       activeBaseLayer,
       mapView,
+      updateOpacity,
     };
   },
 });

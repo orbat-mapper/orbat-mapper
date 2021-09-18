@@ -1,22 +1,6 @@
-<!--
-  This example requires Tailwind CSS v2.0+
-
-  This example requires some changes to your config:
-
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-    ]
-  }
-  ```
--->
 <template>
   <RadioGroup v-model="selected">
-    <RadioGroupLabel class="sr-only"> Privacy setting </RadioGroupLabel>
+    <RadioGroupLabel class="sr-only"> Privacy setting</RadioGroupLabel>
     <div class="bg-white rounded-md -space-y-px">
       <RadioGroupOption
         as="template"
@@ -48,15 +32,22 @@
           >
             <span class="rounded-full bg-white w-1.5 h-1.5" />
           </span>
-          <div class="ml-3 flex flex-col">
+          <div class="ml-3 flex flex-auto min-w-0 flex-col">
             <RadioGroupLabel
-              as="span"
+              as="div"
               :class="[
                 checked ? 'text-indigo-900' : 'text-gray-900',
-                'block text-sm font-medium',
+                'text-sm font-medium flex items-center justify-between',
               ]"
             >
-              {{ setting.title }}
+              <span class="truncate flex-auto">{{ setting.title }}</span>
+              <OpacityInput
+                :model-value="setting.opacity"
+                @update:model-value="
+                  $emit('update:layerOpacity', setting, $event)
+                "
+                class="flex-shrink-0"
+              />
             </RadioGroupLabel>
             <RadioGroupDescription
               as="span"
@@ -82,24 +73,24 @@ import {
   RadioGroupLabel,
   RadioGroupOption,
 } from "@headlessui/vue";
-
-interface Setting {
-  title: string;
-  description?: string;
-}
+import { Opacity as OpacityIcon } from "mdue";
+import { LayerInfo } from "./LayersPanel.vue";
+import OpacityInput from "./OpacityInput.vue";
 
 export default defineComponent({
   components: {
+    OpacityInput,
     RadioGroup,
     RadioGroupDescription,
     RadioGroupLabel,
     RadioGroupOption,
+    OpacityIcon,
   },
   props: {
-    settings: { type: Array as PropType<Setting[]>, required: true },
-    modelValue: { type: Object as PropType<Setting> },
+    settings: { type: Array as PropType<LayerInfo[]>, required: true },
+    modelValue: { type: Object as PropType<LayerInfo> },
   },
-  emits: ["update:modelValue"],
+  emits: ["update:modelValue", "update:layerOpacity"],
   // setup(props) {
   //   const selected = ref(props.settings[0]);
   //
@@ -109,10 +100,10 @@ export default defineComponent({
   // },
   computed: {
     selected: {
-      get(): Setting | undefined {
+      get(): LayerInfo | undefined {
         return this.modelValue;
       },
-      set(v: Setting) {
+      set(v: LayerInfo) {
         this.$emit("update:modelValue", v);
       },
     },
