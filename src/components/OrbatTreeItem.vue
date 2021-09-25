@@ -44,7 +44,7 @@
             draggable="true"
             @dragstart="dragStart"
             @dragend="dragEnd"
-            :class="{ 'opacity-10': isDragged }"
+            :class="{ 'opacity-20': isDragged }"
           >
             <div class="flex-shrink-0 w-8 flex justify-center cursor-move">
               <MilSymbol
@@ -56,7 +56,7 @@
               />
             </div>
             <span
-              class="flex-auto"
+              class="flex-auto text-left"
               :class="{
                 'font-bold': isActiveUnit,
                 'font-bold underline': isDragOver,
