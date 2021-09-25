@@ -12,7 +12,7 @@
     <button
       class="h-6 text-gray-500 flex items-center"
       title="Opacity"
-      @click.stop="toggleRange"
+      @click.stop="toggleRange()"
     >
       <OpacityIcon class="transform scale-110" />
       <span class="text-xs ml-1 text-gray-700 w-7 text-right"

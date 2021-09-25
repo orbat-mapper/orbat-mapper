@@ -262,11 +262,11 @@ function useModifyInteraction(
     source: unitLayer.getSource(),
   });
 
-  modifyInteraction.on(["modifystart", "modifyend"], (evt: ModifyEvent) => {
+  modifyInteraction.on(["modifystart", "modifyend"], (evt) => {
     mapRef.getTargetElement().style.cursor =
       evt.type === "modifystart" ? "grabbing" : "pointer";
     if (evt.type === "modifyend") {
-      const unitFeature = evt.features.pop() as Feature<Point>;
+      const unitFeature = (evt as ModifyEvent).features.pop() as Feature<Point>;
       if (unitFeature) {
         const movedUnit = scenarioStore.getUnitById(unitFeature.getId() ?? "");
         if (!movedUnit) return;

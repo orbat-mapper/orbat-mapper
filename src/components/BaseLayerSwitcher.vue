@@ -87,8 +87,8 @@ export default defineComponent({
     OpacityIcon,
   },
   props: {
-    settings: { type: Array as PropType<LayerInfo[]>, required: true },
-    modelValue: { type: Object as PropType<LayerInfo> },
+    settings: { type: Array as PropType<LayerInfo<any>[]>, required: true },
+    modelValue: { type: Object as PropType<LayerInfo<any>> },
   },
   emits: ["update:modelValue", "update:layerOpacity"],
   // setup(props) {
