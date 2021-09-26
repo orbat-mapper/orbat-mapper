@@ -93,10 +93,9 @@
       @keyup.prevent.alt.k="showSearch = true"
     />
     <ShortcutsModal v-model="shortcutsModalVisible" />
-
     <MainViewSlideOver v-model="isOpen" />
-
     <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
+    <AppNotifications />
   </div>
 </template>
 
@@ -139,10 +138,13 @@ import WipBadge from "../components/WipBadge.vue";
 import MainViewSlideOver from "../components/MainViewSlideOver.vue";
 import DotsMenu, { MenuItemData } from "../components/DotsMenu.vue";
 import { ScenarioActions } from "../types/constants";
+import AppNotifications from "../components/AppNotifications.vue";
+import { useNotifications } from "../composables/notifications";
 
 export default defineComponent({
   name: "MainView",
   components: {
+    AppNotifications,
     DotsMenu,
     MainViewSlideOver,
     WipBadge,
@@ -181,6 +183,8 @@ export default defineComponent({
     const { activeUnit } = toRefs(activeUnitStore);
     const originalTitle = useTitle().value;
     const windowTitle = computed(() => scenarioStore.scenario.name);
+    const { send } = useNotifications();
+
     useTitle(windowTitle);
 
     onUnmounted(() => {
@@ -254,10 +258,12 @@ export default defineComponent({
 
       if (action === ScenarioActions.Save) {
         scenarioIO.saveToLocalStorage();
+        send({ message: "Saved to local storage" });
       }
 
       if (action === ScenarioActions.Load) {
         scenarioIO.loadFromLocalStorage();
+        send({ message: "Loaded from local storage" });
       }
 
       if (action === ScenarioActions.ExportJson) {

@@ -4,6 +4,7 @@ import { useScenarioStore, walkSubUnits } from "./scenarioStore";
 import { SID_INDEX, Sidc } from "../symbology/sidc";
 import { nanoid } from "nanoid";
 import { setCharAt } from "../components/helpers";
+import { useNotifications } from "../composables/notifications";
 
 let counter = 1;
 
@@ -27,9 +28,12 @@ export const useUnitManipulationStore = defineStore("unitManipulationStore", {
 
       const { side, parents } = scenarioStore.getUnitHierarchy(newParent);
       if (parents.includes(unit)) {
-        console.warn(
-          `Operation not allowed. Unit ${newParent.name} is a child of ${unit.name}`
-        );
+        const { send } = useNotifications();
+
+        send({
+          message: `Operation not allowed. Unit ${newParent.name} is a child of ${unit.name}`,
+        });
+
         return;
       }
 
