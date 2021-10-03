@@ -1,6 +1,6 @@
 <template>
   <div v-show="isActive" class="mt-6" :class="tabClass">
-    <slot></slot>
+    <slot :is-active="isActive"></slot>
   </div>
 </template>
 
