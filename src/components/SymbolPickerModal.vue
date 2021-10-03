@@ -106,7 +106,9 @@
     <GlobalEvents
       v-if="hits?.length && hitsIsOpen"
       @keydown.arrow-down="doKbd('down')"
+      @keydown.page-down="doKbd('pagedown')"
       @keydown.arrow-up="doKbd('up')"
+      @keydown.page-up="doKbd('pageup')"
       @keydown.enter.prevent="onSelect()"
     >
     </GlobalEvents>
@@ -207,7 +209,7 @@ export default defineComponent({
       open.value = false;
     };
 
-    function doKbd(direction: "up" | "down") {
+    function doKbd(direction: "up" | "down" | "pagedown" | "pageup") {
       const nHits = hits?.value?.length || 0;
       if (direction === "up") {
         if (currentIndex.value === 0) {
@@ -218,6 +220,14 @@ export default defineComponent({
         if (currentIndex.value >= nHits) {
           currentIndex.value = 0;
         }
+      } else if (direction === "pagedown") {
+        currentIndex.value += 3;
+        if (currentIndex.value >= nHits) {
+          currentIndex.value = nHits - 1;
+        }
+      } else if (direction === "pageup") {
+        currentIndex.value -= 3;
+        if (currentIndex.value < 0) currentIndex.value = 0;
       }
     }
 
