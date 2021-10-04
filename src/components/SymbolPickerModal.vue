@@ -118,60 +118,13 @@
         </GlobalEvents>
       </TabItem>
       <TabItem label="Browse" v-slot="{ isActive }">
-        <div class="min-h-[30rem]" v-if="isActive">
-          <SymbolCodeSelect
-            v-model="symbolSetValue"
-            label="Symbol set"
-            :items="symbolSets"
-          />
-
-          <div class="overflow-auto max-h-[40rem] mt-2">
-            <div
-              v-for="[entity, entityIcons] in iconsByEntity"
-              class="relative"
-            >
-              <p class="text-gray-900 font-medium bg-gray-200 p-2 sticky top-0">
-                {{ entity }}
-              </p>
-              <div class="mt-4 grid grid-cols-3 gap-x-2 gap-y-4 p-1">
-                <button
-                  type="button"
-                  v-for="{
-                    sidc,
-                    entity,
-                    entityType,
-                    entitySubtype,
-                    code,
-                  } in entityIcons"
-                  :key="sidc"
-                  @click="iconValue = code"
-                  class="
-                    border border-transparent
-                    rounded
-                    p-4
-                    flex flex-col
-                    items-center
-                    justify-start
-                    w-full
-                    hover:border-gray-500
-                  "
-                >
-                  <MilSymbol :size="32" :sidc="sidc" />
-                  <p
-                    class="
-                      mt-1
-                      text-sm text-center text-gray-900
-                      max-w-full
-                      overflow-hidden
-                    "
-                  >
-                    {{ entitySubtype || entityType || entity }}
-                  </p>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <SymbolBrowseTab
+          v-if="isActive"
+          v-model:icon-value="iconValue"
+          v-model:symbol-set-value="symbolSetValue"
+          :symbol-sets="symbolSets"
+          :icons="icons"
+        />
       </TabItem>
     </TabView>
   </SimpleModal>
@@ -198,10 +151,12 @@ import SearchModalInput from "./SearchModalInput.vue";
 import { GlobalEvents } from "vue-global-events";
 import TabView from "./TabView.vue";
 import TabItem from "./TabItem.vue";
+import SymbolBrowseTab from "./SymbolBrowseTab.vue";
 
 export default defineComponent({
   name: "SymbolPickerModal",
   components: {
+    SymbolBrowseTab,
     TabItem,
     TabView,
     SearchModalInput,
@@ -315,18 +270,6 @@ export default defineComponent({
       );
     });
 
-    const iconsByEntity = computed(() => {
-      const { icons } = symbolItems;
-      const mm = new Map();
-      icons.value.forEach((v) => {
-        const l = mm.get(v.entity) || [];
-        l.push(v);
-        mm.set(v.entity, l);
-      });
-
-      return mm;
-    });
-
     return {
       open,
       csidc,
@@ -343,7 +286,6 @@ export default defineComponent({
       hitsIsOpen,
       hitsRef,
       onTab,
-      iconsByEntity,
     };
   },
 });
