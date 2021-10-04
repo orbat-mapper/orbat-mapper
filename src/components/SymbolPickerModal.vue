@@ -122,8 +122,12 @@
           v-if="isActive"
           v-model:icon-value="iconValue"
           v-model:symbol-set-value="symbolSetValue"
+          v-model:mod1-value="mod1Value"
+          v-model:mod2-value="mod2Value"
           :symbol-sets="symbolSets"
           :icons="icons"
+          :mod1-items="mod1Items"
+          :mod2-items="mod2Items"
         />
       </TabItem>
     </TabView>

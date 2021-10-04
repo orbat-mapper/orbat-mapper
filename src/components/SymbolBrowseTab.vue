@@ -48,6 +48,68 @@
           </button>
         </div>
       </div>
+      <p>Modifier 1</p>
+      <div class="mt-4 grid grid-cols-3 gap-x-2 gap-y-4 p-1">
+        <button
+          type="button"
+          v-for="{ sidc, text, code } in mod1Items"
+          :key="sidc"
+          @click="mod1V = code"
+          class="
+            border border-transparent
+            rounded
+            p-4
+            flex flex-col
+            items-center
+            justify-start
+            w-full
+            hover:border-gray-500
+          "
+        >
+          <MilSymbol :size="32" :sidc="sidc" />
+          <p
+            class="
+              mt-1
+              text-sm text-center text-gray-900
+              max-w-full
+              overflow-hidden
+            "
+          >
+            {{ text }}
+          </p>
+        </button>
+      </div>
+      <p>Modifier 2</p>
+      <div class="mt-4 grid grid-cols-3 gap-x-2 gap-y-4 p-1">
+        <button
+          type="button"
+          v-for="{ sidc, text, code } in mod2Items"
+          :key="sidc"
+          @click="mod2V = code"
+          class="
+            border border-transparent
+            rounded
+            p-4
+            flex flex-col
+            items-center
+            justify-start
+            w-full
+            hover:border-gray-500
+          "
+        >
+          <MilSymbol :size="32" :sidc="sidc" />
+          <p
+            class="
+              mt-1
+              text-sm text-center text-gray-900
+              max-w-full
+              overflow-hidden
+            "
+          >
+            {{ text }}
+          </p>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -57,6 +119,7 @@ import SymbolCodeSelect from "./SymbolCodeSelect.vue";
 import { computed, defineComponent, PropType } from "vue";
 import { useVModel } from "@vueuse/core";
 import { SymbolItem } from "../types/constants";
+import { groupBy } from "../utils";
 
 export default defineComponent({
   name: "SymbolBrowseTab",
@@ -64,25 +127,27 @@ export default defineComponent({
   props: {
     iconValue: String,
     symbolSetValue: String,
+    mod1Value: String,
+    mod2Value: String,
     icons: { type: Array as PropType<SymbolItem[]>, required: true },
     symbolSets: { type: Array as PropType<SymbolItem[]>, required: true },
+    mod1Items: { type: Array as PropType<SymbolItem[]>, required: true },
+    mod2Items: { type: Array as PropType<SymbolItem[]>, required: true },
   },
-  emits: ["update:iconValue", "update:symbolSetValue"],
+  emits: [
+    "update:iconValue",
+    "update:symbolSetValue",
+    "update:mod1Value",
+    "update:mod2Value",
+  ],
   setup(props) {
     const iconV = useVModel(props, "iconValue");
     const symbolSetV = useVModel(props, "symbolSetValue");
-    const iconsByEntity = computed(() => {
-      const mm = new Map();
-      props.icons.forEach((v) => {
-        const l = mm.get(v.entity) || [];
-        l.push(v);
-        mm.set(v.entity, l);
-      });
+    const mod1V = useVModel(props, "mod1Value");
+    const mod2V = useVModel(props, "mod2Value");
+    const iconsByEntity = computed(() => groupBy(props.icons, "entity"));
 
-      return mm;
-    });
-
-    return { iconsByEntity, iconV, symbolSetV };
+    return { iconsByEntity, iconV, symbolSetV, mod1V, mod2V };
   },
 });
 </script>
