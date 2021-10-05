@@ -111,10 +111,14 @@ export function useSymbolItems(sidc: Ref<string>) {
 
   const symbolSets = computed(() => {
     const symbSets = Object.entries(symbology.value || {}).map(([k, v]) => {
+      const iconValue =
+        k === CONTROL_MEASURE_SYMBOLSET_VALUE
+          ? "00001602050000"
+          : "00000000000000";
       return {
         code: k,
         text: v.name,
-        sidc: "100" + sidValue.value + k + "00000000000000",
+        sidc: "100" + sidValue.value + k + iconValue,
       } as SymbolItem;
     });
     symbSets.sort((a, b) => +a.code - +b.code);
