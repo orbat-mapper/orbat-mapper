@@ -1,16 +1,23 @@
 <template>
   <div class="min-h-[30rem]">
-    <SymbolCodeSelect
-      v-model="symbolSetV"
-      label="Symbol set"
-      :items="symbolSets"
-    />
+    <SymbolCodeSelect v-model="symbolSetV" :items="symbolSets" />
 
-    <div class="overflow-auto max-h-[40rem] mt-2">
+    <div class="overflow-auto max-h-[40rem] mt-4">
       <div v-for="[entity, entityIcons] in iconsByEntity" class="relative">
-        <p class="text-gray-900 font-medium bg-gray-200 p-2 sticky top-0">
+        <h3
+          class="
+            border-t border-b border-gray-200
+            text-gray-600 text-sm
+            font-medium
+            bg-gray-50
+            p-2
+            px-4
+            sticky
+            top-0
+          "
+        >
           {{ entity }}
-        </p>
+        </h3>
         <div class="mt-4 grid grid-cols-3 gap-x-2 gap-y-4 p-1">
           <button
             type="button"
@@ -26,7 +33,7 @@
             class="
               border border-transparent
               rounded
-              p-4
+              p-3
               flex flex-col
               items-center
               justify-start
@@ -34,12 +41,13 @@
               hover:border-gray-500
             "
           >
-            <MilSymbol :size="32" :sidc="sidc" />
+            <MilSymbol :size="symbolSize" :sidc="sidc" />
             <p
               class="
                 mt-1
                 text-sm text-center text-gray-900
                 max-w-full
+                break-words
                 overflow-hidden
               "
             >
@@ -48,7 +56,20 @@
           </button>
         </div>
       </div>
-      <p>Modifier 1</p>
+      <h3
+        class="
+          border-t border-b border-gray-200
+          text-gray-600 text-sm
+          font-medium
+          bg-gray-50
+          p-2
+          px-4
+          sticky
+          top-0
+        "
+      >
+        Modifier 1
+      </h3>
       <div class="mt-4 grid grid-cols-3 gap-x-2 gap-y-4 p-1">
         <button
           type="button"
@@ -66,20 +87,34 @@
             hover:border-gray-500
           "
         >
-          <MilSymbol :size="32" :sidc="sidc" />
+          <MilSymbol :size="symbolSize" :sidc="sidc" />
           <p
             class="
               mt-1
               text-sm text-center text-gray-900
               max-w-full
               overflow-hidden
+              break-words
             "
           >
             {{ text }}
           </p>
         </button>
       </div>
-      <p>Modifier 2</p>
+      <p
+        class="
+          border-t border-b border-gray-200
+          text-gray-600 text-sm
+          font-medium
+          bg-gray-50
+          p-2
+          px-4
+          sticky
+          top-0
+        "
+      >
+        Modifier 2
+      </p>
       <div class="mt-4 grid grid-cols-3 gap-x-2 gap-y-4 p-1">
         <button
           type="button"
@@ -97,13 +132,14 @@
             hover:border-gray-500
           "
         >
-          <MilSymbol :size="32" :sidc="sidc" />
+          <MilSymbol :size="symbolSize" :sidc="sidc" />
           <p
             class="
               mt-1
               text-sm text-center text-gray-900
               max-w-full
               overflow-hidden
+              break-words
             "
           >
             {{ text }}
@@ -133,6 +169,7 @@ export default defineComponent({
     symbolSets: { type: Array as PropType<SymbolItem[]>, required: true },
     mod1Items: { type: Array as PropType<SymbolItem[]>, required: true },
     mod2Items: { type: Array as PropType<SymbolItem[]>, required: true },
+    symbolSize: { type: Number, default: 32 },
   },
   emits: [
     "update:iconValue",
