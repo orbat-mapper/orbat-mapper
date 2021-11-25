@@ -17,7 +17,7 @@
     "@headlessui/vue": "^1.4.1",
     "@heroicons/vue": "^1.0.4",
     "@popperjs/core": "^2.10.1",
-    "@vueuse/core": "^6.4.1",
+    "@vueuse/core": "^7.1.1",
     "dayjs": "^1.10.7",
     "file-saver": "^2.0.5",
     "formatcoords": "^1.1.3",
