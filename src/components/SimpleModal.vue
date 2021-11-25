@@ -10,17 +10,7 @@
       :initialFocus="initialFocus"
     >
       <div
-        class="
-          flex
-          items-start
-          justify-center
-          min-h-screen
-          pt-4
-          px-4
-          pb-20
-          text-center
-          sm:block sm:p-0
-        "
+        class="flex items-start justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
       >
         <TransitionChild
           as="template"
@@ -52,25 +42,7 @@
           leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         >
           <div
-            class="
-              inline-block
-              align-bottom
-              bg-white
-              rounded-lg
-              px-4
-              pt-5
-              pb-4
-              text-left
-              overflow-hidden
-              shadow-xl
-              transform
-              transition-all
-              sm:my-8
-              md:my-16
-              sm:align-middle sm:max-w-lg
-              w-full
-              sm:p-6
-            "
+            class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 md:my-16 sm:align-middle sm:max-w-lg w-full sm:p-6"
           >
             <div class="">
               <div class="mt-3 text-center sm:mt-0 sm:ml-2 sm:text-left">
@@ -86,16 +58,7 @@
             <div class="sm:block absolute top-0 right-0 pt-4 pr-4">
               <button
                 type="button"
-                class="
-                  bg-white
-                  rounded-md
-                  text-gray-400
-                  hover:text-gray-500
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-offset-2
-                  focus:ring-indigo-500
-                "
+                class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 @click="open = false"
               >
                 <span class="sr-only">Close</span>

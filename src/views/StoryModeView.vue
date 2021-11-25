@@ -5,24 +5,7 @@
       <button
         type="button"
         @click="toggleSidebar()"
-        class="
-          z-20
-          fixed
-          top-2
-          right-4
-          bg-white bg-opacity-75
-          inline-flex
-          items-center
-          justify-center
-          p-2
-          rounded-md
-          text-gray-500
-          hover:text-gray-500 hover:bg-gray-100
-          focus:outline-none
-          focus:ring-2
-          focus:ring-offset-2
-          focus:ring-indigo-500
-        "
+        class="z-20 fixed top-2 right-4 bg-white bg-opacity-75 inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
         <span class="sr-only">Open main menu</span>
         <MenuIcon
@@ -35,18 +18,7 @@
     </header>
     <div class="md:flex-auto md:min-h-0 md:flex">
       <section
-        class="
-          w-full
-          md:h-full
-          sticky
-          md:static
-          top-0
-          h-[45vh]
-          bg-white
-          z-10
-          shadow-md
-          md:shadow-none
-        "
+        class="w-full md:h-full sticky md:static top-0 h-[45vh] bg-white z-10 shadow-md md:shadow-none"
       >
         <MapContainer @ready="onMapReady" />
       </section>

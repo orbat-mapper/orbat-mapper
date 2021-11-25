@@ -41,14 +41,7 @@
       />
       <div
         v-if="!group?.units.length"
-        class="
-          p-8
-          border-2
-          mr-4
-          border-gray-300 border-dashed
-          flex
-          justify-center
-        "
+        class="p-8 border-2 mr-4 border-gray-300 border-dashed flex justify-center"
       >
         <SecondaryButton @click="addGroupUnit(group)"
           >Add root unit

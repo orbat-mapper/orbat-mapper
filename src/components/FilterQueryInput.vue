@@ -1,15 +1,7 @@
 <template>
   <div class="relative rounded-md shadow-sm">
     <div
-      class="
-        absolute
-        inset-y-0
-        left-0
-        pl-3
-        flex
-        items-center
-        pointer-events-none
-      "
+      class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
     >
       <FilterVariantPlus
         v-if="hasFilter"
@@ -21,30 +13,13 @@
     <input
       v-model="localValue"
       type="text"
-      class="
-        focus:ring-indigo-500 focus:border-indigo-500
-        block
-        w-full
-        pl-10
-        pr-10
-        sm:text-sm
-        border-gray-300
-        rounded-md
-      "
+      class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-10 sm:text-sm border-gray-300 rounded-md"
       placeholder="Filter"
       v-bind="$attrs"
     />
     <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
       <button
-        class="
-          rounded-md
-          text-gray-400
-          hover:text-gray-700
-          focus:outline-none
-          focus:ring-2
-          focus:ring-offset-2
-          focus:ring-indigo-500
-        "
+        class="rounded-md text-gray-400 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         type="button"
         @click="localValue = ''"
       >
@@ -54,15 +29,7 @@
         v-model="hasLocationFilter"
         title="Toggle location filter"
         @click="hasLocationFilter = !hasLocationFilter"
-        class="
-          rounded-md
-          text-gray-400
-          hover:text-gray-700
-          focus:outline-none
-          focus:ring-2
-          focus:ring-offset-2
-          focus:ring-indigo-500
-        "
+        class="rounded-md text-gray-400 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
         <CrosshairsOff
           v-if="hasLocationFilter"

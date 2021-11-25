@@ -13,19 +13,7 @@
         :value="inputValue"
         @input="updateValue"
         name="search-field"
-        class="
-          block
-          w-full
-          h-full
-          pl-8
-          pr-3
-          py-2
-          border-transparent
-          text-gray-900
-          placeholder-gray-500
-          focus:outline-none focus:ring-0 focus:border-transparent
-          sm:text-base
-        "
+        class="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-transparent sm:text-base"
         autocomplete="off"
         spellcheck="false"
         :placeholder="placeholder"

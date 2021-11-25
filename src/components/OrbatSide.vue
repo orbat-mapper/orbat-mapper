@@ -2,19 +2,7 @@
   <Disclosure v-slot="{ open }" default-open>
     <section class="pl-6">
       <header
-        class="
-          flex
-          items-center
-          justify-between
-          relative
-          block
-          -ml-6
-          pl-6
-          bg-gray-200
-          border-b-2 border-t-2
-          py-1
-          border-gray-300
-        "
+        class="flex items-center justify-between relative block -ml-6 pl-6 bg-gray-200 border-b-2 border-t-2 py-1 border-gray-300"
       >
         <DisclosureButton
           class="w-full text-left flex items-center justify-between"

@@ -4,14 +4,7 @@
     <div class="mt-4">
       <div v-for="category in shortcuts">
         <h4
-          class="
-            text-base
-            font-medium
-            text-gray-900
-            border-b-2
-            pb-1
-            border-gray-300
-          "
+          class="text-base font-medium text-gray-900 border-b-2 pb-1 border-gray-300"
         >
           {{ category.label }}
         </h4>

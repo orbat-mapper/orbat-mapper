@@ -37,13 +37,7 @@
         </template>
       </TabView>
       <footer
-        class="
-          bg-gray-200
-          flex-shrink-0
-          border-t border-gray-300
-          flex
-          items-center
-        "
+        class="bg-gray-200 flex-shrink-0 border-t border-gray-300 flex items-center"
       >
         <div class="flex flex-col space-y-2">
           <router-link to="/" class="ml-2">

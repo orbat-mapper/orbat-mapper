@@ -21,36 +21,11 @@
 
           <div class="relative" v-if="hits?.length && hitsIsOpen" ref="hitsRef">
             <ul
-              class="
-                absolute
-                z-10
-                mt-1
-                w-full
-                bg-white
-                shadow-2xl
-                max-h-56
-                border border-gray-400
-                rounded-md
-                py-1
-                text-base
-                ring-1 ring-black ring-opacity-5
-                overflow-auto
-                focus:outline-none
-                sm:text-sm
-                divide-y divide-gray-100
-              "
+              class="absolute z-10 mt-1 w-full bg-white shadow-2xl max-h-56 border border-gray-400 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm divide-y divide-gray-100"
             >
               <li
                 v-for="(item, index) in hits"
-                class="
-                  text-sm
-                  p-2
-                  py-3
-                  flex
-                  items-center
-                  cursor-default
-                  hover:bg-gray-200
-                "
+                class="text-sm p-2 py-3 flex items-center cursor-default hover:bg-gray-200"
                 tabindex="-1"
                 :class="{ 'bg-gray-200': index === currentIndex }"
                 :key="item.sidc"

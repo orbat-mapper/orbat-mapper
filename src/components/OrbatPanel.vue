@@ -1,15 +1,7 @@
 <template>
   <div>
     <p
-      class="
-        pl-6
-        pr-2
-        text-xs
-        font-medium
-        text-gray-500
-        uppercase
-        tracking-wider
-      "
+      class="pl-6 pr-2 text-xs font-medium text-gray-500 uppercase tracking-wider"
     >
       Order of battle
     </p>

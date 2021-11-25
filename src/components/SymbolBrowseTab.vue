@@ -5,16 +5,7 @@
     <div class="overflow-auto max-h-[40rem] mt-4">
       <div v-for="[entity, entityIcons] in iconsByEntity" class="relative">
         <h3
-          class="
-            border-t border-b border-gray-200
-            text-gray-600 text-sm
-            font-medium
-            bg-gray-50
-            p-2
-            px-4
-            sticky
-            top-0
-          "
+          class="border-t border-b border-gray-200 text-gray-600 text-sm font-medium bg-gray-50 p-2 px-4 sticky top-0"
         >
           {{ entity }}
         </h3>
@@ -30,26 +21,11 @@
             } in entityIcons"
             :key="sidc"
             @click="iconV = code"
-            class="
-              border border-transparent
-              rounded
-              p-3
-              flex flex-col
-              items-center
-              justify-start
-              w-full
-              hover:border-gray-500
-            "
+            class="border border-transparent rounded p-3 flex flex-col items-center justify-start w-full hover:border-gray-500"
           >
             <MilSymbol :size="symbolSize" :sidc="sidc" />
             <p
-              class="
-                mt-1
-                text-sm text-center text-gray-900
-                max-w-full
-                break-words
-                overflow-hidden
-              "
+              class="mt-1 text-sm text-center text-gray-900 max-w-full break-words overflow-hidden"
             >
               {{ entitySubtype || entityType || entity }}
             </p>
@@ -57,16 +33,7 @@
         </div>
       </div>
       <h3
-        class="
-          border-t border-b border-gray-200
-          text-gray-600 text-sm
-          font-medium
-          bg-gray-50
-          p-2
-          px-4
-          sticky
-          top-0
-        "
+        class="border-t border-b border-gray-200 text-gray-600 text-sm font-medium bg-gray-50 p-2 px-4 sticky top-0"
       >
         Modifier 1
       </h3>
@@ -76,42 +43,18 @@
           v-for="{ sidc, text, code } in mod1Items"
           :key="sidc"
           @click="mod1V = code"
-          class="
-            border border-transparent
-            rounded
-            p-4
-            flex flex-col
-            items-center
-            justify-start
-            w-full
-            hover:border-gray-500
-          "
+          class="border border-transparent rounded p-4 flex flex-col items-center justify-start w-full hover:border-gray-500"
         >
           <MilSymbol :size="symbolSize" :sidc="sidc" />
           <p
-            class="
-              mt-1
-              text-sm text-center text-gray-900
-              max-w-full
-              overflow-hidden
-              break-words
-            "
+            class="mt-1 text-sm text-center text-gray-900 max-w-full overflow-hidden break-words"
           >
             {{ text }}
           </p>
         </button>
       </div>
       <p
-        class="
-          border-t border-b border-gray-200
-          text-gray-600 text-sm
-          font-medium
-          bg-gray-50
-          p-2
-          px-4
-          sticky
-          top-0
-        "
+        class="border-t border-b border-gray-200 text-gray-600 text-sm font-medium bg-gray-50 p-2 px-4 sticky top-0"
       >
         Modifier 2
       </p>
@@ -121,26 +64,11 @@
           v-for="{ sidc, text, code } in mod2Items"
           :key="sidc"
           @click="mod2V = code"
-          class="
-            border border-transparent
-            rounded
-            p-4
-            flex flex-col
-            items-center
-            justify-start
-            w-full
-            hover:border-gray-500
-          "
+          class="border border-transparent rounded p-4 flex flex-col items-center justify-start w-full hover:border-gray-500"
         >
           <MilSymbol :size="symbolSize" :sidc="sidc" />
           <p
-            class="
-              mt-1
-              text-sm text-center text-gray-900
-              max-w-full
-              overflow-hidden
-              break-words
-            "
+            class="mt-1 text-sm text-center text-gray-900 max-w-full overflow-hidden break-words"
           >
             {{ text }}
           </p>

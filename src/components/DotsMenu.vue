@@ -1,17 +1,7 @@
 <template>
   <Menu as="div">
     <MenuButton
-      class="
-        w-8
-        h-8
-        inline-flex
-        items-center
-        justify-center
-        text-gray-400
-        rounded-full
-        hover:text-gray-500
-        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-army2
-      "
+      class="w-8 h-8 inline-flex items-center justify-center text-gray-400 rounded-full hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-army2"
     >
       <span class="sr-only">Open options</span>
       <DotsVerticalIcon class="w-5 h-5" aria-hidden="true" />
@@ -25,22 +15,7 @@
       leave-to-class="transform opacity-0 scale-95"
     >
       <MenuItems
-        class="
-          z-20
-          mx-3
-          origin-top-right
-          absolute
-          right-10
-          top-3
-          w-48
-          mt-1
-          rounded-md
-          shadow-lg
-          bg-white
-          ring-1 ring-black ring-opacity-5
-          divide-y divide-gray-200
-          focus:outline-none
-        "
+        class="z-20 mx-3 origin-top-right absolute right-10 top-3 w-48 mt-1 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-200 focus:outline-none"
       >
         <div class="py-1">
           <MenuItem

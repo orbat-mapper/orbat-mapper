@@ -6,33 +6,14 @@
         <li
           v-for="scenario in scenarios"
           :key="scenario.name"
-          class="
-            col-span-1
-            flex flex-col
-            text-center
-            bg-white
-            rounded-lg
-            shadow
-            divide-y divide-gray-200
-            hover:border-army
-            border
-            overflow-hidden
-            focus-within:border-blue-800
-          "
+          class="col-span-1 flex flex-col text-center bg-white rounded-lg shadow divide-y divide-gray-200 hover:border-army border overflow-hidden focus-within:border-blue-800"
         >
           <router-link
             :to="getScenarioTo(scenario.id)"
             class="flex-1 flex flex-col"
           >
             <img
-              class="
-                w-full
-                h-52
-                flex-shrink-0
-                mx-auto
-                bg-black
-                object-cover object-top
-              "
+              class="w-full h-52 flex-shrink-0 mx-auto bg-black object-cover object-top"
               :src="scenario.imageUrl"
               alt=""
             />
@@ -51,20 +32,7 @@
           <button
             type="button"
             @click="newScenario"
-            class="
-              relative
-              block
-              w-full
-              border-2 border-gray-300 border-dashed
-              rounded-lg
-              p-12
-              text-center
-              hover:border-gray-400
-              focus:outline-none
-              focus:ring-2
-              focus:ring-offset-2
-              focus:ring-indigo-500
-            "
+            class="relative block w-full border-2 border-gray-300 border-dashed rounded-lg p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <svg
               class="mx-auto h-12 w-12 text-gray-400"

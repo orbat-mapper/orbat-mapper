@@ -1,16 +1,7 @@
 <template>
   <li :id="'o-' + unit.id">
     <div
-      class="
-        flex
-        items-center
-        hover:bg-gray-200
-        py-2
-        pl-2
-        group
-        justify-between
-        relative
-      "
+      class="flex items-center hover:bg-gray-200 py-2 pl-2 group justify-between relative"
       @dblclick="isOpen = !isOpen"
       @click="onUnitClick"
     >
@@ -23,14 +14,7 @@
             @dragenter.prevent="isOpen = true"
           >
             <ChevronRightIcon
-              class="
-                h-6
-                w-6
-                transform
-                transition-transform
-                group-hover:text-gray-900
-                text-gray-500
-              "
+              class="h-6 w-6 transform transition-transform group-hover:text-gray-900 text-gray-500"
               :class="{
                 'rotate-90': isOpen,
                 'text-red-600': hasActiveChildren,

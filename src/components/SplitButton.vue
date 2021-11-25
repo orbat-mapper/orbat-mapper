@@ -3,50 +3,14 @@
     <button
       type="button"
       @click="onClick(activeItem)"
-      class="
-        relative
-        inline-flex
-        items-center
-        px-4
-        py-2
-        rounded-l-md
-        border border-gray-300
-        bg-white
-        text-sm
-        font-medium
-        text-gray-700
-        hover:bg-gray-50
-        focus:z-10
-        focus:outline-none
-        focus:ring-1
-        focus:ring-indigo-500
-        focus:border-indigo-500
-      "
+      class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
     >
       {{ activeItem.label }}
     </button>
     <Menu as="span" class="-ml-px relative block">
       <MenuButton
         ref="trigger"
-        class="
-          relative
-          inline-flex
-          items-center
-          px-2
-          py-2
-          rounded-r-md
-          border border-gray-300
-          bg-white
-          text-sm
-          font-medium
-          text-gray-500
-          hover:bg-gray-50
-          focus:z-10
-          focus:outline-none
-          focus:ring-1
-          focus:ring-indigo-500
-          focus:border-indigo-500
-        "
+        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
       >
         <span class="sr-only">Open options</span>
         <ChevronDownIcon class="h-5 w-5" aria-hidden="true" />
@@ -62,18 +26,7 @@
         <teleport to="body">
           <MenuItems
             ref="container"
-            class="
-              origin-top-right
-              absolute
-              right-0
-              w-56
-              rounded-md
-              shadow-lg
-              bg-white
-              ring-1 ring-black ring-opacity-5
-              focus:outline-none
-              z-20
-            "
+            class="origin-top-right absolute right-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-20"
           >
             <div class="py-1">
               <MenuItem
