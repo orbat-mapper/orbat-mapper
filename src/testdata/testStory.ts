@@ -20,7 +20,7 @@ export const content = `# Invasion of South Georgia
 ::: scroll-step
 [From Wikipedia, the free encyclopedia](https://en.wikipedia.org/wiki/Invasion_of_South_Georgia)
 
-The Argentine invasion had begun on 19 March, when a group of civilian scrap metal workers arrived at Leith Harbour on board the transport ship ARA Bahía Buen Suceso without the required landing clearance and then raised the Argentine flag. The scrap workers had been infiltrated by Argentine marines posing as civilian scientists.
+The conflict begun on 19 March, when a group of civilian scrap metal workers arrived at Leith Harbour on board the transport ship ARA Bahía Buen Suceso without the required landing clearance and then raised the Argentine flag.
 
 [![Leith whaling station](https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Leith_whaling_station.JPG/1024px-Leith_whaling_station.JPG)](https://commons.wikimedia.org/wiki/File:Leith_whaling_station.JPG "Markabq, Public domain, via Wikimedia Commons")
 :::
