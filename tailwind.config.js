@@ -1,9 +1,7 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
-  purge: ["src/**/*.html", "src/**/*.vue", "src/**/*.js", "**/*.html"],
-  darkMode: false, // or 'media' or 'class'
-  mode: "jit",
+  content: ["src/**/*.html", "src/**/*.vue", "src/**/*.js", "**/*.html"],
   theme: {
     extend: {
       fontFamily: {
@@ -14,9 +12,6 @@ module.exports = {
         army2: "#a5b646",
       },
     },
-  },
-  variants: {
-    extend: {},
   },
   plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],
 };
