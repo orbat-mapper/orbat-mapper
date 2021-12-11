@@ -14,6 +14,12 @@
         <p>
           <router-link to="/storymode" class="">Story mode test</router-link>
         </p>
+
+        <p>
+          <router-link :to="{ name: ORBAT_CHART_ROUTE }" class=""
+            >Orbat chart test</router-link
+          >
+        </p>
       </ProseSection>
       <LandingPageScenarios />
 
@@ -77,6 +83,7 @@
 import ProseSection from "../components/ProseSection.vue";
 import LandingPageScenarios from "./LandingPageScenarios.vue";
 import { Github as GithubIcon } from "mdue";
+import { ORBAT_CHART_ROUTE } from "../routes";
 
 export default {
   components: {
@@ -85,7 +92,7 @@ export default {
     GithubIcon,
   },
   setup() {
-    return {};
+    return { ORBAT_CHART_ROUTE };
   },
 };
 </script>

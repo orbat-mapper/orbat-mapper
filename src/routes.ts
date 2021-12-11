@@ -5,10 +5,13 @@ import LandingPage from "./views/LandingPage.vue";
 
 const MainView = () => import("./views/MainView.vue");
 const StoryModeView = () => import("./views/StoryModeView.vue");
+const OrbatChartView = () => import("./modules/orbatchart/OrbatChartView.vue");
 
 export const SCENARIO_ROUTE = "ScenarioRoute";
 export const LANDING_PAGE_ROUTE = "LandingPageRoute";
 export const STORY_MODE_ROUTE = "StoryModeRoute";
+export const ORBAT_CHART_ROUTE = "OrbatChartRoute";
+
 const routes = [
   {
     path: "/scenario",
@@ -26,6 +29,15 @@ const routes = [
       NProgress.start();
     },
   },
+  {
+    path: "/chart",
+    name: ORBAT_CHART_ROUTE,
+    component: OrbatChartView,
+    beforeEnter: (to, from) => {
+      NProgress.start();
+    },
+  },
+
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];
 
