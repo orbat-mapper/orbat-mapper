@@ -251,7 +251,7 @@ class OrbatChart {
     this.svg.selectAll(".select-rect").on("click", null);
   }
 
-  toSVG(size: Partial<Size>, parentElement: HTMLElement): Element {
+  toSVG(size: Partial<Size>, parentElement: HTMLElement): SVGElement {
     this.width = size.width || DEFAULT_CHART_WIDTH;
     this.height = size.height || DEFAULT_CHART_HEIGHT;
     let renderedChart = this._createSvgElement(parentElement);
@@ -266,13 +266,14 @@ class OrbatChart {
     this._doNodeLayout(renderedChart);
     this._drawConnectors(renderedChart);
     this.renderedChart = renderedChart;
-    return this.svg.node() as Element;
+    return this.svg.node() as SVGElement;
   }
 
   highlightLevel(levelNumber: number) {
     let layer = select("#o-highlight-layer");
     let groupElement = select(`#o-level-${levelNumber}`) as GElementSelection;
-    const bbox = groupElement.node()!.getBBox();
+    const bbox = groupElement.node()?.getBBox();
+    if (!bbox) return;
     let offset = 20;
     let tmp = layer
       .append("rect")
