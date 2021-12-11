@@ -1,12 +1,19 @@
 <script lang="ts">
-import { defineComponent, h, onMounted, onUnmounted, PropType, ref } from "vue";
+import {
+  defineComponent,
+  onMounted,
+  onUnmounted,
+  PropType,
+  ref,
+  watchEffect,
+} from "vue";
 import OrbatChart, {
   ChartOrientation,
+  DEFAULT_OPTIONS,
+  LevelLayout,
   Unit,
   UnitLevelDistance,
 } from "../../orbatchart";
-import { DEFAULT_OPTIONS } from "../../orbatchart";
-import { LevelLayout } from "../../orbatchart";
 
 export default defineComponent({
   name: "OrbatChart",
@@ -37,36 +44,16 @@ export default defineComponent({
     highlightedLevels: { type: Array, default: () => [] },
   },
 
-  data: () => ({
-    resizeTimeout: null,
-    width: 600,
-    height: 600,
-    isMounted: false,
-  }),
-
   setup(props, { emit }) {
     const chartRootElement = ref();
+    const width = ref(600);
+    const height = ref(600);
+    let orbatChart: OrbatChart;
 
-    let orbatChart = new OrbatChart(
-      props.unit,
-      {
-        maxLevels: props.maxLevels,
-        debug: props.debug,
-        symbolSize: props.symbolSize,
-        onClick: onClick,
-        onLevelClick: onLevelClick,
-        onLevelGroupClick: onLevelGroupClick,
-        connectorOffset: props.connectorOffset,
-        orientation: props.orientation,
-        unitLevelDistance: props.unitLevelDistance,
-        lastLevelLayout: props.lastLevelLayout,
-        levelPadding: props.levelPadding,
-        treeOffset: props.treeOffset,
-        stackedOffset: props.stackedOffset,
-        lineWidth: props.lineWidth,
-      },
-      props.specificOptions || {}
-    );
+    onMounted(() => {
+      width.value = chartRootElement.value?.clientWidth || 600;
+      height.value = chartRootElement.value?.clientHeight || 600;
+    });
 
     function onClick(unit: Unit) {
       emit("unitclick", unit);
@@ -84,8 +71,33 @@ export default defineComponent({
       orbatChart.highlightLevels([...value]);
     }
 
-    onMounted(() => {
-      orbatChart.toSVG({}, chartRootElement.value);
+    watchEffect(() => {
+      if (!chartRootElement.value) return;
+      if (orbatChart) orbatChart.cleanup();
+      orbatChart = new OrbatChart(
+        props.unit,
+        {
+          maxLevels: props.maxLevels,
+          debug: props.debug,
+          symbolSize: props.symbolSize,
+          onClick: onClick,
+          onLevelClick: onLevelClick,
+          onLevelGroupClick: onLevelGroupClick,
+          connectorOffset: props.connectorOffset,
+          orientation: props.orientation,
+          unitLevelDistance: props.unitLevelDistance,
+          lastLevelLayout: props.lastLevelLayout,
+          levelPadding: props.levelPadding,
+          treeOffset: props.treeOffset,
+          stackedOffset: props.stackedOffset,
+          lineWidth: props.lineWidth,
+        },
+        props.specificOptions || {}
+      );
+      orbatChart.toSVG(
+        { width: width.value, height: height.value },
+        chartRootElement.value
+      );
       if (props.interactive) orbatChart.makeInteractive();
     });
 
@@ -95,18 +107,6 @@ export default defineComponent({
 
     return { chartRootElement };
   },
-
-  mounted() {
-    this.isMounted = true;
-    this.width = this.$el.clientWidth;
-    this.height = this.$el.clientHeight;
-  },
-
-  // watch: {
-  //   highlightedLevels(value) {
-  //     this.handleLevelHighlight(value);
-  //   },
-  // },
 });
 </script>
 
@@ -117,7 +117,7 @@ export default defineComponent({
 <style>
 .orbat-chart {
   width: 100%;
-  height: 80%;
+  height: 100%;
   padding: 0;
   margin: 0;
 }
