@@ -1,6 +1,7 @@
 <template>
   <main class="w-screen h-screen relative">
     <OrbatChart
+      v-if="isReady"
       :unit="rootUnit"
       :debug="debug"
       :last-level-layout="lastLevelLayout"
@@ -20,6 +21,7 @@ import ToggleField from "../../components/ToggleField.vue";
 import { useScenarioStore } from "../../stores/scenarioStore";
 import { useScenarioIO } from "../../stores/scenarioIO";
 import { LevelLayout } from "./orbatchart";
+import { ORBAT1 } from "./orbatchart/test/testorbats";
 
 export default defineComponent({
   name: "OrbatChartView",
@@ -30,15 +32,16 @@ export default defineComponent({
     const scenarioIO = useScenarioIO();
     scenarioIO.loadDemoScenario("falkland82");
 
-    const rootUnit = computed(() =>
-      scenarioStore.getUnitById("yeyNm2QTCh_yivrfpnv0N")
+    const rootUnit = computed(
+      () => scenarioStore.getUnitById("yeyNm2QTCh_yivrfpnv0N") || ORBAT1
     );
 
     const lastLevelLayout = LevelLayout.TreeRight;
     const width = ref(1920 / 2);
     const height = ref(1080);
+    const isReady = computed(() => scenarioStore.isLoaded);
 
-    return { rootUnit, debug, lastLevelLayout, width, height };
+    return { rootUnit, debug, lastLevelLayout, width, height, isReady };
   },
 });
 </script>
