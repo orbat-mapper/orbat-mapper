@@ -42,18 +42,18 @@ export default defineComponent({
     specificOptions: { type: Object },
     interactive: { type: Boolean, default: false },
     highlightedLevels: { type: Array, default: () => [] },
+    width: { type: Number, default: 600 },
+    height: { type: Number, default: 600 },
   },
 
   setup(props, { emit }) {
     const chartRootElement = ref();
-    const width = ref(600);
-    const height = ref(600);
     let orbatChart: OrbatChart;
 
-    onMounted(() => {
-      width.value = chartRootElement.value?.clientWidth || 600;
-      height.value = chartRootElement.value?.clientHeight || 600;
-    });
+    // onMounted(() => {
+    //   width.value = chartRootElement.value?.clientWidth || 600;
+    //   height.value =chartRootElement.value?.clientHeight || 600;
+    // });
 
     function onClick(unit: Unit) {
       emit("unitclick", unit);
@@ -95,7 +95,7 @@ export default defineComponent({
         props.specificOptions || {}
       );
       orbatChart.toSVG(
-        { width: width.value, height: height.value },
+        { width: props.width, height: props.height },
         chartRootElement.value
       );
       if (props.interactive) orbatChart.makeInteractive();

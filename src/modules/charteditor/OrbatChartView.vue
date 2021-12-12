@@ -1,6 +1,12 @@
 <template>
   <main class="w-screen h-screen relative">
-    <OrbatChart :unit="rootUnit" :debug="debug"></OrbatChart>
+    <OrbatChart
+      :unit="rootUnit"
+      :debug="debug"
+      :last-level-layout="lastLevelLayout"
+      :width="width"
+      :height="height"
+    />
     <div class="absolute left-2 top-2">
       <ToggleField v-model="debug">Debug mode</ToggleField>
     </div>
@@ -8,17 +14,31 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { computed, defineComponent, ref } from "vue";
 import OrbatChart from "./OrbatChart.vue";
-import { ORBAT1 } from "./orbatchart/test/testorbats";
 import ToggleField from "../../components/ToggleField.vue";
+import { useScenarioStore } from "../../stores/scenarioStore";
+import { useScenarioIO } from "../../stores/scenarioIO";
+import { LevelLayout } from "./orbatchart";
 
 export default defineComponent({
   name: "OrbatChartView",
   components: { ToggleField, OrbatChart },
   setup() {
     const debug = ref(false);
-    return { rootUnit: ORBAT1, debug };
+    const scenarioStore = useScenarioStore();
+    const scenarioIO = useScenarioIO();
+    scenarioIO.loadDemoScenario("falkland82");
+
+    const rootUnit = computed(() =>
+      scenarioStore.getUnitById("yeyNm2QTCh_yivrfpnv0N")
+    );
+
+    const lastLevelLayout = LevelLayout.TreeRight;
+    const width = ref(1920 / 2);
+    const height = ref(1080);
+
+    return { rootUnit, debug, lastLevelLayout, width, height };
   },
 });
 </script>
