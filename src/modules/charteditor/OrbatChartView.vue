@@ -10,7 +10,7 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import OrbatChart from "./OrbatChart.vue";
-import { ORBAT1 } from "../../orbatchart/test/testorbats";
+import { ORBAT1 } from "./orbatchart/test/testorbats";
 import ToggleField from "../../components/ToggleField.vue";
 
 export default defineComponent({

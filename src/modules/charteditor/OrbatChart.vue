@@ -13,7 +13,7 @@ import OrbatChart, {
   LevelLayout,
   Unit,
   UnitLevelDistance,
-} from "../../orbatchart";
+} from "./orbatchart";
 
 export default defineComponent({
   name: "OrbatChart",

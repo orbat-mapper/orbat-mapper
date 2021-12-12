@@ -5,7 +5,7 @@ import LandingPage from "./views/LandingPage.vue";
 
 const MainView = () => import("./views/MainView.vue");
 const StoryModeView = () => import("./views/StoryModeView.vue");
-const OrbatChartView = () => import("./modules/orbatchart/OrbatChartView.vue");
+const OrbatChartView = () => import("./modules/charteditor/OrbatChartView.vue");
 
 export const SCENARIO_ROUTE = "ScenarioRoute";
 export const LANDING_PAGE_ROUTE = "LandingPageRoute";
