@@ -181,6 +181,13 @@ export const useScenarioStore = defineStore("scenario", {
       return this.unitMap.get(id);
     },
 
+    getUnitByName(name: string): Unit | null {
+      for (const unit of this.unitMap.values()) {
+        if (unit.name === name) return unit;
+      }
+      return null;
+    },
+
     addUnit(unit: Unit, parent: Unit | SideGroup) {
       if (!unit.id) {
         unit.id = nanoid();
