@@ -13,7 +13,7 @@ import OrbatChart, {
 export default defineComponent({
   name: "OrbatChart",
   props: {
-    unit: { type: Object as PropType<Unit>, required: true },
+    unit: { type: Object as PropType<Unit> },
     maxLevels: { type: Number, default: 3 },
     debug: { type: Boolean, default: false },
     symbolSize: { type: Number, default: 32 },
@@ -69,7 +69,7 @@ export default defineComponent({
     }
 
     watchEffect(() => {
-      if (!chartRootElement.value) return;
+      if (!chartRootElement.value || !props.unit) return;
       if (orbatChart) orbatChart.cleanup();
       orbatChart = new OrbatChart(
         props.unit,

@@ -79,7 +79,7 @@ export interface UnitNodeInfo extends BasicUnitNode {
   rx: number;
 }
 
-export type OnUnitClickCallback = (unit: Unit) => void;
+export type OnUnitClickCallback = (unit: UnitNodeInfo) => void;
 export type OnLevelClickCallback = (levelNumber: number) => void;
 export type OnLevelGroupClickCallback = (parentId: string | number) => void;
 export type SymbolGenerator = (sidc: string, options: SymbolOptions) => Symbol;
