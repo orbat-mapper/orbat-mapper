@@ -8,7 +8,8 @@
         <p>
           Follow the development of
           <a href="https://github.com/kjellmf/orbat-mapper"
-            >ORBAT Mapper on GitHub <GithubIcon class="w-10 h-10 inline" /> </a
+            >ORBAT Mapper on GitHub
+            <GithubIcon class="w-10 h-10 inline" /> </a
           >.
         </p>
         <p>
@@ -17,8 +18,8 @@
 
         <p>
           <router-link :to="{ name: ORBAT_CHART_ROUTE }" class=""
-            >Orbat chart test</router-link
-          >
+            >Orbat chart test
+          </router-link>
         </p>
       </ProseSection>
       <LandingPageScenarios />
@@ -65,14 +66,24 @@
           </li>
         </ul>
 
+        <h3>Military history</h3>
+
         <p>
-          If you are interested in military history I highly recommend the site
+          If you are interested in WW2 history I highly recommend the site
           <a href="https://www.project44.ca/"
             >Project'44 the road to liberation</a
           >. Their
           <a href="https://map.project44.ca/">interactive WWII web map</a> and
           <a href="https://map.project44.ca/story-maps">story maps</a> are
           fantastic!
+        </p>
+
+        <p>
+          For those who are interested in Cold War history, Hans Boersma's site
+          <a href="https://www.orbat85.nl/"
+            >Netherlands Armed Forces ORDER OF BATTLE 1985</a
+          >
+          is a real treat.
         </p>
       </ProseSection>
     </main>
