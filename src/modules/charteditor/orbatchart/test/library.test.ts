@@ -1,13 +1,6 @@
-import {
-  ChartOrientation,
-  UnitNodeInfo,
-  SymbolGenerator,
-  Unit,
-  BasicUnitNode,
-} from "../index";
+import { ChartOrientation, DEFAULT_OPTIONS, OrbatChart, SymbolGenerator, Unit, } from "../index";
 import { ORBAT1 } from "./testorbats";
 import ms from "milsymbol";
-import { DEFAULT_OPTIONS, OrbatChart } from "../index";
 
 // @ts-ignore
 SVGElement.prototype.getBBox = () => {
@@ -44,7 +37,7 @@ describe("OrbatChart options", () => {
     expect(ob.options.symbolGenerator).toBeUndefined();
   });
 
-  it("override default values", () => {
+  it("overrides default values", () => {
     let ob = new OrbatChart(DUMMY_UNIT, { symbolSize: 13, maxLevels: 4 });
     expect(ob.options.symbolSize).toBe(13);
     expect(ob.options.connectorOffset).toBe(DEFAULT_OPTIONS.connectorOffset);
@@ -79,12 +72,12 @@ describe("Symbol generator", () => {
 });
 
 describe("OrbatChart orientation", () => {
-  it("default value is 'TOP'", () => {
+  it("has default value 'TOP'", () => {
     let ob = new OrbatChart(DUMMY_UNIT);
     expect(ob.options.orientation).toBe(ChartOrientation.Top);
   });
 
-  it("value can be changed", () => {
+  it("can be changed", () => {
     let ob = new OrbatChart(DUMMY_UNIT, {
       orientation: ChartOrientation.Bottom,
     });
