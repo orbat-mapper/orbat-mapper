@@ -7,6 +7,7 @@ import OrbatChart, {
   SymbolGenerator,
   Unit,
   UnitLevelDistance,
+  UnitNodeInfo,
 } from "./orbatchart";
 
 export default defineComponent({
@@ -40,6 +41,7 @@ export default defineComponent({
     height: { type: Number, default: 600 },
     symbolGenerator: { type: Function as PropType<SymbolGenerator> },
   },
+  emits: ["unitclick", "levelclick", "levelgroupclick"],
 
   setup(props, { emit }) {
     const chartRootElement = ref();
@@ -50,7 +52,7 @@ export default defineComponent({
     //   height.value =chartRootElement.value?.clientHeight || 600;
     // });
 
-    function onClick(unit: Unit) {
+    function onClick(unit: UnitNodeInfo) {
       emit("unitclick", unit);
     }
 

@@ -8,9 +8,12 @@
       :width="width"
       :height="height"
       :symbol-generator="symbolGenerator"
+      @unitclick="onUnitClick"
+      :interactive="isInteractive"
     />
-    <div class="absolute left-2 top-2">
+    <div class="absolute left-4 top-4 flex items-center space-x-4">
       <ToggleField v-model="debug">Debug mode</ToggleField>
+      <ToggleField v-model="isInteractive">Interactive</ToggleField>
     </div>
   </main>
 </template>
@@ -21,7 +24,7 @@ import OrbatChart from "./OrbatChart.vue";
 import ToggleField from "../../components/ToggleField.vue";
 import { useScenarioStore } from "../../stores/scenarioStore";
 import { useScenarioIO } from "../../stores/scenarioIO";
-import { LevelLayout } from "./orbatchart";
+import { LevelLayout, UnitNodeInfo } from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
 
@@ -30,6 +33,7 @@ export default defineComponent({
   components: { ToggleField, OrbatChart },
   setup() {
     const debug = ref(false);
+    const isInteractive = ref(false);
     const scenarioStore = useScenarioStore();
     const scenarioIO = useScenarioIO();
     scenarioIO.loadDemoScenario("falkland82");
@@ -44,6 +48,10 @@ export default defineComponent({
     const height = ref(1080);
     const isReady = computed(() => scenarioStore.isLoaded);
 
+    const onUnitClick = (unit: UnitNodeInfo) => {
+      console.log("Clicked on unit", unit.unit.name);
+    };
+
     return {
       rootUnit,
       debug,
@@ -52,6 +60,8 @@ export default defineComponent({
       height,
       isReady,
       symbolGenerator,
+      onUnitClick,
+      isInteractive,
     };
   },
 });
