@@ -7,6 +7,7 @@
       :last-level-layout="lastLevelLayout"
       :width="width"
       :height="height"
+      :symbol-generator="symbolGenerator"
     />
     <div class="absolute left-2 top-2">
       <ToggleField v-model="debug">Debug mode</ToggleField>
@@ -22,6 +23,7 @@ import { useScenarioStore } from "../../stores/scenarioStore";
 import { useScenarioIO } from "../../stores/scenarioIO";
 import { LevelLayout } from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
+import { symbolGenerator } from "../../symbology/milsymbwrapper";
 
 export default defineComponent({
   name: "OrbatChartView",
@@ -33,7 +35,8 @@ export default defineComponent({
     scenarioIO.loadDemoScenario("falkland82");
 
     const rootUnit = computed(
-      () => scenarioStore.getUnitById("yeyNm2QTCh_yivrfpnv0N") || ORBAT1
+      // () => scenarioStore.getUnitById("yeyNm2QTCh_yivrfpnv0N") || ORBAT1
+      () => scenarioStore.getUnitByName("3 Mech Inf Bde") || ORBAT1
     );
 
     const lastLevelLayout = LevelLayout.TreeRight;
@@ -41,7 +44,15 @@ export default defineComponent({
     const height = ref(1080);
     const isReady = computed(() => scenarioStore.isLoaded);
 
-    return { rootUnit, debug, lastLevelLayout, width, height, isReady };
+    return {
+      rootUnit,
+      debug,
+      lastLevelLayout,
+      width,
+      height,
+      isReady,
+      symbolGenerator,
+    };
   },
 });
 </script>

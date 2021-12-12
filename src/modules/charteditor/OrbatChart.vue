@@ -1,16 +1,10 @@
 <script lang="ts">
-import {
-  defineComponent,
-  onMounted,
-  onUnmounted,
-  PropType,
-  ref,
-  watchEffect,
-} from "vue";
+import { defineComponent, onUnmounted, PropType, ref, watchEffect } from "vue";
 import OrbatChart, {
   ChartOrientation,
   DEFAULT_OPTIONS,
   LevelLayout,
+  SymbolGenerator,
   Unit,
   UnitLevelDistance,
 } from "./orbatchart";
@@ -44,6 +38,7 @@ export default defineComponent({
     highlightedLevels: { type: Array, default: () => [] },
     width: { type: Number, default: 600 },
     height: { type: Number, default: 600 },
+    symbolGenerator: { type: Function as PropType<SymbolGenerator> },
   },
 
   setup(props, { emit }) {
@@ -77,6 +72,7 @@ export default defineComponent({
       orbatChart = new OrbatChart(
         props.unit,
         {
+          symbolGenerator: props.symbolGenerator,
           maxLevels: props.maxLevels,
           debug: props.debug,
           symbolSize: props.symbolSize,
