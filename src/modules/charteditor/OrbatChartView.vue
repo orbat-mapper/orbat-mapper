@@ -59,13 +59,13 @@ export default defineComponent({
     const scenarioIO = useScenarioIO();
 
     scenarioIO.loadDemoScenario("falkland82");
-
     whenever(
       () => scenarioStore.isLoaded,
       () => {
         rootUnit.value =
           scenarioStore.getUnitByName("3 Mech Inf Bde") || ORBAT1;
-      }
+      },
+      { immediate: true }
     );
 
     const lastLevelLayout = LevelLayout.TreeRight;

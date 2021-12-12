@@ -1,5 +1,12 @@
 <script lang="ts">
-import { defineComponent, onUnmounted, PropType, ref, watchEffect } from "vue";
+import {
+  defineComponent,
+  onBeforeUnmount,
+  onUnmounted,
+  PropType,
+  ref,
+  watchEffect,
+} from "vue";
 import OrbatChart, {
   ChartOrientation,
   DEFAULT_OPTIONS,
@@ -99,8 +106,8 @@ export default defineComponent({
       if (props.interactive) orbatChart.makeInteractive();
     });
 
-    onUnmounted(() => {
-      orbatChart.cleanup();
+    onBeforeUnmount(() => {
+      orbatChart?.cleanup();
     });
 
     return { chartRootElement };
