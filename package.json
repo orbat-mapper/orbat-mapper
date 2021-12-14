@@ -52,7 +52,7 @@
     "@types/markdown-it-container": "^2.0.4",
     "@types/nprogress": "^0.2.0",
     "@types/ol-ext": "npm:@siedlerchr/types-ol-ext@^1.2.0",
-    "@vitejs/plugin-vue": "^1.9.2",
+    "@vitejs/plugin-vue": "^2.0.1",
     "@vue/compiler-sfc": "^3.2.18",
     "@vue/vue3-jest": "^27.0.0-alpha.4",
     "autoprefixer": "^10.4.0",
