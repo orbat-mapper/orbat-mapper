@@ -25,7 +25,7 @@
           >
             <a
               href="#"
-              @click.stop="$emit('action', item.action)"
+              @click.stop="onItemClick(item)"
               :class="[
                 active
                   ? 'bg-gray-100 text-gray-900 border-r-2 border-army2'
@@ -52,7 +52,7 @@ import {
   TransitionChild,
   TransitionRoot,
 } from "@headlessui/vue";
-import { ChevronRightIcon, DotsVerticalIcon } from "@heroicons/vue/solid";
+import { DotsVerticalIcon } from "@heroicons/vue/solid";
 
 export interface MenuItemData<T = string> {
   label: string;
@@ -63,7 +63,10 @@ export interface MenuItemData<T = string> {
 export default defineComponent({
   name: "DotsMenu",
   props: {
-    items: { type: Array as PropType<MenuItemData[]>, required: true },
+    items: {
+      type: Array as PropType<MenuItemData<string | Function>[]>,
+      required: true,
+    },
   },
   emits: ["action"],
   components: {
@@ -75,6 +78,12 @@ export default defineComponent({
     TransitionChild,
     TransitionRoot,
   },
-  setup(props) {},
+  setup(props, { emit }) {
+    const onItemClick = (item: MenuItemData<string | Function>) => {
+      if (item.action instanceof Function) item.action();
+      else emit("action", item.action);
+    };
+    return { onItemClick };
+  },
 });
 </script>
