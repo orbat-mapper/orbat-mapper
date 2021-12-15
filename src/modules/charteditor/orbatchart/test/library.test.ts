@@ -1,4 +1,10 @@
-import { ChartOrientation, DEFAULT_OPTIONS, OrbatChart, SymbolGenerator, Unit, } from "../index";
+import {
+  ChartOrientation,
+  DEFAULT_OPTIONS,
+  OrbatChart,
+  SymbolGenerator,
+  Unit,
+} from "../index";
 import { ORBAT1 } from "./testorbats";
 import ms from "milsymbol";
 
@@ -16,6 +22,26 @@ describe("OrbatChart class", () => {
     let o = new OrbatChart(ORBAT1);
     let svg = o.toSVG({}, document.body);
     expect(svg.getAttribute("width")).toBe("100%");
+  });
+});
+
+describe("OrbatChart SVG rendering", () => {
+  it("renders", () => {
+    let o = new OrbatChart(ORBAT1);
+    let svg = o.toSVG({}, document.body);
+    expect(svg.getAttribute("width")).toBe("100%");
+  });
+
+  it("has empty ID by default", () => {
+    let o = new OrbatChart(ORBAT1);
+    let svg = o.toSVG({}, document.body);
+    expect(svg.id).toBe("");
+  });
+
+  it("allows a custom ID", () => {
+    let o = new OrbatChart(ORBAT1);
+    let svg = o.toSVG({}, document.body, "CustomID");
+    expect(svg.id).toBe("CustomID");
   });
 });
 

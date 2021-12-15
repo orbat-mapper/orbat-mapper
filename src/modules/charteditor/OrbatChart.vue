@@ -47,6 +47,7 @@ export default defineComponent({
     width: { type: Number, default: 600 },
     height: { type: Number, default: 600 },
     symbolGenerator: { type: Function as PropType<SymbolGenerator> },
+    chartId: { type: String },
   },
   emits: ["unitclick", "levelclick", "levelgroupclick"],
 
@@ -101,7 +102,8 @@ export default defineComponent({
       );
       orbatChart.toSVG(
         { width: props.width, height: props.height },
-        chartRootElement.value
+        chartRootElement.value,
+        props.chartId
       );
       if (props.interactive) orbatChart.makeInteractive();
     });

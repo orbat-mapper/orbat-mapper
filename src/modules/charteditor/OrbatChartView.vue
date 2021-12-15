@@ -10,6 +10,7 @@
       :symbol-generator="symbolGenerator"
       @unitclick="onUnitClick"
       :interactive="isInteractive"
+      :chart-id="chartId"
     />
     <div class="absolute left-4 top-4 flex items-center space-x-4">
       <ToggleField v-model="debug">Debug mode</ToggleField>
@@ -21,6 +22,7 @@
         <span class="sr-only">Search units</span>
         <SearchIcon class="h-5 w-5" />
       </button>
+      <DotsMenu :items="menuItems" />
     </div>
     <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
   </main>
@@ -36,9 +38,9 @@ import { LevelLayout, UnitNodeInfo } from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
 import { SearchIcon } from "@heroicons/vue/solid";
-import SearchModal from "../../components/SearchModal.vue";
 import { Unit } from "../../types/models";
 import { whenever } from "@vueuse/core";
+import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 
 export default defineComponent({
   name: "OrbatChartView",
@@ -49,6 +51,7 @@ export default defineComponent({
     ToggleField,
     OrbatChart,
     SearchIcon,
+    DotsMenu,
   },
   setup() {
     const debug = ref(false);
@@ -57,6 +60,7 @@ export default defineComponent({
     const rootUnit = ref<Unit>();
     const scenarioStore = useScenarioStore();
     const scenarioIO = useScenarioIO();
+    const chartId = "OrbatChart";
 
     scenarioIO.loadDemoScenario("falkland82");
     whenever(
@@ -82,6 +86,19 @@ export default defineComponent({
       if (unit) rootUnit.value = unit;
     };
 
+    const doSVGDownload = () => {
+      console.log("do svg download");
+    };
+
+    const doPNGDownload = () => {
+      console.log("do png download");
+    };
+
+    const menuItems: MenuItemData<Function>[] = [
+      { label: "Download SVG", action: doSVGDownload },
+      { label: "Download PNG", action: doPNGDownload },
+    ];
+
     return {
       rootUnit,
       debug,
@@ -94,6 +111,8 @@ export default defineComponent({
       isInteractive,
       showSearch,
       onUnitSelect,
+      menuItems,
+      chartId,
     };
   },
 });

@@ -251,10 +251,14 @@ class OrbatChart {
     this.svg.selectAll(".select-rect").on("click", null);
   }
 
-  toSVG(size: Partial<Size>, parentElement: HTMLElement): SVGElement {
+  toSVG(
+    size: Partial<Size>,
+    parentElement: HTMLElement,
+    elementId?: string
+  ): SVGElement {
     this.width = size.width || DEFAULT_CHART_WIDTH;
     this.height = size.height || DEFAULT_CHART_HEIGHT;
-    let renderedChart = this._createSvgElement(parentElement);
+    let renderedChart = this._createSvgElement(parentElement, elementId);
 
     // Pass 1: Create g elements and other svg elements
     // Pass 2: Do unit layout
@@ -311,12 +315,16 @@ class OrbatChart {
     }
   }
 
-  private _createSvgElement(parentElement: HTMLElement): RenderedChart {
+  private _createSvgElement(
+    parentElement: HTMLElement,
+    elementId?: string
+  ): RenderedChart {
     parentElement.innerHTML = "";
     const svg = select(parentElement)
       .append<SVGElement>("svg")
       .attr("viewBox", `0 0 ${this.width} ${this.height}`)
       .attr("class", "orbat-chart");
+    if (elementId) svg.attr("id", elementId);
 
     svg.append("style").text(createChartStyle(this.options));
     svg.attr("width", "100%");
