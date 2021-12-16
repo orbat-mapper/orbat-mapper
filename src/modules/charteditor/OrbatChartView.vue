@@ -92,7 +92,7 @@ export default defineComponent({
     };
 
     const doPNGDownload = () => {
-      downloadSvgAsSvg(chartId);
+      downloadSvgAsPng(chartId, width.value, height.value);
     };
 
     const menuItems: MenuItemData<Function>[] = [
@@ -118,15 +118,16 @@ export default defineComponent({
   },
 });
 
-function downloadSvgAsSvg(elementId: string) {
+function downloadSvgAsPng(elementId: string, width: number, height: number) {
   let svgElement = document.getElementById(elementId);
   if (!svgElement) return;
   // need this for Firefox (https://stackoverflow.com/questions/28690643/firefox-error-rendering-an-svg-image-to-html5-canvas-with-drawimage)
   const savedWidth = svgElement.getAttribute("width") || "";
   const savedHeight = svgElement.getAttribute("height") || "";
+  const scaleFactor = 2;
 
-  svgElement.setAttribute("width", "1000px");
-  svgElement.setAttribute("height", "1000px");
+  svgElement.setAttribute("width", `${width * scaleFactor}px`);
+  svgElement.setAttribute("height", `${height * scaleFactor}px`);
   const svgBlob = new Blob(
     [new XMLSerializer().serializeToString(svgElement)],
     {
@@ -135,15 +136,14 @@ function downloadSvgAsSvg(elementId: string) {
   );
 
   const canvas = document.createElement("canvas");
-  canvas.width = 1000;
-  canvas.height = 1000;
+  canvas.width = width * scaleFactor;
+  canvas.height = height * scaleFactor;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   const objectURL = URL.createObjectURL(svgBlob);
   const image = new Image();
 
   image.onload = function () {
-    ctx.clearRect(0, 0, 1000, 1000);
     ctx.drawImage(image, 0, 0);
     canvas.toBlob((blob) => blob && FileSaver(blob, "orbat-chart.png"));
     URL.revokeObjectURL(objectURL);
