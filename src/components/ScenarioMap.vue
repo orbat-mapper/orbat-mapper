@@ -22,10 +22,7 @@ import { createHistoryLayer, createUnitFeatureAt } from "../geo/layers";
 import VectorLayer from "ol/layer/Vector";
 import { Collection, Feature } from "ol";
 import { Modify, Select } from "ol/interaction";
-import {
-  clearStyleCache,
-  createSelectedUnitStyleFromFeature,
-} from "../geo/styles";
+import { clearStyleCache, createSelectedUnitStyleFromFeature } from "../geo/styles";
 import { SelectEvent } from "ol/interaction/Select";
 import { click } from "ol/events/condition";
 import { LineString, Point } from "ol/geom";
@@ -46,9 +43,7 @@ export default defineComponent({
   components: { MapContainer, GlobalEvents },
   setup() {
     let mapRef: OLMap;
-    let selectedFeatures: Collection<Feature<Point>> = new Collection<
-      Feature<Point>
-    >();
+    let selectedFeatures: Collection<Feature<Point>> = new Collection<Feature<Point>>();
     const { unitLayer, drawUnits } = useUnitLayer();
     const activeUnitStore = useActiveUnitStore();
     const historyLayer = createHistoryLayer();
@@ -166,18 +161,14 @@ function useDrop(mapRef: Ref<OLMap>, unitLayer: Ref<VectorLayer<any>>) {
     ) {
       const dropPosition = toLonLat(mapRef.value.getEventCoordinate(ev));
       const unitSource = unitLayer.value.getSource();
-      const existingUnitFeature = unitSource.getFeatureById(
-        dragStore.draggedUnit.id
-      );
+      const existingUnitFeature = unitSource.getFeatureById(dragStore.draggedUnit.id);
 
       scenarioStore.addUnitPosition(dragStore.draggedUnit, dropPosition);
 
       if (existingUnitFeature) {
         existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
       } else {
-        unitSource.addFeature(
-          createUnitFeatureAt(dropPosition, dragStore.draggedUnit)
-        );
+        unitSource.addFeature(createUnitFeatureAt(dropPosition, dragStore.draggedUnit));
       }
     }
   };
@@ -203,8 +194,7 @@ function useSelectInteraction(
   function onSelect(evt: SelectEvent) {
     const selectedUnitId = evt.selected.map((f) => f.getId())[0];
     if (selectedUnitId) {
-      activeUnitStore.activeUnit =
-        scenarioStore.getUnitById(selectedUnitId) || null;
+      activeUnitStore.activeUnit = scenarioStore.getUnitById(selectedUnitId) || null;
     }
   }
 
@@ -273,10 +263,7 @@ function useModifyInteraction(
         const newCoordinate = unitFeature.getGeometry()?.getCoordinates();
         if (newCoordinate)
           scenarioStore.addUnitPosition(movedUnit, toLonLat(newCoordinate));
-        if (
-          activeUnitStore.activeUnit &&
-          activeUnitStore.activeUnit === movedUnit
-        ) {
+        if (activeUnitStore.activeUnit && activeUnitStore.activeUnit === movedUnit) {
           activeUnitStore.clearActiveUnit();
           nextTick(() => activeUnitStore.setActiveUnit(movedUnit));
         }
@@ -284,13 +271,9 @@ function useModifyInteraction(
     }
   });
   const overlaySource = modifyInteraction.getOverlay().getSource();
-  overlaySource.on(
-    ["addfeature", "removefeature"],
-    function (evt: ModifyEvent) {
-      mapRef.getTargetElement().style.cursor =
-        evt.type === "addfeature" ? "pointer" : "";
-    }
-  );
+  overlaySource.on(["addfeature", "removefeature"], function (evt: ModifyEvent) {
+    mapRef.getTargetElement().style.cursor = evt.type === "addfeature" ? "pointer" : "";
+  });
   return { modifyInteraction };
 }
 </script>

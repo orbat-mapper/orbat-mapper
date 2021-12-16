@@ -3,14 +3,7 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  markRaw,
-  onMounted,
-  onUnmounted,
-  PropType,
-  ref,
-} from "vue";
+import { defineComponent, markRaw, onMounted, onUnmounted, PropType, ref } from "vue";
 
 import MapEvent from "ol/MapEvent";
 import OLMap from "ol/Map";

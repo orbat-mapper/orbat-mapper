@@ -19,10 +19,7 @@ function replaceAt(text: string, index: number, replace: string) {
   return text.substring(0, index) + replace + text.substring(index + 1);
 }
 
-export function symbolGenerator(
-  sidc: string,
-  options: SymbolOptions = {}
-): MilSymbol {
+export function symbolGenerator(sidc: string, options: SymbolOptions = {}): MilSymbol {
   let opts = options;
   if (sidc[3] === "7") {
     sidc = replaceAt(sidc, 3, "3");

@@ -65,11 +65,7 @@
 </template>
 
 <script>
-import {
-  CalendarIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/vue/solid";
+import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/solid";
 
 import { ChevronLeft, ChevronRight, SkipNext, SkipPrevious } from "mdue";
 import { GlobalEvents } from "vue-global-events";
@@ -100,9 +96,7 @@ export default defineComponent({
     const scenarioStore = useScenarioStore();
     const scenarioTimeStore = useScenarioTime();
 
-    const scenarioTime = computed(() =>
-      formatDateString(scenarioStore.currentTime)
-    );
+    const scenarioTime = computed(() => formatDateString(scenarioStore.currentTime));
 
     return {
       scenarioTime,

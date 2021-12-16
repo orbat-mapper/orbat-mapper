@@ -12,13 +12,7 @@
         <div class="mt-4 grid grid-cols-3 gap-x-2 gap-y-4 p-1">
           <button
             type="button"
-            v-for="{
-              sidc,
-              entity,
-              entityType,
-              entitySubtype,
-              code,
-            } in entityIcons"
+            v-for="{ sidc, entity, entityType, entitySubtype, code } in entityIcons"
             :key="sidc"
             @click="iconV = code"
             class="border border-transparent rounded p-3 flex flex-col items-center justify-start w-full hover:border-gray-500"

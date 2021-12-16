@@ -5,10 +5,7 @@ import { Unit } from "../types/models";
 import { Feature } from "ol";
 import { LineString, Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";
-import {
-  createHistoryStylesFromFeature,
-  createUnitStyleFromFeature,
-} from "./styles";
+import { createHistoryStylesFromFeature, createUnitStyleFromFeature } from "./styles";
 import { PointVectorLayer } from "./types";
 import View from "ol/View";
 
@@ -21,19 +18,14 @@ export function createUnitLayer(): PointVectorLayer {
   });
 }
 
-export function createHistoryLayer(): VectorLayer<
-  VectorSource<Point | LineString>
-> {
+export function createHistoryLayer(): VectorLayer<VectorSource<Point | LineString>> {
   return new VectorLayer({
     source: new VectorSource(),
     style: createHistoryStylesFromFeature,
   });
 }
 
-export function createUnitFeatureAt(
-  position: Coordinate,
-  unit: Unit
-): Feature<Point> {
+export function createUnitFeatureAt(position: Coordinate, unit: Unit): Feature<Point> {
   const geometry = new Point(fromLonLat(position));
   const { sidc, name, id, shortName } = unit;
   const feature = new Feature<Point>({ geometry, sidc, name, id, shortName });

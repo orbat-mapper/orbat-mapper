@@ -1,14 +1,9 @@
 <template>
-  <div
-    v-if="scenarioStore.isLoaded"
-    class="h-screen flex overflow-hidden bg-gray-300"
-  >
+  <div v-if="scenarioStore.isLoaded" class="h-screen flex overflow-hidden bg-gray-300">
     <!--    <div class="flex flex-shrink-0 bg-gray-700">-->
     <!--      <nav class="w-16"></nav>-->
     <!--    </div>-->
-    <aside
-      class="w-96 bg-gray-100 border-r-2 flex flex-col justify-between z-10"
-    >
+    <aside class="w-96 bg-gray-100 border-r-2 flex flex-col justify-between z-10">
       <TabView
         v-model:current-tab="currentScenarioTab"
         extra-class="px-6"
@@ -71,10 +66,7 @@
       </TabView>
     </aside>
     <ScenarioMap class="flex-1" />
-    <PlainButton
-      class="fixed right-4 top-4 opacity-80"
-      @click="isOpen = !isOpen"
-    >
+    <PlainButton class="fixed right-4 top-4 opacity-80" @click="isOpen = !isOpen">
       <MenuIcon class="w-5 h-5 opacity-100" />
     </PlainButton>
     <GlobalEvents

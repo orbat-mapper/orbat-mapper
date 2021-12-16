@@ -48,9 +48,7 @@ export default defineComponent({
     PlainButton,
     InputGroup,
     MenuAlt3Icon,
-    SymbolPickerModal: defineAsyncComponent(
-      () => import("./SymbolPickerModal.vue")
-    ),
+    SymbolPickerModal: defineAsyncComponent(() => import("./SymbolPickerModal.vue")),
   },
   props: { modelValue: { type: String } },
   emits: ["update:modelValue"],

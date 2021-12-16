@@ -8,11 +8,7 @@
         class="z-20 fixed top-2 right-4 bg-white bg-opacity-75 inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
         <span class="sr-only">Open main menu</span>
-        <MenuIcon
-          v-if="!sidebarIsOpen"
-          class="block h-6 w-6"
-          aria-hidden="true"
-        />
+        <MenuIcon v-if="!sidebarIsOpen" class="block h-6 w-6" aria-hidden="true" />
         <XIcon v-else class="block h-6 w-6" aria-hidden="true" />
       </button>
     </header>
@@ -22,9 +18,7 @@
       >
         <MapContainer @ready="onMapReady" />
       </section>
-      <section
-        class="bg-gray-50 w-full md:max-w-sm lg:max-w-lg overflow-auto border"
-      >
+      <section class="bg-gray-50 w-full md:max-w-sm lg:max-w-lg overflow-auto border">
         <StoryModeContent @update-state="onUpdateState" />
       </section>
     </div>

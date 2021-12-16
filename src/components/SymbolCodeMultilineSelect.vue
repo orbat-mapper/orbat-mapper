@@ -49,9 +49,7 @@
                 <p class="flex-shrink-0 h-7 w-8 flex justify-center pt-1">
                   <MilSymbol :size="20" :sidc="item.sidc" />
                 </p>
-                <div
-                  :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 ']"
-                >
+                <div :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 ']">
                   <p class="text-sm text-gray-500">
                     {{ item.entity }} / {{ item.entityType }}
                   </p>

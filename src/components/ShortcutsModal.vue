@@ -3,9 +3,7 @@
   <SimpleModal v-model="open" dialog-title="Keyboard shortcuts">
     <div class="mt-4">
       <div v-for="category in shortcuts">
-        <h4
-          class="text-base font-medium text-gray-900 border-b-2 pb-1 border-gray-300"
-        >
+        <h4 class="text-base font-medium text-gray-900 border-b-2 pb-1 border-gray-300">
           {{ category.label }}
         </h4>
         <ul class="text-sm text-gray-900 divide-gray-200 divide-y">

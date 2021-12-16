@@ -23,20 +23,8 @@
       </SwitchGroup>
       <InputGroup label="Date" type="date" v-model="date"></InputGroup>
       <div class="flex space-x-4">
-        <InputGroup
-          label="Hour"
-          v-model="hour"
-          type="number"
-          min="0"
-          max="23"
-        />
-        <InputGroup
-          label="Minute"
-          v-model="minute"
-          type="number"
-          min="0"
-          max="59"
-        />
+        <InputGroup label="Hour" v-model="hour" type="number" min="0" max="23" />
+        <InputGroup label="Minute" v-model="minute" type="number" min="0" max="59" />
       </div>
 
       <p class="flex justify-between items-center">
@@ -85,9 +73,7 @@ export default defineComponent({
 
     const inputDateTime = computed(() => {
       return isLocal.value
-        ? dayjs
-            .utc(props.timestamp)
-            .tz(scenarioStore.scenario.timeZone || "UTC")
+        ? dayjs.utc(props.timestamp).tz(scenarioStore.scenario.timeZone || "UTC")
         : dayjs.utc(props.timestamp);
     });
     watch(

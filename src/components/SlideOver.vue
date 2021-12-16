@@ -22,9 +22,7 @@
             leave-to="translate-x-full"
           >
             <div class="w-screen max-w-xs sm:max-w-md">
-              <div
-                class="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll"
-              >
+              <div class="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll">
                 <div class="px-4 sm:px-6">
                   <div class="flex items-start justify-between">
                     <DialogTitle class="text-lg font-medium text-gray-900">

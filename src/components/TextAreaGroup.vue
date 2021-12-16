@@ -1,9 +1,6 @@
 <template>
   <div>
-    <label
-      :for="id || computedId"
-      class="block text-sm font-medium text-gray-700"
-    >
+    <label :for="id || computedId" class="block text-sm font-medium text-gray-700">
       <slot name="label">{{ label }}</slot>
     </label>
     <div class="mt-1">
@@ -14,10 +11,7 @@
         v-bind="$attrs"
       />
     </div>
-    <p
-      v-if="description || $slots.description"
-      class="mt-2 text-sm text-gray-500"
-    >
+    <p v-if="description || $slots.description" class="mt-2 text-sm text-gray-500">
       <slot name="description">{{ description }}</slot>
     </p>
   </div>

@@ -4,9 +4,7 @@
       <header
         class="flex items-center justify-between relative block -ml-6 pl-6 bg-gray-200 border-b-2 border-t-2 py-1 border-gray-300"
       >
-        <DisclosureButton
-          class="w-full text-left flex items-center justify-between"
-        >
+        <DisclosureButton class="w-full text-left flex items-center justify-between">
           <h4 class="font-medium text-base text-gray-900">{{ side.name }}</h4>
           <ChevronUpIcon
             :class="open ? 'transform rotate-180' : ''"

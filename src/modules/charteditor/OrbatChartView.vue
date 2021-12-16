@@ -15,10 +15,7 @@
     <div class="absolute left-4 top-4 flex items-center space-x-4">
       <ToggleField v-model="debug">Debug mode</ToggleField>
       <ToggleField v-model="isInteractive">Interactive</ToggleField>
-      <button
-        @click="showSearch = true"
-        class="text-gray-500 hover:text-gray-900"
-      >
+      <button @click="showSearch = true" class="text-gray-500 hover:text-gray-900">
         <span class="sr-only">Search units</span>
         <SearchIcon class="h-5 w-5" />
       </button>
@@ -46,9 +43,7 @@ import FileSaver from "file-saver";
 export default defineComponent({
   name: "OrbatChartView",
   components: {
-    SearchModal: defineAsyncComponent(
-      () => import("../../components/SearchModal.vue")
-    ),
+    SearchModal: defineAsyncComponent(() => import("../../components/SearchModal.vue")),
     ToggleField,
     OrbatChart,
     SearchIcon,
@@ -67,8 +62,7 @@ export default defineComponent({
     whenever(
       () => scenarioStore.isLoaded,
       () => {
-        rootUnit.value =
-          scenarioStore.getUnitByName("3 Mech Inf Bde") || ORBAT1;
+        rootUnit.value = scenarioStore.getUnitByName("3 Mech Inf Bde") || ORBAT1;
       },
       { immediate: true }
     );
@@ -128,12 +122,9 @@ function downloadSvgAsPng(elementId: string, width: number, height: number) {
 
   svgElement.setAttribute("width", `${width * scaleFactor}px`);
   svgElement.setAttribute("height", `${height * scaleFactor}px`);
-  const svgBlob = new Blob(
-    [new XMLSerializer().serializeToString(svgElement)],
-    {
-      type: "image/svg+xml",
-    }
-  );
+  const svgBlob = new Blob([new XMLSerializer().serializeToString(svgElement)], {
+    type: "image/svg+xml",
+  });
 
   const canvas = document.createElement("canvas");
   canvas.width = width * scaleFactor;

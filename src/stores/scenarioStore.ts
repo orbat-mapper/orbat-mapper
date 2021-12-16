@@ -44,11 +44,7 @@ export interface SideUnits {
 export function walkSide(side: Side, callback: WalkSideCallback) {
   let level = 0;
 
-  function helper(
-    currentUnit: Unit,
-    parent: Unit | SideGroup,
-    sideGroup: SideGroup
-  ) {
+  function helper(currentUnit: Unit, parent: Unit | SideGroup, sideGroup: SideGroup) {
     callback(currentUnit, level, parent, sideGroup, side);
     if (currentUnit.subUnits) {
       level += 1;
@@ -90,8 +86,7 @@ export function walkSubUnits(
 }
 
 function createInitialState(unit: Unit): State | null {
-  if (unit.location)
-    return { t: Number.MIN_SAFE_INTEGER, location: unit.location };
+  if (unit.location) return { t: Number.MIN_SAFE_INTEGER, location: unit.location };
   return null;
 }
 
@@ -141,8 +136,7 @@ export const useScenarioStore = defineStore("scenario", {
   actions: {
     loadScenario(demoScenario: Scenario) {
       const settingsStore = useSettingsStore();
-      const { scenario, unitMap, sideMap, sideGroupMap } =
-        prepareScenario(demoScenario);
+      const { scenario, unitMap, sideMap, sideGroupMap } = prepareScenario(demoScenario);
       this.scenario = scenario;
       if (scenario.symbologyStandard)
         settingsStore.symbologyStandard = scenario.symbologyStandard;

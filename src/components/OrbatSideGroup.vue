@@ -1,9 +1,7 @@
 <template>
   <Disclosure v-slot="{ open }" default-open>
     <div class="flex items-center justify-between relative mt-4 py-0 group">
-      <DisclosureButton
-        class="w-full text-left flex items-center justify-between"
-      >
+      <DisclosureButton class="w-full text-left flex items-center justify-between">
         <p
           class="font-medium text-base text-gray-600 hover:text-gray-900"
           :class="{ 'font-bold underline': isDragOver }"
@@ -43,9 +41,7 @@
         v-if="!group?.units.length"
         class="p-8 border-2 mr-4 border-gray-300 border-dashed flex justify-center"
       >
-        <SecondaryButton @click="addGroupUnit(group)"
-          >Add root unit
-        </SecondaryButton>
+        <SecondaryButton @click="addGroupUnit(group)">Add root unit </SecondaryButton>
       </div>
     </DisclosurePanel>
   </Disclosure>
@@ -139,10 +135,7 @@ export default defineComponent({
         return;
       isDragOver.value = false;
       const unitManipulationStore = useUnitManipulationStore();
-      unitManipulationStore.changeUnitParent(
-        dragStore.draggedUnit,
-        props.group
-      );
+      unitManipulationStore.changeUnitParent(dragStore.draggedUnit, props.group);
     };
 
     return {

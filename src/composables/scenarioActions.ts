@@ -26,10 +26,8 @@ export function useUnitActions() {
     }
 
     action === UnitActions.Clone && unitManipulationStore.cloneUnit(unit);
-    action === UnitActions.MoveUp &&
-      unitManipulationStore.reorderUnit(unit, "up");
-    action === UnitActions.MoveDown &&
-      unitManipulationStore.reorderUnit(unit, "down");
+    action === UnitActions.MoveUp && unitManipulationStore.reorderUnit(unit, "up");
+    action === UnitActions.MoveDown && unitManipulationStore.reorderUnit(unit, "down");
 
     if (action === UnitActions.Delete) {
       if (activeUnitStore.activeUnit === unit) {

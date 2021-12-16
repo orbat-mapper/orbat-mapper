@@ -1,10 +1,6 @@
 <template>
   <div>
-    <form
-      v-if="isEditMode"
-      @submit.prevent="onFormSubmit"
-      class="p-6 space-y-4"
-    >
+    <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="p-6 space-y-4">
       <InputGroup label="Name" v-model="form.name" id="name-input" />
       <SimpleMarkdownInput
         label="Description"
@@ -13,19 +9,12 @@
       />
       <DescriptionItem label="Start time"
         >{{ computedStartTime.format() }}
-        <PlainButton @click="showTimeModal = true" class="ml-2"
-          >Change
-        </PlainButton>
+        <PlainButton @click="showTimeModal = true" class="ml-2">Change </PlainButton>
       </DescriptionItem>
       <InputGroup label="Time zone" v-model="form.timeZone" />
-      <RadioGroupList
-        :settings="standardSettings"
-        v-model="form.symbologyStandard"
-      />
+      <RadioGroupList :settings="standardSettings" v-model="form.symbologyStandard" />
       <div class="flex justify-end space-x-2">
-        <PlainButton type="button" @click="toggleEditMode()"
-          >Cancel
-        </PlainButton>
+        <PlainButton type="button" @click="toggleEditMode()">Cancel </PlainButton>
         <PrimaryButton type="submit">Update</PrimaryButton>
       </div>
       <InputDateModal
@@ -44,9 +33,7 @@
       <DescriptionItem label="Start time"
         >{{ computedStartTime.format() }}
       </DescriptionItem>
-      <DescriptionItem label="Time zone name"
-        >{{ scenario.timeZone }}
-      </DescriptionItem>
+      <DescriptionItem label="Time zone name">{{ scenario.timeZone }} </DescriptionItem>
       <DescriptionItem label="Symbology standard"
         >{{ scenario.symbologyStandard }}
       </DescriptionItem>
@@ -116,9 +103,7 @@ export default defineComponent({
 
     const showTimeModal = ref(false);
 
-    const hDescription = computed(() =>
-      renderMarkdown(description!.value || "")
-    );
+    const hDescription = computed(() => renderMarkdown(description!.value || ""));
 
     let form = ref<ScenarioInfo>({
       name: "",
@@ -131,8 +116,7 @@ export default defineComponent({
     watch(
       scenario,
       (scn) => {
-        const { name, description, startTime, timeZone, symbologyStandard } =
-          scn;
+        const { name, description, startTime, timeZone, symbologyStandard } = scn;
         form.value = {
           name,
           description,

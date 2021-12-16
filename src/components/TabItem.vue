@@ -5,14 +5,7 @@
 </template>
 
 <script>
-import {
-  defineComponent,
-  inject,
-  onBeforeMount,
-  onBeforeUnmount,
-  ref,
-  watch,
-} from "vue";
+import { defineComponent, inject, onBeforeMount, onBeforeUnmount, ref, watch } from "vue";
 
 export default defineComponent({
   name: "TabItem",

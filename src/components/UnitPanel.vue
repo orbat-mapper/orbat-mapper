@@ -6,22 +6,14 @@
       </div>
       <p class="font-medium pt-2">{{ unit.name }}</p>
     </header>
-    <form
-      v-if="isEditMode"
-      @submit.prevent="onFormSubmit"
-      class="mt-0 space-y-4"
-    >
+    <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="mt-0 space-y-4">
       <InputGroup label="Name" v-model="form.name" id="name-input" />
       <InputGroup
         label="Short name"
         description="Alternative name"
         v-model="form.shortName"
       />
-      <InputGroup
-        label="External URL"
-        description=""
-        v-model="form.externalUrl"
-      />
+      <InputGroup label="External URL" description="" v-model="form.externalUrl" />
       <div class="w-full">
         <SymbolPickerInput v-model="form.sidc" />
       </div>
@@ -42,12 +34,9 @@
         >{{ unit.shortName }}
       </DescriptionItem>
       <DescriptionItem v-if="unit.externalUrl" label="External URL"
-        ><a
-          target="_blank"
-          class="underline text-sm"
-          :href="unit.externalUrl"
-          >{{ unit.externalUrl }}</a
-        ></DescriptionItem
+        ><a target="_blank" class="underline text-sm" :href="unit.externalUrl">{{
+          unit.externalUrl
+        }}</a></DescriptionItem
       >
       <DescriptionItem v-if="unit.description" label="Description">
         <div class="prose prose-sm" v-html="hDescription"></div>
@@ -129,9 +118,7 @@ export default defineComponent({
       inputElement && inputElement.focus();
     };
 
-    const hDescription = computed(() =>
-      renderMarkdown(props.unit?.description || "")
-    );
+    const hDescription = computed(() => renderMarkdown(props.unit?.description || ""));
 
     const hasPosition = computed(() => Boolean(props.unit?._state?.location));
 
@@ -139,8 +126,7 @@ export default defineComponent({
       () => props.unit,
       (updatedUnit, oldValue) => {
         if (updatedUnit) {
-          const { name, shortName, sidc, description, externalUrl } =
-            updatedUnit;
+          const { name, shortName, sidc, description, externalUrl } = updatedUnit;
           form.value = { name, shortName, sidc, description, externalUrl };
         }
         if (isEditMode.value) nextTick(() => doFormFocus());

@@ -71,10 +71,7 @@ function useSymbologyData() {
             const { entity, entityType, entitySubtype } = e;
             return {
               ...e,
-              text: `${entity} ${entityType} ${entitySubtype}`.replaceAll(
-                "/",
-                " "
-              ),
+              text: `${entity} ${entityType} ${entitySubtype}`.replaceAll("/", " "),
             };
           }),
         {
@@ -112,9 +109,7 @@ export function useSymbolItems(sidc: Ref<string>) {
   const symbolSets = computed(() => {
     const symbSets = Object.entries(symbology.value || {}).map(([k, v]) => {
       const iconValue =
-        k === CONTROL_MEASURE_SYMBOLSET_VALUE
-          ? "00001602050000"
-          : "00000000000000";
+        k === CONTROL_MEASURE_SYMBOLSET_VALUE ? "00001602050000" : "00000000000000";
       return {
         code: k,
         text: v.name,
@@ -129,8 +124,7 @@ export function useSymbolItems(sidc: Ref<string>) {
     return statusValues.map(({ code, text }) => ({
       code,
       text,
-      sidc:
-        "100" + sidValue.value + symbolSetValue.value + code + "0000000000000",
+      sidc: "100" + sidValue.value + symbolSetValue.value + code + "0000000000000",
     }));
   });
 
@@ -138,13 +132,7 @@ export function useSymbolItems(sidc: Ref<string>) {
     return HQTFDummyValues.map(({ code, text }) => ({
       code,
       text,
-      sidc:
-        "100" +
-        sidValue.value +
-        symbolSetValue.value +
-        "0" +
-        code +
-        "000000000000",
+      sidc: "100" + sidValue.value + symbolSetValue.value + "0" + code + "000000000000",
     }));
   });
 
@@ -161,8 +149,7 @@ export function useSymbolItems(sidc: Ref<string>) {
       return {
         code: mi.code,
         text,
-        sidc:
-          "100" + sidValue.value + symbolSetCode + "0000" + mi.code + "0000",
+        sidc: "100" + sidValue.value + symbolSetCode + "0000" + mi.code + "0000",
         entity: mi.entity,
         entityType: mi.entityType,
         entitySubtype: mi.entitySubtype,
@@ -193,13 +180,7 @@ export function useSymbolItems(sidc: Ref<string>) {
       return {
         code,
         text,
-        sidc:
-          "100" +
-          sidValue.value +
-          symbolSetValue.value +
-          "00" +
-          code +
-          "0000000000",
+        sidc: "100" + sidValue.value + symbolSetValue.value + "00" + code + "0000000000",
       };
     });
   });
@@ -212,12 +193,7 @@ export function useSymbolItems(sidc: Ref<string>) {
           code,
           text: modifier,
           sidc:
-            "100" +
-            sidValue.value +
-            symbolSetValue.value +
-            "0000000000" +
-            code +
-            "00",
+            "100" + sidValue.value + symbolSetValue.value + "0000000000" + code + "00",
         };
       }
     );
@@ -231,12 +207,7 @@ export function useSymbolItems(sidc: Ref<string>) {
           code,
           text: modifier,
           sidc:
-            "100" +
-            sidValue.value +
-            symbolSetValue.value +
-            "0000000000" +
-            "00" +
-            code,
+            "100" + sidValue.value + symbolSetValue.value + "0000000000" + "00" + code,
         };
       }
     );
@@ -271,9 +242,7 @@ function useSymbolValues(sidc: Ref<string>) {
   const symbolSetValue = ref(sidcObj.symbolSet);
   const statusValue = ref(sidcObj.status);
   const hqtfdValue = ref(sidcObj.hqtfd);
-  const iconValue = ref(
-    sidcObj.entity + sidcObj.entityType + sidcObj.entitySubType
-  );
+  const iconValue = ref(sidcObj.entity + sidcObj.entityType + sidcObj.entitySubType);
   const emtValue = ref(sidcObj.emt);
   const mod1Value = ref(sidcObj.modifierOne);
   const mod2Value = ref(sidcObj.modifierTwo);
@@ -283,8 +252,7 @@ function useSymbolValues(sidc: Ref<string>) {
     symbolSetValue.value = sidcObj.symbolSet;
     statusValue.value = sidcObj.status;
     hqtfdValue.value = sidcObj.hqtfd;
-    iconValue.value =
-      sidcObj.entity + sidcObj.entityType + sidcObj.entitySubType;
+    iconValue.value = sidcObj.entity + sidcObj.entityType + sidcObj.entitySubType;
     emtValue.value = sidcObj.emt;
     mod1Value.value = sidcObj.modifierOne;
     mod2Value.value = sidcObj.modifierTwo;

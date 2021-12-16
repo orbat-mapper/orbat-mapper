@@ -24,8 +24,7 @@ export const useScenarioIO = defineStore("scenarioIO", {
 
     async loadFromUrl(url: string) {
       const scenario = useScenarioStore();
-      const { data, isFinished, statusCode, error } =
-        useFetch<Scenario>(url).json();
+      const { data, isFinished, statusCode, error } = useFetch<Scenario>(url).json();
       await until(isFinished).toBe(true);
 
       if (error.value) {

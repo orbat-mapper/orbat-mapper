@@ -1,8 +1,6 @@
 <template>
   <div class="relative rounded-md shadow-sm">
-    <div
-      class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-    >
+    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
       <FilterVariantPlus
         v-if="hasFilter"
         class="h-5 w-5 text-gray-400"
@@ -31,11 +29,7 @@
         @click="hasLocationFilter = !hasLocationFilter"
         class="rounded-md text-gray-400 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
-        <CrosshairsOff
-          v-if="hasLocationFilter"
-          class="h-5 w-5"
-          aria-hidden="true"
-        />
+        <CrosshairsOff v-if="hasLocationFilter" class="h-5 w-5" aria-hidden="true" />
         <CrosshairsGps v-else class="h-5 w-5" aria-hidden="true" />
       </Switch>
     </div>

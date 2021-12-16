@@ -5,9 +5,7 @@
   >
     <div class="w-full flex flex-col items-center space-y-4 sm:items-end">
       <NotificationItem
-        v-for="(
-          { title, message, duration, id, type }, idx
-        ) in notificationsReversed"
+        v-for="({ title, message, duration, id, type }, idx) in notificationsReversed"
         :key="id"
         :title="title"
         :message="message"

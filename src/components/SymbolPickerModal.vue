@@ -13,9 +13,7 @@
             placeholder="Search for symbol"
             v-model="searchQuery"
             @keydown.tab="onTab"
-            @keydown.esc.stop="
-              hitsIsOpen ? (hitsIsOpen = false) : (open = false)
-            "
+            @keydown.esc.stop="hitsIsOpen ? (hitsIsOpen = false) : (open = false)"
             @keydown.enter.prevent="!hitsIsOpen && onSubmit()"
           />
 
@@ -46,11 +44,7 @@
               label="Symbol set"
               :items="symbolSets"
             />
-            <SymbolCodeSelect
-              v-model="statusValue"
-              label="Status"
-              :items="statusItems"
-            />
+            <SymbolCodeSelect v-model="statusValue" label="Status" :items="statusItems" />
             <SymbolCodeSelect
               v-model="hqtfdValue"
               label="Headquaters / Task force / Dummy"
@@ -66,16 +60,8 @@
               label="Main icon"
               :items="icons"
             />
-            <SymbolCodeSelect
-              v-model="mod1Value"
-              label="Modifier 1"
-              :items="mod1Items"
-            />
-            <SymbolCodeSelect
-              v-model="mod2Value"
-              label="Modifier 2"
-              :items="mod2Items"
-            />
+            <SymbolCodeSelect v-model="mod1Value" label="Modifier 1" :items="mod1Items" />
+            <SymbolCodeSelect v-model="mod2Value" label="Modifier 2" :items="mod2Items" />
 
             <div style="min-height: 14rem" class="py-4 flex justify-end">
               <div class=""></div>
@@ -118,14 +104,7 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineComponent,
-  nextTick,
-  ref,
-  watch,
-  watchEffect,
-} from "vue";
+import { computed, defineComponent, nextTick, ref, watch, watchEffect } from "vue";
 import MilSymbol from "./MilSymbol.vue";
 import PrimaryButton from "./PrimaryButton.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
@@ -185,20 +164,12 @@ export default defineComponent({
 
     whenever(isLoaded, () => NProgress.done(), { immediate: true });
     const hits = computed(() => {
-      return fuseSymbolRef.value
-        ?.search(debouncedQuery.value, { limit: 20 })
-        .map((e) => {
-          return {
-            ...e.item,
-            sidc:
-              "100" +
-              sidValue.value +
-              e.item.symbolSet +
-              "0000" +
-              e.item.code +
-              "0000",
-          };
-        });
+      return fuseSymbolRef.value?.search(debouncedQuery.value, { limit: 20 }).map((e) => {
+        return {
+          ...e.item,
+          sidc: "100" + sidValue.value + e.item.symbolSet + "0000" + e.item.code + "0000",
+        };
+      });
     });
 
     watch(hits, (v) => {

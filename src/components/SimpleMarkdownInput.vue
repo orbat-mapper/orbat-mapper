@@ -1,10 +1,7 @@
 <template>
   <div>
     <div class="flex items-end justify-between">
-      <label
-        :for="id || computedId"
-        class="block text-sm font-medium text-gray-700"
-      >
+      <label :for="id || computedId" class="block text-sm font-medium text-gray-700">
         <slot name="label">{{ label }}</slot>
       </label>
       <nav class="flex space-x-3" aria-label="Tabs">
@@ -33,11 +30,7 @@
         class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
         v-bind="$attrs"
       />
-      <div
-        v-if="isPreview"
-        class="mt-4 prose prose-sm"
-        v-html="renderedMarkdown"
-      ></div>
+      <div v-if="isPreview" class="mt-4 prose prose-sm" v-html="renderedMarkdown"></div>
     </div>
     <p
       v-if="!isPreview && (description || $slots.description)"

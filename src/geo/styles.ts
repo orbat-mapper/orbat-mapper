@@ -53,9 +53,7 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style {
   } else return selectedUnitStyleCache.get(key);
 }
 
-export function createSelectedUnitStyleFromFeature(
-  feature: FeatureLike
-): Style {
+export function createSelectedUnitStyleFromFeature(feature: FeatureLike): Style {
   const { sidc, name, shortName } = feature.getProperties() as Unit;
   const key = sidc + name;
   if (!unitStyleCache.has(key)) {

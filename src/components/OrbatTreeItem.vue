@@ -140,10 +140,7 @@ export default defineComponent({
       isDragOver.value = false;
       if (dragStore.draggedUnit.id === props.item.unit.id) return;
       const unitManipulationStore = useUnitManipulationStore();
-      unitManipulationStore.changeUnitParent(
-        dragStore.draggedUnit,
-        props.item.unit
-      );
+      unitManipulationStore.changeUnitParent(dragStore.draggedUnit, props.item.unit);
       isOpen.value = true;
     };
 
@@ -161,9 +158,7 @@ export default defineComponent({
       activeUnitStore.activeUnit = props.item.unit;
     };
 
-    const isActiveUnit = computed(
-      () => activeUnitStore.activeUnit === props.item.unit
-    );
+    const isActiveUnit = computed(() => activeUnitStore.activeUnit === props.item.unit);
 
     const hasActiveChildren = computed(() =>
       Boolean(activeUnitStore?.activeUnitParents?.includes(props.item.unit.id))

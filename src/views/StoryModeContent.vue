@@ -6,14 +6,7 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineComponent,
-  onMounted,
-  onUnmounted,
-  ref,
-  watch,
-} from "vue";
+import { computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import { renderMarkdown } from "../composables/formatting";
 import { actions, content } from "../testdata/testStory";
 import scrollama, { ScrollamaInstance } from "scrollama";

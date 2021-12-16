@@ -18,24 +18,13 @@
             <div class="w-full flex justify-between items-center">
               <div class="flex items-center">
                 <div class="w-10 h-10 flex flex-shrink-0">
-                  <MilSymbol
-                    :size="20"
-                    :sidc="unit.sidc"
-                    class="inline self-center"
-                  />
+                  <MilSymbol :size="20" :sidc="unit.sidc" class="inline self-center" />
                 </div>
                 <p>{{ unit.name }}</p>
               </div>
 
-              <p
-                v-if="unit.parent"
-                class="text-xs flex self-start text-gray-600"
-              >
-                <MilSymbol
-                  :size="12"
-                  :sidc="unit.parent.sidc"
-                  class="mr-1 opacity-80"
-                />
+              <p v-if="unit.parent" class="text-xs flex self-start text-gray-600">
+                <MilSymbol :size="12" :sidc="unit.parent.sidc" class="mr-1 opacity-80" />
                 {{ unit.parent.name }}
               </p>
             </div>

@@ -1,8 +1,6 @@
 <template>
   <div>
-    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">
-      Base layers
-    </p>
+    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Base layers</p>
 
     <BaseLayerSwitcher
       class="mt-4"
@@ -25,10 +23,7 @@
                 :model-value="layer.opacity"
                 @update:model-value="updateOpacity(layer, $event)"
               />
-              <button
-                class="h-5 w-5 text-gray-500 ml-4"
-                @click="toggleLayer(layer)"
-              >
+              <button class="h-5 w-5 text-gray-500 ml-4" @click="toggleLayer(layer)">
                 <EyeIcon v-if="layer.visible" />
                 <EyeOffIcon v-else />
               </button>
@@ -149,8 +144,7 @@ export default defineComponent({
       )[0] as LayerInfo<AnyTileLayer>;
 
       vectorLayers.value = mappedLayers.filter(
-        ({ layer }) =>
-          layer instanceof VectorLayer || layer instanceof LayerGroup
+        ({ layer }) => layer instanceof VectorLayer || layer instanceof LayerGroup
       ) as LayerInfo<AnyVectorLayer>[];
     };
 

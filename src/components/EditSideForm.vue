@@ -43,9 +43,7 @@ export default defineComponent({
   setup(props, { emit }) {
     let form = ref<Partial<Side>>({ name: "New side", standardIdentity: "3" });
     const { getSideById, updateSide } = useScenarioStore();
-    const side = computed(() =>
-      props.sideId ? getSideById(props.sideId) : undefined
-    );
+    const side = computed(() => (props.sideId ? getSideById(props.sideId) : undefined));
     watch(
       () => props.sideId,
       (sideId) => {
@@ -61,15 +59,13 @@ export default defineComponent({
       updateSide({ id: props.sideId, ...form.value });
       emit("close");
     };
-    const sidItems = standardIdentityValues.map(
-      ({ code, text }): SymbolItem => {
-        return {
-          code,
-          text,
-          sidc: "100" + code + 10 + "00" + "00" + "0000000000",
-        };
-      }
-    );
+    const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {
+      return {
+        code,
+        text,
+        sidc: "100" + code + 10 + "00" + "00" + "0000000000",
+      };
+    });
 
     const { focusId } = useFocusOnMount();
 
