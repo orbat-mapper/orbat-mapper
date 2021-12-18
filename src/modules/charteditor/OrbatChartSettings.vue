@@ -1,7 +1,8 @@
 <template>
-  <div class="space-y-2">
+  <div class="space-y-4">
     <h3 class="text-gray-900 font-medium">Settings</h3>
     <InputGroup label="Levels" type="number" v-model="options.maxLevels"></InputGroup>
+    <InputGroup label="Symbol size" type="number" v-model="options.symbolSize" />
   </div>
 </template>
 

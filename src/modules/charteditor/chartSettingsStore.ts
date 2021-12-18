@@ -1,10 +1,13 @@
 import { defineStore } from "pinia";
 
-interface State {
-  maxLevels: 3;
+export interface State {
+  maxLevels: number;
+  symbolSize: number;
 }
+
 export const useChartSettingsStore = defineStore("chartSettingsStore", {
   state: (): State => ({
     maxLevels: 3,
+    symbolSize: 32,
   }),
 });

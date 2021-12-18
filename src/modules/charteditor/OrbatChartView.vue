@@ -1,12 +1,12 @@
 <template>
   <div class="w-screen h-screen relative flex overflow-hidden">
-    <aside class="hidden w-64 lg:flex lg:flex-shrink-0 bg-gray-50 print:hidden p-6">
-      <OrbatChartSettings />
+    <aside class="hidden lg:w-64 lg:flex lg:flex-shrink-0 bg-gray-50 p-6 print:hidden">
+      <OrbatChartSettings class="print:hidden" />
     </aside>
     <SlideOver v-model="isMenuOpen">
       <OrbatChartSettings v-if="isMenuOpen" />
     </SlideOver>
-    <main class="relative min-w-0 flex-auto">
+    <main class="relative min-w-0 flex-auto print:block">
       <OrbatChart
         v-if="isReady"
         :unit="rootUnit"
@@ -93,7 +93,7 @@ export default defineComponent({
     );
 
     const lastLevelLayout = LevelLayout.TreeRight;
-    const width = ref(1920 / 2);
+    const width = ref(1920);
     const height = ref(1080);
     const isReady = computed(() => scenarioStore.isLoaded);
 
