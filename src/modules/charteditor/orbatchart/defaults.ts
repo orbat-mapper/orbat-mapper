@@ -26,4 +26,5 @@ export const DEFAULT_OPTIONS = {
   treeOffset: TREE_LEFT_RIGHT_OFFSET,
   stackedOffset: STACKED_OFFSET,
   lineWidth: 1,
+  fontSize: 12,
 } as OrbChartOptions;

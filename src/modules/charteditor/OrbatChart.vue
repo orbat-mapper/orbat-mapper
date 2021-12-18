@@ -34,6 +34,7 @@ export default defineComponent({
     treeOffset: { type: Number, default: DEFAULT_OPTIONS.treeOffset },
     stackedOffset: { type: Number, default: DEFAULT_OPTIONS.stackedOffset },
     lineWidth: { type: Number, default: DEFAULT_OPTIONS.lineWidth },
+    fontSize: { type: Number, default: DEFAULT_OPTIONS.fontSize },
     specificOptions: { type: Object },
     interactive: { type: Boolean, default: false },
     highlightedLevels: { type: Array, default: () => [] },
@@ -90,6 +91,7 @@ export default defineComponent({
           treeOffset: props.treeOffset,
           stackedOffset: props.stackedOffset,
           lineWidth: props.lineWidth,
+          fontSize: props.fontSize,
         },
         props.specificOptions || {}
       );

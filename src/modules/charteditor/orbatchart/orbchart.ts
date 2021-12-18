@@ -57,6 +57,7 @@ function createChartStyle(options: OrbChartOptions) {
 
 .o-label {
   text-anchor: middle;
+  font-size: ${options.fontSize}pt;
 }
 
 ${HIGHLIGT_STYLE}
