@@ -1,28 +1,45 @@
 <template>
-  <main class="w-screen h-screen relative">
-    <OrbatChart
-      v-if="isReady"
-      :unit="rootUnit"
-      :debug="debug"
-      :last-level-layout="lastLevelLayout"
-      :width="width"
-      :height="height"
-      :symbol-generator="symbolGenerator"
-      @unitclick="onUnitClick"
-      :interactive="isInteractive"
-      :chart-id="chartId"
-    />
-    <div class="absolute left-4 top-4 flex items-center space-x-4">
-      <ToggleField v-model="debug">Debug mode</ToggleField>
-      <ToggleField v-model="isInteractive">Interactive</ToggleField>
-      <button @click="showSearch = true" class="text-gray-500 hover:text-gray-900">
-        <span class="sr-only">Search units</span>
-        <SearchIcon class="h-5 w-5" />
-      </button>
-      <DotsMenu :items="menuItems" />
-    </div>
-    <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
-  </main>
+  <div class="w-screen h-screen relative flex overflow-hidden">
+    <aside class="hidden w-64 lg:flex lg:flex-shrink-0 bg-gray-50 print:hidden p-6">
+      <OrbatChartSettings />
+    </aside>
+    <SlideOver v-model="isMenuOpen">
+      <OrbatChartSettings v-if="isMenuOpen" />
+    </SlideOver>
+    <main class="relative min-w-0 flex-auto">
+      <OrbatChart
+        v-if="isReady"
+        :unit="rootUnit"
+        :debug="debug"
+        :last-level-layout="lastLevelLayout"
+        :width="width"
+        :height="height"
+        :symbol-generator="symbolGenerator"
+        @unitclick="onUnitClick"
+        :interactive="isInteractive"
+        :chart-id="chartId"
+        v-bind="options.$state"
+      />
+      <div class="absolute left-4 top-4 flex items-center space-x-4 print:hidden">
+        <button
+          type="button"
+          @click="isMenuOpen = true"
+          class="p-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden"
+        >
+          <span class="sr-only">Open sidebar</span>
+          <MenuAlt2Icon class="h-6 w-6" aria-hidden="true" />
+        </button>
+        <ToggleField v-model="debug">Debug mode</ToggleField>
+        <ToggleField v-model="isInteractive">Interactive</ToggleField>
+        <button @click="showSearch = true" class="text-gray-500 hover:text-gray-900">
+          <span class="sr-only">Search units</span>
+          <SearchIcon class="h-5 w-5" />
+        </button>
+        <DotsMenu :items="menuItems" />
+      </div>
+      <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
+    </main>
+  </div>
 </template>
 
 <script lang="ts">
@@ -34,20 +51,26 @@ import { useScenarioIO } from "../../stores/scenarioIO";
 import { LevelLayout, UnitNodeInfo } from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
-import { SearchIcon } from "@heroicons/vue/solid";
+import { SearchIcon, MenuAlt2Icon } from "@heroicons/vue/solid";
 import { Unit } from "../../types/models";
 import { whenever } from "@vueuse/core";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import FileSaver from "file-saver";
+import SlideOver from "../../components/SlideOver.vue";
+import OrbatChartSettings from "./OrbatChartSettings.vue";
+import { useChartSettingsStore } from "./chartSettingsStore";
 
 export default defineComponent({
   name: "OrbatChartView",
   components: {
+    OrbatChartSettings,
+    SlideOver,
     SearchModal: defineAsyncComponent(() => import("../../components/SearchModal.vue")),
     ToggleField,
     OrbatChart,
     SearchIcon,
     DotsMenu,
+    MenuAlt2Icon,
   },
   setup() {
     const debug = ref(false);
@@ -57,6 +80,8 @@ export default defineComponent({
     const scenarioStore = useScenarioStore();
     const scenarioIO = useScenarioIO();
     const chartId = "OrbatChart";
+    const isMenuOpen = ref(false);
+    const options = useChartSettingsStore();
 
     scenarioIO.loadDemoScenario("falkland82");
     whenever(
@@ -108,6 +133,8 @@ export default defineComponent({
       onUnitSelect,
       menuItems,
       chartId,
+      isMenuOpen,
+      options,
     };
   },
 });

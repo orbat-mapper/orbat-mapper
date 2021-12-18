@@ -1,12 +1,5 @@
 <script lang="ts">
-import {
-  defineComponent,
-  onBeforeUnmount,
-  onUnmounted,
-  PropType,
-  ref,
-  watchEffect,
-} from "vue";
+import { defineComponent, onBeforeUnmount, PropType, ref, watchEffect } from "vue";
 import OrbatChart, {
   ChartOrientation,
   DEFAULT_OPTIONS,
@@ -86,9 +79,9 @@ export default defineComponent({
           maxLevels: props.maxLevels,
           debug: props.debug,
           symbolSize: props.symbolSize,
-          onClick: onClick,
-          onLevelClick: onLevelClick,
-          onLevelGroupClick: onLevelGroupClick,
+          onClick,
+          onLevelClick,
+          onLevelGroupClick,
           connectorOffset: props.connectorOffset,
           orientation: props.orientation,
           unitLevelDistance: props.unitLevelDistance,
