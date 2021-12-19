@@ -1,12 +1,10 @@
 <script lang="ts">
 import { defineComponent, onBeforeUnmount, PropType, ref, watchEffect } from "vue";
 import OrbatChart, {
-  ChartOrientation,
-  DEFAULT_OPTIONS,
-  LevelLayout,
+  PartialOrbChartOptions,
+  SpecificOptions,
   SymbolGenerator,
   Unit,
-  UnitLevelDistance,
   UnitNodeInfo,
 } from "./orbatchart";
 
@@ -14,28 +12,9 @@ export default defineComponent({
   name: "OrbatChart",
   props: {
     unit: { type: Object as PropType<Unit> },
-    maxLevels: { type: Number, default: 3 },
     debug: { type: Boolean, default: false },
-    symbolSize: { type: Number, default: 32 },
-    connectorOffset: { type: Number, default: DEFAULT_OPTIONS.connectorOffset },
-    orientation: {
-      type: String as PropType<ChartOrientation>,
-      default: DEFAULT_OPTIONS.orientation,
-    },
-    unitLevelDistance: {
-      type: String as PropType<UnitLevelDistance>,
-      default: DEFAULT_OPTIONS.unitLevelDistance,
-    },
-    lastLevelLayout: {
-      type: String as PropType<LevelLayout>,
-      default: LevelLayout.Horizontal,
-    },
-    levelPadding: { type: Number, default: DEFAULT_OPTIONS.levelPadding },
-    treeOffset: { type: Number, default: DEFAULT_OPTIONS.treeOffset },
-    stackedOffset: { type: Number, default: DEFAULT_OPTIONS.stackedOffset },
-    lineWidth: { type: Number, default: DEFAULT_OPTIONS.lineWidth },
-    fontSize: { type: Number, default: DEFAULT_OPTIONS.fontSize },
-    specificOptions: { type: Object },
+    options: { type: Object as PropType<PartialOrbChartOptions> },
+    specificOptions: { type: Object as PropType<SpecificOptions> },
     interactive: { type: Boolean, default: false },
     highlightedLevels: { type: Array, default: () => [] },
     width: { type: Number, default: 600 },
@@ -76,25 +55,16 @@ export default defineComponent({
       orbatChart = new OrbatChart(
         props.unit,
         {
+          ...props.options,
           symbolGenerator: props.symbolGenerator,
-          maxLevels: props.maxLevels,
           debug: props.debug,
-          symbolSize: props.symbolSize,
           onClick,
           onLevelClick,
           onLevelGroupClick,
-          connectorOffset: props.connectorOffset,
-          orientation: props.orientation,
-          unitLevelDistance: props.unitLevelDistance,
-          lastLevelLayout: props.lastLevelLayout,
-          levelPadding: props.levelPadding,
-          treeOffset: props.treeOffset,
-          stackedOffset: props.stackedOffset,
-          lineWidth: props.lineWidth,
-          fontSize: props.fontSize,
         },
         props.specificOptions || {}
       );
+
       orbatChart.toSVG(
         { width: props.width, height: props.height },
         chartRootElement.value,

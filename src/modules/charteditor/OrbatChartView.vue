@@ -11,14 +11,13 @@
         v-if="isReady"
         :unit="rootUnit"
         :debug="debug"
-        :last-level-layout="lastLevelLayout"
         :width="width"
         :height="height"
         :symbol-generator="symbolGenerator"
         @unitclick="onUnitClick"
         :interactive="isInteractive"
         :chart-id="chartId"
-        v-bind="options.$state"
+        :options="options.$state"
       />
       <div class="absolute left-4 top-4 flex items-center space-x-4 print:hidden">
         <button
