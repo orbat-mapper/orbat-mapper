@@ -13,5 +13,10 @@ export const useChartSettingsStore = defineStore("chartSettingsStore", {
     symbolSize: DEFAULT_OPTIONS.symbolSize,
     fontSize: DEFAULT_OPTIONS.fontSize,
     lastLevelLayout: LevelLayout.TreeRight,
+    connectorOffset: DEFAULT_OPTIONS.connectorOffset,
+    levelPadding: DEFAULT_OPTIONS.levelPadding,
+    treeOffset: DEFAULT_OPTIONS.treeOffset,
+    stackedOffset: DEFAULT_OPTIONS.stackedOffset,
+    lineWidth: DEFAULT_OPTIONS.lineWidth,
   }),
 });
