@@ -3,7 +3,7 @@
     <aside class="hidden lg:w-64 lg:flex lg:flex-shrink-0 bg-gray-50 p-6 print:hidden">
       <OrbatChartSettings class="print:hidden" />
     </aside>
-    <SlideOver v-model="isMenuOpen">
+    <SlideOver v-model="isMenuOpen" left>
       <OrbatChartSettings v-if="isMenuOpen" />
     </SlideOver>
     <main class="relative min-w-0 flex-auto print:block">

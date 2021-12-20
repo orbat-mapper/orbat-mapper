@@ -11,15 +11,18 @@
       <div class="absolute inset-0 overflow-hidden">
         <DialogOverlay class="absolute inset-0" />
 
-        <div class="fixed inset-y-0 right-0 sm:pl-16 max-w-full flex">
+        <div
+          class="fixed inset-y-0 sm:pl-16 max-w-full flex"
+          :class="left ? 'left-0' : 'right-0'"
+        >
           <TransitionChild
             as="template"
             enter="transform transition ease-in-out duration-500 sm:duration-500"
-            enter-from="translate-x-full"
+            :enter-from="left ? '-translate-x-full' : 'translate-x-full'"
             enter-to="translate-x-0"
             leave="transform transition ease-in-out duration-500 sm:duration-500"
             leave-from="translate-x-0"
-            leave-to="translate-x-full"
+            :leave-to="left ? '-translate-x-full' : 'translate-x-full'"
           >
             <div class="w-screen max-w-xs sm:max-w-md">
               <div class="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll">
@@ -71,7 +74,7 @@ export default defineComponent({
     TransitionRoot,
     XIcon,
   },
-  props: { modelValue: { type: Boolean, default: false }, title: String },
+  props: { modelValue: { type: Boolean, default: false }, title: String, left: Boolean },
   emits: ["update:modelValue"],
   setup(props, { emit }) {
     const open = computed({
