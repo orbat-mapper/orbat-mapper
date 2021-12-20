@@ -150,13 +150,16 @@ function createUnitGroup(
   options: OrbChartOptions
 ): RenderedUnitNode {
   const g = createGroupElement(parentElement, "o-unit");
+  const unitLabel = options.useShortName
+    ? unitNode.unit.shortName || unitNode.unit.name
+    : unitNode.unit.name;
   g.append("g").html(unitNode.symb.asSVG());
   g.append("text")
     .attr("x", unitNode.octagonAnchor.x)
     .attr("dy", "1.1em")
     .attr("y", unitNode.symbolBoxSize.height)
     .attr("class", "o-label")
-    .text(unitNode.unit.name);
+    .text(unitLabel);
 
   if (options.onClick) {
     g.on("click", (e) => {

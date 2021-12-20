@@ -16,7 +16,7 @@
       />
     </Switch>
     <SwitchLabel as="span" class="ml-3">
-      <span class="text-sm font-medium text-gray-900"><slot></slot></span>
+      <span class="text-sm font-medium text-gray-700"><slot></slot></span>
     </SwitchLabel>
   </SwitchGroup>
 </template>

@@ -13,6 +13,7 @@
     <InputGroup label="Line width" type="number" v-model="options.lineWidth" />
     <InputGroup label="Tree offset" type="number" v-model="options.treeOffset" />
     <InputGroup label="Stacked offset" type="number" v-model="options.stackedOffset" />
+    <ToggleField v-model="options.useShortName">Use short unit names</ToggleField>
     <SimpleSelect
       label="Last level layout"
       v-model="options.lastLevelLayout"
@@ -26,10 +27,11 @@ import InputGroup from "../../components/InputGroup.vue";
 import { useChartSettingsStore } from "./chartSettingsStore";
 import SimpleSelect from "../../components/SimpleSelect.vue";
 import { LevelLayout } from "./orbatchart";
+import ToggleField from "../../components/ToggleField.vue";
 
 export default {
   name: "OrbatChartSettings",
-  components: { SimpleSelect, InputGroup },
+  components: { ToggleField, SimpleSelect, InputGroup },
   setup() {
     const options = useChartSettingsStore();
     const levelItems = Object.entries(LevelLayout).map(([label, value]) => ({

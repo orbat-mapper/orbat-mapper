@@ -27,4 +27,5 @@ export const DEFAULT_OPTIONS = {
   stackedOffset: STACKED_OFFSET,
   lineWidth: 1,
   fontSize: 12,
+  useShortName: false,
 } as OrbChartOptions;

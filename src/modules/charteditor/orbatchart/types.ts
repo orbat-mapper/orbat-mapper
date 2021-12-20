@@ -103,6 +103,7 @@ export interface OrbChartOptions {
   stackedOffset: number;
   lineWidth: number;
   fontSize: number;
+  useShortName: boolean;
 }
 
 export type PartialOrbChartOptions = Partial<OrbChartOptions>;

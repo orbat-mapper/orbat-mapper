@@ -18,5 +18,6 @@ export const useChartSettingsStore = defineStore("chartSettingsStore", {
     treeOffset: DEFAULT_OPTIONS.treeOffset,
     stackedOffset: DEFAULT_OPTIONS.stackedOffset,
     lineWidth: DEFAULT_OPTIONS.lineWidth,
+    useShortName: false,
   }),
 });

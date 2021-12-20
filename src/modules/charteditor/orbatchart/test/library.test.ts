@@ -47,6 +47,7 @@ describe("OrbatChart SVG rendering", () => {
 
 const DUMMY_UNIT: Unit = {
   name: "Unit A",
+  shortName: "A Bde",
   id: "1",
   sidc: "10031000151211000000",
   subUnits: [],
@@ -108,5 +109,21 @@ describe("OrbatChart orientation", () => {
       orientation: ChartOrientation.Bottom,
     });
     expect(ob.options.orientation).toBe(ChartOrientation.Bottom);
+  });
+});
+
+describe("OrbatChart unit names", () => {
+  it("uses name by default", () => {
+    let o = new OrbatChart(DUMMY_UNIT);
+    let svg = o.toSVG({}, document.body);
+    const svgString = svg.innerHTML;
+    expect(svgString).toContain(DUMMY_UNIT.name);
+  });
+
+  it("uses short name if useShortName is true", () => {
+    let o = new OrbatChart(DUMMY_UNIT, { useShortName: true });
+    let svg = o.toSVG({}, document.body);
+    const svgString = svg.innerHTML;
+    expect(svgString).toContain(DUMMY_UNIT.shortName);
   });
 });
