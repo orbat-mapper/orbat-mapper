@@ -2,6 +2,7 @@ import {
   ChartOrientation,
   DEFAULT_OPTIONS,
   OrbatChart,
+  PartialOrbChartOptions,
   SymbolGenerator,
   Unit,
 } from "../index";
@@ -84,18 +85,6 @@ describe("Symbol generator", () => {
     let ob = new OrbatChart(DUMMY_UNIT, { symbolGenerator: customGenerator });
     expect(ob.options.symbolGenerator).toBe(customGenerator);
   });
-  /*
-  it("is used", () => {
-    const dummy_sidc = "11111111111111111111";
-    let customGenerator: SymbolGenerator = (sidc, options) => {
-      return new Symbol(dummy_sidc, options)
-    };
-    let ob = new OrbatChart(DUMMY_UNIT, { symbolGenerator: customGenerator });
-    let nodeInfo: UnitNodeInfo = ob.groupedLevels[0][0][0];
-    let symbolOptions = nodeInfo.symb.getOptions();
-    expect(symbolOptions["sidc"]).toBe(dummy_sidc)
-  })
- */
 });
 
 describe("OrbatChart orientation", () => {
@@ -112,18 +101,20 @@ describe("OrbatChart orientation", () => {
   });
 });
 
-describe("OrbatChart unit names", () => {
+function createChartSvgString(options?: PartialOrbChartOptions) {
+  let o = new OrbatChart(DUMMY_UNIT, options);
+  let svg = o.toSVG({}, document.body);
+  return svg.innerHTML;
+}
+
+describe("OrbatChart unit labels", () => {
   it("uses name by default", () => {
-    let o = new OrbatChart(DUMMY_UNIT);
-    let svg = o.toSVG({}, document.body);
-    const svgString = svg.innerHTML;
+    const svgString = createChartSvgString();
     expect(svgString).toContain(DUMMY_UNIT.name);
   });
 
   it("uses short name if useShortName is true", () => {
-    let o = new OrbatChart(DUMMY_UNIT, { useShortName: true });
-    let svg = o.toSVG({}, document.body);
-    const svgString = svg.innerHTML;
+    const svgString = createChartSvgString({ useShortName: true });
     expect(svgString).toContain(DUMMY_UNIT.shortName);
   });
 });
