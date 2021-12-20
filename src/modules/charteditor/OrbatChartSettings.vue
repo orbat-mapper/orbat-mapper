@@ -19,27 +19,31 @@
       v-model="options.lastLevelLayout"
       :items="levelItems"
     />
+    <SimpleSelect
+      label="Unit spacing"
+      v-model="options.unitLevelDistance"
+      :items="spacingItems"
+    />
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import InputGroup from "../../components/InputGroup.vue";
 import { useChartSettingsStore } from "./chartSettingsStore";
 import SimpleSelect from "../../components/SimpleSelect.vue";
-import { LevelLayout } from "./orbatchart";
+import { LevelLayout, UnitLevelDistance } from "./orbatchart";
 import ToggleField from "../../components/ToggleField.vue";
+import { enum2Items } from "../../utils";
 
 export default {
   name: "OrbatChartSettings",
   components: { ToggleField, SimpleSelect, InputGroup },
   setup() {
     const options = useChartSettingsStore();
-    const levelItems = Object.entries(LevelLayout).map(([label, value]) => ({
-      label,
-      value,
-    }));
+    const levelItems = enum2Items(LevelLayout);
+    const spacingItems = enum2Items(UnitLevelDistance);
 
-    return { options, levelItems };
+    return { options, levelItems, spacingItems };
   },
 };
 </script>
