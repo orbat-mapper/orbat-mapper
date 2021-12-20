@@ -44,6 +44,7 @@ const HIGHLIGT_STYLE = `
     stroke: red;
     stroke-width: 2pt;
     fill: #ccc;
+    fill-opacity: 0.1;
   }
 `;
 
@@ -297,7 +298,7 @@ class OrbatChart {
       .attr("class", "highlight select-rect");
     if (this.options.onLevelGroupClick) {
       tmp.on("click", (e) => {
-        this.options.onLevelGroupClick(renderedLevelGroup.units[0].parent!.unit.id || 0);
+        this.options.onLevelGroupClick(renderedLevelGroup.units[0]?.parent?.unit.id || 0);
       });
     }
   }
