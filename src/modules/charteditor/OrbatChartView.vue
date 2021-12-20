@@ -86,7 +86,7 @@ export default defineComponent({
     whenever(
       () => scenarioStore.isLoaded,
       () => {
-        rootUnit.value = scenarioStore.getUnitByName("3 Mech Inf Bde") || ORBAT1;
+        rootUnit.value = scenarioStore.getUnitByName("TG 317.1 LG") || ORBAT1;
       },
       { immediate: true }
     );

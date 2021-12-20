@@ -384,13 +384,15 @@
                           "name": "Left Flank",
                           "sidc": "10031000151211000000",
                           "id": "ZAWfVIlG0e0m1InBT3IT4",
-                          "state": []
+                          "state": [],
+                          "shortName": "LF"
                         },
                         {
                           "name": "Right Flank",
                           "sidc": "10031000151211000000",
                           "id": "yzpHFOCCRimBYvqSVrX4L",
-                          "state": []
+                          "state": [],
+                          "shortName": "RF"
                         },
                         {
                           "name": "G",

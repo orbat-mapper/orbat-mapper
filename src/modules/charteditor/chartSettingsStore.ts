@@ -9,16 +9,16 @@ export interface State {
 
 export const useChartSettingsStore = defineStore("chartSettingsStore", {
   state: (): PartialOrbChartOptions => ({
-    maxLevels: 3,
+    maxLevels: 4,
     symbolSize: DEFAULT_OPTIONS.symbolSize,
     fontSize: DEFAULT_OPTIONS.fontSize,
     lastLevelLayout: LevelLayout.TreeRight,
     connectorOffset: DEFAULT_OPTIONS.connectorOffset,
-    levelPadding: DEFAULT_OPTIONS.levelPadding,
+    levelPadding: 160,
     treeOffset: DEFAULT_OPTIONS.treeOffset,
     stackedOffset: DEFAULT_OPTIONS.stackedOffset,
     lineWidth: DEFAULT_OPTIONS.lineWidth,
-    useShortName: false,
+    useShortName: true,
     unitLevelDistance: DEFAULT_OPTIONS.unitLevelDistance,
   }),
 });
