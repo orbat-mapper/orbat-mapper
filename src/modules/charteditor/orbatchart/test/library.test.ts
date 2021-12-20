@@ -117,4 +117,9 @@ describe("OrbatChart unit labels", () => {
     const svgString = createChartSvgString({ useShortName: true });
     expect(svgString).toContain(DUMMY_UNIT.shortName);
   });
+
+  it("has configurable labelOffset", () => {
+    const svgString = createChartSvgString({ labelOffset: 1337 });
+    expect(svgString).toContain("1337");
+  });
 });

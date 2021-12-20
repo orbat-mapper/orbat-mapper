@@ -13,6 +13,7 @@
     <InputGroup label="Line width" type="number" v-model="options.lineWidth" />
     <InputGroup label="Tree offset" type="number" v-model="options.treeOffset" />
     <InputGroup label="Stacked offset" type="number" v-model="options.stackedOffset" />
+    <InputGroup label="Label offset" type="number" v-model="options.labelOffset" />
     <ToggleField v-model="options.useShortName">Use short unit names</ToggleField>
     <SimpleSelect
       label="Last level layout"

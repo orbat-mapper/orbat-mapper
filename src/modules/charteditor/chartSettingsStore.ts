@@ -20,5 +20,6 @@ export const useChartSettingsStore = defineStore("chartSettingsStore", {
     lineWidth: DEFAULT_OPTIONS.lineWidth,
     useShortName: true,
     unitLevelDistance: DEFAULT_OPTIONS.unitLevelDistance,
+    labelOffset: DEFAULT_OPTIONS.labelOffset,
   }),
 });

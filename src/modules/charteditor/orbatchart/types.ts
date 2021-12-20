@@ -104,6 +104,7 @@ export interface OrbChartOptions {
   lineWidth: number;
   fontSize: number;
   useShortName: boolean;
+  labelOffset: number;
 }
 
 export type PartialOrbChartOptions = Partial<OrbChartOptions>;

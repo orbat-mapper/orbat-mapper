@@ -156,7 +156,7 @@ function createUnitGroup(
   g.append("g").html(unitNode.symb.asSVG());
   g.append("text")
     .attr("x", unitNode.octagonAnchor.x)
-    .attr("dy", "1.1em")
+    .attr("dy", `${options.labelOffset}pt`)
     .attr("y", unitNode.symbolBoxSize.height)
     .attr("class", "o-label")
     .text(unitLabel);

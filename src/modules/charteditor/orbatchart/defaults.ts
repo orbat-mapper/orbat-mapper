@@ -28,4 +28,5 @@ export const DEFAULT_OPTIONS = {
   lineWidth: 1,
   fontSize: 12,
   useShortName: false,
+  labelOffset: 16,
 } as OrbChartOptions;
