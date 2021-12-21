@@ -1,7 +1,7 @@
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4 pb-4">
     <p class="text-sm text-gray-600">Unit specific options.</p>
-    <div v-if="currentUnit">
+    <div v-if="currentUnit" class="space-y-6">
       <header class="flex items-start">
         <div class="flex-shrink-0 w-16 h-20">
           <MilSymbol :sidc="currentUnit.sidc" :size="34" />
@@ -11,29 +11,30 @@
           <p class="text-sm text-gray-500">{{ currentUnit.shortName }}</p>
         </div>
       </header>
+      <PlainButton @click="clearUnitOptions()">Clear settings</PlainButton>
+
+      <InputGroup
+        label="Symbol size"
+        type="number"
+        :model-value="mergedOptions.symbolSize"
+        @update:model-value="setValue('symbolSize', $event)"
+        :class="!usedOptions.has('symbolSize') && 'sepia-[50%]'"
+      />
+
+      <!--    <InputGroup-->
+      <!--      label="Font size"-->
+      <!--      type="number"-->
+      <!--      :model-value="mergedOptions.fontSize"-->
+      <!--      @update:model-value="setValue('fontSize', $event)"-->
+      <!--      :class="!usedOptions.has('fontSize') && 'sepia-[50%]'"-->
+      <!--    />-->
+      <ToggleField
+        :model-value="mergedOptions.useShortName"
+        @update:model-value="setValue('useShortName', $event)"
+        :class="!usedOptions.has('useShortName') && 'sepia-[50%]'"
+        >Use short unit names
+      </ToggleField>
     </div>
-
-    <InputGroup
-      label="Symbol size"
-      type="number"
-      :model-value="mergedOptions.symbolSize"
-      @update:model-value="setValue('symbolSize', $event)"
-      :class="!usedOptions.has('symbolSize') && 'sepia-[50%]'"
-    />
-
-    <!--    <InputGroup-->
-    <!--      label="Font size"-->
-    <!--      type="number"-->
-    <!--      :model-value="mergedOptions.fontSize"-->
-    <!--      @update:model-value="setValue('fontSize', $event)"-->
-    <!--      :class="!usedOptions.has('fontSize') && 'sepia-[50%]'"-->
-    <!--    />-->
-    <ToggleField
-      :model-value="mergedOptions.useShortName"
-      @update:model-value="setValue('useShortName', $event)"
-      :class="!usedOptions.has('useShortName') && 'sepia-[50%]'"
-      >Use short unit names</ToggleField
-    >
   </div>
 </template>
 
@@ -48,10 +49,11 @@ import SimpleSelect from "../../components/SimpleSelect.vue";
 import ToggleField from "../../components/ToggleField.vue";
 import { computed, defineComponent, reactive, ref } from "vue";
 import MilSymbol from "../../components/MilSymbol.vue";
+import PlainButton from "../../components/PlainButton.vue";
 
 export default defineComponent({
   name: "OrbatChartSettingsUnit",
-  components: { MilSymbol, ToggleField, SimpleSelect, InputGroup },
+  components: { PlainButton, MilSymbol, ToggleField, SimpleSelect, InputGroup },
   setup() {
     const options = useChartSettingsStore();
     const currentUnitNode = useSelectedChartUnitStore();
@@ -75,9 +77,20 @@ export default defineComponent({
       if (currentUnit.value) specificOptions.unit[currentUnit.value.id] = opts;
     }
 
+    function clearUnitOptions() {
+      if (currentUnit.value) specificOptions.unit[currentUnit.value.id] = {};
+    }
+
     const usedOptions = computed(() => new Set(Object.keys(unitOptions.value || {})));
 
-    return { options, currentUnit, mergedOptions, setValue, usedOptions };
+    return {
+      options,
+      currentUnit,
+      mergedOptions,
+      setValue,
+      usedOptions,
+      clearUnitOptions,
+    };
   },
 });
 </script>
