@@ -52,8 +52,7 @@ import MilSymbol from "../../components/MilSymbol.vue";
 export default defineComponent({
   name: "OrbatChartSettingsUnit",
   components: { MilSymbol, ToggleField, SimpleSelect, InputGroup },
-  props: {},
-  setup(props) {
+  setup() {
     const options = useChartSettingsStore();
     const currentUnitNode = useSelectedChartUnitStore();
     const specificOptions = useSpecificChartOptionsStore();

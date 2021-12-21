@@ -87,7 +87,7 @@ export default defineComponent({
     const scenarioIO = useScenarioIO();
     const chartId = "OrbatChart";
     const isMenuOpen = ref(false);
-    const currentTab = ref<ChartTabs>(ChartTabs.Level);
+    const currentTab = ref<ChartTabs>(ChartTabs.Chart);
 
     const options = useChartSettingsStore();
     const specificOptions = useSpecificChartOptionsStore();
