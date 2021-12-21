@@ -1,10 +1,10 @@
 <template>
   <div class="w-screen h-screen relative flex overflow-hidden">
-    <aside class="hidden lg:w-64 lg:flex lg:flex-shrink-0 bg-gray-50 p-6 print:hidden">
-      <OrbatChartSettings class="print:hidden" />
+    <aside class="hidden lg:w-[20rem] lg:flex lg:flex-shrink-0 bg-gray-50 print:hidden">
+      <OrbatChartSettings v-model:tab="currentTab" class="print:hidden" />
     </aside>
-    <SlideOver v-model="isMenuOpen" left>
-      <OrbatChartSettings v-if="isMenuOpen" />
+    <SlideOver v-model="isMenuOpen" left title="Chart layout settings">
+      <OrbatChartSettings v-if="isMenuOpen" v-model:tab="currentTab" />
     </SlideOver>
     <main class="relative min-w-0 flex-auto print:block">
       <OrbatChart
@@ -15,9 +15,12 @@
         :height="height"
         :symbol-generator="symbolGenerator"
         @unitclick="onUnitClick"
+        @levelclick="onLevelClick"
         :interactive="isInteractive"
         :chart-id="chartId"
         :options="options.$state"
+        :specific-options="specificOptions.$state"
+        class=""
       />
       <div class="absolute left-4 top-4 flex items-center space-x-4 print:hidden">
         <button
@@ -47,17 +50,21 @@ import OrbatChart from "./OrbatChart.vue";
 import ToggleField from "../../components/ToggleField.vue";
 import { useScenarioStore } from "../../stores/scenarioStore";
 import { useScenarioIO } from "../../stores/scenarioIO";
-import { LevelLayout, UnitNodeInfo } from "./orbatchart";
+import { LevelLayout, OnLevelClickCallback, UnitNodeInfo } from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
-import { SearchIcon, MenuAlt2Icon } from "@heroicons/vue/solid";
+import { MenuAlt2Icon, SearchIcon } from "@heroicons/vue/solid";
 import { Unit } from "../../types/models";
 import { whenever } from "@vueuse/core";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import FileSaver from "file-saver";
 import SlideOver from "../../components/SlideOver.vue";
-import OrbatChartSettings from "./OrbatChartSettings.vue";
-import { useChartSettingsStore } from "./chartSettingsStore";
+import OrbatChartSettings, { ChartTabs } from "./OrbatChartSettings.vue";
+import {
+  useChartSettingsStore,
+  useSelectedChartUnitStore,
+  useSpecificChartOptionsStore,
+} from "./chartSettingsStore";
 
 export default defineComponent({
   name: "OrbatChartView",
@@ -80,9 +87,13 @@ export default defineComponent({
     const scenarioIO = useScenarioIO();
     const chartId = "OrbatChart";
     const isMenuOpen = ref(false);
-    const options = useChartSettingsStore();
+    const currentTab = ref<ChartTabs>(ChartTabs.Level);
 
+    const options = useChartSettingsStore();
+    const specificOptions = useSpecificChartOptionsStore();
+    const currentNodeUnit = useSelectedChartUnitStore();
     scenarioIO.loadDemoScenario("falkland82");
+
     whenever(
       () => scenarioStore.isLoaded,
       () => {
@@ -90,25 +101,26 @@ export default defineComponent({
       },
       { immediate: true }
     );
-
     const lastLevelLayout = LevelLayout.TreeRight;
     const width = ref(1920);
     const height = ref(1080);
+
     const isReady = computed(() => scenarioStore.isLoaded);
+    const onUnitClick = (unitNode: UnitNodeInfo) => {
+      currentNodeUnit.node = unitNode;
 
-    const onUnitClick = (unit: UnitNodeInfo) => {
-      console.log("Clicked on unit", unit.unit.name);
+      currentTab.value = ChartTabs.Unit;
     };
-
     const onUnitSelect = (unitId: string) => {
       const unit = scenarioStore.getUnitById(unitId);
       if (unit) rootUnit.value = unit;
     };
-
+    const onLevelClick: OnLevelClickCallback = (levelNumber: number) => {
+      // if (isInteractive) currentTab.value = ChartTabs.Level;
+    };
     const doSVGDownload = () => {
       downloadElementAsSVG(chartId);
     };
-
     const doPNGDownload = () => {
       downloadSvgAsPng(chartId, width.value, height.value);
     };
@@ -130,10 +142,13 @@ export default defineComponent({
       isInteractive,
       showSearch,
       onUnitSelect,
+      onLevelClick,
       menuItems,
       chartId,
       isMenuOpen,
       options,
+      currentTab,
+      specificOptions,
     };
   },
 });

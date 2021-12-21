@@ -1,5 +1,11 @@
 import { defineStore } from "pinia";
-import { DEFAULT_OPTIONS, LevelLayout, PartialOrbChartOptions } from "./orbatchart";
+import {
+  DEFAULT_OPTIONS,
+  LevelLayout,
+  PartialOrbChartOptions,
+  SpecificOptions,
+  UnitNodeInfo,
+} from "./orbatchart";
 
 export interface State {
   maxLevels: number;
@@ -22,4 +28,30 @@ export const useChartSettingsStore = defineStore("chartSettingsStore", {
     unitLevelDistance: DEFAULT_OPTIONS.unitLevelDistance,
     labelOffset: DEFAULT_OPTIONS.labelOffset,
   }),
+});
+
+export const useSelectedChartUnitStore = defineStore("selectedChartUnitStore", {
+  state: (): { node: UnitNodeInfo | null } => ({
+    node: null,
+  }),
+  actions: {
+    clear() {
+      this.node = null;
+    },
+  },
+});
+
+export const useSpecificChartOptionsStore = defineStore("specificChartOptions", {
+  state: (): Required<SpecificOptions> => ({
+    level: {},
+    levelGroup: {},
+    unit: {},
+  }),
+  actions: {
+    clear() {
+      this.level = {};
+      this.levelGroup = {};
+      this.unit = {};
+    },
+  },
 });

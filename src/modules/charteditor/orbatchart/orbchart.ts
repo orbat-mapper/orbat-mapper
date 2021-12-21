@@ -27,10 +27,10 @@ import {
 
 // language=CSS format=false
 const HIGHLIGT_STYLE = `
-
   .o-unit:hover {
-    stroke: red;
-    fill: blue;
+    stroke: #770303;
+    fill: #770303;
+    cursor: pointer;
   }
 
   .highlight {

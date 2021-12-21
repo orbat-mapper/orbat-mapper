@@ -10,7 +10,8 @@
     "esModuleInterop": true,
     "lib": ["esnext", "dom"],
     "types": ["vite/client", "@types/jest"],
-    "allowJs": true
+    "allowJs": true,
+    "isolatedModules": true
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

@@ -93,4 +93,8 @@ export default defineComponent({
   padding: 0;
   margin: 0;
 }
+
+.select-rect {
+  cursor: pointer;
+}
 </style>
