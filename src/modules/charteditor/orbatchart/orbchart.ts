@@ -58,7 +58,6 @@ function createChartStyle(options: OrbChartOptions) {
 
 .o-label {
   text-anchor: middle;
-  font-size: ${options.fontSize}pt;
 }
 
 ${HIGHLIGT_STYLE}
@@ -159,6 +158,7 @@ function createUnitGroup(
     .attr("x", unitNode.octagonAnchor.x)
     .attr("dy", `${options.labelOffset}pt`)
     .attr("y", unitNode.symbolBoxSize.height)
+    .attr("font-size", `${options.fontSize}pt`)
     .attr("class", "o-label")
     .text(unitLabel);
 

@@ -21,13 +21,20 @@
         :class="!usedOptions.has('symbolSize') && 'sepia-[50%]'"
       />
 
-      <!--    <InputGroup-->
-      <!--      label="Font size"-->
-      <!--      type="number"-->
-      <!--      :model-value="mergedOptions.fontSize"-->
-      <!--      @update:model-value="setValue('fontSize', $event)"-->
-      <!--      :class="!usedOptions.has('fontSize') && 'sepia-[50%]'"-->
-      <!--    />-->
+      <InputGroup
+        label="Font size"
+        type="number"
+        :model-value="mergedOptions.fontSize"
+        @update:model-value="setValue('fontSize', $event)"
+        :class="!usedOptions.has('fontSize') && 'sepia-[50%]'"
+      />
+      <InputGroup
+        label="Label offset"
+        type="number"
+        :model-value="mergedOptions.labelOffset"
+        @update:model-value="setValue('labelOffset', $event)"
+        :class="!usedOptions.has('labelOffset') && 'sepia-[50%]'"
+      />
       <ToggleField
         :model-value="mergedOptions.useShortName"
         @update:model-value="setValue('useShortName', $event)"
