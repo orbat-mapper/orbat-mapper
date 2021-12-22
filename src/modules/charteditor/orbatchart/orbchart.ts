@@ -225,6 +225,7 @@ class OrbatChart {
   options: OrbChartOptions;
   groupedLevels: BasicUnitNode[][][] = [];
   svg!: SVGElementSelection;
+  connectorGroup!: GElementSelection;
   renderedChart!: RenderedChart;
 
   constructor(
@@ -251,12 +252,17 @@ class OrbatChart {
   toSVG(size: Partial<Size>, parentElement: HTMLElement, elementId?: string): SVGElement {
     this.width = size.width || DEFAULT_CHART_WIDTH;
     this.height = size.height || DEFAULT_CHART_HEIGHT;
-    let renderedChart = this._createSvgElement(parentElement, elementId);
+    let renderedChart = this._createSvgRootElement(parentElement, elementId);
+    const chartGroup = createGroupElement(this.svg, "o-chart");
+    this.connectorGroup = createGroupElement(chartGroup, "o-connectors");
 
     // Pass 1: Create g elements and other svg elements
     // Pass 2: Do unit layout
     // Pass 3: Draw connectors
-    renderedChart.levels = this._createInitialNodeStructure(this.svg, this.groupedLevels);
+    renderedChart.levels = this._createInitialNodeStructure(
+      chartGroup,
+      this.groupedLevels
+    );
     this._doNodeLayout(renderedChart);
     this._drawConnectors(renderedChart);
     this.renderedChart = renderedChart;
@@ -264,12 +270,12 @@ class OrbatChart {
   }
 
   highlightLevel(levelNumber: number) {
-    let layer = select("#o-highlight-layer");
-    let groupElement = select(`#o-level-${levelNumber}`) as GElementSelection;
+    const backgroundLayer = select("#o-highlight-layer");
+    const groupElement = select(`#o-level-${levelNumber}`) as GElementSelection;
     const bbox = groupElement.node()?.getBBox();
     if (!bbox) return;
     let offset = 20;
-    let tmp = layer
+    let tmp = backgroundLayer
       .append("rect")
       .attr("x", bbox.x - offset * 2)
       .attr("y", bbox.y - offset)
@@ -285,11 +291,11 @@ class OrbatChart {
   }
 
   highlightGroup(renderedLevelGroup: RenderedLevelGroup) {
-    let layer = select("#o-highlight-layer");
-    let groupElement = renderedLevelGroup.groupElement;
+    const backgroundLayer = select("#o-highlight-layer");
+    const groupElement = renderedLevelGroup.groupElement;
     const bbox = groupElement.node()!.getBBox();
     let offset = 10;
-    let tmp = layer
+    let tmp = backgroundLayer
       .append("rect")
       .attr("x", bbox.x - offset * 2)
       .attr("y", bbox.y - offset)
@@ -303,7 +309,7 @@ class OrbatChart {
     }
   }
 
-  private _createSvgElement(
+  private _createSvgRootElement(
     parentElement: HTMLElement,
     elementId?: string
   ): RenderedChart {
@@ -374,7 +380,7 @@ class OrbatChart {
   }
 
   private _createInitialNodeStructure(
-    parentElement: SVGElementSelection,
+    parentElement: SVGElementSelection | GElementSelection,
     groupedLevels: BasicUnitNode[][][]
   ): RenderedLevel[] {
     const options = this.options;
@@ -616,7 +622,7 @@ class OrbatChart {
     if (unit.parent) {
       const dy = y - (y - unit.parent.y) / 2;
       const d = `M ${x}, ${y - unit.octagonAnchor.y - options.connectorOffset} V ${dy}`;
-      this.svg.append("path").attr("d", d).classed("o-line", true);
+      this.connectorGroup.append("path").attr("d", d).classed("o-line", true);
     }
   }
 
@@ -625,16 +631,16 @@ class OrbatChart {
     options: OrbChartOptions
   ) {
     let firstUnitInGroup = unitLevelGroup[0];
-    let svg = this.svg;
+    let g = this.connectorGroup;
     let parentUnit = firstUnitInGroup.parent;
     if (!parentUnit) return;
     let lastUnitInGroup = unitLevelGroup[unitLevelGroup.length - 1];
 
     const dy = firstUnitInGroup.y - (firstUnitInGroup.y - parentUnit.y) / 2;
     const d1 = `M ${parentUnit.x}, ${parentUnit.ly + options.connectorOffset} V ${dy}`;
-    svg.append("path").attr("d", d1).classed("o-line", true);
+    g.append("path").attr("d", d1).classed("o-line", true);
     const d = `M ${firstUnitInGroup.x}, ${dy} H ${lastUnitInGroup.x}`;
-    svg.append("path").attr("d", d).classed("o-line", true);
+    g.append("path").attr("d", d).classed("o-line", true);
   }
 
   private _drawUnitLevelGroupTreeLeftRightConnectorPath(
@@ -642,7 +648,7 @@ class OrbatChart {
     levelLayout: LevelLayout,
     options: OrbChartOptions
   ) {
-    let svg = this.svg;
+    let g = this.connectorGroup;
     let lastUnitInGroup = unitLevelGroup[unitLevelGroup.length - 1];
     let parentUnit = lastUnitInGroup.parent as RenderedUnitNode;
     if (!parentUnit) return;
@@ -650,7 +656,7 @@ class OrbatChart {
     const d1 = `M ${parentUnit.x}, ${parentUnit.ly + options.connectorOffset} V ${
       lastUnitInGroup.y
     }`;
-    svg.append("path").attr("d", d1).classed("o-line", true);
+    g.append("path").attr("d", d1).classed("o-line", true);
 
     // find the widest node
     let maxWidth = Math.max(...unitLevelGroup.map((u) => u.boundingBox.width));
@@ -668,7 +674,7 @@ class OrbatChart {
         d1 = `M ${unit.rx + delta + options.connectorOffset}, ${unit.y}  H ${
           parentUnit.x
         }`;
-      svg.append("path").attr("d", d1).classed("o-line", true);
+      g.append("path").attr("d", d1).classed("o-line", true);
     }
   }
 
