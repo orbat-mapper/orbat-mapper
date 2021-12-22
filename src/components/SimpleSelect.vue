@@ -36,7 +36,7 @@ export default defineComponent({
     modelValue: [String, Number],
     items: { type: Array as PropType<SelectItem[]> },
     values: { type: Array as PropType<(string | number)[]> },
-    extraClass: [String, Array, Object, Function],
+    extraClass: [String, Array, Object, Function, Boolean],
   },
   emits: ["update:modelValue"],
   inheritAttrs: false,
