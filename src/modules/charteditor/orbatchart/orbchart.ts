@@ -6,6 +6,7 @@ import {
   GElementSelection,
   LevelLayout,
   OrbChartOptions,
+  PartialOrbChartOptions,
   RenderedChart,
   RenderedLevel,
   RenderedLevelGroup,
@@ -147,20 +148,22 @@ function drawDebugPoint(parentElement: any, x: number, y: number, fillColor = "r
 function createUnitGroup(
   parentElement: GElementSelection,
   unitNode: UnitNodeInfo,
-  options: OrbChartOptions
+  options: OrbChartOptions,
+  specificOptions: PartialOrbChartOptions
 ): RenderedUnitNode {
   const g = createGroupElement(parentElement, "o-unit");
   const unitLabel = options.useShortName
     ? unitNode.unit.shortName || unitNode.unit.name
     : unitNode.unit.name;
   g.append("g").html(unitNode.symb.asSVG());
-  g.append("text")
+  const text = g
+    .append("text")
     .attr("x", unitNode.octagonAnchor.x)
     .attr("dy", `${options.labelOffset}pt`)
     .attr("y", unitNode.symbolBoxSize.height)
-    .attr("font-size", `${options.fontSize}pt`)
     .attr("class", "o-label")
     .text(unitLabel);
+  if (specificOptions.fontSize) text.attr("font-size", `${options.fontSize}pt`);
 
   if (options.onClick) {
     g.on("click", (e) => {
@@ -254,6 +257,7 @@ class OrbatChart {
     this.height = size.height || DEFAULT_CHART_HEIGHT;
     let renderedChart = this._createSvgRootElement(parentElement, elementId);
     const chartGroup = createGroupElement(this.svg, "o-chart");
+    this._addChartAttributes(chartGroup);
     this.connectorGroup = createGroupElement(chartGroup, "o-connectors");
 
     // Pass 1: Create g elements and other svg elements
@@ -267,6 +271,10 @@ class OrbatChart {
     this._drawConnectors(renderedChart);
     this.renderedChart = renderedChart;
     return this.svg.node() as SVGElement;
+  }
+
+  private _addChartAttributes(group: GElementSelection) {
+    group.attr("font-size", `${this.options.fontSize}pt`);
   }
 
   highlightLevel(levelNumber: number) {
@@ -424,7 +432,8 @@ class OrbatChart {
           let renderedUnitNode = createUnitGroup(
             levelGroupGElement,
             convertBasicUnitNode2UnitNodeInfo(unitNode, unitOptions),
-            unitOptions
+            unitOptions,
+            unitSpecificOptions
           );
           renderedUnitNode.options = unitSpecificOptions;
           return renderedUnitNode;
