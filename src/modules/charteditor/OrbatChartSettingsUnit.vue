@@ -28,6 +28,21 @@
         @update:model-value="setValue('fontSize', $event)"
         :class="!usedOptions.has('fontSize') && 'sepia-[50%]'"
       />
+
+      <SimpleSelect
+        label="Font weight"
+        :model-value="mergedOptions.fontWeight"
+        @update:model-value="setValue('fontWeight', $event)"
+        :extra-class="!usedOptions.has('fontWeight') && 'sepia-[50%]'"
+        :items="fontWeightItems"
+      />
+      <SimpleSelect
+        label="Font style"
+        :model-value="mergedOptions.fontStyle"
+        @update:model-value="setValue('fontStyle', $event)"
+        :extra-class="!usedOptions.has('fontStyle') && 'sepia-[50%]'"
+        :items="fontStyleItems"
+      />
       <InputGroup
         label="Label offset"
         type="number"
@@ -57,6 +72,8 @@ import ToggleField from "../../components/ToggleField.vue";
 import { computed, defineComponent, reactive, ref } from "vue";
 import MilSymbol from "../../components/MilSymbol.vue";
 import PlainButton from "../../components/PlainButton.vue";
+import { enum2Items } from "../../utils";
+import { FontStyle, FontWeight } from "./orbatchart";
 
 export default defineComponent({
   name: "OrbatChartSettingsUnit",
@@ -89,6 +106,8 @@ export default defineComponent({
     }
 
     const usedOptions = computed(() => new Set(Object.keys(unitOptions.value || {})));
+    const fontWeightItems = enum2Items(FontWeight);
+    const fontStyleItems = enum2Items(FontStyle);
 
     return {
       options,
@@ -97,6 +116,8 @@ export default defineComponent({
       setValue,
       usedOptions,
       clearUnitOptions,
+      fontWeightItems,
+      fontStyleItems,
     };
   },
 });

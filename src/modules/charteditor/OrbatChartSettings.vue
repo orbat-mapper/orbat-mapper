@@ -19,6 +19,16 @@
           ></InputGroup>
           <InputGroup label="Symbol size" type="number" v-model="options.symbolSize" />
           <InputGroup label="Font size" type="number" v-model="options.fontSize" />
+          <SimpleSelect
+            label="Font weight"
+            v-model="options.fontWeight"
+            :items="fontWeightItems"
+          />
+          <SimpleSelect
+            label="Font style"
+            v-model="options.fontStyle"
+            :items="fontStyleItems"
+          />
           <InputGroup
             label="Connector offset"
             type="number"
@@ -71,7 +81,7 @@
 import InputGroup from "../../components/InputGroup.vue";
 import { useChartSettingsStore, useSelectedChartUnitStore } from "./chartSettingsStore";
 import SimpleSelect from "../../components/SimpleSelect.vue";
-import { LevelLayout, UnitLevelDistance } from "./orbatchart";
+import { FontStyle, FontWeight, LevelLayout, UnitLevelDistance } from "./orbatchart";
 import ToggleField from "../../components/ToggleField.vue";
 import { enum2Items } from "../../utils";
 import TabView from "../../components/TabView.vue";
@@ -107,9 +117,19 @@ export default defineComponent({
     const currentUnitNode = useSelectedChartUnitStore();
     const levelItems = enum2Items(LevelLayout);
     const spacingItems = enum2Items(UnitLevelDistance);
+    const fontWeightItems = enum2Items(FontWeight);
+    const fontStyleItems = enum2Items(FontStyle);
     const currentTab = useVModel(props, "tab", emit);
     const currentUnit = computed(() => currentUnitNode.node?.unit);
-    return { options, levelItems, spacingItems, currentTab, currentUnit };
+    return {
+      options,
+      levelItems,
+      spacingItems,
+      currentTab,
+      currentUnit,
+      fontWeightItems,
+      fontStyleItems,
+    };
   },
 });
 </script>

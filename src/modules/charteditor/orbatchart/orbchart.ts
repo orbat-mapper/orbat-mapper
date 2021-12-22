@@ -29,9 +29,9 @@ import {
 // language=CSS format=false
 const HIGHLIGT_STYLE = `
   .o-unit:hover {
-    stroke: #770303;
     fill: #770303;
     cursor: pointer;
+    font-weight: bold;
   }
 
   .highlight {
@@ -164,6 +164,8 @@ function createUnitGroup(
     .attr("class", "o-label")
     .text(unitLabel);
   if (specificOptions.fontSize) text.attr("font-size", `${options.fontSize}pt`);
+  if (specificOptions.fontWeight) text.attr("font-weight", options.fontWeight);
+  if (specificOptions.fontStyle) text.attr("font-style", options.fontStyle);
 
   if (options.onClick) {
     g.on("click", (e) => {
@@ -274,7 +276,10 @@ class OrbatChart {
   }
 
   private _addChartAttributes(group: GElementSelection) {
-    group.attr("font-size", `${this.options.fontSize}pt`);
+    group
+      .attr("font-size", `${this.options.fontSize}pt`)
+      .attr("font-weight", this.options.fontWeight)
+      .attr("font-style", this.options.fontStyle);
   }
 
   highlightLevel(levelNumber: number) {

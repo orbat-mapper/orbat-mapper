@@ -29,4 +29,6 @@ export const DEFAULT_OPTIONS = {
   fontSize: 12,
   useShortName: false,
   labelOffset: 16,
+  fontStyle: "normal",
+  fontWeight: "normal",
 } as OrbChartOptions;

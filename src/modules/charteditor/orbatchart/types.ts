@@ -44,6 +44,18 @@ export enum VerticalAlignment {
   Bottom = "BOTTOM",
 }
 
+export enum FontWeight {
+  Normal = "normal",
+  Bold = "bold",
+  Bolder = "bolder",
+  Lighter = "lighter",
+}
+
+export enum FontStyle {
+  Normal = "normal",
+  Italic = "italic",
+}
+
 export enum ChartItemType {
   Level,
   LevelGroup,
@@ -84,7 +96,13 @@ export type OnLevelClickCallback = (levelNumber: number) => void;
 export type OnLevelGroupClickCallback = (parentId: string | number) => void;
 export type SymbolGenerator = (sidc: string, options: SymbolOptions) => Symbol;
 
-export interface OrbChartOptions {
+export interface FontOptions {
+  fontSize: number;
+  fontStyle: "normal" | "italic" | "oblique";
+  fontWeight: "normal" | "bold" | "lighter" | "bolder" | number;
+}
+
+export interface OrbChartOptions extends FontOptions {
   symbolSize: number;
   maxLevels: number;
   debug: boolean;
@@ -102,7 +120,6 @@ export interface OrbChartOptions {
   treeOffset: number;
   stackedOffset: number;
   lineWidth: number;
-  fontSize: number;
   useShortName: boolean;
   labelOffset: number;
 }

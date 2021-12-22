@@ -27,6 +27,8 @@ export const useChartSettingsStore = defineStore("chartSettingsStore", {
     useShortName: true,
     unitLevelDistance: DEFAULT_OPTIONS.unitLevelDistance,
     labelOffset: DEFAULT_OPTIONS.labelOffset,
+    fontWeight: "normal",
+    fontStyle: "normal",
   }),
 });
 

@@ -1,5 +1,10 @@
 <template>
-  <InputGroupTemplate :label="label" :description="description" v-slot="{ id }">
+  <InputGroupTemplate
+    :label="label"
+    :description="description"
+    v-slot="{ id }"
+    :class="extraClass"
+  >
     <select
       v-model="selectedValue"
       :id="id"
@@ -31,6 +36,7 @@ export default defineComponent({
     modelValue: [String, Number],
     items: { type: Array as PropType<SelectItem[]> },
     values: { type: Array as PropType<(string | number)[]> },
+    extraClass: [String, Array, Object, Function],
   },
   emits: ["update:modelValue"],
   inheritAttrs: false,
