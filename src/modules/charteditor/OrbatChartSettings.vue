@@ -40,6 +40,7 @@
             v-model="options.levelPadding"
           />
           <InputGroup label="Line width" type="number" v-model="options.lineWidth" />
+          <InputGroup label="Line color" type="color" v-model="options.lineColor" />
           <InputGroup label="Tree offset" type="number" v-model="options.treeOffset" />
           <InputGroup
             label="Stacked offset"

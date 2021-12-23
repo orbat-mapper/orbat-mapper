@@ -29,6 +29,7 @@ export const useChartSettingsStore = defineStore("chartSettingsStore", {
     labelOffset: DEFAULT_OPTIONS.labelOffset,
     fontWeight: "normal",
     fontStyle: "normal",
+    lineColor: DEFAULT_OPTIONS.lineColor,
   }),
 });
 
