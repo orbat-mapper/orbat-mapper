@@ -474,49 +474,75 @@ class OrbatChart {
     const nLevels = this.options.maxLevels || renderedChart.levels.length;
     renderedChart.levels.forEach((renderedLevel, yIdx) => {
       let levelOptions = { ...this.options, ...renderedLevel.options };
+      const currentLevelGroupElement =
+        yIdx > 0
+          ? createGroupElement(this.connectorGroup, "", `o-connectors-level-${yIdx}`)
+          : null;
       renderedLevel.unitGroups.forEach((unitLevelGroup, groupIdx) => {
+        const parent = unitLevelGroup.units[0].parent;
         let currentLevelLayout =
           yIdx === nLevels - 1 ? this.options.lastLevelLayout : LevelLayout.Horizontal;
         let levelGroupOptions = { ...levelOptions, ...unitLevelGroup.options };
+        if (!currentLevelGroupElement) return;
+
+        const levelGroupId = `o-connectors-group-${parent ? parent.unit.id : 0}`;
+        const currentGroupElement = createGroupElement(
+          currentLevelGroupElement,
+          "",
+          levelGroupId
+        );
         unitLevelGroup.units.forEach((unitNode, idx) => {
           let unitOptions = { ...levelGroupOptions, ...unitNode.options };
           if (currentLevelLayout === LevelLayout.Stacked && idx > 0) return;
           if (isLeftRightLayout(currentLevelLayout)) return;
           if (currentLevelLayout === LevelLayout.Tree) return;
-          this._drawUnitLevelGroupConnectorPath(unitNode, unitOptions);
+          this._drawUnitLevelGroupConnectorPath(
+            currentGroupElement,
+            unitNode,
+            unitOptions
+          );
         });
         switch (currentLevelLayout) {
           case LevelLayout.TreeRight:
           case LevelLayout.TreeLeft:
           case LevelLayout.Tree:
             this._drawUnitLevelGroupTreeLeftRightConnectorPath(
+              currentGroupElement,
               unitLevelGroup.units,
               currentLevelLayout,
               levelGroupOptions
             );
             break;
           default:
-            this._drawUnitLevelConnectorPath(unitLevelGroup.units, levelGroupOptions);
+            this._drawUnitLevelConnectorPath(
+              currentGroupElement,
+              unitLevelGroup.units,
+              levelGroupOptions
+            );
         }
       });
     });
   }
 
-  private _drawUnitLevelGroupConnectorPath(unit: UnitNodeInfo, options: any) {
+  private _drawUnitLevelGroupConnectorPath(
+    g: GElementSelection,
+    unit: UnitNodeInfo,
+    options: any
+  ) {
     const { x, y } = unit;
     if (unit.parent) {
       const dy = y - (y - unit.parent.y) / 2;
       const d = `M ${x}, ${y - unit.octagonAnchor.y - options.connectorOffset} V ${dy}`;
-      this.connectorGroup.append("path").attr("d", d).classed("o-line", true);
+      g.append("path").attr("d", d).classed("o-line", true);
     }
   }
 
   private _drawUnitLevelConnectorPath(
+    g: GElementSelection,
     unitLevelGroup: RenderedUnitNode[],
     options: OrbChartOptions
   ) {
     let firstUnitInGroup = unitLevelGroup[0];
-    let g = this.connectorGroup;
     let parentUnit = firstUnitInGroup.parent;
     if (!parentUnit) return;
     let lastUnitInGroup = unitLevelGroup[unitLevelGroup.length - 1];
@@ -529,11 +555,11 @@ class OrbatChart {
   }
 
   private _drawUnitLevelGroupTreeLeftRightConnectorPath(
+    g: GElementSelection,
     unitLevelGroup: RenderedUnitNode[],
     levelLayout: LevelLayout,
     options: OrbChartOptions
   ) {
-    let g = this.connectorGroup;
     let lastUnitInGroup = unitLevelGroup[unitLevelGroup.length - 1];
     let parentUnit = lastUnitInGroup.parent as RenderedUnitNode;
     if (!parentUnit) return;
