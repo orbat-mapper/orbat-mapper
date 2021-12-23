@@ -1,4 +1,4 @@
-import { Symbol, SymbolOptions } from "milsymbol";
+import { Symbol as MilSymbol, SymbolOptions } from "milsymbol";
 import { Selection } from "d3-selection";
 
 export type SVGElementSelection = Selection<SVGElement, any, any, any>;
@@ -81,7 +81,7 @@ export interface UnitNodeInfo extends BasicUnitNode {
   symbolBoxSize: Size;
   anchor: Point;
   octagonAnchor: Point;
-  symb: Symbol;
+  symb: MilSymbol;
   x: number;
   y: number;
   parent?: UnitNodeInfo;
@@ -94,7 +94,7 @@ export interface UnitNodeInfo extends BasicUnitNode {
 export type OnUnitClickCallback = (unit: UnitNodeInfo) => void;
 export type OnLevelClickCallback = (levelNumber: number) => void;
 export type OnLevelGroupClickCallback = (parentId: string | number) => void;
-export type SymbolGenerator = (sidc: string, options: SymbolOptions) => Symbol;
+export type SymbolGenerator = (sidc: string, options: SymbolOptions) => MilSymbol;
 
 export interface FontOptions {
   fontSize: number;

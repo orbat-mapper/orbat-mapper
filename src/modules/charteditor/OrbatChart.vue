@@ -1,6 +1,7 @@
 <script lang="ts">
 import { defineComponent, onBeforeUnmount, PropType, ref, watchEffect } from "vue";
-import OrbatChart, {
+import {
+  OrbatChart,
   PartialOrbChartOptions,
   SpecificOptions,
   SymbolGenerator,
