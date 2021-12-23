@@ -25,6 +25,9 @@ import {
   MARGIN_TOP,
 } from "./defaults";
 import {
+  drawUnitLevelConnectorPath,
+  drawUnitLevelGroupConnectorPath,
+  drawUnitLevelGroupTreeLeftRightConnectorPath,
   calculateAnchorPoints,
   createChartStyle,
   createGroupElement,
@@ -496,17 +499,13 @@ class OrbatChart {
           if (currentLevelLayout === LevelLayout.Stacked && idx > 0) return;
           if (isLeftRightLayout(currentLevelLayout)) return;
           if (currentLevelLayout === LevelLayout.Tree) return;
-          this._drawUnitLevelGroupConnectorPath(
-            currentGroupElement,
-            unitNode,
-            unitOptions
-          );
+          drawUnitLevelGroupConnectorPath(currentGroupElement, unitNode, unitOptions);
         });
         switch (currentLevelLayout) {
           case LevelLayout.TreeRight:
           case LevelLayout.TreeLeft:
           case LevelLayout.Tree:
-            this._drawUnitLevelGroupTreeLeftRightConnectorPath(
+            drawUnitLevelGroupTreeLeftRightConnectorPath(
               currentGroupElement,
               unitLevelGroup.units,
               currentLevelLayout,
@@ -514,7 +513,7 @@ class OrbatChart {
             );
             break;
           default:
-            this._drawUnitLevelConnectorPath(
+            drawUnitLevelConnectorPath(
               currentGroupElement,
               unitLevelGroup.units,
               levelGroupOptions
@@ -522,71 +521,6 @@ class OrbatChart {
         }
       });
     });
-  }
-
-  private _drawUnitLevelGroupConnectorPath(
-    g: GElementSelection,
-    unit: UnitNodeInfo,
-    options: any
-  ) {
-    const { x, y } = unit;
-    if (unit.parent) {
-      const dy = y - (y - unit.parent.y) / 2;
-      const d = `M ${x}, ${y - unit.octagonAnchor.y - options.connectorOffset} V ${dy}`;
-      g.append("path").attr("d", d).classed("o-line", true);
-    }
-  }
-
-  private _drawUnitLevelConnectorPath(
-    g: GElementSelection,
-    unitLevelGroup: RenderedUnitNode[],
-    options: OrbChartOptions
-  ) {
-    let firstUnitInGroup = unitLevelGroup[0];
-    let parentUnit = firstUnitInGroup.parent;
-    if (!parentUnit) return;
-    let lastUnitInGroup = unitLevelGroup[unitLevelGroup.length - 1];
-
-    const dy = firstUnitInGroup.y - (firstUnitInGroup.y - parentUnit.y) / 2;
-    const d1 = `M ${parentUnit.x}, ${parentUnit.ly + options.connectorOffset} V ${dy}`;
-    g.append("path").attr("d", d1).classed("o-line", true);
-    const d = `M ${firstUnitInGroup.x}, ${dy} H ${lastUnitInGroup.x}`;
-    g.append("path").attr("d", d).classed("o-line", true);
-  }
-
-  private _drawUnitLevelGroupTreeLeftRightConnectorPath(
-    g: GElementSelection,
-    unitLevelGroup: RenderedUnitNode[],
-    levelLayout: LevelLayout,
-    options: OrbChartOptions
-  ) {
-    let lastUnitInGroup = unitLevelGroup[unitLevelGroup.length - 1];
-    let parentUnit = lastUnitInGroup.parent as RenderedUnitNode;
-    if (!parentUnit) return;
-
-    const d1 = `M ${parentUnit.x}, ${parentUnit.ly + options.connectorOffset} V ${
-      lastUnitInGroup.y
-    }`;
-    g.append("path").attr("d", d1).classed("o-line", true);
-
-    // find the widest node
-    let maxWidth = Math.max(...unitLevelGroup.map((u) => u.boundingBox.width));
-    for (const [yIdx, unit] of unitLevelGroup.entries()) {
-      let d1;
-      const delta = Math.abs(unit.boundingBox.width / 2 - maxWidth / 2);
-      if (
-        levelLayout === LevelLayout.TreeRight ||
-        (levelLayout === LevelLayout.Tree && yIdx % 2)
-      )
-        d1 = `M ${unit.lx - delta - options.connectorOffset}, ${unit.y}  H ${
-          parentUnit.x
-        }`;
-      else
-        d1 = `M ${unit.rx + delta + options.connectorOffset}, ${unit.y}  H ${
-          parentUnit.x
-        }`;
-      g.append("path").attr("d", d1).classed("o-line", true);
-    }
   }
 
   public makeInteractive() {
