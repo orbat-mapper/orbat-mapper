@@ -125,6 +125,7 @@ class OrbatChart {
     const chartGroup = createGroupElement(this.svg, "o-chart");
     this._addChartAttributes(chartGroup);
     this.connectorGroup = createGroupElement(chartGroup, "o-connectors");
+    this._addConnectorAttributes(this.connectorGroup);
 
     // Pass 1: Create g elements and other svg elements
     // Pass 2: Do unit layout
@@ -144,6 +145,12 @@ class OrbatChart {
       .attr("font-size", `${this.options.fontSize}pt`)
       .attr("font-weight", this.options.fontWeight)
       .attr("font-style", this.options.fontStyle);
+  }
+
+  private _addConnectorAttributes(group: GElementSelection) {
+    group
+      .attr("stroke", this.options.lineColor)
+      .attr("stroke-width", `${this.options.lineWidth}pt`);
   }
 
   highlightLevel(levelNumber: number) {

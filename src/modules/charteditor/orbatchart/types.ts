@@ -102,7 +102,12 @@ export interface FontOptions {
   fontWeight: "normal" | "bold" | "lighter" | "bolder" | number;
 }
 
-export interface OrbChartOptions extends FontOptions {
+export interface ConnectorOptions {
+  lineWidth: number;
+  lineColor: string;
+}
+
+export interface OrbChartOptions extends FontOptions, ConnectorOptions {
   symbolSize: number;
   maxLevels: number;
   debug: boolean;
@@ -119,7 +124,6 @@ export interface OrbChartOptions extends FontOptions {
   levelPadding: number;
   treeOffset: number;
   stackedOffset: number;
-  lineWidth: number;
   useShortName: boolean;
   labelOffset: number;
 }

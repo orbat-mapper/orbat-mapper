@@ -31,4 +31,5 @@ export const DEFAULT_OPTIONS = {
   labelOffset: 16,
   fontStyle: "normal",
   fontWeight: "normal",
+  lineColor: "#1F2937",
 } as OrbChartOptions;

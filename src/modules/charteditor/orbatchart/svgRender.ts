@@ -33,9 +33,7 @@ const HIGHLIGT_STYLE = `
 export function createChartStyle(options: OrbChartOptions) {
   return `
 .o-line {
-  stroke: black;
-  stroke-width: ${options.lineWidth}pt;
-  fill:none;
+ 
 }
 
 .o-label {
