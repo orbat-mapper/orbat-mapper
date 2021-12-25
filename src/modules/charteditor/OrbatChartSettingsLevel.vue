@@ -1,17 +1,9 @@
 <template>
   <div class="space-y-4 pb-4">
-    <p class="text-sm text-gray-600">Unit specific options.</p>
-    <div v-if="currentUnit" class="space-y-6">
-      <header class="flex items-start">
-        <div class="flex-shrink-0 w-16 h-20">
-          <MilSymbol :sidc="currentUnit.sidc" :size="34" />
-        </div>
-        <div>
-          <p class="font-medium text-gray-700 pt-2">{{ currentUnit.name }}</p>
-          <p class="text-sm text-gray-500">{{ currentUnit.shortName }}</p>
-        </div>
-      </header>
-      <PlainButton @click="clearUnitOptions()">Clear settings</PlainButton>
+    <p class="text-sm text-gray-600">Level specific options.</p>
+    <div v-if="currentLevel !== null" class="space-y-6">
+      <header class="flex items-start">{{ currentLevel }}</header>
+      <PlainButton @click="clearLevelOptions()">Clear settings</PlainButton>
 
       <InputGroup
         label="Symbol size"
@@ -76,46 +68,45 @@ import { enum2Items } from "../../utils";
 import { FontStyle, FontWeight } from "./orbatchart";
 
 export default defineComponent({
-  name: "OrbatChartSettingsUnit",
+  name: "OrbatChartSettingsLevel",
   components: { PlainButton, MilSymbol, ToggleField, SimpleSelect, InputGroup },
   setup() {
     const options = useChartSettingsStore();
-    const currentUnitNode = useSelectedChartElementStore();
+    const selectedElement = useSelectedChartElementStore();
     const specificOptions = useSpecificChartOptionsStore();
-    const currentUnit = computed(() => currentUnitNode.node?.unit);
-    const unitOptions = computed(() => {
-      return currentUnit.value && specificOptions.unit[currentUnit.value.id];
+    const currentLevel = computed(() => selectedElement.level);
+    const levelOptions = computed(() => {
+      return currentLevel.value !== null && specificOptions.level[currentLevel.value];
     });
 
     const mergedOptions = computed(() => {
       return {
         ...options.$state,
-        // ...specificOptions.level,
+        ...(levelOptions.value || {}),
         // ...specificOptions.levelGroup,
-        ...unitOptions.value,
       };
     });
 
     function setValue(name: string, value: any) {
-      const opts = { ...(unitOptions.value || {}), [name]: value };
-      if (currentUnit.value) specificOptions.unit[currentUnit.value.id] = opts;
+      const opts = { ...(levelOptions.value || {}), [name]: value };
+      if (currentLevel.value !== null) specificOptions.level[currentLevel.value] = opts;
     }
 
-    function clearUnitOptions() {
-      if (currentUnit.value) specificOptions.unit[currentUnit.value.id] = {};
+    function clearLevelOptions() {
+      if (currentLevel.value !== null) specificOptions.level[currentLevel.value] = {};
     }
 
-    const usedOptions = computed(() => new Set(Object.keys(unitOptions.value || {})));
+    const usedOptions = computed(() => new Set(Object.keys(levelOptions.value || {})));
     const fontWeightItems = enum2Items(FontWeight);
     const fontStyleItems = enum2Items(FontStyle);
 
     return {
       options,
-      currentUnit,
+      currentLevel,
       mergedOptions,
       setValue,
       usedOptions,
-      clearUnitOptions,
+      clearLevelOptions,
       fontWeightItems,
       fontStyleItems,
     };

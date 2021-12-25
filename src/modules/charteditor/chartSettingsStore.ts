@@ -33,13 +33,15 @@ export const useChartSettingsStore = defineStore("chartSettingsStore", {
   }),
 });
 
-export const useSelectedChartUnitStore = defineStore("selectedChartUnitStore", {
-  state: (): { node: UnitNodeInfo | null } => ({
+export const useSelectedChartElementStore = defineStore("selectedChartUnitStore", {
+  state: (): { node: UnitNodeInfo | null; level: number | null } => ({
     node: null,
+    level: null,
   }),
   actions: {
     clear() {
       this.node = null;
+      this.level = null;
     },
   },
 });

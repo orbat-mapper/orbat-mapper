@@ -3,6 +3,7 @@ import { select } from "d3-selection";
 import { arrSum, flattenArray, walkTree } from "./utils";
 import {
   BasicUnitNode,
+  FontOptions,
   GElementSelection,
   LevelLayout,
   OrbChartOptions,
@@ -35,6 +36,7 @@ import {
   drawDebugAnchors,
   drawDebugRect,
   putGroupAt,
+  addFontAttributes,
 } from "./svgRender";
 
 function convertBasicUnitNode2UnitNodeInfo(
@@ -126,7 +128,7 @@ class OrbatChart {
     this.height = size.height || DEFAULT_CHART_HEIGHT;
     let renderedChart = this._createSvgRootElement(parentElement, elementId);
     const chartGroup = createGroupElement(this.svg, "o-chart");
-    this._addChartAttributes(chartGroup);
+    addFontAttributes(chartGroup, this.options);
     this.connectorGroup = createGroupElement(chartGroup, "o-connectors");
     this._addConnectorAttributes(this.connectorGroup);
 
@@ -141,13 +143,6 @@ class OrbatChart {
     this._drawConnectors(renderedChart);
     this.renderedChart = renderedChart;
     return this.svg.node() as SVGElement;
-  }
-
-  private _addChartAttributes(group: GElementSelection) {
-    group
-      .attr("font-size", `${this.options.fontSize}pt`)
-      .attr("font-weight", this.options.fontWeight)
-      .attr("font-style", this.options.fontStyle);
   }
 
   private _addConnectorAttributes(group: GElementSelection) {
@@ -279,6 +274,7 @@ class OrbatChart {
         levelSpecificOptions = this.specificOptions.level[yIdx] || {};
       }
       let levelGElement = createGroupElement(parentElement, "o-level", `o-level-${yIdx}`);
+      addFontAttributes(levelGElement, levelSpecificOptions);
 
       let renderedLevel: RenderedLevel = {
         groupElement: levelGElement,

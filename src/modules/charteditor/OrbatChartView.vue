@@ -62,7 +62,7 @@ import SlideOver from "../../components/SlideOver.vue";
 import OrbatChartSettings, { ChartTabs } from "./OrbatChartSettings.vue";
 import {
   useChartSettingsStore,
-  useSelectedChartUnitStore,
+  useSelectedChartElementStore,
   useSpecificChartOptionsStore,
 } from "./chartSettingsStore";
 
@@ -91,7 +91,7 @@ export default defineComponent({
 
     const options = useChartSettingsStore();
     const specificOptions = useSpecificChartOptionsStore();
-    const currentNodeUnit = useSelectedChartUnitStore();
+    const currentChartElements = useSelectedChartElementStore();
     scenarioIO.loadDemoScenario("falkland82");
 
     whenever(
@@ -107,7 +107,7 @@ export default defineComponent({
 
     const isReady = computed(() => scenarioStore.isLoaded);
     const onUnitClick = (unitNode: UnitNodeInfo) => {
-      currentNodeUnit.node = unitNode;
+      currentChartElements.node = unitNode;
 
       currentTab.value = ChartTabs.Unit;
     };
@@ -116,7 +116,9 @@ export default defineComponent({
       if (unit) rootUnit.value = unit;
     };
     const onLevelClick: OnLevelClickCallback = (levelNumber: number) => {
-      // if (isInteractive) currentTab.value = ChartTabs.Level;
+      console.log("Click level", levelNumber);
+      currentChartElements.level = levelNumber;
+      currentTab.value = ChartTabs.Level;
     };
     const doSVGDownload = () => {
       downloadElementAsSVG(chartId);

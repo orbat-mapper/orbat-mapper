@@ -1,5 +1,6 @@
 // language=CSS format=false
 import {
+  FontOptions,
   GElementSelection,
   LevelLayout,
   OrbChartOptions,
@@ -209,4 +210,14 @@ export function drawUnitLevelGroupTreeLeftRightConnectorPath(
       d1 = `M ${unit.rx + delta + options.connectorOffset}, ${unit.y}  H ${parentUnit.x}`;
     g.append("path").attr("d", d1).classed("o-line", true);
   }
+}
+
+export function addFontAttributes(
+  group: GElementSelection,
+  options: Partial<FontOptions>
+) {
+  const { fontSize, fontWeight, fontStyle } = options;
+  fontSize && group.attr("font-size", `${fontSize}pt`);
+  fontWeight && group.attr("font-weight", fontWeight);
+  fontStyle && group.attr("font-style", fontStyle);
 }

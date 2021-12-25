@@ -61,16 +61,14 @@
           />
         </div>
       </TabItem>
-      <!--      <TabItem label="Level" class="mx-4">
-        <div class="space-y-4">
-          <p class="text-sm text-gray-600">Level specific options.</p>
-        </div>
+      <TabItem label="Level" class="mx-4">
+        <OrbatChartSettingsLevel />
       </TabItem>
-      <TabItem label="Branch" class="mx-4">
-        <div class="space-y-4">
-          <p class="text-sm text-gray-600">Branch specific options.</p>
-        </div>
-      </TabItem>-->
+      <!--      <TabItem label="Branch" class="mx-4">-->
+      <!--        <div class="space-y-4">-->
+      <!--          <p class="text-sm text-gray-600">Branch specific options.</p>-->
+      <!--        </div>-->
+      <!--      </TabItem>-->
       <TabItem label="Unit" class="mx-4">
         <OrbatChartSettingsUnit />
       </TabItem>
@@ -80,7 +78,10 @@
 
 <script lang="ts">
 import InputGroup from "../../components/InputGroup.vue";
-import { useChartSettingsStore, useSelectedChartUnitStore } from "./chartSettingsStore";
+import {
+  useChartSettingsStore,
+  useSelectedChartElementStore,
+} from "./chartSettingsStore";
 import SimpleSelect from "../../components/SimpleSelect.vue";
 import { FontStyle, FontWeight, LevelLayout, UnitLevelDistance } from "./orbatchart";
 import ToggleField from "../../components/ToggleField.vue";
@@ -91,10 +92,11 @@ import { computed, defineComponent, PropType, ref } from "vue";
 import { useVModel } from "@vueuse/core";
 import MilSymbol from "../../components/MilSymbol.vue";
 import OrbatChartSettingsUnit from "./OrbatChartSettingsUnit.vue";
+import OrbatChartSettingsLevel from "./OrbatChartSettingsLevel.vue";
 
 export const enum ChartTabs {
   Chart = 0,
-  // Level,
+  Level,
   // Group,
   Unit,
 }
@@ -102,6 +104,7 @@ export const enum ChartTabs {
 export default defineComponent({
   name: "OrbatChartSettings",
   components: {
+    OrbatChartSettingsLevel,
     OrbatChartSettingsUnit,
     MilSymbol,
     TabItem,
@@ -115,13 +118,13 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const options = useChartSettingsStore();
-    const currentUnitNode = useSelectedChartUnitStore();
+    const selectedElement = useSelectedChartElementStore();
     const levelItems = enum2Items(LevelLayout);
     const spacingItems = enum2Items(UnitLevelDistance);
     const fontWeightItems = enum2Items(FontWeight);
     const fontStyleItems = enum2Items(FontStyle);
     const currentTab = useVModel(props, "tab", emit);
-    const currentUnit = computed(() => currentUnitNode.node?.unit);
+    const currentUnit = computed(() => selectedElement.node?.unit);
     return {
       options,
       levelItems,
