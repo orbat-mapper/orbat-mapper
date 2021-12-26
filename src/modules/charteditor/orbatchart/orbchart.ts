@@ -3,7 +3,6 @@ import { select } from "d3-selection";
 import { arrSum, flattenArray, walkTree } from "./utils";
 import {
   BasicUnitNode,
-  FontOptions,
   GElementSelection,
   LevelLayout,
   OrbChartOptions,
@@ -26,17 +25,17 @@ import {
   MARGIN_TOP,
 } from "./defaults";
 import {
-  drawUnitLevelConnectorPath,
-  drawUnitLevelGroupConnectorPath,
-  drawUnitLevelGroupTreeLeftRightConnectorPath,
+  addFontAttributes,
   calculateAnchorPoints,
   createChartStyle,
   createGroupElement,
   createUnitGroup,
   drawDebugAnchors,
   drawDebugRect,
+  drawUnitLevelConnectorPath,
+  drawUnitLevelGroupConnectorPath,
+  drawUnitLevelGroupTreeLeftRightConnectorPath,
   putGroupAt,
-  addFontAttributes,
 } from "./svgRender";
 
 function convertBasicUnitNode2UnitNodeInfo(
@@ -308,7 +307,8 @@ class OrbatChart {
             levelGroupGElement,
             convertBasicUnitNode2UnitNodeInfo(unitNode, unitOptions),
             unitOptions,
-            unitSpecificOptions
+            unitSpecificOptions,
+            yIdx
           );
           renderedUnitNode.options = unitSpecificOptions;
           return renderedUnitNode;

@@ -50,7 +50,7 @@ import OrbatChart from "./OrbatChart.vue";
 import ToggleField from "../../components/ToggleField.vue";
 import { useScenarioStore } from "../../stores/scenarioStore";
 import { useScenarioIO } from "../../stores/scenarioIO";
-import { LevelLayout, OnLevelClickCallback, UnitNodeInfo } from "./orbatchart";
+import { LevelLayout, OnLevelClickCallback, RenderedUnitNode } from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
 import { MenuAlt2Icon, SearchIcon } from "@heroicons/vue/solid";
@@ -106,11 +106,11 @@ export default defineComponent({
     const height = ref(1080);
 
     const isReady = computed(() => scenarioStore.isLoaded);
-    const onUnitClick = (unitNode: UnitNodeInfo) => {
+    const onUnitClick = (unitNode: RenderedUnitNode) => {
       currentChartElements.node = unitNode;
-
       currentTab.value = ChartTabs.Unit;
     };
+
     const onUnitSelect = (unitId: string) => {
       const unit = scenarioStore.getUnitById(unitId);
       if (unit) rootUnit.value = unit;

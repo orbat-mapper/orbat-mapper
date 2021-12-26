@@ -91,7 +91,7 @@ export interface UnitNodeInfo extends BasicUnitNode {
   rx: number;
 }
 
-export type OnUnitClickCallback = (unit: UnitNodeInfo) => void;
+export type OnUnitClickCallback = (unit: RenderedUnitNode) => void;
 export type OnLevelClickCallback = (levelNumber: number) => void;
 export type OnLevelGroupClickCallback = (parentId: string | number) => void;
 export type SymbolGenerator = (sidc: string, options: SymbolOptions) => MilSymbol;
@@ -175,4 +175,5 @@ export interface RenderedUnitNode extends RenderedElement, UnitNodeInfo {
   boundingBox: DOMRect;
   parent?: RenderedUnitNode;
   options: Partial<OrbChartOptions>;
+  level: number;
 }

@@ -101,7 +101,8 @@ export function createUnitGroup(
   parentElement: GElementSelection,
   unitNode: UnitNodeInfo,
   options: OrbChartOptions,
-  specificOptions: PartialOrbChartOptions
+  specificOptions: PartialOrbChartOptions,
+  level: number
 ): RenderedUnitNode {
   const g = createGroupElement(parentElement, "o-unit");
   const unitLabel = options.useShortName
@@ -133,6 +134,7 @@ export function createUnitGroup(
   let renderedUnitNode = unitNode as RenderedUnitNode;
   renderedUnitNode.groupElement = g;
   renderedUnitNode.boundingBox = g.node()!.getBBox();
+  renderedUnitNode.level = level;
 
   return renderedUnitNode;
 }
