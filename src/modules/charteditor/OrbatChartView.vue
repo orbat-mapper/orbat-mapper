@@ -16,6 +16,7 @@
         :symbol-generator="symbolGenerator"
         @unitclick="onUnitClick"
         @levelclick="onLevelClick"
+        @levelgroupclick="onLevelGroupClick"
         :interactive="isInteractive"
         :chart-id="chartId"
         :options="tOptions"
@@ -50,7 +51,12 @@ import OrbatChart from "./OrbatChart.vue";
 import ToggleField from "../../components/ToggleField.vue";
 import { useScenarioStore } from "../../stores/scenarioStore";
 import { useScenarioIO } from "../../stores/scenarioIO";
-import { LevelLayout, OnLevelClickCallback, RenderedUnitNode } from "./orbatchart";
+import {
+  LevelLayout,
+  OnLevelClickCallback,
+  OnLevelGroupClickCallback,
+  RenderedUnitNode,
+} from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
 import { MenuAlt2Icon, SearchIcon } from "@heroicons/vue/solid";
@@ -120,6 +126,13 @@ export default defineComponent({
       currentChartElements.level = levelNumber;
       currentTab.value = ChartTabs.Level;
     };
+
+    const onLevelGroupClick: OnLevelGroupClickCallback = (parentId, levelNumber) => {
+      console.log("Click level group", parentId, levelNumber);
+
+      // currentTab.value = ChartTabs.Level;
+    };
+
     const doSVGDownload = () => {
       downloadElementAsSVG(chartId);
     };
@@ -157,6 +170,7 @@ export default defineComponent({
       showSearch,
       onUnitSelect,
       onLevelClick,
+      onLevelGroupClick,
       menuItems,
       chartId,
       isMenuOpen,

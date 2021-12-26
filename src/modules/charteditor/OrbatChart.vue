@@ -42,8 +42,8 @@ export default defineComponent({
       emit("levelclick", levelNumber);
     }
 
-    function onLevelGroupClick(parentId: string | number) {
-      emit("levelgroupclick", parentId);
+    function onLevelGroupClick(parentId: string | number, levelNumber: number) {
+      emit("levelgroupclick", parentId, levelNumber);
     }
 
     function handleLevelHighlight(value: number[]) {

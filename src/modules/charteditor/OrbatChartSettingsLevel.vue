@@ -3,7 +3,7 @@
     <p class="text-sm text-gray-600">Level specific options.</p>
     <div v-if="currentLevel !== null" class="space-y-6">
       <header class="flex items-start">{{ currentLevel }}</header>
-      <PlainButton @click="clearLevelOptions()">Clear settings</PlainButton>
+      <PlainButton @click="clearSpecificOptions()">Clear settings</PlainButton>
 
       <InputGroup
         label="Symbol size"
@@ -75,28 +75,28 @@ export default defineComponent({
     const selectedElement = useSelectedChartElementStore();
     const specificOptions = useSpecificChartOptionsStore();
     const currentLevel = computed(() => selectedElement.level);
-    const levelOptions = computed(() => {
+    const elementOptions = computed(() => {
       return currentLevel.value !== null && specificOptions.level[currentLevel.value];
     });
 
     const mergedOptions = computed(() => {
       return {
         ...options.$state,
-        ...(levelOptions.value || {}),
+        ...(elementOptions.value || {}),
         // ...specificOptions.levelGroup,
       };
     });
 
     function setValue(name: string, value: any) {
-      const opts = { ...(levelOptions.value || {}), [name]: value };
+      const opts = { ...(elementOptions.value || {}), [name]: value };
       if (currentLevel.value !== null) specificOptions.level[currentLevel.value] = opts;
     }
 
-    function clearLevelOptions() {
+    function clearSpecificOptions() {
       if (currentLevel.value !== null) specificOptions.level[currentLevel.value] = {};
     }
 
-    const usedOptions = computed(() => new Set(Object.keys(levelOptions.value || {})));
+    const usedOptions = computed(() => new Set(Object.keys(elementOptions.value || {})));
     const fontWeightItems = enum2Items(FontWeight);
     const fontStyleItems = enum2Items(FontStyle);
 
@@ -106,7 +106,7 @@ export default defineComponent({
       mergedOptions,
       setValue,
       usedOptions,
-      clearLevelOptions,
+      clearSpecificOptions,
       fontWeightItems,
       fontStyleItems,
     };

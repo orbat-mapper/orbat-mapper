@@ -185,7 +185,10 @@ class OrbatChart {
       .attr("class", "highlight select-rect");
     if (this.options.onLevelGroupClick) {
       tmp.on("click", (e) => {
-        this.options.onLevelGroupClick(renderedLevelGroup.units[0]?.parent?.unit.id || 0);
+        this.options.onLevelGroupClick(
+          renderedLevelGroup.units[0]?.parent?.unit.id || 0,
+          renderedLevelGroup.level
+        );
       });
     }
   }
@@ -266,13 +269,17 @@ class OrbatChart {
   ): RenderedLevel[] {
     const options = this.options;
     let renderedLevels: RenderedLevel[] = [];
-    for (const [yIdx, currentLevel] of groupedLevels.entries()) {
-      if (options.maxLevels && yIdx >= options.maxLevels) break;
+    for (const [levelNumber, currentLevel] of groupedLevels.entries()) {
+      if (options.maxLevels && levelNumber >= options.maxLevels) break;
       let levelSpecificOptions = {};
-      if (this.specificOptions.level && this.specificOptions.level[yIdx]) {
-        levelSpecificOptions = this.specificOptions.level[yIdx] || {};
+      if (this.specificOptions.level && this.specificOptions.level[levelNumber]) {
+        levelSpecificOptions = this.specificOptions.level[levelNumber] || {};
       }
-      let levelGElement = createGroupElement(parentElement, "o-level", `o-level-${yIdx}`);
+      let levelGElement = createGroupElement(
+        parentElement,
+        "o-level",
+        `o-level-${levelNumber}`
+      );
       addFontAttributes(levelGElement, levelSpecificOptions);
 
       let renderedLevel: RenderedLevel = {
@@ -308,7 +315,7 @@ class OrbatChart {
             convertBasicUnitNode2UnitNodeInfo(unitNode, unitOptions),
             unitOptions,
             unitSpecificOptions,
-            yIdx
+            levelNumber
           );
           renderedUnitNode.options = unitSpecificOptions;
           return renderedUnitNode;
@@ -317,6 +324,7 @@ class OrbatChart {
           groupElement: levelGroupGElement,
           units,
           options: lgSpecificOptions,
+          level: levelNumber,
         });
       });
     }
@@ -524,8 +532,8 @@ class OrbatChart {
   }
 
   private _addSelectionLayer(renderedChart: RenderedChart) {
-    renderedChart.levels.forEach((level, index) => {
-      this.highlightLevel(index);
+    renderedChart.levels.forEach((level, levelNumber) => {
+      this.highlightLevel(levelNumber);
       level.unitGroups.forEach((levelGroup) => {
         this.highlightGroup(levelGroup);
       });

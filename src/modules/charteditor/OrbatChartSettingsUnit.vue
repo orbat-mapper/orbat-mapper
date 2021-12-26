@@ -11,7 +11,7 @@
           <p class="text-sm text-gray-500">{{ currentUnit.shortName }}</p>
         </div>
       </header>
-      <PlainButton @click="clearUnitOptions()">Clear settings</PlainButton>
+      <PlainButton @click="clearSpecificOptions()">Clear settings</PlainButton>
 
       <InputGroup
         label="Symbol size"
@@ -79,7 +79,7 @@ export default defineComponent({
   name: "OrbatChartSettingsUnit",
   components: { PlainButton, MilSymbol, ToggleField, SimpleSelect, InputGroup },
   setup() {
-    const options = useChartSettingsStore();
+    const chartOptions = useChartSettingsStore();
     const currentUnitNode = useSelectedChartElementStore();
     const specificOptions = useSpecificChartOptionsStore();
     const currentUnit = computed(() => currentUnitNode.node?.unit);
@@ -88,39 +88,38 @@ export default defineComponent({
       return currentLevel.value !== null && specificOptions.level[currentLevel.value];
     });
 
-    const unitOptions = computed(() => {
+    const elementOptions = computed(() => {
       return currentUnit.value && specificOptions.unit[currentUnit.value.id];
     });
 
     const mergedOptions = computed(() => {
       return {
-        ...options.$state,
+        ...chartOptions.$state,
         ...levelOptions.value,
         // ...specificOptions.levelGroup,
-        ...unitOptions.value,
+        ...elementOptions.value,
       };
     });
 
     function setValue(name: string, value: any) {
-      const opts = { ...(unitOptions.value || {}), [name]: value };
+      const opts = { ...(elementOptions.value || {}), [name]: value };
       if (currentUnit.value) specificOptions.unit[currentUnit.value.id] = opts;
     }
 
-    function clearUnitOptions() {
+    function clearSpecificOptions() {
       if (currentUnit.value) specificOptions.unit[currentUnit.value.id] = {};
     }
 
-    const usedOptions = computed(() => new Set(Object.keys(unitOptions.value || {})));
+    const usedOptions = computed(() => new Set(Object.keys(elementOptions.value || {})));
     const fontWeightItems = enum2Items(FontWeight);
     const fontStyleItems = enum2Items(FontStyle);
 
     return {
-      options,
       currentUnit,
       mergedOptions,
       setValue,
       usedOptions,
-      clearUnitOptions,
+      clearSpecificOptions,
       fontWeightItems,
       fontStyleItems,
     };
