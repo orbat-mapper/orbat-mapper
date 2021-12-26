@@ -83,6 +83,11 @@ export default defineComponent({
     const currentUnitNode = useSelectedChartElementStore();
     const specificOptions = useSpecificChartOptionsStore();
     const currentUnit = computed(() => currentUnitNode.node?.unit);
+    const currentLevel = computed(() => currentUnitNode.level);
+    const levelOptions = computed(() => {
+      return currentLevel.value !== null && specificOptions.level[currentLevel.value];
+    });
+
     const unitOptions = computed(() => {
       return currentUnit.value && specificOptions.unit[currentUnit.value.id];
     });
@@ -90,7 +95,7 @@ export default defineComponent({
     const mergedOptions = computed(() => {
       return {
         ...options.$state,
-        // ...specificOptions.level,
+        ...levelOptions.value,
         // ...specificOptions.levelGroup,
         ...unitOptions.value,
       };
