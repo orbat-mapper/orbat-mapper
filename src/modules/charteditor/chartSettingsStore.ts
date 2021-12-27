@@ -13,6 +13,12 @@ export interface State {
   fontSize: number;
 }
 
+export interface SelectedState {
+  node: UnitNodeInfo | null;
+  level: number | null;
+  levelGroup: { level: number; parent: string | number } | null;
+}
+
 export const useChartSettingsStore = defineStore("chartSettingsStore", {
   state: (): PartialOrbChartOptions => ({
     maxLevels: 4,
@@ -34,14 +40,16 @@ export const useChartSettingsStore = defineStore("chartSettingsStore", {
 });
 
 export const useSelectedChartElementStore = defineStore("selectedChartUnitStore", {
-  state: (): { node: UnitNodeInfo | null; level: number | null } => ({
+  state: (): SelectedState => ({
     node: null,
     level: null,
+    levelGroup: null,
   }),
   actions: {
     clear() {
       this.node = null;
       this.level = null;
+      this.levelGroup = null;
     },
   },
 });

@@ -64,11 +64,9 @@
       <TabItem label="Level" class="mx-4">
         <OrbatChartSettingsLevel />
       </TabItem>
-      <!--      <TabItem label="Branch" class="mx-4">-->
-      <!--        <div class="space-y-4">-->
-      <!--          <p class="text-sm text-gray-600">Branch specific options.</p>-->
-      <!--        </div>-->
-      <!--      </TabItem>-->
+      <TabItem label="Branch" class="mx-4">
+        <OrbatChartSettingsLevelGroup />
+      </TabItem>
       <TabItem label="Unit" class="mx-4">
         <OrbatChartSettingsUnit />
       </TabItem>
@@ -93,17 +91,19 @@ import { useVModel } from "@vueuse/core";
 import MilSymbol from "../../components/MilSymbol.vue";
 import OrbatChartSettingsUnit from "./OrbatChartSettingsUnit.vue";
 import OrbatChartSettingsLevel from "./OrbatChartSettingsLevel.vue";
+import OrbatChartSettingsLevelGroup from "./OrbatChartSettingsLevelGroup.vue";
 
 export const enum ChartTabs {
   Chart = 0,
   Level,
-  // Group,
+  LevelGroup,
   Unit,
 }
 
 export default defineComponent({
   name: "OrbatChartSettings",
   components: {
+    OrbatChartSettingsLevelGroup,
     OrbatChartSettingsLevel,
     OrbatChartSettingsUnit,
     MilSymbol,

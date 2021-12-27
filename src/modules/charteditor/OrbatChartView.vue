@@ -122,15 +122,13 @@ export default defineComponent({
       if (unit) rootUnit.value = unit;
     };
     const onLevelClick: OnLevelClickCallback = (levelNumber: number) => {
-      console.log("Click level", levelNumber);
       currentChartElements.level = levelNumber;
       currentTab.value = ChartTabs.Level;
     };
 
     const onLevelGroupClick: OnLevelGroupClickCallback = (parentId, levelNumber) => {
-      console.log("Click level group", parentId, levelNumber);
-
-      // currentTab.value = ChartTabs.Level;
+      currentChartElements.levelGroup = { level: levelNumber, parent: parentId };
+      currentTab.value = ChartTabs.LevelGroup;
     };
 
     const doSVGDownload = () => {

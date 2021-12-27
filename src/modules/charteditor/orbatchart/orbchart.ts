@@ -304,6 +304,7 @@ class OrbatChart {
           "o-level-group",
           levelGroupId
         );
+        addFontAttributes(levelGroupGElement, lgSpecificOptions);
         const units = unitLevelGroup.map((unitNode) => {
           let unitSpecificOptions =
             this.specificOptions && this.specificOptions.unit
