@@ -64,6 +64,7 @@
 import InputGroup from "../../components/InputGroup.vue";
 import {
   useChartSettingsStore,
+  useMergedChartOptionsStore,
   useSelectedChartElementStore,
   useSpecificChartOptionsStore,
 } from "./chartSettingsStore";
@@ -79,26 +80,18 @@ export default defineComponent({
   name: "OrbatChartSettingsUnit",
   components: { PlainButton, MilSymbol, ToggleField, SimpleSelect, InputGroup },
   setup() {
-    const chartOptions = useChartSettingsStore();
     const currentUnitNode = useSelectedChartElementStore();
     const specificOptions = useSpecificChartOptionsStore();
     const currentUnit = computed(() => currentUnitNode.node?.unit);
-    const currentLevel = computed(() => currentUnitNode.level);
-    const levelOptions = computed(() => {
-      return currentLevel.value !== null && specificOptions.level[currentLevel.value];
-    });
 
     const elementOptions = computed(() => {
       return currentUnit.value && specificOptions.unit[currentUnit.value.id];
     });
 
+    const mOptions = useMergedChartOptionsStore();
+
     const mergedOptions = computed(() => {
-      return {
-        ...chartOptions.$state,
-        ...levelOptions.value,
-        // ...specificOptions.levelGroup,
-        ...elementOptions.value,
-      };
+      return mOptions.unit;
     });
 
     function setValue(name: string, value: any) {

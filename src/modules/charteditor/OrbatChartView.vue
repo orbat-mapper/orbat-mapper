@@ -113,7 +113,7 @@ export default defineComponent({
 
     const isReady = computed(() => scenarioStore.isLoaded);
     const onUnitClick = (unitNode: RenderedUnitNode) => {
-      currentChartElements.node = unitNode;
+      currentChartElements.selectUnit(unitNode);
       currentTab.value = ChartTabs.Unit;
     };
 
@@ -122,12 +122,12 @@ export default defineComponent({
       if (unit) rootUnit.value = unit;
     };
     const onLevelClick: OnLevelClickCallback = (levelNumber: number) => {
-      currentChartElements.level = levelNumber;
+      currentChartElements.selectLevel(levelNumber);
       currentTab.value = ChartTabs.Level;
     };
 
     const onLevelGroupClick: OnLevelGroupClickCallback = (parentId, levelNumber) => {
-      currentChartElements.levelGroup = { level: levelNumber, parent: parentId };
+      currentChartElements.selectLevelGroup(parentId, levelNumber);
       currentTab.value = ChartTabs.LevelGroup;
     };
 

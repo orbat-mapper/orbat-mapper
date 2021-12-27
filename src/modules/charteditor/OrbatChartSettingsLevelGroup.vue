@@ -56,6 +56,7 @@
 import InputGroup from "../../components/InputGroup.vue";
 import {
   useChartSettingsStore,
+  useMergedChartOptionsStore,
   useSelectedChartElementStore,
   useSpecificChartOptionsStore,
 } from "./chartSettingsStore";
@@ -74,10 +75,7 @@ export default defineComponent({
     const options = useChartSettingsStore();
     const selectedElement = useSelectedChartElementStore();
     const specificOptions = useSpecificChartOptionsStore();
-    const currentLevel = computed(() => selectedElement.levelGroup?.level || null);
-    const levelOptions = computed(() => {
-      return currentLevel.value !== null && specificOptions.level[currentLevel.value];
-    });
+
     const currentLevelGroup = computed(() => selectedElement.levelGroup?.parent || null);
     const elementOptions = computed(() => {
       return (
@@ -86,13 +84,10 @@ export default defineComponent({
       );
     });
 
+    const mOptions = useMergedChartOptionsStore();
+
     const mergedOptions = computed(() => {
-      return {
-        ...options.$state,
-        ...levelOptions.value,
-        ...(elementOptions.value || {}),
-        // ...specificOptions.levelGroup,
-      };
+      return mOptions.levelGroup;
     });
 
     function setValue(name: string, value: any) {
