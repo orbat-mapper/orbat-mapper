@@ -5,6 +5,7 @@ import {
   PartialOrbChartOptions,
   RenderedUnitNode,
   SpecificOptions,
+  Unit,
 } from "./orbatchart";
 
 export interface State {
@@ -18,6 +19,16 @@ export interface SelectedState {
   level: number | null;
   levelGroup: { level: number; parent: string | number } | null;
 }
+
+export interface RootUnitState {
+  unit: Unit | null | undefined;
+}
+
+export const useRootUnitStore = defineStore("chartRootUnit", {
+  state: (): RootUnitState => {
+    return { unit: null };
+  },
+});
 
 export const useChartSettingsStore = defineStore("chartSettingsStore", {
   state: (): PartialOrbChartOptions => ({

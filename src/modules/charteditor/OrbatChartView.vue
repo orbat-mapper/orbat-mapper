@@ -9,7 +9,7 @@
     <main class="relative min-w-0 flex-auto print:block">
       <OrbatChart
         v-if="isReady"
-        :unit="rootUnit"
+        :unit="rootUnitStore.unit"
         :debug="debug"
         :width="width"
         :height="height"
@@ -34,19 +34,14 @@
         </button>
         <ToggleField v-model="debug">Debug mode</ToggleField>
         <ToggleField v-model="isInteractive">Interactive</ToggleField>
-        <button @click="showSearch = true" class="text-gray-500 hover:text-gray-900">
-          <span class="sr-only">Search units</span>
-          <SearchIcon class="h-5 w-5" />
-        </button>
         <DotsMenu :items="menuItems" />
       </div>
-      <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
     </main>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineAsyncComponent, defineComponent, ref } from "vue";
+import { computed, defineComponent, ref } from "vue";
 import OrbatChart from "./OrbatChart.vue";
 import ToggleField from "../../components/ToggleField.vue";
 import { useScenarioStore } from "../../stores/scenarioStore";
@@ -60,7 +55,6 @@ import {
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
 import { MenuAlt2Icon, SearchIcon } from "@heroicons/vue/solid";
-import { Unit } from "../../types/models";
 import { throttledWatch, whenever } from "@vueuse/core";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import FileSaver from "file-saver";
@@ -68,6 +62,7 @@ import SlideOver from "../../components/SlideOver.vue";
 import OrbatChartSettings, { ChartTabs } from "./OrbatChartSettings.vue";
 import {
   useChartSettingsStore,
+  useRootUnitStore,
   useSelectedChartElementStore,
   useSpecificChartOptionsStore,
 } from "./chartSettingsStore";
@@ -77,7 +72,6 @@ export default defineComponent({
   components: {
     OrbatChartSettings,
     SlideOver,
-    SearchModal: defineAsyncComponent(() => import("../../components/SearchModal.vue")),
     ToggleField,
     OrbatChart,
     SearchIcon,
@@ -87,14 +81,13 @@ export default defineComponent({
   setup() {
     const debug = ref(false);
     const isInteractive = ref(false);
-    const showSearch = ref(false);
-    const rootUnit = ref<Unit>();
+
     const scenarioStore = useScenarioStore();
     const scenarioIO = useScenarioIO();
     const chartId = "OrbatChart";
     const isMenuOpen = ref(false);
     const currentTab = ref<ChartTabs>(ChartTabs.Chart);
-
+    const rootUnitStore = useRootUnitStore();
     const options = useChartSettingsStore();
     const specificOptions = useSpecificChartOptionsStore();
     const currentChartElements = useSelectedChartElementStore();
@@ -103,7 +96,7 @@ export default defineComponent({
     whenever(
       () => scenarioStore.isLoaded,
       () => {
-        rootUnit.value = scenarioStore.getUnitByName("TG 317.1 LG") || ORBAT1;
+        rootUnitStore.unit = scenarioStore.getUnitByName("TG 317.1 LG") || ORBAT1;
       },
       { immediate: true }
     );
@@ -117,10 +110,6 @@ export default defineComponent({
       currentTab.value = ChartTabs.Unit;
     };
 
-    const onUnitSelect = (unitId: string) => {
-      const unit = scenarioStore.getUnitById(unitId);
-      if (unit) rootUnit.value = unit;
-    };
     const onLevelClick: OnLevelClickCallback = (levelNumber: number) => {
       currentChartElements.selectLevel(levelNumber);
       currentTab.value = ChartTabs.Level;
@@ -156,7 +145,7 @@ export default defineComponent({
     );
 
     return {
-      rootUnit,
+      rootUnitStore,
       debug,
       lastLevelLayout,
       width,
@@ -165,8 +154,6 @@ export default defineComponent({
       symbolGenerator,
       onUnitClick,
       isInteractive,
-      showSearch,
-      onUnitSelect,
       onLevelClick,
       onLevelGroupClick,
       menuItems,
