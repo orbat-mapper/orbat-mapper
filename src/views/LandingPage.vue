@@ -15,11 +15,14 @@
           <router-link to="/storymode" class="">Story mode test</router-link>
         </p>
 
-        <p>
-          <router-link :to="{ name: ORBAT_CHART_ROUTE }" class=""
+        <div class="grid grid-cols-2 place-items-center gap-4">
+          <div class="aspect-w-5 aspect-h-2 rounded-lg bg-gray-100 overflow-hidden">
+            <img src="/images/orbat-chart-demo.png" class="object-cover object-top" />
+          </div>
+          <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="flex-shrink-0"
             >Orbat chart test
           </router-link>
-        </p>
+        </div>
       </ProseSection>
       <LandingPageScenarios />
 
