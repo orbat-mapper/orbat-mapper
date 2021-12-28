@@ -66,6 +66,7 @@ import {
   useSelectedChartElementStore,
   useSpecificChartOptionsStore,
 } from "./chartSettingsStore";
+import { sizeToWidthHeight } from "./orbatchart/sizes";
 
 export default defineComponent({
   name: "OrbatChartView",
@@ -101,8 +102,8 @@ export default defineComponent({
       { immediate: true }
     );
     const lastLevelLayout = LevelLayout.TreeRight;
-    const width = ref(1920);
-    const height = ref(1080);
+    const width = computed(() => sizeToWidthHeight(options.paperSize).width);
+    const height = computed(() => sizeToWidthHeight(options.paperSize).height);
 
     const isReady = computed(() => scenarioStore.isLoaded);
     const onUnitClick = (unitNode: RenderedUnitNode) => {

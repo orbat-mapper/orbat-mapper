@@ -24,9 +24,14 @@
     <CreateEmtpyDashed
       v-else
       @click="showSearch = true"
-      :icon="$options.components.SearchIcon"
-      >Select root unit</CreateEmtpyDashed
-    >
+      :icon="$options.components?.SearchIcon"
+      >Select root unit
+    </CreateEmtpyDashed>
+    <SimpleSelect
+      v-model="options.paperSize"
+      label="Page size"
+      :items="canvasSizeItems"
+    ></SimpleSelect>
     <InputGroup label="Levels" type="number" v-model="options.maxLevels" />
     <InputGroup label="Symbol size" type="number" v-model="options.symbolSize" />
     <InputGroup label="Font size" type="number" v-model="options.fontSize" />
@@ -86,6 +91,7 @@ import IconButton from "../../components/IconButton.vue";
 import { SearchIcon } from "@heroicons/vue/solid";
 import { useScenarioStore } from "../../stores/scenarioStore";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
+import { canvasSizeItems } from "./orbatchart/sizes";
 
 export default defineComponent({
   name: "OrbatChartSettingsChart",
@@ -102,8 +108,7 @@ export default defineComponent({
     SearchIcon,
     SearchModal: defineAsyncComponent(() => import("../../components/SearchModal.vue")),
   },
-  props: {},
-  setup(props, { emit }) {
+  setup() {
     const options = useChartSettingsStore();
     const levelItems = enum2Items(LevelLayout);
     const spacingItems = enum2Items(UnitLevelDistance);
@@ -127,6 +132,7 @@ export default defineComponent({
       rootUnitStore,
       showSearch,
       onUnitSelect,
+      canvasSizeItems,
     };
   },
 });

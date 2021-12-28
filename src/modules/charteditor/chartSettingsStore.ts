@@ -24,6 +24,10 @@ export interface RootUnitState {
   unit: Unit | null | undefined;
 }
 
+export interface ChartSettingsState extends PartialOrbChartOptions {
+  paperSize: string;
+}
+
 export const useRootUnitStore = defineStore("chartRootUnit", {
   state: (): RootUnitState => {
     return { unit: null };
@@ -31,7 +35,8 @@ export const useRootUnitStore = defineStore("chartRootUnit", {
 });
 
 export const useChartSettingsStore = defineStore("chartSettingsStore", {
-  state: (): PartialOrbChartOptions => ({
+  state: (): ChartSettingsState => ({
+    paperSize: "4:3",
     maxLevels: 4,
     symbolSize: DEFAULT_OPTIONS.symbolSize,
     fontSize: DEFAULT_OPTIONS.fontSize,

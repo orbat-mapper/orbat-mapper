@@ -12,7 +12,7 @@ import {
 export default defineComponent({
   name: "OrbatChart",
   props: {
-    unit: { type: Object as PropType<Unit> },
+    unit: { type: Object as PropType<Unit | null | undefined> },
     debug: { type: Boolean, default: false },
     options: { type: Object as PropType<PartialOrbChartOptions> },
     specificOptions: { type: Object as PropType<SpecificOptions> },
