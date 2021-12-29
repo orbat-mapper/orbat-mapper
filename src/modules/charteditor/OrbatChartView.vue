@@ -1,6 +1,8 @@
 <template>
   <div class="w-screen h-screen relative flex overflow-hidden">
-    <aside class="hidden lg:w-[20rem] lg:flex lg:flex-shrink-0 bg-gray-50 print:hidden">
+    <aside
+      class="hidden lg:w-[20rem] lg:flex lg:flex-shrink-0 bg-gray-50 print:hidden lg:border-r lg:border-gray-200"
+    >
       <OrbatChartSettings v-model:tab="currentTab" class="print:hidden" />
     </aside>
     <SlideOver v-model="isMenuOpen" left title="Chart layout settings">

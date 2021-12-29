@@ -1,7 +1,7 @@
 <template>
-  <div class="space-y-4">
+  <div>
     <p class="text-sm text-gray-600">Settings that affect the whole chart.</p>
-    <InputGroupTemplate label="Root unit" v-if="rootUnitStore.unit">
+    <InputGroupTemplate label="Root unit" v-if="rootUnitStore.unit" class="my-4">
       <div class="flex items-start">
         <div class="flex-shrink-0 w-16 mt-2">
           <MilSymbol :sidc="rootUnitStore.unit.sidc" :size="30" />
@@ -27,46 +27,55 @@
       :icon="$options.components?.SearchIcon"
       >Select root unit
     </CreateEmtpyDashed>
-    <SimpleSelect
-      v-model="options.paperSize"
-      label="Page size"
-      :items="canvasSizeItems"
-    ></SimpleSelect>
     <InputGroup label="Levels" type="number" v-model="options.maxLevels" />
-    <InputGroup label="Symbol size" type="number" v-model="options.symbolSize" />
-    <InputGroup label="Font size" type="number" v-model="options.fontSize" />
-    <SimpleSelect
-      label="Font weight"
-      v-model="options.fontWeight"
-      :items="fontWeightItems"
-    />
-    <SimpleSelect
-      label="Font style"
-      v-model="options.fontStyle"
-      :items="fontStyleItems"
-    />
-    <InputGroup
-      label="Connector offset"
-      type="number"
-      v-model="options.connectorOffset"
-    />
-    <InputGroup label="Level padding" type="number" v-model="options.levelPadding" />
-    <InputGroup label="Line width" type="number" v-model="options.lineWidth" />
-    <InputGroup label="Line color" type="color" v-model="options.lineColor" />
-    <InputGroup label="Tree offset" type="number" v-model="options.treeOffset" />
-    <InputGroup label="Stacked offset" type="number" v-model="options.stackedOffset" />
-    <InputGroup label="Label offset" type="number" v-model="options.labelOffset" />
-    <ToggleField v-model="options.useShortName">Use short unit names</ToggleField>
-    <SimpleSelect
-      label="Last level layout"
-      v-model="options.lastLevelLayout"
-      :items="levelItems"
-    />
-    <SimpleSelect
-      label="Unit spacing"
-      v-model="options.unitLevelDistance"
-      :items="spacingItems"
-    />
+    <div class="w-full border-t border-gray-200 mt-4" />
+    <AccordionPanel label="Layout and spacing">
+      <SimpleSelect
+        v-model="options.paperSize"
+        label="Page size"
+        :items="canvasSizeItems"
+      />
+      <InputGroup label="Level padding" type="number" v-model="options.levelPadding" />
+      <InputGroup label="Tree offset" type="number" v-model="options.treeOffset" />
+      <InputGroup label="Stacked offset" type="number" v-model="options.stackedOffset" />
+      <SimpleSelect
+        label="Last level layout"
+        v-model="options.lastLevelLayout"
+        :items="levelItems"
+      />
+      <SimpleSelect
+        label="Unit spacing"
+        v-model="options.unitLevelDistance"
+        :items="spacingItems"
+      />
+    </AccordionPanel>
+
+    <AccordionPanel label="Unit settings">
+      <InputGroup label="Symbol size" type="number" v-model="options.symbolSize" />
+      <InputGroup label="Font size" type="number" v-model="options.fontSize" />
+      <SimpleSelect
+        label="Font weight"
+        v-model="options.fontWeight"
+        :items="fontWeightItems"
+      />
+      <SimpleSelect
+        label="Font style"
+        v-model="options.fontStyle"
+        :items="fontStyleItems"
+      />
+      <InputGroup label="Label offset" type="number" v-model="options.labelOffset" />
+      <ToggleField v-model="options.useShortName">Use short unit names</ToggleField>
+    </AccordionPanel>
+    <AccordionPanel label="Connectors">
+      <InputGroup
+        label="Connector offset"
+        type="number"
+        v-model="options.connectorOffset"
+      />
+      <InputGroup label="Line width" type="number" v-model="options.lineWidth" />
+      <InputGroup label="Line color" type="color" v-model="options.lineColor" />
+    </AccordionPanel>
+
     <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
   </div>
 </template>
@@ -92,10 +101,12 @@ import { SearchIcon } from "@heroicons/vue/solid";
 import { useScenarioStore } from "../../stores/scenarioStore";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { canvasSizeItems } from "./orbatchart/sizes";
+import AccordionPanel from "../../components/AccordionPanel.vue";
 
 export default defineComponent({
   name: "OrbatChartSettingsChart",
   components: {
+    AccordionPanel,
     CreateEmtpyDashed,
     IconButton,
     InputGroupTemplate,
