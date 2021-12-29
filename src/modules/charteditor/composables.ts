@@ -20,7 +20,7 @@ export function useChartSettings(chartElementType: ChartItemType) {
       case ChartItemType.Unit:
         return mOptions.unit;
       default:
-        return null;
+        return {};
     }
   });
 
