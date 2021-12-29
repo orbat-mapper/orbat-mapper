@@ -57,9 +57,10 @@ export enum FontStyle {
 }
 
 export enum ChartItemType {
-  Level,
-  LevelGroup,
-  Unit,
+  Chart = "chart",
+  Level = "level",
+  LevelGroup = "levelGroup",
+  Unit = "unit",
 }
 
 export interface Size {
