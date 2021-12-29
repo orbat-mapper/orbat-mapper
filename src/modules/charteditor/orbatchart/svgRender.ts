@@ -1,5 +1,6 @@
 // language=CSS format=false
 import {
+  ConnectorOptions,
   FontOptions,
   GElementSelection,
   LevelLayout,
@@ -222,4 +223,13 @@ export function addFontAttributes(
   fontSize && group.attr("font-size", `${fontSize}pt`);
   fontWeight && group.attr("font-weight", fontWeight);
   fontStyle && group.attr("font-style", fontStyle);
+}
+
+export function addConnectorAttributes(
+  group: GElementSelection,
+  options: Partial<ConnectorOptions>
+) {
+  const { lineColor, lineWidth } = options;
+  lineColor && group.attr("stroke", lineColor);
+  lineWidth && group.attr("stroke-width", `${lineWidth}pt`);
 }

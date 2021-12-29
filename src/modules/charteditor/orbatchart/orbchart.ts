@@ -25,6 +25,7 @@ import {
   MARGIN_TOP,
 } from "./defaults";
 import {
+  addConnectorAttributes,
   addFontAttributes,
   calculateAnchorPoints,
   createChartStyle,
@@ -130,7 +131,7 @@ class OrbatChart {
     addFontAttributes(chartGroup, this.options);
 
     this.connectorGroup = createGroupElement(chartGroup, "o-connectors");
-    this._addConnectorAttributes(this.connectorGroup);
+    addConnectorAttributes(this.connectorGroup, this.options);
 
     // Pass 1: Create g elements and other svg elements
     // Pass 2: Do unit layout
@@ -143,12 +144,6 @@ class OrbatChart {
     this._drawConnectors(renderedChart);
     this.renderedChart = renderedChart;
     return this.svg.node() as SVGElement;
-  }
-
-  private _addConnectorAttributes(group: GElementSelection) {
-    group
-      .attr("stroke", this.options.lineColor)
-      .attr("stroke-width", `${this.options.lineWidth}pt`);
   }
 
   highlightLevel(levelNumber: number) {
@@ -480,23 +475,27 @@ class OrbatChart {
     const nLevels = this.options.maxLevels || renderedChart.levels.length;
     renderedChart.levels.forEach((renderedLevel, yIdx) => {
       let levelOptions = { ...this.options, ...renderedLevel.options };
-      const currentLevelGroupElement =
+      const currentLevelGElement =
         yIdx > 0
           ? createGroupElement(this.connectorGroup, "", `o-connectors-level-${yIdx}`)
           : null;
+
+      if (currentLevelGElement)
+        addConnectorAttributes(currentLevelGElement, levelOptions);
       renderedLevel.unitGroups.forEach((unitLevelGroup, groupIdx) => {
         const parent = unitLevelGroup.units[0].parent;
         let currentLevelLayout =
           yIdx === nLevels - 1 ? this.options.lastLevelLayout : LevelLayout.Horizontal;
         let levelGroupOptions = { ...levelOptions, ...unitLevelGroup.options };
-        if (!currentLevelGroupElement) return;
+        if (!currentLevelGElement) return;
 
         const levelGroupId = `o-connectors-group-${parent ? parent.unit.id : 0}`;
         const currentGroupElement = createGroupElement(
-          currentLevelGroupElement,
+          currentLevelGElement,
           "",
           levelGroupId
         );
+        addConnectorAttributes(currentGroupElement, levelGroupOptions);
         unitLevelGroup.units.forEach((unitNode, idx) => {
           let unitOptions = { ...levelGroupOptions, ...unitNode.options };
           if (currentLevelLayout === LevelLayout.Stacked && idx > 0) return;

@@ -1,10 +1,13 @@
 <template>
   <div class="pb-4">
     <p class="text-sm text-gray-600">Branch specific options.</p>
-    <div v-if="currentLevelGroup !== null" class="space-y-6 mt-4">
+    <div v-if="currentLevelGroup !== null" class="mt-4">
       <PlainButton @click="clearSpecificOptions()">Clear settings</PlainButton>
       <AccordionPanel label="Unit settings" default-open>
         <SettingsUnit :item-type="ChartItemType.LevelGroup" />
+      </AccordionPanel>
+      <AccordionPanel label="Connectors">
+        <SettingConnectors :item-type="ChartItemType.LevelGroup" />
       </AccordionPanel>
     </div>
   </div>
@@ -22,10 +25,12 @@ import { ChartItemType } from "./orbatchart";
 import { useChartSettings } from "./composables";
 import SettingsUnit from "./SettingsUnit.vue";
 import AccordionPanel from "../../components/AccordionPanel.vue";
+import SettingConnectors from "./SettingsConnectors.vue";
 
 export default defineComponent({
   name: "OrbatChartSettingsLevelGroup",
   components: {
+    SettingConnectors,
     AccordionPanel,
     SettingsUnit,
     PlainButton,
