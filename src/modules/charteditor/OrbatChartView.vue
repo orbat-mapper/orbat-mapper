@@ -19,8 +19,8 @@
         @levelgroupclick="onLevelGroupClick"
         :interactive="isInteractive"
         :chart-id="chartId"
-        :options="tOptions"
-        :specific-options="tSpecificOptions"
+        :options="options.$state"
+        :specific-options="specificOptions.$state"
         class=""
       />
       <div class="absolute left-4 top-4 flex items-center space-x-4 print:hidden">
@@ -55,7 +55,7 @@ import {
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
 import { MenuAlt2Icon, SearchIcon } from "@heroicons/vue/solid";
-import { throttledWatch, whenever } from "@vueuse/core";
+import { whenever } from "@vueuse/core";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import FileSaver from "file-saver";
 import SlideOver from "../../components/SlideOver.vue";
@@ -133,18 +133,6 @@ export default defineComponent({
       { label: "Download PNG", action: doPNGDownload },
     ];
 
-    const tOptions = ref({ ...options.$state });
-    const tSpecificOptions = ref({ ...specificOptions.$state });
-
-    throttledWatch(
-      [options, tSpecificOptions],
-      () => {
-        tOptions.value = { ...options.$state };
-        tSpecificOptions.value = { ...specificOptions.$state };
-      },
-      { throttle: 100 }
-    );
-
     return {
       rootUnitStore,
       debug,
@@ -161,10 +149,8 @@ export default defineComponent({
       chartId,
       isMenuOpen,
       options,
-      tOptions,
       currentTab,
       specificOptions,
-      tSpecificOptions,
     };
   },
 });
