@@ -128,6 +128,7 @@ class OrbatChart {
     let renderedChart = this._createSvgRootElement(parentElement, elementId);
     const chartGroup = createGroupElement(this.svg, "o-chart");
     addFontAttributes(chartGroup, this.options);
+
     this.connectorGroup = createGroupElement(chartGroup, "o-connectors");
     this._addConnectorAttributes(this.connectorGroup);
 
@@ -271,10 +272,7 @@ class OrbatChart {
     let renderedLevels: RenderedLevel[] = [];
     for (const [levelNumber, currentLevel] of groupedLevels.entries()) {
       if (options.maxLevels && levelNumber >= options.maxLevels) break;
-      let levelSpecificOptions = {};
-      if (this.specificOptions.level && this.specificOptions.level[levelNumber]) {
-        levelSpecificOptions = this.specificOptions.level[levelNumber] || {};
-      }
+      let levelSpecificOptions = this.specificOptions.level?.[levelNumber] || {};
       let levelGElement = createGroupElement(
         parentElement,
         "o-level",
@@ -294,8 +292,8 @@ class OrbatChart {
       currentLevel.forEach((unitLevelGroup, groupIdx) => {
         let parent = unitLevelGroup[0].parent;
         let lgSpecificOptions = {};
-        if (parent && this.specificOptions && this.specificOptions.levelGroup) {
-          lgSpecificOptions = this.specificOptions.levelGroup[parent.unit.id] || {};
+        if (parent) {
+          lgSpecificOptions = this.specificOptions.levelGroup?.[parent.unit.id] || {};
         }
         let levelGroupOptions = { ...levelOptions, ...lgSpecificOptions };
         let levelGroupId = `o-level-group-${parent ? parent.unit.id : 0}`;
@@ -305,11 +303,10 @@ class OrbatChart {
           levelGroupId
         );
         addFontAttributes(levelGroupGElement, lgSpecificOptions);
+
         const units = unitLevelGroup.map((unitNode) => {
-          let unitSpecificOptions =
-            this.specificOptions && this.specificOptions.unit
-              ? this.specificOptions.unit[unitNode.unit.id] || {}
-              : {};
+          let unitSpecificOptions = this.specificOptions.unit?.[unitNode.unit.id] || {};
+
           let unitOptions = { ...levelGroupOptions, ...unitSpecificOptions };
           let renderedUnitNode = createUnitGroup(
             levelGroupGElement,
@@ -321,6 +318,7 @@ class OrbatChart {
           renderedUnitNode.options = unitSpecificOptions;
           return renderedUnitNode;
         });
+
         renderedLevel.unitGroups.push({
           groupElement: levelGroupGElement,
           units,
