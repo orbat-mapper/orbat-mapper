@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from "vue";
+import { computed, defineComponent, nextTick, ref } from "vue";
 import OrbatChart from "./OrbatChart.vue";
 import ToggleField from "../../components/ToggleField.vue";
 import { useScenarioStore } from "../../stores/scenarioStore";
@@ -57,7 +57,7 @@ import {
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
 import { MenuAlt2Icon, SearchIcon } from "@heroicons/vue/solid";
-import { whenever } from "@vueuse/core";
+import { whenever, promiseTimeout } from "@vueuse/core";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import FileSaver from "file-saver";
 import SlideOver from "../../components/SlideOver.vue";
@@ -83,7 +83,7 @@ export default defineComponent({
   },
   setup() {
     const debug = ref(false);
-    const isInteractive = ref(false);
+    const isInteractive = ref(true);
 
     const scenarioStore = useScenarioStore();
     const scenarioIO = useScenarioIO();
@@ -123,11 +123,22 @@ export default defineComponent({
       currentTab.value = ChartTabs.LevelGroup;
     };
 
-    const doSVGDownload = () => {
+    const doSVGDownload = async () => {
+      const origValue = isInteractive.value;
+      isInteractive.value = false;
+      await nextTick();
       downloadElementAsSVG(chartId);
+      await promiseTimeout(1000);
+      isInteractive.value = origValue;
     };
-    const doPNGDownload = () => {
+
+    const doPNGDownload = async () => {
+      const origValue = isInteractive.value;
+      isInteractive.value = false;
+      await nextTick();
       downloadSvgAsPng(chartId, width.value, height.value);
+      await promiseTimeout(1000);
+      isInteractive.value = origValue;
     };
 
     const menuItems: MenuItemData<Function>[] = [
