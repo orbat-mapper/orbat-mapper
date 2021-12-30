@@ -1,15 +1,19 @@
 // language=CSS format=false
 import {
+  BasicUnitNode,
   ConnectorOptions,
   FontOptions,
   GElementSelection,
   LevelLayout,
   OrbChartOptions,
   PartialOrbChartOptions,
+  RenderedLevel,
   RenderedUnitNode,
+  SpecificOptions,
   SVGElementSelection,
   UnitNodeInfo,
 } from "./types";
+import ms from "milsymbol";
 
 const HIGHLIGT_STYLE = `
   .o-unit:hover {
@@ -45,6 +49,102 @@ export function createChartStyle(options: OrbChartOptions) {
 
 ${HIGHLIGT_STYLE}
 `;
+}
+
+function convertBasicUnitNode2UnitNodeInfo(
+  basicUnitNode: BasicUnitNode,
+  options: Partial<OrbChartOptions>
+): UnitNodeInfo {
+  let symb: ms.Symbol;
+  const symbolOptions = { size: options.symbolSize };
+  if (options.symbolGenerator) {
+    symb = options.symbolGenerator(basicUnitNode.unit.sidc, symbolOptions);
+  } else {
+    symb = new ms.Symbol(
+      basicUnitNode.unit.sidc,
+      symbolOptions
+      // {uniqueDesignation: node.shortName || node.name},
+    );
+  }
+  let unitNodeInfo = basicUnitNode as UnitNodeInfo;
+  unitNodeInfo.symbolBoxSize = symb.getSize();
+  unitNodeInfo.anchor = symb.getAnchor();
+  unitNodeInfo.octagonAnchor = symb.getOctagonAnchor();
+  unitNodeInfo.symb = symb;
+  unitNodeInfo.x = 0;
+  unitNodeInfo.y = 0;
+  unitNodeInfo.lx = 0;
+  unitNodeInfo.rx = 0;
+  unitNodeInfo.ly = 0;
+
+  return unitNodeInfo;
+}
+
+export function createInitialNodeStructure(
+  parentElement: SVGElementSelection | GElementSelection,
+  groupedLevels: BasicUnitNode[][][],
+  options: OrbChartOptions,
+  specificOptions: SpecificOptions
+): RenderedLevel[] {
+  let renderedLevels: RenderedLevel[] = [];
+  for (const [levelNumber, currentLevel] of groupedLevels.entries()) {
+    if (options.maxLevels && levelNumber >= options.maxLevels) break;
+    let levelSpecificOptions = specificOptions.level?.[levelNumber] || {};
+    let levelGElement = createGroupElement(
+      parentElement,
+      "o-level",
+      `o-level-${levelNumber}`
+    );
+    addFontAttributes(levelGElement, levelSpecificOptions);
+
+    let renderedLevel: RenderedLevel = {
+      groupElement: levelGElement,
+      unitGroups: [],
+      options: levelSpecificOptions,
+    };
+
+    renderedLevels.push(renderedLevel);
+    let levelOptions = { ...options, ...levelSpecificOptions };
+
+    currentLevel.forEach((unitLevelGroup, groupIdx) => {
+      let parent = unitLevelGroup[0].parent;
+      let lgSpecificOptions = {};
+      if (parent) {
+        lgSpecificOptions = specificOptions.levelGroup?.[parent.unit.id] || {};
+      }
+      let levelGroupOptions = { ...levelOptions, ...lgSpecificOptions };
+      let levelGroupId = `o-level-group-${parent ? parent.unit.id : 0}`;
+      let levelGroupGElement = createGroupElement(
+        levelGElement,
+        "o-level-group",
+        levelGroupId
+      );
+      addFontAttributes(levelGroupGElement, lgSpecificOptions);
+
+      const units = unitLevelGroup.map((unitNode) => {
+        let unitSpecificOptions = specificOptions.unit?.[unitNode.unit.id] || {};
+
+        let unitOptions = { ...levelGroupOptions, ...unitSpecificOptions };
+        let renderedUnitNode = createUnitGroup(
+          levelGroupGElement,
+          convertBasicUnitNode2UnitNodeInfo(unitNode, unitOptions),
+          unitOptions,
+          unitSpecificOptions,
+          levelNumber
+        );
+        renderedUnitNode.options = unitSpecificOptions;
+        return renderedUnitNode;
+      });
+
+      renderedLevel.unitGroups.push({
+        groupElement: levelGroupGElement,
+        units,
+        options: lgSpecificOptions,
+        level: levelNumber,
+      });
+    });
+  }
+  return renderedLevels;
 }
 
 export function putGroupAt(

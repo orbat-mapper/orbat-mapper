@@ -4,6 +4,7 @@ import { arrSum, flattenArray, walkTree } from "./utils";
 import {
   BasicUnitNode,
   GElementSelection,
+  IdMap,
   LevelLayout,
   OrbChartOptions,
   RenderedChart,
@@ -25,6 +26,7 @@ import {
   MARGIN_TOP,
 } from "./defaults";
 import {
+  createInitialNodeStructure,
   addConnectorAttributes,
   addFontAttributes,
   calculateAnchorPoints,
@@ -38,35 +40,6 @@ import {
   drawUnitLevelGroupTreeLeftRightConnectorPath,
   putGroupAt,
 } from "./svgRender";
-
-function convertBasicUnitNode2UnitNodeInfo(
-  basicUnitNode: BasicUnitNode,
-  options: Partial<OrbChartOptions>
-): UnitNodeInfo {
-  let symb: ms.Symbol;
-  const symbolOptions = { size: options.symbolSize };
-  if (options.symbolGenerator) {
-    symb = options.symbolGenerator(basicUnitNode.unit.sidc, symbolOptions);
-  } else {
-    symb = new ms.Symbol(
-      basicUnitNode.unit.sidc,
-      symbolOptions
-      // {uniqueDesignation: node.shortName || node.name},
-    );
-  }
-  let unitNodeInfo = basicUnitNode as UnitNodeInfo;
-  unitNodeInfo.symbolBoxSize = symb.getSize();
-  unitNodeInfo.anchor = symb.getAnchor();
-  unitNodeInfo.octagonAnchor = symb.getOctagonAnchor();
-  unitNodeInfo.symb = symb;
-  unitNodeInfo.x = 0;
-  unitNodeInfo.y = 0;
-  unitNodeInfo.lx = 0;
-  unitNodeInfo.rx = 0;
-  unitNodeInfo.ly = 0;
-
-  return unitNodeInfo;
-}
 
 function isStackedLayout(layout: LevelLayout) {
   return layout === LevelLayout.Stacked;
@@ -136,9 +109,11 @@ class OrbatChart {
     // Pass 1: Create g elements and other svg elements
     // Pass 2: Do unit layout
     // Pass 3: Draw connectors
-    renderedChart.levels = this._createInitialNodeStructure(
+    renderedChart.levels = createInitialNodeStructure(
       chartGroup,
-      this.groupedLevels
+      this.groupedLevels,
+      this.options,
+      this.specificOptions
     );
     this._doNodeLayout(renderedChart);
     this._drawConnectors(renderedChart);
@@ -220,7 +195,7 @@ class OrbatChart {
 
   private _computeOrbatInfo(rootNode: Unit) {
     let levels: BasicUnitNode[][] = [];
-    const nodeMap: any = {};
+    const nodeMap: IdMap<BasicUnitNode> = {};
 
     walkTree(rootNode, (unit, levelIdx, parent) => {
       const unitNodeInfo: BasicUnitNode = { unit };
@@ -233,9 +208,9 @@ class OrbatChart {
       levels[levelIdx] = currentLevel;
     });
 
-    this.groupedLevels = _groupLevelsByParent();
+    this.groupedLevels = groupLevelsByParent();
 
-    function _groupLevelsByParent(): BasicUnitNode[][][] {
+    function groupLevelsByParent(): BasicUnitNode[][][] {
       let groupedLevels: BasicUnitNode[][][] = [];
       levels.forEach((level, yIdx) => {
         let groupedLevel = level.reduce(
@@ -257,72 +232,6 @@ class OrbatChart {
       });
       return groupedLevels;
     }
-  }
-
-  private _createInitialNodeStructure(
-    parentElement: SVGElementSelection | GElementSelection,
-    groupedLevels: BasicUnitNode[][][]
-  ): RenderedLevel[] {
-    const options = this.options;
-    let renderedLevels: RenderedLevel[] = [];
-    for (const [levelNumber, currentLevel] of groupedLevels.entries()) {
-      if (options.maxLevels && levelNumber >= options.maxLevels) break;
-      let levelSpecificOptions = this.specificOptions.level?.[levelNumber] || {};
-      let levelGElement = createGroupElement(
-        parentElement,
-        "o-level",
-        `o-level-${levelNumber}`
-      );
-      addFontAttributes(levelGElement, levelSpecificOptions);
-
-      let renderedLevel: RenderedLevel = {
-        groupElement: levelGElement,
-        unitGroups: [],
-        options: levelSpecificOptions,
-      };
-
-      renderedLevels.push(renderedLevel);
-      let levelOptions = { ...options, ...levelSpecificOptions };
-
-      currentLevel.forEach((unitLevelGroup, groupIdx) => {
-        let parent = unitLevelGroup[0].parent;
-        let lgSpecificOptions = {};
-        if (parent) {
-          lgSpecificOptions = this.specificOptions.levelGroup?.[parent.unit.id] || {};
-        }
-        let levelGroupOptions = { ...levelOptions, ...lgSpecificOptions };
-        let levelGroupId = `o-level-group-${parent ? parent.unit.id : 0}`;
-        let levelGroupGElement = createGroupElement(
-          levelGElement,
-          "o-level-group",
-          levelGroupId
-        );
-        addFontAttributes(levelGroupGElement, lgSpecificOptions);
-
-        const units = unitLevelGroup.map((unitNode) => {
-          let unitSpecificOptions = this.specificOptions.unit?.[unitNode.unit.id] || {};
-
-          let unitOptions = { ...levelGroupOptions, ...unitSpecificOptions };
-          let renderedUnitNode = createUnitGroup(
-            levelGroupGElement,
-            convertBasicUnitNode2UnitNodeInfo(unitNode, unitOptions),
-            unitOptions,
-            unitSpecificOptions,
-            levelNumber
-          );
-          renderedUnitNode.options = unitSpecificOptions;
-          return renderedUnitNode;
-        });
-
-        renderedLevel.unitGroups.push({
-          groupElement: levelGroupGElement,
-          units,
-          options: lgSpecificOptions,
-          level: levelNumber,
-        });
-      });
-    }
-    return renderedLevels;
   }
 
   private _doNodeLayout(renderedChart: RenderedChart) {

@@ -11,6 +11,10 @@ export interface StringNumberMap<T> {
   [key: number]: T;
 }
 
+export interface IdMap<T> {
+  [key: string | number]: T;
+}
+
 export interface NumberMap<T> {
   [idx: number]: T;
 }
