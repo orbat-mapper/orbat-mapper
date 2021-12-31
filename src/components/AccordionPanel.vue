@@ -4,7 +4,7 @@
       <DisclosureButton
         class="py-3 w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500"
       >
-        <span class="font-medium text-gray-900">
+        <span class="font-bold text-gray-900">
           <slot name="label">{{ label }}</slot>
         </span>
         <span class="ml-6 flex items-center">

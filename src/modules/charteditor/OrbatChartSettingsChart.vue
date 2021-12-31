@@ -29,12 +29,14 @@
     </CreateEmtpyDashed>
     <InputGroup label="Levels" type="number" v-model="options.maxLevels" />
     <div class="w-full border-t border-gray-200 mt-4" />
-    <AccordionPanel label="Layout and spacing">
+    <AccordionPanel label="Page settings">
       <SimpleSelect
         v-model="options.paperSize"
         label="Page size"
         :items="canvasSizeItems"
       />
+    </AccordionPanel>
+    <AccordionPanel label="Layout and spacing">
       <InputGroup label="Level padding" type="number" v-model="options.levelPadding" />
       <InputGroup label="Tree offset" type="number" v-model="options.treeOffset" />
       <InputGroup label="Stacked offset" type="number" v-model="options.stackedOffset" />
