@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div class="w-full flex flex-col">
     <h3 class="hidden lg:block text-gray-900 font-medium px-4 lg:p-4">
       Chart layout settings
     </h3>
@@ -7,7 +7,7 @@
       v-model:current-tab="currentTab"
       extra-class="px-4 -mx-4 lg:mx-0"
       tab-class="mx-2 lg:mx-4"
-      class="min-h-0"
+      class="flex-auto min-h-0"
     >
       <TabItem label="Chart" class="mx-4">
         <OrbatChartSettingsChart />
