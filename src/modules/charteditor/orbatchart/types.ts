@@ -63,7 +63,7 @@ export enum FontStyle {
 export enum ChartItemType {
   Chart = "chart",
   Level = "level",
-  LevelGroup = "levelGroup",
+  Branch = "branch",
   Unit = "unit",
 }
 
@@ -98,7 +98,7 @@ export interface UnitNodeInfo extends BasicUnitNode {
 
 export type OnUnitClickCallback = (unit: RenderedUnitNode) => void;
 export type OnLevelClickCallback = (levelNumber: number) => void;
-export type OnLevelGroupClickCallback = (
+export type OnBranchClickCallback = (
   parentId: string | number,
   levelNumber: number
 ) => void;
@@ -127,7 +127,7 @@ export interface OrbChartOptions extends FontOptions, ConnectorOptions, LabelOpt
   debug: boolean;
   onClick: OnUnitClickCallback;
   onLevelClick: OnLevelClickCallback;
-  onLevelGroupClick: OnLevelGroupClickCallback;
+  onBranchClick: OnBranchClickCallback;
   connectorOffset: number;
   symbolGenerator: SymbolGenerator;
   orientation: ChartOrientation;
@@ -142,12 +142,12 @@ export interface OrbChartOptions extends FontOptions, ConnectorOptions, LabelOpt
 
 export type PartialOrbChartOptions = Partial<OrbChartOptions>;
 export type LevelSpecificOptions = NumberMap<PartialOrbChartOptions>;
-export type LevelGroupSpecificOptions = StringNumberMap<PartialOrbChartOptions>;
+export type BranchSpecificOptions = StringNumberMap<PartialOrbChartOptions>;
 export type UnitSpecificOptions = StringNumberMap<PartialOrbChartOptions>;
 
 export interface SpecificOptions {
   level?: LevelSpecificOptions;
-  levelGroup?: LevelGroupSpecificOptions;
+  branch?: BranchSpecificOptions;
   unit?: UnitSpecificOptions;
 }
 
@@ -174,11 +174,11 @@ export interface RenderedChart extends RenderedElement {
 }
 
 export interface RenderedLevel extends RenderedElement {
-  unitGroups: RenderedLevelGroup[];
+  branches: RenderedBranch[];
   options: Partial<OrbChartOptions>;
 }
 
-export interface RenderedLevelGroup extends RenderedElement {
+export interface RenderedBranch extends RenderedElement {
   units: RenderedUnitNode[];
   options: Partial<OrbChartOptions>;
   level: number;

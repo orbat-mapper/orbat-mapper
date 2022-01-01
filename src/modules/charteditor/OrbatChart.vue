@@ -23,7 +23,7 @@ export default defineComponent({
     symbolGenerator: { type: Function as PropType<SymbolGenerator> },
     chartId: { type: String },
   },
-  emits: ["unitclick", "levelclick", "levelgroupclick"],
+  emits: ["unitclick", "levelclick", "branchclick"],
 
   setup(props, { emit }) {
     const chartRootElement = ref();
@@ -42,8 +42,8 @@ export default defineComponent({
       emit("levelclick", levelNumber);
     }
 
-    function onLevelGroupClick(parentId: string | number, levelNumber: number) {
-      emit("levelgroupclick", parentId, levelNumber);
+    function onBranchClick(parentId: string | number, levelNumber: number) {
+      emit("branchclick", parentId, levelNumber);
     }
 
     function handleLevelHighlight(value: number[]) {
@@ -61,7 +61,7 @@ export default defineComponent({
           debug: props.debug,
           onClick,
           onLevelClick,
-          onLevelGroupClick,
+          onBranchClick,
         },
         props.specificOptions || {}
       );

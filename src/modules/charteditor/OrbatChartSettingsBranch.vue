@@ -1,13 +1,13 @@
 <template>
   <div class="pb-4">
     <p class="text-sm text-gray-600">Branch specific options.</p>
-    <div v-if="currentLevelGroup !== null" class="mt-4">
+    <div v-if="currentBranch !== null" class="mt-4">
       <PlainButton @click="clearSpecificOptions()">Clear settings</PlainButton>
       <AccordionPanel label="Unit settings" default-open>
-        <SettingsUnit :item-type="ChartItemType.LevelGroup" />
+        <SettingsUnit :item-type="ChartItemType.Branch" />
       </AccordionPanel>
       <AccordionPanel label="Connectors">
-        <SettingConnectors :item-type="ChartItemType.LevelGroup" />
+        <SettingConnectors :item-type="ChartItemType.Branch" />
       </AccordionPanel>
     </div>
   </div>
@@ -28,7 +28,7 @@ import AccordionPanel from "../../components/AccordionPanel.vue";
 import SettingConnectors from "./SettingsConnectors.vue";
 
 export default defineComponent({
-  name: "OrbatChartSettingsLevelGroup",
+  name: "OrbatChartSettingsBranch",
   components: {
     SettingConnectors,
     AccordionPanel,
@@ -41,11 +41,11 @@ export default defineComponent({
   },
   setup() {
     const selectedElement = useSelectedChartElementStore();
-    const { clearSpecificOptions } = useChartSettings(ChartItemType.LevelGroup);
-    const currentLevelGroup = computed(() => selectedElement.levelGroup?.parent || null);
+    const { clearSpecificOptions } = useChartSettings(ChartItemType.Branch);
+    const currentBranch = computed(() => selectedElement.branch?.parent || null);
 
     return {
-      currentLevelGroup,
+      currentBranch,
       clearSpecificOptions,
       ChartItemType,
     };

@@ -85,11 +85,7 @@
 
 <script lang="ts">
 import InputGroup from "../../components/InputGroup.vue";
-import {
-  useChartSettingsStore,
-  useRootUnitStore,
-  useSelectedChartElementStore,
-} from "./chartSettingsStore";
+import { useChartSettingsStore, useRootUnitStore } from "./chartSettingsStore";
 import SimpleSelect from "../../components/SimpleSelect.vue";
 import { FontStyle, FontWeight, LevelLayout, UnitLevelDistance } from "./orbatchart";
 import ToggleField from "../../components/ToggleField.vue";

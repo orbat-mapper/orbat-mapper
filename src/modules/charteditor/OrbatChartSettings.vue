@@ -16,7 +16,7 @@
         <OrbatChartSettingsLevel />
       </TabItem>
       <TabItem label="Branch" class="mx-4">
-        <OrbatChartSettingsLevelGroup />
+        <OrbatChartSettingsBranch />
       </TabItem>
       <TabItem label="Unit" class="mx-4">
         <OrbatChartSettingsUnit />
@@ -32,13 +32,13 @@ import { defineComponent, PropType } from "vue";
 import { useVModel } from "@vueuse/core";
 import OrbatChartSettingsUnit from "./OrbatChartSettingsUnit.vue";
 import OrbatChartSettingsLevel from "./OrbatChartSettingsLevel.vue";
-import OrbatChartSettingsLevelGroup from "./OrbatChartSettingsLevelGroup.vue";
 import OrbatChartSettingsChart from "./OrbatChartSettingsChart.vue";
+import OrbatChartSettingsBranch from "./OrbatChartSettingsBranch.vue";
 
 export const enum ChartTabs {
   Chart = 0,
   Level,
-  LevelGroup,
+  Branch,
   Unit,
 }
 
@@ -46,8 +46,8 @@ export default defineComponent({
   name: "OrbatChartSettings",
   components: {
     OrbatChartSettingsChart,
-    OrbatChartSettingsLevelGroup,
     OrbatChartSettingsLevel,
+    OrbatChartSettingsBranch,
     OrbatChartSettingsUnit,
 
     TabItem,

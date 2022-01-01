@@ -99,34 +99,30 @@ export function createInitialNodeStructure(
 
     let renderedLevel: RenderedLevel = {
       groupElement: levelGElement,
-      unitGroups: [],
+      branches: [],
       options: levelSpecificOptions,
     };
 
     renderedLevels.push(renderedLevel);
     let levelOptions = { ...options, ...levelSpecificOptions };
 
-    currentLevel.forEach((unitLevelGroup, groupIdx) => {
-      let parent = unitLevelGroup[0].parent;
-      let lgSpecificOptions = {};
+    currentLevel.forEach((branch, groupIdx) => {
+      let parent = branch[0].parent;
+      let branchSpecificOptions = {};
       if (parent) {
-        lgSpecificOptions = specificOptions.levelGroup?.[parent.unit.id] || {};
+        branchSpecificOptions = specificOptions.branch?.[parent.unit.id] || {};
       }
-      let levelGroupOptions = { ...levelOptions, ...lgSpecificOptions };
-      let levelGroupId = `o-level-group-${parent ? parent.unit.id : 0}`;
-      let levelGroupGElement = createGroupElement(
-        levelGElement,
-        "o-level-group",
-        levelGroupId
-      );
-      addFontAttributes(levelGroupGElement, lgSpecificOptions);
+      let branchOptions = { ...levelOptions, ...branchSpecificOptions };
+      let branchId = `o-branch-${parent ? parent.unit.id : 0}`;
+      let branchGElement = createGroupElement(levelGElement, "o-branch", branchId);
+      addFontAttributes(branchGElement, branchSpecificOptions);
 
-      const units = unitLevelGroup.map((unitNode) => {
+      const units = branch.map((unitNode) => {
         let unitSpecificOptions = specificOptions.unit?.[unitNode.unit.id] || {};
 
-        let unitOptions = { ...levelGroupOptions, ...unitSpecificOptions };
+        let unitOptions = { ...branchOptions, ...unitSpecificOptions };
         let renderedUnitNode = createUnitGroup(
-          levelGroupGElement,
+          branchGElement,
           convertBasicUnitNode2UnitNodeInfo(unitNode, unitOptions),
           unitOptions,
           unitSpecificOptions,
@@ -136,10 +132,10 @@ export function createInitialNodeStructure(
         return renderedUnitNode;
       });
 
-      renderedLevel.unitGroups.push({
-        groupElement: levelGroupGElement,
+      renderedLevel.branches.push({
+        groupElement: branchGElement,
         units,
-        options: lgSpecificOptions,
+        options: branchSpecificOptions,
         level: levelNumber,
       });
     });
@@ -257,7 +253,7 @@ export function drawDebugAnchors(svg: SVGElementSelection, unitNode: RenderedUni
   drawDebugPoint(svg, unitNode.rx, unitNode.y);
 }
 
-export function drawUnitLevelGroupConnectorPath(
+export function drawUnitBranchConnectorPath(
   g: GElementSelection,
   unit: UnitNodeInfo,
   options: any
@@ -272,13 +268,13 @@ export function drawUnitLevelGroupConnectorPath(
 
 export function drawUnitLevelConnectorPath(
   g: GElementSelection,
-  unitLevelGroup: RenderedUnitNode[],
+  unitBranch: RenderedUnitNode[],
   options: OrbChartOptions
 ) {
-  let firstUnitInGroup = unitLevelGroup[0];
+  let firstUnitInGroup = unitBranch[0];
   let parentUnit = firstUnitInGroup.parent;
   if (!parentUnit) return;
-  let lastUnitInGroup = unitLevelGroup[unitLevelGroup.length - 1];
+  let lastUnitInGroup = unitBranch[unitBranch.length - 1];
 
   const dy = firstUnitInGroup.y - (firstUnitInGroup.y - parentUnit.y) / 2;
   const d1 = `M ${parentUnit.x}, ${parentUnit.ly + options.connectorOffset} V ${dy}`;
@@ -287,13 +283,13 @@ export function drawUnitLevelConnectorPath(
   g.append("path").attr("d", d).classed("o-line", true);
 }
 
-export function drawUnitLevelGroupTreeLeftRightConnectorPath(
+export function drawUnitBranchTreeLeftRightConnectorPath(
   g: GElementSelection,
-  unitLevelGroup: RenderedUnitNode[],
+  unitBranch: RenderedUnitNode[],
   levelLayout: LevelLayout,
   options: OrbChartOptions
 ) {
-  let lastUnitInGroup = unitLevelGroup[unitLevelGroup.length - 1];
+  let lastUnitInGroup = unitBranch[unitBranch.length - 1];
   let parentUnit = lastUnitInGroup.parent as RenderedUnitNode;
   if (!parentUnit) return;
 
@@ -303,8 +299,8 @@ export function drawUnitLevelGroupTreeLeftRightConnectorPath(
   g.append("path").attr("d", d1).classed("o-line", true);
 
   // find the widest node
-  let maxWidth = Math.max(...unitLevelGroup.map((u) => u.boundingBox.width));
-  for (const [yIdx, unit] of unitLevelGroup.entries()) {
+  let maxWidth = Math.max(...unitBranch.map((u) => u.boundingBox.width));
+  for (const [yIdx, unit] of unitBranch.entries()) {
     let d1;
     const delta = Math.abs(unit.boundingBox.width / 2 - maxWidth / 2);
     if (

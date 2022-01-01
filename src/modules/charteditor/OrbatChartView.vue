@@ -18,7 +18,7 @@
         :symbol-generator="symbolGenerator"
         @unitclick="onUnitClick"
         @levelclick="onLevelClick"
-        @levelgroupclick="onLevelGroupClick"
+        @branchclick="onBranchClick"
         :interactive="isInteractive"
         :chart-id="chartId"
         :options="options.$state"
@@ -50,14 +50,14 @@ import { useScenarioStore } from "../../stores/scenarioStore";
 import { useScenarioIO } from "../../stores/scenarioIO";
 import {
   LevelLayout,
+  OnBranchClickCallback,
   OnLevelClickCallback,
-  OnLevelGroupClickCallback,
   RenderedUnitNode,
 } from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
 import { MenuAlt2Icon, SearchIcon } from "@heroicons/vue/solid";
-import { whenever, promiseTimeout } from "@vueuse/core";
+import { promiseTimeout, whenever } from "@vueuse/core";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import FileSaver from "file-saver";
 import SlideOver from "../../components/SlideOver.vue";
@@ -118,9 +118,9 @@ export default defineComponent({
       currentTab.value = ChartTabs.Level;
     };
 
-    const onLevelGroupClick: OnLevelGroupClickCallback = (parentId, levelNumber) => {
-      currentChartElements.selectLevelGroup(parentId, levelNumber);
-      currentTab.value = ChartTabs.LevelGroup;
+    const onBranchClick: OnBranchClickCallback = (parentId, levelNumber) => {
+      currentChartElements.selectBranch(parentId, levelNumber);
+      currentTab.value = ChartTabs.Branch;
     };
 
     const doSVGDownload = async () => {
@@ -157,7 +157,7 @@ export default defineComponent({
       onUnitClick,
       isInteractive,
       onLevelClick,
-      onLevelGroupClick,
+      onBranchClick,
       menuItems,
       chartId,
       isMenuOpen,

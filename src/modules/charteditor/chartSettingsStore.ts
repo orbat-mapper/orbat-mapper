@@ -17,7 +17,7 @@ export interface State {
 export interface SelectedState {
   node: RenderedUnitNode | null;
   level: number | null;
-  levelGroup: { level: number; parent: string | number } | null;
+  branch: { level: number; parent: string | number } | null;
 }
 
 export interface RootUnitState {
@@ -60,28 +60,28 @@ export const useSelectedChartElementStore = defineStore("selectedChartUnitStore"
   state: (): SelectedState => ({
     node: null,
     level: null,
-    levelGroup: null,
+    branch: null,
   }),
   actions: {
     clear() {
       this.node = null;
       this.level = null;
-      this.levelGroup = null;
+      this.branch = null;
     },
     selectUnit(unit: RenderedUnitNode) {
       this.node = unit;
       this.level = unit.level;
-      this.levelGroup = unit.parent
+      this.branch = unit.parent
         ? { parent: unit.parent.unit.id, level: unit.level }
         : null;
     },
     selectLevel(levelNumber: number) {
       this.level = levelNumber;
       this.node = null;
-      this.levelGroup = null;
+      this.branch = null;
     },
-    selectLevelGroup(parentId: string | number, level: number) {
-      this.levelGroup = { level, parent: parentId };
+    selectBranch(parentId: string | number, level: number) {
+      this.branch = { level, parent: parentId };
       this.level = level;
       this.node = null;
     },
@@ -91,13 +91,13 @@ export const useSelectedChartElementStore = defineStore("selectedChartUnitStore"
 export const useSpecificChartOptionsStore = defineStore("specificChartOptions", {
   state: (): Required<SpecificOptions> => ({
     level: {},
-    levelGroup: {},
+    branch: {},
     unit: {},
   }),
   actions: {
     clear() {
       this.level = {};
-      this.levelGroup = {};
+      this.branch = {};
       this.unit = {};
     },
   },
@@ -113,13 +113,11 @@ export const useMergedChartOptionsStore = defineStore("mergedChartOption", {
       return { ...chart.$state, ...spec };
     },
 
-    levelGroup() {
+    branch() {
       const selected = useSelectedChartElementStore();
       const specific = useSpecificChartOptionsStore();
       const spec =
-        selected.levelGroup !== null
-          ? specific.levelGroup[selected.levelGroup.parent] || {}
-          : {};
+        selected.branch !== null ? specific.branch[selected.branch.parent] || {} : {};
       return { ...this.level, ...spec };
     },
 
@@ -128,7 +126,7 @@ export const useMergedChartOptionsStore = defineStore("mergedChartOption", {
       const specific = useSpecificChartOptionsStore();
       const spec = selected.node ? specific.unit[selected.node.unit.id] || {} : {};
 
-      return { ...this.levelGroup, ...spec };
+      return { ...this.branch, ...spec };
     },
   },
 });

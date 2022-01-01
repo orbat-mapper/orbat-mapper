@@ -15,8 +15,8 @@ export function useChartSettings(chartElementType: ChartItemType) {
     switch (chartElementType) {
       case ChartItemType.Level:
         return mOptions.level;
-      case ChartItemType.LevelGroup:
-        return mOptions.levelGroup;
+      case ChartItemType.Branch:
+        return mOptions.branch;
       case ChartItemType.Unit:
         return mOptions.unit;
       default:
@@ -28,8 +28,8 @@ export function useChartSettings(chartElementType: ChartItemType) {
     switch (chartElementType) {
       case ChartItemType.Level:
         return selectedElementStore.level;
-      case ChartItemType.LevelGroup:
-        return selectedElementStore.levelGroup?.parent || null;
+      case ChartItemType.Branch:
+        return selectedElementStore.branch?.parent || null;
       case ChartItemType.Unit:
         return selectedElementStore.node?.unit || null;
       default:
@@ -42,8 +42,8 @@ export function useChartSettings(chartElementType: ChartItemType) {
     switch (chartElementType) {
       case ChartItemType.Level:
         return specificOptionsStore.level[currentElement.value as number];
-      case ChartItemType.LevelGroup:
-        return specificOptionsStore.levelGroup[currentElement.value as string | number];
+      case ChartItemType.Branch:
+        return specificOptionsStore.branch[currentElement.value as string | number];
       case ChartItemType.Unit:
         return specificOptionsStore.unit[(currentElement.value as Unit).id] || null;
       default:
@@ -58,8 +58,8 @@ export function useChartSettings(chartElementType: ChartItemType) {
       case ChartItemType.Level:
         specificOptionsStore.level[currentElement.value as number] = opts;
         break;
-      case ChartItemType.LevelGroup:
-        specificOptionsStore.levelGroup[currentElement.value as string | number] = opts;
+      case ChartItemType.Branch:
+        specificOptionsStore.branch[currentElement.value as string | number] = opts;
         break;
       case ChartItemType.Unit:
         specificOptionsStore.unit[(currentElement.value as Unit).id] = opts;
@@ -74,8 +74,8 @@ export function useChartSettings(chartElementType: ChartItemType) {
       case ChartItemType.Level:
         specificOptionsStore.level[currentElement.value as number] = opts;
         break;
-      case ChartItemType.LevelGroup:
-        specificOptionsStore.levelGroup[currentElement.value as string | number] = opts;
+      case ChartItemType.Branch:
+        specificOptionsStore.branch[currentElement.value as string | number] = opts;
         break;
       case ChartItemType.Unit:
         specificOptionsStore.unit[(currentElement.value as Unit).id] = opts;
