@@ -186,3 +186,9 @@ export interface RenderedUnitNode extends RenderedElement, UnitNodeInfo {
   options: Partial<OrbChartOptions>;
   level: number;
 }
+
+export interface ToSvgOptions {
+  width?: number;
+  height?: number;
+  elementId?: string;
+}

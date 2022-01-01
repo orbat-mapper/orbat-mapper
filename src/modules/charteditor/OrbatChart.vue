@@ -66,11 +66,11 @@ export default defineComponent({
         props.specificOptions || {}
       );
 
-      orbatChart.toSVG(
-        { width: props.width, height: props.height },
-        chartRootElement.value,
-        props.chartId
-      );
+      orbatChart.toSVG(chartRootElement.value, {
+        width: props.width,
+        height: props.height,
+        elementId: props.chartId,
+      });
       if (props.interactive) orbatChart.makeInteractive();
     });
 

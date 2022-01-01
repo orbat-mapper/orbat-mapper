@@ -1,4 +1,3 @@
-import ms from "milsymbol";
 import { select } from "d3-selection";
 import { arrSum, flattenArray, walkTree } from "./utils";
 import {
@@ -14,9 +13,9 @@ import {
   Size,
   SpecificOptions,
   SVGElementSelection,
+  ToSvgOptions,
   Unit,
   UnitLevelDistance,
-  UnitNodeInfo,
   VerticalAlignment,
 } from "./types";
 import {
@@ -26,13 +25,12 @@ import {
   MARGIN_TOP,
 } from "./defaults";
 import {
-  createInitialNodeStructure,
   addConnectorAttributes,
   addFontAttributes,
   calculateAnchorPoints,
   createChartStyle,
   createGroupElement,
-  createUnitGroup,
+  createInitialNodeStructure,
   drawDebugAnchors,
   drawDebugRect,
   drawUnitLevelConnectorPath,
@@ -96,9 +94,12 @@ class OrbatChart {
     this.svg.selectAll(".select-rect").on("click", null);
   }
 
-  toSVG(size: Partial<Size>, parentElement: HTMLElement, elementId?: string): SVGElement {
-    this.width = size.width || DEFAULT_CHART_WIDTH;
-    this.height = size.height || DEFAULT_CHART_HEIGHT;
+  toSVG(
+    parentElement: HTMLElement,
+    { width, height, elementId }: ToSvgOptions = {}
+  ): SVGElement {
+    this.width = width || DEFAULT_CHART_WIDTH;
+    this.height = height || DEFAULT_CHART_HEIGHT;
     let renderedChart = this._createSvgRootElement(parentElement, elementId);
     const chartGroup = createGroupElement(this.svg, "o-chart");
     addFontAttributes(chartGroup, this.options);

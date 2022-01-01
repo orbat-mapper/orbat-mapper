@@ -21,7 +21,7 @@ describe("OrbatChart class", () => {
 
   it("renders", () => {
     let o = new OrbatChart(ORBAT1);
-    let svg = o.toSVG({}, document.body);
+    let svg = o.toSVG(document.body);
     expect(svg.getAttribute("width")).toBe("100%");
   });
 });
@@ -29,19 +29,19 @@ describe("OrbatChart class", () => {
 describe("OrbatChart SVG rendering", () => {
   it("renders", () => {
     let o = new OrbatChart(ORBAT1);
-    let svg = o.toSVG({}, document.body);
+    let svg = o.toSVG(document.body);
     expect(svg.getAttribute("width")).toBe("100%");
   });
 
   it("has empty ID by default", () => {
     let o = new OrbatChart(ORBAT1);
-    let svg = o.toSVG({}, document.body);
+    let svg = o.toSVG(document.body);
     expect(svg.id).toBe("");
   });
 
   it("allows a custom ID", () => {
     let o = new OrbatChart(ORBAT1);
-    let svg = o.toSVG({}, document.body, "CustomID");
+    let svg = o.toSVG(document.body, { elementId: "CustomID" });
     expect(svg.id).toBe("CustomID");
   });
 });
@@ -103,7 +103,7 @@ describe("OrbatChart orientation", () => {
 
 function createChartSvgString(options?: PartialOrbChartOptions) {
   let o = new OrbatChart(DUMMY_UNIT, options);
-  let svg = o.toSVG({}, document.body);
+  let svg = o.toSVG(document.body);
   return svg.innerHTML;
 }
 
