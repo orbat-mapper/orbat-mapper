@@ -43,6 +43,12 @@
       :class="!usedOptions.has('useShortName') && 'sepia-[50%]'"
       >Use short unit names
     </ToggleField>
+    <ToggleField
+      :model-value="mergedOptions.hideLabel"
+      @update:model-value="setValue('hideLabel', $event)"
+      :class="!usedOptions.has('hideLabel') && 'sepia-[50%]'"
+      >Hide label
+    </ToggleField>
   </div>
 </template>
 

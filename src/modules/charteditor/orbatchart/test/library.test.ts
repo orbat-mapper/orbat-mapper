@@ -121,5 +121,12 @@ describe("OrbatChart unit labels", () => {
   it("has configurable labelOffset", () => {
     const svgString = createChartSvgString({ labelOffset: 1337 });
     expect(svgString).toContain("1337");
+    expect(svgString).toContain(DUMMY_UNIT.name);
+  });
+
+  it("can be disable with hideLabel setting", () => {
+    const svgString = createChartSvgString({ labelOffset: 1337, hideLabel: true });
+    expect(svgString).not.toContain(DUMMY_UNIT.name);
+    expect(svgString).not.toContain("1337");
   });
 });

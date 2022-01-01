@@ -210,16 +210,19 @@ export function createUnitGroup(
     ? unitNode.unit.shortName || unitNode.unit.name
     : unitNode.unit.name;
   g.append("g").html(unitNode.symb.asSVG());
-  const text = g
-    .append("text")
-    .attr("x", unitNode.octagonAnchor.x)
-    .attr("dy", `${options.labelOffset}pt`)
-    .attr("y", unitNode.symbolBoxSize.height)
-    .attr("class", "o-label")
-    .text(unitLabel);
-  if (specificOptions.fontSize) text.attr("font-size", `${options.fontSize}pt`);
-  if (specificOptions.fontWeight) text.attr("font-weight", options.fontWeight);
-  if (specificOptions.fontStyle) text.attr("font-style", options.fontStyle);
+  if (!options.hideLabel) {
+    const text = g
+      .append("text")
+      .attr("x", unitNode.octagonAnchor.x)
+      .attr("dy", `${options.labelOffset}pt`)
+      .attr("y", unitNode.symbolBoxSize.height)
+      .attr("class", "o-label")
+      .text(unitLabel);
+
+    if (specificOptions.fontSize) text.attr("font-size", `${options.fontSize}pt`);
+    if (specificOptions.fontWeight) text.attr("font-weight", options.fontWeight);
+    if (specificOptions.fontStyle) text.attr("font-style", options.fontStyle);
+  }
 
   if (options.onClick) {
     g.on("click", (e) => {

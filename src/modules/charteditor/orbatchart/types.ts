@@ -115,7 +115,13 @@ export interface ConnectorOptions {
   lineColor: string;
 }
 
-export interface OrbChartOptions extends FontOptions, ConnectorOptions {
+export interface LabelOptions {
+  useShortName: boolean;
+  labelOffset: number;
+  hideLabel: boolean;
+}
+
+export interface OrbChartOptions extends FontOptions, ConnectorOptions, LabelOptions {
   symbolSize: number;
   maxLevels: number;
   debug: boolean;
@@ -132,8 +138,6 @@ export interface OrbChartOptions extends FontOptions, ConnectorOptions {
   levelPadding: number;
   treeOffset: number;
   stackedOffset: number;
-  useShortName: boolean;
-  labelOffset: number;
 }
 
 export type PartialOrbChartOptions = Partial<OrbChartOptions>;

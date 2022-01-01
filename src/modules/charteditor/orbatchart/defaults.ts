@@ -32,4 +32,5 @@ export const DEFAULT_OPTIONS = {
   fontStyle: "normal",
   fontWeight: "normal",
   lineColor: "#1F2937",
+  hideLabel: false,
 } as OrbChartOptions;
