@@ -66,6 +66,7 @@
         :items="fontStyleItems"
       />
       <InputGroup label="Label offset" type="number" v-model="options.labelOffset" />
+      <InputGroup label="Font color" type="color" v-model="options.fontColor" />
       <ToggleField v-model="options.useShortName">Use short unit names</ToggleField>
       <ToggleField v-model="options.hideLabel">Hide label</ToggleField>
     </AccordionPanel>

@@ -108,6 +108,7 @@ export interface FontOptions {
   fontSize: number;
   fontStyle: "normal" | "italic" | "oblique";
   fontWeight: "normal" | "bold" | "lighter" | "bolder" | number;
+  fontColor: string;
 }
 
 export interface ConnectorOptions {

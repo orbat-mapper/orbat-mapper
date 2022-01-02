@@ -218,6 +218,7 @@ export function createUnitGroup(
     if (specificOptions.fontSize) text.attr("font-size", `${options.fontSize}pt`);
     if (specificOptions.fontWeight) text.attr("font-weight", options.fontWeight);
     if (specificOptions.fontStyle) text.attr("font-style", options.fontStyle);
+    if (specificOptions.fontColor) text.attr("fill", options.fontColor);
   }
 
   if (options.onClick) {
@@ -318,10 +319,11 @@ export function addFontAttributes(
   group: GElementSelection,
   options: Partial<FontOptions>
 ) {
-  const { fontSize, fontWeight, fontStyle } = options;
+  const { fontSize, fontWeight, fontStyle, fontColor } = options;
   fontSize && group.attr("font-size", `${fontSize}pt`);
   fontWeight && group.attr("font-weight", fontWeight);
   fontStyle && group.attr("font-style", fontStyle);
+  fontColor && group.attr("fill", fontColor);
 }
 
 export function addConnectorAttributes(

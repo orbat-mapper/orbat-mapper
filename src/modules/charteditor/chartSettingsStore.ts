@@ -53,6 +53,7 @@ export const useChartSettingsStore = defineStore("chartSettingsStore", {
     fontStyle: "normal",
     lineColor: DEFAULT_OPTIONS.lineColor,
     hideLabel: false,
+    fontColor: DEFAULT_OPTIONS.fontColor,
   }),
 });
 

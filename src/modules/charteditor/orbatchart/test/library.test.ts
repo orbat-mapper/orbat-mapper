@@ -129,4 +129,9 @@ describe("OrbatChart unit labels", () => {
     expect(svgString).not.toContain(DUMMY_UNIT.name);
     expect(svgString).not.toContain("1337");
   });
+
+  it("can change color", () => {
+    const svgString = createChartSvgString({ fontColor: "testvalue" });
+    expect(svgString).toContain('fill="testvalue"');
+  });
 });
