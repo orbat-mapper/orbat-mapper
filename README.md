@@ -4,7 +4,7 @@ Recreate historic battles and military scenarios.
 
 **Please note that this project is a work in progress. A working version of ORBAT Mapper has not been released yet.**
 
-You can try the current version at https://preview--orbat-mapper-proto.netlify.app/.
+You can try the current version at https://preview--orbat-mapper.netlify.app/.
 
 _Screenshot of an early prototype:_
 
