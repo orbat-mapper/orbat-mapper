@@ -18,10 +18,10 @@
         <div
           class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6 max-w-sm md:max-w-5xl mx-auto"
         >
-          <div class="border rounded-lg overflow-hidden">
+          <div class="border rounded-lg overflow-hidden aspect-w-4 aspect-h-3">
             <img src="/images/orbat-chart-demo.png" class="object-cover object-center" />
           </div>
-          <div class="border rounded-lg">
+          <div class="border rounded-lg overflow-hidden aspect-w-4 aspect-h-3">
             <img src="/images/screenshot-2021-08-04.png" class="object-cover" />
           </div>
         </div>
