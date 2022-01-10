@@ -11,7 +11,7 @@ export const useGeoStore = defineStore("geo", {
   state: () => ({
     olMap: null as OLMap | null,
     layers: null as unknown as Collection<
-      BaseLayer | BaseTileLayer<any> | BaseVectorLayer<any>
+      BaseLayer | BaseTileLayer<any, any> | BaseVectorLayer<any, any>
     >,
   }),
   actions: {
