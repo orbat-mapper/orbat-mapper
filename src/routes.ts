@@ -6,6 +6,7 @@ import LandingPage from "./views/LandingPage.vue";
 const MainView = () => import("./views/MainView.vue");
 const StoryModeView = () => import("./modules/storymode/StoryModeView.vue");
 const OrbatChartView = () => import("./modules/charteditor/OrbatChartView.vue");
+const ComponentsTestView = () => import("./views/ComponentsTestView.vue");
 
 export const SCENARIO_ROUTE = "ScenarioRoute";
 export const LANDING_PAGE_ROUTE = "LandingPageRoute";
@@ -36,6 +37,11 @@ const routes = [
     beforeEnter: (to, from) => {
       NProgress.start();
     },
+  },
+  {
+    path: "/testcomponents",
+
+    component: ComponentsTestView,
   },
 
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },

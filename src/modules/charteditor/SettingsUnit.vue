@@ -31,11 +31,11 @@
       :items="fontStyleItems"
     />
     <InputGroup
-        label="Font color"
-        type="color"
-        :model-value="mergedOptions.fontColor"
-        @update:model-value="setValue('fontColor', $event)"
-        :class="!usedOptions.has('fontColor') && 'sepia-[50%]'"
+      label="Font color"
+      type="color"
+      :model-value="mergedOptions.fontColor"
+      @update:model-value="setValue('fontColor', $event)"
+      :class="!usedOptions.has('fontColor') && 'sepia-[50%]'"
     />
     <InputGroup
       label="Label offset"

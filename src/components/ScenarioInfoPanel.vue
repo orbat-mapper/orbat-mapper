@@ -9,12 +9,12 @@
       />
       <DescriptionItem label="Start time"
         >{{ computedStartTime.format() }}
-        <PlainButton @click="showTimeModal = true" class="ml-2">Change </PlainButton>
+        <PlainButton @click="showTimeModal = true" class="ml-2">Change</PlainButton>
       </DescriptionItem>
       <InputGroup label="Time zone" v-model="form.timeZone" />
       <RadioGroupList :settings="standardSettings" v-model="form.symbologyStandard" />
       <div class="flex justify-end space-x-2">
-        <PlainButton type="button" @click="toggleEditMode()">Cancel </PlainButton>
+        <PlainButton type="button" @click="toggleEditMode()">Cancel</PlainButton>
         <PrimaryButton type="submit">Update</PrimaryButton>
       </div>
       <InputDateModal
@@ -33,12 +33,12 @@
       <DescriptionItem label="Start time"
         >{{ computedStartTime.format() }}
       </DescriptionItem>
-      <DescriptionItem label="Time zone name">{{ scenario.timeZone }} </DescriptionItem>
+      <DescriptionItem label="Time zone name">{{ scenario.timeZone }}</DescriptionItem>
       <DescriptionItem label="Symbology standard"
         >{{ scenario.symbologyStandard }}
       </DescriptionItem>
 
-      <div class="flex space-x-2">
+      <div class="flex space-x-2 items-center">
         <PlainButton @click="toggleEditMode()">Edit mode</PlainButton>
         <SecondaryButton @click="onDownload">Download</SecondaryButton>
         <PrimaryButton @click="onSave">Save</PrimaryButton>
