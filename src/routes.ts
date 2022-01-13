@@ -4,7 +4,7 @@ import "nprogress/nprogress.css";
 import LandingPage from "./views/LandingPage.vue";
 
 const MainView = () => import("./views/MainView.vue");
-const StoryModeView = () => import("./views/StoryModeView.vue");
+const StoryModeView = () => import("./modules/storymode/StoryModeView.vue");
 const OrbatChartView = () => import("./modules/charteditor/OrbatChartView.vue");
 
 export const SCENARIO_ROUTE = "ScenarioRoute";

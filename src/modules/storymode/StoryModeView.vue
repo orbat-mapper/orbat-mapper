@@ -42,22 +42,22 @@ import {
   toRef,
   watch,
 } from "vue";
-import MapContainer from "../components/MapContainer.vue";
-import { useScenarioStore } from "../stores/scenarioStore";
+import MapContainer from "../../components/MapContainer.vue";
+import { useScenarioStore } from "../../stores/scenarioStore";
 import { and, invoke, useTitle, useToggle, whenever } from "@vueuse/core";
-import { useScenarioIO } from "../stores/scenarioIO";
+import { useScenarioIO } from "../../stores/scenarioIO";
 import OLMap from "ol/Map";
-import { useUnitLayer } from "../composables/geomap";
+import { useUnitLayer } from "../../composables/geomap";
 import StoryModeContent from "./StoryModeContent.vue";
-import { chapter, StoryStateChange } from "../testdata/testStory";
+import { chapter, StoryStateChange } from "../../testdata/testStory";
 import { fromLonLat } from "ol/proj";
 import dayjs from "dayjs";
-import { flyTo } from "../geo/layers";
-import { useSettingsStore } from "../stores/settingsStore";
-import { clearStyleCache } from "../geo/styles";
-import SlideOver from "../components/SlideOver.vue";
+import { flyTo } from "../../geo/layers";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { clearStyleCache } from "../../geo/styles";
+import SlideOver from "../../components/SlideOver.vue";
 import { MenuIcon, XIcon } from "@heroicons/vue/outline";
-import InputGroup from "../components/InputGroup.vue";
+import InputGroup from "../../components/InputGroup.vue";
 
 export default defineComponent({
   name: "StoryModeView",
