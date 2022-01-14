@@ -20,6 +20,7 @@
     "@heroicons/vue": "^1.0.4",
     "@popperjs/core": "^2.10.1",
     "@vueuse/core": "^7.1.1",
+    "@vvo/tzdb": "^6.44.0",
     "d3-selection": "^3.0.0",
     "dayjs": "^1.10.7",
     "file-saver": "^2.0.5",

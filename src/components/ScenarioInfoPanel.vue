@@ -11,7 +11,7 @@
         >{{ computedStartTime.format() }}
         <PlainButton @click="showTimeModal = true" class="ml-2">Change</PlainButton>
       </DescriptionItem>
-      <InputGroup label="Time zone" v-model="form.timeZone" />
+      <TimezoneSelect label="Time zone" v-model="form.timeZone" />
       <RadioGroupList :settings="standardSettings" v-model="form.symbologyStandard" />
       <div class="flex justify-end space-x-2">
         <PlainButton type="button" @click="toggleEditMode()">Cancel</PlainButton>
@@ -49,14 +49,7 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  defineComponent,
-  onMounted,
-  ref,
-  watch,
-} from "vue";
+import { computed, defineAsyncComponent, defineComponent, ref, watch } from "vue";
 import { useScenarioStore } from "../stores/scenarioStore";
 import DescriptionItem from "./DescriptionItem.vue";
 import PrimaryButton from "./PrimaryButton.vue";
@@ -87,6 +80,7 @@ const standardSettings = [
 export default defineComponent({
   name: "ScenarioInfoPanel",
   components: {
+    TimezoneSelect: defineAsyncComponent(() => import("./TimezoneSelect.vue")),
     RadioGroupList,
     InputDateModal: defineAsyncComponent(() => import("./InputDateModal.vue")),
     SimpleMarkdownInput: defineAsyncComponent(() => import("./SimpleMarkdownInput.vue")),
