@@ -65,14 +65,13 @@
 </template>
 
 <script>
+import { computed, defineAsyncComponent, defineComponent, ref } from "vue";
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/solid";
 
 import { ChevronLeft, ChevronRight, SkipNext, SkipPrevious } from "mdue";
 import { GlobalEvents } from "vue-global-events";
-import { computed, defineComponent, ref } from "vue";
 import { useScenarioStore } from "../stores/scenarioStore";
 import { formatDateString } from "../geo/utils";
-import InputDateModal from "./InputDateModal.vue";
 import { useUiStore } from "../stores/uiStore";
 import { inputEventFilter } from "./helpers";
 import { useScenarioTime } from "../stores/scenarioTime";
@@ -80,7 +79,7 @@ import { useScenarioTime } from "../stores/scenarioTime";
 export default defineComponent({
   name: "TimeController",
   components: {
-    InputDateModal,
+    InputDateModal: defineAsyncComponent(() => import("./InputDateModal.vue")),
     ChevronLeftIcon,
     ChevronRightIcon,
     CalendarIcon,

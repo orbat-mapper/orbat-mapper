@@ -49,7 +49,14 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watch } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  defineComponent,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 import { useScenarioStore } from "../stores/scenarioStore";
 import DescriptionItem from "./DescriptionItem.vue";
 import PrimaryButton from "./PrimaryButton.vue";
@@ -62,7 +69,6 @@ import { ScenarioInfo } from "../types/models";
 import InputGroup from "./InputGroup.vue";
 import SimpleMarkdownInput from "./SimpleMarkdownInput.vue";
 import dayjs from "dayjs";
-import InputDateModal from "./InputDateModal.vue";
 import RadioGroupList from "./RadioGroupList.vue";
 import { useSettingsStore } from "../stores/settingsStore";
 
@@ -83,7 +89,7 @@ export default defineComponent({
   name: "ScenarioInfoPanel",
   components: {
     RadioGroupList,
-    InputDateModal,
+    InputDateModal: defineAsyncComponent(() => import("./InputDateModal.vue")),
     SimpleMarkdownInput,
     InputGroup,
     PlainButton,
