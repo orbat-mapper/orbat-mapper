@@ -52,7 +52,15 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, nextTick, PropType, ref, watch } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  defineComponent,
+  nextTick,
+  PropType,
+  ref,
+  watch,
+} from "vue";
 import { Unit } from "../types/models";
 import InputGroup from "./InputGroup.vue";
 import PrimaryButton from "./PrimaryButton.vue";
@@ -63,7 +71,6 @@ import MilSymbol from "./MilSymbol.vue";
 import { GlobalEvents } from "vue-global-events";
 import { inputEventFilter } from "./helpers";
 import TextAreaGroup from "./TextAreaGroup.vue";
-import SimpleMarkdownInput from "./SimpleMarkdownInput.vue";
 import DescriptionItem from "./DescriptionItem.vue";
 import { useToggle } from "@vueuse/core";
 import { renderMarkdown } from "../composables/formatting";
@@ -82,7 +89,7 @@ export default defineComponent({
     ButtonGroup,
     UnitPanelState,
     DescriptionItem,
-    SimpleMarkdownInput,
+    SimpleMarkdownInput: defineAsyncComponent(() => import("./SimpleMarkdownInput.vue")),
     TextAreaGroup,
     MilSymbol,
     PlainButton,

@@ -67,7 +67,6 @@ import { toRefs, useToggle } from "@vueuse/core";
 import PlainButton from "./PlainButton.vue";
 import { ScenarioInfo } from "../types/models";
 import InputGroup from "./InputGroup.vue";
-import SimpleMarkdownInput from "./SimpleMarkdownInput.vue";
 import dayjs from "dayjs";
 import RadioGroupList from "./RadioGroupList.vue";
 import { useSettingsStore } from "../stores/settingsStore";
@@ -90,7 +89,7 @@ export default defineComponent({
   components: {
     RadioGroupList,
     InputDateModal: defineAsyncComponent(() => import("./InputDateModal.vue")),
-    SimpleMarkdownInput,
+    SimpleMarkdownInput: defineAsyncComponent(() => import("./SimpleMarkdownInput.vue")),
     InputGroup,
     PlainButton,
     SecondaryButton,
