@@ -152,7 +152,7 @@ export const useScenarioStore = defineStore("scenario", {
       const settingsStore = useSettingsStore();
       const scn: Scenario = {
         name: "New scenario",
-        type: "ScenarioViewer",
+        type: "ORBAT-mapper",
         symbologyStandard: settingsStore.symbologyStandard,
         version: "0.5.0",
         description: "Empty scenario description",

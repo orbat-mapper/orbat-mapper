@@ -1,6 +1,6 @@
 {
   "name": "Battles of Narvik",
-  "type": "ScenarioViewer",
+  "type": "ORBAT-mapper",
   "version": "0.5.0",
   "symbologyStandard": "app6",
   "timeZone": "Europe/Oslo",
