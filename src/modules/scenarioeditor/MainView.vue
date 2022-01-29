@@ -87,12 +87,14 @@
     <MainViewSlideOver v-model="isOpen" />
     <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
     <AppNotifications />
+    <LoadScenarioDialog v-if="showLoadModal" v-model="showLoadModal" />
   </div>
 </template>
 
 <script lang="ts">
 import {
   computed,
+  defineAsyncComponent,
   defineComponent,
   nextTick,
   onUnmounted,
@@ -156,6 +158,7 @@ export default defineComponent({
     HomeIcon,
     SearchIcon,
     KeyboardIcon,
+    LoadScenarioDialog: defineAsyncComponent(() => import("./LoadScenarioDialog.vue")),
   },
 
   setup(props) {
@@ -167,6 +170,7 @@ export default defineComponent({
     const currentTab = ref(0);
     const isOpen = ref(false);
     const showSearch = ref(false);
+    const showLoadModal = ref(false);
     const shortcutsModalVisible = ref(false);
     const currentScenarioTab = ref(0);
     const activeUnitStore = useActiveUnitStore();
@@ -202,7 +206,7 @@ export default defineComponent({
     watch(
       () => route.query.load,
       async (v) => {
-        await loadDemoScenario(v as string);
+        if (v) await loadDemoScenario(v as string);
       }
     );
 
@@ -239,6 +243,7 @@ export default defineComponent({
       { label: "Add new side", action: ScenarioActions.AddSide },
       { label: "Save to local storage", action: ScenarioActions.Save },
       { label: "Load from local storage", action: ScenarioActions.Load },
+      { label: "Load scenario", action: ScenarioActions.LoadNew },
       { label: "Download as JSON", action: ScenarioActions.ExportJson },
     ];
 
@@ -260,6 +265,10 @@ export default defineComponent({
       if (action === ScenarioActions.ExportJson) {
         scenarioIO.downloadAsJson();
       }
+
+      if (action === ScenarioActions.LoadNew) {
+        showLoadModal.value = true;
+      }
     }
 
     return {
@@ -277,6 +286,7 @@ export default defineComponent({
       duplicateUnit,
       scenarioMenuItems,
       onScenarioAction,
+      showLoadModal,
     };
   },
 
