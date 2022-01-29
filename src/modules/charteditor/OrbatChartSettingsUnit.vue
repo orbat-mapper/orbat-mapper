@@ -3,11 +3,11 @@
     <p class="text-sm text-gray-600">Unit specific options.</p>
     <div v-if="currentUnit" class="s">
       <header class="flex items-start">
-        <div class="flex-shrink-0 w-16 h-20">
+        <div class="h-20 w-16 flex-shrink-0">
           <MilSymbol :sidc="currentUnit.sidc" :size="34" />
         </div>
         <div>
-          <p class="font-medium text-gray-700 pt-2">{{ currentUnit.name }}</p>
+          <p class="pt-2 font-medium text-gray-700">{{ currentUnit.name }}</p>
           <p class="text-sm text-gray-500">{{ currentUnit.shortName }}</p>
         </div>
       </header>

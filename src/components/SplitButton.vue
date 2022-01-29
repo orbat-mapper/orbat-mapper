@@ -1,16 +1,16 @@
 <template>
-  <span class="relative z-0 inline-flex shadow-sm rounded-md">
+  <span class="relative z-0 inline-flex rounded-md shadow-sm">
     <button
       type="button"
       @click="onClick(activeItem)"
-      class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+      class="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
     >
       {{ activeItem.label }}
     </button>
-    <Menu as="span" class="-ml-px relative block">
+    <Menu as="span" class="relative -ml-px block">
       <MenuButton
         ref="trigger"
-        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        class="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
       >
         <span class="sr-only">Open options</span>
         <ChevronDownIcon class="h-5 w-5" aria-hidden="true" />
@@ -26,7 +26,7 @@
         <teleport to="body">
           <MenuItems
             ref="container"
-            class="origin-top-right absolute right-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-20"
+            class="absolute right-0 z-20 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
           >
             <div class="py-1">
               <MenuItem

@@ -1,9 +1,9 @@
 <template>
-  <div v-if="scenarioStore.isLoaded" class="h-screen flex overflow-hidden bg-gray-300">
+  <div v-if="scenarioStore.isLoaded" class="flex h-screen overflow-hidden bg-gray-300">
     <!--    <div class="flex flex-shrink-0 bg-gray-700">-->
     <!--      <nav class="w-16"></nav>-->
     <!--    </div>-->
-    <aside class="w-96 bg-gray-100 border-r-2 flex flex-col justify-between z-10">
+    <aside class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100">
       <TabView
         v-model:current-tab="currentScenarioTab"
         extra-class="px-6"
@@ -26,17 +26,17 @@
         <template #extra>
           <DotsMenu
             :items="scenarioMenuItems"
-            class="pt-2 -mr-2 relative"
+            class="relative -mr-2 pt-2"
             @action="onScenarioAction"
           />
         </template>
       </TabView>
       <footer
-        class="bg-gray-200 flex-shrink-0 border-t border-gray-300 flex items-center"
+        class="flex flex-shrink-0 items-center border-t border-gray-300 bg-gray-200"
       >
         <div class="flex flex-col space-y-2">
           <router-link to="/" class="ml-2">
-            <HomeIcon class="w-5 h-5 text-gray-500" />
+            <HomeIcon class="h-5 w-5 text-gray-500" />
           </router-link>
           <button
             type="button"
@@ -44,13 +44,13 @@
             @click="showKeyboardShortcuts"
             title="Show keyboard shortcuts"
           >
-            <KeyboardIcon class="w-5 h-5" />
+            <KeyboardIcon class="h-5 w-5" />
           </button>
         </div>
         <TimeController class="" />
       </footer>
     </aside>
-    <aside class="flex-shrink-0 w-96 bg-gray-50 border-r-2 flex flex-col">
+    <aside class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50">
       <TabView
         v-model:current-tab="currentTab"
         extra-class="px-6"
@@ -67,7 +67,7 @@
     </aside>
     <ScenarioMap class="flex-1" />
     <PlainButton class="fixed right-4 top-4 opacity-80" @click="isOpen = !isOpen">
-      <MenuIcon class="w-5 h-5 opacity-100" />
+      <MenuIcon class="h-5 w-5 opacity-100" />
     </PlainButton>
     <GlobalEvents
       v-if="shortcutsEnabled"

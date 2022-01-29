@@ -1,7 +1,7 @@
 <template>
   <RadioGroup v-model="selected">
     <RadioGroupLabel class="sr-only"> Privacy setting</RadioGroupLabel>
-    <div class="bg-white rounded-md -space-y-px">
+    <div class="-space-y-px rounded-md bg-white">
       <RadioGroupOption
         as="template"
         v-for="(setting, settingIdx) in settings"
@@ -13,30 +13,30 @@
           :class="[
             settingIdx === 0 ? 'rounded-tl-md rounded-tr-md' : '',
             settingIdx === settings.length - 1 ? 'rounded-bl-md rounded-br-md' : '',
-            checked ? 'bg-indigo-50 border-indigo-200 z-10' : 'border-gray-200',
-            'relative border p-4 flex cursor-pointer focus:outline-none',
+            checked ? 'z-10 border-indigo-200 bg-indigo-50' : 'border-gray-200',
+            'relative flex cursor-pointer border p-4 focus:outline-none',
           ]"
         >
           <span
             class="flex-shrink-0"
             :class="[
-              checked ? 'bg-indigo-600 border-transparent' : 'bg-white border-gray-300',
-              active ? 'ring-2 ring-offset-2 ring-indigo-500' : '',
-              'h-4 w-4 mt-0.5 cursor-pointer rounded-full border flex items-center justify-center',
+              checked ? 'border-transparent bg-indigo-600' : 'border-gray-300 bg-white',
+              active ? 'ring-2 ring-indigo-500 ring-offset-2' : '',
+              'mt-0.5 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border',
             ]"
             aria-hidden="true"
           >
-            <span class="rounded-full bg-white w-1.5 h-1.5" />
+            <span class="h-1.5 w-1.5 rounded-full bg-white" />
           </span>
-          <div class="ml-3 flex flex-auto min-w-0 flex-col">
+          <div class="ml-3 flex min-w-0 flex-auto flex-col">
             <RadioGroupLabel
               as="div"
               :class="[
                 checked ? 'text-indigo-900' : 'text-gray-900',
-                'text-sm font-medium flex items-center justify-between',
+                'flex items-center justify-between text-sm font-medium',
               ]"
             >
-              <span class="truncate flex-auto">{{ setting.title }}</span>
+              <span class="flex-auto truncate">{{ setting.title }}</span>
               <OpacityInput
                 :model-value="setting.opacity"
                 @update:model-value="$emit('update:layerOpacity', setting, $event)"

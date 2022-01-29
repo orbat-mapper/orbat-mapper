@@ -1,11 +1,11 @@
 <template>
-  <h3 class="font-medium text-gray-900 mt-6">Unit state</h3>
-  <ul class="mt-2 border-t border-b border-gray-200 divide-y divide-gray-200">
-    <li v-for="(s, index) in state" class="py-4 flex items-center">
-      <div class="flex-auto min-w-0 text-sm flex flex-col">
+  <h3 class="mt-6 font-medium text-gray-900">Unit state</h3>
+  <ul class="mt-2 divide-y divide-gray-200 border-t border-b border-gray-200">
+    <li v-for="(s, index) in state" class="flex items-center py-4">
+      <div class="flex min-w-0 flex-auto flex-col text-sm">
         <p
-          class="text-gray-500 font-medium"
-          :class="{ 'text-gray-900 font-bold': isActive(s, index) }"
+          class="font-medium text-gray-500"
+          :class="{ 'font-bold text-gray-900': isActive(s, index) }"
         >
           {{ formatDateString(s.t, scenarioStore.timeZone) }}
         </p>

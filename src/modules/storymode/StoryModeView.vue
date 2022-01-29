@@ -1,24 +1,24 @@
 <template>
-  <div class="md:flex md:flex-col md:h-screen">
-    <header class="p-4 w-full bg-gray-100 md:flex-shrink-0 relative">
+  <div class="md:flex md:h-screen md:flex-col">
+    <header class="relative w-full bg-gray-100 p-4 md:flex-shrink-0">
       <h1>{{ scenario.name }}</h1>
       <button
         type="button"
         @click="toggleSidebar()"
-        class="z-20 fixed top-2 right-4 bg-white bg-opacity-75 inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        class="fixed top-2 right-4 z-20 inline-flex items-center justify-center rounded-md bg-white bg-opacity-75 p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
       >
         <span class="sr-only">Open main menu</span>
         <MenuIcon v-if="!sidebarIsOpen" class="block h-6 w-6" aria-hidden="true" />
         <XIcon v-else class="block h-6 w-6" aria-hidden="true" />
       </button>
     </header>
-    <div class="md:flex-auto md:min-h-0 md:flex">
+    <div class="md:flex md:min-h-0 md:flex-auto">
       <section
-        class="w-full md:h-full sticky md:static top-0 h-[45vh] bg-white z-10 shadow-md md:shadow-none"
+        class="sticky top-0 z-10 h-[45vh] w-full bg-white shadow-md md:static md:h-full md:shadow-none"
       >
         <MapContainer @ready="onMapReady" />
       </section>
-      <section class="bg-gray-50 w-full md:max-w-sm lg:max-w-lg overflow-auto border">
+      <section class="w-full overflow-auto border bg-gray-50 md:max-w-sm lg:max-w-lg">
         <StoryModeContent @update-state="onUpdateState" />
       </section>
     </div>

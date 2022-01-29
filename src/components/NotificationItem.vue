@@ -9,20 +9,20 @@
   >
     <div
       v-if="show"
-      class="max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden"
+      class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5"
     >
       <div class="p-4">
         <div class="flex items-start">
-          <div class="w-0 flex-1 flex justify-between">
+          <div class="flex w-0 flex-1 justify-between">
             <p class="w-0 flex-1 text-sm font-medium text-gray-900">
               {{ message }}
             </p>
           </div>
 
-          <div class="ml-4 flex-shrink-0 flex">
+          <div class="ml-4 flex flex-shrink-0">
             <button
               @click="close()"
-              class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               <span class="sr-only">Close</span>
               <XIcon class="h-5 w-5" aria-hidden="true" />

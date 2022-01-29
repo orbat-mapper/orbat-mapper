@@ -10,12 +10,12 @@
       class="w-24"
     />
     <button
-      class="h-6 text-gray-500 flex items-center"
+      class="flex h-6 items-center text-gray-500"
       title="Opacity"
       @click.stop="toggleRange()"
     >
-      <OpacityIcon class="transform scale-110" />
-      <span class="text-xs ml-1 text-gray-700 w-7 text-right"
+      <OpacityIcon class="scale-110 transform" />
+      <span class="ml-1 w-7 text-right text-xs text-gray-700"
         >{{ opacityAsPercent }}%</span
       >
     </button>

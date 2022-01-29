@@ -3,20 +3,20 @@
     <p class="text-sm text-gray-600">Settings that affect the whole chart.</p>
     <InputGroupTemplate label="Root unit" v-if="rootUnitStore.unit" class="my-4">
       <div class="flex items-start">
-        <div class="flex-shrink-0 w-16 mt-2">
+        <div class="mt-2 w-16 flex-shrink-0">
           <MilSymbol :sidc="rootUnitStore.unit.sidc" :size="30" />
         </div>
-        <div class="flex-auto min-w-0">
-          <p class="font-medium text-gray-700 pt-2 text-sm truncate">
+        <div class="min-w-0 flex-auto">
+          <p class="truncate pt-2 text-sm font-medium text-gray-700">
             {{ rootUnitStore.unit.name }}
           </p>
-          <p class="text-sm text-gray-500 text-sm truncate">
+          <p class="truncate text-sm text-sm text-gray-500">
             {{ rootUnitStore.unit.shortName }}
           </p>
         </div>
-        <div class="flex-none mt-4">
+        <div class="mt-4 flex-none">
           <IconButton @click="showSearch = true">
-            <SearchIcon class="w-5 h-5" />
+            <SearchIcon class="h-5 w-5" />
           </IconButton>
         </div>
       </div>
@@ -28,7 +28,7 @@
       >Select root unit
     </CreateEmtpyDashed>
     <InputGroup label="Levels" type="number" v-model="options.maxLevels" />
-    <div class="w-full border-t border-gray-200 mt-4" />
+    <div class="mt-4 w-full border-t border-gray-200" />
     <AccordionPanel label="Page settings">
       <SimpleSelect
         v-model="options.paperSize"

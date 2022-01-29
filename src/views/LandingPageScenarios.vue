@@ -1,25 +1,25 @@
 <template>
-  <div class="bg-gray-50 py-5 relative">
+  <div class="relative bg-gray-50 py-5">
     <p class="absolute right-6 top-2 z-10"><WipBadge /></p>
-    <section class="max-w-7xl mx-auto p-6">
+    <section class="mx-auto max-w-7xl p-6">
       <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
         <li
           v-for="scenario in scenarios"
           :key="scenario.name"
-          class="col-span-1 flex flex-col text-center bg-white rounded-lg shadow divide-y divide-gray-200 hover:border-army border overflow-hidden focus-within:border-blue-800"
+          class="col-span-1 flex flex-col divide-y divide-gray-200 overflow-hidden rounded-lg border bg-white text-center shadow focus-within:border-blue-800 hover:border-army"
         >
-          <router-link :to="getScenarioTo(scenario.id)" class="flex-1 flex flex-col">
+          <router-link :to="getScenarioTo(scenario.id)" class="flex flex-1 flex-col">
             <img
-              class="w-full h-52 flex-shrink-0 mx-auto bg-black object-cover object-top"
+              class="mx-auto h-52 w-full flex-shrink-0 bg-black object-cover object-top"
               :src="scenario.imageUrl"
               alt=""
             />
-            <h3 class="mt-6 text-gray-900 text-sm font-medium">
+            <h3 class="mt-6 text-sm font-medium text-gray-900">
               {{ scenario.name }}
             </h3>
-            <dl class="mt-1 flex-grow flex flex-col justify-between p-4">
+            <dl class="mt-1 flex flex-grow flex-col justify-between p-4">
               <dt class="sr-only">Summary</dt>
-              <dd class="text-gray-500 text-sm">
+              <dd class="text-sm text-gray-500">
                 {{ scenario.summary }}
               </dd>
             </dl>
@@ -29,7 +29,7 @@
           <button
             type="button"
             @click="newScenario"
-            class="relative block w-full border-2 border-gray-300 border-dashed rounded-lg p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            class="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             <svg
               class="mx-auto h-12 w-12 text-gray-400"

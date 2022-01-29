@@ -2,13 +2,13 @@
   <Disclosure v-slot="{ open }" default-open>
     <section class="pl-6">
       <header
-        class="flex items-center justify-between relative block -ml-6 pl-6 bg-gray-200 border-b-2 border-t-2 py-1 border-gray-300"
+        class="relative -ml-6 block flex items-center justify-between border-b-2 border-t-2 border-gray-300 bg-gray-200 py-1 pl-6"
       >
-        <DisclosureButton class="w-full text-left flex items-center justify-between">
-          <h4 class="font-medium text-base text-gray-900">{{ side.name }}</h4>
+        <DisclosureButton class="flex w-full items-center justify-between text-left">
+          <h4 class="text-base font-medium text-gray-900">{{ side.name }}</h4>
           <ChevronUpIcon
-            :class="open ? 'transform rotate-180' : ''"
-            class="w-6 h-6 text-gray-400 group-hover:text-gray-900"
+            :class="open ? 'rotate-180 transform' : ''"
+            class="h-6 w-6 text-gray-400 group-hover:text-gray-900"
           />
         </DisclosureButton>
 

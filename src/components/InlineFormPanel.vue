@@ -1,11 +1,11 @@
 <template>
-  <div class="bg-white overflow-hiden shadow">
-    <div class="px-4 py-5 sm:p-6 relative">
+  <div class="overflow-hiden bg-white shadow">
+    <div class="relative px-4 py-5 sm:p-6">
       <p v-if="title" class="-mt-2 mb-4 text-sm text-gray-500">{{ title }}</p>
-      <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
+      <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
         <button
           type="button"
-          class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           @click="$emit('close')"
         >
           <span class="sr-only">Close</span>

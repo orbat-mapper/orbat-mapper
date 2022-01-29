@@ -1,10 +1,10 @@
 <template>
   <div v-if="unit" class="">
     <header class="flex">
-      <div class="flex-shrink-0 w-16 h-20">
+      <div class="h-20 w-16 flex-shrink-0">
         <MilSymbol :sidc="form.sidc" :size="34" />
       </div>
-      <p class="font-medium pt-2">{{ unit.name }}</p>
+      <p class="pt-2 font-medium">{{ unit.name }}</p>
     </header>
     <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="mt-0 space-y-4">
       <InputGroup label="Name" v-model="form.name" id="name-input" />
@@ -28,13 +28,13 @@
         <PrimaryButton type="submit">Update</PrimaryButton>
       </div>
     </form>
-    <div v-else class="space-y-4 mb-4">
+    <div v-else class="mb-4 space-y-4">
       <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
       <DescriptionItem v-if="unit.shortName" label="Short name"
         >{{ unit.shortName }}
       </DescriptionItem>
       <DescriptionItem v-if="unit.externalUrl" label="External URL"
-        ><a target="_blank" class="underline text-sm" :href="unit.externalUrl">{{
+        ><a target="_blank" class="text-sm underline" :href="unit.externalUrl">{{
           unit.externalUrl
         }}</a></DescriptionItem
       >

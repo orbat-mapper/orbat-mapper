@@ -1,7 +1,7 @@
 <template>
-  <div class="w-screen h-screen relative flex overflow-hidden">
+  <div class="relative flex h-screen w-screen overflow-hidden">
     <aside
-      class="hidden lg:w-[20rem] lg:flex lg:flex-shrink-0 bg-gray-50 print:hidden lg:border-r lg:border-gray-200"
+      class="hidden bg-gray-50 print:hidden lg:flex lg:w-[20rem] lg:flex-shrink-0 lg:border-r lg:border-gray-200"
     >
       <OrbatChartSettings v-model:tab="currentTab" class="print:hidden" />
     </aside>
@@ -29,7 +29,7 @@
         <button
           type="button"
           @click="isMenuOpen = true"
-          class="p-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden"
+          class="border-r border-gray-200 p-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden"
         >
           <span class="sr-only">Open sidebar</span>
           <MenuAlt2Icon class="h-6 w-6" aria-hidden="true" />

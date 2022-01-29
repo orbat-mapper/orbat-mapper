@@ -4,7 +4,7 @@
     <Dialog
       as="div"
       static
-      class="fixed inset-0 overflow-hidden z-40"
+      class="fixed inset-0 z-40 overflow-hidden"
       @close="open = false"
       :open="open"
     >
@@ -12,7 +12,7 @@
         <DialogOverlay class="absolute inset-0" />
 
         <div
-          class="fixed inset-y-0 sm:pl-16 max-w-full flex"
+          class="fixed inset-y-0 flex max-w-full sm:pl-16"
           :class="left ? 'left-0' : 'right-0'"
         >
           <TransitionChild
@@ -25,15 +25,15 @@
             :leave-to="left ? '-translate-x-full' : 'translate-x-full'"
           >
             <div class="w-screen max-w-xs sm:max-w-md">
-              <div class="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll">
+              <div class="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
                 <div class="px-4 sm:px-6">
                   <div class="flex items-start justify-between">
                     <DialogTitle class="text-lg font-medium text-gray-900">
                       <slot name="title">{{ title }}</slot>
                     </DialogTitle>
-                    <div class="ml-3 h-7 flex items-center">
+                    <div class="ml-3 flex h-7 items-center">
                       <button
-                        class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         @click="open = false"
                       >
                         <span class="sr-only">Close panel</span>
@@ -42,7 +42,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="mt-6 relative flex-1 px-4 sm:px-6">
+                <div class="relative mt-6 flex-1 px-4 sm:px-6">
                   <slot />
                 </div>
               </div>

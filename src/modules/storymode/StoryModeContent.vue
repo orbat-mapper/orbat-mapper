@@ -1,7 +1,7 @@
 <template>
   <div>
-    <p class="fixed p-2 border bg-white bottom-2 left-2 z-40">{{ sIndex }}</p>
-    <div class="prose p-4 prose-sm" v-html="renderedContent"></div>
+    <p class="fixed bottom-2 left-2 z-40 border bg-white p-2">{{ sIndex }}</p>
+    <div class="prose prose-sm p-4" v-html="renderedContent"></div>
   </div>
 </template>
 

@@ -2,7 +2,7 @@
   <Disclosure as="div" class="border-b border-gray-200 py-6" v-slot="{ open }">
     <h3 class="-my-3 flow-root">
       <DisclosureButton
-        class="py-3 w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500"
+        class="flex w-full items-center justify-between py-3 text-sm text-gray-400 hover:text-gray-500"
       >
         <span class="font-bold text-gray-900">
           <slot name="label">{{ label }}</slot>
@@ -13,7 +13,7 @@
         </span>
       </DisclosureButton>
     </h3>
-    <DisclosurePanel class="pt-6 space-y-4">
+    <DisclosurePanel class="space-y-4 pt-6">
       <slot></slot>
     </DisclosurePanel>
   </Disclosure>

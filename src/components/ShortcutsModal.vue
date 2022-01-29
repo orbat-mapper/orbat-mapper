@@ -3,15 +3,15 @@
   <SimpleModal v-model="open" dialog-title="Keyboard shortcuts">
     <div class="mt-4">
       <div v-for="category in shortcuts">
-        <h4 class="text-base font-medium text-gray-900 border-b-2 pb-1 border-gray-300">
+        <h4 class="border-b-2 border-gray-300 pb-1 text-base font-medium text-gray-900">
           {{ category.label }}
         </h4>
-        <ul class="text-sm text-gray-900 divide-gray-200 divide-y">
+        <ul class="divide-y divide-gray-200 text-sm text-gray-900">
           <li
             v-for="entry in category.shortcuts"
-            class="flex justify-between items-center py-2"
+            class="flex items-center justify-between py-2"
           >
-            <p class="text-gray-700 text-sm">{{ entry.description }}</p>
+            <p class="text-sm text-gray-700">{{ entry.description }}</p>
             <div>
               <ul class="flex divide-x-2 divide-gray-300">
                 <li v-for="i in entry.shortcut" class="px-2 py-0.5">

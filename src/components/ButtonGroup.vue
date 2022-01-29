@@ -1,17 +1,17 @@
 <template>
-  <span class="relative z-0 inline-flex shadow-sm rounded-md">
+  <span class="relative z-0 inline-flex rounded-md shadow-sm">
     <button
       v-for="(item, index) in items"
       @click="item.onClick"
       type="button"
       :disabled="item.disabled"
-      class="relative inline-flex items-center px-4 border border-gray-300 bg-white font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+      class="relative inline-flex items-center border border-gray-300 bg-white px-4 font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
       :class="{
         'rounded-l-md': index === 0,
         'rounded-r-md': index === items.length - 1,
         '-ml-px': index > 0,
-        'text-xs py-1.5': small,
-        'text-sm py-2': !small,
+        'py-1.5 text-xs': small,
+        'py-2 text-sm': !small,
       }"
     >
       {{ item.label }}

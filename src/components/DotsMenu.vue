@@ -1,10 +1,10 @@
 <template>
   <Menu as="div">
     <MenuButton
-      class="w-8 h-8 inline-flex items-center justify-center text-gray-400 rounded-full hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-army2"
+      class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-army2 focus:ring-offset-2"
     >
       <span class="sr-only">Open options</span>
-      <DotsVerticalIcon class="w-5 h-5" aria-hidden="true" />
+      <DotsVerticalIcon class="h-5 w-5" aria-hidden="true" />
     </MenuButton>
     <transition
       enter-active-class="transition ease-out duration-100"
@@ -15,7 +15,7 @@
       leave-to-class="transform opacity-0 scale-95"
     >
       <MenuItems
-        class="z-20 mx-3 origin-top-right absolute right-10 top-3 w-48 mt-1 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-200 focus:outline-none"
+        class="absolute right-10 top-3 z-20 mx-3 mt-1 w-48 origin-top-right divide-y divide-gray-200 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
       >
         <div class="py-1">
           <MenuItem
@@ -28,7 +28,7 @@
               @click.stop="onItemClick(item)"
               :class="[
                 active
-                  ? 'bg-gray-100 text-gray-900 border-r-2 border-army2'
+                  ? 'border-r-2 border-army2 bg-gray-100 text-gray-900'
                   : 'text-gray-700',
                 'block px-4 py-2 text-sm',
                 disabled ? 'opacity-50 hover:cursor-default' : '',

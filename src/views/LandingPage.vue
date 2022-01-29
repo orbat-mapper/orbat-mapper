@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100 overflow-hidden">
+  <div class="min-h-screen overflow-hidden bg-gray-100">
     <main>
       <ProseSection class="">
         <h1><span class="text-red-900">Order of Battle</span> Mapper</h1>
@@ -8,7 +8,7 @@
         <p>
           Follow the development of
           <a href="https://github.com/kjellmf/orbat-mapper"
-            >ORBAT Mapper on GitHub <GithubIcon class="w-10 h-10 inline" /> </a
+            >ORBAT Mapper on GitHub <GithubIcon class="inline h-10 w-10" /> </a
           >.
         </p>
         <p>
@@ -16,7 +16,7 @@
         </p>
 
         <div class="grid grid-cols-2 place-items-center gap-4">
-          <div class="aspect-w-5 aspect-h-2 rounded-lg bg-gray-100 overflow-hidden">
+          <div class="aspect-w-5 aspect-h-2 overflow-hidden rounded-lg bg-gray-100">
             <img src="/images/orbat-chart-demo.png" class="object-cover object-top" />
           </div>
           <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="flex-shrink-0"

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-full">
+  <div class="flex h-full flex-col">
     <header class="flex-shrink-0">
       <div class="border-b border-gray-300" :class="extraClass">
         <div class="flex justify-between">
@@ -11,8 +11,8 @@
               :class="[
                 index === selectedIndex
                   ? 'border-army text-army'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm',
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium',
               ]"
               :aria-current="index === selectedIndex ? 'page' : undefined"
             >

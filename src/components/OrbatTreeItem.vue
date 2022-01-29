@@ -1,12 +1,12 @@
 <template>
   <li :id="'o-' + unit.id">
     <div
-      class="flex items-center hover:bg-gray-200 py-2 pl-2 group justify-between relative"
+      class="group relative flex items-center justify-between py-2 pl-2 hover:bg-gray-200"
       @dblclick="isOpen = !isOpen"
       @click="onUnitClick"
     >
       <div class="flex items-center space-x-1">
-        <div class="w-6 h-6">
+        <div class="h-6 w-6">
           <button
             v-if="isParent"
             @click.stop="isOpen = !isOpen"
@@ -14,7 +14,7 @@
             @dragenter.prevent="isOpen = true"
           >
             <ChevronRightIcon
-              class="h-6 w-6 transform transition-transform group-hover:text-gray-900 text-gray-500"
+              class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900"
               :class="{
                 'rotate-90': isOpen,
                 'text-red-600': hasActiveChildren,
@@ -22,15 +22,15 @@
             />
           </button>
         </div>
-        <button class="flex space-x-1 items-center">
+        <button class="flex items-center space-x-1">
           <div
-            class="flex space-x-1 items-center"
+            class="flex items-center space-x-1"
             draggable="true"
             @dragstart="dragStart"
             @dragend="dragEnd"
             :class="{ 'opacity-20': isDragged }"
           >
-            <div class="flex-shrink-0 w-8 flex justify-center cursor-move">
+            <div class="flex w-8 flex-shrink-0 cursor-move justify-center">
               <MilSymbol
                 :sidc="unit.sidc"
                 :size="settingsStore.orbatIconSize"

@@ -7,23 +7,23 @@
     </ToggleField>
     <section v-if="unitHits.length">
       <p class="font-medium text-gray-700">Units</p>
-      <ul class="space-y-2 mt-2">
+      <ul class="mt-2 space-y-2">
         <li v-for="(unit, index) in unitHits">
           <button
             type="button"
-            class="w-full flex items-center p-2 rounded focus:ring border border-transparent hover:bg-red-100 hover:border hover:border-army"
+            class="flex w-full items-center rounded border border-transparent p-2 hover:border hover:border-army hover:bg-red-100 focus:ring"
             :class="index === currentHitIndex ? 'bg-blue-200' : 'bg-gray-100'"
             @click="onSelect(index)"
           >
-            <div class="w-full flex justify-between items-center">
+            <div class="flex w-full items-center justify-between">
               <div class="flex items-center">
-                <div class="w-10 h-10 flex flex-shrink-0">
+                <div class="flex h-10 w-10 flex-shrink-0">
                   <MilSymbol :size="20" :sidc="unit.sidc" class="inline self-center" />
                 </div>
                 <p>{{ unit.name }}</p>
               </div>
 
-              <p v-if="unit.parent" class="text-xs flex self-start text-gray-600">
+              <p v-if="unit.parent" class="flex self-start text-xs text-gray-600">
                 <MilSymbol :size="12" :sidc="unit.parent.sidc" class="mr-1 opacity-80" />
                 {{ unit.parent.name }}
               </p>

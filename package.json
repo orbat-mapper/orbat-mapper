@@ -60,6 +60,7 @@
     "jest": "^27.4.7",
     "postcss": "^8.4.5",
     "prettier": "^2.5.1",
+    "prettier-plugin-tailwindcss": "^0.1.4",
     "rollup-plugin-visualizer": "^5.5.4",
     "tailwindcss": "^3.0.18",
     "ts-jest": "^27.1.3",

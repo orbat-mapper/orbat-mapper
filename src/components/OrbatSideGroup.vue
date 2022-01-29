@@ -1,9 +1,9 @@
 <template>
   <Disclosure v-slot="{ open }" default-open>
-    <div class="flex items-center justify-between relative mt-4 py-0 group">
-      <DisclosureButton class="w-full text-left flex items-center justify-between">
+    <div class="group relative mt-4 flex items-center justify-between py-0">
+      <DisclosureButton class="flex w-full items-center justify-between text-left">
         <p
-          class="font-medium text-base text-gray-600 hover:text-gray-900"
+          class="text-base font-medium text-gray-600 hover:text-gray-900"
           :class="{ 'font-bold underline': isDragOver }"
           @dragover.prevent="isDragOver = true"
           @drop.prevent="onDrop"
@@ -12,8 +12,8 @@
           {{ group.name || "Units" }}
         </p>
         <ChevronUpIcon
-          :class="open ? 'transform rotate-180' : ''"
-          class="w-6 h-6 text-gray-400 group-hover:text-gray-900"
+          :class="open ? 'rotate-180 transform' : ''"
+          class="h-6 w-6 text-gray-400 group-hover:text-gray-900"
         />
       </DisclosureButton>
       <DotsMenu
@@ -39,7 +39,7 @@
       />
       <div
         v-if="!group?.units.length"
-        class="p-8 border-2 mr-4 border-gray-300 border-dashed flex justify-center"
+        class="mr-4 flex justify-center border-2 border-dashed border-gray-300 p-8"
       >
         <SecondaryButton @click="addGroupUnit(group)">Add root unit </SecondaryButton>
       </div>

@@ -2,12 +2,12 @@
   <div class="min-h-full">
     <div class="py-10">
       <header>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 class="text-3xl font-bold leading-tight text-gray-900">Test components</h1>
         </div>
       </header>
       <main class="mt-4">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
+        <div class="mx-auto max-w-7xl space-y-4 sm:px-6 lg:px-8">
           <section class="space-y-4">
             <h3>Basic button</h3>
             <p class="flex items-start space-x-2">

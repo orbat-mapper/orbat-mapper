@@ -1,6 +1,6 @@
 <template>
   <div class="">
-    <section class="max-w-4xl mx-auto prose md:prose-lg prose-green p-6">
+    <section class="prose prose-green mx-auto max-w-4xl p-6 md:prose-lg">
       <slot />
     </section>
   </div>

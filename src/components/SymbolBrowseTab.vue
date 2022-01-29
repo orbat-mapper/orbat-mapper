@@ -2,10 +2,10 @@
   <div class="min-h-[30rem]">
     <SymbolCodeSelect v-model="symbolSetV" :items="symbolSets" />
 
-    <div class="overflow-auto max-h-[40rem] mt-4">
+    <div class="mt-4 max-h-[40rem] overflow-auto">
       <div v-for="[entity, entityIcons] in iconsByEntity" class="relative">
         <h3
-          class="border-t border-b border-gray-200 text-gray-600 text-sm font-medium bg-gray-50 p-2 px-4 sticky top-0"
+          class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
         >
           {{ entity }}
         </h3>
@@ -15,11 +15,11 @@
             v-for="{ sidc, entity, entityType, entitySubtype, code } in entityIcons"
             :key="sidc"
             @click="iconV = code"
-            class="border border-transparent rounded p-3 flex flex-col items-center justify-start w-full hover:border-gray-500"
+            class="flex w-full flex-col items-center justify-start rounded border border-transparent p-3 hover:border-gray-500"
           >
             <MilSymbol :size="symbolSize" :sidc="sidc" />
             <p
-              class="mt-1 text-sm text-center text-gray-900 max-w-full break-words overflow-hidden"
+              class="mt-1 max-w-full overflow-hidden break-words text-center text-sm text-gray-900"
             >
               {{ entitySubtype || entityType || entity }}
             </p>
@@ -27,7 +27,7 @@
         </div>
       </div>
       <h3
-        class="border-t border-b border-gray-200 text-gray-600 text-sm font-medium bg-gray-50 p-2 px-4 sticky top-0"
+        class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
       >
         Modifier 1
       </h3>
@@ -37,18 +37,18 @@
           v-for="{ sidc, text, code } in mod1Items"
           :key="sidc"
           @click="mod1V = code"
-          class="border border-transparent rounded p-4 flex flex-col items-center justify-start w-full hover:border-gray-500"
+          class="flex w-full flex-col items-center justify-start rounded border border-transparent p-4 hover:border-gray-500"
         >
           <MilSymbol :size="symbolSize" :sidc="sidc" />
           <p
-            class="mt-1 text-sm text-center text-gray-900 max-w-full overflow-hidden break-words"
+            class="mt-1 max-w-full overflow-hidden break-words text-center text-sm text-gray-900"
           >
             {{ text }}
           </p>
         </button>
       </div>
       <p
-        class="border-t border-b border-gray-200 text-gray-600 text-sm font-medium bg-gray-50 p-2 px-4 sticky top-0"
+        class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
       >
         Modifier 2
       </p>
@@ -58,11 +58,11 @@
           v-for="{ sidc, text, code } in mod2Items"
           :key="sidc"
           @click="mod2V = code"
-          class="border border-transparent rounded p-4 flex flex-col items-center justify-start w-full hover:border-gray-500"
+          class="flex w-full flex-col items-center justify-start rounded border border-transparent p-4 hover:border-gray-500"
         >
           <MilSymbol :size="symbolSize" :sidc="sidc" />
           <p
-            class="mt-1 text-sm text-center text-gray-900 max-w-full overflow-hidden break-words"
+            class="mt-1 max-w-full overflow-hidden break-words text-center text-sm text-gray-900"
           >
             {{ text }}
           </p>

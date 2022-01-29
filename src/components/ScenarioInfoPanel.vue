@@ -1,6 +1,6 @@
 <template>
   <div>
-    <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="p-6 space-y-4">
+    <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="space-y-4 p-6">
       <InputGroup label="Name" v-model="form.name" id="name-input" />
       <SimpleMarkdownInput
         label="Description"
@@ -23,11 +23,11 @@
         v-model:timestamp="form.startTime"
       />
     </form>
-    <div v-else class="p-6 space-y-4">
+    <div v-else class="space-y-4 p-6">
       <DescriptionItem label="Title">{{ scenario.name }}</DescriptionItem>
 
       <DescriptionItem label="Description">
-        <div class="prose prose-esm" v-html="hDescription"></div>
+        <div class="prose-esm prose" v-html="hDescription"></div>
       </DescriptionItem>
 
       <DescriptionItem label="Start time"
@@ -38,7 +38,7 @@
         >{{ scenario.symbologyStandard }}
       </DescriptionItem>
 
-      <div class="flex space-x-2 items-center">
+      <div class="flex items-center space-x-2">
         <PlainButton @click="toggleEditMode()">Edit mode</PlainButton>
         <SecondaryButton @click="onDownload">Download</SecondaryButton>
         <PrimaryButton @click="onSave">Save</PrimaryButton>

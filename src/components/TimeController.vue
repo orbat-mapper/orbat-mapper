@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full flex justify-between items-center p-4">
+  <div class="flex w-full items-center justify-between p-4">
     <div>
       <p class="text-sm font-medium text-gray-700">
         {{ scenarioStore.scenarioTime.format("YYYY-MM-DD") }}
@@ -8,7 +8,7 @@
         {{ scenarioStore.scenarioTime.format("HH:mmZ") }}
       </p>
     </div>
-    <span class="relative z-0 inline-flex shadow-sm rounded-md">
+    <span class="relative z-0 inline-flex rounded-md shadow-sm">
       <button
         @click="showModal = true"
         type="button"
@@ -20,7 +20,7 @@
       <button
         type="button"
         @click="scenarioTimeStore.jumpToPrevEvent()"
-        class="-ml-px btn-group-btn px-2"
+        class="btn-group-btn -ml-px px-2"
       >
         <span class="sr-only">Previous</span>
         <SkipPrevious class="h-5 w-5" aria-hidden="true" />
@@ -28,7 +28,7 @@
       <button
         @click="scenarioTimeStore.jumpToNextEvent()"
         type="button"
-        class="-ml-px btn-group-btn px-2"
+        class="btn-group-btn -ml-px px-2"
       >
         <span class="sr-only">Next</span>
         <SkipNext class="h-5 w-5" aria-hidden="true" />
@@ -36,7 +36,7 @@
       <button
         type="button"
         @click="scenarioTimeStore.subtract(1, 'day')"
-        class="-ml-px btn-group-btn px-2"
+        class="btn-group-btn -ml-px px-2"
       >
         <span class="sr-only">Previous</span>
         <ChevronLeft class="h-5 w-5" aria-hidden="true" />
@@ -44,7 +44,7 @@
       <button
         @click="scenarioTimeStore.add(1, 'day')"
         type="button"
-        class="-ml-px btn-group-btn px-2 rounded-r-md"
+        class="btn-group-btn -ml-px rounded-r-md px-2"
       >
         <span class="sr-only">Next</span>
         <ChevronRight class="h-5 w-5" aria-hidden="true" />

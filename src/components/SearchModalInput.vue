@@ -1,9 +1,9 @@
 <template>
-  <form class="w-full flex md:ml-0" @submit.prevent :class="class">
+  <form class="flex w-full md:ml-0" @submit.prevent :class="class">
     <label for="search-field" class="sr-only">Search</label>
     <div class="relative w-full text-gray-400 focus-within:text-gray-600">
       <div
-        class="absolute inset-y-0 left-0 flex items-center pointer-events-none"
+        class="pointer-events-none absolute inset-y-0 left-0 flex items-center"
         aria-hidden="true"
       >
         <SearchIcon class="h-5 w-5" aria-hidden="true" />
@@ -13,7 +13,7 @@
         :value="inputValue"
         @input="updateValue"
         name="search-field"
-        class="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-transparent sm:text-base"
+        class="block h-full w-full border-transparent py-2 pl-8 pr-3 text-gray-900 placeholder-gray-500 focus:border-transparent focus:outline-none focus:ring-0 sm:text-base"
         autocomplete="off"
         spellcheck="false"
         :placeholder="placeholder"

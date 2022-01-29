@@ -8,7 +8,7 @@
     <select
       v-model="selectedValue"
       :id="id"
-      class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+      class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
     >
       <option v-for="val in computedValues" :value="val.value" :key="val.value">
         {{ val.label }}

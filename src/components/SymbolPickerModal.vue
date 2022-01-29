@@ -1,8 +1,8 @@
 <!-- This example requires Tailwind CSS v2.0+ -->
 <template>
   <SimpleModal v-model="open" dialog-title="Symbol picker">
-    <div class="h-full flex flex-col">
-      <header class="mt-4 w-16 h-20">
+    <div class="flex h-full flex-col">
+      <header class="mt-4 h-20 w-16">
         <MilSymbol :sidc="csidc" :size="34" />
       </header>
 
@@ -19,21 +19,21 @@
 
           <div class="relative" v-if="hits?.length && hitsIsOpen" ref="hitsRef">
             <ul
-              class="absolute z-10 mt-1 w-full bg-white shadow-2xl max-h-56 border border-gray-400 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm divide-y divide-gray-100"
+              class="absolute z-10 mt-1 max-h-56 w-full divide-y divide-gray-100 overflow-auto rounded-md border border-gray-400 bg-white py-1 text-base shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
             >
               <li
                 v-for="(item, index) in hits"
-                class="text-sm p-2 py-3 flex items-center cursor-default hover:bg-gray-200"
+                class="flex cursor-default items-center p-2 py-3 text-sm hover:bg-gray-200"
                 tabindex="-1"
                 :class="{ 'bg-gray-200': index === currentIndex }"
                 :key="item.sidc"
                 :id="item.sidc"
                 @click="onSelect(index)"
               >
-                <p class="flex-shrink-0 h-7 w-9 flex justify-center">
+                <p class="flex h-7 w-9 flex-shrink-0 justify-center">
                   <MilSymbol :size="25" :sidc="item.sidc" />
                 </p>
-                <span class="text-sm ml-3">{{ item.text }} </span>
+                <span class="ml-3 text-sm">{{ item.text }} </span>
               </li>
             </ul>
           </div>
@@ -63,7 +63,7 @@
             <SymbolCodeSelect v-model="mod1Value" label="Modifier 1" :items="mod1Items" />
             <SymbolCodeSelect v-model="mod2Value" label="Modifier 2" :items="mod2Items" />
 
-            <div style="min-height: 14rem" class="py-4 flex justify-end">
+            <div style="min-height: 14rem" class="flex justify-end py-4">
               <div class=""></div>
             </div>
           </form>
@@ -91,7 +91,7 @@
           />
         </TabItem>
       </TabView>
-      <div class="pt-4 flex-shrink-0 flex justify-end space-x-2">
+      <div class="flex flex-shrink-0 justify-end space-x-2 pt-4">
         <SecondaryButton type="button" @click="clearModifiers()" class=""
           >Clear modifiers</SecondaryButton
         >
