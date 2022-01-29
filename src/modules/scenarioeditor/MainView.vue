@@ -101,36 +101,36 @@ import {
   watch,
 } from "vue";
 import { GlobalEvents } from "vue-global-events";
-import OrbatPanel from "../components/OrbatPanel.vue";
-import { useScenarioStore } from "../stores/scenarioStore";
-import ScenarioMap from "../components/ScenarioMap.vue";
-import UnitPanel from "../components/UnitPanel.vue";
-import { useActiveUnitStore } from "../stores/dragStore";
-import TabView from "../components/TabView.vue";
-import TabItem from "../components/TabItem.vue";
-import InputGroup from "../components/InputGroup.vue";
-import SecondaryButton from "../components/SecondaryButton.vue";
-import ScenarioInfoPanel from "../components/ScenarioInfoPanel.vue";
-import ShortcutsModal from "../components/ShortcutsModal.vue";
-import TimeController from "../components/TimeController.vue";
-import PlainButton from "../components/PlainButton.vue";
+import OrbatPanel from "../../components/OrbatPanel.vue";
+import { useScenarioStore } from "../../stores/scenarioStore";
+import ScenarioMap from "../../components/ScenarioMap.vue";
+import UnitPanel from "../../components/UnitPanel.vue";
+import { useActiveUnitStore } from "../../stores/dragStore";
+import TabView from "../../components/TabView.vue";
+import TabItem from "../../components/TabItem.vue";
+import InputGroup from "../../components/InputGroup.vue";
+import SecondaryButton from "../../components/SecondaryButton.vue";
+import ScenarioInfoPanel from "../../components/ScenarioInfoPanel.vue";
+import ShortcutsModal from "../../components/ShortcutsModal.vue";
+import TimeController from "../../components/TimeController.vue";
+import PlainButton from "../../components/PlainButton.vue";
 
 import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
-import { inputEventFilter } from "../components/helpers";
-import SearchModal from "../components/SearchModal.vue";
+import { inputEventFilter } from "../../components/helpers";
+import SearchModal from "../../components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
-import { useScenarioIO } from "../stores/scenarioIO";
-import { useUiStore } from "../stores/uiStore";
+import { useScenarioIO } from "../../stores/scenarioIO";
+import { useUiStore } from "../../stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
 import { Keyboard as KeyboardIcon } from "mdue";
 import { useTitle } from "@vueuse/core";
-import { useUnitManipulationStore } from "../stores/scenarioManipulation";
-import WipBadge from "../components/WipBadge.vue";
-import MainViewSlideOver from "../components/MainViewSlideOver.vue";
-import DotsMenu, { MenuItemData } from "../components/DotsMenu.vue";
-import { ScenarioActions } from "../types/constants";
-import AppNotifications from "../components/AppNotifications.vue";
-import { useNotifications } from "../composables/notifications";
+import { useUnitManipulationStore } from "../../stores/scenarioManipulation";
+import WipBadge from "../../components/WipBadge.vue";
+import MainViewSlideOver from "../../components/MainViewSlideOver.vue";
+import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
+import { ScenarioActions } from "../../types/constants";
+import AppNotifications from "../../components/AppNotifications.vue";
+import { useNotifications } from "../../composables/notifications";
 
 export default defineComponent({
   name: "MainView",

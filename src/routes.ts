@@ -3,7 +3,7 @@ import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import LandingPage from "./views/LandingPage.vue";
 
-const MainView = () => import("./views/MainView.vue");
+const MainView = () => import("./modules/scenarioeditor/MainView.vue");
 const StoryModeView = () => import("./modules/storymode/StoryModeView.vue");
 const OrbatChartView = () => import("./modules/charteditor/OrbatChartView.vue");
 const ComponentsTestView = () => import("./views/ComponentsTestView.vue");
