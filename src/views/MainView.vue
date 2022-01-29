@@ -1,8 +1,13 @@
 <template>
-  <div v-if="scenarioStore.isLoaded" class="flex h-screen overflow-hidden bg-gray-300">
-    <!--    <div class="flex flex-shrink-0 bg-gray-700">-->
-    <!--      <nav class="w-16"></nav>-->
-    <!--    </div>-->
+  <div
+    v-if="scenarioStore.isLoaded"
+    class="flex h-screen overflow-hidden bg-gray-300 pt-4"
+  >
+    <p
+      class="absolute inset-x-0 top-0 h-4 border-b bg-amber-200 text-center text-xs text-amber-700"
+    >
+      Under development
+    </p>
     <aside class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100">
       <TabView
         v-model:current-tab="currentScenarioTab"

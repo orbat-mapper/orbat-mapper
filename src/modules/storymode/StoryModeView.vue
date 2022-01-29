@@ -1,5 +1,10 @@
 <template>
-  <div class="md:flex md:h-screen md:flex-col">
+  <div class="pt-4 md:flex md:h-screen md:flex-col">
+    <p
+      class="absolute inset-x-0 top-0 h-4 border-b bg-amber-200 text-center text-xs text-amber-700"
+    >
+      Under development
+    </p>
     <header class="relative w-full bg-gray-100 p-4 md:flex-shrink-0">
       <h1>{{ scenario.name }}</h1>
       <button
