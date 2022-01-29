@@ -25,7 +25,7 @@
           >
             <a
               href="#"
-              @click.stop="onItemClick(item)"
+              @click.stop.prevent="onItemClick(item)"
               :class="[
                 active
                   ? 'border-r-2 border-army2 bg-gray-100 text-gray-900'
