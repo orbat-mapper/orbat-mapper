@@ -19,7 +19,13 @@
           >
             <MilSymbol :size="symbolSize" :sidc="sidc" />
             <p
-              class="mt-1 max-w-full overflow-hidden break-words text-center text-sm text-gray-900"
+              v-if="entitySubtype && entityType"
+              class="mt-1 max-w-full overflow-hidden truncate text-center text-sm text-gray-500"
+            >
+              {{ entityType }}
+            </p>
+            <p
+              class="mt-1 max-w-full overflow-hidden break-words text-center text-sm font-medium text-gray-900"
             >
               {{ entitySubtype || entityType || entity }}
             </p>
