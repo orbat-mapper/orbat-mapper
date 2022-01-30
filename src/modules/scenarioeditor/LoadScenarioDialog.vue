@@ -10,7 +10,6 @@ import { defineComponent } from "vue";
 import { useVModel } from "@vueuse/core";
 import SimpleModal from "../../components/SimpleModal.vue";
 import { Scenario } from "../../types/models";
-import { useScenarioStore } from "../../stores/scenarioStore";
 
 export default defineComponent({
   name: "LoadScenarioDialog",
@@ -18,8 +17,8 @@ export default defineComponent({
   props: {
     modelValue: { type: Boolean, default: false },
   },
-  emits: ["update:modelValue"],
-  setup(props) {
+  emits: ["update:modelValue", "loaded"],
+  setup(props, { emit }) {
     const open = useVModel(props, "modelValue");
     const onFileLoad = (e: Event) => {
       const target = <HTMLInputElement>e.target;
@@ -31,9 +30,7 @@ export default defineComponent({
         try {
           const scenarioData = JSON.parse(content) as Scenario;
           if (scenarioData?.type === "ORBAT-mapper") {
-            const scenario = useScenarioStore();
-            scenario.$reset();
-            scenario.loadScenario(scenarioData);
+            emit("loaded", scenarioData);
             open.value = false;
           }
         } catch (e) {

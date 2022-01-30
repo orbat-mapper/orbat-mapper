@@ -87,7 +87,11 @@
     <MainViewSlideOver v-model="isOpen" />
     <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
     <AppNotifications />
-    <LoadScenarioDialog v-if="showLoadModal" v-model="showLoadModal" />
+    <LoadScenarioDialog
+      v-if="showLoadModal"
+      v-model="showLoadModal"
+      @loaded="loadScenario"
+    />
   </div>
 </template>
 
@@ -133,6 +137,7 @@ import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import { ScenarioActions } from "../../types/constants";
 import AppNotifications from "../../components/AppNotifications.vue";
 import { useNotifications } from "../../composables/notifications";
+import { Scenario } from "../../types/models";
 
 export default defineComponent({
   name: "MainView",
@@ -201,6 +206,11 @@ export default defineComponent({
       }
       await scenarioIO.loadDemoScenario(name as string);
       // await router.replace("");
+    }
+
+    function loadScenario(scenarioData: Scenario) {
+      scenarioIO.loadFromObject(scenarioData);
+      send({ message: "Loaded scenario from file" });
     }
 
     watch(
@@ -287,6 +297,7 @@ export default defineComponent({
       scenarioMenuItems,
       onScenarioAction,
       showLoadModal,
+      loadScenario,
     };
   },
 

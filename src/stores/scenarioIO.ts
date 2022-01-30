@@ -22,6 +22,12 @@ export const useScenarioIO = defineStore("scenarioIO", {
       }
     },
 
+    loadFromObject(data: Scenario) {
+      const scenario = useScenarioStore();
+      scenario.$reset();
+      scenario.loadScenario(data);
+    },
+
     async loadFromUrl(url: string) {
       const scenario = useScenarioStore();
       const { data, isFinished, statusCode, error } = useFetch<Scenario>(url).json();
