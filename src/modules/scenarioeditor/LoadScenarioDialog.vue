@@ -1,7 +1,7 @@
 <template>
   <SimpleModal v-model="open" dialog-title="Load scenario">
     <div
-      class="mt-4 h-40 w-full border-2 border-dashed p-4 hover:border-gray-500"
+      class="mt-4 h-40 w-full rounded-lg border-2 border-dashed p-4 ring-offset-2 focus-within:ring-2 hover:border-gray-500"
       :class="isDragOver ? 'cursor-crosshair border-green-500' : ''"
       @dragover.prevent="isDragOver = true"
       @drop.prevent="onDrop"
