@@ -1,26 +1,32 @@
 <template>
   <SimpleModal v-model="open" :dialog-title="dialogTitle">
     <form @submit.prevent="updateTime" class="mt-4 space-y-6">
-      <SwitchGroup as="div" class="flex items-center">
-        <Switch
-          v-model="enabled"
-          :class="[
-            enabled ? 'bg-indigo-600' : 'bg-gray-200',
-            'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
-          ]"
-        >
-          <span
-            aria-hidden="true"
+      <div class="flex items-center justify-between">
+        <DescriptionItem label="Time zone name">
+          {{ scenarioStore.scenario.timeZone }}
+        </DescriptionItem>
+
+        <SwitchGroup as="div" class="flex items-center">
+          <Switch
+            v-model="enabled"
             :class="[
-              enabled ? 'translate-x-5' : 'translate-x-0',
-              'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+              enabled ? 'bg-indigo-600' : 'bg-gray-200',
+              'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
             ]"
-          />
-        </Switch>
-        <SwitchLabel as="span" class="ml-3">
-          <span class="text-sm font-medium text-gray-900">UTC mode</span>
-        </SwitchLabel>
-      </SwitchGroup>
+          >
+            <span
+              aria-hidden="true"
+              :class="[
+                enabled ? 'translate-x-5' : 'translate-x-0',
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+              ]"
+            />
+          </Switch>
+          <SwitchLabel as="span" class="ml-3">
+            <span class="text-sm font-medium text-gray-900">UTC mode</span>
+          </SwitchLabel>
+        </SwitchGroup>
+      </div>
       <InputGroup label="Date" type="date" v-model="date"></InputGroup>
       <div class="flex space-x-4">
         <InputGroup label="Hour" v-model="hour" type="number" min="0" max="23" />
@@ -45,9 +51,11 @@ import { useScenarioStore } from "../stores/scenarioStore";
 import dayjs from "dayjs";
 import PrimaryButton from "./PrimaryButton.vue";
 import InputGroup from "./InputGroup.vue";
+import DescriptionItem from "./DescriptionItem.vue";
 
 export default defineComponent({
   components: {
+    DescriptionItem,
     InputGroup,
     PrimaryButton,
     SimpleModal,
@@ -112,6 +120,7 @@ export default defineComponent({
       minute,
       resDateTime,
       enabled,
+      scenarioStore,
     };
   },
 });
