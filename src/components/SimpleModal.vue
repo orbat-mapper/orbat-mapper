@@ -45,8 +45,11 @@
             class="inline-block w-full transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all sm:my-8 sm:max-w-lg sm:p-6 sm:align-middle md:my-16"
           >
             <div class="">
-              <div class="mt-3 text-center sm:mt-0 sm:ml-2 sm:text-left">
-                <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">
+              <div class="mt-3 sm:mt-0 sm:ml-2">
+                <DialogTitle
+                  as="h3"
+                  class="text-center text-lg font-medium leading-6 text-gray-900 sm:text-left"
+                >
                   <slot name="title">{{ dialogTitle }}</slot>
                 </DialogTitle>
                 <slot></slot>
