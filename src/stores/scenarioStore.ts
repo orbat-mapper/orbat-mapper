@@ -150,6 +150,10 @@ export const useScenarioStore = defineStore("scenario", {
 
     loadEmptyScenario() {
       const settingsStore = useSettingsStore();
+      let timeZone;
+      try {
+        timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      } catch (e) {}
       const scn: Scenario = {
         name: "New scenario",
         type: "ORBAT-mapper",
@@ -159,6 +163,7 @@ export const useScenarioStore = defineStore("scenario", {
         sides: [],
         events: [],
         startTime: new Date().getTime(),
+        timeZone,
       };
       this.loadScenario(scn);
     },
