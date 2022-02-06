@@ -42,6 +42,13 @@
               />
             </div>
           </section>
+
+          <section>
+            <FormCard label="Label" description="A description">
+              <InputGroup label="Label"></InputGroup>
+              <InputGroup label="Label"></InputGroup>
+            </FormCard>
+          </section>
         </div>
       </main>
     </div>
@@ -51,12 +58,13 @@
 <script>
 import PrimaryButton from "../components/PrimaryButton.vue";
 import BaseButton from "../components/BaseButton.vue";
-import InputGroup from "../components/InputGroup.vue";
-import NumberInputGroup from "../components/NumberInputGroup.vue";
+import FormCard from "../components/FormCard.vue";
 import { ref } from "vue";
+import NumberInputGroup from "../components/NumberInputGroup.vue";
+import InputGroup from "../components/InputGroup.vue";
 
 export default {
-  components: { NumberInputGroup, InputGroup, BaseButton, PrimaryButton },
+  components: { InputGroup, NumberInputGroup, FormCard, BaseButton, PrimaryButton },
   setup() {
     const num = ref(1);
     return { num };

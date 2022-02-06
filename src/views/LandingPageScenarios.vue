@@ -1,6 +1,8 @@
 <template>
   <div class="relative bg-gray-50 py-5">
-    <p class="absolute right-6 top-2 z-10"><WipBadge /></p>
+    <p class="absolute right-6 top-2 z-10">
+      <WipBadge />
+    </p>
     <section class="mx-auto max-w-7xl p-6">
       <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
         <li
@@ -60,7 +62,7 @@
 import { MailIcon, PhoneIcon } from "@heroicons/vue/solid";
 import ProseSection from "../components/ProseSection.vue";
 import { useRouter } from "vue-router";
-import { SCENARIO_ROUTE } from "../routes";
+import { NEW_SCENARIO_ROUTE, SCENARIO_ROUTE } from "../routes";
 import WipBadge from "../components/WipBadge.vue";
 
 const scenarios = [
@@ -101,7 +103,7 @@ export default {
     };
 
     const newScenario = () => {
-      router.push({ name: SCENARIO_ROUTE, query: { load: "empty" } });
+      router.push({ name: NEW_SCENARIO_ROUTE });
     };
     return {
       scenarios,
