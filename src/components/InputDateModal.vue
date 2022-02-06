@@ -46,12 +46,12 @@ import SimpleModal from "./SimpleModal.vue";
 import { useVModel } from "@vueuse/core";
 import { Switch, SwitchGroup, SwitchLabel } from "@headlessui/vue";
 
-import { computed, defineComponent, ref, watch } from "vue";
+import { computed, defineComponent, ref } from "vue";
 import { useScenarioStore } from "../stores/scenarioStore";
-import dayjs from "dayjs";
 import PrimaryButton from "./PrimaryButton.vue";
 import InputGroup from "./InputGroup.vue";
 import DescriptionItem from "./DescriptionItem.vue";
+import { useDateElements } from "../composables/scenarioTime";
 
 export default defineComponent({
   components: {
@@ -72,41 +72,14 @@ export default defineComponent({
 
   setup(props, { emit }) {
     const open = useVModel(props, "modelValue");
-    const date = ref("");
-    const hour = ref(12);
-    const minute = ref(0);
+    const scenarioStore = useScenarioStore();
     const enabled = ref(false);
     const isLocal = computed(() => !enabled.value);
-    const scenarioStore = useScenarioStore();
-
-    const inputDateTime = computed(() => {
-      return isLocal.value
-        ? dayjs.utc(props.timestamp).tz(scenarioStore.scenario.timeZone || "UTC")
-        : dayjs.utc(props.timestamp);
+    const { date, hour, minute, resDateTime } = useDateElements({
+      timestamp: props.timestamp,
+      isLocal,
+      timeZone: scenarioStore.scenario.timeZone || "UTC",
     });
-    watch(
-      inputDateTime,
-      (v) => {
-        date.value = v.format().split("T")[0];
-        hour.value = v.hour();
-        minute.value = v.minute();
-      },
-      { immediate: true }
-    );
-
-    const resDateTime = computed(() => {
-      try {
-        if (isLocal.value)
-          return dayjs.tz(
-            `${date.value} ${hour.value}:${minute.value}`,
-            scenarioStore.scenario.timeZone
-          );
-        return dayjs.utc(`${date.value} ${hour.value}:${minute.value}`);
-      } catch (e) {
-        return dayjs(0);
-      }
-    });
-
     const updateTime = () => {
       emit("update:timestamp", resDateTime.value.valueOf());
       open.value = false;
