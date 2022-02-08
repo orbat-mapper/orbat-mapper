@@ -1,14 +1,13 @@
 <template>
   <div class="space-y-6">
-    <InputGroup
+    <NumberInputGroup
       label="Connector offset"
-      type="number"
       :model-value="mergedOptions.connectorOffset"
       @update:model-value="setValue('connectorOffset', $event)"
       :class="!usedOptions.has('connectorOffset') && 'sepia-[50%]'"
     />
 
-    <InputGroup
+    <NumberInputGroup
       label="Line width"
       type="number"
       :model-value="mergedOptions.lineWidth"
@@ -33,10 +32,11 @@ import { defineComponent, PropType } from "vue";
 import PlainButton from "../../components/PlainButton.vue";
 import { ChartItemType } from "./orbatchart";
 import { useChartSettings } from "./composables";
+import NumberInputGroup from "../../components/NumberInputGroup.vue";
 
 export default defineComponent({
   name: "SettingConnectors",
-  components: { PlainButton, ToggleField, SimpleSelect, InputGroup },
+  components: { NumberInputGroup, PlainButton, ToggleField, SimpleSelect, InputGroup },
   props: {
     itemType: { type: String as PropType<ChartItemType>, required: true },
   },

@@ -29,6 +29,19 @@
               <BaseButton secondary huge>Secondary huge</BaseButton>
             </p>
           </section>
+          <section class="space-y-4">
+            <h3>Input groups</h3>
+            <div class="grid grid-cols-3 gap-4">
+              <InputGroup type="number" label="Label" description="Description" />
+              <NumberInputGroup
+                v-model="num"
+                :max="10"
+                :min="-3"
+                label="Label"
+                description="Description"
+              />
+            </div>
+          </section>
         </div>
       </main>
     </div>
@@ -38,11 +51,15 @@
 <script>
 import PrimaryButton from "../components/PrimaryButton.vue";
 import BaseButton from "../components/BaseButton.vue";
+import InputGroup from "../components/InputGroup.vue";
+import NumberInputGroup from "../components/NumberInputGroup.vue";
+import { ref } from "vue";
 
 export default {
-  components: { BaseButton, PrimaryButton },
+  components: { NumberInputGroup, InputGroup, BaseButton, PrimaryButton },
   setup() {
-    return {};
+    const num = ref(1);
+    return { num };
   },
 };
 </script>

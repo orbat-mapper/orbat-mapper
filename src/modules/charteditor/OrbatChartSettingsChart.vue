@@ -27,7 +27,8 @@
       :icon="$options.components?.SearchIcon"
       >Select root unit
     </CreateEmtpyDashed>
-    <InputGroup label="Levels" type="number" v-model="options.maxLevels" />
+
+    <NumberInputGroup label="Levels" type="number" v-model="options.maxLevels" />
     <div class="mt-4 w-full border-t border-gray-200" />
     <AccordionPanel label="Page settings">
       <SimpleSelect
@@ -37,9 +38,9 @@
       />
     </AccordionPanel>
     <AccordionPanel label="Layout and spacing">
-      <InputGroup label="Level padding" type="number" v-model="options.levelPadding" />
-      <InputGroup label="Tree offset" type="number" v-model="options.treeOffset" />
-      <InputGroup label="Stacked offset" type="number" v-model="options.stackedOffset" />
+      <NumberInputGroup label="Level padding" v-model="options.levelPadding" />
+      <NumberInputGroup label="Tree offset" v-model="options.treeOffset" />
+      <NumberInputGroup label="Stacked offset" v-model="options.stackedOffset" />
       <SimpleSelect
         label="Last level layout"
         v-model="options.lastLevelLayout"
@@ -53,8 +54,8 @@
     </AccordionPanel>
 
     <AccordionPanel label="Unit settings">
-      <InputGroup label="Symbol size" type="number" v-model="options.symbolSize" />
-      <InputGroup label="Font size" type="number" v-model="options.fontSize" />
+      <NumberInputGroup label="Symbol size" v-model="options.symbolSize" />
+      <NumberInputGroup label="Font size" v-model="options.fontSize" />
       <SimpleSelect
         label="Font weight"
         v-model="options.fontWeight"
@@ -65,17 +66,13 @@
         v-model="options.fontStyle"
         :items="fontStyleItems"
       />
-      <InputGroup label="Label offset" type="number" v-model="options.labelOffset" />
+      <NumberInputGroup label="Label offset" v-model="options.labelOffset" />
       <InputGroup label="Font color" type="color" v-model="options.fontColor" />
       <ToggleField v-model="options.useShortName">Use short unit names</ToggleField>
       <ToggleField v-model="options.hideLabel">Hide label</ToggleField>
     </AccordionPanel>
     <AccordionPanel label="Connectors">
-      <InputGroup
-        label="Connector offset"
-        type="number"
-        v-model="options.connectorOffset"
-      />
+      <NumberInputGroup label="Connector offset" v-model="options.connectorOffset" />
       <InputGroup label="Line width" type="number" v-model="options.lineWidth" />
       <InputGroup label="Line color" type="color" v-model="options.lineColor" />
     </AccordionPanel>
@@ -102,10 +99,12 @@ import { useScenarioStore } from "../../stores/scenarioStore";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { canvasSizeItems } from "./orbatchart/sizes";
 import AccordionPanel from "../../components/AccordionPanel.vue";
+import NumberInputGroup from "../../components/NumberInputGroup.vue";
 
 export default defineComponent({
   name: "OrbatChartSettingsChart",
   components: {
+    NumberInputGroup,
     AccordionPanel,
     CreateEmtpyDashed,
     IconButton,

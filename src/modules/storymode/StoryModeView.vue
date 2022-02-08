@@ -28,11 +28,11 @@
       </section>
     </div>
     <SlideOver v-model="sidebarIsOpen" title="Settings">
-      <InputGroup
+      <NumberInputGroup
         label="Symbol size"
         type="number"
         v-model="settingsStore.mapIconSize"
-      ></InputGroup>
+      />
     </SlideOver>
   </div>
 </template>
@@ -63,10 +63,12 @@ import { clearStyleCache } from "../../geo/styles";
 import SlideOver from "../../components/SlideOver.vue";
 import { MenuIcon, XIcon } from "@heroicons/vue/outline";
 import InputGroup from "../../components/InputGroup.vue";
+import NumberInputGroup from "../../components/NumberInputGroup.vue";
 
 export default defineComponent({
   name: "StoryModeView",
   components: {
+    NumberInputGroup,
     InputGroup,
     SlideOver,
     StoryModeContent,

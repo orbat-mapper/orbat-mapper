@@ -1,16 +1,14 @@
 <template>
   <div class="space-y-6">
-    <InputGroup
+    <NumberInputGroup
       label="Symbol size"
-      type="number"
       :model-value="mergedOptions.symbolSize"
       @update:model-value="setValue('symbolSize', $event)"
       :class="!usedOptions.has('symbolSize') && 'sepia-[50%]'"
     />
 
-    <InputGroup
+    <NumberInputGroup
       label="Font size"
-      type="number"
       :model-value="mergedOptions.fontSize"
       @update:model-value="setValue('fontSize', $event)"
       :class="!usedOptions.has('fontSize') && 'sepia-[50%]'"
@@ -37,7 +35,7 @@
       @update:model-value="setValue('fontColor', $event)"
       :class="!usedOptions.has('fontColor') && 'sepia-[50%]'"
     />
-    <InputGroup
+    <NumberInputGroup
       label="Label offset"
       type="number"
       :model-value="mergedOptions.labelOffset"
@@ -68,10 +66,11 @@ import PlainButton from "../../components/PlainButton.vue";
 import { enum2Items } from "../../utils";
 import { ChartItemType, FontStyle, FontWeight } from "./orbatchart";
 import { useChartSettings } from "./composables";
+import NumberInputGroup from "../../components/NumberInputGroup.vue";
 
 export default defineComponent({
   name: "SettingsUnit",
-  components: { PlainButton, ToggleField, SimpleSelect, InputGroup },
+  components: { NumberInputGroup, PlainButton, ToggleField, SimpleSelect, InputGroup },
   props: {
     itemType: { type: String as PropType<ChartItemType>, required: true },
   },

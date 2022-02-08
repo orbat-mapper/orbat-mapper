@@ -4,21 +4,21 @@
       <TabItem label="Layers">
         <LayersPanel />
       </TabItem>
-      <TabItem label="Rendering"
-        ><div class="space-y-4 p-1">
-          <InputGroup
+      <TabItem label="Rendering">
+        <div class="space-y-4 p-1">
+          <NumberInputGroup
             InputGroup
             label="Map symbol size"
-            type="number"
             v-model="settings.mapIconSize"
           />
-          <InputGroup
+          <NumberInputGroup
             InputGroup
             label="ORBAT symbol size"
             type="number"
             v-model="settings.orbatIconSize"
-          /></div
-      ></TabItem>
+          />
+        </div>
+      </TabItem>
     </TabView>
   </SlideOver>
 </template>
@@ -32,10 +32,11 @@ import TabView from "./TabView.vue";
 import TabItem from "./TabItem.vue";
 import { useSettingsStore } from "../stores/settingsStore";
 import InputGroup from "./InputGroup.vue";
+import NumberInputGroup from "./NumberInputGroup.vue";
 
 export default defineComponent({
   name: "MainViewSlideOver",
-  components: { InputGroup, TabItem, TabView, SlideOver, LayersPanel },
+  components: { NumberInputGroup, InputGroup, TabItem, TabView, SlideOver, LayersPanel },
   props: { modelValue: Boolean },
   setup(props) {
     const open = useVModel(props, "modelValue");
