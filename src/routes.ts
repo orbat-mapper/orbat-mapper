@@ -57,7 +57,17 @@ const routes = [
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];
 
-export const router = createRouter({ history: createWebHistory(), routes });
+export const router = createRouter({
+  history: createWebHistory(),
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      return { top: 0 };
+    }
+  },
+});
 
 // router.beforeEach((to, from, next) => {
 //   // If this isn't an initial page load.
