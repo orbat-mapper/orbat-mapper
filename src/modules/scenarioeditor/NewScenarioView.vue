@@ -37,9 +37,13 @@
           <template #description>
             <p>Select a start time and time zone.</p>
           </template>
-          <TimezoneSelect label="Time zone" v-model="scenarioStore.scenario.timeZone" />
+          <TimezoneSelect label="Time zone" v-model="timeZone" />
 
-          <InputGroup label="Date" type="date" v-model="date"></InputGroup>
+          <div class="grid grid-cols-3 gap-6">
+            <InputGroup label="Year" type="number" v-model="year" />
+            <InputGroup label="Month" type="number" v-model="month" />
+            <InputGroup label="Day" type="number" v-model="day" />
+          </div>
           <div class="grid grid-cols-2 gap-6">
             <InputGroup label="Hour" v-model="hour" type="number" min="0" max="23" />
             <InputGroup label="Minute" v-model="minute" type="number" min="0" max="59" />
@@ -66,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import { CheckIcon } from "@heroicons/vue/solid";
 import ScenarioInfoPanel from "../../components/ScenarioInfoPanel.vue";
 import { useScenarioStore } from "../../stores/scenarioStore";
@@ -74,7 +78,7 @@ import FormCard from "../../components/FormCard.vue";
 import InputGroup from "../../components/InputGroup.vue";
 import SimpleMarkdownInput from "../../components/SimpleMarkdownInput.vue";
 import TimezoneSelect from "../../components/TimezoneSelect.vue";
-import { useDateElements } from "../../composables/scenarioTime";
+import { useYMDElements } from "../../composables/scenarioTime";
 import RadioGroupList from "../../components/RadioGroupList.vue";
 import BaseButton from "../../components/BaseButton.vue";
 import { useRouter } from "vue-router";
@@ -110,11 +114,12 @@ export default defineComponent({
     const scenarioStore = useScenarioStore();
     const router = useRouter();
     scenarioStore.loadEmptyScenario();
+    const timeZone = ref(scenarioStore.scenario.timeZone || "UTC");
 
-    const { date, hour, minute, resDateTime } = useDateElements({
+    const { year, month, day, hour, minute, resDateTime } = useYMDElements({
       timestamp: scenarioStore.scenario.startTime!,
       isLocal: true,
-      timeZone: scenarioStore.scenario.timeZone || "UTC",
+      timeZone,
     });
 
     function create() {
@@ -129,9 +134,13 @@ export default defineComponent({
 
     return {
       scenarioStore,
-      date,
+      year,
+      month,
+      day,
       hour,
       minute,
+      timeZone,
+
       resDateTime,
       standardSettings,
       cancel,
