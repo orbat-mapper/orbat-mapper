@@ -49,6 +49,16 @@
               <InputGroup label="Label"></InputGroup>
             </FormCard>
           </section>
+          <section>
+            <div class="grid grid-cols-2 gap-4">
+              <SimpleCombo label="A label" v-model="v" :values="values" />
+              <p>{{ v }}</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <SimpleCombo label="A label" v-model="v2" :items="items" />
+              <p>{{ v2 }}</p>
+            </div>
+          </section>
         </div>
       </main>
     </div>
@@ -62,12 +72,28 @@ import FormCard from "../components/FormCard.vue";
 import { ref } from "vue";
 import NumberInputGroup from "../components/NumberInputGroup.vue";
 import InputGroup from "../components/InputGroup.vue";
+import SimpleCombo from "../components/SimpleCombo.vue";
 
 export default {
-  components: { InputGroup, NumberInputGroup, FormCard, BaseButton, PrimaryButton },
+  components: {
+    SimpleCombo,
+    InputGroup,
+    NumberInputGroup,
+    FormCard,
+    BaseButton,
+    PrimaryButton,
+  },
   setup() {
     const num = ref(1);
-    return { num };
+    const v = ref("Test");
+    const v2 = ref(1);
+    const values = ["Hello", "Test", "Another"];
+    const items = [
+      { label: "Hello", value: 1 },
+      { label: "Test", value: 2 },
+      { label: "Another", value: 3 },
+    ];
+    return { num, v, values, items, v2 };
   },
 };
 </script>

@@ -1,15 +1,16 @@
 <template>
-  <SimpleSelect :values="timeZonesNames" v-model="tzValue" />
+  <SimpleCombo :values="timeZonesNames" v-model="tzValue" />
 </template>
 
 <script>
 import { timeZonesNames } from "@vvo/tzdb";
 import { useVModel } from "@vueuse/core";
 import SimpleSelect from "./SimpleSelect.vue";
+import SimpleCombo from "./SimpleCombo.vue";
 
 export default {
   name: "TimezoneSelect",
-  components: { SimpleSelect },
+  components: { SimpleCombo, SimpleSelect },
   emits: ["update:modelValue"],
   props: { modelValue: String },
   setup(props) {
