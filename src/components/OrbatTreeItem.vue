@@ -30,7 +30,10 @@
             @dragend="dragEnd"
             :class="{ 'opacity-20': isDragged }"
           >
-            <div class="flex w-8 flex-shrink-0 cursor-move justify-center">
+            <div
+              class="flex flex-shrink-0 cursor-move justify-center"
+              :style="{ width: settingsStore.orbatIconSize + 'pt' }"
+            >
               <MilSymbol
                 :sidc="unit.sidc"
                 :size="settingsStore.orbatIconSize"
@@ -40,7 +43,7 @@
               />
             </div>
             <span
-              class="flex-auto text-left"
+              class="flex-auto pl-1.5 text-left"
               :class="{
                 'font-bold': isActiveUnit,
                 'font-bold underline': isDragOver,
