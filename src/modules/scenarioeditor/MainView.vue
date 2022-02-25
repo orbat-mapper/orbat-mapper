@@ -55,7 +55,10 @@
         <TimeController class="" />
       </footer>
     </aside>
-    <aside class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50">
+    <aside
+      class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50"
+      v-if="showUnitPanel"
+    >
       <TabView
         v-model:current-tab="currentTab"
         extra-class="px-6"
@@ -68,6 +71,17 @@
         <!--        <TabItem label="Layers">-->
         <!--          <LayersPanel />-->
         <!--        </TabItem>-->
+        <template #extra>
+          <div class="flex pt-4">
+            <button
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              @click="toggleUnitPanel"
+            >
+              <span class="sr-only">Close panel</span>
+              <XIcon class="h-6 w-6" aria-hidden="true" />
+            </button>
+          </div>
+        </template>
       </TabView>
     </aside>
     <ScenarioMap class="flex-1" />
@@ -121,7 +135,7 @@ import ShortcutsModal from "../../components/ShortcutsModal.vue";
 import TimeController from "../../components/TimeController.vue";
 import PlainButton from "../../components/PlainButton.vue";
 
-import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
+import { MenuIcon, SearchIcon, XIcon } from "@heroicons/vue/outline";
 import { inputEventFilter } from "../../components/helpers";
 import SearchModal from "../../components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -129,7 +143,7 @@ import { useScenarioIO } from "../../stores/scenarioIO";
 import { useUiStore } from "../../stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
 import { Keyboard as KeyboardIcon } from "mdue";
-import { useTitle } from "@vueuse/core";
+import { useTitle, useToggle } from "@vueuse/core";
 import { useUnitManipulationStore } from "../../stores/scenarioManipulation";
 import WipBadge from "../../components/WipBadge.vue";
 import MainViewSlideOver from "../../components/MainViewSlideOver.vue";
@@ -138,6 +152,7 @@ import { ScenarioActions } from "../../types/constants";
 import AppNotifications from "../../components/AppNotifications.vue";
 import { useNotifications } from "../../composables/notifications";
 import { Scenario } from "../../types/models";
+import { useGeoStore } from "../../stores/geoStore";
 
 export default defineComponent({
   name: "MainView",
@@ -164,6 +179,7 @@ export default defineComponent({
     SearchIcon,
     KeyboardIcon,
     LoadScenarioDialog: defineAsyncComponent(() => import("./LoadScenarioDialog.vue")),
+    XIcon,
   },
 
   setup(props) {
@@ -184,6 +200,8 @@ export default defineComponent({
     const originalTitle = useTitle().value;
     const windowTitle = computed(() => scenarioStore.scenario.name);
     const { send } = useNotifications();
+    const geoStore = useGeoStore();
+    const [showUnitPanel, toggleUnitPanel] = useToggle();
 
     useTitle(windowTitle);
 
@@ -217,6 +235,17 @@ export default defineComponent({
       () => route.query.load,
       async (v) => {
         if (v) await loadDemoScenario(v as string);
+      }
+    );
+
+    watch(showUnitPanel, (v) => {
+      nextTick(() => geoStore.updateMapSize());
+    });
+
+    watch(
+      () => activeUnitStore.activeUnit,
+      (v) => {
+        if (v) showUnitPanel.value = true;
       }
     );
 
@@ -298,6 +327,8 @@ export default defineComponent({
       onScenarioAction,
       showLoadModal,
       loadScenario,
+      showUnitPanel,
+      toggleUnitPanel,
     };
   },
 

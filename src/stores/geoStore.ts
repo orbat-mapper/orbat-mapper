@@ -35,5 +35,9 @@ export const useGeoStore = defineStore("geo", {
         duration,
       });
     },
+
+    updateMapSize() {
+      this.olMap?.updateSize();
+    },
   },
 });
