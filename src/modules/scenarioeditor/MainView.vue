@@ -73,13 +73,7 @@
         <!--        </TabItem>-->
         <template #extra>
           <div class="flex pt-4">
-            <button
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              @click="toggleUnitPanel"
-            >
-              <span class="sr-only">Close panel</span>
-              <XIcon class="h-6 w-6" aria-hidden="true" />
-            </button>
+            <CloseButton @click="toggleUnitPanel" />
           </div>
         </template>
       </TabView>
@@ -153,10 +147,12 @@ import AppNotifications from "../../components/AppNotifications.vue";
 import { useNotifications } from "../../composables/notifications";
 import { Scenario } from "../../types/models";
 import { useGeoStore } from "../../stores/geoStore";
+import CloseButton from "../../components/CloseButton.vue";
 
 export default defineComponent({
   name: "MainView",
   components: {
+    CloseButton,
     AppNotifications,
     DotsMenu,
     MainViewSlideOver,
@@ -310,6 +306,10 @@ export default defineComponent({
       }
     }
 
+    function showKeyboardShortcuts() {
+      shortcutsModalVisible.value = true;
+    }
+
     return {
       activeUnit,
       currentTab,
@@ -329,13 +329,8 @@ export default defineComponent({
       loadScenario,
       showUnitPanel,
       toggleUnitPanel,
+      showKeyboardShortcuts,
     };
-  },
-
-  methods: {
-    showKeyboardShortcuts() {
-      this.shortcutsModalVisible = true;
-    },
   },
 });
 </script>
