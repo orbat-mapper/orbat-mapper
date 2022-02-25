@@ -73,7 +73,7 @@
         <!--        </TabItem>-->
         <template #extra>
           <div class="flex pt-4">
-            <CloseButton @click="toggleUnitPanel" />
+            <CloseButton @click="toggleUnitPanel()" />
           </div>
         </template>
       </TabView>
