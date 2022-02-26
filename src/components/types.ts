@@ -3,3 +3,8 @@ export interface ButtonGroupItem {
   onClick: () => void;
   disabled?: boolean;
 }
+
+export interface SelectItem {
+  label: string;
+  value: string | number;
+}

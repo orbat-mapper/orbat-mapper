@@ -21,11 +21,7 @@
 import InputGroupTemplate from "./InputGroupTemplate.vue";
 import { useVModel } from "@vueuse/core";
 import { computed, defineComponent, PropType } from "vue";
-
-interface SelectItem {
-  label: string;
-  value: string | number;
-}
+import { SelectItem } from "./types";
 
 export default defineComponent({
   name: "SimpleSelect",
