@@ -7,14 +7,14 @@
     >
       {{ activeItem.label }}
     </button>
-    <Menu as="span" class="relative -ml-px block">
-      <MenuButton
-        ref="trigger"
-        class="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-      >
-        <span class="sr-only">Open options</span>
-        <ChevronDownIcon class="h-5 w-5" aria-hidden="true" />
-      </MenuButton>
+    <Menu>
+      <span class="relative -ml-px block" ref="trigger">
+        <MenuButton
+          class="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        >
+          <span class="sr-only">Open options</span>
+          <ChevronDownIcon class="h-5 w-5" aria-hidden="true" /> </MenuButton
+      ></span>
       <transition
         enter-active-class="transition ease-out duration-100"
         enter-from-class="transform opacity-0 scale-95"
@@ -24,11 +24,11 @@
         leave-to-class="transform opacity-0 scale-95"
       >
         <teleport to="body">
-          <MenuItems
-            ref="container"
-            class="absolute right-0 z-20 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-          >
-            <div class="py-1">
+          <MenuItems>
+            <div
+              ref="container"
+              class="absolute right-0 z-20 w-56 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+            >
               <MenuItem
                 v-for="item in menuItems"
                 :key="item.label"
@@ -60,12 +60,6 @@ import { ChevronDownIcon } from "@heroicons/vue/solid";
 import { computed, defineComponent, PropType, ref } from "vue";
 import { usePopper } from "../composables/usePopper";
 import { ButtonGroupItem } from "./types";
-
-const items = [
-  { name: "Save and schedule", href: "#" },
-  { name: "Save and publish", href: "#" },
-  { name: "Export PDF", href: "#" },
-];
 
 export default defineComponent({
   components: {
