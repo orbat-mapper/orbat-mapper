@@ -250,9 +250,16 @@ export default defineComponent({
     watch(
       () => activeUnitStore.activeUnit,
       (v) => {
-        if (v) showUnitPanel.value = true;
+        if (v && currentScenarioTab.value === 0) showUnitPanel.value = true;
       }
     );
+
+    watch(currentScenarioTab, (value, prevValue) => {
+      if (value === 1 && prevValue === 0) {
+        activeUnitStore.clearActiveUnit();
+        showUnitPanel.value = false;
+      }
+    });
 
     const createNewUnit = () => {
       const parent = activeUnit.value;
