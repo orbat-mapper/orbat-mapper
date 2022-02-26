@@ -201,7 +201,8 @@ export default defineComponent({
     const [showUnitPanel, toggleUnitPanel] = useToggle();
     const oobUnitClickBus = useEventBus(orbatUnitClick);
     oobUnitClickBus.on((unit) => {
-      activeUnitStore.activeUnit = unit;
+      activeUnitStore.toggleActiveUnit(unit);
+      if (!activeUnitStore.activeUnit) showUnitPanel.value = false;
     });
 
     const mapUnitClickBus = useEventBus(mapUnitClick);

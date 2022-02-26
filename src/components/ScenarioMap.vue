@@ -222,6 +222,7 @@ function useSelectInteraction(
     () => activeUnitStore.activeUnit,
     (unit: Unit | null) => {
       if (unit) selectUnit(unit);
+      else selectedFeatures.clear();
     }
   );
   watch(

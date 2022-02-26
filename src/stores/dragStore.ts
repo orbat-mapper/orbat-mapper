@@ -29,5 +29,13 @@ export const useActiveUnitStore = defineStore("activeUnit", {
     setActiveUnit(unit: Unit) {
       this.activeUnit = unit;
     },
+
+    toggleActiveUnit(unit: Unit) {
+      if (this.activeUnit && this.activeUnit.id === unit.id) {
+        this.clearActiveUnit();
+      } else {
+        this.activeUnit = unit;
+      }
+    },
   },
 });
