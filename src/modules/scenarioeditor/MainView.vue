@@ -137,7 +137,7 @@ import { useScenarioIO } from "../../stores/scenarioIO";
 import { useUiStore } from "../../stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
 import { Keyboard as KeyboardIcon } from "mdue";
-import { useTitle, useToggle } from "@vueuse/core";
+import { useEventBus, useTitle, useToggle } from "@vueuse/core";
 import { useUnitManipulationStore } from "../../stores/scenarioManipulation";
 import WipBadge from "../../components/WipBadge.vue";
 import MainViewSlideOver from "../../components/MainViewSlideOver.vue";
@@ -148,6 +148,7 @@ import { useNotifications } from "../../composables/notifications";
 import { Scenario } from "../../types/models";
 import { useGeoStore } from "../../stores/geoStore";
 import CloseButton from "../../components/CloseButton.vue";
+import { mapUnitClick, orbatUnitClick } from "../../components/eventKeys";
 
 export default defineComponent({
   name: "MainView",
@@ -198,6 +199,13 @@ export default defineComponent({
     const { send } = useNotifications();
     const geoStore = useGeoStore();
     const [showUnitPanel, toggleUnitPanel] = useToggle();
+    const oobUnitClickBus = useEventBus(orbatUnitClick);
+    oobUnitClickBus.on((unit) => {
+      activeUnitStore.activeUnit = unit;
+    });
+
+    const mapUnitClickBus = useEventBus(mapUnitClick);
+    // mapUnitClickBus.on((e) => console.log("Map select", e.name));
 
     useTitle(windowTitle);
 

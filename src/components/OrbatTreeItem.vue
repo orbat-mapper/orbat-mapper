@@ -88,6 +88,8 @@ import { useExpandTree } from "./helpers";
 import { useUnitMenu } from "../composables/scenarioActions";
 import { useUnitManipulationStore } from "../stores/scenarioManipulation";
 import { useSettingsStore } from "../stores/settingsStore";
+import { useEventBus } from "@vueuse/core";
+import { orbatUnitClick } from "./eventKeys";
 
 export default defineComponent({
   name: "OrbatTreeItem",
@@ -116,6 +118,7 @@ export default defineComponent({
 
     const dragStore = useDragStore();
     const settingsStore = useSettingsStore();
+    const bus = useEventBus(orbatUnitClick);
 
     const dragStart = (ev: DragEvent) => {
       const { dataTransfer } = ev;
@@ -158,7 +161,7 @@ export default defineComponent({
     };
 
     const onUnitClick = () => {
-      activeUnitStore.activeUnit = props.item.unit;
+      bus.emit(props.item.unit);
     };
 
     const isActiveUnit = computed(() => activeUnitStore.activeUnit === props.item.unit);

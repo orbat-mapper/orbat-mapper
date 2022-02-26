@@ -37,6 +37,8 @@ import { inputEventFilter } from "./helpers";
 import { useUiStore } from "../stores/uiStore";
 import { useUnitLayer } from "../composables/geomap";
 import { useSettingsStore } from "../stores/settingsStore";
+import { useEventBus } from "@vueuse/core";
+import { mapUnitClick } from "./eventKeys";
 
 export default defineComponent({
   name: "ScenarioMap",
@@ -181,6 +183,7 @@ function useSelectInteraction(
   selectedFeatures: Collection<Feature<Point>>,
   historyLayer: VectorLayer<any>
 ) {
+  const bus = useEventBus(mapUnitClick);
   const activeUnitStore = useActiveUnitStore();
   const scenarioStore = useScenarioStore();
   const selectInteraction = new Select({
@@ -194,7 +197,9 @@ function useSelectInteraction(
   function onSelect(evt: SelectEvent) {
     const selectedUnitId = evt.selected.map((f) => f.getId())[0];
     if (selectedUnitId) {
-      activeUnitStore.activeUnit = scenarioStore.getUnitById(selectedUnitId) || null;
+      const selectedUnit = scenarioStore.getUnitById(selectedUnitId);
+      bus.emit(selectedUnit);
+      activeUnitStore.activeUnit = selectedUnit || null;
     }
   }
 
