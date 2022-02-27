@@ -39,6 +39,7 @@ import { useUnitLayer } from "../composables/geomap";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useEventBus } from "@vueuse/core";
 import { mapUnitClick } from "./eventKeys";
+import { ObjectEvent } from "ol/Object";
 
 export default defineComponent({
   name: "ScenarioMap",
@@ -85,6 +86,7 @@ export default defineComponent({
       mapRef.addInteraction(selectInteraction);
 
       const { modifyInteraction } = useModifyInteraction(olMap, unitLayer);
+      unitLayerGroup.on("change:visible", toggleModifyInteraction);
       mapRef.addInteraction(modifyInteraction);
 
       geoStore.layers = markRaw(olMap.getLayers());
@@ -93,6 +95,11 @@ export default defineComponent({
       const extent = unitLayer.getSource().getExtent();
       if (extent && !unitLayer.getSource().isEmpty())
         mapRef.getView().fit(extent, { padding: [10, 10, 10, 10] });
+
+      function toggleModifyInteraction(event: ObjectEvent) {
+        const isUnitLayerVisible = !event.oldValue;
+        modifyInteraction.setActive(isUnitLayerVisible);
+      }
     };
 
     const drawHistory = () => {
