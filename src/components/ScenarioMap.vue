@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="relative">
     <MapContainer @ready="onMapReady" @drop="onDrop" @dragover.prevent />
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"
@@ -7,6 +7,13 @@
       @keyup.z="onItemZoom"
       @keyup.p="onItemPan"
     />
+    <IconButton
+      class="absolute bottom-2 left-1"
+      :class="measure && 'text-red-900'"
+      @click="toggleMeasure()"
+    >
+      <RulerMeasure />
+    </IconButton>
   </div>
 </template>
 
@@ -37,13 +44,16 @@ import { inputEventFilter } from "./helpers";
 import { useUiStore } from "../stores/uiStore";
 import { useUnitLayer } from "../composables/geomap";
 import { useSettingsStore } from "../stores/settingsStore";
-import { useEventBus } from "@vueuse/core";
+import { useEventBus, useToggle } from "@vueuse/core";
 import { mapUnitClick } from "./eventKeys";
 import { ObjectEvent } from "ol/Object";
+import { useMeasurementInteraction } from "../composables/geoMeasurement";
+import IconButton from "./IconButton.vue";
+import { TapeMeasure, Ruler as RulerMeasure } from "mdue";
 
 export default defineComponent({
   name: "ScenarioMap",
-  components: { MapContainer, GlobalEvents },
+  components: { IconButton, MapContainer, GlobalEvents, TapeMeasure, RulerMeasure },
   setup() {
     let mapRef: OLMap;
     let selectedFeatures: Collection<Feature<Point>> = new Collection<Feature<Point>>();
@@ -55,6 +65,7 @@ export default defineComponent({
     const geoStore = useGeoStore();
     const uiStore = useUiStore();
     const settingsStore = useSettingsStore();
+    const [measure, toggleMeasure] = useToggle(false);
     const onMapReady = (olMap: OLMap) => {
       mapRef = olMap;
       const unitLayerGroup = new LayerGroup({
@@ -100,6 +111,13 @@ export default defineComponent({
         const isUnitLayerVisible = !event.oldValue;
         modifyInteraction.setActive(isUnitLayerVisible);
       }
+
+      const { clear } = useMeasurementInteraction(olMap, "LineString", {
+        enable: measure,
+      });
+      watch(measure, (v) => {
+        clear();
+      });
     };
 
     const drawHistory = () => {
@@ -153,6 +171,8 @@ export default defineComponent({
       onItemZoom,
       onItemPan,
       uiStore,
+      measure,
+      toggleMeasure,
     };
   },
 });

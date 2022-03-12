@@ -19,7 +19,7 @@ import XYZ from "ol/source/XYZ";
 function createBaseLayers() {
   const openStreetmapLayer = new TileLayer({
     source: new OSM(),
-    visible: false,
+    visible: true,
     preload: Infinity,
   });
   openStreetmapLayer.set("title", "OSM");
@@ -52,7 +52,7 @@ function createBaseLayers() {
 
   const esriWorldImagery = new TileLayer({
     preload: Infinity,
-    visible: true,
+    visible: false,
     source: new XYZ({
       transition: 0, // should be set to 0 when opacity is < 1
       attributions:
