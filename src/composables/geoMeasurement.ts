@@ -9,10 +9,9 @@ import { Vector as VectorLayer } from "ol/layer";
 import { getArea, getLength } from "ol/sphere";
 import Feature from "ol/Feature";
 import { MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
-import { ref, watch } from "vue";
+import { ref, unref, watch } from "vue";
 
-let showSegments = true;
-let clearPrevious = false;
+export type MeasurementTypes = "LineString" | "Polygon";
 
 const style = new Style({
   fill: new Fill({
@@ -122,8 +121,6 @@ const segmentStyle = new Style({
   }),
 });
 
-const segmentStyles = [segmentStyle];
-
 const formatLength = function (line: Geometry) {
   const length = getLength(line);
   let output;
@@ -146,118 +143,169 @@ const formatArea = function (polygon: Geometry) {
   return output;
 };
 
-const source = new VectorSource();
-
-const modifyInteraction = new Modify({ source, style: modifyStyle });
-
-let tipPoint: Point;
-
-function styleFunction(
-  feature: Feature<SimpleGeometry>,
-  segments: boolean,
-  drawType?: "Polygon" | "LineString",
-  tip?: string
+function measurementInteractionWrapper(
+  olMap: OLMap,
+  drawType: MeasurementTypes,
+  options = {
+    showSegments: true,
+    clearPrevious: true,
+  }
 ) {
-  const styles = [style];
-  const geometry = feature.getGeometry();
-  if (!geometry) return styles;
-  const type = geometry.getType();
-  let point: Point | undefined;
-  let label = "";
-  let line: LineString | undefined;
-  if (!drawType || drawType === type) {
-    if (type === "Polygon") {
-      point = (geometry as Polygon).getInteriorPoint();
-      label = formatArea(geometry);
-      line = new LineString(geometry.getCoordinates()[0]);
-    } else if (type === "LineString") {
-      point = new Point(geometry.getLastCoordinate());
-      label = formatLength(geometry);
-      line = geometry as LineString;
-    }
-  }
-  if (segments && line) {
-    let count = 0;
-    line.forEachSegment(function (a, b) {
-      const segment = new LineString([a, b]);
-      const label = formatLength(segment);
-      if (segmentStyles.length - 1 < count) {
-        segmentStyles.push(segmentStyle.clone());
-      }
-      const segmentPoint = new Point(segment.getCoordinateAt(0.5));
-      segmentStyles[count].setGeometry(segmentPoint);
-      segmentStyles[count].getText().setText(label);
-      styles.push(segmentStyles[count]);
-      count++;
-    });
-  }
-
-  if (label && point) {
-    labelStyle.setGeometry(point);
-    labelStyle.getText().setText(label);
-    styles.push(labelStyle);
-  }
-  if (
-    tip &&
-    type === "Point" &&
-    !modifyInteraction.getOverlay().getSource().getFeatures().length
-  ) {
-    tipPoint = geometry as Point;
-    tipStyle.getText().setText(tip);
-    styles.push(tipStyle);
-  }
-  return styles;
-}
-
-const vector = new VectorLayer({
-  source: source,
-  style: function (feature) {
-    return styleFunction(feature as Feature<SimpleGeometry>, showSegments);
-  },
-});
-
-let drawInteraction: Draw; // global so we can remove it later
-
-function addInteraction(map: OLMap, drawType: "LineString" | "Polygon") {
-  const activeTip =
-    "Click to continue drawing the " + (drawType === "Polygon" ? "polygon" : "line");
-  const idleTip = "Click to start measuring";
-  let tip = idleTip;
-  drawInteraction = new Draw({
+  let showSegments = options.showSegments;
+  let clearPrevious = options.clearPrevious;
+  let tipPoint: Point;
+  let drawInteraction: Draw;
+  const segmentStyles = [segmentStyle];
+  const source = new VectorSource();
+  const vector = new VectorLayer({
     source: source,
-    type: drawType,
     style: function (feature) {
-      return styleFunction(
-        feature as Feature<SimpleGeometry>,
-        showSegments,
-        drawType,
-        tip
-      );
+      return styleFunction(feature as Feature<SimpleGeometry>, showSegments);
     },
   });
-  drawInteraction.on("drawstart", function () {
-    if (clearPrevious) {
-      source.clear();
+  const modifyInteraction = new Modify({ source, style: modifyStyle });
+
+  function styleFunction(
+    feature: Feature<SimpleGeometry>,
+    segments: boolean,
+    drawType?: "Polygon" | "LineString",
+    tip?: string
+  ) {
+    const styles = [style];
+    const geometry = feature.getGeometry();
+    if (!geometry) return styles;
+    const type = geometry.getType();
+    let point: Point | undefined;
+    let label = "";
+    let line: LineString | undefined;
+    if (!drawType || drawType === type) {
+      if (type === "Polygon") {
+        point = (geometry as Polygon).getInteriorPoint();
+        label = formatArea(geometry);
+        line = new LineString(geometry.getCoordinates()[0]);
+      } else if (type === "LineString") {
+        point = new Point(geometry.getLastCoordinate());
+        label = formatLength(geometry);
+        line = geometry as LineString;
+      }
     }
-    modifyInteraction.setActive(false);
-    tip = activeTip;
-  });
-  drawInteraction.on("drawend", function () {
-    modifyStyle.setGeometry(tipPoint);
-    modifyInteraction.setActive(true);
-    map.once("pointermove", function () {
-      // @ts-ignore
-      modifyStyle.setGeometry();
+    if (segments && line) {
+      let count = 0;
+      line.forEachSegment(function (a, b) {
+        const segment = new LineString([a, b]);
+        const label = formatLength(segment);
+        if (segmentStyles.length - 1 < count) {
+          segmentStyles.push(segmentStyle.clone());
+        }
+        const segmentPoint = new Point(segment.getCoordinateAt(0.5));
+        segmentStyles[count].setGeometry(segmentPoint);
+        segmentStyles[count].getText().setText(label);
+        styles.push(segmentStyles[count]);
+        count++;
+      });
+    }
+
+    if (label && point) {
+      labelStyle.setGeometry(point);
+      labelStyle.getText().setText(label);
+      styles.push(labelStyle);
+    }
+    if (
+      tip &&
+      type === "Point" &&
+      !modifyInteraction.getOverlay().getSource().getFeatures().length
+    ) {
+      tipPoint = geometry as Point;
+      tipStyle.getText().setText(tip);
+      styles.push(tipStyle);
+    }
+    return styles;
+  }
+
+  function addInteraction(map: OLMap, drawType: MeasurementTypes) {
+    const activeTip =
+      "Click to continue drawing the " + (drawType === "Polygon" ? "polygon" : "line");
+    const idleTip = "Click to start measuring";
+    let tip = idleTip;
+    drawInteraction = new Draw({
+      source: source,
+      type: drawType,
+      style: function (feature) {
+        return styleFunction(
+          feature as Feature<SimpleGeometry>,
+          showSegments,
+          drawType,
+          tip
+        );
+      },
     });
-    tip = idleTip;
-  });
-  modifyInteraction.setActive(true);
-  map.addInteraction(drawInteraction);
+    drawInteraction.on("drawstart", function () {
+      if (clearPrevious) {
+        source.clear();
+      }
+      modifyInteraction.setActive(false);
+      tip = activeTip;
+    });
+    drawInteraction.on("drawend", function () {
+      modifyStyle.setGeometry(tipPoint);
+      modifyInteraction.setActive(true);
+      map.once("pointermove", function () {
+        // @ts-ignore
+        modifyStyle.setGeometry();
+      });
+      tip = idleTip;
+    });
+    modifyInteraction.setActive(true);
+    map.addInteraction(drawInteraction);
+  }
+
+  function changeMeasurementType(type: MeasurementTypes) {
+    olMap.removeInteraction(drawInteraction);
+    addInteraction(olMap, type);
+  }
+
+  function setShowSegments(v: boolean) {
+    showSegments = v;
+    vector.changed();
+    drawInteraction.getOverlay().changed();
+  }
+
+  function setClearPrevious(v: boolean) {
+    clearPrevious = v;
+  }
+
+  function setActive(enabled: boolean) {
+    modifyInteraction.setActive(enabled);
+    drawInteraction.setActive(enabled);
+  }
+
+  function cleanup() {
+    vector.getSource().clear();
+    olMap.removeLayer(vector);
+    olMap.removeInteraction(modifyInteraction);
+  }
+
+  function clear() {
+    vector.getSource().clear();
+  }
+
+  olMap.addLayer(vector);
+  addInteraction(olMap, drawType);
+  olMap.addInteraction(modifyInteraction);
+
+  return {
+    changeMeasurementType,
+    setShowSegments,
+    setClearPrevious,
+    setActive,
+    cleanup,
+    clear,
+  };
 }
 
 export function useMeasurementInteraction(
   olMap: OLMap,
-  measurementType: MaybeRef<"LineString" | "Polygon">,
+  measurementType: MaybeRef<MeasurementTypes>,
   options: Partial<{
     showSegments: MaybeRef<boolean>;
     clearPrevious: MaybeRef<boolean>;
@@ -268,40 +316,27 @@ export function useMeasurementInteraction(
   const showSegmentsRef = ref(options.showSegments ?? true);
   const clearPreviousRef = ref(options.clearPrevious ?? true);
   const enableRef = ref(options.enable ?? true);
-  showSegments = showSegmentsRef.value;
 
-  watch(measurementTypeRef, (type) => {
-    olMap.removeInteraction(drawInteraction);
-    addInteraction(olMap, type);
+  const {
+    changeMeasurementType,
+    setShowSegments,
+    setClearPrevious,
+    setActive,
+    cleanup,
+    clear,
+  } = measurementInteractionWrapper(olMap, unref(measurementTypeRef), {
+    clearPrevious: unref(clearPreviousRef),
+    showSegments: unref(showSegmentsRef),
   });
 
-  watch(showSegmentsRef, (v) => {
-    showSegments = v;
-    vector.changed();
-    drawInteraction.getOverlay().changed();
-  });
-
-  watch(clearPreviousRef, (v) => (clearPrevious = v), { immediate: true });
-
-  olMap.addLayer(vector);
-
-  addInteraction(olMap, measurementTypeRef.value);
-  olMap.addInteraction(modifyInteraction);
-
-  watch(
-    enableRef,
-    (enabled) => {
-      modifyInteraction.setActive(enabled);
-      drawInteraction.setActive(enabled);
-    },
-    { immediate: true }
-  );
+  watch(measurementTypeRef, (type) => changeMeasurementType(type));
+  watch(showSegmentsRef, (v) => setShowSegments(v));
+  watch(clearPreviousRef, (v) => setClearPrevious(v), { immediate: true });
+  watch(enableRef, (enabled) => setActive(enabled), { immediate: true });
 
   tryOnBeforeUnmount(() => {
-    vector.getSource().clear();
-    olMap.removeLayer(vector);
-    olMap.removeInteraction(modifyInteraction);
+    cleanup();
   });
 
-  return { clear: () => vector.getSource().clear() };
+  return { clear };
 }

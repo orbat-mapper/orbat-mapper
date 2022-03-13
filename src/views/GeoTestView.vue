@@ -11,8 +11,8 @@ const enableMeasurements = ref(true);
 const clearPrevious = ref(true);
 const measurementType = ref<"LineString" | "Polygon">("LineString");
 let mInt: any;
+
 const onMapReady = (olMap: OLMap) => {
-  console.log("Map ready");
   mInt = useMeasurementInteraction(olMap, measurementType, {
     showSegments,
     clearPrevious,
