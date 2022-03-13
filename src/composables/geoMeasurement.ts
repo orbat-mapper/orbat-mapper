@@ -163,7 +163,11 @@ function measurementInteractionWrapper(
       return styleFunction(feature as Feature<SimpleGeometry>, showSegments);
     },
   });
-  const modifyInteraction = new Modify({ source, style: modifyStyle });
+  const modifyInteraction = new Modify({
+    source,
+    style: modifyStyle,
+    pixelTolerance: 20,
+  });
 
   function styleFunction(
     feature: Feature<SimpleGeometry>,

@@ -7,18 +7,20 @@
       @keyup.z="onItemZoom"
       @keyup.p="onItemPan"
     />
-    <IconButton
-      class="absolute bottom-2 left-1"
-      :class="measure && 'text-red-900'"
-      @click="toggleMeasure()"
-    >
-      <RulerMeasure />
-    </IconButton>
+    <MeasurementToolbar v-if="mapRef" class="absolute left-3 bottom-4" :ol-map="mapRef" />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, markRaw, nextTick, Ref, watch } from "vue";
+import {
+  computed,
+  defineComponent,
+  markRaw,
+  nextTick,
+  Ref,
+  shallowRef,
+  watch,
+} from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { GlobalEvents } from "vue-global-events";
@@ -47,15 +49,22 @@ import { useSettingsStore } from "../stores/settingsStore";
 import { useEventBus, useToggle } from "@vueuse/core";
 import { mapUnitClick } from "./eventKeys";
 import { ObjectEvent } from "ol/Object";
-import { useMeasurementInteraction } from "../composables/geoMeasurement";
 import IconButton from "./IconButton.vue";
-import { TapeMeasure, Ruler as RulerMeasure } from "mdue";
+import { Ruler as RulerMeasure, TapeMeasure } from "mdue";
+import MeasurementToolbar from "./MeasurementToolbar.vue";
 
 export default defineComponent({
   name: "ScenarioMap",
-  components: { IconButton, MapContainer, GlobalEvents, TapeMeasure, RulerMeasure },
+  components: {
+    MeasurementToolbar,
+    IconButton,
+    MapContainer,
+    GlobalEvents,
+    TapeMeasure,
+    RulerMeasure,
+  },
   setup() {
-    let mapRef: OLMap;
+    const mapRef = shallowRef<OLMap>();
     let selectedFeatures: Collection<Feature<Point>> = new Collection<Feature<Point>>();
     const { unitLayer, drawUnits } = useUnitLayer();
     const activeUnitStore = useActiveUnitStore();
@@ -67,15 +76,15 @@ export default defineComponent({
     const settingsStore = useSettingsStore();
     const [measure, toggleMeasure] = useToggle(false);
     const onMapReady = (olMap: OLMap) => {
-      mapRef = olMap;
+      mapRef.value = olMap;
       const unitLayerGroup = new LayerGroup({
         layers: [unitLayer],
       });
 
       historyLayer.set("title", "History");
-      mapRef.addLayer(historyLayer);
+      olMap.addLayer(historyLayer);
       unitLayerGroup.set("title", "Units");
-      mapRef.addLayer(unitLayerGroup);
+      olMap.addLayer(unitLayerGroup);
 
       // olMap.on("click", (evt: MapBrowserEvent) => {
       //   const feature = evt.map.forEachFeatureAtPixel(
@@ -94,30 +103,23 @@ export default defineComponent({
         selectedFeatures,
         historyLayer
       );
-      mapRef.addInteraction(selectInteraction);
+      olMap.addInteraction(selectInteraction);
 
       const { modifyInteraction } = useModifyInteraction(olMap, unitLayer);
       unitLayerGroup.on("change:visible", toggleModifyInteraction);
-      mapRef.addInteraction(modifyInteraction);
+      olMap.addInteraction(modifyInteraction);
 
       geoStore.layers = markRaw(olMap.getLayers());
       drawUnits();
       drawHistory();
       const extent = unitLayer.getSource().getExtent();
       if (extent && !unitLayer.getSource().isEmpty())
-        mapRef.getView().fit(extent, { padding: [10, 10, 10, 10] });
+        olMap.getView().fit(extent, { padding: [10, 10, 10, 10] });
 
       function toggleModifyInteraction(event: ObjectEvent) {
         const isUnitLayerVisible = !event.oldValue;
         modifyInteraction.setActive(isUnitLayerVisible);
       }
-
-      const { clear } = useMeasurementInteraction(olMap, "LineString", {
-        enable: measure,
-      });
-      watch(measure, (v) => {
-        clear();
-      });
     };
 
     const drawHistory = () => {
@@ -152,7 +154,8 @@ export default defineComponent({
     // );
 
     const { onDrop } = useDrop(
-      computed(() => mapRef),
+      //@ts-ignore
+      mapRef,
       computed(() => unitLayer)
     );
 
@@ -173,6 +176,7 @@ export default defineComponent({
       uiStore,
       measure,
       toggleMeasure,
+      mapRef,
     };
   },
 });
