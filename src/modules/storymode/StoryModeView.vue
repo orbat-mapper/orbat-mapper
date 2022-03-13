@@ -19,9 +19,14 @@
     </header>
     <div class="md:flex md:min-h-0 md:flex-auto">
       <section
-        class="sticky top-0 z-10 h-[45vh] w-full bg-white shadow-md md:static md:h-full md:shadow-none"
+        class="relative sticky top-0 z-10 h-[45vh] w-full bg-white shadow-md md:static md:h-full md:shadow-none"
       >
         <MapContainer @ready="onMapReady" />
+        <MeasurementToolbar
+          v-if="mapRef"
+          :ol-map="mapRef"
+          class="absolute bottom-2 left-2"
+        />
       </section>
       <section class="w-full overflow-auto border bg-gray-50 md:max-w-sm lg:max-w-lg">
         <StoryModeContent @update-state="onUpdateState" />
@@ -44,6 +49,7 @@ import {
   onMounted,
   onUnmounted,
   ref,
+  shallowRef,
   toRef,
   watch,
 } from "vue";
@@ -64,10 +70,12 @@ import SlideOver from "../../components/SlideOver.vue";
 import { MenuIcon, XIcon } from "@heroicons/vue/outline";
 import InputGroup from "../../components/InputGroup.vue";
 import NumberInputGroup from "../../components/NumberInputGroup.vue";
+import MeasurementToolbar from "../../components/MeasurementToolbar.vue";
 
 export default defineComponent({
   name: "StoryModeView",
   components: {
+    MeasurementToolbar,
     NumberInputGroup,
     InputGroup,
     SlideOver,
@@ -84,7 +92,7 @@ export default defineComponent({
     const mapIsReady = ref(false);
     const sidebarIsOpen = ref(false);
     const toggleSidebar = useToggle(sidebarIsOpen);
-    let mapInstance: OLMap;
+    const mapRef = shallowRef<OLMap>();
 
     const settingsStore = useSettingsStore();
 
@@ -104,13 +112,13 @@ export default defineComponent({
     const { unitLayer, drawUnits, animateUnits } = useUnitLayer();
 
     function onMapReady(olMap: OLMap) {
-      mapInstance = olMap;
+      mapRef.value = olMap;
       olMap.addLayer(unitLayer);
       mapIsReady.value = true;
     }
 
     whenever(and(mapIsReady, scenarioLoaded), () => {
-      const view = mapInstance.getView();
+      const view = mapRef.value!.getView();
       const { center, ...rest } = chapter.view;
       const time = dayjs.utc(chapter.startTime);
       scenarioStore.setCurrentTime(time.valueOf());
@@ -133,7 +141,7 @@ export default defineComponent({
         animateUnits();
       }
       if (state.view) {
-        const view = mapInstance.getView();
+        const view = mapRef.value!.getView();
         const { center, zoom, duration, ...rest } = state.view;
 
         // view.animate(
@@ -172,6 +180,7 @@ export default defineComponent({
       sidebarIsOpen,
       toggleSidebar,
       settingsStore,
+      mapRef,
     };
   },
 });
