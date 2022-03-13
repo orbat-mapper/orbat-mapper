@@ -12,8 +12,8 @@ const onMapReady = (olMap: OLMap) => {
 </script>
 
 <template>
-  <div class="h-screen w-screen">
-    <MapContainer @ready="onMapReady" />
+  <div class="h-full w-full">
+    <MapContainer @ready="onMapReady" class="h-full w-full" />
     <MeasurementToolbar v-if="mapRef" :ol-map="mapRef" class="absolute left-3 bottom-4" />
   </div>
 </template>
