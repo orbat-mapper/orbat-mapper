@@ -50,39 +50,33 @@
 import { TrashIcon } from "@heroicons/vue/solid";
 
 import {
+  MapMarkerPath,
   Ruler as RulerIcon,
+  SelectionMultiple,
   VectorPolygon,
   VectorPolyline,
-  SelectionMultiple,
-  MapMarkerPath,
 } from "mdue";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";
-import {
-  MeasurementTypes,
-  useMeasurementInteraction,
-} from "../composables/geoMeasurement";
-import { ref, watch } from "vue";
+import { useMeasurementInteraction } from "../composables/geoMeasurement";
+import { watch } from "vue";
 import { useToggle } from "@vueuse/core";
+import { storeToRefs } from "pinia";
+import { useMeasurementsStore } from "../stores/geoStore";
 
 const props = defineProps<{ olMap: OLMap }>();
+const { showSegments, clearPrevious, measurementType } = storeToRefs(
+  useMeasurementsStore()
+);
 
-const showSegments = ref(true);
 const [enableMeasurements, toggleMeasurements] = useToggle(false);
-const clearPrevious = ref(false);
-const measurementType = ref<"LineString" | "Polygon">("LineString");
+
 const { clear } = useMeasurementInteraction(props.olMap, measurementType, {
   showSegments,
   clearPrevious,
   enable: enableMeasurements,
 });
-
-function setMeasurementType(type: MeasurementTypes) {
-  measurementType.value = type;
-  if (type === "LineString") {
-  }
-}
 
 watch(enableMeasurements, (v) => !v && clear());
 </script>

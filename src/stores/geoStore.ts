@@ -4,8 +4,9 @@ import BaseLayer from "ol/layer/Base";
 import { Collection } from "ol";
 import BaseTileLayer from "ol/layer/BaseTile";
 import BaseVectorLayer from "ol/layer/BaseVector";
-import { Unit } from "../types/models";
+import { SymbologyStandard, Unit } from "../types/models";
 import { fromLonLat } from "ol/proj";
+import { MeasurementTypes } from "../composables/geoMeasurement";
 
 export const useGeoStore = defineStore("geo", {
   state: () => ({
@@ -39,5 +40,15 @@ export const useGeoStore = defineStore("geo", {
     updateMapSize() {
       this.olMap?.updateSize();
     },
+  },
+});
+
+export const useMeasurementsStore = defineStore("measurements", {
+  state() {
+    return {
+      measurementType: "LineString" as MeasurementTypes,
+      clearPrevious: true,
+      showSegments: true,
+    };
   },
 });
