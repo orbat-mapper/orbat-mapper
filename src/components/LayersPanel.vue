@@ -130,11 +130,19 @@ export default defineComponent({
           subLayers: [],
         };
         if (layer instanceof LayerGroup) {
-          l.subLayers = layer.getLayers().getArray().map(mapLayer);
+          l.subLayers = layer
+            .getLayers()
+            .getArray()
+            .filter((l) => l.get("title"))
+            .map(mapLayer);
         }
         return l;
       };
-      const mappedLayers = geoStore.olMap.getLayers().getArray().map(mapLayer);
+      const mappedLayers = geoStore.olMap
+        .getLayers()
+        .getArray()
+        .filter((l) => l.get("title"))
+        .map(mapLayer);
       tileLayers.value = mappedLayers.filter(
         ({ layer }) => layer instanceof TileLayer
       ) as LayerInfo<AnyTileLayer>[];
