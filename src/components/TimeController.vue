@@ -8,48 +8,29 @@
         {{ scenarioStore.scenarioTime.format("HH:mmZ") }}
       </p>
     </div>
-    <span class="relative z-0 inline-flex rounded-md shadow-sm">
-      <button
-        @click="showModal = true"
-        type="button"
-        class="btn-group-btn rounded-l-md px-2"
-      >
+
+    <BaseToolbar>
+      <ToolbarButton @click="showModal = true" start>
         <span class="sr-only">Select time and date</span>
         <CalendarIcon class="h-5 w-5" aria-hidden="true" />
-      </button>
-      <button
-        type="button"
-        @click="scenarioTimeStore.jumpToPrevEvent()"
-        class="btn-group-btn -ml-px px-2"
-      >
+      </ToolbarButton>
+      <ToolbarButton @click="scenarioTimeStore.jumpToPrevEvent()">
         <span class="sr-only">Previous</span>
         <SkipPrevious class="h-5 w-5" aria-hidden="true" />
-      </button>
-      <button
-        @click="scenarioTimeStore.jumpToNextEvent()"
-        type="button"
-        class="btn-group-btn -ml-px px-2"
-      >
+      </ToolbarButton>
+      <ToolbarButton @click="scenarioTimeStore.jumpToNextEvent()">
         <span class="sr-only">Next</span>
         <SkipNext class="h-5 w-5" aria-hidden="true" />
-      </button>
-      <button
-        type="button"
-        @click="scenarioTimeStore.subtract(1, 'day')"
-        class="btn-group-btn -ml-px px-2"
-      >
+      </ToolbarButton>
+      <ToolbarButton type="button" @click="scenarioTimeStore.subtract(1, 'day')">
         <span class="sr-only">Previous</span>
         <ChevronLeft class="h-5 w-5" aria-hidden="true" />
-      </button>
-      <button
-        @click="scenarioTimeStore.add(1, 'day')"
-        type="button"
-        class="btn-group-btn -ml-px rounded-r-md px-2"
-      >
+      </ToolbarButton>
+      <ToolbarButton @click="scenarioTimeStore.add(1, 'day')" end>
         <span class="sr-only">Next</span>
         <ChevronRight class="h-5 w-5" aria-hidden="true" />
-      </button>
-    </span>
+      </ToolbarButton>
+    </BaseToolbar>
     <InputDateModal
       v-if="showModal"
       v-model="showModal"
@@ -75,10 +56,16 @@ import { formatDateString } from "../geo/utils";
 import { useUiStore } from "../stores/uiStore";
 import { inputEventFilter } from "./helpers";
 import { useScenarioTime } from "../stores/scenarioTime";
+import BaseToolbar from "./BaseToolbar.vue";
+import BaseButton from "./BaseButton.vue";
+import ToolbarButton from "./ToolbarButton.vue";
 
 export default defineComponent({
   name: "TimeController",
   components: {
+    ToolbarButton,
+    BaseButton,
+    BaseToolbar,
     InputDateModal: defineAsyncComponent(() => import("./InputDateModal.vue")),
     ChevronLeftIcon,
     ChevronRightIcon,

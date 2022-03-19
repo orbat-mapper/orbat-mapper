@@ -11,24 +11,16 @@
         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         v-bind="$attrs"
       />
-      <span class="relative z-0 ml-2 inline-flex rounded-md shadow-sm">
-        <button
-          type="button"
-          class="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          @click="decrement()"
-        >
-          <span class="sr-only">Previous</span>
+      <BaseToolbar class="ml-2">
+        <ToolbarButton @click="decrement()" start>
+          <span class="sr-only">Decrease</span>
           <MinusIcon class="h-5 w-5" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          class="relative -ml-px inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          @click="increment()"
-        >
-          <span class="sr-only">Next</span>
+        </ToolbarButton>
+        <ToolbarButton @click="increment()" end>
+          <span class="sr-only">Increase</span>
           <PlusIcon class="h-5 w-5" aria-hidden="true" />
-        </button>
-      </span>
+        </ToolbarButton>
+      </BaseToolbar>
     </div>
     <p v-if="description || $slots.description" class="mt-2 text-sm text-gray-500">
       <slot name="description">{{ description }}</slot>
@@ -40,6 +32,8 @@
 import { computed, defineComponent } from "vue";
 import { nanoid } from "nanoid";
 import { MinusIcon, PlusIcon } from "@heroicons/vue/solid";
+import BaseToolbar from "./BaseToolbar.vue";
+import ToolbarButton from "./ToolbarButton.vue";
 
 export default defineComponent({
   name: "NumberInputGroup",
@@ -54,7 +48,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   inheritAttrs: false,
-  components: { PlusIcon, MinusIcon },
+  components: { ToolbarButton, BaseToolbar, PlusIcon, MinusIcon },
   setup(props, { emit }) {
     const computedId = nanoid();
     const localValue = computed({
