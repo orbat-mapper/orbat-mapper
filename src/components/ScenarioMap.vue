@@ -205,10 +205,13 @@ function useSelectInteraction(
       const selectedUnit = scenarioStore.getUnitById(selectedUnitId);
       bus.emit(selectedUnit);
       activeUnitStore.activeUnit = selectedUnit || null;
+      selectUnit(selectedUnit);
+    } else {
+      historyLayer.getSource().clear();
     }
   }
 
-  function selectUnit(unit: Unit) {
+  function selectUnit(unit: Unit | null | undefined) {
     const historyLayerSource = historyLayer.getSource();
     historyLayerSource.clear(true);
     if (!unit) {
