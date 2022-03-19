@@ -10,33 +10,32 @@
         <RulerIcon class="h-5 w-5" :class="enableMeasurements && 'text-gray-900'" />
       </ToolbarButton>
       <template v-if="enableMeasurements">
-        <ToolbarButton>
+        <ToolbarButton
+          @click="measurementType = 'LineString'"
+          :active="measurementType === 'LineString'"
+        >
           <VectorPolyline
-            @click="measurementType = 'LineString'"
             class="h-5 w-5"
             :class="measurementType === 'LineString' && 'text-gray-900'"
           />
         </ToolbarButton>
-        <ToolbarButton>
+        <ToolbarButton
+          @click="measurementType = 'Polygon'"
+          :active="measurementType === 'Polygon'"
+        >
           <VectorPolygon
-            @click="measurementType = 'Polygon'"
             class="h-5 w-5"
             :class="measurementType === 'Polygon' && 'text-gray-900'"
           />
         </ToolbarButton>
-        <ToolbarButton title="Clear previous measurements">
-          <SelectionMultiple
-            @click="clearPrevious = !clearPrevious"
-            class="h-5 w-5"
-            :class="!clearPrevious && 'text-gray-900'"
-          />
+        <ToolbarButton
+          title="Clear previous measurements"
+          @click="clearPrevious = !clearPrevious"
+        >
+          <SelectionMultiple class="h-5 w-5" :class="!clearPrevious && 'text-gray-900'" />
         </ToolbarButton>
-        <ToolbarButton title="Show segment lengths">
-          <MapMarkerPath
-            @click="showSegments = !showSegments"
-            class="h-5 w-5"
-            :class="showSegments && 'text-gray-900'"
-          />
+        <ToolbarButton title="Show segment lengths" @click="showSegments = !showSegments">
+          <MapMarkerPath class="h-5 w-5" :class="showSegments && 'text-gray-900'" />
         </ToolbarButton>
         <ToolbarButton end @click="clear()">
           <TrashIcon class="h-5 w-5" />
