@@ -14,28 +14,27 @@
           @click="measurementType = 'LineString'"
           :active="measurementType === 'LineString'"
         >
-          <VectorPolyline
-            class="h-5 w-5"
-            :class="measurementType === 'LineString' && 'text-gray-900'"
-          />
+          <VectorPolyline class="h-5 w-5" />
         </ToolbarButton>
         <ToolbarButton
           @click="measurementType = 'Polygon'"
           :active="measurementType === 'Polygon'"
         >
-          <VectorPolygon
-            class="h-5 w-5"
-            :class="measurementType === 'Polygon' && 'text-gray-900'"
-          />
+          <VectorPolygon class="h-5 w-5" />
         </ToolbarButton>
         <ToolbarButton
           title="Clear previous measurements"
           @click="clearPrevious = !clearPrevious"
+          :active="!clearPrevious"
         >
-          <SelectionMultiple class="h-5 w-5" :class="!clearPrevious && 'text-gray-900'" />
+          <SelectionMultiple class="h-5 w-5" />
         </ToolbarButton>
-        <ToolbarButton title="Show segment lengths" @click="showSegments = !showSegments">
-          <MapMarkerPath class="h-5 w-5" :class="showSegments && 'text-gray-900'" />
+        <ToolbarButton
+          title="Show segment lengths"
+          @click="showSegments = !showSegments"
+          :active="showSegments"
+        >
+          <MapMarkerPath class="h-5 w-5" />
         </ToolbarButton>
         <ToolbarButton end @click="clear()">
           <TrashIcon class="h-5 w-5" />
