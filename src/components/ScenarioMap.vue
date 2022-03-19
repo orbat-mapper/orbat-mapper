@@ -8,6 +8,14 @@
       @keyup.p="onItemPan"
     />
     <MeasurementToolbar v-if="mapRef" class="absolute left-3 bottom-4" :ol-map="mapRef" />
+    <div v-if="mapRef" class="absolute left-3 bottom-16">
+      <BaseToolbar>
+        <ToolbarButton start end @click="toggleModify">
+          <PencilOff v-if="modifyEnabled" class="h-5 w-5" aria-hidden="true" />
+          <PencilIcon v-else class="h-5 w-5" aria-hidden="true" />
+        </ToolbarButton>
+      </BaseToolbar>
+    </div>
   </div>
 </template>
 
@@ -50,18 +58,29 @@ import { useEventBus, useToggle } from "@vueuse/core";
 import { mapUnitClick } from "./eventKeys";
 import { ObjectEvent } from "ol/Object";
 import IconButton from "./IconButton.vue";
-import { Ruler as RulerMeasure, TapeMeasure } from "mdue";
+import {
+  Pencil as PencilIcon,
+  PencilOff,
+  Ruler as RulerMeasure,
+  TapeMeasure,
+} from "mdue";
 import MeasurementToolbar from "./MeasurementToolbar.vue";
+import BaseToolbar from "./BaseToolbar.vue";
+import ToolbarButton from "./ToolbarButton.vue";
 
 export default defineComponent({
   name: "ScenarioMap",
   components: {
+    ToolbarButton,
+    BaseToolbar,
     MeasurementToolbar,
     IconButton,
     MapContainer,
     GlobalEvents,
     TapeMeasure,
     RulerMeasure,
+    PencilIcon,
+    PencilOff,
   },
   setup() {
     const mapRef = shallowRef<OLMap>();
@@ -75,6 +94,7 @@ export default defineComponent({
     const uiStore = useUiStore();
     const settingsStore = useSettingsStore();
     const [measure, toggleMeasure] = useToggle(false);
+    const [modifyEnabled, toggleModify] = useToggle(true);
     const onMapReady = (olMap: OLMap) => {
       mapRef.value = olMap;
       const unitLayerGroup = new LayerGroup({
@@ -105,7 +125,7 @@ export default defineComponent({
       );
       olMap.addInteraction(selectInteraction);
 
-      const { modifyInteraction } = useModifyInteraction(olMap, unitLayer);
+      const { modifyInteraction } = useModifyInteraction(olMap, unitLayer, modifyEnabled);
       unitLayerGroup.on("change:visible", toggleModifyInteraction);
       olMap.addInteraction(modifyInteraction);
 
@@ -118,7 +138,7 @@ export default defineComponent({
 
       function toggleModifyInteraction(event: ObjectEvent) {
         const isUnitLayerVisible = !event.oldValue;
-        modifyInteraction.setActive(isUnitLayerVisible);
+        modifyInteraction.setActive(isUnitLayerVisible && modifyEnabled.value);
       }
     };
 
@@ -177,6 +197,8 @@ export default defineComponent({
       measure,
       toggleMeasure,
       mapRef,
+      modifyEnabled,
+      toggleModify,
     };
   },
 });
@@ -280,7 +302,8 @@ function createHistoryFeature(unit: Unit): Feature<LineString> {
 
 function useModifyInteraction(
   mapRef: OLMap,
-  unitLayer: VectorLayer<VectorSource<Point>>
+  unitLayer: VectorLayer<VectorSource<Point>>,
+  enabled: Ref<boolean>
 ) {
   const scenarioStore = useScenarioStore();
   const activeUnitStore = useActiveUnitStore();
@@ -311,6 +334,14 @@ function useModifyInteraction(
   overlaySource.on(["addfeature", "removefeature"], function (evt: ModifyEvent) {
     mapRef.getTargetElement().style.cursor = evt.type === "addfeature" ? "pointer" : "";
   });
+
+  watch(
+    enabled,
+    (v) => {
+      modifyInteraction.setActive(v);
+    },
+    { immediate: true }
+  );
   return { modifyInteraction };
 }
 </script>
