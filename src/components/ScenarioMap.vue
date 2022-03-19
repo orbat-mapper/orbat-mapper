@@ -20,25 +20,15 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineComponent,
-  markRaw,
-  nextTick,
-  Ref,
-  shallowRef,
-  watch,
-} from "vue";
+import { computed, defineComponent, markRaw, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { GlobalEvents } from "vue-global-events";
-import { fromLonLat, toLonLat } from "ol/proj";
-import { useActiveUnitStore, useDragStore } from "../stores/dragStore";
-import { DragOperations } from "../types/constants";
-import { createHistoryLayer, createUnitFeatureAt } from "../geo/layers";
+import { useActiveUnitStore } from "../stores/dragStore";
+import { createHistoryLayer } from "../geo/layers";
 import VectorLayer from "ol/layer/Vector";
 import { Collection, Feature } from "ol";
-import { Modify, Select } from "ol/interaction";
+import { Select } from "ol/interaction";
 import { clearStyleCache, createSelectedUnitStyleFromFeature } from "../geo/styles";
 import { SelectEvent } from "ol/interaction/Select";
 import { click } from "ol/events/condition";
@@ -47,12 +37,10 @@ import { useScenarioStore } from "../stores/scenarioStore";
 import { Unit } from "../types/models";
 import { useGeoStore } from "../stores/geoStore";
 import LayerGroup from "ol/layer/Group";
-import { ModifyEvent } from "ol/interaction/Modify";
 import GeometryLayout from "ol/geom/GeometryLayout";
-import VectorSource from "ol/source/Vector";
 import { inputEventFilter } from "./helpers";
 import { useUiStore } from "../stores/uiStore";
-import { useUnitLayer } from "../composables/geomap";
+import { useDrop, useModifyInteraction, useUnitLayer } from "../composables/geomap";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useEventBus, useToggle } from "@vueuse/core";
 import { mapUnitClick } from "./eventKeys";
@@ -165,14 +153,6 @@ export default defineComponent({
       drawUnits();
     });
 
-    // watch(
-    //   () => scenarioStore.currentTime,
-    //   () => {
-    //     drawUnits();
-    //     drawHistory();
-    //   }
-    // );
-
     const { onDrop } = useDrop(
       //@ts-ignore
       mapRef,
@@ -202,34 +182,6 @@ export default defineComponent({
     };
   },
 });
-
-function useDrop(mapRef: Ref<OLMap>, unitLayer: Ref<VectorLayer<any>>) {
-  const dragStore = useDragStore();
-  const scenarioStore = useScenarioStore();
-
-  const onDrop = (ev: DragEvent) => {
-    ev.preventDefault();
-    if (
-      ev.dataTransfer &&
-      ev.dataTransfer.getData("text") === DragOperations.OrbatDrag &&
-      dragStore.draggedUnit
-    ) {
-      const dropPosition = toLonLat(mapRef.value.getEventCoordinate(ev));
-      const unitSource = unitLayer.value.getSource();
-      const existingUnitFeature = unitSource.getFeatureById(dragStore.draggedUnit.id);
-
-      scenarioStore.addUnitPosition(dragStore.draggedUnit, dropPosition);
-
-      if (existingUnitFeature) {
-        existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
-      } else {
-        unitSource.addFeature(createUnitFeatureAt(dropPosition, dragStore.draggedUnit));
-      }
-    }
-  };
-
-  return { onDrop };
-}
 
 function useSelectInteraction(
   layers: VectorLayer<any>[],
@@ -298,50 +250,5 @@ function createHistoryFeature(unit: Unit): Feature<LineString> {
   const t = new LineString(geometry, GeometryLayout.XYM);
   t.transform("EPSG:4326", "EPSG:3857");
   return new Feature(t);
-}
-
-function useModifyInteraction(
-  mapRef: OLMap,
-  unitLayer: VectorLayer<VectorSource<Point>>,
-  enabled: Ref<boolean>
-) {
-  const scenarioStore = useScenarioStore();
-  const activeUnitStore = useActiveUnitStore();
-  const modifyInteraction = new Modify({
-    hitDetection: unitLayer,
-    source: unitLayer.getSource(),
-  });
-
-  modifyInteraction.on(["modifystart", "modifyend"], (evt) => {
-    mapRef.getTargetElement().style.cursor =
-      evt.type === "modifystart" ? "grabbing" : "pointer";
-    if (evt.type === "modifyend") {
-      const unitFeature = (evt as ModifyEvent).features.pop() as Feature<Point>;
-      if (unitFeature) {
-        const movedUnit = scenarioStore.getUnitById(unitFeature.getId() ?? "");
-        if (!movedUnit) return;
-        const newCoordinate = unitFeature.getGeometry()?.getCoordinates();
-        if (newCoordinate)
-          scenarioStore.addUnitPosition(movedUnit, toLonLat(newCoordinate));
-        if (activeUnitStore.activeUnit && activeUnitStore.activeUnit === movedUnit) {
-          activeUnitStore.clearActiveUnit();
-          nextTick(() => activeUnitStore.setActiveUnit(movedUnit));
-        }
-      }
-    }
-  });
-  const overlaySource = modifyInteraction.getOverlay().getSource();
-  overlaySource.on(["addfeature", "removefeature"], function (evt: ModifyEvent) {
-    mapRef.getTargetElement().style.cursor = evt.type === "addfeature" ? "pointer" : "";
-  });
-
-  watch(
-    enabled,
-    (v) => {
-      modifyInteraction.setActive(v);
-    },
-    { immediate: true }
-  );
-  return { modifyInteraction };
 }
 </script>
