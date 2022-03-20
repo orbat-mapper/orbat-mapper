@@ -5,6 +5,8 @@
     :class="[
       start && 'rounded-l-md',
       end && 'rounded-r-md',
+      top && 'rounded-t-md',
+      bottom && 'rounded-b-md',
       active ? 'bg-gray-100 text-gray-900' : 'bg-white text-gray-500',
     ]"
   >
@@ -18,6 +20,8 @@ export default {
   props: {
     start: { type: Boolean, default: false },
     end: { type: Boolean, default: false },
+    top: { type: Boolean, default: false },
+    bottom: { type: Boolean, default: false },
     active: { type: Boolean, default: false },
   },
 };
