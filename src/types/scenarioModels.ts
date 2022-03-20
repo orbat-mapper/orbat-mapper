@@ -84,6 +84,12 @@ export interface ScenarioEvent {
   id?: string;
 }
 
+export interface ScenarioLayer {
+  id: string | number;
+  name: string;
+  description?: string;
+}
+
 export interface ScenarioInfo {
   name: string;
   description?: string;
@@ -99,6 +105,7 @@ export interface Scenario extends ScenarioInfo {
   version: string;
   sides: Side[];
   events: ScenarioEvent[];
+  layers: ScenarioLayer[];
 }
 
 export interface UnitMapping {

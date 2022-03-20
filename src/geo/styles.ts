@@ -1,6 +1,6 @@
 import Feature, { FeatureLike } from "ol/Feature";
 import { Fill, Icon, RegularShape, Stroke, Style, Text } from "ol/style";
-import { Unit } from "../types/models";
+import { Unit } from "../types/scenarioModels";
 import { symbolGenerator } from "../symbology/milsymbwrapper";
 import { Symbol as MilSymbol } from "milsymbol";
 import IconAnchorUnits from "ol/style/IconAnchorUnits";

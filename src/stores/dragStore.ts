@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-import { Unit } from "../types/models";
+import { Unit } from "../types/scenarioModels";
 import { useScenarioStore } from "./scenarioStore";
 
 export const useDragStore = defineStore("drag", {

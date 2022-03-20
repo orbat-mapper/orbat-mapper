@@ -49,7 +49,7 @@ import OrbatTree from "./OrbatTree.vue";
 import { defineComponent, onBeforeUpdate, PropType, ref } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
-import { Side } from "../types/models";
+import { Side } from "../types/scenarioModels";
 import { SideActions } from "../types/constants";
 import { useScenarioStore } from "../stores/scenarioStore";
 import InputGroup from "./InputGroup.vue";

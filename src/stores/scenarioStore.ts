@@ -8,7 +8,7 @@ import {
   State,
   Unit,
   UnitOrSide,
-} from "../types/models";
+} from "../types/scenarioModels";
 import { nanoid } from "nanoid";
 import { SID_INDEX } from "../symbology/sidc";
 import { setCharAt } from "../components/helpers";
@@ -162,6 +162,7 @@ export const useScenarioStore = defineStore("scenario", {
         description: "Empty scenario description",
         sides: [],
         events: [],
+        layers: [],
         startTime: new Date().getTime(),
         timeZone,
       };

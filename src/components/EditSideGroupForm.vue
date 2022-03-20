@@ -16,7 +16,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import InputGroup from "./InputGroup.vue";
 import PlainButton from "./PlainButton.vue";
 import PrimaryButton from "./PrimaryButton.vue";
-import { SideGroup } from "../types/models";
+import { SideGroup } from "../types/scenarioModels";
 import { useScenarioStore } from "../stores/scenarioStore";
 import InlineFormPanel from "./InlineFormPanel.vue";
 import { useFocusOnMount } from "./helpers";

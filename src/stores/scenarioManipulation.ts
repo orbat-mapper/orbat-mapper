@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { SideGroup, Unit } from "../types/models";
+import { SideGroup, Unit } from "../types/scenarioModels";
 import { useScenarioStore, walkSubUnits } from "./scenarioStore";
 import { SID_INDEX, Sidc } from "../symbology/sidc";
 import { nanoid } from "nanoid";

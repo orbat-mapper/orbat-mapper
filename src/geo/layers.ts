@@ -1,7 +1,7 @@
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { Coordinate } from "ol/coordinate";
-import { Unit } from "../types/models";
+import { Unit } from "../types/scenarioModels";
 import { Feature } from "ol";
 import { LineString, Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";

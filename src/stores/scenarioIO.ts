@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { until, useFetch, useLocalStorage } from "@vueuse/core";
 import { useScenarioStore } from "./scenarioStore";
-import { ObjectMapping, Scenario } from "../types/models";
+import { ObjectMapping, Scenario } from "../types/scenarioModels";
 import * as FileSaver from "file-saver";
 
 export const useScenarioIO = defineStore("scenarioIO", {

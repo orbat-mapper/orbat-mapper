@@ -145,7 +145,7 @@ import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import { ScenarioActions } from "../../types/constants";
 import AppNotifications from "../../components/AppNotifications.vue";
 import { useNotifications } from "../../composables/notifications";
-import { Scenario } from "../../types/models";
+import { Scenario } from "../../types/scenarioModels";
 import { useGeoStore } from "../../stores/geoStore";
 import CloseButton from "../../components/CloseButton.vue";
 import { mapUnitClick, orbatUnitClick } from "../../components/eventKeys";

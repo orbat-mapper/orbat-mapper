@@ -61,7 +61,7 @@ import {
   ref,
   watch,
 } from "vue";
-import { Unit } from "../types/models";
+import { Unit } from "../types/scenarioModels";
 import InputGroup from "./InputGroup.vue";
 import PrimaryButton from "./PrimaryButton.vue";
 import PlainButton from "./PlainButton.vue";

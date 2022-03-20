@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from "vue";
-import { State, Unit } from "../types/models";
+import { State, Unit } from "../types/scenarioModels";
 import { formatDateString, formatPosition } from "../geo/utils";
 import { CrosshairsGps } from "mdue";
 import { XIcon } from "@heroicons/vue/solid";

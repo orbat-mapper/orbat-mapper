@@ -1,4 +1,4 @@
-import { OrbatItemData, Unit } from "../types/models";
+import { OrbatItemData, Unit } from "../types/scenarioModels";
 import { UnitActions } from "../types/constants";
 import { useScenarioStore } from "../stores/scenarioStore";
 import { useGeoStore } from "../stores/geoStore";

@@ -29,7 +29,7 @@
 import { defineComponent, ref } from "vue";
 import { useVModel } from "@vueuse/core";
 import SimpleModal from "../../components/SimpleModal.vue";
-import { Scenario } from "../../types/models";
+import { Scenario } from "../../types/scenarioModels";
 
 export default defineComponent({
   name: "LoadScenarioDialog",

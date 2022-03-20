@@ -54,7 +54,7 @@ import OrbatTree from "./OrbatTree.vue";
 import { onBeforeUpdate, PropType, ref } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
-import { SideGroup } from "../types/models";
+import { SideGroup } from "../types/scenarioModels";
 import { DragOperations, SideActions } from "../types/constants";
 import { useDragStore } from "../stores/dragStore";
 import InputGroup from "./InputGroup.vue";

@@ -18,7 +18,7 @@ import {
 import { Sidc } from "../symbology/sidc";
 import { SymbolSetMap } from "../symbology/types";
 import { useSettingsStore } from "../stores/settingsStore";
-import { SymbologyStandard } from "../types/models";
+import { SymbologyStandard } from "../types/scenarioModels";
 import Fuse from "fuse.js";
 
 const symbology = shallowRef<SymbolSetMap | undefined>();

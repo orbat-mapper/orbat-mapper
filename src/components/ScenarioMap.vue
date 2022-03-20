@@ -34,7 +34,7 @@ import { SelectEvent } from "ol/interaction/Select";
 import { click } from "ol/events/condition";
 import { LineString, Point } from "ol/geom";
 import { useScenarioStore } from "../stores/scenarioStore";
-import { Unit } from "../types/models";
+import { Unit } from "../types/scenarioModels";
 import { useGeoStore } from "../stores/geoStore";
 import LayerGroup from "ol/layer/Group";
 import GeometryLayout from "ol/geom/GeometryLayout";

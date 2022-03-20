@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { SymbologyStandard } from "../types/models";
+import { SymbologyStandard } from "../types/scenarioModels";
 
 export const useSettingsStore = defineStore("settings", {
   state() {

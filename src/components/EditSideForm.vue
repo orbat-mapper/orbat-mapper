@@ -21,7 +21,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import InputGroup from "./InputGroup.vue";
 import PlainButton from "./PlainButton.vue";
 import PrimaryButton from "./PrimaryButton.vue";
-import { Side } from "../types/models";
+import { Side } from "../types/scenarioModels";
 import { useScenarioStore } from "../stores/scenarioStore";
 import InlineFormPanel from "./InlineFormPanel.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";

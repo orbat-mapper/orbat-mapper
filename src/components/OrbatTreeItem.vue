@@ -78,7 +78,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, ref } from "vue";
 import MilSymbol from "./MilSymbol.vue";
-import { OrbatItemData, Unit } from "../types/models";
+import { OrbatItemData, Unit } from "../types/scenarioModels";
 //@ts-ignore
 import { ChevronRightIcon } from "@heroicons/vue/solid";
 import { useActiveUnitStore, useDragStore } from "../stores/dragStore";

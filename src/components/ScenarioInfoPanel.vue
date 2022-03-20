@@ -58,7 +58,7 @@ import { renderMarkdown } from "../composables/formatting";
 import { useScenarioIO } from "../stores/scenarioIO";
 import { toRefs, useToggle } from "@vueuse/core";
 import PlainButton from "./PlainButton.vue";
-import { ScenarioInfo } from "../types/models";
+import { ScenarioInfo } from "../types/scenarioModels";
 import InputGroup from "./InputGroup.vue";
 import dayjs from "dayjs";
 import RadioGroupList from "./RadioGroupList.vue";

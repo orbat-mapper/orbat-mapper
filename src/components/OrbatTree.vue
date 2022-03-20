@@ -13,7 +13,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType } from "vue";
 import OrbatTreeItem from "./OrbatTreeItem.vue";
-import { OrbatItemData, Unit } from "../types/models";
+import { OrbatItemData, Unit } from "../types/scenarioModels";
 import { useExpandTree } from "./helpers";
 import { UnitActions } from "../types/constants";
 

@@ -5,6 +5,7 @@
   "symbologyStandard": "app6",
   "timeZone": "Europe/Oslo",
   "description": "The Battles of Narvik were fought from 9 April to 8 June 1940 as a naval battle in the Ofotfjord and as a land battle in the mountains surrounding the north Norwegian town of Narvik as part of the Norwegian Campaign of the Second World War. ",
+  "startTime": -938221200000,
   "sides": [
     {
       "id": "gjNibxLX9gQrtAiX9fv_F",
@@ -109,5 +110,5 @@
     }
   ],
   "events": [],
-  "startTime": -938221200000
+  "layers": []
 }
