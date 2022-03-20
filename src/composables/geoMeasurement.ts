@@ -18,7 +18,7 @@ const style = new Style({
     color: "rgba(255, 255, 255, 0.2)",
   }),
   stroke: new Stroke({
-    color: "rgba(0, 0, 0, 0.5)",
+    color: "rgb(0, 0, 0)",
     lineDash: [10, 10],
     width: 2,
   }),
@@ -30,6 +30,13 @@ const style = new Style({
     fill: new Fill({
       color: "rgba(255, 255, 255, 0.2)",
     }),
+  }),
+});
+
+const lineBackgroundStyle = new Style({
+  stroke: new Stroke({
+    color: "rgba(255, 255, 255, 0.7)",
+    width: 5,
   }),
 });
 
@@ -175,7 +182,7 @@ function measurementInteractionWrapper(
     drawType?: "Polygon" | "LineString",
     tip?: string
   ) {
-    const styles = [style];
+    const styles = [lineBackgroundStyle, style];
     const geometry = feature.getGeometry();
     if (!geometry) return styles;
     const type = geometry.getType();
