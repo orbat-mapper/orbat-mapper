@@ -5,6 +5,9 @@ import VectorSource from "ol/source/Vector";
 import { onUnmounted, ref } from "vue";
 import Draw from "ol/interaction/Draw";
 import Snap from "ol/interaction/Snap";
+import Select from "ol/interaction/Select";
+import Layer from "ol/layer/Layer";
+import { Modify } from "ol/interaction";
 
 export type DrawType = "Point" | "LineString" | "Polygon";
 
@@ -18,19 +21,34 @@ export function useEditingInteraction(
   const { lineDraw, polygonDraw, pointDraw } = initializeDrawInteractions(source);
 
   const currentDrawType = ref<DrawType | null>(null);
+  const isModifying = ref(false);
 
   olMap.addInteraction(lineDraw);
   olMap.addInteraction(polygonDraw);
   olMap.addInteraction(pointDraw);
-
-  const snap = new Snap({
-    source,
-  });
+  const snap = new Snap({ source });
   olMap.addInteraction(snap);
 
+  const select = new Select({
+    layers: [layerRef.value as Layer<any, any>],
+    hitTolerance: 20,
+  });
+  olMap.addInteraction(select);
+  select.setActive(false);
+
+  const modify = new Modify({ features: select.getFeatures() });
+  olMap.addInteraction(modify);
+  modify.setActive(false);
+
   function startDrawing(drawType: DrawType) {
+    select.setActive(false);
+    modify.setActive(false);
+    isModifying.value = false;
+    select.getFeatures().clear();
+
     currentDrawInteraction?.setActive(false);
     currentDrawInteraction = null;
+
     if (drawType === "LineString") currentDrawInteraction = lineDraw;
     if (drawType === "Polygon") currentDrawInteraction = polygonDraw;
     if (drawType === "Point") currentDrawInteraction = pointDraw;
@@ -43,13 +61,23 @@ export function useEditingInteraction(
     });
   }
 
+  function startModify() {
+    currentDrawInteraction?.setActive(false);
+    currentDrawType.value = null;
+    select.setActive(true);
+    modify.setActive(true);
+    isModifying.value = true;
+  }
+
   onUnmounted(() => {
     olMap.removeInteraction(snap);
     olMap.removeInteraction(lineDraw);
     olMap.removeInteraction(polygonDraw);
+    olMap.removeInteraction(select);
+    olMap.removeInteraction(modify);
   });
 
-  return { startDrawing, currentDrawType };
+  return { startDrawing, currentDrawType, startModify, isModifying };
 }
 
 function initializeDrawInteractions(source: VectorSource<any>) {

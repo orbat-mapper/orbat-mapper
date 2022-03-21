@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { MapMarker, VectorLine, VectorTriangle } from "mdue";
+import {
+  MapMarker,
+  VectorLine,
+  VectorTriangle,
+  SquareEditOutline,
+  TrashCanOutline,
+} from "mdue";
 import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";
 import { toRef } from "vue";
@@ -9,14 +15,14 @@ import { useEditingInteraction } from "../composables/geoEditing";
 
 const props = defineProps<{ olMap: OLMap; layer: VectorLayer<any> }>();
 
-const { startDrawing, currentDrawType } = useEditingInteraction(
+const { startDrawing, currentDrawType, startModify, isModifying } = useEditingInteraction(
   props.olMap,
   toRef(props, "layer")
 );
 </script>
 
 <template>
-  <div>
+  <div class="flex flex-col">
     <VerticalToolbar>
       <ToolbarButton
         top
@@ -26,7 +32,6 @@ const { startDrawing, currentDrawType } = useEditingInteraction(
       >
         <MapMarker class="h-5 w-5" />
       </ToolbarButton>
-
       <ToolbarButton
         title="Draw polyline"
         @click="startDrawing('LineString')"
@@ -41,6 +46,20 @@ const { startDrawing, currentDrawType } = useEditingInteraction(
         :active="currentDrawType === 'Polygon'"
       >
         <VectorTriangle class="h-5 w-5" />
+      </ToolbarButton>
+    </VerticalToolbar>
+
+    <VerticalToolbar class="mt-2">
+      <ToolbarButton
+        top
+        title="Modify feature"
+        @click="startModify()"
+        :active="isModifying"
+      >
+        <SquareEditOutline class="h-5 w-5" />
+      </ToolbarButton>
+      <ToolbarButton bottom title="Delete feature" disabled>
+        <TrashCanOutline class="h-5 w-5" />
       </ToolbarButton>
     </VerticalToolbar>
   </div>
