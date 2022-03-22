@@ -28,6 +28,11 @@
         <TabItem label="Scenario info">
           <ScenarioInfoPanel />
         </TabItem>
+        <TabItem label="Layers" v-slot="{ isActive }">
+          <keep-alive>
+            <ScenarioLayers v-if="isActive" />
+          </keep-alive>
+        </TabItem>
         <template #extra>
           <DotsMenu
             :items="scenarioMenuItems"
@@ -176,6 +181,7 @@ export default defineComponent({
     SearchIcon,
     KeyboardIcon,
     LoadScenarioDialog: defineAsyncComponent(() => import("./LoadScenarioDialog.vue")),
+    ScenarioLayers: defineAsyncComponent(() => import("./ScenarioLayers.vue")),
     XIcon,
   },
 

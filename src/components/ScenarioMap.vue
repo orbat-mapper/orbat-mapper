@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, markRaw, shallowRef, watch } from "vue";
+import { computed, defineComponent, markRaw, onUnmounted, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { GlobalEvents } from "vue-global-events";
@@ -166,6 +166,10 @@ export default defineComponent({
     const onItemPan = () => {
       geoStore.panToUnit(activeUnitStore.activeUnit);
     };
+
+    onUnmounted(() => {
+      geoStore.olMap = undefined;
+    });
 
     return {
       onMapReady,

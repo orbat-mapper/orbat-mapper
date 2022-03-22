@@ -120,6 +120,7 @@ export default defineComponent({
 
     onUnmounted(() => {
       olMap.un("moveend", moveendHandler);
+      olMap.setTarget(undefined);
     });
 
     return { mapRoot };
