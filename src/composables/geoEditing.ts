@@ -36,15 +36,13 @@ export function useEditingInteraction(
   olMap.addInteraction(select);
   select.setActive(false);
 
-  const modify = new Modify({ features: select.getFeatures() });
+  const modify = new Modify({ features: select.getFeatures(), pixelTolerance: 20 });
   olMap.addInteraction(modify);
   modify.setActive(false);
 
   function startDrawing(drawType: DrawType) {
     select.setActive(false);
-    modify.setActive(false);
-    isModifying.value = false;
-    select.getFeatures().clear();
+    stopModify();
 
     currentDrawInteraction?.setActive(false);
     currentDrawInteraction = null;
@@ -61,7 +59,17 @@ export function useEditingInteraction(
     });
   }
 
+  function stopModify() {
+    modify.setActive(false);
+    isModifying.value = false;
+    select.getFeatures().clear();
+  }
+
   function startModify() {
+    if (isModifying.value) {
+      stopModify();
+      return;
+    }
     currentDrawInteraction?.setActive(false);
     currentDrawType.value = null;
     select.setActive(true);
