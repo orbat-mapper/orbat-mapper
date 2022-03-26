@@ -15,7 +15,7 @@
 
     <div class="mt-4 overflow-hidden rounded-md bg-white shadow">
       <ul class="divide-y divide-gray-200">
-        <li v-for="layer in vectorLayers" :key="layer.title" class="px-6 py-4">
+        <li v-for="layer in vectorLayers" :key="layer.id" class="px-6 py-4">
           <div class="flex items-center justify-between">
             <p class="flex-auto truncate text-sm">{{ layer.title }}</p>
             <div class="ml-2 flex flex-shrink-0 items-center">
@@ -61,8 +61,10 @@ import { AnyTileLayer, AnyVectorLayer, PointVectorLayer } from "../geo/types";
 import TileSource from "ol/source/Tile";
 import { toLonLat } from "ol/proj";
 import OpacityInput from "./OpacityInput.vue";
+import { getUid } from "ol";
 
 export interface LayerInfo<T extends BaseLayer = BaseLayer> {
+  id: string;
   title: string;
   visible: boolean;
   zIndex: number;
@@ -95,16 +97,10 @@ export default defineComponent({
       };
     });
 
-    onMounted(() => {
-      if (geoStore.olMap) updateLayers();
-    });
-
     watch(
       () => geoStore.olMap,
-      () => {
-        if (!geoStore.olMap) return;
-        updateLayers();
-      }
+      (v) => v && updateLayers(),
+      { immediate: true }
     );
 
     watch(activeBaseLayer, (layerInfo) => {
@@ -117,11 +113,12 @@ export default defineComponent({
       });
     });
 
-    const updateLayers = () => {
+    function updateLayers() {
       if (!geoStore.olMap) return;
 
-      const mapLayer = (layer: BaseLayer): LayerInfo<BaseLayer> => {
+      const transformLayer = (layer: BaseLayer): LayerInfo<BaseLayer> => {
         const l: LayerInfo<BaseLayer> = {
+          id: getUid(layer),
           title: layer.get("title"),
           visible: layer.getVisible(),
           zIndex: layer.getZIndex(),
@@ -134,15 +131,17 @@ export default defineComponent({
             .getLayers()
             .getArray()
             .filter((l) => l.get("title"))
-            .map(mapLayer);
+            .map(transformLayer);
         }
         return l;
       };
+
       const mappedLayers = geoStore.olMap
         .getLayers()
         .getArray()
         .filter((l) => l.get("title"))
-        .map(mapLayer);
+        .map(transformLayer);
+
       tileLayers.value = mappedLayers.filter(
         ({ layer }) => layer instanceof TileLayer
       ) as LayerInfo<AnyTileLayer>[];
@@ -154,7 +153,7 @@ export default defineComponent({
       vectorLayers.value = mappedLayers.filter(
         ({ layer }) => layer instanceof VectorLayer || layer instanceof LayerGroup
       ) as LayerInfo<AnyVectorLayer>[];
-    };
+    }
 
     const toggleLayer = (l: LayerInfo<any>) => {
       l.visible = !l.visible;

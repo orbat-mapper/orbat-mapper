@@ -11,9 +11,6 @@ import { MeasurementTypes } from "../composables/geoMeasurement";
 export const useGeoStore = defineStore("geo", {
   state: () => ({
     olMap: null as OLMap | null | undefined,
-    layers: null as unknown as Collection<
-      BaseLayer | BaseTileLayer<any, any> | BaseVectorLayer<any, any>
-    >,
   }),
   actions: {
     zoomToUnit(unit?: Unit | null, duration = 900) {

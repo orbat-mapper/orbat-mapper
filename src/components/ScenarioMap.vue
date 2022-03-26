@@ -102,7 +102,6 @@ export default defineComponent({
       unitLayerGroup.on("change:visible", toggleModifyInteraction);
       olMap.addInteraction(modifyInteraction);
 
-      geoStore.layers = markRaw(olMap.getLayers());
       drawUnits();
       drawHistory();
       const extent = unitLayer.getSource().getExtent();
