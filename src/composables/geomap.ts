@@ -1,7 +1,7 @@
 import { createUnitFeatureAt, createUnitLayer } from "../geo/layers";
 import { useScenarioStore } from "../stores/scenarioStore";
 import Fade from "ol-ext/featureanimation/Fade";
-import { nextTick, Ref, watch } from "vue";
+import { nextTick, Ref, unref, watch } from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import { useActiveUnitStore, useDragStore } from "../stores/dragStore";
@@ -12,6 +12,7 @@ import VectorSource from "ol/source/Vector";
 import { Modify } from "ol/interaction";
 import { ModifyEvent } from "ol/interaction/Modify";
 import { Feature } from "ol";
+import { MaybeRef } from "@vueuse/core";
 
 export function useUnitLayer() {
   const scenarioStore = useScenarioStore();
@@ -39,19 +40,25 @@ export function useUnitLayer() {
   return { unitLayer, drawUnits, animateUnits };
 }
 
-export function useDrop(mapRef: Ref<OLMap>, unitLayer: Ref<VectorLayer<any>>) {
+export function useDrop(
+  mapRef: MaybeRef<OLMap | null | undefined>,
+  unitLayer: MaybeRef<VectorLayer<any>>
+) {
   const dragStore = useDragStore();
   const scenarioStore = useScenarioStore();
 
   const onDrop = (ev: DragEvent) => {
+    const olMap = unref(mapRef);
+
     ev.preventDefault();
     if (
+      olMap &&
       ev.dataTransfer &&
       ev.dataTransfer.getData("text") === DragOperations.OrbatDrag &&
       dragStore.draggedUnit
     ) {
-      const dropPosition = toLonLat(mapRef.value.getEventCoordinate(ev));
-      const unitSource = unitLayer.value.getSource();
+      const dropPosition = toLonLat(olMap.getEventCoordinate(ev));
+      const unitSource = unref(unitLayer).getSource();
       const existingUnitFeature = unitSource.getFeatureById(dragStore.draggedUnit.id);
 
       scenarioStore.addUnitPosition(dragStore.draggedUnit, dropPosition);

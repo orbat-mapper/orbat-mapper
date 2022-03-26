@@ -89,16 +89,6 @@ export default defineComponent({
       unitLayerGroup.set("title", "Units");
       olMap.addLayer(unitLayerGroup);
 
-      // olMap.on("click", (evt: MapBrowserEvent) => {
-      //   const feature = evt.map.forEachFeatureAtPixel(
-      //     evt.pixel,
-      //     (feature) => feature
-      //   );
-      //   if (feature) {
-      //     console.log(feature!.getGeometry()!.getClosestPoint(evt.pixel));
-      //   }
-      // });
-
       geoStore.olMap = markRaw(olMap);
 
       const { selectInteraction } = useSelectInteraction(
@@ -148,11 +138,7 @@ export default defineComponent({
       drawUnits();
     });
 
-    const { onDrop } = useDrop(
-      //@ts-ignore
-      mapRef,
-      computed(() => unitLayer)
-    );
+    const { onDrop } = useDrop(mapRef, unitLayer);
 
     const onItemZoom = () => {
       geoStore.zoomToUnit(activeUnitStore.activeUnit);
