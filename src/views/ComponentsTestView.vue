@@ -9,7 +9,7 @@
       <main class="mt-4">
         <div class="mx-auto max-w-7xl space-y-4 sm:px-6 lg:px-8">
           <section class="space-y-4">
-            <h3>Basic button</h3>
+            <h3 class="border-b text-lg">Basic button</h3>
             <p class="flex items-start space-x-2">
               <BaseButton small>Basic small</BaseButton>
               <BaseButton>Basic default</BaseButton>
@@ -30,7 +30,7 @@
             </p>
           </section>
           <section class="space-y-4">
-            <h3>Input groups</h3>
+            <h3 class="border-b text-lg">Input groups</h3>
             <div class="grid grid-cols-3 gap-4">
               <InputGroup type="number" label="Label" description="Description" />
               <NumberInputGroup
@@ -59,41 +59,50 @@
               <p>{{ v2 }}</p>
             </div>
           </section>
+
+          <section>
+            <h3 class="border-b text-lg">Accordion panels</h3>
+
+            <div class="grid grid-cols-3 gap-6">
+              <AccordionPanel label="Accordion title"> Accordion content </AccordionPanel>
+              <AccordionPanel label="Accordion with right slot">
+                <template #right>
+                  <Earth class="h-5 w-5" />
+                </template>
+                Accordion content
+              </AccordionPanel>
+              <AccordionPanel>
+                <template #label
+                  ><span class="text-red-900">Custom label slot</span></template
+                >
+
+                Accordion content
+              </AccordionPanel>
+            </div>
+          </section>
         </div>
       </main>
     </div>
   </div>
 </template>
 
-<script>
-import PrimaryButton from "../components/PrimaryButton.vue";
+<script setup>
 import BaseButton from "../components/BaseButton.vue";
 import FormCard from "../components/FormCard.vue";
 import { ref } from "vue";
+import { Earth } from "mdue";
 import NumberInputGroup from "../components/NumberInputGroup.vue";
 import InputGroup from "../components/InputGroup.vue";
 import SimpleCombo from "../components/SimpleCombo.vue";
+import AccordionPanel from "../components/AccordionPanel.vue";
 
-export default {
-  components: {
-    SimpleCombo,
-    InputGroup,
-    NumberInputGroup,
-    FormCard,
-    BaseButton,
-    PrimaryButton,
-  },
-  setup() {
-    const num = ref(1);
-    const v = ref("Test");
-    const v2 = ref(1);
-    const values = ["Hello", "Test", "Another"];
-    const items = [
-      { label: "Hello", value: 1 },
-      { label: "Test", value: 2 },
-      { label: "Another", value: 3 },
-    ];
-    return { num, v, values, items, v2 };
-  },
-};
+const num = ref(1);
+const v = ref("Test");
+const v2 = ref(1);
+const values = ["Hello", "Test", "Another"];
+const items = [
+  { label: "Hello", value: 1 },
+  { label: "Test", value: 2 },
+  { label: "Another", value: 3 },
+];
 </script>

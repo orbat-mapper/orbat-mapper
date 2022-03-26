@@ -8,6 +8,7 @@
           <slot name="label">{{ label }}</slot>
         </span>
         <span class="ml-6 flex items-center">
+          <slot name="right"></slot>
           <PlusSmIcon v-if="!open" class="h-5 w-5" aria-hidden="true" />
           <MinusSmIcon v-else class="h-5 w-5" aria-hidden="true" />
         </span>
