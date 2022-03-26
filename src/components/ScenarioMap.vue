@@ -11,8 +11,8 @@
     <div v-if="mapRef" class="absolute left-3 bottom-16">
       <BaseToolbar>
         <ToolbarButton start end @click="toggleModify">
-          <PencilOff v-if="modifyEnabled" class="h-5 w-5" aria-hidden="true" />
-          <PencilIcon v-else class="h-5 w-5" aria-hidden="true" />
+          <CursorDefault v-if="modifyEnabled" class="h-5 w-5" aria-hidden="true" />
+          <CursorMove v-else class="h-5 w-5" aria-hidden="true" />
         </ToolbarButton>
       </BaseToolbar>
     </div>
@@ -46,12 +46,7 @@ import { useEventBus, useToggle } from "@vueuse/core";
 import { mapUnitClick } from "./eventKeys";
 import { ObjectEvent } from "ol/Object";
 import IconButton from "./IconButton.vue";
-import {
-  Pencil as PencilIcon,
-  PencilOff,
-  Ruler as RulerMeasure,
-  TapeMeasure,
-} from "mdue";
+import { CursorDefault, CursorMove, Ruler as RulerMeasure, TapeMeasure } from "mdue";
 import MeasurementToolbar from "./MeasurementToolbar.vue";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
@@ -67,8 +62,8 @@ export default defineComponent({
     GlobalEvents,
     TapeMeasure,
     RulerMeasure,
-    PencilIcon,
-    PencilOff,
+    CursorMove,
+    CursorDefault,
   },
   setup() {
     const mapRef = shallowRef<OLMap>();
@@ -82,7 +77,7 @@ export default defineComponent({
     const uiStore = useUiStore();
     const settingsStore = useSettingsStore();
     const [measure, toggleMeasure] = useToggle(false);
-    const [modifyEnabled, toggleModify] = useToggle(true);
+    const [modifyEnabled, toggleModify] = useToggle(false);
     const onMapReady = (olMap: OLMap) => {
       mapRef.value = olMap;
       const unitLayerGroup = new LayerGroup({
