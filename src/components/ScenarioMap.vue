@@ -20,36 +20,36 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, markRaw, onUnmounted, shallowRef, watch } from "vue";
+import { defineComponent, markRaw, onUnmounted, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { GlobalEvents } from "vue-global-events";
 import { useActiveUnitStore } from "../stores/dragStore";
 import { createHistoryLayer } from "../geo/layers";
-import VectorLayer from "ol/layer/Vector";
 import { Collection, Feature } from "ol";
-import { Select } from "ol/interaction";
-import { clearStyleCache, createSelectedUnitStyleFromFeature } from "../geo/styles";
-import { SelectEvent } from "ol/interaction/Select";
-import { click } from "ol/events/condition";
-import { LineString, Point } from "ol/geom";
+import { clearStyleCache } from "../geo/styles";
+import { Point } from "ol/geom";
 import { useScenarioStore } from "../stores/scenarioStore";
-import { Unit } from "../types/scenarioModels";
 import { useGeoStore } from "../stores/geoStore";
 import LayerGroup from "ol/layer/Group";
-import GeometryLayout from "ol/geom/GeometryLayout";
 import { inputEventFilter } from "./helpers";
 import { useUiStore } from "../stores/uiStore";
-import { useDrop, useModifyInteraction, useUnitLayer } from "../composables/geomap";
+import {
+  createHistoryFeature,
+  useDrop,
+  useModifyInteraction,
+  useSelectInteraction,
+  useUnitLayer,
+} from "../composables/geomap";
 import { useSettingsStore } from "../stores/settingsStore";
-import { useEventBus, useToggle } from "@vueuse/core";
-import { mapUnitClick } from "./eventKeys";
+import { useToggle } from "@vueuse/core";
 import { ObjectEvent } from "ol/Object";
 import IconButton from "./IconButton.vue";
 import { CursorDefault, CursorMove, Ruler as RulerMeasure, TapeMeasure } from "mdue";
 import MeasurementToolbar from "./MeasurementToolbar.vue";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
+import { useOlEvent } from "../composables/openlayersHelpers";
 
 export default defineComponent({
   name: "ScenarioMap",
@@ -99,7 +99,7 @@ export default defineComponent({
       olMap.addInteraction(selectInteraction);
 
       const { modifyInteraction } = useModifyInteraction(olMap, unitLayer, modifyEnabled);
-      unitLayerGroup.on("change:visible", toggleModifyInteraction);
+      useOlEvent(unitLayerGroup.on("change:visible", toggleModifyInteraction));
       olMap.addInteraction(modifyInteraction);
 
       drawUnits();
@@ -166,76 +166,4 @@ export default defineComponent({
     };
   },
 });
-
-function useSelectInteraction(
-  layers: VectorLayer<any>[],
-  selectedFeatures: Collection<Feature<Point>>,
-  historyLayer: VectorLayer<any>
-) {
-  const bus = useEventBus(mapUnitClick);
-  const activeUnitStore = useActiveUnitStore();
-  const scenarioStore = useScenarioStore();
-  const selectInteraction = new Select({
-    layers,
-    style: createSelectedUnitStyleFromFeature,
-    condition: click,
-    features: selectedFeatures,
-  });
-  selectInteraction.on("select", onSelect);
-
-  function onSelect(evt: SelectEvent) {
-    const selectedUnitId = evt.selected.map((f) => f.getId())[0];
-    if (selectedUnitId) {
-      const selectedUnit = scenarioStore.getUnitById(selectedUnitId);
-      bus.emit(selectedUnit);
-      activeUnitStore.activeUnit = selectedUnit || null;
-      selectUnit(selectedUnit);
-    } else {
-      historyLayer.getSource().clear();
-    }
-  }
-
-  function selectUnit(unit: Unit | null | undefined) {
-    const historyLayerSource = historyLayer.getSource();
-    historyLayerSource.clear(true);
-    if (!unit) {
-      return;
-    }
-    const existingFeature = layers[0].getSource().getFeatureById(unit.id);
-    selectedFeatures.clear();
-    if (existingFeature) {
-      const historyFeature = createHistoryFeature(unit);
-      historyLayerSource.addFeature(historyFeature);
-      selectedFeatures.push(existingFeature);
-    }
-  }
-
-  watch(
-    () => activeUnitStore.activeUnit,
-    (unit: Unit | null) => {
-      if (unit) selectUnit(unit);
-      else selectedFeatures.clear();
-    }
-  );
-  watch(
-    () => scenarioStore.visibleUnits,
-    () => {
-      const activeUnit = activeUnitStore.activeUnit;
-      if (activeUnit) selectUnit(activeUnit);
-    }
-  );
-
-  return { selectInteraction };
-}
-
-function createHistoryFeature(unit: Unit): Feature<LineString> {
-  const state = [{ location: unit.location }, ...(unit.state || [])].filter(
-    (s) => s?.location
-  );
-  // @ts-ignore
-  const geometry = state.map((s) => [...s.location!, s.t]);
-  const t = new LineString(geometry, GeometryLayout.XYM);
-  t.transform("EPSG:4326", "EPSG:3857");
-  return new Feature(t);
-}
 </script>

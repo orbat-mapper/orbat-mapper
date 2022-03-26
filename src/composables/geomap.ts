@@ -7,12 +7,19 @@ import VectorLayer from "ol/layer/Vector";
 import { useActiveUnitStore, useDragStore } from "../stores/dragStore";
 import { DragOperations } from "../types/constants";
 import { fromLonLat, toLonLat } from "ol/proj";
-import { Point } from "ol/geom";
+import { LineString, Point } from "ol/geom";
 import VectorSource from "ol/source/Vector";
-import { Modify } from "ol/interaction";
+import { Modify, Select } from "ol/interaction";
 import { ModifyEvent } from "ol/interaction/Modify";
-import { Feature } from "ol";
-import { MaybeRef } from "@vueuse/core";
+import { Collection, Feature } from "ol";
+import { MaybeRef, useEventBus } from "@vueuse/core";
+import { mapUnitClick } from "../components/eventKeys";
+import { createSelectedUnitStyleFromFeature } from "../geo/styles";
+import { click } from "ol/events/condition";
+import { SelectEvent } from "ol/interaction/Select";
+import { Unit } from "../types/scenarioModels";
+import GeometryLayout from "ol/geom/GeometryLayout";
+import { useOlEvent } from "./openlayersHelpers";
 
 export function useUnitLayer() {
   const scenarioStore = useScenarioStore();
@@ -111,4 +118,76 @@ export function useModifyInteraction(
 
   watch(enabled, (v) => modifyInteraction.setActive(v), { immediate: true });
   return { modifyInteraction };
+}
+
+export function useSelectInteraction(
+  layers: VectorLayer<any>[],
+  selectedFeatures: Collection<Feature<Point>>,
+  historyLayer: VectorLayer<any>
+) {
+  const bus = useEventBus(mapUnitClick);
+  const activeUnitStore = useActiveUnitStore();
+  const scenarioStore = useScenarioStore();
+  const selectInteraction = new Select({
+    layers,
+    style: createSelectedUnitStyleFromFeature,
+    condition: click,
+    features: selectedFeatures,
+  });
+  useOlEvent(selectInteraction.on("select", onSelect));
+
+  function onSelect(evt: SelectEvent) {
+    const selectedUnitId = evt.selected.map((f) => f.getId())[0];
+    if (selectedUnitId) {
+      const selectedUnit = scenarioStore.getUnitById(selectedUnitId);
+      bus.emit(selectedUnit);
+      activeUnitStore.activeUnit = selectedUnit || null;
+      selectUnit(selectedUnit);
+    } else {
+      historyLayer.getSource().clear();
+    }
+  }
+
+  function selectUnit(unit: Unit | null | undefined) {
+    const historyLayerSource = historyLayer.getSource();
+    historyLayerSource.clear(true);
+    if (!unit) {
+      return;
+    }
+    const existingFeature = layers[0].getSource().getFeatureById(unit.id);
+    selectedFeatures.clear();
+    if (existingFeature) {
+      const historyFeature = createHistoryFeature(unit);
+      historyLayerSource.addFeature(historyFeature);
+      selectedFeatures.push(existingFeature);
+    }
+  }
+
+  watch(
+    () => activeUnitStore.activeUnit,
+    (unit: Unit | null) => {
+      if (unit) selectUnit(unit);
+      else selectedFeatures.clear();
+    }
+  );
+  watch(
+    () => scenarioStore.visibleUnits,
+    () => {
+      const activeUnit = activeUnitStore.activeUnit;
+      if (activeUnit) selectUnit(activeUnit);
+    }
+  );
+
+  return { selectInteraction };
+}
+
+export function createHistoryFeature(unit: Unit): Feature<LineString> {
+  const state = [{ location: unit.location }, ...(unit.state || [])].filter(
+    (s) => s?.location
+  );
+  // @ts-ignore
+  const geometry = state.map((s) => [...s.location!, s.t]);
+  const t = new LineString(geometry, GeometryLayout.XYM);
+  t.transform("EPSG:4326", "EPSG:3857");
+  return new Feature(t);
 }

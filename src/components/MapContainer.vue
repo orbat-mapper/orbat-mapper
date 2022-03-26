@@ -15,6 +15,7 @@ import { Coordinate } from "ol/coordinate";
 import { fromLonLat } from "ol/proj";
 import OSM from "ol/source/OSM";
 import XYZ from "ol/source/XYZ";
+import { useOlEvent } from "../composables/openlayersHelpers";
 
 function createBaseLayers() {
   const openStreetmapLayer = new TileLayer({
@@ -114,12 +115,11 @@ export default defineComponent({
           },
         }),
       });
-      olMap.on("moveend", moveendHandler);
+      useOlEvent(olMap.on("moveend", moveendHandler));
       emit("ready", markRaw(olMap));
     });
 
     onUnmounted(() => {
-      olMap.un("moveend", moveendHandler);
       olMap.setTarget(undefined);
     });
 
