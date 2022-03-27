@@ -62,6 +62,7 @@ import TileSource from "ol/source/Tile";
 import { toLonLat } from "ol/proj";
 import OpacityInput from "./OpacityInput.vue";
 import { getUid } from "ol";
+import { LayerType } from "../composables/scenarioLayers";
 
 export interface LayerInfo<T extends BaseLayer = BaseLayer> {
   id: string;
@@ -72,6 +73,7 @@ export interface LayerInfo<T extends BaseLayer = BaseLayer> {
   layer: T;
   subLayers?: LayerInfo<T>[];
   description?: string;
+  layerType?: LayerType;
 }
 
 export default defineComponent({
@@ -120,6 +122,7 @@ export default defineComponent({
         const l: LayerInfo<BaseLayer> = {
           id: getUid(layer),
           title: layer.get("title"),
+          layerType: layer.get("layerType"),
           visible: layer.getVisible(),
           zIndex: layer.getZIndex(),
           opacity: layer.getOpacity(),
@@ -137,8 +140,7 @@ export default defineComponent({
       };
 
       const mappedLayers = geoStore.olMap
-        .getLayers()
-        .getArray()
+        .getAllLayers()
         .filter((l) => l.get("title"))
         .map(transformLayer);
 

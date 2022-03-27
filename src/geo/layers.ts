@@ -8,6 +8,8 @@ import { fromLonLat } from "ol/proj";
 import { createHistoryStylesFromFeature, createUnitStyleFromFeature } from "./styles";
 import { PointVectorLayer } from "./types";
 import View from "ol/View";
+import { nanoid } from "nanoid";
+import { LayerType } from "../composables/scenarioLayers";
 
 export function createUnitLayer(): PointVectorLayer {
   return new VectorLayer({
@@ -15,6 +17,11 @@ export function createUnitLayer(): PointVectorLayer {
     style: createUnitStyleFromFeature,
     updateWhileInteracting: true,
     updateWhileAnimating: true,
+    properties: {
+      id: nanoid(),
+      title: "Unit layer",
+      layerType: LayerType.units,
+    },
   });
 }
 
