@@ -26,8 +26,6 @@ export function useEditingInteraction(
   olMap.addInteraction(lineDraw);
   olMap.addInteraction(polygonDraw);
   olMap.addInteraction(pointDraw);
-  const snap = new Snap({ source });
-  olMap.addInteraction(snap);
 
   const select = new Select({
     layers: [layerRef.value as Layer<any, any>],
@@ -39,6 +37,9 @@ export function useEditingInteraction(
   const modify = new Modify({ features: select.getFeatures(), pixelTolerance: 20 });
   olMap.addInteraction(modify);
   modify.setActive(false);
+
+  const snap = new Snap({ source });
+  olMap.addInteraction(snap);
 
   function startDrawing(drawType: DrawType) {
     select.setActive(false);
