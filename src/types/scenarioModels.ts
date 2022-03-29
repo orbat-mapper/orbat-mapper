@@ -1,4 +1,4 @@
-export type Position = number[];
+import { Position, ScenarioLayer } from "./scenarioGeoModels";
 
 export interface State {
   t: number;
@@ -82,12 +82,6 @@ export interface ScenarioEvent {
   startTime: number;
   uiActions: UIAction[];
   id?: string;
-}
-
-export interface ScenarioLayer {
-  id: string | number;
-  name: string;
-  description?: string;
 }
 
 export interface ScenarioInfo {

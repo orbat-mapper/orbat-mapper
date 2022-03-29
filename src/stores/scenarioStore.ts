@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 
 import {
-  Position,
   Scenario,
   Side,
   SideGroup,
@@ -15,6 +14,7 @@ import { setCharAt } from "../components/helpers";
 import { SID } from "../symbology/values";
 import dayjs from "dayjs";
 import { useSettingsStore } from "./settingsStore";
+import { Position } from "../types/scenarioGeoModels";
 
 /**
  * Visit every unit and apply callback
@@ -429,6 +429,10 @@ export const useScenarioStore = defineStore("scenario", {
     timeZone(state) {
       const zone = state.scenario.timeZone;
       return zone;
+    },
+
+    scenarioLayers(state) {
+      return state.scenario.layers;
     },
   },
 });
