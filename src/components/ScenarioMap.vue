@@ -50,6 +50,7 @@ import MeasurementToolbar from "./MeasurementToolbar.vue";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
 import { useOlEvent } from "../composables/openlayersHelpers";
+import { useScenarioLayers } from "../composables/scenarioLayers";
 
 export default defineComponent({
   name: "ScenarioMap",
@@ -80,6 +81,8 @@ export default defineComponent({
     const [modifyEnabled, toggleModify] = useToggle(false);
     const onMapReady = (olMap: OLMap) => {
       mapRef.value = olMap;
+      geoStore.olMap = markRaw(olMap);
+
       const unitLayerGroup = new LayerGroup({
         layers: [unitLayer],
       });
@@ -88,8 +91,6 @@ export default defineComponent({
       olMap.addLayer(historyLayer);
       unitLayerGroup.set("title", "Units");
       olMap.addLayer(unitLayerGroup);
-
-      geoStore.olMap = markRaw(olMap);
 
       const { selectInteraction } = useSelectInteraction(
         [unitLayer],
@@ -104,6 +105,9 @@ export default defineComponent({
 
       drawUnits();
       drawHistory();
+
+      const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
+      loadScenarioLayers();
       const extent = unitLayer.getSource().getExtent();
       if (extent && !unitLayer.getSource().isEmpty())
         olMap.getView().fit(extent, { padding: [10, 10, 10, 10] });
@@ -112,6 +116,9 @@ export default defineComponent({
         const isUnitLayerVisible = !event.oldValue;
         modifyInteraction.setActive(isUnitLayerVisible && modifyEnabled.value);
       }
+
+      const layerCollection = olMap.getLayers();
+      useOlEvent(layerCollection.on(["add", "remove"], (event) => {}));
     };
 
     const drawHistory = () => {
