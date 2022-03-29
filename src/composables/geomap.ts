@@ -25,19 +25,19 @@ export function useUnitLayer() {
   const scenarioStore = useScenarioStore();
   const unitLayer = createUnitLayer();
   const drawUnits = () => {
-    unitLayer.getSource().clear();
+    unitLayer.getSource()?.clear();
     const units = scenarioStore.everyVisibleUnits.map((unit) => {
       return createUnitFeatureAt(unit._state!.location!, unit);
     });
-    unitLayer.getSource().addFeatures(units);
+    unitLayer.getSource()?.addFeatures(units);
   };
 
   const animateUnits = () => {
-    unitLayer.getSource().clear();
+    unitLayer.getSource()?.clear();
     const units = scenarioStore.everyVisibleUnits.map((unit) => {
       return createUnitFeatureAt(unit._state!.location!, unit);
     });
-    unitLayer.getSource().addFeatures(units);
+    unitLayer.getSource()?.addFeatures(units);
     units.forEach((f) =>
       //@ts-ignore
       unitLayer.animateFeature(f, new Fade({ duration: 1000 }))
@@ -90,7 +90,7 @@ export function useModifyInteraction(
   const activeUnitStore = useActiveUnitStore();
   const modifyInteraction = new Modify({
     hitDetection: unitLayer,
-    source: unitLayer.getSource(),
+    source: unitLayer.getSource()!,
   });
 
   modifyInteraction.on(["modifystart", "modifyend"], (evt) => {

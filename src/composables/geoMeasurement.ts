@@ -193,7 +193,7 @@ function measurementInteractionWrapper(
       if (type === "Polygon") {
         point = (geometry as Polygon).getInteriorPoint();
         label = formatArea(geometry);
-        line = new LineString(geometry.getCoordinates()[0]);
+        line = new LineString(geometry.getCoordinates()![0]);
       } else if (type === "LineString") {
         point = new Point(geometry.getLastCoordinate());
         label = formatLength(geometry);
@@ -291,13 +291,13 @@ function measurementInteractionWrapper(
   }
 
   function cleanup() {
-    vector.getSource().clear();
+    vector.getSource()?.clear();
     olMap.removeLayer(vector);
     olMap.removeInteraction(modifyInteraction);
   }
 
   function clear() {
-    vector.getSource().clear();
+    vector.getSource()?.clear();
   }
 
   olMap.addLayer(vector);

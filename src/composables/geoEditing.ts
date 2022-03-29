@@ -17,7 +17,7 @@ export function useEditingInteraction(
 ) {
   const layerRef = ref(vectorLayer);
   let currentDrawInteraction: Draw | null | undefined;
-  const source = layerRef.value.getSource();
+  const source = layerRef.value.getSource()!;
   const { lineDraw, polygonDraw, pointDraw } = initializeDrawInteractions(source);
 
   const currentDrawType = ref<DrawType | null>(null);

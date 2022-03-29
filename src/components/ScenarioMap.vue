@@ -108,8 +108,8 @@ export default defineComponent({
 
       const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
       loadScenarioLayers();
-      const extent = unitLayer.getSource().getExtent();
-      if (extent && !unitLayer.getSource().isEmpty())
+      const extent = unitLayer.getSource()?.getExtent();
+      if (extent && !unitLayer.getSource()?.isEmpty())
         olMap.getView().fit(extent, { padding: [10, 10, 10, 10] });
 
       function toggleModifyInteraction(event: ObjectEvent) {
@@ -122,7 +122,7 @@ export default defineComponent({
     };
 
     const drawHistory = () => {
-      const historyLayerSource = historyLayer.getSource();
+      const historyLayerSource = historyLayer.getSource()!;
       historyLayerSource.clear();
       const unit = activeUnitStore.activeUnit;
       if (!unit) return;
