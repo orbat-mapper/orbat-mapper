@@ -83,7 +83,7 @@
         </template>
       </TabView>
     </aside>
-    <ScenarioMap class="flex-1" />
+    <ScenarioMap class="flex-1" :key="scenarioStore.id" />
     <PlainButton class="fixed right-4 top-4 opacity-80" @click="isOpen = !isOpen">
       <MenuIcon class="h-5 w-5 opacity-100" />
     </PlainButton>
@@ -222,6 +222,7 @@ export default defineComponent({
     });
 
     if (route.query.load) {
+      scenarioStore.isLoaded = false;
       loadDemoScenario(route.query.load as string);
     } else {
       if (!scenarioStore.isLoaded) scenarioStore.loadEmptyScenario();

@@ -132,6 +132,7 @@ export const useScenarioStore = defineStore("scenario", {
     name: "test",
     isLoaded: false,
     currentTime: 0,
+    id: nanoid(),
   }),
   actions: {
     loadScenario(demoScenario: Scenario) {
@@ -146,6 +147,7 @@ export const useScenarioStore = defineStore("scenario", {
       this.currentTime = scenario.startTime || 0;
       this.setCurrentTime(this.currentTime);
       this.isLoaded = true;
+      this.id = nanoid();
     },
 
     loadEmptyScenario() {
