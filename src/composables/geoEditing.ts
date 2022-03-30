@@ -3,17 +3,19 @@ import { MaybeRef } from "@vueuse/core";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { onUnmounted, ref } from "vue";
-import Draw from "ol/interaction/Draw";
+import Draw, { DrawEvent } from "ol/interaction/Draw";
 import Snap from "ol/interaction/Snap";
 import Select from "ol/interaction/Select";
 import Layer from "ol/layer/Layer";
 import { Modify } from "ol/interaction";
+import { useOlEvent } from "./openlayersHelpers";
 
 export type DrawType = "Point" | "LineString" | "Polygon";
 
 export function useEditingInteraction(
   olMap: OLMap,
-  vectorLayer: MaybeRef<VectorLayer<VectorSource<any>>>
+  vectorLayer: MaybeRef<VectorLayer<VectorSource<any>>>,
+  emit?: (name: "add" | "modify", ...args: any[]) => void
 ) {
   const layerRef = ref(vectorLayer);
   let currentDrawInteraction: Draw | null | undefined;
@@ -35,6 +37,7 @@ export function useEditingInteraction(
   select.setActive(false);
 
   const modify = new Modify({ features: select.getFeatures(), pixelTolerance: 20 });
+  useOlEvent(modify.on("modifyend", (event) => emit && emit("modify", event.features)));
   olMap.addInteraction(modify);
   modify.setActive(false);
 
@@ -54,9 +57,10 @@ export function useEditingInteraction(
 
     currentDrawInteraction?.setActive(true);
     currentDrawType.value = drawType;
-    currentDrawInteraction?.once("drawend", () => {
+    currentDrawInteraction?.once("drawend", (e: DrawEvent) => {
       currentDrawInteraction?.setActive(false);
       currentDrawType.value = null;
+      emit && emit("add", e.feature);
     });
   }
 

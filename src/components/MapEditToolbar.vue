@@ -14,10 +14,12 @@ import VectorLayer from "ol/layer/Vector";
 import { useEditingInteraction } from "../composables/geoEditing";
 
 const props = defineProps<{ olMap: OLMap; layer: VectorLayer<any> }>();
+const emit = defineEmits(["add", "modify"]);
 
 const { startDrawing, currentDrawType, startModify, isModifying } = useEditingInteraction(
   props.olMap,
-  toRef(props, "layer")
+  toRef(props, "layer"),
+  emit
 );
 </script>
 
