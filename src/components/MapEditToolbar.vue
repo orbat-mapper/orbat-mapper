@@ -5,6 +5,7 @@ import {
   VectorTriangle,
   SquareEditOutline,
   TrashCanOutline,
+  VectorCircleVariant,
 } from "mdue";
 import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";
@@ -48,6 +49,14 @@ const { startDrawing, currentDrawType, startModify, isModifying } = useEditingIn
         :active="currentDrawType === 'Polygon'"
       >
         <VectorTriangle class="h-5 w-5" />
+      </ToolbarButton>
+      <ToolbarButton
+        bottom
+        title="Draw circle"
+        @click="startDrawing('Circle')"
+        :active="currentDrawType === 'Circle'"
+      >
+        <VectorCircleVariant class="h-5 w-5" />
       </ToolbarButton>
     </VerticalToolbar>
 

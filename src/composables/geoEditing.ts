@@ -10,7 +10,7 @@ import Layer from "ol/layer/Layer";
 import { Modify } from "ol/interaction";
 import { useOlEvent } from "./openlayersHelpers";
 
-export type DrawType = "Point" | "LineString" | "Polygon";
+export type DrawType = "Point" | "LineString" | "Polygon" | "Circle";
 
 export function useEditingInteraction(
   olMap: OLMap,
@@ -20,7 +20,8 @@ export function useEditingInteraction(
   const layerRef = ref(vectorLayer);
   let currentDrawInteraction: Draw | null | undefined;
   const source = layerRef.value.getSource()!;
-  const { lineDraw, polygonDraw, pointDraw } = initializeDrawInteractions(source);
+  const { lineDraw, polygonDraw, pointDraw, circleDraw } =
+    initializeDrawInteractions(source);
 
   const currentDrawType = ref<DrawType | null>(null);
   const isModifying = ref(false);
@@ -28,6 +29,7 @@ export function useEditingInteraction(
   olMap.addInteraction(lineDraw);
   olMap.addInteraction(polygonDraw);
   olMap.addInteraction(pointDraw);
+  olMap.addInteraction(circleDraw);
 
   const select = new Select({
     layers: [layerRef.value as Layer<any, any>],
@@ -54,6 +56,7 @@ export function useEditingInteraction(
     if (drawType === "LineString") currentDrawInteraction = lineDraw;
     if (drawType === "Polygon") currentDrawInteraction = polygonDraw;
     if (drawType === "Point") currentDrawInteraction = pointDraw;
+    if (drawType === "Circle") currentDrawInteraction = circleDraw;
 
     currentDrawInteraction?.setActive(true);
     currentDrawType.value = drawType;
@@ -84,8 +87,10 @@ export function useEditingInteraction(
 
   onUnmounted(() => {
     olMap.removeInteraction(snap);
+    olMap.removeInteraction(pointDraw);
     olMap.removeInteraction(lineDraw);
     olMap.removeInteraction(polygonDraw);
+    olMap.removeInteraction(circleDraw);
     olMap.removeInteraction(select);
     olMap.removeInteraction(modify);
   });
@@ -102,5 +107,9 @@ function initializeDrawInteractions(source: VectorSource<any>) {
 
   const pointDraw = new Draw({ type: "Point", source });
   pointDraw.setActive(false);
-  return { lineDraw, polygonDraw, pointDraw };
+
+  const circleDraw = new Draw({ type: "Circle", source });
+  circleDraw.setActive(false);
+
+  return { lineDraw, polygonDraw, pointDraw, circleDraw };
 }
