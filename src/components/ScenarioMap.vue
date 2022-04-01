@@ -87,6 +87,8 @@ export default defineComponent({
         layers: [unitLayer],
       });
 
+      const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
+
       historyLayer.set("title", "History");
       olMap.addLayer(historyLayer);
       unitLayerGroup.set("title", "Units");
@@ -106,7 +108,6 @@ export default defineComponent({
       drawUnits();
       drawHistory();
 
-      const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
       loadScenarioLayers();
       const extent = unitLayer.getSource()?.getExtent();
       if (extent && !unitLayer.getSource()?.isEmpty())

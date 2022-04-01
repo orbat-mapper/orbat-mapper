@@ -1,6 +1,7 @@
 import { EventsKey } from "ol/events";
 import { onUnmounted } from "vue";
 import { unByKey } from "ol/Observable";
+import Feature from "ol/Feature";
 
 /**
  * Unregister open layers event automatically on unmount
@@ -14,4 +15,8 @@ export function useOlEvent(eventKey: EventsKey | EventsKey[]): EventsKey | Event
     } else unByKey(eKey);
   });
   return eventKey;
+}
+
+export function isCircle(feature: Feature) {
+  return feature.getGeometry()?.getType() === "Circle";
 }
