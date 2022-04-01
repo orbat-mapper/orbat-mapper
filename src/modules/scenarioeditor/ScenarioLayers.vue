@@ -2,7 +2,7 @@
 import { computed, onActivated, onDeactivated, ref } from "vue";
 import BaseButton from "../../components/BaseButton.vue";
 import { useScenarioStore } from "../../stores/scenarioStore";
-import { ScenarioLayer } from "../../types/scenarioModels";
+import { ScenarioLayer } from "../../types/scenarioGeoModels";
 import OLMap from "ol/Map";
 import { useGeoStore } from "../../stores/geoStore";
 import MapEditToolbar from "../../components/MapEditToolbar.vue";
