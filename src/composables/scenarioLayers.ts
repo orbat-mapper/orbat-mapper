@@ -18,6 +18,12 @@ import LineString from "ol/geom/LineString";
 import { add as addCoordinate } from "ol/coordinate";
 import { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
+import { Style } from "ol/style";
+import {
+  createSimpleStyle,
+  defaultSimplestyleFill,
+  defaultSimplestyleStroke,
+} from "../geo/simplestyle";
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -42,23 +48,27 @@ function createScenarioLayerFeatures(
   });
   const olFeatures: Feature[] = [];
   features.forEach((feature) => {
+    const style = createSimpleStyle(feature.properties);
     if (feature.properties?.radius) {
       const newRadius = convertRadius(
         feature as GeoJsonFeature<Point>,
         feature.properties.radius
       );
-      const c = new Circle(
+      const circle = new Circle(
         fromLonLat(feature.geometry.coordinates as number[]),
         newRadius
       );
       let f = new Feature({
-        geometry: c,
+        geometry: circle,
         id: feature.id,
         ...feature.properties,
       });
+      f.setStyle(style);
       olFeatures.push(f);
     } else {
-      olFeatures.push(gjson.readFeature(feature));
+      const f = gjson.readFeature(feature);
+      f.setStyle(style);
+      olFeatures.push(f);
     }
   });
   return olFeatures;
@@ -84,6 +94,10 @@ export function useScenarioLayers(olMap: OLMap) {
             l.features,
             olMap.getView().getProjection()
           ),
+        }),
+        style: new Style({
+          stroke: defaultSimplestyleStroke,
+          fill: defaultSimplestyleFill,
         }),
         properties: { id: l.id, title: l.name, layerType: LayerType.overlay },
       });
