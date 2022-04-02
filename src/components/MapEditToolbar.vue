@@ -17,7 +17,7 @@ import { useEditingInteraction } from "../composables/geoEditing";
 const props = defineProps<{
   olMap: OLMap;
   layer: VectorLayer<any>;
-  addMultiple: boolean;
+  addMultiple?: boolean;
 }>();
 const emit = defineEmits(["add", "modify"]);
 
