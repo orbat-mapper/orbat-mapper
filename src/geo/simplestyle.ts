@@ -4,7 +4,7 @@
  * https://github.com/mapbox/simplestyle-spec/tree/master/1.1.0
  */
 
-import { Fill, Stroke, Style } from "ol/style";
+import { Circle, Fill, Stroke, Style } from "ol/style";
 import * as olColor from "ol/color";
 
 export interface SimpleStyleSpec {
@@ -41,5 +41,13 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
     fill = undefined;
   }
 
-  return new Style({ stroke, fill });
+  return new Style({
+    stroke,
+    fill,
+    image: new Circle({
+      fill: fill,
+      stroke: stroke,
+      radius: 5,
+    }),
+  });
 }

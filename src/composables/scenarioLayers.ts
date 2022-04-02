@@ -18,7 +18,7 @@ import LineString from "ol/geom/LineString";
 import { add as addCoordinate } from "ol/coordinate";
 import { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
-import { Style } from "ol/style";
+import { Style, Circle as CircleStyle } from "ol/style";
 import {
   createSimpleStyle,
   defaultSimplestyleFill,
@@ -98,6 +98,11 @@ export function useScenarioLayers(olMap: OLMap) {
         style: new Style({
           stroke: defaultSimplestyleStroke,
           fill: defaultSimplestyleFill,
+          image: new CircleStyle({
+            fill: defaultSimplestyleFill,
+            stroke: defaultSimplestyleStroke,
+            radius: 5,
+          }),
         }),
         properties: { id: l.id, title: l.name, layerType: LayerType.overlay },
       });
