@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {
   MapMarker,
-  VectorLine,
-  VectorTriangle,
   SquareEditOutline,
   TrashCanOutline,
   VectorCircleVariant,
+  VectorLine,
+  VectorTriangle,
 } from "mdue";
 import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";
@@ -14,13 +14,17 @@ import VerticalToolbar from "./VerticalToolbar.vue";
 import VectorLayer from "ol/layer/Vector";
 import { useEditingInteraction } from "../composables/geoEditing";
 
-const props = defineProps<{ olMap: OLMap; layer: VectorLayer<any> }>();
+const props = defineProps<{
+  olMap: OLMap;
+  layer: VectorLayer<any>;
+  addMultiple: boolean;
+}>();
 const emit = defineEmits(["add", "modify"]);
 
 const { startDrawing, currentDrawType, startModify, isModifying } = useEditingInteraction(
   props.olMap,
   toRef(props, "layer"),
-  emit
+  { emit, addMultiple: props.addMultiple }
 );
 </script>
 

@@ -27,6 +27,7 @@ const onMapReady = (olMap: OLMap) => {
       :ol-map="mapRef"
       class="absolute left-3 top-[150px]"
       :layer="vectorLayer"
+      add-multiple
     />
     <MeasurementToolbar v-if="mapRef" :ol-map="mapRef" class="absolute left-3 bottom-4" />
   </div>

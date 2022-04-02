@@ -2,7 +2,7 @@ import OLMap from "ol/Map";
 import { MaybeRef } from "@vueuse/core";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
-import { onUnmounted, ref } from "vue";
+import { onUnmounted, ref, unref } from "vue";
 import Draw, { DrawEvent } from "ol/interaction/Draw";
 import Snap from "ol/interaction/Snap";
 import Select from "ol/interaction/Select";
@@ -12,10 +12,15 @@ import { useOlEvent } from "./openlayersHelpers";
 
 export type DrawType = "Point" | "LineString" | "Polygon" | "Circle";
 
+export interface GeoEditingOptions {
+  addMultiple?: MaybeRef<boolean>;
+  emit?: (name: "add" | "modify", ...args: any[]) => void;
+}
+
 export function useEditingInteraction(
   olMap: OLMap,
   vectorLayer: MaybeRef<VectorLayer<VectorSource<any>>>,
-  emit?: (name: "add" | "modify", ...args: any[]) => void
+  options?: GeoEditingOptions
 ) {
   const layerRef = ref(vectorLayer);
   let currentDrawInteraction: Draw | null | undefined;
@@ -25,6 +30,8 @@ export function useEditingInteraction(
 
   const currentDrawType = ref<DrawType | null>(null);
   const isModifying = ref(false);
+  const emit = options?.emit;
+  const addMultiple = ref<MaybeRef<boolean>>(options?.addMultiple || false);
 
   olMap.addInteraction(lineDraw);
   olMap.addInteraction(polygonDraw);
@@ -37,8 +44,8 @@ export function useEditingInteraction(
   });
   olMap.addInteraction(select);
   select.setActive(false);
-
   const modify = new Modify({ features: select.getFeatures(), pixelTolerance: 20 });
+
   useOlEvent(modify.on("modifyend", (event) => emit && emit("modify", event.features)));
   olMap.addInteraction(modify);
   modify.setActive(false);
@@ -61,8 +68,10 @@ export function useEditingInteraction(
     currentDrawInteraction?.setActive(true);
     currentDrawType.value = drawType;
     currentDrawInteraction?.once("drawend", (e: DrawEvent) => {
-      currentDrawInteraction?.setActive(false);
-      currentDrawType.value = null;
+      if (!unref(addMultiple)) {
+        currentDrawInteraction?.setActive(false);
+        currentDrawType.value = null;
+      }
       emit && emit("add", e.feature);
     });
   }
