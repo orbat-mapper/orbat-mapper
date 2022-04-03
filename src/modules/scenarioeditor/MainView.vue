@@ -11,6 +11,7 @@
     <aside class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100">
       <TabView
         v-model:current-tab="currentScenarioTab"
+        :key="scenarioStore.id"
         extra-class="px-6"
         tab-class=""
         class="mt-3 min-h-0"
