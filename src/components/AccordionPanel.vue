@@ -2,15 +2,23 @@
   <Disclosure as="div" class="border-b border-gray-200 py-6" v-slot="{ open }">
     <h3 class="-my-3 flow-root">
       <DisclosureButton
-        class="flex w-full items-center justify-between py-3 text-sm text-gray-400 hover:text-gray-500"
+        class="group flex w-full items-center justify-between py-3 text-sm text-gray-400"
       >
         <span class="font-bold text-gray-900">
           <slot name="label">{{ label }}</slot>
         </span>
         <span class="ml-6 flex items-center">
           <slot name="right"></slot>
-          <PlusSmIcon v-if="!open" class="h-5 w-5" aria-hidden="true" />
-          <MinusSmIcon v-else class="h-5 w-5" aria-hidden="true" />
+          <PlusSmIcon
+            v-if="!open"
+            class="h-5 w-5 group-hover:text-gray-500"
+            aria-hidden="true"
+          />
+          <MinusSmIcon
+            v-else
+            class="h-5 w-5 group-hover:text-gray-500"
+            aria-hidden="true"
+          />
         </span>
       </DisclosureButton>
     </h3>

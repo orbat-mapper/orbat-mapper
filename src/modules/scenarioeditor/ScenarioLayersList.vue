@@ -18,7 +18,12 @@ const emit = defineEmits(["set-active"]);
       </span>
     </template>
     <template #right>
-      <button type="button" @click.stop.prevent="emit('set-active', layer)" @keydown.stop>
+      <button
+        type="button"
+        @click.stop.prevent="emit('set-active', layer)"
+        @keydown.stop
+        class="hover:text-gray-700"
+      >
         <PencilOff v-if="layer === activeLayer" class="h-5 w-5" />
         <PencilIcon v-else class="h-5 w-5" />
       </button>
