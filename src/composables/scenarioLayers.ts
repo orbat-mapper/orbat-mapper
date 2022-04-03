@@ -18,13 +18,15 @@ import LineString from "ol/geom/LineString";
 import { add as addCoordinate } from "ol/coordinate";
 import { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
-import { Style, Circle as CircleStyle } from "ol/style";
+import { Circle as CircleStyle, Style } from "ol/style";
 import {
   createSimpleStyle,
   defaultSimplestyleFill,
   defaultSimplestyleStroke,
 } from "../geo/simplestyle";
-import { computed } from "vue";
+import { computed, onUnmounted } from "vue";
+import { unByKey } from "ol/Observable";
+import { EventsKey } from "ol/events";
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -167,10 +169,11 @@ function convertOlFeatureToScenarioFeature(olFeature: Feature): ScenarioFeature 
 
 export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
   const scenarioStore = useScenarioStore();
+  const eventKeys = [] as EventsKey[];
 
   function addListener(l: VectorLayer<any>) {
     const source = l.getSource() as VectorSource<SimpleGeometry>;
-    useOlEvent(
+    eventKeys.push(
       source.on("addfeature", (event1) => {
         event1.feature?.setId(nanoid());
         const scenarioFeature = convertOlFeatureToScenarioFeature(event1.feature!);
@@ -189,4 +192,8 @@ export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
       addListener(addedLayer);
     })
   );
+
+  onUnmounted(() => {
+    eventKeys.forEach((key) => unByKey(key));
+  });
 }
