@@ -10,7 +10,7 @@ import { SimpleGeometry } from "ol/geom";
 import { GeoJSON } from "ol/format";
 import { point } from "@turf/helpers";
 import Feature from "ol/Feature";
-import { ScenarioFeature } from "../types/scenarioGeoModels";
+import { ScenarioFeature, ScenarioLayer } from "../types/scenarioGeoModels";
 import Circle from "ol/geom/Circle";
 import { fromLonLat, ProjectionLike, toLonLat } from "ol/proj";
 import { getLength } from "ol/sphere";
@@ -24,6 +24,7 @@ import {
   defaultSimplestyleFill,
   defaultSimplestyleStroke,
 } from "../geo/simplestyle";
+import { computed } from "vue";
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -74,6 +75,25 @@ function createScenarioLayerFeatures(
   return olFeatures;
 }
 
+function createVectorLayer(l: ScenarioLayer, projection: ProjectionLike = "EPSG:3837") {
+  const vectorLayer = new VectorLayer({
+    source: new VectorSource({
+      features: createScenarioLayerFeatures(l.features, projection),
+    }),
+    style: new Style({
+      stroke: defaultSimplestyleStroke,
+      fill: defaultSimplestyleFill,
+      image: new CircleStyle({
+        fill: defaultSimplestyleFill,
+        stroke: defaultSimplestyleStroke,
+        radius: 5,
+      }),
+    }),
+    properties: { id: l.id, title: l.name, layerType: LayerType.overlay },
+  });
+  return vectorLayer;
+}
+
 /**
  * Create and manage scenario layers
  *
@@ -84,43 +104,34 @@ export function useScenarioLayers(olMap: OLMap) {
   const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
     VectorLayer<any>
   >;
+  const projection = olMap.getView().getProjection();
 
   function initializeFromStore() {
     scenarioLayersOl.clear();
+
     scenarioStore.scenarioLayers.forEach((l) => {
-      const vectorLayer = new VectorLayer({
-        source: new VectorSource({
-          features: createScenarioLayerFeatures(
-            l.features,
-            olMap.getView().getProjection()
-          ),
-        }),
-        style: new Style({
-          stroke: defaultSimplestyleStroke,
-          fill: defaultSimplestyleFill,
-          image: new CircleStyle({
-            fill: defaultSimplestyleFill,
-            stroke: defaultSimplestyleStroke,
-            radius: 5,
-          }),
-        }),
-        properties: { id: l.id, title: l.name, layerType: LayerType.overlay },
-      });
+      const vectorLayer = createVectorLayer(l, projection);
       scenarioLayersOl.push(vectorLayer);
     });
   }
 
-  function getLayerById(id: string | number) {
+  function getOlLayerById(id: string | number) {
     return scenarioLayersOl
       .getArray()
       .find((e) => e.get("id") === id) as VectorLayer<any>;
   }
 
+  function addLayer(newLayer: ScenarioLayer) {
+    scenarioStore.scenarioLayers.push(newLayer);
+    scenarioLayersOl.push(createVectorLayer(newLayer, projection));
+  }
+
   return {
     scenarioLayersGroup,
     initializeFromStore,
-    scenarioLayers: scenarioStore.scenarioLayers,
-    getLayerById,
+    scenarioLayers: computed(() => scenarioStore.scenarioLayers),
+    getOlLayerById,
+    addLayer,
   };
 }
 

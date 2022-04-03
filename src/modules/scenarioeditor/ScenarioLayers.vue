@@ -1,28 +1,63 @@
 <script setup lang="ts">
-import { computed, onActivated, onDeactivated, ref } from "vue";
+import { onActivated, onDeactivated, ref, shallowRef } from "vue";
 import BaseButton from "../../components/BaseButton.vue";
 import { useScenarioStore } from "../../stores/scenarioStore";
-import { ScenarioLayer } from "../../types/scenarioGeoModels";
 import OLMap from "ol/Map";
 import { useGeoStore } from "../../stores/geoStore";
 import MapEditToolbar from "../../components/MapEditToolbar.vue";
 import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
+import { LayersPlus } from "mdue";
+
+import {
+  useScenarioLayers,
+  useScenarioLayerSync,
+} from "../../composables/scenarioLayers";
+import { ScenarioLayer } from "../../types/scenarioGeoModels";
+import Feature from "ol/Feature";
+import { Collection } from "ol";
+import ScenarioLayersList from "./ScenarioLayersList.vue";
+import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
+import { nanoid } from "nanoid";
 
 const isActive = ref(true);
 const scenarioStore = useScenarioStore();
 const mapRef = useGeoStore().olMap! as OLMap;
 
-const layers = computed(() => scenarioStore.scenario.layers);
+const {
+  scenarioLayersGroup,
+  scenarioLayers: layers,
+  getOlLayerById,
+  addLayer,
+} = useScenarioLayers(mapRef);
+
+useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 const activeLayer = ref<ScenarioLayer | null>(null);
+const olCurrentLayer = shallowRef<VectorLayer<any> | null>(null);
 
-const vectorLayer = new VectorLayer({
-  source: new VectorSource(),
-});
+function addNewLayer() {
+  addLayer({ id: nanoid(), name: `New layer ${layers.value.length + 1}`, features: [] });
+}
 
-mapRef.addLayer(vectorLayer);
+function setActiveLayer(layer: ScenarioLayer) {
+  const l = getOlLayerById(layer.id);
+  if (!l) return;
 
-function addLayer() {}
+  if (activeLayer.value?.id === layer.id) {
+    olCurrentLayer.value = null;
+    activeLayer.value = null;
+  } else {
+    olCurrentLayer.value = l;
+    activeLayer.value = layer;
+  }
+}
+
+function onFeatureAdded(feature: Feature) {
+  console.log("Added", feature);
+}
+
+function onModify(features: Collection<Feature>) {
+  console.log("DOne modify", features.item(0).getId());
+}
 
 onActivated(() => (isActive.value = true));
 onDeactivated(() => (isActive.value = false));
@@ -30,30 +65,35 @@ onDeactivated(() => (isActive.value = false));
 
 <template>
   <div class="px-6">
-    <h2 class="text-lg font-medium text-gray-900">Layers</h2>
-    <p class="mt-1 text-sm text-gray-500">Add some layers</p>
-
-    <p class="mt-4 text-center">
-      <BaseButton @click="addLayer" large primary>Add new layer</BaseButton>
-    </p>
-
-    <ul class="divide-y divide-gray-300">
-      <li v-for="layer in layers" :key="layer.id" class="block py-4">
-        <button type="button" @click="activeLayer = layer">
-          <span :class="[activeLayer?.id === layer.id && 'font-bold']">
-            {{ layer.name }}
-          </span>
-        </button>
-      </li>
-    </ul>
-    <BaseButton @click="activeLayer = null">Clear active layer</BaseButton>
+    <div v-if="layers.length === 0">
+      <CreateEmtpyDashed
+        v-if="layers.length === 0"
+        @click="addNewLayer()"
+        :icon="LayersPlus"
+      >
+        Add a new scenario layer
+      </CreateEmtpyDashed>
+    </div>
+    <div v-else>
+      <ScenarioLayersList
+        :layers="layers"
+        :active-layer="activeLayer"
+        @set-active="setActiveLayer"
+      />
+      <p class="my-5 text-right">
+        <BaseButton @click="addNewLayer" secondary>Add new layer</BaseButton>
+      </p>
+    </div>
   </div>
   <Teleport :to="mapRef.getTargetElement()">
     <MapEditToolbar
-      v-if="isActive"
+      v-if="isActive && activeLayer && olCurrentLayer"
+      :key="activeLayer.id"
       :ol-map="mapRef"
-      :layer="vectorLayer"
+      :layer="olCurrentLayer"
       class="absolute left-3 top-[150px]"
+      @modify="onModify"
+      add-multiple
     />
   </Teleport>
 </template>
