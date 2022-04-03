@@ -94,6 +94,15 @@ export function useEditingInteraction(
     isModifying.value = true;
   }
 
+  function cancel() {
+    select.setActive(false);
+    stopModify();
+
+    currentDrawInteraction?.setActive(false);
+    currentDrawInteraction = null;
+    currentDrawType.value = null;
+  }
+
   onUnmounted(() => {
     olMap.removeInteraction(snap);
     olMap.removeInteraction(pointDraw);
@@ -104,7 +113,7 @@ export function useEditingInteraction(
     olMap.removeInteraction(modify);
   });
 
-  return { startDrawing, currentDrawType, startModify, isModifying };
+  return { startDrawing, currentDrawType, startModify, isModifying, cancel };
 }
 
 function initializeDrawInteractions(source: VectorSource<any>) {

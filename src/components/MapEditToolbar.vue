@@ -13,6 +13,7 @@ import { toRef } from "vue";
 import VerticalToolbar from "./VerticalToolbar.vue";
 import VectorLayer from "ol/layer/Vector";
 import { useEditingInteraction } from "../composables/geoEditing";
+import { onKeyStroke } from "@vueuse/core";
 
 const props = defineProps<{
   olMap: OLMap;
@@ -21,11 +22,15 @@ const props = defineProps<{
 }>();
 const emit = defineEmits(["add", "modify"]);
 
-const { startDrawing, currentDrawType, startModify, isModifying } = useEditingInteraction(
-  props.olMap,
-  toRef(props, "layer"),
-  { emit, addMultiple: props.addMultiple }
-);
+const { startDrawing, currentDrawType, startModify, isModifying, cancel } =
+  useEditingInteraction(props.olMap, toRef(props, "layer"), {
+    emit,
+    addMultiple: props.addMultiple,
+  });
+
+onKeyStroke("Escape", (event) => {
+  cancel();
+});
 </script>
 
 <template>
