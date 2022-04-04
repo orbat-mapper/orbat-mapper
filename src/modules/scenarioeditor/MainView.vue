@@ -207,6 +207,7 @@ export default defineComponent({
     const geoStore = useGeoStore();
     const [showUnitPanel, toggleUnitPanel] = useToggle();
     const oobUnitClickBus = useEventBus(orbatUnitClick);
+
     oobUnitClickBus.on((unit) => {
       activeUnitStore.toggleActiveUnit(unit);
       if (!activeUnitStore.activeUnit) showUnitPanel.value = false;
@@ -218,6 +219,7 @@ export default defineComponent({
     useTitle(windowTitle);
 
     onUnmounted(() => {
+      oobUnitClickBus.reset();
       useTitle(originalTitle);
       activeUnitStore.clearActiveUnit();
     });
