@@ -12,7 +12,7 @@ import {
   useScenarioLayers,
   useScenarioLayerSync,
 } from "../../composables/scenarioLayers";
-import { ScenarioLayer } from "../../types/scenarioGeoModels";
+import { ScenarioLayer, ScenarioLayerInstance } from "../../types/scenarioGeoModels";
 import Feature from "ol/Feature";
 import { Collection } from "ol";
 import ScenarioLayersList from "./ScenarioLayersList.vue";
@@ -31,7 +31,7 @@ const {
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
-const activeLayer = ref<ScenarioLayer | null>(null);
+const activeLayer = ref<ScenarioLayerInstance | null>(null);
 const olCurrentLayer = shallowRef<VectorLayer<any> | null>(null);
 
 function addNewLayer() {

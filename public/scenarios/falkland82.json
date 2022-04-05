@@ -102,7 +102,7 @@
               "state": [
                 {
                   "t": 386467200000,
-                  "location": [-57.920222, -51.683998]
+                  "location": [-57.92047949206542, -51.685295093903676]
                 },
                 {
                   "t": 386632800000,
@@ -862,5 +862,29 @@
       "id": "L7sLKYe3xMRELH2bEA7Da"
     }
   ],
-  "layers": []
+  "layers": [
+    {
+      "id": "2pf1FK",
+      "name": "Features",
+      "features": [
+        {
+          "type": "Feature",
+          "id": "feature1",
+          "properties": {
+            "type": "Circle",
+            "name": "Maritime Exclusion Zone",
+            "radius": 370000,
+            "stroke": "#7F1D1D",
+            "stroke-width": 4,
+            "stroke-opacity": 0.4,
+            "fill": null
+          },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-59.436550429034575, -51.73994920324739]
+          }
+        }
+      ]
+    }
+  ]
 }

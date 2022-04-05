@@ -2,8 +2,19 @@ import { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
 import { SimpleStyleSpec } from "../geo/simplestyle";
 
 export type Position = number[];
+export type ScenarioFeatureType =
+  | "Point"
+  | "LineString"
+  | "Polygon"
+  | "Circle"
+  | "MultiPoint"
+  | "MultiLineString"
+  | "MultiPolygon"
+  | "GeometryCollection";
 
 export interface ScenarioFeatureProperties extends Partial<SimpleStyleSpec> {
+  type: ScenarioFeatureType;
+
   [name: string]: any;
 }
 
@@ -19,4 +30,8 @@ export interface ScenarioLayer {
   name: string;
   description?: string;
   features: ScenarioFeature[];
+}
+
+export interface ScenarioLayerInstance extends ScenarioLayer {
+  isVisible?: boolean;
 }

@@ -10,7 +10,11 @@ import { SimpleGeometry } from "ol/geom";
 import { GeoJSON } from "ol/format";
 import { point } from "@turf/helpers";
 import Feature from "ol/Feature";
-import { ScenarioFeature, ScenarioLayer } from "../types/scenarioGeoModels";
+import {
+  ScenarioFeature,
+  ScenarioFeatureProperties,
+  ScenarioLayer,
+} from "../types/scenarioGeoModels";
 import Circle from "ol/geom/Circle";
 import { fromLonLat, ProjectionLike, toLonLat } from "ol/proj";
 import { getLength } from "ol/sphere";
@@ -153,18 +157,20 @@ function convertOlFeatureToScenarioFeature(olFeature: Feature): ScenarioFeature 
     const { geometry, properties = {} } = olFeature.getProperties();
     const center = circle.getCenter();
     const r = addCoordinate([...center], [0, circle.getRadius()]);
-
+    properties.type = "Circle";
     properties.radius = getLength(new LineString([center, r]));
-    return point(toLonLat(circle.getCenter()), properties, {
+    return point<ScenarioFeatureProperties>(toLonLat(circle.getCenter()), properties, {
       id: olFeature.getId() || nanoid(),
     }) as ScenarioFeature;
   }
 
   const gj = new GeoJSON({ featureProjection: "EPSG:3857" }).writeFeatureObject(
     olFeature
-  ) as ScenarioFeature;
-  // @ts-ignore
-  return { id: nanoid(), ...gj, properties: gj.properties || {} };
+  );
+
+  const properties = { ...gj.properties, type: gj.geometry.type };
+  //@ts-ignore
+  return { id: nanoid(), geometry: gj.geometry, properties };
 }
 
 export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
