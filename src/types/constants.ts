@@ -33,6 +33,11 @@ export const enum ScenarioActions {
   LoadNew = "LoadNew",
 }
 
+export const enum ScenarioFeatureActions {
+  Delete = "Delete",
+  Zoom = "Zoom",
+}
+
 export interface SymbolValue {
   code: string;
   text: string;

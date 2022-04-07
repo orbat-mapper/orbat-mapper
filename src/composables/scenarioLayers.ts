@@ -5,7 +5,7 @@ import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
 import { nanoid } from "nanoid";
 import { Collection } from "ol";
-import { isCircle, useOlEvent } from "./openlayersHelpers";
+import { getFeatureAndLayerById, isCircle, useOlEvent } from "./openlayersHelpers";
 import { SimpleGeometry } from "ol/geom";
 import { GeoJSON } from "ol/format";
 import { point } from "@turf/helpers";
@@ -67,9 +67,9 @@ function createScenarioLayerFeatures(
       );
       let f = new Feature({
         geometry: circle,
-        id: feature.id,
         ...feature.properties,
       });
+      f.setId(feature.id);
       f.setStyle(style);
       olFeatures.push(f);
     } else {
@@ -132,17 +132,28 @@ export function useScenarioLayers(olMap: OLMap) {
     scenarioLayersOl.push(createVectorLayer(newLayer, projection));
   }
 
+  function zoomToFeature(feature: ScenarioFeature) {
+    const { feature: olFeature } =
+      getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
+    if (!olFeature) return;
+    olMap.getView().fit(olFeature.getGeometry(), { maxZoom: 17 });
+  }
+
+  function deleteFeature(feature: ScenarioFeature) {}
+
   return {
     scenarioLayersGroup,
     initializeFromStore,
     scenarioLayers: computed(() => scenarioStore.scenarioLayers),
     getOlLayerById,
     addLayer,
+    zoomToFeature,
   };
 }
 
 function getOrCreateLayerGroup(olMap: OLMap) {
   if (layersMap.has(olMap)) return layersMap.get(olMap)!;
+
   const layerGroup = new LayerGroup({
     properties: { id: nanoid(), title: "Scenario layers" },
   });
@@ -168,9 +179,11 @@ function convertOlFeatureToScenarioFeature(olFeature: Feature): ScenarioFeature 
     olFeature
   );
 
+  gj.properties = { ...gj.properties, type: gj.geometry.type };
+
   const properties = { ...gj.properties, type: gj.geometry.type };
   //@ts-ignore
-  return { id: nanoid(), geometry: gj.geometry, properties };
+  return gj;
 }
 
 export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {

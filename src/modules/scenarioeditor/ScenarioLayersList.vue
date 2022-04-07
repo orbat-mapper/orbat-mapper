@@ -5,13 +5,23 @@ import {
   ScenarioLayer,
   ScenarioLayerInstance,
 } from "../../types/scenarioGeoModels";
-import { Eye as EyeIcon, Pencil as PencilIcon, PencilOff } from "mdue";
-import { MapMarker, VectorCircleVariant, VectorLine, VectorTriangle } from "mdue";
+import {
+  Eye as EyeIcon,
+  MapMarker,
+  Pencil as PencilIcon,
+  PencilOff,
+  VectorCircleVariant,
+  VectorLine,
+  VectorTriangle,
+} from "mdue";
+import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
+import { ScenarioFeatureActions } from "../../types/constants";
 
 const props = defineProps<{
   layers: ScenarioLayerInstance[];
   activeLayer: ScenarioLayer | null;
 }>();
+const emit = defineEmits(["set-active", "feature-action"]);
 
 const typeMap: any = {
   Point: MapMarker,
@@ -20,7 +30,10 @@ const typeMap: any = {
   Circle: VectorCircleVariant,
 };
 
-const emit = defineEmits(["set-active"]);
+const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
+  { label: "Zoom to", action: ScenarioFeatureActions.Zoom },
+  // { label: "Delete", action: ScenarioFeatureActions.Delete },
+];
 
 function getIcon(feature: ScenarioFeature) {
   return typeMap[feature.properties.type];
@@ -53,13 +66,28 @@ function getIcon(feature: ScenarioFeature) {
     </template>
     <div class="mt-6 flow-root">
       <ul class="-mt-5 divide-y divide-gray-200 border-t border-b">
-        <li v-for="feature in layer.features" class="flex items-center py-4" :key="feature.id">
-          <component :is="getIcon(feature)" class="h-5 w-5 text-gray-400" />
-          <span class="ml-2 text-sm text-gray-700">
-            {{
-              feature.properties.name || feature.properties.type || feature.geometry.type
-            }}
-          </span>
+        <li
+          v-for="feature in layer.features"
+          class="group flex items-center justify-between py-4"
+          :key="feature.id"
+        >
+          <div class="flex items-center">
+            <component :is="getIcon(feature)" class="h-5 w-5 text-gray-400" />
+            <span class="ml-2 text-sm text-gray-700 group-hover:text-gray-900">
+              {{
+                feature.properties.name ||
+                feature.properties.type ||
+                feature.geometry.type
+              }}
+            </span>
+          </div>
+          <div class="relative">
+            <DotsMenu
+              :items="featureMenuItems"
+              @action="emit('feature-action', feature, $event)"
+              class="flex-shrink-0"
+            />
+          </div>
         </li>
       </ul>
     </div>

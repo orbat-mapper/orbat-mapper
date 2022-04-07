@@ -12,12 +12,17 @@ import {
   useScenarioLayers,
   useScenarioLayerSync,
 } from "../../composables/scenarioLayers";
-import { ScenarioLayer, ScenarioLayerInstance } from "../../types/scenarioGeoModels";
+import {
+  ScenarioFeature,
+  ScenarioLayer,
+  ScenarioLayerInstance,
+} from "../../types/scenarioGeoModels";
 import Feature from "ol/Feature";
 import { Collection } from "ol";
 import ScenarioLayersList from "./ScenarioLayersList.vue";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { nanoid } from "nanoid";
+import { ScenarioFeatureActions } from "../../types/constants";
 
 const isActive = ref(true);
 const scenarioStore = useScenarioStore();
@@ -28,6 +33,7 @@ const {
   scenarioLayers: layers,
   getOlLayerById,
   addLayer,
+  zoomToFeature,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -59,6 +65,10 @@ function onModify(features: Collection<Feature>) {
   console.log("DOne modify", features.item(0).getId());
 }
 
+function onFeatureAction(feature: ScenarioFeature, action: ScenarioFeatureActions) {
+  if (action === ScenarioFeatureActions.Zoom) zoomToFeature(feature);
+}
+
 onActivated(() => (isActive.value = true));
 onDeactivated(() => (isActive.value = false));
 </script>
@@ -79,6 +89,7 @@ onDeactivated(() => (isActive.value = false));
         :layers="layers"
         :active-layer="activeLayer"
         @set-active="setActiveLayer"
+        @feature-action="onFeatureAction"
       />
       <p class="my-5 text-right">
         <BaseButton @click="addNewLayer" secondary>Add new layer</BaseButton>
