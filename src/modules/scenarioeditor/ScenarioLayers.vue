@@ -25,7 +25,6 @@ import { nanoid } from "nanoid";
 import { ScenarioFeatureActions } from "../../types/constants";
 
 const isActive = ref(true);
-const scenarioStore = useScenarioStore();
 const mapRef = useGeoStore().olMap! as OLMap;
 
 const {
@@ -66,9 +65,13 @@ function onModify(features: Collection<Feature>) {
   console.log("DOne modify", features.item(0).getId());
 }
 
-function onFeatureAction(feature: ScenarioFeature, action: ScenarioFeatureActions) {
+function onFeatureAction(
+  feature: ScenarioFeature,
+  action: ScenarioFeatureActions,
+  layer: ScenarioLayer
+) {
   if (action === ScenarioFeatureActions.Zoom) zoomToFeature(feature);
-  if (action === ScenarioFeatureActions.Delete) deleteFeature(feature);
+  if (action === ScenarioFeatureActions.Delete) deleteFeature(feature, layer);
 }
 
 onActivated(() => (isActive.value = true));

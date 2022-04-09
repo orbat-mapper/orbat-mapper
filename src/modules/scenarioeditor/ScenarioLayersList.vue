@@ -84,7 +84,7 @@ function getIcon(feature: ScenarioFeature) {
           <div class="relative">
             <DotsMenu
               :items="featureMenuItems"
-              @action="emit('feature-action', feature, $event)"
+              @action="emit('feature-action', feature, $event, layer)"
               class="flex-shrink-0"
             />
           </div>

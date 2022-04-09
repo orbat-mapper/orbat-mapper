@@ -1,5 +1,4 @@
 import OLMap from "ol/Map";
-import { useScenarioStore } from "../stores/scenarioStore";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
@@ -31,6 +30,7 @@ import {
 import { computed, onUnmounted } from "vue";
 import { unByKey } from "ol/Observable";
 import { EventsKey } from "ol/events";
+import { useScenarioLayersStore } from "../stores/scenarioLayersStore";
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -105,7 +105,7 @@ function createVectorLayer(l: ScenarioLayer, projection: ProjectionLike = "EPSG:
  *
  */
 export function useScenarioLayers(olMap: OLMap) {
-  const scenarioStore = useScenarioStore();
+  const layersStore = useScenarioLayersStore();
   const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
   const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
     VectorLayer<any>
@@ -115,7 +115,7 @@ export function useScenarioLayers(olMap: OLMap) {
   function initializeFromStore() {
     scenarioLayersOl.clear();
 
-    scenarioStore.scenarioLayers.forEach((l) => {
+    layersStore.layers.forEach((l) => {
       const vectorLayer = createVectorLayer(l, projection);
       scenarioLayersOl.push(vectorLayer);
     });
@@ -128,7 +128,7 @@ export function useScenarioLayers(olMap: OLMap) {
   }
 
   function addLayer(newLayer: ScenarioLayer) {
-    scenarioStore.scenarioLayers.push(newLayer);
+    layersStore.add(newLayer);
     scenarioLayersOl.push(createVectorLayer(newLayer, projection));
   }
 
@@ -139,24 +139,18 @@ export function useScenarioLayers(olMap: OLMap) {
     olMap.getView().fit(olFeature.getGeometry(), { maxZoom: 17 });
   }
 
-  function deleteFeature(feature: ScenarioFeature) {
-    const {
-      feature: olFeature,
-      layer,
-      layerIndex,
-    } = getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
+  function deleteFeature(feature: ScenarioFeature, scenarioLayer: ScenarioLayer) {
+    const { feature: olFeature, layer } =
+      getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
     if (!(olFeature && layer)) return;
     layer.getSource()?.removeFeature(olFeature);
-
-    scenarioStore.scenarioLayers[layerIndex!].features = scenarioStore.scenarioLayers[
-      layerIndex!
-    ].features.filter((e) => e.id !== feature.id);
+    layersStore.removeFeature(feature, scenarioLayer);
   }
 
   return {
     scenarioLayersGroup,
     initializeFromStore,
-    scenarioLayers: computed(() => scenarioStore.scenarioLayers),
+    scenarioLayers: computed(() => layersStore.layers),
     getOlLayerById,
     addLayer,
     zoomToFeature,
@@ -200,7 +194,7 @@ function convertOlFeatureToScenarioFeature(olFeature: Feature): ScenarioFeature 
 }
 
 export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
-  const scenarioStore = useScenarioStore();
+  const layerStore = useScenarioLayersStore();
   const eventKeys = [] as EventsKey[];
 
   function addListener(l: VectorLayer<any>) {
@@ -209,8 +203,9 @@ export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
       source.on("addfeature", (event1) => {
         event1.feature?.setId(nanoid());
         const scenarioFeature = convertOlFeatureToScenarioFeature(event1.feature!);
-        const la = scenarioStore.scenarioLayers.find((e) => e.id === l.get("id"));
-        la?.features.push(scenarioFeature);
+
+        const la = layerStore.getLayerById(l.get("id"));
+        la && layerStore.addFeature(scenarioFeature, la);
       })
     );
   }
