@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 
 import {
+  INTERNAL_NAMES,
   Scenario,
   Side,
   SideGroup,
@@ -373,14 +374,7 @@ export const useScenarioStore = defineStore("scenario", {
       return JSON.stringify(
         this.scenario,
         (name, val) => {
-          if (name === "_state") {
-            return undefined;
-          }
-          if (name === "_pid") {
-            return undefined;
-          }
-          if (name === "_isOpen") return undefined;
-
+          if (INTERNAL_NAMES.includes(name)) return undefined;
           return val;
         },
         "  "
