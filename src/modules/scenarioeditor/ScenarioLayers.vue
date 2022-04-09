@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onActivated, onDeactivated, ref, shallowRef } from "vue";
 import BaseButton from "../../components/BaseButton.vue";
-import { useScenarioStore } from "../../stores/scenarioStore";
 import OLMap from "ol/Map";
 import { useGeoStore } from "../../stores/geoStore";
 import MapEditToolbar from "../../components/MapEditToolbar.vue";
@@ -19,10 +18,10 @@ import {
 } from "../../types/scenarioGeoModels";
 import Feature from "ol/Feature";
 import { Collection } from "ol";
-import ScenarioLayersList from "./ScenarioLayersList.vue";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { nanoid } from "nanoid";
 import { ScenarioFeatureActions } from "../../types/constants";
+import ScenarioLayersListLayer from "./ScenarioLayersListLayer.vue";
 
 const isActive = ref(true);
 const mapRef = useGeoStore().olMap! as OLMap;
@@ -90,14 +89,17 @@ onDeactivated(() => (isActive.value = false));
       </CreateEmtpyDashed>
     </div>
     <div v-else>
-      <ScenarioLayersList
-        :layers="layers"
-        :active-layer="activeLayer"
+      <ScenarioLayersListLayer
+        v-for="layer in layers"
+        :key="layer.id"
+        :layer="layer"
+        :is-active="activeLayer === layer"
         @set-active="setActiveLayer"
         @feature-action="onFeatureAction"
       />
+
       <p class="my-5 text-right">
-        <BaseButton @click="addNewLayer" secondary>Add new layer</BaseButton>
+        <BaseButton @click="addNewLayer" secondary> Add new layer</BaseButton>
       </p>
     </div>
   </div>

@@ -18,8 +18,8 @@ import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import { ScenarioFeatureActions } from "../../types/constants";
 
 const props = defineProps<{
-  layers: ScenarioLayerInstance[];
-  activeLayer: ScenarioLayer | null;
+  layer: ScenarioLayerInstance;
+  isActive: boolean;
 }>();
 const emit = defineEmits(["set-active", "feature-action"]);
 
@@ -41,9 +41,9 @@ function getIcon(feature: ScenarioFeature) {
 </script>
 
 <template>
-  <AccordionPanel v-for="layer in layers" :key="layer.id" :label="layer.name">
+  <AccordionPanel :label="layer.name">
     <template #label>
-      <span :class="layer === activeLayer && 'text-red-900'"> {{ layer.name }} </span
+      <span :class="isActive && 'text-red-900'"> {{ layer.name }} </span
       ><span
         v-if="layer.features.length"
         class="ml-2 inline-flex items-center rounded-full bg-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-800"
@@ -57,7 +57,7 @@ function getIcon(feature: ScenarioFeature) {
         @keydown.stop
         class="hover:text-gray-700"
       >
-        <PencilOff v-if="layer.id === activeLayer?.id" class="h-5 w-5" />
+        <PencilOff v-if="isActive" class="h-5 w-5" />
         <PencilIcon v-else class="h-5 w-5" />
       </button>
       <button type="button" @click.stop.prevent @keydown.stop class="ml-2 mr-2">
