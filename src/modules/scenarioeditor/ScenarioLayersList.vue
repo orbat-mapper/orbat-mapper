@@ -32,7 +32,7 @@ const typeMap: any = {
 
 const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
   { label: "Zoom to", action: ScenarioFeatureActions.Zoom },
-  // { label: "Delete", action: ScenarioFeatureActions.Delete },
+  { label: "Delete", action: ScenarioFeatureActions.Delete },
 ];
 
 function getIcon(feature: ScenarioFeature) {

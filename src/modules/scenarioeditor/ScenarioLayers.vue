@@ -34,6 +34,7 @@ const {
   getOlLayerById,
   addLayer,
   zoomToFeature,
+  deleteFeature,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -67,6 +68,7 @@ function onModify(features: Collection<Feature>) {
 
 function onFeatureAction(feature: ScenarioFeature, action: ScenarioFeatureActions) {
   if (action === ScenarioFeatureActions.Zoom) zoomToFeature(feature);
+  if (action === ScenarioFeatureActions.Delete) deleteFeature(feature);
 }
 
 onActivated(() => (isActive.value = true));

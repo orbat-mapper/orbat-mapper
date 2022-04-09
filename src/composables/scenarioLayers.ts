@@ -139,7 +139,19 @@ export function useScenarioLayers(olMap: OLMap) {
     olMap.getView().fit(olFeature.getGeometry(), { maxZoom: 17 });
   }
 
-  function deleteFeature(feature: ScenarioFeature) {}
+  function deleteFeature(feature: ScenarioFeature) {
+    const {
+      feature: olFeature,
+      layer,
+      layerIndex,
+    } = getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
+    if (!(olFeature && layer)) return;
+    layer.getSource()?.removeFeature(olFeature);
+
+    scenarioStore.scenarioLayers[layerIndex!].features = scenarioStore.scenarioLayers[
+      layerIndex!
+    ].features.filter((e) => e.id !== feature.id);
+  }
 
   return {
     scenarioLayersGroup,
@@ -148,6 +160,7 @@ export function useScenarioLayers(olMap: OLMap) {
     getOlLayerById,
     addLayer,
     zoomToFeature,
+    deleteFeature,
   };
 }
 

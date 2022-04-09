@@ -32,7 +32,7 @@ export function getFeatureAndLayerById(
     const layer = layerCollection.item(index);
     const feature = layer.getSource()?.getFeatureById(featureId);
     if (feature) {
-      return { feature, layer, index };
+      return { feature, layer, layerIndex: index };
     }
   }
   return null;
