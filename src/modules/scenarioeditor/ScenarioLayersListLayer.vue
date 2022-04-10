@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import AccordionPanel from "../../components/AccordionPanel.vue";
-import {
-  ScenarioFeature,
-  ScenarioLayer,
-  ScenarioLayerInstance,
-} from "../../types/scenarioGeoModels";
+import { ScenarioFeature, ScenarioLayerInstance } from "../../types/scenarioGeoModels";
 import {
   Eye as EyeIcon,
+  FormTextbox,
   MapMarker,
   Pencil as PencilIcon,
   PencilOff,
@@ -16,12 +13,16 @@ import {
 } from "mdue";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import { ScenarioFeatureActions } from "../../types/constants";
+import { ref } from "vue";
+import EditLayerInlineForm from "./EditLayerInlineForm.vue";
 
 const props = defineProps<{
   layer: ScenarioLayerInstance;
   isActive: boolean;
 }>();
-const emit = defineEmits(["set-active", "feature-action"]);
+const emit = defineEmits(["set-active", "feature-action", "update-layer"]);
+
+const showEditNameForm = ref(props.layer?._isNew || false);
 
 const typeMap: any = {
   Point: MapMarker,
@@ -41,7 +42,7 @@ function getIcon(feature: ScenarioFeature) {
 </script>
 
 <template>
-  <AccordionPanel :label="layer.name">
+  <AccordionPanel :label="layer.name" :default-open="showEditNameForm">
     <template #label>
       <span :class="isActive && 'text-red-900'"> {{ layer.name }} </span
       ><span
@@ -60,11 +61,25 @@ function getIcon(feature: ScenarioFeature) {
         <PencilOff v-if="isActive" class="h-5 w-5" />
         <PencilIcon v-else class="h-5 w-5" />
       </button>
+      <button
+        type="button"
+        @click.stop.prevent="showEditNameForm = true"
+        @keydown.stop
+        class="ml-2"
+      >
+        <FormTextbox class="h-5 w-5" />
+      </button>
       <button type="button" @click.stop.prevent @keydown.stop class="ml-2 mr-2">
         <EyeIcon class="h-5 w-5" />
       </button>
     </template>
     <div class="mt-6 flow-root">
+      <EditLayerInlineForm
+        v-if="showEditNameForm"
+        :layer="layer"
+        @close="showEditNameForm = false"
+        @update="emit('update-layer', layer, $event)"
+      />
       <ul class="-mt-5 divide-y divide-gray-200 border-t border-b">
         <li
           v-for="feature in layer.features"

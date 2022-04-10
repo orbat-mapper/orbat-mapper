@@ -121,7 +121,7 @@ export default defineComponent({
       const transformLayer = (layer: BaseLayer): LayerInfo<BaseLayer> => {
         const l: LayerInfo<BaseLayer> = {
           id: getUid(layer),
-          title: layer.get("title"),
+          title: layer.get("name") || layer.get("title"),
           layerType: layer.get("layerType"),
           visible: layer.getVisible(),
           zIndex: layer.getZIndex(),

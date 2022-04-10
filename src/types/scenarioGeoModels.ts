@@ -30,6 +30,7 @@ export interface ScenarioLayer {
   name: string;
   description?: string;
   features: ScenarioFeature[];
+  _isNew?: boolean;
 }
 
 export interface ScenarioLayerInstance extends ScenarioLayer {

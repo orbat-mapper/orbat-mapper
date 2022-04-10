@@ -33,6 +33,7 @@ const {
   addLayer,
   zoomToFeature,
   deleteFeature,
+  updateLayer,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -40,7 +41,12 @@ const activeLayer = ref<ScenarioLayerInstance | null>(null);
 const olCurrentLayer = shallowRef<VectorLayer<any> | null>(null);
 
 function addNewLayer() {
-  addLayer({ id: nanoid(), name: `New layer ${layers.value.length + 1}`, features: [] });
+  addLayer({
+    id: nanoid(),
+    name: `New layer ${layers.value.length + 1}`,
+    features: [],
+    _isNew: true,
+  });
 }
 
 function setActiveLayer(layer: ScenarioLayer) {
@@ -73,6 +79,10 @@ function onFeatureAction(
   if (action === ScenarioFeatureActions.Delete) deleteFeature(feature, layer);
 }
 
+function onLayerUpdate(layer: ScenarioLayer, data: Partial<ScenarioLayer>) {
+  updateLayer(layer, data);
+}
+
 onActivated(() => (isActive.value = true));
 onDeactivated(() => (isActive.value = false));
 </script>
@@ -96,6 +106,7 @@ onDeactivated(() => (isActive.value = false));
         :is-active="activeLayer === layer"
         @set-active="setActiveLayer"
         @feature-action="onFeatureAction"
+        @update-layer="onLayerUpdate"
       />
 
       <p class="my-5 text-right">

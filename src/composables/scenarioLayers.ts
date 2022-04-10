@@ -147,6 +147,17 @@ export function useScenarioLayers(olMap: OLMap) {
     layersStore.removeFeature(feature, scenarioLayer);
   }
 
+  function updateLayer(scenarioLayer: ScenarioLayer, data: Partial<ScenarioLayer>) {
+    layersStore.updateLayer(scenarioLayer, data);
+    const olLayer = getOlLayerById(scenarioLayer.id);
+
+    if (!olLayer) return;
+    for (const [key, value] of Object.entries(data)) {
+      olLayer.set(key, value);
+    }
+    olLayer.set("title", data.name);
+  }
+
   return {
     scenarioLayersGroup,
     initializeFromStore,
@@ -155,6 +166,7 @@ export function useScenarioLayers(olMap: OLMap) {
     addLayer,
     zoomToFeature,
     deleteFeature,
+    updateLayer,
   };
 }
 
