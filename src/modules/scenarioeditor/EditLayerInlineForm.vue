@@ -24,9 +24,14 @@ const { focusId } = useFocusOnMount();
 <template>
   <InlineFormPanel @close="$emit('close')" title="Edit layer">
     <form @submit.prevent="onFormSubmit" clasFeaturess="space-y-4">
-      <InputGroup label="Layer name" v-model="form.name" :id="focusId" />
+      <InputGroup
+        label="Layer name"
+        v-model="form.name"
+        :id="focusId"
+        @keyup.esc="emit('close')"
+      />
 
-      <div class="flex justify-end space-x-2">
+      <div class="my-4 flex justify-end space-x-2">
         <PlainButton @click="emit('close')">Cancel</PlainButton>
         <PrimaryButton type="submit">Update</PrimaryButton>
       </div>

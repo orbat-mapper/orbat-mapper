@@ -155,7 +155,6 @@ export function useScenarioLayers(olMap: OLMap) {
     for (const [key, value] of Object.entries(data)) {
       olLayer.set(key, value);
     }
-    olLayer.set("title", data.name);
   }
 
   return {

@@ -65,7 +65,7 @@ function getIcon(feature: ScenarioFeature) {
         type="button"
         @click.stop.prevent="showEditNameForm = true"
         @keydown.stop
-        class="ml-2"
+        class="ml-2 hover:text-gray-700"
       >
         <FormTextbox class="h-5 w-5" />
       </button>
