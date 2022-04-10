@@ -3,6 +3,7 @@ import AccordionPanel from "../../components/AccordionPanel.vue";
 import { ScenarioFeature, ScenarioLayerInstance } from "../../types/scenarioGeoModels";
 import {
   Eye as EyeIcon,
+  EyeOff,
   FormTextbox,
   MapMarker,
   Pencil as PencilIcon,
@@ -20,7 +21,12 @@ const props = defineProps<{
   layer: ScenarioLayerInstance;
   isActive: boolean;
 }>();
-const emit = defineEmits(["set-active", "feature-action", "update-layer"]);
+const emit = defineEmits([
+  "set-active",
+  "feature-action",
+  "update-layer",
+  "toggle-layer",
+]);
 
 const showEditNameForm = ref(props.layer?._isNew || false);
 
@@ -69,8 +75,14 @@ function getIcon(feature: ScenarioFeature) {
       >
         <FormTextbox class="h-5 w-5" />
       </button>
-      <button type="button" @click.stop.prevent @keydown.stop class="ml-2 mr-2">
-        <EyeIcon class="h-5 w-5" />
+      <button
+        type="button"
+        @click.stop.prevent="emit('toggle-layer', layer)"
+        @keydown.stop
+        class="ml-2 mr-2 hover:text-gray-700"
+      >
+        <EyeOff v-if="layer.isHidden" class="h-5 w-5" />
+        <EyeIcon class="h-5 w-5" v-else />
       </button>
     </template>
     <div class="mt-6 flow-root">

@@ -34,6 +34,7 @@ const {
   zoomToFeature,
   deleteFeature,
   updateLayer,
+  toggleLayerVisibility,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -107,6 +108,7 @@ onDeactivated(() => (isActive.value = false));
         @set-active="setActiveLayer"
         @feature-action="onFeatureAction"
         @update-layer="onLayerUpdate"
+        @toggle-layer="toggleLayerVisibility"
       />
 
       <p class="my-5 text-right">

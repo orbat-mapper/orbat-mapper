@@ -157,6 +157,14 @@ export function useScenarioLayers(olMap: OLMap) {
     }
   }
 
+  function toggleLayerVisibility(scenarioLayer: ScenarioLayer) {
+    const olLayer = getOlLayerById(scenarioLayer.id);
+    if (!olLayer) return;
+    const currentVisibility = olLayer.getVisible();
+    olLayer.setVisible(!currentVisibility);
+    updateLayer(scenarioLayer, { isHidden: !currentVisibility });
+  }
+
   return {
     scenarioLayersGroup,
     initializeFromStore,
@@ -166,6 +174,7 @@ export function useScenarioLayers(olMap: OLMap) {
     zoomToFeature,
     deleteFeature,
     updateLayer,
+    toggleLayerVisibility,
   };
 }
 
@@ -217,6 +226,13 @@ export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
 
         const la = layerStore.getLayerById(l.get("id"));
         la && layerStore.addFeature(scenarioFeature, la);
+      })
+    );
+    eventKeys.push(
+      l.on("change:visible", (event) => {
+        const scenarioLayer = layerStore.getLayerById(l.get("id"));
+        scenarioLayer &&
+          layerStore.updateLayer(scenarioLayer, { isHidden: !l.getVisible() });
       })
     );
   }
