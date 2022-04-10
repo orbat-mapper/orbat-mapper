@@ -97,6 +97,7 @@ function createVectorLayer(l: ScenarioLayer, projection: ProjectionLike = "EPSG:
     }),
     properties: { id: l.id, title: l.name, layerType: LayerType.overlay },
   });
+  if (l.isHidden) vectorLayer.setVisible(false);
   return vectorLayer;
 }
 
@@ -160,9 +161,9 @@ export function useScenarioLayers(olMap: OLMap) {
   function toggleLayerVisibility(scenarioLayer: ScenarioLayer) {
     const olLayer = getOlLayerById(scenarioLayer.id);
     if (!olLayer) return;
-    const currentVisibility = olLayer.getVisible();
-    olLayer.setVisible(!currentVisibility);
-    updateLayer(scenarioLayer, { isHidden: !currentVisibility });
+    const isVisible = olLayer.getVisible();
+    olLayer.setVisible(!isVisible);
+    layersStore.updateLayer(scenarioLayer, { isHidden: isVisible });
   }
 
   return {
@@ -230,9 +231,9 @@ export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
     );
     eventKeys.push(
       l.on("change:visible", (event) => {
+        const isVisible = l.getVisible();
         const scenarioLayer = layerStore.getLayerById(l.get("id"));
-        scenarioLayer &&
-          layerStore.updateLayer(scenarioLayer, { isHidden: !l.getVisible() });
+        scenarioLayer && layerStore.updateLayer(scenarioLayer, { isHidden: !isVisible });
       })
     );
   }
