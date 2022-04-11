@@ -80,6 +80,12 @@
               </AccordionPanel>
             </div>
           </section>
+          <section>
+            <h3 class="border-b text-lg">Chevron panel</h3>
+            <div class="grid grid-cols-3 gap-6">
+              <ChevronPanel label="Chevron title">Panel content</ChevronPanel>
+            </div>
+          </section>
         </div>
       </main>
     </div>
@@ -95,6 +101,7 @@ import NumberInputGroup from "../components/NumberInputGroup.vue";
 import InputGroup from "../components/InputGroup.vue";
 import SimpleCombo from "../components/SimpleCombo.vue";
 import AccordionPanel from "../components/AccordionPanel.vue";
+import ChevronPanel from "../components/ChevronPanel.vue";
 
 const num = ref(1);
 const v = ref("Test");

@@ -16,6 +16,7 @@ import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import { ScenarioFeatureActions } from "../../types/constants";
 import { ref } from "vue";
 import EditLayerInlineForm from "./EditLayerInlineForm.vue";
+import ChevronPanel from "../../components/ChevronPanel.vue";
 
 const props = defineProps<{
   layer: ScenarioLayerInstance;
@@ -48,7 +49,7 @@ function getIcon(feature: ScenarioFeature) {
 </script>
 
 <template>
-  <AccordionPanel :label="layer.name" :default-open="showEditNameForm">
+  <ChevronPanel :label="layer.name" :default-open="showEditNameForm">
     <template #label>
       <span :class="isActive && 'text-red-900'"> {{ layer.name }} </span
       ><span
@@ -60,26 +61,26 @@ function getIcon(feature: ScenarioFeature) {
     <template #right>
       <button
         type="button"
-        @click.stop.prevent="emit('set-active', layer)"
+        @click="emit('set-active', layer)"
         @keydown.stop
-        class="hover:text-gray-700"
+        class="text-gray-500 hover:text-gray-700"
       >
         <PencilOff v-if="isActive" class="h-5 w-5" />
         <PencilIcon v-else class="h-5 w-5" />
       </button>
       <button
         type="button"
-        @click.stop.prevent="showEditNameForm = true"
+        @click="showEditNameForm = true"
         @keydown.stop
-        class="ml-2 hover:text-gray-700"
+        class="ml-2 text-gray-500 hover:text-gray-700"
       >
         <FormTextbox class="h-5 w-5" />
       </button>
       <button
         type="button"
-        @click.stop.prevent="emit('toggle-layer', layer)"
+        @click="emit('toggle-layer', layer)"
         @keydown.stop
-        class="ml-2 mr-2 hover:text-gray-700"
+        class="ml-2 mr-2 text-gray-500 hover:text-gray-700"
       >
         <EyeOff v-if="layer.isHidden" class="h-5 w-5" />
         <EyeIcon class="h-5 w-5" v-else />
@@ -118,5 +119,5 @@ function getIcon(feature: ScenarioFeature) {
         </li>
       </ul>
     </div>
-  </AccordionPanel>
+  </ChevronPanel>
 </template>
