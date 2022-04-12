@@ -15,8 +15,8 @@
           <slot name="label">{{ label }}</slot>
         </span>
       </DisclosureButton>
-      <span class="ml-6 flex flex-shrink-0 items-center">
-        <slot name="right">NN</slot>
+      <span class="relative ml-6 flex flex-shrink-0 items-center">
+        <slot name="right"></slot>
       </span>
     </h3>
     <DisclosurePanel class="space-y-4 pt-6 pl-6">

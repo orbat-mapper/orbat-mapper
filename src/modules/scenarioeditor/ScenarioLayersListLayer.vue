@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import AccordionPanel from "../../components/AccordionPanel.vue";
 import { ScenarioFeature, ScenarioLayerInstance } from "../../types/scenarioGeoModels";
 import {
   Eye as EyeIcon,
   EyeOff,
-  FormTextbox,
   MapMarker,
   Pencil as PencilIcon,
   PencilOff,
@@ -13,7 +11,7 @@ import {
   VectorTriangle,
 } from "mdue";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
-import { ScenarioFeatureActions } from "../../types/constants";
+import { ScenarioFeatureActions, ScenarioLayerActions } from "../../types/constants";
 import { ref } from "vue";
 import EditLayerInlineForm from "./EditLayerInlineForm.vue";
 import ChevronPanel from "../../components/ChevronPanel.vue";
@@ -38,6 +36,10 @@ const typeMap: any = {
   Circle: VectorCircleVariant,
 };
 
+const layerMenuItems: MenuItemData<ScenarioLayerActions>[] = [
+  { label: "Rename", action: ScenarioLayerActions.Rename },
+];
+
 const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
   { label: "Zoom to", action: ScenarioFeatureActions.Zoom },
   { label: "Delete", action: ScenarioFeatureActions.Delete },
@@ -45,6 +47,10 @@ const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
 
 function getIcon(feature: ScenarioFeature) {
   return typeMap[feature.properties.type];
+}
+
+function onLayerAction(action: ScenarioLayerActions) {
+  if (action === ScenarioLayerActions.Rename) showEditNameForm.value = true;
 }
 </script>
 
@@ -70,14 +76,6 @@ function getIcon(feature: ScenarioFeature) {
       </button>
       <button
         type="button"
-        @click="showEditNameForm = true"
-        @keydown.stop
-        class="ml-2 text-gray-500 hover:text-gray-700"
-      >
-        <FormTextbox class="h-5 w-5" />
-      </button>
-      <button
-        type="button"
         @click="emit('toggle-layer', layer)"
         @keydown.stop
         class="ml-2 mr-2 text-gray-500 hover:text-gray-700"
@@ -85,6 +83,7 @@ function getIcon(feature: ScenarioFeature) {
         <EyeOff v-if="layer.isHidden" class="h-5 w-5" />
         <EyeIcon class="h-5 w-5" v-else />
       </button>
+      <DotsMenu :items="layerMenuItems" @action="onLayerAction" />
     </template>
     <div class="mt-6 flow-root">
       <EditLayerInlineForm

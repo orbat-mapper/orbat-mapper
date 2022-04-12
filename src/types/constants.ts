@@ -38,6 +38,11 @@ export const enum ScenarioFeatureActions {
   Zoom = "Zoom",
 }
 
+export const enum ScenarioLayerActions {
+  Delete = "Delete",
+  Rename = "Rename",
+}
+
 export interface SymbolValue {
   code: string;
   text: string;
