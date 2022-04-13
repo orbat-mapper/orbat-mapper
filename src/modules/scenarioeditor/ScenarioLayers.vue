@@ -20,7 +20,7 @@ import Feature from "ol/Feature";
 import { Collection } from "ol";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { nanoid } from "nanoid";
-import { ScenarioFeatureActions } from "../../types/constants";
+import { ScenarioFeatureActions, ScenarioLayerActions } from "../../types/constants";
 import ScenarioLayersListLayer from "./ScenarioLayersListLayer.vue";
 
 const isActive = ref(true);
@@ -35,6 +35,7 @@ const {
   deleteFeature,
   updateLayer,
   toggleLayerVisibility,
+  zoomToLayer,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -80,6 +81,10 @@ function onFeatureAction(
   if (action === ScenarioFeatureActions.Delete) deleteFeature(feature, layer);
 }
 
+function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerActions) {
+  if (action === ScenarioLayerActions.Zoom) zoomToLayer(layer);
+}
+
 function onLayerUpdate(layer: ScenarioLayer, data: Partial<ScenarioLayer>) {
   updateLayer(layer, data);
 }
@@ -109,6 +114,7 @@ onDeactivated(() => (isActive.value = false));
         @feature-action="onFeatureAction"
         @update-layer="onLayerUpdate"
         @toggle-layer="toggleLayerVisibility"
+        @layer-action="onLayerAction"
       />
 
       <p class="my-5 text-right">

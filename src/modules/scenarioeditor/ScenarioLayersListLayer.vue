@@ -25,6 +25,7 @@ const emit = defineEmits([
   "feature-action",
   "update-layer",
   "toggle-layer",
+  "layer-action",
 ]);
 
 const showEditNameForm = ref(props.layer?._isNew || false);
@@ -37,6 +38,7 @@ const typeMap: any = {
 };
 
 const layerMenuItems: MenuItemData<ScenarioLayerActions>[] = [
+  { label: "Zoom to", action: ScenarioLayerActions.Zoom },
   { label: "Rename", action: ScenarioLayerActions.Rename },
 ];
 
@@ -51,6 +53,7 @@ function getIcon(feature: ScenarioFeature) {
 
 function onLayerAction(action: ScenarioLayerActions) {
   if (action === ScenarioLayerActions.Rename) showEditNameForm.value = true;
+  emit("layer-action", props.layer, action);
 }
 </script>
 

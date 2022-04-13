@@ -2,6 +2,7 @@ import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
+import { isEmpty } from "ol/extent";
 import { nanoid } from "nanoid";
 import { Collection } from "ol";
 import { getFeatureAndLayerById, isCircle, useOlEvent } from "./openlayersHelpers";
@@ -140,6 +141,14 @@ export function useScenarioLayers(olMap: OLMap) {
     olMap.getView().fit(olFeature.getGeometry(), { maxZoom: 17 });
   }
 
+  function zoomToLayer(layer: ScenarioLayer) {
+    const olLayer = getOlLayerById(layer.id);
+    if (!olLayer) return;
+    const layerExtent = olLayer.getSource().getExtent();
+
+    !isEmpty(layerExtent) && layerExtent && olMap.getView().fit(layerExtent);
+  }
+
   function deleteFeature(feature: ScenarioFeature, scenarioLayer: ScenarioLayer) {
     const { feature: olFeature, layer } =
       getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
@@ -176,6 +185,7 @@ export function useScenarioLayers(olMap: OLMap) {
     deleteFeature,
     updateLayer,
     toggleLayerVisibility,
+    zoomToLayer,
   };
 }
 
