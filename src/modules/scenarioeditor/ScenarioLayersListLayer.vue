@@ -40,6 +40,7 @@ const typeMap: any = {
 const layerMenuItems: MenuItemData<ScenarioLayerActions>[] = [
   { label: "Zoom to", action: ScenarioLayerActions.Zoom },
   { label: "Rename", action: ScenarioLayerActions.Rename },
+  { label: "Delete", action: ScenarioLayerActions.Delete },
 ];
 
 const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [

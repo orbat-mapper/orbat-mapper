@@ -157,6 +157,14 @@ export function useScenarioLayers(olMap: OLMap) {
     layersStore.removeFeature(feature, scenarioLayer);
   }
 
+  function deleteLayer(layer: ScenarioLayer) {
+    const olLayer = getOlLayerById(layer.id);
+    if (!olLayer) return;
+    scenarioLayersGroup.getLayers().remove(olLayer);
+    olLayer.getSource().clear();
+    layersStore.removeLayer(layer);
+  }
+
   function updateLayer(scenarioLayer: ScenarioLayer, data: Partial<ScenarioLayer>) {
     layersStore.updateLayer(scenarioLayer, data);
     const olLayer = getOlLayerById(scenarioLayer.id);
@@ -186,6 +194,7 @@ export function useScenarioLayers(olMap: OLMap) {
     updateLayer,
     toggleLayerVisibility,
     zoomToLayer,
+    deleteLayer,
   };
 }
 

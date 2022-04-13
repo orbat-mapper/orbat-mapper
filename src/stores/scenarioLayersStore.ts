@@ -21,6 +21,10 @@ export const useScenarioLayersStore = defineStore("scenarioLayers", {
       if (!l) return;
       Object.assign(l, { ...data });
     },
+    removeLayer(layer: ScenarioLayer) {
+      const scenario = useScenarioStore();
+      scenario.scenario.layers = this.layers.filter((l) => l.id !== layer.id);
+    },
   },
   getters: {
     layers(state) {

@@ -36,6 +36,7 @@ const {
   updateLayer,
   toggleLayerVisibility,
   zoomToLayer,
+  deleteLayer,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -83,6 +84,13 @@ function onFeatureAction(
 
 function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerActions) {
   if (action === ScenarioLayerActions.Zoom) zoomToLayer(layer);
+  if (action === ScenarioLayerActions.Delete) {
+    if (activeLayer.value?.id === layer.id) {
+      activeLayer.value = null;
+      olCurrentLayer.value = null;
+    }
+    deleteLayer(layer);
+  }
 }
 
 function onLayerUpdate(layer: ScenarioLayer, data: Partial<ScenarioLayer>) {
