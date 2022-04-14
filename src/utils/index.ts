@@ -11,3 +11,13 @@ export function enum2Items(enumType: { [key: number]: string }) {
     value,
   }));
 }
+
+export function moveItemMutable<T>(array: T[], fromIndex: number, toIndex: number): T[] {
+  if (!(fromIndex >= 0 && fromIndex < array.length)) return array;
+  if (!(toIndex >= 0 && toIndex < array.length)) return array;
+
+  const item = array[fromIndex];
+  array.splice(fromIndex, 1);
+  array.splice(toIndex, 0, item);
+  return array;
+}

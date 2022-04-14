@@ -36,12 +36,16 @@ export const enum ScenarioActions {
 export const enum ScenarioFeatureActions {
   Delete = "Delete",
   Zoom = "Zoom",
+  MoveUp = "MoveUp",
+  MoveDown = "MoveDown",
 }
 
 export const enum ScenarioLayerActions {
   Delete = "Delete",
   Rename = "Rename",
   Zoom = "Zoom",
+  MoveUp = "MoveUp",
+  MoveDown = "MoveDown",
 }
 
 export interface SymbolValue {

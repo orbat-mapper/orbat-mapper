@@ -5,7 +5,13 @@ import LayerGroup from "ol/layer/Group";
 import { isEmpty } from "ol/extent";
 import { nanoid } from "nanoid";
 import { Collection } from "ol";
-import { getFeatureAndLayerById, isCircle, useOlEvent } from "./openlayersHelpers";
+import {
+  getFeatureAndLayerById,
+  getFeatureIndex,
+  isCircle,
+  useOlEvent,
+} from "./openlayersHelpers";
+import { SimpleGeometry } from "ol/geom";
 import { GeoJSON } from "ol/format";
 import { point } from "@turf/helpers";
 import Feature from "ol/Feature";
@@ -32,6 +38,7 @@ import { unByKey } from "ol/Observable";
 import { EventsKey } from "ol/events";
 import { useScenarioLayersStore } from "../stores/scenarioLayersStore";
 import { AnyVectorLayer } from "../geo/types";
+import { moveItemMutable } from "../utils";
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -79,12 +86,16 @@ function createScenarioLayerFeatures(
       olFeatures.push(f);
     }
   });
-  return olFeatures;
+  return new Collection(olFeatures);
 }
 
 function createVectorLayer(l: ScenarioLayer, projection: ProjectionLike = "EPSG:3837") {
   const vectorLayer = new VectorLayer({
     source: new VectorSource({
+      // Disable spatial index and use a collection for features. Need to this to
+      // get full control of the draw order. Will reduce performance if we have
+      // hundreds of features.
+      // useSpatialIndex: false,
       features: createScenarioLayerFeatures(l.features, projection),
     }),
     style: new Style({
@@ -165,6 +176,32 @@ export function useScenarioLayers(olMap: OLMap) {
     la && layersStore.addFeature(scenarioFeature, la);
   }
 
+  function moveFeature(feature: ScenarioFeature, direction: "up" | "down") {
+    const { feature: olFeature, layer } =
+      getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
+    if (!(olFeature && layer)) return;
+    const olFeatures = layer.getSource();
+    console.log(olFeatures, layer);
+    const idx = getFeatureIndex(olFeature, layer);
+    console.log("index", idx);
+  }
+
+  function moveLayer(layer: ScenarioLayer, direction: "up" | "down") {
+    let toIndex = layersStore.getLayerIndex(layer);
+
+    if (direction === "up") toIndex--;
+    if (direction === "down") toIndex++;
+    layersStore.moveLayer(layer, toIndex);
+    const olLayer = getOlLayerById(layer.id);
+
+    const layersCopy = [...scenarioLayersGroup.getLayers().getArray()];
+    const fromIndex = layersCopy.indexOf(olLayer as any);
+    scenarioLayersGroup.getLayers().clear();
+    scenarioLayersGroup
+      .getLayers()
+      .extend(moveItemMutable(layersCopy, fromIndex, toIndex));
+  }
+
   function deleteLayer(layer: ScenarioLayer) {
     const olLayer = getOlLayerById(layer.id);
     if (!olLayer) return;
@@ -203,7 +240,9 @@ export function useScenarioLayers(olMap: OLMap) {
     toggleLayerVisibility,
     zoomToLayer,
     deleteLayer,
+    moveFeature,
     addOlFeature,
+    moveLayer,
   };
 }
 
@@ -247,6 +286,7 @@ export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
   const eventKeys = [] as EventsKey[];
 
   function addListener(l: VectorLayer<any>) {
+    const source = l.getSource() as VectorSource<SimpleGeometry>;
     eventKeys.push(
       l.on("change:visible", (event) => {
         const isVisible = l.getVisible();

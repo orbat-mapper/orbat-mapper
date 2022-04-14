@@ -40,11 +40,15 @@ const typeMap: any = {
 const layerMenuItems: MenuItemData<ScenarioLayerActions>[] = [
   { label: "Zoom to", action: ScenarioLayerActions.Zoom },
   { label: "Rename", action: ScenarioLayerActions.Rename },
+  { label: "Move up", action: ScenarioLayerActions.MoveUp },
+  { label: "Move down", action: ScenarioLayerActions.MoveDown },
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ];
 
 const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
   { label: "Zoom to", action: ScenarioFeatureActions.Zoom },
+  // { label: "Move up", action: ScenarioFeatureActions.MoveUp },
+  // { label: "Move down", action: ScenarioFeatureActions.MoveDown },
   { label: "Delete", action: ScenarioFeatureActions.Delete },
 ];
 

@@ -5,6 +5,7 @@ import Feature from "ol/Feature";
 import VectorLayer from "ol/layer/Vector";
 import { Collection } from "ol";
 import { AnyVectorLayer } from "../geo/types";
+import VectorSource from "ol/source/Vector";
 
 /**
  * Unregister open layers event automatically on unmount
@@ -36,4 +37,16 @@ export function getFeatureAndLayerById(
     }
   }
   return null;
+}
+
+export function getFeatureIndex(feature: Feature, layer: VectorLayer<any>) {
+  const features = layer.getSource().getFeaturesCollection();
+  if (!features) return;
+  for (let index = 0, ii = features.getLength(); index < ii; ++index) {
+    const currentFeature = features.item(index);
+    if (feature === currentFeature) {
+      return index;
+    }
+  }
+  return -1;
 }

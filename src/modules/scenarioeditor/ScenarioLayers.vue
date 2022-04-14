@@ -39,6 +39,8 @@ const {
   zoomToLayer,
   deleteLayer,
   addOlFeature,
+  moveFeature,
+  moveLayer,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -67,10 +69,6 @@ function setActiveLayer(layer: ScenarioLayer) {
   }
 }
 
-function onModify(features: Collection<Feature>) {
-  console.log("DOne modify", features.item(0).getId());
-}
-
 function onFeatureAction(
   feature: ScenarioFeature,
   action: ScenarioFeatureActions,
@@ -78,6 +76,13 @@ function onFeatureAction(
 ) {
   if (action === ScenarioFeatureActions.Zoom) zoomToFeature(feature);
   if (action === ScenarioFeatureActions.Delete) deleteFeature(feature, layer);
+  if (
+    action === ScenarioFeatureActions.MoveUp ||
+    action === ScenarioFeatureActions.MoveDown
+  ) {
+    const direction = action === ScenarioFeatureActions.MoveUp ? "up" : "down";
+    moveFeature(feature, direction);
+  }
 }
 
 function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerActions) {
@@ -88,6 +93,13 @@ function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerActions) {
       olCurrentLayer.value = null;
     }
     deleteLayer(layer);
+  }
+  if (
+    action === ScenarioLayerActions.MoveUp ||
+    action === ScenarioLayerActions.MoveDown
+  ) {
+    const direction = action === ScenarioLayerActions.MoveUp ? "up" : "down";
+    moveLayer(layer, direction);
   }
 }
 
@@ -135,7 +147,6 @@ onDeactivated(() => (isActive.value = false));
       :ol-map="mapRef"
       :layer="olCurrentLayer"
       class="absolute left-3 top-[150px]"
-      @modify="onModify"
       @add="addOlFeature"
       add-multiple
     />

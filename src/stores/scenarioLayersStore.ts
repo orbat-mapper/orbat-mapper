@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { useScenarioStore } from "./scenarioStore";
 import { ScenarioFeature, ScenarioLayer } from "../types/scenarioGeoModels";
+import { moveItemMutable } from "../utils";
 
 export const useScenarioLayersStore = defineStore("scenarioLayers", {
   actions: {
@@ -24,6 +25,21 @@ export const useScenarioLayersStore = defineStore("scenarioLayers", {
     removeLayer(layer: ScenarioLayer) {
       const scenario = useScenarioStore();
       scenario.scenario.layers = this.layers.filter((l) => l.id !== layer.id);
+    },
+
+    moveLayer(layer: ScenarioLayer, toIndex: number) {
+      const fromIndex = this.layers.indexOf(layer);
+      const scenario = useScenarioStore();
+
+      scenario.scenario.layers = moveItemMutable(
+        [...scenario.scenario.layers],
+        fromIndex,
+        toIndex
+      );
+    },
+
+    getLayerIndex(layer: ScenarioLayer) {
+      return this.layers.indexOf(layer);
     },
   },
   getters: {
