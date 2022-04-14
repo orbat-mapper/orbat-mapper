@@ -22,6 +22,7 @@ import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { nanoid } from "nanoid";
 import { ScenarioFeatureActions, ScenarioLayerActions } from "../../types/constants";
 import ScenarioLayersListLayer from "./ScenarioLayersListLayer.vue";
+import { AnyVectorLayer } from "../../geo/types";
 
 const isActive = ref(true);
 const mapRef = useGeoStore().olMap! as OLMap;
@@ -37,6 +38,7 @@ const {
   toggleLayerVisibility,
   zoomToLayer,
   deleteLayer,
+  addOlFeature,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -63,10 +65,6 @@ function setActiveLayer(layer: ScenarioLayer) {
     olCurrentLayer.value = l;
     activeLayer.value = layer;
   }
-}
-
-function onFeatureAdded(feature: Feature) {
-  console.log("Added", feature);
 }
 
 function onModify(features: Collection<Feature>) {
@@ -138,6 +136,7 @@ onDeactivated(() => (isActive.value = false));
       :layer="olCurrentLayer"
       class="absolute left-3 top-[150px]"
       @modify="onModify"
+      @add="addOlFeature"
       add-multiple
     />
   </Teleport>

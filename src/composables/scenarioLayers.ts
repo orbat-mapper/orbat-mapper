@@ -6,7 +6,6 @@ import { isEmpty } from "ol/extent";
 import { nanoid } from "nanoid";
 import { Collection } from "ol";
 import { getFeatureAndLayerById, isCircle, useOlEvent } from "./openlayersHelpers";
-import { SimpleGeometry } from "ol/geom";
 import { GeoJSON } from "ol/format";
 import { point } from "@turf/helpers";
 import Feature from "ol/Feature";
@@ -32,6 +31,7 @@ import { computed, onUnmounted } from "vue";
 import { unByKey } from "ol/Observable";
 import { EventsKey } from "ol/events";
 import { useScenarioLayersStore } from "../stores/scenarioLayersStore";
+import { AnyVectorLayer } from "../geo/types";
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -157,6 +157,14 @@ export function useScenarioLayers(olMap: OLMap) {
     layersStore.removeFeature(feature, scenarioLayer);
   }
 
+  function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
+    if (!olFeature.getId()) olFeature.setId(nanoid());
+
+    const scenarioFeature = convertOlFeatureToScenarioFeature(olFeature);
+    const la = layersStore.getLayerById(olLayer.get("id"));
+    la && layersStore.addFeature(scenarioFeature, la);
+  }
+
   function deleteLayer(layer: ScenarioLayer) {
     const olLayer = getOlLayerById(layer.id);
     if (!olLayer) return;
@@ -195,6 +203,7 @@ export function useScenarioLayers(olMap: OLMap) {
     toggleLayerVisibility,
     zoomToLayer,
     deleteLayer,
+    addOlFeature,
   };
 }
 
@@ -238,16 +247,6 @@ export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
   const eventKeys = [] as EventsKey[];
 
   function addListener(l: VectorLayer<any>) {
-    const source = l.getSource() as VectorSource<SimpleGeometry>;
-    eventKeys.push(
-      source.on("addfeature", (event1) => {
-        event1.feature?.setId(nanoid());
-        const scenarioFeature = convertOlFeatureToScenarioFeature(event1.feature!);
-
-        const la = layerStore.getLayerById(l.get("id"));
-        la && layerStore.addFeature(scenarioFeature, la);
-      })
-    );
     eventKeys.push(
       l.on("change:visible", (event) => {
         const isVisible = l.getVisible();

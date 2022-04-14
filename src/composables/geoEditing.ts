@@ -38,6 +38,11 @@ export function useEditingInteraction(
   olMap.addInteraction(pointDraw);
   olMap.addInteraction(circleDraw);
 
+  useOlEvent(lineDraw.on("drawend", onDrawEnd));
+  useOlEvent(polygonDraw.on("drawend", onDrawEnd));
+  useOlEvent(pointDraw.on("drawend", onDrawEnd));
+  useOlEvent(circleDraw.on("drawend", onDrawEnd));
+
   const select = new Select({
     layers: [layerRef.value as Layer<any, any>],
     hitTolerance: 20,
@@ -53,6 +58,14 @@ export function useEditingInteraction(
   const snap = new Snap({ source });
   olMap.addInteraction(snap);
 
+  function onDrawEnd(e: DrawEvent) {
+    if (!unref(addMultiple)) {
+      currentDrawInteraction?.setActive(false);
+      currentDrawType.value = null;
+    }
+    emit && emit("add", e.feature, layerRef.value);
+  }
+
   function startDrawing(drawType: DrawType) {
     select.setActive(false);
     stopModify();
@@ -67,13 +80,6 @@ export function useEditingInteraction(
 
     currentDrawInteraction?.setActive(true);
     currentDrawType.value = drawType;
-    currentDrawInteraction?.once("drawend", (e: DrawEvent) => {
-      if (!unref(addMultiple)) {
-        currentDrawInteraction?.setActive(false);
-        currentDrawType.value = null;
-      }
-      emit && emit("add", e.feature);
-    });
   }
 
   function stopModify() {
