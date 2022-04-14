@@ -86,16 +86,12 @@ function createScenarioLayerFeatures(
       olFeatures.push(f);
     }
   });
-  return new Collection(olFeatures);
+  return olFeatures;
 }
 
 function createVectorLayer(l: ScenarioLayer, projection: ProjectionLike = "EPSG:3837") {
   const vectorLayer = new VectorLayer({
     source: new VectorSource({
-      // Disable spatial index and use a collection for features. Need to this to
-      // get full control of the draw order. Will reduce performance if we have
-      // hundreds of features.
-      // useSpatialIndex: false,
       features: createScenarioLayerFeatures(l.features, projection),
     }),
     style: new Style({
