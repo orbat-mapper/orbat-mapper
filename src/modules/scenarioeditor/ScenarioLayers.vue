@@ -20,8 +20,9 @@ import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { nanoid } from "nanoid";
 import { ScenarioFeatureActions, ScenarioLayerActions } from "../../types/constants";
 import ScenarioLayersListLayer from "./ScenarioLayersListLayer.vue";
-import { useVModel } from "@vueuse/core";
+import { useToggle, useVModel } from "@vueuse/core";
 import Feature from "ol/Feature";
+import ScenarioLayersPanel from "./ScenarioLayersPanel.vue";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -29,6 +30,8 @@ const props = defineProps<{
 const emit = defineEmits(["update:modelValue"]);
 
 const showLayerPanel = useVModel(props, "modelValue", emit);
+
+const toggleLayerPanel = useToggle(showLayerPanel);
 
 const isActive = ref(true);
 const mapRef = useGeoStore().olMap! as OLMap;
@@ -175,6 +178,6 @@ onDeactivated(() => (isActive.value = false));
     />
   </Teleport>
   <Teleport to="[data-teleport-layer]" v-if="activeFeature">
-    <pre class="overflow-auto p-4 text-sm">{{ activeFeature }}</pre>
+    <ScenarioLayersPanel :feature="activeFeature" @close="toggleLayerPanel()" />
   </Teleport>
 </template>

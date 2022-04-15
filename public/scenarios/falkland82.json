@@ -871,6 +871,7 @@
           "properties": {
             "type": "Circle",
             "name": "Maritime Exclusion Zone",
+            "description": "The Maritime Exclusion Zone (MEZ) declared on 12 April 1982 covered a circle of radius 200 nautical miles (370 km; 230 mi) from the centre of the Falkland Islands. Any Argentine warship or naval auxiliary entering the MEZ could have been attacked by British nuclear-powered submarines (SSN).",
             "radius": 370000,
             "stroke": "#7F1D1D",
             "stroke-width": 4,

@@ -14,8 +14,8 @@ export type ScenarioFeatureType =
 
 export interface ScenarioFeatureProperties extends Partial<SimpleStyleSpec> {
   type: ScenarioFeatureType;
-
-  [name: string]: any;
+  name?: string;
+  [attribute: string]: any;
 }
 
 // A scenario feature is just a GeoJSON Feature with a required id field.

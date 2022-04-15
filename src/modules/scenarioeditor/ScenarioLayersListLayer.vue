@@ -68,7 +68,7 @@ function onLayerAction(action: ScenarioLayerActions) {
 <template>
   <ChevronPanel :label="layer.name" :default-open="showEditNameForm">
     <template #label>
-      <span :class="isActive && 'text-red-900'"> {{ layer.name }} </span
+      <span> {{ layer.name }} </span
       ><span
         v-if="layer.features.length"
         class="ml-2 inline-flex items-center rounded-full bg-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-800"
@@ -76,6 +76,11 @@ function onLayerAction(action: ScenarioLayerActions) {
       >
     </template>
     <template #right>
+      <span
+        v-if="isActive"
+        class="mr-2 inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"
+        >Active</span
+      >
       <button
         type="button"
         @click="emit('set-active', layer)"

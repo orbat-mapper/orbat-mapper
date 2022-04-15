@@ -167,8 +167,11 @@ export function useScenarioLayers(olMap: OLMap) {
     if (!olFeature.getId()) olFeature.setId(nanoid());
 
     const scenarioFeature = convertOlFeatureToScenarioFeature(olFeature);
-    const la = layersStore.getLayerById(olLayer.get("id"));
-    la && layersStore.addFeature(scenarioFeature, la);
+    const scenarioLayer = layersStore.getLayerById(olLayer.get("id"))!;
+    scenarioFeature.properties.name = `${scenarioFeature.properties.type} ${
+      scenarioLayer.features.length + 1
+    }`;
+    scenarioLayer && layersStore.addFeature(scenarioFeature, scenarioLayer);
   }
 
   function moveFeature(feature: ScenarioFeature, direction: "up" | "down") {
