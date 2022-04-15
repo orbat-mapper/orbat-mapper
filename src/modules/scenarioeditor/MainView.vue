@@ -31,7 +31,7 @@
         </TabItem>
         <TabItem label="Layers" v-slot="{ isActive }">
           <keep-alive>
-            <ScenarioLayers v-if="isActive" />
+            <ScenarioLayers v-if="isActive" v-model="showLayerPanel" />
           </keep-alive>
         </TabItem>
         <template #extra>
@@ -62,6 +62,11 @@
       </footer>
     </aside>
     <aside
+      v-show="showLayerPanel"
+      class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50"
+      data-teleport-layer
+    ></aside>
+    <aside
       class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50"
       v-if="showUnitPanel"
     >
@@ -74,9 +79,6 @@
         <TabItem label="Unit details">
           <UnitPanel :unit="activeUnit ? activeUnit : undefined" />
         </TabItem>
-        <!--        <TabItem label="Layers">-->
-        <!--          <LayersPanel />-->
-        <!--        </TabItem>-->
         <template #extra>
           <div class="flex pt-4">
             <CloseButton @click="toggleUnitPanel()" />
@@ -207,6 +209,7 @@ export default defineComponent({
     const geoStore = useGeoStore();
     const [showUnitPanel, toggleUnitPanel] = useToggle();
     const oobUnitClickBus = useEventBus(orbatUnitClick);
+    const showLayerPanel = ref(false);
 
     oobUnitClickBus.on((unit) => {
       activeUnitStore.toggleActiveUnit(unit);
@@ -253,7 +256,7 @@ export default defineComponent({
       }
     );
 
-    watch(showUnitPanel, (v) => {
+    watch([showUnitPanel, showLayerPanel], (v) => {
       nextTick(() => geoStore.updateMapSize());
     });
 
@@ -356,6 +359,7 @@ export default defineComponent({
       showUnitPanel,
       toggleUnitPanel,
       showKeyboardShortcuts,
+      showLayerPanel,
     };
   },
 });

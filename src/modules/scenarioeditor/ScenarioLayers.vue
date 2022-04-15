@@ -16,13 +16,18 @@ import {
   ScenarioLayer,
   ScenarioLayerInstance,
 } from "../../types/scenarioGeoModels";
-import Feature from "ol/Feature";
-import { Collection } from "ol";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { nanoid } from "nanoid";
 import { ScenarioFeatureActions, ScenarioLayerActions } from "../../types/constants";
 import ScenarioLayersListLayer from "./ScenarioLayersListLayer.vue";
-import { AnyVectorLayer } from "../../geo/types";
+import { useVModel } from "@vueuse/core";
+
+const props = defineProps<{
+  modelValue: boolean;
+}>();
+const emit = defineEmits(["update:modelValue"]);
+
+const showLayerPanel = useVModel(props, "modelValue", emit);
 
 const isActive = ref(true);
 const mapRef = useGeoStore().olMap! as OLMap;
@@ -46,6 +51,7 @@ const {
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 const activeLayer = ref<ScenarioLayerInstance | null>(null);
 const olCurrentLayer = shallowRef<VectorLayer<any> | null>(null);
+const activeFeature = ref<ScenarioFeature | null>(null);
 
 function addNewLayer() {
   addLayer({
@@ -107,6 +113,11 @@ function onLayerUpdate(layer: ScenarioLayer, data: Partial<ScenarioLayer>) {
   updateLayer(layer, data);
 }
 
+function onFeatureClick(feature: ScenarioFeature, layer: ScenarioLayer) {
+  activeFeature.value = activeFeature.value === feature ? null : feature;
+  showLayerPanel.value = activeFeature.value === feature;
+}
+
 onActivated(() => (isActive.value = true));
 onDeactivated(() => (isActive.value = false));
 </script>
@@ -133,6 +144,8 @@ onDeactivated(() => (isActive.value = false));
         @update-layer="onLayerUpdate"
         @toggle-layer="toggleLayerVisibility"
         @layer-action="onLayerAction"
+        @feature-click="onFeatureClick"
+        :active-feature="activeFeature"
       />
 
       <p class="my-5 text-right">
@@ -150,5 +163,8 @@ onDeactivated(() => (isActive.value = false));
       @add="addOlFeature"
       add-multiple
     />
+  </Teleport>
+  <Teleport to="[data-teleport-layer]" v-if="activeFeature">
+    <pre class="overflow-auto p-4 text-sm">{{ activeFeature }}</pre>
   </Teleport>
 </template>

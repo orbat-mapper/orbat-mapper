@@ -19,13 +19,16 @@ import ChevronPanel from "../../components/ChevronPanel.vue";
 const props = defineProps<{
   layer: ScenarioLayerInstance;
   isActive: boolean;
+  activeFeature: ScenarioFeature | null | undefined;
 }>();
+
 const emit = defineEmits([
   "set-active",
   "feature-action",
   "update-layer",
   "toggle-layer",
   "layer-action",
+  "feature-click",
 ]);
 
 const showEditNameForm = ref(props.layer?._isNew || false);
@@ -106,16 +109,22 @@ function onLayerAction(action: ScenarioLayerActions) {
           class="group flex items-center justify-between py-4"
           :key="feature.id"
         >
-          <div class="flex items-center">
+          <button
+            @click="emit('feature-click', feature, layer)"
+            class="flex items-center"
+          >
             <component :is="getIcon(feature)" class="h-5 w-5 text-gray-400" />
-            <span class="ml-2 text-sm text-gray-700 group-hover:text-gray-900">
+            <span
+              class="ml-2 text-sm text-gray-700 group-hover:text-gray-900"
+              :class="{ 'font-medium': activeFeature?.id === feature.id }"
+            >
               {{
                 feature.properties.name ||
                 feature.properties.type ||
                 feature.geometry.type
               }}
             </span>
-          </div>
+          </button>
           <div class="relative">
             <DotsMenu
               :items="featureMenuItems"
