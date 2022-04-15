@@ -147,13 +147,12 @@ onDeactivated(() => (isActive.value = false));
         @feature-click="onFeatureClick"
         :active-feature="activeFeature"
       />
-
       <p class="my-5 text-right">
         <BaseButton @click="addNewLayer" secondary> Add new layer</BaseButton>
       </p>
     </div>
   </div>
-  <Teleport :to="mapRef.getTargetElement()">
+  <Teleport to="[data-teleport-map]">
     <MapEditToolbar
       v-if="isActive && activeLayer && olCurrentLayer"
       :key="activeLayer.id"

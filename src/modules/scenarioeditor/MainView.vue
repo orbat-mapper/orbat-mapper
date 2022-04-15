@@ -86,7 +86,7 @@
         </template>
       </TabView>
     </aside>
-    <ScenarioMap class="flex-1" :key="scenarioStore.id" />
+    <ScenarioMap class="flex-1" :key="scenarioStore.id" data-teleport-map />
     <PlainButton class="fixed right-4 top-4 opacity-80" @click="isOpen = !isOpen">
       <MenuIcon class="h-5 w-5 opacity-100" />
     </PlainButton>
