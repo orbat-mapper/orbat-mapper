@@ -14,9 +14,39 @@ export const useScenarioLayersStore = defineStore("scenarioLayers", {
     getLayerById(id: string | number) {
       return this.layers.find((l) => l.id === id);
     },
+
     removeFeature(feature: ScenarioFeature, layer: ScenarioLayer) {
       layer.features = layer.features.filter((l) => l.id !== feature.id);
     },
+
+    getFeatureById(id: string | number, layer?: ScenarioLayer) {
+      if (layer) {
+        const feature = layer.features.find((e) => e.id === id);
+        return feature && { feature, layer };
+      }
+
+      for (let index = 0, ii = this.layers.length; index < ii; ++index) {
+        const layer = this.layers[index];
+        const feature = layer.features.find((e) => e.id === id);
+        if (feature) {
+          return { feature, layer };
+        }
+      }
+    },
+
+    updateFeature(
+      featureId: string | number,
+      data: Partial<ScenarioFeature>,
+      layer: ScenarioLayer
+    ) {
+      const featuresCopy = [...layer.features];
+      const idx = featuresCopy.findIndex((e) => e.id === featureId);
+      if (idx < 0) return;
+      let existingFeature = featuresCopy[idx];
+      Object.assign(existingFeature, data);
+      layer.features = featuresCopy;
+    },
+
     updateLayer(layer: ScenarioLayer, data: Partial<ScenarioLayer>) {
       const l = this.getLayerById(layer.id);
       if (!l) return;

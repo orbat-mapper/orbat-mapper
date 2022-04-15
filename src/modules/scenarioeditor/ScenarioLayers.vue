@@ -21,6 +21,7 @@ import { nanoid } from "nanoid";
 import { ScenarioFeatureActions, ScenarioLayerActions } from "../../types/constants";
 import ScenarioLayersListLayer from "./ScenarioLayersListLayer.vue";
 import { useVModel } from "@vueuse/core";
+import Feature from "ol/Feature";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -46,6 +47,7 @@ const {
   addOlFeature,
   moveFeature,
   moveLayer,
+  updateFeatureFromOlFeature,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -118,6 +120,10 @@ function onFeatureClick(feature: ScenarioFeature, layer: ScenarioLayer) {
   showLayerPanel.value = activeFeature.value === feature;
 }
 
+function onFeatureModify(olFeatures: Feature[]) {
+  olFeatures.forEach((f) => updateFeatureFromOlFeature(f));
+}
+
 onActivated(() => (isActive.value = true));
 onDeactivated(() => (isActive.value = false));
 </script>
@@ -160,6 +166,7 @@ onDeactivated(() => (isActive.value = false));
       :layer="olCurrentLayer"
       class="absolute left-3 top-[150px]"
       @add="addOlFeature"
+      @modify="onFeatureModify"
       add-multiple
     />
   </Teleport>

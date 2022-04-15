@@ -51,7 +51,9 @@ export function useEditingInteraction(
   select.setActive(false);
   const modify = new Modify({ features: select.getFeatures(), pixelTolerance: 20 });
 
-  useOlEvent(modify.on("modifyend", (event) => emit && emit("modify", event.features)));
+  useOlEvent(
+    modify.on("modifyend", (event) => emit && emit("modify", event.features.getArray()))
+  );
   olMap.addInteraction(modify);
   modify.setActive(false);
 

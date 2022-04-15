@@ -11,7 +11,6 @@ import {
   isCircle,
   useOlEvent,
 } from "./openlayersHelpers";
-import { SimpleGeometry } from "ol/geom";
 import { GeoJSON } from "ol/format";
 import { point } from "@turf/helpers";
 import Feature from "ol/Feature";
@@ -216,6 +215,19 @@ export function useScenarioLayers(olMap: OLMap) {
     }
   }
 
+  function updateFeatureFromOlFeature(olFeature: Feature) {
+    const t = convertOlFeatureToScenarioFeature(olFeature);
+    const id = olFeature.getId();
+    if (!id) return;
+    const { feature, layer } = layersStore.getFeatureById(id) || {};
+    if (!(feature && layer)) return;
+    const dataUpdate = {
+      properties: { ...feature.properties, ...t.properties },
+      geometry: t.geometry,
+    };
+    layersStore.updateFeature(id, dataUpdate, layer);
+  }
+
   function toggleLayerVisibility(scenarioLayer: ScenarioLayer) {
     const olLayer = getOlLayerById(scenarioLayer.id);
     if (!olLayer) return;
@@ -239,6 +251,7 @@ export function useScenarioLayers(olMap: OLMap) {
     moveFeature,
     addOlFeature,
     moveLayer,
+    updateFeatureFromOlFeature,
   };
 }
 
@@ -282,7 +295,6 @@ export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
   const eventKeys = [] as EventsKey[];
 
   function addListener(l: VectorLayer<any>) {
-    const source = l.getSource() as VectorSource<SimpleGeometry>;
     eventKeys.push(
       l.on("change:visible", (event) => {
         const isVisible = l.getVisible();
