@@ -83,7 +83,11 @@ function onFeatureAction(
   layer: ScenarioLayer
 ) {
   if (action === ScenarioFeatureActions.Zoom) zoomToFeature(feature);
-  if (action === ScenarioFeatureActions.Delete) deleteFeature(feature, layer);
+  if (action === ScenarioFeatureActions.Delete) {
+    if (feature === activeFeature.value) activeFeature.value = null;
+    showLayerPanel.value = false;
+    deleteFeature(feature, layer);
+  }
   if (
     action === ScenarioFeatureActions.MoveUp ||
     action === ScenarioFeatureActions.MoveDown
