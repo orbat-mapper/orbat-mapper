@@ -1,20 +1,12 @@
 <script setup lang="ts">
 import { ScenarioFeature, ScenarioLayerInstance } from "../../types/scenarioGeoModels";
-import {
-  Eye as EyeIcon,
-  EyeOff,
-  MapMarker,
-  Pencil as PencilIcon,
-  PencilOff,
-  VectorCircleVariant,
-  VectorLine,
-  VectorTriangle,
-} from "mdue";
+import { Eye as EyeIcon, EyeOff, Pencil as PencilIcon, PencilOff } from "mdue";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import { ScenarioFeatureActions, ScenarioLayerActions } from "../../types/constants";
 import { ref } from "vue";
 import EditLayerInlineForm from "./EditLayerInlineForm.vue";
 import ChevronPanel from "../../components/ChevronPanel.vue";
+import { getGeometryIcon } from "../../composables/scenarioLayers";
 
 const props = defineProps<{
   layer: ScenarioLayerInstance;
@@ -33,13 +25,6 @@ const emit = defineEmits([
 
 const showEditNameForm = ref(props.layer?._isNew || false);
 
-const typeMap: any = {
-  Point: MapMarker,
-  LineString: VectorLine,
-  Polygon: VectorTriangle,
-  Circle: VectorCircleVariant,
-};
-
 const layerMenuItems: MenuItemData<ScenarioLayerActions>[] = [
   { label: "Zoom to", action: ScenarioLayerActions.Zoom },
   { label: "Rename", action: ScenarioLayerActions.Rename },
@@ -54,10 +39,6 @@ const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
   // { label: "Move down", action: ScenarioFeatureActions.MoveDown },
   { label: "Delete", action: ScenarioFeatureActions.Delete },
 ];
-
-function getIcon(feature: ScenarioFeature) {
-  return typeMap[feature.properties.type];
-}
 
 function onLayerAction(action: ScenarioLayerActions) {
   if (action === ScenarioLayerActions.Rename) showEditNameForm.value = true;
@@ -118,7 +99,7 @@ function onLayerAction(action: ScenarioLayerActions) {
             @click="emit('feature-click', feature, layer)"
             class="flex items-center"
           >
-            <component :is="getIcon(feature)" class="h-5 w-5 text-gray-400" />
+            <component :is="getGeometryIcon(feature)" class="h-5 w-5 text-gray-400" />
             <span
               class="ml-2 text-sm text-gray-700 group-hover:text-gray-900"
               :class="{ 'font-bold': activeFeature?.id === feature.id }"

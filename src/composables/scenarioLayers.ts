@@ -38,10 +38,22 @@ import { EventsKey } from "ol/events";
 import { useScenarioLayersStore } from "../stores/scenarioLayersStore";
 import { AnyVectorLayer } from "../geo/types";
 import { moveItemMutable } from "../utils";
+import { MapMarker, VectorCircleVariant, VectorLine, VectorTriangle } from "mdue";
 
 export enum LayerType {
   overlay = "OVERLAY",
   units = "UNITS",
+}
+
+const geometryIconMap: any = {
+  Point: MapMarker,
+  LineString: VectorLine,
+  Polygon: VectorTriangle,
+  Circle: VectorCircleVariant,
+};
+
+export function getGeometryIcon(feature: ScenarioFeature) {
+  return geometryIconMap[feature.properties.type];
 }
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
@@ -172,6 +184,7 @@ export function useScenarioLayers(olMap: OLMap) {
       scenarioLayer.features.length + 1
     }`;
     scenarioLayer && layersStore.addFeature(scenarioFeature, scenarioLayer);
+    return scenarioFeature;
   }
 
   function moveFeature(feature: ScenarioFeature, direction: "up" | "down") {
