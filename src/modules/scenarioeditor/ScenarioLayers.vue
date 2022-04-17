@@ -23,6 +23,7 @@ import ScenarioLayersListLayer from "./ScenarioLayersListLayer.vue";
 import { useToggle, useVModel } from "@vueuse/core";
 import Feature from "ol/Feature";
 import ScenarioLayersPanel from "./ScenarioLayersPanel.vue";
+import { AnyVectorLayer } from "../../geo/types";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -51,6 +52,7 @@ const {
   moveFeature,
   moveLayer,
   updateFeatureFromOlFeature,
+  getFeatureLayer,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -83,9 +85,12 @@ function setActiveLayer(layer: ScenarioLayer) {
 function onFeatureAction(
   feature: ScenarioFeature,
   action: ScenarioFeatureActions,
-  layer: ScenarioLayer
+  scenarioLayer?: ScenarioLayer
 ) {
   if (action === ScenarioFeatureActions.Zoom) zoomToFeature(feature);
+  const layer = scenarioLayer || getFeatureLayer(feature);
+  if (!layer) return;
+
   if (action === ScenarioFeatureActions.Delete) {
     if (feature === activeFeature.value) activeFeature.value = null;
     showLayerPanel.value = false;
@@ -131,6 +136,11 @@ function onFeatureModify(olFeatures: Feature[]) {
   olFeatures.forEach((f) => updateFeatureFromOlFeature(f));
 }
 
+function onFeatureAdd(olFeature: Feature, olLayer: AnyVectorLayer) {
+  const scenarioFeature = addOlFeature(olFeature, olLayer);
+  activeFeature.value = scenarioFeature;
+}
+
 onActivated(() => (isActive.value = true));
 onDeactivated(() => (isActive.value = false));
 </script>
@@ -172,12 +182,16 @@ onDeactivated(() => (isActive.value = false));
       :ol-map="mapRef"
       :layer="olCurrentLayer"
       class="absolute left-3 top-[150px]"
-      @add="addOlFeature"
+      @add="onFeatureAdd"
       @modify="onFeatureModify"
       add-multiple
     />
   </Teleport>
   <Teleport to="[data-teleport-layer]" v-if="activeFeature">
-    <ScenarioLayersPanel :feature="activeFeature" @close="toggleLayerPanel()" />
+    <ScenarioLayersPanel
+      :feature="activeFeature"
+      @close="toggleLayerPanel()"
+      @feature-action="onFeatureAction"
+    />
   </Teleport>
 </template>

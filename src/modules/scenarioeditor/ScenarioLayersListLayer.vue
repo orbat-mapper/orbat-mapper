@@ -2,11 +2,11 @@
 import { ScenarioFeature, ScenarioLayerInstance } from "../../types/scenarioGeoModels";
 import { Eye as EyeIcon, EyeOff, Pencil as PencilIcon, PencilOff } from "mdue";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
-import { ScenarioFeatureActions, ScenarioLayerActions } from "../../types/constants";
+import { ScenarioLayerActions } from "../../types/constants";
 import { ref } from "vue";
 import EditLayerInlineForm from "./EditLayerInlineForm.vue";
 import ChevronPanel from "../../components/ChevronPanel.vue";
-import { getGeometryIcon } from "../../composables/scenarioLayers";
+import { featureMenuItems, getGeometryIcon } from "../../composables/scenarioLayers";
 
 const props = defineProps<{
   layer: ScenarioLayerInstance;
@@ -31,13 +31,6 @@ const layerMenuItems: MenuItemData<ScenarioLayerActions>[] = [
   { label: "Move up", action: ScenarioLayerActions.MoveUp },
   { label: "Move down", action: ScenarioLayerActions.MoveDown },
   { label: "Delete", action: ScenarioLayerActions.Delete },
-];
-
-const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
-  { label: "Zoom to", action: ScenarioFeatureActions.Zoom },
-  // { label: "Move up", action: ScenarioFeatureActions.MoveUp },
-  // { label: "Move down", action: ScenarioFeatureActions.MoveDown },
-  { label: "Delete", action: ScenarioFeatureActions.Delete },
 ];
 
 function onLayerAction(action: ScenarioLayerActions) {

@@ -39,6 +39,8 @@ import { useScenarioLayersStore } from "../stores/scenarioLayersStore";
 import { AnyVectorLayer } from "../geo/types";
 import { moveItemMutable } from "../utils";
 import { MapMarker, VectorCircleVariant, VectorLine, VectorTriangle } from "mdue";
+import { MenuItemData } from "../components/DotsMenu.vue";
+import { ScenarioFeatureActions } from "../types/constants";
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -55,6 +57,13 @@ const geometryIconMap: any = {
 export function getGeometryIcon(feature: ScenarioFeature) {
   return geometryIconMap[feature.properties.type];
 }
+
+export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
+  { label: "Zoom to", action: ScenarioFeatureActions.Zoom },
+  // { label: "Move up", action: ScenarioFeatureActions.MoveUp },
+  // { label: "Move down", action: ScenarioFeatureActions.MoveDown },
+  { label: "Delete", action: ScenarioFeatureActions.Delete },
+];
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
@@ -131,6 +140,8 @@ export function useScenarioLayers(olMap: OLMap) {
     VectorLayer<any>
   >;
   const projection = olMap.getView().getProjection();
+
+  const featureLayerCache = new Map<string | number, ScenarioLayer>();
 
   function initializeFromStore() {
     scenarioLayersOl.clear();
@@ -252,6 +263,16 @@ export function useScenarioLayers(olMap: OLMap) {
     layersStore.updateLayer(scenarioLayer, { isHidden: isVisible });
   }
 
+  function getFeatureLayer(feature: ScenarioFeature): ScenarioLayer | undefined | null {
+    const cached = featureLayerCache.get(feature.id);
+    if (cached) return cached;
+    const { layer } = layersStore.getFeatureById(feature.id) || {};
+    if (layer) {
+      featureLayerCache.set(feature.id, layer);
+      return layer;
+    }
+  }
+
   return {
     scenarioLayersGroup,
     initializeFromStore,
@@ -268,6 +289,7 @@ export function useScenarioLayers(olMap: OLMap) {
     addOlFeature,
     moveLayer,
     updateFeatureFromOlFeature,
+    getFeatureLayer,
   };
 }
 
