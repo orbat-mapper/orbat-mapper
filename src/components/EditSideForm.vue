@@ -9,8 +9,8 @@
       />
 
       <div class="flex justify-end space-x-2">
-        <PlainButton @click="$emit('close')">Cancel</PlainButton>
-        <PrimaryButton type="submit">Update</PrimaryButton>
+        <BaseButton small primary type="submit">Save</BaseButton>
+        <BaseButton @click="$emit('close')">Cancel</BaseButton>
       </div>
     </form>
   </InlineFormPanel>
@@ -28,10 +28,12 @@ import SymbolCodeSelect from "./SymbolCodeSelect.vue";
 import { standardIdentityValues } from "../symbology/values";
 import { SymbolItem } from "../types/constants";
 import { useFocusOnMount } from "./helpers";
+import BaseButton from "./BaseButton.vue";
 
 export default defineComponent({
   name: "EditSideForm",
   components: {
+    BaseButton,
     SymbolCodeSelect,
     InlineFormPanel,
     PrimaryButton,

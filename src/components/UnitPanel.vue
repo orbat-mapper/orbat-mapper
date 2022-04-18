@@ -33,7 +33,7 @@
       />
 
       <div class="flex items-center justify-end space-x-2">
-        <BaseButton type="submit" small primary>Update</BaseButton>
+        <BaseButton type="submit" small primary>Save</BaseButton>
         <BaseButton small @click="toggleEditMode()">Cancel</BaseButton>
       </div>
     </form>

@@ -61,8 +61,8 @@
         </FormCard>
         <!--        <FormCard label="Order of Battle"></FormCard>-->
         <div class="flex justify-end space-x-3 px-4 sm:px-0">
-          <BaseButton @click="cancel()">Cancel</BaseButton>
           <BaseButton primary @click="create()">Create scenario</BaseButton>
+          <BaseButton @click="cancel()">Cancel</BaseButton>
         </div>
       </main>
     </div>
