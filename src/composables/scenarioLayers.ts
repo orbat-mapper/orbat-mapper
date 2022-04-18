@@ -242,6 +242,18 @@ export function useScenarioLayers(olMap: OLMap) {
     }
   }
 
+  function updateFeature(scenarioFeature: ScenarioFeature, data: Partial<ScenarioFeatureProperties>) {
+    const id = scenarioFeature.id;
+    const { feature, layer } = layersStore.getFeatureById(id) || {};
+    if (!(feature && layer)) return;
+    const dataUpdate = {
+      properties: { ...feature.properties, ...data },
+    };
+    layersStore.updateFeature(id, dataUpdate, layer);
+
+
+  }
+
   function updateFeatureFromOlFeature(olFeature: Feature) {
     const t = convertOlFeatureToScenarioFeature(olFeature);
     const id = olFeature.getId();
@@ -290,6 +302,7 @@ export function useScenarioLayers(olMap: OLMap) {
     moveLayer,
     updateFeatureFromOlFeature,
     getFeatureLayer,
+    updateFeature,
   };
 }
 

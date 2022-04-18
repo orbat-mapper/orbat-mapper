@@ -15,6 +15,7 @@ export type ScenarioFeatureType =
 export interface ScenarioFeatureProperties extends Partial<SimpleStyleSpec> {
   type: ScenarioFeatureType;
   name?: string;
+  description?: string;
   [attribute: string]: any;
 }
 

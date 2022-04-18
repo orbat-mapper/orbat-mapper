@@ -53,6 +53,7 @@ const {
   moveLayer,
   updateFeatureFromOlFeature,
   getFeatureLayer,
+  updateFeature,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -127,6 +128,8 @@ function onLayerUpdate(layer: ScenarioLayer, data: Partial<ScenarioLayer>) {
   updateLayer(layer, data);
 }
 
+
+
 function onFeatureClick(feature: ScenarioFeature, layer: ScenarioLayer) {
   activeFeature.value = activeFeature.value === feature ? null : feature;
   showLayerPanel.value = activeFeature.value === feature;
@@ -199,6 +202,7 @@ watch(isActive, (active) => {
       :feature="activeFeature"
       @close="toggleLayerPanel()"
       @feature-action="onFeatureAction"
+      @feature-meta-update="updateFeature"
     />
   </Teleport>
 </template>
