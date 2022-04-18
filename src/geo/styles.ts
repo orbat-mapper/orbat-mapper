@@ -46,6 +46,7 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style {
       outlineColor: "white",
       outlineWidth: 8,
       standard: settingsStore.symbologyStandard,
+      simpleStatusModifier: true,
     });
     const style = createMilSymbolStyle(milSymbol);
     selectedUnitStyleCache.set(key, style);
@@ -64,6 +65,7 @@ export function createSelectedUnitStyleFromFeature(feature: FeatureLike): Style 
       outlineWidth: 20,
       uniqueDesignation: name || shortName,
       standard: settingsStore.symbologyStandard,
+      simpleStatusModifier: true,
     });
     const style = createMilSymbolStyle(milSymbol);
     style.setZIndex(10);
