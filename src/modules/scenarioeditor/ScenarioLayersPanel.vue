@@ -17,8 +17,7 @@ import { ScenarioFeatureActions } from "../../types/constants";
 import DotsMenu from "../../components/DotsMenu.vue";
 import { useToggle } from "@vueuse/core";
 import InputGroup from "../../components/InputGroup.vue";
-import PlainButton from "../../components/PlainButton.vue";
-import PrimaryButton from "../../components/PrimaryButton.vue";
+import BaseButton from "../../components/BaseButton.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("../../components/SimpleMarkdownInput.vue")
@@ -98,9 +97,9 @@ const noFill = ref(false);
             v-model="formMeta.description"
             description="Use markdown syntax for formatting"
           />
-          <div class="flex justify-end space-x-2">
-            <PrimaryButton type="submit">Save</PrimaryButton>
-            <PlainButton @click="toggleMetaEdit()">Cancel</PlainButton>
+          <div class="flex items-center justify-end space-x-2">
+            <BaseButton primary small type="submit">Save</BaseButton>
+            <BaseButton small @click="toggleMetaEdit()">Cancel</BaseButton>
           </div>
         </form>
         <section v-else class="space-y-4">
