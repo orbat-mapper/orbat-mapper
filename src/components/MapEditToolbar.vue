@@ -35,7 +35,7 @@ onKeyStroke("Escape", (event) => {
 
 <template>
   <div class="flex flex-col">
-    <VerticalToolbar>
+    <VerticalToolbar class="shadow">
       <ToolbarButton
         top
         title="Draw point feature"
@@ -69,7 +69,7 @@ onKeyStroke("Escape", (event) => {
       </ToolbarButton>
     </VerticalToolbar>
 
-    <VerticalToolbar class="mt-2">
+    <VerticalToolbar class="mt-2 shadow">
       <ToolbarButton
         top
         title="Modify feature"

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <BaseToolbar>
+    <BaseToolbar class="shadow">
       <ToolbarButton
         start
         :end="!enableMeasurements"

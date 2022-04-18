@@ -9,7 +9,7 @@
     />
     <MeasurementToolbar v-if="mapRef" class="absolute left-3 bottom-4" :ol-map="mapRef" />
     <div v-if="mapRef" class="absolute left-3 bottom-16">
-      <BaseToolbar>
+      <BaseToolbar class="shadow">
         <ToolbarButton start end @click="toggleModify">
           <CursorDefault v-if="modifyEnabled" class="h-5 w-5" aria-hidden="true" />
           <CursorMove v-else class="h-5 w-5" aria-hidden="true" />
