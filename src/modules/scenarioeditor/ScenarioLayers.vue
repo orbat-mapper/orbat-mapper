@@ -128,8 +128,6 @@ function onLayerUpdate(layer: ScenarioLayer, data: Partial<ScenarioLayer>) {
   updateLayer(layer, data);
 }
 
-
-
 function onFeatureClick(feature: ScenarioFeature, layer: ScenarioLayer) {
   activeFeature.value = activeFeature.value === feature ? null : feature;
   showLayerPanel.value = activeFeature.value === feature;
@@ -185,6 +183,7 @@ watch(isActive, (active) => {
       </p>
     </div>
   </div>
+
   <Teleport to="[data-teleport-map]">
     <MapEditToolbar
       v-if="isActive && activeLayer && olCurrentLayer"

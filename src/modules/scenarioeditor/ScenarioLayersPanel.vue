@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { MagnifyPlusOutline } from "mdue";
+import { GlobalEvents } from "vue-global-events";
 import {
   ScenarioFeature,
   ScenarioFeatureProperties,
@@ -8,7 +9,7 @@ import TabView from "../../components/TabView.vue";
 import TabItem from "../../components/TabItem.vue";
 import CloseButton from "../../components/CloseButton.vue";
 import DescriptionItem from "../../components/DescriptionItem.vue";
-import { computed, defineAsyncComponent, ref, watch } from "vue";
+import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
 import { renderMarkdown } from "../../composables/formatting";
 import { featureMenuItems, getGeometryIcon } from "../../composables/scenarioLayers";
 import BaseToolbar from "../../components/BaseToolbar.vue";
@@ -18,6 +19,7 @@ import DotsMenu from "../../components/DotsMenu.vue";
 import { useToggle } from "@vueuse/core";
 import InputGroup from "../../components/InputGroup.vue";
 import BaseButton from "../../components/BaseButton.vue";
+import { inputEventFilter } from "../../components/helpers";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("../../components/SimpleMarkdownInput.vue")
@@ -48,6 +50,13 @@ function onFormMetaSubmit() {
   emit("feature-meta-update", props.feature, { ...formMeta.value });
   toggleMetaEdit();
 }
+
+const doFormFocus = async () => {
+  isMetaEditMode.value = true;
+  await nextTick();
+  const inputElement = document.getElementById("name-input");
+  inputElement && inputElement.focus();
+};
 
 const noStroke = ref(false);
 const noFill = ref(false);
@@ -131,4 +140,6 @@ const noFill = ref(false);
       </div>
     </TabItem>
   </TabView>
+
+  <GlobalEvents :filter="inputEventFilter" @keyup.e="doFormFocus" />
 </template>
