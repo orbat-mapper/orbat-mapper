@@ -4,8 +4,7 @@ import { ScenarioLayer, ScenarioLayerInstance } from "../../types/scenarioGeoMod
 import { useFocusOnMount } from "../../components/helpers";
 import InputGroup from "../../components/InputGroup.vue";
 import InlineFormPanel from "../../components/InlineFormPanel.vue";
-import PlainButton from "../../components/PlainButton.vue";
-import PrimaryButton from "../../components/PrimaryButton.vue";
+import BaseButton from "../../components/BaseButton.vue";
 
 const props = defineProps<{
   layer: ScenarioLayerInstance;
@@ -31,9 +30,9 @@ const { focusId } = useFocusOnMount();
         @keyup.esc="emit('close')"
       />
 
-      <div class="my-4 flex justify-end space-x-2">
-        <PlainButton @click="emit('close')">Cancel</PlainButton>
-        <PrimaryButton type="submit">Update</PrimaryButton>
+      <div class="my-4 flex items-center justify-end space-x-2">
+        <BaseButton primary small type="submit">Save</BaseButton>
+        <BaseButton small @click="emit('close')">Cancel</BaseButton>
       </div>
     </form>
   </InlineFormPanel>
