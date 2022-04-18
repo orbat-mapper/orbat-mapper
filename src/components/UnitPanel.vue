@@ -6,6 +6,15 @@
       </div>
       <p class="pt-2 font-medium">{{ unit.name }}</p>
     </header>
+    <div class="mb-4 flex">
+      <BaseButton
+        :class="isEditMode && 'bg-gray-100 text-black'"
+        @click="toggleEditMode()"
+        >Edit
+      </BaseButton>
+      <SplitButton class="ml-2" :items="buttonItems" />
+    </div>
+
     <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="mt-0 space-y-4">
       <InputGroup label="Name" v-model="form.name" id="name-input" />
       <InputGroup
@@ -23,9 +32,9 @@
         description="Use markdown syntax for formatting"
       />
 
-      <div class="flex justify-end space-x-2">
-        <PlainButton>Reset</PlainButton>
-        <PrimaryButton type="submit">Update</PrimaryButton>
+      <div class="flex items-center justify-end space-x-2">
+        <BaseButton type="submit" small primary>Update</BaseButton>
+        <BaseButton small @click="toggleEditMode()">Cancel</BaseButton>
       </div>
     </form>
     <div v-else class="mb-4 space-y-4">
@@ -42,10 +51,7 @@
         <div class="prose prose-sm" v-html="hDescription"></div>
       </DescriptionItem>
     </div>
-    <div class="flex">
-      <PlainButton @click="toggleEditMode()">Edit</PlainButton>
-      <SplitButton class="ml-2" :items="buttonItems" />
-    </div>
+
     <UnitPanelState v-if="unit?.state?.length" :unit="unit" />
     <GlobalEvents :filter="eventFilter" @keyup.e="doFormFocus" />
   </div>
@@ -80,10 +86,16 @@ import { useUnitActions } from "../composables/scenarioActions";
 import { UnitActions } from "../types/constants";
 import SymbolPickerInput from "./SymbolPickerInput.vue";
 import SplitButton from "./SplitButton.vue";
+import BaseToolbar from "./BaseToolbar.vue";
+import ToolbarButton from "./ToolbarButton.vue";
+import BaseButton from "./BaseButton.vue";
 
 export default defineComponent({
   name: "UnitPanel",
   components: {
+    BaseButton,
+    ToolbarButton,
+    BaseToolbar,
     SplitButton,
     SymbolPickerInput,
     ButtonGroup,
@@ -109,14 +121,15 @@ export default defineComponent({
       externalUrl: "",
     });
     const geoStore = useGeoStore();
-    const onFormSubmit = () => {
-      console.log("Submit", form.value);
-      Object.assign(props.unit, form.value);
-    };
 
     const isEditMode = ref(false);
     const toggleEditMode = useToggle(isEditMode);
     const showSymbolPicker = ref(false);
+
+    const onFormSubmit = () => {
+      Object.assign(props.unit, form.value);
+      toggleEditMode();
+    };
 
     const doFormFocus = async () => {
       isEditMode.value = true;
