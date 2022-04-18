@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onActivated, onDeactivated, ref, shallowRef } from "vue";
+import { onActivated, onDeactivated, ref, shallowRef, watch } from "vue";
 import BaseButton from "../../components/BaseButton.vue";
 import OLMap from "ol/Map";
 import { useGeoStore } from "../../stores/geoStore";
@@ -143,6 +143,13 @@ function onFeatureAdd(olFeature: Feature, olLayer: AnyVectorLayer) {
 
 onActivated(() => (isActive.value = true));
 onDeactivated(() => (isActive.value = false));
+
+watch(isActive, (active) => {
+  if (showLayerPanel.value && !active) {
+    showLayerPanel.value = false;
+    activeFeature.value = null;
+  }
+});
 </script>
 
 <template>
