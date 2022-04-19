@@ -94,7 +94,7 @@ function onLayerAction(action: ScenarioLayerActions) {
           >
             <component :is="getGeometryIcon(feature)" class="h-5 w-5 text-gray-400" />
             <span
-              class="ml-2 text-sm text-gray-700 group-hover:text-gray-900"
+              class="ml-2 text-left text-sm text-gray-700 group-hover:text-gray-900"
               :class="{ 'font-bold': activeFeature?.id === feature.id }"
             >
               {{
