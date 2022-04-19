@@ -23,7 +23,7 @@ export const defaultSimplestyleStroke = new Stroke({ color: "#555555", width: 2 
 export const defaultSimplestyleFill = new Fill({ color: [0x55, 0x55, 0x55, 0.25] });
 
 export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
-  let stroke = defaultSimplestyleStroke;
+  let stroke: Stroke | undefined = defaultSimplestyleStroke;
   let fill: Fill | undefined = defaultSimplestyleFill;
   if (opts.stroke === undefined && opts.fill === undefined) return; // use default layer style
 
@@ -31,6 +31,8 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
     let strokeColor = [...olColor.fromString(opts.stroke)];
     if (opts["stroke-opacity"]) strokeColor[3] = opts["stroke-opacity"];
     stroke = new Stroke({ color: strokeColor, width: opts["stroke-width"] || 2 });
+  } else if (opts.stroke === null) {
+    stroke = undefined;
   }
 
   if (opts.fill) {

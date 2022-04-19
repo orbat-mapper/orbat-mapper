@@ -176,7 +176,6 @@ export function useScenarioLayers(olMap: OLMap) {
       getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
     if (!olFeature) return;
     const view = olMap.getView();
-    console.log(olFeature.getGeometry().getExtent());
     view.animate({
       center: getCenter(olFeature.getGeometry().getExtent()),
     });
