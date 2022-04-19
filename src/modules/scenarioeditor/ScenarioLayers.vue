@@ -54,6 +54,7 @@ const {
   updateFeatureFromOlFeature,
   getFeatureLayer,
   updateFeature,
+  panToFeature,
 } = useScenarioLayers(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
@@ -89,6 +90,7 @@ function onFeatureAction(
   scenarioLayer?: ScenarioLayer
 ) {
   if (action === ScenarioFeatureActions.Zoom) zoomToFeature(feature);
+  if (action === ScenarioFeatureActions.Pan) panToFeature(feature);
   const layer = scenarioLayer || getFeatureLayer(feature);
   if (!layer) return;
 

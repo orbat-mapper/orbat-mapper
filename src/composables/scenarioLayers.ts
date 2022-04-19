@@ -2,7 +2,7 @@ import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
-import { isEmpty } from "ol/extent";
+import { getCenter, isEmpty } from "ol/extent";
 import { nanoid } from "nanoid";
 import { Collection } from "ol";
 import {
@@ -60,6 +60,7 @@ export function getGeometryIcon(feature: ScenarioFeature) {
 
 export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
   { label: "Zoom to", action: ScenarioFeatureActions.Zoom },
+  { label: "Pan to", action: ScenarioFeatureActions.Pan },
   // { label: "Move up", action: ScenarioFeatureActions.MoveUp },
   // { label: "Move down", action: ScenarioFeatureActions.MoveDown },
   { label: "Delete", action: ScenarioFeatureActions.Delete },
@@ -170,6 +171,17 @@ export function useScenarioLayers(olMap: OLMap) {
     olMap.getView().fit(olFeature.getGeometry(), { maxZoom: 17 });
   }
 
+  function panToFeature(feature: ScenarioFeature) {
+    const { feature: olFeature } =
+      getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
+    if (!olFeature) return;
+    const view = olMap.getView();
+    console.log(olFeature.getGeometry().getExtent());
+    view.animate({
+      center: getCenter(olFeature.getGeometry().getExtent()),
+    });
+  }
+
   function zoomToLayer(layer: ScenarioLayer) {
     const olLayer = getOlLayerById(layer.id);
     if (!olLayer) return;
@@ -242,7 +254,10 @@ export function useScenarioLayers(olMap: OLMap) {
     }
   }
 
-  function updateFeature(scenarioFeature: ScenarioFeature, data: Partial<ScenarioFeatureProperties>) {
+  function updateFeature(
+    scenarioFeature: ScenarioFeature,
+    data: Partial<ScenarioFeatureProperties>
+  ) {
     const id = scenarioFeature.id;
     const { feature, layer } = layersStore.getFeatureById(id) || {};
     if (!(feature && layer)) return;
@@ -250,8 +265,6 @@ export function useScenarioLayers(olMap: OLMap) {
       properties: { ...feature.properties, ...data },
     };
     layersStore.updateFeature(id, dataUpdate, layer);
-
-
   }
 
   function updateFeatureFromOlFeature(olFeature: Feature) {
@@ -303,6 +316,7 @@ export function useScenarioLayers(olMap: OLMap) {
     updateFeatureFromOlFeature,
     getFeatureLayer,
     updateFeature,
+    panToFeature,
   };
 }
 

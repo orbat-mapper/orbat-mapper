@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MagnifyPlusOutline } from "mdue";
+import { MagnifyPlusOutline, ImageFilterCenterFocus } from "mdue";
 import { GlobalEvents } from "vue-global-events";
 import {
   ScenarioFeature,
@@ -81,6 +81,12 @@ const noFill = ref(false);
                 title="Zoom to"
               >
                 <MagnifyPlusOutline class="h-5 w-5" />
+              </ToolbarButton>
+              <ToolbarButton
+                @click="emit('feature-action', feature, ScenarioFeatureActions.Pan)"
+                title="Pan to"
+              >
+                <ImageFilterCenterFocus class="h-5 w-5" />
               </ToolbarButton>
               <ToolbarButton @click="toggleMetaEdit()" :active="isMetaEditMode" end
                 ><span class="px-1">Edit</span></ToolbarButton

@@ -38,6 +38,7 @@ export const enum ScenarioFeatureActions {
   Zoom = "Zoom",
   MoveUp = "MoveUp",
   MoveDown = "MoveDown",
+  Pan = "Pan",
 }
 
 export const enum ScenarioLayerActions {
