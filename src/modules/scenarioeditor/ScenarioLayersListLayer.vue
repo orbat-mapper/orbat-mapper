@@ -40,7 +40,13 @@ function onLayerAction(action: ScenarioLayerActions) {
 </script>
 
 <template>
-  <ChevronPanel :label="layer.name" :default-open="showEditNameForm">
+  <ChevronPanel
+    :label="layer.name"
+    :default-open="showEditNameForm"
+    :defaultOpen="layer._isOpen"
+    @opened="layer._isOpen = true"
+    @closed="layer._isOpen = false"
+  >
     <template #label>
       <span> {{ layer.name }} </span
       ><span

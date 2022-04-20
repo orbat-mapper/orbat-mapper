@@ -33,6 +33,7 @@ export interface ScenarioLayer {
   features: ScenarioFeature[];
   _isNew?: boolean;
   isHidden?: boolean;
+  _isOpen?: boolean;
 }
 
 export interface ScenarioLayerInstance extends ScenarioLayer {
