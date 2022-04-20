@@ -1,7 +1,16 @@
+<script setup>
+import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
+import { MinusSmIcon, PlusSmIcon } from "@heroicons/vue/solid";
+
+const props = defineProps(["label"]);
+const emit = defineEmits(["opened", "closed"]);
+</script>
+
 <template>
   <Disclosure as="div" class="border-b border-gray-200 py-6" v-slot="{ open }">
     <h3 class="-my-3 flow-root">
       <DisclosureButton
+        @click="open ? emit('closed') : emit('opened')"
         class="group flex w-full items-center justify-between py-3 text-sm text-gray-400"
       >
         <span class="font-bold text-gray-900">
@@ -27,34 +36,3 @@
     </DisclosurePanel>
   </Disclosure>
 </template>
-
-<script>
-import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
-import { XIcon } from "@heroicons/vue/outline";
-import {
-  ChevronDownIcon,
-  FilterIcon,
-  MinusSmIcon,
-  PlusSmIcon,
-  ViewGridIcon,
-} from "@heroicons/vue/solid";
-
-export default {
-  name: "AccordionPanel",
-  components: {
-    Disclosure,
-    DisclosureButton,
-    DisclosurePanel,
-    ChevronDownIcon,
-    FilterIcon,
-    MinusSmIcon,
-    PlusSmIcon,
-    ViewGridIcon,
-    XIcon,
-  },
-  props: ["label"],
-  setup() {
-    return {};
-  },
-};
-</script>
