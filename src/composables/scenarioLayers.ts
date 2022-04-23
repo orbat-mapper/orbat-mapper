@@ -13,7 +13,7 @@ import {
 } from "./openlayersHelpers";
 import { GeoJSON } from "ol/format";
 import { point } from "@turf/helpers";
-import Feature, { FeatureLike } from "ol/Feature";
+import Feature from "ol/Feature";
 import {
   ScenarioFeature,
   ScenarioFeatureProperties,
@@ -26,12 +26,6 @@ import LineString from "ol/geom/LineString";
 import { add as addCoordinate } from "ol/coordinate";
 import { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
-import { Circle as CircleStyle, Style } from "ol/style";
-import {
-  createSimpleStyle,
-  defaultSimplestyleFill,
-  defaultSimplestyleStroke,
-} from "../geo/simplestyle";
 import { computed, onUnmounted } from "vue";
 import { unByKey } from "ol/Observable";
 import { EventsKey } from "ol/events";
@@ -41,6 +35,7 @@ import { moveItemMutable } from "../utils";
 import { MapMarker, VectorCircleVariant, VectorLine, VectorTriangle } from "mdue";
 import { MenuItemData } from "../components/DotsMenu.vue";
 import { ScenarioFeatureActions } from "../types/constants";
+import { clearStyleCache, scenarioFeatureStyle } from "../geo/featureStyles";
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -106,32 +101,6 @@ function createScenarioLayerFeatures(
     }
   });
   return olFeatures;
-}
-
-const styleCache = new Map<any, Style>();
-
-export function clearStyleCache() {
-  styleCache.clear();
-}
-
-const defaultStyle = new Style({
-  stroke: defaultSimplestyleStroke,
-  fill: defaultSimplestyleFill,
-  image: new CircleStyle({
-    fill: defaultSimplestyleFill,
-    stroke: defaultSimplestyleStroke,
-    radius: 5,
-  }),
-});
-
-function scenarioFeatureStyle(feature: FeatureLike, resolution: number) {
-  let style = styleCache.get(feature.getId());
-  if (!style) {
-    style = createSimpleStyle(feature.getProperties()) || defaultStyle;
-    styleCache.set(feature.getId(), style);
-  }
-  style.setZIndex(feature.get("_zIndex"));
-  return style;
 }
 
 function createScenarioVectorLayer(

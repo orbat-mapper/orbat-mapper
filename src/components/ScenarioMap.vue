@@ -27,7 +27,7 @@ import { GlobalEvents } from "vue-global-events";
 import { useActiveUnitStore } from "../stores/dragStore";
 import { createHistoryLayer } from "../geo/layers";
 import { Collection, Feature } from "ol";
-import { clearStyleCache } from "../geo/styles";
+import { clearStyleCache } from "../geo/unitStyles";
 import { Point } from "ol/geom";
 import { useScenarioStore } from "../stores/scenarioStore";
 import { useGeoStore } from "../stores/geoStore";

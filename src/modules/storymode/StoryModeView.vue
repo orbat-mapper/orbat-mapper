@@ -65,7 +65,7 @@ import { fromLonLat } from "ol/proj";
 import dayjs from "dayjs";
 import { flyTo } from "../../geo/layers";
 import { useSettingsStore } from "../../stores/settingsStore";
-import { clearStyleCache } from "../../geo/styles";
+import { clearStyleCache } from "../../geo/unitStyles";
 import SlideOver from "../../components/SlideOver.vue";
 import { MenuIcon, XIcon } from "@heroicons/vue/outline";
 import InputGroup from "../../components/InputGroup.vue";

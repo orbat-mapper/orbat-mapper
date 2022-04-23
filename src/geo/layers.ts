@@ -5,7 +5,7 @@ import { Unit } from "../types/scenarioModels";
 import { Feature } from "ol";
 import { LineString, Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";
-import { createHistoryStylesFromFeature, createUnitStyleFromFeature } from "./styles";
+import { createHistoryStylesFromFeature, createUnitStyleFromFeature } from "./unitStyles";
 import { PointVectorLayer } from "./types";
 import View from "ol/View";
 import { nanoid } from "nanoid";

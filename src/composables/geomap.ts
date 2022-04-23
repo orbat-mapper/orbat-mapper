@@ -14,7 +14,7 @@ import { ModifyEvent } from "ol/interaction/Modify";
 import { Collection, Feature } from "ol";
 import { MaybeRef, useEventBus } from "@vueuse/core";
 import { mapUnitClick } from "../components/eventKeys";
-import { createSelectedUnitStyleFromFeature } from "../geo/styles";
+import { createSelectedUnitStyleFromFeature } from "../geo/unitStyles";
 import { click } from "ol/events/condition";
 import { SelectEvent } from "ol/interaction/Select";
 import { Unit } from "../types/scenarioModels";
