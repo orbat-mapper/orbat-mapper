@@ -85,7 +85,6 @@ function createScenarioLayerFeatures(
   const olFeatures: Feature[] = [];
   features.forEach((feature, index) => {
     feature.properties._zIndex = index;
-    const style = createSimpleStyle(feature.properties);
     if (feature.properties?.radius) {
       const newRadius = convertRadius(
         feature as GeoJsonFeature<Point>,
@@ -100,15 +99,19 @@ function createScenarioLayerFeatures(
         ...feature.properties,
       });
       f.setId(feature.id);
-      f.setStyle(style);
       olFeatures.push(f);
     } else {
       const f = gjson.readFeature(feature);
-      f.setStyle(style);
       olFeatures.push(f);
     }
   });
   return olFeatures;
+}
+
+const styleCache = new Map<any, Style>();
+
+export function clearStyleCache() {
+  styleCache.clear();
 }
 
 const defaultStyle = new Style({
@@ -122,8 +125,13 @@ const defaultStyle = new Style({
 });
 
 function scenarioFeatureStyle(feature: FeatureLike, resolution: number) {
-  defaultStyle.setZIndex(feature.get("_zIndex"));
-  return defaultStyle;
+  let style = styleCache.get(feature.getId());
+  if (!style) {
+    style = createSimpleStyle(feature.getProperties()) || defaultStyle;
+    styleCache.set(feature.getId(), style);
+  }
+  style.setZIndex(feature.get("_zIndex"));
+  return style;
 }
 
 function createScenarioVectorLayer(
@@ -156,6 +164,7 @@ export function useScenarioLayers(olMap: OLMap) {
   const featureLayerCache = new Map<string | number, ScenarioLayer>();
 
   function initializeFromStore() {
+    clearStyleCache();
     scenarioLayersOl.clear();
 
     layersStore.layers.forEach((l) => {
