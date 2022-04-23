@@ -16,6 +16,7 @@ export interface ScenarioFeatureProperties extends Partial<SimpleStyleSpec> {
   type: ScenarioFeatureType;
   name?: string;
   description?: string;
+  _zIndex?: number;
   [attribute: string]: any;
 }
 

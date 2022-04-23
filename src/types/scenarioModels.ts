@@ -133,4 +133,4 @@ export interface OrbatItemData {
   children: OrbatItemData[];
 }
 
-export const INTERNAL_NAMES = ["_state", "_pid", "_isOpen", "_isNew"];
+export const INTERNAL_NAMES = ["_state", "_pid", "_isOpen", "_isNew", "_zIndex"];

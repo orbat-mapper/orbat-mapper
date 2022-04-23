@@ -13,7 +13,7 @@ import {
 } from "./openlayersHelpers";
 import { GeoJSON } from "ol/format";
 import { point } from "@turf/helpers";
-import Feature from "ol/Feature";
+import Feature, { FeatureLike } from "ol/Feature";
 import {
   ScenarioFeature,
   ScenarioFeatureProperties,
@@ -83,7 +83,8 @@ function createScenarioLayerFeatures(
     featureProjection,
   });
   const olFeatures: Feature[] = [];
-  features.forEach((feature) => {
+  features.forEach((feature, index) => {
+    feature.properties._zIndex = index;
     const style = createSimpleStyle(feature.properties);
     if (feature.properties?.radius) {
       const newRadius = convertRadius(
@@ -110,20 +111,30 @@ function createScenarioLayerFeatures(
   return olFeatures;
 }
 
-function createVectorLayer(l: ScenarioLayer, projection: ProjectionLike = "EPSG:3837") {
+const defaultStyle = new Style({
+  stroke: defaultSimplestyleStroke,
+  fill: defaultSimplestyleFill,
+  image: new CircleStyle({
+    fill: defaultSimplestyleFill,
+    stroke: defaultSimplestyleStroke,
+    radius: 5,
+  }),
+});
+
+function scenarioFeatureStyle(feature: FeatureLike, resolution: number) {
+  defaultStyle.setZIndex(feature.get("_zIndex"));
+  return defaultStyle;
+}
+
+function createScenarioVectorLayer(
+  l: ScenarioLayer,
+  projection: ProjectionLike = "EPSG:3837"
+) {
   const vectorLayer = new VectorLayer({
     source: new VectorSource({
       features: createScenarioLayerFeatures(l.features, projection),
     }),
-    style: new Style({
-      stroke: defaultSimplestyleStroke,
-      fill: defaultSimplestyleFill,
-      image: new CircleStyle({
-        fill: defaultSimplestyleFill,
-        stroke: defaultSimplestyleStroke,
-        radius: 5,
-      }),
-    }),
+    style: scenarioFeatureStyle,
     properties: { id: l.id, title: l.name, layerType: LayerType.overlay },
   });
   if (l.isHidden) vectorLayer.setVisible(false);
@@ -148,7 +159,7 @@ export function useScenarioLayers(olMap: OLMap) {
     scenarioLayersOl.clear();
 
     layersStore.layers.forEach((l) => {
-      const vectorLayer = createVectorLayer(l, projection);
+      const vectorLayer = createScenarioVectorLayer(l, projection);
       scenarioLayersOl.push(vectorLayer);
     });
   }
@@ -161,7 +172,7 @@ export function useScenarioLayers(olMap: OLMap) {
 
   function addLayer(newLayer: ScenarioLayer) {
     layersStore.add(newLayer);
-    scenarioLayersOl.push(createVectorLayer(newLayer, projection));
+    scenarioLayersOl.push(createScenarioVectorLayer(newLayer, projection));
   }
 
   function zoomToFeature(feature: ScenarioFeature) {
@@ -202,9 +213,14 @@ export function useScenarioLayers(olMap: OLMap) {
 
     const scenarioFeature = convertOlFeatureToScenarioFeature(olFeature);
     const scenarioLayer = layersStore.getLayerById(olLayer.get("id"))!;
-    scenarioFeature.properties.name = `${scenarioFeature.properties.type} ${
-      scenarioLayer.features.length + 1
-    }`;
+    const _zIndex = Math.max(
+      scenarioLayer.features.length,
+      (scenarioLayer.features[scenarioLayer.features.length - 1]?.properties._zIndex ||
+        0) + 1
+    );
+    scenarioFeature.properties.name = `${scenarioFeature.properties.type} ${_zIndex + 1}`;
+    scenarioFeature.properties._zIndex = _zIndex;
+    olFeature.set("_zIndex", _zIndex);
     scenarioLayer && layersStore.addFeature(scenarioFeature, scenarioLayer);
     return scenarioFeature;
   }
