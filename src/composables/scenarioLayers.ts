@@ -26,7 +26,7 @@ import LineString from "ol/geom/LineString";
 import { add as addCoordinate } from "ol/coordinate";
 import { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
-import { computed, onUnmounted } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import { unByKey } from "ol/Observable";
 import { EventsKey } from "ol/events";
 import { useScenarioLayersStore } from "../stores/scenarioLayersStore";
@@ -36,6 +36,8 @@ import { MapMarker, VectorCircleVariant, VectorLine, VectorTriangle } from "mdue
 import { MenuItemData } from "../components/DotsMenu.vue";
 import { ScenarioFeatureActions } from "../types/constants";
 import { clearStyleCache, scenarioFeatureStyle } from "../geo/featureStyles";
+import Select from "ol/interaction/Select";
+import { MaybeRef } from "@vueuse/core";
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -116,6 +118,55 @@ function createScenarioVectorLayer(
   });
   if (l.isHidden) vectorLayer.setVisible(false);
   return vectorLayer;
+}
+
+export function useScenarioFeatureSelect(
+  olMap: OLMap,
+  options: Partial<{
+    enable: MaybeRef<boolean>;
+  }> = {}
+) {
+  const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
+  const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
+    VectorLayer<any>
+  >;
+
+  const enableRef = ref(options.enable ?? true);
+
+  const select = new Select({
+    hitTolerance: 20,
+    layers: scenarioLayersOl.getArray(),
+  });
+
+  const selectedFeatures = select.getFeatures();
+  useOlEvent(
+    selectedFeatures.on(["add", "remove"], (event) => {
+      // @ts-ignore
+      const feature = event.element as Feature<any>;
+      if (event.type === "add") selectedIds.value.add(feature.getId()!);
+      if (event.type === "remove") selectedIds.value.delete(feature.getId()!);
+    })
+  );
+
+  const selectedIds = ref<Set<string | number>>(new Set());
+
+  olMap.addInteraction(select);
+  useOlEvent(select.on("select", (event) => {}));
+
+  watch(
+    enableRef,
+    (enabled) => {
+      select.getFeatures().clear();
+      select.setActive(enabled);
+    },
+    { immediate: true }
+  );
+
+  onUnmounted(() => {
+    olMap.removeInteraction(select);
+  });
+
+  return { selectedIds, selectedFeatures };
 }
 
 /**
@@ -310,6 +361,10 @@ export function useScenarioLayers(olMap: OLMap) {
     getFeatureLayer,
     updateFeature,
     panToFeature,
+    getOlFeatureById: (id: string | number) => {
+      const { feature, layer } = getFeatureAndLayerById(id, scenarioLayersOl) || {};
+      return feature;
+    },
   };
 }
 

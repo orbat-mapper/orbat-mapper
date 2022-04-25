@@ -8,6 +8,7 @@ import VectorLayer from "ol/layer/Vector";
 import { LayersPlus } from "mdue";
 
 import {
+  useScenarioFeatureSelect,
   useScenarioLayers,
   useScenarioLayerSync,
 } from "../../composables/scenarioLayers";
@@ -36,6 +37,7 @@ const toggleLayerPanel = useToggle(showLayerPanel);
 
 const isActive = ref(true);
 const mapRef = useGeoStore().olMap! as OLMap;
+const isSelectActive = ref(true);
 
 const {
   scenarioLayersGroup,
@@ -55,7 +57,12 @@ const {
   getFeatureLayer,
   updateFeature,
   panToFeature,
+  getOlFeatureById,
 } = useScenarioLayers(mapRef);
+
+const { selectedIds, selectedFeatures } = useScenarioFeatureSelect(mapRef, {
+  enable: isSelectActive,
+});
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 const activeLayer = ref<ScenarioLayerInstance | null>(null);
@@ -130,9 +137,16 @@ function onLayerUpdate(layer: ScenarioLayer, data: Partial<ScenarioLayer>) {
   updateLayer(layer, data);
 }
 
-function onFeatureClick(feature: ScenarioFeature, layer: ScenarioLayer) {
+function onFeatureClick(
+  feature: ScenarioFeature,
+  layer: ScenarioLayer,
+  shiftClick: boolean
+) {
   activeFeature.value = activeFeature.value === feature ? null : feature;
   showLayerPanel.value = activeFeature.value === feature;
+  const f = getOlFeatureById(feature.id);
+  f && !shiftClick && selectedFeatures.clear();
+  f && selectedFeatures.push(f);
 }
 
 function onFeatureModify(olFeatures: Feature[]) {
@@ -152,6 +166,7 @@ watch(isActive, (active) => {
     showLayerPanel.value = false;
     activeFeature.value = null;
   }
+  isSelectActive.value = active;
 });
 </script>
 
@@ -179,6 +194,7 @@ watch(isActive, (active) => {
         @layer-action="onLayerAction"
         @feature-click="onFeatureClick"
         :active-feature="activeFeature"
+        :selectedIds="selectedIds"
       />
       <p class="my-5 text-right">
         <BaseButton @click="addNewLayer" secondary> Add new layer</BaseButton>

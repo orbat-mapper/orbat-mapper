@@ -12,6 +12,7 @@ const props = defineProps<{
   layer: ScenarioLayerInstance;
   isActive: boolean;
   activeFeature: ScenarioFeature | null | undefined;
+  selectedIds: Set<string | number>;
 }>();
 
 const emit = defineEmits([
@@ -93,9 +94,10 @@ function onLayerAction(action: ScenarioLayerActions) {
           v-for="feature in layer.features"
           class="group flex items-center justify-between py-4"
           :key="feature.id"
+          :class="{ 'bg-yellow-100': selectedIds.has(feature.id) }"
         >
           <button
-            @click="emit('feature-click', feature, layer)"
+            @click="emit('feature-click', feature, layer, $event.shiftKey)"
             class="flex items-center"
           >
             <component :is="getGeometryIcon(feature)" class="h-5 w-5 text-gray-400" />
