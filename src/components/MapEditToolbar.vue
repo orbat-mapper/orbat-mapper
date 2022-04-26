@@ -52,7 +52,6 @@ onKeyStroke("Escape", (event) => {
         <VectorLine class="h-5 w-5" />
       </ToolbarButton>
       <ToolbarButton
-        bottom
         title="Draw polygon"
         @click="startDrawing('Polygon')"
         :active="currentDrawType === 'Polygon'"
