@@ -15,6 +15,7 @@ export type DrawType = "Point" | "LineString" | "Polygon" | "Circle";
 export interface GeoEditingOptions {
   addMultiple?: MaybeRef<boolean>;
   emit?: (name: "add" | "modify", ...args: any[]) => void;
+  select?: Select;
 }
 
 export function useEditingInteraction(
@@ -30,6 +31,7 @@ export function useEditingInteraction(
 
   const currentDrawType = ref<DrawType | null>(null);
   const isModifying = ref(false);
+  const isDrawing = ref(false);
   const emit = options?.emit;
   const addMultiple = ref<MaybeRef<boolean>>(options?.addMultiple || false);
 
@@ -43,12 +45,16 @@ export function useEditingInteraction(
   useOlEvent(pointDraw.on("drawend", onDrawEnd));
   useOlEvent(circleDraw.on("drawend", onDrawEnd));
 
-  const select = new Select({
-    layers: [layerRef.value as Layer<any, any>],
-    hitTolerance: 20,
-  });
-  olMap.addInteraction(select);
-  select.setActive(false);
+  const select =
+    options?.select ||
+    new Select({
+      layers: [layerRef.value as Layer<any, any>],
+      hitTolerance: 20,
+    });
+  if (!options?.select) {
+    olMap.addInteraction(select);
+    select.setActive(false);
+  }
   const modify = new Modify({ features: select.getFeatures(), pixelTolerance: 20 });
 
   useOlEvent(
@@ -70,6 +76,7 @@ export function useEditingInteraction(
 
   function startDrawing(drawType: DrawType) {
     select.setActive(false);
+    select.getFeatures().clear();
     stopModify();
 
     currentDrawInteraction?.setActive(false);
@@ -87,7 +94,7 @@ export function useEditingInteraction(
   function stopModify() {
     modify.setActive(false);
     isModifying.value = false;
-    select.getFeatures().clear();
+    // select.getFeatures().clear();
   }
 
   function startModify() {
@@ -103,7 +110,7 @@ export function useEditingInteraction(
   }
 
   function cancel() {
-    select.setActive(false);
+    select.setActive(true);
     stopModify();
 
     currentDrawInteraction?.setActive(false);
@@ -117,7 +124,7 @@ export function useEditingInteraction(
     olMap.removeInteraction(lineDraw);
     olMap.removeInteraction(polygonDraw);
     olMap.removeInteraction(circleDraw);
-    olMap.removeInteraction(select);
+    if (!options?.select) olMap.removeInteraction(select);
     olMap.removeInteraction(modify);
   });
 

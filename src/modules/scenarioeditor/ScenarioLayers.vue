@@ -60,7 +60,7 @@ const {
   getOlFeatureById,
 } = useScenarioLayers(mapRef);
 
-const { selectedIds, selectedFeatures } = useScenarioFeatureSelect(mapRef, {
+const { selectedIds, selectedFeatures, select } = useScenarioFeatureSelect(mapRef, {
   enable: isSelectActive,
 });
 
@@ -212,6 +212,7 @@ watch(isActive, (active) => {
       @add="onFeatureAdd"
       @modify="onFeatureModify"
       add-multiple
+      :select="select"
     />
   </Teleport>
   <Teleport to="[data-teleport-layer]" v-if="activeFeature">

@@ -6,6 +6,7 @@ import {
   VectorCircleVariant,
   VectorLine,
   VectorTriangle,
+  CursorDefaultOutline,
 } from "mdue";
 import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";
@@ -14,11 +15,13 @@ import VerticalToolbar from "./VerticalToolbar.vue";
 import VectorLayer from "ol/layer/Vector";
 import { useEditingInteraction } from "../composables/geoEditing";
 import { onKeyStroke } from "@vueuse/core";
+import Select from "ol/interaction/Select";
 
 const props = defineProps<{
   olMap: OLMap;
   layer: VectorLayer<any>;
   addMultiple?: boolean;
+  select?: Select;
 }>();
 const emit = defineEmits(["add", "modify"]);
 
@@ -26,6 +29,7 @@ const { startDrawing, currentDrawType, startModify, isModifying, cancel } =
   useEditingInteraction(props.olMap, toRef(props, "layer"), {
     emit,
     addMultiple: props.addMultiple,
+    select: props.select,
   });
 
 onKeyStroke("Escape", (event) => {
@@ -38,6 +42,13 @@ onKeyStroke("Escape", (event) => {
     <VerticalToolbar class="shadow">
       <ToolbarButton
         top
+        title="Select features"
+        @click="cancel()"
+        :active="!currentDrawType"
+      >
+        <CursorDefaultOutline class="h-5 w-5" />
+      </ToolbarButton>
+      <ToolbarButton
         title="Draw point feature"
         @click="startDrawing('Point')"
         :active="currentDrawType === 'Point'"

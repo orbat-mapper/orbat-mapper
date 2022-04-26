@@ -166,7 +166,7 @@ export function useScenarioFeatureSelect(
     olMap.removeInteraction(select);
   });
 
-  return { selectedIds, selectedFeatures };
+  return { selectedIds, selectedFeatures, select };
 }
 
 /**
