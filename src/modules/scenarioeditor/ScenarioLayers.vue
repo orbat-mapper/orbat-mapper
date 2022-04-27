@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onActivated, onDeactivated, ref, shallowRef, watch } from "vue";
+import { onActivated, onDeactivated, onMounted, ref, shallowRef, watch } from "vue";
 import BaseButton from "../../components/BaseButton.vue";
 import OLMap from "ol/Map";
 import { useGeoStore } from "../../stores/geoStore";
@@ -70,12 +70,13 @@ const olCurrentLayer = shallowRef<VectorLayer<any> | null>(null);
 const activeFeature = ref<ScenarioFeature | null>(null);
 
 function addNewLayer() {
-  addLayer({
+  const addedLayer = addLayer({
     id: nanoid(),
     name: `New layer ${layers.value.length + 1}`,
     features: [],
     _isNew: true,
   });
+  setActiveLayer(addedLayer);
 }
 
 function setActiveLayer(layer: ScenarioLayer) {
@@ -167,6 +168,10 @@ watch(isActive, (active) => {
     activeFeature.value = null;
   }
   isSelectActive.value = active;
+});
+
+onMounted(() => {
+  if (layers.value.length) setActiveLayer(layers.value[0]);
 });
 </script>
 

@@ -63,13 +63,13 @@ function onLayerAction(action: ScenarioLayerActions) {
         >Active</span
       >
       <button
+        v-else
         type="button"
         @click="emit('set-active', layer)"
         @keydown.stop
         class="text-gray-500 hover:text-gray-700"
       >
-        <PencilOff v-if="isActive" class="h-5 w-5" />
-        <PencilIcon v-else class="h-5 w-5" />
+        <PencilIcon class="h-5 w-5" />
       </button>
       <button
         type="button"

@@ -202,6 +202,7 @@ export function useScenarioLayers(olMap: OLMap) {
   function addLayer(newLayer: ScenarioLayer) {
     layersStore.add(newLayer);
     scenarioLayersOl.push(createScenarioVectorLayer(newLayer, projection));
+    return newLayer;
   }
 
   function zoomToFeature(feature: ScenarioFeature) {
