@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { ScenarioFeature, ScenarioLayerInstance } from "../../types/scenarioGeoModels";
+import {
+  FeatureId,
+  ScenarioFeature,
+  ScenarioLayerInstance,
+} from "../../types/scenarioGeoModels";
 import { Eye as EyeIcon, EyeOff, Pencil as PencilIcon, PencilOff } from "mdue";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import { ScenarioLayerActions } from "../../types/constants";
@@ -12,7 +16,7 @@ const props = defineProps<{
   layer: ScenarioLayerInstance;
   isActive: boolean;
   activeFeature: ScenarioFeature | null | undefined;
-  selectedIds: Set<string | number>;
+  selectedIds: Set<FeatureId>;
 }>();
 
 const emit = defineEmits([

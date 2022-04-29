@@ -1,6 +1,7 @@
 import { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
 import { SimpleStyleSpec } from "../geo/simplestyle";
 
+export type FeatureId = string | number;
 export type Position = number[];
 export type ScenarioFeatureType =
   | "Point"
@@ -24,11 +25,11 @@ export interface ScenarioFeatureProperties extends Partial<SimpleStyleSpec> {
 // Might have to change this to support time varying geometries
 export interface ScenarioFeature
   extends GeoJsonFeature<Point | LineString | Polygon, ScenarioFeatureProperties> {
-  id: string | number;
+  id: FeatureId;
 }
 
 export interface ScenarioLayer {
-  id: string | number;
+  id: FeatureId;
   name: string;
   description?: string;
   features: ScenarioFeature[];

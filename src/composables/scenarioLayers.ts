@@ -15,6 +15,7 @@ import { GeoJSON } from "ol/format";
 import { point } from "@turf/helpers";
 import Feature from "ol/Feature";
 import {
+  FeatureId,
   ScenarioFeature,
   ScenarioFeatureProperties,
   ScenarioLayer,
@@ -148,7 +149,7 @@ export function useScenarioFeatureSelect(
     })
   );
 
-  const selectedIds = ref<Set<string | number>>(new Set());
+  const selectedIds = ref<Set<FeatureId>>(new Set());
 
   olMap.addInteraction(select);
   useOlEvent(select.on("select", (event) => {}));
@@ -181,7 +182,7 @@ export function useScenarioLayers(olMap: OLMap) {
   >;
   const projection = olMap.getView().getProjection();
 
-  const featureLayerCache = new Map<string | number, ScenarioLayer>();
+  const featureLayerCache = new Map<FeatureId, ScenarioLayer>();
 
   function initializeFromStore() {
     clearStyleCache();
@@ -193,7 +194,7 @@ export function useScenarioLayers(olMap: OLMap) {
     });
   }
 
-  function getOlLayerById(id: string | number) {
+  function getOlLayerById(id: FeatureId) {
     return scenarioLayersOl
       .getArray()
       .find((e) => e.get("id") === id) as VectorLayer<any>;
@@ -362,7 +363,7 @@ export function useScenarioLayers(olMap: OLMap) {
     getFeatureLayer,
     updateFeature,
     panToFeature,
-    getOlFeatureById: (id: string | number) => {
+    getOlFeatureById: (id: FeatureId) => {
       const { feature, layer } = getFeatureAndLayerById(id, scenarioLayersOl) || {};
       return feature;
     },

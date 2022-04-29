@@ -6,6 +6,7 @@ import VectorLayer from "ol/layer/Vector";
 import { Collection } from "ol";
 import { AnyVectorLayer } from "../geo/types";
 import VectorSource from "ol/source/Vector";
+import { FeatureId } from "../types/scenarioGeoModels";
 
 /**
  * Unregister open layers event automatically on unmount
@@ -26,7 +27,7 @@ export function isCircle(feature: Feature) {
 }
 
 export function getFeatureAndLayerById(
-  featureId: string | number,
+  featureId: FeatureId,
   layerCollection: Collection<AnyVectorLayer>
 ) {
   for (let index = 0, ii = layerCollection.getLength(); index < ii; ++index) {

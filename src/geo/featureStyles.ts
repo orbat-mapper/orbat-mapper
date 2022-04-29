@@ -5,6 +5,7 @@ import {
   defaultSimplestyleStroke,
 } from "./simplestyle";
 import { FeatureLike } from "ol/Feature";
+import { FeatureId } from "../types/scenarioGeoModels";
 
 const styleCache = new Map<any, Style>();
 
@@ -12,7 +13,7 @@ export function clearStyleCache() {
   styleCache.clear();
 }
 
-export function invalidateFeatureStyle(featureId: string | number) {
+export function invalidateFeatureStyle(featureId: FeatureId) {
   styleCache.delete(featureId);
 }
 
