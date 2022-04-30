@@ -18,6 +18,7 @@ export interface ScenarioFeatureProperties extends Partial<SimpleStyleSpec> {
   name?: string;
   description?: string;
   _zIndex?: number;
+
   [attribute: string]: any;
 }
 
@@ -40,4 +41,12 @@ export interface ScenarioLayer {
 
 export interface ScenarioLayerInstance extends ScenarioLayer {
   //isVisible?: boolean;
+}
+
+export interface LayerFeatureItem {
+  id: FeatureId;
+  type: "layer" | ScenarioFeatureType;
+  name: string;
+  description?: string;
+  _pid?: FeatureId;
 }

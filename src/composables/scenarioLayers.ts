@@ -33,7 +33,13 @@ import { EventsKey } from "ol/events";
 import { useScenarioLayersStore } from "../stores/scenarioLayersStore";
 import { AnyVectorLayer } from "../geo/types";
 import { moveItemMutable } from "../utils";
-import { MapMarker, VectorCircleVariant, VectorLine, VectorTriangle } from "mdue";
+import {
+  LayersOutline,
+  MapMarker,
+  VectorCircleVariant,
+  VectorLine,
+  VectorTriangle,
+} from "mdue";
 import { MenuItemData } from "../components/DotsMenu.vue";
 import { ScenarioFeatureActions } from "../types/constants";
 import { clearStyleCache, scenarioFeatureStyle } from "../geo/featureStyles";
@@ -50,10 +56,15 @@ const geometryIconMap: any = {
   LineString: VectorLine,
   Polygon: VectorTriangle,
   Circle: VectorCircleVariant,
+  layer: LayersOutline,
 };
 
 export function getGeometryIcon(feature: ScenarioFeature) {
   return geometryIconMap[feature.properties.type];
+}
+
+export function getItemsIcon(type: string) {
+  return geometryIconMap[type];
 }
 
 export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [

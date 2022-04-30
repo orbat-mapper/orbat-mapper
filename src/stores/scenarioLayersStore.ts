@@ -1,6 +1,11 @@
 import { defineStore } from "pinia";
 import { useScenarioStore } from "./scenarioStore";
-import { FeatureId, ScenarioFeature, ScenarioLayer } from "../types/scenarioGeoModels";
+import {
+  FeatureId,
+  LayerFeatureItem,
+  ScenarioFeature,
+  ScenarioLayer,
+} from "../types/scenarioGeoModels";
 import { moveItemMutable } from "../utils";
 
 export const useScenarioLayersStore = defineStore("scenarioLayers", {
@@ -73,9 +78,32 @@ export const useScenarioLayersStore = defineStore("scenarioLayers", {
     },
   },
   getters: {
-    layers(state) {
+    layers: () => {
       const scenario = useScenarioStore();
       return scenario.scenario.layers;
+    },
+
+    features(state): ScenarioFeature[] {
+      return this.layers.map((layer) => layer.features).flat();
+    },
+
+    itemsInfo(state): LayerFeatureItem[] {
+      let items: LayerFeatureItem[] = [];
+      this.layers.forEach((layer) => {
+        items.push({ id: layer.id, type: "layer", name: layer.name });
+        const mappedFeatures: LayerFeatureItem[] = layer.features.map((feature) => {
+          const { properties, id } = feature;
+          return {
+            id,
+            type: properties.type,
+            name: properties.name || "",
+            description: properties.description,
+            _pid: layer.id,
+          };
+        });
+        items.push(...mappedFeatures);
+      });
+      return items;
     },
   },
 });
