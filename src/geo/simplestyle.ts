@@ -12,10 +12,10 @@ export interface SimpleStyleSpec {
   description: string;
   "marker-size": "small" | "medium" | "large";
   "marker-color": string;
-  stroke: string;
+  stroke: string | null;
   "stroke-opacity": number;
   "stroke-width": number;
-  fill: string;
+  fill: string | null;
   "fill-opacity": number;
 }
 
