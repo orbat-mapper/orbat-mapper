@@ -16,7 +16,7 @@
   </InlineFormPanel>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { computed, defineComponent, ref, watch } from "vue";
 import InputGroup from "./InputGroup.vue";
 import PlainButton from "./PlainButton.vue";
@@ -30,48 +30,35 @@ import { SymbolItem } from "../types/constants";
 import { useFocusOnMount } from "./helpers";
 import BaseButton from "./BaseButton.vue";
 
-export default defineComponent({
-  name: "EditSideForm",
-  components: {
-    BaseButton,
-    SymbolCodeSelect,
-    InlineFormPanel,
-    PrimaryButton,
-    PlainButton,
-    InputGroup,
+const props = defineProps<{ sideId: string }>();
+const emit = defineEmits(["close"]);
+
+let form = ref<Partial<Side>>({ name: "New side", standardIdentity: "3" });
+const { getSideById, updateSide } = useScenarioStore();
+const side = computed(() => (props.sideId ? getSideById(props.sideId) : undefined));
+watch(
+  () => props.sideId,
+  (sideId) => {
+    if (sideId && side.value) {
+      const { name, standardIdentity } = side.value;
+      form.value = { name, standardIdentity };
+    }
   },
-  props: { sideId: { type: String } },
-  emits: ["close"],
-  setup(props, { emit }) {
-    let form = ref<Partial<Side>>({ name: "New side", standardIdentity: "3" });
-    const { getSideById, updateSide } = useScenarioStore();
-    const side = computed(() => (props.sideId ? getSideById(props.sideId) : undefined));
-    watch(
-      () => props.sideId,
-      (sideId) => {
-        if (sideId && side.value) {
-          const { name, standardIdentity } = side.value;
-          form.value = { name, standardIdentity };
-        }
-      },
-      { immediate: true }
-    );
+  { immediate: true }
+);
 
-    const onFormSubmit = () => {
-      updateSide({ id: props.sideId, ...form.value });
-      emit("close");
-    };
-    const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {
-      return {
-        code,
-        text,
-        sidc: "100" + code + 10 + "00" + "00" + "0000000000",
-      };
-    });
+const onFormSubmit = () => {
+  updateSide({ id: props.sideId, ...form.value });
+  emit("close");
+};
 
-    const { focusId } = useFocusOnMount();
-
-    return { form, onFormSubmit, sidItems, focusId };
-  },
+const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {
+  return {
+    code,
+    text,
+    sidc: "100" + code + 10 + "00" + "00" + "0000000000",
+  };
 });
+
+const { focusId } = useFocusOnMount();
 </script>

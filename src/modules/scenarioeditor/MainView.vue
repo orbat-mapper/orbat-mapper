@@ -6,7 +6,7 @@
     <p
       class="absolute inset-x-0 top-0 h-4 border-b bg-amber-200 text-center text-xs text-amber-700"
     >
-      Under development
+      Preview
     </p>
     <aside class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100">
       <TabView
@@ -111,11 +111,10 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import {
   computed,
   defineAsyncComponent,
-  defineComponent,
   nextTick,
   onUnmounted,
   ref,
@@ -130,14 +129,12 @@ import UnitPanel from "../../components/UnitPanel.vue";
 import { useActiveUnitStore } from "../../stores/dragStore";
 import TabView from "../../components/TabView.vue";
 import TabItem from "../../components/TabItem.vue";
-import InputGroup from "../../components/InputGroup.vue";
-import SecondaryButton from "../../components/SecondaryButton.vue";
 import ScenarioInfoPanel from "../../components/ScenarioInfoPanel.vue";
 import ShortcutsModal from "../../components/ShortcutsModal.vue";
 import TimeController from "../../components/TimeController.vue";
 import PlainButton from "../../components/PlainButton.vue";
 
-import { MenuIcon, SearchIcon, XIcon } from "@heroicons/vue/outline";
+import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
 import { inputEventFilter } from "../../components/helpers";
 import SearchModal from "../../components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -147,7 +144,6 @@ import { HomeIcon } from "@heroicons/vue/solid";
 import { Keyboard as KeyboardIcon } from "mdue";
 import { useEventBus, useTitle, useToggle } from "@vueuse/core";
 import { useUnitManipulationStore } from "../../stores/scenarioManipulation";
-import WipBadge from "../../components/WipBadge.vue";
 import MainViewSlideOver from "../../components/MainViewSlideOver.vue";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import { ScenarioActions } from "../../types/constants";
@@ -158,209 +154,156 @@ import { useGeoStore } from "../../stores/geoStore";
 import CloseButton from "../../components/CloseButton.vue";
 import { mapUnitClick, orbatUnitClick } from "../../components/eventKeys";
 
-export default defineComponent({
-  name: "MainView",
-  components: {
-    CloseButton,
-    AppNotifications,
-    DotsMenu,
-    MainViewSlideOver,
-    WipBadge,
-    SearchModal,
-    PlainButton,
-    TimeController,
-    ShortcutsModal,
-    GlobalEvents,
-    ScenarioInfoPanel,
-    SecondaryButton,
-    InputGroup,
-    TabItem,
-    TabView,
-    UnitPanel,
-    ScenarioMap,
-    OrbatPanel,
-    MenuIcon,
-    HomeIcon,
-    SearchIcon,
-    KeyboardIcon,
-    LoadScenarioDialog: defineAsyncComponent(() => import("./LoadScenarioDialog.vue")),
-    ScenarioLayers: defineAsyncComponent(() => import("./ScenarioLayers.vue")),
-    XIcon,
-  },
+const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
+const ScenarioLayers = defineAsyncComponent(() => import("./ScenarioLayers.vue"));
 
-  setup(props) {
-    const route = useRoute();
-    const router = useRouter();
-    const scenarioStore = useScenarioStore();
-    const unitManipulationStore = useUnitManipulationStore();
-    const scenarioIO = useScenarioIO();
-    const currentTab = ref(0);
-    const isOpen = ref(false);
-    const showSearch = ref(false);
-    const showLoadModal = ref(false);
-    const shortcutsModalVisible = ref(false);
-    const currentScenarioTab = ref(0);
-    const activeUnitStore = useActiveUnitStore();
-    const uiStore = useUiStore();
-    const { activeUnit } = toRefs(activeUnitStore);
-    const originalTitle = useTitle().value;
-    const windowTitle = computed(() => scenarioStore.scenario.name);
-    const { send } = useNotifications();
-    const geoStore = useGeoStore();
-    const [showUnitPanel, toggleUnitPanel] = useToggle();
-    const oobUnitClickBus = useEventBus(orbatUnitClick);
-    const showLayerPanel = ref(false);
+const route = useRoute();
+const router = useRouter();
+const scenarioStore = useScenarioStore();
+const unitManipulationStore = useUnitManipulationStore();
+const scenarioIO = useScenarioIO();
+const currentTab = ref(0);
+const isOpen = ref(false);
+const showSearch = ref(false);
+const showLoadModal = ref(false);
+const shortcutsModalVisible = ref(false);
+const currentScenarioTab = ref(0);
+const activeUnitStore = useActiveUnitStore();
+const uiStore = useUiStore();
+const { activeUnit } = toRefs(activeUnitStore);
+const originalTitle = useTitle().value;
+const windowTitle = computed(() => scenarioStore.scenario.name);
+const { send } = useNotifications();
+const geoStore = useGeoStore();
+const [showUnitPanel, toggleUnitPanel] = useToggle();
+const oobUnitClickBus = useEventBus(orbatUnitClick);
+const showLayerPanel = ref(false);
 
-    oobUnitClickBus.on((unit) => {
-      activeUnitStore.toggleActiveUnit(unit);
-      if (!activeUnitStore.activeUnit) showUnitPanel.value = false;
-    });
-
-    const mapUnitClickBus = useEventBus(mapUnitClick);
-    // mapUnitClickBus.on((e) => console.log("Map select", e.name));
-
-    useTitle(windowTitle);
-
-    onUnmounted(() => {
-      oobUnitClickBus.reset();
-      useTitle(originalTitle);
-      activeUnitStore.clearActiveUnit();
-    });
-
-    if (route.query.load) {
-      scenarioStore.isLoaded = false;
-      loadDemoScenario(route.query.load as string);
-    } else {
-      if (!scenarioStore.isLoaded) scenarioStore.loadEmptyScenario();
-    }
-
-    async function loadDemoScenario(name: string) {
-      if (name === "empty") {
-        scenarioStore.loadEmptyScenario();
-        await router.replace("");
-        return;
-      }
-      await scenarioIO.loadDemoScenario(name as string);
-      // await router.replace("");
-    }
-
-    function loadScenario(scenarioData: Scenario) {
-      scenarioIO.loadFromObject(scenarioData);
-      send({ message: "Loaded scenario from file" });
-    }
-
-    watch(
-      () => route.query.load,
-      async (v) => {
-        if (v) await loadDemoScenario(v as string);
-      }
-    );
-
-    watch([showUnitPanel, showLayerPanel], (v) => {
-      nextTick(() => geoStore.updateMapSize());
-    });
-
-    watch(
-      () => activeUnitStore.activeUnit,
-      (v) => {
-        if (v && currentScenarioTab.value === 0) showUnitPanel.value = true;
-      }
-    );
-
-    watch(currentScenarioTab, (value, prevValue) => {
-      if (value === 1 && prevValue === 0) {
-        activeUnitStore.clearActiveUnit();
-        showUnitPanel.value = false;
-      }
-    });
-
-    const createNewUnit = () => {
-      const parent = activeUnit.value;
-      if (!parent) return;
-      unitManipulationStore.createSubordinateUnit(parent);
-    };
-
-    const duplicateUnit = () => {
-      if (!activeUnit.value) return;
-
-      unitManipulationStore.cloneUnit(activeUnit.value);
-    };
-
-    const shortcutsEnabled = computed(() => !uiStore.modalOpen);
-
-    const onUnitSelect = (unitId: string) => {
-      const unit = scenarioStore.getUnitById(unitId);
-      if (unit) {
-        activeUnit.value = unit;
-        const { parents } = scenarioStore.getUnitHierarchy(unit);
-        parents.forEach((p) => (p._isOpen = true));
-        nextTick(() => {
-          const el = document.getElementById(`o-${unitId}`);
-          if (el) {
-            el.scrollIntoView();
-          }
-        });
-      }
-    };
-
-    const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
-      { label: "Add new side", action: ScenarioActions.AddSide },
-      { label: "Save to local storage", action: ScenarioActions.Save },
-      { label: "Load from local storage", action: ScenarioActions.Load },
-      { label: "Load scenario", action: ScenarioActions.LoadNew },
-      { label: "Download as JSON", action: ScenarioActions.ExportJson },
-    ];
-
-    function onScenarioAction(action: ScenarioActions) {
-      if (action === ScenarioActions.AddSide) {
-        scenarioStore.addSide();
-      }
-
-      if (action === ScenarioActions.Save) {
-        scenarioIO.saveToLocalStorage();
-        send({ message: "Saved to local storage" });
-      }
-
-      if (action === ScenarioActions.Load) {
-        scenarioIO.loadFromLocalStorage();
-        send({ message: "Loaded from local storage" });
-      }
-
-      if (action === ScenarioActions.ExportJson) {
-        scenarioIO.downloadAsJson();
-      }
-
-      if (action === ScenarioActions.LoadNew) {
-        showLoadModal.value = true;
-      }
-    }
-
-    function showKeyboardShortcuts() {
-      shortcutsModalVisible.value = true;
-    }
-
-    return {
-      activeUnit,
-      currentTab,
-      isOpen,
-      currentScenarioTab,
-      shortcutsModalVisible,
-      createNewUnit,
-      inputEventFilter,
-      shortcutsEnabled,
-      showSearch,
-      onUnitSelect,
-      scenarioStore,
-      duplicateUnit,
-      scenarioMenuItems,
-      onScenarioAction,
-      showLoadModal,
-      loadScenario,
-      showUnitPanel,
-      toggleUnitPanel,
-      showKeyboardShortcuts,
-      showLayerPanel,
-    };
-  },
+oobUnitClickBus.on((unit) => {
+  activeUnitStore.toggleActiveUnit(unit);
+  if (!activeUnitStore.activeUnit) showUnitPanel.value = false;
 });
+
+const mapUnitClickBus = useEventBus(mapUnitClick);
+// mapUnitClickBus.on((e) => console.log("Map select", e.name));
+
+useTitle(windowTitle);
+
+onUnmounted(() => {
+  oobUnitClickBus.reset();
+  useTitle(originalTitle);
+  activeUnitStore.clearActiveUnit();
+});
+
+if (route.query.load) {
+  scenarioStore.isLoaded = false;
+  loadDemoScenario(route.query.load as string);
+} else {
+  if (!scenarioStore.isLoaded) scenarioStore.loadEmptyScenario();
+}
+
+async function loadDemoScenario(name: string) {
+  if (name === "empty") {
+    scenarioStore.loadEmptyScenario();
+    await router.replace("");
+    return;
+  }
+  await scenarioIO.loadDemoScenario(name as string);
+  // await router.replace("");
+}
+
+function loadScenario(scenarioData: Scenario) {
+  scenarioIO.loadFromObject(scenarioData);
+  send({ message: "Loaded scenario from file" });
+}
+
+watch(
+  () => route.query.load,
+  async (v) => {
+    if (v) await loadDemoScenario(v as string);
+  }
+);
+
+watch([showUnitPanel, showLayerPanel], (v) => {
+  nextTick(() => geoStore.updateMapSize());
+});
+
+watch(
+  () => activeUnitStore.activeUnit,
+  (v) => {
+    if (v && currentScenarioTab.value === 0) showUnitPanel.value = true;
+  }
+);
+
+watch(currentScenarioTab, (value, prevValue) => {
+  if (value === 1 && prevValue === 0) {
+    activeUnitStore.clearActiveUnit();
+    showUnitPanel.value = false;
+  }
+});
+
+const createNewUnit = () => {
+  const parent = activeUnit.value;
+  if (!parent) return;
+  unitManipulationStore.createSubordinateUnit(parent);
+};
+
+const duplicateUnit = () => {
+  if (!activeUnit.value) return;
+
+  unitManipulationStore.cloneUnit(activeUnit.value);
+};
+
+const shortcutsEnabled = computed(() => !uiStore.modalOpen);
+
+const onUnitSelect = (unitId: string) => {
+  const unit = scenarioStore.getUnitById(unitId);
+  if (unit) {
+    activeUnit.value = unit;
+    const { parents } = scenarioStore.getUnitHierarchy(unit);
+    parents.forEach((p) => (p._isOpen = true));
+    nextTick(() => {
+      const el = document.getElementById(`o-${unitId}`);
+      if (el) {
+        el.scrollIntoView();
+      }
+    });
+  }
+};
+
+const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
+  { label: "Add new side", action: ScenarioActions.AddSide },
+  { label: "Save to local storage", action: ScenarioActions.Save },
+  { label: "Load from local storage", action: ScenarioActions.Load },
+  { label: "Load scenario", action: ScenarioActions.LoadNew },
+  { label: "Download as JSON", action: ScenarioActions.ExportJson },
+];
+
+function onScenarioAction(action: ScenarioActions) {
+  if (action === ScenarioActions.AddSide) {
+    scenarioStore.addSide();
+  }
+
+  if (action === ScenarioActions.Save) {
+    scenarioIO.saveToLocalStorage();
+    send({ message: "Saved to local storage" });
+  }
+
+  if (action === ScenarioActions.Load) {
+    scenarioIO.loadFromLocalStorage();
+    send({ message: "Loaded from local storage" });
+  }
+
+  if (action === ScenarioActions.ExportJson) {
+    scenarioIO.downloadAsJson();
+  }
+
+  if (action === ScenarioActions.LoadNew) {
+    showLoadModal.value = true;
+  }
+}
+
+function showKeyboardShortcuts() {
+  shortcutsModalVisible.value = true;
+}
 </script>

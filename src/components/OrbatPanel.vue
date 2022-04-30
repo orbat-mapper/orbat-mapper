@@ -8,33 +8,18 @@
   </div>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, toRef } from "vue";
+<script setup lang="ts">
+import { computed, toRef } from "vue";
 import { useScenarioStore } from "../stores/scenarioStore";
 
 import OrbatSide from "./OrbatSide.vue";
-import InputGroup from "./InputGroup.vue";
 import OrbatPanelAddSide from "./OrbatPanelAddSide.vue";
 
-export default defineComponent({
-  name: "OrbatPanel",
-  components: { OrbatPanelAddSide, InputGroup, OrbatSide },
+const scenarioStore = useScenarioStore();
+const scenario = toRef(scenarioStore, "scenario");
+const showAdd = computed(() => scenarioStore.scenario.sides.length < 2);
 
-  setup() {
-    const scenarioStore = useScenarioStore();
-    const scenario = toRef(scenarioStore, "scenario");
-    const showAdd = computed(() => scenarioStore.scenario.sides.length < 2);
-
-    const onAdd = () => {
-      scenarioStore.addSide();
-    };
-
-    return {
-      isLoaded: scenarioStore.isLoaded,
-      scenario,
-      showAdd,
-      onAdd,
-    };
-  },
-});
+const onAdd = () => {
+  scenarioStore.addSide();
+};
 </script>

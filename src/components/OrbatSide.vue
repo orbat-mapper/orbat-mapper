@@ -43,95 +43,59 @@
     </section>
   </Disclosure>
 </template>
-<script lang="ts">
+
+<script setup lang="ts">
 import DotsMenu, { MenuItemData } from "./DotsMenu.vue";
 import OrbatTree from "./OrbatTree.vue";
-import { defineComponent, onBeforeUpdate, PropType, ref } from "vue";
+import { onBeforeUpdate, ref } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
 import { Side } from "../types/scenarioModels";
 import { SideActions } from "../types/constants";
 import { useScenarioStore } from "../stores/scenarioStore";
-import InputGroup from "./InputGroup.vue";
-import { useDebounce, useToggle } from "@vueuse/core";
+import { useDebounce } from "@vueuse/core";
 import FilterQueryInput from "./FilterQueryInput.vue";
-import PlainButton from "./PlainButton.vue";
 import EditSideForm from "./EditSideForm.vue";
-import SecondaryButton from "./SecondaryButton.vue";
 import OrbatSideGroup from "./OrbatSideGroup.vue";
 import { useUnitManipulationStore } from "../stores/scenarioManipulation";
 
-export default defineComponent({
-  name: "OrbatSide",
-  components: {
-    OrbatSideGroup,
-    SecondaryButton,
-    EditSideForm,
-    PlainButton,
-    FilterQueryInput,
-    InputGroup,
-    DotsMenu,
-    OrbatTree,
-    Disclosure,
-    DisclosureButton,
-    DisclosurePanel,
-    ChevronUpIcon,
-  },
-  props: {
-    side: { type: Object as PropType<Side>, required: true },
-  },
-  setup(props) {
-    let treeRef = ref<InstanceType<typeof OrbatTree>>();
-    let treeRefs: InstanceType<typeof OrbatTree>[] = [];
-    const scenarioStore = useScenarioStore();
-    const unitManipulationStore = useUnitManipulationStore();
-    const showEditSideForm = ref(false);
-    if (props.side._isNew) showEditSideForm.value = true;
+const props = defineProps<{ side: Side }>();
+let treeRef = ref<InstanceType<typeof OrbatTree>>();
+let treeRefs: InstanceType<typeof OrbatTree>[] = [];
+const scenarioStore = useScenarioStore();
+const unitManipulationStore = useUnitManipulationStore();
+const showEditSideForm = ref(false);
+if (props.side._isNew) showEditSideForm.value = true;
 
-    const sideMenuItems: MenuItemData<SideActions>[] = [
-      // { label: "Expand", action: SideActions.Expand },
-      { label: "Edit", action: SideActions.Edit },
-      // { label: "Add root unit", action: SideActions.AddSubordinate },
-      { label: "Add group", action: SideActions.AddGroup },
-    ];
+const sideMenuItems: MenuItemData<SideActions>[] = [
+  // { label: "Expand", action: SideActions.Expand },
+  { label: "Edit", action: SideActions.Edit },
+  // { label: "Add root unit", action: SideActions.AddSubordinate },
+  { label: "Add group", action: SideActions.AddGroup },
+];
 
-    onBeforeUpdate(() => {
-      treeRefs = [];
-    });
-
-    const onSideAction = (action: SideActions) => {
-      if (action === SideActions.Expand) {
-        treeRefs.forEach((tree) => tree?.expandChildren());
-      } else if (action === SideActions.AddSubordinate) {
-        unitManipulationStore.createSubordinateUnit(props.side.groups[0]);
-      } else if (action === SideActions.AddGroup) {
-        scenarioStore.addSideGroup(props.side);
-      } else if (action === SideActions.Edit) {
-        showEditSideForm.value = true;
-      }
-    };
-
-    const hasLocationFilter = ref(false);
-    const toggleLocationFilter = useToggle(hasLocationFilter);
-
-    const filterQuery = ref("");
-    const debouncedFilterQuery = useDebounce(filterQuery, 100);
-
-    const setItemRef = (el: any) => {
-      if (el) treeRefs.push(el);
-    };
-
-    return {
-      sideMenuItems,
-      onSideAction,
-      treeRef,
-      filterQuery,
-      debouncedFilterQuery,
-      hasLocationFilter,
-      toggleLocationFilter,
-      setItemRef,
-      showEditSideForm,
-    };
-  },
+onBeforeUpdate(() => {
+  treeRefs = [];
 });
+
+const onSideAction = (action: SideActions) => {
+  if (action === SideActions.Expand) {
+    treeRefs.forEach((tree) => tree?.expandChildren());
+  } else if (action === SideActions.AddSubordinate) {
+    unitManipulationStore.createSubordinateUnit(props.side.groups[0]);
+  } else if (action === SideActions.AddGroup) {
+    scenarioStore.addSideGroup(props.side);
+  } else if (action === SideActions.Edit) {
+    showEditSideForm.value = true;
+  }
+};
+
+const hasLocationFilter = ref(false);
+
+const filterQuery = ref("");
+const debouncedFilterQuery = useDebounce(filterQuery, 100);
+
+const setItemRef = (el: any) => {
+  if (el) treeRefs.push(el);
+};
 </script>
