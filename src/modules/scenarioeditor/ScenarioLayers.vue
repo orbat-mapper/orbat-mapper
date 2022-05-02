@@ -13,6 +13,7 @@ import {
   useScenarioLayerSync,
 } from "../../composables/scenarioLayers";
 import {
+  FeatureId,
   ScenarioFeature,
   ScenarioLayer,
   ScenarioLayerInstance,
@@ -25,9 +26,12 @@ import { useToggle, useVModel } from "@vueuse/core";
 import Feature from "ol/Feature";
 import ScenarioLayersPanel from "./ScenarioLayersPanel.vue";
 import { AnyVectorLayer } from "../../geo/types";
+import { useScenarioLayersStore } from "../../stores/scenarioLayersStore";
 
 const props = defineProps<{
   modelValue: boolean;
+  activeLayerId: FeatureId | null;
+  activeFeatureId: FeatureId | null;
 }>();
 const emit = defineEmits(["update:modelValue"]);
 
@@ -64,6 +68,8 @@ const { selectedIds, selectedFeatures, select } = useScenarioFeatureSelect(mapRe
   enable: isSelectActive,
 });
 
+const layerStore = useScenarioLayersStore();
+
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 const activeLayer = ref<ScenarioLayerInstance | null>(null);
 const olCurrentLayer = shallowRef<VectorLayer<any> | null>(null);
@@ -79,11 +85,11 @@ function addNewLayer() {
   setActiveLayer(addedLayer);
 }
 
-function setActiveLayer(layer: ScenarioLayer) {
+function setActiveLayer(layer: ScenarioLayer, toggle = true) {
   const l = getOlLayerById(layer.id);
   if (!l) return;
 
-  if (activeLayer.value?.id === layer.id) {
+  if (toggle && activeLayer.value?.id === layer.id) {
     olCurrentLayer.value = null;
     activeLayer.value = null;
   } else {
@@ -169,6 +175,26 @@ watch(isActive, (active) => {
   }
   isSelectActive.value = active;
 });
+
+watch(
+  () => props.activeFeatureId,
+  (id) => {
+    if (!id) return;
+    const { feature, layer } = layerStore.getFeatureById(id) || {};
+    feature && layer && onFeatureClick(feature, layer, false);
+  },
+  { immediate: true }
+);
+
+watch(
+  () => props.activeLayerId,
+  (id) => {
+    if (!id) return;
+    const layer = layerStore.getLayerById(id);
+    layer && setActiveLayer(layer, false);
+  },
+  { immediate: true }
+);
 
 onMounted(() => {
   if (layers.value.length) setActiveLayer(layers.value[0]);

@@ -7,7 +7,7 @@
     <main class="space-y-4">
       <section v-for="[source, hits] in groupedHits">
         <p class="font-medium text-gray-700">{{ source }}</p>
-        <ul>
+        <ul class="space-y-1.5">
           <li v-for="hit in hits">
             <button
               type="button"
@@ -48,7 +48,12 @@ import { groupBy } from "../utils";
 import SearchFeatureHit from "./SearchFeatureHit.vue";
 
 const props = defineProps<{ modelValue: boolean }>();
-const emit = defineEmits(["update:modelValue", "select-unit"]);
+const emit = defineEmits([
+  "update:modelValue",
+  "select-unit",
+  "select-layer",
+  "select-feature",
+]);
 const open = useVModel(props, "modelValue");
 const query = ref("");
 const debouncedQuery = useDebounce(query, 200);
@@ -153,9 +158,11 @@ function onSelect(index?: number) {
   if (!hits.value.length) return;
   const item = hits.value[i];
   if (item.category === "Units") emit("select-unit", item.id);
-  else {
-    console.log("Feature selected", item);
+  if (item.category === "Features") {
+    if (item.type === "layer") emit("select-layer", item.id);
+    else emit("select-feature", item.id, item._pid);
   }
+
   open.value = false;
 }
 </script>

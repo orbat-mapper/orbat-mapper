@@ -31,7 +31,12 @@
         </TabItem>
         <TabItem label="Layers" v-slot="{ isActive }">
           <keep-alive>
-            <ScenarioLayers v-if="isActive" v-model="showLayerPanel" />
+            <ScenarioLayers
+              v-if="isActive"
+              v-model="showLayerPanel"
+              :active-layer-id="activeLayerId"
+              :active-feature-id="activeFeatureId"
+            />
           </keep-alive>
         </TabItem>
         <template #extra>
@@ -101,7 +106,12 @@
     />
     <ShortcutsModal v-model="shortcutsModalVisible" />
     <MainViewSlideOver v-model="isOpen" />
-    <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
+    <SearchModal
+      v-model="showSearch"
+      @select-unit="onUnitSelect"
+      @select-layer="onLayerSelect"
+      @select-feature="onFeatureSelect"
+    />
     <AppNotifications />
     <LoadScenarioDialog
       v-if="showLoadModal"
@@ -153,6 +163,7 @@ import { Scenario } from "../../types/scenarioModels";
 import { useGeoStore } from "../../stores/geoStore";
 import CloseButton from "../../components/CloseButton.vue";
 import { mapUnitClick, orbatUnitClick } from "../../components/eventKeys";
+import { FeatureId } from "../../types/scenarioGeoModels";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayers = defineAsyncComponent(() => import("./ScenarioLayers.vue"));
@@ -178,6 +189,9 @@ const geoStore = useGeoStore();
 const [showUnitPanel, toggleUnitPanel] = useToggle();
 const oobUnitClickBus = useEventBus(orbatUnitClick);
 const showLayerPanel = ref(false);
+
+const activeLayerId = ref<FeatureId | null>(null);
+const activeFeatureId = ref<FeatureId | null>(null);
 
 oobUnitClickBus.on((unit) => {
   activeUnitStore.toggleActiveUnit(unit);
@@ -259,6 +273,7 @@ const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 const onUnitSelect = (unitId: string) => {
   const unit = scenarioStore.getUnitById(unitId);
   if (unit) {
+    currentScenarioTab.value = 0;
     activeUnit.value = unit;
     const { parents } = scenarioStore.getUnitHierarchy(unit);
     parents.forEach((p) => (p._isOpen = true));
@@ -269,6 +284,16 @@ const onUnitSelect = (unitId: string) => {
       }
     });
   }
+};
+
+const onLayerSelect = (layerId: FeatureId) => {
+  activeLayerId.value = layerId;
+  currentScenarioTab.value = 2;
+};
+
+const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
+  activeFeatureId.value = featureId;
+  currentScenarioTab.value = 2;
 };
 
 const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
