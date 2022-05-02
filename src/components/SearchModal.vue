@@ -119,11 +119,17 @@ const featureHits = computed(() => {
 });
 
 const hits = computed(() => {
-  return [...unitHits.value, ...featureHits.value].map((e, index) => ({
+  const combinedHits = [unitHits.value, featureHits.value].sort((a, b) => {
+    const scoreA = a[0]?.score ?? 1;
+    const scoreB = b[0]?.score ?? 1;
+    return scoreA - scoreB;
+  });
+  return [...combinedHits.flat()].map((e, index) => ({
     ...e,
     index,
   })) as (UnitSearchResult | LayerFeatureSearchResult)[];
 });
+
 const groupedHits = computed(() => {
   return groupBy(hits.value, "category");
 });
