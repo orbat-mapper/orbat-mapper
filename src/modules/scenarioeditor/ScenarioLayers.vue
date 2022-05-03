@@ -181,6 +181,8 @@ watch(
   (id) => {
     if (!id) return;
     const { feature, layer } = layerStore.getFeatureById(id) || {};
+    if (layer) layer._isOpen = true;
+    activeFeature.value = null;
     feature && layer && onFeatureClick(feature, layer, false);
   },
   { immediate: true }
@@ -191,7 +193,9 @@ watch(
   (id) => {
     if (!id) return;
     const layer = layerStore.getLayerById(id);
-    layer && setActiveLayer(layer, false);
+    if (!layer) return;
+    setActiveLayer(layer, false);
+    layer._isOpen = true;
   },
   { immediate: true }
 );
