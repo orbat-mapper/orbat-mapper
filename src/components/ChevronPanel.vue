@@ -1,35 +1,63 @@
 <script setup>
-import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronRightIcon } from "@heroicons/vue/solid";
+import { ref, watch } from "vue";
+import { nanoid } from "nanoid";
 
-const props = defineProps({ label: String });
-const emit = defineEmits(["opened", "closed"]);
+const props = defineProps({ label: String, open: Boolean });
+const emit = defineEmits(["opened", "closed", "update:open"]);
+
+const isOpen = ref(props.open ?? true);
+
+function toggleOpen() {
+  if (isOpen.value) {
+    isOpen.value = false;
+    emit("update:open", false);
+    emit("closed");
+  } else {
+    isOpen.value = true;
+    emit("update:open", true);
+    emit("opened");
+  }
+}
+
+watch(
+  () => props.open,
+  (v) => {
+    isOpen.value = v;
+    v ? emit("opened") : emit("closed");
+  }
+);
+
+const panelId = nanoid(5);
 </script>
 
 <template>
-  <Disclosure as="div" class="border-b border-gray-200 py-6" v-slot="{ open }">
+  <div as="div" class="border-b border-gray-200 py-6">
     <h3 class="-my-3 flex w-full items-center justify-between py-3">
-      <DisclosureButton
+      <button
+        type="button"
         class="group flex min-w-0 flex-auto items-center text-sm text-gray-400"
-        @click="open ? emit('closed') : emit('opened')"
+        @click="toggleOpen()"
+        :aria-expanded="isOpen"
+        :aria-controls="panelId"
       >
         <ChevronRightIcon
           class="h-6 w-6 flex-none transform text-gray-500 transition-transform group-hover:text-gray-900"
           :class="{
-            'rotate-90': open,
+            'rotate-90': isOpen,
           }"
         />
 
         <span class="ml-2 min-w-0 flex-auto truncate text-left font-bold text-gray-900">
           <slot name="label">{{ label }}</slot>
         </span>
-      </DisclosureButton>
+      </button>
       <span class="relative ml-6 flex flex-shrink-0 items-center">
         <slot name="right"></slot>
       </span>
     </h3>
-    <DisclosurePanel class="space-y-4 pt-6 pl-6">
+    <div :id="panelId" v-show="isOpen" class="space-y-4 pt-6 pl-6">
       <slot></slot>
-    </DisclosurePanel>
-  </Disclosure>
+    </div>
+  </div>
 </template>

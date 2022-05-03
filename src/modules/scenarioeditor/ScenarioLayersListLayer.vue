@@ -48,9 +48,7 @@ function onLayerAction(action: ScenarioLayerActions) {
   <ChevronPanel
     :label="layer.name"
     :default-open="showEditNameForm"
-    :defaultOpen="layer._isOpen"
-    @opened="layer._isOpen = true"
-    @closed="layer._isOpen = false"
+    v-model:open="layer._isOpen"
   >
     <template #label>
       <span> {{ layer.name }} </span
