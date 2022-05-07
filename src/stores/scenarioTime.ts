@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useScenarioStore, walkSide } from "./scenarioStore";
-import dayjs, { OpUnitType } from "dayjs";
+import dayjs, { ManipulateType } from "dayjs";
 
 export const useScenarioTime = defineStore("scenarioTime", {
   actions: {
@@ -44,13 +44,13 @@ export const useScenarioTime = defineStore("scenarioTime", {
       if (newTime > Number.MIN_VALUE) scenarioStore.setCurrentTime(newTime);
     },
 
-    add(amount: number, unit: OpUnitType) {
+    add(amount: number, unit: ManipulateType) {
       const scenarioStore = useScenarioStore();
       const newTime = dayjs(scenarioStore.currentTime).add(amount, unit);
       scenarioStore.setCurrentTime(newTime.valueOf());
     },
 
-    subtract(amount: number, unit: OpUnitType) {
+    subtract(amount: number, unit: ManipulateType) {
       const scenarioStore = useScenarioStore();
       const newTime = dayjs(scenarioStore.currentTime).subtract(amount, unit);
       scenarioStore.setCurrentTime(newTime.valueOf());

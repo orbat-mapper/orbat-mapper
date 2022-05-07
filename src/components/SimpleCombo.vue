@@ -65,7 +65,7 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/vue";
-import { PropType } from "vue/dist/vue";
+import { PropType } from "vue";
 import { SelectItem } from "./types";
 import { useVModel } from "@vueuse/core";
 
