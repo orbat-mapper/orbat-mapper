@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MagnifyPlusOutline, ImageFilterCenterFocus } from "mdue";
+import { ImageFilterCenterFocus, MagnifyPlusOutline } from "mdue";
 import { GlobalEvents } from "vue-global-events";
 import {
   ScenarioFeature,
@@ -20,6 +20,8 @@ import { useToggle } from "@vueuse/core";
 import InputGroup from "../../components/InputGroup.vue";
 import BaseButton from "../../components/BaseButton.vue";
 import { inputEventFilter } from "../../components/helpers";
+import ToggleField from "../../components/ToggleField.vue";
+import FeatureStrokeSettings from "./FeatureStrokeSettings.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("../../components/SimpleMarkdownInput.vue")
@@ -28,6 +30,10 @@ const SimpleMarkdownInput = defineAsyncComponent(
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits(["close", "feature-action", "feature-meta-update"]);
 
+const fillProps = computed(() => {
+  const { fill } = props.feature.properties;
+  return { fill };
+});
 const [isMetaEditMode, toggleMetaEdit] = useToggle(false);
 
 const formMeta = ref<Partial<ScenarioFeatureProperties>>({});
@@ -58,8 +64,7 @@ const doFormFocus = async () => {
   inputElement && inputElement.focus();
 };
 
-const noStroke = ref(false);
-const noFill = ref(false);
+const noFill = ref(fillProps.value.fill === null);
 </script>
 <template>
   <TabView extra-class="px-6" tab-class="pl-6 pr-6" class="mt-3 min-h-0">
@@ -124,21 +129,16 @@ const noFill = ref(false);
           </DescriptionItem>
         </section>
       </div>
-      <!--      <div class="-mx-6 mt-4 border-t px-6 py-4">
-        <header class="flex items-center justify-between">
-          <h4 class="text-sm font-bold text-gray-700">Stroke</h4>
-          <ToggleField v-model="noStroke" >None</ToggleField>
-        </header>
-        <div v-if="!noStroke" class="mt-4">
-        <NumberInputGroup v-model="feature.properties['stroke-width']" label="Width"/>
-          </div>
+      <div class="-mx-6 mt-4 border-t px-6 py-4">
+        <FeatureStrokeSettings :feature="feature" />
       </div>
       <div class="-mx-6 border-t border-b px-6 py-4">
         <header class="flex items-center justify-between">
           <h4 class="text-sm font-bold text-gray-700">Fill</h4>
-          <ToggleField v-model="noFill">None</ToggleField>
+
+          <ToggleField v-model="noFill"></ToggleField>
         </header>
-      </div>-->
+      </div>
     </TabItem>
     <TabItem label="Debug view">
       <div>

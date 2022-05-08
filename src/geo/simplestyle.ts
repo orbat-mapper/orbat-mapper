@@ -7,16 +7,23 @@
 import { Circle, Fill, Stroke, Style } from "ol/style";
 import * as olColor from "ol/color";
 
-export interface SimpleStyleSpec {
+export interface StrokeStyleSpec {
+  stroke: string | null;
+  "stroke-opacity": number;
+  "stroke-width": number;
+  _stroke: string | null;
+}
+
+export interface FillStyleSpec {
+  fill: string | null;
+  "fill-opacity": number;
+}
+
+export interface SimpleStyleSpec extends StrokeStyleSpec, FillStyleSpec {
   title: string;
   description: string;
   "marker-size": "small" | "medium" | "large";
   "marker-color": string;
-  stroke: string | null;
-  "stroke-opacity": number;
-  "stroke-width": number;
-  fill: string | null;
-  "fill-opacity": number;
 }
 
 export const defaultSimplestyleStroke = new Stroke({ color: "#555555", width: 2 });
