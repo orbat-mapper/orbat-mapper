@@ -136,9 +136,9 @@ export const useScenarioStore = defineStore("scenario", {
     id: nanoid(),
   }),
   actions: {
-    loadScenario(demoScenario: Scenario) {
+    loadScenario(scenarioData: Scenario) {
       const settingsStore = useSettingsStore();
-      const { scenario, unitMap, sideMap, sideGroupMap } = prepareScenario(demoScenario);
+      const { scenario, unitMap, sideMap, sideGroupMap } = prepareScenario(scenarioData);
       this.scenario = scenario;
       if (scenario.symbologyStandard)
         settingsStore.symbologyStandard = scenario.symbologyStandard;
