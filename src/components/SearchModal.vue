@@ -34,7 +34,6 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import Fuse from "fuse.js";
 import { GlobalEvents } from "vue-global-events";
 import SimpleModal from "./SimpleModal.vue";
 import { useDebounce, useVModel } from "@vueuse/core";
@@ -43,9 +42,10 @@ import SearchUnitHit from "./SearchUnitHit.vue";
 import { useScenarioStore } from "../stores/scenarioStore";
 import ToggleField from "./ToggleField.vue";
 import { useScenarioLayersStore } from "../stores/scenarioLayersStore";
-import { LayerFeatureSearchResult, SearchResult, UnitSearchResult } from "./types";
-import { groupBy } from "../utils";
+import { LayerFeatureSearchResult, UnitSearchResult } from "./types";
+import { groupBy, htmlTagEscape } from "../utils";
 import SearchFeatureHit from "./SearchFeatureHit.vue";
+import * as fuzzysort from "fuzzysort";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits([
@@ -54,6 +54,7 @@ const emit = defineEmits([
   "select-layer",
   "select-feature",
 ]);
+
 const open = useVModel(props, "modelValue");
 const query = ref("");
 const debouncedQuery = useDebounce(query, 200);
@@ -62,46 +63,30 @@ const layerStore = useScenarioLayersStore();
 const currentHitIndex = ref(0);
 const limitToPosition = ref(false);
 
-const maxScore = 0.5;
-const unitFuseRef = computed(
-  () =>
-    new Fuse(scenarioStore.units, {
-      keys: ["name", "shortName"],
-      useExtendedSearch: false,
-      includeScore: true,
-      // ignoreLocation: true
-    })
-);
-
-const featureFuseRef = computed(() => {
-  return new Fuse(layerStore.itemsInfo, {
-    keys: ["name"],
-    useExtendedSearch: false,
-    includeScore: true,
-    ignoreLocation: true,
-  });
-});
-
 const unitHits = computed(() => {
   const q = debouncedQuery.value.trim();
   if (!q) return [];
-
-  const hits = unitFuseRef.value
-    .search(q)
-    .map((i) => ({ ...i.item, score: i.score ?? 1 }));
+  const hits = fuzzysort.go(q, scenarioStore.units, { keys: ["name", "shortName"] });
   currentHitIndex.value = 0;
   return hits
     .filter((h) => {
-      if (h.score > maxScore) return false;
-      if (limitToPosition.value) return scenarioStore.getUnitById(h.id)?._state?.location;
+      if (limitToPosition.value)
+        return scenarioStore.getUnitById(h.obj.id)?._state?.location;
       return true;
     })
     .slice(0, 10)
-    .map((u) => ({
-      name: u.name,
-      sidc: u.sidc,
-      id: u.id,
-      parent: u._pid && scenarioStore.getUnitById(u._pid),
+    .map((u, i) => ({
+      name: u.obj.name,
+      sidc: u.obj.sidc,
+      id: u.obj.id,
+      parent: u.obj._pid && scenarioStore.getUnitById(u.obj._pid),
+      highlight:
+        u[0] &&
+        fuzzysort.highlight({
+          ...u[0],
+          score: u.score,
+          target: htmlTagEscape(u[0].target),
+        }),
       score: u.score,
       category: "Units",
     }));
@@ -111,23 +96,25 @@ const featureHits = computed(() => {
   const q = debouncedQuery.value.trim();
   if (!q) return [];
 
-  const hits = featureFuseRef.value
-    .search(q)
-    .map((i) => ({ ...i.item, score: i.score ?? 1, category: "Features" }));
+  const hits = fuzzysort.go(q, layerStore.itemsInfo, { key: ["name"] });
 
   currentHitIndex.value = 0;
-  return hits
-    .filter((h) => {
-      return h.score <= maxScore;
-    })
-    .slice(0, 10);
+  return hits.slice(0, 10).map((u, i) => ({
+    ...u.obj,
+    highlight: fuzzysort.highlight({
+      ...u,
+      target: htmlTagEscape(u.target),
+    }),
+    score: u.score,
+    category: "Features",
+  }));
 });
 
 const hits = computed(() => {
   const combinedHits = [unitHits.value, featureHits.value].sort((a, b) => {
-    const scoreA = a[0]?.score ?? 1;
-    const scoreB = b[0]?.score ?? 1;
-    return scoreA - scoreB;
+    const scoreA = a[0]?.score ?? 1000;
+    const scoreB = b[0]?.score ?? 1000;
+    return scoreB - scoreA;
   });
   return [...combinedHits.flat()].map((e, index) => ({
     ...e,

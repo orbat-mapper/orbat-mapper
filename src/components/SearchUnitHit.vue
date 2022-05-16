@@ -4,7 +4,8 @@
       <div class="flex h-10 w-10 flex-shrink-0">
         <MilSymbol :size="20" :sidc="unit.sidc" class="inline self-center" />
       </div>
-      <p>{{ unit.name }}</p>
+      <p v-if="unit.highlight" v-html="unit.highlight" />
+      <p v-else>{{ unit.name }}</p>
       <p class="ml-2 text-xs">{{ unit.score }}</p>
     </div>
 

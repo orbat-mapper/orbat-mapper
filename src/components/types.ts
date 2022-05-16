@@ -17,6 +17,7 @@ export interface SearchResult {
   id: string | number;
   score: number;
   name: string;
+  highlight: string;
 }
 
 export interface UnitSearchResult extends SearchResult {

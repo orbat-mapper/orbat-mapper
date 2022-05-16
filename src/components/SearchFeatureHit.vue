@@ -4,7 +4,8 @@
       <p class="flex h-10 w-10 flex-shrink-0 items-center">
         <component :is="getItemsIcon(feature.type)" class="h-6 w-6 text-gray-400" />
       </p>
-      <p>{{ feature.name }}</p>
+      <p v-if="feature.highlight" v-html="feature.highlight" />
+      <p v-else>{{ feature.name }}</p>
       <p class="ml-2 text-xs">{{ feature.score }}</p>
     </div>
   </div>

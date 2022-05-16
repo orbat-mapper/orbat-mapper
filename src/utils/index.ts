@@ -21,3 +21,7 @@ export function moveItemMutable<T>(array: T[], fromIndex: number, toIndex: numbe
   array.splice(toIndex, 0, item);
   return array;
 }
+
+export function htmlTagEscape(text: string) {
+  return text.replace(/&/g, " ").replace(/</g, " ").replace(/>/g, " ");
+}
