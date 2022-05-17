@@ -37,7 +37,7 @@
               </li>
             </ul>
           </div>
-          <form class="space-y-4" @submit.prevent="onSubmit" v-if="isLoaded">
+          <form class="space-y-4 px-0.5" @submit.prevent="onSubmit" v-if="isLoaded">
             <!--      <input type="text" :value="sidc" />-->
             <SymbolCodeSelect
               v-model="symbolSetValue"

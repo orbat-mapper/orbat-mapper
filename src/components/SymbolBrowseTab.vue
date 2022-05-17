@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-[30rem]">
+  <div class="min-h-[30rem] px-0.5">
     <SymbolCodeSelect v-model="symbolSetV" :items="symbolSets" />
 
     <div class="mt-4 max-h-[40rem] overflow-auto">
