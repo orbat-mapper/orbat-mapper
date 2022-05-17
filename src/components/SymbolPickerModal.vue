@@ -93,8 +93,8 @@
       </TabView>
       <div class="flex flex-shrink-0 justify-end space-x-2 pt-4">
         <SecondaryButton type="button" @click="clearModifiers()" class=""
-          >Clear modifiers</SecondaryButton
-        >
+          >Clear modifiers
+        </SecondaryButton>
         <PrimaryButton type="button" @click="onSubmit()" class=""
           >Select symbol
         </PrimaryButton>
@@ -119,6 +119,7 @@ import TabView from "./TabView.vue";
 import TabItem from "./TabItem.vue";
 import SymbolBrowseTab from "./SymbolBrowseTab.vue";
 import SecondaryButton from "./SecondaryButton.vue";
+import * as fuzzysort from "fuzzysort";
 
 export default defineComponent({
   name: "SymbolPickerModal",
@@ -154,7 +155,7 @@ export default defineComponent({
       csidc,
       loadData,
       isLoaded,
-      fuseSymbolRef,
+      searchSymbolRef,
       sidValue,
       symbolSetValue,
       iconValue,
@@ -164,10 +165,14 @@ export default defineComponent({
 
     whenever(isLoaded, () => NProgress.done(), { immediate: true });
     const hits = computed(() => {
-      return fuseSymbolRef.value?.search(debouncedQuery.value, { limit: 20 }).map((e) => {
+      const h = fuzzysort.go(debouncedQuery.value, searchSymbolRef.value || [], {
+        key: "text",
+        limit: 20,
+      });
+      return h.map((e) => {
         return {
-          ...e.item,
-          sidc: "100" + sidValue.value + e.item.symbolSet + "0000" + e.item.code + "0000",
+          ...e.obj,
+          sidc: "100" + sidValue.value + e.obj.symbolSet + "0000" + e.obj.code + "0000",
         };
       });
     });
