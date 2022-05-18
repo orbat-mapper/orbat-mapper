@@ -27,6 +27,7 @@ import Feature from "ol/Feature";
 import ScenarioLayersPanel from "./ScenarioLayersPanel.vue";
 import { AnyVectorLayer } from "../../geo/types";
 import { useScenarioLayersStore } from "../../stores/scenarioLayersStore";
+import NProgress from "nprogress";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -201,6 +202,7 @@ watch(
 );
 
 onMounted(() => {
+  NProgress.done();
   if (layers.value.length) setActiveLayer(layers.value[0]);
 });
 </script>

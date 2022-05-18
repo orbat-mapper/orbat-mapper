@@ -152,7 +152,7 @@ import { useScenarioIO } from "../../stores/scenarioIO";
 import { useUiStore } from "../../stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
 import { Keyboard as KeyboardIcon } from "mdue";
-import { useEventBus, useTitle, useToggle } from "@vueuse/core";
+import { useEventBus, useTitle, useToggle, whenever } from "@vueuse/core";
 import { useUnitManipulationStore } from "../../stores/scenarioManipulation";
 import MainViewSlideOver from "../../components/MainViewSlideOver.vue";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
@@ -164,6 +164,9 @@ import { useGeoStore } from "../../stores/geoStore";
 import CloseButton from "../../components/CloseButton.vue";
 import { mapUnitClick, orbatUnitClick } from "../../components/eventKeys";
 import { FeatureId } from "../../types/scenarioGeoModels";
+
+import { watchOnce } from "@vueuse/core";
+import NProgress from "nprogress";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayers = defineAsyncComponent(() => import("./ScenarioLayers.vue"));
@@ -331,4 +334,11 @@ function onScenarioAction(action: ScenarioActions) {
 function showKeyboardShortcuts() {
   shortcutsModalVisible.value = true;
 }
+
+watchOnce(
+  () => currentScenarioTab.value === 2,
+  () => {
+    NProgress.start();
+  }
+);
 </script>
