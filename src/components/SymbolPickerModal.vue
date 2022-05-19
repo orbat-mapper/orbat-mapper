@@ -34,7 +34,7 @@
                 <p class="flex h-7 w-9 flex-shrink-0 justify-center">
                   <MilSymbol :size="25" :sidc="item.sidc" />
                 </p>
-                <span class="ml-3 text-sm">{{ item.text }} </span>
+                <span class="ml-3 text-sm" v-html="item.highlight"></span>
               </li>
             </ul>
           </div>
@@ -121,6 +121,7 @@ import TabItem from "./TabItem.vue";
 import SymbolBrowseTab from "./SymbolBrowseTab.vue";
 import SecondaryButton from "./SecondaryButton.vue";
 import * as fuzzysort from "fuzzysort";
+import { htmlTagEscape } from "../utils";
 
 export default defineComponent({
   name: "SymbolPickerModal",
@@ -171,8 +172,10 @@ export default defineComponent({
         limit: 20,
       });
       return h.map((e) => {
+        const { obj, ...rest } = e;
         return {
-          ...e.obj,
+          ...obj,
+          highlight: fuzzysort.highlight({ ...rest, target: htmlTagEscape(rest.target) }),
           sidc: "100" + sidValue.value + e.obj.symbolSet + "0000" + e.obj.code + "0000",
         };
       });
