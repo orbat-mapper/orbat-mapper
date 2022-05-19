@@ -1,6 +1,6 @@
 <template>
   <form class="flex w-full md:ml-0" @submit.prevent :class="class">
-    <label for="search-field" class="sr-only">Search</label>
+    <label :for="inputId" class="sr-only">Search</label>
     <div class="relative w-full text-gray-400 focus-within:text-gray-600">
       <div
         class="pointer-events-none absolute inset-y-0 left-0 flex items-center"
@@ -9,7 +9,7 @@
         <SearchIcon class="h-5 w-5" aria-hidden="true" />
       </div>
       <input
-        id="search-field"
+        :id="inputId"
         :value="inputValue"
         @input="updateValue"
         name="search-field"
@@ -30,6 +30,7 @@
 import { defineComponent } from "vue";
 import { useVModel } from "@vueuse/core";
 import { SearchIcon } from "@heroicons/vue/solid";
+import { useFocusOnMount } from "./helpers";
 
 export default defineComponent({
   name: "SearchModalInput",
@@ -37,6 +38,8 @@ export default defineComponent({
     modelValue: String,
     placeholder: { type: String, default: "Search for anything" },
     class: { type: [String, Object, Array] },
+    inputId: { type: String, default: "searchField" },
+    focus: { type: Boolean, default: false },
   },
   emits: ["update:modelValue"],
   components: { SearchIcon },
@@ -46,6 +49,7 @@ export default defineComponent({
     const updateValue = (event: Event) => {
       inputValue.value = (<HTMLInputElement>event.target).value;
     };
+    useFocusOnMount(props.inputId);
     return { inputValue, updateValue };
   },
 });

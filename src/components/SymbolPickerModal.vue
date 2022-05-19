@@ -15,6 +15,7 @@
             @keydown.tab="onTab"
             @keydown.esc.stop="hitsIsOpen ? (hitsIsOpen = false) : (open = false)"
             @keydown.enter.prevent="!hitsIsOpen && onSubmit()"
+            focus
           />
 
           <div class="relative" v-if="hits?.length && hitsIsOpen" ref="hitsRef">
