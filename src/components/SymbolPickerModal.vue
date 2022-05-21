@@ -1,4 +1,3 @@
-<!-- This example requires Tailwind CSS v2.0+ -->
 <template>
   <SimpleModal v-model="open" dialog-title="Symbol picker">
     <div class="flex h-full flex-col">
@@ -104,8 +103,8 @@
   </SimpleModal>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, nextTick, ref, watch, watchEffect } from "vue";
+<script setup lang="ts">
+import { computed, defineProps, nextTick, ref, watch, watchEffect } from "vue";
 import MilSymbol from "./MilSymbol.vue";
 import PrimaryButton from "./PrimaryButton.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
@@ -123,147 +122,126 @@ import SecondaryButton from "./SecondaryButton.vue";
 import * as fuzzysort from "fuzzysort";
 import { htmlTagEscape } from "../utils";
 
-export default defineComponent({
-  name: "SymbolPickerModal",
-  components: {
-    SecondaryButton,
-    SymbolBrowseTab,
-    TabItem,
-    TabView,
-    SearchModalInput,
-    SymbolCodeMultilineSelect,
-    SimpleModal,
-    SymbolCodeSelect,
-    PrimaryButton,
-    MilSymbol,
-    GlobalEvents,
-  },
-  props: {
-    isVisible: { type: Boolean, default: false },
-    sidc: { type: String },
-  },
-  emits: ["update:isVisible", "update:sidc"],
-  setup(props, { emit }) {
-    const open = useVModel(props, "isVisible");
-    const searchQuery = ref("");
-    const debouncedQuery = useDebounce(searchQuery, 100);
-    const currentIndex = ref(-1);
-    const hitsIsOpen = ref(false);
-    const hitsRef = ref(null);
+interface Props {
+  isVisible?: boolean;
+  sidc: string;
+}
 
-    onClickOutside(hitsRef, (event) => (hitsIsOpen.value = false));
+const props = withDefaults(defineProps<Props>(), { isVisible: true });
+const emit = defineEmits(["update:isVisible", "update:sidc"]);
 
-    const {
-      csidc,
-      loadData,
-      isLoaded,
-      searchSymbolRef,
-      sidValue,
-      symbolSetValue,
-      iconValue,
-      ...symbolItems
-    } = useSymbolItems(computed(() => props.sidc || ""));
-    loadData();
+const open = useVModel(props, "isVisible");
+const searchQuery = ref("");
+const debouncedQuery = useDebounce(searchQuery, 100);
+const currentIndex = ref(-1);
+const hitsIsOpen = ref(false);
+const hitsRef = ref(null);
 
-    whenever(isLoaded, () => NProgress.done(), { immediate: true });
-    const hits = computed(() => {
-      const h = fuzzysort.go(debouncedQuery.value, searchSymbolRef.value || [], {
-        key: "text",
-        limit: 20,
-      });
-      return h.map((e) => {
-        const { obj, ...rest } = e;
-        return {
-          ...obj,
-          highlight: fuzzysort.highlight({ ...rest, target: htmlTagEscape(rest.target) }),
-          sidc: "100" + sidValue.value + e.obj.symbolSet + "0000" + e.obj.code + "0000",
-        };
-      });
-    });
+onClickOutside(hitsRef, (event) => (hitsIsOpen.value = false));
 
-    watch(hits, (v) => {
-      if (!v?.length) return;
-      hitsIsOpen.value = true;
-      currentIndex.value = 0;
-    });
+const {
+  csidc,
+  loadData,
+  isLoaded,
+  searchSymbolRef,
 
-    const onTab = (event: KeyboardEvent) => {
-      if (hitsIsOpen.value) {
-        event.stopPropagation();
-        event.preventDefault();
-      }
-    };
+  sidValue,
+  symbolSetValue,
+  iconValue,
+  statusValue,
+  statusItems,
+  hqtfdItems,
+  hqtfdValue,
+  emtValue,
+  emtItems,
+  mod1Value,
+  mod2Value,
+  mod1Items,
+  mod2Items,
+  icons,
+  symbolSets,
+} = useSymbolItems(computed(() => props.sidc || ""));
+loadData();
 
-    const onSubmit = () => {
-      emit("update:sidc", csidc.value);
-      open.value = false;
-    };
+whenever(isLoaded, () => NProgress.done(), { immediate: true });
 
-    function doKbd(direction: "up" | "down" | "pagedown" | "pageup") {
-      const nHits = hits?.value?.length || 0;
-      if (direction === "up") {
-        if (currentIndex.value === 0) {
-          currentIndex.value = nHits - 1;
-        } else currentIndex.value = currentIndex.value - 1;
-      } else if (direction === "down") {
-        currentIndex.value++;
-        if (currentIndex.value >= nHits) {
-          currentIndex.value = 0;
-        }
-      } else if (direction === "pagedown") {
-        currentIndex.value += 3;
-        if (currentIndex.value >= nHits) {
-          currentIndex.value = nHits - 1;
-        }
-      } else if (direction === "pageup") {
-        currentIndex.value -= 3;
-        if (currentIndex.value < 0) currentIndex.value = 0;
-      }
-    }
-
-    function onSelect(index?: number) {
-      const i = index === undefined ? currentIndex.value : index;
-      if (!hits?.value?.length) return;
-      const symbol = hits.value[i];
-      symbolSetValue.value = symbol.symbolSet;
-      iconValue.value = symbol.code;
-      hitsIsOpen.value = false;
-    }
-
-    watchEffect(() => {
-      if (!hits?.value?.length || currentIndex.value < 0) return;
-      nextTick(() =>
-        document
-          .getElementById(hits.value![currentIndex.value].sidc)
-          ?.scrollIntoView?.({ block: "nearest" })
-      );
-    });
-
-    function clearModifiers() {
-      symbolItems.mod1Value.value = "00";
-      symbolItems.mod2Value.value = "00";
-      symbolItems.emtValue.value = "00";
-      symbolItems.hqtfdValue.value = "0";
-    }
-
+const hits = computed(() => {
+  const h = fuzzysort.go(debouncedQuery.value, searchSymbolRef.value || [], {
+    key: "text",
+    limit: 20,
+  });
+  return h.map((e) => {
+    const { obj, ...rest } = e;
     return {
-      open,
-      csidc,
-      isLoaded,
-      symbolSetValue,
-      iconValue,
-      ...symbolItems,
-      onSubmit,
-      searchQuery,
-      hits,
-      currentIndex,
-      doKbd,
-      onSelect,
-      hitsIsOpen,
-      hitsRef,
-      onTab,
-      clearModifiers,
+      ...obj,
+      highlight: fuzzysort.highlight({ ...rest, target: htmlTagEscape(rest.target) }),
+      sidc: "100" + sidValue.value + e.obj.symbolSet + "0000" + e.obj.code + "0000",
     };
-  },
+  });
 });
+
+watch(hits, (v) => {
+  if (!v?.length) return;
+  hitsIsOpen.value = true;
+  currentIndex.value = 0;
+});
+
+const onTab = (event: KeyboardEvent) => {
+  if (hitsIsOpen.value) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+};
+
+const onSubmit = () => {
+  emit("update:sidc", csidc.value);
+  open.value = false;
+};
+
+function doKbd(direction: "up" | "down" | "pagedown" | "pageup") {
+  const nHits = hits?.value?.length || 0;
+  if (direction === "up") {
+    if (currentIndex.value === 0) {
+      currentIndex.value = nHits - 1;
+    } else currentIndex.value = currentIndex.value - 1;
+  } else if (direction === "down") {
+    currentIndex.value++;
+    if (currentIndex.value >= nHits) {
+      currentIndex.value = 0;
+    }
+  } else if (direction === "pagedown") {
+    currentIndex.value += 3;
+    if (currentIndex.value >= nHits) {
+      currentIndex.value = nHits - 1;
+    }
+  } else if (direction === "pageup") {
+    currentIndex.value -= 3;
+    if (currentIndex.value < 0) currentIndex.value = 0;
+  }
+}
+
+function onSelect(index?: number) {
+  const i = index === undefined ? currentIndex.value : index;
+  if (!hits?.value?.length) return;
+  const symbol = hits.value[i];
+  symbolSetValue.value = symbol.symbolSet;
+  iconValue.value = symbol.code;
+  hitsIsOpen.value = false;
+}
+
+watchEffect(() => {
+  if (!hits?.value?.length || currentIndex.value < 0) return;
+  nextTick(() =>
+    document
+      .getElementById(hits.value![currentIndex.value].sidc)
+      ?.scrollIntoView?.({ block: "nearest" })
+  );
+});
+
+function clearModifiers() {
+  mod1Value.value = "00";
+  mod2Value.value = "00";
+  emtValue.value = "00";
+  hqtfdValue.value = "0";
+}
 </script>
