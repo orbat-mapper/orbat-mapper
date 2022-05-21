@@ -41,9 +41,10 @@ const searchSymbolRef = computed(() => {
       )
       .map((e) => {
         const { entity, entityType, entitySubtype } = e;
+        const text = [entity, entityType, entitySubtype].filter((e) => e).join(" - ");
         return {
           ...e,
-          text: `${entity} ${entityType} ${entitySubtype}`.replaceAll("/", " "),
+          text: text.replaceAll("/", " / "),
         };
       })
   );
