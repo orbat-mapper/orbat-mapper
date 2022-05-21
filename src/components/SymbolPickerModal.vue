@@ -118,7 +118,7 @@ import { htmlTagEscape } from "../utils";
 
 interface Props {
   isVisible?: boolean;
-  sidc: string;
+  sidc?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), { isVisible: true });
