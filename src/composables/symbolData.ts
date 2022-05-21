@@ -24,16 +24,40 @@ const symbology = shallowRef<SymbolSetMap | undefined>();
 const isLoaded = ref(false);
 const currentSymbologyStandard = ref<SymbologyStandard | undefined>();
 
+const searchSymbolRef = computed(() => {
+  return (
+    symbology.value &&
+    Object.values(symbology.value)
+      .map((ss) => {
+        return ss.mainIcon.map((e) => ({
+          symbolSet: ss.symbolSet,
+          name: ss.name,
+          ...e,
+        }));
+      })
+      .flat()
+      .filter((e) =>
+        e.symbolSet === CONTROL_MEASURE_SYMBOLSET_VALUE ? e.geometry === "Point" : true
+      )
+      .map((e) => {
+        const { entity, entityType, entitySubtype } = e;
+        return {
+          ...e,
+          text: `${entity} ${entityType} ${entitySubtype}`.replaceAll("/", " "),
+        };
+      })
+  );
+});
+
 function useSymbologyData() {
   async function loadData() {
     const settingsStore = useSettingsStore();
-
     if (
       symbology.value &&
       currentSymbologyStandard.value === settingsStore.symbologyStandard
-    )
+    ) {
       return;
-
+    }
     isLoaded.value = false;
     if (settingsStore.symbologyStandard === "app6") {
       const { app6d } = await import("../symbology/standards/app6d");
@@ -44,34 +68,8 @@ function useSymbologyData() {
       symbology.value = ms2525d;
       currentSymbologyStandard.value = "2525";
     }
-
     isLoaded.value = true;
   }
-
-  const searchSymbolRef = computed(() => {
-    return (
-      symbology.value &&
-      Object.values(symbology.value)
-        .map((ss) => {
-          return ss.mainIcon.map((e) => ({
-            symbolSet: ss.symbolSet,
-            name: ss.name,
-            ...e,
-          }));
-        })
-        .flat()
-        .filter((e) =>
-          e.symbolSet === CONTROL_MEASURE_SYMBOLSET_VALUE ? e.geometry === "Point" : true
-        )
-        .map((e) => {
-          const { entity, entityType, entitySubtype } = e;
-          return {
-            ...e,
-            text: `${entity} ${entityType} ${entitySubtype}`.replaceAll("/", " "),
-          };
-        })
-    );
-  });
 
   return { isLoaded, symbology, loadData, searchSymbolRef };
 }
@@ -231,7 +229,8 @@ function useSymbolValues(sidc: Ref<string>) {
   const emtValue = ref(sidcObj.emt);
   const mod1Value = ref(sidcObj.modifierOne);
   const mod2Value = ref(sidcObj.modifierTwo);
-  watch(sidc, (value) => {
+
+  function setValues(value: string) {
     const sidcObj = new Sidc(value);
     sidValue.value = sidcObj.standardIdentity;
     symbolSetValue.value = sidcObj.symbolSet;
@@ -241,20 +240,29 @@ function useSymbolValues(sidc: Ref<string>) {
     emtValue.value = sidcObj.emt;
     mod1Value.value = sidcObj.modifierOne;
     mod2Value.value = sidcObj.modifierTwo;
+  }
+
+  watch(sidc, (value) => {
+    setValues(value);
   });
 
-  const csidc = computed(() => {
-    return (
-      "100" +
-      sidValue.value +
-      symbolSetValue.value +
-      statusValue.value +
-      hqtfdValue.value +
-      emtValue.value +
-      iconValue.value +
-      mod1Value.value +
-      mod2Value.value
-    );
+  const csidc = computed({
+    get() {
+      return (
+        "100" +
+        sidValue.value +
+        symbolSetValue.value +
+        statusValue.value +
+        hqtfdValue.value +
+        emtValue.value +
+        iconValue.value +
+        mod1Value.value +
+        mod2Value.value
+      );
+    },
+    set(newValue: string) {
+      setValues(newValue);
+    },
   });
 
   return {

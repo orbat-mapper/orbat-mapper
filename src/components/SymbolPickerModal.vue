@@ -80,14 +80,8 @@
         <TabItem label="Browse" v-slot="{ isActive }">
           <SymbolBrowseTab
             v-if="isActive"
-            v-model:icon-value="iconValue"
-            v-model:symbol-set-value="symbolSetValue"
-            v-model:mod1-value="mod1Value"
-            v-model:mod2-value="mod2Value"
-            :symbol-sets="symbolSets"
-            :icons="icons"
-            :mod1-items="mod1Items"
-            :mod2-items="mod2Items"
+            :initial-sidc="csidc"
+            @update-sidc="updateFromBrowseTab"
           />
         </TabItem>
       </TabView>
@@ -243,5 +237,9 @@ function clearModifiers() {
   mod2Value.value = "00";
   emtValue.value = "00";
   hqtfdValue.value = "0";
+}
+
+function updateFromBrowseTab(sidc: string) {
+  csidc.value = sidc;
 }
 </script>

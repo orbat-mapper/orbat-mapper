@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-[30rem] px-0.5">
-    <SymbolCodeSelect v-model="symbolSetV" :items="symbolSets" />
-
+    <SymbolCodeSelect v-model="symbolSetValue" :items="symbolSets" />
     <div class="mt-4 max-h-[40rem] overflow-auto">
       <div v-for="[entity, entityIcons] in iconsByEntity" class="relative">
         <h3
@@ -14,7 +13,7 @@
             type="button"
             v-for="{ sidc, entity, entityType, entitySubtype, code } in entityIcons"
             :key="sidc"
-            @click="iconV = code"
+            @click="iconValue = code"
             class="flex w-full flex-col items-center justify-start rounded border border-transparent p-3 hover:border-gray-500"
           >
             <MilSymbol :size="symbolSize" :sidc="sidc" />
@@ -42,7 +41,7 @@
           type="button"
           v-for="{ sidc, text, code } in mod1Items"
           :key="sidc"
-          @click="mod1V = code"
+          @click="mod1Value = code"
           class="flex w-full flex-col items-center justify-start rounded border border-transparent p-4 hover:border-gray-500"
         >
           <MilSymbol :size="symbolSize" :sidc="sidc" />
@@ -63,7 +62,7 @@
           type="button"
           v-for="{ sidc, text, code } in mod2Items"
           :key="sidc"
-          @click="mod2V = code"
+          @click="mod2Value = code"
           class="flex w-full flex-col items-center justify-start rounded border border-transparent p-4 hover:border-gray-500"
         >
           <MilSymbol :size="symbolSize" :sidc="sidc" />
@@ -77,42 +76,41 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import MilSymbol from "./MilSymbol.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
-import { computed, defineComponent, PropType } from "vue";
-import { useVModel } from "@vueuse/core";
-import { SymbolItem } from "../types/constants";
+import { computed, watch } from "vue";
 import { groupBy } from "../utils";
+import { useSymbolItems } from "../composables/symbolData";
 
-export default defineComponent({
-  name: "SymbolBrowseTab",
-  components: { MilSymbol, SymbolCodeSelect },
-  props: {
-    iconValue: String,
-    symbolSetValue: String,
-    mod1Value: String,
-    mod2Value: String,
-    icons: { type: Array as PropType<SymbolItem[]>, required: true },
-    symbolSets: { type: Array as PropType<SymbolItem[]>, required: true },
-    mod1Items: { type: Array as PropType<SymbolItem[]>, required: true },
-    mod2Items: { type: Array as PropType<SymbolItem[]>, required: true },
-    symbolSize: { type: Number, default: 32 },
-  },
-  emits: [
-    "update:iconValue",
-    "update:symbolSetValue",
-    "update:mod1Value",
-    "update:mod2Value",
-  ],
-  setup(props) {
-    const iconV = useVModel(props, "iconValue");
-    const symbolSetV = useVModel(props, "symbolSetValue");
-    const mod1V = useVModel(props, "mod1Value");
-    const mod2V = useVModel(props, "mod2Value");
-    const iconsByEntity = computed(() => groupBy(props.icons, "entity"));
+interface Props {
+  initialSidc: string;
+  symbolSize?: number;
+}
 
-    return { iconsByEntity, iconV, symbolSetV, mod1V, mod2V };
-  },
+const props = withDefaults(defineProps<Props>(), { symbolSize: 32 });
+
+const {
+  mod1Items,
+  mod2Items,
+  mod1Value,
+  mod2Value,
+  symbolSets,
+  symbolSetValue,
+  icons,
+  iconValue,
+  csidc,
+  isLoaded,
+  loadData,
+} = useSymbolItems(computed(() => props.initialSidc));
+
+if (!isLoaded.value) loadData();
+
+const emit = defineEmits(["update-sidc"]);
+
+const iconsByEntity = computed(() => groupBy(icons.value, "entity"));
+
+watch([mod1Value, mod2Value, iconValue], (value, oldValue) => {
+  emit("update-sidc", csidc.value);
 });
 </script>
