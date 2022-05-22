@@ -884,6 +884,54 @@
           }
         }
       ]
+    },
+    {
+      "id": "yBW6mLmbE5y38Kv6LzxdB",
+      "name": "Landings",
+      "features": [
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-59.08007935472968, -51.564090346897814]
+          },
+          "properties": {
+            "type": "Point",
+            "name": "Red Beach",
+            "description": "21 May: 45 Cdo",
+            "fill": null
+          },
+          "id": "Zn3Qm3COkjrR-11cL98fB"
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-59.032873825288405, -51.574678888182405]
+          },
+          "properties": {
+            "type": "Point",
+            "name": "Blue Beach",
+            "description": "21 May: \n - 2 Para\n - 40 Cdo\n\n1-2 Jun: \n- 1/GR\n- 1WG\n- 2SG",
+            "fill": null
+          },
+          "id": "3nXZXzD74ZoLNsrm3arDE"
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-58.99651105330039, -51.50288926105369]
+          },
+          "properties": {
+            "type": "Point",
+            "name": "Green Beach",
+            "description": "21 May: 3 Para, 42 Cdo",
+            "fill": null
+          },
+          "id": "Zi5qS3x-JmHsb_M23xL3F"
+        }
+      ]
     }
   ]
 }
