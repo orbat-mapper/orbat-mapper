@@ -6,9 +6,12 @@ import { computed, ref } from "vue";
 import { type StrokeStyleSpec } from "../../geo/simplestyle";
 import { type ScenarioFeature } from "../../types/scenarioGeoModels";
 import ToggleField from "../../components/ToggleField.vue";
+import OpacityInput from "../../components/OpacityInput.vue";
+import InputGroupTemplate from "../../components/InputGroupTemplate.vue";
 
 const settings = ref<Partial<StrokeStyleSpec>>({});
 const props = defineProps<{ feature: ScenarioFeature }>();
+const emit = defineEmits<{ (e: "update", value: Partial<StrokeStyleSpec>): void }>();
 
 const stroke = computed((): Partial<StrokeStyleSpec> => {
   const { properties } = props.feature;
@@ -21,8 +24,7 @@ const stroke = computed((): Partial<StrokeStyleSpec> => {
 });
 
 function updateValue(name: keyof StrokeStyleSpec, value: string | number) {
-  // Fixme!
-  Object.assign(props.feature.properties, { [name]: value });
+  emit("update", { [name]: value });
 }
 
 const db = useDebounceFn(updateValue, 100);
@@ -69,5 +71,12 @@ function toggleStroke(v: boolean) {
       :model-value="stroke['stroke-width']"
       @update:model-value="updateValue('stroke-width', $event)"
     />
+    <InputGroupTemplate label="Opacity">
+      <OpacityInput
+        :model-value="stroke['stroke-opacity']"
+        visible
+        @update:model-value="updateValue('stroke-opacity', $event)"
+      />
+    </InputGroupTemplate>
   </div>
 </template>

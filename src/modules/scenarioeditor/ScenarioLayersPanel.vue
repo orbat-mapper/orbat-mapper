@@ -22,6 +22,7 @@ import BaseButton from "../../components/BaseButton.vue";
 import { inputEventFilter } from "../../components/helpers";
 import ToggleField from "../../components/ToggleField.vue";
 import FeatureStrokeSettings from "./FeatureStrokeSettings.vue";
+import { StrokeStyleSpec } from "../../geo/simplestyle";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("../../components/SimpleMarkdownInput.vue")
@@ -63,6 +64,11 @@ const doFormFocus = async () => {
   const inputElement = document.getElementById("name-input");
   inputElement && inputElement.focus();
 };
+
+function updateStroke(data: Partial<StrokeStyleSpec>) {
+  // Fixme!
+  Object.assign(props.feature.properties, data);
+}
 
 const noFill = ref(fillProps.value.fill === null);
 </script>
@@ -130,7 +136,7 @@ const noFill = ref(fillProps.value.fill === null);
         </section>
       </div>
       <div class="-mx-6 mt-4 border-t px-6 py-4">
-        <FeatureStrokeSettings :feature="feature" />
+        <FeatureStrokeSettings :feature="feature" @update="updateStroke" />
       </div>
       <div class="-mx-6 border-t border-b px-6 py-4">
         <header class="flex items-center justify-between">

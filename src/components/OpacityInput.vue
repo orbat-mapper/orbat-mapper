@@ -30,10 +30,13 @@ import { useToggle, useVModel } from "@vueuse/core";
 export default defineComponent({
   name: "OpacityInput",
   components: { OpacityIcon },
-  props: { modelValue: { type: Number, default: 1 } },
+  props: {
+    modelValue: { type: Number, default: 1 },
+    visible: { type: Boolean, default: false },
+  },
   setup(props) {
     const opacity = useVModel(props, "modelValue");
-    const [showRange, toggleRange] = useToggle(false);
+    const [showRange, toggleRange] = useToggle(props.visible);
     const opacityAsPercent = computed(() => (opacity.value * 100).toFixed(0));
     return { opacity, opacityAsPercent, showRange, toggleRange };
   },
