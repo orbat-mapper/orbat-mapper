@@ -17,6 +17,7 @@ export interface StrokeStyleSpec {
 export interface FillStyleSpec {
   fill: string | null;
   "fill-opacity": number;
+  _fill: string | null;
 }
 
 export interface SimpleStyleSpec extends StrokeStyleSpec, FillStyleSpec {

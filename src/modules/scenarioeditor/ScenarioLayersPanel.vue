@@ -22,7 +22,8 @@ import BaseButton from "../../components/BaseButton.vue";
 import { inputEventFilter } from "../../components/helpers";
 import ToggleField from "../../components/ToggleField.vue";
 import FeatureStrokeSettings from "./FeatureStrokeSettings.vue";
-import { StrokeStyleSpec } from "../../geo/simplestyle";
+import { type StrokeStyleSpec, type FillStyleSpec } from "../../geo/simplestyle";
+import FeatureFillSettings from "./FeatureFillSettings.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("../../components/SimpleMarkdownInput.vue")
@@ -70,7 +71,10 @@ function updateStroke(data: Partial<StrokeStyleSpec>) {
   Object.assign(props.feature.properties, data);
 }
 
-const noFill = ref(fillProps.value.fill === null);
+function updateFill(data: Partial<FillStyleSpec>) {
+  // Fixme!
+  Object.assign(props.feature.properties, data);
+}
 </script>
 <template>
   <TabView extra-class="px-6" tab-class="pl-6 pr-6" class="mt-3 min-h-0">
@@ -139,11 +143,7 @@ const noFill = ref(fillProps.value.fill === null);
         <FeatureStrokeSettings :feature="feature" @update="updateStroke" />
       </div>
       <div class="-mx-6 border-t border-b px-6 py-4">
-        <header class="flex items-center justify-between">
-          <h4 class="text-sm font-bold text-gray-700">Fill</h4>
-
-          <ToggleField v-model="noFill"></ToggleField>
-        </header>
+        <FeatureFillSettings :feature="feature" @update="updateFill" />
       </div>
     </TabItem>
     <TabItem label="Debug view">
