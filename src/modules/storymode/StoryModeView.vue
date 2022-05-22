@@ -71,6 +71,7 @@ import { MenuIcon, XIcon } from "@heroicons/vue/outline";
 import InputGroup from "../../components/InputGroup.vue";
 import NumberInputGroup from "../../components/NumberInputGroup.vue";
 import MeasurementToolbar from "../../components/MeasurementToolbar.vue";
+import { useScenarioLayers } from "../../composables/scenarioLayers";
 
 export default defineComponent({
   name: "StoryModeView",
@@ -122,6 +123,11 @@ export default defineComponent({
       const { center, ...rest } = chapter.view;
       const time = dayjs.utc(chapter.startTime);
       scenarioStore.setCurrentTime(time.valueOf());
+
+      const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(
+        mapRef.value!
+      );
+      loadScenarioLayers();
       drawUnits();
 
       view.animate({
