@@ -98,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, nextTick, ref, watch, watchEffect } from "vue";
+import { computed, nextTick, ref, watch, watchEffect } from "vue";
 import MilSymbol from "./MilSymbol.vue";
 import PrimaryButton from "./PrimaryButton.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
