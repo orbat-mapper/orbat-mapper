@@ -1,7 +1,8 @@
 import { Position, ScenarioLayer } from "./scenarioGeoModels";
+import { ScenarioTime } from "./base";
 
 export interface State {
-  t: number;
+  t: ScenarioTime;
   location?: Position;
   sidc?: string;
 }
@@ -79,7 +80,7 @@ export interface ScenarioEvent {
   title: string;
   subTitle?: string;
   description?: string;
-  startTime: number;
+  startTime: ScenarioTime;
   uiActions: UIAction[];
   id?: string;
 }
@@ -87,7 +88,7 @@ export interface ScenarioEvent {
 export interface ScenarioInfo {
   name: string;
   description?: string;
-  startTime?: number;
+  startTime?: ScenarioTime;
   timeZone?: string;
   symbologyStandard?: SymbologyStandard;
 }
@@ -121,8 +122,8 @@ export interface Mappings {
 
 export interface ScenarioState {
   scenario: Scenario;
-  startTime: number;
-  endTime: number;
+  startTime: ScenarioTime;
+  endTime: ScenarioTime;
   mappings?: Mappings;
 }
 
