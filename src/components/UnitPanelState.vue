@@ -1,7 +1,7 @@
 <template>
   <h3 class="mt-6 font-medium text-gray-900">Unit state</h3>
   <ul class="mt-2 divide-y divide-gray-200 border-t border-b border-gray-200">
-    <li v-for="(s, index) in state" class="flex items-center py-4">
+    <li v-for="(s, index) in state" class="flex items-center py-4" :key="s.t">
       <div class="flex min-w-0 flex-auto flex-col text-sm">
         <p
           class="font-medium text-gray-500"

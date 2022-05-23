@@ -4,7 +4,7 @@
   "symbologyStandard": "app6",
   "name": "The Falklands War",
   "description": "The Falklands War (Spanish: Guerra de las Malvinas), also known as the Falklands Conflict, Falklands Crisis, South Atlantic Conflict, and the Guerra del Atlántico Sur (Spanish for \"South Atlantic War\"), was a ten-week war between Argentina and the United Kingdom over two British overseas territories in the South Atlantic: the Falkland Islands, and South Georgia and the South Sandwich Islands. It began on Friday, 2 April 1982, when Argentina invaded and occupied the Falkland Islands (and, the following day, South Georgia and the South Sandwich Islands) in an attempt to establish the sovereignty it had claimed over them. On 5 April, the British government dispatched a naval task force to engage the Argentine Navy and Air Force before making an amphibious assault on the islands. The conflict lasted 74 days and ended with the Argentine surrender on 14 June 1982, returning the islands to British control. In total, 649 Argentine military personnel, 255 British military personnel, and three Falkland Islanders died during the hostilities.",
-  "startTime": 386467200000,
+  "startTime": "1982-03-31T20:00:00-04:00",
   "timeZone": "Atlantic/Stanley",
   "sides": [
     {
@@ -25,15 +25,15 @@
                   "sidc": "10031000131211004600",
                   "state": [
                     {
-                      "t": 386632800000,
+                      "t": "1982-04-02T18:00:00-04:00",
                       "location": [-57.883186, -51.705864]
                     },
                     {
-                      "t": 386719200000,
+                      "t": "1982-04-03T18:00:00-04:00",
                       "location": [-57.87279, -51.69186]
                     },
                     {
-                      "t": 386805600000,
+                      "t": "1982-04-04T18:00:00-04:00",
                       "location": null
                     }
                   ],
@@ -44,15 +44,15 @@
                   "sidc": "10031000131211004600",
                   "state": [
                     {
-                      "t": 386632800000,
+                      "t": "1982-04-02T18:00:00-04:00",
                       "location": [-57.843876, -51.699906]
                     },
                     {
-                      "t": 386719200000,
+                      "t": "1982-04-03T18:00:00-04:00",
                       "location": [-57.87249, -51.69188]
                     },
                     {
-                      "t": 386805600000,
+                      "t": "1982-04-04T18:00:00-04:00",
                       "location": null
                     }
                   ],
@@ -63,15 +63,15 @@
                   "sidc": "10031000131211004600",
                   "state": [
                     {
-                      "t": 386632800000,
+                      "t": "1982-04-02T18:00:00-04:00",
                       "location": [-57.799072, -51.700225]
                     },
                     {
-                      "t": 386719200000,
+                      "t": "1982-04-03T18:00:00-04:00",
                       "location": [-57.872758, -51.691993]
                     },
                     {
-                      "t": 386805600000,
+                      "t": "1982-04-04T18:00:00-04:00",
                       "location": null
                     }
                   ],
@@ -83,15 +83,15 @@
                   "sidc": "10031000131211004600",
                   "state": [
                     {
-                      "t": 386632800000,
+                      "t": "1982-04-02T18:00:00-04:00",
                       "location": [-57.768173, -51.68618]
                     },
                     {
-                      "t": 386719200000,
+                      "t": "1982-04-03T18:00:00-04:00",
                       "location": [-57.872522, -51.691986]
                     },
                     {
-                      "t": 386805600000,
+                      "t": "1982-04-04T18:00:00-04:00",
                       "location": null
                     }
                   ],
@@ -101,15 +101,15 @@
               ],
               "state": [
                 {
-                  "t": 386467200000,
+                  "t": "1982-03-31T20:00:00-04:00",
                   "location": [-57.92047949206542, -51.685295093903676]
                 },
                 {
-                  "t": 386632800000,
+                  "t": "1982-04-02T18:00:00-04:00",
                   "location": null
                 },
                 {
-                  "t": 386805600000,
+                  "t": "1982-04-04T18:00:00-04:00",
                   "location": [-57.872586, -51.6919]
                 }
               ],
@@ -121,15 +121,15 @@
               "sidc": "10033000001205001900",
               "state": [
                 {
-                  "t": 385574400000,
+                  "t": "1982-03-21T12:00:00-04:00",
                   "location": [-57.83023237124096, -51.68840202070351]
                 },
                 {
-                  "t": 385833600000,
+                  "t": "1982-03-24T12:00:00-04:00",
                   "location": [-36.4509482464316, -54.01594276935968]
                 },
                 {
-                  "t": 386467200000,
+                  "t": "1982-03-31T20:00:00-04:00",
                   "location": [-36.502246419189454, -54.2834671249464]
                 }
               ],
@@ -139,11 +139,11 @@
                   "sidc": "10031000131211004600",
                   "state": [
                     {
-                      "t": 386467200000,
+                      "t": "1982-03-31T20:00:00-04:00",
                       "location": [-36.509564, -54.280661]
                     },
                     {
-                      "t": 386640000000,
+                      "t": "1982-04-02T20:00:00-04:00",
                       "location": [-36.493835, -54.282815]
                     }
                   ],
@@ -167,7 +167,7 @@
                   "id": "R0aM0ePhKjOe1z1mg5KBV",
                   "state": [
                     {
-                      "t": 385394400000,
+                      "t": "1982-03-19T10:00:00-04:00",
                       "location": [-36.68852253064409, -54.14715926640066]
                     }
                   ],
@@ -622,11 +622,11 @@
                   "sidc": "10073000001203070000",
                   "state": [
                     {
-                      "t": 386546400000,
+                      "t": "1982-04-01T18:00:00-04:00",
                       "location": [-57.776155, -51.667871]
                     },
                     {
-                      "t": 386632800000,
+                      "t": "1982-04-02T18:00:00-04:00",
                       "location": [-57.800875, -51.678995]
                     }
                   ],
@@ -637,11 +637,11 @@
                   "sidc": "10073000001202030000",
                   "state": [
                     {
-                      "t": 386546400000,
+                      "t": "1982-04-01T18:00:00-04:00",
                       "location": [-57.829628, -51.737022]
                     },
                     {
-                      "t": 386632800000,
+                      "t": "1982-04-02T18:00:00-04:00",
                       "location": [-57.857437, -51.725912]
                     }
                   ],
@@ -668,7 +668,7 @@
                   "sidc": "10073000001202050000",
                   "state": [
                     {
-                      "t": 386640000000,
+                      "t": "1982-04-02T20:00:00-04:00",
                       "location": [-36.49641, -54.285671]
                     }
                   ],
@@ -680,7 +680,7 @@
                   "sidc": "10073000001301001900",
                   "state": [
                     {
-                      "t": 386640000000,
+                      "t": "1982-04-02T20:00:00-04:00",
                       "location": [-36.474094, -54.286774]
                     }
                   ],
@@ -706,7 +706,7 @@
                   "sidc": "10073000001301000000",
                   "state": [
                     {
-                      "t": 385394400000,
+                      "t": "1982-03-19T10:00:00-04:00",
                       "location": [-36.6833405589705, -54.14092108867432]
                     }
                   ],
@@ -732,7 +732,7 @@
               "id": "HxaawJT7ymu1m2gpLEV-o",
               "state": [
                 {
-                  "t": 385394400000,
+                  "t": "1982-03-19T10:00:00-04:00",
                   "location": [-36.68911416889803, -54.14095696852837]
                 }
               ],
@@ -837,25 +837,25 @@
     {
       "title": "Operation \"Rosario\"",
       "subTitle": "Invasion of the Falklands islands",
-      "startTime": 386467200000,
+      "startTime": "1982-03-31T20:00:00-04:00",
       "uiActions": [],
       "id": "zB5mW4qieAn_k6oRj8t9q"
     },
     {
       "title": "South Georgia invasion",
-      "startTime": 386640000000,
+      "startTime": "1982-04-02T20:00:00-04:00",
       "uiActions": [],
       "id": "rKWYMOrJITfT08_iagIya"
     },
     {
       "title": "Sinking of \"General Belgrano\"",
-      "startTime": 389145600000,
+      "startTime": "1982-05-01T20:00:00-04:00",
       "uiActions": [],
       "id": "CAm5DrJOFQ8FUQw_7TMfc"
     },
     {
       "title": "Battle of Goose Green",
-      "startTime": 391305600000,
+      "startTime": "1982-05-26T20:00:00-04:00",
       "uiActions": [],
       "id": "L7sLKYe3xMRELH2bEA7Da"
     }

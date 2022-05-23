@@ -95,10 +95,15 @@ function prepareScenario(scenario: Scenario) {
   const unitMap = new Map<string, Unit>();
   const sideMap = new Map<string, Side>();
   const sideGroupMap = new Map<string, SideGroup>();
+  if (scenario.startTime !== undefined) {
+    scenario.startTime = +dayjs(scenario.startTime);
+  }
 
   function prepareUnit(unit: Unit, level: number, parent: Unit | SideGroup) {
     if (!unit.state) {
       unit.state = [];
+    } else {
+      unit.state = unit.state.map((e) => ({ ...e, t: +dayjs(e.t) }));
     }
     unit._state = null;
     if (!unit.id) {
@@ -375,6 +380,11 @@ export const useScenarioStore = defineStore("scenario", {
         this.scenario,
         (name, val) => {
           if (INTERNAL_NAMES.includes(name)) return undefined;
+          if (name === "t" || name === "startTime") {
+            return dayjs(val)
+              .tz(this.scenario.timeZone || "UTC")
+              .format();
+          }
           return val;
         },
         "  "
