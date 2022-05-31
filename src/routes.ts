@@ -9,7 +9,7 @@ const StoryModeView = () => import("./modules/storymode/StoryModeView.vue");
 const OrbatChartView = () => import("./modules/charteditor/OrbatChartView.vue");
 const ComponentsTestView = () => import("./views/ComponentsTestView.vue");
 const GeoTestView = () => import("./views/GeoTestView.vue");
-
+const StoreTestView = () => import("./views/StoreTestViewWrapper.vue");
 export const SCENARIO_ROUTE = "ScenarioRoute";
 export const NEW_SCENARIO_ROUTE = "NewScenarioRoute";
 export const LANDING_PAGE_ROUTE = "LandingPageRoute";
@@ -57,6 +57,7 @@ const routes = [
     path: "/geotests",
     component: GeoTestView,
   },
+  { path: "/teststore", component: StoreTestView },
 
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];
