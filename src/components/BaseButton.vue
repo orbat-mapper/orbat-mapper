@@ -23,7 +23,7 @@ const colorClasses = {
 };
 
 const focusClasses =
-  "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500";
+  "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50";
 export default {
   name: "BaseButton",
   props: {
