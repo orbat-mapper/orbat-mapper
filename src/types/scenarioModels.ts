@@ -1,5 +1,5 @@
 import { Position, ScenarioLayer } from "./scenarioGeoModels";
-import { ScenarioTime } from "./base";
+import { EntityId, ScenarioTime } from "./base";
 
 export interface State {
   t: ScenarioTime;
@@ -8,7 +8,7 @@ export interface State {
 }
 
 export interface Unit {
-  id: string;
+  id: EntityId;
   name: string;
   sidc: string;
   shortName?: string;
@@ -30,7 +30,7 @@ export interface SideData {
 }
 
 export interface SideGroup {
-  id: string;
+  id: EntityId;
   name: string;
   description?: string;
   units: Unit[];
@@ -39,14 +39,9 @@ export interface SideGroup {
 }
 
 export interface Side extends SideData {
-  id: string;
+  id: EntityId;
   groups: SideGroup[];
   _isNew?: boolean;
-}
-
-export interface UnitStateData {
-  state: State;
-  unit: Unit;
 }
 
 export enum UIActionType {
@@ -101,30 +96,6 @@ export interface Scenario extends ScenarioInfo {
   sides: Side[];
   events: ScenarioEvent[];
   layers: ScenarioLayer[];
-}
-
-export interface UnitMapping {
-  [id: string]: Unit;
-}
-
-export interface ObjectMapping<T> {
-  [id: string]: T;
-}
-
-export interface SideMapping {
-  [id: string]: Side;
-}
-
-export interface Mappings {
-  unitMap: UnitMapping;
-  sideMap: SideMapping;
-}
-
-export interface ScenarioState {
-  scenario: Scenario;
-  startTime: ScenarioTime;
-  endTime: ScenarioTime;
-  mappings?: Mappings;
 }
 
 export type UnitOrSide = Unit | Side;

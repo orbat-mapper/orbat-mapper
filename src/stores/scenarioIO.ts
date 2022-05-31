@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { until, useFetch, useLocalStorage } from "@vueuse/core";
 import { useScenarioStore } from "./scenarioStore";
-import { ObjectMapping, Scenario } from "../types/scenarioModels";
+import { Scenario } from "../types/scenarioModels";
 import * as FileSaver from "file-saver";
 
 export const useScenarioIO = defineStore("scenarioIO", {
@@ -42,7 +42,7 @@ export const useScenarioIO = defineStore("scenarioIO", {
     },
 
     async loadDemoScenario(id: string) {
-      const idUrlMap: ObjectMapping<string> = {
+      const idUrlMap: Record<string, string> = {
         falkland82: "/scenarios/falkland82.json",
         narvik40: "/scenarios/narvik40.json",
       };
