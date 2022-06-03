@@ -6,9 +6,11 @@
     <p
       class="absolute inset-x-0 top-0 h-4 border-b bg-amber-200 text-center text-xs text-amber-700"
     >
-      Preview
+      Preview - <button type="button" @click="toggleDark()">Toggle dark</button>
     </p>
-    <aside class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100">
+    <aside
+      class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100 dark:bg-gray-900"
+    >
       <TabView
         v-model:current-tab="currentScenarioTab"
         :key="scenarioStore.id"
@@ -48,7 +50,7 @@
         </template>
       </TabView>
       <footer
-        class="flex flex-shrink-0 items-center border-t border-gray-300 bg-gray-200"
+        class="flex flex-shrink-0 items-center border-t border-gray-300 bg-gray-200 dark:bg-gray-700"
       >
         <div class="flex flex-col space-y-2">
           <router-link to="/" class="ml-2">
@@ -152,7 +154,7 @@ import { useScenarioIO } from "../../stores/scenarioIO";
 import { useUiStore } from "../../stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
 import { Keyboard as KeyboardIcon } from "mdue";
-import { useEventBus, useTitle, useToggle, whenever } from "@vueuse/core";
+import { useDark, useEventBus, useTitle, useToggle, whenever } from "@vueuse/core";
 import { useUnitManipulationStore } from "../../stores/scenarioManipulation";
 import MainViewSlideOver from "../../components/MainViewSlideOver.vue";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
@@ -203,7 +205,8 @@ oobUnitClickBus.on((unit) => {
 
 const mapUnitClickBus = useEventBus(mapUnitClick);
 // mapUnitClickBus.on((e) => console.log("Map select", e.name));
-
+const isDark = useDark();
+const toggleDark = useToggle(isDark);
 useTitle(windowTitle);
 
 onUnmounted(() => {

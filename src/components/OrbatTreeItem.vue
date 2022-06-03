@@ -1,7 +1,7 @@
 <template>
-  <li :id="'o-' + unit.id">
+  <li :id="'o-' + unit.id" class="text-gray-900 dark:text-gray-400">
     <div
-      class="group relative flex items-center justify-between py-2 pl-2 hover:bg-gray-200"
+      class="group relative flex items-center justify-between py-2 pl-2 hover:bg-gray-200 dark:hover:bg-gray-700"
       @dblclick="isOpen = !isOpen"
       @click="onUnitClick"
     >

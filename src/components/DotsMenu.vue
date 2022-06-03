@@ -15,7 +15,7 @@
       leave-to-class="transform opacity-0 scale-95"
     >
       <MenuItems
-        class="absolute right-10 top-3 z-20 mx-3 mt-1 w-48 origin-top-right divide-y divide-gray-200 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+        class="absolute right-10 top-3 z-20 mx-3 mt-1 w-48 origin-top-right divide-y divide-gray-200 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800"
       >
         <div class="py-1">
           <MenuItem
@@ -29,7 +29,7 @@
               :class="[
                 active
                   ? 'border-r-2 border-army2 bg-gray-100 text-gray-900'
-                  : 'text-gray-700',
+                  : 'text-gray-700 dark:text-gray-300',
                 'block px-4 py-2 text-sm',
                 disabled ? 'opacity-50 hover:cursor-default' : '',
               ]"

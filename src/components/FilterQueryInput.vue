@@ -11,7 +11,7 @@
     <input
       v-model="localValue"
       type="text"
-      class="block w-full rounded-md border-gray-300 pl-10 pr-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+      class="block w-full rounded-md border-gray-300 pl-10 pr-10 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 sm:text-sm"
       placeholder="Filter"
       v-bind="$attrs"
     />

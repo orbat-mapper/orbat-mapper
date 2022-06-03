@@ -3,7 +3,7 @@
     <div class="group relative mt-4 flex items-center justify-between py-0">
       <DisclosureButton class="flex w-full items-center justify-between text-left">
         <p
-          class="text-base font-medium text-gray-600 hover:text-gray-900"
+          class="text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300"
           :class="{ 'font-bold underline': isDragOver }"
           @dragover.prevent="isDragOver = true"
           @drop.prevent="onDrop"
