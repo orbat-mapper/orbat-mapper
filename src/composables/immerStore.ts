@@ -37,6 +37,7 @@ export function useImmerStore<T extends object>(baseState: T) {
   };
 
   const undo = () => {
+    console.log("Undo");
     if (!canUndo.value) return false;
     const { patches, inversePatches } = past.pop()!;
     applyPatchWrapper(state, inversePatches);
@@ -52,7 +53,7 @@ export function useImmerStore<T extends object>(baseState: T) {
   };
 
   return {
-    state: readonly(state),
+    state,
     update,
     redo,
     undo,

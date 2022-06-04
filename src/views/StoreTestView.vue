@@ -1,25 +1,28 @@
 <script setup lang="ts">
 import { useFetch } from "@vueuse/core";
 import { GlobalEvents } from "vue-global-events";
-import { Scenario, Unit } from "../types/scenarioModels";
-import { NUnit, useNewScenarioStore } from "../stores/newScenarioStore";
+import { Scenario } from "../types/scenarioModels";
+import { IdUnit, NUnit, useNewScenarioStore } from "../stores/newScenarioStore";
 import BaseButton from "../components/BaseButton.vue";
-import OrbatTree from "../components/OrbatTree.vue";
-import { computed, toRaw } from "vue";
+import OrbatTree from "../components/NOrbatTree.vue";
+import { computed, ref } from "vue";
 import { EntityId } from "../types/base";
-import { klona } from "klona";
+import { inputEventFilter } from "../components/helpers";
+import { UnitActions } from "../types/constants";
 
 const { data } = await useFetch<Scenario>("/scenarios/falkland82.json").get().json();
-const { store, deleteUnit } = useNewScenarioStore(data.value);
+const { store, deleteUnit, walkSubUnits } = useNewScenarioStore(data.value);
 
 const { state, update, undo, redo, canRedo, canUndo } = store;
-update((currentState) => {
-  currentState.unitMap["ZcsBI6kKkDawpUEn3j9VJ"].name = "JALLA";
-});
 
 function mutate1() {
   deleteUnit("mFFoHYTQvBP_MJIJ9Trlb");
-  deleteUnit("ZcsBI6kKkDawpUEn3j9VJ");
+}
+
+function mutate2() {
+  update((currentState) => {
+    currentState.unitMap["qPpTHmxnFpihGgZHt_AFH"].name = `RAND-${Math.random()}`;
+  });
 }
 
 function buildHierarchy(rootUnitId: EntityId) {
@@ -42,31 +45,6 @@ function buildHierarchy(rootUnitId: EntityId) {
   return nUnit;
 }
 
-interface IdUnit {
-  id: EntityId;
-  subUnits: IdUnit[];
-}
-
-function buildIdHierarchy(rootUnitId: EntityId) {
-  const rootUnit = state.unitMap[rootUnitId];
-  const nUnit: IdUnit = { id: rootUnitId, subUnits: [] };
-  function helper(unitId: EntityId, parent: IdUnit) {
-    const unit = state.unitMap[unitId];
-
-    if (!unit) return;
-    const nUnit: IdUnit = { id: unitId, subUnits: [] };
-
-    for (const subUnitId of unit.subUnits) {
-      helper(subUnitId, nUnit);
-    }
-    parent.subUnits.push(nUnit);
-  }
-  for (const unitId of rootUnit.subUnits) {
-    helper(unitId, nUnit);
-  }
-  return nUnit;
-}
-
 const units = computed(() => {
   console.log("yo");
 
@@ -76,7 +54,36 @@ const units = computed(() => {
     .map((id) => buildHierarchy(id));
 });
 
-console.log(buildIdHierarchy("yeyNm2QTCh_yivrfpnv0N"));
+const unitIds = computed(() => {
+  console.log("yo2");
+
+  return Object.values(state.sideGroupMap)
+    .map((g) => g.units)
+    .flat();
+});
+
+function onUnitAction(unit: NUnit, action: UnitActions) {
+  console.log("On action", unit.name, action);
+  if (action === UnitActions.Delete) deleteUnit(unit.id);
+  if (action === UnitActions.Expand) {
+    walkSubUnits(
+      unit.id,
+      (unit1) => {
+        unit1._isOpen = true;
+      },
+      true
+    );
+  }
+}
+
+const activeUnitId = ref<EntityId | null | undefined>(null);
+
+function onUnitClick(unit: NUnit) {
+  console.log("On unit click", unit.name);
+  activeUnitId.value = unit.id;
+}
+
+const query = ref("");
 </script>
 <template>
   <main class="p-8">
@@ -85,6 +92,7 @@ console.log(buildIdHierarchy("yeyNm2QTCh_yivrfpnv0N"));
 
       <div class="flex items-center space-x-2">
         <BaseButton @click="mutate1()">Mutate</BaseButton>
+        <BaseButton @click="mutate2()">Mutate2</BaseButton>
         <BaseButton :disabled="!canUndo" @click="undo()">Undo</BaseButton>
         <BaseButton :disabled="!canRedo" @click="redo()">Redo</BaseButton>
       </div>
@@ -94,11 +102,19 @@ console.log(buildIdHierarchy("yeyNm2QTCh_yivrfpnv0N"));
         <pre>{{ state }}</pre>
       </div>
       <div>
-        <OrbatTree :units="units" />
-        <pre>{{ units }}</pre>
+        <input v-model="query" class="rounded-md border p-1" />
+        <OrbatTree
+          :units="unitIds"
+          :unit-map="store.state.unitMap"
+          :filter-query="query"
+          @unit-action="onUnitAction"
+          @unit-click="onUnitClick"
+          :active-unit-id="activeUnitId"
+        />
       </div>
     </section>
     <GlobalEvents
+      :filter="inputEventFilter"
       @keyup.ctrl.z.exact="undo()"
       @keyup.ctrl.shift.z="redo()"
       @keyup.ctrl.y="redo()"

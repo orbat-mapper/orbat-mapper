@@ -6,6 +6,7 @@ import { useActiveUnitStore } from "../stores/dragStore";
 import { computed } from "vue";
 import { MenuItemData } from "../components/DotsMenu.vue";
 import { useUnitManipulationStore } from "../stores/scenarioManipulation";
+import { NOrbatItemData } from "../stores/newScenarioStore";
 
 export function useUnitActions() {
   const scenarioStore = useScenarioStore();
@@ -39,7 +40,7 @@ export function useUnitActions() {
   return { onUnitAction };
 }
 
-export function useUnitMenu(item: OrbatItemData | Unit) {
+export function useUnitMenu(item: OrbatItemData | NOrbatItemData | Unit) {
   const unit = "unit" in item ? item.unit : item;
   // todo: item.children is not reactive
   const children = "unit" in item ? item.children : item.subUnits;

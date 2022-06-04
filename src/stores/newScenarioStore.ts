@@ -18,6 +18,13 @@ export interface NSideGroup extends Omit<SideGroup, "units"> {
   units: EntityId[];
 }
 
+export interface NOrbatItemData {
+  unit: NUnit;
+  children: NOrbatItemData[];
+}
+
+export type WalkSubUnitIdCallback = (unit: NUnit) => void;
+
 function prepareScenario(scenario: Scenario) {
   const unitMap: Record<EntityId, NUnit> = {};
   const sideMap: Record<EntityId, NSide> = {};
@@ -82,5 +89,25 @@ export function useNewScenarioStore(data: Scenario) {
       }
     });
   };
-  return { store, deleteUnit };
+
+  function walkSubUnits(
+    parentUnitId: EntityId,
+    callback: WalkSubUnitIdCallback,
+    includeParent = false
+  ) {
+    function helper(currentUnitId: EntityId) {
+      const currentUnit = state.unitMap[currentUnitId];
+      callback(currentUnit);
+      currentUnit.subUnits.forEach((id) => helper(id));
+    }
+    const parentUnit = state.unitMap[parentUnitId];
+    if (includeParent) callback(parentUnit);
+    parentUnit.subUnits.forEach((unitId) => helper(unitId));
+  }
+  return { store, deleteUnit, walkSubUnits };
+}
+
+export interface IdUnit {
+  id: EntityId;
+  subUnits: IdUnit[];
 }
