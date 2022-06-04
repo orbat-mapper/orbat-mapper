@@ -75,8 +75,8 @@
   </li>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, PropType, ref } from "vue";
+<script setup lang="ts">
+import { computed, ref } from "vue";
 import MilSymbol from "./MilSymbol.vue";
 import { OrbatItemData, Unit } from "../types/scenarioModels";
 //@ts-ignore
@@ -91,114 +91,80 @@ import { useSettingsStore } from "../stores/settingsStore";
 import { useEventBus } from "@vueuse/core";
 import { orbatUnitClick } from "./eventKeys";
 
-export default defineComponent({
-  name: "OrbatTreeItem",
-  components: {
-    DotsMenu,
-    MilSymbol,
-    ChevronRightIcon,
+const props = defineProps<{ item: OrbatItemData }>();
+
+const emit = defineEmits(["action"]);
+
+let isDragged = ref(false);
+let subTree = ref();
+const isDragOver = ref(false);
+const unit = computed(() => props.item.unit);
+const isOpen = computed({
+  get(): boolean {
+    return !!props.item.unit._isOpen;
   },
-  props: {
-    item: { type: Object as PropType<OrbatItemData>, required: true },
+  set(v: boolean) {
+    props.item.unit._isOpen = v;
   },
-  emits: ["action"],
-  setup(props, { emit }) {
-    let isDragged = ref(false);
-    let subTree = ref();
-    const isDragOver = ref(false);
-    const unit = computed(() => props.item.unit);
-    const isOpen = computed({
-      get(): boolean {
-        return !!props.item.unit._isOpen;
-      },
-      set(v: boolean) {
-        props.item.unit._isOpen = v;
-      },
-    });
-
-    const dragStore = useDragStore();
-    const settingsStore = useSettingsStore();
-    const bus = useEventBus(orbatUnitClick);
-
-    const dragStart = (ev: DragEvent) => {
-      const { dataTransfer } = ev;
-      if (dataTransfer) {
-        dataTransfer.setData("text", DragOperations.OrbatDrag);
-        dataTransfer.dropEffect = "copy";
-      }
-      dragStore.draggedUnit = props.item.unit;
-      setTimeout(() => (isDragged.value = true), 10);
-    };
-
-    const dragEnd = (ev: DragEvent) => {
-      dragStore.draggedUnit = null;
-      isDragged.value = false;
-    };
-
-    const onDrop = (ev: DragEvent) => {
-      if (
-        !(
-          ev.dataTransfer?.getData("text") === DragOperations.OrbatDrag &&
-          dragStore.draggedUnit
-        )
-      )
-        return;
-      isDragOver.value = false;
-      if (dragStore.draggedUnit.id === props.item.unit.id) return;
-      const unitManipulationStore = useUnitManipulationStore();
-      unitManipulationStore.changeUnitParent(dragStore.draggedUnit, props.item.unit);
-      isOpen.value = true;
-    };
-
-    const activeUnitStore = useActiveUnitStore();
-
-    const onUnitMenuAction = async (unit: Unit, action: UnitActions) => {
-      if (action === UnitActions.Expand) {
-        await expandChildren();
-      } else {
-        emit("action", unit, action);
-      }
-    };
-
-    const onUnitClick = () => {
-      bus.emit(props.item.unit);
-    };
-
-    const isActiveUnit = computed(() => activeUnitStore.activeUnit === props.item.unit);
-
-    const hasActiveChildren = computed(() =>
-      Boolean(activeUnitStore?.activeUnitParents?.includes(props.item.unit.id))
-    );
-
-    const { unitMenuItems: menuItems } = useUnitMenu(props.item);
-
-    const { setItemRef, expandChildren } = useExpandTree(isOpen);
-
-    return {
-      isOpen,
-      isDragged,
-      isActiveUnit,
-      dragStart,
-      dragEnd,
-      onDrop,
-      menuItems,
-      onUnitMenuAction,
-      onUnitClick,
-      subTree,
-      setItemRef,
-      expandChildren,
-      unit,
-      hasActiveChildren,
-      settingsStore,
-      isDragOver,
-    };
-  },
-
-  computed: {
-    isParent(): boolean {
-      return Boolean(this.item.children && this.item.children.length);
-    },
-  },
-  methods: {},
 });
+
+const dragStore = useDragStore();
+const settingsStore = useSettingsStore();
+const bus = useEventBus(orbatUnitClick);
+
+const dragStart = (ev: DragEvent) => {
+  const { dataTransfer } = ev;
+  if (dataTransfer) {
+    dataTransfer.setData("text", DragOperations.OrbatDrag);
+    dataTransfer.dropEffect = "copy";
+  }
+  dragStore.draggedUnit = props.item.unit;
+  setTimeout(() => (isDragged.value = true), 10);
+};
+
+const dragEnd = (ev: DragEvent) => {
+  dragStore.draggedUnit = null;
+  isDragged.value = false;
+};
+
+const onDrop = (ev: DragEvent) => {
+  if (
+    !(
+      ev.dataTransfer?.getData("text") === DragOperations.OrbatDrag &&
+      dragStore.draggedUnit
+    )
+  )
+    return;
+  isDragOver.value = false;
+  if (dragStore.draggedUnit.id === props.item.unit.id) return;
+  const unitManipulationStore = useUnitManipulationStore();
+  unitManipulationStore.changeUnitParent(dragStore.draggedUnit, props.item.unit);
+  isOpen.value = true;
+};
+
+const activeUnitStore = useActiveUnitStore();
+
+const onUnitMenuAction = async (unit: Unit, action: UnitActions) => {
+  if (action === UnitActions.Expand) {
+    await expandChildren();
+  } else {
+    emit("action", unit, action);
+  }
+};
+
+const onUnitClick = () => {
+  bus.emit(props.item.unit);
+};
+
+const isActiveUnit = computed(() => activeUnitStore.activeUnit === props.item.unit);
+
+const hasActiveChildren = computed(() =>
+  Boolean(activeUnitStore?.activeUnitParents?.includes(props.item.unit.id))
+);
+
+const { unitMenuItems: menuItems } = useUnitMenu(props.item);
+const { setItemRef, expandChildren } = useExpandTree(isOpen);
+const isParent = computed(() =>
+  Boolean(props.item.children && props.item.children.length)
+);
 </script>
