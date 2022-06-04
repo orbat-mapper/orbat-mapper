@@ -62,7 +62,7 @@ export function createSelectedUnitStyleFromFeature(feature: FeatureLike): Style 
     const milSymbol = symbolGenerator(sidc, {
       size: settingsStore.mapIconSize,
       outlineColor: "Yellow",
-      outlineWidth: 20,
+      outlineWidth: 21,
       uniqueDesignation: name || shortName,
       standard: settingsStore.symbologyStandard,
       simpleStatusModifier: true,
