@@ -1,3 +1,5 @@
+import { customAlphabet } from "nanoid";
+
 export function groupBy<T extends object, K extends keyof T>(arr: T[], key: K) {
   return arr.reduce((acc, item) => {
     acc.set(item[key], [...(acc.get(item[key]) || []), item]);
@@ -25,3 +27,6 @@ export function moveItemMutable<T>(array: T[], fromIndex: number, toIndex: numbe
 export function htmlTagEscape(text: string) {
   return text.replace(/&/g, " ").replace(/</g, " ").replace(/>/g, " ");
 }
+
+const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+export const nanoid = customAlphabet(alphabet, 10);

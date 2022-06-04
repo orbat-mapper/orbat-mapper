@@ -1,7 +1,7 @@
 import { useImmerStore } from "../composables/immerStore";
 import { Scenario, Side, SideGroup, Unit } from "../types/scenarioModels";
 import dayjs from "dayjs";
-import { nanoid } from "nanoid";
+import { nanoid } from "../utils";
 import { walkSide } from "./scenarioStore";
 import { klona } from "klona";
 import { EntityId } from "../types/base";

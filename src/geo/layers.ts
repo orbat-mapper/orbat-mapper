@@ -8,7 +8,7 @@ import { fromLonLat } from "ol/proj";
 import { createHistoryStylesFromFeature, createUnitStyleFromFeature } from "./unitStyles";
 import { PointVectorLayer } from "./types";
 import View from "ol/View";
-import { nanoid } from "nanoid";
+import { nanoid } from "../utils";
 import { LayerType } from "../composables/scenarioLayers";
 
 export function createUnitLayer(): PointVectorLayer {

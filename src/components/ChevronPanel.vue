@@ -1,7 +1,7 @@
 <script setup>
 import { ChevronRightIcon } from "@heroicons/vue/solid";
 import { ref, watch } from "vue";
-import { nanoid } from "nanoid";
+import { nanoid } from "../utils";
 
 const props = defineProps({ label: String, open: Boolean });
 const emit = defineEmits(["opened", "closed", "update:open"]);

@@ -3,7 +3,7 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
 import { getCenter, isEmpty } from "ol/extent";
-import { nanoid } from "nanoid";
+import { nanoid } from "../utils";
 import { Collection } from "ol";
 import {
   getFeatureAndLayerById,

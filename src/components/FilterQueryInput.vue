@@ -38,7 +38,7 @@
 
 <script>
 import { computed, defineComponent } from "vue";
-import { nanoid } from "nanoid";
+import { nanoid } from "../utils";
 import {
   Close as CloseIcon,
   CrosshairsGps,

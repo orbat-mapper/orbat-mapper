@@ -9,13 +9,14 @@ import {
   Unit,
   UnitOrSide,
 } from "../types/scenarioModels";
-import { nanoid } from "nanoid";
+
 import { SID_INDEX } from "../symbology/sidc";
 import { setCharAt } from "../components/helpers";
 import { SID } from "../symbology/values";
 import dayjs from "dayjs";
 import { useSettingsStore } from "./settingsStore";
 import { Position } from "../types/scenarioGeoModels";
+import { nanoid } from "../utils";
 
 /**
  * Visit every unit and apply callback

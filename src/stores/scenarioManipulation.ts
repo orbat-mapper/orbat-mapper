@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { SideGroup, Unit } from "../types/scenarioModels";
 import { useScenarioStore, walkSubUnits } from "./scenarioStore";
 import { SID_INDEX, Sidc } from "../symbology/sidc";
-import { nanoid } from "nanoid";
+import { nanoid } from "../utils";
 import { setCharAt } from "../components/helpers";
 import { useNotifications } from "../composables/notifications";
 

@@ -19,7 +19,7 @@ import {
   ScenarioLayerInstance,
 } from "../../types/scenarioGeoModels";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
-import { nanoid } from "nanoid";
+import { nanoid } from "../../utils";
 import { ScenarioFeatureActions, ScenarioLayerActions } from "../../types/constants";
 import ScenarioLayersListLayer from "./ScenarioLayersListLayer.vue";
 import { useToggle, useVModel } from "@vueuse/core";
