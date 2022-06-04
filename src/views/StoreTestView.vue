@@ -25,35 +25,6 @@ function mutate2() {
   });
 }
 
-function buildHierarchy(rootUnitId: EntityId) {
-  const rootUnit = state.unitMap[rootUnitId];
-  const nUnit = { ...rootUnit, subUnits: [] };
-  function helper(unitId: EntityId, parent: typeof nUnit) {
-    const unit = state.unitMap[unitId];
-
-    if (!unit) return;
-    const nUnit = { ...unit, subUnits: [] };
-
-    for (const subUnitId of unit.subUnits) {
-      helper(subUnitId, nUnit);
-    }
-    parent.subUnits.push(nUnit);
-  }
-  for (const unitId of rootUnit.subUnits) {
-    helper(unitId, nUnit);
-  }
-  return nUnit;
-}
-
-const units = computed(() => {
-  console.log("yo");
-
-  return Object.values(state.sideGroupMap)
-    .map((g) => g.units)
-    .flat()
-    .map((id) => buildHierarchy(id));
-});
-
 const unitIds = computed(() => {
   console.log("yo2");
 
@@ -76,7 +47,7 @@ function onUnitAction(unit: NUnit, action: UnitActions) {
   }
 }
 
-const activeUnitId = ref<EntityId | null | undefined>(null);
+const activeUnitId = ref<EntityId | undefined>();
 
 function onUnitClick(unit: NUnit) {
   console.log("On unit click", unit.name);
