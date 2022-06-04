@@ -164,6 +164,7 @@ const hasActiveChildren = computed(() =>
 
 const { unitMenuItems: menuItems } = useUnitMenu(props.item);
 const { setItemRef, expandChildren } = useExpandTree(isOpen);
+defineExpose({ expandChildren });
 const isParent = computed(() =>
   Boolean(props.item.children && props.item.children.length)
 );

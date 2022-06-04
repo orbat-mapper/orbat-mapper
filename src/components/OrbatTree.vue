@@ -17,6 +17,7 @@ const { setItemRef, expandChildren } = useExpandTree();
 const onUnitAction = (unit: Unit, action: UnitActions) => {
   emit("unit-action", unit, action);
 };
+defineExpose({ expandChildren });
 
 const filteredUnits = computed(() =>
   filterUnits(props.units, props.filterQuery, props.locationFilter)
