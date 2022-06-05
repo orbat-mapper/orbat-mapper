@@ -19,7 +19,7 @@ export interface Unit {
   state?: State[];
   // internal runtime only state
   _state?: State | null;
-  _pid?: string;
+  _pid?: EntityId;
   _isOpen?: boolean;
 }
 
@@ -34,7 +34,7 @@ export interface SideGroup {
   name: string;
   description?: string;
   units: Unit[];
-  _pid?: string;
+  _pid?: EntityId;
   _isNew?: boolean;
 }
 

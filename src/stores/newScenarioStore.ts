@@ -23,8 +23,6 @@ export interface NOrbatItemData {
   children: NOrbatItemData[];
 }
 
-export type WalkSubUnitIdCallback = (unit: NUnit) => void;
-
 function prepareScenario(scenario: Scenario) {
   const unitMap: Record<EntityId, NUnit> = {};
   const sideMap: Record<EntityId, NSide> = {};
@@ -66,45 +64,7 @@ export function useNewScenarioStore(data: Scenario) {
   const { unitMap, sideMap, sideGroupMap } = prepareScenario(data);
   const store = useImmerStore({ sideMap, sideGroupMap, unitMap });
 
-  const { state, update } = store;
-
-  const deleteUnit = (id: string) => {
-    const u = state.unitMap[id];
-    if (!u) {
-      console.warn("Unit does not exists", id);
-      return;
-    }
-    update((s) => {
-      delete s.unitMap[id];
-      if (!u._pid) return;
-      const parentUnit = s.unitMap[u._pid];
-      if (parentUnit) {
-        const idx = parentUnit.subUnits.findIndex((e) => e === id);
-        if (idx !== -1) parentUnit.subUnits.splice(idx, 1);
-      } else {
-        const sideGroup = s.sideGroupMap[u._pid];
-        if (!sideGroup) return;
-        const idx = sideGroup.units.findIndex((e) => e === id);
-        if (idx !== -1) sideGroup.units.splice(idx, 1);
-      }
-    });
-  };
-
-  function walkSubUnits(
-    parentUnitId: EntityId,
-    callback: WalkSubUnitIdCallback,
-    includeParent = false
-  ) {
-    function helper(currentUnitId: EntityId) {
-      const currentUnit = state.unitMap[currentUnitId];
-      callback(currentUnit);
-      currentUnit.subUnits.forEach((id) => helper(id));
-    }
-    const parentUnit = state.unitMap[parentUnitId];
-    if (includeParent) callback(parentUnit);
-    parentUnit.subUnits.forEach((unitId) => helper(unitId));
-  }
-  return { store, deleteUnit, walkSubUnits };
+  return { store };
 }
 
 export interface IdUnit {

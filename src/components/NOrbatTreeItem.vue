@@ -51,8 +51,8 @@
               @dragover.prevent="isDragOver = true"
               @drop.prevent="onDrop"
               @dragleave="isDragOver = false"
-              >{{ unit.name }}</span
-            >
+              >{{ unit.name }}
+            </span>
           </div>
         </button>
       </div>
@@ -65,12 +65,12 @@
     </div>
     <ul v-if="isOpen" class="ml-6" ref="subTree">
       <NOrbatTreeItem
-        :ref="setItemRef"
         :item="subUnit"
         v-for="subUnit in item.children"
         :key="subUnit.unit.id"
         @action="onUnitMenuAction"
         @unit-click="onUnitClick"
+        @unit-drop="onUnitDrop"
       />
     </ul>
   </li>
@@ -85,9 +85,7 @@ import { ChevronRightIcon } from "@heroicons/vue/solid";
 import { useActiveUnitStore, useDragStore } from "../stores/dragStore";
 import { DragOperations, UnitActions } from "../types/constants";
 import DotsMenu from "./DotsMenu.vue";
-import { useExpandTree } from "./helpers";
 import { useUnitMenu } from "../composables/scenarioActions";
-import { useUnitManipulationStore } from "../stores/scenarioManipulation";
 import { useSettingsStore } from "../stores/settingsStore";
 import { activeUnitKey } from "./injects";
 import { NOrbatItemData, NUnit } from "../stores/newScenarioStore";
@@ -100,6 +98,7 @@ const props = defineProps<Props>();
 interface Emits {
   (e: "action", unit: NUnit, action: UnitActions): void;
   (e: "unit-click", unit: NUnit): void;
+  (e: "unit-drop", unit: NUnit, destinationUnit: NUnit): void;
 }
 const emit = defineEmits<Emits>();
 
@@ -146,11 +145,12 @@ const onDrop = (ev: DragEvent) => {
     return;
   isDragOver.value = false;
   if (dragStore.draggedUnit.id === props.item.unit.id) return;
-  const unitManipulationStore = useUnitManipulationStore();
-  unitManipulationStore.changeUnitParent(
-    dragStore.draggedUnit,
-    props.item.unit as unknown as Unit
-  );
+  emit("unit-drop", dragStore.draggedUnit as unknown as NUnit, props.item.unit);
+  // const unitManipulationStore = useUnitManipulationStore();
+  // unitManipulationStore.changeUnitParent(
+  //   dragStore.draggedUnit,
+  //   props.item.unit as unknown as Unit
+  // );
   isOpen.value = true;
 };
 
@@ -164,6 +164,9 @@ const onUnitClick = (unit: NUnit) => {
   emit("unit-click", unit);
 };
 
+const onUnitDrop = (unit: NUnit, destinationUnit: NUnit) =>
+  emit("unit-drop", unit, destinationUnit);
+
 const isActiveUnit = computed(() => activeUnitId?.value === props.item.unit.id);
 
 const hasActiveChildren = computed(() =>
@@ -171,7 +174,7 @@ const hasActiveChildren = computed(() =>
 );
 
 const { unitMenuItems: menuItems } = useUnitMenu(props.item);
-const { setItemRef, expandChildren } = useExpandTree(isOpen);
+
 const isParent = computed(() =>
   Boolean(props.item.children && props.item.children.length)
 );

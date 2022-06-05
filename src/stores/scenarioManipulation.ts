@@ -2,22 +2,11 @@ import { defineStore } from "pinia";
 import { SideGroup, Unit } from "../types/scenarioModels";
 import { useScenarioStore, walkSubUnits } from "./scenarioStore";
 import { SID_INDEX, Sidc } from "../symbology/sidc";
-import { nanoid } from "../utils";
+import { moveElement, nanoid } from "../utils";
 import { setCharAt } from "../components/helpers";
 import { useNotifications } from "../composables/notifications";
 
 let counter = 1;
-
-// https://gist.github.com/albertein/4496103
-export function moveElement<T>(array: T[], element: T, delta: number) {
-  const index = array.indexOf(element);
-  const newIndex = index + delta;
-  if (newIndex < 0 || newIndex === array.length) {
-    return;
-  }
-  const indexes = [index, newIndex].sort();
-  array.splice(indexes[0], 2, array[indexes[1]], array[indexes[0]]);
-}
 
 export const useUnitManipulationStore = defineStore("unitManipulationStore", {
   actions: {

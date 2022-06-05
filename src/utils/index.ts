@@ -30,3 +30,14 @@ export function htmlTagEscape(text: string) {
 
 const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 export const nanoid = customAlphabet(alphabet, 10);
+
+// https://gist.github.com/albertein/4496103
+export function moveElement<T>(array: T[], element: T, delta: number) {
+  const index = array.indexOf(element);
+  const newIndex = index + delta;
+  if (newIndex < 0 || newIndex === array.length) {
+    return;
+  }
+  const indexes = [index, newIndex].sort();
+  array.splice(indexes[0], 2, array[indexes[1]], array[indexes[0]]);
+}

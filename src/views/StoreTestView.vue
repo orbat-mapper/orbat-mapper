@@ -9,10 +9,12 @@ import { computed, ref } from "vue";
 import { EntityId } from "../types/base";
 import { inputEventFilter } from "../components/helpers";
 import { UnitActions } from "../types/constants";
+import { useUnitManipulations } from "../composables/unitManipulations";
 
 const { data } = await useFetch<Scenario>("/scenarios/falkland82.json").get().json();
-const { store, deleteUnit, walkSubUnits } = useNewScenarioStore(data.value);
+const { store } = useNewScenarioStore(data.value);
 
+const { deleteUnit, walkSubUnits, changeUnitParent } = useUnitManipulations({ store });
 const { state, update, undo, redo, canRedo, canUndo } = store;
 
 function mutate1() {
@@ -45,6 +47,10 @@ function onUnitAction(unit: NUnit, action: UnitActions) {
       true
     );
   }
+}
+function onUnitDrop(unit: NUnit, destinationUnit: NUnit) {
+  console.log(`Unit ${unit.name} was dropped on ${destinationUnit.name}`);
+  changeUnitParent(unit.id, destinationUnit.id);
 }
 
 const activeUnitId = ref<EntityId | undefined>();
@@ -80,6 +86,7 @@ const query = ref("");
           :filter-query="query"
           @unit-action="onUnitAction"
           @unit-click="onUnitClick"
+          @unit-drop="onUnitDrop"
           :active-unit-id="activeUnitId"
         />
       </div>
