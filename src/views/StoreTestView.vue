@@ -2,7 +2,7 @@
 import { useFetch } from "@vueuse/core";
 import { GlobalEvents } from "vue-global-events";
 import { Scenario } from "../types/scenarioModels";
-import { IdUnit, NUnit, useNewScenarioStore } from "../stores/newScenarioStore";
+import { NUnit, useNewScenarioStore } from "../stores/newScenarioStore";
 import BaseButton from "../components/BaseButton.vue";
 import OrbatTree from "../components/NOrbatTree.vue";
 import { computed, ref } from "vue";
@@ -15,18 +15,13 @@ import { DropTarget } from "../components/types";
 const { data } = await useFetch<Scenario>("/scenarios/falkland82.json").get().json();
 const { store } = useNewScenarioStore(data.value);
 
-const { deleteUnit, walkSubUnits, changeUnitParent } = useUnitManipulations({ store });
+const { deleteUnit, walkSubUnits, changeUnitParent, cloneUnit } = useUnitManipulations({
+  store,
+});
 const { state, update, undo, redo, canRedo, canUndo } = store;
 
-function mutate1() {
-  deleteUnit("mFFoHYTQvBP_MJIJ9Trlb");
-}
-
-function mutate2() {
-  update((currentState) => {
-    currentState.unitMap["qPpTHmxnFpihGgZHt_AFH"].name = `RAND-${Math.random()}`;
-  });
-}
+const activeUnitId = ref<EntityId | undefined>();
+const query = ref("");
 
 const unitIds = computed(() => {
   console.log("yo2");
@@ -48,6 +43,7 @@ function onUnitAction(unit: NUnit, action: UnitActions) {
       true
     );
   }
+  if (action === UnitActions.Clone) cloneUnit(unit.id);
 }
 function onUnitDrop(unit: NUnit, destinationUnit: NUnit, target: DropTarget) {
   console.log(`Unit ${unit.name} was dropped ${target} ${destinationUnit.name}`);
@@ -56,14 +52,10 @@ function onUnitDrop(unit: NUnit, destinationUnit: NUnit, target: DropTarget) {
   } else console.log("Not implemented yet");
 }
 
-const activeUnitId = ref<EntityId | undefined>();
-
 function onUnitClick(unit: NUnit) {
   console.log("On unit click", unit.name);
   activeUnitId.value = unit.id;
 }
-
-const query = ref("");
 </script>
 <template>
   <main class="p-4 sm:p-8">
@@ -71,8 +63,6 @@ const query = ref("");
       <h1>Scenario store experiments</h1>
 
       <div class="flex items-center space-x-2">
-        <BaseButton @click="mutate1()">Mutate</BaseButton>
-        <BaseButton @click="mutate2()">Mutate2</BaseButton>
         <BaseButton :disabled="!canUndo" @click="undo()">Undo</BaseButton>
         <BaseButton :disabled="!canRedo" @click="redo()">Redo</BaseButton>
       </div>

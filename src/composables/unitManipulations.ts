@@ -1,8 +1,9 @@
 import { EntityId } from "../types/base";
-import { NUnit, useNewScenarioStore } from "../stores/newScenarioStore";
+import { NSideGroup, NUnit, useNewScenarioStore } from "../stores/newScenarioStore";
+import { nanoid } from "../utils";
 
 export type WalkSubUnitIdCallback = (unit: NUnit) => void;
-
+let counter = 1;
 export function useUnitManipulations({ store }: ReturnType<typeof useNewScenarioStore>) {
   const { state, update } = store;
 
@@ -50,15 +51,54 @@ export function useUnitManipulations({ store }: ReturnType<typeof useNewScenario
     includeParent = false
   ) {
     function helper(currentUnitId: EntityId) {
-      const currentUnit = state.unitMap[currentUnitId];
+      const currentUnit = state.unitMap[currentUnitId]!;
       callback(currentUnit);
       currentUnit.subUnits.forEach((id) => helper(id));
     }
 
-    const parentUnit = state.unitMap[parentUnitId];
+    const parentUnit = state.unitMap[parentUnitId]!;
     if (includeParent) callback(parentUnit);
     parentUnit.subUnits.forEach((unitId) => helper(unitId));
   }
 
-  return { deleteUnit, changeUnitParent, walkSubUnits };
+  function getParent(unitId: EntityId): NUnit | NSideGroup | undefined {
+    const parent = state.unitMap[unitId] || state.sideGroupMap[unitId];
+    return parent;
+  }
+
+  function addUnit(unit: NUnit, parentId: EntityId) {
+    if (!unit.id) {
+      unit.id = nanoid();
+    }
+    unit._pid = parentId;
+    unit._isOpen = false;
+    update((s) => {
+      s.unitMap[unit.id] = unit;
+      let parent = s.sideGroupMap[parentId] || s.unitMap[parentId];
+      if (!parent) return;
+
+      if ("sidc" in parent) {
+        parent.subUnits.push(unit.id);
+      } else {
+        parent.units.push(unit.id);
+      }
+    });
+  }
+
+  function cloneUnit(unitId: EntityId) {
+    const unit = state.unitMap[unitId];
+    if (!unit) return;
+    let newUnit = {
+      ...unit,
+      name: unit.name + counter++,
+      id: nanoid(),
+      state: [],
+      _state: null,
+      subUnits: [],
+    };
+
+    addUnit(newUnit, unit._pid);
+  }
+
+  return { deleteUnit, changeUnitParent, walkSubUnits, cloneUnit };
 }

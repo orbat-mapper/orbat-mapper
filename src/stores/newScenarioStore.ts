@@ -6,8 +6,9 @@ import { walkSide } from "./scenarioStore";
 import { klona } from "klona";
 import { EntityId } from "../types/base";
 
-export interface NUnit extends Omit<Unit, "subUnits"> {
+export interface NUnit extends Omit<Unit, "subUnits" | "_pid"> {
   subUnits: EntityId[];
+  _pid: EntityId;
 }
 
 export interface NSide extends Omit<Side, "groups"> {
@@ -24,9 +25,9 @@ export interface NOrbatItemData {
 }
 
 function prepareScenario(scenario: Scenario) {
-  const unitMap: Record<EntityId, NUnit> = {};
-  const sideMap: Record<EntityId, NSide> = {};
-  const sideGroupMap: Record<EntityId, NSideGroup> = {};
+  const unitMap: Record<EntityId, NUnit | undefined> = {};
+  const sideMap: Record<EntityId, NSide | undefined> = {};
+  const sideGroupMap: Record<EntityId, NSideGroup | undefined> = {};
 
   function prepareUnit(unit1: Unit, level: number, parent: Unit | SideGroup) {
     const unit = klona(unit1);
@@ -42,7 +43,11 @@ function prepareScenario(scenario: Scenario) {
 
     unit._pid = parent.id;
     unit._isOpen = false;
-    unitMap[unit1.id] = { ...unit, subUnits: unit.subUnits?.map((u) => u.id) || [] };
+
+    unitMap[unit1.id] = {
+      ...unit,
+      subUnits: unit.subUnits?.map((u) => u.id) || [],
+    } as NUnit;
   }
 
   scenario.sides.forEach((side) => {
