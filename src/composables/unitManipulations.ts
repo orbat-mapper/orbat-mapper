@@ -61,9 +61,9 @@ export function useUnitManipulations({ store }: ReturnType<typeof useNewScenario
     parentUnit.subUnits.forEach((unitId) => helper(unitId));
   }
 
-  function getParent(unitId: EntityId): NUnit | NSideGroup | undefined {
-    const parent = state.unitMap[unitId] || state.sideGroupMap[unitId];
-    return parent;
+  function getUnitOrSideGroup(id: EntityId, s = state): NUnit | NSideGroup | undefined {
+    if (id in s.unitMap) return s.unitMap[id];
+    return s.sideGroupMap[id] || undefined;
   }
 
   function addUnit(unit: NUnit, parentId: EntityId) {
@@ -74,7 +74,7 @@ export function useUnitManipulations({ store }: ReturnType<typeof useNewScenario
     unit._isOpen = false;
     update((s) => {
       s.unitMap[unit.id] = unit;
-      let parent = s.sideGroupMap[parentId] || s.unitMap[parentId];
+      let parent = getUnitOrSideGroup(unit._pid);
       if (!parent) return;
 
       if ("sidc" in parent) {

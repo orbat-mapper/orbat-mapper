@@ -25,9 +25,9 @@ export interface NOrbatItemData {
 }
 
 function prepareScenario(scenario: Scenario) {
-  const unitMap: Record<EntityId, NUnit | undefined> = {};
-  const sideMap: Record<EntityId, NSide | undefined> = {};
-  const sideGroupMap: Record<EntityId, NSideGroup | undefined> = {};
+  const unitMap: Record<EntityId, NUnit> = {};
+  const sideMap: Record<EntityId, NSide> = {};
+  const sideGroupMap: Record<EntityId, NSideGroup> = {};
 
   function prepareUnit(unit1: Unit, level: number, parent: Unit | SideGroup) {
     const unit = klona(unit1);
