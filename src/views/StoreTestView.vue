@@ -10,6 +10,7 @@ import { EntityId } from "../types/base";
 import { inputEventFilter } from "../components/helpers";
 import { UnitActions } from "../types/constants";
 import { useUnitManipulations } from "../composables/unitManipulations";
+import { DropTarget } from "../components/types";
 
 const { data } = await useFetch<Scenario>("/scenarios/falkland82.json").get().json();
 const { store } = useNewScenarioStore(data.value);
@@ -48,9 +49,11 @@ function onUnitAction(unit: NUnit, action: UnitActions) {
     );
   }
 }
-function onUnitDrop(unit: NUnit, destinationUnit: NUnit) {
-  console.log(`Unit ${unit.name} was dropped on ${destinationUnit.name}`);
-  changeUnitParent(unit.id, destinationUnit.id);
+function onUnitDrop(unit: NUnit, destinationUnit: NUnit, target: DropTarget) {
+  console.log(`Unit ${unit.name} was dropped ${target} ${destinationUnit.name}`);
+  if (target === "on") {
+    changeUnitParent(unit.id, destinationUnit.id);
+  } else console.log("Not implemented yet");
 }
 
 const activeUnitId = ref<EntityId | undefined>();
@@ -63,7 +66,7 @@ function onUnitClick(unit: NUnit) {
 const query = ref("");
 </script>
 <template>
-  <main class="p-8">
+  <main class="p-4 sm:p-8">
     <header class="prose">
       <h1>Scenario store experiments</h1>
 
@@ -74,11 +77,8 @@ const query = ref("");
         <BaseButton :disabled="!canRedo" @click="redo()">Redo</BaseButton>
       </div>
     </header>
-    <section class="mt-4 grid grid-cols-2 gap-4">
-      <div class="prose">
-        <pre>{{ state }}</pre>
-      </div>
-      <div>
+    <section class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="max-w-md">
         <input v-model="query" class="rounded-md border p-1" />
         <OrbatTree
           :units="unitIds"
@@ -89,6 +89,9 @@ const query = ref("");
           @unit-drop="onUnitDrop"
           :active-unit-id="activeUnitId"
         />
+      </div>
+      <div class="prose">
+        <pre>{{ state }}</pre>
       </div>
     </section>
     <GlobalEvents

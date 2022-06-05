@@ -1,5 +1,12 @@
 <template>
-  <li :id="'o-' + unit.id" class="text-gray-900 dark:text-gray-400">
+  <li :id="'o-' + unit.id" class="relative text-gray-900 dark:text-gray-400">
+    <div
+      class="absolute top-0 left-8 right-0 z-10 h-3"
+      :class="{ 'border-t-4 border-gray-500': isDragOverAbove }"
+      @dragover.prevent="isDragOverAbove = true"
+      @drop.prevent="onDrop"
+      @dragleave="isDragOverAbove = false"
+    />
     <div
       class="group relative flex items-center justify-between py-2 pl-2 hover:bg-gray-200 dark:hover:bg-gray-700"
       @dblclick="isOpen = !isOpen"
@@ -43,7 +50,7 @@
               />
             </div>
             <span
-              class="flex-auto pl-1.5 text-left"
+              class="flex-auto pl-1.5 text-left text-gray-900"
               :class="{
                 'font-bold': isActiveUnit,
                 'font-bold underline': isDragOver,
@@ -73,6 +80,13 @@
         @unit-drop="onUnitDrop"
       />
     </ul>
+    <div
+      class="absolute bottom-0 left-8 right-0 h-3"
+      :class="{ 'border-b-4 border-gray-500': isDragOverBelow }"
+      @dragover.prevent="isDragOverBelow = true"
+      @drop.prevent="onDrop"
+      @dragleave="isDragOverBelow = false"
+    />
   </li>
 </template>
 
@@ -89,16 +103,18 @@ import { useUnitMenu } from "../composables/scenarioActions";
 import { useSettingsStore } from "../stores/settingsStore";
 import { activeUnitKey } from "./injects";
 import { NOrbatItemData, NUnit } from "../stores/newScenarioStore";
+import { DropTarget } from "./types";
 
 interface Props {
   item: NOrbatItemData;
 }
+
 const props = defineProps<Props>();
 
 interface Emits {
   (e: "action", unit: NUnit, action: UnitActions): void;
   (e: "unit-click", unit: NUnit): void;
-  (e: "unit-drop", unit: NUnit, destinationUnit: NUnit): void;
+  (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
 }
 const emit = defineEmits<Emits>();
 
@@ -107,6 +123,9 @@ const activeUnitId = inject(activeUnitKey);
 let isDragged = ref(false);
 let subTree = ref();
 const isDragOver = ref(false);
+const isDragOverBelow = ref(false);
+const isDragOverAbove = ref(false);
+
 const unit = computed(() => props.item.unit);
 const isOpen = computed({
   get(): boolean {
@@ -144,13 +163,13 @@ const onDrop = (ev: DragEvent) => {
   )
     return;
   isDragOver.value = false;
+  let target: DropTarget = "on";
+  if (isDragOverAbove.value) target = "above";
+  if (isDragOverBelow.value) target = "below";
+  isDragOverAbove.value = false;
+  isDragOverBelow.value = false;
   if (dragStore.draggedUnit.id === props.item.unit.id) return;
-  emit("unit-drop", dragStore.draggedUnit as unknown as NUnit, props.item.unit);
-  // const unitManipulationStore = useUnitManipulationStore();
-  // unitManipulationStore.changeUnitParent(
-  //   dragStore.draggedUnit,
-  //   props.item.unit as unknown as Unit
-  // );
+  emit("unit-drop", dragStore.draggedUnit as unknown as NUnit, props.item.unit, target);
   isOpen.value = true;
 };
 
@@ -164,8 +183,8 @@ const onUnitClick = (unit: NUnit) => {
   emit("unit-click", unit);
 };
 
-const onUnitDrop = (unit: NUnit, destinationUnit: NUnit) =>
-  emit("unit-drop", unit, destinationUnit);
+const onUnitDrop = (unit: NUnit, destinationUnit: NUnit, target: DropTarget) =>
+  emit("unit-drop", unit, destinationUnit, target);
 
 const isActiveUnit = computed(() => activeUnitId?.value === props.item.unit.id);
 

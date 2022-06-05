@@ -32,3 +32,5 @@ export interface UnitSearchResult extends SearchResult {
 export interface LayerFeatureSearchResult extends LayerFeatureItem, SearchResult {
   category: "Features";
 }
+
+export type DropTarget = "on" | "above" | "below";

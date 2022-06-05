@@ -5,6 +5,7 @@ import { UnitActions } from "../types/constants";
 import { EntityId } from "../types/base";
 import { NUnit } from "../stores/newScenarioStore";
 import { activeUnitKey } from "./injects";
+import { DropTarget } from "./types";
 
 interface Props {
   units: EntityId[];
@@ -27,7 +28,7 @@ provide(
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitActions): void;
   (e: "unit-click", unit: NUnit): void;
-  (e: "unit-drop", unit: NUnit, destinationUnit: NUnit): void;
+  (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
 }
 const emit = defineEmits<Emits>();
 
@@ -35,8 +36,8 @@ const onUnitAction = (unit: NUnit, action: UnitActions) => {
   emit("unit-action", unit, action);
 };
 
-const onUnitDrop = (unit: NUnit, destinationUnit: NUnit) =>
-  emit("unit-drop", unit, destinationUnit);
+const onUnitDrop = (unit: NUnit, destinationUnit: NUnit, target: DropTarget) =>
+  emit("unit-drop", unit, destinationUnit, target);
 
 const filteredUnits = computed(() =>
   filterUnits(props.units, props.filterQuery, props.locationFilter)
