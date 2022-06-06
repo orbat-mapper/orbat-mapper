@@ -3,7 +3,7 @@ import { useDark, useFetch, useToggle } from "@vueuse/core";
 import { GlobalEvents } from "vue-global-events";
 import { SunIcon, MoonIcon } from "@heroicons/vue/solid";
 import { Scenario } from "../types/scenarioModels";
-import { NUnit, useNewScenarioStore } from "../stores/newScenarioStore";
+import { useNewScenarioStore } from "../stores/newScenarioStore";
 import BaseButton from "../components/BaseButton.vue";
 import OrbatTree from "../components/NOrbatTree.vue";
 import { computed, ref } from "vue";
@@ -12,6 +12,7 @@ import { inputEventFilter } from "../components/helpers";
 import { UnitActions } from "../types/constants";
 import { useUnitManipulations } from "../composables/unitManipulations";
 import { DropTarget } from "../components/types";
+import { NUnit } from "../types/internalModels";
 
 const { data } = await useFetch<Scenario>("/scenarios/falkland82.json").get().json();
 const { store } = useNewScenarioStore(data.value);

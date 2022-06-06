@@ -1,30 +1,19 @@
 import { useImmerStore } from "../composables/immerStore";
-import { Scenario, Side, SideGroup, Unit } from "../types/scenarioModels";
+import { Scenario, SideGroup, Unit } from "../types/scenarioModels";
 import dayjs from "dayjs";
 import { nanoid } from "../utils";
 import { walkSide } from "./scenarioStore";
 import { klona } from "klona";
 import { EntityId } from "../types/base";
+import { NSide, NSideGroup, NUnit } from "../types/internalModels";
 
-export interface NUnit extends Omit<Unit, "subUnits" | "_pid"> {
-  subUnits: EntityId[];
-  _pid: EntityId;
+export interface ScenarioState {
+  unitMap: Record<EntityId, NUnit>;
+  sideMap: Record<EntityId, NSide>;
+  sideGroupMap: Record<EntityId, NSideGroup>;
 }
 
-export interface NSide extends Omit<Side, "groups"> {
-  groups: EntityId[];
-}
-
-export interface NSideGroup extends Omit<SideGroup, "units"> {
-  units: EntityId[];
-}
-
-export interface NOrbatItemData {
-  unit: NUnit;
-  children: NOrbatItemData[];
-}
-
-function prepareScenario(scenario: Scenario) {
+function prepareScenario(scenario: Scenario): ScenarioState {
   const unitMap: Record<EntityId, NUnit> = {};
   const sideMap: Record<EntityId, NSide> = {};
   const sideGroupMap: Record<EntityId, NSideGroup> = {};
@@ -62,17 +51,11 @@ function prepareScenario(scenario: Scenario) {
     walkSide(side, prepareUnit);
   });
 
-  return { scenario, unitMap, sideMap, sideGroupMap };
+  return { unitMap, sideMap, sideGroupMap };
 }
 
 export function useNewScenarioStore(data: Scenario) {
-  const { unitMap, sideMap, sideGroupMap } = prepareScenario(data);
-  const store = useImmerStore({ sideMap, sideGroupMap, unitMap });
-
+  const inputState = prepareScenario(data);
+  const store = useImmerStore(inputState);
   return { store };
-}
-
-export interface IdUnit {
-  id: EntityId;
-  subUnits: IdUnit[];
 }

@@ -3,9 +3,9 @@ import { computed, provide } from "vue";
 import NOrbatTreeItem from "./NOrbatTreeItem.vue";
 import { UnitActions } from "../types/constants";
 import { EntityId } from "../types/base";
-import { NUnit } from "../stores/newScenarioStore";
 import { activeUnitKey } from "./injects";
 import { DropTarget } from "./types";
+import { NUnit } from "../types/internalModels";
 
 interface Props {
   units: EntityId[];

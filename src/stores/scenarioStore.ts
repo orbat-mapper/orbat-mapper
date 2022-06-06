@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 
 import {
-  INTERNAL_NAMES,
   Scenario,
   Side,
   SideGroup,
@@ -17,6 +16,7 @@ import dayjs from "dayjs";
 import { useSettingsStore } from "./settingsStore";
 import { Position } from "../types/scenarioGeoModels";
 import { nanoid } from "../utils";
+import { INTERNAL_NAMES } from "../types/internalModels";
 
 /**
  * Visit every unit and apply callback

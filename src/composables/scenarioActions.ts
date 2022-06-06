@@ -6,7 +6,7 @@ import { useActiveUnitStore } from "../stores/dragStore";
 import { computed } from "vue";
 import { MenuItemData } from "../components/DotsMenu.vue";
 import { useUnitManipulationStore } from "../stores/scenarioManipulation";
-import { NOrbatItemData } from "../stores/newScenarioStore";
+import { NOrbatItemData } from "../types/internalModels";
 
 export function useUnitActions() {
   const scenarioStore = useScenarioStore();

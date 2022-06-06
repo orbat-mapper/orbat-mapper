@@ -1,0 +1,22 @@
+import { Side, SideGroup, Unit } from "./scenarioModels";
+import { EntityId } from "./base";
+
+export interface NUnit extends Omit<Unit, "subUnits" | "_pid"> {
+  subUnits: EntityId[];
+  _pid: EntityId;
+}
+
+export interface NSide extends Omit<Side, "groups"> {
+  groups: EntityId[];
+}
+
+export interface NSideGroup extends Omit<SideGroup, "units"> {
+  units: EntityId[];
+}
+
+export interface NOrbatItemData {
+  unit: NUnit;
+  children: NOrbatItemData[];
+}
+
+export const INTERNAL_NAMES = ["_state", "_pid", "_isOpen", "_isNew", "_zIndex"];

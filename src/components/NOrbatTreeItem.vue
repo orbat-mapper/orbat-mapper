@@ -102,8 +102,8 @@ import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "../composables/scenarioActions";
 import { useSettingsStore } from "../stores/settingsStore";
 import { activeUnitKey } from "./injects";
-import { NOrbatItemData, NUnit } from "../stores/newScenarioStore";
 import { DropTarget } from "./types";
+import { NOrbatItemData, NUnit } from "../types/internalModels";
 
 interface Props {
   item: NOrbatItemData;

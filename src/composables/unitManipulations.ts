@@ -1,9 +1,12 @@
 import { EntityId } from "../types/base";
-import { NSideGroup, NUnit, useNewScenarioStore } from "../stores/newScenarioStore";
+import { useNewScenarioStore } from "../stores/newScenarioStore";
 import { nanoid } from "../utils";
+import { NSideGroup, NUnit } from "../types/internalModels";
 
 export type WalkSubUnitIdCallback = (unit: NUnit) => void;
+
 let counter = 1;
+
 export function useUnitManipulations({ store }: ReturnType<typeof useNewScenarioStore>) {
   const { state, update } = store;
 
