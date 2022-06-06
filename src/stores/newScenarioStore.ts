@@ -11,12 +11,14 @@ export interface ScenarioState {
   unitMap: Record<EntityId, NUnit>;
   sideMap: Record<EntityId, NSide>;
   sideGroupMap: Record<EntityId, NSideGroup>;
+  sides: EntityId[];
 }
 
 function prepareScenario(scenario: Scenario): ScenarioState {
   const unitMap: Record<EntityId, NUnit> = {};
   const sideMap: Record<EntityId, NSide> = {};
   const sideGroupMap: Record<EntityId, NSideGroup> = {};
+  const sides: EntityId[] = [];
 
   function prepareUnit(unit1: Unit, level: number, parent: Unit | SideGroup) {
     const unit = klona(unit1);
@@ -41,17 +43,19 @@ function prepareScenario(scenario: Scenario): ScenarioState {
 
   scenario.sides.forEach((side) => {
     sideMap[side.id] = { ...side, groups: side.groups.map((group) => group.id) };
+    sides.push(side.id);
     side.groups.forEach((group) => {
-      sideGroupMap[group.id] = {
+      const nSideGroup = {
         ...group,
         _pid: side.id,
         units: group.units.map((unit) => unit.id),
       };
+      sideGroupMap[group.id] = nSideGroup;
     });
     walkSide(side, prepareUnit);
   });
 
-  return { unitMap, sideMap, sideGroupMap };
+  return { sides, unitMap, sideMap, sideGroupMap };
 }
 
 export function useNewScenarioStore(data: Scenario) {

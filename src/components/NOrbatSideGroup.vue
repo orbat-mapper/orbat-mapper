@@ -1,0 +1,134 @@
+<template>
+  <Disclosure v-slot="{ open }" default-open>
+    <div class="group relative mt-4 flex items-center justify-between py-0">
+      <DisclosureButton class="flex w-full items-center justify-between text-left">
+        <p
+          class="text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300"
+          :class="{ 'font-bold underline': isDragOver }"
+          @dragover.prevent="isDragOver = true"
+          @drop.prevent="onDrop"
+          @dragleave="isDragOver = false"
+        >
+          {{ group.name || "Units" }}
+        </p>
+        <ChevronUpIcon
+          :class="open ? 'rotate-180 transform' : ''"
+          class="h-6 w-6 text-gray-400 group-hover:text-gray-900"
+        />
+      </DisclosureButton>
+      <DotsMenu
+        :items="sideGroupMenuItems"
+        @action="onSideGroupAction(group, $event)"
+        class="flex-shrink-0 pr-2"
+      />
+    </div>
+    <EditSideGroupForm
+      v-if="showEditForm"
+      @close="showEditForm = false"
+      :side-group-id="group.id"
+      class="-ml-6"
+    />
+    <DisclosurePanel>
+      <NOrbatTree
+        :units="group.units"
+        :unit-map="state.unitMap"
+        class="mt-1"
+        :filter-query="filterQuery"
+        :location-filter="hasLocationFilter"
+        @unit-action="onUnitAction"
+        @unit-click="emit('unit-click', $event)"
+        @unit-drop="onUnitDrop"
+      />
+      <div
+        v-if="!group?.units.length"
+        class="mr-4 flex justify-center border-2 border-dashed border-gray-300 p-8"
+      >
+        <SecondaryButton @click="addGroupUnit(group)">Add root unit </SecondaryButton>
+      </div>
+    </DisclosurePanel>
+  </Disclosure>
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+import DotsMenu, { MenuItemData } from "./DotsMenu.vue";
+import NOrbatTree from "./NOrbatTree.vue";
+import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
+import { ChevronUpIcon } from "@heroicons/vue/solid";
+import { SideGroup } from "../types/scenarioModels";
+import { DragOperations, SideActions, UnitActions } from "../types/constants";
+import { useDragStore } from "../stores/dragStore";
+import SecondaryButton from "./SecondaryButton.vue";
+import EditSideGroupForm from "./EditSideGroupForm.vue";
+import { useUnitManipulationStore } from "../stores/scenarioManipulation";
+import { NSideGroup, NUnit } from "../types/internalModels";
+import { ScenarioState } from "../stores/newScenarioStore";
+import { DropTarget } from "./types";
+
+interface Props {
+  group: NSideGroup;
+  filterQuery?: string;
+  hasLocationFilter?: boolean;
+  state: ScenarioState;
+}
+const props = defineProps<Props>();
+
+interface Emits {
+  (e: "unit-action", unit: NUnit, action: UnitActions): void;
+  (e: "unit-click", unit: NUnit): void;
+  (
+    e: "unit-drop",
+    unit: NUnit,
+    destinationUnit: NUnit | NSideGroup,
+    target: DropTarget
+  ): void;
+}
+const emit = defineEmits<Emits>();
+
+const dragStore = useDragStore();
+const unitManipulationStore = useUnitManipulationStore();
+const isDragOver = ref(false);
+
+const showEditForm = ref(false);
+if (props.group._isNew) {
+  showEditForm.value = true;
+}
+
+const sideGroupMenuItems: MenuItemData<SideActions>[] = [
+  { label: "Expand", action: SideActions.Expand },
+  { label: "Add root unit", action: SideActions.AddSubordinate },
+  { label: "Edit group", action: SideActions.Edit },
+];
+
+const onSideGroupAction = (group: SideGroup, action: SideActions) => {
+  if (action === SideActions.Expand) {
+  } else if (action === SideActions.AddSubordinate) {
+    unitManipulationStore.createSubordinateUnit(group);
+  } else if (action === SideActions.Edit) {
+    showEditForm.value = true;
+  }
+};
+
+const addGroupUnit = (group: SideGroup) => {
+  onSideGroupAction(group, SideActions.AddSubordinate);
+};
+
+const onUnitAction = (unit: NUnit, action: UnitActions) => {
+  emit("unit-action", unit, action);
+};
+
+const onUnitDrop = (unit: NUnit, destinationUnit: NUnit, target: DropTarget) =>
+  emit("unit-drop", unit, destinationUnit, target);
+
+const onDrop = (ev: DragEvent) => {
+  if (
+    !(
+      ev.dataTransfer?.getData("text") === DragOperations.OrbatDrag &&
+      dragStore.draggedUnit
+    )
+  )
+    return;
+  isDragOver.value = false;
+  emit("unit-drop", dragStore.draggedUnit as unknown as NUnit, props.group, "on");
+};
+</script>

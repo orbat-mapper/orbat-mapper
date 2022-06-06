@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { useDark, useFetch, useToggle } from "@vueuse/core";
 import { GlobalEvents } from "vue-global-events";
-import { SunIcon, MoonIcon } from "@heroicons/vue/solid";
+import { MoonIcon, SunIcon } from "@heroicons/vue/solid";
 import { Scenario } from "../types/scenarioModels";
 import { useNewScenarioStore } from "../stores/newScenarioStore";
 import BaseButton from "../components/BaseButton.vue";
-import OrbatTree from "../components/NOrbatTree.vue";
-import { computed, ref } from "vue";
+import { computed, provide, ref } from "vue";
 import { EntityId } from "../types/base";
 import { inputEventFilter } from "../components/helpers";
 import { UnitActions } from "../types/constants";
 import { useUnitManipulations } from "../composables/unitManipulations";
 import { DropTarget } from "../components/types";
-import { NUnit } from "../types/internalModels";
+import { NSideGroup, NUnit } from "../types/internalModels";
+import NOrbatSideGroup from "../components/NOrbatSideGroup.vue";
+import { activeUnitKey } from "../components/injects";
 
 const { data } = await useFetch<Scenario>("/scenarios/falkland82.json").get().json();
 const { store } = useNewScenarioStore(data.value);
@@ -23,15 +24,13 @@ const { deleteUnit, walkSubUnits, changeUnitParent, cloneUnit } = useUnitManipul
 const { state, update, undo, redo, canRedo, canUndo } = store;
 
 const activeUnitId = ref<EntityId | undefined>();
-const query = ref("");
+
+provide(activeUnitKey, activeUnitId);
 
 const isDark = useDark();
 
-const unitIds = computed(() => {
-  console.log("compute unitIds");
-  return Object.values(state.sideGroupMap)
-    .map((g) => g.units)
-    .flat();
+const sideGroups = computed(() => {
+  return Object.values(state.sideGroupMap);
 });
 
 function onUnitAction(unit: NUnit, action: UnitActions) {
@@ -48,7 +47,11 @@ function onUnitAction(unit: NUnit, action: UnitActions) {
   }
   if (action === UnitActions.Clone) cloneUnit(unit.id);
 }
-function onUnitDrop(unit: NUnit, destinationUnit: NUnit, target: DropTarget) {
+function onUnitDrop(
+  unit: NUnit,
+  destinationUnit: NUnit | NSideGroup,
+  target: DropTarget
+) {
   console.log(`Unit ${unit.name} was dropped ${target} ${destinationUnit.name}`);
   if (target === "on") {
     changeUnitParent(unit.id, destinationUnit.id);
@@ -81,16 +84,15 @@ const toggleDark = useToggle(isDark);
     </header>
     <section class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div class="max-w-md">
-        <input v-model="query" class="rounded-md border p-1" />
-        <OrbatTree
-          :units="unitIds"
-          :unit-map="store.state.unitMap"
-          :filter-query="query"
-          @unit-action="onUnitAction"
-          @unit-click="onUnitClick"
-          @unit-drop="onUnitDrop"
-          :active-unit-id="activeUnitId"
-        />
+        <div v-for="sideGroup in sideGroups" :key="sideGroup.id">
+          <NOrbatSideGroup
+            :group="sideGroup"
+            :state="state"
+            @unit-action="onUnitAction"
+            @unit-click="onUnitClick"
+            @unit-drop="onUnitDrop"
+          />
+        </div>
       </div>
       <div class="prose">
         <pre>{{ state }}</pre>

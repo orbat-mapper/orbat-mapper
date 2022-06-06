@@ -75,7 +75,7 @@
         :item="subUnit"
         v-for="subUnit in item.children"
         :key="subUnit.unit.id"
-        @action="onUnitMenuAction"
+        @unit-action="onUnitMenuAction"
         @unit-click="onUnitClick"
         @unit-drop="onUnitDrop"
       />
@@ -102,8 +102,8 @@ import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "../composables/scenarioActions";
 import { useSettingsStore } from "../stores/settingsStore";
 import { activeUnitKey } from "./injects";
-import { DropTarget } from "./types";
-import { NOrbatItemData, NUnit } from "../types/internalModels";
+import type { DropTarget } from "./types";
+import type { NOrbatItemData, NUnit } from "../types/internalModels";
 
 interface Props {
   item: NOrbatItemData;
@@ -112,7 +112,7 @@ interface Props {
 const props = defineProps<Props>();
 
 interface Emits {
-  (e: "action", unit: NUnit, action: UnitActions): void;
+  (e: "unit-action", unit: NUnit, action: UnitActions): void;
   (e: "unit-click", unit: NUnit): void;
   (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
 }
@@ -176,7 +176,7 @@ const onDrop = (ev: DragEvent) => {
 const activeUnitStore = useActiveUnitStore();
 
 const onUnitMenuAction = async (unit: NUnit, action: UnitActions) => {
-  emit("action", unit, action);
+  emit("unit-action", unit, action);
 };
 
 const onUnitClick = (unit: NUnit) => {

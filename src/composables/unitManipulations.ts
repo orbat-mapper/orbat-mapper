@@ -35,15 +35,25 @@ export function useUnitManipulations({ store }: ReturnType<typeof useNewScenario
   function changeUnitParent(unitId: EntityId, parentId: EntityId) {
     update((s) => {
       const unit = s.unitMap[unitId];
+      const newParent = getUnitOrSideGroup(parentId, s);
 
-      const newParent = s.unitMap[parentId];
       if (!(unit && newParent)) return;
-      const originalParent = unit._pid && s.unitMap[unit._pid];
+      const originalParent = getUnitOrSideGroup(unit._pid, s);
       unit._pid = parentId;
-      newParent.subUnits.push(unitId);
+
+      if ("sidc" in newParent) {
+        newParent.subUnits.push(unitId);
+      } else {
+        newParent.units.push(unitId);
+      }
       if (originalParent) {
-        const idx = originalParent.subUnits.findIndex((id) => id === unitId);
-        if (idx >= 0) originalParent.subUnits.splice(idx, 1);
+        if ("sidc" in originalParent) {
+          const idx = originalParent.subUnits.findIndex((id) => id === unitId);
+          if (idx >= 0) originalParent.subUnits.splice(idx, 1);
+        } else {
+          const idx = originalParent.units.findIndex((id) => id === unitId);
+          if (idx >= 0) originalParent.units.splice(idx, 1);
+        }
       }
     });
   }

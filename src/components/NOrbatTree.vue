@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed, provide } from "vue";
+import { computed } from "vue";
 import NOrbatTreeItem from "./NOrbatTreeItem.vue";
 import { UnitActions } from "../types/constants";
 import { EntityId } from "../types/base";
-import { activeUnitKey } from "./injects";
-import { DropTarget } from "./types";
+import type { DropTarget } from "./types";
 import { NUnit } from "../types/internalModels";
 
 interface Props {
@@ -12,18 +11,12 @@ interface Props {
   unitMap: Record<EntityId, NUnit>;
   filterQuery?: string;
   locationFilter?: boolean;
-  activeUnitId?: EntityId;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   filterQuery: "",
   locationFilter: false,
 });
-
-provide(
-  activeUnitKey,
-  computed(() => props.activeUnitId)
-);
 
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitActions): void;
@@ -101,7 +94,7 @@ function filterUnits(
       :item="orbatItem"
       v-for="orbatItem in filteredUnits"
       :key="orbatItem.unit.id"
-      @action="onUnitAction"
+      @unit-action="onUnitAction"
       @unit-click="emit('unit-click', $event)"
       @unit-drop="onUnitDrop"
     />
