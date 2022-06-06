@@ -74,7 +74,7 @@
       data-teleport-layer
     ></aside>
     <aside
-      class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50"
+      class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50 dark:bg-gray-800"
       v-if="showUnitPanel"
     >
       <TabView

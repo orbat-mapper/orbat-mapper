@@ -48,7 +48,7 @@
         }}</a></DescriptionItem
       >
       <DescriptionItem v-if="unit.description" label="Description">
-        <div class="prose prose-sm" v-html="hDescription"></div>
+        <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
       </DescriptionItem>
     </div>
 

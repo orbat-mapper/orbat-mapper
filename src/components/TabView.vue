@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col">
     <header class="flex-shrink-0">
-      <div class="border-b border-gray-300" :class="extraClass">
+      <div class="border-b border-gray-300 dark:border-gray-400" :class="extraClass">
         <div class="flex justify-between">
           <nav class="-mb-px flex space-x-8" aria-label="Tabs">
             <button
@@ -10,8 +10,8 @@
               @click="selectTab(index)"
               :class="[
                 index === selectedIndex
-                  ? 'border-army text-army'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                  ? 'border-army text-army dark:border-amber-600 dark:text-amber-600'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400',
                 'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium',
               ]"
               :aria-current="index === selectedIndex ? 'page' : undefined"

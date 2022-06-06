@@ -27,7 +27,7 @@
       <DescriptionItem label="Title">{{ scenario.name }}</DescriptionItem>
 
       <DescriptionItem label="Description">
-        <div class="prose-esm prose" v-html="hDescription"></div>
+        <div class="prose-esm prose dark:prose-invert" v-html="hDescription"></div>
       </DescriptionItem>
 
       <DescriptionItem label="Start time"
