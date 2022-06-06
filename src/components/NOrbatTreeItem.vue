@@ -21,7 +21,7 @@
             @dragenter.prevent="isOpen = true"
           >
             <ChevronRightIcon
-              class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900"
+              class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
               :class="{
                 'rotate-90': isOpen,
                 'text-red-600': hasActiveChildren,
@@ -50,9 +50,9 @@
               />
             </div>
             <span
-              class="flex-auto pl-1.5 text-left text-gray-900"
+              class="flex-auto pl-1.5 text-left text-gray-900 dark:text-gray-300"
               :class="{
-                'font-bold': isActiveUnit,
+                'font-bold dark:text-amber-600': isActiveUnit,
                 'font-bold underline': isDragOver,
               }"
               @dragover.prevent="isDragOver = true"

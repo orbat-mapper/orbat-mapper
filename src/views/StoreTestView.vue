@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useFetch } from "@vueuse/core";
+import { useDark, useFetch, useToggle } from "@vueuse/core";
 import { GlobalEvents } from "vue-global-events";
+import { SunIcon, MoonIcon } from "@heroicons/vue/solid";
 import { Scenario } from "../types/scenarioModels";
 import { NUnit, useNewScenarioStore } from "../stores/newScenarioStore";
 import BaseButton from "../components/BaseButton.vue";
@@ -23,9 +24,10 @@ const { state, update, undo, redo, canRedo, canUndo } = store;
 const activeUnitId = ref<EntityId | undefined>();
 const query = ref("");
 
-const unitIds = computed(() => {
-  console.log("yo2");
+const isDark = useDark();
 
+const unitIds = computed(() => {
+  console.log("compute unitIds");
   return Object.values(state.sideGroupMap)
     .map((g) => g.units)
     .flat();
@@ -56,15 +58,24 @@ function onUnitClick(unit: NUnit) {
   console.log("On unit click", unit.name);
   activeUnitId.value = unit.id;
 }
+
+const toggleDark = useToggle(isDark);
 </script>
 <template>
-  <main class="p-4 sm:p-8">
-    <header class="prose">
+  <main class="dark:text bg-white p-4 text-gray-700 dark:bg-gray-900 dark:text-gray-400">
+    <header class="prose dark:prose-invert">
       <h1>Scenario store experiments</h1>
+      <p class="-mt-6">
+        Working on a new scenario store with undo and redo functionality.
+      </p>
 
       <div class="flex items-center space-x-2">
         <BaseButton :disabled="!canUndo" @click="undo()">Undo</BaseButton>
         <BaseButton :disabled="!canRedo" @click="redo()">Redo</BaseButton>
+        <BaseButton @click="toggleDark()"
+          ><span class="mr-1 h-4 w-4"><MoonIcon v-if="isDark" /><SunIcon v-else /></span
+          >Toggle</BaseButton
+        >
       </div>
     </header>
     <section class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
