@@ -100,16 +100,16 @@ const sideGroupMenuItems: MenuItemData<SideActions>[] = [
   { label: "Edit group", action: SideActions.Edit },
 ];
 
-const onSideGroupAction = (group: SideGroup, action: SideActions) => {
+const onSideGroupAction = (group: NSideGroup, action: SideActions) => {
   if (action === SideActions.Expand) {
   } else if (action === SideActions.AddSubordinate) {
-    unitManipulationStore.createSubordinateUnit(group);
+    // unitManipulationStore.createSubordinateUnit(group);
   } else if (action === SideActions.Edit) {
     showEditForm.value = true;
   }
 };
 
-const addGroupUnit = (group: SideGroup) => {
+const addGroupUnit = (group: NSideGroup) => {
   onSideGroupAction(group, SideActions.AddSubordinate);
 };
 

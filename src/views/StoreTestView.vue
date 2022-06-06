@@ -14,6 +14,7 @@ import { DropTarget } from "../components/types";
 import { NSideGroup, NUnit } from "../types/internalModels";
 import NOrbatSideGroup from "../components/NOrbatSideGroup.vue";
 import { activeUnitKey } from "../components/injects";
+import NOrbatSide from "../components/NOrbatSide.vue";
 
 const { data } = await useFetch<Scenario>("/scenarios/falkland82.json").get().json();
 const { store } = useNewScenarioStore(data.value);
@@ -31,6 +32,10 @@ const isDark = useDark();
 
 const sideGroups = computed(() => {
   return Object.values(state.sideGroupMap);
+});
+
+const sides = computed(() => {
+  return state.sides.map((id) => state.sideMap[id]);
 });
 
 function onUnitAction(unit: NUnit, action: UnitActions) {
@@ -84,15 +89,15 @@ const toggleDark = useToggle(isDark);
     </header>
     <section class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div class="max-w-md">
-        <div v-for="sideGroup in sideGroups" :key="sideGroup.id">
-          <NOrbatSideGroup
-            :group="sideGroup"
-            :state="state"
-            @unit-action="onUnitAction"
-            @unit-click="onUnitClick"
-            @unit-drop="onUnitDrop"
-          />
-        </div>
+        <NOrbatSide
+          v-for="side in sides"
+          :key="side.id"
+          :side="side"
+          :state="state"
+          @unit-action="onUnitAction"
+          @unit-click="onUnitClick"
+          @unit-drop="onUnitDrop"
+        />
       </div>
       <div class="prose">
         <pre>{{ state }}</pre>
