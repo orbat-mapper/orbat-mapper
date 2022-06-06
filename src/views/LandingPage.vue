@@ -3,16 +3,13 @@
     <main>
       <ProseSection class="">
         <h1><span class="text-red-900">Order of Battle</span> Mapper</h1>
-        <p>Recreate historic battles.</p>
+        <p>Recreate historic battles and military scenarios.</p>
 
         <p>
-          Follow the development of
+          This is a work in progress prototype. Follow the development of
           <a href="https://github.com/kjellmf/orbat-mapper"
             >ORBAT Mapper on GitHub <GithubIcon class="inline h-10 w-10" /> </a
           >.
-        </p>
-        <p>
-          <router-link to="/storymode" class="">Story mode test</router-link>
         </p>
 
         <div class="grid grid-cols-2 place-items-center gap-4">
@@ -23,7 +20,15 @@
             >Orbat chart test
           </router-link>
         </div>
+        <ul class="flex flex-wrap gap-x-6 gap-y-2">
+          <router-link to="/storymode" class="">Story mode test</router-link>
+          <router-link to="/teststore" class="">New scenario store test</router-link>
+          <router-link :to="{ name: ORBAT_CHART_ROUTE }" class=""
+            >Orbat chart test
+          </router-link>
+        </ul>
       </ProseSection>
+
       <LandingPageScenarios />
 
       <ProseSection class="">
@@ -87,20 +92,9 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import ProseSection from "../components/ProseSection.vue";
 import LandingPageScenarios from "./LandingPageScenarios.vue";
 import { Github as GithubIcon } from "mdue";
 import { ORBAT_CHART_ROUTE } from "../routes";
-
-export default {
-  components: {
-    LandingPageScenarios,
-    ProseSection,
-    GithubIcon,
-  },
-  setup() {
-    return { ORBAT_CHART_ROUTE };
-  },
-};
 </script>

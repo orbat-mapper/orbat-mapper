@@ -58,10 +58,9 @@
   </div>
 </template>
 
-<script>
-import { MailIcon, PhoneIcon } from "@heroicons/vue/solid";
-import ProseSection from "../components/ProseSection.vue";
+<script setup>
 import { useRouter } from "vue-router";
+
 import { NEW_SCENARIO_ROUTE, SCENARIO_ROUTE } from "../routes";
 import WipBadge from "../components/WipBadge.vue";
 
@@ -89,27 +88,12 @@ const scenarios = [
   // More scenarios...
 ];
 
-export default {
-  components: {
-    WipBadge,
-    ProseSection,
-    MailIcon,
-    PhoneIcon,
-  },
-  setup() {
-    const router = useRouter();
-    const getScenarioTo = (scenarioId) => {
-      return { name: SCENARIO_ROUTE, query: { load: scenarioId } };
-    };
+const router = useRouter();
+const getScenarioTo = (scenarioId) => {
+  return { name: SCENARIO_ROUTE, query: { load: scenarioId } };
+};
 
-    const newScenario = () => {
-      router.push({ name: NEW_SCENARIO_ROUTE });
-    };
-    return {
-      scenarios,
-      getScenarioTo,
-      newScenario,
-    };
-  },
+const newScenario = () => {
+  router.push({ name: NEW_SCENARIO_ROUTE });
 };
 </script>
