@@ -1,5 +1,5 @@
 <template>
-  <div class="relative">
+  <div class="relative bg-white dark:bg-gray-900">
     <MapContainer @ready="onMapReady" @drop="onDrop" @dragover.prevent />
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"
