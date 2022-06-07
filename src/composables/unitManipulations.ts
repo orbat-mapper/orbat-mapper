@@ -2,6 +2,7 @@ import { EntityId } from "../types/base";
 import { useNewScenarioStore } from "../stores/newScenarioStore";
 import { nanoid } from "../utils";
 import { NSideGroup, NUnit } from "../types/internalModels";
+import { SideGroup, Unit } from "../types/scenarioModels";
 
 export type WalkSubUnitIdCallback = (unit: NUnit) => void;
 
@@ -26,8 +27,8 @@ export function useUnitManipulations({ store }: ReturnType<typeof useNewScenario
       } else {
         const sideGroup = s.sideGroupMap[u._pid];
         if (!sideGroup) return;
-        const idx = sideGroup.units.findIndex((e) => e === id);
-        if (idx !== -1) sideGroup.units.splice(idx, 1);
+        const idx = sideGroup.subUnits.findIndex((e) => e === id);
+        if (idx !== -1) sideGroup.subUnits.splice(idx, 1);
       }
     });
   }
@@ -41,19 +42,11 @@ export function useUnitManipulations({ store }: ReturnType<typeof useNewScenario
       const originalParent = getUnitOrSideGroup(unit._pid, s);
       unit._pid = parentId;
 
-      if ("sidc" in newParent) {
-        newParent.subUnits.push(unitId);
-      } else {
-        newParent.units.push(unitId);
-      }
+      newParent.subUnits.push(unitId);
+
       if (originalParent) {
-        if ("sidc" in originalParent) {
-          const idx = originalParent.subUnits.findIndex((id) => id === unitId);
-          if (idx >= 0) originalParent.subUnits.splice(idx, 1);
-        } else {
-          const idx = originalParent.units.findIndex((id) => id === unitId);
-          if (idx >= 0) originalParent.units.splice(idx, 1);
-        }
+        const idx = originalParent.subUnits.findIndex((id) => id === unitId);
+        if (idx >= 0) originalParent.subUnits.splice(idx, 1);
       }
     });
   }
@@ -89,12 +82,7 @@ export function useUnitManipulations({ store }: ReturnType<typeof useNewScenario
       s.unitMap[unit.id] = unit;
       let parent = getUnitOrSideGroup(unit._pid);
       if (!parent) return;
-
-      if ("sidc" in parent) {
-        parent.subUnits.push(unit.id);
-      } else {
-        parent.units.push(unit.id);
-      }
+      parent.subUnits.push(unit.id);
     });
   }
 

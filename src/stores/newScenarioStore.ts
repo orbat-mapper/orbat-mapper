@@ -48,7 +48,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
       const nSideGroup = {
         ...group,
         _pid: side.id,
-        units: group.units.map((unit) => unit.id),
+        subUnits: group.units.map((unit) => unit.id),
       };
       sideGroupMap[group.id] = nSideGroup;
     });

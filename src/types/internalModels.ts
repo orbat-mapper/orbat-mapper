@@ -8,10 +8,12 @@ export interface NUnit extends Omit<Unit, "subUnits" | "_pid"> {
 
 export interface NSide extends Omit<Side, "groups"> {
   groups: EntityId[];
+  _isOpen?: boolean;
 }
 
 export interface NSideGroup extends Omit<SideGroup, "units"> {
-  units: EntityId[];
+  subUnits: EntityId[];
+  _isOpen?: boolean;
 }
 
 export interface NOrbatItemData {

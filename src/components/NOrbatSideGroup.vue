@@ -30,7 +30,7 @@
     />
     <DisclosurePanel>
       <NOrbatTree
-        :units="group.units"
+        :units="group.subUnits"
         :unit-map="state.unitMap"
         class="mt-1"
         :filter-query="filterQuery"
@@ -40,7 +40,7 @@
         @unit-drop="onUnitDrop"
       />
       <div
-        v-if="!group?.units.length"
+        v-if="!group.subUnits.length"
         class="mr-4 flex justify-center border-2 border-dashed border-gray-300 p-8"
       >
         <SecondaryButton @click="addGroupUnit(group)">Add root unit </SecondaryButton>
@@ -86,7 +86,6 @@ interface Emits {
 const emit = defineEmits<Emits>();
 
 const dragStore = useDragStore();
-const unitManipulationStore = useUnitManipulationStore();
 const isDragOver = ref(false);
 
 const showEditForm = ref(false);
