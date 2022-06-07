@@ -1,10 +1,14 @@
 import { EntityId } from "../types/base";
-import { useNewScenarioStore } from "../stores/newScenarioStore";
+import { ScenarioState, useNewScenarioStore } from "../stores/newScenarioStore";
 import { nanoid } from "../utils";
 import { NSideGroup, NUnit } from "../types/internalModels";
 import { SideGroup, Unit } from "../types/scenarioModels";
 
 export type WalkSubUnitIdCallback = (unit: NUnit) => void;
+export interface WalkSubUnitsOptions {
+  includeParent: boolean;
+  state: ScenarioState;
+}
 
 let counter = 1;
 
@@ -54,15 +58,16 @@ export function useUnitManipulations({ store }: ReturnType<typeof useNewScenario
   function walkSubUnits(
     parentUnitId: EntityId,
     callback: WalkSubUnitIdCallback,
-    includeParent = false
+    options: Partial<WalkSubUnitsOptions>
   ) {
+    const { state: s = state, includeParent = false } = options;
     function helper(currentUnitId: EntityId) {
-      const currentUnit = state.unitMap[currentUnitId]!;
+      const currentUnit = s.unitMap[currentUnitId]!;
       callback(currentUnit);
       currentUnit.subUnits.forEach((id) => helper(id));
     }
 
-    const parentUnit = state.unitMap[parentUnitId]!;
+    const parentUnit = s.unitMap[parentUnitId]!;
     if (includeParent) callback(parentUnit);
     parentUnit.subUnits.forEach((unitId) => helper(unitId));
   }

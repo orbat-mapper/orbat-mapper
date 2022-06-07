@@ -47,7 +47,7 @@ function onUnitAction(unit: NUnit, action: UnitActions) {
       (unit1) => {
         unit1._isOpen = true;
       },
-      true
+      { includeParent: true }
     );
   }
   if (action === UnitActions.Clone) cloneUnit(unit.id);
