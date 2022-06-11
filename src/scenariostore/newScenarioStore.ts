@@ -2,7 +2,7 @@ import { useImmerStore } from "../composables/immerStore";
 import { Scenario, SideGroup, Unit } from "../types/scenarioModels";
 import dayjs from "dayjs";
 import { nanoid } from "../utils";
-import { walkSide } from "./scenarioStore";
+import { walkSide } from "../stores/scenarioStore";
 import { klona } from "klona";
 import { EntityId } from "../types/base";
 import { NSide, NSideGroup, NUnit } from "../types/internalModels";
@@ -13,6 +13,8 @@ export interface ScenarioState {
   sideGroupMap: Record<EntityId, NSideGroup>;
   sides: EntityId[];
 }
+
+export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
 
 function prepareScenario(scenario: Scenario): ScenarioState {
   const unitMap: Record<EntityId, NUnit> = {};
@@ -60,6 +62,5 @@ function prepareScenario(scenario: Scenario): ScenarioState {
 
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);
-  const store = useImmerStore(inputState);
-  return { store };
+  return useImmerStore(inputState);
 }

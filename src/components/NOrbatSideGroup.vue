@@ -62,7 +62,7 @@ import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./EditSideGroupForm.vue";
 import { useUnitManipulationStore } from "../stores/scenarioManipulation";
 import { NSideGroup, NUnit } from "../types/internalModels";
-import { ScenarioState } from "../stores/newScenarioStore";
+import { ScenarioState } from "../scenariostore/newScenarioStore";
 import { DropTarget } from "./types";
 
 interface Props {

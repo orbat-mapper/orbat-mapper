@@ -63,7 +63,7 @@ import EditSideForm from "./EditSideForm.vue";
 import NOrbatSideGroup from "./NOrbatSideGroup.vue";
 import { useUnitManipulationStore } from "../stores/scenarioManipulation";
 import { NSide, NSideGroup, NUnit } from "../types/internalModels";
-import { ScenarioState } from "../stores/newScenarioStore";
+import { ScenarioState } from "../scenariostore/newScenarioStore";
 import { DropTarget } from "./types";
 
 interface Props {

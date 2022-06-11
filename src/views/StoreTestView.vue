@@ -1,27 +1,23 @@
 <script setup lang="ts">
-import { useDark, useFetch, useToggle } from "@vueuse/core";
+import { useDark, useToggle } from "@vueuse/core";
 import { GlobalEvents } from "vue-global-events";
 import { MoonIcon, SunIcon } from "@heroicons/vue/solid";
-import { Scenario } from "../types/scenarioModels";
-import { useNewScenarioStore } from "../stores/newScenarioStore";
 import BaseButton from "../components/BaseButton.vue";
 import { computed, provide, ref } from "vue";
 import { EntityId } from "../types/base";
 import { inputEventFilter } from "../components/helpers";
 import { UnitActions } from "../types/constants";
-import { useUnitManipulations } from "../composables/unitManipulations";
 import { DropTarget } from "../components/types";
 import { NSideGroup, NUnit } from "../types/internalModels";
-import NOrbatSideGroup from "../components/NOrbatSideGroup.vue";
 import { activeUnitKey } from "../components/injects";
 import NOrbatSide from "../components/NOrbatSide.vue";
+import { loadDemoScenario, useScenario } from "../scenariostore";
 
-const { data } = await useFetch<Scenario>("/scenarios/falkland82.json").get().json();
-const { store } = useNewScenarioStore(data.value);
+await loadDemoScenario();
 
-const { deleteUnit, walkSubUnits, changeUnitParent, cloneUnit } = useUnitManipulations({
-  store,
-});
+const { store, unitActions } = useScenario();
+
+const { deleteUnit, walkSubUnits, changeUnitParent, cloneUnit } = unitActions;
 const { state, update, undo, redo, canRedo, canUndo } = store;
 
 const activeUnitId = ref<EntityId | undefined>();
@@ -29,10 +25,6 @@ const activeUnitId = ref<EntityId | undefined>();
 provide(activeUnitKey, activeUnitId);
 
 const isDark = useDark();
-
-const sideGroups = computed(() => {
-  return Object.values(state.sideGroupMap);
-});
 
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
