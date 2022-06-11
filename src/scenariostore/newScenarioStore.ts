@@ -1,17 +1,20 @@
 import { useImmerStore } from "../composables/immerStore";
-import { Scenario, SideGroup, Unit } from "../types/scenarioModels";
+import { Scenario, ScenarioInfo, SideGroup, Unit } from "../types/scenarioModels";
 import dayjs from "dayjs";
 import { nanoid } from "../utils";
 import { walkSide } from "../stores/scenarioStore";
 import { klona } from "klona";
 import { EntityId } from "../types/base";
 import { NSide, NSideGroup, NUnit } from "../types/internalModels";
+import { useScenarioTime } from "./time";
 
 export interface ScenarioState {
   unitMap: Record<EntityId, NUnit>;
   sideMap: Record<EntityId, NSide>;
   sideGroupMap: Record<EntityId, NSideGroup>;
   sides: EntityId[];
+  info: ScenarioInfo;
+  currentTime: number;
 }
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
@@ -21,6 +24,10 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const sideMap: Record<EntityId, NSide> = {};
   const sideGroupMap: Record<EntityId, NSideGroup> = {};
   const sides: EntityId[] = [];
+
+  if (scenario.startTime !== undefined) {
+    scenario.startTime = +dayjs(scenario.startTime);
+  }
 
   function prepareUnit(unit1: Unit, level: number, parent: Unit | SideGroup) {
     const unit = klona(unit1);
@@ -47,20 +54,36 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     sideMap[side.id] = { ...side, groups: side.groups.map((group) => group.id) };
     sides.push(side.id);
     side.groups.forEach((group) => {
-      const nSideGroup = {
+      sideGroupMap[group.id] = {
         ...group,
         _pid: side.id,
         subUnits: group.units.map((unit) => unit.id),
       };
-      sideGroupMap[group.id] = nSideGroup;
     });
     walkSide(side, prepareUnit);
   });
 
-  return { sides, unitMap, sideMap, sideGroupMap };
+  const info: ScenarioInfo = {
+    name: scenario.name,
+    startTime: scenario.startTime,
+    timeZone: scenario.timeZone,
+    description: scenario.description,
+    symbologyStandard: scenario.symbologyStandard,
+  };
+
+  return {
+    currentTime: scenario.startTime || 0,
+    info,
+    sides,
+    unitMap,
+    sideMap,
+    sideGroupMap,
+  };
 }
 
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);
-  return useImmerStore(inputState);
+  const store = useImmerStore(inputState);
+  useScenarioTime(store).setCurrentTime(store.state.currentTime);
+  return store;
 }

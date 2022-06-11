@@ -2,6 +2,7 @@ import { ref } from "vue";
 import { NewScenarioStore } from "./newScenarioStore";
 import { useUnitManipulations } from "./unitManipulations";
 import { useScenarioIO } from "./io";
+import { useScenarioTime } from "./time";
 
 let storage = {
   store: null,
@@ -27,5 +28,6 @@ export function useScenario() {
   return {
     store,
     unitActions: useUnitManipulations(store!),
+    time: useScenarioTime(store!),
   };
 }

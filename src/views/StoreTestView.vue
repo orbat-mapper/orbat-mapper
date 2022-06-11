@@ -15,9 +15,10 @@ import { loadDemoScenario, useScenario } from "../scenariostore";
 
 await loadDemoScenario();
 
-const { store, unitActions } = useScenario();
+const { store, unitActions, time } = useScenario();
 const { deleteUnit, walkSubUnits, changeUnitParent, cloneUnit } = unitActions;
 const { state, update, undo, redo, canRedo, canUndo } = store!;
+const { utcTime, scenarioTime, timeZone } = time;
 
 const activeUnitId = ref<EntityId | undefined>();
 
@@ -59,6 +60,8 @@ function onUnitClick(unit: NUnit) {
   activeUnitId.value = unit.id;
 }
 
+console.log(time.scenarioTime.value.format("YYYY-MM-DD"));
+
 const toggleDark = useToggle(isDark);
 </script>
 <template>
@@ -74,8 +77,11 @@ const toggleDark = useToggle(isDark);
         <BaseButton :disabled="!canRedo" @click="redo()">Redo</BaseButton>
         <BaseButton @click="toggleDark()"
           ><span class="mr-1 h-4 w-4"><MoonIcon v-if="isDark" /><SunIcon v-else /></span
-          >Toggle</BaseButton
-        >
+          >Toggle
+        </BaseButton>
+        <BaseButton @click="time.add(1, 'day')">+1 day</BaseButton>
+        <BaseButton @click="time.subtract(1, 'day')">-1 day</BaseButton>
+        <span>{{ scenarioTime.format("YYYY-MM-DDTHH:mmZ") }}</span>
       </div>
     </header>
     <section class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
