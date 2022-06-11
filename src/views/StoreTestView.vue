@@ -16,9 +16,8 @@ import { loadDemoScenario, useScenario } from "../scenariostore";
 await loadDemoScenario();
 
 const { store, unitActions } = useScenario();
-
 const { deleteUnit, walkSubUnits, changeUnitParent, cloneUnit } = unitActions;
-const { state, update, undo, redo, canRedo, canUndo } = store;
+const { state, update, undo, redo, canRedo, canUndo } = store!;
 
 const activeUnitId = ref<EntityId | undefined>();
 

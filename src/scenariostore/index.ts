@@ -1,24 +1,31 @@
 import { ref } from "vue";
-import { NewScenarioStore, useNewScenarioStore } from "./newScenarioStore";
+import { NewScenarioStore } from "./newScenarioStore";
 import { useUnitManipulations } from "./unitManipulations";
-import { useFetch } from "@vueuse/core";
-import { Scenario } from "../types/scenarioModels";
+import { useScenarioIO } from "./io";
 
-let store: NewScenarioStore;
+let storage = {
+  store: null,
+} as { store: NewScenarioStore | null };
+
 export const isLoaded = ref(false);
 export const isLoading = ref(false);
 
+export function useIO() {
+  return useScenarioIO(storage);
+}
+
 export async function loadDemoScenario() {
+  const io = useIO();
   isLoading.value = true;
-  const { data } = await useFetch("/scenarios/falkland82.json").get().json();
-  store = useNewScenarioStore(data.value as Scenario);
+  await io.loadDemoScenario("falkland82");
   isLoading.value = false;
   isLoaded.value = true;
 }
 
 export function useScenario() {
+  const { store } = storage;
   return {
     store,
-    unitActions: useUnitManipulations(store),
+    unitActions: useUnitManipulations(store!),
   };
 }
