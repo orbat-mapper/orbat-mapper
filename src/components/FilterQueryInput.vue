@@ -1,3 +1,41 @@
+<script lang="ts">
+export default { inheritAttrs: false };
+</script>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import {
+  Close as CloseIcon,
+  CrosshairsGps,
+  CrosshairsOff,
+  FilterVariant,
+  FilterVariantPlus,
+} from "mdue";
+import { Switch } from "@headlessui/vue";
+import { useVModel } from "@vueuse/core";
+
+interface Props {
+  id?: string;
+  label?: string;
+  description?: string;
+  modelValue?: string | number;
+  locationFilter?: boolean;
+}
+
+const props = defineProps<Props>();
+
+const emit = defineEmits(["update:modelValue", "update:locationFilter"]);
+
+const localValue = computed({
+  get: () => props.modelValue,
+  set: (value) => emit("update:modelValue", value),
+});
+const hasLocationFilter = useVModel(props, "locationFilter");
+const hasFilter = computed(() => {
+  return !!(hasLocationFilter.value || localValue.value);
+});
+</script>
+
 <template>
   <div class="relative rounded-md shadow-sm">
     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -35,55 +73,3 @@
     </div>
   </div>
 </template>
-
-<script>
-import { computed, defineComponent } from "vue";
-import { nanoid } from "../utils";
-import {
-  Close as CloseIcon,
-  CrosshairsGps,
-  CrosshairsOff,
-  FilterVariant,
-  FilterVariantPlus,
-} from "mdue";
-import { Switch } from "@headlessui/vue";
-import { useVModel } from "@vueuse/core";
-
-export default defineComponent({
-  name: "FilterQueryInput",
-  props: {
-    id: [String],
-    label: String,
-    description: String,
-    modelValue: [String, Number],
-    locationFilter: Boolean,
-  },
-  emits: ["update:modelValue", "update:locationFilter"],
-  components: {
-    FilterVariant,
-    CloseIcon,
-    CrosshairsGps,
-    CrosshairsOff,
-    Switch,
-    FilterVariantPlus,
-  },
-  inheritAttrs: false,
-  setup(props, { emit }) {
-    const computedId = nanoid();
-    const localValue = computed({
-      get: () => props.modelValue,
-      set: (value) => emit("update:modelValue", value),
-    });
-    const hasLocationFilter = useVModel(props, "locationFilter");
-    const hasFilter = computed(() => {
-      return !!(hasLocationFilter.value || localValue.value);
-    });
-    return {
-      localValue,
-      computedId,
-      hasLocationFilter,
-      hasFilter,
-    };
-  },
-});
-</script>
