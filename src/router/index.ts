@@ -1,20 +1,22 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
-import LandingPage from "./views/LandingPage.vue";
+import LandingPage from "../views/LandingPage.vue";
+import {
+  LANDING_PAGE_ROUTE,
+  NEW_SCENARIO_ROUTE,
+  ORBAT_CHART_ROUTE,
+  SCENARIO_ROUTE,
+  STORY_MODE_ROUTE,
+} from "@/router/names";
 
-const MainView = () => import("./modules/scenarioeditor/MainView.vue");
-const NewScenarioView = () => import("./modules/scenarioeditor/NewScenarioView.vue");
-const StoryModeView = () => import("./modules/storymode/StoryModeView.vue");
-const OrbatChartView = () => import("./modules/charteditor/OrbatChartView.vue");
-const ComponentsTestView = () => import("./views/ComponentsTestView.vue");
-const GeoTestView = () => import("./views/GeoTestView.vue");
-const StoreTestView = () => import("./views/StoreTestViewWrapper.vue");
-export const SCENARIO_ROUTE = "ScenarioRoute";
-export const NEW_SCENARIO_ROUTE = "NewScenarioRoute";
-export const LANDING_PAGE_ROUTE = "LandingPageRoute";
-export const STORY_MODE_ROUTE = "StoryModeRoute";
-export const ORBAT_CHART_ROUTE = "OrbatChartRoute";
+const MainView = () => import("../modules/scenarioeditor/MainView.vue");
+const NewScenarioView = () => import("../modules/scenarioeditor/NewScenarioView.vue");
+const StoryModeView = () => import("../modules/storymode/StoryModeView.vue");
+const OrbatChartView = () => import("../modules/charteditor/OrbatChartView.vue");
+const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
+const GeoTestView = () => import("../views/GeoTestView.vue");
+const StoreTestView = () => import("../views/StoreTestViewWrapper.vue");
 
 const routes = [
   {
@@ -73,15 +75,6 @@ export const router = createRouter({
     }
   },
 });
-
-// router.beforeEach((to, from, next) => {
-//   // If this isn't an initial page load.
-//   if (to.name) {
-//     // Start the route progress bar.
-//     NProgress.start()
-//   }
-//   next()
-// })
 
 router.afterEach((to, from) => {
   // Complete the animation of the route progress bar.

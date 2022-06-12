@@ -96,5 +96,5 @@
 import ProseSection from "../components/ProseSection.vue";
 import LandingPageScenarios from "./LandingPageScenarios.vue";
 import { Github as GithubIcon } from "mdue";
-import { ORBAT_CHART_ROUTE } from "../routes";
+import { ORBAT_CHART_ROUTE } from "@/router/names";
 </script>

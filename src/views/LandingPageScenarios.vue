@@ -61,8 +61,8 @@
 <script setup>
 import { useRouter } from "vue-router";
 
-import { NEW_SCENARIO_ROUTE, SCENARIO_ROUTE } from "../routes";
 import WipBadge from "../components/WipBadge.vue";
+import { NEW_SCENARIO_ROUTE, SCENARIO_ROUTE } from "@/router/names";
 
 const scenarios = [
   {

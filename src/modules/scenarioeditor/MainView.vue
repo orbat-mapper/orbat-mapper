@@ -134,40 +134,38 @@ import {
   watch,
 } from "vue";
 import { GlobalEvents } from "vue-global-events";
-import OrbatPanel from "../../components/OrbatPanel.vue";
-import { useScenarioStore } from "../../stores/scenarioStore";
-import ScenarioMap from "../../components/ScenarioMap.vue";
-import UnitPanel from "../../components/UnitPanel.vue";
-import { useActiveUnitStore } from "../../stores/dragStore";
-import TabView from "../../components/TabView.vue";
-import TabItem from "../../components/TabItem.vue";
-import ScenarioInfoPanel from "../../components/ScenarioInfoPanel.vue";
-import ShortcutsModal from "../../components/ShortcutsModal.vue";
-import TimeController from "../../components/TimeController.vue";
-import PlainButton from "../../components/PlainButton.vue";
+import OrbatPanel from "@/components/OrbatPanel.vue";
+import { useScenarioStore } from "@/stores/scenarioStore";
+import ScenarioMap from "@/components/ScenarioMap.vue";
+import UnitPanel from "@/components/UnitPanel.vue";
+import { useActiveUnitStore } from "@/stores/dragStore";
+import TabView from "@/components/TabView.vue";
+import TabItem from "@/components/TabItem.vue";
+import ScenarioInfoPanel from "@/components/ScenarioInfoPanel.vue";
+import ShortcutsModal from "@/components/ShortcutsModal.vue";
+import TimeController from "@/components/TimeController.vue";
+import PlainButton from "@/components/PlainButton.vue";
 
 import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
-import { inputEventFilter } from "../../components/helpers";
-import SearchModal from "../../components/SearchModal.vue";
+import { inputEventFilter } from "@/components/helpers";
+import SearchModal from "@/components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
-import { useScenarioIO } from "../../stores/scenarioIO";
-import { useUiStore } from "../../stores/uiStore";
+import { useScenarioIO } from "@/stores/scenarioIO";
+import { useUiStore } from "@/stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
 import { Keyboard as KeyboardIcon } from "mdue";
-import { useDark, useEventBus, useTitle, useToggle, whenever } from "@vueuse/core";
-import { useUnitManipulationStore } from "../../stores/scenarioManipulation";
-import MainViewSlideOver from "../../components/MainViewSlideOver.vue";
-import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
-import { ScenarioActions } from "../../types/constants";
-import AppNotifications from "../../components/AppNotifications.vue";
-import { useNotifications } from "../../composables/notifications";
-import { Scenario } from "../../types/scenarioModels";
-import { useGeoStore } from "../../stores/geoStore";
-import CloseButton from "../../components/CloseButton.vue";
-import { mapUnitClick, orbatUnitClick } from "../../components/eventKeys";
-import { FeatureId } from "../../types/scenarioGeoModels";
-
-import { watchOnce } from "@vueuse/core";
+import { useDark, useEventBus, useTitle, useToggle, watchOnce } from "@vueuse/core";
+import { useUnitManipulationStore } from "@/stores/scenarioManipulation";
+import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
+import DotsMenu, { MenuItemData } from "@/components/DotsMenu.vue";
+import { ScenarioActions } from "@/types/constants";
+import AppNotifications from "@/components/AppNotifications.vue";
+import { useNotifications } from "@/composables/notifications";
+import { Scenario } from "@/types/scenarioModels";
+import { useGeoStore } from "@/stores/geoStore";
+import CloseButton from "@/components/CloseButton.vue";
+import { orbatUnitClick } from "@/components/eventKeys";
+import { FeatureId } from "@/types/scenarioGeoModels";
 import NProgress from "nprogress";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
@@ -203,8 +201,6 @@ oobUnitClickBus.on((unit) => {
   if (!activeUnitStore.activeUnit) showUnitPanel.value = false;
 });
 
-const mapUnitClickBus = useEventBus(mapUnitClick);
-// mapUnitClickBus.on((e) => console.log("Map select", e.name));
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
 useTitle(windowTitle);

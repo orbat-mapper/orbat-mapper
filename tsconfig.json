@@ -11,7 +11,12 @@
     "lib": ["esnext", "dom"],
     "types": ["vite/client", "@types/jest"],
     "allowJs": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    //    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

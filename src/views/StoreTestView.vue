@@ -2,16 +2,16 @@
 import { useDark, useToggle } from "@vueuse/core";
 import { GlobalEvents } from "vue-global-events";
 import { MoonIcon, SunIcon } from "@heroicons/vue/solid";
-import BaseButton from "../components/BaseButton.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import { computed, provide, ref } from "vue";
-import { EntityId } from "../types/base";
-import { inputEventFilter } from "../components/helpers";
-import { UnitActions } from "../types/constants";
-import { DropTarget } from "../components/types";
-import { NSideGroup, NUnit } from "../types/internalModels";
-import { activeUnitKey } from "../components/injects";
-import NOrbatSide from "../components/NOrbatSide.vue";
-import { loadDemoScenario, useScenario } from "../scenariostore";
+import { EntityId } from "@/types/base";
+import { inputEventFilter } from "@/components/helpers";
+import { UnitActions } from "@/types/constants";
+import { DropTarget } from "@/components/types";
+import { NSideGroup, NUnit } from "@/types/internalModels";
+import { activeUnitKey } from "@/components/injects";
+import NOrbatSide from "@/components/NOrbatSide.vue";
+import { loadDemoScenario, useScenario } from "@/scenariostore";
 
 await loadDemoScenario();
 

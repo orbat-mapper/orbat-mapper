@@ -82,7 +82,7 @@ import { useYMDElements } from "../../composables/scenarioTime";
 import RadioGroupList from "../../components/RadioGroupList.vue";
 import BaseButton from "../../components/BaseButton.vue";
 import { useRouter } from "vue-router";
-import { SCENARIO_ROUTE } from "../../routes";
+import { SCENARIO_ROUTE } from "@/router/names";
 
 const standardSettings = [
   {
