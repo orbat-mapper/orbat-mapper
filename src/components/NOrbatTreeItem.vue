@@ -70,7 +70,7 @@
         @action="onUnitMenuAction(unit, $event)"
       />
     </div>
-    <ul v-if="isOpen" class="ml-6" ref="subTree">
+    <ul v-if="isOpen" class="ml-6 pb-1" ref="subTree">
       <NOrbatTreeItem
         :item="subUnit"
         v-for="subUnit in item.children"
