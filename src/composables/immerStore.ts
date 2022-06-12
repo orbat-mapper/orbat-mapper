@@ -30,14 +30,13 @@ export function useImmerStore<T extends object>(baseState: T) {
   const canRedo = computed(() => future.length > 0);
   const update = (updater: (currentState: T) => void) => {
     const [, patches, inversePatches] = produceWithPatches(toRaw(state), updater);
+    if (patches.length === 0) return;
     applyPatchWrapper(state, patches);
-    // update history
     past.push({ patches, inversePatches });
     future.splice(0);
   };
 
   const undo = () => {
-    console.log("Undo");
     if (!canUndo.value) return false;
     const { patches, inversePatches } = past.pop()!;
     applyPatchWrapper(state, inversePatches);
