@@ -2,11 +2,15 @@ import { EntityId } from "../types/base";
 import { NewScenarioStore, ScenarioState } from "./newScenarioStore";
 import { moveElement, nanoid } from "../utils";
 import { NSideGroup, NUnit } from "../types/internalModels";
-import { Unit } from "../types/scenarioModels";
-import { useScenarioStore } from "../stores/scenarioStore";
+import { SideGroup, Unit } from "../types/scenarioModels";
+import { useScenarioStore, walkSubUnits } from "../stores/scenarioStore";
 import { DropTarget } from "../components/types";
+import { useNotifications } from "../composables/notifications";
+import { SID_INDEX } from "../symbology/sidc";
+import { setCharAt } from "../components/helpers";
 
 export type WalkSubUnitIdCallback = (unit: NUnit) => void;
+
 export interface WalkSubUnitsOptions {
   includeParent: boolean;
   state: ScenarioState;
@@ -47,12 +51,17 @@ export function useUnitManipulations(store: NewScenarioStore) {
     update((s) => {
       const unit = s.unitMap[unitId];
       let parentId = targetId;
+
       if (target === "above" || target === "below") {
         parentId = getUnitOrSideGroup(targetId)?._pid!;
       }
       const newParent = getUnitOrSideGroup(parentId, s);
-
       if (!(unit && newParent)) return;
+      const { side, parents } = getUnitHierarchy(newParent.id, s);
+      if (parents.includes(unit)) {
+        console.error("Not allowed");
+        return;
+      }
       const originalParent = getUnitOrSideGroup(unit._pid, s);
       unit._pid = parentId;
 
@@ -69,6 +78,19 @@ export function useUnitManipulations(store: NewScenarioStore) {
         if (target === "below") newParent.subUnits.splice(idx + 1, 0, unitId);
         if (target === "above") newParent.subUnits.splice(idx, 0, unitId);
       }
+
+      //update SID if necessary
+      if (side) {
+        walkSubUnits(
+          unitId,
+          (u) => {
+            if (u.sidc[SID_INDEX] !== side.standardIdentity) {
+              u.sidc = setCharAt(u.sidc, SID_INDEX, side.standardIdentity);
+            }
+          },
+          { state: s, includeParent: true }
+        );
+      }
     });
   }
 
@@ -78,6 +100,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     options: Partial<WalkSubUnitsOptions>
   ) {
     const { state: s = state, includeParent = false } = options;
+
     function helper(currentUnitId: EntityId) {
       const currentUnit = s.unitMap[currentUnitId]!;
       callback(currentUnit);
@@ -87,6 +110,27 @@ export function useUnitManipulations(store: NewScenarioStore) {
     const parentUnit = s.unitMap[parentUnitId]!;
     if (includeParent) callback(parentUnit);
     parentUnit.subUnits.forEach((unitId) => helper(unitId));
+  }
+
+  function getUnitHierarchy(entityId: EntityId, s = state) {
+    const parents: NUnit[] = [];
+    const unit = getUnitOrSideGroup(entityId, s);
+
+    const helper = (uId: EntityId) => {
+      const u = s.unitMap[uId];
+      const parent = u?._pid && s.unitMap[u._pid];
+      if (parent) {
+        parents.push(parent);
+        helper(parent.id);
+      }
+    };
+
+    helper(entityId);
+    parents.reverse();
+    const sideGroup =
+      s.sideGroupMap[parents[0]?._pid || unit?._pid!] || s.sideGroupMap[unit?.id!];
+    const side = sideGroup && s.sideMap[sideGroup._pid!];
+    return { side, sideGroup, parents };
   }
 
   function getUnitOrSideGroup(id: EntityId, s = state): NUnit | NSideGroup | undefined {
@@ -132,5 +176,12 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
-  return { deleteUnit, changeUnitParent, walkSubUnits, cloneUnit, reorderUnit };
+  return {
+    deleteUnit,
+    changeUnitParent,
+    walkSubUnits,
+    cloneUnit,
+    reorderUnit,
+    getUnitHierarchy,
+  };
 }
