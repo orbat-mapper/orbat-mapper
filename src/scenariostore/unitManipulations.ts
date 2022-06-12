@@ -1,7 +1,9 @@
 import { EntityId } from "../types/base";
 import { NewScenarioStore, ScenarioState } from "./newScenarioStore";
-import { nanoid } from "../utils";
+import { moveElement, nanoid } from "../utils";
 import { NSideGroup, NUnit } from "../types/internalModels";
+import { Unit } from "../types/scenarioModels";
+import { useScenarioStore } from "../stores/scenarioStore";
 
 export type WalkSubUnitIdCallback = (unit: NUnit) => void;
 export interface WalkSubUnitsOptions {
@@ -105,5 +107,14 @@ export function useUnitManipulations(store: NewScenarioStore) {
     addUnit(newUnit, unit._pid);
   }
 
-  return { deleteUnit, changeUnitParent, walkSubUnits, cloneUnit };
+  function reorderUnit(unitId: EntityId, direction: "up" | "down") {
+    const unit = state.unitMap[unitId];
+    if (!unit) return;
+    update((s) => {
+      const parent = getUnitOrSideGroup(unit._pid, s);
+      if (parent) moveElement(parent.subUnits, unitId, direction === "up" ? -1 : 1);
+    });
+  }
+
+  return { deleteUnit, changeUnitParent, walkSubUnits, cloneUnit, reorderUnit };
 }

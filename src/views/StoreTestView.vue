@@ -43,6 +43,8 @@ function onUnitAction(unit: NUnit, action: UnitActions) {
     );
   }
   if (action === UnitActions.Clone) cloneUnit(unit.id);
+  if (action === UnitActions.MoveUp) unitActions.reorderUnit(unit.id, "up");
+  if (action === UnitActions.MoveDown) unitActions.reorderUnit(unit.id, "down");
 }
 function onUnitDrop(
   unit: NUnit,
@@ -59,8 +61,6 @@ function onUnitClick(unit: NUnit) {
   console.log("On unit click", unit.name);
   activeUnitId.value = unit.id;
 }
-
-console.log(time.scenarioTime.value.format("YYYY-MM-DD"));
 
 const toggleDark = useToggle(isDark);
 </script>
