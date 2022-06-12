@@ -52,9 +52,8 @@ function onUnitDrop(
   target: DropTarget
 ) {
   console.log(`Unit ${unit.name} was dropped ${target} ${destinationUnit.name}`);
-  if (target === "on") {
-    changeUnitParent(unit.id, destinationUnit.id);
-  } else console.log("Not implemented yet");
+
+  changeUnitParent(unit.id, destinationUnit.id, target);
 }
 
 function onUnitClick(unit: NUnit) {

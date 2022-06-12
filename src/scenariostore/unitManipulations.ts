@@ -4,6 +4,7 @@ import { moveElement, nanoid } from "../utils";
 import { NSideGroup, NUnit } from "../types/internalModels";
 import { Unit } from "../types/scenarioModels";
 import { useScenarioStore } from "../stores/scenarioStore";
+import { DropTarget } from "../components/types";
 
 export type WalkSubUnitIdCallback = (unit: NUnit) => void;
 export interface WalkSubUnitsOptions {
@@ -38,20 +39,35 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
-  function changeUnitParent(unitId: EntityId, parentId: EntityId) {
+  function changeUnitParent(
+    unitId: EntityId,
+    targetId: EntityId,
+    target: DropTarget = "on"
+  ) {
     update((s) => {
       const unit = s.unitMap[unitId];
+      let parentId = targetId;
+      if (target === "above" || target === "below") {
+        parentId = getUnitOrSideGroup(targetId)?._pid!;
+      }
       const newParent = getUnitOrSideGroup(parentId, s);
 
       if (!(unit && newParent)) return;
       const originalParent = getUnitOrSideGroup(unit._pid, s);
       unit._pid = parentId;
 
-      newParent.subUnits.push(unitId);
-
       if (originalParent) {
         const idx = originalParent.subUnits.findIndex((id) => id === unitId);
         if (idx >= 0) originalParent.subUnits.splice(idx, 1);
+      }
+
+      if (target === "on") {
+        newParent.subUnits.push(unitId);
+      } else {
+        const idx = newParent.subUnits.findIndex((id) => id === targetId);
+        if (idx < 0) return;
+        if (target === "below") newParent.subUnits.splice(idx + 1, 0, unitId);
+        if (target === "above") newParent.subUnits.splice(idx, 0, unitId);
       }
     });
   }
