@@ -11,10 +11,14 @@ export interface NSide extends Omit<Side, "groups"> {
   _isOpen?: boolean;
 }
 
+export interface SideUpdate extends Omit<NSide, "id"> {}
+
 export interface NSideGroup extends Omit<SideGroup, "units"> {
   subUnits: EntityId[];
   _isOpen?: boolean;
 }
+
+export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id">> {}
 
 export interface NOrbatItemData {
   unit: NUnit;

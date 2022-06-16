@@ -55,15 +55,14 @@ import DotsMenu, { MenuItemData } from "./DotsMenu.vue";
 import { computed, ref } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
-import { SideActions, UnitActions } from "../types/constants";
-import { useScenarioStore } from "../stores/scenarioStore";
+import { SideActions, UnitActions } from "@/types/constants";
+import { useScenarioStore } from "@/stores/scenarioStore";
 import { useDebounce } from "@vueuse/core";
 import FilterQueryInput from "./FilterQueryInput.vue";
-import EditSideForm from "./EditSideForm.vue";
+import EditSideForm from "./NEditSideForm.vue";
 import NOrbatSideGroup from "./NOrbatSideGroup.vue";
-import { useUnitManipulationStore } from "../stores/scenarioManipulation";
-import { NSide, NSideGroup, NUnit } from "../types/internalModels";
-import { ScenarioState } from "../scenariostore/newScenarioStore";
+import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
+import { ScenarioState } from "@/scenariostore/newScenarioStore";
 import { DropTarget } from "./types";
 
 interface Props {
@@ -93,7 +92,6 @@ const sideGroups = computed(() =>
 );
 
 const scenarioStore = useScenarioStore();
-const unitManipulationStore = useUnitManipulationStore();
 const showEditSideForm = ref(false);
 
 if (props.side._isNew) showEditSideForm.value = true;

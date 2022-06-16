@@ -31,3 +31,5 @@ export function useScenario() {
     time: useScenarioTime(store!),
   };
 }
+
+export type TScenario = ReturnType<typeof useScenario>;

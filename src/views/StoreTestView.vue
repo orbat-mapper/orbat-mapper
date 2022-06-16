@@ -9,13 +9,13 @@ import { inputEventFilter } from "@/components/helpers";
 import { UnitActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
 import { NSideGroup, NUnit } from "@/types/internalModels";
-import { activeUnitKey } from "@/components/injects";
+import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import NOrbatSide from "@/components/NOrbatSide.vue";
 import { loadDemoScenario, useScenario } from "@/scenariostore";
 
 await loadDemoScenario();
-
-const { store, unitActions, time } = useScenario();
+const activeScenario = useScenario();
+const { store, unitActions, time } = activeScenario;
 const { deleteUnit, walkSubUnits, changeUnitParent, cloneUnit } = unitActions;
 const { state, update, undo, redo, canRedo, canUndo } = store!;
 const { utcTime, scenarioTime, timeZone } = time;
@@ -23,6 +23,7 @@ const { utcTime, scenarioTime, timeZone } = time;
 const activeUnitId = ref<EntityId | undefined>();
 
 provide(activeUnitKey, activeUnitId);
+provide(activeScenarioKey, activeScenario);
 
 const isDark = useDark();
 

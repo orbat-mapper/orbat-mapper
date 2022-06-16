@@ -1,15 +1,28 @@
-import { EntityId } from "../types/base";
+import { EntityId } from "@/types/base";
 import { NewScenarioStore, ScenarioState } from "./newScenarioStore";
-import { moveElement, nanoid } from "../utils";
-import { NSideGroup, NUnit } from "../types/internalModels";
-import { SideGroup, Unit } from "../types/scenarioModels";
-import { useScenarioStore, walkSubUnits } from "../stores/scenarioStore";
-import { DropTarget } from "../components/types";
-import { useNotifications } from "../composables/notifications";
-import { SID_INDEX } from "../symbology/sidc";
-import { setCharAt } from "../components/helpers";
+import { moveElement, nanoid } from "@/utils";
+import {
+  NSide,
+  NSideGroup,
+  NUnit,
+  SideGroupUpdate,
+  SideUpdate,
+} from "@/types/internalModels";
+import { DropTarget } from "@/components/types";
+import { SID_INDEX } from "@/symbology/sidc";
+import { setCharAt } from "@/components/helpers";
+import { Side, SideGroup, Unit } from "@/types/scenarioModels";
+import { WalkSideCallback } from "@/stores/scenarioStore";
 
-export type WalkSubUnitIdCallback = (unit: NUnit) => void;
+export type NWalkSubUnitCallback = (unit: NUnit) => void;
+
+export type NWalkSideCallback = (
+  unit: NUnit,
+  level: number,
+  parent: NUnit | NSideGroup,
+  sideGroup: NSideGroup,
+  side: NSide
+) => void;
 
 export interface WalkSubUnitsOptions {
   includeParent: boolean;
@@ -20,6 +33,35 @@ let counter = 1;
 
 export function useUnitManipulations(store: NewScenarioStore) {
   const { state, update } = store;
+
+  function updateSide(sideId: EntityId, sideData: Partial<SideUpdate>) {
+    update((s) => {
+      let side = s.sideMap[sideId!];
+      if (!side) return;
+      const updateSid =
+        sideData.standardIdentity ?? side.standardIdentity !== sideData.standardIdentity;
+      Object.assign(side, sideData);
+      if (updateSid) {
+        const sid = side.standardIdentity;
+        walkSide(
+          side.id,
+          (unit) => {
+            if (unit.sidc[SID_INDEX] !== sid) {
+              unit.sidc = setCharAt(unit.sidc, SID_INDEX, sid);
+            }
+          },
+          s
+        );
+      }
+    });
+  }
+
+  function updateSideGroup(sideGroupId: EntityId, sideGroupData: SideGroupUpdate) {
+    update((s) => {
+      let sideGroup = s.sideGroupMap[sideGroupId];
+      if (sideGroup) Object.assign(sideGroup, { ...sideGroupData, _isNew: false });
+    });
+  }
 
   function deleteUnit(id: string) {
     const u = state.unitMap[id];
@@ -96,7 +138,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
   function walkSubUnits(
     parentUnitId: EntityId,
-    callback: WalkSubUnitIdCallback,
+    callback: NWalkSubUnitCallback,
     options: Partial<WalkSubUnitsOptions>
   ) {
     const { state: s = state, includeParent = false } = options;
@@ -110,6 +152,33 @@ export function useUnitManipulations(store: NewScenarioStore) {
     const parentUnit = s.unitMap[parentUnitId]!;
     if (includeParent) callback(parentUnit);
     parentUnit.subUnits.forEach((unitId) => helper(unitId));
+  }
+
+  function walkSide(sideId: EntityId, callback: NWalkSideCallback, s = state) {
+    let level = 0;
+    const side = s.sideMap[sideId];
+    if (!side) return;
+
+    function helper(
+      currentUnitId: EntityId,
+      parent: NUnit | NSideGroup,
+      sideGroup: NSideGroup
+    ) {
+      const currentUnit = s.unitMap[currentUnitId]!;
+      callback(currentUnit, level, parent, sideGroup, side);
+      if (currentUnit.subUnits) {
+        level += 1;
+        for (const subUnitId of currentUnit.subUnits) {
+          helper(subUnitId, currentUnit, sideGroup);
+        }
+        level -= 1;
+      }
+    }
+
+    for (const sideGroupId of side.groups) {
+      const sideGroup = s.sideGroupMap[sideGroupId]!;
+      sideGroup.subUnits.forEach((unitId) => helper(unitId, sideGroup, sideGroup));
+    }
   }
 
   function getUnitHierarchy(entityId: EntityId, s = state) {
@@ -183,5 +252,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     cloneUnit,
     reorderUnit,
     getUnitHierarchy,
+    updateSide,
+    updateSideGroup,
   };
 }
