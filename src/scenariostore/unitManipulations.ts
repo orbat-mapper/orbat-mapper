@@ -11,8 +11,6 @@ import {
 import { DropTarget } from "@/components/types";
 import { SID_INDEX } from "@/symbology/sidc";
 import { setCharAt } from "@/components/helpers";
-import { Side, SideGroup, Unit } from "@/types/scenarioModels";
-import { WalkSideCallback } from "@/stores/scenarioStore";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 

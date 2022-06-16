@@ -3,7 +3,7 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
 import { getCenter, isEmpty } from "ol/extent";
-import { nanoid } from "../utils";
+import { moveItemMutable, nanoid } from "../utils";
 import { Collection } from "ol";
 import {
   getFeatureAndLayerById,
@@ -32,7 +32,6 @@ import { unByKey } from "ol/Observable";
 import { EventsKey } from "ol/events";
 import { useScenarioLayersStore } from "../stores/scenarioLayersStore";
 import { AnyVectorLayer } from "../geo/types";
-import { moveItemMutable } from "../utils";
 import {
   LayersOutline,
   MapMarker,

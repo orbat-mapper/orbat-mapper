@@ -20,9 +20,8 @@ import { useToggle } from "@vueuse/core";
 import InputGroup from "../../components/InputGroup.vue";
 import BaseButton from "../../components/BaseButton.vue";
 import { inputEventFilter } from "../../components/helpers";
-import ToggleField from "../../components/ToggleField.vue";
 import FeatureStrokeSettings from "./FeatureStrokeSettings.vue";
-import { type StrokeStyleSpec, type FillStyleSpec } from "../../geo/simplestyle";
+import { type FillStyleSpec, type StrokeStyleSpec } from "../../geo/simplestyle";
 import FeatureFillSettings from "./FeatureFillSettings.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(

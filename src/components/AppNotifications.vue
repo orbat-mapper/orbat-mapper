@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from "vue";
+import { computed, defineComponent } from "vue";
 import { InboxIcon } from "@heroicons/vue/outline";
 import { XIcon } from "@heroicons/vue/solid";
 import NotificationItem from "./NotificationItem.vue";

@@ -5,7 +5,6 @@ import Feature from "ol/Feature";
 import VectorLayer from "ol/layer/Vector";
 import { Collection } from "ol";
 import { AnyVectorLayer } from "../geo/types";
-import VectorSource from "ol/source/Vector";
 import { FeatureId } from "../types/scenarioGeoModels";
 
 /**

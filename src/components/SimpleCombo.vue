@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from "vue";
+import { computed, defineComponent, PropType, ref } from "vue";
 import { CheckIcon, SelectorIcon } from "@heroicons/vue/solid";
 import {
   Combobox,
@@ -65,7 +65,6 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/vue";
-import { PropType } from "vue";
 import { SelectItem } from "./types";
 import { useVModel } from "@vueuse/core";
 

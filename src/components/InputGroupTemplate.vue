@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { computed, defineComponent } from "vue";
+import { defineComponent } from "vue";
 import { nanoid } from "nanoid";
 
 export default defineComponent({

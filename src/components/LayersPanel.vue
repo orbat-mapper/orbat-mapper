@@ -41,15 +41,7 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineComponent,
-  markRaw,
-  onMounted,
-  ref,
-  shallowRef,
-  watch,
-} from "vue";
+import { computed, defineComponent, markRaw, ref, shallowRef, watch } from "vue";
 import { useGeoStore } from "../stores/geoStore";
 import BaseLayer from "ol/layer/Base";
 import TileLayer from "ol/layer/Tile";

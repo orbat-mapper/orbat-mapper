@@ -2,10 +2,11 @@
  * A custom store based on https://github.com/Korijn/vue-store
  */
 
-import { computed, reactive, readonly, shallowReactive, toRaw } from "vue";
+import { computed, reactive, shallowReactive, toRaw } from "vue";
 import type { Patch } from "immer";
-import { produceWithPatches, enablePatches, setAutoFreeze } from "immer";
+import { enablePatches, produceWithPatches, setAutoFreeze } from "immer";
 import { applyPatch } from "rfc6902";
+
 enablePatches();
 setAutoFreeze(false);
 function applyPatchWrapper<T>(state: T, patches: Patch[]) {

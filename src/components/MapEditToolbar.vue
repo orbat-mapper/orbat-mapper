@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import {
+  CursorDefaultOutline,
   MapMarker,
   SquareEditOutline,
   TrashCanOutline,
   VectorCircleVariant,
   VectorLine,
   VectorTriangle,
-  CursorDefaultOutline,
 } from "mdue";
 import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useDebounceFn } from "@vueuse/core";
 import InputGroup from "../../components/InputGroup.vue";
-import NumberInputGroup from "../../components/NumberInputGroup.vue";
 import { computed, ref } from "vue";
 import { type FillStyleSpec } from "../../geo/simplestyle";
 import { type ScenarioFeature } from "../../types/scenarioGeoModels";

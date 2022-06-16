@@ -48,10 +48,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, onBeforeUpdate, PropType, ref } from "vue";
 import DotsMenu, { MenuItemData } from "./DotsMenu.vue";
 import OrbatTree from "./OrbatTree.vue";
-import { onBeforeUpdate, PropType, ref } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
 import { SideGroup } from "../types/scenarioModels";
