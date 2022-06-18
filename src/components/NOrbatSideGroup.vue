@@ -55,12 +55,12 @@ import DotsMenu, { MenuItemData } from "./DotsMenu.vue";
 import NOrbatTree from "./NOrbatTree.vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
-import { DragOperations, SideActions, UnitActions } from "../types/constants";
-import { useDragStore } from "../stores/dragStore";
+import { DragOperations, SideActions, UnitActions } from "@/types/constants";
+import { useDragStore } from "@/stores/dragStore";
 import SecondaryButton from "./SecondaryButton.vue";
-import EditSideGroupForm from "./EditSideGroupForm.vue";
-import { NSideGroup, NUnit } from "../types/internalModels";
-import { ScenarioState } from "../scenariostore/newScenarioStore";
+import EditSideGroupForm from "./NEditSideGroupForm.vue";
+import { NSideGroup, NUnit } from "@/types/internalModels";
+import { ScenarioState } from "@/scenariostore/newScenarioStore";
 import { DropTarget } from "./types";
 
 interface Props {

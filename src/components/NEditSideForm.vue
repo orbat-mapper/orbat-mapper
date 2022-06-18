@@ -1,32 +1,14 @@
-<template>
-  <InlineFormPanel @close="$emit('close')" title="Edit side info">
-    <form @submit.prevent="onFormSubmit" class="space-y-4">
-      <InputGroup label="Side name" v-model="form.name" :id="focusId" />
-      <SymbolCodeSelect
-        label="Standard identity"
-        v-model="form.standardIdentity"
-        :items="sidItems"
-      />
-
-      <div class="flex justify-end space-x-2">
-        <BaseButton small primary type="submit">Save</BaseButton>
-        <BaseButton @click="$emit('close')">Cancel</BaseButton>
-      </div>
-    </form>
-  </InlineFormPanel>
-</template>
-
 <script setup lang="ts">
 import { computed, inject, ref, watch } from "vue";
 import InputGroup from "./InputGroup.vue";
 import InlineFormPanel from "./InlineFormPanel.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
 import { standardIdentityValues } from "@/symbology/values";
-import { SymbolItem } from "@/types/constants";
+import type { SymbolItem } from "@/types/constants";
 import { useFocusOnMount } from "./helpers";
 import BaseButton from "./BaseButton.vue";
 import { activeScenarioKey } from "@/components/injects";
-import { SideUpdate } from "@/types/internalModels";
+import type { SideUpdate } from "@/types/internalModels";
 
 const props = defineProps<{ sideId: string }>();
 const emit = defineEmits(["close"]);
@@ -47,9 +29,7 @@ watch(
 );
 
 const onFormSubmit = () => {
-  store?.update((s) => {
-    unitActions.updateSide(props.sideId, { ...form.value });
-  });
+  unitActions.updateSide(props.sideId, { ...form.value });
   emit("close");
 };
 
@@ -63,3 +43,21 @@ const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {
 
 const { focusId } = useFocusOnMount();
 </script>
+
+<template>
+  <InlineFormPanel @close="$emit('close')" title="Edit side info">
+    <form @submit.prevent="onFormSubmit" class="space-y-4">
+      <InputGroup label="Side name" v-model="form.name" :id="focusId" />
+      <SymbolCodeSelect
+        label="Standard identity"
+        v-model="form.standardIdentity"
+        :items="sidItems"
+      />
+
+      <div class="flex justify-end space-x-2">
+        <BaseButton small primary type="submit">Save</BaseButton>
+        <BaseButton @click="$emit('close')">Cancel</BaseButton>
+      </div>
+    </form>
+  </InlineFormPanel>
+</template>

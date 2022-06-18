@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import DotsMenu, { MenuItemData } from "./DotsMenu.vue";
-import { computed, ref } from "vue";
+import { computed, inject, ref } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
 import { SideActions, UnitActions } from "@/types/constants";
@@ -64,6 +64,7 @@ import NOrbatSideGroup from "./NOrbatSideGroup.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { ScenarioState } from "@/scenariostore/newScenarioStore";
 import { DropTarget } from "./types";
+import { activeScenarioKey } from "@/components/injects";
 
 interface Props {
   side: NSide;
@@ -83,6 +84,8 @@ interface Emits {
 }
 const emit = defineEmits<Emits>();
 
+const { store, unitActions } = inject(activeScenarioKey)!;
+
 const hasLocationFilter = ref(false);
 const filterQuery = ref("");
 
@@ -91,7 +94,6 @@ const sideGroups = computed(() =>
   props.side.groups.map((id) => props.state.sideGroupMap[id])
 );
 
-const scenarioStore = useScenarioStore();
 const showEditSideForm = ref(false);
 
 if (props.side._isNew) showEditSideForm.value = true;
@@ -107,6 +109,7 @@ const onSideAction = (action: SideActions) => {
   } else if (action === SideActions.AddSubordinate) {
     // unitManipulationStore.createSubordinateUnit(props.side.groups[0]);
   } else if (action === SideActions.AddGroup) {
+    unitActions.addSideGroup(props.side.id);
     // scenarioStore.addSideGroup(props.side);
   } else if (action === SideActions.Edit) {
     showEditSideForm.value = true;
