@@ -75,6 +75,7 @@ const toggleDark = useToggle(isDark);
       <div class="flex items-center space-x-2">
         <BaseButton :disabled="!canUndo" @click="undo()">Undo</BaseButton>
         <BaseButton :disabled="!canRedo" @click="redo()">Redo</BaseButton>
+        <BaseButton @click="unitActions.addSide()">Add side</BaseButton>
         <BaseButton @click="toggleDark()"
           ><span class="mr-1 h-4 w-4"><MoonIcon v-if="isDark" /><SunIcon v-else /></span
           >Toggle

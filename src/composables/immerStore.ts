@@ -29,6 +29,7 @@ export function useImmerStore<T extends object>(baseState: T) {
 
   const canUndo = computed(() => past.length > 0);
   const canRedo = computed(() => future.length > 0);
+
   const update = (updater: (currentState: T) => void) => {
     const [, patches, inversePatches] = produceWithPatches(toRaw(state), updater);
     if (patches.length === 0) return;
@@ -37,6 +38,23 @@ export function useImmerStore<T extends object>(baseState: T) {
     future.splice(0);
   };
 
+  function groupUpdate(updates: () => void) {
+    const preLength = past.length;
+    updates();
+    const diff = past.length - preLength;
+    if (diff <= 0) return;
+    let elems: UndoEntry[] = [];
+    for (let i = 0; i < diff; i++) elems.push(past.pop()!);
+    elems.reverse();
+    let mergedPatches: Patch[] = [];
+    let mergedInversePatches: Patch[] = [];
+    elems.forEach(({ patches, inversePatches }) => {
+      mergedPatches.push(...patches);
+      mergedInversePatches.push(...inversePatches);
+    });
+    past.push({ patches: mergedPatches, inversePatches: mergedInversePatches });
+  }
+
   const undo = () => {
     if (!canUndo.value) return false;
     const { patches, inversePatches } = past.pop()!;
@@ -44,6 +62,7 @@ export function useImmerStore<T extends object>(baseState: T) {
     future.unshift({ patches, inversePatches });
     return true;
   };
+
   const redo = () => {
     if (!canRedo.value) return false;
     const { patches, inversePatches } = future.shift()!;
@@ -59,5 +78,6 @@ export function useImmerStore<T extends object>(baseState: T) {
     undo,
     canRedo,
     canUndo,
+    groupUpdate,
   };
 }

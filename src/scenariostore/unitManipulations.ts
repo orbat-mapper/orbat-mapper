@@ -11,6 +11,7 @@ import {
 import { DropTarget } from "@/components/types";
 import { SID_INDEX } from "@/symbology/sidc";
 import { setCharAt } from "@/components/helpers";
+import { SID } from "@/symbology/values";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -30,7 +31,40 @@ export interface WalkSubUnitsOptions {
 let counter = 1;
 
 export function useUnitManipulations(store: NewScenarioStore) {
-  const { state, update } = store;
+  const { state, update, groupUpdate } = store;
+
+  function addSide(sideDate: Partial<SideUpdate> = {}) {
+    const newSide: NSide = {
+      id: nanoid(),
+      name: sideDate.name || "New side",
+      standardIdentity: sideDate.standardIdentity || SID.Friend,
+      groups: [],
+      _isNew: true,
+    };
+    groupUpdate(() => {
+      update((s) => {
+        s.sideMap[newSide.id] = newSide;
+        s.sides.push(newSide.id);
+      });
+      addSideGroup(newSide.id);
+    });
+  }
+
+  function addSideGroup(sideId: EntityId, data: Partial<NSideGroup> = {}) {
+    update((s) => {
+      const side = s.sideMap[sideId];
+      if (!side) return;
+      const newSideGroup: NSideGroup = {
+        id: nanoid(),
+        name: data.name || "New group",
+        subUnits: [],
+        _pid: sideId,
+        _isNew: true,
+      };
+      s.sideGroupMap[newSideGroup.id] = newSideGroup;
+      side.groups.push(newSideGroup.id);
+    });
+  }
 
   function updateSide(sideId: EntityId, sideData: Partial<SideUpdate>) {
     update((s) => {
@@ -252,5 +286,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     getUnitHierarchy,
     updateSide,
     updateSideGroup,
+    addSide,
+    addSideGroup,
   };
 }
