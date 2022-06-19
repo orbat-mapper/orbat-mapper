@@ -1,4 +1,5 @@
 import { customAlphabet } from "nanoid";
+import { EntityId } from "@/types/base";
 
 export function groupBy<T extends object, K extends keyof T>(arr: T[], key: K) {
   return arr.reduce((acc, item) => {
@@ -40,4 +41,11 @@ export function moveElement<T>(array: T[], element: T, delta: number) {
   }
   const indexes = [index, newIndex].sort();
   array.splice(indexes[0], 2, array[indexes[1]], array[indexes[0]]);
+}
+
+export function removeElement(value: EntityId, array: EntityId[]) {
+  const index = array.indexOf(value);
+  if (index > -1) {
+    array.splice(index, 1);
+  }
 }

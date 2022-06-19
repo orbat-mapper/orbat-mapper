@@ -1,6 +1,6 @@
 import { EntityId } from "@/types/base";
 import { NewScenarioStore, ScenarioState } from "./newScenarioStore";
-import { moveElement, nanoid } from "@/utils";
+import { moveElement, nanoid, removeElement } from "@/utils";
 import {
   NSide,
   NSideGroup,
@@ -29,13 +29,6 @@ export interface WalkSubUnitsOptions {
 }
 
 let counter = 1;
-
-function removeElement(value: EntityId, array: EntityId[]) {
-  const index = array.indexOf(value);
-  if (index > -1) {
-    array.splice(index, 1);
-  }
-}
 
 export function useUnitManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
