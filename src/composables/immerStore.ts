@@ -45,7 +45,6 @@ export function useImmerStore<T extends object>(baseState: T) {
     if (diff <= 0) return;
     let elems: UndoEntry[] = [];
     for (let i = 0; i < diff; i++) elems.push(past.pop()!);
-    elems.reverse();
     let mergedPatches: Patch[] = [];
     let mergedInversePatches: Patch[] = [];
     elems.forEach(({ patches, inversePatches }) => {
