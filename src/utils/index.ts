@@ -1,5 +1,6 @@
 import { customAlphabet } from "nanoid";
 import { EntityId } from "@/types/base";
+import { inject, InjectionKey } from "vue";
 
 export function groupBy<T extends object, K extends keyof T>(arr: T[], key: K) {
   return arr.reduce((acc, item) => {
@@ -48,4 +49,14 @@ export function removeElement(value: EntityId, array: EntityId[]) {
   if (index > -1) {
     array.splice(index, 1);
   }
+}
+
+// from https://logaretm.com/blog/making-the-most-out-of-vuejs-injections/
+export function injectStrict<T>(key: InjectionKey<T>, fallback?: T) {
+  const resolved = inject(key, fallback);
+  if (!resolved) {
+    throw new Error(`Could not resolve ${key.description}`);
+  }
+
+  return resolved;
 }

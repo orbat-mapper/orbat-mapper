@@ -21,8 +21,9 @@ import InlineFormPanel from "./InlineFormPanel.vue";
 import { useFocusOnMount } from "./helpers";
 import type { EntityId } from "@/types/base";
 import { activeScenarioKey } from "@/components/injects";
+import { injectStrict } from "@/utils";
 
-const { store, unitActions } = inject(activeScenarioKey)!;
+const { store, unitActions } = injectStrict(activeScenarioKey);
 const props = defineProps<{ sideGroupId: EntityId }>();
 const emit = defineEmits(["close"]);
 

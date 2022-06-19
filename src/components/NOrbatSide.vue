@@ -65,6 +65,7 @@ import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { ScenarioState } from "@/scenariostore/newScenarioStore";
 import { DropTarget } from "./types";
 import { activeScenarioKey } from "@/components/injects";
+import { injectStrict } from "@/utils";
 
 interface Props {
   side: NSide;
@@ -90,7 +91,7 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 
-const { store, unitActions } = inject(activeScenarioKey)!;
+const { store, unitActions } = injectStrict(activeScenarioKey);
 
 const hasLocationFilter = ref(false);
 const filterQuery = ref("");

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import InputGroup from "./InputGroup.vue";
 import InlineFormPanel from "./InlineFormPanel.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
@@ -9,10 +9,11 @@ import { useFocusOnMount } from "./helpers";
 import BaseButton from "./BaseButton.vue";
 import { activeScenarioKey } from "@/components/injects";
 import type { SideUpdate } from "@/types/internalModels";
+import { injectStrict } from "@/utils";
 
 const props = defineProps<{ sideId: string }>();
 const emit = defineEmits(["close"]);
-const { store, unitActions } = inject(activeScenarioKey)!;
+const { store, unitActions } = injectStrict(activeScenarioKey);
 
 let form = ref<Partial<SideUpdate>>({ name: "New side", standardIdentity: "3" });
 
