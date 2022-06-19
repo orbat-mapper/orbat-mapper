@@ -30,6 +30,13 @@ export interface WalkSubUnitsOptions {
 
 let counter = 1;
 
+function removeElement(value: EntityId, array: EntityId[]) {
+  const index = array.indexOf(value);
+  if (index > -1) {
+    array.splice(index, 1);
+  }
+}
+
 export function useUnitManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
 
@@ -88,6 +95,34 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function deleteSide(sideId: EntityId) {
+    const side = state.sideMap[sideId];
+    if (!side) return;
+    const sideGroups = [...side.groups];
+    groupUpdate(() => {
+      sideGroups.forEach((id) => deleteSideGroup(id));
+      update((s) => {
+        delete s.sideMap[sideId];
+        removeElement(sideId, s.sides);
+      });
+    });
+  }
+
+  function deleteSideGroup(sideGroupId: EntityId) {
+    const sideGroup = state.sideGroupMap[sideGroupId];
+    if (!sideGroup) return;
+    const subUnits = [...sideGroup.subUnits];
+    groupUpdate(() => {
+      subUnits.forEach((unitId) => deleteUnit(unitId));
+      update((s) => {
+        delete s.sideGroupMap[sideGroupId];
+        if (!sideGroup._pid) return;
+        const parentSide = s.sideMap[sideGroup._pid];
+        removeElement(sideGroupId, parentSide.groups);
+      });
+    });
+  }
+
   function updateSideGroup(sideGroupId: EntityId, sideGroupData: SideGroupUpdate) {
     update((s) => {
       let sideGroup = s.sideGroupMap[sideGroupId];
@@ -106,13 +141,11 @@ export function useUnitManipulations(store: NewScenarioStore) {
       if (!u._pid) return;
       const parentUnit = s.unitMap[u._pid];
       if (parentUnit) {
-        const idx = parentUnit.subUnits.findIndex((e) => e === id);
-        if (idx !== -1) parentUnit.subUnits.splice(idx, 1);
+        removeElement(id, parentUnit.subUnits);
       } else {
         const sideGroup = s.sideGroupMap[u._pid];
         if (!sideGroup) return;
-        const idx = sideGroup.subUnits.findIndex((e) => e === id);
-        if (idx !== -1) sideGroup.subUnits.splice(idx, 1);
+        removeElement(id, sideGroup.subUnits);
       }
     });
   }
@@ -140,8 +173,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       unit._pid = parentId;
 
       if (originalParent) {
-        const idx = originalParent.subUnits.findIndex((id) => id === unitId);
-        if (idx >= 0) originalParent.subUnits.splice(idx, 1);
+        removeElement(unitId, originalParent.subUnits);
       }
 
       if (target === "on") {
@@ -288,5 +320,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateSideGroup,
     addSide,
     addSideGroup,
+    deleteSide,
+    deleteSideGroup,
   };
 }

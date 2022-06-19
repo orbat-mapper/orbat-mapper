@@ -42,6 +42,7 @@
             @unit-action="onUnitAction"
             @unit-click="emit('unit-click', $event)"
             @unit-drop="onUnitDrop"
+            @sidegroup-action="onSideGroupAction"
           >
           </NOrbatSideGroup>
         </div>
@@ -52,11 +53,10 @@
 
 <script setup lang="ts">
 import DotsMenu, { MenuItemData } from "./DotsMenu.vue";
-import { computed, inject, ref } from "vue";
+import { computed, inject, ref, toRaw } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
 import { SideActions, UnitActions } from "@/types/constants";
-import { useScenarioStore } from "@/stores/scenarioStore";
 import { useDebounce } from "@vueuse/core";
 import FilterQueryInput from "./FilterQueryInput.vue";
 import EditSideForm from "./NEditSideForm.vue";
@@ -70,18 +70,24 @@ interface Props {
   side: NSide;
   state: ScenarioState;
 }
+
 const props = defineProps<Props>();
 
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitActions): void;
+
   (e: "unit-click", unit: NUnit): void;
+
   (
     e: "unit-drop",
     unit: NUnit,
     destinationUnit: NUnit | NSideGroup,
     target: DropTarget
   ): void;
+
+  (e: "side-action", unit: NSide, action: SideActions): void;
 }
+
 const emit = defineEmits<Emits>();
 
 const { store, unitActions } = inject(activeScenarioKey)!;
@@ -102,6 +108,7 @@ const sideMenuItems: MenuItemData<SideActions>[] = [
   // { label: "Expand", action: SideActions.Expand },
   { label: "Edit", action: SideActions.Edit },
   { label: "Add group", action: SideActions.AddGroup },
+  { label: "Delete side", action: SideActions.Delete },
 ];
 
 const onSideAction = (action: SideActions) => {
@@ -110,11 +117,18 @@ const onSideAction = (action: SideActions) => {
     // unitManipulationStore.createSubordinateUnit(props.side.groups[0]);
   } else if (action === SideActions.AddGroup) {
     unitActions.addSideGroup(props.side.id);
-    // scenarioStore.addSideGroup(props.side);
   } else if (action === SideActions.Edit) {
     showEditSideForm.value = true;
+  } else {
+    emit("side-action", props.side, action);
   }
 };
+
+function onSideGroupAction(sideGroup: NSideGroup, action: SideActions) {
+  if (action === SideActions.Delete) {
+    unitActions.deleteSideGroup(sideGroup.id);
+  }
+}
 
 const onUnitAction = (unit: NUnit, action: UnitActions) => {
   emit("unit-action", unit, action);

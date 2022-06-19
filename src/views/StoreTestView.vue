@@ -3,12 +3,12 @@ import { useDark, useToggle } from "@vueuse/core";
 import { GlobalEvents } from "vue-global-events";
 import { MoonIcon, SunIcon } from "@heroicons/vue/solid";
 import BaseButton from "@/components/BaseButton.vue";
-import { computed, provide, ref } from "vue";
+import { computed, provide, ref, toRaw } from "vue";
 import { EntityId } from "@/types/base";
 import { inputEventFilter } from "@/components/helpers";
-import { UnitActions } from "@/types/constants";
+import { SideActions, UnitActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
-import { NSideGroup, NUnit } from "@/types/internalModels";
+import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import NOrbatSide from "@/components/NOrbatSide.vue";
 import { loadDemoScenario, useScenario } from "@/scenariostore";
@@ -47,6 +47,7 @@ function onUnitAction(unit: NUnit, action: UnitActions) {
   if (action === UnitActions.MoveUp) unitActions.reorderUnit(unit.id, "up");
   if (action === UnitActions.MoveDown) unitActions.reorderUnit(unit.id, "down");
 }
+
 function onUnitDrop(
   unit: NUnit,
   destinationUnit: NUnit | NSideGroup,
@@ -60,6 +61,12 @@ function onUnitDrop(
 function onUnitClick(unit: NUnit) {
   console.log("On unit click", unit.name);
   activeUnitId.value = unit.id;
+}
+
+function onSideAction(side: NSide, action: SideActions) {
+  if (action === SideActions.Delete) {
+    unitActions.deleteSide(side.id);
+  }
 }
 
 const toggleDark = useToggle(isDark);
@@ -95,6 +102,7 @@ const toggleDark = useToggle(isDark);
           @unit-action="onUnitAction"
           @unit-click="onUnitClick"
           @unit-drop="onUnitDrop"
+          @side-action="onSideAction"
         />
       </div>
       <div class="prose">

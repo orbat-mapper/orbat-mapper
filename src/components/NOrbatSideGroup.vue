@@ -59,7 +59,7 @@ import { DragOperations, SideActions, UnitActions } from "@/types/constants";
 import { useDragStore } from "@/stores/dragStore";
 import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./NEditSideGroupForm.vue";
-import { NSideGroup, NUnit } from "@/types/internalModels";
+import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { ScenarioState } from "@/scenariostore/newScenarioStore";
 import { DropTarget } from "./types";
 
@@ -80,6 +80,7 @@ interface Emits {
     destinationUnit: NUnit | NSideGroup,
     target: DropTarget
   ): void;
+  (e: "sidegroup-action", unit: NSideGroup, action: SideActions): void;
 }
 const emit = defineEmits<Emits>();
 
@@ -95,6 +96,7 @@ const sideGroupMenuItems: MenuItemData<SideActions>[] = [
   { label: "Expand", action: SideActions.Expand },
   { label: "Add root unit", action: SideActions.AddSubordinate },
   { label: "Edit group", action: SideActions.Edit },
+  { label: "Delete group", action: SideActions.Delete },
 ];
 
 const onSideGroupAction = (group: NSideGroup, action: SideActions) => {
@@ -103,6 +105,8 @@ const onSideGroupAction = (group: NSideGroup, action: SideActions) => {
     // unitManipulationStore.createSubordinateUnit(group);
   } else if (action === SideActions.Edit) {
     showEditForm.value = true;
+  } else {
+    emit("sidegroup-action", group, action);
   }
 };
 
