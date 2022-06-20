@@ -3,7 +3,7 @@ import { useDark, useToggle } from "@vueuse/core";
 import { GlobalEvents } from "vue-global-events";
 import { MoonIcon, SunIcon } from "@heroicons/vue/solid";
 import BaseButton from "@/components/BaseButton.vue";
-import { computed, provide, ref, toRaw } from "vue";
+import { computed, onMounted, provide, ref } from "vue";
 import { EntityId } from "@/types/base";
 import { inputEventFilter } from "@/components/helpers";
 import { SideActions, UnitActions } from "@/types/constants";
@@ -11,11 +11,11 @@ import { DropTarget } from "@/components/types";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import NOrbatSide from "@/components/NOrbatSide.vue";
-import { loadDemoScenario, useScenario } from "@/scenariostore";
+import { TScenario } from "@/scenariostore";
 
-await loadDemoScenario();
-const activeScenario = useScenario();
-const { store, unitActions, time } = activeScenario;
+const props = defineProps<{ activeScenario: TScenario }>();
+
+const { store, unitActions, time, io } = props.activeScenario;
 const { deleteUnit, walkSubUnits, changeUnitParent, cloneUnit } = unitActions;
 const { state, update, undo, redo, canRedo, canUndo } = store!;
 const { utcTime, scenarioTime, timeZone } = time;
@@ -23,7 +23,7 @@ const { utcTime, scenarioTime, timeZone } = time;
 const activeUnitId = ref<EntityId | undefined>();
 
 provide(activeUnitKey, activeUnitId);
-provide(activeScenarioKey, activeScenario);
+provide(activeScenarioKey, props.activeScenario);
 
 const isDark = useDark();
 
@@ -70,6 +70,10 @@ function onSideAction(side: NSide, action: SideActions) {
 }
 
 const toggleDark = useToggle(isDark);
+
+onMounted(() => {
+  console.log("Mounted");
+});
 </script>
 <template>
   <main class="dark:text bg-white p-4 text-gray-700 dark:bg-gray-900 dark:text-gray-400">
@@ -87,6 +91,8 @@ const toggleDark = useToggle(isDark);
           ><span class="mr-1 h-4 w-4"><MoonIcon v-if="isDark" /><SunIcon v-else /></span
           >Toggle
         </BaseButton>
+        <BaseButton @click="io.loadEmptyScenario()">Empty</BaseButton>
+        <BaseButton @click="io.loadDemoScenario('falkland82')">Empty</BaseButton>
         <BaseButton @click="time.add(1, 'day')">+1 day</BaseButton>
         <BaseButton @click="time.subtract(1, 'day')">-1 day</BaseButton>
         <span>{{ scenarioTime.format("YYYY-MM-DDTHH:mmZ") }}</span>
@@ -106,7 +112,7 @@ const toggleDark = useToggle(isDark);
         />
       </div>
       <div class="prose">
-        <pre>{{ state }}</pre>
+        <pre>{{ store.state }}</pre>
       </div>
     </section>
     <GlobalEvents

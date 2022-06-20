@@ -9,6 +9,7 @@ import { NSide, NSideGroup, NUnit } from "../types/internalModels";
 import { useScenarioTime } from "./time";
 
 export interface ScenarioState {
+  id: EntityId;
   unitMap: Record<EntityId, NUnit>;
   sideMap: Record<EntityId, NSide>;
   sideGroupMap: Record<EntityId, NSideGroup>;
@@ -72,6 +73,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   };
 
   return {
+    id: nanoid(),
     currentTime: scenario.startTime || 0,
     info,
     sides,
