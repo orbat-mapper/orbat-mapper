@@ -54,6 +54,14 @@ const shortcuts: KeyboardCategory[] = [
       { shortcut: [["e"]], description: "Edit active unit" },
       { shortcut: [["d"]], description: "Duplicate unit" },
       { shortcut: [["t"]], description: "Set scenario time" },
+      { shortcut: [["ctrl", "z"]], description: "Undo" },
+      {
+        shortcut: [
+          ["ctrl", "shift", "z"],
+          ["ctrl", "y"],
+        ],
+        description: "Redo",
+      },
     ],
   },
   {
