@@ -9,12 +9,12 @@
               :key="index"
               @click="selectTab(index)"
               :class="[
-                index === selectedIndex
+                index === state.selectedIndex
                   ? 'border-army text-army dark:border-amber-600 dark:text-amber-600'
                   : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400',
                 'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium',
               ]"
-              :aria-current="index === selectedIndex ? 'page' : undefined"
+              :aria-current="index === state.selectedIndex ? 'page' : undefined"
             >
               {{ tab.label }}
             </button>
@@ -31,84 +31,62 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import {
   computed,
-  defineComponent,
   onBeforeMount,
   onMounted,
   provide,
   reactive,
   ref,
-  toRefs,
+  useSlots,
   VNode,
   watch,
 } from "vue";
 
-interface TabProps {
-  label: string;
+interface Props {
+  currentTab?: number;
+  extraClass?: string;
+  tabClass?: string;
 }
 
-export default defineComponent({
-  name: "TabView",
-  props: {
-    currentTab: Number,
-    extraClass: String,
-    tabClass: String,
-  },
-  emits: ["update:current-tab"],
-  setup(props, { emit, slots }) {
-    const state = reactive({
-      selectedIndex: 0,
-      count: 0,
-      tabClass: props.tabClass,
-    });
+const props = defineProps<Props>();
+const slots = useSlots();
+const emit = defineEmits(["update:current-tab"]);
 
-    const tabs = ref([] as VNode[]);
+const state = reactive({
+  selectedIndex: 0,
+  count: 0,
+  tabClass: props.tabClass,
+});
 
-    provide("TabsProvider", state);
+const tabs = ref([] as VNode[]);
 
-    const selectTab = (i: number) => {
-      state.selectedIndex = i;
-      emit("update:current-tab", state.selectedIndex);
-    };
+provide("TabsProvider", state);
 
-    onBeforeMount(() => {
-      if (slots.default) {
-        tabs.value = slots
-          .default()
-          .filter((child: any) => child.type.name === "TabItem");
-      }
-    });
+const selectTab = (i: number) => {
+  state.selectedIndex = i;
+  emit("update:current-tab", state.selectedIndex);
+};
 
-    onMounted(() => {
-      selectTab(props.currentTab ?? 0);
-    });
+onBeforeMount(() => {
+  if (slots.default) {
+    tabs.value = slots.default().filter((child: any) => child.type.name === "TabItem");
+  }
+});
 
-    watch(
-      () => props.currentTab,
-      (v) => {
-        state.selectedIndex = v ?? 0;
-      }
-    );
+onMounted(() => {
+  selectTab(props.currentTab ?? 0);
+});
 
-    const tabsInfo = computed(() => {
-      return tabs.value.map((t) => ({ label: t.props?.label }));
-    });
+watch(
+  () => props.currentTab,
+  (v) => {
+    state.selectedIndex = v ?? 0;
+  }
+);
 
-    // watch(
-    //   () => state.count,
-    //   () => {
-    //     if (slots.default) {
-    //       state.tabs = slots
-    //         .default()
-    //         //@ts-ignore
-    //         .filter((child) => child.type.name === "TabItem");
-    //     }
-    //   }
-    // );
-
-    return { ...toRefs(state), selectTab, tabsInfo };
-  },
+const tabsInfo = computed(() => {
+  return tabs.value.map((t) => ({ label: t.props?.label }));
 });
 </script>

@@ -72,8 +72,8 @@
   </TransitionRoot>
 </template>
 
-<script lang="ts">
-import { defineComponent, onUnmounted, PropType, watch } from "vue";
+<script setup lang="ts">
+import { defineEmits, onUnmounted, watch } from "vue";
 import {
   Dialog,
   DialogOverlay,
@@ -83,40 +83,23 @@ import {
 } from "@headlessui/vue";
 import { XIcon } from "@heroicons/vue/outline";
 import { useVModel } from "@vueuse/core";
-import { useUiStore } from "../stores/uiStore";
+import { useUiStore } from "@/stores/uiStore";
 
-export default defineComponent({
-  name: "SimpleModal",
-  components: {
-    Dialog,
-    DialogOverlay,
-    DialogTitle,
-    TransitionChild,
-    TransitionRoot,
-    XIcon,
-  },
-  props: {
-    modelValue: { type: Boolean, default: false },
-    dialogTitle: { type: String },
-    initialFocus: {
-      type: Object as PropType<HTMLElement | null>,
-      default: null,
-    },
-  },
-  emits: ["update:modelValue"],
-  setup(props, { emit }) {
-    const uiStore = useUiStore();
-    const open = useVModel(props, "modelValue");
-    uiStore.modalOpen = open.value;
-    watch(open, (v) => {
-      uiStore.modalOpen = v;
-    });
+interface Props {
+  modelValue?: boolean;
+  dialogTitle?: string;
+  initialFocus?: HTMLElement;
+}
 
-    onUnmounted(() => (uiStore.modalOpen = false));
+const props = withDefaults(defineProps<Props>(), { modelValue: false });
+const emit = defineEmits(["update:modelValue"]);
 
-    return {
-      open,
-    };
-  },
+const uiStore = useUiStore();
+const open = useVModel(props, "modelValue");
+uiStore.modalOpen = open.value;
+watch(open, (v) => {
+  uiStore.modalOpen = v;
 });
+
+onUnmounted(() => (uiStore.modalOpen = false));
 </script>

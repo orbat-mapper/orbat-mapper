@@ -16,27 +16,12 @@
   </div>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent } from "vue";
-import { InboxIcon } from "@heroicons/vue/outline";
-import { XIcon } from "@heroicons/vue/solid";
+<script setup lang="ts">
+import { computed } from "vue";
 import NotificationItem from "./NotificationItem.vue";
-import { useNotifications } from "../composables/notifications";
+import { useNotifications } from "@/composables/notifications";
 
-export default defineComponent({
-  name: "AppNotifications",
-  components: {
-    NotificationItem,
-    InboxIcon,
-    XIcon,
-  },
-  setup() {
-    const { notifications, deleteNotification } = useNotifications();
+const { notifications, deleteNotification } = useNotifications();
 
-    return {
-      notificationsReversed: computed(() => [...notifications.value].reverse()),
-      deleteNotification,
-    };
-  },
-});
+const notificationsReversed = computed(() => [...notifications.value].reverse());
 </script>

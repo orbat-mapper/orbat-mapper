@@ -19,15 +19,12 @@
   </span>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from "vue";
+<script setup lang="ts">
+import { PropType } from "vue";
 import { ButtonGroupItem } from "./types";
 
-export default defineComponent({
-  name: "ButtonGroup",
-  props: {
-    items: { type: Array as PropType<ButtonGroupItem[]>, required: true },
-    small: { type: Boolean, default: false },
-  },
+const props = defineProps({
+  items: { type: Array as PropType<ButtonGroupItem[]>, required: true },
+  small: { type: Boolean, default: false },
 });
 </script>
