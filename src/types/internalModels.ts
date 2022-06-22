@@ -19,6 +19,7 @@ export interface NSideGroup extends Omit<SideGroup, "units"> {
 }
 
 export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id">> {}
+export interface UnitUpdate extends Partial<Omit<NUnit, "id">> {}
 
 export interface NOrbatItemData {
   unit: NUnit;

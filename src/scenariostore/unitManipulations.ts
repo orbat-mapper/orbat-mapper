@@ -7,6 +7,7 @@ import {
   NUnit,
   SideGroupUpdate,
   SideUpdate,
+  UnitUpdate,
 } from "@/types/internalModels";
 import { DropTarget } from "@/components/types";
 import { SID_INDEX, Sidc } from "@/symbology/sidc";
@@ -14,6 +15,8 @@ import { setCharAt } from "@/components/helpers";
 import { SID } from "@/symbology/values";
 import { SideGroup, Unit } from "@/types/scenarioModels";
 import { useScenarioStore } from "@/stores/scenarioStore";
+import { toRaw } from "vue";
+import { klona } from "klona";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -122,6 +125,15 @@ export function useUnitManipulations(store: NewScenarioStore) {
     update((s) => {
       let sideGroup = s.sideGroupMap[sideGroupId];
       if (sideGroup) Object.assign(sideGroup, { ...sideGroupData, _isNew: false });
+    });
+  }
+
+  function updateUnit(unitId: EntityId, data: UnitUpdate) {
+    update((s) => {
+      let unit = s.unitMap[unitId];
+      if (!unit) return;
+      Object.assign(unit, { ...data });
+      s.unitMap[unitId] = klona(unit);
     });
   }
 
@@ -352,5 +364,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     deleteSide,
     deleteSideGroup,
     createSubordinateUnit,
+    updateUnit,
   };
 }

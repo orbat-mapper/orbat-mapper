@@ -81,7 +81,7 @@
         class="mt-3 min-h-0"
       >
         <TabItem label="Unit details">
-          <UnitPanel :unit="activeUnit ? activeUnit : undefined" />
+          <UnitPanel :unit-id="activeUnitId" />
         </TabItem>
         <template #extra>
           <div class="flex pt-4">
@@ -140,7 +140,7 @@ import {
 import { GlobalEvents } from "vue-global-events";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import { useScenarioStore } from "@/stores/scenarioStore";
-import UnitPanel from "@/components/UnitPanel.vue";
+import UnitPanel from "./UnitPanel.vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
@@ -177,7 +177,7 @@ const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDial
 const ScenarioLayers = defineAsyncComponent(() => import("./ScenarioLayers.vue"));
 
 const props = defineProps<{ activeScenario: TScenario }>();
-const activeUnitId = ref<EntityId | undefined>();
+const activeUnitId = ref<EntityId | undefined | null>(null);
 
 provide(activeUnitKey, activeUnitId);
 provide(activeScenarioKey, props.activeScenario);
@@ -229,12 +229,9 @@ watch([showUnitPanel, showLayerPanel], (v) => {
   nextTick(() => geoStore.updateMapSize());
 });
 
-watch(
-  () => activeUnitStore.activeUnit,
-  (v) => {
-    if (v && currentScenarioTab.value === 0) showUnitPanel.value = true;
-  }
-);
+watch(activeUnitId, (v) => {
+  showUnitPanel.value = !!(v && currentScenarioTab.value === 0);
+});
 
 watch(currentScenarioTab, (value, prevValue) => {
   if (value === 1 && prevValue === 0) {

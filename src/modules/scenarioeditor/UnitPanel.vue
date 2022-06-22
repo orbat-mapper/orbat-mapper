@@ -1,0 +1,180 @@
+<template>
+  <div v-if="unit" class="">
+    <header class="flex">
+      <div class="h-20 w-16 flex-shrink-0">
+        <MilSymbol :sidc="form.sidc" :size="34" />
+      </div>
+      <p class="pt-2 font-medium">{{ unit.name }}</p>
+    </header>
+    <div class="mb-4 flex">
+      <BaseButton
+        :class="isEditMode && 'bg-gray-100 text-black'"
+        @click="toggleEditMode()"
+        >Edit
+      </BaseButton>
+      <SplitButton class="ml-2" :items="buttonItems" />
+    </div>
+
+    <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="mt-0 space-y-4">
+      <InputGroup label="Name" v-model="form.name" id="name-input" />
+      <InputGroup
+        label="Short name"
+        description="Alternative name"
+        v-model="form.shortName"
+      />
+      <InputGroup label="External URL" description="" v-model="form.externalUrl" />
+      <div class="w-full">
+        <SymbolPickerInput v-model="form.sidc" />
+      </div>
+      <SimpleMarkdownInput
+        label="Description"
+        v-model="form.description"
+        description="Use markdown syntax for formatting"
+      />
+
+      <div class="flex items-center justify-end space-x-2">
+        <BaseButton type="submit" small primary>Save</BaseButton>
+        <BaseButton small @click="toggleEditMode()">Cancel</BaseButton>
+      </div>
+    </form>
+    <div v-else class="mb-4 space-y-4">
+      <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
+      <DescriptionItem v-if="unit.shortName" label="Short name"
+        >{{ unit.shortName }}
+      </DescriptionItem>
+      <DescriptionItem v-if="unit.externalUrl" label="External URL"
+        ><a target="_blank" class="text-sm underline" :href="unit.externalUrl">{{
+          unit.externalUrl
+        }}</a></DescriptionItem
+      >
+      <DescriptionItem v-if="unit.description" label="Description">
+        <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
+      </DescriptionItem>
+    </div>
+
+    <UnitPanelState v-if="unit?.state?.length" :unit="unit" />
+    <GlobalEvents :filter="inputEventFilter" @keyup.e="doFormFocus" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
+import InputGroup from "@/components/InputGroup.vue";
+import { useGeoStore } from "@/stores/geoStore";
+import MilSymbol from "@/components/MilSymbol.vue";
+import { GlobalEvents } from "vue-global-events";
+import { inputEventFilter } from "@/components/helpers";
+import DescriptionItem from "@/components/DescriptionItem.vue";
+import { useToggle } from "@vueuse/core";
+import { renderMarkdown } from "@/composables/formatting";
+import UnitPanelState from "@/components/UnitPanelState.vue";
+import { useUnitActionsN } from "@/composables/scenarioActions";
+import { UnitActions } from "@/types/constants";
+import SymbolPickerInput from "@/components/SymbolPickerInput.vue";
+import SplitButton from "@/components/SplitButton.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import { EntityId } from "@/types/base";
+import { injectStrict, nanoid } from "@/utils";
+import { activeScenarioKey } from "@/components/injects";
+import { UnitUpdate } from "@/types/internalModels";
+
+const SimpleMarkdownInput = defineAsyncComponent(
+  () => import("@/components/SimpleMarkdownInput.vue")
+);
+
+const props = defineProps<{ unitId: EntityId }>();
+const activeScenario = injectStrict(activeScenarioKey);
+const {
+  store,
+  unitActions: { updateUnit },
+} = activeScenario;
+
+let form = ref<UnitUpdate>({
+  name: "",
+  shortName: "",
+  sidc: "",
+  description: "",
+  externalUrl: "",
+});
+const geoStore = useGeoStore();
+
+const isEditMode = ref(false);
+const toggleEditMode = useToggle(isEditMode);
+const nn = ref(nanoid());
+const unit = computed(() => {
+  return store.state.unitMap[props.unitId];
+});
+
+const onFormSubmit = () => {
+  updateUnit(props.unitId, form.value);
+  toggleEditMode();
+};
+
+const doFormFocus = async () => {
+  isEditMode.value = true;
+  await nextTick();
+  const inputElement = document.getElementById("name-input");
+  inputElement && inputElement.focus();
+};
+
+const hDescription = computed(() => renderMarkdown(unit.value.description || ""));
+
+const hasPosition = computed(() => Boolean(unit.value._state?.location));
+
+function updateForm() {
+  const { name, shortName, sidc, description, externalUrl } = unit.value;
+  form.value = { name, shortName, sidc, description, externalUrl };
+}
+
+updateForm();
+
+watch(
+  isEditMode,
+  (v) => {
+    if (!v) return;
+    updateForm();
+    if (v) nextTick(() => doFormFocus());
+  },
+  { immediate: true }
+);
+
+watch(
+  () => props.unitId,
+  () => updateForm()
+);
+
+const { onUnitAction } = useUnitActionsN();
+
+const buttonItems = computed(() => [
+  {
+    label: "Duplicate",
+    onClick: () => onUnitAction(unit.value, UnitActions.Clone),
+  },
+  {
+    label: "Move up",
+    onClick: () => onUnitAction(unit.value, UnitActions.MoveUp),
+  },
+  {
+    label: "Move down",
+    onClick: () => onUnitAction(unit.value, UnitActions.MoveDown),
+  },
+  {
+    label: "Create subordinate",
+    onClick: () => onUnitAction(unit.value, UnitActions.AddSubordinate),
+  },
+  {
+    label: "Zoom",
+    onClick: () => onUnitAction(unit.value, UnitActions.Zoom),
+    disabled: !hasPosition.value,
+  },
+  {
+    label: "Pan",
+    onClick: () => onUnitAction(unit.value, UnitActions.Pan),
+    disabled: !hasPosition.value,
+  },
+  {
+    label: "Delete",
+    onClick: () => onUnitAction(unit.value, UnitActions.Delete),
+  },
+]);
+</script>

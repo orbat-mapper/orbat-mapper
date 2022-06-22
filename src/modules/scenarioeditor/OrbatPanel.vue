@@ -27,42 +27,21 @@ import NOrbatSide from "@/components/NOrbatSide.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { SideActions, UnitActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
+import { useUnitActionsN } from "@/composables/scenarioActions";
 
-const { store, unitActions } = injectStrict(activeScenarioKey);
+const activeScenario = injectStrict(activeScenarioKey);
+const { store, unitActions } = activeScenario;
 const activeUnitId = injectStrict(activeUnitKey);
 
 const { state } = store;
-const {
-  deleteUnit,
-  walkSubUnits,
-  cloneUnit,
-  changeUnitParent,
-  createSubordinateUnit,
-  addSide,
-} = unitActions;
+const { changeUnitParent, addSide } = unitActions;
 
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
 });
 const showAdd = computed(() => sides.value.length < 2);
 
-function onUnitAction(unit: NUnit, action: UnitActions) {
-  console.log("On action", unit.name, action);
-  if (action === UnitActions.Delete) deleteUnit(unit.id);
-  if (action === UnitActions.Expand) {
-    walkSubUnits(
-      unit.id,
-      (unit1) => {
-        unit1._isOpen = true;
-      },
-      { includeParent: true }
-    );
-  }
-  if (action === UnitActions.Clone) cloneUnit(unit.id);
-  if (action === UnitActions.AddSubordinate) createSubordinateUnit(unit.id);
-  if (action === UnitActions.MoveUp) unitActions.reorderUnit(unit.id, "up");
-  if (action === UnitActions.MoveDown) unitActions.reorderUnit(unit.id, "down");
-}
+const { onUnitAction } = useUnitActionsN();
 
 function onUnitDrop(
   unit: NUnit,
@@ -73,8 +52,7 @@ function onUnitDrop(
 }
 
 function onUnitClick(unit: NUnit) {
-  console.log("On unit click", unit.name);
-  activeUnitId.value = unit.id;
+  activeUnitId.value = activeUnitId.value === unit.id ? null : unit.id;
 }
 
 function onSideAction(side: NSide, action: SideActions) {

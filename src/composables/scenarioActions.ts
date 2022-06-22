@@ -3,10 +3,14 @@ import { UnitActions } from "../types/constants";
 import { useScenarioStore } from "../stores/scenarioStore";
 import { useGeoStore } from "../stores/geoStore";
 import { useActiveUnitStore } from "../stores/dragStore";
-import { computed } from "vue";
+import { computed, Ref } from "vue";
 import { MenuItemData } from "../components/DotsMenu.vue";
 import { useUnitManipulationStore } from "../stores/scenarioManipulation";
-import { NOrbatItemData } from "../types/internalModels";
+import { NOrbatItemData, NUnit } from "../types/internalModels";
+import { TScenario } from "@/scenariostore";
+import { EntityId } from "@/types/base";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 
 export function useUnitActions() {
   const scenarioStore = useScenarioStore();
@@ -35,6 +39,47 @@ export function useUnitActions() {
         activeUnitStore.clearActiveUnit();
       }
       scenarioStore.deleteUnit(unit);
+    }
+  };
+  return { onUnitAction };
+}
+
+export function useUnitActionsN() {
+  const { unitActions } = injectStrict(activeScenarioKey);
+  const activeUnitId = injectStrict(activeUnitKey);
+  const geoStore = useGeoStore();
+
+  const onUnitAction = (unit: NUnit | undefined, action: UnitActions) => {
+    if (!unit) return;
+    if (action === UnitActions.AddSubordinate) {
+      unit._isOpen = true;
+      unitActions.createSubordinateUnit(unit.id);
+    }
+
+    // if (action === UnitActions.Zoom) geoStore.zoomToUnit(unit, 500);
+    // if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);
+    if (action === UnitActions.Edit) {
+      activeUnitId.value = unit.id;
+    }
+
+    action === UnitActions.Clone && unitActions.cloneUnit(unit.id);
+    action === UnitActions.MoveUp && unitActions.reorderUnit(unit.id, "up");
+    action === UnitActions.MoveDown && unitActions.reorderUnit(unit.id, "down");
+    if (action === UnitActions.Expand) {
+      unitActions.walkSubUnits(
+        unit.id,
+        (unit1) => {
+          unit1._isOpen = true;
+        },
+        { includeParent: true }
+      );
+    }
+
+    if (action === UnitActions.Delete) {
+      if (activeUnitId.value === unit.id) {
+        activeUnitId.value = null;
+      }
+      unitActions.deleteUnit(unit.id);
     }
   };
   return { onUnitAction };

@@ -73,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineEmits, onUnmounted, watch } from "vue";
+import { onUnmounted, watch } from "vue";
 import {
   Dialog,
   DialogOverlay,
