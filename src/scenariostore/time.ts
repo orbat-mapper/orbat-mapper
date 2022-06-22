@@ -41,6 +41,14 @@ export function useScenarioTime(store: NewScenarioStore) {
     setCurrentTime(newTime.valueOf());
   }
 
+  function jumpToNextEvent() {
+    console.warn("Not implemented yet");
+  }
+
+  function jumpToPrevEvent() {
+    console.warn("Not implemented yet");
+  }
+
   const utcTime = computed(() => {
     return dayjs.utc(state.currentTime);
   });
@@ -55,5 +63,14 @@ export function useScenarioTime(store: NewScenarioStore) {
     return zone;
   });
 
-  return { setCurrentTime, add, subtract, utcTime, scenarioTime, timeZone };
+  return {
+    setCurrentTime,
+    add,
+    subtract,
+    utcTime,
+    scenarioTime,
+    timeZone,
+    jumpToNextEvent,
+    jumpToPrevEvent,
+  };
 }

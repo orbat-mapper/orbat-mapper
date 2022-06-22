@@ -84,5 +84,5 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       fileName
     );
   }
-  return { loadDemoScenario, loadEmptyScenario };
+  return { loadDemoScenario, loadEmptyScenario, loadFromObject };
 }

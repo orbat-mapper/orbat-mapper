@@ -10,7 +10,8 @@ import {
   STORY_MODE_ROUTE,
 } from "@/router/names";
 
-const ScenarioEditor = () => import("../modules/scenarioeditor/ScenarioEditor.vue");
+const ScenarioEditorWrapper = () =>
+  import("../modules/scenarioeditor/ScenarioEditorWrapper.vue");
 const NewScenarioView = () => import("../modules/scenarioeditor/NewScenarioView.vue");
 const StoryModeView = () => import("../modules/storymode/StoryModeView.vue");
 const OrbatChartView = () => import("../modules/charteditor/OrbatChartView.vue");
@@ -22,7 +23,7 @@ const routes = [
   {
     path: "/scenario",
     name: SCENARIO_ROUTE,
-    component: ScenarioEditor,
+    component: ScenarioEditorWrapper,
     beforeEnter: (to, from) => {
       NProgress.start();
     },

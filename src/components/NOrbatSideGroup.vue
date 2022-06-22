@@ -59,9 +59,11 @@ import { DragOperations, SideActions, UnitActions } from "@/types/constants";
 import { useDragStore } from "@/stores/dragStore";
 import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./NEditSideGroupForm.vue";
-import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
+import { NSideGroup, NUnit } from "@/types/internalModels";
 import { ScenarioState } from "@/scenariostore/newScenarioStore";
 import { DropTarget } from "./types";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey } from "@/components/injects";
 
 interface Props {
   group: NSideGroup;
@@ -84,6 +86,8 @@ interface Emits {
 }
 const emit = defineEmits<Emits>();
 
+const { unitActions } = injectStrict(activeScenarioKey);
+
 const dragStore = useDragStore();
 const isDragOver = ref(false);
 
@@ -102,7 +106,7 @@ const sideGroupMenuItems: MenuItemData<SideActions>[] = [
 const onSideGroupAction = (group: NSideGroup, action: SideActions) => {
   if (action === SideActions.Expand) {
   } else if (action === SideActions.AddSubordinate) {
-    // unitManipulationStore.createSubordinateUnit(group);
+    emit("unit-action", group as unknown as NUnit, UnitActions.AddSubordinate);
   } else if (action === SideActions.Edit) {
     showEditForm.value = true;
   } else {

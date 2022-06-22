@@ -9,9 +9,11 @@ import {
   SideUpdate,
 } from "@/types/internalModels";
 import { DropTarget } from "@/components/types";
-import { SID_INDEX } from "@/symbology/sidc";
+import { SID_INDEX, Sidc } from "@/symbology/sidc";
 import { setCharAt } from "@/components/helpers";
 import { SID } from "@/symbology/values";
+import { SideGroup, Unit } from "@/types/scenarioModels";
+import { useScenarioStore } from "@/stores/scenarioStore";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -278,6 +280,40 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function createSubordinateUnit(parentId: EntityId) {
+    const parent = getUnitOrSideGroup(parentId);
+    if (!parent) return;
+    let sidc: Sidc;
+    if ("sidc" in parent) {
+      sidc = new Sidc(parent.sidc);
+      const echelon = +sidc.amplifierDescriptor;
+      if (echelon > 0) {
+        // Todo: Fix hard coded values
+        if (echelon === 8) {
+          // brigade
+          sidc.amplifierDescriptor = "6";
+        } else {
+          sidc.amplifierDescriptor = (echelon - 1).toString();
+        }
+      }
+    } else {
+      sidc = new Sidc("10031000000000000000");
+      const side = state.sideMap[parent._pid!];
+      sidc.standardIdentity = side?.standardIdentity || "0";
+    }
+    const newUnit: NUnit = {
+      name: parent.name + counter++,
+      sidc: sidc.toString(),
+      id: nanoid(),
+      state: [],
+      _state: null,
+      _pid: parent.id,
+      subUnits: [],
+    };
+    addUnit(newUnit, parentId);
+    parent._isOpen = true;
+  }
+
   function cloneUnit(unitId: EntityId) {
     const unit = state.unitMap[unitId];
     if (!unit) return;
@@ -315,5 +351,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     addSideGroup,
     deleteSide,
     deleteSideGroup,
+    createSubordinateUnit,
   };
 }

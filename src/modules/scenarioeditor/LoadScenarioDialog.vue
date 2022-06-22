@@ -25,58 +25,52 @@
   </SimpleModal>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from "vue";
+<script setup lang="ts">
+import { ref } from "vue";
 import { useVModel } from "@vueuse/core";
-import SimpleModal from "../../components/SimpleModal.vue";
-import { Scenario } from "../../types/scenarioModels";
+import SimpleModal from "@/components/SimpleModal.vue";
+import { type Scenario } from "@/types/scenarioModels";
 
-export default defineComponent({
-  name: "LoadScenarioDialog",
-  components: { SimpleModal },
-  props: {
-    modelValue: { type: Boolean, default: false },
-  },
-  emits: ["update:modelValue", "loaded"],
-  setup: function (props, { emit }) {
-    const open = useVModel(props, "modelValue");
-    const isDragOver = ref(false);
-    const isError = ref(false);
-
-    function readFile(file: File) {
-      const reader = new FileReader();
-
-      reader.onload = function (evt) {
-        const content = evt?.target?.result as string;
-
-        try {
-          const scenarioData = JSON.parse(content) as Scenario;
-          if (scenarioData?.type === "ORBAT-mapper") {
-            emit("loaded", scenarioData);
-            open.value = false;
-          }
-        } catch (e) {
-          console.error("Failed to load", file.name);
-          isError.value = true;
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    const onFileLoad = (e: Event) => {
-      const target = <HTMLInputElement>e.target;
-      if (!target?.files?.length) return;
-      const file = target.files[0];
-      if (file) readFile(file);
-    };
-
-    function onDrop(ev: DragEvent) {
-      const file = ev?.dataTransfer?.files[0];
-      if (file) readFile(file);
-      isDragOver.value = false;
-    }
-
-    return { open, onFileLoad, isDragOver, onDrop, isError };
-  },
+const props = defineProps({
+  modelValue: { type: Boolean, default: false },
 });
+const emit = defineEmits(["update:modelValue", "loaded"]);
+
+const open = useVModel(props, "modelValue");
+const isDragOver = ref(false);
+const isError = ref(false);
+
+function readFile(file: File) {
+  const reader = new FileReader();
+
+  reader.onload = function (evt) {
+    const content = evt?.target?.result as string;
+
+    try {
+      const scenarioData = JSON.parse(content) as Scenario;
+      if (scenarioData?.type === "ORBAT-mapper") {
+        console.log("do emit", scenarioData);
+        emit("loaded", scenarioData);
+        open.value = false;
+      }
+    } catch (e) {
+      console.error("Failed to load", file.name);
+      isError.value = true;
+    }
+  };
+  reader.readAsText(file);
+}
+
+const onFileLoad = (e: Event) => {
+  const target = <HTMLInputElement>e.target;
+  if (!target?.files?.length) return;
+  const file = target.files[0];
+  if (file) readFile(file);
+};
+
+function onDrop(ev: DragEvent) {
+  const file = ev?.dataTransfer?.files[0];
+  if (file) readFile(file);
+  isDragOver.value = false;
+}
 </script>
