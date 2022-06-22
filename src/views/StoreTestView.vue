@@ -82,22 +82,21 @@ onMounted(() => {
       <p class="-mt-6">
         Working on a new scenario store with undo and redo functionality.
       </p>
-
-      <div class="flex items-center space-x-2">
-        <BaseButton :disabled="!canUndo" @click="undo()">Undo</BaseButton>
-        <BaseButton :disabled="!canRedo" @click="redo()">Redo</BaseButton>
-        <BaseButton @click="unitActions.addSide()">Add side</BaseButton>
-        <BaseButton @click="toggleDark()"
-          ><span class="mr-1 h-4 w-4"><MoonIcon v-if="isDark" /><SunIcon v-else /></span
-          >Toggle
-        </BaseButton>
-        <BaseButton @click="io.loadEmptyScenario()">Empty</BaseButton>
-        <BaseButton @click="io.loadDemoScenario('falkland82')">Empty</BaseButton>
-        <BaseButton @click="time.add(1, 'day')">+1 day</BaseButton>
-        <BaseButton @click="time.subtract(1, 'day')">-1 day</BaseButton>
-        <span>{{ scenarioTime.format("YYYY-MM-DDTHH:mmZ") }}</span>
-      </div>
     </header>
+    <div class="mt-4 flex items-center space-x-2">
+      <BaseButton :disabled="!canUndo" @click="undo()">Undo</BaseButton>
+      <BaseButton :disabled="!canRedo" @click="redo()">Redo</BaseButton>
+      <BaseButton @click="unitActions.addSide()">Add side</BaseButton>
+      <BaseButton @click="toggleDark()"
+        ><span class="mr-1 h-4 w-4"><MoonIcon v-if="isDark" /><SunIcon v-else /></span
+        >Toggle
+      </BaseButton>
+      <BaseButton @click="io.loadEmptyScenario()">Load empty</BaseButton>
+      <BaseButton @click="io.loadDemoScenario('falkland82')">Load demo</BaseButton>
+      <BaseButton @click="time.add(1, 'day')">+1 day</BaseButton>
+      <BaseButton @click="time.subtract(1, 'day')">-1 day</BaseButton>
+      <span>{{ scenarioTime.format("YYYY-MM-DDTHH:mmZ") }}</span>
+    </div>
     <section class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div class="max-w-md">
         <NOrbatSide

@@ -46,7 +46,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         s.sideMap[newSide.id] = newSide;
         s.sides.push(newSide.id);
       });
-      addSideGroup(newSide.id);
+      addSideGroup(newSide.id, { name: "Units", _isNew: false });
     });
   }
 
@@ -59,7 +59,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         name: data.name || "New group",
         subUnits: [],
         _pid: sideId,
-        _isNew: true,
+        _isNew: data._isNew ?? true,
       };
       s.sideGroupMap[newSideGroup.id] = newSideGroup;
       side.groups.push(newSideGroup.id);
