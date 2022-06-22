@@ -51,6 +51,7 @@ function filterUnits(
 
   function helper(currentUnitId: EntityId, parentMatched: boolean) {
     const currentUnit = props.unitMap[currentUnitId] as NUnit;
+    if (!currentUnit) return [];
     let oi: NOrbatItemData = {
       unit: currentUnit,
       children: [],
@@ -76,7 +77,7 @@ function filterUnits(
       }
     }
     if (matched || childMatched || (parentMatched && !locationFilter)) {
-      children.push(oi);
+      oi && children.push(oi);
     }
     return children;
   }
