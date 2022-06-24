@@ -5,7 +5,7 @@
         start
         :end="!enableMeasurements"
         title="Toggle measurements"
-        @click="toggleMeasurements"
+        @click="toggleMeasurements()"
       >
         <RulerIcon class="h-5 w-5" :class="enableMeasurements && 'text-gray-900'" />
       </ToolbarButton>
