@@ -67,7 +67,7 @@ import { inputEventFilter } from "@/components/helpers";
 import DescriptionItem from "@/components/DescriptionItem.vue";
 import { useToggle } from "@vueuse/core";
 import { renderMarkdown } from "@/composables/formatting";
-import UnitPanelState from "@/components/UnitPanelState.vue";
+import UnitPanelState from "./UnitPanelState.vue";
 import { useUnitActionsN } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
 import SymbolPickerInput from "@/components/SymbolPickerInput.vue";

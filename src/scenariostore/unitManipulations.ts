@@ -13,10 +13,8 @@ import { DropTarget } from "@/components/types";
 import { SID_INDEX, Sidc } from "@/symbology/sidc";
 import { setCharAt } from "@/components/helpers";
 import { SID } from "@/symbology/values";
-import { SideGroup, Unit } from "@/types/scenarioModels";
-import { useScenarioStore } from "@/stores/scenarioStore";
-import { toRaw } from "vue";
 import { klona } from "klona";
+import { createInitialState } from "@/scenariostore/time";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -350,6 +348,34 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function deleteUnitStateEntry(unitId: EntityId, index: number) {
+    update((s) => {
+      const _unit = s.getUnitById(unitId);
+      if (!_unit) return;
+      _unit.state?.splice(index, 1);
+    });
+
+    updateUnitState(unitId);
+  }
+
+  function updateUnitState(unitId: EntityId, undoable = false) {
+    const unit = state.unitMap[unitId];
+    const timestamp = state.currentTime;
+    if (!unit.state || !unit.state.length) {
+      unit._state = createInitialState(unit);
+      return;
+    }
+    let tmpstate = createInitialState(unit);
+    for (const s of unit.state) {
+      if (s.t <= timestamp) {
+        tmpstate = s;
+      } else {
+        break;
+      }
+    }
+    unit._state = tmpstate;
+  }
+
   return {
     deleteUnit,
     changeUnitParent,
@@ -365,5 +391,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     deleteSideGroup,
     createSubordinateUnit,
     updateUnit,
+    deleteUnitStateEntry,
   };
 }

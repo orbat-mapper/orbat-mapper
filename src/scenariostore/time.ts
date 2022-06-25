@@ -1,10 +1,10 @@
 import { NewScenarioStore } from "./newScenarioStore";
-import { State } from "../types/scenarioModels";
-import { NUnit } from "../types/internalModels";
+import { State } from "@/types/scenarioModels";
+import { NUnit } from "@/types/internalModels";
 import dayjs, { ManipulateType } from "dayjs";
 import { computed } from "vue";
 
-function createInitialState(unit: NUnit): State | null {
+export function createInitialState(unit: NUnit): State | null {
   if (unit.location) return { t: Number.MIN_SAFE_INTEGER, location: unit.location };
   return null;
 }
