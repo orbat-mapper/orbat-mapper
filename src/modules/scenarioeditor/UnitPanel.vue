@@ -42,8 +42,8 @@
       <DescriptionItem v-if="unit.shortName" label="Short name"
         >{{ unit.shortName }}
       </DescriptionItem>
-      <DescriptionItem v-if="unit.externalUrl" label="External URL"
-        ><a target="_blank" class="text-sm underline" :href="unit.externalUrl">{{
+      <DescriptionItem v-if="unit.externalUrl" label="External URL" dd-class="truncate"
+        ><a target="_blank" class="underline" :href="unit.externalUrl">{{
           unit.externalUrl
         }}</a></DescriptionItem
       >
