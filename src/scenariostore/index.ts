@@ -3,6 +3,7 @@ import { NewScenarioStore } from "./newScenarioStore";
 import { useUnitManipulations } from "./unitManipulations";
 import { useScenarioIO } from "./io";
 import { useScenarioTime } from "./time";
+import { useGeo } from "@/scenariostore/geo";
 
 const nstore = shallowRef<NewScenarioStore>({} as any);
 
@@ -21,6 +22,7 @@ export function useScenario() {
         unitActions: useUnitManipulations(nstore.value!),
         time: useScenarioTime(nstore.value!),
         io: useIO(),
+        geo: useGeo(nstore.value),
       };
     }),
     isLoading,

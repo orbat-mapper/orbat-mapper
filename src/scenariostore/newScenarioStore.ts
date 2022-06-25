@@ -16,6 +16,7 @@ export interface ScenarioState {
   sides: EntityId[];
   info: ScenarioInfo;
   currentTime: number;
+  getUnitById: (id: EntityId) => NUnit;
 }
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
@@ -80,6 +81,9 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     unitMap,
     sideMap,
     sideGroupMap,
+    getUnitById(id: EntityId) {
+      return this.unitMap[id];
+    },
   };
 }
 

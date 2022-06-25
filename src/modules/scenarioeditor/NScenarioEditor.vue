@@ -90,7 +90,7 @@
         </template>
       </TabView>
     </aside>
-    <!--    <ScenarioMap class="flex-1" data-teleport-map />-->
+    <ScenarioMap class="flex-1" data-teleport-map />
     <PlainButton class="fixed right-4 top-4 opacity-80" @click="isOpen = !isOpen">
       <MenuIcon class="h-5 w-5 opacity-100" />
     </PlainButton>
@@ -172,6 +172,7 @@ import { EntityId } from "@/types/base";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
 import type { Scenario } from "@/types/scenarioModels";
+import ScenarioMap from "@/components/NScenarioMap.vue";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayers = defineAsyncComponent(() => import("./ScenarioLayers.vue"));

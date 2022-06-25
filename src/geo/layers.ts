@@ -10,6 +10,7 @@ import { PointVectorLayer } from "./types";
 import View from "ol/View";
 import { nanoid } from "../utils";
 import { LayerType } from "../composables/scenarioLayers";
+import { NUnit } from "@/types/internalModels";
 
 export function createUnitLayer(): PointVectorLayer {
   return new VectorLayer({
@@ -32,7 +33,10 @@ export function createHistoryLayer(): VectorLayer<VectorSource<Point | LineStrin
   });
 }
 
-export function createUnitFeatureAt(position: Coordinate, unit: Unit): Feature<Point> {
+export function createUnitFeatureAt(
+  position: Coordinate,
+  unit: Unit | NUnit
+): Feature<Point> {
   const geometry = new Point(fromLonLat(position));
   const { sidc, name, id, shortName } = unit;
   const feature = new Feature<Point>({ geometry, sidc, name, id, shortName });

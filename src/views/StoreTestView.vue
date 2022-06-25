@@ -15,7 +15,7 @@ import { TScenario } from "@/scenariostore";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 
-const { store, unitActions, time, io } = props.activeScenario;
+const { store, unitActions, time, io, geo } = props.activeScenario;
 const { deleteUnit, walkSubUnits, changeUnitParent, cloneUnit } = unitActions;
 const { state, update, undo, redo, canRedo, canUndo } = store!;
 const { utcTime, scenarioTime, timeZone } = time;
@@ -111,6 +111,7 @@ onMounted(() => {
         />
       </div>
       <div class="prose">
+        <pre>{{ geo.everyVisibleUnit }}</pre>
         <pre>{{ store.state }}</pre>
       </div>
     </section>
