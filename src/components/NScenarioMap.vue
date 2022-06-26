@@ -48,7 +48,7 @@ import MeasurementToolbar from "./MeasurementToolbar.vue";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
 import { useOlEvent } from "@/composables/openlayersHelpers";
-import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers";
+import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 
@@ -80,7 +80,7 @@ const onMapReady = (olMap: OLMap) => {
     layers: [unitLayer],
   });
 
-  // const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
+  const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
 
   historyLayer.set("title", "History");
   olMap.addLayer(historyLayer);
@@ -101,7 +101,7 @@ const onMapReady = (olMap: OLMap) => {
   drawUnits();
   drawHistory();
 
-  // loadScenarioLayers();
+  loadScenarioLayers();
   const extent = unitLayer.getSource()?.getExtent();
   if (extent && !unitLayer.getSource()?.isEmpty())
     olMap.getView().fit(extent, { padding: [10, 10, 10, 10] });

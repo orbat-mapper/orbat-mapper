@@ -29,14 +29,14 @@
           <ScenarioInfoPanel />
         </TabItem>
         <TabItem label="Layers" v-slot="{ isActive }">
-          <!--          <keep-alive>-->
-          <!--            <ScenarioLayers-->
-          <!--              v-if="isActive"-->
-          <!--              v-model="showLayerPanel"-->
-          <!--              :active-layer-id="activeLayerId"-->
-          <!--              :active-feature-id="activeFeatureId"-->
-          <!--            />-->
-          <!--          </keep-alive>-->
+          <keep-alive>
+            <ScenarioLayers
+              v-if="isActive"
+              v-model="showLayerPanel"
+              :active-layer-id="activeLayerId"
+              :active-feature-id="activeFeatureId"
+            />
+          </keep-alive>
         </TabItem>
         <template #extra>
           <DotsMenu
@@ -141,7 +141,7 @@ import { GlobalEvents } from "vue-global-events";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import { useScenarioStore } from "@/stores/scenarioStore";
 import UnitPanel from "./UnitPanel.vue";
-import { useActiveUnitStore, useActiveUnitStore2 } from "@/stores/dragStore";
+import { useActiveUnitStore2 } from "@/stores/dragStore";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
@@ -175,7 +175,7 @@ import type { Scenario } from "@/types/scenarioModels";
 import ScenarioMap from "@/components/NScenarioMap.vue";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
-const ScenarioLayers = defineAsyncComponent(() => import("./ScenarioLayers.vue"));
+const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"));
 
 const props = defineProps<{ activeScenario: TScenario }>();
 const activeUnitId = ref<EntityId | undefined | null>(null);

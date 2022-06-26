@@ -5,8 +5,15 @@ import { nanoid } from "../utils";
 import { walkSide } from "../stores/scenarioStore";
 import { klona } from "klona";
 import { EntityId } from "../types/base";
-import { NSide, NSideGroup, NUnit } from "../types/internalModels";
+import {
+  NScenarioFeature,
+  NScenarioLayer,
+  NSide,
+  NSideGroup,
+  NUnit,
+} from "../types/internalModels";
 import { useScenarioTime } from "./time";
+import { FeatureId, ScenarioFeature, ScenarioLayer } from "@/types/scenarioGeoModels";
 
 export interface ScenarioState {
   id: EntityId;
@@ -14,6 +21,9 @@ export interface ScenarioState {
   sideMap: Record<EntityId, NSide>;
   sideGroupMap: Record<EntityId, NSideGroup>;
   sides: EntityId[];
+  layers: FeatureId[];
+  layerMap: Record<FeatureId, NScenarioLayer>;
+  featureMap: Record<FeatureId, NScenarioFeature>;
   info: ScenarioInfo;
   currentTime: number;
   getUnitById: (id: EntityId) => NUnit;
@@ -26,6 +36,9 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const sideMap: Record<EntityId, NSide> = {};
   const sideGroupMap: Record<EntityId, NSideGroup> = {};
   const sides: EntityId[] = [];
+  const layers: FeatureId[] = [];
+  const layerMap: Record<FeatureId, NScenarioLayer> = {};
+  const featureMap: Record<FeatureId, NScenarioFeature> = {};
 
   if (scenario.startTime !== undefined) {
     scenario.startTime = +dayjs(scenario.startTime);
@@ -73,7 +86,18 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     symbologyStandard: scenario.symbologyStandard,
   };
 
+  scenario.layers.forEach((layer) => {
+    layers.push(layer.id);
+    layerMap[layer.id] = { ...layer, features: layer.features.map((f) => f.id) };
+    layer.features.forEach((feature) => {
+      featureMap[feature.id] = { ...feature, _pid: layer.id };
+    });
+  });
+
   return {
+    layers,
+    layerMap,
+    featureMap,
     id: nanoid(),
     currentTime: scenario.startTime || 0,
     info,

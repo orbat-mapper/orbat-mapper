@@ -111,7 +111,7 @@ onMounted(() => {
         />
       </div>
       <div class="prose">
-        <pre>{{ geo.everyVisibleUnit }}</pre>
+        <pre>{{ geo.layers }}</pre>
         <pre>{{ store.state }}</pre>
       </div>
     </section>

@@ -1,5 +1,5 @@
 import { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
-import { SimpleStyleSpec } from "../geo/simplestyle";
+import { SimpleStyleSpec } from "@/geo/simplestyle";
 
 export type FeatureId = string | number;
 export type Position = number[];

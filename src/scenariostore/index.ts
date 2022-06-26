@@ -19,8 +19,8 @@ export function useScenario() {
     scenario: computed(() => {
       return {
         store: nstore.value,
-        unitActions: useUnitManipulations(nstore.value!),
-        time: useScenarioTime(nstore.value!),
+        unitActions: useUnitManipulations(nstore.value),
+        time: useScenarioTime(nstore.value),
         io: useIO(),
         geo: useGeo(nstore.value),
       };
