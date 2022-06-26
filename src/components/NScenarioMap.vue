@@ -4,7 +4,7 @@
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"
       :filter="inputEventFilter"
-      @keyup.z="onItemZoom"
+      @keyup.z.exact="onItemZoom"
       @keyup.p="onItemPan"
     />
     <MeasurementToolbar v-if="mapRef" class="absolute left-3 bottom-4" :ol-map="mapRef" />
