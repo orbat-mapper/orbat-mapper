@@ -141,7 +141,7 @@ import { GlobalEvents } from "vue-global-events";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import { useScenarioStore } from "@/stores/scenarioStore";
 import UnitPanel from "./UnitPanel.vue";
-import { useActiveUnitStore } from "@/stores/dragStore";
+import { useActiveUnitStore, useActiveUnitStore2 } from "@/stores/dragStore";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
@@ -197,9 +197,12 @@ const showSearch = ref(false);
 const showLoadModal = ref(false);
 const shortcutsModalVisible = ref(false);
 const currentScenarioTab = ref(0);
-const activeUnitStore = useActiveUnitStore();
+const activeUnitStore = useActiveUnitStore2({
+  activeScenario: props.activeScenario,
+  activeUnitId,
+});
 const uiStore = useUiStore();
-const { activeUnit } = toRefs(activeUnitStore);
+
 const originalTitle = useTitle().value;
 const windowTitle = computed(() => scenarioStore.scenario.name);
 const { send } = useNotifications();
@@ -211,10 +214,10 @@ const showLayerPanel = ref(false);
 const activeLayerId = ref<FeatureId | null>(null);
 const activeFeatureId = ref<FeatureId | null>(null);
 
-// oobUnitClickBus.on((unit) => {
-//   activeUnitStore.toggleActiveUnit(unit);
-//   if (!activeUnitStore.activeUnit) showUnitPanel.value = false;
-// });
+oobUnitClickBus.on((unit) => {
+  activeUnitStore.toggleActiveUnit(unit);
+  if (!activeUnitStore.activeUnit) showUnitPanel.value = false;
+});
 
 const isDark = useDark();
 const toggleDark = useToggle(isDark);

@@ -1,6 +1,6 @@
 import { customAlphabet } from "nanoid";
 import { EntityId } from "@/types/base";
-import { inject, InjectionKey } from "vue";
+import { getCurrentInstance, inject, InjectionKey } from "vue";
 
 export function groupBy<T extends object, K extends keyof T>(arr: T[], key: K) {
   return arr.reduce((acc, item) => {
@@ -59,4 +59,10 @@ export function injectStrict<T>(key: InjectionKey<T>, fallback?: T) {
   }
 
   return resolved;
+}
+
+export function injectStrictWithSelf<T>(key: InjectionKey<T>): T | undefined {
+  const vm = getCurrentInstance() as any;
+
+  return vm?.provides[key as any] || injectStrict(key);
 }

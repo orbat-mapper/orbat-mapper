@@ -93,17 +93,17 @@
 <script setup lang="ts">
 import { computed, inject, ref } from "vue";
 import MilSymbol from "./MilSymbol.vue";
-import { Unit } from "../types/scenarioModels";
+import { Unit } from "@/types/scenarioModels";
 //@ts-ignore
 import { ChevronRightIcon } from "@heroicons/vue/solid";
-import { useActiveUnitStore, useDragStore } from "../stores/dragStore";
-import { DragOperations, UnitActions } from "../types/constants";
+import { useActiveUnitStore2, useDragStore } from "@/stores/dragStore";
+import { DragOperations, UnitActions } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
-import { useUnitMenu } from "../composables/scenarioActions";
-import { useSettingsStore } from "../stores/settingsStore";
+import { useUnitMenu } from "@/composables/scenarioActions";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { activeUnitKey } from "./injects";
 import type { DropTarget } from "./types";
-import type { NOrbatItemData, NUnit } from "../types/internalModels";
+import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 
 interface Props {
   item: NOrbatItemData;
@@ -173,7 +173,7 @@ const onDrop = (ev: DragEvent) => {
   isOpen.value = true;
 };
 
-const activeUnitStore = useActiveUnitStore();
+const activeUnitStore = useActiveUnitStore2();
 
 const onUnitMenuAction = async (unit: NUnit, action: UnitActions) => {
   emit("unit-action", unit, action);
@@ -189,7 +189,7 @@ const onUnitDrop = (unit: NUnit, destinationUnit: NUnit, target: DropTarget) =>
 const isActiveUnit = computed(() => activeUnitId?.value === props.item.unit.id);
 
 const hasActiveChildren = computed(() =>
-  Boolean(activeUnitStore?.activeUnitParents?.includes(props.item.unit.id))
+  activeUnitStore.activeUnitParentIds.value.includes(props.item.unit.id)
 );
 
 const { unitMenuItems: menuItems } = useUnitMenu(props.item);
