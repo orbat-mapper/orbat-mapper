@@ -81,7 +81,7 @@
         class="mt-3 min-h-0"
       >
         <TabItem label="Unit details">
-          <UnitPanel :unit-id="activeUnitId" />
+          <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" />
         </TabItem>
         <template #extra>
           <div class="flex pt-4">
@@ -150,7 +150,7 @@ import PlainButton from "@/components/PlainButton.vue";
 
 import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
 import { inputEventFilter } from "@/components/helpers";
-import SearchModal from "@/components/SearchModal.vue";
+import SearchModal from "@/components/NSearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useScenarioIO } from "@/stores/scenarioIO";
 import { useUiStore } from "@/stores/uiStore";
@@ -211,10 +211,10 @@ const showLayerPanel = ref(false);
 const activeLayerId = ref<FeatureId | null>(null);
 const activeFeatureId = ref<FeatureId | null>(null);
 
-oobUnitClickBus.on((unit) => {
-  activeUnitStore.toggleActiveUnit(unit);
-  if (!activeUnitStore.activeUnit) showUnitPanel.value = false;
-});
+// oobUnitClickBus.on((unit) => {
+//   activeUnitStore.toggleActiveUnit(unit);
+//   if (!activeUnitStore.activeUnit) showUnitPanel.value = false;
+// });
 
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
@@ -251,20 +251,17 @@ const duplicateUnit = () => {
 
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 
-const onUnitSelect = (unitId: string) => {
-  const unit = scenarioStore.getUnitById(unitId);
-  if (unit) {
-    currentScenarioTab.value = 0;
-    activeUnit.value = unit;
-    const { parents } = scenarioStore.getUnitHierarchy(unit);
-    parents.forEach((p) => (p._isOpen = true));
-    nextTick(() => {
-      const el = document.getElementById(`o-${unitId}`);
-      if (el) {
-        el.scrollIntoView();
-      }
-    });
-  }
+const onUnitSelect = (unitId: EntityId) => {
+  currentScenarioTab.value = 0;
+  activeUnitId.value = unitId;
+  const { parents } = unitActions.getUnitHierarchy(unitId);
+  parents.forEach((p) => (p._isOpen = true));
+  nextTick(() => {
+    const el = document.getElementById(`o-${unitId}`);
+    if (el) {
+      el.scrollIntoView();
+    }
+  });
 };
 
 const onLayerSelect = (layerId: FeatureId) => {

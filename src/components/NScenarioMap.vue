@@ -48,7 +48,7 @@ import MeasurementToolbar from "./MeasurementToolbar.vue";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
 import { useOlEvent } from "@/composables/openlayersHelpers";
-import { useScenarioLayers } from "@/composables/scenarioLayers";
+import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 

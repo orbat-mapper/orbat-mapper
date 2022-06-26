@@ -15,6 +15,7 @@ import { setCharAt } from "@/components/helpers";
 import { SID } from "@/symbology/values";
 import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
+import { computed } from "vue";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -392,5 +393,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     createSubordinateUnit,
     updateUnit,
     deleteUnitStateEntry,
+    units: computed(() => Object.values(state.unitMap)),
+    getUnitById: (id: EntityId) => state.unitMap[id],
   };
 }

@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 
 import { Unit } from "../types/scenarioModels";
 import { useScenarioStore } from "./scenarioStore";
+import { NUnit } from "@/types/internalModels";
 
 export const useDragStore = defineStore("drag", {
   state: () => ({
@@ -30,11 +31,11 @@ export const useActiveUnitStore = defineStore("activeUnit", {
       this.activeUnit = unit;
     },
 
-    toggleActiveUnit(unit: Unit) {
+    toggleActiveUnit(unit: Unit | NUnit) {
       if (this.activeUnit && this.activeUnit.id === unit.id) {
         this.clearActiveUnit();
       } else {
-        this.activeUnit = unit;
+        this.activeUnit = unit as Unit;
       }
     },
   },
