@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { markRaw, onUnmounted, shallowRef, watch } from "vue";
+import { computed, markRaw, onUnmounted, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { GlobalEvents } from "vue-global-events";
@@ -50,11 +50,18 @@ import ToolbarButton from "./ToolbarButton.vue";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { useScenarioLayers } from "@/composables/scenarioLayers";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+
+const {
+  geo,
+  store: { state },
+} = injectStrict(activeScenarioKey);
+
+const activeUnitId = injectStrict(activeUnitKey);
 
 const mapRef = shallowRef<OLMap>();
 let selectedFeatures: Collection<Feature<Point>> = new Collection<Feature<Point>>();
-const { geo } = injectStrict(activeScenarioKey);
+
 const { unitLayer, drawUnits } = useUnitLayer();
 const activeUnitStore = useActiveUnitStore();
 const historyLayer = createHistoryLayer();
@@ -118,6 +125,10 @@ const drawHistory = () => {
   historyLayerSource.addFeature(historyFeature);
 };
 
+const activeUnit = computed(
+  () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null
+);
+
 watch(geo.everyVisibleUnit, () => {
   drawUnits();
   drawHistory();
@@ -131,11 +142,11 @@ watch(settingsStore, () => {
 const { onDrop } = useDrop(mapRef, unitLayer);
 
 const onItemZoom = () => {
-  geoStore.zoomToUnit(activeUnitStore.activeUnit);
+  geoStore.zoomToUnit(activeUnit.value);
 };
 
 const onItemPan = () => {
-  geoStore.panToUnit(activeUnitStore.activeUnit);
+  geoStore.panToUnit(activeUnit.value);
 };
 
 onUnmounted(() => {

@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps } from "vue";
+import { computed } from "vue";
 import { State } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
 import { CrosshairsGps } from "mdue";

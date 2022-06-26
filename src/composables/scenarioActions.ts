@@ -56,8 +56,8 @@ export function useUnitActionsN() {
       unitActions.createSubordinateUnit(unit.id);
     }
 
-    // if (action === UnitActions.Zoom) geoStore.zoomToUnit(unit, 500);
-    // if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);
+    if (action === UnitActions.Zoom) geoStore.zoomToUnit(unit, 500);
+    if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);
     if (action === UnitActions.Edit) {
       activeUnitId.value = unit.id;
     }

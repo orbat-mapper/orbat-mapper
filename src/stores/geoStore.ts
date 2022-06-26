@@ -3,13 +3,14 @@ import OLMap from "ol/Map";
 import { Unit } from "../types/scenarioModels";
 import { fromLonLat } from "ol/proj";
 import { MeasurementTypes } from "../composables/geoMeasurement";
+import { NUnit } from "@/types/internalModels";
 
 export const useGeoStore = defineStore("geo", {
   state: () => ({
     olMap: null as OLMap | null | undefined,
   }),
   actions: {
-    zoomToUnit(unit?: Unit | null, duration = 900) {
+    zoomToUnit(unit?: Unit | NUnit | null, duration = 900) {
       const location = unit?._state?.location;
       if (!location) return;
       const view = this.olMap!.getView();
@@ -20,7 +21,7 @@ export const useGeoStore = defineStore("geo", {
       });
     },
 
-    panToUnit(unit?: Unit | null, duration = 900) {
+    panToUnit(unit?: Unit | NUnit | null, duration = 900) {
       const location = unit?._state?.location;
       if (!location) return;
       const view = this.olMap!.getView();
