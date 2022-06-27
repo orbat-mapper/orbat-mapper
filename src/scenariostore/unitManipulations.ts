@@ -45,13 +45,16 @@ export function useUnitManipulations(store: NewScenarioStore) {
       groups: [],
       _isNew: true,
     };
-    groupUpdate(() => {
-      update((s) => {
-        s.sideMap[newSide.id] = newSide;
-        s.sides.push(newSide.id);
-      });
-      addSideGroup(newSide.id, { name: "Units", _isNew: false });
-    });
+    groupUpdate(
+      () => {
+        update((s) => {
+          s.sideMap[newSide.id] = newSide;
+          s.sides.push(newSide.id);
+        });
+        addSideGroup(newSide.id, { name: "Units", _isNew: false });
+      },
+      { label: "addSide", value: newSide.id }
+    );
   }
 
   function addSideGroup(sideId: EntityId, data: Partial<NSideGroup> = {}) {

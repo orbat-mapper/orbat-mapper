@@ -1,7 +1,7 @@
 /**
  * A custom store based on https://github.com/Korijn/vue-store
  */
-
+import { createEventHook } from "@vueuse/core";
 import { computed, reactive, shallowReactive, toRaw } from "vue";
 import type { Patch } from "immer";
 import { enablePatches, produceWithPatches, setAutoFreeze } from "immer";
@@ -16,9 +16,15 @@ function applyPatchWrapper<T>(state: T, patches: Patch[]) {
   applyPatch(state, convertedPatches);
 }
 
+export interface MetaEntry {
+  label: string;
+  value: string | number;
+}
+
 interface UndoEntry {
   patches: Patch[];
   inversePatches: Patch[];
+  meta?: MetaEntry;
 }
 
 export function useImmerStore<T extends object>(baseState: T) {
@@ -30,15 +36,18 @@ export function useImmerStore<T extends object>(baseState: T) {
   const canUndo = computed(() => past.length > 0);
   const canRedo = computed(() => future.length > 0);
 
-  const update = (updater: (currentState: T) => void) => {
+  const undoHook = createEventHook<{ patch: Patch[]; meta?: MetaEntry }>();
+  const redoHook = createEventHook<{ patch: Patch[]; meta?: MetaEntry }>();
+
+  const update = (updater: (currentState: T) => void, meta?: MetaEntry) => {
     const [, patches, inversePatches] = produceWithPatches(toRaw(state), updater);
     if (patches.length === 0) return;
     applyPatchWrapper(state, patches);
-    past.push({ patches, inversePatches });
+    past.push({ patches, inversePatches, meta });
     future.splice(0);
   };
 
-  function groupUpdate(updates: () => void) {
+  function groupUpdate(updates: () => void, meta?: MetaEntry) {
     const preLength = past.length;
     updates();
     const diff = past.length - preLength;
@@ -51,22 +60,24 @@ export function useImmerStore<T extends object>(baseState: T) {
       mergedPatches.push(...patches);
       mergedInversePatches.push(...inversePatches);
     });
-    past.push({ patches: mergedPatches, inversePatches: mergedInversePatches });
+    past.push({ patches: mergedPatches, inversePatches: mergedInversePatches, meta });
   }
 
   const undo = () => {
     if (!canUndo.value) return false;
-    const { patches, inversePatches } = past.pop()!;
+    const { patches, inversePatches, meta } = past.pop()!;
     applyPatchWrapper(state, inversePatches);
     future.unshift({ patches, inversePatches });
+    undoHook.trigger({ patch: inversePatches, meta });
     return true;
   };
 
   const redo = () => {
     if (!canRedo.value) return false;
-    const { patches, inversePatches } = future.shift()!;
+    const { patches, inversePatches, meta } = future.shift()!;
     applyPatchWrapper(state, patches);
     past.push({ patches, inversePatches });
+    redoHook.trigger({ patch: patches, meta });
     return true;
   };
 
@@ -78,5 +89,7 @@ export function useImmerStore<T extends object>(baseState: T) {
     canRedo,
     canUndo,
     groupUpdate,
+    onUndo: undoHook.on,
+    onRedo: redoHook.on,
   };
 }

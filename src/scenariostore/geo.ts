@@ -1,11 +1,11 @@
 import { NewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { computed } from "vue";
 import { State, Unit } from "@/types/scenarioModels";
-import { FeatureId, Position } from "@/types/scenarioGeoModels";
+import { FeatureId, Position, ScenarioLayer } from "@/types/scenarioGeoModels";
 import { EntityId } from "@/types/base";
 import { NScenarioLayer, ScenarioLayerUpdate } from "@/types/internalModels";
 import { klona } from "klona";
-import { nanoid } from "@/utils";
+import { nanoid, removeElement } from "@/utils";
 
 export function useGeo(store: NewScenarioStore) {
   const { state, update } = store;
@@ -47,6 +47,12 @@ export function useGeo(store: NewScenarioStore) {
     return state.layerMap[newLayer.id];
   }
 
+  function getFullLayer(layerId: FeatureId): ScenarioLayer | undefined {
+    const layer = state.layerMap[layerId];
+    if (!layer) return;
+    return { ...layer, features: layer.features.map((f) => klona(state.featureMap[f])) };
+  }
+
   const layers = computed(() => {
     return state.layers
       .map((layerId) => state.layerMap[layerId])
@@ -56,10 +62,38 @@ export function useGeo(store: NewScenarioStore) {
       }));
   });
 
-  function updateLayer(layerId: FeatureId, data: ScenarioLayerUpdate) {
-    update((s) => {
-      const layer = s.layerMap[layerId];
+  function updateLayer(layerId: FeatureId, data: ScenarioLayerUpdate, undoable = true) {
+    if (undoable) {
+      update((s) => {
+        const layer = s.layerMap[layerId];
+        Object.assign(layer, data);
+      });
+    } else {
+      const layer = state.layerMap[layerId];
       Object.assign(layer, data);
+    }
+  }
+
+  function deleteLayer(layerId: FeatureId) {
+    update(
+      (s) => {
+        const layer = s.layerMap[layerId];
+        if (!layer) return;
+        layer.features.forEach((featureId) => delete s.featureMap[featureId]);
+        delete s.layerMap[layerId];
+        removeElement(layerId, s.layers);
+      },
+      { label: "deleteLayer", value: layerId }
+    );
+  }
+
+  function deleteFeature(featureId: FeatureId) {
+    const feature = state.featureMap[featureId];
+    if (!feature) return;
+    update((s) => {
+      const layer = s.layerMap[feature._pid];
+      delete s.featureMap[featureId];
+      removeElement(featureId, layer.features);
     });
   }
 
@@ -68,11 +102,14 @@ export function useGeo(store: NewScenarioStore) {
     addUnitPosition,
     addLayer,
     getLayerById: (id: FeatureId) => state.layerMap[id],
+    getFullLayer,
     getFeatureById: (id: FeatureId) => {
       const feature = state.featureMap[id];
       return { feature, layer: state.layerMap[feature._pid] };
     },
     updateLayer,
+    deleteLayer,
     layers,
+    deleteFeature,
   };
 }

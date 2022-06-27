@@ -38,7 +38,10 @@ const props = defineProps<{
 }>();
 const emit = defineEmits(["update:modelValue"]);
 
-const { geo } = injectStrict(activeScenarioKey);
+const {
+  geo,
+  store: { onUndo },
+} = injectStrict(activeScenarioKey);
 
 const showLayerPanel = useVModel(props, "modelValue", emit);
 
@@ -71,6 +74,16 @@ const {
 
 const { selectedIds, selectedFeatures, select } = useScenarioFeatureSelect(mapRef, {
   enable: isSelectActive,
+});
+
+onUndo(({ meta, patch }) => {
+  if (!meta) return;
+  const { label, value } = meta;
+  if (label === "deleteLayer") {
+    const layer = geo.getLayerById(value);
+    addLayer(layer, true);
+  }
+  console.log("Undo", meta, patch);
 });
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);

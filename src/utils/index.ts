@@ -1,6 +1,7 @@
 import { customAlphabet } from "nanoid";
 import { EntityId } from "@/types/base";
 import { getCurrentInstance, inject, InjectionKey } from "vue";
+import { FeatureId } from "@/types/scenarioGeoModels";
 
 export function groupBy<T extends object, K extends keyof T>(arr: T[], key: K) {
   return arr.reduce((acc, item) => {
@@ -44,7 +45,10 @@ export function moveElement<T>(array: T[], element: T, delta: number) {
   array.splice(indexes[0], 2, array[indexes[1]], array[indexes[0]]);
 }
 
-export function removeElement(value: EntityId, array: EntityId[]) {
+export function removeElement(
+  value: EntityId | FeatureId,
+  array: (EntityId | FeatureId)[]
+) {
   const index = array.indexOf(value);
   if (index > -1) {
     array.splice(index, 1);

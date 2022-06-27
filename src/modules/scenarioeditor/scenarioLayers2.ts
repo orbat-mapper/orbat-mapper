@@ -90,6 +90,7 @@ function createScenarioLayerFeatures(
   featureProjection: ProjectionLike
 ) {
   const gjson = new GeoJSON({
+    dataProjection: "EPSG:4326",
     featureProjection,
   });
   const olFeatures: Feature[] = [];
@@ -111,7 +112,10 @@ function createScenarioLayerFeatures(
       f.setId(feature.id);
       olFeatures.push(f);
     } else {
-      const f = gjson.readFeature(feature);
+      const f = gjson.readFeature(feature, {
+        featureProjection: "EPSG:3857",
+        dataProjection: "EPSG:4326",
+      });
       olFeatures.push(f);
     }
   });
@@ -210,11 +214,9 @@ export function useScenarioLayers(olMap: OLMap) {
       .find((e) => e.get("id") === id) as VectorLayer<any>;
   }
 
-  function addLayer(newLayer: NScenarioLayer) {
-    geo.addLayer(newLayer);
-    scenarioLayersOl.push(
-      createScenarioVectorLayer(newLayer as ScenarioLayer, projection)
-    );
+  function addLayer(newLayer: NScenarioLayer, isRedo = false) {
+    const addedLayer = isRedo ? newLayer : geo.addLayer(newLayer);
+    scenarioLayersOl.push(createScenarioVectorLayer(geo.getFullLayer(addedLayer.id)!));
     return newLayer;
   }
 
@@ -248,7 +250,7 @@ export function useScenarioLayers(olMap: OLMap) {
       getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
     if (!(olFeature && layer)) return;
     layer.getSource()?.removeFeature(olFeature);
-    layersStore.removeFeature(feature, scenarioLayer);
+    geo.deleteFeature(feature.id);
   }
 
   function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
@@ -299,7 +301,7 @@ export function useScenarioLayers(olMap: OLMap) {
     if (!olLayer) return;
     scenarioLayersGroup.getLayers().remove(olLayer);
     olLayer.getSource().clear();
-    layersStore.removeLayer(layer);
+    geo.deleteLayer(layer.id);
   }
 
   function updateLayer(scenarioLayer: ScenarioLayer, data: ScenarioLayerUpdate) {
@@ -343,17 +345,12 @@ export function useScenarioLayers(olMap: OLMap) {
     if (!olLayer) return;
     const isVisible = olLayer.getVisible();
     olLayer.setVisible(!isVisible);
-    layersStore.updateLayer(scenarioLayer, { isHidden: isVisible });
+    geo.updateLayer(scenarioLayer.id, { isHidden: isVisible }, false);
   }
 
-  function getFeatureLayer(feature: ScenarioFeature): ScenarioLayer | undefined | null {
-    const cached = featureLayerCache.get(feature.id);
-    if (cached) return cached;
-    const { layer } = layersStore.getFeatureById(feature.id) || {};
-    if (layer) {
-      featureLayerCache.set(feature.id, layer);
-      return layer;
-    }
+  function getFeatureLayer(feature: ScenarioFeature): NScenarioLayer | undefined | null {
+    const { layer } = geo.getFeatureById(feature.id) || {};
+    return layer;
   }
 
   return {
@@ -418,6 +415,7 @@ function convertOlFeatureToScenarioFeature(olFeature: Feature): ScenarioFeature 
 }
 
 export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
+  const { geo } = injectStrict(activeScenarioKey);
   const layerStore = useScenarioLayersStore();
   const eventKeys = [] as EventsKey[];
 
@@ -425,8 +423,7 @@ export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
     eventKeys.push(
       l.on("change:visible", (event) => {
         const isVisible = l.getVisible();
-        const scenarioLayer = layerStore.getLayerById(l.get("id"));
-        scenarioLayer && layerStore.updateLayer(scenarioLayer, { isHidden: !isVisible });
+        geo.updateLayer(l.get("id"), { isHidden: !isVisible }, false);
       })
     );
   }
