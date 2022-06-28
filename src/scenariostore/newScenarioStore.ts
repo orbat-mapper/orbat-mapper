@@ -1,19 +1,19 @@
-import { useImmerStore } from "../composables/immerStore";
-import { Scenario, ScenarioInfo, SideGroup, Unit } from "../types/scenarioModels";
+import { useImmerStore } from "@/composables/immerStore";
+import { Scenario, ScenarioInfo, SideGroup, Unit } from "@/types/scenarioModels";
 import dayjs from "dayjs";
-import { nanoid } from "../utils";
-import { walkSide } from "../stores/scenarioStore";
+import { nanoid } from "@/utils";
+import { walkSide } from "@/stores/scenarioStore";
 import { klona } from "klona";
-import { EntityId } from "../types/base";
-import {
+import type { EntityId } from "@/types/base";
+import type {
   NScenarioFeature,
   NScenarioLayer,
   NSide,
   NSideGroup,
   NUnit,
-} from "../types/internalModels";
+} from "@/types/internalModels";
 import { useScenarioTime } from "./time";
-import { FeatureId, ScenarioFeature, ScenarioLayer } from "@/types/scenarioGeoModels";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 
 export interface ScenarioState {
   id: EntityId;
@@ -111,9 +111,11 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   };
 }
 
+export type ActionLabel = "deleteLayer" | "addLayer";
+
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);
-  const store = useImmerStore(inputState);
+  const store = useImmerStore<ScenarioState, ActionLabel>(inputState);
   useScenarioTime(store).setCurrentTime(store.state.currentTime);
   return store;
 }

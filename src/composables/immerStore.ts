@@ -16,30 +16,30 @@ function applyPatchWrapper<T>(state: T, patches: Patch[]) {
   applyPatch(state, convertedPatches);
 }
 
-export interface MetaEntry {
-  label: string;
+export interface MetaEntry<T = string> {
+  label: T;
   value: string | number;
 }
 
-interface UndoEntry {
+interface UndoEntry<T = string> {
   patches: Patch[];
   inversePatches: Patch[];
-  meta?: MetaEntry;
+  meta?: MetaEntry<T>;
 }
 
-export function useImmerStore<T extends object>(baseState: T) {
+export function useImmerStore<T extends object, M>(baseState: T) {
   const state = reactive(baseState);
 
-  const past = shallowReactive<UndoEntry[]>([]);
-  const future = shallowReactive<UndoEntry[]>([]);
+  const past = shallowReactive<UndoEntry<M>[]>([]);
+  const future = shallowReactive<UndoEntry<M>[]>([]);
 
   const canUndo = computed(() => past.length > 0);
   const canRedo = computed(() => future.length > 0);
 
-  const undoHook = createEventHook<{ patch: Patch[]; meta?: MetaEntry }>();
-  const redoHook = createEventHook<{ patch: Patch[]; meta?: MetaEntry }>();
+  const undoHook = createEventHook<{ patch: Patch[]; meta?: MetaEntry<M> }>();
+  const redoHook = createEventHook<{ patch: Patch[]; meta?: MetaEntry<M> }>();
 
-  const update = (updater: (currentState: T) => void, meta?: MetaEntry) => {
+  const update = (updater: (currentState: T) => void, meta?: MetaEntry<M>) => {
     const [, patches, inversePatches] = produceWithPatches(toRaw(state), updater);
     if (patches.length === 0) return;
     applyPatchWrapper(state, patches);
@@ -47,12 +47,12 @@ export function useImmerStore<T extends object>(baseState: T) {
     future.splice(0);
   };
 
-  function groupUpdate(updates: () => void, meta?: MetaEntry) {
+  function groupUpdate(updates: () => void, meta?: MetaEntry<M>) {
     const preLength = past.length;
     updates();
     const diff = past.length - preLength;
     if (diff <= 0) return;
-    let elems: UndoEntry[] = [];
+    let elems: UndoEntry<M>[] = [];
     for (let i = 0; i < diff; i++) elems.push(past.pop()!);
     let mergedPatches: Patch[] = [];
     let mergedInversePatches: Patch[] = [];

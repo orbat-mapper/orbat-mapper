@@ -83,6 +83,7 @@ onUndo(({ meta, patch }) => {
     const layer = geo.getLayerById(value);
     addLayer(layer, true);
   }
+
   console.log("Undo", meta, patch);
 });
 
