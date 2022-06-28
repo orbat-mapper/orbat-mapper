@@ -1,7 +1,12 @@
 import { NewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { computed } from "vue";
-import { State, Unit } from "@/types/scenarioModels";
-import { FeatureId, Position, ScenarioLayer } from "@/types/scenarioGeoModels";
+import { State } from "@/types/scenarioModels";
+import {
+  FeatureId,
+  LayerFeatureItem,
+  Position,
+  ScenarioLayer,
+} from "@/types/scenarioGeoModels";
 import { EntityId } from "@/types/base";
 import { NScenarioLayer, ScenarioLayerUpdate } from "@/types/internalModels";
 import { klona } from "klona";
@@ -97,6 +102,25 @@ export function useGeo(store: NewScenarioStore) {
     });
   }
 
+  const itemsInfo = computed<LayerFeatureItem[]>(() => {
+    let items: LayerFeatureItem[] = [];
+    layers.value.forEach((layer) => {
+      items.push({ id: layer.id, type: "layer", name: layer.name });
+      const mappedFeatures: LayerFeatureItem[] = layer.features.map((feature) => {
+        const { properties, id } = feature;
+        return {
+          id,
+          type: properties.type,
+          name: properties.name || "",
+          description: properties.description,
+          _pid: layer.id,
+        };
+      });
+      items.push(...mappedFeatures);
+    });
+    return items;
+  });
+
   return {
     everyVisibleUnit,
     addUnitPosition,
@@ -111,5 +135,6 @@ export function useGeo(store: NewScenarioStore) {
     deleteLayer,
     layers,
     deleteFeature,
+    itemsInfo,
   };
 }

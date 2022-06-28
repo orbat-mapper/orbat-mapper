@@ -41,7 +41,6 @@ import SearchModalInput from "./SearchModalInput.vue";
 import SearchUnitHit from "./SearchUnitHit.vue";
 import { useScenarioStore } from "../stores/scenarioStore";
 import ToggleField from "./ToggleField.vue";
-import { useScenarioLayersStore } from "../stores/scenarioLayersStore";
 import { LayerFeatureSearchResult, UnitSearchResult } from "./types";
 import { groupBy, htmlTagEscape, injectStrict } from "../utils";
 import SearchFeatureHit from "./SearchFeatureHit.vue";
@@ -59,13 +58,13 @@ const emit = defineEmits([
 const {
   unitActions,
   store: { state },
+  geo,
 } = injectStrict(activeScenarioKey);
 
 const open = useVModel(props, "modelValue");
 const query = ref("");
 const debouncedQuery = useDebounce(query, 200);
 const scenarioStore = useScenarioStore();
-const layerStore = useScenarioLayersStore();
 const currentHitIndex = ref(0);
 const limitToPosition = ref(false);
 
@@ -99,10 +98,9 @@ const unitHits = computed(() => {
 
 const featureHits = computed(() => {
   const q = debouncedQuery.value.trim();
-  return [];
   if (!q) return [];
 
-  const hits = fuzzysort.go(q, layerStore.itemsInfo, { key: ["name"] });
+  const hits = fuzzysort.go(q, geo.itemsInfo.value, { key: ["name"] });
 
   currentHitIndex.value = 0;
   return hits.slice(0, 10).map((u, i) => ({
