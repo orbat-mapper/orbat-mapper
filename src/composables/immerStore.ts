@@ -36,8 +36,16 @@ export function useImmerStore<T extends object, M>(baseState: T) {
   const canUndo = computed(() => past.length > 0);
   const canRedo = computed(() => future.length > 0);
 
-  const undoHook = createEventHook<{ patch: Patch[]; meta?: MetaEntry<M> }>();
-  const redoHook = createEventHook<{ patch: Patch[]; meta?: MetaEntry<M> }>();
+  const undoHook = createEventHook<{
+    patch: Patch[];
+    meta?: MetaEntry<M>;
+    action: "undo";
+  }>();
+  const redoHook = createEventHook<{
+    patch: Patch[];
+    meta?: MetaEntry<M>;
+    action: "redo";
+  }>();
 
   const update = (updater: (currentState: T) => void, meta?: MetaEntry<M>) => {
     const [, patches, inversePatches] = produceWithPatches(toRaw(state), updater);
@@ -67,8 +75,8 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     if (!canUndo.value) return false;
     const { patches, inversePatches, meta } = past.pop()!;
     applyPatchWrapper(state, inversePatches);
-    future.unshift({ patches, inversePatches });
-    undoHook.trigger({ patch: inversePatches, meta });
+    future.unshift({ patches, inversePatches, meta });
+    undoHook.trigger({ patch: inversePatches, meta, action: "undo" });
     return true;
   };
 
@@ -76,8 +84,8 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     if (!canRedo.value) return false;
     const { patches, inversePatches, meta } = future.shift()!;
     applyPatchWrapper(state, patches);
-    past.push({ patches, inversePatches });
-    redoHook.trigger({ patch: patches, meta });
+    past.push({ patches, inversePatches, meta });
+    redoHook.trigger({ patch: patches, meta, action: "redo" });
     return true;
   };
 
