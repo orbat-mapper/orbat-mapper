@@ -30,6 +30,7 @@ import { useScenarioLayersStore } from "@/stores/scenarioLayersStore";
 import NProgress from "nprogress";
 import { activeScenarioKey } from "@/components/injects";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
+import { EntityId } from "@/types/base";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -40,7 +41,7 @@ const emit = defineEmits(["update:modelValue"]);
 
 const {
   geo,
-  store: { onUndo },
+  store: { onUndo, onRedo },
 } = injectStrict(activeScenarioKey);
 
 const showLayerPanel = useVModel(props, "modelValue", emit);
@@ -77,18 +78,30 @@ const { selectedIds, selectedFeatures, select } = useScenarioFeatureSelect(mapRe
 });
 
 onUndo(({ meta, patch }) => {
+  console.log("Undo", meta, patch);
   if (!meta) return;
   const { label, value } = meta;
   if (label === "deleteLayer") {
     const layer = geo.getLayerById(value);
     addLayer(layer, true);
   }
+  if (label === "deleteFeature") {
+    const feature = geo.getLayerById(value);
+    addOlFeature();
+  }
+});
 
-  console.log("Undo", meta, patch);
+onRedo(({ meta, patch }) => {
+  console.log("Redo", meta, patch);
+  if (!meta) return;
+  const { label, value: layerId } = meta;
+  if (label === "deleteLayer") {
+    deleteLayer(layerId as FeatureId, true);
+  }
 });
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
-const activeLayer = ref<NScenarioLayer | null>(null);
+const activeLayer = ref<FeatureId | null>(null);
 const olCurrentLayer = shallowRef<VectorLayer<any> | null>(null);
 const activeFeature = ref<ScenarioFeature | null>(null);
 
@@ -100,29 +113,29 @@ function addNewLayer() {
     _isNew: false,
   });
   addedLayer._isNew = true;
-  setActiveLayer(addedLayer);
+  setActiveLayer(addedLayer.id);
 }
 
-function setActiveLayer(layer: NScenarioLayer, toggle = true) {
-  const l = getOlLayerById(layer.id);
+function setActiveLayer(layerId: FeatureId, toggle = true) {
+  const l = getOlLayerById(layerId);
   if (!l) return;
 
-  if (toggle && activeLayer.value?.id === layer.id) {
+  if (toggle && activeLayer.value === layerId) {
     olCurrentLayer.value = null;
     activeLayer.value = null;
   } else {
     olCurrentLayer.value = l;
-    activeLayer.value = layer;
+    activeLayer.value = layerId;
   }
 }
 
 function onFeatureAction(
-  feature: ScenarioFeature,
+  feature: NScenarioFeature,
   action: ScenarioFeatureActions,
-  scenarioLayer?: ScenarioLayer
+  scenarioLayer?: NScenarioLayer
 ) {
-  if (action === ScenarioFeatureActions.Zoom) zoomToFeature(feature);
-  if (action === ScenarioFeatureActions.Pan) panToFeature(feature);
+  if (action === ScenarioFeatureActions.Zoom) zoomToFeature(feature.id);
+  if (action === ScenarioFeatureActions.Pan) panToFeature(feature.id);
   const layer = scenarioLayer || getFeatureLayer(feature);
   if (!layer) return;
 
@@ -141,13 +154,13 @@ function onFeatureAction(
 }
 
 function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerActions) {
-  if (action === ScenarioLayerActions.Zoom) zoomToLayer(layer);
+  if (action === ScenarioLayerActions.Zoom) zoomToLayer(layer.id);
   if (action === ScenarioLayerActions.Delete) {
-    if (activeLayer.value?.id === layer.id) {
+    if (activeLayer.value === layer.id) {
       activeLayer.value = null;
       olCurrentLayer.value = null;
     }
-    deleteLayer(layer);
+    deleteLayer(layer.id);
   }
   if (
     action === ScenarioLayerActions.MoveUp ||
@@ -211,7 +224,7 @@ watch(
   () => props.activeLayerId,
   (id) => {
     if (!id) return;
-    const layer = layerStore.getLayerById(id);
+    const layer = geo.getLayerById(id);
     if (!layer) return;
     setActiveLayer(layer, false);
     layer._isOpen = true;
@@ -221,7 +234,7 @@ watch(
 
 onMounted(() => {
   NProgress.done();
-  if (layers.value.length) setActiveLayer(layers.value[0]);
+  if (layers.value.length) setActiveLayer(layers.value[0].id);
 });
 </script>
 
@@ -241,7 +254,7 @@ onMounted(() => {
         v-for="layer in layers"
         :key="layer.id"
         :layer="layer"
-        :is-active="activeLayer === layer"
+        :is-active="activeLayer === layer.id"
         @set-active="setActiveLayer"
         @feature-action="onFeatureAction"
         @update-layer="onLayerUpdate"
@@ -260,7 +273,7 @@ onMounted(() => {
   <Teleport to="[data-teleport-map]">
     <MapEditToolbar
       v-if="isActive && activeLayer && olCurrentLayer"
-      :key="activeLayer.id"
+      :key="activeLayer"
       :ol-map="mapRef"
       :layer="olCurrentLayer"
       class="absolute left-3 top-[150px]"

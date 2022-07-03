@@ -155,7 +155,7 @@ function updateFill(data: Partial<FillStyleSpec>) {
   <GlobalEvents
     :filter="inputEventFilter"
     @keyup.e="doFormFocus"
-    @keyup.z="emit('feature-action', feature, ScenarioFeatureActions.Zoom)"
+    @keyup.z.exact="emit('feature-action', feature, ScenarioFeatureActions.Zoom)"
     @keyup.p="emit('feature-action', feature, ScenarioFeatureActions.Pan)"
   />
 </template>

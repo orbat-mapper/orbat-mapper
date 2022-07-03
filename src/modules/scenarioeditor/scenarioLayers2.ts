@@ -45,7 +45,12 @@ import { clearStyleCache, scenarioFeatureStyle } from "@/geo/featureStyles";
 import Select from "ol/interaction/Select";
 import { MaybeRef } from "@vueuse/core";
 import { activeScenarioKey } from "@/components/injects";
-import { NScenarioLayer, ScenarioLayerUpdate } from "@/types/internalModels";
+import {
+  NScenarioFeature,
+  NScenarioLayer,
+  ScenarioLayerUpdate,
+} from "@/types/internalModels";
+import { EntityId } from "@/types/base";
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -214,22 +219,22 @@ export function useScenarioLayers(olMap: OLMap) {
       .find((e) => e.get("id") === id) as VectorLayer<any>;
   }
 
-  function addLayer(newLayer: NScenarioLayer, isRedo = false) {
-    const addedLayer = isRedo ? newLayer : geo.addLayer(newLayer);
+  function addLayer(newLayer: NScenarioLayer, isUndoRedo = false) {
+    const addedLayer = isUndoRedo ? newLayer : geo.addLayer(newLayer);
     scenarioLayersOl.push(createScenarioVectorLayer(geo.getFullLayer(addedLayer.id)!));
     return newLayer;
   }
 
-  function zoomToFeature(feature: ScenarioFeature) {
+  function zoomToFeature(featureId: FeatureId) {
     const { feature: olFeature } =
-      getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
+      getFeatureAndLayerById(featureId, scenarioLayersOl) || {};
     if (!olFeature) return;
     olMap.getView().fit(olFeature.getGeometry(), { maxZoom: 17 });
   }
 
-  function panToFeature(feature: ScenarioFeature) {
+  function panToFeature(featureId: FeatureId) {
     const { feature: olFeature } =
-      getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
+      getFeatureAndLayerById(featureId, scenarioLayersOl) || {};
     if (!olFeature) return;
     const view = olMap.getView();
     view.animate({
@@ -237,12 +242,16 @@ export function useScenarioLayers(olMap: OLMap) {
     });
   }
 
-  function zoomToLayer(layer: ScenarioLayer) {
-    const olLayer = getOlLayerById(layer.id);
+  function zoomToLayer(layerId: FeatureId) {
+    const olLayer = getOlLayerById(layerId);
     if (!olLayer) return;
     const layerExtent = olLayer.getSource().getExtent();
 
     !isEmpty(layerExtent) && layerExtent && olMap.getView().fit(layerExtent);
+  }
+
+  function addFeature(feature: NScenarioFeature, isUndoRedo = false) {
+    if (!isUndoRedo) geo.addFeature(feature, feature._pid);
   }
 
   function deleteFeature(feature: ScenarioFeature, scenarioLayer: ScenarioLayer) {
@@ -257,16 +266,21 @@ export function useScenarioLayers(olMap: OLMap) {
     if (!olFeature.getId()) olFeature.setId(nanoid());
 
     const scenarioFeature = convertOlFeatureToScenarioFeature(olFeature);
-    const scenarioLayer = layersStore.getLayerById(olLayer.get("id"))!;
+    const scenarioLayer = geo.getLayerById(olLayer.get("id"))!;
+
+    const { feature: lastFeatureInLayer } = geo.getFeatureById(
+      scenarioLayer.features[scenarioLayer.features.length - 1]
+    );
+
     const _zIndex = Math.max(
       scenarioLayer.features.length,
-      (scenarioLayer.features[scenarioLayer.features.length - 1]?.properties._zIndex ||
-        0) + 1
+      (lastFeatureInLayer?.properties._zIndex || 0) + 1
     );
     scenarioFeature.properties.name = `${scenarioFeature.properties.type} ${_zIndex + 1}`;
     scenarioFeature.properties._zIndex = _zIndex;
+    scenarioFeature._pid = scenarioLayer.id;
     olFeature.set("_zIndex", _zIndex);
-    scenarioLayer && layersStore.addFeature(scenarioFeature, scenarioLayer);
+    scenarioLayer && geo.addFeature(scenarioFeature, scenarioLayer.id);
     return scenarioFeature;
   }
 
@@ -296,12 +310,12 @@ export function useScenarioLayers(olMap: OLMap) {
       .extend(moveItemMutable(layersCopy, fromIndex, toIndex));
   }
 
-  function deleteLayer(layer: ScenarioLayer) {
-    const olLayer = getOlLayerById(layer.id);
+  function deleteLayer(layerId: FeatureId, isUndoRedo = false) {
+    const olLayer = getOlLayerById(layerId);
     if (!olLayer) return;
     scenarioLayersGroup.getLayers().remove(olLayer);
     olLayer.getSource().clear();
-    geo.deleteLayer(layer.id);
+    if (!isUndoRedo) geo.deleteLayer(layerId);
   }
 
   function updateLayer(scenarioLayer: ScenarioLayer, data: ScenarioLayerUpdate) {
@@ -319,25 +333,25 @@ export function useScenarioLayers(olMap: OLMap) {
     data: Partial<ScenarioFeatureProperties>
   ) {
     const id = scenarioFeature.id;
-    const { feature, layer } = layersStore.getFeatureById(id) || {};
+    const { feature, layer } = geo.getFeatureById(id) || {};
     if (!(feature && layer)) return;
     const dataUpdate = {
       properties: { ...feature.properties, ...data },
     };
-    layersStore.updateFeature(id, dataUpdate, layer);
+    geo.updateFeature(id, dataUpdate);
   }
 
   function updateFeatureFromOlFeature(olFeature: Feature) {
     const t = convertOlFeatureToScenarioFeature(olFeature);
     const id = olFeature.getId();
     if (!id) return;
-    const { feature, layer } = layersStore.getFeatureById(id) || {};
+    const { feature, layer } = geo.getFeatureById(id) || {};
     if (!(feature && layer)) return;
     const dataUpdate = {
       properties: { ...feature.properties, ...t.properties },
       geometry: t.geometry,
     };
-    layersStore.updateFeature(id, dataUpdate, layer);
+    geo.updateFeature(id, dataUpdate);
   }
 
   function toggleLayerVisibility(scenarioLayer: ScenarioLayer) {
@@ -390,7 +404,8 @@ function getOrCreateLayerGroup(olMap: OLMap) {
   return layerGroup;
 }
 
-function convertOlFeatureToScenarioFeature(olFeature: Feature): ScenarioFeature {
+// Fixme: Should only return properties needed to represent the geometry
+function convertOlFeatureToScenarioFeature(olFeature: Feature): NScenarioFeature {
   if (isCircle(olFeature)) {
     const circle = olFeature.getGeometry() as Circle;
     const { geometry, properties = {} } = olFeature.getProperties();
@@ -400,7 +415,7 @@ function convertOlFeatureToScenarioFeature(olFeature: Feature): ScenarioFeature 
     properties.radius = getLength(new LineString([center, r]));
     return point<ScenarioFeatureProperties>(toLonLat(circle.getCenter()), properties, {
       id: olFeature.getId() || nanoid(),
-    }) as ScenarioFeature;
+    }) as NScenarioFeature;
   }
 
   const gj = new GeoJSON({ featureProjection: "EPSG:3857" }).writeFeatureObject(

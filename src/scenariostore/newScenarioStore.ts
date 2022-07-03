@@ -111,7 +111,14 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   };
 }
 
-export type ActionLabel = "deleteLayer" | "addLayer";
+export type ActionLabel =
+  | "deleteLayer"
+  | "addLayer"
+  | "addFeature"
+  | "deleteFeature"
+  | "addUnitPosition"
+  | "updateFeature"
+  | "updateFeatureGeometry";
 
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);

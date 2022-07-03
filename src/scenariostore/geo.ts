@@ -8,7 +8,12 @@ import {
   ScenarioLayer,
 } from "@/types/scenarioGeoModels";
 import { EntityId } from "@/types/base";
-import { NScenarioLayer, ScenarioLayerUpdate } from "@/types/internalModels";
+import {
+  NScenarioFeature,
+  NScenarioLayer,
+  ScenarioFeatureUpdate,
+  ScenarioLayerUpdate,
+} from "@/types/internalModels";
 import { klona } from "klona";
 import { nanoid, removeElement } from "@/utils";
 
@@ -21,23 +26,26 @@ export function useGeo(store: NewScenarioStore) {
 
   function addUnitPosition(unitId: EntityId, coordinates: Position) {
     let newState: State | null = null;
-    update((s) => {
-      const u = s.getUnitById(unitId);
-      const t = s.currentTime;
-      newState = { t, location: coordinates };
-      u._state = newState;
-      if (!u.state) u.state = [];
-      for (let i = 0, len = u.state.length; i < len; i++) {
-        if (t < u.state[i].t) {
-          u.state.splice(i, 0, newState);
-          return;
-        } else if (t === u.state[i].t) {
-          u.state[i] = newState;
-          return;
+    update(
+      (s) => {
+        const u = s.getUnitById(unitId);
+        const t = s.currentTime;
+        newState = { t, location: coordinates };
+        u._state = newState;
+        if (!u.state) u.state = [];
+        for (let i = 0, len = u.state.length; i < len; i++) {
+          if (t < u.state[i].t) {
+            u.state.splice(i, 0, newState);
+            return;
+          } else if (t === u.state[i].t) {
+            u.state[i] = newState;
+            return;
+          }
         }
-      }
-      u.state.push(newState);
-    });
+        u.state.push(newState);
+      },
+      { label: "addUnitPosition", value: unitId }
+    );
     // if (newState) unit._state = newState;
   }
 
@@ -45,10 +53,13 @@ export function useGeo(store: NewScenarioStore) {
     const newLayer = klona({ ...data, _isNew: true });
     if (!newLayer.id) newLayer.id = nanoid();
     newLayer._isNew = true;
-    update((s) => {
-      s.layers.push(newLayer.id);
-      s.layerMap[newLayer.id] = newLayer;
-    });
+    update(
+      (s) => {
+        s.layers.push(newLayer.id);
+        s.layerMap[newLayer.id] = newLayer;
+      },
+      { label: "addLayer", value: newLayer.id }
+    );
     return state.layerMap[newLayer.id];
   }
 
@@ -92,14 +103,56 @@ export function useGeo(store: NewScenarioStore) {
     );
   }
 
+  function addFeature(data: NScenarioFeature, layerId: FeatureId) {
+    const newFeature = klona(data);
+    if (!newFeature.id) newFeature.id = nanoid();
+    newFeature._pid = layerId;
+    update(
+      (s) => {
+        const layer = s.layerMap[layerId];
+        if (!layer) return;
+        s.featureMap[newFeature.id!] = newFeature;
+        layer.features.push(newFeature.id!);
+      },
+      { label: "addFeature", value: newFeature._pid }
+    );
+  }
+
   function deleteFeature(featureId: FeatureId) {
     const feature = state.featureMap[featureId];
     if (!feature) return;
-    update((s) => {
-      const layer = s.layerMap[feature._pid];
-      delete s.featureMap[featureId];
-      removeElement(featureId, layer.features);
-    });
+    update(
+      (s) => {
+        const layer = s.layerMap[feature._pid];
+        delete s.featureMap[featureId];
+        removeElement(featureId, layer.features);
+      },
+      { label: "deleteFeature", value: featureId }
+    );
+  }
+
+  function updateFeature(
+    featureId: FeatureId,
+    data: ScenarioFeatureUpdate,
+    undoable = true
+  ) {
+    if (undoable) {
+      update(
+        (s) => {
+          const layer = s.featureMap[featureId];
+          const { properties = {}, geometry } = data;
+          Object.assign(layer.properties, properties);
+          if (geometry) {
+            const { coordinates } = geometry;
+            layer.geometry.coordinates = coordinates;
+          }
+        },
+        { label: "updateFeature", value: featureId }
+      );
+    } else {
+      const layer = state.featureMap[featureId];
+      Object.assign(layer, data);
+    }
   }
 
   const itemsInfo = computed<LayerFeatureItem[]>(() => {
@@ -133,8 +186,10 @@ export function useGeo(store: NewScenarioStore) {
     },
     updateLayer,
     deleteLayer,
-    layers,
+    addFeature,
     deleteFeature,
+    updateFeature,
     itemsInfo,
+    layers,
   };
 }
