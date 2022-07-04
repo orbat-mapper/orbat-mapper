@@ -114,7 +114,7 @@ export function useGeo(store: NewScenarioStore) {
         s.featureMap[newFeature.id!] = newFeature;
         layer.features.push(newFeature.id!);
       },
-      { label: "addFeature", value: newFeature._pid }
+      { label: "addFeature", value: newFeature.id }
     );
   }
 
@@ -142,10 +142,7 @@ export function useGeo(store: NewScenarioStore) {
           const layer = s.featureMap[featureId];
           const { properties = {}, geometry } = data;
           Object.assign(layer.properties, properties);
-          if (geometry) {
-            const { coordinates } = geometry;
-            layer.geometry.coordinates = coordinates;
-          }
+          Object.assign(layer.geometry, geometry);
         },
         { label: "updateFeature", value: featureId }
       );
@@ -182,6 +179,7 @@ export function useGeo(store: NewScenarioStore) {
     getFullLayer,
     getFeatureById: (id: FeatureId) => {
       const feature = state.featureMap[id];
+      if (!feature) return { feature, layer: undefined };
       return { feature, layer: state.layerMap[feature._pid] };
     },
     updateLayer,

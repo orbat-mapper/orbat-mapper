@@ -91,7 +91,7 @@ function convertRadius(center: GeoJsonFeature<Point>, radiusInMeters: number): n
 }
 
 function createScenarioLayerFeatures(
-  features: ScenarioFeature[],
+  features: NScenarioFeature[] | ScenarioFeature[],
   featureProjection: ProjectionLike
 ) {
   const gjson = new GeoJSON({
@@ -252,14 +252,17 @@ export function useScenarioLayers(olMap: OLMap) {
 
   function addFeature(feature: NScenarioFeature, isUndoRedo = false) {
     if (!isUndoRedo) geo.addFeature(feature, feature._pid);
+    const olLayer = getOlLayerById(feature._pid);
+    const olFeature = createScenarioLayerFeatures([feature], "EPSG:3837");
+    olLayer.getSource().addFeatures(olFeature);
   }
 
-  function deleteFeature(feature: ScenarioFeature, scenarioLayer: ScenarioLayer) {
+  function deleteFeature(featureId: FeatureId, isUndoRedo = false) {
     const { feature: olFeature, layer } =
-      getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
+      getFeatureAndLayerById(featureId, scenarioLayersOl) || {};
     if (!(olFeature && layer)) return;
     layer.getSource()?.removeFeature(olFeature);
-    geo.deleteFeature(feature.id);
+    if (!isUndoRedo) geo.deleteFeature(featureId);
   }
 
   function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
@@ -384,6 +387,7 @@ export function useScenarioLayers(olMap: OLMap) {
     moveLayer,
     updateFeatureFromOlFeature,
     getFeatureLayer,
+    addFeature,
     updateFeature,
     panToFeature,
     getOlFeatureById: (id: FeatureId) => {

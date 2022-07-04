@@ -71,6 +71,7 @@ const {
   updateFeature,
   panToFeature,
   getOlFeatureById,
+  addFeature,
 } = useScenarioLayers(mapRef);
 
 const { selectedIds, selectedFeatures, select } = useScenarioFeatureSelect(mapRef, {
@@ -86,17 +87,30 @@ onUndo(({ meta, patch }) => {
     addLayer(layer, true);
   }
   if (label === "deleteFeature") {
-    const feature = geo.getLayerById(value);
-    addOlFeature();
+    const { feature } = geo.getFeatureById(value);
+    addFeature(feature, true);
+  }
+
+  if (label === "addFeature") {
+    deleteFeature(value, true);
   }
 });
 
 onRedo(({ meta, patch }) => {
   console.log("Redo", meta, patch);
   if (!meta) return;
-  const { label, value: layerId } = meta;
+  const { label, value } = meta;
   if (label === "deleteLayer") {
-    deleteLayer(layerId as FeatureId, true);
+    deleteLayer(value as FeatureId, true);
+  }
+
+  if (label === "deleteFeature") {
+    deleteFeature(value, true);
+  }
+
+  if (label === "addFeature") {
+    const { feature } = geo.getFeatureById(value);
+    addFeature(feature, true);
   }
 });
 
@@ -113,10 +127,11 @@ function addNewLayer() {
     _isNew: false,
   });
   addedLayer._isNew = true;
-  setActiveLayer(addedLayer.id);
+  setActiveLayer(addedLayer);
 }
 
-function setActiveLayer(layerId: FeatureId, toggle = true) {
+function setActiveLayer(layer: NScenarioLayer | ScenarioLayer, toggle = true) {
+  const layerId = layer.id;
   const l = getOlLayerById(layerId);
   if (!l) return;
 
@@ -142,7 +157,7 @@ function onFeatureAction(
   if (action === ScenarioFeatureActions.Delete) {
     if (feature === activeFeature.value) activeFeature.value = null;
     showLayerPanel.value = false;
-    deleteFeature(feature, layer);
+    deleteFeature(feature.id);
   }
   if (
     action === ScenarioFeatureActions.MoveUp ||
@@ -234,7 +249,7 @@ watch(
 
 onMounted(() => {
   NProgress.done();
-  if (layers.value.length) setActiveLayer(layers.value[0].id);
+  if (layers.value.length) setActiveLayer(layers.value[0]);
 });
 </script>
 

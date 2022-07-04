@@ -30,7 +30,6 @@ export const useGeoStore = defineStore("geo", {
         duration,
       });
     },
-
     updateMapSize() {
       this.olMap?.updateSize();
     },
@@ -46,3 +45,8 @@ export const useMeasurementsStore = defineStore("measurements", {
     };
   },
 });
+
+if (import.meta.hot) {
+  // HMR code
+  import.meta.hot.decline();
+}
