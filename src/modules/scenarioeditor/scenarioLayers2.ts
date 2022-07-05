@@ -344,7 +344,7 @@ export function useScenarioLayers(olMap: OLMap) {
     geo.updateFeature(id, dataUpdate);
   }
 
-  function updateFeatureFromOlFeature(olFeature: Feature) {
+  function updateFeatureGeometryFromOlFeature(olFeature: Feature) {
     const t = convertOlFeatureToScenarioFeature(olFeature);
     const id = olFeature.getId();
     if (!id) return;
@@ -354,7 +354,7 @@ export function useScenarioLayers(olMap: OLMap) {
       properties: { ...feature.properties, ...t.properties },
       geometry: t.geometry,
     };
-    geo.updateFeature(id, dataUpdate);
+    geo.updateFeature(id, dataUpdate, true, true);
   }
 
   function toggleLayerVisibility(scenarioLayer: ScenarioLayer) {
@@ -385,7 +385,7 @@ export function useScenarioLayers(olMap: OLMap) {
     moveFeature,
     addOlFeature,
     moveLayer,
-    updateFeatureFromOlFeature,
+    updateFeatureGeometryFromOlFeature,
     getFeatureLayer,
     addFeature,
     updateFeature,

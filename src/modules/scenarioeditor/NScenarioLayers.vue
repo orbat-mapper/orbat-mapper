@@ -66,7 +66,7 @@ const {
   addOlFeature,
   moveFeature,
   moveLayer,
-  updateFeatureFromOlFeature,
+  updateFeatureGeometryFromOlFeature,
   getFeatureLayer,
   updateFeature,
   panToFeature,
@@ -94,6 +94,12 @@ onUndo(({ meta, patch }) => {
   if (label === "addFeature") {
     deleteFeature(value, true);
   }
+
+  if (label === "updateFeatureGeometry") {
+    deleteFeature(value, true);
+    const { feature } = geo.getFeatureById(value);
+    addFeature(feature, true);
+  }
 });
 
 onRedo(({ meta, patch }) => {
@@ -109,6 +115,11 @@ onRedo(({ meta, patch }) => {
   }
 
   if (label === "addFeature") {
+    const { feature } = geo.getFeatureById(value);
+    addFeature(feature, true);
+  }
+  if (label === "updateFeatureGeometry") {
+    deleteFeature(value, true);
     const { feature } = geo.getFeatureById(value);
     addFeature(feature, true);
   }
@@ -203,7 +214,7 @@ function onFeatureClick(
 }
 
 function onFeatureModify(olFeatures: Feature[]) {
-  olFeatures.forEach((f) => updateFeatureFromOlFeature(f));
+  olFeatures.forEach((f) => updateFeatureGeometryFromOlFeature(f));
 }
 
 function onFeatureAdd(olFeature: Feature, olLayer: AnyVectorLayer) {

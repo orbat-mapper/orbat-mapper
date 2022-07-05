@@ -134,7 +134,8 @@ export function useGeo(store: NewScenarioStore) {
   function updateFeature(
     featureId: FeatureId,
     data: ScenarioFeatureUpdate,
-    undoable = true
+    undoable = true,
+    isGeometry = false
   ) {
     if (undoable) {
       update(
@@ -144,7 +145,10 @@ export function useGeo(store: NewScenarioStore) {
           Object.assign(layer.properties, properties);
           Object.assign(layer.geometry, geometry);
         },
-        { label: "updateFeature", value: featureId }
+        {
+          label: isGeometry ? "updateFeatureGeometry" : "updateFeature",
+          value: featureId,
+        }
       );
     } else {
       const layer = state.featureMap[featureId];
