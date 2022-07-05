@@ -1,8 +1,5 @@
 <template>
-  <div
-    v-if="scenarioStore.isLoaded"
-    class="flex h-screen overflow-hidden bg-gray-300 pt-4"
-  >
+  <div class="flex h-screen overflow-hidden bg-gray-300 pt-4">
     <p
       class="absolute inset-x-0 top-0 h-4 border-b bg-amber-200 text-center text-xs text-amber-700"
     >
@@ -84,7 +81,7 @@
         class="mt-3 min-h-0"
       >
         <TabItem label="Unit details">
-          <UnitPanel :unit="activeUnit ? activeUnit : undefined" />
+          <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" />
         </TabItem>
         <template #extra>
           <div class="flex pt-4">
@@ -93,7 +90,7 @@
         </template>
       </TabView>
     </aside>
-    <ScenarioMap class="flex-1" :key="scenarioStore.id" data-teleport-map />
+    <ScenarioMap class="flex-1" data-teleport-map />
     <PlainButton class="fixed right-4 top-4 opacity-80" @click="isOpen = !isOpen">
       <MenuIcon class="h-5 w-5 opacity-100" />
     </PlainButton>
@@ -105,6 +102,12 @@
       @keyup.d="duplicateUnit"
       @keyup.s="showSearch = true"
       @keyup.prevent.alt.k="showSearch = true"
+    />
+    <GlobalEvents
+      :filter="inputEventFilter"
+      @keyup.ctrl.z.exact="undo()"
+      @keyup.ctrl.shift.z="redo()"
+      @keyup.ctrl.y="redo()"
     />
     <ShortcutsModal v-model="shortcutsModalVisible" />
     <MainViewSlideOver v-model="isOpen" />
@@ -129,52 +132,64 @@ import {
   defineAsyncComponent,
   nextTick,
   onUnmounted,
+  provide,
   ref,
   toRefs,
   watch,
 } from "vue";
 import { GlobalEvents } from "vue-global-events";
-import OrbatPanel from "@/components/OrbatPanel.vue";
+import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import { useScenarioStore } from "@/stores/scenarioStore";
-import ScenarioMap from "@/components/ScenarioMap.vue";
-import UnitPanel from "@/components/UnitPanel.vue";
-import { useActiveUnitStore } from "@/stores/dragStore";
+import UnitPanel from "./UnitPanel.vue";
+import { useActiveUnitStore2 } from "@/stores/dragStore";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
-import ScenarioInfoPanel from "@/components/ScenarioInfoPanel.vue";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
-import TimeController from "@/components/TimeController.vue";
+import TimeController from "@/components/NTimeController.vue";
 import PlainButton from "@/components/PlainButton.vue";
 
 import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
 import { inputEventFilter } from "@/components/helpers";
-import SearchModal from "@/components/SearchModal.vue";
+import SearchModal from "@/components/NSearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useScenarioIO } from "@/stores/scenarioIO";
 import { useUiStore } from "@/stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
 import { Keyboard as KeyboardIcon } from "mdue";
 import { useDark, useEventBus, useTitle, useToggle, watchOnce } from "@vueuse/core";
-import { useUnitManipulationStore } from "@/stores/scenarioManipulation";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import DotsMenu, { MenuItemData } from "@/components/DotsMenu.vue";
 import { ScenarioActions } from "@/types/constants";
 import AppNotifications from "@/components/AppNotifications.vue";
 import { useNotifications } from "@/composables/notifications";
-import { Scenario } from "@/types/scenarioModels";
 import { useGeoStore } from "@/stores/geoStore";
 import CloseButton from "@/components/CloseButton.vue";
 import { orbatUnitClick } from "@/components/eventKeys";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import NProgress from "nprogress";
+import { TScenario } from "@/scenariostore";
+import { EntityId } from "@/types/base";
+import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
+import type { Scenario } from "@/types/scenarioModels";
+import ScenarioMap from "@/components/NScenarioMap.vue";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
-const ScenarioLayers = defineAsyncComponent(() => import("./ScenarioLayers.vue"));
+const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"));
 
+const props = defineProps<{ activeScenario: TScenario }>();
+const activeUnitId = ref<EntityId | undefined | null>(null);
+
+provide(activeUnitKey, activeUnitId);
+provide(activeScenarioKey, props.activeScenario);
+
+const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
+
+const { loadFromObject } = props.activeScenario.io;
+const { unitActions } = props.activeScenario;
 const route = useRoute();
 const router = useRouter();
 const scenarioStore = useScenarioStore();
-const unitManipulationStore = useUnitManipulationStore();
 const scenarioIO = useScenarioIO();
 const currentTab = ref(0);
 const isOpen = ref(false);
@@ -182,9 +197,12 @@ const showSearch = ref(false);
 const showLoadModal = ref(false);
 const shortcutsModalVisible = ref(false);
 const currentScenarioTab = ref(0);
-const activeUnitStore = useActiveUnitStore();
+const activeUnitStore = useActiveUnitStore2({
+  activeScenario: props.activeScenario,
+  activeUnitId,
+});
 const uiStore = useUiStore();
-const { activeUnit } = toRefs(activeUnitStore);
+
 const originalTitle = useTitle().value;
 const windowTitle = computed(() => scenarioStore.scenario.name);
 const { send } = useNotifications();
@@ -211,45 +229,13 @@ onUnmounted(() => {
   activeUnitStore.clearActiveUnit();
 });
 
-if (route.query.load) {
-  scenarioStore.isLoaded = false;
-  loadDemoScenario(route.query.load as string);
-} else {
-  if (!scenarioStore.isLoaded) scenarioStore.loadEmptyScenario();
-}
-
-async function loadDemoScenario(name: string) {
-  if (name === "empty") {
-    scenarioStore.loadEmptyScenario();
-    await router.replace("");
-    return;
-  }
-  await scenarioIO.loadDemoScenario(name as string);
-  // await router.replace("");
-}
-
-function loadScenario(scenarioData: Scenario) {
-  scenarioIO.loadFromObject(scenarioData);
-  send({ message: "Loaded scenario from file" });
-}
-
-watch(
-  () => route.query.load,
-  async (v) => {
-    if (v) await loadDemoScenario(v as string);
-  }
-);
-
 watch([showUnitPanel, showLayerPanel], (v) => {
   nextTick(() => geoStore.updateMapSize());
 });
 
-watch(
-  () => activeUnitStore.activeUnit,
-  (v) => {
-    if (v && currentScenarioTab.value === 0) showUnitPanel.value = true;
-  }
-);
+watch(activeUnitId, (v) => {
+  showUnitPanel.value = !!(v && currentScenarioTab.value === 0);
+});
 
 watch(currentScenarioTab, (value, prevValue) => {
   if (value === 1 && prevValue === 0) {
@@ -259,33 +245,26 @@ watch(currentScenarioTab, (value, prevValue) => {
 });
 
 const createNewUnit = () => {
-  const parent = activeUnit.value;
-  if (!parent) return;
-  unitManipulationStore.createSubordinateUnit(parent);
+  activeUnitId.value && unitActions.createSubordinateUnit(activeUnitId.value);
 };
 
 const duplicateUnit = () => {
-  if (!activeUnit.value) return;
-
-  unitManipulationStore.cloneUnit(activeUnit.value);
+  activeUnitId.value && unitActions.cloneUnit(activeUnitId.value);
 };
 
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 
-const onUnitSelect = (unitId: string) => {
-  const unit = scenarioStore.getUnitById(unitId);
-  if (unit) {
-    currentScenarioTab.value = 0;
-    activeUnit.value = unit;
-    const { parents } = scenarioStore.getUnitHierarchy(unit);
-    parents.forEach((p) => (p._isOpen = true));
-    nextTick(() => {
-      const el = document.getElementById(`o-${unitId}`);
-      if (el) {
-        el.scrollIntoView();
-      }
-    });
-  }
+const onUnitSelect = (unitId: EntityId) => {
+  currentScenarioTab.value = 0;
+  activeUnitId.value = unitId;
+  const { parents } = unitActions.getUnitHierarchy(unitId);
+  parents.forEach((p) => (p._isOpen = true));
+  nextTick(() => {
+    const el = document.getElementById(`o-${unitId}`);
+    if (el) {
+      el.scrollIntoView();
+    }
+  });
 };
 
 const onLayerSelect = (layerId: FeatureId) => {
@@ -308,21 +287,22 @@ const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
 
 function onScenarioAction(action: ScenarioActions) {
   if (action === ScenarioActions.AddSide) {
-    scenarioStore.addSide();
+    unitActions.addSide();
   }
 
   if (action === ScenarioActions.Save) {
-    scenarioIO.saveToLocalStorage();
-    send({ message: "Saved to local storage" });
+    // scenarioIO.saveToLocalStorage();
+    send({ message: "Not implemented yet" });
   }
 
   if (action === ScenarioActions.Load) {
-    scenarioIO.loadFromLocalStorage();
-    send({ message: "Loaded from local storage" });
+    // scenarioIO.loadFromLocalStorage();
+    send({ message: "Not implemented yet" });
   }
 
   if (action === ScenarioActions.ExportJson) {
-    scenarioIO.downloadAsJson();
+    send({ message: "Not implemented yet" });
+    // scenarioIO.downloadAsJson();
   }
 
   if (action === ScenarioActions.LoadNew) {
@@ -340,4 +320,8 @@ watchOnce(
     NProgress.start();
   }
 );
+
+function loadScenario(v: Scenario) {
+  loadFromObject(v);
+}
 </script>

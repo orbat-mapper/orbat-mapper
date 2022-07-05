@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ScenarioEditor from "@/modules/scenarioeditor/NScenarioEditor.vue";
+import ScenarioEditor from "@/modules/scenarioeditor/ScenarioEditor.vue";
 import { useScenario } from "@/scenariostore";
 import { useRoute } from "vue-router";
 import { watch } from "vue";
