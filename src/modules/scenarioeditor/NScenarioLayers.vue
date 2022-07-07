@@ -197,7 +197,7 @@ function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerActions) {
   }
 }
 
-function onLayerUpdate(layer: ScenarioLayer, data: Partial<ScenarioLayer>) {
+function onLayerUpdate(layer: ScenarioLayer, data: Partial<NScenarioLayer>) {
   updateLayer(layer, data);
 }
 

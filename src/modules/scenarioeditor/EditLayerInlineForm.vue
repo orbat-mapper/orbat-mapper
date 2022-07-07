@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { ScenarioLayer, ScenarioLayerInstance } from "../../types/scenarioGeoModels";
-import { useFocusOnMount } from "../../components/helpers";
+import { ScenarioLayerInstance } from "@/types/scenarioGeoModels";
+import { useFocusOnMount } from "@/components/helpers";
 import InputGroup from "../../components/InputGroup.vue";
 import InlineFormPanel from "../../components/InlineFormPanel.vue";
 import BaseButton from "../../components/BaseButton.vue";
+import { NScenarioLayer } from "@/types/internalModels";
 
 const props = defineProps<{
   layer: ScenarioLayerInstance;
 }>();
 const emit = defineEmits(["close", "update"]);
-let form = ref<Partial<ScenarioLayer>>({ name: props.layer.name, _isNew: false });
+let form = ref<Partial<NScenarioLayer>>({ name: props.layer.name, _isNew: false });
 
 const onFormSubmit = () => {
   emit("update", { ...form.value });
@@ -22,7 +23,7 @@ const { focusId } = useFocusOnMount();
 
 <template>
   <InlineFormPanel @close="$emit('close')" title="Edit layer">
-    <form @submit.prevent="onFormSubmit" clasFeaturess="space-y-4">
+    <form @submit.prevent="onFormSubmit" class="space-y-4">
       <InputGroup
         label="Layer name"
         v-model="form.name"

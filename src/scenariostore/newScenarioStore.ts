@@ -118,7 +118,8 @@ export type ActionLabel =
   | "deleteFeature"
   | "addUnitPosition"
   | "updateFeature"
-  | "updateFeatureGeometry";
+  | "updateFeatureGeometry"
+  | "addSide";
 
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);

@@ -116,7 +116,7 @@ export default defineComponent({
     SimpleSelect,
     InputGroup,
     SearchIcon,
-    SearchModal: defineAsyncComponent(() => import("../../components/SearchModal.vue")),
+    SearchModal: defineAsyncComponent(() => import("../../components/NSearchModal.vue")),
   },
   setup() {
     const options = useChartSettingsStore();
