@@ -27,7 +27,8 @@ export interface NScenarioFeature extends ScenarioFeature {
 }
 
 export interface ScenarioFeatureUpdate extends Partial<Omit<NScenarioFeature, "id">> {}
-export interface ScenarioLayerUpdate extends Partial<Omit<NScenarioLayer, "id">> {}
+export interface ScenarioLayerUpdate
+  extends Partial<Omit<NScenarioLayer, "id" | "features">> {}
 
 export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id">> {}
 export interface UnitUpdate extends Partial<Omit<NUnit, "id">> {}

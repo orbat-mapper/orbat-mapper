@@ -119,7 +119,8 @@ export type ActionLabel =
   | "addUnitPosition"
   | "updateFeature"
   | "updateFeatureGeometry"
-  | "addSide";
+  | "addSide"
+  | "updateLayer";
 
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);

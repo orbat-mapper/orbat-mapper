@@ -50,7 +50,8 @@ import {
   NScenarioLayer,
   ScenarioLayerUpdate,
 } from "@/types/internalModels";
-import { EntityId } from "@/types/base";
+import { useNotifications } from "@/composables/notifications";
+const { send } = useNotifications();
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -298,19 +299,20 @@ export function useScenarioLayers(olMap: OLMap) {
   }
 
   function moveLayer(layer: ScenarioLayer, direction: "up" | "down") {
-    let toIndex = layersStore.getLayerIndex(layer);
-
-    if (direction === "up") toIndex--;
-    if (direction === "down") toIndex++;
-    layersStore.moveLayer(layer, toIndex);
-    const olLayer = getOlLayerById(layer.id);
-
-    const layersCopy = [...scenarioLayersGroup.getLayers().getArray()];
-    const fromIndex = layersCopy.indexOf(olLayer as any);
-    scenarioLayersGroup.getLayers().clear();
-    scenarioLayersGroup
-      .getLayers()
-      .extend(moveItemMutable(layersCopy, fromIndex, toIndex));
+    send({ message: "Not implemented yet" });
+    // let toIndex = layersStore.getLayerIndex(layer);
+    //
+    // if (direction === "up") toIndex--;
+    // if (direction === "down") toIndex++;
+    // layersStore.moveLayer(layer, toIndex);
+    // const olLayer = getOlLayerById(layer.id);
+    //
+    // const layersCopy = [...scenarioLayersGroup.getLayers().getArray()];
+    // const fromIndex = layersCopy.indexOf(olLayer as any);
+    // scenarioLayersGroup.getLayers().clear();
+    // scenarioLayersGroup
+    //   .getLayers()
+    //   .extend(moveItemMutable(layersCopy, fromIndex, toIndex));
   }
 
   function deleteLayer(layerId: FeatureId, isUndoRedo = false) {
@@ -321,9 +323,13 @@ export function useScenarioLayers(olMap: OLMap) {
     if (!isUndoRedo) geo.deleteLayer(layerId);
   }
 
-  function updateLayer(scenarioLayer: ScenarioLayer, data: ScenarioLayerUpdate) {
-    geo.updateLayer(scenarioLayer.id, data);
-    const olLayer = getOlLayerById(scenarioLayer.id);
+  function updateLayer(
+    layerId: FeatureId,
+    data: ScenarioLayerUpdate,
+    isUndoRedo = false
+  ) {
+    if (!isUndoRedo) geo.updateLayer(layerId, data);
+    const olLayer = getOlLayerById(layerId);
 
     if (!olLayer) return;
     for (const [key, value] of Object.entries(data)) {

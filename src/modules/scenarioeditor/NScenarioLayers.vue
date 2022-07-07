@@ -29,7 +29,11 @@ import { AnyVectorLayer } from "@/geo/types";
 import { useScenarioLayersStore } from "@/stores/scenarioLayersStore";
 import NProgress from "nprogress";
 import { activeScenarioKey } from "@/components/injects";
-import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
+import {
+  NScenarioFeature,
+  NScenarioLayer,
+  ScenarioLayerUpdate,
+} from "@/types/internalModels";
 import { EntityId } from "@/types/base";
 
 const props = defineProps<{
@@ -100,6 +104,11 @@ onUndo(({ meta, patch }) => {
     const { feature } = geo.getFeatureById(value);
     addFeature(feature, true);
   }
+
+  if (label === "updateLayer") {
+    const layer = geo.getLayerById(value);
+    updateLayer(value, layer, true);
+  }
 });
 
 onRedo(({ meta, patch }) => {
@@ -122,6 +131,11 @@ onRedo(({ meta, patch }) => {
     deleteFeature(value, true);
     const { feature } = geo.getFeatureById(value);
     addFeature(feature, true);
+  }
+
+  if (label === "updateLayer") {
+    const layer = geo.getLayerById(value);
+    updateLayer(value, layer, true);
   }
 });
 
@@ -197,8 +211,8 @@ function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerActions) {
   }
 }
 
-function onLayerUpdate(layer: ScenarioLayer, data: Partial<NScenarioLayer>) {
-  updateLayer(layer, data);
+function onLayerUpdate(layer: ScenarioLayer, data: ScenarioLayerUpdate) {
+  updateLayer(layer.id, data);
 }
 
 function onFeatureClick(

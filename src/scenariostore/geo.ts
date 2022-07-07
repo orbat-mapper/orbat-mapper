@@ -80,10 +80,13 @@ export function useGeo(store: NewScenarioStore) {
 
   function updateLayer(layerId: FeatureId, data: ScenarioLayerUpdate, undoable = true) {
     if (undoable) {
-      update((s) => {
-        const layer = s.layerMap[layerId];
-        Object.assign(layer, data);
-      });
+      update(
+        (s) => {
+          const layer = s.layerMap[layerId];
+          Object.assign(layer, data);
+        },
+        { label: "updateLayer", value: layerId }
+      );
     } else {
       const layer = state.layerMap[layerId];
       Object.assign(layer, data);
