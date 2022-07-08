@@ -120,7 +120,8 @@ export type ActionLabel =
   | "updateFeature"
   | "updateFeatureGeometry"
   | "addSide"
-  | "updateLayer";
+  | "updateLayer"
+  | "moveLayer";
 
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);

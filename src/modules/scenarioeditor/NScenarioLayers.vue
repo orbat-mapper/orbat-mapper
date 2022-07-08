@@ -89,25 +89,20 @@ onUndo(({ meta, patch }) => {
   if (label === "deleteLayer") {
     const layer = geo.getLayerById(value);
     addLayer(layer, true);
-  }
-  if (label === "deleteFeature") {
+  } else if (label === "deleteFeature") {
     const { feature } = geo.getFeatureById(value);
     addFeature(feature, true);
-  }
-
-  if (label === "addFeature") {
+  } else if (label === "addFeature") {
     deleteFeature(value, true);
-  }
-
-  if (label === "updateFeatureGeometry") {
+  } else if (label === "updateFeatureGeometry") {
     deleteFeature(value, true);
     const { feature } = geo.getFeatureById(value);
     addFeature(feature, true);
-  }
-
-  if (label === "updateLayer") {
+  } else if (label === "updateLayer") {
     const layer = geo.getLayerById(value);
     updateLayer(value, layer, true);
+  } else if (label === "moveLayer") {
+    moveLayer(value, "down", true);
   }
 });
 
@@ -117,25 +112,20 @@ onRedo(({ meta, patch }) => {
   const { label, value } = meta;
   if (label === "deleteLayer") {
     deleteLayer(value as FeatureId, true);
-  }
-
-  if (label === "deleteFeature") {
+  } else if (label === "deleteFeature") {
     deleteFeature(value, true);
-  }
-
-  if (label === "addFeature") {
+  } else if (label === "addFeature") {
     const { feature } = geo.getFeatureById(value);
     addFeature(feature, true);
-  }
-  if (label === "updateFeatureGeometry") {
+  } else if (label === "updateFeatureGeometry") {
     deleteFeature(value, true);
     const { feature } = geo.getFeatureById(value);
     addFeature(feature, true);
-  }
-
-  if (label === "updateLayer") {
+  } else if (label === "updateLayer") {
     const layer = geo.getLayerById(value);
     updateLayer(value, layer, true);
+  } else if (label === "moveLayer") {
+    moveLayer(value, "down", true);
   }
 });
 
@@ -207,7 +197,7 @@ function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerActions) {
     action === ScenarioLayerActions.MoveDown
   ) {
     const direction = action === ScenarioLayerActions.MoveUp ? "up" : "down";
-    moveLayer(layer, direction);
+    moveLayer(layer.id, direction);
   }
 }
 

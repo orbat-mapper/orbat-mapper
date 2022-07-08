@@ -298,21 +298,22 @@ export function useScenarioLayers(olMap: OLMap) {
     console.log("index", idx);
   }
 
-  function moveLayer(layer: ScenarioLayer, direction: "up" | "down") {
-    send({ message: "Not implemented yet" });
-    // let toIndex = layersStore.getLayerIndex(layer);
-    //
-    // if (direction === "up") toIndex--;
-    // if (direction === "down") toIndex++;
-    // layersStore.moveLayer(layer, toIndex);
-    // const olLayer = getOlLayerById(layer.id);
-    //
-    // const layersCopy = [...scenarioLayersGroup.getLayers().getArray()];
-    // const fromIndex = layersCopy.indexOf(olLayer as any);
-    // scenarioLayersGroup.getLayers().clear();
-    // scenarioLayersGroup
-    //   .getLayers()
-    //   .extend(moveItemMutable(layersCopy, fromIndex, toIndex));
+  function moveLayer(layerId: FeatureId, direction: "up" | "down", isUndoRedo = false) {
+    let toIndex = geo.getLayerIndex(layerId);
+
+    if (!isUndoRedo) {
+      if (direction === "up") toIndex--;
+      if (direction === "down") toIndex++;
+      geo.moveLayer(layerId, toIndex);
+    }
+    const olLayer = getOlLayerById(layerId);
+
+    const layersCopy = [...scenarioLayersGroup.getLayers().getArray()];
+    const fromIndex = layersCopy.indexOf(olLayer as any);
+    scenarioLayersGroup.getLayers().clear();
+    scenarioLayersGroup
+      .getLayers()
+      .extend(moveItemMutable(layersCopy, fromIndex, toIndex));
   }
 
   function deleteLayer(layerId: FeatureId, isUndoRedo = false) {
@@ -441,7 +442,7 @@ function convertOlFeatureToScenarioFeature(olFeature: Feature): NScenarioFeature
 
 export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
   const { geo } = injectStrict(activeScenarioKey);
-  const layerStore = useScenarioLayersStore();
+
   const eventKeys = [] as EventsKey[];
 
   function addListener(l: VectorLayer<any>) {

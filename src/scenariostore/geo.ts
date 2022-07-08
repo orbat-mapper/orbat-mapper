@@ -15,7 +15,8 @@ import {
   ScenarioLayerUpdate,
 } from "@/types/internalModels";
 import { klona } from "klona";
-import { nanoid, removeElement } from "@/utils";
+import { moveElement, moveItemMutable, nanoid, removeElement } from "@/utils";
+import { useScenarioStore } from "@/stores/scenarioStore";
 
 export function useGeo(store: NewScenarioStore) {
   const { state, update } = store;
@@ -61,6 +62,16 @@ export function useGeo(store: NewScenarioStore) {
       { label: "addLayer", value: newLayer.id }
     );
     return state.layerMap[newLayer.id];
+  }
+
+  function moveLayer(layerId: FeatureId, toIndex: number) {
+    const fromIndex = state.layers.indexOf(layerId);
+    update(
+      (s) => {
+        moveItemMutable(s.layers, fromIndex, toIndex);
+      },
+      { label: "moveLayer", value: layerId }
+    );
   }
 
   function getFullLayer(layerId: FeatureId): ScenarioLayer | undefined {
@@ -191,6 +202,8 @@ export function useGeo(store: NewScenarioStore) {
     },
     updateLayer,
     deleteLayer,
+    getLayerIndex: (id: FeatureId) => state.layers.indexOf(id),
+    moveLayer,
     addFeature,
     deleteFeature,
     updateFeature,
