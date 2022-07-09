@@ -12,12 +12,7 @@ import {
   useScenarioLayers,
   useScenarioLayerSync,
 } from "./scenarioLayers2";
-import {
-  FeatureId,
-  ScenarioFeature,
-  ScenarioLayer,
-  ScenarioLayerInstance,
-} from "@/types/scenarioGeoModels";
+import { FeatureId, ScenarioFeature, ScenarioLayer } from "@/types/scenarioGeoModels";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { injectStrict, nanoid } from "@/utils";
 import { ScenarioFeatureActions, ScenarioLayerActions } from "@/types/constants";
@@ -26,7 +21,6 @@ import { useToggle, useVModel } from "@vueuse/core";
 import Feature from "ol/Feature";
 import ScenarioLayersPanel from "./ScenarioLayersPanel.vue";
 import { AnyVectorLayer } from "@/geo/types";
-import { useScenarioLayersStore } from "@/stores/scenarioLayersStore";
 import NProgress from "nprogress";
 import { activeScenarioKey } from "@/components/injects";
 import {
@@ -34,7 +28,6 @@ import {
   NScenarioLayer,
   ScenarioLayerUpdate,
 } from "@/types/internalModels";
-import { EntityId } from "@/types/base";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -103,6 +96,8 @@ onUndo(({ meta, patch }) => {
     updateLayer(value, layer, true);
   } else if (label === "moveLayer") {
     moveLayer(value, "down", true);
+  } else if (label === "updateFeature") {
+    updateFeature(value, {}, true);
   }
 });
 
@@ -126,6 +121,8 @@ onRedo(({ meta, patch }) => {
     updateLayer(value, layer, true);
   } else if (label === "moveLayer") {
     moveLayer(value, "down", true);
+  } else if (label === "updateFeature") {
+    updateFeature(value, {}, true);
   }
 });
 
@@ -319,6 +316,7 @@ onMounted(() => {
       @close="toggleLayerPanel()"
       @feature-action="onFeatureAction"
       @feature-meta-update="updateFeature"
+      @feature-style-update="updateFeature"
     />
   </Teleport>
 </template>

@@ -6,7 +6,7 @@
       min="0"
       max="1"
       step="0.01"
-      v-model.number="opacity"
+      v-model.number.lazy="opacity"
       class="w-24"
     />
     <button

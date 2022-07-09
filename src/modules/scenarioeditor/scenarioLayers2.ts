@@ -27,10 +27,9 @@ import LineString from "ol/geom/LineString";
 import { add as addCoordinate } from "ol/coordinate";
 import { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
-import { computed, onUnmounted, ref, watch } from "vue";
+import { onUnmounted, ref, watch } from "vue";
 import { unByKey } from "ol/Observable";
 import { EventsKey } from "ol/events";
-import { useScenarioLayersStore } from "@/stores/scenarioLayersStore";
 import { AnyVectorLayer } from "@/geo/types";
 import {
   LayersOutline,
@@ -41,16 +40,16 @@ import {
 } from "mdue";
 import { MenuItemData } from "@/components/DotsMenu.vue";
 import { ScenarioFeatureActions } from "@/types/constants";
-import { clearStyleCache, scenarioFeatureStyle } from "@/geo/featureStyles";
 import Select from "ol/interaction/Select";
 import { MaybeRef } from "@vueuse/core";
-import { activeScenarioKey } from "@/components/injects";
+import { activeFeaturesKey, activeScenarioKey } from "@/components/injects";
 import {
   NScenarioFeature,
   NScenarioLayer,
   ScenarioLayerUpdate,
 } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
+
 const { send } = useNotifications();
 
 export enum LayerType {
@@ -128,21 +127,6 @@ function createScenarioLayerFeatures(
   return olFeatures;
 }
 
-function createScenarioVectorLayer(
-  l: ScenarioLayer,
-  projection: ProjectionLike = "EPSG:3837"
-) {
-  const vectorLayer = new VectorLayer({
-    source: new VectorSource({
-      features: createScenarioLayerFeatures(l.features, projection),
-    }),
-    style: scenarioFeatureStyle,
-    properties: { id: l.id, title: l.name, layerType: LayerType.overlay },
-  });
-  if (l.isHidden) vectorLayer.setVisible(false);
-  return vectorLayer;
-}
-
 export function useScenarioFeatureSelect(
   olMap: OLMap,
   options: Partial<{
@@ -198,14 +182,30 @@ export function useScenarioFeatureSelect(
  */
 export function useScenarioLayers(olMap: OLMap) {
   const { geo } = injectStrict(activeScenarioKey);
+  const activeScenarioFeatures = injectStrict(activeFeaturesKey);
   const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
   const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
     VectorLayer<any>
   >;
   const projection = olMap.getView().getProjection();
 
+  function createScenarioVectorLayer(
+    l: ScenarioLayer,
+    projection: ProjectionLike = "EPSG:3837"
+  ) {
+    const vectorLayer = new VectorLayer({
+      source: new VectorSource({
+        features: createScenarioLayerFeatures(l.features, projection),
+      }),
+      style: activeScenarioFeatures.scenarioFeatureStyle,
+      properties: { id: l.id, title: l.name, layerType: LayerType.overlay },
+    });
+    if (l.isHidden) vectorLayer.setVisible(false);
+    return vectorLayer;
+  }
+
   function initializeFromStore() {
-    clearStyleCache();
+    activeScenarioFeatures.clearCache();
     scenarioLayersOl.clear();
 
     geo.layers.value.forEach((l) => {
@@ -339,16 +339,21 @@ export function useScenarioLayers(olMap: OLMap) {
   }
 
   function updateFeature(
-    scenarioFeature: ScenarioFeature,
-    data: Partial<ScenarioFeatureProperties>
+    featureId: FeatureId,
+    data: Partial<ScenarioFeatureProperties>,
+    isUndoRedo = false
   ) {
-    const id = scenarioFeature.id;
-    const { feature, layer } = geo.getFeatureById(id) || {};
+    const { feature, layer } = geo.getFeatureById(featureId) || {};
     if (!(feature && layer)) return;
-    const dataUpdate = {
-      properties: { ...feature.properties, ...data },
-    };
-    geo.updateFeature(id, dataUpdate);
+
+    if (!isUndoRedo) {
+      const dataUpdate = {
+        properties: { ...feature.properties, ...data },
+      };
+      geo.updateFeature(featureId, dataUpdate);
+    }
+    activeScenarioFeatures.invalidateStyle(featureId);
+    olMap.getView().adjustCenter([0.01, 0.01]);
   }
 
   function updateFeatureGeometryFromOlFeature(olFeature: Feature) {

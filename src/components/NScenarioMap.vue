@@ -50,7 +50,11 @@ import ToolbarButton from "./ToolbarButton.vue";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import {
+  activeFeaturesKey,
+  activeScenarioKey,
+  activeUnitKey,
+} from "@/components/injects";
 
 const {
   geo,

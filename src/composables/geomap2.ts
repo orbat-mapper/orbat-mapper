@@ -1,10 +1,9 @@
 import { createUnitFeatureAt, createUnitLayer } from "@/geo/layers";
-import { useScenarioStore } from "@/stores/scenarioStore";
 import Fade from "ol-ext/featureanimation/Fade";
 import { nextTick, Ref, unref, watch } from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
-import { useActiveUnitStore, useDragStore } from "@/stores/dragStore";
+import { useDragStore } from "@/stores/dragStore";
 import { DragOperations } from "@/types/constants";
 import { fromLonLat, toLonLat } from "ol/proj";
 import { LineString, Point } from "ol/geom";

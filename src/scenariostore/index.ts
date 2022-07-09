@@ -7,7 +7,6 @@ import { useGeo } from "@/scenariostore/geo";
 
 const nstore = shallowRef<NewScenarioStore>({} as any);
 
-export const isLoaded = ref(false);
 export const isLoading = ref(false);
 
 export function useIO() {
@@ -31,3 +30,4 @@ export function useScenario() {
 }
 
 export type TScenario = UnwrapRef<ReturnType<typeof useScenario>>["scenario"];
+export type TGeo = ReturnType<typeof useGeo>;

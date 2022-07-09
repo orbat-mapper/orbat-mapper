@@ -169,19 +169,26 @@ import { FeatureId } from "@/types/scenarioGeoModels";
 import NProgress from "nprogress";
 import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import {
+  activeFeaturesKey,
+  activeScenarioKey,
+  activeUnitKey,
+} from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
 import type { Scenario } from "@/types/scenarioModels";
 import ScenarioMap from "@/components/NScenarioMap.vue";
+import { useFeatureStyles } from "@/geo/featureStyles";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"));
 
 const props = defineProps<{ activeScenario: TScenario }>();
 const activeUnitId = ref<EntityId | undefined | null>(null);
+const scnFeatures = useFeatureStyles(props.activeScenario.geo);
 
 provide(activeUnitKey, activeUnitId);
 provide(activeScenarioKey, props.activeScenario);
+provide(activeFeaturesKey, scnFeatures);
 
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
 

@@ -29,7 +29,12 @@ const SimpleMarkdownInput = defineAsyncComponent(
 );
 
 const props = defineProps<{ feature: ScenarioFeature }>();
-const emit = defineEmits(["close", "feature-action", "feature-meta-update"]);
+const emit = defineEmits([
+  "close",
+  "feature-action",
+  "feature-meta-update",
+  "feature-style-update",
+]);
 
 const fillProps = computed(() => {
   const { fill } = props.feature.properties;
@@ -54,7 +59,7 @@ const hDescription = computed(() =>
 );
 
 function onFormMetaSubmit() {
-  emit("feature-meta-update", props.feature, { ...formMeta.value });
+  emit("feature-meta-update", props.feature.id, { ...formMeta.value });
   toggleMetaEdit();
 }
 
@@ -66,13 +71,11 @@ const doFormFocus = async () => {
 };
 
 function updateStroke(data: Partial<StrokeStyleSpec>) {
-  // Fixme!
-  Object.assign(props.feature.properties, data);
+  emit("feature-style-update", props.feature.id, { ...data });
 }
 
 function updateFill(data: Partial<FillStyleSpec>) {
-  // Fixme!
-  Object.assign(props.feature.properties, data);
+  emit("feature-style-update", props.feature.id, { ...data });
 }
 </script>
 <template>
