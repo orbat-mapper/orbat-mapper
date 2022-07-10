@@ -10,7 +10,7 @@
     >
       <TabView
         v-model:current-tab="currentScenarioTab"
-        :key="scenarioStore.id"
+        :key="state.id"
         extra-class="px-6"
         tab-class=""
         class="mt-3 min-h-0"
@@ -196,8 +196,6 @@ const { loadFromObject } = props.activeScenario.io;
 const { unitActions } = props.activeScenario;
 const route = useRoute();
 const router = useRouter();
-const scenarioStore = useScenarioStore();
-const scenarioIO = useScenarioIO();
 const currentTab = ref(0);
 const isOpen = ref(false);
 const showSearch = ref(false);
@@ -211,7 +209,7 @@ const activeUnitStore = useActiveUnitStore2({
 const uiStore = useUiStore();
 
 const originalTitle = useTitle().value;
-const windowTitle = computed(() => scenarioStore.scenario.name);
+const windowTitle = computed(() => state.info.name);
 const { send } = useNotifications();
 const geoStore = useGeoStore();
 const [showUnitPanel, toggleUnitPanel] = useToggle();
