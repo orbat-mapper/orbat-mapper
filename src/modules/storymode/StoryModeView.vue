@@ -6,7 +6,7 @@
       Under development
     </p>
     <header class="relative w-full bg-gray-100 p-4 md:flex-shrink-0">
-      <h1>{{ scenario.name }}</h1>
+      <h1>{{ state.info.name }}</h1>
       <button
         type="button"
         @click="toggleSidebar()"
@@ -42,152 +42,124 @@
   </div>
 </template>
 
-<script lang="ts">
-import {
-  computed,
-  defineComponent,
-  onMounted,
-  onUnmounted,
-  ref,
-  shallowRef,
-  toRef,
-  watch,
-} from "vue";
-import MapContainer from "../../components/MapContainer.vue";
-import { useScenarioStore } from "../../stores/scenarioStore";
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, provide, ref, shallowRef, watch } from "vue";
+import MapContainer from "@/components/MapContainer.vue";
 import { and, invoke, useTitle, useToggle, whenever } from "@vueuse/core";
-import { useScenarioIO } from "../../stores/scenarioIO";
 import OLMap from "ol/Map";
-import { useUnitLayer } from "../../composables/geomap";
 import StoryModeContent from "./StoryModeContent.vue";
-import { chapter, StoryStateChange } from "../../testdata/testStory";
+import { chapter, StoryStateChange } from "@/testdata/testStory";
 import { fromLonLat } from "ol/proj";
 import dayjs from "dayjs";
-import { flyTo } from "../../geo/layers";
-import { useSettingsStore } from "../../stores/settingsStore";
-import { clearStyleCache } from "../../geo/unitStyles";
+import { flyTo } from "@/geo/layers";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { clearStyleCache } from "@/geo/unitStyles";
 import SlideOver from "../../components/SlideOver.vue";
 import { MenuIcon, XIcon } from "@heroicons/vue/outline";
-import InputGroup from "../../components/InputGroup.vue";
 import NumberInputGroup from "../../components/NumberInputGroup.vue";
 import MeasurementToolbar from "../../components/MeasurementToolbar.vue";
-import { useScenarioLayers } from "../../composables/scenarioLayers";
+import type { TScenario } from "@/scenariostore";
+import { useUnitLayer } from "@/composables/geomap2";
+import { activeFeaturesKey, activeScenarioKey } from "@/components/injects";
+import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
+import { useFeatureStyles } from "@/geo/featureStyles";
 
-export default defineComponent({
-  name: "StoryModeView",
-  components: {
-    MeasurementToolbar,
-    NumberInputGroup,
-    InputGroup,
-    SlideOver,
-    StoryModeContent,
-    MapContainer,
-    MenuIcon,
-    XIcon,
-  },
-  setup() {
-    const scenarioStore = useScenarioStore();
-    const scenarioIO = useScenarioIO();
-    const originalTitle = useTitle().value;
-    const windowTitle = computed(() => scenarioStore.scenario.name);
-    const mapIsReady = ref(false);
-    const sidebarIsOpen = ref(false);
-    const toggleSidebar = useToggle(sidebarIsOpen);
-    const mapRef = shallowRef<OLMap>();
+const props = defineProps<{ activeScenario: TScenario }>();
+provide(activeScenarioKey, props.activeScenario);
 
-    const settingsStore = useSettingsStore();
+const scnFeatures = useFeatureStyles(props.activeScenario.geo);
+provide(activeFeaturesKey, scnFeatures);
 
-    useTitle(windowTitle);
+const { state } = props.activeScenario.store;
 
-    onMounted(() => {
-      window.scrollTo(0, 0);
-    });
+const originalTitle = useTitle().value;
+const windowTitle = computed(() => state.info.name);
+const mapIsReady = ref(false);
+const sidebarIsOpen = ref(false);
+const toggleSidebar = useToggle(sidebarIsOpen);
+const mapRef = shallowRef<OLMap>();
 
-    onUnmounted(() => {
-      useTitle(originalTitle);
-    });
+const settingsStore = useSettingsStore();
 
-    scenarioIO.loadDemoScenario("falkland82");
-    const scenarioLoaded = computed(() => scenarioStore.isLoaded);
-    const scenario = toRef(scenarioStore, "scenario");
-    const { unitLayer, drawUnits, animateUnits } = useUnitLayer();
+useTitle(windowTitle);
 
-    function onMapReady(olMap: OLMap) {
-      mapRef.value = olMap;
-      olMap.addLayer(unitLayer);
-      mapIsReady.value = true;
-    }
+onMounted(() => {
+  window.scrollTo(0, 0);
+});
 
-    whenever(and(mapIsReady, scenarioLoaded), () => {
-      const view = mapRef.value!.getView();
-      const { center, ...rest } = chapter.view;
-      const time = dayjs.utc(chapter.startTime);
-      scenarioStore.setCurrentTime(time.valueOf());
+onUnmounted(() => {
+  useTitle(originalTitle);
+});
 
-      const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(
-        mapRef.value!
-      );
-      loadScenarioLayers();
-      drawUnits();
+const { unitLayer, drawUnits, animateUnits } = useUnitLayer({
+  activeScenario: props.activeScenario,
+});
 
-      view.animate({
-        ...rest,
-        center: fromLonLat(center, view.getProjection()),
-        duration: 0,
+function onMapReady(olMap: OLMap) {
+  mapRef.value = olMap;
+  olMap.addLayer(unitLayer);
+  mapIsReady.value = true;
+}
+
+whenever(and(mapIsReady), () => {
+  const view = mapRef.value!.getView();
+  const { center, ...rest } = chapter.view;
+  const time = dayjs.utc(chapter.startTime);
+  props.activeScenario.time.setCurrentTime(time.valueOf());
+  const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(mapRef.value!, {
+    activeScenario: props.activeScenario,
+    activeScenarioFeatures: scnFeatures,
+  });
+
+  loadScenarioLayers();
+  drawUnits();
+
+  view.animate({
+    ...rest,
+    center: fromLonLat(center, view.getProjection()),
+    duration: 0,
+  });
+  // const extent = unitLayer.getSource().getExtent();
+  // if (extent && !unitLayer.getSource().isEmpty())
+  //   mapInstance.getView().fit(extent, { padding: [10, 10, 10, 10] });
+});
+
+function onUpdateState(state: StoryStateChange) {
+  if (state.time) {
+    const time = dayjs.utc(state.time);
+    props.activeScenario.time.setCurrentTime(time.valueOf());
+    animateUnits();
+  }
+  if (state.view) {
+    const view = mapRef.value!.getView();
+    const { center, zoom, duration, ...rest } = state.view;
+
+    // view.animate(
+    //   {
+    //     duration: 2000,
+    //     ...rest,
+    //     center: center && fromLonLat(center, view.getProjection()),
+    //   },
+    //   () => (doneAnimating.value = true)
+    // );
+
+    if (center)
+      invoke(async () => {
+        await flyTo(view, {
+          location: fromLonLat(center, view.getProjection()),
+          zoom,
+          duration,
+        });
+        // await until(doneAnimating).toBe(true);
+        console.log("done animating");
       });
-      // const extent = unitLayer.getSource().getExtent();
-      // if (extent && !unitLayer.getSource().isEmpty())
-      //   mapInstance.getView().fit(extent, { padding: [10, 10, 10, 10] });
-    });
+  }
 
-    function onUpdateState(state: StoryStateChange) {
-      if (state.time) {
-        const time = dayjs.utc(state.time);
-        scenarioStore.setCurrentTime(time.valueOf());
-        animateUnits();
-      }
-      if (state.view) {
-        const view = mapRef.value!.getView();
-        const { center, zoom, duration, ...rest } = state.view;
+  console.log("On update state", state);
+}
 
-        // view.animate(
-        //   {
-        //     duration: 2000,
-        //     ...rest,
-        //     center: center && fromLonLat(center, view.getProjection()),
-        //   },
-        //   () => (doneAnimating.value = true)
-        // );
-
-        if (center)
-          invoke(async () => {
-            await flyTo(view, {
-              location: fromLonLat(center, view.getProjection()),
-              zoom,
-              duration,
-            });
-            // await until(doneAnimating).toBe(true);
-            console.log("done animating");
-          });
-      }
-
-      console.log("On update state", state);
-    }
-
-    watch(settingsStore, () => {
-      clearStyleCache();
-      drawUnits();
-    });
-
-    return {
-      scenario,
-      onMapReady,
-      onUpdateState,
-      sidebarIsOpen,
-      toggleSidebar,
-      settingsStore,
-      mapRef,
-    };
-  },
+watch(settingsStore, () => {
+  clearStyleCache();
+  drawUnits();
 });
 </script>

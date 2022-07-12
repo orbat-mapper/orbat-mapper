@@ -49,6 +49,8 @@ import {
   ScenarioLayerUpdate,
 } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
+import { TScenario } from "@/scenariostore";
+import { UseFeatureStyles } from "@/geo/featureStyles";
 
 const { send } = useNotifications();
 
@@ -180,9 +182,16 @@ export function useScenarioFeatureSelect(
  * Create and manage scenario layers
  *
  */
-export function useScenarioLayers(olMap: OLMap) {
-  const { geo } = injectStrict(activeScenarioKey);
-  const activeScenarioFeatures = injectStrict(activeFeaturesKey);
+export function useScenarioLayers(
+  olMap: OLMap,
+  {
+    activeScenario,
+    activeScenarioFeatures,
+  }: { activeScenario?: TScenario; activeScenarioFeatures?: UseFeatureStyles } = {}
+) {
+  const { geo } = activeScenario || injectStrict(activeScenarioKey);
+  const { scenarioFeatureStyle, clearCache, invalidateStyle } =
+    activeScenarioFeatures || injectStrict(activeFeaturesKey);
   const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
   const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
     VectorLayer<any>
@@ -197,7 +206,7 @@ export function useScenarioLayers(olMap: OLMap) {
       source: new VectorSource({
         features: createScenarioLayerFeatures(l.features, projection),
       }),
-      style: activeScenarioFeatures.scenarioFeatureStyle,
+      style: scenarioFeatureStyle,
       properties: { id: l.id, title: l.name, layerType: LayerType.overlay },
     });
     if (l.isHidden) vectorLayer.setVisible(false);
@@ -205,7 +214,7 @@ export function useScenarioLayers(olMap: OLMap) {
   }
 
   function initializeFromStore() {
-    activeScenarioFeatures.clearCache();
+    clearCache();
     scenarioLayersOl.clear();
 
     geo.layers.value.forEach((l) => {
@@ -352,7 +361,7 @@ export function useScenarioLayers(olMap: OLMap) {
       };
       geo.updateFeature(featureId, dataUpdate);
     }
-    activeScenarioFeatures.invalidateStyle(featureId);
+    invalidateStyle(featureId);
     olMap.getView().adjustCenter([0.01, 0.01]);
   }
 

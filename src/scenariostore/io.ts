@@ -60,7 +60,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     loadFromObject(scn);
   }
 
-  async function loadDemoScenario(id: string) {
+  async function loadDemoScenario(id: string | "falkland82" | "narvik40") {
     isLoading.value = true;
     const idUrlMap: Record<string, string> = {
       falkland82: "/scenarios/falkland82.json",

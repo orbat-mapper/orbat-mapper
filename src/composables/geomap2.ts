@@ -22,9 +22,10 @@ import { useOlEvent } from "./openlayersHelpers";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
+import { TScenario } from "@/scenariostore";
 
-export function useUnitLayer() {
-  const { geo } = injectStrict(activeScenarioKey);
+export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
+  const { geo } = activeScenario || injectStrict(activeScenarioKey);
   const unitLayer = createUnitLayer();
   const drawUnits = () => {
     unitLayer.getSource()?.clear();
