@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { LayerFeatureSearchResult } from "./types";
-import { getItemsIcon } from "../composables/scenarioLayers";
+import { getItemsIcon } from "@/modules/scenarioeditor/scenarioLayers2";
 
 const props = defineProps<{ feature: LayerFeatureSearchResult }>();
 </script>

@@ -9,8 +9,8 @@ import { createHistoryStylesFromFeature, createUnitStyleFromFeature } from "./un
 import { PointVectorLayer } from "./types";
 import View from "ol/View";
 import { nanoid } from "../utils";
-import { LayerType } from "../composables/scenarioLayers";
 import { NUnit } from "@/types/internalModels";
+import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
 
 export function createUnitLayer(): PointVectorLayer {
   return new VectorLayer({

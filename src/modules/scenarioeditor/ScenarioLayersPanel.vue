@@ -1,27 +1,27 @@
 <script setup lang="ts">
 import { ImageFilterCenterFocus, MagnifyPlusOutline } from "mdue";
 import { GlobalEvents } from "vue-global-events";
-import {
-  ScenarioFeature,
-  ScenarioFeatureProperties,
-} from "../../types/scenarioGeoModels";
+import { ScenarioFeature, ScenarioFeatureProperties } from "@/types/scenarioGeoModels";
 import TabView from "../../components/TabView.vue";
 import TabItem from "../../components/TabItem.vue";
 import CloseButton from "../../components/CloseButton.vue";
 import DescriptionItem from "../../components/DescriptionItem.vue";
 import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
-import { renderMarkdown } from "../../composables/formatting";
-import { featureMenuItems, getGeometryIcon } from "../../composables/scenarioLayers";
+import { renderMarkdown } from "@/composables/formatting";
+import {
+  featureMenuItems,
+  getGeometryIcon,
+} from "@/modules/scenarioeditor/scenarioLayers2";
 import BaseToolbar from "../../components/BaseToolbar.vue";
 import ToolbarButton from "../../components/ToolbarButton.vue";
-import { ScenarioFeatureActions } from "../../types/constants";
+import { ScenarioFeatureActions } from "@/types/constants";
 import DotsMenu from "../../components/DotsMenu.vue";
 import { useToggle } from "@vueuse/core";
 import InputGroup from "../../components/InputGroup.vue";
 import BaseButton from "../../components/BaseButton.vue";
-import { inputEventFilter } from "../../components/helpers";
+import { inputEventFilter } from "@/components/helpers";
 import FeatureStrokeSettings from "./FeatureStrokeSettings.vue";
-import { type FillStyleSpec, type StrokeStyleSpec } from "../../geo/simplestyle";
+import { type FillStyleSpec, type StrokeStyleSpec } from "@/geo/simplestyle";
 import FeatureFillSettings from "./FeatureFillSettings.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(

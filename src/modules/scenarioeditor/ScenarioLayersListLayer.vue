@@ -10,7 +10,10 @@ import { ScenarioLayerActions } from "../../types/constants";
 import { ref } from "vue";
 import EditLayerInlineForm from "./EditLayerInlineForm.vue";
 import ChevronPanel from "../../components/ChevronPanel.vue";
-import { featureMenuItems, getGeometryIcon } from "../../composables/scenarioLayers";
+import {
+  featureMenuItems,
+  getGeometryIcon,
+} from "@/modules/scenarioeditor/scenarioLayers2";
 
 const props = defineProps<{
   layer: ScenarioLayerInstance;

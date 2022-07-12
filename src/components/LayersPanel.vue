@@ -54,7 +54,7 @@ import TileSource from "ol/source/Tile";
 import { toLonLat } from "ol/proj";
 import OpacityInput from "./OpacityInput.vue";
 import { getUid } from "ol";
-import { LayerType } from "../composables/scenarioLayers";
+import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
 
 export interface LayerInfo<T extends BaseLayer = BaseLayer> {
   id: string;
