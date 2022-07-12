@@ -1,14 +1,14 @@
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { Coordinate } from "ol/coordinate";
-import { Unit } from "../types/scenarioModels";
+import { Unit } from "@/types/scenarioModels";
 import { Feature } from "ol";
 import { LineString, Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import { createHistoryStylesFromFeature, createUnitStyleFromFeature } from "./unitStyles";
 import { PointVectorLayer } from "./types";
 import View from "ol/View";
-import { nanoid } from "../utils";
+import { nanoid } from "@/utils";
 import { NUnit } from "@/types/internalModels";
 import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
 

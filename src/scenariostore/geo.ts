@@ -15,8 +15,7 @@ import {
   ScenarioLayerUpdate,
 } from "@/types/internalModels";
 import { klona } from "klona";
-import { moveElement, moveItemMutable, nanoid, removeElement } from "@/utils";
-import { useScenarioStore } from "@/stores/scenarioStore";
+import { moveItemMutable, nanoid, removeElement } from "@/utils";
 
 export function useGeo(store: NewScenarioStore) {
   const { state, update } = store;

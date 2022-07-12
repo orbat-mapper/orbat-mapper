@@ -1,14 +1,12 @@
-import { OrbatItemData, Unit } from "../types/scenarioModels";
-import { UnitActions } from "../types/constants";
-import { useScenarioStore } from "../stores/scenarioStore";
-import { useGeoStore } from "../stores/geoStore";
-import { useActiveUnitStore } from "../stores/dragStore";
-import { computed, Ref } from "vue";
-import { MenuItemData } from "../components/DotsMenu.vue";
-import { useUnitManipulationStore } from "../stores/scenarioManipulation";
-import { NOrbatItemData, NUnit } from "../types/internalModels";
-import { TScenario } from "@/scenariostore";
-import { EntityId } from "@/types/base";
+import { OrbatItemData, Unit } from "@/types/scenarioModels";
+import { UnitActions } from "@/types/constants";
+import { useScenarioStore } from "@/stores/scenarioStore";
+import { useGeoStore } from "@/stores/geoStore";
+import { useActiveUnitStore } from "@/stores/dragStore";
+import { computed } from "vue";
+import { MenuItemData } from "@/components/DotsMenu.vue";
+import { useUnitManipulationStore } from "@/stores/scenarioManipulation";
+import { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 

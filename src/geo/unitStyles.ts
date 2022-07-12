@@ -1,13 +1,13 @@
 import Feature, { FeatureLike } from "ol/Feature";
 import { Fill, Icon, RegularShape, Stroke, Style, Text } from "ol/style";
-import { Unit } from "../types/scenarioModels";
-import { symbolGenerator } from "../symbology/milsymbwrapper";
+import { Unit } from "@/types/scenarioModels";
+import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import { Symbol as MilSymbol } from "milsymbol";
 import IconAnchorUnits from "ol/style/IconAnchorUnits";
 import { LineString, Point } from "ol/geom";
 import CircleStyle from "ol/style/Circle";
 import { formatDateString } from "./utils";
-import { useSettingsStore } from "../stores/settingsStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 
 const unitStyleCache = new Map();
 const selectedUnitStyleCache = new Map();

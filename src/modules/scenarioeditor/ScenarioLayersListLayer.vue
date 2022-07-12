@@ -3,13 +3,13 @@ import {
   FeatureId,
   ScenarioFeature,
   ScenarioLayerInstance,
-} from "../../types/scenarioGeoModels";
+} from "@/types/scenarioGeoModels";
 import { Eye as EyeIcon, EyeOff, Pencil as PencilIcon } from "mdue";
-import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
-import { ScenarioLayerActions } from "../../types/constants";
+import DotsMenu, { MenuItemData } from "@/components/DotsMenu.vue";
+import { ScenarioLayerActions } from "@/types/constants";
 import { ref } from "vue";
 import EditLayerInlineForm from "./EditLayerInlineForm.vue";
-import ChevronPanel from "../../components/ChevronPanel.vue";
+import ChevronPanel from "@/components/ChevronPanel.vue";
 import {
   featureMenuItems,
   getGeometryIcon,

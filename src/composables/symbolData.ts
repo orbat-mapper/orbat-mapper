@@ -1,6 +1,6 @@
-import { app6d } from "../symbology/standards/app6d";
+import { app6d } from "@/symbology/standards/app6d";
 import { computed, ref, Ref, shallowRef, watch } from "vue";
-import { SymbolItem, SymbolValue } from "../types/constants";
+import { SymbolItem, SymbolValue } from "@/types/constants";
 import {
   CONTROL_MEASURE_SYMBOLSET_VALUE,
   DISMOUNTED_SYMBOLSET_VALUE,
@@ -14,11 +14,11 @@ import {
   SURFACE_SYMBOLSET_VALUE,
   towedArrayValues,
   UNIT_SYMBOLSET_VALUE,
-} from "../symbology/values";
-import { Sidc } from "../symbology/sidc";
-import { SymbolSetMap } from "../symbology/types";
-import { useSettingsStore } from "../stores/settingsStore";
-import { SymbologyStandard } from "../types/scenarioModels";
+} from "@/symbology/values";
+import { Sidc } from "@/symbology/sidc";
+import { SymbolSetMap } from "@/symbology/types";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { SymbologyStandard } from "@/types/scenarioModels";
 
 const symbology = shallowRef<SymbolSetMap | undefined>();
 const isLoaded = ref(false);
