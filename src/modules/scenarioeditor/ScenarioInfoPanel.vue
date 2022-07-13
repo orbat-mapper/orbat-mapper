@@ -55,7 +55,6 @@ import DescriptionItem from "@/components/DescriptionItem.vue";
 import PrimaryButton from "@/components/PrimaryButton.vue";
 import SecondaryButton from "@/components/SecondaryButton.vue";
 import { renderMarkdown } from "@/composables/formatting";
-import { useScenarioIO } from "@/stores/scenarioIO";
 import { useToggle } from "@vueuse/core";
 import PlainButton from "@/components/PlainButton.vue";
 import { type ScenarioInfo } from "@/types/scenarioModels";
@@ -92,7 +91,6 @@ const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
 );
 
-const scenarioIO = useScenarioIO();
 const settingsStore = useSettingsStore();
 const { state } = store;
 

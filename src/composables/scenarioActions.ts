@@ -1,46 +1,11 @@
 import { OrbatItemData, Unit } from "@/types/scenarioModels";
 import { UnitActions } from "@/types/constants";
-import { useScenarioStore } from "@/stores/scenarioStore";
 import { useGeoStore } from "@/stores/geoStore";
-import { useActiveUnitStore } from "@/stores/dragStore";
 import { computed } from "vue";
 import { MenuItemData } from "@/components/DotsMenu.vue";
-import { useUnitManipulationStore } from "@/stores/scenarioManipulation";
 import { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
-
-export function useUnitActions() {
-  const scenarioStore = useScenarioStore();
-  const unitManipulationStore = useUnitManipulationStore();
-  const geoStore = useGeoStore();
-  const activeUnitStore = useActiveUnitStore();
-  const onUnitAction = (unit: Unit | undefined, action: UnitActions) => {
-    if (!unit) return;
-    if (action === UnitActions.AddSubordinate) {
-      unit._isOpen = true;
-      unitManipulationStore.createSubordinateUnit(unit);
-    }
-
-    if (action === UnitActions.Zoom) geoStore.zoomToUnit(unit, 500);
-    if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);
-    if (action === UnitActions.Edit) {
-      activeUnitStore.setActiveUnit(unit);
-    }
-
-    action === UnitActions.Clone && unitManipulationStore.cloneUnit(unit);
-    action === UnitActions.MoveUp && unitManipulationStore.reorderUnit(unit, "up");
-    action === UnitActions.MoveDown && unitManipulationStore.reorderUnit(unit, "down");
-
-    if (action === UnitActions.Delete) {
-      if (activeUnitStore.activeUnit === unit) {
-        activeUnitStore.clearActiveUnit();
-      }
-      scenarioStore.deleteUnit(unit);
-    }
-  };
-  return { onUnitAction };
-}
 
 export function useUnitActionsN() {
   const { unitActions } = injectStrict(activeScenarioKey);

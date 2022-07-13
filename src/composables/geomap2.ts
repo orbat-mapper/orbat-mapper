@@ -23,6 +23,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
+import { NUnit } from "@/types/internalModels";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const { geo } = activeScenario || injectStrict(activeScenarioKey);
@@ -183,7 +184,7 @@ export function useSelectInteraction(
   return { selectInteraction };
 }
 
-export function createHistoryFeature(unit: Unit): Feature<LineString> {
+export function createHistoryFeature(unit: Unit | NUnit): Feature<LineString> {
   const state = [{ location: unit.location }, ...(unit.state || [])].filter(
     (s) => s?.location
   );

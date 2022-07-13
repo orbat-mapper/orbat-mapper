@@ -24,7 +24,6 @@ import { computed, markRaw, onUnmounted, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { GlobalEvents } from "vue-global-events";
-import { useActiveUnitStore } from "@/stores/dragStore";
 import { createHistoryLayer } from "@/geo/layers";
 import { Collection, Feature } from "ol";
 import { clearStyleCache } from "@/geo/unitStyles";
@@ -50,11 +49,7 @@ import ToolbarButton from "./ToolbarButton.vue";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
-import {
-  activeFeaturesKey,
-  activeScenarioKey,
-  activeUnitKey,
-} from "@/components/injects";
+import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 
 const {
   geo,
@@ -67,7 +62,6 @@ const mapRef = shallowRef<OLMap>();
 let selectedFeatures: Collection<Feature<Point>> = new Collection<Feature<Point>>();
 
 const { unitLayer, drawUnits } = useUnitLayer();
-const activeUnitStore = useActiveUnitStore();
 const historyLayer = createHistoryLayer();
 
 const geoStore = useGeoStore();
@@ -122,7 +116,7 @@ const onMapReady = (olMap: OLMap) => {
 const drawHistory = () => {
   const historyLayerSource = historyLayer.getSource()!;
   historyLayerSource.clear();
-  const unit = activeUnitStore.activeUnit;
+  const unit = activeUnit.value;
   if (!unit) return;
 
   const historyFeature = createHistoryFeature(unit);
