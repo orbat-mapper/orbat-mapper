@@ -19,6 +19,26 @@ import { EntityId } from "@/types/base";
 
 const LOCALSTORAGE_KEY = "orbat-scenario4";
 
+export function createEmptyScenario(): Scenario {
+  const settingsStore = useSettingsStore();
+  let timeZone;
+  try {
+    timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch (e) {}
+  return {
+    type: "ORBAT-mapper",
+    version: "0.5.0",
+    name: "New scenario",
+    description: "Empty scenario description",
+    startTime: new Date().getTime(),
+    timeZone,
+    symbologyStandard: settingsStore.symbologyStandard,
+    sides: [],
+    events: [],
+    layers: [],
+  };
+}
+
 function getScenarioInfo(state: ScenarioState): ScenarioInfo {
   return { ...state.info };
 }
@@ -115,23 +135,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   }
 
   function loadEmptyScenario() {
-    const settingsStore = useSettingsStore();
-    let timeZone;
-    try {
-      timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    } catch (e) {}
-    const scn: Scenario = {
-      name: "New scenario",
-      type: "ORBAT-mapper",
-      symbologyStandard: settingsStore.symbologyStandard,
-      version: "0.5.0",
-      description: "Empty scenario description",
-      sides: [],
-      events: [],
-      layers: [],
-      startTime: new Date().getTime(),
-      timeZone,
-    };
+    const scn = createEmptyScenario();
     loadFromObject(scn);
   }
 

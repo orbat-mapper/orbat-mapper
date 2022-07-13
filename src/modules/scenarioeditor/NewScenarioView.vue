@@ -21,15 +21,11 @@
           label="Basic scenario info"
           description="Provide a name and description for your scenario."
         >
-          <InputGroup
-            label="Name"
-            v-model="scenarioStore.scenario.name"
-            id="name-input"
-          />
+          <InputGroup label="Name" v-model="newScenario.name" id="name-input" />
 
           <SimpleMarkdownInput
             label="Description"
-            v-model="scenarioStore.scenario.description"
+            v-model="newScenario.description"
             description="Use markdown syntax for formatting"
           />
         </FormCard>
@@ -56,7 +52,7 @@
         >
           <RadioGroupList
             :settings="standardSettings"
-            v-model="scenarioStore.scenario.symbologyStandard"
+            v-model="newScenario.symbologyStandard"
           />
         </FormCard>
         <!--        <FormCard label="Order of Battle"></FormCard>-->
@@ -69,20 +65,19 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from "vue";
-import { CheckIcon } from "@heroicons/vue/solid";
-import ScenarioInfoPanel from "../../components/ScenarioInfoPanel.vue";
-import { useScenarioStore } from "../../stores/scenarioStore";
+<script setup lang="ts">
+import { ref } from "vue";
 import FormCard from "../../components/FormCard.vue";
 import InputGroup from "../../components/InputGroup.vue";
 import SimpleMarkdownInput from "../../components/SimpleMarkdownInput.vue";
 import TimezoneSelect from "../../components/TimezoneSelect.vue";
-import { useYMDElements } from "../../composables/scenarioTime";
+import { useYMDElements } from "@/composables/scenarioTime";
 import RadioGroupList from "../../components/RadioGroupList.vue";
 import BaseButton from "../../components/BaseButton.vue";
 import { useRouter } from "vue-router";
 import { SCENARIO_ROUTE } from "@/router/names";
+import { useScenario } from "@/scenariostore";
+import { createEmptyScenario } from "@/scenariostore/io";
 
 const standardSettings = [
   {
@@ -97,55 +92,30 @@ const standardSettings = [
   },
 ];
 
-export default defineComponent({
-  name: "NewScenarioView",
-  components: {
-    BaseButton,
-    RadioGroupList,
-    TimezoneSelect,
-    SimpleMarkdownInput,
-    InputGroup,
-    FormCard,
-    ScenarioInfoPanel,
-    CheckIcon,
-  },
+const newScenario = ref(createEmptyScenario());
 
-  setup(props) {
-    const scenarioStore = useScenarioStore();
-    const router = useRouter();
-    scenarioStore.loadEmptyScenario();
-    const timeZone = ref(scenarioStore.scenario.timeZone || "UTC");
+const { scenario } = useScenario();
 
-    const { year, month, day, hour, minute, resDateTime } = useYMDElements({
-      timestamp: scenarioStore.scenario.startTime!,
-      isLocal: true,
-      timeZone,
-    });
+const router = useRouter();
 
-    function create() {
-      scenarioStore.scenario.startTime = resDateTime.value.valueOf();
-      scenarioStore.setCurrentTime(scenarioStore.scenario.startTime);
-      router.push({ name: SCENARIO_ROUTE });
-    }
+const timeZone = ref(newScenario.value.timeZone || "UTC");
 
-    function cancel() {
-      router.back();
-    }
-
-    return {
-      scenarioStore,
-      year,
-      month,
-      day,
-      hour,
-      minute,
-      timeZone,
-
-      resDateTime,
-      standardSettings,
-      cancel,
-      create,
-    };
-  },
+const { year, month, day, hour, minute, resDateTime } = useYMDElements({
+  timestamp: newScenario.value.startTime!,
+  isLocal: true,
+  timeZone,
 });
+
+function create() {
+  const startTime = resDateTime.value.valueOf();
+  newScenario.value.startTime = startTime;
+  scenario.value.io.loadFromObject(newScenario.value);
+  scenario.value.time.setCurrentTime(startTime);
+
+  router.push({ name: SCENARIO_ROUTE });
+}
+
+function cancel() {
+  router.back();
+}
 </script>
