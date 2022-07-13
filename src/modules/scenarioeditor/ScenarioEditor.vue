@@ -134,12 +134,10 @@ import {
   onUnmounted,
   provide,
   ref,
-  toRefs,
   watch,
 } from "vue";
 import { GlobalEvents } from "vue-global-events";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
-import { useScenarioStore } from "@/stores/scenarioStore";
 import UnitPanel from "./UnitPanel.vue";
 import { useActiveUnitStore2 } from "@/stores/dragStore";
 import TabView from "@/components/TabView.vue";
@@ -152,7 +150,6 @@ import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
 import { inputEventFilter } from "@/components/helpers";
 import SearchModal from "@/components/NSearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
-import { useScenarioIO } from "@/stores/scenarioIO";
 import { useUiStore } from "@/stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
 import { Keyboard as KeyboardIcon } from "mdue";

@@ -21,6 +21,7 @@
         v-model="showTimeModal"
         dialog-title="Set scenario start time"
         v-model:timestamp="form.startTime"
+        :time-zone="state.info.timeZone"
       />
     </form>
     <div v-else class="space-y-4 p-6">
@@ -49,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, toRefs, watch } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
 import DescriptionItem from "@/components/DescriptionItem.vue";
 import PrimaryButton from "@/components/PrimaryButton.vue";
 import SecondaryButton from "@/components/SecondaryButton.vue";
@@ -64,7 +65,6 @@ import RadioGroupList from "@/components/RadioGroupList.vue";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { klona } from "klona";
 
 const { store } = injectStrict(activeScenarioKey);
 

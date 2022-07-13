@@ -3,7 +3,7 @@
     <form @submit.prevent="updateTime" class="mt-4 space-y-6">
       <div class="flex items-center justify-between">
         <DescriptionItem label="Time zone name">
-          {{ scenarioStore.scenario.timeZone }}
+          {{ timeZone }}
         </DescriptionItem>
 
         <SwitchGroup as="div" class="flex items-center">
@@ -41,60 +41,36 @@
   </SimpleModal>
 </template>
 
-<script lang="ts">
-import SimpleModal from "./SimpleModal.vue";
+<script setup lang="ts">
+import { computed, ref } from "vue";
 import { useVModel } from "@vueuse/core";
 import { Switch, SwitchGroup, SwitchLabel } from "@headlessui/vue";
 
-import { computed, defineComponent, ref } from "vue";
-import { useScenarioStore } from "../stores/scenarioStore";
+import SimpleModal from "./SimpleModal.vue";
 import PrimaryButton from "./PrimaryButton.vue";
 import InputGroup from "./InputGroup.vue";
 import DescriptionItem from "./DescriptionItem.vue";
-import { useDateElements } from "../composables/scenarioTime";
+import { useDateElements } from "@/composables/scenarioTime";
 
-export default defineComponent({
-  components: {
-    DescriptionItem,
-    InputGroup,
-    PrimaryButton,
-    SimpleModal,
-    Switch,
-    SwitchGroup,
-    SwitchLabel,
-  },
-  props: {
-    dialogTitle: { type: String, default: "Set scenario date and time" },
-    timestamp: { type: Number, default: 386467200000 },
-    modelValue: { type: Boolean, default: false },
-  },
-  emits: ["update:modelValue", "update:timestamp"],
-
-  setup(props, { emit }) {
-    const open = useVModel(props, "modelValue");
-    const scenarioStore = useScenarioStore();
-    const enabled = ref(false);
-    const isLocal = computed(() => !enabled.value);
-    const { date, hour, minute, resDateTime } = useDateElements({
-      timestamp: props.timestamp,
-      isLocal,
-      timeZone: scenarioStore.scenario.timeZone || "UTC",
-    });
-    const updateTime = () => {
-      emit("update:timestamp", resDateTime.value.valueOf());
-      open.value = false;
-    };
-
-    return {
-      open,
-      date,
-      updateTime,
-      hour,
-      minute,
-      resDateTime,
-      enabled,
-      scenarioStore,
-    };
-  },
+const props = defineProps({
+  dialogTitle: { type: String, default: "Set scenario date and time" },
+  timestamp: { type: Number, default: 386467200000 },
+  modelValue: { type: Boolean, default: false },
+  timeZone: { type: String, default: "UTC" },
 });
+const emit = defineEmits(["update:modelValue", "update:timestamp"]);
+
+const open = useVModel(props, "modelValue");
+const enabled = ref(false);
+const isLocal = computed(() => !enabled.value);
+const { date, hour, minute, resDateTime } = useDateElements({
+  timestamp: props.timestamp,
+  isLocal,
+  timeZone: props.timeZone,
+});
+
+const updateTime = () => {
+  emit("update:timestamp", resDateTime.value.valueOf());
+  open.value = false;
+};
 </script>

@@ -36,6 +36,7 @@
       v-model="showModal"
       dialog-title="Set current scenario time"
       v-model:timestamp="currentTime"
+      :time-zone="state.info.timeZone"
     />
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"

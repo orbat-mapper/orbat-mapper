@@ -39,7 +39,6 @@ import SimpleModal from "./SimpleModal.vue";
 import { useDebounce, useVModel } from "@vueuse/core";
 import SearchModalInput from "./SearchModalInput.vue";
 import SearchUnitHit from "./SearchUnitHit.vue";
-import { useScenarioStore } from "../stores/scenarioStore";
 import ToggleField from "./ToggleField.vue";
 import { LayerFeatureSearchResult, UnitSearchResult } from "./types";
 import { groupBy, htmlTagEscape, injectStrict } from "../utils";
@@ -64,7 +63,6 @@ const {
 const open = useVModel(props, "modelValue");
 const query = ref("");
 const debouncedQuery = useDebounce(query, 200);
-const scenarioStore = useScenarioStore();
 const currentHitIndex = ref(0);
 const limitToPosition = ref(false);
 
