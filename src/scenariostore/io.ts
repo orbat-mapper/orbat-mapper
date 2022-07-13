@@ -1,26 +1,101 @@
 import { until, useFetch, useLocalStorage } from "@vueuse/core";
-import { useScenarioStore } from "@/stores/scenarioStore";
-import { Scenario } from "@/types/scenarioModels";
+import {
+  Scenario,
+  ScenarioEvent,
+  ScenarioInfo,
+  Side,
+  SideGroup,
+  Unit,
+} from "@/types/scenarioModels";
 import * as FileSaver from "file-saver";
-import { NewScenarioStore, useNewScenarioStore } from "./newScenarioStore";
+import { NewScenarioStore, ScenarioState, useNewScenarioStore } from "./newScenarioStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { ShallowRef } from "vue";
 import { isLoading } from "@/scenariostore/index";
+import { INTERNAL_NAMES } from "@/types/internalModels";
+import dayjs from "dayjs";
+import { ScenarioLayer } from "@/types/scenarioGeoModels";
+import { EntityId } from "@/types/base";
 
-export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
-  function saveToLocalStorage(key = "orbat-scenario2") {
-    const scn = useLocalStorage(key, "");
-    const scenario = useScenarioStore();
-    scn.value = scenario.stringify();
+const LOCALSTORAGE_KEY = "orbat-scenario4";
+
+function getScenarioInfo(state: ScenarioState): ScenarioInfo {
+  return { ...state.info };
+}
+
+function getScenarioEvents(state: ScenarioState): ScenarioEvent[] {
+  return state.events;
+}
+
+function getSides(state: ScenarioState): Side[] {
+  function getUnit(unitId: EntityId): Unit {
+    const nUnit = state.unitMap[unitId];
+    return {
+      ...nUnit,
+      subUnits: nUnit.subUnits.map((subUnitId) => getUnit(subUnitId)),
+    };
   }
 
-  function loadFromLocalStorage(key = "orbat-scenario2") {
-    const scenario = useScenarioStore();
+  function getSideGroup(groupId: EntityId): SideGroup {
+    const group = state.sideGroupMap[groupId];
+    return { ...group, units: group.subUnits.map((unitId) => getUnit(unitId)) };
+  }
+
+  return state.sides
+    .map((sideId) => state.sideMap[sideId])
+    .map((nSide) => ({
+      ...nSide,
+      groups: nSide.groups.map((groupId) => getSideGroup(groupId)),
+    }));
+}
+
+function getLayers(state: ScenarioState): ScenarioLayer[] {
+  return state.layers
+    .map((id) => state.layerMap[id])
+    .map((layer) => ({
+      ...layer,
+      features: layer.features.map((fId) => state.featureMap[fId]),
+    }));
+}
+
+export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
+  function toObject(): Scenario {
+    const { state } = store.value;
+    return {
+      type: "ORBAT-mapper",
+      version: "0.5.0",
+      ...getScenarioInfo(state),
+      sides: getSides(state),
+      layers: getLayers(state),
+      events: getScenarioEvents(state),
+    };
+  }
+
+  function stringifyScenario() {
+    return JSON.stringify(
+      toObject(),
+      (name, val) => {
+        if (INTERNAL_NAMES.includes(name)) return undefined;
+        if (name === "t" || name === "startTime") {
+          return dayjs(val)
+            .tz(store.value.state.info.timeZone || "UTC")
+            .format();
+        }
+        return val;
+      },
+      "  "
+    );
+  }
+  function saveToLocalStorage(key = LOCALSTORAGE_KEY) {
+    const scn = useLocalStorage(key, "");
+    scn.value = stringifyScenario();
+  }
+
+  function loadFromLocalStorage(key = LOCALSTORAGE_KEY) {
     const scn = useLocalStorage(key, "");
 
     if (scn.value) {
-      scenario.$reset();
-      scenario.loadScenario(JSON.parse(scn.value));
+      loadFromObject(JSON.parse(scn.value));
     }
   }
 
@@ -76,13 +151,19 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   }
 
   async function downloadAsJson(fileName = "scenario.json") {
-    const scenario = useScenarioStore();
     FileSaver.saveAs(
-      new Blob([scenario.stringify()], {
+      new Blob([stringifyScenario()], {
         type: "application/json",
       }),
       fileName
     );
   }
-  return { loadDemoScenario, loadEmptyScenario, loadFromObject };
+  return {
+    loadDemoScenario,
+    loadEmptyScenario,
+    loadFromObject,
+    downloadAsJson,
+    saveToLocalStorage,
+    loadFromLocalStorage,
+  };
 }

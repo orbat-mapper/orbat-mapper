@@ -5,27 +5,24 @@ import { useScenarioIO } from "./io";
 import { useScenarioTime } from "./time";
 import { useGeo } from "@/scenariostore/geo";
 
-const nstore = shallowRef<NewScenarioStore>({} as any);
+const globalStoreRef = shallowRef<NewScenarioStore>({} as any);
 
 export const isLoading = ref(false);
 
-export function useIO() {
-  return useScenarioIO(nstore);
-}
-
+// Todo: add store ref as parameter in case we want to load multiple scenarios.
 export function useScenario() {
   return {
     scenario: computed(() => {
       return {
-        store: nstore.value,
-        unitActions: useUnitManipulations(nstore.value),
-        time: useScenarioTime(nstore.value),
-        io: useIO(),
-        geo: useGeo(nstore.value),
+        store: globalStoreRef.value,
+        unitActions: useUnitManipulations(globalStoreRef.value),
+        time: useScenarioTime(globalStoreRef.value),
+        io: useScenarioIO(globalStoreRef),
+        geo: useGeo(globalStoreRef.value),
       };
     }),
     isLoading,
-    isReady: computed(() => !!nstore.value.state),
+    isReady: computed(() => !!globalStoreRef.value.state),
   };
 }
 

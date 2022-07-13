@@ -193,7 +193,7 @@ provide(activeFeaturesKey, scnFeatures);
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
 
 const { loadFromObject } = props.activeScenario.io;
-const { unitActions } = props.activeScenario;
+const { unitActions, io } = props.activeScenario;
 const route = useRoute();
 const router = useRouter();
 const currentTab = ref(0);
@@ -296,18 +296,17 @@ function onScenarioAction(action: ScenarioActions) {
   }
 
   if (action === ScenarioActions.Save) {
-    // scenarioIO.saveToLocalStorage();
-    send({ message: "Not implemented yet" });
+    io.saveToLocalStorage();
+    send({ message: "Scenario saved to local storage" });
   }
 
   if (action === ScenarioActions.Load) {
-    // scenarioIO.loadFromLocalStorage();
-    send({ message: "Not implemented yet" });
+    io.loadFromLocalStorage();
+    send({ message: "Scenario loaded from local storage" });
   }
 
   if (action === ScenarioActions.ExportJson) {
-    send({ message: "Not implemented yet" });
-    // scenarioIO.downloadAsJson();
+    io.downloadAsJson();
   }
 
   if (action === ScenarioActions.LoadNew) {

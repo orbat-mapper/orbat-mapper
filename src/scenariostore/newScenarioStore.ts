@@ -1,5 +1,11 @@
 import { useImmerStore } from "@/composables/immerStore";
-import { Scenario, ScenarioInfo, SideGroup, Unit } from "@/types/scenarioModels";
+import {
+  Scenario,
+  ScenarioEvent,
+  ScenarioInfo,
+  SideGroup,
+  Unit,
+} from "@/types/scenarioModels";
 import dayjs from "dayjs";
 import { nanoid } from "@/utils";
 import { walkSide } from "@/stores/scenarioStore";
@@ -25,6 +31,7 @@ export interface ScenarioState {
   layerMap: Record<FeatureId, NScenarioLayer>;
   featureMap: Record<FeatureId, NScenarioFeature>;
   info: ScenarioInfo;
+  events: ScenarioEvent[];
   currentTime: number;
   getUnitById: (id: EntityId) => NUnit;
 }
@@ -39,6 +46,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const layers: FeatureId[] = [];
   const layerMap: Record<FeatureId, NScenarioLayer> = {};
   const featureMap: Record<FeatureId, NScenarioFeature> = {};
+  const events = [...scenario.events];
 
   if (scenario.startTime !== undefined) {
     scenario.startTime = +dayjs(scenario.startTime);
@@ -105,6 +113,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     unitMap,
     sideMap,
     sideGroupMap,
+    events,
     getUnitById(id: EntityId) {
       return this.unitMap[id];
     },
