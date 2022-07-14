@@ -22,7 +22,6 @@
         </div>
         <ul class="flex flex-wrap gap-x-6 gap-y-2">
           <router-link to="/storymode" class="">Story mode test</router-link>
-          <router-link to="/teststore" class="">New scenario store test</router-link>
           <router-link :to="{ name: ORBAT_CHART_ROUTE }" class=""
             >Orbat chart test
           </router-link>

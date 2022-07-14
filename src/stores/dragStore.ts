@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-import { Unit } from "../types/scenarioModels";
+import { Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
 import { computed, Ref, ref } from "vue";
 import { injectStrict } from "@/utils";

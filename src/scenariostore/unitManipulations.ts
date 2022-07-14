@@ -16,6 +16,7 @@ import { SID } from "@/symbology/values";
 import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
+import { Unit } from "@/types/scenarioModels";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -380,6 +381,13 @@ export function useUnitManipulations(store: NewScenarioStore) {
     unit._state = tmpstate;
   }
 
+  function expandUnit(unit: NUnit): Unit {
+    return {
+      ...unit,
+      subUnits: unit.subUnits.map((subUnitId) => expandUnit(state.unitMap[subUnitId])),
+    };
+  }
+
   return {
     deleteUnit,
     changeUnitParent,
@@ -398,5 +406,12 @@ export function useUnitManipulations(store: NewScenarioStore) {
     deleteUnitStateEntry,
     units: computed(() => Object.values(state.unitMap)),
     getUnitById: (id: EntityId) => state.unitMap[id],
+    getUnitByName: (name: string) => {
+      for (const unit of Object.values(state.unitMap)) {
+        if (unit.name === name) return expandUnit(unit);
+      }
+      return null;
+    },
+    expandUnit,
   };
 }

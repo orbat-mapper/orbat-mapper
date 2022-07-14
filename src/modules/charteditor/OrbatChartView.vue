@@ -15,7 +15,6 @@
     </SlideOver>
     <main class="relative min-w-0 flex-auto print:block">
       <OrbatChart
-        v-if="isReady"
         :unit="rootUnitStore.unit"
         :debug="debug"
         :width="width"
@@ -47,12 +46,11 @@
   </div>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, nextTick, ref } from "vue";
+<script setup lang="ts">
+import { computed, nextTick, provide, ref } from "vue";
 import OrbatChart from "./OrbatChart.vue";
 import ToggleField from "../../components/ToggleField.vue";
-import { useScenarioStore } from "../../stores/scenarioStore";
-import { useScenarioIO } from "../../stores/scenarioIO";
+
 import {
   LevelLayout,
   OnBranchClickCallback,
@@ -61,8 +59,8 @@ import {
 } from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
-import { MenuAlt2Icon, SearchIcon } from "@heroicons/vue/solid";
-import { promiseTimeout, whenever } from "@vueuse/core";
+import { MenuAlt2Icon } from "@heroicons/vue/solid";
+import { promiseTimeout } from "@vueuse/core";
 import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
 import FileSaver from "file-saver";
 import SlideOver from "../../components/SlideOver.vue";
@@ -74,104 +72,67 @@ import {
   useSpecificChartOptionsStore,
 } from "./chartSettingsStore";
 import { sizeToWidthHeight } from "./orbatchart/sizes";
+import { TScenario } from "@/scenariostore";
+import { activeScenarioKey } from "@/components/injects";
 
-export default defineComponent({
-  name: "OrbatChartView",
-  components: {
-    OrbatChartSettings,
-    SlideOver,
-    ToggleField,
-    OrbatChart,
-    SearchIcon,
-    DotsMenu,
-    MenuAlt2Icon,
-  },
-  setup() {
-    const debug = ref(false);
-    const isInteractive = ref(true);
+const props = defineProps<{ activeScenario: TScenario }>();
+provide(activeScenarioKey, props.activeScenario);
 
-    const scenarioStore = useScenarioStore();
-    const scenarioIO = useScenarioIO();
-    const chartId = "OrbatChart";
-    const isMenuOpen = ref(false);
-    const currentTab = ref<ChartTabs>(ChartTabs.Chart);
-    const rootUnitStore = useRootUnitStore();
-    const options = useChartSettingsStore();
-    const specificOptions = useSpecificChartOptionsStore();
-    const currentChartElements = useSelectedChartElementStore();
-    scenarioIO.loadDemoScenario("falkland82");
+const debug = ref(false);
+const isInteractive = ref(true);
 
-    whenever(
-      () => scenarioStore.isLoaded,
-      () => {
-        rootUnitStore.unit = scenarioStore.getUnitByName("TG 317.1 LG") || ORBAT1;
-      },
-      { immediate: true }
-    );
-    const lastLevelLayout = LevelLayout.TreeRight;
-    const width = computed(() => sizeToWidthHeight(options.paperSize).width);
-    const height = computed(() => sizeToWidthHeight(options.paperSize).height);
+const chartId = "OrbatChart";
+const isMenuOpen = ref(false);
+const currentTab = ref<ChartTabs>(ChartTabs.Chart);
+const rootUnitStore = useRootUnitStore();
+const options = useChartSettingsStore();
+const specificOptions = useSpecificChartOptionsStore();
+const currentChartElements = useSelectedChartElementStore();
 
-    const isReady = computed(() => scenarioStore.isLoaded);
-    const onUnitClick = (unitNode: RenderedUnitNode) => {
-      currentChartElements.selectUnit(unitNode);
-      currentTab.value = ChartTabs.Unit;
-    };
+rootUnitStore.unit =
+  props.activeScenario.unitActions.getUnitByName("TG 317.1 LG") || ORBAT1;
 
-    const onLevelClick: OnLevelClickCallback = (levelNumber: number) => {
-      currentChartElements.selectLevel(levelNumber);
-      currentTab.value = ChartTabs.Level;
-    };
+const lastLevelLayout = LevelLayout.TreeRight;
+const width = computed(() => sizeToWidthHeight(options.paperSize).width);
+const height = computed(() => sizeToWidthHeight(options.paperSize).height);
 
-    const onBranchClick: OnBranchClickCallback = (parentId, levelNumber) => {
-      currentChartElements.selectBranch(parentId, levelNumber);
-      currentTab.value = ChartTabs.Branch;
-    };
+const onUnitClick = (unitNode: RenderedUnitNode) => {
+  currentChartElements.selectUnit(unitNode);
+  currentTab.value = ChartTabs.Unit;
+};
 
-    const doSVGDownload = async () => {
-      const origValue = isInteractive.value;
-      isInteractive.value = false;
-      await nextTick();
-      downloadElementAsSVG(chartId);
-      await promiseTimeout(1000);
-      isInteractive.value = origValue;
-    };
+const onLevelClick: OnLevelClickCallback = (levelNumber: number) => {
+  currentChartElements.selectLevel(levelNumber);
+  currentTab.value = ChartTabs.Level;
+};
 
-    const doPNGDownload = async () => {
-      const origValue = isInteractive.value;
-      isInteractive.value = false;
-      await nextTick();
-      downloadSvgAsPng(chartId, width.value, height.value);
-      await promiseTimeout(1000);
-      isInteractive.value = origValue;
-    };
+const onBranchClick: OnBranchClickCallback = (parentId, levelNumber) => {
+  currentChartElements.selectBranch(parentId, levelNumber);
+  currentTab.value = ChartTabs.Branch;
+};
 
-    const menuItems: MenuItemData<Function>[] = [
-      { label: "Download SVG", action: doSVGDownload },
-      { label: "Download PNG", action: doPNGDownload },
-    ];
+const doSVGDownload = async () => {
+  const origValue = isInteractive.value;
+  isInteractive.value = false;
+  await nextTick();
+  downloadElementAsSVG(chartId);
+  await promiseTimeout(1000);
+  isInteractive.value = origValue;
+};
 
-    return {
-      rootUnitStore,
-      debug,
-      lastLevelLayout,
-      width,
-      height,
-      isReady,
-      symbolGenerator,
-      onUnitClick,
-      isInteractive,
-      onLevelClick,
-      onBranchClick,
-      menuItems,
-      chartId,
-      isMenuOpen,
-      options,
-      currentTab,
-      specificOptions,
-    };
-  },
-});
+const doPNGDownload = async () => {
+  const origValue = isInteractive.value;
+  isInteractive.value = false;
+  await nextTick();
+  downloadSvgAsPng(chartId, width.value, height.value);
+  await promiseTimeout(1000);
+  isInteractive.value = origValue;
+};
+
+const menuItems: MenuItemData<Function>[] = [
+  { label: "Download SVG", action: doSVGDownload },
+  { label: "Download PNG", action: doPNGDownload },
+];
 
 function downloadSvgAsPng(elementId: string, width: number, height: number) {
   let svgElement = document.getElementById(elementId);

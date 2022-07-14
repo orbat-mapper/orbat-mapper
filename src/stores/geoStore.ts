@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import OLMap from "ol/Map";
-import { Unit } from "../types/scenarioModels";
+import { Unit } from "@/types/scenarioModels";
 import { fromLonLat } from "ol/proj";
-import { MeasurementTypes } from "../composables/geoMeasurement";
+import { MeasurementTypes } from "@/composables/geoMeasurement";
 import { NUnit } from "@/types/internalModels";
 
 export const useGeoStore = defineStore("geo", {

@@ -81,69 +81,40 @@
   </div>
 </template>
 
-<script lang="ts">
-import InputGroup from "../../components/InputGroup.vue";
+<script setup lang="ts">
+import InputGroup from "@/components/InputGroup.vue";
 import { useChartSettingsStore, useRootUnitStore } from "./chartSettingsStore";
-import SimpleSelect from "../../components/SimpleSelect.vue";
+import SimpleSelect from "@/components/SimpleSelect.vue";
 import { FontStyle, FontWeight, LevelLayout, UnitLevelDistance } from "./orbatchart";
-import ToggleField from "../../components/ToggleField.vue";
-import { enum2Items } from "../../utils";
-import TabView from "../../components/TabView.vue";
-import TabItem from "../../components/TabItem.vue";
-import { defineAsyncComponent, defineComponent, ref } from "vue";
-import MilSymbol from "../../components/MilSymbol.vue";
-import InputGroupTemplate from "../../components/InputGroupTemplate.vue";
-import IconButton from "../../components/IconButton.vue";
+import ToggleField from "@/components/ToggleField.vue";
+import { enum2Items, injectStrict } from "@/utils";
+import { defineAsyncComponent, ref } from "vue";
+import MilSymbol from "@/components/MilSymbol.vue";
+import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
+import IconButton from "@/components/IconButton.vue";
 import { SearchIcon } from "@heroicons/vue/solid";
-import { useScenarioStore } from "../../stores/scenarioStore";
-import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
+import CreateEmtpyDashed from "@/components/CreateEmtpyDashed.vue";
 import { canvasSizeItems } from "./orbatchart/sizes";
-import AccordionPanel from "../../components/AccordionPanel.vue";
-import NumberInputGroup from "../../components/NumberInputGroup.vue";
+import AccordionPanel from "@/components/AccordionPanel.vue";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
+import { activeScenarioKey } from "@/components/injects";
 
-export default defineComponent({
-  name: "OrbatChartSettingsChart",
-  components: {
-    NumberInputGroup,
-    AccordionPanel,
-    CreateEmtpyDashed,
-    IconButton,
-    InputGroupTemplate,
-    MilSymbol,
-    TabItem,
-    TabView,
-    ToggleField,
-    SimpleSelect,
-    InputGroup,
-    SearchIcon,
-    SearchModal: defineAsyncComponent(() => import("../../components/NSearchModal.vue")),
-  },
-  setup() {
-    const options = useChartSettingsStore();
-    const levelItems = enum2Items(LevelLayout);
-    const spacingItems = enum2Items(UnitLevelDistance);
-    const fontWeightItems = enum2Items(FontWeight);
-    const fontStyleItems = enum2Items(FontStyle);
-    const rootUnitStore = useRootUnitStore();
-    const scenarioStore = useScenarioStore();
-    const showSearch = ref(false);
+const SearchModal = defineAsyncComponent(() => import("@/components/NSearchModal.vue"));
 
-    const onUnitSelect = (unitId: string) => {
-      const unit = scenarioStore.getUnitById(unitId);
-      if (unit) rootUnitStore.unit = unit;
-    };
+const {
+  unitActions: { expandUnit, getUnitById },
+} = injectStrict(activeScenarioKey);
 
-    return {
-      options,
-      levelItems,
-      spacingItems,
-      fontWeightItems,
-      fontStyleItems,
-      rootUnitStore,
-      showSearch,
-      onUnitSelect,
-      canvasSizeItems,
-    };
-  },
-});
+const options = useChartSettingsStore();
+const levelItems = enum2Items(LevelLayout);
+const spacingItems = enum2Items(UnitLevelDistance);
+const fontWeightItems = enum2Items(FontWeight);
+const fontStyleItems = enum2Items(FontStyle);
+const rootUnitStore = useRootUnitStore();
+const showSearch = ref(false);
+
+const onUnitSelect = (unitId: string) => {
+  const unit = expandUnit(getUnitById(unitId));
+  if (unit) rootUnitStore.unit = unit;
+};
 </script>

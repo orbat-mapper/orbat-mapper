@@ -14,7 +14,7 @@ const ScenarioEditorWrapper = () =>
   import("../modules/scenarioeditor/ScenarioEditorWrapper.vue");
 const NewScenarioView = () => import("../modules/scenarioeditor/NewScenarioView.vue");
 const StoryModeView = () => import("../modules/storymode/StoryModeWrapper.vue");
-const OrbatChartView = () => import("../modules/charteditor/OrbatChartView.vue");
+const OrbatChartView = () => import("../modules/charteditor/OrbatChartViewWrapper.vue");
 const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
 const GeoTestView = () => import("../views/GeoTestView.vue");
 const StoreTestView = () => import("../views/StoreTestViewWrapper.vue");
