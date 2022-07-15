@@ -64,8 +64,11 @@ import RadioGroupList from "@/components/RadioGroupList.vue";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
+import { useNotifications } from "@/composables/notifications";
 
-const { store } = injectStrict(activeScenarioKey);
+const { send } = useNotifications();
+
+const { store, io } = injectStrict(activeScenarioKey);
 
 const standardSettings = [
   {
@@ -134,18 +137,17 @@ const computedStartTime = computed(() => {
 });
 
 function onDownload() {
-  console.warn("Download as json not implemented");
-  // scenarioIO.downloadAsJson();
+  io.downloadAsJson();
 }
 
 function onSave() {
-  console.warn("Save to local storage not implemented");
-  // scenarioIO.saveToLocalStorage();
+  io.saveToLocalStorage();
+  send({ message: "Scenario saved to local storage" });
 }
 
 function onLoad() {
-  console.warn("Load from local storage not implemented");
-  // scenarioIO.loadFromLocalStorage();
+  io.loadFromLocalStorage();
+  send({ message: "Scenario loaded from local storage" });
 }
 
 function onFormSubmit() {
