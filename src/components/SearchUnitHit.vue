@@ -6,7 +6,7 @@
       </div>
       <p v-if="unit.highlight" v-html="unit.highlight" />
       <p v-else>{{ unit.name }}</p>
-      <p class="ml-2 text-xs">{{ unit.score }}</p>
+      <!--      <p class="ml-2 text-xs">{{ unit.score }}</p>-->
     </div>
 
     <p v-if="unit.parent" class="flex self-start text-xs text-gray-600">
