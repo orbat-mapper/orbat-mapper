@@ -33,7 +33,7 @@ export interface SideGroup {
   id: EntityId;
   name: string;
   description?: string;
-  units: Unit[];
+  subUnits: Unit[];
   _pid?: EntityId;
   _isNew?: boolean;
 }
@@ -89,7 +89,7 @@ export interface ScenarioInfo {
 }
 
 export type SymbologyStandard = "2525" | "app6";
-export type ScenarioVersion = "0.5.0" | "0.6.0";
+export type ScenarioVersion = "0.6.0";
 
 export interface Scenario extends ScenarioInfo {
   type: "ORBAT-mapper";

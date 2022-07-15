@@ -14,7 +14,7 @@ export interface NSide extends Omit<Side, "groups"> {
 
 export interface SideUpdate extends Omit<NSide, "id"> {}
 
-export interface NSideGroup extends Omit<SideGroup, "units"> {
+export interface NSideGroup extends Omit<SideGroup, "subUnits"> {
   subUnits: EntityId[];
   _isOpen?: boolean;
 }

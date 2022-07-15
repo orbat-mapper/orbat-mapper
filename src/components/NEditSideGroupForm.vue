@@ -22,12 +22,13 @@ import { useFocusOnMount } from "./helpers";
 import type { EntityId } from "@/types/base";
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
+import { NSideGroup } from "@/types/internalModels";
 
 const { store, unitActions } = injectStrict(activeScenarioKey);
 const props = defineProps<{ sideGroupId: EntityId }>();
 const emit = defineEmits(["close"]);
 
-let form = ref<Partial<SideGroup>>({ name: "Units" });
+let form = ref<Partial<NSideGroup>>({ name: "Units" });
 const sideGroup = computed(() =>
   props.sideGroupId ? store?.state.sideGroupMap[props.sideGroupId] : undefined
 );

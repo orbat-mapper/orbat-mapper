@@ -80,7 +80,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
       sideGroupMap[group.id] = {
         ...group,
         _pid: side.id,
-        subUnits: group.units.map((unit) => unit.id),
+        subUnits: group.subUnits.map((unit) => unit.id),
       };
     });
     walkSide(side, prepareUnit);

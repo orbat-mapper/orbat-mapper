@@ -58,7 +58,7 @@ export function walkSide(side: Side, callback: WalkSideCallback) {
   }
 
   for (const sideGroup of side.groups) {
-    sideGroup.units.forEach((unit) => helper(unit, sideGroup, sideGroup));
+    sideGroup.subUnits.forEach((unit) => helper(unit, sideGroup, sideGroup));
   }
 }
 

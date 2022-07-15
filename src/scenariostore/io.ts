@@ -27,7 +27,7 @@ export function createEmptyScenario(): Scenario {
   } catch (e) {}
   return {
     type: "ORBAT-mapper",
-    version: "0.5.0",
+    version: "0.6.0",
     name: "New scenario",
     description: "Empty scenario description",
     startTime: new Date().getTime(),
@@ -58,7 +58,7 @@ function getSides(state: ScenarioState): Side[] {
 
   function getSideGroup(groupId: EntityId): SideGroup {
     const group = state.sideGroupMap[groupId];
-    return { ...group, units: group.subUnits.map((unitId) => getUnit(unitId)) };
+    return { ...group, subUnits: group.subUnits.map((unitId) => getUnit(unitId)) };
   }
 
   return state.sides
@@ -83,7 +83,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     const { state } = store.value;
     return {
       type: "ORBAT-mapper",
-      version: "0.5.0",
+      version: "0.6.0",
       ...getScenarioInfo(state),
       sides: getSides(state),
       layers: getLayers(state),
