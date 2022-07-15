@@ -1,4 +1,3 @@
-<!-- This example requires Tailwind CSS v2.0+ -->
 <template>
   <SimpleModal v-model="open" dialog-title="Keyboard shortcuts">
     <div class="mt-4">
@@ -49,7 +48,7 @@ const shortcuts: KeyboardCategory[] = [
     label: "Generic",
     shortcuts: [
       { shortcut: [["?"]], description: "Show help" },
-      { shortcut: [["s"]], description: "Search" },
+      { shortcut: [["ctrl", "k"], ["s"]], description: "Search" },
       { shortcut: [["c"]], description: "Create subordinate unit" },
       { shortcut: [["e"]], description: "Edit active unit" },
       { shortcut: [["d"]], description: "Duplicate unit" },

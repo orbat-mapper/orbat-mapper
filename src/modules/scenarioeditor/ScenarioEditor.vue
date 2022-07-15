@@ -101,6 +101,7 @@
       @keyup.c="createNewUnit"
       @keyup.d="duplicateUnit"
       @keyup.s="showSearch = true"
+      @keydown.ctrl.k.prevent="showSearch = true"
       @keyup.prevent.alt.k="showSearch = true"
     />
     <GlobalEvents
