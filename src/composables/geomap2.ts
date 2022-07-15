@@ -14,7 +14,7 @@ import { Collection, Feature } from "ol";
 import { MaybeRef, useEventBus } from "@vueuse/core";
 import { mapUnitClick } from "@/components/eventKeys";
 import { createSelectedUnitStyleFromFeature } from "@/geo/unitStyles";
-import { click } from "ol/events/condition";
+import { click as clickCondition } from "ol/events/condition";
 import { SelectEvent } from "ol/interaction/Select";
 import type { Unit } from "@/types/scenarioModels";
 import GeometryLayout from "ol/geom/GeometryLayout";
@@ -140,7 +140,7 @@ export function useSelectInteraction(
   const selectInteraction = new Select({
     layers,
     style: createSelectedUnitStyleFromFeature,
-    condition: click,
+    condition: clickCondition,
     features: selectedFeatures,
   });
   useOlEvent(selectInteraction.on("select", onSelect));

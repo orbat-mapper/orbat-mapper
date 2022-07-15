@@ -9,6 +9,7 @@ import Select from "ol/interaction/Select";
 import Layer from "ol/layer/Layer";
 import { Modify } from "ol/interaction";
 import { useOlEvent } from "./openlayersHelpers";
+import { click as clickCondition } from "ol/events/condition";
 
 export type DrawType = "Point" | "LineString" | "Polygon" | "Circle";
 
@@ -50,6 +51,7 @@ export function useEditingInteraction(
     new Select({
       layers: [layerRef.value as Layer<any, any>],
       hitTolerance: 20,
+      condition: clickCondition,
     });
   if (!options?.select) {
     olMap.addInteraction(select);

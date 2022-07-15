@@ -2,6 +2,7 @@ import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
+import { click as clickCondition } from "ol/events/condition";
 import { getCenter, isEmpty } from "ol/extent";
 import { injectStrict, moveItemMutable, nanoid } from "@/utils";
 import { Collection } from "ol";
@@ -143,6 +144,7 @@ export function useScenarioFeatureSelect(
   const enableRef = ref(options.enable ?? true);
 
   const select = new Select({
+    condition: clickCondition,
     hitTolerance: 20,
     layers: scenarioLayersOl.getArray(),
   });
