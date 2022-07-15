@@ -143,13 +143,13 @@ export function useScenarioFeatureSelect(
 
   const enableRef = ref(options.enable ?? true);
 
-  const select = new Select({
+  const selectInteraction = new Select({
     condition: clickCondition,
     hitTolerance: 20,
     layers: scenarioLayersOl.getArray(),
   });
 
-  const selectedFeatures = select.getFeatures();
+  const selectedFeatures = selectInteraction.getFeatures();
   useOlEvent(
     selectedFeatures.on(["add", "remove"], (event) => {
       // @ts-ignore
@@ -161,23 +161,23 @@ export function useScenarioFeatureSelect(
 
   const selectedIds = ref<Set<FeatureId>>(new Set());
 
-  olMap.addInteraction(select);
-  useOlEvent(select.on("select", (event) => {}));
+  olMap.addInteraction(selectInteraction);
+  useOlEvent(selectInteraction.on("select", (event) => {}));
 
   watch(
     enableRef,
     (enabled) => {
-      select.getFeatures().clear();
-      select.setActive(enabled);
+      selectInteraction.getFeatures().clear();
+      selectInteraction.setActive(enabled);
     },
     { immediate: true }
   );
 
   onUnmounted(() => {
-    olMap.removeInteraction(select);
+    olMap.removeInteraction(selectInteraction);
   });
 
-  return { selectedIds, selectedFeatures, select };
+  return { selectedIds, selectedFeatures, selectInteraction };
 }
 
 /**

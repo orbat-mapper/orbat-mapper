@@ -71,9 +71,12 @@ const {
   addFeature,
 } = useScenarioLayers(mapRef);
 
-const { selectedIds, selectedFeatures, select } = useScenarioFeatureSelect(mapRef, {
-  enable: isSelectActive,
-});
+const { selectedIds, selectedFeatures, selectInteraction } = useScenarioFeatureSelect(
+  mapRef,
+  {
+    enable: isSelectActive,
+  }
+);
 
 onUndo(({ meta, patch }) => {
   console.log("Undo", meta, patch);
@@ -210,8 +213,10 @@ function onFeatureClick(
   activeFeature.value = activeFeature.value === feature ? null : feature;
   showLayerPanel.value = activeFeature.value === feature;
   const f = getOlFeatureById(feature.id);
+  const had = selectedIds.value.has(feature.id);
   f && !shiftClick && selectedFeatures.clear();
-  f && selectedFeatures.push(f);
+
+  f && !had && selectedFeatures.push(f);
 }
 
 function onFeatureModify(olFeatures: Feature[]) {
@@ -258,6 +263,13 @@ watch(
   },
   { immediate: true }
 );
+
+watch(selectedIds.value, (v) => {
+  if (v.size === 1) {
+    activeFeature.value = [...v.values()].map((i) => geo.getFeatureById(i).feature)[0];
+    showLayerPanel.value = true;
+  }
+});
 
 onMounted(() => {
   NProgress.done();
@@ -307,7 +319,7 @@ onMounted(() => {
       @add="onFeatureAdd"
       @modify="onFeatureModify"
       add-multiple
-      :select="select"
+      :select="selectInteraction"
     />
   </Teleport>
   <Teleport to="[data-teleport-layer]" v-if="activeFeature">
