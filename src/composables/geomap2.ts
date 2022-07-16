@@ -166,8 +166,8 @@ export function useSelectInteraction(
     selectedFeatures.clear();
     const unit = state.getUnitById(unitId);
     if (existingFeature) {
-      // const historyFeature = createHistoryFeature(unit);
-      // historyLayerSource.addFeature(historyFeature);
+      const historyFeature = createHistoryFeature(unit);
+      historyLayerSource.addFeature(historyFeature);
       selectedFeatures.push(existingFeature);
     }
   }
