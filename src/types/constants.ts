@@ -31,6 +31,7 @@ export const enum ScenarioActions {
   Load = "Load",
   ExportJson = "ExportJson",
   LoadNew = "LoadNew",
+  ExportClipboard = "ExportClipboard",
 }
 
 export const enum ScenarioFeatureActions {

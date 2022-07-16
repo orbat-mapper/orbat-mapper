@@ -154,7 +154,14 @@ import { useRoute, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
 import { Keyboard as KeyboardIcon } from "mdue";
-import { useDark, useEventBus, useTitle, useToggle, watchOnce } from "@vueuse/core";
+import {
+  useClipboard,
+  useDark,
+  useEventBus,
+  useTitle,
+  useToggle,
+  watchOnce,
+} from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import DotsMenu, { MenuItemData } from "@/components/DotsMenu.vue";
 import { ScenarioActions } from "@/types/constants";
@@ -194,6 +201,7 @@ const { loadFromObject } = props.activeScenario.io;
 const { unitActions, io } = props.activeScenario;
 const route = useRoute();
 const router = useRouter();
+const { copy: copyToClipboard, copied } = useClipboard();
 const currentTab = ref(0);
 const isOpen = ref(false);
 const showSearch = ref(false);
@@ -286,29 +294,25 @@ const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
   { label: "Load from local storage", action: ScenarioActions.Load },
   { label: "Load scenario", action: ScenarioActions.LoadNew },
   { label: "Download as JSON", action: ScenarioActions.ExportJson },
+  { label: "Copy to clipboard", action: ScenarioActions.ExportClipboard },
 ];
 
-function onScenarioAction(action: ScenarioActions) {
+async function onScenarioAction(action: ScenarioActions) {
   if (action === ScenarioActions.AddSide) {
     unitActions.addSide();
-  }
-
-  if (action === ScenarioActions.Save) {
+  } else if (action === ScenarioActions.Save) {
     io.saveToLocalStorage();
     send({ message: "Scenario saved to local storage" });
-  }
-
-  if (action === ScenarioActions.Load) {
+  } else if (action === ScenarioActions.Load) {
     io.loadFromLocalStorage();
     send({ message: "Scenario loaded from local storage" });
-  }
-
-  if (action === ScenarioActions.ExportJson) {
-    io.downloadAsJson();
-  }
-
-  if (action === ScenarioActions.LoadNew) {
+  } else if (action === ScenarioActions.ExportJson) {
+    await io.downloadAsJson();
+  } else if (action === ScenarioActions.LoadNew) {
     showLoadModal.value = true;
+  } else if (action === ScenarioActions.ExportClipboard) {
+    await copyToClipboard(io.stringifyScenario());
+    if (copied.value) send({ message: "Scenario copied to clipboard" });
   }
 }
 

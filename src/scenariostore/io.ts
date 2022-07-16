@@ -169,5 +169,6 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     downloadAsJson,
     saveToLocalStorage,
     loadFromLocalStorage,
+    stringifyScenario,
   };
 }
