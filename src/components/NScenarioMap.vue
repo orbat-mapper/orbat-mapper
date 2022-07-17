@@ -33,7 +33,6 @@ import LayerGroup from "ol/layer/Group";
 import { inputEventFilter } from "./helpers";
 import { useUiStore } from "@/stores/uiStore";
 import {
-  createHistoryFeature,
   useDrop,
   useMoveInteraction,
   useSelectInteraction,
@@ -50,6 +49,7 @@ import { useOlEvent } from "@/composables/openlayersHelpers";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import { createHistoryFeature } from "@/geo/history";
 
 const {
   geo,

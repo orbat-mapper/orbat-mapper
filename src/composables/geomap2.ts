@@ -6,7 +6,7 @@ import VectorLayer from "ol/layer/Vector";
 import { useDragStore } from "@/stores/dragStore";
 import { DragOperations } from "@/types/constants";
 import { fromLonLat, toLonLat } from "ol/proj";
-import { LineString, Point } from "ol/geom";
+import { Point } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Modify, Select } from "ol/interaction";
 import { ModifyEvent } from "ol/interaction/Modify";
@@ -16,14 +16,12 @@ import { mapUnitClick } from "@/components/eventKeys";
 import { createSelectedUnitStyleFromFeature } from "@/geo/unitStyles";
 import { click as clickCondition } from "ol/events/condition";
 import { SelectEvent } from "ol/interaction/Select";
-import type { Unit } from "@/types/scenarioModels";
-import GeometryLayout from "ol/geom/GeometryLayout";
 import { useOlEvent } from "./openlayersHelpers";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
-import { NUnit } from "@/types/internalModels";
+import { createHistoryFeature } from "@/geo/history";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const { geo } = activeScenario || injectStrict(activeScenarioKey);
@@ -182,15 +180,4 @@ export function useSelectInteraction(
   });
 
   return { selectInteraction };
-}
-
-export function createHistoryFeature(unit: Unit | NUnit): Feature<LineString> {
-  const state = [{ location: unit.location }, ...(unit.state || [])].filter(
-    (s) => s?.location
-  );
-  // @ts-ignore
-  const geometry = state.map((s) => [...s.location!, s.t]);
-  const t = new LineString(geometry, GeometryLayout.XYM);
-  t.transform("EPSG:4326", "EPSG:3857");
-  return new Feature(t);
 }
