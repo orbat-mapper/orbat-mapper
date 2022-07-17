@@ -10,8 +10,8 @@
     <MeasurementToolbar v-if="mapRef" class="absolute left-3 bottom-4" :ol-map="mapRef" />
     <div v-if="mapRef" class="absolute left-3 bottom-16">
       <BaseToolbar class="shadow">
-        <ToolbarButton start end @click="toggleModify">
-          <CursorDefault v-if="modifyEnabled" class="h-5 w-5" aria-hidden="true" />
+        <ToolbarButton start end @click="toggleMoveUnit()">
+          <CursorDefault v-if="moveUnitEnabled" class="h-5 w-5" aria-hidden="true" />
           <CursorMove v-else class="h-5 w-5" aria-hidden="true" />
         </ToolbarButton>
       </BaseToolbar>
@@ -68,7 +68,7 @@ const geoStore = useGeoStore();
 const uiStore = useUiStore();
 const settingsStore = useSettingsStore();
 const [measure, toggleMeasure] = useToggle(false);
-const [modifyEnabled, toggleModify] = useToggle(false);
+const [moveUnitEnabled, toggleMoveUnit] = useToggle(false);
 
 const onMapReady = (olMap: OLMap) => {
   mapRef.value = olMap;
@@ -92,9 +92,13 @@ const onMapReady = (olMap: OLMap) => {
   );
   olMap.addInteraction(selectInteraction);
 
-  const { moveInteraction } = useMoveInteraction(olMap, unitLayer, modifyEnabled);
+  const { moveInteraction: moveUnitInteraction } = useMoveInteraction(
+    olMap,
+    unitLayer,
+    moveUnitEnabled
+  );
   useOlEvent(unitLayerGroup.on("change:visible", toggleModifyInteraction));
-  olMap.addInteraction(moveInteraction);
+  olMap.addInteraction(moveUnitInteraction);
 
   drawUnits();
   drawHistory();
@@ -106,7 +110,7 @@ const onMapReady = (olMap: OLMap) => {
 
   function toggleModifyInteraction(event: ObjectEvent) {
     const isUnitLayerVisible = !event.oldValue;
-    moveInteraction.setActive(isUnitLayerVisible && modifyEnabled.value);
+    moveUnitInteraction.setActive(isUnitLayerVisible && moveUnitEnabled.value);
   }
 
   const layerCollection = olMap.getLayers();
