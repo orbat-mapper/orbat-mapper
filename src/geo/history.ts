@@ -6,9 +6,45 @@ import CircleStyle from "ol/style/Circle";
 import { LocationState, Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
 import GeometryLayout from "ol/geom/GeometryLayout";
+import { nanoid } from "@/utils";
+
+const styleCache = new Map();
+
+export function clearStyleCache() {
+  styleCache.clear();
+}
 
 const stroke = new Stroke({ color: "black", width: 2 });
 const fill = new Fill({ color: "red" });
+const lineStyle = new Style({
+  stroke: new Stroke({
+    color: "red",
+    width: 2,
+    lineDash: [10, 10],
+  }),
+});
+
+const circleStyle = new CircleStyle({
+  radius: 5,
+  fill: new Fill({
+    color: "orange",
+  }),
+  stroke: new Stroke({
+    color: "green",
+    width: 3,
+  }),
+});
+
+const viaStyle = new CircleStyle({
+  radius: 3,
+  fill: new Fill({
+    color: "red",
+  }),
+  stroke: new Stroke({
+    color: "green",
+    width: 1,
+  }),
+});
 
 export function createHistoryStylesFromFeature(
   feature: FeatureLike,
@@ -16,25 +52,15 @@ export function createHistoryStylesFromFeature(
 ): Style[] {
   const geometry = (feature as Feature<LineString>).getGeometry();
   const coordinates = geometry!.getCoordinates();
-  console.log("draw");
-  let styles = [
-    // linestring
-    new Style({
-      stroke: new Stroke({
-        color: "red",
-        width: 2,
-        lineDash: [10, 10],
-      }),
-    }),
-  ];
+  let styles = [lineStyle];
 
   let i = 0;
-  const t = feature.get("t");
+  const t = coordinates[0][2];
   styles.push(
     new Style({
       image: new RegularShape({
-        fill: fill,
-        stroke: stroke,
+        fill,
+        stroke,
         points: 4,
         radius: 10,
         radius2: 0,
@@ -42,7 +68,7 @@ export function createHistoryStylesFromFeature(
       }),
       geometry: new Point(geometry!.getFirstCoordinate()!),
       text: new Text({
-        text: formatDateString(coordinates[0][2]).split("T")[0],
+        text: formatDateString(t).split("T")[0],
         textAlign: "left",
         offsetY: -15,
         offsetX: 15,
@@ -56,21 +82,17 @@ export function createHistoryStylesFromFeature(
 
   geometry!.forEachSegment((start, end) => {
     const t = coordinates[++ii][2];
+    const isVia = t === -1337;
+
+    const label = isVia ? "" : formatDateString(t).split("T")[0];
+
     styles.push(
       new Style({
         geometry: new Point(end),
-        image: new CircleStyle({
-          radius: 5,
-          fill: new Fill({
-            color: t === -1337 ? "red" : "orange",
-          }),
-          stroke: new Stroke({
-            color: "green",
-            width: 3,
-          }),
-        }),
+        image: isVia ? viaStyle : circleStyle,
+
         text: new Text({
-          text: formatDateString(t).split("T")[0],
+          text: label,
           textAlign: "left",
           offsetX: 12,
           fill: new Fill({ color: "#aa3300" }),
@@ -101,5 +123,7 @@ export function createHistoryFeature(unit: Unit | NUnit): Feature<LineString> {
     .flat(2);
   const t = new LineString(geometry, GeometryLayout.XYM);
   t.transform("EPSG:4326", "EPSG:3857");
-  return new Feature(t);
+  const f = new Feature({ geometry: t });
+  f.setId(nanoid());
+  return f;
 }
