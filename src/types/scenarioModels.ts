@@ -5,6 +5,11 @@ export interface State {
   t: ScenarioTime;
   location?: Position;
   sidc?: string;
+  via?: Position[];
+}
+
+export interface LocationState extends State {
+  location: Position;
 }
 
 export interface Unit {

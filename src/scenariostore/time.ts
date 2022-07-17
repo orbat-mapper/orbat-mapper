@@ -26,7 +26,11 @@ export function useScenarioTime(store: NewScenarioStore) {
           currentState = s;
         } else {
           if (currentState?.location && s.location) {
-            const n = lineString([currentState.location, s.location]);
+            const n = lineString(
+              s.via
+                ? [currentState.location, ...s.via, s.location]
+                : [currentState.location, s.location]
+            );
             const timeDiff = s.t - currentState.t;
             const pathLength = turfLength(n);
             const averageSpeed = pathLength / timeDiff;
