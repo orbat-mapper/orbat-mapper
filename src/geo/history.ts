@@ -18,9 +18,10 @@ const stroke = new Stroke({ color: "black", width: 2 });
 const fill = new Fill({ color: "red" });
 const lineStyle = new Style({
   stroke: new Stroke({
-    color: "red",
-    width: 2,
-    lineDash: [10, 10],
+    color: "rgba(255,0,0,0.65)",
+    width: 3,
+    // Dashed lines are slow! https://github.com/openlayers/openlayers/issues/10139
+    // lineDash: [20, 20],
   }),
 });
 
@@ -36,9 +37,9 @@ const circleStyle = new CircleStyle({
 });
 
 const viaStyle = new CircleStyle({
-  radius: 3,
+  radius: 4,
   fill: new Fill({
-    color: "red",
+    color: "rgba(101,213,57,0.73)",
   }),
   stroke: new Stroke({
     color: "green",
