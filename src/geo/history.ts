@@ -68,7 +68,7 @@ export function createHistoryStylesFromFeature(
       }),
       geometry: new Point(geometry!.getFirstCoordinate()!),
       text: new Text({
-        text: formatDateString(t).split("T")[0],
+        text: t > Number.MIN_SAFE_INTEGER ? formatDateString(t).split("T")[0] : "",
         textAlign: "left",
         offsetY: -15,
         offsetX: 15,
@@ -82,7 +82,7 @@ export function createHistoryStylesFromFeature(
 
   geometry!.forEachSegment((start, end) => {
     const t = coordinates[++ii][2];
-    const isVia = t === -1337;
+    const isVia = t === VIA_TIME || t === 0;
 
     const label = isVia ? "" : formatDateString(t).split("T")[0];
 
@@ -106,15 +106,18 @@ export function createHistoryStylesFromFeature(
   return styles;
 }
 
+export const VIA_TIME = -1337;
+
 export function createHistoryFeature(unit: Unit | NUnit): Feature<LineString> {
-  const state = [{ location: unit.location }, ...(unit.state || [])].filter(
-    (s) => s.location
-  ) as LocationState[];
-  // @ts-ignore
+  const state = [
+    { location: unit.location, t: Number.MIN_SAFE_INTEGER },
+    ...(unit.state || []),
+  ].filter((s) => s.location) as LocationState[];
+
   const geometry = state
     .map((s) => {
       if (s.via) {
-        const a = s.via.map((v) => [...v, -1337]);
+        const a = s.via.map((v) => [...v, VIA_TIME]);
         a.push([...s.location, s.t]);
         return a;
       }
@@ -123,7 +126,7 @@ export function createHistoryFeature(unit: Unit | NUnit): Feature<LineString> {
     .flat(2);
   const t = new LineString(geometry, GeometryLayout.XYM);
   t.transform("EPSG:4326", "EPSG:3857");
-  const f = new Feature({ geometry: t });
+  const f = new Feature({ geometry: t, unitId: unit.id, unitName: unit.name });
   f.setId(nanoid());
   return f;
 }

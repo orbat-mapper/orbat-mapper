@@ -1,7 +1,7 @@
 <template>
   <h3 class="mt-6 font-medium text-gray-900">Unit state</h3>
   <ul class="mt-2 divide-y divide-gray-200 border-t border-b border-gray-200">
-    <li v-for="(s, index) in state" class="flex items-center py-4" :key="s.t">
+    <li v-for="(s, index) in state" class="relative flex items-center py-4" :key="s.t">
       <div class="flex min-w-0 flex-auto flex-col text-sm">
         <p
           :class="
@@ -13,7 +13,7 @@
         <p>{{ formatPosition(s.location) }}</p>
       </div>
 
-      <div class="flex-0 flex space-x-0">
+      <div class="flex-0 flex items-center space-x-0">
         <IconButton @click="changeToState(s)" class="bg-gray-50">
           <CrosshairsGps class="h-5 w-5" aria-hidden="true" />
           <span class="sr-only">Delete entry</span>
@@ -23,6 +23,13 @@
           <span class="sr-only">Delete entry</span>
         </IconButton>
       </div>
+      <div v-if="s.via" class="absolute -top-3 left-1/2">
+        <div
+          class="relative -left-1/2 flex items-center rounded-full border bg-white px-4 py-0.5"
+        >
+          <MapMarkerPath class="h-5 w-5 text-gray-500" />
+        </div>
+      </div>
     </li>
   </ul>
 </template>
@@ -31,7 +38,7 @@
 import { computed } from "vue";
 import { State } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
-import { CrosshairsGps } from "mdue";
+import { CrosshairsGps, MapMarkerPath } from "mdue";
 import { XIcon } from "@heroicons/vue/solid";
 import IconButton from "@/components/IconButton.vue";
 import { useUnitActionsN } from "@/composables/scenarioActions";

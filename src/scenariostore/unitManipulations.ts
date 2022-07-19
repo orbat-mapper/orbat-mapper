@@ -1,4 +1,4 @@
-import { EntityId } from "@/types/base";
+import { EntityId, HistoryAction } from "@/types/base";
 import { NewScenarioStore, ScenarioState } from "./newScenarioStore";
 import { moveElement, nanoid, removeElement } from "@/utils";
 import {
@@ -17,6 +17,7 @@ import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
 import { Unit } from "@/types/scenarioModels";
+import { Position } from "@/types/scenarioGeoModels";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -370,15 +371,41 @@ export function useUnitManipulations(store: NewScenarioStore) {
       unit._state = createInitialState(unit);
       return;
     }
-    let tmpstate = createInitialState(unit);
+    let currentState = createInitialState(unit);
     for (const s of unit.state) {
       if (s.t <= timestamp) {
-        tmpstate = s;
+        currentState = s;
       } else {
         break;
       }
     }
-    unit._state = tmpstate;
+    unit._state = currentState;
+  }
+
+  function updateUnitStateVia(
+    unitId: EntityId,
+    action: HistoryAction,
+    stateIndex: number,
+    elementIndex: number,
+    data: Position
+  ) {
+    update(
+      (s) => {
+        const unit = s.getUnitById(unitId);
+        if (!unit || !unit.state) return;
+        const stateElement = unit.state[stateIndex];
+        if (!stateElement) return;
+        if (!stateElement.via) stateElement.via = [];
+        if (action === "add") {
+          stateElement.via.splice(elementIndex, 0, data);
+        } else if (action === "modify") {
+          stateElement.via[elementIndex] = data;
+        } else if (action === "remove") {
+          stateElement.via.splice(elementIndex, 1);
+        }
+      },
+      { label: "addUnitPosition", value: unitId }
+    );
   }
 
   function expandUnit(unit: NUnit): Unit {
@@ -413,5 +440,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
       return null;
     },
     expandUnit,
+    updateUnitStateVia,
   };
 }

@@ -24,21 +24,21 @@ export function useGeo(store: NewScenarioStore) {
     return Object.values(state.unitMap).filter((unit) => unit._state?.location);
   });
 
-  function addUnitPosition(unitId: EntityId, coordinates: Position) {
+  function addUnitPosition(unitId: EntityId, coordinates: Position, atTime?: number) {
     let newState: State | null = null;
     update(
       (s) => {
         const u = s.getUnitById(unitId);
-        const t = s.currentTime;
+        const t = atTime ?? s.currentTime;
         newState = { t, location: coordinates };
-        u._state = newState;
+        if (t === s.currentTime) u._state = newState;
         if (!u.state) u.state = [];
         for (let i = 0, len = u.state.length; i < len; i++) {
           if (t < u.state[i].t) {
             u.state.splice(i, 0, newState);
             return;
           } else if (t === u.state[i].t) {
-            u.state[i] = newState;
+            u.state[i] = { ...u.state[i], ...newState };
             return;
           }
         }
