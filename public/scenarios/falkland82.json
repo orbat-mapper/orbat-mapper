@@ -983,7 +983,8 @@
             "type": "Point",
             "name": "Rio Grande AB",
             "fill": "#a40000",
-            "fill-opacity": 1
+            "fill-opacity": 1,
+            "marker-symbol": "star"
           },
           "id": "dm1UDXs2xW"
         },
@@ -997,7 +998,8 @@
             "type": "Point",
             "name": "Rio Gallego AB",
             "fill": "#a40000",
-            "fill-opacity": 1
+            "fill-opacity": 1,
+            "marker-symbol": "star"
           },
           "id": "dm1UssDXs2xW"
         },

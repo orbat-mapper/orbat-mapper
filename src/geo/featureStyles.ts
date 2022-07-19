@@ -28,16 +28,6 @@ const defaultStyle = new Style({
   }),
 });
 
-export function scenarioFeatureStyle(feature: FeatureLike, resolution: number) {
-  let style = styleCache.get(feature.getId());
-  if (!style) {
-    style = createSimpleStyle(feature.getProperties()) || defaultStyle;
-    styleCache.set(feature.getId(), style);
-  }
-  style.setZIndex(feature.get("_zIndex"));
-  return style;
-}
-
 export function useFeatureStyles(geo: TGeo) {
   const styleCache = new Map<any, Style>();
 
