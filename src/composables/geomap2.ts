@@ -14,7 +14,7 @@ import { Collection, Feature } from "ol";
 import { MaybeRef, useEventBus } from "@vueuse/core";
 import { mapUnitClick } from "@/components/eventKeys";
 import { createSelectedUnitStyleFromFeature } from "@/geo/unitStyles";
-import { click as clickCondition } from "ol/events/condition";
+import { altKeyOnly, click as clickCondition } from "ol/events/condition";
 import { SelectEvent } from "ol/interaction/Select";
 import { useOlEvent } from "./openlayersHelpers";
 import { injectStrict } from "@/utils";
@@ -45,7 +45,6 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       unitLayer.animateFeature(f, new Fade({ duration: 1000 }))
     );
   };
-
   return { unitLayer, drawUnits, animateUnits };
 }
 
@@ -139,6 +138,7 @@ export function useSelectInteraction(
     layers,
     style: createSelectedUnitStyleFromFeature,
     condition: clickCondition,
+    removeCondition: altKeyOnly,
     features: selectedFeatures,
   });
   useOlEvent(selectInteraction.on("select", onSelect));
