@@ -643,29 +643,6 @@
               "id": "g3n1NTl_5OuFYjsRfd_2G"
             }
           ]
-        },
-        {
-          "id": "Ptqp7cKljJXxPJbU8ICQG",
-          "name": "Infrastructure",
-          "subUnits": [
-            {
-              "name": "RAF Ascension Island",
-              "shortName": "ASI",
-              "sidc": "10032000001213010000",
-              "id": "jMD1iekHwNeNCJ3ckslEu",
-              "location": [-14.394771075434118, -7.968983239138055],
-              "subUnits": [],
-              "state": []
-            },
-            {
-              "name": "HMNB Portsmouth",
-              "sidc": "10032000001213090000",
-              "id": "ml2_2hrJ-8dKNzqi3qWnD",
-              "subUnits": [],
-              "location": [-1.102355866123122, 50.80462010162316],
-              "state": []
-            }
-          ]
         }
       ]
     },
@@ -915,38 +892,6 @@
               "subUnits": []
             }
           ]
-        },
-        {
-          "id": "AddI6qfpPYwQich60xxeC",
-          "name": "Infrastructure",
-          "subUnits": [
-            {
-              "name": "Puerto Belgrano",
-              "sidc": "10072000001213090000",
-              "id": "pKit-j6gGPi4CWXfCoIMr",
-              "location": [-62.10458968984189, -38.88794287445259],
-              "subUnits": [],
-              "shortName": "",
-              "externalUrl": "https://en.wikipedia.org/wiki/Port_Belgrano_Naval_Base",
-              "state": []
-            },
-            {
-              "name": "Rio Gallego",
-              "sidc": "10072000001213010000",
-              "id": "704bzd7YhNVcXHAS6-TxT",
-              "location": [-69.30725832955693, -51.60882330522812],
-              "subUnits": [],
-              "state": []
-            },
-            {
-              "name": "Rio Grande",
-              "sidc": "10072000001213010000",
-              "id": "syO2U3AlPZz1uEIDriyMc",
-              "location": [-67.75590454496876, -53.777518083637915],
-              "subUnits": [],
-              "state": []
-            }
-          ]
         }
       ]
     }
@@ -1021,6 +966,89 @@
             "fill": null
           },
           "id": "Zi5qS3x-JmHsb_M23xL3F"
+        }
+      ]
+    },
+    {
+      "id": "GBzPAQoyDW",
+      "name": "Argentinian bases",
+      "features": [
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-67.7557523798225, -53.77759602366957]
+          },
+          "properties": {
+            "type": "Point",
+            "name": "Rio Grande AB",
+            "fill": "#a40000",
+            "fill-opacity": 1
+          },
+          "id": "dm1UDXs2xW"
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-69.30725832955693, -51.60882330522812]
+          },
+          "properties": {
+            "type": "Point",
+            "name": "Rio Gallego AB",
+            "fill": "#a40000",
+            "fill-opacity": 1
+          },
+          "id": "dm1UssDXs2xW"
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-62.10384759484108, -38.891831102546085]
+          },
+          "properties": {
+            "type": "Point",
+            "name": "Puerto Belgrano",
+            "fill": "#204a87",
+            "fill-opacity": 1
+          },
+          "id": "EYeIuLNE9V"
+        }
+      ]
+    },
+    {
+      "id": "Vy8yJW8rOS",
+      "name": "British bases",
+      "features": [
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-14.40257026225315, -7.968535001150471]
+          },
+          "properties": {
+            "type": "Point",
+            "name": "RAF Ascension Island",
+            "fill": "#fce94f",
+            "fill-opacity": 1,
+            "stroke-opacity": 1
+          },
+          "id": "VIyMHgWoWS"
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-1.104852842922037, 50.8046643899244]
+          },
+          "properties": {
+            "type": "Point",
+            "name": "HMNB Portsmouth",
+            "fill": "#73d216",
+            "fill-opacity": 1
+          },
+          "id": "ibuQYToiiN"
         }
       ]
     }
