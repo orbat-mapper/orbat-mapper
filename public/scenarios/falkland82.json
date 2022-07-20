@@ -912,7 +912,8 @@
             "stroke": "#7F1D1D",
             "stroke-width": 4,
             "stroke-opacity": 0.4,
-            "fill": null
+            "fill": null,
+            "visibleFromT": "1982-04-12T00:00:00Z"
           },
           "geometry": {
             "type": "Point",
@@ -924,6 +925,7 @@
     {
       "id": "yBW6mLmbE5y38Kv6LzxdB",
       "name": "Landings",
+      "visibleFromT": "1982-05-21T00:00Z",
       "features": [
         {
           "type": "Feature",

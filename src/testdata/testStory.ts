@@ -115,7 +115,7 @@ export const actions: StoryStateChange[] = [
       zoom: 14,
     },
   },
-  { time: "1982-04-02T20:00:00-04:00" },
+  { time: "1982-05-30T20:00:00-04:00" },
 ];
 
 export const chapter2: StoryChapter = {

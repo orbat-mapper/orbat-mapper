@@ -28,6 +28,13 @@ import {
 } from "@/geo/simplestyle";
 import FeatureFillSettings from "./FeatureFillSettings.vue";
 import FeatureMarkerSettings from "@/modules/scenarioeditor/FeatureMarkerSettings.vue";
+import { formatDateString } from "@/geo/utils";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey } from "@/components/injects";
+
+const {
+  time: { timeZone },
+} = injectStrict(activeScenarioKey);
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -145,6 +152,13 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
           <DescriptionItem label="Name">{{ feature.properties.name }}</DescriptionItem>
           <DescriptionItem v-if="feature.properties.description" label="Description">
             <div class="prose prose-sm" v-html="hDescription"></div>
+          </DescriptionItem>
+          <DescriptionItem v-if="feature.properties.visibleFromT" label="Visible from">
+            {{ formatDateString(feature.properties.visibleFromT, timeZone) }}
+          </DescriptionItem>
+
+          <DescriptionItem v-if="feature.properties.visibleUntilT" label="Visible from">
+            {{ formatDateString(feature.properties.visibleUntilT, timeZone) }}
           </DescriptionItem>
         </section>
       </div>

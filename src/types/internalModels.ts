@@ -38,5 +38,12 @@ export interface NOrbatItemData {
   children: NOrbatItemData[];
 }
 
-export const INTERNAL_NAMES = ["_state", "_pid", "_isOpen", "_isNew", "_zIndex"];
+export const INTERNAL_NAMES = [
+  "_state",
+  "_pid",
+  "_isOpen",
+  "_isNew",
+  "_zIndex",
+  "_hidden",
+];
 export const TIMESTAMP_NAMES = ["t", "visibleFromT", "visibleUntilT", "startTime"];

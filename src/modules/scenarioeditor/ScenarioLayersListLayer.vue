@@ -4,7 +4,7 @@ import {
   ScenarioFeature,
   ScenarioLayerInstance,
 } from "@/types/scenarioGeoModels";
-import { Eye as EyeIcon, EyeOff, Pencil as PencilIcon } from "mdue";
+import { Eye as EyeIcon, EyeOff, Pencil as PencilIcon, ClockOutline } from "mdue";
 import DotsMenu, { MenuItemData } from "@/components/DotsMenu.vue";
 import { ScenarioLayerActions } from "@/types/constants";
 import { ref } from "vue";
@@ -117,11 +117,15 @@ function onLayerAction(action: ScenarioLayerActions) {
               }}
             </span>
           </button>
-          <div class="relative">
+          <div class="relative flex items-center">
+            <ClockOutline
+              v-if="feature.properties.visibleFromT || feature.properties.visibleUntilT"
+              class="h-5 w-5 text-gray-400"
+            />
             <DotsMenu
               :items="featureMenuItems"
               @action="emit('feature-action', feature, $event, layer)"
-              class="flex-shrink-0"
+              class="ml-2 flex-shrink-0"
             />
           </div>
         </li>

@@ -177,6 +177,7 @@ import { EntityId } from "@/types/base";
 import {
   activeFeaturesKey,
   activeScenarioKey,
+  currentScenarioTabKey,
   activeUnitKey,
 } from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
@@ -190,11 +191,12 @@ const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"
 const props = defineProps<{ activeScenario: TScenario }>();
 const activeUnitId = ref<EntityId | undefined | null>(null);
 const scnFeatures = useFeatureStyles(props.activeScenario.geo);
+const currentScenarioTab = ref(0);
 
 provide(activeUnitKey, activeUnitId);
 provide(activeScenarioKey, props.activeScenario);
 provide(activeFeaturesKey, scnFeatures);
-
+provide(currentScenarioTabKey, currentScenarioTab);
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
 
 const { loadFromObject } = props.activeScenario.io;
@@ -207,7 +209,7 @@ const isOpen = ref(false);
 const showSearch = ref(false);
 const showLoadModal = ref(false);
 const shortcutsModalVisible = ref(false);
-const currentScenarioTab = ref(0);
+
 const activeUnitStore = useActiveUnitStore2({
   activeScenario: props.activeScenario,
   activeUnitId,

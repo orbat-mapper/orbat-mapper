@@ -42,6 +42,19 @@ export function useScenarioTime(store: NewScenarioStore) {
       }
       unit._state = currentState;
     });
+    Object.values(state.layerMap).forEach((layer) => {
+      const visibleFromT = layer.visibleFromT || Number.MIN_SAFE_INTEGER;
+      const visibleUntilT = layer.visibleUntilT || Number.MAX_SAFE_INTEGER;
+      layer._hidden = timestamp <= visibleFromT && timestamp <= visibleUntilT;
+      layer.features.forEach((featureId) => {
+        const feature = state.featureMap[featureId];
+        const visibleFromT = feature.properties.visibleFromT || Number.MIN_SAFE_INTEGER;
+        const visibleUntilT = feature.properties.visibleUntilT || Number.MAX_SAFE_INTEGER;
+
+        if (feature)
+          feature._hidden = timestamp <= visibleFromT && timestamp <= visibleUntilT;
+      });
+    });
     state.currentTime = timestamp;
   }
 

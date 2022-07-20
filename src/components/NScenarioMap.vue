@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw, onUnmounted, shallowRef, watch } from "vue";
+import { computed, inject, markRaw, onUnmounted, ref, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { GlobalEvents } from "vue-global-events";
@@ -48,7 +48,11 @@ import ToolbarButton from "./ToolbarButton.vue";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import {
+  activeScenarioKey,
+  activeUnitKey,
+  currentScenarioTabKey,
+} from "@/components/injects";
 import { createHistoryFeature, VIA_TIME } from "@/geo/history";
 import Modify, { ModifyEvent } from "ol/interaction/Modify";
 import GeometryLayout from "ol/geom/GeometryLayout";
@@ -61,6 +65,10 @@ const {
   store: { state, onUndo, onRedo },
   unitActions,
 } = injectStrict(activeScenarioKey);
+
+const currentScenarioTab = inject(currentScenarioTabKey, ref(0));
+
+const doNotFilterLayers = computed(() => currentScenarioTab.value === 2);
 
 const activeUnitId = injectStrict(activeUnitKey);
 
@@ -92,6 +100,10 @@ const onMapReady = (olMap: OLMap) => {
   olMap.addLayer(unitLayerGroup);
 
   // test
+
+  watch([() => state.currentTime, doNotFilterLayers], (v) => {
+    loadScenarioLayers(false, !doNotFilterLayers.value);
+  });
 
   onUndo(({ meta }) => {
     if (meta?.value === activeUnitId.value) drawHistory();

@@ -113,6 +113,11 @@ function onMapReady(olMap: OLMap) {
   olMap.addLayer(unitLayer);
   drawUnits();
 
+  watch(
+    () => state.currentTime,
+    () => loadScenarioLayers(false)
+  );
+
   view.animate({
     ...rest,
     center: fromLonLat(center, view.getProjection()),

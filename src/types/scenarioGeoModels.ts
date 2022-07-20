@@ -35,6 +35,7 @@ export interface ScenarioFeatureProperties
 export interface ScenarioFeature
   extends GeoJsonFeature<Point | LineString | Polygon, ScenarioFeatureProperties> {
   id: FeatureId;
+  _hidden?: boolean;
 }
 
 export interface ScenarioLayer extends Partial<VisibilityInfo> {
@@ -45,6 +46,7 @@ export interface ScenarioLayer extends Partial<VisibilityInfo> {
   _isNew?: boolean;
   isHidden?: boolean;
   _isOpen?: boolean;
+  _hidden?: boolean;
 }
 
 export interface ScenarioLayerInstance extends ScenarioLayer {

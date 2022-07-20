@@ -202,11 +202,15 @@ export function useScenarioLayers(
 
   function createScenarioVectorLayer(
     l: ScenarioLayer,
-    projection: ProjectionLike = "EPSG:3837"
+    projection: ProjectionLike = "EPSG:3837",
+    filterVisible = true
   ) {
     const vectorLayer = new VectorLayer({
       source: new VectorSource({
-        features: createScenarioLayerFeatures(l.features, projection),
+        features: createScenarioLayerFeatures(
+          l.features.filter((f) => !filterVisible || !f._hidden),
+          projection
+        ),
       }),
       style: scenarioFeatureStyle,
       properties: { id: l.id, title: l.name, layerType: LayerType.overlay },
@@ -215,14 +219,16 @@ export function useScenarioLayers(
     return vectorLayer;
   }
 
-  function initializeFromStore() {
-    clearCache();
+  function initializeFromStore(doClearCache = true, filterVisible = true) {
+    if (doClearCache) clearCache();
     scenarioLayersOl.clear();
 
-    geo.layers.value.forEach((l) => {
-      const vectorLayer = createScenarioVectorLayer(l, projection);
-      scenarioLayersOl.push(vectorLayer);
-    });
+    geo.layers.value
+      .filter((l) => !filterVisible || !l._hidden)
+      .forEach((l) => {
+        const vectorLayer = createScenarioVectorLayer(l, projection, filterVisible);
+        scenarioLayersOl.push(vectorLayer);
+      });
   }
 
   function getOlLayerById(id: FeatureId) {

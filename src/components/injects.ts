@@ -10,3 +10,7 @@ export const activeScenarioKey = Symbol("Active scenario") as InjectionKey<TScen
 export const activeFeaturesKey = Symbol(
   "Active features"
 ) as InjectionKey<UseFeatureStyles>;
+
+export const currentScenarioTabKey = Symbol("Current scenario tab") as InjectionKey<
+  Ref<number>
+>;
