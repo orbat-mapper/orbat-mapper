@@ -6,7 +6,6 @@
       </p>
       <p v-if="feature.highlight" v-html="feature.highlight" />
       <p v-else>{{ feature.name }}</p>
-      <p class="ml-2 text-xs">{{ feature.score }}</p>
     </div>
   </div>
 </template>
