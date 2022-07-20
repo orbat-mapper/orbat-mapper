@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, provide, ref, shallowRef, watch } from "vue";
 import MapContainer from "@/components/MapContainer.vue";
-import { and, invoke, useTitle, useToggle, whenever } from "@vueuse/core";
+import { invoke, useTitle, useToggle } from "@vueuse/core";
 import OLMap from "ol/Map";
 import StoryModeContent from "./StoryModeContent.vue";
 import { chapter, StoryStateChange } from "@/testdata/testStory";
@@ -97,11 +97,9 @@ const { unitLayer, drawUnits, animateUnits } = useUnitLayer({
 
 function onMapReady(olMap: OLMap) {
   mapRef.value = olMap;
-  olMap.addLayer(unitLayer);
-  mapIsReady.value = true;
-}
 
-whenever(and(mapIsReady), () => {
+  mapIsReady.value = true;
+
   const view = mapRef.value!.getView();
   const { center, ...rest } = chapter.view;
   const time = dayjs.utc(chapter.startTime);
@@ -112,6 +110,7 @@ whenever(and(mapIsReady), () => {
   });
 
   loadScenarioLayers();
+  olMap.addLayer(unitLayer);
   drawUnits();
 
   view.animate({
@@ -119,10 +118,7 @@ whenever(and(mapIsReady), () => {
     center: fromLonLat(center, view.getProjection()),
     duration: 0,
   });
-  // const extent = unitLayer.getSource().getExtent();
-  // if (extent && !unitLayer.getSource().isEmpty())
-  //   mapInstance.getView().fit(extent, { padding: [10, 10, 10, 10] });
-});
+}
 
 function onUpdateState(state: StoryStateChange) {
   if (state.time) {
