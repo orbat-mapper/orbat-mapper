@@ -25,7 +25,15 @@ export interface FillStyleSpec {
   _fill: string | null;
 }
 
-export type MarkerSymbol = "square" | "triangle" | "star" | "cross" | "x" | "circle";
+export type MarkerSymbol =
+  | "square"
+  | "triangle"
+  | "star"
+  | "cross"
+  | "x"
+  | "circle"
+  | "hexagon"
+  | "pentagon";
 
 export interface SimpleStyleSpec extends StrokeStyleSpec, FillStyleSpec {
   title: string;
@@ -50,6 +58,24 @@ function createMarkerSymbol(
         radius: 10,
         angle: Math.PI / 4,
       });
+    case "pentagon":
+      return new RegularShape({
+        fill: fill,
+        stroke: stroke,
+        points: 5,
+        radius: 10,
+        angle: 0,
+      });
+
+    case "hexagon":
+      return new RegularShape({
+        fill: fill,
+        stroke: stroke,
+        points: 6,
+        radius: 10,
+        angle: Math.PI / 2,
+      });
+
     case "triangle":
       return new RegularShape({
         fill: fill,
