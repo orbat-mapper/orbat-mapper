@@ -1,5 +1,11 @@
 import { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
 import { SimpleStyleSpec } from "@/geo/simplestyle";
+import { ScenarioTime } from "@/types/base";
+
+export interface VisibilityInfo {
+  visibleFromT: ScenarioTime;
+  visibleUntilT: ScenarioTime;
+}
 
 export type FeatureId = string | number;
 export type Position = number[];
@@ -13,7 +19,9 @@ export type ScenarioFeatureType =
   | "MultiPolygon"
   | "GeometryCollection";
 
-export interface ScenarioFeatureProperties extends Partial<SimpleStyleSpec> {
+export interface ScenarioFeatureProperties
+  extends Partial<SimpleStyleSpec>,
+    Partial<VisibilityInfo> {
   type: ScenarioFeatureType;
   name?: string;
   description?: string;
@@ -29,7 +37,7 @@ export interface ScenarioFeature
   id: FeatureId;
 }
 
-export interface ScenarioLayer {
+export interface ScenarioLayer extends Partial<VisibilityInfo> {
   id: FeatureId;
   name: string;
   description?: string;

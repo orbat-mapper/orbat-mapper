@@ -19,7 +19,7 @@ import type {
   NUnit,
 } from "@/types/internalModels";
 import { useScenarioTime } from "./time";
-import type { FeatureId } from "@/types/scenarioGeoModels";
+import type { FeatureId, VisibilityInfo } from "@/types/scenarioGeoModels";
 
 export interface ScenarioState {
   id: EntityId;
@@ -94,11 +94,27 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     symbologyStandard: scenario.symbologyStandard,
   };
 
+  function mapVisibility<T extends Partial<VisibilityInfo>>(l: T): T {
+    const r = { ...l };
+    if (l.visibleFromT !== undefined) {
+      r.visibleFromT = +dayjs(l.visibleFromT);
+    }
+    if (l.visibleUntilT !== undefined) {
+      r.visibleUntilT = +dayjs(l.visibleUntilT);
+    }
+    return r;
+  }
+
   scenario.layers.forEach((layer) => {
     layers.push(layer.id);
-    layerMap[layer.id] = { ...layer, features: layer.features.map((f) => f.id) };
+    layerMap[layer.id] = {
+      ...mapVisibility(layer),
+      features: layer.features.map((f) => f.id),
+    };
     layer.features.forEach((feature) => {
-      featureMap[feature.id] = { ...feature, _pid: layer.id };
+      const tmp = { ...feature };
+      tmp.properties = mapVisibility(tmp.properties);
+      featureMap[feature.id] = { ...tmp, _pid: layer.id };
     });
   });
 

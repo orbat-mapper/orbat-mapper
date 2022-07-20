@@ -12,7 +12,7 @@ import { NewScenarioStore, ScenarioState, useNewScenarioStore } from "./newScena
 import { useSettingsStore } from "@/stores/settingsStore";
 import { ShallowRef } from "vue";
 import { isLoading } from "@/scenariostore/index";
-import { INTERNAL_NAMES } from "@/types/internalModels";
+import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
 import dayjs from "dayjs";
 import { ScenarioLayer } from "@/types/scenarioGeoModels";
 import { EntityId } from "@/types/base";
@@ -96,7 +96,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       toObject(),
       (name, val) => {
         if (INTERNAL_NAMES.includes(name)) return undefined;
-        if (name === "t" || name === "startTime") {
+        if (TIMESTAMP_NAMES.includes(name)) {
           return dayjs(val)
             .tz(store.value.state.info.timeZone || "UTC")
             .format();

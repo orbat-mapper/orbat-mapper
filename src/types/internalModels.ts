@@ -39,3 +39,4 @@ export interface NOrbatItemData {
 }
 
 export const INTERNAL_NAMES = ["_state", "_pid", "_isOpen", "_isNew", "_zIndex"];
+export const TIMESTAMP_NAMES = ["t", "visibleFromT", "visibleUntilT", "startTime"];
