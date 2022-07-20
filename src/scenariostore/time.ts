@@ -56,11 +56,35 @@ export function useScenarioTime(store: NewScenarioStore) {
   }
 
   function jumpToNextEvent() {
-    console.warn("Not implemented yet");
+    let newTime = Number.MAX_SAFE_INTEGER;
+    Object.values(state.unitMap).forEach((unit) => {
+      if (!unit?.state?.length) {
+        return;
+      }
+      for (const s of unit.state) {
+        if (s.t > state.currentTime) {
+          if (s.t < newTime) newTime = s.t;
+          break;
+        }
+      }
+    });
+    if (newTime < Number.MAX_SAFE_INTEGER) setCurrentTime(newTime);
   }
 
   function jumpToPrevEvent() {
-    console.warn("Not implemented yet");
+    let newTime = Number.MIN_SAFE_INTEGER;
+    Object.values(state.unitMap).forEach((unit) => {
+      if (!unit?.state?.length) {
+        return;
+      }
+      for (const s of unit.state) {
+        if (s.t < state.currentTime) {
+          if (s.t > newTime) newTime = s.t;
+          break;
+        }
+      }
+    });
+    if (newTime > Number.MIN_SAFE_INTEGER) setCurrentTime(newTime);
   }
 
   const utcTime = computed(() => {

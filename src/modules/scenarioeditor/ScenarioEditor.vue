@@ -144,7 +144,7 @@ import { useActiveUnitStore2 } from "@/stores/dragStore";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
-import TimeController from "@/components/NTimeController.vue";
+import TimeController from "@/components/TimeController.vue";
 import PlainButton from "@/components/PlainButton.vue";
 
 import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
