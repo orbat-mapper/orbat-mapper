@@ -35,12 +35,15 @@ export type MarkerSymbol =
   | "hexagon"
   | "pentagon";
 
-export interface SimpleStyleSpec extends StrokeStyleSpec, FillStyleSpec {
-  title: string;
-  description: string;
+export interface MarkerStyleSpec {
   "marker-size": "small" | "medium" | "large";
   "marker-color": string;
   "marker-symbol": MarkerSymbol;
+}
+
+export interface SimpleStyleSpec extends StrokeStyleSpec, FillStyleSpec, MarkerStyleSpec {
+  title: string;
+  description: string;
 }
 
 // based on https://openlayers.org/en/latest/examples/regularshape.html

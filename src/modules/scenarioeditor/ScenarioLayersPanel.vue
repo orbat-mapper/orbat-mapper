@@ -21,8 +21,13 @@ import InputGroup from "@/components/InputGroup.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { inputEventFilter } from "@/components/helpers";
 import FeatureStrokeSettings from "./FeatureStrokeSettings.vue";
-import { type FillStyleSpec, type StrokeStyleSpec } from "@/geo/simplestyle";
+import {
+  type FillStyleSpec,
+  MarkerStyleSpec,
+  type StrokeStyleSpec,
+} from "@/geo/simplestyle";
 import FeatureFillSettings from "./FeatureFillSettings.vue";
+import FeatureMarkerSettings from "@/modules/scenarioeditor/FeatureMarkerSettings.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -36,10 +41,6 @@ const emit = defineEmits([
   "feature-style-update",
 ]);
 
-const fillProps = computed(() => {
-  const { fill } = props.feature.properties;
-  return { fill };
-});
 const [isMetaEditMode, toggleMetaEdit] = useToggle(false);
 
 const formMeta = ref<Partial<ScenarioFeatureProperties>>({});
@@ -58,6 +59,8 @@ const hDescription = computed(() =>
   renderMarkdown(props.feature.properties.description || "")
 );
 
+const geometryType = computed(() => props.feature.properties.type);
+
 function onFormMetaSubmit() {
   emit("feature-meta-update", props.feature.id, { ...formMeta.value });
   toggleMetaEdit();
@@ -75,6 +78,10 @@ function updateStroke(data: Partial<StrokeStyleSpec>) {
 }
 
 function updateFill(data: Partial<FillStyleSpec>) {
+  emit("feature-style-update", props.feature.id, { ...data });
+}
+
+function updateMarker(data: Partial<MarkerStyleSpec>) {
   emit("feature-style-update", props.feature.id, { ...data });
 }
 </script>
@@ -140,6 +147,9 @@ function updateFill(data: Partial<FillStyleSpec>) {
             <div class="prose prose-sm" v-html="hDescription"></div>
           </DescriptionItem>
         </section>
+      </div>
+      <div v-if="geometryType === 'Point'" class="-mx-6 mt-4 border-t px-6 py-4">
+        <FeatureMarkerSettings :feature="feature" @update="updateMarker" />
       </div>
       <div class="-mx-6 mt-4 border-t px-6 py-4">
         <FeatureStrokeSettings :feature="feature" @update="updateStroke" />

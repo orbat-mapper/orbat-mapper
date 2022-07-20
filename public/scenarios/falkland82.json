@@ -984,7 +984,9 @@
             "name": "Rio Grande AB",
             "fill": "#a40000",
             "fill-opacity": 1,
-            "marker-symbol": "star"
+            "marker-symbol": "star",
+            "stroke": "#ffffff",
+            "stroke-width": 1
           },
           "id": "dm1UDXs2xW"
         },
@@ -999,7 +1001,9 @@
             "name": "Rio Gallego AB",
             "fill": "#a40000",
             "fill-opacity": 1,
-            "marker-symbol": "star"
+            "marker-symbol": "star",
+            "stroke-width": 1,
+            "stroke": "#ffffff"
           },
           "id": "dm1UssDXs2xW"
         },
@@ -1012,8 +1016,11 @@
           "properties": {
             "type": "Point",
             "name": "Puerto Belgrano",
-            "fill": "#204a87",
-            "fill-opacity": 1
+            "fill": "#a40000",
+            "fill-opacity": 1,
+            "marker-symbol": "pentagon",
+            "stroke-width": 1,
+            "stroke": "#ffffff"
           },
           "id": "EYeIuLNE9V"
         }
@@ -1032,9 +1039,12 @@
           "properties": {
             "type": "Point",
             "name": "RAF Ascension Island",
-            "fill": "#fce94f",
+            "fill": "#3465a4",
             "fill-opacity": 1,
-            "stroke-opacity": 1
+            "stroke-opacity": 1,
+            "marker-symbol": "star",
+            "stroke-width": 1,
+            "stroke": "#ffffff"
           },
           "id": "VIyMHgWoWS"
         },
@@ -1047,8 +1057,11 @@
           "properties": {
             "type": "Point",
             "name": "HMNB Portsmouth",
-            "fill": "#73d216",
-            "fill-opacity": 1
+            "fill": "#3465a4",
+            "fill-opacity": 1,
+            "marker-symbol": "pentagon",
+            "stroke-width": 1,
+            "stroke": "#ffffff"
           },
           "id": "ibuQYToiiN"
         }
