@@ -8,9 +8,9 @@ export interface ButtonGroupItem {
   disabled?: boolean;
 }
 
-export interface SelectItem {
+export interface SelectItem<T = string | number> {
   label: string;
-  value: string | number;
+  value: T;
 }
 
 export interface SearchResult {

@@ -1020,7 +1020,8 @@
             "fill-opacity": 1,
             "marker-symbol": "pentagon",
             "stroke-width": 1,
-            "stroke": "#ffffff"
+            "stroke": "#ffffff",
+            "marker-size": "small"
           },
           "id": "EYeIuLNE9V"
         }
@@ -1061,7 +1062,8 @@
             "fill-opacity": 1,
             "marker-symbol": "pentagon",
             "stroke-width": 1,
-            "stroke": "#ffffff"
+            "stroke": "#ffffff",
+            "marker-size": "small"
           },
           "id": "ibuQYToiiN"
         }
