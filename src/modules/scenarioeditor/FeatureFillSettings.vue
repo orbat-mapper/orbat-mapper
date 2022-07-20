@@ -39,12 +39,10 @@ const usedOptions = computed(
 const hasFill = computed(() => fill.value.fill !== null);
 
 function toggleFill(v: boolean) {
-  // Fixme!
   if (v) {
-    props.feature.properties.fill = props.feature.properties._fill || "#555555";
+    emit("update", { fill: props.feature.properties._fill || "#555555" });
   } else {
-    props.feature.properties._fill = props.feature.properties.fill;
-    props.feature.properties.fill = null;
+    emit("update", { fill: null, _fill: props.feature.properties.fill });
   }
 }
 </script>

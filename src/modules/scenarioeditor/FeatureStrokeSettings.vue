@@ -23,7 +23,7 @@ const stroke = computed((): Partial<StrokeStyleSpec> => {
   };
 });
 
-function updateValue(name: keyof StrokeStyleSpec, value: string | number) {
+function updateValue(name: keyof StrokeStyleSpec, value: string | number | null) {
   emit("update", { [name]: value });
 }
 
@@ -41,12 +41,10 @@ const usedOptions = computed(
 const hasStroke = computed(() => stroke.value.stroke !== null);
 
 function toggleStroke(v: boolean) {
-  // Fixme!
   if (v) {
-    props.feature.properties.stroke = props.feature.properties._stroke || "#cccccc";
+    emit("update", { stroke: props.feature.properties._stroke || "#cccccc" });
   } else {
-    props.feature.properties._stroke = props.feature.properties.stroke;
-    props.feature.properties.stroke = null;
+    emit("update", { stroke: null, _stroke: props.feature.properties.stroke });
   }
 }
 </script>
