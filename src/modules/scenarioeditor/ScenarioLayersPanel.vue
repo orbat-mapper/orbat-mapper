@@ -31,6 +31,11 @@ import FeatureMarkerSettings from "@/modules/scenarioeditor/FeatureMarkerSetting
 import { formatDateString } from "@/geo/utils";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
+import PlainButton from "@/components/PlainButton.vue";
+
+const InputDateModal = defineAsyncComponent(
+  () => import("@/components/InputDateModal.vue")
+);
 
 const {
   time: { timeZone },
@@ -48,7 +53,11 @@ const emit = defineEmits([
   "feature-style-update",
 ]);
 
+const showTimeModal = ref(false);
 const [isMetaEditMode, toggleMetaEdit] = useToggle(false);
+
+const timeAttributeName = ref("visibleFromT");
+const timeDialogTitle = ref("");
 
 const formMeta = ref<Partial<ScenarioFeatureProperties>>({});
 
@@ -56,8 +65,8 @@ watch(
   [isMetaEditMode, () => props.feature],
   ([isEditMode, feature]) => {
     if (!isEditMode) return;
-    const { name, description } = props.feature.properties;
-    formMeta.value = { name, description };
+    const { name, description, visibleFromT, visibleUntilT } = props.feature.properties;
+    formMeta.value = { name, description, visibleFromT, visibleUntilT };
   },
   { immediate: true }
 );
@@ -65,6 +74,8 @@ watch(
 const hDescription = computed(() =>
   renderMarkdown(props.feature.properties.description || "")
 );
+
+const timeModalTitle = computed(() => {});
 
 const geometryType = computed(() => props.feature.properties.type);
 
@@ -90,6 +101,16 @@ function updateFill(data: Partial<FillStyleSpec>) {
 
 function updateMarker(data: Partial<MarkerStyleSpec>) {
   emit("feature-style-update", props.feature.id, { ...data });
+}
+
+function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
+  timeAttributeName.value = field;
+  if (field === "visibleFromT") {
+    timeDialogTitle.value = "Visible from";
+  } else if (field === "visibleUntilT") {
+    timeDialogTitle.value = "Visible until";
+  }
+  showTimeModal.value = true;
 }
 </script>
 <template>
@@ -143,10 +164,30 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
             v-model="formMeta.description"
             description="Use markdown syntax for formatting"
           />
+
+          <DescriptionItem label="Visible from"
+            >{{ formatDateString(formMeta.visibleFromT, timeZone) }}
+            <PlainButton @click="doShowTimeModal('visibleFromT')" class="ml-2"
+              >Change</PlainButton
+            >
+          </DescriptionItem>
+
+          <DescriptionItem label="Visible until"
+            >{{ formatDateString(formMeta.visibleUntilT, timeZone) }}
+            <PlainButton @click="doShowTimeModal('visibleUntilT')" class="ml-2"
+              >Change</PlainButton
+            >
+          </DescriptionItem>
           <div class="flex items-center justify-end space-x-2">
             <BaseButton primary small type="submit">Save</BaseButton>
             <BaseButton small @click="toggleMetaEdit()">Cancel</BaseButton>
           </div>
+          <InputDateModal
+            v-model="showTimeModal"
+            :dialog-title="timeDialogTitle"
+            v-model:timestamp="formMeta[timeAttributeName]"
+            :time-zone="timeZone"
+          />
         </form>
         <section v-else class="space-y-4">
           <DescriptionItem label="Name">{{ feature.properties.name }}</DescriptionItem>
@@ -157,7 +198,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
             {{ formatDateString(feature.properties.visibleFromT, timeZone) }}
           </DescriptionItem>
 
-          <DescriptionItem v-if="feature.properties.visibleUntilT" label="Visible from">
+          <DescriptionItem v-if="feature.properties.visibleUntilT" label="Visible until">
             {{ formatDateString(feature.properties.visibleUntilT, timeZone) }}
           </DescriptionItem>
         </section>

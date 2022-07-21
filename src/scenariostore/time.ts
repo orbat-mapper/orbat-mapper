@@ -6,6 +6,7 @@ import { computed } from "vue";
 import turfLength from "@turf/length";
 import turfAlong from "@turf/along";
 import { lineString } from "@turf/helpers";
+
 export function createInitialState(unit: NUnit): State | null {
   if (unit.location) return { t: Number.MIN_SAFE_INTEGER, location: unit.location };
   return null;
@@ -52,7 +53,7 @@ export function useScenarioTime(store: NewScenarioStore) {
         const visibleUntilT = feature.properties.visibleUntilT || Number.MAX_SAFE_INTEGER;
 
         if (feature)
-          feature._hidden = timestamp <= visibleFromT && timestamp <= visibleUntilT;
+          feature._hidden = timestamp <= visibleFromT || timestamp >= visibleUntilT;
       });
     });
     state.currentTime = timestamp;
