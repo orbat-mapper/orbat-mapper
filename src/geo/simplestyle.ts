@@ -91,7 +91,6 @@ function createMarkerSymbol(
         stroke: stroke,
         points: 3,
         radius: 10 * sizeScale,
-        rotation: Math.PI / 4,
         angle: 0,
       });
     case "star":
