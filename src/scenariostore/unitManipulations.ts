@@ -364,6 +364,20 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitState(unitId);
   }
 
+  function convertStateEntryToInitialLocation(unitId: EntityId, index: number) {
+    const u = state.getUnitById(unitId);
+    const stateEntry = u?.state?.[index];
+    if (!stateEntry?.location) return;
+    const location = [...stateEntry.location];
+    groupUpdate(
+      () => {
+        deleteUnitStateEntry(unitId, index);
+        updateUnit(unitId, { location });
+      },
+      { label: "addUnitPosition", value: unitId }
+    );
+  }
+
   function updateUnitState(unitId: EntityId, undoable = false) {
     const unit = state.unitMap[unitId];
     const timestamp = state.currentTime;
@@ -441,5 +455,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     },
     expandUnit,
     updateUnitStateVia,
+    convertStateEntryToInitialLocation,
   };
 }

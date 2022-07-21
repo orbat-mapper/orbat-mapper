@@ -13,15 +13,15 @@
         <p>{{ formatPosition(s.location) }}</p>
       </div>
 
-      <div class="flex-0 flex items-center space-x-0">
+      <div class="flex-0 relative flex items-center space-x-0">
         <IconButton @click="changeToState(s)" class="bg-gray-50">
           <CrosshairsGps class="h-5 w-5" aria-hidden="true" />
-          <span class="sr-only">Delete entry</span>
         </IconButton>
         <IconButton @click="deleteState(index)" class="bg-gray-50">
           <XIcon class="h-5 w-5" aria-hidden="true" />
           <span class="sr-only">Delete entry</span>
         </IconButton>
+        <DotsMenu :items="menuItems" @action="onStateAction(index, $event)" />
       </div>
       <div v-if="s.via" class="absolute -top-3 left-1/2">
         <div
@@ -42,10 +42,11 @@ import { CrosshairsGps, MapMarkerPath } from "mdue";
 import { XIcon } from "@heroicons/vue/solid";
 import IconButton from "@/components/IconButton.vue";
 import { useUnitActionsN } from "@/composables/scenarioActions";
-import { UnitActions } from "@/types/constants";
+import { StateAction, UnitActions } from "@/types/constants";
 import type { NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
+import DotsMenu, { type MenuItemData } from "@/components/DotsMenu.vue";
 
 interface Props {
   unit: NUnit;
@@ -55,6 +56,12 @@ const { store, time, unitActions } = injectStrict(activeScenarioKey);
 
 const { onUnitAction } = useUnitActionsN();
 const state = computed(() => props.unit.state);
+
+const menuItems: MenuItemData<StateAction>[] = [
+  { label: "Delete", action: "delete" },
+  // { label: "Change time", action: "changeTime" },
+  { label: "Convert to initial position", action: "convertToInitialPosition" },
+];
 
 const deleteState = (index: number) => {
   unitActions.deleteUnitStateEntry(props.unit.id, index);
@@ -74,4 +81,12 @@ const changeToState = (stateEntry: State) => {
     onUnitAction(props.unit, UnitActions.Pan);
   }
 };
+
+function onStateAction(index: number, action: StateAction) {
+  if (action === "delete") {
+    deleteState(index);
+  } else if (action === "convertToInitialPosition") {
+    unitActions.convertStateEntryToInitialLocation(props.unit.id, index);
+  }
+}
 </script>

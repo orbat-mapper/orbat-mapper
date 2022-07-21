@@ -4,6 +4,7 @@ import { Unit } from "@/types/scenarioModels";
 import { fromLonLat } from "ol/proj";
 import { MeasurementTypes } from "@/composables/geoMeasurement";
 import { NUnit } from "@/types/internalModels";
+import { Position } from "geojson";
 
 export const useGeoStore = defineStore("geo", {
   state: () => ({
@@ -30,6 +31,16 @@ export const useGeoStore = defineStore("geo", {
         duration,
       });
     },
+
+    panToLocation(location?: Position, duration = 900) {
+      if (!location) return;
+      const view = this.olMap!.getView();
+      view.animate({
+        center: fromLonLat(location, view.getProjection()),
+        duration,
+      });
+    },
+
     updateMapSize() {
       this.olMap?.updateSize();
     },

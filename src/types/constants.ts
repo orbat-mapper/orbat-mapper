@@ -62,3 +62,11 @@ export interface SymbolItem extends SymbolValue {
   entityType?: string;
   entitySubtype?: string;
 }
+
+const stateActions = [
+  "delete",
+  "changeTime",
+  "duplicate",
+  "convertToInitialPosition",
+] as const;
+export type StateAction = typeof stateActions[number];

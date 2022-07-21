@@ -50,6 +50,15 @@
       <DescriptionItem v-if="unit.description" label="Description">
         <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
       </DescriptionItem>
+
+      <DescriptionItem v-if="unit.location" label="Initial location">
+        <div class="flex items-center justify-between">
+          <p>{{ formatPosition(unit.location) }}</p>
+          <IconButton @click="geoStore.panToLocation(unit.location)">
+            <CrosshairsGps class="h-5 w-5" />
+          </IconButton>
+        </div>
+      </DescriptionItem>
     </div>
 
     <UnitPanelState v-if="unit?.state?.length" :unit="unit" />
@@ -59,6 +68,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
+import { CrosshairsGps } from "mdue";
 import InputGroup from "@/components/InputGroup.vue";
 import { useGeoStore } from "@/stores/geoStore";
 import MilSymbol from "@/components/MilSymbol.vue";
@@ -77,6 +87,8 @@ import { EntityId } from "@/types/base";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { UnitUpdate } from "@/types/internalModels";
+import { formatPosition } from "@/geo/utils";
+import IconButton from "@/components/IconButton.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -100,7 +112,6 @@ const geoStore = useGeoStore();
 
 const isEditMode = ref(false);
 const toggleEditMode = useToggle(isEditMode);
-const nn = ref(nanoid());
 const unit = computed(() => {
   return store.state.unitMap[props.unitId];
 });
