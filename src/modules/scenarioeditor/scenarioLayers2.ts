@@ -77,7 +77,7 @@ export function getItemsIcon(type: string) {
 }
 
 export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
-  { label: "Zoom to", action: ScenarioFeatureActions.Zoom },
+  { label: "Zboom to", action: ScenarioFeatureActions.Zoom },
   { label: "Pan to", action: ScenarioFeatureActions.Pan },
   // { label: "Move up", action: ScenarioFeatureActions.MoveUp },
   // { label: "Move down", action: ScenarioFeatureActions.MoveDown },

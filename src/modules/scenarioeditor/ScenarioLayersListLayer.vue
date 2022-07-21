@@ -35,7 +35,7 @@ const showEditNameForm = ref(props.layer?._isNew || false);
 
 const layerMenuItems: MenuItemData<ScenarioLayerActions>[] = [
   { label: "Zoom to", action: ScenarioLayerActions.Zoom },
-  { label: "Rename", action: ScenarioLayerActions.Rename },
+  { label: "Edit", action: ScenarioLayerActions.Rename },
   { label: "Move up", action: ScenarioLayerActions.MoveUp },
   { label: "Move down", action: ScenarioLayerActions.MoveDown },
   { label: "Delete", action: ScenarioLayerActions.Delete },
@@ -76,6 +76,11 @@ function onLayerAction(action: ScenarioLayerActions) {
       >
         <PencilIcon class="h-5 w-5" />
       </button>
+      <ClockOutline
+        v-if="layer.visibleFromT || layer.visibleUntilT"
+        class="h-5 w-5 text-gray-400"
+      />
+
       <button
         type="button"
         @click="emit('toggle-layer', layer)"

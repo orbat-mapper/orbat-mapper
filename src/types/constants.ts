@@ -45,6 +45,7 @@ export const enum ScenarioFeatureActions {
 export const enum ScenarioLayerActions {
   Delete = "Delete",
   Rename = "Rename",
+  Edit = "Edit",
   Zoom = "Zoom",
   MoveUp = "MoveUp",
   MoveDown = "MoveDown",
