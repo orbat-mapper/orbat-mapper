@@ -1,6 +1,7 @@
 <template>
   <Menu as="div">
     <MenuButton
+      @click.stop
       class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-army2 focus:ring-offset-2"
     >
       <span class="sr-only">Open options</span>
@@ -22,10 +23,10 @@
             v-slot="{ active, disabled }"
             v-for="item in items"
             :disabled="item.disabled"
+            @click.stop.prevent="onItemClick(item)"
           >
             <a
               href="#"
-              @click.stop.prevent="onItemClick(item)"
               :class="[
                 active
                   ? 'border-r-2 border-army2 bg-gray-100 text-gray-900'
