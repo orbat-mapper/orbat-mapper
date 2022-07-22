@@ -25,13 +25,6 @@
             class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
           />
         </TransitionChild>
-
-        <!-- This element is to trick the browser into centering the modal contents. -->
-        <!--        <span-->
-        <!--          class="hidden sm:inline-block sm:align-middle sm:h-screen"-->
-        <!--          aria-hidden="true"-->
-        <!--          >&#8203;</span-->
-        <!--        >-->
         <TransitionChild
           as="template"
           enter="ease-out duration-300"
@@ -73,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { onUnmounted, watch } from "vue";
+import { nextTick, onUnmounted, ref, watch } from "vue";
 import {
   Dialog,
   DialogOverlay,
@@ -82,7 +75,7 @@ import {
   TransitionRoot,
 } from "@headlessui/vue";
 import { XIcon } from "@heroicons/vue/outline";
-import { useVModel } from "@vueuse/core";
+import { promiseTimeout, useVModel } from "@vueuse/core";
 import { useUiStore } from "@/stores/uiStore";
 
 interface Props {
@@ -95,10 +88,21 @@ const props = withDefaults(defineProps<Props>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue"]);
 
 const uiStore = useUiStore();
-const open = useVModel(props, "modelValue");
+const open = ref(false);
+watch(
+  () => props.modelValue,
+  async (v) => {
+    await promiseTimeout(100);
+    open.value = v;
+  },
+  { immediate: true }
+);
+
 uiStore.modalOpen = open.value;
-watch(open, (v) => {
+watch(open, async (v) => {
   uiStore.modalOpen = v;
+  await promiseTimeout(300);
+  emit("update:modelValue", v);
 });
 
 onUnmounted(() => (uiStore.modalOpen = false));
