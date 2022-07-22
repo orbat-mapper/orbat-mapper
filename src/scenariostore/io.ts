@@ -95,6 +95,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     return JSON.stringify(
       toObject(),
       (name, val) => {
+        if (val === undefined) return undefined;
         if (INTERNAL_NAMES.includes(name)) return undefined;
         if (TIMESTAMP_NAMES.includes(name)) {
           return dayjs(val)
