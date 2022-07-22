@@ -2,10 +2,10 @@ import { OrbatItemData, Unit } from "@/types/scenarioModels";
 import { UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
 import { computed } from "vue";
-import { MenuItemData } from "@/components/DotsMenu.vue";
 import { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import { MenuItemData } from "@/components/types";
 
 export function useUnitActionsN() {
   const { unitActions } = injectStrict(activeScenarioKey);

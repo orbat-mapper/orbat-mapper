@@ -5,7 +5,7 @@ import {
   ScenarioLayerInstance,
 } from "@/types/scenarioGeoModels";
 import { Eye as EyeIcon, EyeOff, Pencil as PencilIcon, ClockOutline } from "mdue";
-import DotsMenu, { MenuItemData } from "@/components/DotsMenu.vue";
+import DotsMenu from "@/components/DotsMenu.vue";
 import { ScenarioLayerActions } from "@/types/constants";
 import { ref } from "vue";
 import EditLayerInlineForm from "./EditLayerInlineForm.vue";
@@ -14,6 +14,7 @@ import {
   featureMenuItems,
   getGeometryIcon,
 } from "@/modules/scenarioeditor/scenarioLayers2";
+import { MenuItemData } from "@/components/types";
 
 const props = defineProps<{
   layer: ScenarioLayerInstance;

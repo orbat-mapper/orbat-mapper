@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import DotsMenu, { MenuItemData } from "./DotsMenu.vue";
+import DotsMenu from "./DotsMenu.vue";
 import NOrbatTree from "./NOrbatTree.vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
@@ -61,7 +61,7 @@ import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./NEditSideGroupForm.vue";
 import { NSideGroup, NUnit } from "@/types/internalModels";
 import { ScenarioState } from "@/scenariostore/newScenarioStore";
-import { DropTarget } from "./types";
+import { DropTarget, MenuItemData } from "./types";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 

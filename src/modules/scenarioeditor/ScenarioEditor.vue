@@ -163,7 +163,7 @@ import {
   watchOnce,
 } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
-import DotsMenu, { MenuItemData } from "@/components/DotsMenu.vue";
+import DotsMenu from "@/components/DotsMenu.vue";
 import { ScenarioActions } from "@/types/constants";
 import AppNotifications from "@/components/AppNotifications.vue";
 import { useNotifications } from "@/composables/notifications";
@@ -184,6 +184,7 @@ import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
 import type { Scenario } from "@/types/scenarioModels";
 import ScenarioMap from "@/components/NScenarioMap.vue";
 import { useFeatureStyles } from "@/geo/featureStyles";
+import { MenuItemData } from "@/components/types";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"));

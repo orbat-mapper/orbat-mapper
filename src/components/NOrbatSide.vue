@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import DotsMenu, { MenuItemData } from "./DotsMenu.vue";
+import DotsMenu from "./DotsMenu.vue";
 import { computed, inject, ref, toRaw } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
@@ -63,7 +63,7 @@ import EditSideForm from "./NEditSideForm.vue";
 import NOrbatSideGroup from "./NOrbatSideGroup.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { ScenarioState } from "@/scenariostore/newScenarioStore";
-import { DropTarget } from "./types";
+import { DropTarget, MenuItemData } from "./types";
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 

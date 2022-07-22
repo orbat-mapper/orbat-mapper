@@ -43,48 +43,16 @@
   </Menu>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from "vue";
-import {
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-  TransitionChild,
-  TransitionRoot,
-} from "@headlessui/vue";
+<script setup lang="ts">
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
 import { DotsVerticalIcon } from "@heroicons/vue/solid";
+import { MenuItemData } from "@/components/types";
 
-export interface MenuItemData<T = string> {
-  label: string;
-  action: T;
-  disabled?: boolean;
-}
+const props = defineProps<{ items: MenuItemData[] }>();
+const emit = defineEmits(["action"]);
 
-export default defineComponent({
-  name: "DotsMenu",
-  props: {
-    items: {
-      type: Array as PropType<MenuItemData<string | Function>[]>,
-      required: true,
-    },
-  },
-  emits: ["action"],
-  components: {
-    DotsVerticalIcon,
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-    TransitionChild,
-    TransitionRoot,
-  },
-  setup(props, { emit }) {
-    const onItemClick = (item: MenuItemData<string | Function>) => {
-      if (item.action instanceof Function) item.action();
-      else emit("action", item.action);
-    };
-    return { onItemClick };
-  },
-});
+const onItemClick = (item: MenuItemData<string | Function>) => {
+  if (item.action instanceof Function) item.action();
+  else emit("action", item.action);
+};
 </script>

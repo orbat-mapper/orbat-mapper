@@ -42,3 +42,9 @@ export interface UnitEmits {
   (e: "unit-click", unit: NUnit): void;
   (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
 }
+
+export interface MenuItemData<T = string | Function> {
+  label: string;
+  action: T;
+  disabled?: boolean;
+}

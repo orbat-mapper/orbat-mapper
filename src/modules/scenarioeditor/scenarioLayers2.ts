@@ -39,7 +39,6 @@ import {
   VectorLine,
   VectorTriangle,
 } from "mdue";
-import { MenuItemData } from "@/components/DotsMenu.vue";
 import { ScenarioFeatureActions } from "@/types/constants";
 import Select from "ol/interaction/Select";
 import { MaybeRef } from "@vueuse/core";
@@ -52,6 +51,7 @@ import {
 import { useNotifications } from "@/composables/notifications";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
+import { MenuItemData } from "@/components/types";
 
 const { send } = useNotifications();
 

@@ -61,7 +61,7 @@ import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
 import { MenuAlt2Icon } from "@heroicons/vue/solid";
 import { promiseTimeout } from "@vueuse/core";
-import DotsMenu, { MenuItemData } from "../../components/DotsMenu.vue";
+import DotsMenu from "../../components/DotsMenu.vue";
 import FileSaver from "file-saver";
 import SlideOver from "../../components/SlideOver.vue";
 import OrbatChartSettings, { ChartTabs } from "./OrbatChartSettings.vue";
@@ -74,6 +74,7 @@ import {
 import { sizeToWidthHeight } from "./orbatchart/sizes";
 import { TScenario } from "@/scenariostore";
 import { activeScenarioKey } from "@/components/injects";
+import { MenuItemData } from "@/components/types";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 provide(activeScenarioKey, props.activeScenario);
