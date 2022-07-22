@@ -144,7 +144,14 @@
                 },
                 {
                   "t": "1982-03-24T12:00:00-04:00",
-                  "location": [-36.49467898221041, -54.284221639121604]
+                  "location": [-36.49467898221041, -54.284221639121604],
+                  "via": [
+                    [-57.831722350100485, -51.6896359583592],
+                    [-57.828117461184455, -51.67026401383344],
+                    [-57.76494607446571, -51.6657923881361],
+                    [-36.331059429056495, -53.96070327336668],
+                    [-36.457658080362194, -54.291163832602]
+                  ]
                 },
                 {
                   "t": "1982-03-25T12:00:00-04:00",
@@ -913,7 +920,7 @@
             "stroke-width": 4,
             "stroke-opacity": 0.4,
             "fill": null,
-            "visibleFromT": "1982-04-12T00:00:00Z"
+            "visibleFromT": "1982-04-11T20:00:00-04:00"
           },
           "geometry": {
             "type": "Point",
@@ -925,7 +932,7 @@
     {
       "id": "yBW6mLmbE5y38Kv6LzxdB",
       "name": "Landings",
-      "visibleFromT": "1982-05-21T00:00Z",
+      "visibleFromT": "1982-05-20T20:00:00-04:00",
       "features": [
         {
           "type": "Feature",
@@ -1026,6 +1033,43 @@
             "marker-size": "small"
           },
           "id": "EYeIuLNE9V"
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-27.30841913424884, -59.4572127866505]
+          },
+          "properties": {
+            "type": "Point",
+            "name": "Corbeta Uruguay base",
+            "marker-symbol": "triangle",
+            "stroke": "#ffffff",
+            "fill": "#a40000",
+            "fill-opacity": 1,
+            "description": "An Argentinian military outpost established in 1976",
+            "marker-size": "small",
+            "stroke-width": 1
+          },
+          "id": "uGTaeM6ZUd"
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-44.73800717700976, -60.738236763164295]
+          },
+          "properties": {
+            "type": "Point",
+            "name": "Orcadas",
+            "marker-symbol": "triangle",
+            "stroke": "#ffffff",
+            "fill": "#a40000",
+            "fill-opacity": 1,
+            "marker-size": "small",
+            "stroke-width": 1
+          },
+          "id": "Jl2579NHvw"
         }
       ]
     },
@@ -1068,6 +1112,24 @@
             "marker-size": "small"
           },
           "id": "ibuQYToiiN"
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-36.4948515401756, -54.28327179945222]
+          },
+          "properties": {
+            "type": "Point",
+            "name": "British Antarctic Survey",
+            "marker-symbol": "triangle",
+            "stroke": "#ffffff",
+            "fill": "#4e9a06",
+            "fill-opacity": 1,
+            "marker-size": "small",
+            "stroke-width": 1
+          },
+          "id": "9GEGHFNoIK"
         }
       ]
     }
