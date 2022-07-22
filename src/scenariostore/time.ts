@@ -59,13 +59,17 @@ export function useScenarioTime(store: NewScenarioStore) {
     state.currentTime = timestamp;
   }
 
-  function add(amount: number, unit: ManipulateType) {
-    const newTime = dayjs(state.currentTime).add(amount, unit);
+  function add(amount: number, unit: ManipulateType, normalize = false) {
+    const newTime = normalize
+      ? dayjs(state.currentTime).add(amount, unit).tz(timeZone.value).hour(12)
+      : dayjs(state.currentTime).add(amount, unit);
     setCurrentTime(newTime.valueOf());
   }
 
-  function subtract(amount: number, unit: ManipulateType) {
-    const newTime = dayjs(state.currentTime).subtract(amount, unit);
+  function subtract(amount: number, unit: ManipulateType, normalize = false) {
+    const newTime = normalize
+      ? dayjs(state.currentTime).subtract(amount, unit).tz(timeZone.value).hour(12)
+      : dayjs(state.currentTime).subtract(amount, unit);
     setCurrentTime(newTime.valueOf());
   }
 

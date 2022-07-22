@@ -22,11 +22,11 @@
         <span class="sr-only">Next</span>
         <SkipNext class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
-      <ToolbarButton type="button" @click="subtract(1, 'day')">
+      <ToolbarButton type="button" @click="subtract(1, 'day', true)">
         <span class="sr-only">Previous</span>
         <ChevronLeft class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
-      <ToolbarButton @click="add(1, 'day')" end>
+      <ToolbarButton @click="add(1, 'day', true)" end>
         <span class="sr-only">Next</span>
         <ChevronRight class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
