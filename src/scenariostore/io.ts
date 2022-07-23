@@ -79,6 +79,8 @@ function getLayers(state: ScenarioState): ScenarioLayer[] {
 }
 
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
+  const settingsStore = useSettingsStore();
+
   function toObject(): Scenario {
     const { state } = store.value;
     return {
@@ -122,6 +124,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
 
   function loadFromObject(data: Scenario) {
     store.value = useNewScenarioStore(data);
+    settingsStore.symbologyStandard = store.value.state.info.symbologyStandard || "2525";
   }
 
   async function loadFromUrl(url: string) {
