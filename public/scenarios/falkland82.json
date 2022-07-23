@@ -659,20 +659,15 @@
       "standardIdentity": "7",
       "groups": [
         {
-          "id": "sdfsdsdfsdf32",
-          "name": "Operation Rosario",
+          "id": "FkpNiWEqlI",
+          "name": "Argentine navy",
           "subUnits": [
             {
-              "name": "TG 40",
-              "sidc": "10073000001210030000",
+              "name": "Combatants",
+              "sidc": "10073000001200000000",
+              "id": "v5s79rpYNJ",
+              "state": [],
               "subUnits": [
-                {
-                  "name": "TG 40.1",
-                  "sidc": "10071004001211000000",
-                  "state": [],
-                  "id": "yfstrSnutHFfE5HvXKT_b",
-                  "subUnits": []
-                },
                 {
                   "name": "ARA Cabo San Antonio",
                   "sidc": "10073000001203070000",
@@ -688,6 +683,61 @@
                   ],
                   "id": "1CErmjoqxB5t4WQBpM6yW",
                   "subUnits": []
+                },
+                {
+                  "name": "ARA Comodoro Py",
+                  "sidc": "10073000001202030000",
+                  "state": [],
+                  "subUnits": [],
+                  "id": "M0kWkyf8bR",
+                  "shortName": "D-27",
+                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)"
+                },
+                {
+                  "name": "ARA Comodoro Segui",
+                  "sidc": "10073000001202030000",
+                  "state": [],
+                  "subUnits": [],
+                  "id": "Wh9hm0AEg8",
+                  "shortName": "D-25",
+                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)"
+                },
+                {
+                  "name": "ARA Guerrico",
+                  "sidc": "10073000001202050000",
+                  "state": [
+                    {
+                      "t": "1982-04-02T20:00:00-04:00",
+                      "location": [-36.49641, -54.285671]
+                    }
+                  ],
+                  "subUnits": [],
+                  "id": "Hd0jvhPwPxFEDy92ZbSjW"
+                },
+                {
+                  "name": "ARA Hipólito Bouchard",
+                  "sidc": "10073000001202030000",
+                  "state": [],
+                  "subUnits": [],
+                  "id": "dqgRTjJUps",
+                  "shortName": "D-26",
+                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)"
+                },
+                {
+                  "name": "ARA Piedrabuena (D-29)",
+                  "sidc": "10073000001202030000",
+                  "state": [],
+                  "subUnits": [],
+                  "id": "0yiwjzanWF",
+                  "shortName": "D-29",
+                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Collett#Argentine_service"
+                },
+                {
+                  "name": "ARA Santa Fe",
+                  "sidc": "10073500001101000000",
+                  "state": [],
+                  "subUnits": [],
+                  "id": "cIMXbLAS~uZNUIUhLwHga"
                 },
                 {
                   "name": "ARA Santisima Trinidad",
@@ -706,32 +756,22 @@
                   "id": "DOcTMUcoX9LLzuyRPmKOs"
                 },
                 {
-                  "name": "ARA Santa Fe",
-                  "sidc": "10073500001101000000",
+                  "name": "ARA Veinticinco de Mayo",
+                  "sidc": "10073000001201000000",
+                  "id": "TmxVfg3S2b",
                   "state": [],
                   "subUnits": [],
-                  "id": "cIMXbLAS~uZNUIUhLwHga"
+                  "shortName": "V-2",
+                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Veinticinco_de_Mayo_(V-2)"
                 }
-              ],
-              "state": [],
-              "id": "XpFQeOSfcsI1xDEBjn0O8"
+              ]
             },
             {
-              "name": "TF 60",
-              "sidc": "10073000001210030000",
+              "name": "Support ships",
+              "sidc": "10073000001300000000",
+              "id": "yEcvWJit3j",
+              "state": [],
               "subUnits": [
-                {
-                  "name": "ARA Guerrico",
-                  "sidc": "10073000001202050000",
-                  "state": [
-                    {
-                      "t": "1982-04-02T20:00:00-04:00",
-                      "location": [-36.49641, -54.285671]
-                    }
-                  ],
-                  "subUnits": [],
-                  "id": "Hd0jvhPwPxFEDy92ZbSjW"
-                },
                 {
                   "name": "ARA Almirante Irízar",
                   "sidc": "10073000001301001900",
@@ -771,6 +811,7 @@
                       "t": "1982-03-19T10:00:00-04:00",
                       "location": [-36.6833405589705, -54.14092108867432],
                       "via": [
+                        [-55.362188636921495, -35.581456163182054],
                         [-36.61587532073748, -54.12574548510739],
                         [-36.642482834165214, -54.152696173974796]
                       ]
@@ -794,8 +835,57 @@
                   "subUnits": [],
                   "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Buen_Suceso",
                   "shortName": "B-6"
+                },
+                {
+                  "name": "ARA Bahía Paraíso",
+                  "sidc": "10073000001301000000",
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-44.745513546481135, -60.73552079710086]
+                    },
+                    {
+                      "t": "1982-03-23T10:00:00-04:00",
+                      "location": [-44.76734861976849, -60.7177783125482]
+                    },
+                    {
+                      "t": "1982-03-25T22:00:00-04:00",
+                      "location": [-36.684097226005825, -54.14272379683638]
+                    }
+                  ],
+                  "id": "eDeNLcdZt0",
+                  "subUnits": [],
+                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Para%C3%ADso",
+                  "shortName": "",
+                  "description": "The ship operated as a naval auxiliary vessel from 1981 to 1986 and served in the Falklands War as a troop transport as well as hospital ship. It was involved in transporting troops to Leith Harbour prior to the Invasion of South Georgia. "
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "sdfsdsdfsdf32",
+          "name": "Operation Blue",
+          "subUnits": [
+            {
+              "name": "TG 40",
+              "sidc": "10073000001210030000",
+              "subUnits": [
+                {
+                  "name": "TG 40.1",
+                  "sidc": "10071004001211000000",
+                  "state": [],
+                  "id": "yfstrSnutHFfE5HvXKT_b",
+                  "subUnits": []
                 }
               ],
+              "state": [],
+              "id": "XpFQeOSfcsI1xDEBjn0O8"
+            },
+            {
+              "name": "TF 60",
+              "sidc": "10073000001210030000",
+              "subUnits": [],
               "state": [],
               "id": "XjTbIv_HVxn4RrSsmb6bm"
             },
@@ -810,29 +900,6 @@
                 }
               ],
               "subUnits": []
-            },
-            {
-              "name": "ARA Bahía Paraíso",
-              "sidc": "10073000001301000000",
-              "state": [
-                {
-                  "t": "1982-03-11T10:00:00-04:00",
-                  "location": [-44.745513546481135, -60.73552079710086]
-                },
-                {
-                  "t": "1982-03-23T10:00:00-04:00",
-                  "location": [-44.76734861976849, -60.7177783125482]
-                },
-                {
-                  "t": "1982-03-25T22:00:00-04:00",
-                  "location": [-36.684097226005825, -54.14272379683638]
-                }
-              ],
-              "id": "eDeNLcdZt0",
-              "subUnits": [],
-              "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Para%C3%ADso",
-              "shortName": "",
-              "description": "The ship operated as a naval auxiliary vessel from 1981 to 1986 and served in the Falklands War as a troop transport as well as hospital ship. It was involved in transporting troops to Leith Harbour prior to the Invasion of South Georgia. "
             }
           ]
         },
