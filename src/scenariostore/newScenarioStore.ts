@@ -146,7 +146,8 @@ export type ActionLabel =
   | "updateFeatureGeometry"
   | "addSide"
   | "updateLayer"
-  | "moveLayer";
+  | "moveLayer"
+  | "moveFeature";
 
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);

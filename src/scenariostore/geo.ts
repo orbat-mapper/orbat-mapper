@@ -73,6 +73,23 @@ export function useGeo(store: NewScenarioStore) {
     );
   }
 
+  function moveFeature(featureId: FeatureId, toIndex: number) {
+    const feature = state.featureMap[featureId];
+
+    update(
+      (s) => {
+        const layer = s.layerMap[feature._pid];
+        const fromIndex = layer.features.indexOf(featureId);
+        moveItemMutable(layer.features, fromIndex, toIndex);
+        layer.features.forEach((fid, i) => {
+          const feature = s.featureMap[fid];
+          if (feature.properties._zIndex !== i) feature.properties._zIndex = i;
+        });
+      },
+      { label: "moveFeature", value: featureId }
+    );
+  }
+
   function getFullLayer(layerId: FeatureId): ScenarioLayer | undefined {
     const layer = state.layerMap[layerId];
     if (!layer) return;
@@ -199,6 +216,7 @@ export function useGeo(store: NewScenarioStore) {
       if (!feature) return { feature, layer: undefined };
       return { feature, layer: state.layerMap[feature._pid] };
     },
+    moveFeature,
     updateLayer,
     deleteLayer,
     getLayerIndex: (id: FeatureId) => state.layers.indexOf(id),

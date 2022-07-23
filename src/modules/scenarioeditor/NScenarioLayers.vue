@@ -101,6 +101,9 @@ onUndo(({ meta, patch }) => {
     moveLayer(value, "down", true);
   } else if (label === "updateFeature") {
     updateFeature(value, {}, true);
+  } else if (label === "moveFeature") {
+    const { feature } = geo.getFeatureById(value);
+    moveFeature(feature, "down", true);
   }
 });
 
@@ -126,6 +129,9 @@ onRedo(({ meta, patch }) => {
     moveLayer(value, "down", true);
   } else if (label === "updateFeature") {
     updateFeature(value, {}, true);
+  } else if (label === "moveFeature") {
+    const { feature } = geo.getFeatureById(value);
+    moveFeature(feature, "down", true);
   }
 });
 

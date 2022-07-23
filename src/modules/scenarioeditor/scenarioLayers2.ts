@@ -77,10 +77,10 @@ export function getItemsIcon(type: string) {
 }
 
 export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
-  { label: "Zboom to", action: ScenarioFeatureActions.Zoom },
+  { label: "Zoom to", action: ScenarioFeatureActions.Zoom },
   { label: "Pan to", action: ScenarioFeatureActions.Pan },
-  // { label: "Move up", action: ScenarioFeatureActions.MoveUp },
-  // { label: "Move down", action: ScenarioFeatureActions.MoveDown },
+  { label: "Move up", action: ScenarioFeatureActions.MoveUp },
+  { label: "Move down", action: ScenarioFeatureActions.MoveDown },
   { label: "Delete", action: ScenarioFeatureActions.Delete },
 ];
 
@@ -306,14 +306,23 @@ export function useScenarioLayers(
     return scenarioFeature;
   }
 
-  function moveFeature(feature: ScenarioFeature, direction: "up" | "down") {
-    const { feature: olFeature, layer } =
-      getFeatureAndLayerById(feature.id, scenarioLayersOl) || {};
-    if (!(olFeature && layer)) return;
-    const olFeatures = layer.getSource();
-    console.log(olFeatures, layer);
-    const idx = getFeatureIndex(olFeature, layer);
-    console.log("index", idx);
+  function moveFeature(
+    feature: NScenarioFeature,
+    direction: "up" | "down",
+    isUndoRedo = false
+  ) {
+    const layer = geo.getLayerById(feature._pid);
+    let toIndex = layer.features.indexOf(feature.id);
+
+    if (!isUndoRedo) {
+      if (direction === "up") toIndex--;
+      if (direction === "down") toIndex++;
+      geo.moveFeature(feature.id, toIndex);
+    }
+
+    layer.features.forEach((id) => invalidateStyle(id));
+    olMap.getView().adjustCenter([0.01, 0.01]);
+    olMap.getView().cancelAnimations();
   }
 
   function moveLayer(layerId: FeatureId, direction: "up" | "down", isUndoRedo = false) {
