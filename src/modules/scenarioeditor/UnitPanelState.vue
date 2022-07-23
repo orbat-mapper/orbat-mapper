@@ -67,7 +67,7 @@ const { store, time, unitActions } = injectStrict(activeScenarioKey);
 const showDateModal = ref(false);
 
 const { onUnitAction } = useUnitActionsN();
-const state = computed(() => props.unit.state);
+const state = computed(() => props.unit.state || []);
 
 const menuItems: MenuItemData<StateAction>[] = [
   { label: "Delete", action: "delete" },
