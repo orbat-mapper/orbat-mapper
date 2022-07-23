@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import DotsMenu from "./DotsMenu.vue";
-import { computed, inject, ref, toRaw } from "vue";
+import { computed, ref } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
 import { SideActions, UnitActions } from "@/types/constants";
@@ -110,6 +110,8 @@ const sideMenuItems: MenuItemData<SideActions>[] = [
   { label: "Edit", action: SideActions.Edit },
   { label: "Add group", action: SideActions.AddGroup },
   { label: "Delete side", action: SideActions.Delete },
+  { label: "Move up", action: SideActions.MoveUp },
+  { label: "Move down", action: SideActions.MoveDown },
 ];
 
 const onSideAction = (action: SideActions) => {
@@ -128,6 +130,10 @@ const onSideAction = (action: SideActions) => {
 function onSideGroupAction(sideGroup: NSideGroup, action: SideActions) {
   if (action === SideActions.Delete) {
     unitActions.deleteSideGroup(sideGroup.id);
+  } else if (action === SideActions.MoveDown) {
+    unitActions.reorderSideGroup(sideGroup.id, "down");
+  } else if (action === SideActions.MoveUp) {
+    unitActions.reorderSideGroup(sideGroup.id, "up");
   }
 }
 

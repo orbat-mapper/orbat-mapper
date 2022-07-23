@@ -25,7 +25,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import NOrbatSide from "@/components/NOrbatSide.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
-import { SideActions, UnitActions } from "@/types/constants";
+import { SideActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
 import { useUnitActionsN } from "@/composables/scenarioActions";
 
@@ -58,6 +58,10 @@ function onUnitClick(unit: NUnit) {
 function onSideAction(side: NSide, action: SideActions) {
   if (action === SideActions.Delete) {
     unitActions.deleteSide(side.id);
+  } else if (action === SideActions.MoveDown) {
+    unitActions.reorderSide(side.id, "down");
+  } else if (action === SideActions.MoveUp) {
+    unitActions.reorderSide(side.id, "up");
   }
 }
 </script>

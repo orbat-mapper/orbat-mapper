@@ -132,6 +132,23 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function reorderSideGroup(sideGroupId: EntityId, direction: "up" | "down") {
+    const sideGroup = state.sideGroupMap[sideGroupId];
+    const sideId = sideGroup?._pid;
+    if (!sideGroup || !sideId) return;
+
+    update((s) => {
+      const parent = s.sideMap[sideId];
+      if (parent) moveElement(parent.groups, sideGroupId, direction === "up" ? -1 : 1);
+    });
+  }
+
+  function reorderSide(sideIdId: EntityId, direction: "up" | "down") {
+    update((s) => {
+      moveElement(s.sides, sideIdId, direction === "up" ? -1 : 1);
+    });
+  }
+
   function updateUnit(unitId: EntityId, data: UnitUpdate) {
     update((s) => {
       let unit = s.unitMap[unitId];
@@ -468,5 +485,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitStateVia,
     updateUnitStateEntry,
     convertStateEntryToInitialLocation,
+    reorderSide,
+    reorderSideGroup,
   };
 }

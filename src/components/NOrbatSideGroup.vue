@@ -101,6 +101,8 @@ const sideGroupMenuItems: MenuItemData<SideActions>[] = [
   { label: "Add root unit", action: SideActions.AddSubordinate },
   { label: "Edit group", action: SideActions.Edit },
   { label: "Delete group", action: SideActions.Delete },
+  { label: "Move up", action: SideActions.MoveUp },
+  { label: "Move down", action: SideActions.MoveDown },
 ];
 
 const onSideGroupAction = (group: NSideGroup, action: SideActions) => {

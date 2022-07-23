@@ -23,6 +23,8 @@ export const enum SideActions {
   AddGroup = "AddGroup",
   Edit = "Edit",
   Add = "Add",
+  MoveUp = "MoveUp",
+  MoveDown = "MoveDown",
 }
 
 export const enum ScenarioActions {
