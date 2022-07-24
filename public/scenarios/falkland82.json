@@ -673,6 +673,10 @@
                   "sidc": "10073000001203070000",
                   "state": [
                     {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-61.983432057200275, -38.97245098455193]
+                    },
+                    {
                       "t": "1982-04-01T18:00:00-04:00",
                       "location": [-57.776155, -51.667871]
                     },
@@ -687,7 +691,12 @@
                 {
                   "name": "ARA Comodoro Py",
                   "sidc": "10073000001202030000",
-                  "state": [],
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-62.124558602371216, -38.921489637879176]
+                    }
+                  ],
                   "subUnits": [],
                   "id": "M0kWkyf8bR",
                   "shortName": "D-27",
@@ -696,7 +705,12 @@
                 {
                   "name": "ARA Comodoro Segui",
                   "sidc": "10073000001202030000",
-                  "state": [],
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-62.10773578742981, -38.922558060636455]
+                    }
+                  ],
                   "subUnits": [],
                   "id": "Wh9hm0AEg8",
                   "shortName": "D-25",
@@ -704,7 +718,7 @@
                 },
                 {
                   "name": "ARA Guerrico",
-                  "sidc": "10073000001202050000",
+                  "sidc": "10073000001202051900",
                   "state": [
                     {
                       "t": "1982-04-02T20:00:00-04:00",
@@ -717,16 +731,26 @@
                 {
                   "name": "ARA Hipólito Bouchard",
                   "sidc": "10073000001202030000",
-                  "state": [],
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-62.10945240119934, -38.91053737702328]
+                    }
+                  ],
                   "subUnits": [],
                   "id": "dqgRTjJUps",
                   "shortName": "D-26",
                   "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)"
                 },
                 {
-                  "name": "ARA Piedrabuena (D-29)",
+                  "name": "ARA Piedra buena (D-29)",
                   "sidc": "10073000001202030000",
-                  "state": [],
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-62.12524524787902, -38.8995834259827]
+                    }
+                  ],
                   "subUnits": [],
                   "id": "0yiwjzanWF",
                   "shortName": "D-29",
@@ -735,7 +759,12 @@
                 {
                   "name": "ARA Santa Fe",
                   "sidc": "10073500001101000000",
-                  "state": [],
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-61.986178639231525, -38.99540201865318]
+                    }
+                  ],
                   "subUnits": [],
                   "id": "cIMXbLAS~uZNUIUhLwHga"
                 },
@@ -743,6 +772,10 @@
                   "name": "ARA Santisima Trinidad",
                   "sidc": "10073000001202030000",
                   "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-62.01364445954402, -38.97565390108864]
+                    },
                     {
                       "t": "1982-04-01T18:00:00-04:00",
                       "location": [-57.829628, -51.737022]
@@ -759,10 +792,39 @@
                   "name": "ARA Veinticinco de Mayo",
                   "sidc": "10073000001201000000",
                   "id": "TmxVfg3S2b",
-                  "state": [],
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-62.13382831672671, -38.910270227594424]
+                    }
+                  ],
                   "subUnits": [],
                   "shortName": "V-2",
                   "externalUrl": "https://en.wikipedia.org/wiki/ARA_Veinticinco_de_Mayo_(V-2)"
+                },
+                {
+                  "name": "ARA Drummond",
+                  "sidc": "10073000001202050000",
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-62.01433110505183, -38.99967115754452]
+                    }
+                  ],
+                  "subUnits": [],
+                  "id": "wrJyBZxevK"
+                },
+                {
+                  "name": "ARA Granville",
+                  "sidc": "10073000001202050000",
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-61.94909978180964, -38.99113262219964]
+                    }
+                  ],
+                  "subUnits": [],
+                  "id": "iz8Li51faM"
                 }
               ]
             },
@@ -858,6 +920,21 @@
                   "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Para%C3%ADso",
                   "shortName": "",
                   "description": "The ship operated as a naval auxiliary vessel from 1981 to 1986 and served in the Falklands War as a troop transport as well as hospital ship. It was involved in transporting troops to Leith Harbour prior to the Invasion of South Georgia. "
+                },
+                {
+                  "name": "ARA Punta Médanos",
+                  "sidc": "10073000001301100000",
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-62.12078205207824, -38.90946877327505]
+                    }
+                  ],
+                  "id": "X9A3sPq1G7",
+                  "subUnits": [],
+                  "externalUrl": "",
+                  "shortName": "",
+                  "description": ""
                 }
               ]
             }
