@@ -30,16 +30,14 @@ import FeatureFillSettings from "./FeatureFillSettings.vue";
 import FeatureMarkerSettings from "@/modules/scenarioeditor/FeatureMarkerSettings.vue";
 import { formatDateString } from "@/geo/utils";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import PlainButton from "@/components/PlainButton.vue";
-
-const InputDateModal = defineAsyncComponent(
-  () => import("@/components/InputDateModal.vue")
-);
 
 const {
   time: { timeZone },
 } = injectStrict(activeScenarioKey);
+
+const { getModalTimestamp } = injectStrict(timeModalKey);
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -53,11 +51,7 @@ const emit = defineEmits([
   "feature-style-update",
 ]);
 
-const showTimeModal = ref(false);
 const [isMetaEditMode, toggleMetaEdit] = useToggle(false);
-
-const timeAttributeName = ref("visibleFromT");
-const timeDialogTitle = ref("");
 
 const formMeta = ref<Partial<ScenarioFeatureProperties>>({});
 
@@ -74,8 +68,6 @@ watch(
 const hDescription = computed(() =>
   renderMarkdown(props.feature.properties.description || "")
 );
-
-const timeModalTitle = computed(() => {});
 
 const geometryType = computed(() => props.feature.properties.type);
 
@@ -103,14 +95,14 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
   emit("feature-style-update", props.feature.id, { ...data });
 }
 
-function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
-  timeAttributeName.value = field;
-  if (field === "visibleFromT") {
-    timeDialogTitle.value = "Visible from";
-  } else if (field === "visibleUntilT") {
-    timeDialogTitle.value = "Visible until";
+async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
+  const newTimestamp = await getModalTimestamp(formMeta.value[field]!, {
+    timeZone: timeZone.value,
+    title: field === "visibleFromT" ? "Visible from" : "Visible until",
+  });
+  if (newTimestamp !== undefined) {
+    formMeta.value[field] = newTimestamp;
   }
-  showTimeModal.value = true;
 }
 </script>
 <template>
@@ -182,12 +174,6 @@ function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
             <BaseButton primary small type="submit">Save</BaseButton>
             <BaseButton small @click="toggleMetaEdit()">Cancel</BaseButton>
           </div>
-          <InputDateModal
-            v-model="showTimeModal"
-            :dialog-title="timeDialogTitle"
-            v-model:timestamp="formMeta[timeAttributeName]"
-            :time-zone="timeZone"
-          />
         </form>
         <section v-else class="space-y-4">
           <DescriptionItem label="Name">{{ feature.properties.name }}</DescriptionItem>

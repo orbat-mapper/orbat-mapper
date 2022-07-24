@@ -10,7 +10,7 @@
     </div>
 
     <BaseToolbar>
-      <ToolbarButton @click="showModal = true" start>
+      <ToolbarButton @click="openTimeDialog" start>
         <span class="sr-only">Select time and date</span>
         <CalendarIcon class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
@@ -31,23 +31,16 @@
         <ChevronRight class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
     </BaseToolbar>
-    <InputDateModal
-      v-if="showModal"
-      v-model="showModal"
-      dialog-title="Set current scenario time"
-      v-model:timestamp="currentTime"
-      :time-zone="state.info.timeZone"
-    />
+
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"
       :filter="inputEventFilter"
-      @keyup.t="showModal = true"
+      @keyup.t="openTimeDialog"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from "vue";
 import { CalendarIcon } from "@heroicons/vue/solid";
 
 import { ChevronLeft, ChevronRight, SkipNext, SkipPrevious } from "mdue";
@@ -57,24 +50,23 @@ import { inputEventFilter } from "./helpers";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
-
-const InputDateModal = defineAsyncComponent(() => import("./InputDateModal.vue"));
+import { activeScenarioKey, timeModalKey } from "@/components/injects";
 
 const {
   store: { state },
   time: { scenarioTime, setCurrentTime, add, subtract, jumpToNextEvent, jumpToPrevEvent },
 } = injectStrict(activeScenarioKey);
 
-const uiStore = useUiStore();
-const showModal = ref(false);
+const { getModalTimestamp } = injectStrict(timeModalKey);
 
-const currentTime = computed({
-  get() {
-    return state.currentTime;
-  },
-  set(v: number) {
-    setCurrentTime(v);
-  },
-});
+const uiStore = useUiStore();
+
+const openTimeDialog = async () => {
+  const newTimestamp = await getModalTimestamp(state.currentTime, {
+    timeZone: state.info.timeZone,
+  });
+  if (newTimestamp !== undefined) {
+    setCurrentTime(newTimestamp);
+  }
+};
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <SimpleModal v-model="open" :dialog-title="dialogTitle">
+  <SimpleModal v-model="open" :dialog-title="dialogTitle" @cancel="emit('cancel')">
     <form @submit.prevent="updateTime" class="mt-4 space-y-6">
       <div class="flex items-center justify-between">
         <DescriptionItem label="Time zone name">
@@ -58,7 +58,7 @@ const props = defineProps({
   modelValue: { type: Boolean, default: false },
   timeZone: { type: String, default: "UTC" },
 });
-const emit = defineEmits(["update:modelValue", "update:timestamp"]);
+const emit = defineEmits(["update:modelValue", "update:timestamp", "cancel"]);
 
 const open = useVModel(props, "modelValue");
 const enabled = ref(false);

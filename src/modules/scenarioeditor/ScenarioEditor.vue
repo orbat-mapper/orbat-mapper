@@ -124,6 +124,15 @@
       v-model="showLoadModal"
       @loaded="loadScenario"
     />
+    <InputDateModal
+      v-if="showDateModal"
+      v-model="showDateModal"
+      :dialog-title="dateModalTitle"
+      :timestamp="initialDateModalValue"
+      @update:timestamp="confirmDateModal($event)"
+      :time-zone="dateModalTimeZone"
+      @cancel="cancelDateModal"
+    />
   </div>
 </template>
 
@@ -131,6 +140,7 @@
 import {
   computed,
   defineAsyncComponent,
+  inject,
   nextTick,
   onUnmounted,
   provide,
@@ -179,12 +189,14 @@ import {
   activeScenarioKey,
   currentScenarioTabKey,
   activeUnitKey,
+  timeModalKey,
 } from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
 import type { Scenario } from "@/types/scenarioModels";
 import ScenarioMap from "@/components/NScenarioMap.vue";
 import { useFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
+import { useDateModal } from "@/composables/modals";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"));
@@ -236,6 +248,22 @@ oobUnitClickBus.on((unit) => {
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
 useTitle(windowTitle);
+
+const InputDateModal = defineAsyncComponent(
+  () => import("@/components/InputDateModal.vue")
+);
+
+const {
+  showDateModal,
+  confirmDateModal,
+  cancelDateModal,
+  initialDateModalValue,
+  dateModalTimeZone,
+  dateModalTitle,
+  getModalTimestamp,
+} = useDateModal();
+
+provide(timeModalKey, { getModalTimestamp });
 
 onUnmounted(() => {
   oobUnitClickBus.reset();

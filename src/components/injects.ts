@@ -2,6 +2,7 @@ import type { InjectionKey, Ref } from "vue";
 import { EntityId } from "../types/base";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
+import { TimeModalPromise } from "@/composables/modals";
 
 export const activeUnitKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>
@@ -14,3 +15,7 @@ export const activeFeaturesKey = Symbol(
 export const currentScenarioTabKey = Symbol("Current scenario tab") as InjectionKey<
   Ref<number>
 >;
+
+export const timeModalKey = Symbol("Time modal") as InjectionKey<{
+  getModalTimestamp: TimeModalPromise;
+}>;

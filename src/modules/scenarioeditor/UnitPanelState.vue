@@ -33,29 +33,21 @@
       </div>
     </li>
   </ul>
-  <InputDateModal
-    v-model="showDateModal"
-    v-if="showDateModal"
-    :timestamp="state[currentStateIndex].t"
-    @update:timestamp="updateTimestamp"
-    :time-zone="store.state.info.timeZone"
-  />
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { State } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
 import { CrosshairsGps, MapMarkerPath } from "mdue";
-import { XIcon } from "@heroicons/vue/solid";
 import IconButton from "@/components/IconButton.vue";
 import { useUnitActionsN } from "@/composables/scenarioActions";
 import { StateAction, UnitActions } from "@/types/constants";
 import type { NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import DotsMenu from "@/components/DotsMenu.vue";
-import InputDateModal from "@/components/InputDateModal.vue";
+
 import { MenuItemData } from "@/components/types";
 
 interface Props {
@@ -63,8 +55,7 @@ interface Props {
 }
 const props = defineProps<Props>();
 const { store, time, unitActions } = injectStrict(activeScenarioKey);
-
-const showDateModal = ref(false);
+const { getModalTimestamp } = injectStrict(timeModalKey);
 
 const { onUnitAction } = useUnitActionsN();
 const state = computed(() => props.unit.state || []);
@@ -94,22 +85,20 @@ const changeToState = (stateEntry: State) => {
   }
 };
 
-let currentStateIndex = ref(-1);
-
-function onStateAction(index: number, action: StateAction) {
+async function onStateAction(index: number, action: StateAction) {
   if (action === "delete") {
     deleteState(index);
   } else if (action === "convertToInitialPosition") {
     unitActions.convertStateEntryToInitialLocation(props.unit.id, index);
   } else if (action === "changeTime") {
-    currentStateIndex.value = index;
-    showDateModal.value = true;
+    const newTimestamp = await getModalTimestamp(state.value[index].t, {
+      timeZone: store.state.info.timeZone,
+    });
+    if (newTimestamp !== undefined) {
+      unitActions.updateUnitStateEntry(props.unit.id, index, {
+        t: newTimestamp,
+      });
+    }
   }
-}
-
-function updateTimestamp(newTimestamp: number) {
-  unitActions.updateUnitStateEntry(props.unit.id, currentStateIndex.value, {
-    t: newTimestamp,
-  });
 }
 </script>

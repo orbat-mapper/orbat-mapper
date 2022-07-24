@@ -9,7 +9,7 @@
       />
       <DescriptionItem label="Start time"
         >{{ computedStartTime.format() }}
-        <PlainButton @click="showTimeModal = true" class="ml-2">Change</PlainButton>
+        <PlainButton @click="openTimeModal()" class="ml-2">Change</PlainButton>
       </DescriptionItem>
       <TimezoneSelect label="Time zone" v-model="form.timeZone" />
       <RadioGroupList :settings="standardSettings" v-model="form.symbologyStandard" />
@@ -17,12 +17,6 @@
         <PrimaryButton type="submit">Update</PrimaryButton>
         <PlainButton type="button" @click="toggleEditMode()">Cancel</PlainButton>
       </div>
-      <InputDateModal
-        v-model="showTimeModal"
-        dialog-title="Set scenario start time"
-        v-model:timestamp="form.startTime"
-        :time-zone="state.info.timeZone"
-      />
     </form>
     <div v-else class="space-y-4 p-6">
       <DescriptionItem label="Title">{{ state.info.name }}</DescriptionItem>
@@ -63,12 +57,13 @@ import dayjs from "dayjs";
 import RadioGroupList from "@/components/RadioGroupList.vue";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import { useNotifications } from "@/composables/notifications";
 
 const { send } = useNotifications();
 
 const { store, io } = injectStrict(activeScenarioKey);
+const { getModalTimestamp } = injectStrict(timeModalKey);
 
 const standardSettings = [
   {
@@ -87,9 +82,6 @@ const TimezoneSelect = defineAsyncComponent(
   () => import("@/components/TimezoneSelect.vue")
 );
 
-const InputDateModal = defineAsyncComponent(
-  () => import("@/components/InputDateModal.vue")
-);
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
 );
@@ -99,8 +91,6 @@ const { state } = store;
 
 const isEditMode = ref(false);
 const toggleEditMode = useToggle(isEditMode);
-
-const showTimeModal = ref(false);
 
 const hDescription = computed(() => renderMarkdown(state.info.description || ""));
 
@@ -160,5 +150,15 @@ function onFormSubmit() {
 
   if (info.symbologyStandard) settingsStore.symbologyStandard = info.symbologyStandard;
   isEditMode.value = false;
+}
+
+async function openTimeModal() {
+  const newTime = await getModalTimestamp(form.value.startTime!, {
+    timeZone: form.value.timeZone,
+    title: "Set scenario start time",
+  });
+  if (newTime !== undefined) {
+    form.value.startTime = newTime;
+  }
 }
 </script>
