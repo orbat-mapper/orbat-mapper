@@ -27,7 +27,7 @@
           </SwitchLabel>
         </SwitchGroup>
       </div>
-      <InputGroup label="Date" type="date" v-model="date"></InputGroup>
+      <InputGroup :id="focusId" label="Date" type="date" v-model="date"></InputGroup>
       <div class="flex space-x-4">
         <InputGroup label="Hour" v-model="hour" type="number" min="0" max="23" />
         <InputGroup label="Minute" v-model="minute" type="number" min="0" max="59" />
@@ -51,6 +51,7 @@ import PrimaryButton from "./PrimaryButton.vue";
 import InputGroup from "./InputGroup.vue";
 import DescriptionItem from "./DescriptionItem.vue";
 import { useDateElements } from "@/composables/scenarioTime";
+import { useFocusOnMount } from "@/components/helpers";
 
 const props = defineProps({
   dialogTitle: { type: String, default: "Set scenario date and time" },
@@ -59,6 +60,8 @@ const props = defineProps({
   timeZone: { type: String, default: "UTC" },
 });
 const emit = defineEmits(["update:modelValue", "update:timestamp", "cancel"]);
+
+const { focusId } = useFocusOnMount(undefined, 150);
 
 const open = useVModel(props, "modelValue");
 const enabled = ref(false);
