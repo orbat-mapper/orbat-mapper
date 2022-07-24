@@ -5,7 +5,7 @@
       as="div"
       static
       class="fixed inset-0 z-10 overflow-y-auto"
-      @close="open = false"
+      @close="doClose()"
       :open="open"
       :initialFocus="initialFocus"
     >
@@ -85,7 +85,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), { modelValue: false });
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "cancel"]);
 
 const uiStore = useUiStore();
 const open = ref(false);
@@ -104,6 +104,11 @@ watch(open, async (v) => {
   await promiseTimeout(300);
   emit("update:modelValue", v);
 });
+
+function doClose() {
+  emit("cancel");
+  open.value = false;
+}
 
 onUnmounted(() => (uiStore.modalOpen = false));
 </script>
