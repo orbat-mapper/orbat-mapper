@@ -58,8 +58,8 @@
               @dragover.prevent="isDragOver = true"
               @drop.prevent="onDrop"
               @dragleave="isDragOver = false"
-              >{{ unit.name }}
-            </span>
+              >{{ unit.name }}</span
+            ><span v-if="unit._state?.location" class="text-gray-500">&deg;</span>
           </div>
         </button>
       </div>
