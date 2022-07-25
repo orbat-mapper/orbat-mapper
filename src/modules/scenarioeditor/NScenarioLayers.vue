@@ -219,10 +219,14 @@ function onFeatureClick(
   activeFeature.value = activeFeature.value === feature ? null : feature;
   showLayerPanel.value = activeFeature.value === feature;
   const f = getOlFeatureById(feature.id);
-  const had = selectedIds.value.has(feature.id);
-  f && !shiftClick && selectedFeatures.clear();
-
-  f && !had && selectedFeatures.push(f);
+  if (!f) return;
+  const alreadySelected = selectedIds.value.has(feature.id);
+  if (!shiftClick) selectedFeatures.clear();
+  if (alreadySelected) {
+    selectedFeatures.remove(f);
+  } else {
+    selectedFeatures.push(f);
+  }
 }
 
 function onFeatureModify(olFeatures: Feature[]) {
