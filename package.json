@@ -20,7 +20,7 @@
     "@heroicons/vue": "^1.0.6",
     "@popperjs/core": "^2.11.5",
     "@turf/turf": "^6.5.0",
-    "@vueuse/core": "^8.2.6",
+    "@vueuse/core": "^9.0.0",
     "@vvo/tzdb": "^6.48.0",
     "d3-selection": "^3.0.0",
     "dayjs": "^1.11.2",
@@ -57,7 +57,7 @@
     "@types/markdown-it-container": "^2.0.5",
     "@types/nprogress": "^0.2.0",
     "@types/ol-ext": "npm:@siedlerchr/types-ol-ext@^1.7.2",
-    "@vitejs/plugin-vue": "^2.2.4",
+    "@vitejs/plugin-vue": "^3.0.1",
     "@vue/compiler-sfc": "^3.2.33",
     "@vue/vue3-jest": "^27.0.0",
     "autoprefixer": "^10.4.7",
@@ -69,8 +69,8 @@
     "tailwindcss": "^3.0.24",
     "ts-jest": "^27.1.4",
     "typescript": "^4.6.4",
-    "vite": "^2.9.8",
-    "vue-tsc": "^0.33.9"
+    "vite": "^3.0.3",
+    "vue-tsc": "^0.39.0"
   },
   "engines": {
     "node": ">= 16.13.0",
