@@ -22,7 +22,7 @@ import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { injectStrict, nanoid } from "@/utils";
 import { ScenarioFeatureActions, ScenarioLayerActions } from "@/types/constants";
 import ScenarioLayersListLayer from "./ScenarioLayersListLayer.vue";
-import { useToggle, useVModel } from "@vueuse/core";
+import { useDebounceFn, useToggle, useVModel } from "@vueuse/core";
 import Feature from "ol/Feature";
 import ScenarioLayersPanel from "./ScenarioLayersPanel.vue";
 import { AnyVectorLayer } from "@/geo/types";
@@ -291,15 +291,19 @@ onMounted(() => {
   if (layers.value.length) setActiveLayer(layers.value[0]);
 });
 
+const debouncedResetMap = useDebounceFn(() => selectInteraction.setMap(mapRef), 3000);
+
 function doUpdateFeature(
   featureOrFeatures: FeatureId | FeatureId[],
   data: Partial<ScenarioFeatureProperties>
 ) {
+  selectInteraction.setMap(null);
   if (Array.isArray(featureOrFeatures)) {
     featureOrFeatures.forEach((f) => updateFeature(f, data));
   } else {
     updateFeature(featureOrFeatures, data);
   }
+  debouncedResetMap();
 }
 </script>
 
