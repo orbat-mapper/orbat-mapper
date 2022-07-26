@@ -229,7 +229,19 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
   <GlobalEvents
     :filter="inputEventFilter"
     @keyup.e="doFormFocus"
-    @keyup.z.exact="emit('feature-action', feature, ScenarioFeatureActions.Zoom)"
-    @keyup.p="emit('feature-action', feature, ScenarioFeatureActions.Pan)"
+    @keyup.z.exact="
+      emit(
+        'feature-action',
+        isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
+        ScenarioFeatureActions.Zoom
+      )
+    "
+    @keyup.p="
+      emit(
+        'feature-action',
+        isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
+        ScenarioFeatureActions.Pan
+      )
+    "
   />
 </template>

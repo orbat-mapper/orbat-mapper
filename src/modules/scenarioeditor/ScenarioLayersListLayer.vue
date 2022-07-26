@@ -130,7 +130,7 @@ function onLayerAction(action: ScenarioLayerActions) {
             />
             <DotsMenu
               :items="featureMenuItems"
-              @action="emit('feature-action', feature, $event, layer)"
+              @action="emit('feature-action', feature.id, $event, layer)"
               class="ml-2 flex-shrink-0"
             />
           </div>

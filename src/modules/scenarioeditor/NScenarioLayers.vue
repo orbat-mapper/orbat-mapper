@@ -69,7 +69,6 @@ const {
   moveFeature,
   moveLayer,
   updateFeatureGeometryFromOlFeature,
-  getFeatureLayer,
   updateFeature,
   panToFeature,
   getOlFeatureById,
@@ -171,27 +170,38 @@ function setActiveLayer(layer: NScenarioLayer | ScenarioLayer, toggle = true) {
 }
 
 function onFeatureAction(
-  feature: NScenarioFeature,
-  action: ScenarioFeatureActions,
-  scenarioLayer?: NScenarioLayer
+  featureOrFeaturesId: FeatureId | FeatureId[],
+  action: ScenarioFeatureActions
 ) {
-  if (action === ScenarioFeatureActions.Zoom) zoomToFeature(feature.id);
-  if (action === ScenarioFeatureActions.Pan) panToFeature(feature.id);
-  const layer = scenarioLayer || getFeatureLayer(feature);
-  if (!layer) return;
+  const isArray = Array.isArray(featureOrFeaturesId);
 
-  if (action === ScenarioFeatureActions.Delete) {
-    if (feature === activeFeature.value) activeFeature.value = null;
-    showLayerPanel.value = false;
-    deleteFeature(feature.id);
-  }
   if (
-    action === ScenarioFeatureActions.MoveUp ||
-    action === ScenarioFeatureActions.MoveDown
+    isArray &&
+    (action === ScenarioFeatureActions.Zoom || action === ScenarioFeatureActions.Pan)
   ) {
-    const direction = action === ScenarioFeatureActions.MoveUp ? "up" : "down";
-    moveFeature(feature, direction);
+    console.warn("Not implemented yet");
+    return;
   }
+  (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {
+    const { feature, layer } = geo.getFeatureById(featureId) || {};
+    if (action === ScenarioFeatureActions.Zoom) zoomToFeature(featureId);
+    if (action === ScenarioFeatureActions.Pan) panToFeature(featureId);
+
+    if (!layer || !layer) return;
+
+    if (action === ScenarioFeatureActions.Delete) {
+      if (feature === activeFeature.value) activeFeature.value = null;
+      showLayerPanel.value = false;
+      deleteFeature(feature.id);
+    }
+    if (
+      action === ScenarioFeatureActions.MoveUp ||
+      action === ScenarioFeatureActions.MoveDown
+    ) {
+      const direction = action === ScenarioFeatureActions.MoveUp ? "up" : "down";
+      moveFeature(feature, direction);
+    }
+  });
 }
 
 function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerActions) {
