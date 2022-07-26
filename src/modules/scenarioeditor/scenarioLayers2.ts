@@ -60,6 +60,8 @@ export enum LayerType {
   units = "UNITS",
 }
 
+export type SelectedScenarioFeatures = Set<FeatureId>;
+
 const geometryIconMap: any = {
   Point: MapMarker,
   LineString: VectorLine,
@@ -159,7 +161,7 @@ export function useScenarioFeatureSelect(
     })
   );
 
-  const selectedIds = ref<Set<FeatureId>>(new Set());
+  const selectedIds = ref<SelectedScenarioFeatures>(new Set());
 
   olMap.addInteraction(selectInteraction);
   useOlEvent(selectInteraction.on("select", (event) => {}));

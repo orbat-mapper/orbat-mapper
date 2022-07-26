@@ -11,6 +11,7 @@ import { renderMarkdown } from "@/composables/formatting";
 import {
   featureMenuItems,
   getGeometryIcon,
+  SelectedScenarioFeatures,
 } from "@/modules/scenarioeditor/scenarioLayers2";
 import BaseToolbar from "@/components/BaseToolbar.vue";
 import ToolbarButton from "@/components/ToolbarButton.vue";
@@ -43,7 +44,12 @@ const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
 );
 
-const props = defineProps<{ feature: ScenarioFeature }>();
+interface Props {
+  feature: ScenarioFeature;
+  selectedIds: SelectedScenarioFeatures;
+}
+
+const props = defineProps<Props>();
 const emit = defineEmits([
   "close",
   "feature-action",
@@ -70,6 +76,7 @@ const hDescription = computed(() =>
 );
 
 const geometryType = computed(() => props.feature.properties.type);
+const isMultipleFeatures = computed(() => props.selectedIds.size > 1);
 
 function onFormMetaSubmit() {
   emit("feature-meta-update", props.feature.id, { ...formMeta.value });
@@ -84,15 +91,27 @@ const doFormFocus = async () => {
 };
 
 function updateStroke(data: Partial<StrokeStyleSpec>) {
-  emit("feature-style-update", props.feature.id, { ...data });
+  emit(
+    "feature-style-update",
+    isMultipleFeatures.value ? [...props.selectedIds.values()] : props.feature.id,
+    { ...data }
+  );
 }
 
 function updateFill(data: Partial<FillStyleSpec>) {
-  emit("feature-style-update", props.feature.id, { ...data });
+  emit(
+    "feature-style-update",
+    isMultipleFeatures.value ? [...props.selectedIds.values()] : props.feature.id,
+    { ...data }
+  );
 }
 
 function updateMarker(data: Partial<MarkerStyleSpec>) {
-  emit("feature-style-update", props.feature.id, { ...data });
+  emit(
+    "feature-style-update",
+    isMultipleFeatures.value ? [...props.selectedIds.values()] : props.feature.id,
+    { ...data }
+  );
 }
 
 async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
@@ -116,6 +135,7 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
       <div class="space-y-4">
         <header class="flex items-center justify-between">
           <component :is="getGeometryIcon(feature)" class="h-5 w-5 text-gray-400" />
+          <p v-if="isMultipleFeatures">Selected {{ selectedIds.size }}</p>
 
           <div class="flex items-center">
             <BaseToolbar>
@@ -175,7 +195,7 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
             <BaseButton small @click="toggleMetaEdit()">Cancel</BaseButton>
           </div>
         </form>
-        <section v-else class="space-y-4">
+        <section v-else-if="!isMultipleFeatures" class="space-y-4">
           <DescriptionItem label="Name">{{ feature.properties.name }}</DescriptionItem>
           <DescriptionItem v-if="feature.properties.description" label="Description">
             <div class="prose prose-sm" v-html="hDescription"></div>

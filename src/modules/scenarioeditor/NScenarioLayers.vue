@@ -12,7 +12,12 @@ import {
   useScenarioLayers,
   useScenarioLayerSync,
 } from "./scenarioLayers2";
-import { FeatureId, ScenarioFeature, ScenarioLayer } from "@/types/scenarioGeoModels";
+import {
+  FeatureId,
+  ScenarioFeature,
+  ScenarioFeatureProperties,
+  ScenarioLayer,
+} from "@/types/scenarioGeoModels";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { injectStrict, nanoid } from "@/utils";
 import { ScenarioFeatureActions, ScenarioLayerActions } from "@/types/constants";
@@ -285,6 +290,17 @@ onMounted(() => {
   NProgress.done();
   if (layers.value.length) setActiveLayer(layers.value[0]);
 });
+
+function doUpdateFeature(
+  featureOrFeatures: FeatureId | FeatureId[],
+  data: Partial<ScenarioFeatureProperties>
+) {
+  if (Array.isArray(featureOrFeatures)) {
+    featureOrFeatures.forEach((f) => updateFeature(f, data));
+  } else {
+    updateFeature(featureOrFeatures, data);
+  }
+}
 </script>
 
 <template>
@@ -335,10 +351,11 @@ onMounted(() => {
   <Teleport to="[data-teleport-layer]" v-if="activeFeature">
     <ScenarioLayersPanel
       :feature="activeFeature"
+      :selectedIds="selectedIds"
       @close="toggleLayerPanel()"
       @feature-action="onFeatureAction"
       @feature-meta-update="updateFeature"
-      @feature-style-update="updateFeature"
+      @feature-style-update="doUpdateFeature"
     />
   </Teleport>
 </template>
