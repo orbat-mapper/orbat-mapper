@@ -140,14 +140,26 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
           <div class="flex items-center">
             <BaseToolbar>
               <ToolbarButton
-                @click="emit('feature-action', feature, ScenarioFeatureActions.Zoom)"
+                @click="
+                  emit(
+                    'feature-action',
+                    isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
+                    ScenarioFeatureActions.Zoom
+                  )
+                "
                 start
                 title="Zoom to"
               >
                 <MagnifyPlusOutline class="h-5 w-5" />
               </ToolbarButton>
               <ToolbarButton
-                @click="emit('feature-action', feature, ScenarioFeatureActions.Pan)"
+                @click="
+                  emit(
+                    'feature-action',
+                    isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
+                    ScenarioFeatureActions.Pan
+                  )
+                "
                 title="Pan to"
               >
                 <ImageFilterCenterFocus class="h-5 w-5" />

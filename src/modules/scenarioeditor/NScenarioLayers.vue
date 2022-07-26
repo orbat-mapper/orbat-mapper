@@ -73,6 +73,7 @@ const {
   panToFeature,
   getOlFeatureById,
   addFeature,
+  zoomToFeatures,
 } = useScenarioLayers(mapRef);
 
 const { selectedIds, selectedFeatures, selectInteraction } = useScenarioFeatureSelect(
@@ -179,7 +180,7 @@ function onFeatureAction(
     isArray &&
     (action === ScenarioFeatureActions.Zoom || action === ScenarioFeatureActions.Pan)
   ) {
-    console.warn("Not implemented yet");
+    if (action === ScenarioFeatureActions.Zoom) zoomToFeatures(featureOrFeaturesId);
     return;
   }
   (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {

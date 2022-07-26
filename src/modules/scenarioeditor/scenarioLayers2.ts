@@ -4,6 +4,8 @@ import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
 import { click as clickCondition } from "ol/events/condition";
 import { getCenter, isEmpty } from "ol/extent";
+import { featureCollection } from "@turf/helpers";
+import turfEnvelope from "@turf/envelope";
 import { injectStrict, moveItemMutable, nanoid } from "@/utils";
 import { Collection } from "ol";
 import {
@@ -52,6 +54,7 @@ import { useNotifications } from "@/composables/notifications";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
+import { SimpleGeometry } from "ol/geom";
 
 const { send } = useNotifications();
 
@@ -193,7 +196,10 @@ export function useScenarioLayers(
     activeScenarioFeatures,
   }: { activeScenario?: TScenario; activeScenarioFeatures?: UseFeatureStyles } = {}
 ) {
-  const { geo } = activeScenario || injectStrict(activeScenarioKey);
+  const {
+    geo,
+    store: { state },
+  } = activeScenario || injectStrict(activeScenarioKey);
   const { scenarioFeatureStyle, clearCache, invalidateStyle } =
     activeScenarioFeatures || injectStrict(activeFeaturesKey);
   const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
@@ -251,6 +257,16 @@ export function useScenarioLayers(
       getFeatureAndLayerById(featureId, scenarioLayersOl) || {};
     if (!olFeature) return;
     olMap.getView().fit(olFeature.getGeometry(), { maxZoom: 17 });
+  }
+
+  function zoomToFeatures(featureIds: FeatureId[]) {
+    const c = featureCollection(featureIds.map((fid) => state.featureMap[fid]));
+    const bb = new GeoJSON().readFeature(turfEnvelope(c), {
+      featureProjection: "EPSG:3857",
+      dataProjection: "EPSG:4326",
+    }) as Feature<any>;
+    if (!bb) return;
+    olMap.getView().fit(bb.getGeometry(), { maxZoom: 17 });
   }
 
   function panToFeature(featureId: FeatureId) {
@@ -418,6 +434,7 @@ export function useScenarioLayers(
     getOlLayerById,
     addLayer,
     zoomToFeature,
+    zoomToFeatures,
     deleteFeature,
     updateLayer,
     toggleLayerVisibility,
