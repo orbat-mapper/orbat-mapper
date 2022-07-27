@@ -76,12 +76,9 @@ const {
   zoomToFeatures,
 } = useScenarioLayers(mapRef);
 
-const { selectedIds, selectedFeatures, selectInteraction } = useScenarioFeatureSelect(
-  mapRef,
-  {
-    enable: isSelectActive,
-  }
-);
+const { selectedIds, selectInteraction } = useScenarioFeatureSelect(mapRef, {
+  enable: isSelectActive,
+});
 
 onUndoRedo(({ meta, patch, action }) => {
   console.log(action, meta, patch);
@@ -217,14 +214,13 @@ function onFeatureClick(
 ) {
   activeFeature.value = activeFeature.value === feature ? null : feature;
   showLayerPanel.value = activeFeature.value === feature;
-  const f = getOlFeatureById(feature.id);
-  if (!f) return;
+
   const alreadySelected = selectedIds.value.has(feature.id);
-  if (!shiftClick) selectedFeatures.clear();
+  if (!shiftClick) selectedIds.value.clear();
   if (alreadySelected) {
-    selectedFeatures.remove(f);
+    selectedIds.value.delete(feature.id);
   } else {
-    selectedFeatures.push(f);
+    selectedIds.value.add(feature.id);
   }
 }
 

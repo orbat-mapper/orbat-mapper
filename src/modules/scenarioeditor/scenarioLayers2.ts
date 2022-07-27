@@ -30,7 +30,7 @@ import LineString from "ol/geom/LineString";
 import { add as addCoordinate } from "ol/coordinate";
 import { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
-import { onUnmounted, ref, watch } from "vue";
+import { nextTick, onUnmounted, ref, watch } from "vue";
 import { unByKey } from "ol/Observable";
 import { EventsKey } from "ol/events";
 import { AnyVectorLayer } from "@/geo/types";
@@ -42,7 +42,7 @@ import {
   VectorTriangle,
 } from "mdue";
 import { ScenarioFeatureActions } from "@/types/constants";
-import Select from "ol/interaction/Select";
+import Select, { SelectEvent } from "ol/interaction/Select";
 import { MaybeRef } from "@vueuse/core";
 import { activeFeaturesKey, activeScenarioKey } from "@/components/injects";
 import {
@@ -146,6 +146,8 @@ export function useScenarioFeatureSelect(
     VectorLayer<any>
   >;
 
+  const selectedIds = ref<SelectedScenarioFeatures>(new Set());
+
   const enableRef = ref(options.enable ?? true);
 
   const selectInteraction = new Select({
@@ -153,18 +155,31 @@ export function useScenarioFeatureSelect(
     hitTolerance: 20,
     layers: scenarioLayersOl.getArray(),
   });
-
   const selectedFeatures = selectInteraction.getFeatures();
+  let isInternal = false;
+
   useOlEvent(
-    selectedFeatures.on(["add", "remove"], (event) => {
-      // @ts-ignore
-      const feature = event.element as Feature<any>;
-      if (event.type === "add") selectedIds.value.add(feature.getId()!);
-      if (event.type === "remove") selectedIds.value.delete(feature.getId()!);
+    selectInteraction.on("select", (event: SelectEvent) => {
+      isInternal = true;
+      event.selected.forEach((f) => selectedIds.value.add(f.getId()!));
+      event.deselected.forEach((f) => selectedIds.value.delete(f.getId()!));
     })
   );
 
-  const selectedIds = ref<SelectedScenarioFeatures>(new Set());
+  watch(
+    () => [...selectedIds.value],
+    (v) => {
+      if (!isInternal) {
+        selectedFeatures.clear();
+        v.forEach((fid) => {
+          const { feature } = getFeatureAndLayerById(fid, scenarioLayersOl) || {};
+          if (feature) selectedFeatures.push(feature);
+        });
+      }
+      isInternal = false;
+    },
+    { immediate: true }
+  );
 
   olMap.addInteraction(selectInteraction);
   useOlEvent(selectInteraction.on("select", (event) => {}));
