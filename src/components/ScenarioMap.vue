@@ -37,7 +37,7 @@ import {
   useMoveInteraction,
   useUnitSelectInteraction,
   useUnitLayer,
-} from "@/composables/geomap2";
+} from "@/composables/geomap";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useToggle } from "@vueuse/core";
 import { ObjectEvent } from "ol/Object";

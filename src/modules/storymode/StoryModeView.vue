@@ -59,7 +59,7 @@ import { MenuIcon, XIcon } from "@heroicons/vue/outline";
 import NumberInputGroup from "../../components/NumberInputGroup.vue";
 import MeasurementToolbar from "../../components/MeasurementToolbar.vue";
 import type { TScenario } from "@/scenariostore";
-import { useUnitLayer } from "@/composables/geomap2";
+import { useUnitLayer } from "@/composables/geomap";
 import { activeFeaturesKey, activeScenarioKey } from "@/components/injects";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useFeatureStyles } from "@/geo/featureStyles";
