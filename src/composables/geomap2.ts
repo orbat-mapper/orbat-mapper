@@ -122,7 +122,7 @@ export function useMoveInteraction(
   return { moveInteraction: modifyInteraction };
 }
 
-export function useSelectInteraction(
+export function useUnitSelectInteraction(
   layers: VectorLayer<any>[],
   selectedFeatures: Collection<Feature<Point>>,
   historyLayer: VectorLayer<any>
@@ -134,16 +134,16 @@ export function useSelectInteraction(
     store: { state },
   } = injectStrict(activeScenarioKey);
 
-  const selectInteraction = new Select({
+  const unitSelectInteraction = new Select({
     layers,
     style: createSelectedUnitStyleFromFeature,
     condition: clickCondition,
     removeCondition: altKeyOnly,
     features: selectedFeatures,
   });
-  useOlEvent(selectInteraction.on("select", onSelect));
+  useOlEvent(unitSelectInteraction.on("select", onUnitSelect));
 
-  function onSelect(evt: SelectEvent) {
+  function onUnitSelect(evt: SelectEvent) {
     const selectedUnitId = evt.selected.map((f) => f.getId())[0] as string;
     if (selectedUnitId) {
       const selectedUnit = state.getUnitById(selectedUnitId);
@@ -179,5 +179,5 @@ export function useSelectInteraction(
     if (activeUnit) selectUnit(activeUnit);
   });
 
-  return { selectInteraction };
+  return { unitSelectInteraction };
 }

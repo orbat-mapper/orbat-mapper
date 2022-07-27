@@ -35,7 +35,7 @@ import { useUiStore } from "@/stores/uiStore";
 import {
   useDrop,
   useMoveInteraction,
-  useSelectInteraction,
+  useUnitSelectInteraction,
   useUnitLayer,
 } from "@/composables/geomap2";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -173,12 +173,12 @@ const onMapReady = (olMap: OLMap) => {
 
   olMap.addInteraction(historyModify);
 
-  const { selectInteraction } = useSelectInteraction(
+  const { unitSelectInteraction } = useUnitSelectInteraction(
     [unitLayer],
     selectedFeatures,
     historyLayer
   );
-  olMap.addInteraction(selectInteraction);
+  olMap.addInteraction(unitSelectInteraction);
 
   const { moveInteraction: moveUnitInteraction } = useMoveInteraction(
     olMap,
