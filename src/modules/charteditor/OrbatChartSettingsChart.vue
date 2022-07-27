@@ -99,7 +99,7 @@ import AccordionPanel from "@/components/AccordionPanel.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { activeScenarioKey } from "@/components/injects";
 
-const SearchModal = defineAsyncComponent(() => import("@/components/NSearchModal.vue"));
+const SearchModal = defineAsyncComponent(() => import("@/components/SearchModal.vue"));
 
 const {
   unitActions: { expandUnit, getUnitById },

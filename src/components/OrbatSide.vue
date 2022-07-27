@@ -59,7 +59,7 @@ import { ChevronUpIcon } from "@heroicons/vue/solid";
 import { SideActions, UnitActions } from "@/types/constants";
 import { useDebounce } from "@vueuse/core";
 import FilterQueryInput from "./FilterQueryInput.vue";
-import EditSideForm from "./NEditSideForm.vue";
+import EditSideForm from "./EditSideForm.vue";
 import OrbatSideGroup from "./OrbatSideGroup.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { ScenarioState } from "@/scenariostore/newScenarioStore";

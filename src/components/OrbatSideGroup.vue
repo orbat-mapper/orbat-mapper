@@ -58,7 +58,7 @@ import { ChevronUpIcon } from "@heroicons/vue/solid";
 import { DragOperations, SideActions, UnitActions } from "@/types/constants";
 import { useDragStore } from "@/stores/dragStore";
 import SecondaryButton from "./SecondaryButton.vue";
-import EditSideGroupForm from "./NEditSideGroupForm.vue";
+import EditSideGroupForm from "./EditSideGroupForm.vue";
 import { NSideGroup, NUnit } from "@/types/internalModels";
 import { ScenarioState } from "@/scenariostore/newScenarioStore";
 import { DropTarget, MenuItemData } from "./types";

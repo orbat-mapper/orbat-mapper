@@ -159,7 +159,7 @@ import PlainButton from "@/components/PlainButton.vue";
 
 import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
 import { inputEventFilter } from "@/components/helpers";
-import SearchModal from "@/components/NSearchModal.vue";
+import SearchModal from "@/components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
@@ -193,7 +193,7 @@ import {
 } from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
 import type { Scenario } from "@/types/scenarioModels";
-import ScenarioMap from "@/components/NScenarioMap.vue";
+import ScenarioMap from "@/components/ScenarioMap.vue";
 import { useFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
 import { useDateModal } from "@/composables/modals";
