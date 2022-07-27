@@ -10,7 +10,7 @@ import { SideActions, UnitActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
-import NOrbatSide from "@/components/NOrbatSide.vue";
+import NOrbatSide from "@/components/OrbatSide.vue";
 import { TScenario } from "@/scenariostore";
 
 const props = defineProps<{ activeScenario: TScenario }>();

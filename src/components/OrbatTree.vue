@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import NOrbatTreeItem from "./NOrbatTreeItem.vue";
-import { UnitActions } from "../types/constants";
-import { EntityId } from "../types/base";
+import OrbatTreeItem from "./OrbatTreeItem.vue";
+import { UnitActions } from "@/types/constants";
+import { EntityId } from "@/types/base";
 import type { DropTarget } from "./types";
-import { NUnit } from "../types/internalModels";
+import { NUnit } from "@/types/internalModels";
 
 interface Props {
   units: EntityId[];
@@ -91,7 +91,7 @@ function filterUnits(
 
 <template>
   <ul class="space-y-1">
-    <NOrbatTreeItem
+    <OrbatTreeItem
       :item="orbatItem"
       v-for="orbatItem in filteredUnits"
       :key="orbatItem.unit.id"

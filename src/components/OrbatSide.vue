@@ -34,7 +34,7 @@
           />
         </div>
         <div v-for="group in sideGroups" :key="group.id">
-          <NOrbatSideGroup
+          <OrbatSideGroup
             :group="group"
             :filter-query="debouncedFilterQuery"
             :has-location-filter="hasLocationFilter"
@@ -44,7 +44,7 @@
             @unit-drop="onUnitDrop"
             @sidegroup-action="onSideGroupAction"
           >
-          </NOrbatSideGroup>
+          </OrbatSideGroup>
         </div>
       </DisclosurePanel>
     </section>
@@ -60,7 +60,7 @@ import { SideActions, UnitActions } from "@/types/constants";
 import { useDebounce } from "@vueuse/core";
 import FilterQueryInput from "./FilterQueryInput.vue";
 import EditSideForm from "./NEditSideForm.vue";
-import NOrbatSideGroup from "./NOrbatSideGroup.vue";
+import OrbatSideGroup from "./OrbatSideGroup.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { ScenarioState } from "@/scenariostore/newScenarioStore";
 import { DropTarget, MenuItemData } from "./types";

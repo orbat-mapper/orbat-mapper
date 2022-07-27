@@ -29,7 +29,7 @@
       class="-ml-6"
     />
     <DisclosurePanel>
-      <NOrbatTree
+      <OrbatTree
         :units="group.subUnits"
         :unit-map="state.unitMap"
         class="mt-1"
@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import DotsMenu from "./DotsMenu.vue";
-import NOrbatTree from "./NOrbatTree.vue";
+import OrbatTree from "./OrbatTree.vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/solid";
 import { DragOperations, SideActions, UnitActions } from "@/types/constants";

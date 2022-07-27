@@ -3,7 +3,7 @@
     <p class="pl-6 pr-2 text-xs font-medium uppercase tracking-wider text-gray-500">
       Order of battle
     </p>
-    <NOrbatSide
+    <OrbatSide
       v-for="side in sides"
       :key="side.id"
       :side="side"
@@ -23,7 +23,7 @@ import { computed } from "vue";
 import OrbatPanelAddSide from "@/components/OrbatPanelAddSide.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
-import NOrbatSide from "@/components/NOrbatSide.vue";
+import OrbatSide from "@/components/OrbatSide.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { SideActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
