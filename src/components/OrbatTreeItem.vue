@@ -71,7 +71,7 @@
       />
     </div>
     <ul v-if="isOpen" class="ml-6 pb-1" ref="subTree">
-      <NOrbatTreeItem
+      <OrbatTreeItem
         :item="subUnit"
         v-for="subUnit in item.children"
         :key="subUnit.unit.id"
