@@ -36,15 +36,10 @@ export function useImmerStore<T extends object, M>(baseState: T) {
   const canUndo = computed(() => past.length > 0);
   const canRedo = computed(() => future.length > 0);
 
-  const undoHook = createEventHook<{
+  const undoRedoHook = createEventHook<{
     patch: Patch[];
     meta?: MetaEntry<M>;
-    action: "undo";
-  }>();
-  const redoHook = createEventHook<{
-    patch: Patch[];
-    meta?: MetaEntry<M>;
-    action: "redo";
+    action: "undo" | "redo";
   }>();
 
   const update = (updater: (currentState: T) => void, meta?: MetaEntry<M>) => {
@@ -76,7 +71,7 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     const { patches, inversePatches, meta } = past.pop()!;
     applyPatchWrapper(state, inversePatches);
     future.unshift({ patches, inversePatches, meta });
-    undoHook.trigger({ patch: inversePatches, meta, action: "undo" });
+    undoRedoHook.trigger({ patch: inversePatches, meta, action: "undo" });
     return true;
   };
 
@@ -85,7 +80,7 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     const { patches, inversePatches, meta } = future.shift()!;
     applyPatchWrapper(state, patches);
     past.push({ patches, inversePatches, meta });
-    redoHook.trigger({ patch: patches, meta, action: "redo" });
+    undoRedoHook.trigger({ patch: patches, meta, action: "redo" });
     return true;
   };
 
@@ -97,7 +92,6 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     canRedo,
     canUndo,
     groupUpdate,
-    onUndo: undoHook.on,
-    onRedo: redoHook.on,
+    onUndoRedo: undoRedoHook.on,
   };
 }

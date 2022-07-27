@@ -62,7 +62,7 @@ import { toLonLat } from "ol/proj";
 
 const {
   geo,
-  store: { state, onUndo, onRedo },
+  store: { state, onUndoRedo },
   unitActions,
 } = injectStrict(activeScenarioKey);
 
@@ -105,11 +105,7 @@ const onMapReady = (olMap: OLMap) => {
     loadScenarioLayers(false, !doNotFilterLayers.value);
   });
 
-  onUndo(({ meta }) => {
-    if (meta?.value === activeUnitId.value) drawHistory();
-  });
-
-  onRedo(({ meta }) => {
+  onUndoRedo(({ meta }) => {
     if (meta?.value === activeUnitId.value) drawHistory();
   });
 

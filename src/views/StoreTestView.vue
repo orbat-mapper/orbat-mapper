@@ -20,10 +20,10 @@ const { deleteUnit, walkSubUnits, changeUnitParent, cloneUnit } = unitActions;
 const { state, update, undo, redo, canRedo, canUndo } = store!;
 const { utcTime, scenarioTime, timeZone } = time;
 
-const { onUndo } = store;
+const { onUndoRedo } = store;
 
-onUndo((data) => {
-  console.log("On undo", data);
+onUndoRedo((data) => {
+  console.log("On undo/redo", data);
 });
 
 const activeUnitId = ref<EntityId | undefined>();

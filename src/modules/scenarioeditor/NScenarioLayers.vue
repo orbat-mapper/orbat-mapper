@@ -43,7 +43,7 @@ const emit = defineEmits(["update:modelValue"]);
 
 const {
   geo,
-  store: { onUndo, onRedo },
+  store: { onUndoRedo },
 } = injectStrict(activeScenarioKey);
 
 const showLayerPanel = useVModel(props, "modelValue", emit);
@@ -83,46 +83,29 @@ const { selectedIds, selectedFeatures, selectInteraction } = useScenarioFeatureS
   }
 );
 
-onUndo(({ meta, patch }) => {
-  console.log("Undo", meta, patch);
+onUndoRedo(({ meta, patch, action }) => {
+  console.log(action, meta, patch);
   if (!meta) return;
   const { label, value } = meta;
   if (label === "deleteLayer") {
-    const layer = geo.getLayerById(value);
-    addLayer(layer, true);
+    if (action === "undo") {
+      const layer = geo.getLayerById(value);
+      addLayer(layer, true);
+    } else deleteLayer(value as FeatureId, true);
   } else if (label === "deleteFeature") {
-    const { feature } = geo.getFeatureById(value);
-    addFeature(feature, true);
+    if (action === "undo") {
+      const { feature } = geo.getFeatureById(value);
+      addFeature(feature, true);
+    } else {
+      deleteFeature(value, true);
+    }
   } else if (label === "addFeature") {
-    deleteFeature(value, true);
-  } else if (label === "updateFeatureGeometry") {
-    deleteFeature(value, true);
-    const { feature } = geo.getFeatureById(value);
-    addFeature(feature, true);
-  } else if (label === "updateLayer") {
-    const layer = geo.getLayerById(value);
-    updateLayer(value, layer, true);
-  } else if (label === "moveLayer") {
-    moveLayer(value, "down", true);
-  } else if (label === "updateFeature") {
-    updateFeature(value, {}, true);
-  } else if (label === "moveFeature") {
-    const { feature } = geo.getFeatureById(value);
-    moveFeature(feature, "down", true);
-  }
-});
-
-onRedo(({ meta, patch }) => {
-  console.log("Redo", meta, patch);
-  if (!meta) return;
-  const { label, value } = meta;
-  if (label === "deleteLayer") {
-    deleteLayer(value as FeatureId, true);
-  } else if (label === "deleteFeature") {
-    deleteFeature(value, true);
-  } else if (label === "addFeature") {
-    const { feature } = geo.getFeatureById(value);
-    addFeature(feature, true);
+    if (action === "undo") {
+      deleteFeature(value, true);
+    } else {
+      const { feature } = geo.getFeatureById(value);
+      addFeature(feature, true);
+    }
   } else if (label === "updateFeatureGeometry") {
     deleteFeature(value, true);
     const { feature } = geo.getFeatureById(value);
