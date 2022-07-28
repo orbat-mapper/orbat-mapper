@@ -25,9 +25,9 @@ import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { GlobalEvents } from "vue-global-events";
 import { createHistoryLayer } from "@/geo/layers";
-import { Collection, Feature } from "ol";
+import { Feature } from "ol";
 import { clearStyleCache } from "@/geo/unitStyles";
-import { LineString, Point } from "ol/geom";
+import { LineString } from "ol/geom";
 import { useGeoStore } from "@/stores/geoStore";
 import LayerGroup from "ol/layer/Group";
 import { inputEventFilter } from "./helpers";
@@ -35,8 +35,8 @@ import { useUiStore } from "@/stores/uiStore";
 import {
   useDrop,
   useMoveInteraction,
-  useUnitSelectInteraction,
   useUnitLayer,
+  useUnitSelectInteraction,
 } from "@/composables/geomap";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useToggle } from "@vueuse/core";
@@ -73,7 +73,6 @@ const doNotFilterLayers = computed(() => currentScenarioTab.value === 2);
 const activeUnitId = injectStrict(activeUnitKey);
 
 const mapRef = shallowRef<OLMap>();
-let selectedFeatures: Collection<Feature<Point>> = new Collection<Feature<Point>>();
 
 const { unitLayer, drawUnits } = useUnitLayer();
 const historyLayer = createHistoryLayer();
@@ -173,11 +172,7 @@ const onMapReady = (olMap: OLMap) => {
 
   olMap.addInteraction(historyModify);
 
-  const { unitSelectInteraction } = useUnitSelectInteraction(
-    [unitLayer],
-    selectedFeatures,
-    historyLayer
-  );
+  const { unitSelectInteraction } = useUnitSelectInteraction([unitLayer], historyLayer);
   olMap.addInteraction(unitSelectInteraction);
 
   const { moveInteraction: moveUnitInteraction } = useMoveInteraction(

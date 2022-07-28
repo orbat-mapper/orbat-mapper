@@ -124,9 +124,9 @@ export function useMoveInteraction(
 
 export function useUnitSelectInteraction(
   layers: VectorLayer<any>[],
-  selectedFeatures: Collection<Feature<Point>>,
   historyLayer: VectorLayer<any>
 ) {
+  const selectedFeatures: Collection<Feature<Point>> = new Collection<Feature<Point>>();
   const bus = useEventBus(mapUnitClick);
   const activeUnitId = injectStrict(activeUnitKey);
   const {
