@@ -16,7 +16,7 @@ export function useUnitActionsN() {
   const activeUnitId = injectStrict(activeUnitKey);
   const geoStore = useGeoStore();
 
-  const onUnitAction = (unit: NUnit | undefined, action: UnitActions) => {
+  const onUnitAction = (unit: NUnit | undefined | null, action: UnitActions) => {
     if (!unit) return;
     if (action === UnitActions.AddSubordinate) {
       unit._isOpen = true;
