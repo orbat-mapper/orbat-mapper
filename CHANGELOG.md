@@ -6,5 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Add button to the unit panel for setting unit location by clicking on the map.
 - Zoom to multiple features using z keyboard shortcut or the zoom button on the feature details panel.
 - Select multiple scenario features with shift+click on the features list, or by shift+click on the map.

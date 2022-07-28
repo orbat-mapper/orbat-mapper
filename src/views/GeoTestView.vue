@@ -13,10 +13,11 @@ import { toLonLat } from "ol/proj";
 import { onClickOutside, onKeyStroke } from "@vueuse/core";
 import { unByKey } from "ol/Observable";
 import { formatPosition } from "@/geo/utils";
+import { useGetMapLocation } from "@/composables/geoMapLocation";
 
 const mapRef = shallowRef<OLMap>();
 const loc = ref("");
-
+const nn = ref<ReturnType<typeof useGetMapLocation>>();
 const vectorLayer = new VectorLayer({
   source: new VectorSource(),
   properties: {
@@ -26,6 +27,10 @@ const vectorLayer = new VectorLayer({
 const onMapReady = (olMap: OLMap) => {
   mapRef.value = olMap;
   olMap.addLayer(vectorLayer);
+  nn.value = useGetMapLocation(olMap);
+  nn.value.onGetLocation((location) => {
+    loc.value = formatPosition(location);
+  });
 };
 
 function onModify(features: Feature[]) {
@@ -75,11 +80,16 @@ function doGetLocation() {
       @add="onAdd"
     />
     <MeasurementToolbar v-if="mapRef" :ol-map="mapRef" class="absolute left-3 bottom-4" />
-    <BaseButton class="fixed top-20 left-2" @click="doGetLocation"
-      >Get location</BaseButton
+    <template v-if="nn">
+      <BaseButton
+        class="fixed top-20 left-2"
+        :class="{ 'bg-red-100': nn.isActive }"
+        @click="nn?.start()"
+        >Get location</BaseButton
+      >
+      <p class="fixed bottom-5 left-20 rounded border bg-white bg-opacity-70 p-1 px-2">
+        {{ loc }}
+      </p></template
     >
-    <p class="fixed bottom-5 left-20 rounded border bg-white bg-opacity-70 p-1 px-2">
-      {{ loc }}
-    </p>
   </div>
 </template>

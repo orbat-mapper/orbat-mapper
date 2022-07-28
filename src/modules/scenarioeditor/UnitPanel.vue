@@ -60,7 +60,11 @@
         </div>
       </DescriptionItem>
     </div>
-
+    <BaseButton @click="startGetLocation()"
+      ><CrosshairsGps class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />{{
+        isGetLocationActive ? "Select on map" : "Set location"
+      }}
+    </BaseButton>
     <UnitPanelState v-if="unit?.state?.length" :unit="unit" />
     <GlobalEvents :filter="inputEventFilter" @keyup.e="doFormFocus" />
   </div>
@@ -84,11 +88,13 @@ import SymbolPickerInput from "@/components/SymbolPickerInput.vue";
 import SplitButton from "@/components/SplitButton.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { EntityId } from "@/types/base";
-import { injectStrict, nanoid } from "@/utils";
+import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
+import { useGetMapLocation } from "@/composables/geoMapLocation";
+import OLMap from "ol/Map";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -98,6 +104,7 @@ const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
 const {
   store,
+  geo: { addUnitPosition },
   unitActions: { updateUnit },
 } = activeScenario;
 
@@ -110,6 +117,13 @@ let form = ref<UnitUpdate>({
 });
 const geoStore = useGeoStore();
 
+const {
+  start: startGetLocation,
+  isActive: isGetLocationActive,
+  onGetLocation,
+} = useGetMapLocation(geoStore.olMap as OLMap);
+
+onGetLocation((location) => addUnitPosition(props.unitId, location));
 const isEditMode = ref(false);
 const toggleEditMode = useToggle(isEditMode);
 const unit = computed(() => {
