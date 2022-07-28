@@ -160,7 +160,7 @@ function onFeatureAction(
     isArray &&
     (action === ScenarioFeatureActions.Zoom || action === ScenarioFeatureActions.Pan)
   ) {
-    if (action === ScenarioFeatureActions.Zoom) zoomToFeatures(featureOrFeaturesId);
+    zoomToFeatures(featureOrFeaturesId);
     return;
   }
   (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {

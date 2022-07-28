@@ -164,7 +164,11 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
               >
                 <ImageFilterCenterFocus class="h-5 w-5" />
               </ToolbarButton>
-              <ToolbarButton @click="toggleMetaEdit()" :active="isMetaEditMode" end
+              <ToolbarButton
+                @click="toggleMetaEdit()"
+                :active="isMetaEditMode"
+                end
+                :disabled="isMultipleFeatures"
                 ><span class="px-1">Edit</span></ToolbarButton
               >
             </BaseToolbar>
