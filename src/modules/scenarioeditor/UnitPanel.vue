@@ -190,7 +190,6 @@ const buttonItems = computed(() => [
   {
     label: "Zoom",
     onClick: () => onUnitAction(unit.value, UnitActions.Zoom),
-    disabled: !hasPosition.value,
   },
   {
     label: "Pan",

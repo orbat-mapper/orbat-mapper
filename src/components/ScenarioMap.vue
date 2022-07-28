@@ -4,8 +4,8 @@
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"
       :filter="inputEventFilter"
-      @keyup.z.exact="onItemZoom"
-      @keyup.p="onItemPan"
+      @keyup.z.exact="onUnitAction(activeUnit, UnitActions.Zoom)"
+      @keyup.p="onUnitAction(activeUnit, UnitActions.Pan)"
     />
     <MeasurementToolbar v-if="mapRef" class="absolute left-3 bottom-4" :ol-map="mapRef" />
     <div v-if="mapRef" class="absolute left-3 bottom-16">
@@ -59,6 +59,8 @@ import GeometryLayout from "ol/geom/GeometryLayout";
 import { EntityId, HistoryAction } from "@/types/base";
 import { Coordinate } from "ol/coordinate";
 import { toLonLat } from "ol/proj";
+import { useUnitActionsN } from "@/composables/scenarioActions";
+import { UnitActions } from "@/types/constants";
 
 const {
   geo,
@@ -67,12 +69,10 @@ const {
 } = injectStrict(activeScenarioKey);
 
 const currentScenarioTab = inject(currentScenarioTabKey, ref(0));
-
 const doNotFilterLayers = computed(() => currentScenarioTab.value === 2);
-
 const activeUnitId = injectStrict(activeUnitKey);
-
 const mapRef = shallowRef<OLMap>();
+const { onUnitAction } = useUnitActionsN();
 
 const { unitLayer, drawUnits } = useUnitLayer();
 const historyLayer = createHistoryLayer();
@@ -272,14 +272,6 @@ watch(settingsStore, () => {
 });
 
 const { onDrop } = useDrop(mapRef, unitLayer);
-
-const onItemZoom = () => {
-  geoStore.zoomToUnit(activeUnit.value);
-};
-
-const onItemPan = () => {
-  geoStore.panToUnit(activeUnit.value);
-};
 
 onUnmounted(() => {
   geoStore.olMap = undefined;

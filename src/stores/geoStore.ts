@@ -22,6 +22,16 @@ export const useGeoStore = defineStore("geo", {
       });
     },
 
+    zoomToLocation(location?: Position, duration = 900) {
+      if (!location) return;
+      const view = this.olMap!.getView();
+      view.animate({
+        zoom: 10,
+        center: fromLonLat(location, view.getProjection()),
+        duration,
+      });
+    },
+
     panToUnit(unit?: Unit | NUnit | null, duration = 900) {
       const location = unit?._state?.location;
       if (!location) return;

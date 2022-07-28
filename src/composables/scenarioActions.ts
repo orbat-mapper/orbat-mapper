@@ -6,6 +6,10 @@ import { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import { MenuItemData } from "@/components/types";
+import { multiPoint } from "@turf/helpers";
+import turfEnvelope from "@turf/envelope";
+import { GeoJSON } from "ol/format";
+import Feature from "ol/Feature";
 
 export function useUnitActionsN() {
   const { unitActions } = injectStrict(activeScenarioKey);
@@ -19,7 +23,31 @@ export function useUnitActionsN() {
       unitActions.createSubordinateUnit(unit.id);
     }
 
-    if (action === UnitActions.Zoom) geoStore.zoomToUnit(unit, 500);
+    if (action === UnitActions.Zoom) {
+      if (unit._state?.location) {
+        geoStore.zoomToUnit(unit, 500);
+      } else {
+        const subUnits: NUnit[] = [];
+        unitActions.walkSubUnits(
+          unit.id,
+          (unit1) => {
+            subUnits.push(unit1);
+          },
+          {}
+        );
+        const locations = subUnits
+          .filter((u) => u._state?.location)
+          .map((u) => u._state?.location!);
+
+        if (locations.length === 0) return;
+        const bb = new GeoJSON().readFeature(turfEnvelope(multiPoint(locations)), {
+          featureProjection: "EPSG:3857",
+          dataProjection: "EPSG:4326",
+        }) as Feature<any>;
+        if (!bb) return;
+        geoStore.olMap?.getView().fit(bb.getGeometry(), { maxZoom: 17 });
+      }
+    }
     if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);
     if (action === UnitActions.Edit) {
       activeUnitId.value = unit.id;
