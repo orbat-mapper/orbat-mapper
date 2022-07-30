@@ -27,7 +27,6 @@ function toggleOpen() {
 watch(
   () => props.open,
   (v) => {
-    console.log("yo");
     isOpen.value = !!v;
     v ? emit("opened") : emit("closed");
   }

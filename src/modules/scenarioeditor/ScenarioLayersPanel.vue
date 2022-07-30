@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { ImageFilterCenterFocus, MagnifyPlusOutline } from "mdue";
 import { GlobalEvents } from "vue-global-events";
-import { ScenarioFeature, ScenarioFeatureProperties } from "@/types/scenarioGeoModels";
+import {
+  ScenarioFeature,
+  ScenarioFeatureProperties,
+  VisibilityInfo,
+} from "@/types/scenarioGeoModels";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import CloseButton from "@/components/CloseButton.vue";
@@ -29,17 +33,7 @@ import {
 } from "@/geo/simplestyle";
 import FeatureFillSettings from "./FeatureFillSettings.vue";
 import FeatureMarkerSettings from "@/modules/scenarioeditor/FeatureMarkerSettings.vue";
-import { formatDateString } from "@/geo/utils";
-import { injectStrict } from "@/utils";
-import { activeScenarioKey, timeModalKey } from "@/components/injects";
-import PlainButton from "@/components/PlainButton.vue";
-import SettingsPanel from "@/components/SettingsPanel.vue";
-
-const {
-  time: { timeZone },
-} = injectStrict(activeScenarioKey);
-
-const { getModalTimestamp } = injectStrict(timeModalKey);
+import FeatureVisibilitySettings from "@/modules/scenarioeditor/FeatureVisibilitySettings.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -66,8 +60,8 @@ watch(
   [isMetaEditMode, () => props.feature],
   ([isEditMode, feature]) => {
     if (!isEditMode) return;
-    const { name, description, visibleFromT, visibleUntilT } = props.feature.properties;
-    formMeta.value = { name, description, visibleFromT, visibleUntilT };
+    const { name, description } = props.feature.properties;
+    formMeta.value = { name, description };
   },
   { immediate: true }
 );
@@ -82,6 +76,14 @@ const isMultipleFeatures = computed(() => props.selectedIds.size > 1);
 function onFormMetaSubmit() {
   emit("feature-meta-update", props.feature.id, { ...formMeta.value });
   toggleMetaEdit();
+}
+
+function updateVisibility(data: Partial<VisibilityInfo>) {
+  emit(
+    "feature-meta-update",
+    isMultipleFeatures.value ? [...props.selectedIds.values()] : props.feature.id,
+    { ...data }
+  );
 }
 
 const doFormFocus = async () => {
@@ -113,16 +115,6 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
     isMultipleFeatures.value ? [...props.selectedIds.values()] : props.feature.id,
     { ...data }
   );
-}
-
-async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
-  const newTimestamp = await getModalTimestamp(formMeta.value[field]!, {
-    timeZone: timeZone.value,
-    title: field === "visibleFromT" ? "Visible from" : "Visible until",
-  });
-  if (newTimestamp !== undefined) {
-    formMeta.value[field] = newTimestamp;
-  }
 }
 </script>
 <template>
@@ -195,19 +187,6 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
             description="Use markdown syntax for formatting"
           />
 
-          <DescriptionItem label="Visible from"
-            >{{ formatDateString(formMeta.visibleFromT, timeZone) }}
-            <PlainButton @click="doShowTimeModal('visibleFromT')" class="ml-2"
-              >Change</PlainButton
-            >
-          </DescriptionItem>
-
-          <DescriptionItem label="Visible until"
-            >{{ formatDateString(formMeta.visibleUntilT, timeZone) }}
-            <PlainButton @click="doShowTimeModal('visibleUntilT')" class="ml-2"
-              >Change</PlainButton
-            >
-          </DescriptionItem>
           <div class="flex items-center justify-end space-x-2">
             <BaseButton primary small type="submit">Save</BaseButton>
             <BaseButton small @click="toggleMetaEdit()">Cancel</BaseButton>
@@ -218,16 +197,10 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
           <DescriptionItem v-if="feature.properties.description" label="Description">
             <div class="prose prose-sm" v-html="hDescription"></div>
           </DescriptionItem>
-          <DescriptionItem v-if="feature.properties.visibleFromT" label="Visible from">
-            {{ formatDateString(feature.properties.visibleFromT, timeZone) }}
-          </DescriptionItem>
-
-          <DescriptionItem v-if="feature.properties.visibleUntilT" label="Visible until">
-            {{ formatDateString(feature.properties.visibleUntilT, timeZone) }}
-          </DescriptionItem>
         </section>
       </div>
       <div class="-mx-6 mt-6 divide-y divide-gray-300 border-t border-b border-gray-300">
+        <FeatureVisibilitySettings :feature="feature" @update="updateVisibility" />
         <FeatureMarkerSettings
           v-if="geometryType === 'Point'"
           class=""

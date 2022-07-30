@@ -348,7 +348,7 @@ function doUpdateFeature(
       :selectedIds="selectedIds"
       @close="toggleLayerPanel()"
       @feature-action="onFeatureAction"
-      @feature-meta-update="updateFeature"
+      @feature-meta-update="doUpdateFeature"
       @feature-style-update="doUpdateFeature"
     />
   </Teleport>
