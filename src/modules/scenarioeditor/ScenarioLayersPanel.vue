@@ -33,6 +33,7 @@ import { formatDateString } from "@/geo/utils";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import PlainButton from "@/components/PlainButton.vue";
+import SettingsPanel from "@/components/SettingsPanel.vue";
 
 const {
   time: { timeZone },
@@ -135,8 +136,6 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
       <div class="space-y-4">
         <header class="flex items-center justify-between">
           <component :is="getGeometryIcon(feature)" class="h-5 w-5 text-gray-400" />
-          <p v-if="isMultipleFeatures">Selected {{ selectedIds.size }}</p>
-
           <div class="flex items-center">
             <BaseToolbar>
               <ToolbarButton
@@ -181,6 +180,9 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
             </div>
           </div>
         </header>
+        <p v-if="isMultipleFeatures" class="text-base font-medium text-gray-900">
+          {{ selectedIds.size }} features selected
+        </p>
         <form
           v-if="isMetaEditMode"
           @submit.prevent="onFormMetaSubmit()"
@@ -225,13 +227,14 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
           </DescriptionItem>
         </section>
       </div>
-      <div v-if="geometryType === 'Point'" class="-mx-6 mt-4 border-t px-6 py-4">
-        <FeatureMarkerSettings :feature="feature" @update="updateMarker" />
-      </div>
-      <div class="-mx-6 mt-4 border-t px-6 py-4">
+      <div class="-mx-6 mt-6 divide-y divide-gray-300 border-t border-b border-gray-300">
+        <FeatureMarkerSettings
+          v-if="geometryType === 'Point'"
+          class=""
+          :feature="feature"
+          @update="updateMarker"
+        />
         <FeatureStrokeSettings :feature="feature" @update="updateStroke" />
-      </div>
-      <div class="-mx-6 border-t border-b px-6 py-4">
         <FeatureFillSettings :feature="feature" @update="updateFill" />
       </div>
     </TabItem>

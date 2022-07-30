@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useDebounceFn } from "@vueuse/core";
+import { useDebounceFn, useStorage } from "@vueuse/core";
 import InputGroup from "../../components/InputGroup.vue";
 import NumberInputGroup from "../../components/NumberInputGroup.vue";
 import { computed, ref } from "vue";
@@ -8,6 +8,7 @@ import { type ScenarioFeature } from "../../types/scenarioGeoModels";
 import ToggleField from "../../components/ToggleField.vue";
 import OpacityInput from "../../components/OpacityInput.vue";
 import InputGroupTemplate from "../../components/InputGroupTemplate.vue";
+import SettingsPanel from "@/components/SettingsPanel.vue";
 
 const settings = ref<Partial<StrokeStyleSpec>>({});
 const props = defineProps<{ feature: ScenarioFeature }>();
@@ -47,34 +48,35 @@ function toggleStroke(v: boolean) {
     emit("update", { stroke: null, _stroke: props.feature.properties.stroke });
   }
 }
+
+const open = useStorage("stroke-panel", true);
 </script>
 
 <template>
-  <header class="flex items-center justify-between">
-    <h4 class="text-sm font-bold text-gray-700">Stroke</h4>
-    <ToggleField
-      :model-value="hasStroke"
-      @update:model-value="toggleStroke"
-    ></ToggleField>
-  </header>
-  <div v-if="hasStroke" class="mt-4 space-y-4">
-    <InputGroup
-      type="color"
-      label="Color"
-      :model-value="stroke.stroke"
-      @update:model-value="updateValue('stroke', $event)"
-    />
-    <NumberInputGroup
-      label="Width"
-      :model-value="stroke['stroke-width']"
-      @update:model-value="updateValue('stroke-width', $event)"
-    />
-    <InputGroupTemplate label="Opacity">
-      <OpacityInput
-        :model-value="stroke['stroke-opacity']"
-        visible
-        @update:model-value="updateValue('stroke-opacity', $event)"
+  <SettingsPanel label="Stroke" v-model:open="open">
+    <template #right>
+      <ToggleField :model-value="hasStroke" @update:model-value="toggleStroke" />
+    </template>
+
+    <div v-if="hasStroke" class="mt-4 space-y-4">
+      <InputGroup
+        type="color"
+        label="Color"
+        :model-value="stroke.stroke"
+        @update:model-value="updateValue('stroke', $event)"
       />
-    </InputGroupTemplate>
-  </div>
+      <NumberInputGroup
+        label="Width"
+        :model-value="stroke['stroke-width']"
+        @update:model-value="updateValue('stroke-width', $event)"
+      />
+      <InputGroupTemplate label="Opacity">
+        <OpacityInput
+          :model-value="stroke['stroke-opacity']"
+          visible
+          @update:model-value="updateValue('stroke-opacity', $event)"
+        />
+      </InputGroupTemplate>
+    </div>
+  </SettingsPanel>
 </template>

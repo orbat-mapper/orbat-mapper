@@ -86,6 +86,16 @@
               <ChevronPanel label="Chevron title">Panel content</ChevronPanel>
             </div>
           </section>
+
+          <section>
+            <h3 class="border-b text-lg">Settings panel</h3>
+            <div class="grid gap-6 px-4 sm:grid-cols-3">
+              <SettingsPanel label="Settings panel title">
+                <template #right="{ open }">sdf {{ open }}</template>
+                Panel content is
+              </SettingsPanel>
+            </div>
+          </section>
         </div>
       </main>
     </div>
@@ -93,15 +103,16 @@
 </template>
 
 <script setup>
-import BaseButton from "../components/BaseButton.vue";
-import FormCard from "../components/FormCard.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import FormCard from "@/components/FormCard.vue";
 import { ref } from "vue";
 import { Earth } from "mdue";
-import NumberInputGroup from "../components/NumberInputGroup.vue";
-import InputGroup from "../components/InputGroup.vue";
-import SimpleCombo from "../components/SimpleCombo.vue";
-import AccordionPanel from "../components/AccordionPanel.vue";
-import ChevronPanel from "../components/ChevronPanel.vue";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
+import InputGroup from "@/components/InputGroup.vue";
+import SimpleCombo from "@/components/SimpleCombo.vue";
+import AccordionPanel from "@/components/AccordionPanel.vue";
+import ChevronPanel from "@/components/ChevronPanel.vue";
+import SettingsPanel from "@/components/SettingsPanel.vue";
 
 const num = ref(1);
 const v = ref("Test");

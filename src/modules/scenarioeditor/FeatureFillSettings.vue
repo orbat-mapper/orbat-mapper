@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useDebounceFn } from "@vueuse/core";
+import { useDebounceFn, useStorage } from "@vueuse/core";
 import InputGroup from "../../components/InputGroup.vue";
 import { computed, ref } from "vue";
 import { type FillStyleSpec } from "../../geo/simplestyle";
@@ -7,11 +7,13 @@ import { type ScenarioFeature } from "../../types/scenarioGeoModels";
 import ToggleField from "../../components/ToggleField.vue";
 import OpacityInput from "../../components/OpacityInput.vue";
 import InputGroupTemplate from "../../components/InputGroupTemplate.vue";
+import SettingsPanel from "@/components/SettingsPanel.vue";
 
 const settings = ref<Partial<FillStyleSpec>>({});
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits<{ (e: "update", value: Partial<FillStyleSpec>): void }>();
 
+const open = useStorage("fill-panel", true);
 const fill = computed((): Partial<FillStyleSpec> => {
   const { properties } = props.feature;
   return {
@@ -48,24 +50,26 @@ function toggleFill(v: boolean) {
 </script>
 
 <template>
-  <header class="flex items-center justify-between">
-    <h4 class="text-sm font-bold text-gray-700">Fill</h4>
-    <ToggleField :model-value="hasFill" @update:model-value="toggleFill"></ToggleField>
-  </header>
-  <div v-if="hasFill" class="mt-4 space-y-4">
-    <InputGroup
-      type="color"
-      label="Color"
-      :model-value="fill.fill"
-      @update:model-value="updateValue('fill', $event)"
-    />
+  <SettingsPanel label="Fill" v-model:open="open">
+    <template #right>
+      <ToggleField :model-value="hasFill" @update:model-value="toggleFill" />
+    </template>
 
-    <InputGroupTemplate label="Opacity">
-      <OpacityInput
-        :model-value="fill['fill-opacity']"
-        visible
-        @update:model-value="updateValue('fill-opacity', $event)"
+    <div v-if="hasFill" class="mt-4 space-y-4">
+      <InputGroup
+        type="color"
+        label="Color"
+        :model-value="fill.fill"
+        @update:model-value="updateValue('fill', $event)"
       />
-    </InputGroupTemplate>
-  </div>
+
+      <InputGroupTemplate label="Opacity">
+        <OpacityInput
+          :model-value="fill['fill-opacity']"
+          visible
+          @update:model-value="updateValue('fill-opacity', $event)"
+        />
+      </InputGroupTemplate>
+    </div>
+  </SettingsPanel>
 </template>

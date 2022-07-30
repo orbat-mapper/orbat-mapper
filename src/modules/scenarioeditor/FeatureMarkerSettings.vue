@@ -4,6 +4,8 @@ import { MarkerSize, MarkerStyleSpec, MarkerSymbol } from "@/geo/simplestyle";
 import { type ScenarioFeature } from "@/types/scenarioGeoModels";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { SelectItem } from "@/components/types";
+import SettingsPanel from "@/components/SettingsPanel.vue";
+import { useStorage } from "@vueuse/core";
 
 const settings = ref<Partial<MarkerStyleSpec>>({});
 const props = defineProps<{ feature: ScenarioFeature }>();
@@ -37,13 +39,12 @@ const markerSize: SelectItem<MarkerSize>[] = [
   { label: "Medium", value: "medium" },
   { label: "Large", value: "large" },
 ];
+
+const open = useStorage("marker-settings", true);
 </script>
 
 <template>
-  <header class="flex items-center justify-between">
-    <h4 class="text-sm font-bold text-gray-700">Marker</h4>
-  </header>
-  <div class="mt-4 space-y-4">
+  <SettingsPanel label="Marker" v-model:open="open">
     <SimpleSelect
       :items="markerItems"
       :model-value="marker['marker-symbol']"
@@ -55,5 +56,5 @@ const markerSize: SelectItem<MarkerSize>[] = [
       :model-value="marker['marker-size']"
       @update:model-value="updateValue('marker-size', $event)"
     />
-  </div>
+  </SettingsPanel>
 </template>
