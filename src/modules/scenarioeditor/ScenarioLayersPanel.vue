@@ -166,7 +166,13 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
             <div class="relative ml-2">
               <DotsMenu
                 :items="featureMenuItems"
-                @action="emit('feature-action', feature, $event)"
+                @action="
+                  emit(
+                    'feature-action',
+                    isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
+                    $event
+                  )
+                "
                 class="flex-shrink-0"
               />
             </div>
