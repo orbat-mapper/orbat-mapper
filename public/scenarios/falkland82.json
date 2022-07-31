@@ -140,6 +140,7 @@
                 },
                 {
                   "t": "1982-03-20T12:00:00-04:00",
+                  "title": "HMS Endurance sails from Stanley with a Royal Marines detachment onboard",
                   "location": [-57.857406173757106, -51.69060624656955]
                 },
                 {
@@ -867,7 +868,8 @@
                   "state": [
                     {
                       "t": "1982-03-11T09:00:00-04:00",
-                      "location": [-58.347816408312845, -34.59035066507696]
+                      "location": [-58.347816408312845, -34.59035066507696],
+                      "title": "Constantino Davidoff's working expedition leave Buenos Aires"
                     },
                     {
                       "t": "1982-03-19T10:00:00-04:00",

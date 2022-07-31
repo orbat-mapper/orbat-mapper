@@ -11,7 +11,10 @@
         >
           {{ formatDateString(s.t, store.state.info.timeZone) }}
         </p>
-        <p>{{ formatPosition(s.location) }}</p>
+        <p v-if="s.title" class="my-1 font-medium leading-tight text-gray-900">
+          {{ s.title }}
+        </p>
+        <p class="text-gray-700">{{ formatPosition(s.location) }}</p>
       </div>
 
       <div class="flex-0 relative flex items-center space-x-0">

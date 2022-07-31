@@ -1,7 +1,7 @@
 import { Position, ScenarioLayer } from "./scenarioGeoModels";
 import { EntityId, ScenarioTime } from "./base";
 
-export interface State {
+export interface State extends Partial<ScenarioEventDescription> {
   t: ScenarioTime;
   location?: Position;
   sidc?: string;
@@ -73,13 +73,16 @@ export interface FlyToUnitLocationAction extends UIAction {
   zoomLevel?: number;
 }
 
-/**
- *
- */
-export interface ScenarioEvent {
+export interface ScenarioEventDescription {
   title: string;
   subTitle?: string;
   description?: string;
+}
+
+/**
+ *
+ */
+export interface ScenarioEvent extends ScenarioEventDescription {
   startTime: ScenarioTime;
   uiActions: UIAction[];
   id?: string;

@@ -32,6 +32,7 @@ export interface ScenarioState {
   featureMap: Record<FeatureId, NScenarioFeature>;
   info: ScenarioInfo;
   events: ScenarioEvent[];
+  mergedEvents: ScenarioEvent[];
   currentTime: number;
   getUnitById: (id: EntityId) => NUnit;
 }
@@ -51,6 +52,8 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     startTime: +dayjs(e.startTime),
   }));
 
+  const mergedEvents: ScenarioEvent[] = [...events];
+
   if (scenario.startTime !== undefined) {
     scenario.startTime = +dayjs(scenario.startTime);
   }
@@ -62,6 +65,19 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     } else {
       unit.state = unit.state.map((e) => ({ ...e, t: +dayjs(e.t) }));
     }
+    unit.state
+      .filter((s) => s.title)
+      .forEach((s) => {
+        const { t: startTime, subTitle, description } = s;
+        mergedEvents.push({
+          id: nanoid(),
+          startTime,
+          title: s.title || "NN",
+          subTitle,
+          description,
+          uiActions: [],
+        });
+      });
     unit._state = null;
     if (!unit.id) {
       unit.id = nanoid();
@@ -121,6 +137,8 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     });
   });
 
+  mergedEvents.sort(({ startTime: a }, { startTime: b }) => (a < b ? -1 : a > b ? 1 : 0));
+
   return {
     layers,
     layerMap,
@@ -133,6 +151,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     sideMap,
     sideGroupMap,
     events,
+    mergedEvents,
     getUnitById(id: EntityId) {
       return this.unitMap[id];
     },

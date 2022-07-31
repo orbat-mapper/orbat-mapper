@@ -9,7 +9,7 @@ const {
   time: { timeZone, setCurrentTime },
 } = injectStrict(activeScenarioKey);
 
-const events = computed(() => store.state.events);
+const events = computed(() => store.state.mergedEvents);
 const t = computed(() => store.state.currentTime);
 </script>
 <template>
