@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Add button for clearing selected features.
 - Edit visibility of multiple features at once.
 - Add button for clearing feature visibility timestamp.
 - On zoom to a unit with no location zoom to show subordinates instead.

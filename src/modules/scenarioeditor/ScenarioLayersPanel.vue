@@ -172,9 +172,17 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
             </div>
           </div>
         </header>
-        <p v-if="isMultipleFeatures" class="text-base font-medium text-gray-900">
-          {{ selectedIds.size }} features selected
-        </p>
+        <div v-if="isMultipleFeatures" class="flex items-center justify-between">
+          <span class="text-base font-medium text-gray-900"
+            >{{ selectedIds.size }} features selected</span
+          >
+          <button
+            class="text-sm text-indigo-600 hover:text-indigo-900"
+            @click="selectedIds.clear()"
+          >
+            Clear selection
+          </button>
+        </div>
         <form
           v-if="isMetaEditMode"
           @submit.prevent="onFormMetaSubmit()"
