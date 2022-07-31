@@ -4,18 +4,16 @@ import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
 import { click as clickCondition } from "ol/events/condition";
 import { getCenter, isEmpty } from "ol/extent";
-import { featureCollection } from "@turf/helpers";
+import { featureCollection, point } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
 import { injectStrict, moveItemMutable, nanoid } from "@/utils";
 import { Collection } from "ol";
 import {
   getFeatureAndLayerById,
-  getFeatureIndex,
   isCircle,
   useOlEvent,
 } from "@/composables/openlayersHelpers";
 import { GeoJSON } from "ol/format";
-import { point } from "@turf/helpers";
 import Feature from "ol/Feature";
 import type {
   FeatureId,
@@ -30,7 +28,7 @@ import LineString from "ol/geom/LineString";
 import { add as addCoordinate } from "ol/coordinate";
 import { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
-import { nextTick, onUnmounted, ref, watch } from "vue";
+import { onUnmounted, ref, watch } from "vue";
 import { unByKey } from "ol/Observable";
 import { EventsKey } from "ol/events";
 import { AnyVectorLayer } from "@/geo/types";
@@ -54,7 +52,6 @@ import { useNotifications } from "@/composables/notifications";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
-import { SimpleGeometry } from "ol/geom";
 
 const { send } = useNotifications();
 
@@ -354,8 +351,7 @@ export function useScenarioLayers(
     }
 
     layer.features.forEach((id) => invalidateStyle(id));
-    olMap.getView().adjustCenter([0.01, 0.01]);
-    olMap.getView().cancelAnimations();
+    scenarioLayersOl.forEach((l) => l.changed());
   }
 
   function moveLayer(layerId: FeatureId, direction: "up" | "down", isUndoRedo = false) {
@@ -413,7 +409,7 @@ export function useScenarioLayers(
       geo.updateFeature(featureId, dataUpdate);
     }
     invalidateStyle(featureId);
-    olMap.getView().adjustCenter([0.01, 0.01]);
+    scenarioLayersOl.forEach((l) => l.changed());
   }
 
   function updateFeatureGeometryFromOlFeature(olFeature: Feature) {
