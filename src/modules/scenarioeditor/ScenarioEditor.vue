@@ -320,28 +320,28 @@ const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
 };
 
 const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
-  { label: "Add new side", action: ScenarioActions.AddSide },
-  { label: "Save to local storage", action: ScenarioActions.Save },
-  { label: "Load from local storage", action: ScenarioActions.Load },
-  { label: "Load scenario", action: ScenarioActions.LoadNew },
-  { label: "Download as JSON", action: ScenarioActions.ExportJson },
-  { label: "Copy to clipboard", action: ScenarioActions.ExportClipboard },
+  { label: "Add new side", action: "addSide" },
+  { label: "Save to local storage", action: "save" },
+  { label: "Load from local storage", action: "load" },
+  { label: "Load scenario", action: "loadNew" },
+  { label: "Download as JSON", action: "exportJson" },
+  { label: "Copy to clipboard", action: "exportToClipboard" },
 ];
 
 async function onScenarioAction(action: ScenarioActions) {
-  if (action === ScenarioActions.AddSide) {
+  if (action === "addSide") {
     unitActions.addSide();
-  } else if (action === ScenarioActions.Save) {
+  } else if (action === "save") {
     io.saveToLocalStorage();
     send({ message: "Scenario saved to local storage" });
-  } else if (action === ScenarioActions.Load) {
+  } else if (action === "load") {
     io.loadFromLocalStorage();
     send({ message: "Scenario loaded from local storage" });
-  } else if (action === ScenarioActions.ExportJson) {
+  } else if (action === "exportJson") {
     await io.downloadAsJson();
-  } else if (action === ScenarioActions.LoadNew) {
+  } else if (action === "loadNew") {
     showLoadModal.value = true;
-  } else if (action === ScenarioActions.ExportClipboard) {
+  } else if (action === "exportToClipboard") {
     await copyToClipboard(io.stringifyScenario());
     if (copied.value) send({ message: "Scenario copied to clipboard" });
   }

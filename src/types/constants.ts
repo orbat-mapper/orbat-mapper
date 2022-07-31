@@ -27,14 +27,13 @@ export const enum SideActions {
   MoveDown = "MoveDown",
 }
 
-export const enum ScenarioActions {
-  AddSide = "AddSide",
-  Save = "Save",
-  Load = "Load",
-  ExportJson = "ExportJson",
-  LoadNew = "LoadNew",
-  ExportClipboard = "ExportClipboard",
-}
+export type ScenarioActions =
+  | "addSide"
+  | "save"
+  | "load"
+  | "exportJson"
+  | "loadNew"
+  | "exportToClipboard";
 
 export const enum ScenarioFeatureActions {
   Delete = "Delete",
