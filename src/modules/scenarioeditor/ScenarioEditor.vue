@@ -25,7 +25,7 @@
           </button>
           <OrbatPanel class="pb-12" />
         </TabItem>
-        <TabItem label="Scenario info">
+        <TabItem label="Info">
           <ScenarioInfoPanel />
         </TabItem>
         <TabItem label="Layers" v-slot="{ isActive }">
@@ -45,6 +45,7 @@
             @action="onScenarioAction"
           />
         </template>
+        <TabItem label="Events"><ScenarioEventsPanel></ScenarioEventsPanel></TabItem>
       </TabView>
       <footer
         class="flex flex-shrink-0 items-center border-t border-gray-300 bg-gray-200 dark:bg-gray-700"
@@ -197,6 +198,7 @@ import ScenarioMap from "@/components/ScenarioMap.vue";
 import { useFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
 import { useDateModal } from "@/composables/modals";
+import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"));

@@ -46,7 +46,10 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const layers: FeatureId[] = [];
   const layerMap: Record<FeatureId, NScenarioLayer> = {};
   const featureMap: Record<FeatureId, NScenarioFeature> = {};
-  const events = [...scenario.events];
+  const events = [...scenario.events].map((e) => ({
+    ...e,
+    startTime: +dayjs(e.startTime),
+  }));
 
   if (scenario.startTime !== undefined) {
     scenario.startTime = +dayjs(scenario.startTime);
