@@ -19,7 +19,7 @@ import {
 } from "@/modules/scenarioeditor/scenarioLayers2";
 import BaseToolbar from "@/components/BaseToolbar.vue";
 import ToolbarButton from "@/components/ToolbarButton.vue";
-import { ScenarioFeatureActions } from "@/types/constants";
+import { type ScenarioFeatureActions } from "@/types/constants";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useToggle } from "@vueuse/core";
 import InputGroup from "@/components/InputGroup.vue";
@@ -135,7 +135,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
                   emit(
                     'feature-action',
                     isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
-                    ScenarioFeatureActions.Zoom
+                    'zoom'
                   )
                 "
                 start
@@ -148,7 +148,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
                   emit(
                     'feature-action',
                     isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
-                    ScenarioFeatureActions.Pan
+                    'pan'
                   )
                 "
                 title="Pan to"
@@ -239,14 +239,14 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
       emit(
         'feature-action',
         isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
-        ScenarioFeatureActions.Zoom
+        'zoom'
       )
     "
     @keyup.p="
       emit(
         'feature-action',
         isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
-        ScenarioFeatureActions.Pan
+        'pan'
       )
     "
   />

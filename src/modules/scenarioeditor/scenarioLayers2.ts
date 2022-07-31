@@ -79,11 +79,11 @@ export function getItemsIcon(type: string) {
 }
 
 export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
-  { label: "Zoom to", action: ScenarioFeatureActions.Zoom },
-  { label: "Pan to", action: ScenarioFeatureActions.Pan },
-  { label: "Move up", action: ScenarioFeatureActions.MoveUp },
-  { label: "Move down", action: ScenarioFeatureActions.MoveDown },
-  { label: "Delete", action: ScenarioFeatureActions.Delete },
+  { label: "Zoom to", action: "zoom" },
+  { label: "Pan to", action: "pan" },
+  { label: "Move up", action: "moveUp" },
+  { label: "Move down", action: "moveDown" },
+  { label: "Delete", action: "delete" },
 ];
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();

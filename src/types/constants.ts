@@ -35,13 +35,14 @@ export type ScenarioActions =
   | "loadNew"
   | "exportToClipboard";
 
-export const enum ScenarioFeatureActions {
-  Delete = "Delete",
-  Zoom = "Zoom",
-  MoveUp = "MoveUp",
-  MoveDown = "MoveDown",
-  Pan = "Pan",
-}
+export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
+//{
+//   Delete = "Delete",
+//   Zoom = "Zoom",
+//   MoveUp = "MoveUp",
+//   MoveDown = "MoveDown",
+//   Pan = "Pan",
+// }
 
 export const enum ScenarioLayerActions {
   Delete = "Delete",

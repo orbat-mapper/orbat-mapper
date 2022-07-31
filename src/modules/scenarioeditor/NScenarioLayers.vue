@@ -20,7 +20,7 @@ import {
 } from "@/types/scenarioGeoModels";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { injectStrict, nanoid } from "@/utils";
-import { ScenarioFeatureActions, ScenarioLayerActions } from "@/types/constants";
+import { type ScenarioFeatureActions, ScenarioLayerActions } from "@/types/constants";
 import ScenarioLayersListLayer from "./ScenarioLayersListLayer.vue";
 import { useDebounceFn, useToggle, useVModel } from "@vueuse/core";
 import Feature from "ol/Feature";
@@ -156,30 +156,24 @@ function onFeatureAction(
 ) {
   const isArray = Array.isArray(featureOrFeaturesId);
 
-  if (
-    isArray &&
-    (action === ScenarioFeatureActions.Zoom || action === ScenarioFeatureActions.Pan)
-  ) {
+  if (isArray && (action === "zoom" || action === "pan")) {
     zoomToFeatures(featureOrFeaturesId);
     return;
   }
   (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {
     const { feature, layer } = geo.getFeatureById(featureId) || {};
-    if (action === ScenarioFeatureActions.Zoom) zoomToFeature(featureId);
-    if (action === ScenarioFeatureActions.Pan) panToFeature(featureId);
+    if (action === "zoom") zoomToFeature(featureId);
+    if (action === "pan") panToFeature(featureId);
 
     if (!layer || !layer) return;
 
-    if (action === ScenarioFeatureActions.Delete) {
+    if (action === "delete") {
       if (feature === activeFeature.value) activeFeature.value = null;
       showLayerPanel.value = false;
       deleteFeature(feature.id);
     }
-    if (
-      action === ScenarioFeatureActions.MoveUp ||
-      action === ScenarioFeatureActions.MoveDown
-    ) {
-      const direction = action === ScenarioFeatureActions.MoveUp ? "up" : "down";
+    if (action === "moveUp" || action === "moveDown") {
+      const direction = action === "moveUp" ? "up" : "down";
       moveFeature(feature, direction);
     }
   });
