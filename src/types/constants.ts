@@ -70,5 +70,6 @@ const stateActions = [
   "changeTime",
   "duplicate",
   "convertToInitialPosition",
+  "editTitle",
 ] as const;
 export type StateAction = typeof stateActions[number];

@@ -11,9 +11,23 @@
         >
           {{ formatDateString(s.t, store.state.info.timeZone) }}
         </p>
-        <p v-if="s.title" class="my-1 font-medium leading-tight text-gray-900">
+        <input
+          v-if="s === editedTitle"
+          type="text"
+          v-model="newTitle"
+          @vnode-mounted="onVMounted"
+          @blur="doneEdit(s)"
+          @keyup.enter="doneEdit(s)"
+          @keyup.escape="cancelEdit(s)"
+        />
+        <p
+          v-else-if="s.title"
+          class="my-1 font-medium leading-tight text-gray-900"
+          @dblclick="editTitle(s)"
+        >
           {{ s.title }}
         </p>
+
         <p class="text-gray-700">{{ formatPosition(s.location) }}</p>
       </div>
 
@@ -39,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, nextTick, ref, VNode } from "vue";
 import { State } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
 import { CrosshairsGps, MapMarkerPath } from "mdue";
@@ -66,8 +80,11 @@ const state = computed(() => props.unit.state || []);
 const menuItems: MenuItemData<StateAction>[] = [
   { label: "Delete", action: "delete" },
   { label: "Change time", action: "changeTime" },
+  { label: "Edit title", action: "editTitle" },
   { label: "Convert to initial position", action: "convertToInitialPosition" },
 ];
+
+const editedTitle = ref<State | null>();
 
 const deleteState = (index: number) => {
   unitActions.deleteUnitStateEntry(props.unit.id, index);
@@ -102,6 +119,32 @@ async function onStateAction(index: number, action: StateAction) {
         t: newTimestamp,
       });
     }
+  } else if (action === "editTitle") {
+    editTitle(state.value[index]);
   }
 }
+
+const newTitle = ref();
+function editTitle(s: State) {
+  nextTick(() => (editedTitle.value = s));
+  newTitle.value = s.title || "";
+}
+
+function doneEdit(s: State) {
+  if (!editedTitle.value) return;
+  const index = state.value.indexOf(s);
+  editedTitle.value = null;
+  if (index < 0) return;
+  unitActions.updateUnitStateEntry(props.unit.id, index, {
+    title: newTitle.value,
+  });
+  newTitle.value = "";
+}
+
+function cancelEdit(s: State) {
+  editedTitle.value = null;
+  newTitle.value = "";
+}
+
+const onVMounted = ({ el }: VNode) => el?.focus();
 </script>

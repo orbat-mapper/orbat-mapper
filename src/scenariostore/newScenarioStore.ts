@@ -75,7 +75,6 @@ function prepareScenario(scenario: Scenario): ScenarioState {
           title: s.title || "NN",
           subTitle,
           description,
-          uiActions: [],
         });
       });
     unit._state = null;

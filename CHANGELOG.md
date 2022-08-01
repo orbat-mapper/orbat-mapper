@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Unit state change entries can now have a title.
 - Add scenario events panel with a basic timeline to the scenario editor.
 - Add button for clearing selected features.
 - Edit visibility of multiple features at once.

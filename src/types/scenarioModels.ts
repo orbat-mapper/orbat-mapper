@@ -49,11 +49,10 @@ export interface Side extends SideData {
   _isNew?: boolean;
 }
 
-export enum UIActionType {
-  CHANGE_MAP_LAYER_ACTION = "CHANGE_MAP_LAYER",
-  FLY_TO_LOCATION_ACTION = "FLY_TO_LOCATION",
-  FLY_TO_UNIT_LOCATION_ACTION = "FLY_TO_LOCATION",
-}
+export type UIActionType =
+  | "CHANGE_MAP_LAYER"
+  | "FLY_TO_LOCATION"
+  | "FLY_TO_UNIT_LOCATION";
 
 /**
  * A UI/map-action
@@ -63,12 +62,12 @@ export interface UIAction {
 }
 
 export interface ChangeMapLayerUIAction extends UIAction {
-  type: UIActionType.CHANGE_MAP_LAYER_ACTION;
+  type: "CHANGE_MAP_LAYER";
   layerIndex: number;
 }
 
 export interface FlyToUnitLocationAction extends UIAction {
-  type: UIActionType.FLY_TO_UNIT_LOCATION_ACTION;
+  type: "FLY_TO_UNIT_LOCATION";
   unitId: string;
   zoomLevel?: number;
 }
@@ -84,7 +83,7 @@ export interface ScenarioEventDescription {
  */
 export interface ScenarioEvent extends ScenarioEventDescription {
   startTime: ScenarioTime;
-  uiActions: UIAction[];
+  uiActions?: UIAction[];
   id?: string;
 }
 
