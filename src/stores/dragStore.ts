@@ -4,7 +4,11 @@ import { Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
 import { computed, Ref, ref } from "vue";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import {
+  activeScenarioKey,
+  activeUnitKey,
+  selectedUnitIdsKey,
+} from "@/components/injects";
 import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
 
@@ -48,4 +52,9 @@ export function useActiveUnitStore2({
       }
     },
   };
+}
+
+export function useSelectedUnits(selectedUnitIdsRef?: Ref<Set<EntityId>>) {
+  const selectedUnitIds = selectedUnitIdsRef || injectStrict(selectedUnitIdsKey);
+  return { selectedUnitIds };
 }

@@ -11,6 +11,10 @@
       class="group relative flex items-center justify-between py-2 pl-2 hover:bg-gray-200 dark:hover:bg-gray-700"
       @dblclick="isOpen = !isOpen"
       @click="onUnitClick(unit, $event)"
+      :class="{
+        'bg-yellow-100 hover:bg-yellow-200':
+          selectedUnitIds.has(unit.id) && selectedUnitIds.size > 1,
+      }"
     >
       <div class="flex items-center space-x-1">
         <div class="h-6 w-6">
@@ -96,7 +100,7 @@ import MilSymbol from "./MilSymbol.vue";
 import { Unit } from "@/types/scenarioModels";
 //@ts-ignore
 import { ChevronRightIcon } from "@heroicons/vue/solid";
-import { useActiveUnitStore2, useDragStore } from "@/stores/dragStore";
+import { useActiveUnitStore2, useDragStore, useSelectedUnits } from "@/stores/dragStore";
 import { DragOperations, UnitActions } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "@/composables/scenarioActions";
@@ -138,6 +142,7 @@ const isOpen = computed({
 
 const dragStore = useDragStore();
 const settingsStore = useSettingsStore();
+const { selectedUnitIds } = useSelectedUnits();
 
 const dragStart = (ev: DragEvent) => {
   const { dataTransfer } = ev;

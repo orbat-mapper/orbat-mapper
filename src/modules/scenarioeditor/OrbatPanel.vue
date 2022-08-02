@@ -28,6 +28,7 @@ import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { SideActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
 import { useUnitActionsN } from "@/composables/scenarioActions";
+import { useSelectedUnits } from "@/stores/dragStore";
 
 const activeScenario = injectStrict(activeScenarioKey);
 const { store, unitActions } = activeScenario;
@@ -42,6 +43,7 @@ const sides = computed(() => {
 const showAdd = computed(() => sides.value.length < 2);
 
 const { onUnitAction } = useUnitActionsN();
+const { selectedUnitIds } = useSelectedUnits();
 
 function onUnitDrop(
   unit: NUnit,
@@ -51,8 +53,20 @@ function onUnitDrop(
   changeUnitParent(unit.id, destinationUnit.id, target);
 }
 
-function onUnitClick(unit: NUnit) {
-  activeUnitId.value = activeUnitId.value === unit.id ? null : unit.id;
+function onUnitClick(unit: NUnit, event: MouseEvent) {
+  if (event.shiftKey) {
+    if (selectedUnitIds.value.has(unit.id)) {
+      selectedUnitIds.value.delete(unit.id);
+    } else {
+      selectedUnitIds.value.add(unit.id);
+    }
+    if (selectedUnitIds.value.size === 1) {
+      activeUnitId.value = unit.id;
+    }
+  } else {
+    activeUnitId.value = activeUnitId.value === unit.id ? null : unit.id;
+    selectedUnitIds.value = new Set(activeUnitId.value ? [unit.id] : []);
+  }
 }
 
 function onSideAction(side: NSide, action: SideActions) {

@@ -5,6 +5,7 @@
     >
       Preview - <button type="button" @click="toggleDark()">Toggle dark</button>
     </p>
+
     <aside
       class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100 dark:bg-gray-900"
     >
@@ -151,7 +152,7 @@ import {
 import { GlobalEvents } from "vue-global-events";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import UnitPanel from "./UnitPanel.vue";
-import { useActiveUnitStore2 } from "@/stores/dragStore";
+import { useActiveUnitStore2, useSelectedUnits } from "@/stores/dragStore";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
@@ -191,6 +192,7 @@ import {
   currentScenarioTabKey,
   activeUnitKey,
   timeModalKey,
+  selectedUnitIdsKey,
 } from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
 import type { Scenario } from "@/types/scenarioModels";
@@ -205,13 +207,18 @@ const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"
 
 const props = defineProps<{ activeScenario: TScenario }>();
 const activeUnitId = ref<EntityId | undefined | null>(null);
+const selectedUnitIdsRef = ref<Set<EntityId>>(new Set());
 const scnFeatures = useFeatureStyles(props.activeScenario.geo);
 const currentScenarioTab = ref(0);
 
 provide(activeUnitKey, activeUnitId);
+provide(selectedUnitIdsKey, selectedUnitIdsRef);
 provide(activeScenarioKey, props.activeScenario);
 provide(activeFeaturesKey, scnFeatures);
 provide(currentScenarioTabKey, currentScenarioTab);
+
+const { selectedUnitIds } = useSelectedUnits(selectedUnitIdsRef);
+
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
 
 const { loadFromObject } = props.activeScenario.io;
