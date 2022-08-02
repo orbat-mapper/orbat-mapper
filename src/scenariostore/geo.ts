@@ -1,6 +1,6 @@
 import { NewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { computed } from "vue";
-import { State } from "@/types/scenarioModels";
+import { CurrentState, State } from "@/types/scenarioModels";
 import {
   FeatureId,
   LayerFeatureItem,
@@ -25,7 +25,7 @@ export function useGeo(store: NewScenarioStore) {
   });
 
   function addUnitPosition(unitId: EntityId, coordinates: Position, atTime?: number) {
-    let newState: State | null = null;
+    let newState: CurrentState | null = null;
     update(
       (s) => {
         const u = s.getUnitById(unitId);
@@ -35,18 +35,17 @@ export function useGeo(store: NewScenarioStore) {
         if (!u.state) u.state = [];
         for (let i = 0, len = u.state.length; i < len; i++) {
           if (t < u.state[i].t) {
-            u.state.splice(i, 0, newState);
+            u.state.splice(i, 0, { id: nanoid(), ...newState });
             return;
           } else if (t === u.state[i].t) {
             u.state[i] = { ...u.state[i], ...newState };
             return;
           }
         }
-        u.state.push(newState);
+        u.state.push({ id: nanoid(), ...newState });
       },
       { label: "addUnitPosition", value: unitId }
     );
-    // if (newState) unit._state = newState;
   }
 
   function addLayer(data: NScenarioLayer) {

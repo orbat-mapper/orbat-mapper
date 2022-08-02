@@ -1,13 +1,14 @@
 import { NewScenarioStore } from "./newScenarioStore";
-import { State } from "@/types/scenarioModels";
+import { CurrentState, State } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
 import dayjs, { ManipulateType } from "dayjs";
 import { computed } from "vue";
 import turfLength from "@turf/length";
 import turfAlong from "@turf/along";
 import { lineString } from "@turf/helpers";
+import { nanoid } from "@/utils";
 
-export function createInitialState(unit: NUnit): State | null {
+export function createInitialState(unit: NUnit): CurrentState | null {
   if (unit.location) return { t: Number.MIN_SAFE_INTEGER, location: unit.location };
   return null;
 }
@@ -36,7 +37,10 @@ export function useScenarioTime(store: NewScenarioStore) {
             const pathLength = turfLength(n);
             const averageSpeed = pathLength / timeDiff;
             const p = turfAlong(n, averageSpeed * (timestamp - currentState.t));
-            currentState = { t: timestamp, location: p.geometry.coordinates };
+            currentState = {
+              t: timestamp,
+              location: p.geometry.coordinates,
+            };
           }
           break;
         }

@@ -63,14 +63,17 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     if (!unit.state) {
       unit.state = [];
     } else {
-      unit.state = unit.state.map((e) => ({ ...e, t: +dayjs(e.t) }));
+      unit.state = unit.state.map((e) => ({
+        ...e,
+        t: +dayjs(e.t),
+        id: e.id || nanoid(),
+      }));
     }
     unit.state
       .filter((s) => s.title)
       .forEach((s) => {
         const { t: startTime, subTitle, description } = s;
         mergedEvents.push({
-          id: nanoid(),
           startTime,
           title: s.title || "NN",
           subTitle,

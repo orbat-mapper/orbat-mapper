@@ -2,11 +2,14 @@ import { Position, ScenarioLayer } from "./scenarioGeoModels";
 import { EntityId, ScenarioTime } from "./base";
 
 export interface State extends Partial<ScenarioEventDescription> {
+  id: string;
   t: ScenarioTime;
   location?: Position;
   sidc?: string;
   via?: Position[];
 }
+
+export interface CurrentState extends Omit<State, "id"> {}
 
 export interface LocationState extends State {
   location: Position;
@@ -23,7 +26,7 @@ export interface Unit {
   location?: Position;
   state?: State[];
   // internal runtime only state
-  _state?: State | null;
+  _state?: CurrentState | null;
   _pid?: EntityId;
   _isOpen?: boolean;
 }
