@@ -10,7 +10,7 @@
     <div
       class="group relative flex items-center justify-between py-2 pl-2 hover:bg-gray-200 dark:hover:bg-gray-700"
       @dblclick="isOpen = !isOpen"
-      @click="onUnitClick(unit)"
+      @click="onUnitClick(unit, $event)"
     >
       <div class="flex items-center space-x-1">
         <div class="h-6 w-6">
@@ -113,7 +113,7 @@ const props = defineProps<Props>();
 
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitActions): void;
-  (e: "unit-click", unit: NUnit): void;
+  (e: "unit-click", unit: NUnit, event: MouseEvent): void;
   (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
 }
 const emit = defineEmits<Emits>();
@@ -179,8 +179,8 @@ const onUnitMenuAction = async (unit: NUnit, action: UnitActions) => {
   emit("unit-action", unit, action);
 };
 
-const onUnitClick = (unit: NUnit) => {
-  emit("unit-click", unit);
+const onUnitClick = (unit: NUnit, event: MouseEvent) => {
+  emit("unit-click", unit, event);
 };
 
 const onUnitDrop = (unit: NUnit, destinationUnit: NUnit, target: DropTarget) =>

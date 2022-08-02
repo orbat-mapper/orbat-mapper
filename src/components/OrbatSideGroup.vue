@@ -36,7 +36,7 @@
         :filter-query="filterQuery"
         :location-filter="hasLocationFilter"
         @unit-action="onUnitAction"
-        @unit-click="emit('unit-click', $event)"
+        @unit-click="(unit, event) => emit('unit-click', unit, event)"
         @unit-drop="onUnitDrop"
       />
       <div
@@ -75,7 +75,7 @@ const props = defineProps<Props>();
 
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitActions): void;
-  (e: "unit-click", unit: NUnit): void;
+  (e: "unit-click", unit: NUnit, event: MouseEvent): void;
   (
     e: "unit-drop",
     unit: NUnit,

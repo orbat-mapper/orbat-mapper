@@ -20,7 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitActions): void;
-  (e: "unit-click", unit: NUnit): void;
+  (e: "unit-click", unit: NUnit, event: MouseEvent): void;
   (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
 }
 const emit = defineEmits<Emits>();
@@ -96,7 +96,7 @@ function filterUnits(
       v-for="orbatItem in filteredUnits"
       :key="orbatItem.unit.id"
       @unit-action="onUnitAction"
-      @unit-click="emit('unit-click', $event)"
+      @unit-click="(unit, event) => emit('unit-click', unit, event)"
       @unit-drop="onUnitDrop"
     />
   </ul>
