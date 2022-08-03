@@ -108,7 +108,7 @@ function onLayerAction(action: ScenarioLayerActions) {
           :class="{ 'bg-yellow-100': selectedIds.has(feature.id) }"
         >
           <button
-            @click="emit('feature-click', feature, layer, $event.shiftKey)"
+            @click="emit('feature-click', feature, layer, $event)"
             class="flex items-center"
           >
             <component :is="getGeometryIcon(feature)" class="h-5 w-5 text-gray-400" />

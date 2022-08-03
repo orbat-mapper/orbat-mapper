@@ -204,13 +204,13 @@ function onLayerUpdate(layer: ScenarioLayer, data: ScenarioLayerUpdate) {
 function onFeatureClick(
   feature: NScenarioFeature,
   layer: NScenarioLayer,
-  shiftClick: boolean
+  event: MouseEvent
 ) {
   activeFeature.value = activeFeature.value === feature ? null : feature;
   showLayerPanel.value = activeFeature.value === feature;
 
   const alreadySelected = selectedIds.value.has(feature.id);
-  if (!shiftClick) selectedIds.value.clear();
+  if (!event.shiftKey) selectedIds.value.clear();
   if (alreadySelected) {
     selectedIds.value.delete(feature.id);
   } else {
