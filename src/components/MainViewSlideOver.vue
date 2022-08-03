@@ -23,25 +23,17 @@
   </SlideOver>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
 import LayersPanel from "./LayersPanel.vue";
 import { useVModel } from "@vueuse/core";
 import SlideOver from "./SlideOver.vue";
 import TabView from "./TabView.vue";
 import TabItem from "./TabItem.vue";
-import { useSettingsStore } from "../stores/settingsStore";
-import InputGroup from "./InputGroup.vue";
+import { useSettingsStore } from "@/stores/settingsStore";
 import NumberInputGroup from "./NumberInputGroup.vue";
 
-export default defineComponent({
-  name: "MainViewSlideOver",
-  components: { NumberInputGroup, InputGroup, TabItem, TabView, SlideOver, LayersPanel },
-  props: { modelValue: Boolean },
-  setup(props) {
-    const open = useVModel(props, "modelValue");
-    const settings = useSettingsStore();
-    return { open, settings };
-  },
-});
+const props = defineProps({ modelValue: Boolean });
+
+const open = useVModel(props, "modelValue");
+const settings = useSettingsStore();
 </script>

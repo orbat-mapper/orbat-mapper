@@ -1,141 +1,154 @@
 <template>
-  <div class="flex h-screen overflow-hidden bg-gray-300 pt-4">
-    <p
-      class="absolute inset-x-0 top-0 h-4 border-b bg-amber-200 text-center text-xs text-amber-700"
+  <div class="flex h-screen flex-col overflow-hidden bg-gray-300">
+    <!-- navbar -->
+    <nav
+      class="flex flex-shrink-0 items-center justify-between bg-gray-800 px-6 py-2 text-gray-200"
     >
-      Preview - <button type="button" @click="toggleDark()">Toggle dark</button>
-    </p>
-
-    <aside
-      class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100 dark:bg-gray-900"
-    >
-      <TabView
-        v-model:current-tab="currentScenarioTab"
-        :key="state.id"
-        extra-class="px-6"
-        tab-class=""
-        class="mt-3 min-h-0"
+      <div class="flex items-center divide-x">
+        <span class="pr-2 text-sm font-medium tracking-tight text-gray-300"
+          >ORBAT-Mapper</span
+        >
+        <span class="pl-2 text-gray-400">{{ activeScenario.store.state.info.name }}</span>
+      </div>
+      <button
+        class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+        @click="isOpen = !isOpen"
       >
-        <TabItem label="ORBAT" class="relative">
-          <button
-            @click="showSearch = true"
-            class="absolute -top-1 right-6 text-gray-500 hover:text-gray-900"
-          >
-            <span class="sr-only">Search units</span>
-            <SearchIcon class="h-5 w-5" />
-          </button>
-          <OrbatPanel class="pb-12" />
-        </TabItem>
-        <TabItem label="Info">
-          <ScenarioInfoPanel />
-        </TabItem>
-        <TabItem label="Layers" v-slot="{ isActive }">
-          <keep-alive>
-            <ScenarioLayers
-              v-if="isActive"
-              v-model="showLayerPanel"
-              :active-layer-id="activeLayerId"
-              :active-feature-id="activeFeatureId"
+        <MenuIcon class="block h-6 w-6" />
+      </button>
+    </nav>
+    <div class="flex min-h-0 flex-auto">
+      <aside
+        class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100 dark:bg-gray-900"
+      >
+        <TabView
+          v-model:current-tab="currentScenarioTab"
+          :key="state.id"
+          extra-class="px-6"
+          tab-class=""
+          class="min-h-0"
+        >
+          <TabItem label="ORBAT" class="relative">
+            <button
+              @click="showSearch = true"
+              class="absolute -top-1 right-6 text-gray-500 hover:text-gray-900"
+            >
+              <span class="sr-only">Search units</span>
+              <SearchIcon class="h-5 w-5" />
+            </button>
+            <OrbatPanel class="pb-12" />
+          </TabItem>
+          <TabItem label="Info">
+            <ScenarioInfoPanel />
+          </TabItem>
+          <TabItem label="Layers" v-slot="{ isActive }">
+            <keep-alive>
+              <ScenarioLayers
+                v-if="isActive"
+                v-model="showLayerPanel"
+                :active-layer-id="activeLayerId"
+                :active-feature-id="activeFeatureId"
+              />
+            </keep-alive>
+          </TabItem>
+          <template #extra>
+            <DotsMenu
+              :items="scenarioMenuItems"
+              class="relative -mr-2 pt-2"
+              @action="onScenarioAction"
             />
-          </keep-alive>
-        </TabItem>
-        <template #extra>
-          <DotsMenu
-            :items="scenarioMenuItems"
-            class="relative -mr-2 pt-2"
-            @action="onScenarioAction"
-          />
-        </template>
-        <TabItem label="Events"><ScenarioEventsPanel></ScenarioEventsPanel></TabItem>
-      </TabView>
-      <footer
-        class="flex flex-shrink-0 items-center border-t border-gray-300 bg-gray-200 dark:bg-gray-700"
-      >
-        <div class="flex flex-col space-y-2">
-          <router-link to="/" class="ml-2">
-            <HomeIcon class="h-5 w-5 text-gray-500" />
-          </router-link>
-          <button
-            type="button"
-            class="ml-2 text-gray-500 hover:text-gray-700"
-            @click="showKeyboardShortcuts"
-            title="Show keyboard shortcuts"
-          >
-            <KeyboardIcon class="h-5 w-5" />
-          </button>
-        </div>
-        <TimeController class="" />
-      </footer>
-    </aside>
-    <aside
-      v-show="showLayerPanel"
-      class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50"
-      data-teleport-layer
-    ></aside>
-    <aside
-      class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50 dark:bg-gray-800"
-      v-if="showUnitPanel"
-    >
-      <TabView
-        v-model:current-tab="currentTab"
-        extra-class="px-6"
-        tab-class="pl-6 pr-6"
-        class="mt-3 min-h-0"
-      >
-        <TabItem label="Unit details">
-          <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" />
-        </TabItem>
-        <template #extra>
-          <div class="flex pt-4">
-            <CloseButton @click="toggleUnitPanel()" />
+          </template>
+          <TabItem label="Events">
+            <ScenarioEventsPanel></ScenarioEventsPanel>
+          </TabItem>
+        </TabView>
+        <footer
+          class="flex flex-shrink-0 items-center border-t border-gray-300 bg-gray-200 dark:bg-gray-700"
+        >
+          <div class="flex flex-col space-y-2">
+            <router-link to="/" class="ml-2">
+              <HomeIcon class="h-5 w-5 text-gray-500" />
+            </router-link>
+            <button
+              type="button"
+              class="ml-2 text-gray-500 hover:text-gray-700"
+              @click="showKeyboardShortcuts"
+              title="Show keyboard shortcuts"
+            >
+              <KeyboardIcon class="h-5 w-5" />
+            </button>
           </div>
-        </template>
-      </TabView>
-    </aside>
-    <ScenarioMap class="flex-1" data-teleport-map />
-    <PlainButton class="fixed right-4 top-4 opacity-80" @click="isOpen = !isOpen">
-      <MenuIcon class="h-5 w-5 opacity-100" />
-    </PlainButton>
-    <GlobalEvents
-      v-if="shortcutsEnabled"
-      :filter="inputEventFilter"
-      @keyup.?="showKeyboardShortcuts"
-      @keyup.c="createNewUnit"
-      @keyup.d="duplicateUnit"
-      @keyup.s="showSearch = true"
-      @keydown.ctrl.k.prevent="showSearch = true"
-      @keyup.prevent.alt.k="showSearch = true"
-      @keydown.esc="handleEscape"
-    />
-    <GlobalEvents
-      :filter="inputEventFilter"
-      @keyup.ctrl.z.exact="undo()"
-      @keyup.ctrl.shift.z="redo()"
-      @keyup.ctrl.y="redo()"
-    />
-    <ShortcutsModal v-model="shortcutsModalVisible" />
-    <MainViewSlideOver v-model="isOpen" />
-    <SearchModal
-      v-model="showSearch"
-      @select-unit="onUnitSelect"
-      @select-layer="onLayerSelect"
-      @select-feature="onFeatureSelect"
-    />
-    <AppNotifications />
-    <LoadScenarioDialog
-      v-if="showLoadModal"
-      v-model="showLoadModal"
-      @loaded="loadScenario"
-    />
-    <InputDateModal
-      v-if="showDateModal"
-      v-model="showDateModal"
-      :dialog-title="dateModalTitle"
-      :timestamp="initialDateModalValue"
-      @update:timestamp="confirmDateModal($event)"
-      :time-zone="dateModalTimeZone"
-      @cancel="cancelDateModal"
-    />
+          <TimeController class="" />
+        </footer>
+      </aside>
+      <aside
+        v-show="showLayerPanel"
+        class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50"
+        data-teleport-layer
+      ></aside>
+      <aside
+        class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50 dark:bg-gray-800"
+        v-if="showUnitPanel"
+      >
+        <TabView
+          v-model:current-tab="currentTab"
+          extra-class="px-6"
+          tab-class="pl-6 pr-6"
+          class="mt-3 min-h-0"
+        >
+          <TabItem label="Unit details">
+            <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" />
+          </TabItem>
+          <template #extra>
+            <div class="flex pt-4">
+              <CloseButton @click="toggleUnitPanel()" />
+            </div>
+          </template>
+        </TabView>
+      </aside>
+      <ScenarioMap class="flex-1" data-teleport-map />
+
+      <GlobalEvents
+        v-if="shortcutsEnabled"
+        :filter="inputEventFilter"
+        @keyup.?="showKeyboardShortcuts"
+        @keyup.c="createNewUnit"
+        @keyup.d="duplicateUnit"
+        @keyup.s="showSearch = true"
+        @keydown.ctrl.k.prevent="showSearch = true"
+        @keyup.prevent.alt.k="showSearch = true"
+        @keydown.esc="handleEscape"
+      />
+      <GlobalEvents
+        :filter="inputEventFilter"
+        @keyup.ctrl.z.exact="undo()"
+        @keyup.ctrl.shift.z="redo()"
+        @keyup.ctrl.y="redo()"
+      />
+      <ShortcutsModal v-model="shortcutsModalVisible" />
+      <MainViewSlideOver v-model="isOpen" />
+      <SearchModal
+        v-model="showSearch"
+        @select-unit="onUnitSelect"
+        @select-layer="onLayerSelect"
+        @select-feature="onFeatureSelect"
+      />
+      <AppNotifications />
+      <LoadScenarioDialog
+        v-if="showLoadModal"
+        v-model="showLoadModal"
+        @loaded="loadScenario"
+      />
+      <InputDateModal
+        v-if="showDateModal"
+        v-model="showDateModal"
+        :dialog-title="dateModalTitle"
+        :timestamp="initialDateModalValue"
+        @update:timestamp="confirmDateModal($event)"
+        :time-zone="dateModalTimeZone"
+        @cancel="cancelDateModal"
+      />
+    </div>
   </div>
 </template>
 
@@ -143,7 +156,6 @@
 import {
   computed,
   defineAsyncComponent,
-  inject,
   nextTick,
   onUnmounted,
   provide,
@@ -172,14 +184,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import { HomeIcon } from "@heroicons/vue/solid";
 import { Keyboard as KeyboardIcon } from "mdue";
-import {
-  useClipboard,
-  useDark,
-  useEventBus,
-  useTitle,
-  useToggle,
-  watchOnce,
-} from "@vueuse/core";
+import { useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { ScenarioActions } from "@/types/constants";
@@ -187,7 +192,6 @@ import AppNotifications from "@/components/AppNotifications.vue";
 import { useNotifications } from "@/composables/notifications";
 import { useGeoStore } from "@/stores/geoStore";
 import CloseButton from "@/components/CloseButton.vue";
-import { orbatUnitClick } from "@/components/eventKeys";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import NProgress from "nprogress";
 import { TScenario } from "@/scenariostore";
@@ -195,11 +199,11 @@ import { EntityId } from "@/types/base";
 import {
   activeFeaturesKey,
   activeScenarioKey,
-  currentScenarioTabKey,
   activeUnitKey,
-  timeModalKey,
-  selectedUnitIdsKey,
+  currentScenarioTabKey,
   selectedFeatureIdsKey,
+  selectedUnitIdsKey,
+  timeModalKey,
 } from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
 import type { Scenario } from "@/types/scenarioModels";
@@ -258,8 +262,8 @@ const showLayerPanel = ref(false);
 const activeLayerId = ref<FeatureId | null>(null);
 const activeFeatureId = ref<FeatureId | null>(null);
 
-const isDark = useDark();
-const toggleDark = useToggle(isDark);
+// const isDark = useDark();
+// const toggleDark = useToggle(isDark);
 useTitle(windowTitle);
 
 const InputDateModal = defineAsyncComponent(
