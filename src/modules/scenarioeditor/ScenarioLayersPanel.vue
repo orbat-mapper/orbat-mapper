@@ -118,7 +118,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
 }
 </script>
 <template>
-  <TabView extra-class="px-6" tab-class="pl-6 pr-6" class="mt-3 min-h-0">
+  <TabView extra-class="px-6" tab-class="pl-6 pr-6" class="min-h-0">
     <template #extra>
       <div class="flex pt-4">
         <CloseButton @click="emit('close')" />

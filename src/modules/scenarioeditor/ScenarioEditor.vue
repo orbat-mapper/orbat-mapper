@@ -4,11 +4,26 @@
     <nav
       class="flex flex-shrink-0 items-center justify-between bg-gray-800 px-6 py-2 text-gray-200"
     >
-      <div class="flex items-center divide-x">
-        <span class="pr-2 text-sm font-medium tracking-tight text-gray-300"
-          >ORBAT-Mapper</span
-        >
-        <span class="pl-2 text-gray-400">{{ activeScenario.store.state.info.name }}</span>
+      <div class="flex items-center">
+        <router-link to="/">
+          <svg
+            class="block h-7 w-auto fill-gray-700 stroke-gray-300"
+            stroke="currentColor"
+            viewBox="41 41 118 118"
+          >
+            <path d="m100 45 55 25v60l-55 25-55-25V70z" stroke-width="6" />
+            <path d="m45 70 110 60m-110 0 110-60" stroke-width="6" />
+            <circle cx="100" cy="70" r="10" class="fill-gray-300" />
+          </svg>
+        </router-link>
+        <div class="ml-3 flex items-center divide-x divide-gray-400">
+          <span class="pr-3 text-sm font-medium tracking-tight text-gray-300"
+            >ORBAT-Mapper</span
+          >
+          <span class="pl-3 text-gray-400">{{
+            activeScenario.store.state.info.name
+          }}</span>
+        </div>
       </div>
       <div class="flex items-center space-x-2">
         <button
@@ -44,7 +59,7 @@
           tab-class=""
           class="min-h-0"
         >
-          <TabItem label="ORBAT" class="relative">
+          <TabItem label="Units" class="relative">
             <button
               @click="showSearch = true"
               class="absolute -top-1 right-6 text-gray-500 hover:text-gray-900"
@@ -81,19 +96,6 @@
         <footer
           class="flex flex-shrink-0 items-center border-t border-gray-300 bg-gray-200 dark:bg-gray-700"
         >
-          <div class="flex flex-col space-y-2">
-            <router-link to="/" class="ml-2">
-              <HomeIcon class="h-5 w-5 text-gray-500" />
-            </router-link>
-            <button
-              type="button"
-              class="ml-2 text-gray-500 hover:text-gray-700"
-              @click="showKeyboardShortcuts"
-              title="Show keyboard shortcuts"
-            >
-              <KeyboardIcon class="h-5 w-5" />
-            </button>
-          </div>
           <TimeController class="" />
         </footer>
       </aside>
@@ -110,7 +112,7 @@
           v-model:current-tab="currentTab"
           extra-class="px-6"
           tab-class="pl-6 pr-6"
-          class="mt-3 min-h-0"
+          class="min-h-0"
         >
           <TabItem label="Unit details">
             <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" />
