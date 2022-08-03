@@ -10,12 +10,28 @@
         >
         <span class="pl-2 text-gray-400">{{ activeScenario.store.state.info.name }}</span>
       </div>
-      <button
-        class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-        @click="isOpen = !isOpen"
-      >
-        <MenuIcon class="block h-6 w-6" />
-      </button>
+      <div class="flex items-center space-x-2">
+        <button
+          @click="showSearch = true"
+          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+        >
+          <SearchIcon class="block h-6 w-6" />
+        </button>
+        <button
+          @click="showKeyboardShortcuts"
+          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          title="Show keyboard shortcuts"
+        >
+          <KeyboardIcon class="block h-6 w-6" />
+        </button>
+
+        <button
+          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          @click="isOpen = !isOpen"
+        >
+          <MenuIcon class="block h-6 w-6" />
+        </button>
+      </div>
     </nav>
     <div class="flex min-h-0 flex-auto">
       <aside
