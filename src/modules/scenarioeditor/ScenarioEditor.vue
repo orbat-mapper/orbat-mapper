@@ -2,10 +2,10 @@
   <div class="flex h-screen flex-col overflow-hidden bg-gray-300">
     <!-- navbar -->
     <nav
-      class="flex flex-shrink-0 items-center justify-between bg-gray-800 px-6 py-2 text-gray-200"
+      class="flex flex-shrink-0 items-center justify-between bg-gray-800 py-2 pr-4 pl-6 text-gray-200"
     >
-      <div class="flex items-center">
-        <router-link to="/">
+      <div class="flex min-w-0 flex-auto items-center">
+        <router-link to="/" class="flex-shrink-0">
           <svg
             class="block h-7 w-auto fill-gray-700 stroke-gray-300"
             stroke="currentColor"
@@ -16,16 +16,17 @@
             <circle cx="100" cy="70" r="10" class="fill-gray-300" />
           </svg>
         </router-link>
-        <div class="ml-3 flex items-center divide-x divide-gray-400">
-          <span class="pr-3 text-sm font-medium tracking-tight text-gray-300"
+        <div class="ml-3 flex min-w-0 flex-auto items-center divide-gray-400 sm:divide-x">
+          <span
+            class="hidden pr-3 text-sm font-medium tracking-tight text-gray-300 sm:block"
             >ORBAT-Mapper</span
           >
-          <span class="pl-3 text-gray-400">{{
-            activeScenario.store.state.info.name
-          }}</span>
+          <span class="truncate pl-3 text-gray-400">
+            {{ activeScenario.store.state.info.name }}
+          </span>
         </div>
       </div>
-      <div class="flex items-center space-x-2">
+      <div class="flex shrink-0 items-center space-x-2">
         <button
           @click="showSearch = true"
           class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -34,7 +35,7 @@
         </button>
         <button
           @click="showKeyboardShortcuts"
-          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          class="inline-flex hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white sm:block"
           title="Show keyboard shortcuts"
         >
           <KeyboardIcon class="block h-6 w-6" />
