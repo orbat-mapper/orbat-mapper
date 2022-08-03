@@ -15,7 +15,6 @@ import { renderMarkdown } from "@/composables/formatting";
 import {
   featureMenuItems,
   getGeometryIcon,
-  SelectedScenarioFeatures,
 } from "@/modules/scenarioeditor/scenarioLayers2";
 import BaseToolbar from "@/components/BaseToolbar.vue";
 import ToolbarButton from "@/components/ToolbarButton.vue";
@@ -34,6 +33,7 @@ import {
 import FeatureFillSettings from "./FeatureFillSettings.vue";
 import FeatureMarkerSettings from "@/modules/scenarioeditor/FeatureMarkerSettings.vue";
 import FeatureVisibilitySettings from "@/modules/scenarioeditor/FeatureVisibilitySettings.vue";
+import { SelectedScenarioFeatures } from "@/stores/dragStore";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")

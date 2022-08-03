@@ -10,12 +10,13 @@ import {
 } from "mdue";
 import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";
-import { toRef } from "vue";
+import { toRef, watch } from "vue";
 import VerticalToolbar from "./VerticalToolbar.vue";
 import VectorLayer from "ol/layer/Vector";
 import { useEditingInteraction } from "../composables/geoEditing";
 import { onKeyStroke } from "@vueuse/core";
 import Select from "ol/interaction/Select";
+import { useUiStore } from "@/stores/uiStore";
 
 const props = defineProps<{
   olMap: OLMap;
@@ -25,12 +26,22 @@ const props = defineProps<{
 }>();
 const emit = defineEmits(["add", "modify"]);
 
-const { startDrawing, currentDrawType, startModify, isModifying, cancel } =
+const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing } =
   useEditingInteraction(props.olMap, toRef(props, "layer"), {
     emit,
     addMultiple: props.addMultiple,
     select: props.select,
   });
+
+const uiStore = useUiStore();
+
+watch(
+  [isDrawing, isModifying],
+  ([drawing, modifying]) => {
+    uiStore.editToolbarActive = drawing || modifying;
+  },
+  { immediate: true }
+);
 
 onKeyStroke("Escape", (event) => {
   cancel();

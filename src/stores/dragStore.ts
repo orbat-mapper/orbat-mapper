@@ -7,10 +7,14 @@ import { injectStrict } from "@/utils";
 import {
   activeScenarioKey,
   activeUnitKey,
+  selectedFeatureIdsKey,
   selectedUnitIdsKey,
 } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
+import { FeatureId } from "@/types/scenarioGeoModels";
+
+export type SelectedScenarioFeatures = Set<FeatureId>;
 
 export const useDragStore = defineStore("drag", {
   state: () => ({
@@ -56,5 +60,25 @@ export function useActiveUnitStore2({
 
 export function useSelectedUnits(selectedUnitIdsRef?: Ref<Set<EntityId>>) {
   const selectedUnitIds = selectedUnitIdsRef || injectStrict(selectedUnitIdsKey);
-  return { selectedUnitIds };
+
+  return {
+    selectedUnitIds,
+    clear() {
+      if (selectedUnitIds.value.size > 0) selectedUnitIds.value.clear();
+    },
+  };
+}
+
+export function useSelectedFeatures(
+  selectedFeaturesIdsRef?: Ref<SelectedScenarioFeatures>
+) {
+  const selectedFeatureIds =
+    selectedFeaturesIdsRef || injectStrict(selectedFeatureIdsKey);
+
+  return {
+    selectedFeatureIds,
+    clear() {
+      if (selectedFeatureIds.value.size > 0) selectedFeatureIds.value.clear();
+    },
+  };
 }

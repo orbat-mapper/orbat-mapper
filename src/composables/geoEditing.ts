@@ -79,6 +79,7 @@ export function useEditingInteraction(
   function startDrawing(drawType: DrawType) {
     select.setActive(false);
     select.getFeatures().clear();
+    isDrawing.value = true;
     stopModify();
 
     currentDrawInteraction?.setActive(false);
@@ -106,6 +107,7 @@ export function useEditingInteraction(
     }
     currentDrawInteraction?.setActive(false);
     currentDrawType.value = null;
+    isDrawing.value = false;
     select.setActive(true);
     modify.setActive(true);
     isModifying.value = true;
@@ -118,6 +120,7 @@ export function useEditingInteraction(
     currentDrawInteraction?.setActive(false);
     currentDrawInteraction = null;
     currentDrawType.value = null;
+    isDrawing.value = false;
   }
 
   onUnmounted(() => {
@@ -130,7 +133,7 @@ export function useEditingInteraction(
     olMap.removeInteraction(modify);
   });
 
-  return { startDrawing, currentDrawType, startModify, isModifying, cancel };
+  return { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing };
 }
 
 function initializeDrawInteractions(source: VectorSource<any>) {

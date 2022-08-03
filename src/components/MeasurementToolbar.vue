@@ -59,15 +59,18 @@ import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";
 import { useMeasurementInteraction } from "../composables/geoMeasurement";
 import { watch } from "vue";
-import { onKeyStroke, useToggle } from "@vueuse/core";
+import { Fn, onKeyDown, onKeyStroke, useToggle } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { useMeasurementsStore } from "../stores/geoStore";
+import { useUiStore } from "@/stores/uiStore";
 
 const props = defineProps<{ olMap: OLMap }>();
 const { showSegments, clearPrevious, measurementType } = storeToRefs(
   useMeasurementsStore()
 );
 
+const uiStore = useUiStore();
+uiStore.measurementActive = false;
 const [enableMeasurements, toggleMeasurements] = useToggle(false);
 
 const { clear } = useMeasurementInteraction(props.olMap, measurementType, {
@@ -76,7 +79,17 @@ const { clear } = useMeasurementInteraction(props.olMap, measurementType, {
   enable: enableMeasurements,
 });
 
-watch(enableMeasurements, (v) => !v && clear());
-
-onKeyStroke("Escape", () => (enableMeasurements.value = false));
+let fn: Fn;
+watch(enableMeasurements, (enabled) => {
+  if (enabled) {
+    uiStore.measurementActive = true;
+    fn = onKeyDown("Escape", (event) => {
+      enableMeasurements.value = false;
+    });
+  } else {
+    uiStore.measurementActive = false;
+    fn();
+    clear();
+  }
+});
 </script>

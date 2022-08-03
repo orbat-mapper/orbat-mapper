@@ -52,6 +52,7 @@ import { useNotifications } from "@/composables/notifications";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
+import { SelectedScenarioFeatures, useSelectedFeatures } from "@/stores/dragStore";
 
 const { send } = useNotifications();
 
@@ -59,8 +60,6 @@ export enum LayerType {
   overlay = "OVERLAY",
   units = "UNITS",
 }
-
-export type SelectedScenarioFeatures = Set<FeatureId>;
 
 const geometryIconMap: any = {
   Point: MapMarker,
@@ -143,7 +142,7 @@ export function useScenarioFeatureSelect(
     VectorLayer<any>
   >;
 
-  const selectedIds = ref<SelectedScenarioFeatures>(new Set());
+  const { selectedFeatureIds: selectedIds } = useSelectedFeatures();
 
   const enableRef = ref(options.enable ?? true);
 

@@ -71,7 +71,6 @@ const {
   updateFeatureGeometryFromOlFeature,
   updateFeature,
   panToFeature,
-  getOlFeatureById,
   addFeature,
   zoomToFeatures,
 } = useScenarioLayers(mapRef);
@@ -204,14 +203,15 @@ function onLayerUpdate(layer: ScenarioLayer, data: ScenarioLayerUpdate) {
 function onFeatureClick(
   feature: NScenarioFeature,
   layer: NScenarioLayer,
-  event: MouseEvent
+  event?: MouseEvent
 ) {
+  const isMultiSelect = event?.ctrlKey || event?.shiftKey;
   activeFeature.value = activeFeature.value === feature ? null : feature;
   showLayerPanel.value = activeFeature.value === feature;
 
   const alreadySelected = selectedIds.value.has(feature.id);
-  if (!event.shiftKey) selectedIds.value.clear();
-  if (alreadySelected) {
+  if (!isMultiSelect) selectedIds.value.clear();
+  if (alreadySelected && (!isMultiSelect || event?.ctrlKey)) {
     selectedIds.value.delete(feature.id);
   } else {
     selectedIds.value.add(feature.id);
@@ -246,7 +246,7 @@ watch(
 
     if (layer) layer._isOpen = true;
     activeFeature.value = null;
-    feature && layer && onFeatureClick(feature, layer, false);
+    feature && layer && onFeatureClick(feature, layer);
   },
   { immediate: true }
 );
@@ -267,6 +267,9 @@ watch(selectedIds.value, (v) => {
   if (v.size === 1) {
     activeFeature.value = [...v.values()].map((i) => geo.getFeatureById(i).feature)[0];
     showLayerPanel.value = true;
+  } else if (v.size === 0) {
+    activeFeature.value = null;
+    showLayerPanel.value = false;
   }
 });
 

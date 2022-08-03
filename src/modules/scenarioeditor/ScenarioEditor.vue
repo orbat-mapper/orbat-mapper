@@ -105,6 +105,7 @@
       @keyup.s="showSearch = true"
       @keydown.ctrl.k.prevent="showSearch = true"
       @keyup.prevent.alt.k="showSearch = true"
+      @keydown.esc="handleEscape"
     />
     <GlobalEvents
       :filter="inputEventFilter"
@@ -152,7 +153,12 @@ import {
 import { GlobalEvents } from "vue-global-events";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import UnitPanel from "./UnitPanel.vue";
-import { useActiveUnitStore2, useSelectedUnits } from "@/stores/dragStore";
+import {
+  SelectedScenarioFeatures,
+  useActiveUnitStore2,
+  useSelectedFeatures,
+  useSelectedUnits,
+} from "@/stores/dragStore";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
@@ -193,6 +199,7 @@ import {
   activeUnitKey,
   timeModalKey,
   selectedUnitIdsKey,
+  selectedFeatureIdsKey,
 } from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
 import type { Scenario } from "@/types/scenarioModels";
@@ -208,16 +215,19 @@ const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"
 const props = defineProps<{ activeScenario: TScenario }>();
 const activeUnitId = ref<EntityId | undefined | null>(null);
 const selectedUnitIdsRef = ref<Set<EntityId>>(new Set());
+const selectedFeatureIdsRef = ref<SelectedScenarioFeatures>(new Set());
 const scnFeatures = useFeatureStyles(props.activeScenario.geo);
 const currentScenarioTab = ref(0);
 
 provide(activeUnitKey, activeUnitId);
 provide(selectedUnitIdsKey, selectedUnitIdsRef);
+provide(selectedFeatureIdsKey, selectedFeatureIdsRef);
 provide(activeScenarioKey, props.activeScenario);
 provide(activeFeaturesKey, scnFeatures);
 provide(currentScenarioTabKey, currentScenarioTab);
 
-const { selectedUnitIds } = useSelectedUnits(selectedUnitIdsRef);
+const { clear: clearSelectedUnits } = useSelectedUnits(selectedUnitIdsRef);
+const { clear: clearSelectedFeatures } = useSelectedFeatures(selectedFeatureIdsRef);
 
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
 
@@ -243,16 +253,10 @@ const windowTitle = computed(() => state.info.name);
 const { send } = useNotifications();
 const geoStore = useGeoStore();
 const [showUnitPanel, toggleUnitPanel] = useToggle();
-const oobUnitClickBus = useEventBus(orbatUnitClick);
 const showLayerPanel = ref(false);
 
 const activeLayerId = ref<FeatureId | null>(null);
 const activeFeatureId = ref<FeatureId | null>(null);
-
-oobUnitClickBus.on((unit) => {
-  activeUnitStore.toggleActiveUnit(unit);
-  if (!activeUnitStore.activeUnit) showUnitPanel.value = false;
-});
 
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
@@ -275,7 +279,6 @@ const {
 provide(timeModalKey, { getModalTimestamp });
 
 onUnmounted(() => {
-  oobUnitClickBus.reset();
   useTitle(originalTitle);
   activeUnitStore.clearActiveUnit();
 });
@@ -369,5 +372,13 @@ watchOnce(
 
 function loadScenario(v: Scenario) {
   loadFromObject(v);
+}
+
+function handleEscape(e: KeyboardEvent) {
+  if (uiStore.escEnabled) {
+    clearSelectedUnits();
+    activeUnitStore.clearActiveUnit();
+    clearSelectedFeatures();
+  }
 }
 </script>
