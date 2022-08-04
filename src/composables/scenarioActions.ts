@@ -10,10 +10,12 @@ import { multiPoint } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
 import { GeoJSON } from "ol/format";
 import Feature from "ol/Feature";
+import { useSelectedUnits } from "@/stores/dragStore";
 
 export function useUnitActionsN() {
   const { unitActions } = injectStrict(activeScenarioKey);
   const activeUnitId = injectStrict(activeUnitKey);
+  const { selectedUnitIds } = useSelectedUnits();
   const geoStore = useGeoStore();
 
   const onUnitAction = (unit: NUnit | undefined | null, action: UnitActions) => {
@@ -50,7 +52,8 @@ export function useUnitActionsN() {
     }
     if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);
     if (action === UnitActions.Edit) {
-      activeUnitId.value = unit.id;
+      selectedUnitIds.value.clear();
+      selectedUnitIds.value.add(unit.id);
     }
 
     action === UnitActions.Clone && unitActions.cloneUnit(unit.id);
@@ -71,6 +74,7 @@ export function useUnitActionsN() {
         activeUnitId.value = null;
       }
       unitActions.deleteUnit(unit.id);
+      selectedUnitIds.value.delete(unit.id);
     }
   };
   return { onUnitAction };

@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import OrbatPanelAddSide from "@/components/OrbatPanelAddSide.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
@@ -54,20 +54,26 @@ function onUnitDrop(
 }
 
 function onUnitClick(unit: NUnit, event: MouseEvent) {
+  const ids = selectedUnitIds.value;
   if (event.shiftKey) {
-    if (selectedUnitIds.value.has(unit.id)) {
-      selectedUnitIds.value.delete(unit.id);
+    if (ids.has(unit.id)) {
+      ids.delete(unit.id);
     } else {
-      selectedUnitIds.value.add(unit.id);
-    }
-    if (selectedUnitIds.value.size === 1) {
-      activeUnitId.value = unit.id;
+      ids.add(unit.id);
     }
   } else {
     activeUnitId.value = activeUnitId.value === unit.id ? null : unit.id;
     selectedUnitIds.value = new Set(activeUnitId.value ? [unit.id] : []);
   }
 }
+
+watch(
+  () => selectedUnitIds.value,
+  (v) => {
+    if (v.size === 1) activeUnitId.value = [...selectedUnitIds.value.values()].pop();
+  },
+  { deep: true }
+);
 
 function onSideAction(side: NSide, action: SideActions) {
   if (action === SideActions.Delete) {
