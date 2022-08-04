@@ -95,6 +95,7 @@ import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 import OLMap from "ol/Map";
+import { useUiStore } from "@/stores/uiStore";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -122,6 +123,7 @@ const {
   isActive: isGetLocationActive,
   onGetLocation,
 } = useGetMapLocation(geoStore.olMap as OLMap);
+const uiStore = useUiStore();
 
 onGetLocation((location) => addUnitPosition(props.unitId, location));
 const isEditMode = ref(false);
@@ -166,6 +168,14 @@ watch(
 watch(
   () => props.unitId,
   () => updateForm()
+);
+
+watch(
+  isGetLocationActive,
+  (isActive) => {
+    uiStore.getLocationActive = isActive;
+  },
+  { immediate: true }
 );
 
 const { onUnitAction } = useUnitActionsN();
