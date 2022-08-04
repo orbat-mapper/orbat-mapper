@@ -178,7 +178,6 @@ export function useScenarioFeatureSelect(
   );
 
   olMap.addInteraction(selectInteraction);
-  useOlEvent(selectInteraction.on("select", (event) => {}));
 
   watch(
     enableRef,

@@ -172,7 +172,7 @@ const onMapReady = (olMap: OLMap) => {
 
   olMap.addInteraction(historyModify);
 
-  const { unitSelectInteraction } = useUnitSelectInteraction([unitLayer], historyLayer);
+  const { unitSelectInteraction } = useUnitSelectInteraction([unitLayer]);
   olMap.addInteraction(unitSelectInteraction);
 
   const { moveInteraction: moveUnitInteraction } = useMoveInteraction(

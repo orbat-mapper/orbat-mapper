@@ -1,18 +1,17 @@
 import { createUnitFeatureAt, createUnitLayer } from "@/geo/layers";
 import Fade from "ol-ext/featureanimation/Fade";
-import { nextTick, Ref, unref, watch } from "vue";
+import { nextTick, ref, Ref, unref, watch } from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
-import { useDragStore } from "@/stores/dragStore";
+import { useDragStore, useSelectedUnits } from "@/stores/dragStore";
 import { DragOperations } from "@/types/constants";
 import { fromLonLat, toLonLat } from "ol/proj";
 import { Point } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Modify, Select } from "ol/interaction";
 import { ModifyEvent } from "ol/interaction/Modify";
-import { Collection, Feature } from "ol";
-import { MaybeRef, useEventBus } from "@vueuse/core";
-import { mapUnitClick } from "@/components/eventKeys";
+import { Feature } from "ol";
+import { MaybeRef } from "@vueuse/core";
 import { createSelectedUnitStyleFromFeature } from "@/geo/unitStyles";
 import { altKeyOnly, click as clickCondition } from "ol/events/condition";
 import { SelectEvent } from "ol/interaction/Select";
@@ -124,39 +123,42 @@ export function useMoveInteraction(
 
 export function useUnitSelectInteraction(
   layers: VectorLayer<any>[],
-  historyLayer: VectorLayer<any>
+  options: Partial<{
+    enable: MaybeRef<boolean>;
+  }> = {}
 ) {
-  const selectedFeatures: Collection<Feature<Point>> = new Collection<Feature<Point>>();
-  const bus = useEventBus(mapUnitClick);
-  const activeUnitId = injectStrict(activeUnitKey);
-  const {
-    geo,
-    store: { state },
-  } = injectStrict(activeScenarioKey);
+  let isInternal = false;
+  const enableRef = ref(options.enable ?? true);
+
+  const { selectedUnitIds: selectedIds } = useSelectedUnits();
+  const { geo } = injectStrict(activeScenarioKey);
 
   const unitSelectInteraction = new Select({
     layers,
     style: createSelectedUnitStyleFromFeature,
     condition: clickCondition,
     removeCondition: altKeyOnly,
-    features: selectedFeatures,
   });
-  useOlEvent(unitSelectInteraction.on("select", onUnitSelect));
+  const selectedFeatures = unitSelectInteraction.getFeatures();
 
-  function onUnitSelect(evt: SelectEvent) {
-    const selectedUnitId = evt.selected.map((f) => f.getId())[0] as string;
-    if (selectedUnitId) {
-      const selectedUnit = state.getUnitById(selectedUnitId);
-      bus.emit(selectedUnit);
-      activeUnitId.value = selectedUnitId;
+  watch(
+    enableRef,
+    (enabled) => {
+      unitSelectInteraction.setActive(enabled);
+      if (!enabled) unitSelectInteraction.getFeatures().clear();
+    },
+    { immediate: true }
+  );
 
-      selectUnit(selectedUnitId);
-    } else {
-      historyLayer.getSource().clear();
-    }
-  }
+  useOlEvent(
+    unitSelectInteraction.on("select", (event: SelectEvent) => {
+      isInternal = true;
+      event.selected.forEach((f) => selectedIds.value.add(f.getId() as string));
+      event.deselected.forEach((f) => selectedIds.value.delete(f.getId() as string));
+    })
+  );
 
-  function selectUnit(unitId: EntityId) {
+  /*function selectUnit(unitId: EntityId) {
     const historyLayerSource = historyLayer.getSource();
     historyLayerSource.clear(true);
 
@@ -168,16 +170,29 @@ export function useUnitSelectInteraction(
       historyLayerSource.addFeature(historyFeature);
       selectedFeatures.push(existingFeature);
     }
+  }*/
+
+  watch(
+    () => [...selectedIds.value],
+    (v) => redrawSelectedLayer(v),
+    { immediate: true }
+  );
+
+  watch(geo.everyVisibleUnit, () => {
+    isInternal = false;
+    redrawSelectedLayer([...selectedIds.value]);
+  });
+
+  function redrawSelectedLayer(v: EntityId[]) {
+    if (!isInternal) {
+      selectedFeatures.clear();
+      v.forEach((fid) => {
+        const feature = layers[0].getSource().getFeatureById(fid);
+        if (feature) selectedFeatures.push(feature);
+      });
+    }
+    isInternal = false;
   }
 
-  watch(activeUnitId, (unitId) => {
-    if (unitId) selectUnit(unitId);
-    else selectedFeatures.clear();
-  });
-  watch(geo.everyVisibleUnit, () => {
-    const activeUnit = activeUnitId.value;
-    if (activeUnit) selectUnit(activeUnit);
-  });
-
-  return { unitSelectInteraction };
+  return { unitSelectInteraction, isEnabled: enableRef };
 }
