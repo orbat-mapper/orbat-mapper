@@ -20,7 +20,6 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
-import { createHistoryFeature } from "@/geo/history";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const { geo } = activeScenario || injectStrict(activeScenarioKey);

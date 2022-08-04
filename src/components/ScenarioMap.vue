@@ -180,7 +180,7 @@ const onMapReady = (olMap: OLMap) => {
     unitLayer,
     moveUnitEnabled
   );
-  useOlEvent(unitLayerGroup.on("change:visible", toggleModifyInteraction));
+  useOlEvent(unitLayerGroup.on("change:visible", toggleMoveUnitInteraction));
   olMap.addInteraction(moveUnitInteraction);
 
   drawUnits();
@@ -191,7 +191,7 @@ const onMapReady = (olMap: OLMap) => {
   if (extent && !unitLayer.getSource()?.isEmpty())
     olMap.getView().fit(extent, { padding: [10, 10, 10, 10] });
 
-  function toggleModifyInteraction(event: ObjectEvent) {
+  function toggleMoveUnitInteraction(event: ObjectEvent) {
     const isUnitLayerVisible = !event.oldValue;
     moveUnitInteraction.setActive(isUnitLayerVisible && moveUnitEnabled.value);
   }
