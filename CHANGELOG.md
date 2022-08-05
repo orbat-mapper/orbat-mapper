@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Select multiple units in the ORBAT panel with shift+click.
+- Select multiple units on the map with shift+click.
 - Deselect units/features by pressing the escape key.
 - Unit state change entries can now have a title.
 - Add scenario events panel with a basic timeline to the scenario editor.
