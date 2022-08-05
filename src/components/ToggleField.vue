@@ -21,26 +21,12 @@
   </SwitchGroup>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
 import { Switch, SwitchGroup, SwitchLabel } from "@headlessui/vue";
 import { useVModel } from "@vueuse/core";
 
-export default defineComponent({
-  name: "ToggleField",
-  components: {
-    Switch,
-    SwitchGroup,
-    SwitchLabel,
-  },
-  props: { modelValue: Boolean },
-  emits: ["update:modelValue"],
-  setup(props) {
-    const enabled = useVModel(props, "modelValue");
+const props = withDefaults(defineProps<{ modelValue?: boolean }>(), { modelValue: true });
+const emit = defineEmits(["update:modelValue"]);
 
-    return {
-      enabled,
-    };
-  },
-});
+const enabled = useVModel(props, "modelValue", emit);
 </script>

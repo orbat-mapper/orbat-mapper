@@ -59,6 +59,9 @@
               <p>{{ v2 }}</p>
             </div>
           </section>
+          <section>
+            <ToggleField v-model="toggle">Test</ToggleField>
+          </section>
 
           <section>
             <h3 class="border-b text-lg">Accordion panels</h3>
@@ -113,6 +116,7 @@ import SimpleCombo from "@/components/SimpleCombo.vue";
 import AccordionPanel from "@/components/AccordionPanel.vue";
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import SettingsPanel from "@/components/SettingsPanel.vue";
+import ToggleField from "@/components/ToggleField.vue";
 
 const num = ref(1);
 const v = ref("Test");
@@ -123,4 +127,6 @@ const items = [
   { label: "Test", value: 2 },
   { label: "Another", value: 3 },
 ];
+
+const toggle = ref(true);
 </script>
