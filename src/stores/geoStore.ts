@@ -67,6 +67,15 @@ export const useMeasurementsStore = defineStore("measurements", {
   },
 });
 
+export const useUnitSettingsStore = defineStore("unitSettings", {
+  state() {
+    return {
+      showHistory: true,
+      editHistory: true,
+    };
+  },
+});
+
 if (import.meta.hot) {
   // HMR code
   import.meta.hot.decline();

@@ -170,6 +170,8 @@ export function useUnitHistory(
     }
   );
 
+  watch(showHistoryRef, () => drawHistory());
+
   return {
     historyLayer,
     drawHistory,

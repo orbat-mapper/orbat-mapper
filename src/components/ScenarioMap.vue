@@ -25,7 +25,7 @@ import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { GlobalEvents } from "vue-global-events";
 import { clearStyleCache } from "@/geo/unitStyles";
-import { useGeoStore } from "@/stores/geoStore";
+import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import LayerGroup from "ol/layer/Group";
 import { inputEventFilter } from "./helpers";
 import { useUiStore } from "@/stores/uiStore";
@@ -53,6 +53,7 @@ import {
 import { useUnitActionsN } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
+import { storeToRefs } from "pinia";
 
 const {
   geo,
@@ -67,6 +68,7 @@ const mapRef = shallowRef<OLMap>();
 const { onUnitAction } = useUnitActionsN();
 
 const { unitLayer, drawUnits } = useUnitLayer();
+const unitSettingsStore = useUnitSettingsStore();
 
 const geoStore = useGeoStore();
 const uiStore = useUiStore();
@@ -82,8 +84,13 @@ const onMapReady = (olMap: OLMap) => {
     layers: [unitLayer],
   });
 
+  const { showHistory, editHistory } = storeToRefs(unitSettingsStore);
+
   const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
-  const { historyLayer, drawHistory, historyModify } = useUnitHistory();
+  const { historyLayer, drawHistory, historyModify } = useUnitHistory({
+    showHistory,
+    editHistory,
+  });
 
   historyLayer.set("title", "History");
   olMap.addLayer(historyLayer);

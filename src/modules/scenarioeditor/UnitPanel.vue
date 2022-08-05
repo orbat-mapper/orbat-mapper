@@ -65,6 +65,10 @@
         isGetLocationActive ? "Select on map" : "Set location"
       }}
     </BaseButton>
+    <div class="mt-4 space-y-2">
+      <ToggleField v-model="unitSettings.showHistory">Show unit track on map</ToggleField>
+      <ToggleField v-model="unitSettings.editHistory">Edit unit track on map</ToggleField>
+    </div>
     <UnitPanelState v-if="unit?.state?.length" :unit="unit" />
     <GlobalEvents :filter="inputEventFilter" @keyup.e="doFormFocus" />
   </div>
@@ -74,7 +78,7 @@
 import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
 import { CrosshairsGps } from "mdue";
 import InputGroup from "@/components/InputGroup.vue";
-import { useGeoStore } from "@/stores/geoStore";
+import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import MilSymbol from "@/components/MilSymbol.vue";
 import { GlobalEvents } from "vue-global-events";
 import { inputEventFilter } from "@/components/helpers";
@@ -96,6 +100,7 @@ import IconButton from "@/components/IconButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 import OLMap from "ol/Map";
 import { useUiStore } from "@/stores/uiStore";
+import ToggleField from "@/components/ToggleField.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -117,6 +122,7 @@ let form = ref<UnitUpdate>({
   externalUrl: "",
 });
 const geoStore = useGeoStore();
+const unitSettings = useUnitSettingsStore();
 
 const {
   start: startGetLocation,
