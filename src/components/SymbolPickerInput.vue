@@ -25,34 +25,26 @@
         </button>
       </div>
     </div>
-    <SymbolPickerModal
-      v-if="showSymbolPicker"
-      v-model:is-visible="showSymbolPickerDelayed"
-      v-model:sidc="sidcValue"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, ref } from "vue";
 import { useVModel } from "@vueuse/core";
-import { biSyncDelayedRef } from "@/composables/utils";
-import { MenuAlt3Icon } from "@heroicons/vue/solid";
-import NProgress from "nprogress";
 
-const SymbolPickerModal = defineAsyncComponent(() => import("./SymbolPickerModal.vue"));
+import { MenuAlt3Icon } from "@heroicons/vue/solid";
+import { injectStrict } from "@/utils";
+import { sidcModalKey } from "@/components/injects";
 
 const props = defineProps<{ modelValue?: string }>();
 const emit = defineEmits(["update:modelValue"]);
-
 const sidcValue = useVModel(props, "modelValue", emit);
-const showSymbolPicker = ref(false);
-const showSymbolPickerDelayed = ref(false);
 
-biSyncDelayedRef(showSymbolPicker, showSymbolPickerDelayed);
+const { getModalSidc } = injectStrict(sidcModalKey);
 
 const openModal = async () => {
-  NProgress.start();
-  showSymbolPicker.value = true;
+  const newSidcValue = await getModalSidc(props.modelValue || "");
+  if (newSidcValue !== undefined) {
+    emit("update:modelValue", newSidcValue);
+  }
 };
 </script>

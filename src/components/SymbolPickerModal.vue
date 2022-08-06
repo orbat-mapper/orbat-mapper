@@ -1,5 +1,5 @@
 <template>
-  <SimpleModal v-model="open" dialog-title="Symbol picker">
+  <SimpleModal v-model="open" dialog-title="Symbol picker" @cancel="emit('cancel')">
     <div class="flex h-full flex-col">
       <header class="mt-4 h-20 w-16">
         <MilSymbol :sidc="csidc" :size="34" />
@@ -122,7 +122,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), { isVisible: true });
-const emit = defineEmits(["update:isVisible", "update:sidc"]);
+const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
 
 const open = useVModel(props, "isVisible");
 const searchQuery = ref("");

@@ -183,6 +183,12 @@
         :time-zone="dateModalTimeZone"
         @cancel="cancelDateModal"
       />
+      <SymbolPickerModal
+        v-if="showSidcModal"
+        :sidc="initialSidcModalValue"
+        @update:sidc="confirmSidcModal($event)"
+        @cancel="cancelSidcModal"
+      />
     </div>
   </div>
 </template>
@@ -235,6 +241,7 @@ import {
   currentScenarioTabKey,
   selectedFeatureIdsKey,
   selectedUnitIdsKey,
+  sidcModalKey,
   timeModalKey,
 } from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
@@ -242,13 +249,16 @@ import type { Scenario } from "@/types/scenarioModels";
 import ScenarioMap from "@/components/ScenarioMap.vue";
 import { useFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
-import { useDateModal } from "@/composables/modals";
+import { useDateModal, useSidcModal } from "@/composables/modals";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import { storeToRefs } from "pinia";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"));
+const SymbolPickerModal = defineAsyncComponent(
+  () => import("@/components/SymbolPickerModal.vue")
+);
 
 const props = defineProps<{ activeScenario: TScenario }>();
 const activeUnitId = ref<EntityId | undefined | null>(null);
@@ -314,6 +324,15 @@ const {
 } = useDateModal();
 
 provide(timeModalKey, { getModalTimestamp });
+
+const {
+  getModalSidc,
+  confirmSidcModal,
+  showSidcModal,
+  cancelSidcModal,
+  initialSidcModalValue,
+} = useSidcModal();
+provide(sidcModalKey, { getModalSidc });
 
 onUnmounted(() => {
   useTitle(originalTitle);

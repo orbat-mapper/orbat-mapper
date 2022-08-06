@@ -2,7 +2,7 @@ import type { InjectionKey, Ref } from "vue";
 import type { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
-import { TimeModalPromise } from "@/composables/modals";
+import { SidcModalPromise, TimeModalPromise } from "@/composables/modals";
 import { SelectedScenarioFeatures } from "@/stores/dragStore";
 
 export const activeUnitKey = Symbol("Active unit") as InjectionKey<
@@ -26,4 +26,8 @@ export const currentScenarioTabKey = Symbol("Current scenario tab") as Injection
 
 export const timeModalKey = Symbol("Time modal") as InjectionKey<{
   getModalTimestamp: TimeModalPromise;
+}>;
+
+export const sidcModalKey = Symbol("SIDC modal") as InjectionKey<{
+  getModalSidc: SidcModalPromise;
 }>;

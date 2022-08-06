@@ -1,6 +1,7 @@
 import { useConfirmDialog } from "@vueuse/core";
 import { computed, ref } from "vue";
 import { useScenario } from "@/scenariostore";
+import NProgress from "nprogress";
 
 export interface ModalTimestampOptions {
   timeZone: string;
@@ -44,4 +45,44 @@ export function useDateModal() {
   };
 }
 
+export interface ModalSidcOptions {
+  title: string;
+}
+
+export function useSidcModal() {
+  const { isRevealed, reveal, confirm, cancel } = useConfirmDialog<string>();
+  const initialSidcModalValue = ref("10031000001211000000");
+  const sidcModalTitle = ref("Select symbol");
+
+  const getModalSidc = async (
+    initialValue: string,
+    options: Partial<ModalSidcOptions> = {}
+  ): Promise<string | undefined> => {
+    NProgress.start();
+    initialSidcModalValue.value = initialValue;
+    sidcModalTitle.value = options.title || "Set scenario time";
+    const { data, isCanceled } = await reveal();
+    if (!isCanceled) {
+      return data;
+    }
+  };
+  const showSidcModal = computed({
+    get() {
+      return isRevealed.value;
+    },
+    set(v: boolean) {},
+  });
+  return {
+    isRevealed,
+    showSidcModal,
+    revealSidcModal: reveal,
+    getModalSidc,
+    confirmSidcModal: confirm,
+    cancelSidcModal: cancel,
+    initialSidcModalValue,
+    sidcModalTitle,
+  };
+}
+
 export type TimeModalPromise = ReturnType<typeof useDateModal>["getModalTimestamp"];
+export type SidcModalPromise = ReturnType<typeof useSidcModal>["getModalSidc"];
