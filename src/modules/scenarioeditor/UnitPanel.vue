@@ -2,16 +2,20 @@
   <div v-if="unit" class="">
     <header class="flex">
       <div class="h-20 w-16 flex-shrink-0">
-        <MilSymbol :sidc="form.sidc" :size="34" />
+        <MilSymbol :sidc="unit.sidc" :size="34" />
       </div>
       <p class="pt-2 font-medium">{{ unit.name }}</p>
     </header>
     <div class="mb-4 flex">
-      <BaseButton
-        :class="isEditMode && 'bg-gray-100 text-black'"
-        @click="toggleEditMode()"
-        >Edit
-      </BaseButton>
+      <BaseToolbar>
+        <ToolbarButton
+          start
+          :class="isEditMode && 'bg-gray-100 text-black'"
+          @click="toggleEditMode()"
+          >Edit
+        </ToolbarButton>
+        <ToolbarButton end @click="handleChangeSymbol()">Change symbol </ToolbarButton>
+      </BaseToolbar>
       <SplitButton class="ml-2" :items="buttonItems" />
     </div>
 
@@ -23,9 +27,6 @@
         v-model="form.shortName"
       />
       <InputGroup label="External URL" description="" v-model="form.externalUrl" />
-      <div class="w-full">
-        <SymbolPickerInput v-model="form.sidc" />
-      </div>
       <SimpleMarkdownInput
         label="Description"
         v-model="form.description"
@@ -88,12 +89,11 @@ import { renderMarkdown } from "@/composables/formatting";
 import UnitPanelState from "./UnitPanelState.vue";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
-import SymbolPickerInput from "@/components/SymbolPickerInput.vue";
 import SplitButton from "@/components/SplitButton.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { EntityId } from "@/types/base";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, sidcModalKey } from "@/components/injects";
 import { UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
@@ -101,6 +101,8 @@ import { useGetMapLocation } from "@/composables/geoMapLocation";
 import OLMap from "ol/Map";
 import { useUiStore } from "@/stores/uiStore";
 import ToggleField from "@/components/ToggleField.vue";
+import BaseToolbar from "@/components/BaseToolbar.vue";
+import ToolbarButton from "@/components/ToolbarButton.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -123,6 +125,7 @@ let form = ref<UnitUpdate>({
 });
 const geoStore = useGeoStore();
 const unitSettings = useUnitSettingsStore();
+const { getModalSidc } = injectStrict(sidcModalKey);
 
 const {
   start: startGetLocation,
@@ -155,8 +158,8 @@ const hDescription = computed(() => renderMarkdown(unit.value.description || "")
 const hasPosition = computed(() => Boolean(unit.value._state?.location));
 
 function updateForm() {
-  const { name, shortName, sidc, description, externalUrl } = unit.value;
-  form.value = { name, shortName, sidc, description, externalUrl };
+  const { name, shortName, description, externalUrl } = unit.value;
+  form.value = { name, shortName, description, externalUrl };
 }
 
 updateForm();
@@ -217,4 +220,11 @@ const buttonItems = computed(() => [
     onClick: () => onUnitAction(unit.value, UnitActions.Delete),
   },
 ]);
+
+async function handleChangeSymbol() {
+  const newSidcValue = await getModalSidc(unit.value.sidc);
+  if (newSidcValue !== undefined) {
+    updateUnit(props.unitId, { sidc: newSidcValue });
+  }
+}
 </script>

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Add button for changing unit symbol directly.
 - Add undo and redo buttons to navigation bar.
 - Add toggles to unit panel for controlling unit track visibility and unit track editing.
 - Select multiple units in the ORBAT panel with shift+click.

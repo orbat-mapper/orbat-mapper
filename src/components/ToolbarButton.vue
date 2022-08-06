@@ -9,7 +9,7 @@
       bottom && 'rounded-b-md',
       active
         ? 'bg-army2 text-gray-200 hover:text-gray-300'
-        : 'bg-white text-gray-500 hover:bg-gray-50',
+        : 'bg-white text-gray-700 hover:bg-gray-50',
     ]"
   >
     <slot />
