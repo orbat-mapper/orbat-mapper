@@ -1,10 +1,18 @@
 <template>
   <div v-if="unit" class="">
-    <header class="flex">
+    <header v-if="!isMultiMode" class="flex">
       <div class="h-20 w-16 flex-shrink-0">
         <MilSymbol :sidc="unit.sidc" :size="34" />
       </div>
       <p class="pt-2 font-medium">{{ unit.name }}</p>
+    </header>
+    <header v-else>
+      <p class="font-medium">{{ selectedUnitIds.size }} units selected</p>
+      <ul class="my-4 flex w-full flex-wrap gap-1">
+        <li v-for="sUnit in selectedUnits">
+          <MilSymbol :sidc="sUnit.sidc" :size="24" />
+        </li>
+      </ul>
     </header>
     <div class="mb-4 flex">
       <BaseToolbar>
@@ -12,6 +20,7 @@
           start
           :class="isEditMode && 'bg-gray-100 text-black'"
           @click="toggleEditMode()"
+          :disabled="isMultiMode"
           >Edit
         </ToolbarButton>
         <ToolbarButton end @click="handleChangeSymbol()">Change symbol </ToolbarButton>
@@ -38,7 +47,7 @@
         <BaseButton small @click="toggleEditMode()">Cancel</BaseButton>
       </div>
     </form>
-    <div v-else class="mb-4 space-y-4">
+    <div v-else-if="!isMultiMode" class="mb-4 space-y-4">
       <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
       <DescriptionItem v-if="unit.shortName" label="Short name"
         >{{ unit.shortName }}
@@ -61,7 +70,7 @@
         </div>
       </DescriptionItem>
     </div>
-    <BaseButton @click="startGetLocation()"
+    <BaseButton @click="startGetLocation()" :disabled="isMultiMode"
       ><CrosshairsGps class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />{{
         isGetLocationActive ? "Select on map" : "Set location"
       }}
@@ -70,7 +79,7 @@
       <ToggleField v-model="unitSettings.showHistory">Show unit track on map</ToggleField>
       <ToggleField v-model="unitSettings.editHistory">Edit unit track on map</ToggleField>
     </div>
-    <UnitPanelState v-if="unit?.state?.length" :unit="unit" />
+    <UnitPanelState v-if="!isMultiMode && unit?.state?.length" :unit="unit" />
     <GlobalEvents :filter="inputEventFilter" @keyup.e="doFormFocus" />
   </div>
 </template>
@@ -103,6 +112,7 @@ import { useUiStore } from "@/stores/uiStore";
 import ToggleField from "@/components/ToggleField.vue";
 import BaseToolbar from "@/components/BaseToolbar.vue";
 import ToolbarButton from "@/components/ToolbarButton.vue";
+import { useSelectedUnits } from "@/stores/dragStore";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -133,7 +143,11 @@ const {
   onGetLocation,
 } = useGetMapLocation(geoStore.olMap as OLMap);
 const uiStore = useUiStore();
-
+const { selectedUnitIds } = useSelectedUnits();
+const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
+const selectedUnits = computed(() =>
+  [...selectedUnitIds.value].map((id) => store.state.getUnitById(id))
+);
 onGetLocation((location) => addUnitPosition(props.unitId, location));
 const isEditMode = ref(false);
 const toggleEditMode = useToggle(isEditMode);
@@ -189,42 +203,53 @@ watch(
 
 const { onUnitAction } = useUnitActions();
 
+function actionWrapper(action: UnitActions) {
+  if (isMultiMode) {
+    selectedUnits.value.forEach((unit) => onUnitAction(unit, action));
+    return;
+  }
+  onUnitAction(unit.value, action);
+}
 const buttonItems = computed(() => [
   {
     label: "Duplicate",
-    onClick: () => onUnitAction(unit.value, UnitActions.Clone),
+    onClick: () => actionWrapper(UnitActions.Clone),
   },
   {
     label: "Move up",
-    onClick: () => onUnitAction(unit.value, UnitActions.MoveUp),
+    onClick: () => actionWrapper(UnitActions.MoveUp),
   },
   {
     label: "Move down",
-    onClick: () => onUnitAction(unit.value, UnitActions.MoveDown),
+    onClick: () => actionWrapper(UnitActions.MoveDown),
   },
   {
     label: "Create subordinate",
-    onClick: () => onUnitAction(unit.value, UnitActions.AddSubordinate),
+    onClick: () => actionWrapper(UnitActions.AddSubordinate),
   },
   {
     label: "Zoom",
-    onClick: () => onUnitAction(unit.value, UnitActions.Zoom),
+    onClick: () => actionWrapper(UnitActions.Zoom),
   },
   {
     label: "Pan",
-    onClick: () => onUnitAction(unit.value, UnitActions.Pan),
+    onClick: () => actionWrapper(UnitActions.Pan),
     disabled: !hasPosition.value,
   },
   {
     label: "Delete",
-    onClick: () => onUnitAction(unit.value, UnitActions.Delete),
+    onClick: () => actionWrapper(UnitActions.Delete),
   },
 ]);
 
 async function handleChangeSymbol() {
   const newSidcValue = await getModalSidc(unit.value.sidc);
   if (newSidcValue !== undefined) {
-    updateUnit(props.unitId, { sidc: newSidcValue });
+    if (isMultiMode.value) {
+      selectedUnitIds.value.forEach((unitId) =>
+        updateUnit(unitId, { sidc: newSidcValue })
+      );
+    } else updateUnit(props.unitId, { sidc: newSidcValue });
   }
 }
 </script>
