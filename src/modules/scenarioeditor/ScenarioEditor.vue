@@ -72,7 +72,7 @@
         class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100 dark:bg-gray-900"
       >
         <TabView
-          v-model:current-tab="currentScenarioTab"
+          v-model:current-tab="activeScenarioTab"
           :key="state.id"
           extra-class="px-6"
           tab-class=""
@@ -210,7 +210,7 @@ import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
 import { inputEventFilter } from "@/components/helpers";
 import SearchModal from "@/components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
-import { useUiStore } from "@/stores/uiStore";
+import { useTabStore, useUiStore } from "@/stores/uiStore";
 import {
   Keyboard as KeyboardIcon,
   RedoVariant as RedoIcon,
@@ -219,7 +219,7 @@ import {
 import { useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
-import { ScenarioActions } from "@/types/constants";
+import { ScenarioActions, TAB_LAYERS, TAB_ORBAT } from "@/types/constants";
 import AppNotifications from "@/components/AppNotifications.vue";
 import { useNotifications } from "@/composables/notifications";
 import { useGeoStore } from "@/stores/geoStore";
@@ -245,6 +245,7 @@ import { MenuItemData } from "@/components/types";
 import { useDateModal } from "@/composables/modals";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
+import { storeToRefs } from "pinia";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"));
@@ -254,14 +255,16 @@ const activeUnitId = ref<EntityId | undefined | null>(null);
 const selectedUnitIdsRef = ref<Set<EntityId>>(new Set());
 const selectedFeatureIdsRef = ref<SelectedScenarioFeatures>(new Set());
 const scnFeatures = useFeatureStyles(props.activeScenario.geo);
-const currentScenarioTab = ref(0);
+
+const uiTabs = useTabStore();
+const { activeScenarioTab } = storeToRefs(uiTabs);
 
 provide(activeUnitKey, activeUnitId);
 provide(selectedUnitIdsKey, selectedUnitIdsRef);
 provide(selectedFeatureIdsKey, selectedFeatureIdsRef);
 provide(activeScenarioKey, props.activeScenario);
 provide(activeFeaturesKey, scnFeatures);
-provide(currentScenarioTabKey, currentScenarioTab);
+provide(currentScenarioTabKey, activeScenarioTab);
 
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
 
@@ -322,10 +325,10 @@ watch([showUnitPanel, showLayerPanel], (v) => {
 });
 
 watch(activeUnitId, (v) => {
-  showUnitPanel.value = !!(v && currentScenarioTab.value === 0);
+  showUnitPanel.value = !!(v && activeScenarioTab.value === TAB_ORBAT);
 });
 
-watch(currentScenarioTab, (value, prevValue) => {
+watch(activeScenarioTab, (value, prevValue) => {
   if (value === 1 && prevValue === 0) {
     activeUnitStore.clearActiveUnit();
     showUnitPanel.value = false;
@@ -335,7 +338,7 @@ watch(currentScenarioTab, (value, prevValue) => {
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 
 const onUnitSelect = (unitId: EntityId) => {
-  currentScenarioTab.value = 0;
+  activeScenarioTab.value = TAB_ORBAT;
   activeUnitId.value = unitId;
   const { parents } = unitActions.getUnitHierarchy(unitId);
   parents.forEach((p) => (p._isOpen = true));
@@ -349,12 +352,12 @@ const onUnitSelect = (unitId: EntityId) => {
 
 const onLayerSelect = (layerId: FeatureId) => {
   activeLayerId.value = layerId;
-  currentScenarioTab.value = 2;
+  activeScenarioTab.value = TAB_LAYERS;
 };
 
 const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
   activeFeatureId.value = featureId;
-  currentScenarioTab.value = 2;
+  activeScenarioTab.value = TAB_LAYERS;
 };
 
 const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
@@ -390,7 +393,7 @@ function showKeyboardShortcuts() {
 }
 
 watchOnce(
-  () => currentScenarioTab.value === 2,
+  () => activeScenarioTab.value === TAB_LAYERS,
   () => {
     NProgress.start();
   }
