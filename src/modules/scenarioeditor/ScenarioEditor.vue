@@ -33,6 +33,24 @@
         >
           <SearchIcon class="block h-6 w-6" />
         </button>
+        <div class="flex items-center">
+          <button
+            @click="undo()"
+            class="inline-flex hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white disabled:opacity-50 sm:block"
+            title="Undo action (ctrl+z)"
+            :disabled="!canUndo"
+          >
+            <UndoIcon class="block h-6 w-6" />
+          </button>
+          <button
+            @click="redo()"
+            class="inline-flex hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white disabled:opacity-50 sm:block"
+            title="Redo action"
+            :disabled="!canRedo"
+          >
+            <RedoIcon class="block h-6 w-6" />
+          </button>
+        </div>
         <button
           @click="showKeyboardShortcuts"
           class="inline-flex hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white sm:block"
@@ -201,8 +219,11 @@ import { inputEventFilter } from "@/components/helpers";
 import SearchModal from "@/components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
-import { HomeIcon } from "@heroicons/vue/solid";
-import { Keyboard as KeyboardIcon } from "mdue";
+import {
+  Keyboard as KeyboardIcon,
+  UndoVariant as UndoIcon,
+  RedoVariant as RedoIcon,
+} from "mdue";
 import { useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
