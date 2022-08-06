@@ -18,7 +18,6 @@ import {
 } from "@/modules/scenarioeditor/scenarioLayers2";
 import BaseToolbar from "@/components/BaseToolbar.vue";
 import ToolbarButton from "@/components/ToolbarButton.vue";
-import { type ScenarioFeatureActions } from "@/types/constants";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useToggle } from "@vueuse/core";
 import InputGroup from "@/components/InputGroup.vue";
@@ -231,23 +230,5 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
       </div>
     </TabItem>
   </TabView>
-
-  <GlobalEvents
-    :filter="inputEventFilter"
-    @keyup.e="doFormFocus"
-    @keyup.z.exact="
-      emit(
-        'feature-action',
-        isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
-        'zoom'
-      )
-    "
-    @keyup.p="
-      emit(
-        'feature-action',
-        isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
-        'pan'
-      )
-    "
-  />
+  <GlobalEvents :filter="inputEventFilter" @keyup.e="doFormFocus" />
 </template>

@@ -144,7 +144,7 @@
         </TabView>
       </aside>
       <ScenarioMap class="flex-1" data-teleport-map />
-      <KeyboardScenarioActions />
+      <KeyboardScenarioActions v-if="geoStore.olMap" />
 
       <GlobalEvents
         v-if="shortcutsEnabled"

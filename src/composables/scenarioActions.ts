@@ -1,5 +1,5 @@
 import { OrbatItemData, Unit } from "@/types/scenarioModels";
-import { UnitActions } from "@/types/constants";
+import { ScenarioFeatureActions, UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
 import { computed, Ref } from "vue";
 import { NOrbatItemData, NUnit } from "@/types/internalModels";
@@ -13,6 +13,9 @@ import Feature from "ol/Feature";
 import { useSelectedUnits } from "@/stores/dragStore";
 import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
+import { FeatureId } from "@/types/scenarioGeoModels";
+import OLMap from "ol/Map";
+import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 
 export function useUnitActions(
   options: Partial<{
@@ -120,4 +123,27 @@ export function useUnitMenu(item: OrbatItemData | NOrbatItemData | Unit) {
   });
 
   return { unitMenuItems };
+}
+
+export function useScenarioFeatureActions() {
+  const mapRef = useGeoStore().olMap! as OLMap;
+
+  const { zoomToFeature, panToFeature, zoomToFeatures } = useScenarioLayers(mapRef);
+
+  function onFeatureAction(
+    featureOrFeaturesId: FeatureId | FeatureId[],
+    action: "zoom" | "pan"
+  ) {
+    const isArray = Array.isArray(featureOrFeaturesId);
+    if (isArray && (action === "zoom" || action === "pan")) {
+      zoomToFeatures(featureOrFeaturesId);
+      return;
+    }
+    (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {
+      if (action === "zoom") zoomToFeature(featureId);
+      if (action === "pan") panToFeature(featureId);
+    });
+  }
+
+  return { onFeatureAction };
 }

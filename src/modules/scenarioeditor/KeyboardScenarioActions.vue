@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { GlobalEvents } from "vue-global-events";
 import { computed } from "vue";
-import { useUiStore } from "@/stores/uiStore";
+import { useTabStore, useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
@@ -10,8 +10,8 @@ import {
   useSelectedFeatures,
   useSelectedUnits,
 } from "@/stores/dragStore";
-import { useUnitActions } from "@/composables/scenarioActions";
-import { UnitActions } from "@/types/constants";
+import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
+import { TAB_LAYERS, UnitActions } from "@/types/constants";
 
 const activeUnitId = injectStrict(activeUnitKey);
 const {
@@ -23,7 +23,9 @@ const activeUnitStore = useActiveUnitStore();
 const { clear: clearSelectedUnits, selectedUnitIds } = useSelectedUnits();
 const { clear: clearSelectedFeatures, selectedFeatureIds } = useSelectedFeatures();
 const { onUnitAction } = useUnitActions();
+const { onFeatureAction } = useScenarioFeatureActions();
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
+const tabStore = useTabStore();
 
 const activeUnit = computed(
   () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null
@@ -46,13 +48,19 @@ function handleEscape(e: KeyboardEvent) {
 }
 
 function handleZoomShortcut(e: KeyboardEvent) {
-  if (selectedUnitIds.value.size) {
+  if (selectedFeatureIds.value.size && tabStore.activeScenarioTab === TAB_LAYERS) {
+    const fIds = [...selectedFeatureIds.value];
+    onFeatureAction(fIds.length > 1 ? fIds : fIds[0], "zoom");
+  } else if (selectedUnitIds.value.size) {
     onUnitAction(activeUnit.value, UnitActions.Zoom);
   }
 }
 
 function handlePanShortcut(e: KeyboardEvent) {
-  if (selectedUnitIds.value.size) {
+  if (selectedFeatureIds.value.size && tabStore.activeScenarioTab === TAB_LAYERS) {
+    const fIds = [...selectedFeatureIds.value];
+    onFeatureAction(fIds.length > 1 ? fIds : fIds[0], "pan");
+  } else if (selectedUnitIds.value.size) {
     onUnitAction(activeUnit.value, UnitActions.Pan);
   }
 }
