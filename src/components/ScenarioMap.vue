@@ -1,12 +1,7 @@
 <template>
   <div class="relative bg-white dark:bg-gray-900">
     <MapContainer @ready="onMapReady" @drop="onDrop" @dragover.prevent />
-    <GlobalEvents
-      v-if="uiStore.shortcutsEnabled"
-      :filter="inputEventFilter"
-      @keyup.z.exact="onUnitAction(activeUnit, UnitActions.Zoom)"
-      @keyup.p="onUnitAction(activeUnit, UnitActions.Pan)"
-    />
+    <GlobalEvents v-if="uiStore.shortcutsEnabled" :filter="inputEventFilter" />
     <MeasurementToolbar v-if="mapRef" class="absolute left-3 bottom-4" :ol-map="mapRef" />
     <div v-if="mapRef" class="absolute left-3 bottom-16">
       <BaseToolbar class="shadow">
@@ -51,7 +46,6 @@ import {
   currentScenarioTabKey,
 } from "@/components/injects";
 import { useUnitActions } from "@/composables/scenarioActions";
-import { UnitActions } from "@/types/constants";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { storeToRefs } from "pinia";
 
@@ -135,10 +129,6 @@ const onMapReady = (olMap: OLMap) => {
     drawHistory();
   });
 };
-
-const activeUnit = computed(
-  () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null
-);
 
 watch(settingsStore, () => {
   clearStyleCache();

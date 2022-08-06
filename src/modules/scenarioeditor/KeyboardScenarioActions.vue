@@ -10,15 +10,24 @@ import {
   useSelectedFeatures,
   useSelectedUnits,
 } from "@/stores/dragStore";
+import { useUnitActions } from "@/composables/scenarioActions";
+import { UnitActions } from "@/types/constants";
 
 const activeUnitId = injectStrict(activeUnitKey);
-const { unitActions } = injectStrict(activeScenarioKey);
+const {
+  unitActions,
+  store: { state },
+} = injectStrict(activeScenarioKey);
 const uiStore = useUiStore();
 const activeUnitStore = useActiveUnitStore();
-const { clear: clearSelectedUnits } = useSelectedUnits();
-const { clear: clearSelectedFeatures } = useSelectedFeatures();
-
+const { clear: clearSelectedUnits, selectedUnitIds } = useSelectedUnits();
+const { clear: clearSelectedFeatures, selectedFeatureIds } = useSelectedFeatures();
+const { onUnitAction } = useUnitActions();
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
+
+const activeUnit = computed(
+  () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null
+);
 
 const createNewUnit = () => {
   activeUnitId.value && unitActions.createSubordinateUnit(activeUnitId.value);
@@ -35,6 +44,18 @@ function handleEscape(e: KeyboardEvent) {
     clearSelectedFeatures();
   }
 }
+
+function handleZoomShortcut(e: KeyboardEvent) {
+  if (selectedUnitIds.value.size) {
+    onUnitAction(activeUnit.value, UnitActions.Zoom);
+  }
+}
+
+function handlePanShortcut(e: KeyboardEvent) {
+  if (selectedUnitIds.value.size) {
+    onUnitAction(activeUnit.value, UnitActions.Pan);
+  }
+}
 </script>
 
 <template>
@@ -44,5 +65,7 @@ function handleEscape(e: KeyboardEvent) {
     @keyup.c="createNewUnit"
     @keyup.d="duplicateUnit"
     @keydown.esc="handleEscape"
+    @keyup.z.exact="handleZoomShortcut"
+    @keyup.p="handlePanShortcut"
   />
 </template>
