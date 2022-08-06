@@ -204,7 +204,7 @@ import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import UnitPanel from "./UnitPanel.vue";
 import {
   SelectedScenarioFeatures,
-  useActiveUnitStore2,
+  useActiveUnitStore,
   useSelectedFeatures,
   useSelectedUnits,
 } from "@/stores/dragStore";
@@ -286,7 +286,7 @@ const showSearch = ref(false);
 const showLoadModal = ref(false);
 const shortcutsModalVisible = ref(false);
 
-const activeUnitStore = useActiveUnitStore2({
+const activeUnitStore = useActiveUnitStore({
   activeScenario: props.activeScenario,
   activeUnitId,
 });

@@ -86,7 +86,7 @@ import DescriptionItem from "@/components/DescriptionItem.vue";
 import { useToggle } from "@vueuse/core";
 import { renderMarkdown } from "@/composables/formatting";
 import UnitPanelState from "./UnitPanelState.vue";
-import { useUnitActionsN } from "@/composables/scenarioActions";
+import { useUnitActions } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
 import SymbolPickerInput from "@/components/SymbolPickerInput.vue";
 import SplitButton from "@/components/SplitButton.vue";
@@ -184,7 +184,7 @@ watch(
   { immediate: true }
 );
 
-const { onUnitAction } = useUnitActionsN();
+const { onUnitAction } = useUnitActions();
 
 const buttonItems = computed(() => [
   {

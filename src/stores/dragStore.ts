@@ -22,12 +22,14 @@ export const useDragStore = defineStore("drag", {
   }),
 });
 
-export function useActiveUnitStore2({
-  activeScenario,
-  activeUnitId,
-}: { activeScenario?: TScenario; activeUnitId?: Ref<EntityId | undefined | null> } = {}) {
-  const { unitActions } = activeScenario || injectStrict(activeScenarioKey);
-  const activeUnitIdRef = activeUnitId || injectStrict(activeUnitKey);
+export function useActiveUnitStore(
+  options: Partial<{
+    activeScenario: TScenario;
+    activeUnitId: Ref<EntityId | undefined | null>;
+  }> = {}
+) {
+  const { unitActions } = options.activeScenario || injectStrict(activeScenarioKey);
+  const activeUnitIdRef = options.activeUnitId || injectStrict(activeUnitKey);
 
   const activeUnit = ref<NUnit | null>(null);
 

@@ -1,7 +1,7 @@
 import { OrbatItemData, Unit } from "@/types/scenarioModels";
 import { UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
-import { computed } from "vue";
+import { computed, Ref } from "vue";
 import { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
@@ -11,10 +11,17 @@ import turfEnvelope from "@turf/envelope";
 import { GeoJSON } from "ol/format";
 import Feature from "ol/Feature";
 import { useSelectedUnits } from "@/stores/dragStore";
+import { TScenario } from "@/scenariostore";
+import { EntityId } from "@/types/base";
 
-export function useUnitActionsN() {
-  const { unitActions } = injectStrict(activeScenarioKey);
-  const activeUnitId = injectStrict(activeUnitKey);
+export function useUnitActions(
+  options: Partial<{
+    activeScenario: TScenario;
+    activeUnitId: Ref<EntityId | undefined | null>;
+  }> = {}
+) {
+  const { unitActions } = options.activeScenario || injectStrict(activeScenarioKey);
+  const activeUnitId = options.activeUnitId || injectStrict(activeUnitKey);
   const { selectedUnitIds } = useSelectedUnits();
   const geoStore = useGeoStore();
 

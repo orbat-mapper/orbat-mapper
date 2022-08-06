@@ -58,7 +58,7 @@ import { State } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
 import { CrosshairsGps, MapMarkerPath } from "mdue";
 import IconButton from "@/components/IconButton.vue";
-import { useUnitActionsN } from "@/composables/scenarioActions";
+import { useUnitActions } from "@/composables/scenarioActions";
 import { StateAction, UnitActions } from "@/types/constants";
 import type { NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
@@ -74,7 +74,7 @@ const props = defineProps<Props>();
 const { store, time, unitActions } = injectStrict(activeScenarioKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
 
-const { onUnitAction } = useUnitActionsN();
+const { onUnitAction } = useUnitActions();
 const state = computed(() => props.unit.state || []);
 
 const menuItems: MenuItemData<StateAction>[] = [

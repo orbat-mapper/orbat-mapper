@@ -27,7 +27,7 @@ import OrbatSide from "@/components/OrbatSide.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { SideActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
-import { useUnitActionsN } from "@/composables/scenarioActions";
+import { useUnitActions } from "@/composables/scenarioActions";
 import { useSelectedUnits } from "@/stores/dragStore";
 
 const activeScenario = injectStrict(activeScenarioKey);
@@ -42,7 +42,7 @@ const sides = computed(() => {
 });
 const showAdd = computed(() => sides.value.length < 2);
 
-const { onUnitAction } = useUnitActionsN();
+const { onUnitAction } = useUnitActions();
 const { selectedUnitIds } = useSelectedUnits();
 
 function onUnitDrop(

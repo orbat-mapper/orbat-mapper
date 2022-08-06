@@ -100,7 +100,7 @@ import MilSymbol from "./MilSymbol.vue";
 import { Unit } from "@/types/scenarioModels";
 //@ts-ignore
 import { ChevronRightIcon } from "@heroicons/vue/solid";
-import { useActiveUnitStore2, useDragStore, useSelectedUnits } from "@/stores/dragStore";
+import { useActiveUnitStore, useDragStore, useSelectedUnits } from "@/stores/dragStore";
 import { DragOperations, UnitActions } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "@/composables/scenarioActions";
@@ -178,7 +178,7 @@ const onDrop = (ev: DragEvent) => {
   isOpen.value = true;
 };
 
-const activeUnitStore = useActiveUnitStore2();
+const activeUnitStore = useActiveUnitStore();
 
 const onUnitMenuAction = async (unit: NUnit, action: UnitActions) => {
   emit("unit-action", unit, action);

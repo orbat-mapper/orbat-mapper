@@ -50,7 +50,7 @@ import {
   activeUnitKey,
   currentScenarioTabKey,
 } from "@/components/injects";
-import { useUnitActionsN } from "@/composables/scenarioActions";
+import { useUnitActions } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { storeToRefs } from "pinia";
@@ -65,7 +65,7 @@ const currentScenarioTab = inject(currentScenarioTabKey, ref(0));
 const doNotFilterLayers = computed(() => currentScenarioTab.value === 2);
 const activeUnitId = injectStrict(activeUnitKey);
 const mapRef = shallowRef<OLMap>();
-const { onUnitAction } = useUnitActionsN();
+const { onUnitAction } = useUnitActions();
 
 const { unitLayer, drawUnits } = useUnitLayer();
 const unitSettingsStore = useUnitSettingsStore();
