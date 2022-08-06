@@ -144,17 +144,15 @@
         </TabView>
       </aside>
       <ScenarioMap class="flex-1" data-teleport-map />
+      <KeyboardScenarioActions />
 
       <GlobalEvents
         v-if="shortcutsEnabled"
         :filter="inputEventFilter"
         @keyup.?="showKeyboardShortcuts"
-        @keyup.c="createNewUnit"
-        @keyup.d="duplicateUnit"
         @keyup.s="showSearch = true"
         @keydown.ctrl.k.prevent="showSearch = true"
         @keyup.prevent.alt.k="showSearch = true"
-        @keydown.esc="handleEscape"
       />
       <GlobalEvents
         :filter="inputEventFilter"
@@ -202,17 +200,11 @@ import {
 import { GlobalEvents } from "vue-global-events";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import UnitPanel from "./UnitPanel.vue";
-import {
-  SelectedScenarioFeatures,
-  useActiveUnitStore,
-  useSelectedFeatures,
-  useSelectedUnits,
-} from "@/stores/dragStore";
+import { SelectedScenarioFeatures, useActiveUnitStore } from "@/stores/dragStore";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
 import TimeController from "@/components/TimeController.vue";
-import PlainButton from "@/components/PlainButton.vue";
 
 import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
 import { inputEventFilter } from "@/components/helpers";
@@ -221,8 +213,8 @@ import { useRoute, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import {
   Keyboard as KeyboardIcon,
-  UndoVariant as UndoIcon,
   RedoVariant as RedoIcon,
+  UndoVariant as UndoIcon,
 } from "mdue";
 import { useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
@@ -252,6 +244,7 @@ import { useFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
 import { useDateModal } from "@/composables/modals";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
+import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"));
@@ -269,9 +262,6 @@ provide(selectedFeatureIdsKey, selectedFeatureIdsRef);
 provide(activeScenarioKey, props.activeScenario);
 provide(activeFeaturesKey, scnFeatures);
 provide(currentScenarioTabKey, currentScenarioTab);
-
-const { clear: clearSelectedUnits } = useSelectedUnits(selectedUnitIdsRef);
-const { clear: clearSelectedFeatures } = useSelectedFeatures(selectedFeatureIdsRef);
 
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
 
@@ -342,14 +332,6 @@ watch(currentScenarioTab, (value, prevValue) => {
   }
 });
 
-const createNewUnit = () => {
-  activeUnitId.value && unitActions.createSubordinateUnit(activeUnitId.value);
-};
-
-const duplicateUnit = () => {
-  activeUnitId.value && unitActions.cloneUnit(activeUnitId.value);
-};
-
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 
 const onUnitSelect = (unitId: EntityId) => {
@@ -416,13 +398,5 @@ watchOnce(
 
 function loadScenario(v: Scenario) {
   loadFromObject(v);
-}
-
-function handleEscape(e: KeyboardEvent) {
-  if (uiStore.escEnabled) {
-    clearSelectedUnits();
-    activeUnitStore.clearActiveUnit();
-    clearSelectedFeatures();
-  }
 }
 </script>
