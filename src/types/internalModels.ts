@@ -1,10 +1,14 @@
-import { Side, SideGroup, Unit } from "./scenarioModels";
+import { CurrentStateType, Side, SideGroup, Unit } from "./scenarioModels";
 import { EntityId } from "./base";
 import { FeatureId, ScenarioFeature, ScenarioLayer } from "@/types/scenarioGeoModels";
 
 export interface NUnit extends Omit<Unit, "subUnits" | "_pid"> {
   subUnits: EntityId[];
   _pid: EntityId;
+}
+
+export interface OlUnitProps extends Pick<NUnit, "id" | "sidc" | "name" | "shortName"> {
+  stateType: CurrentStateType;
 }
 
 export interface NSide extends Omit<Side, "groups"> {

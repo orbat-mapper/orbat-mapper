@@ -40,7 +40,8 @@ export function createUnitFeatureAt(
 ): Feature<Point> {
   const geometry = new Point(fromLonLat(position));
   const { sidc, name, id, shortName } = unit;
-  const feature = new Feature<Point>({ geometry, sidc, name, id, shortName });
+  const stateType = unit._state?.type;
+  const feature = new Feature<Point>({ geometry, sidc, name, id, shortName, stateType });
   feature.setId(id);
   return feature;
 }

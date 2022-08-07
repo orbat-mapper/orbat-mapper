@@ -1,10 +1,12 @@
 import { FeatureLike } from "ol/Feature";
-import { Icon, Style } from "ol/style";
+import { Fill, Icon, RegularShape, Stroke, Style } from "ol/style";
 import { Unit } from "@/types/scenarioModels";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import { Symbol as MilSymbol } from "milsymbol";
 import IconAnchorUnits from "ol/style/IconAnchorUnits";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { OlUnitProps } from "@/types/internalModels";
+import CircleStyle from "ol/style/Circle";
 
 const unitStyleCache = new Map();
 const selectedUnitStyleCache = new Map();
@@ -32,8 +34,9 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
   });
 }
 
-export function createUnitStyleFromFeature(feature: FeatureLike): Style {
-  const { sidc, name, shortName } = feature.getProperties() as Unit;
+export function createUnitStyleFromFeature(feature: FeatureLike): Style[] {
+  const { sidc, name, shortName, stateType } = feature.getProperties() as OlUnitProps;
+  const isInterpolated = stateType === "interpolated";
   const key = sidc + name;
   if (!unitStyleCache.has(key)) {
     const settingsStore = useSettingsStore();
@@ -47,8 +50,8 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style {
     });
     const style = createMilSymbolStyle(milSymbol);
     unitStyleCache.set(key, style);
-    return style;
-  } else return unitStyleCache.get(key);
+    return [style];
+  } else return [unitStyleCache.get(key)];
 }
 
 export function createSelectedUnitStyleFromFeature(feature: FeatureLike): Style {

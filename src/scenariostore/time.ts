@@ -1,15 +1,15 @@
 import { NewScenarioStore } from "./newScenarioStore";
-import { CurrentState, State } from "@/types/scenarioModels";
+import { CurrentState } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
 import dayjs, { ManipulateType } from "dayjs";
 import { computed } from "vue";
 import turfLength from "@turf/length";
 import turfAlong from "@turf/along";
 import { lineString } from "@turf/helpers";
-import { nanoid } from "@/utils";
 
 export function createInitialState(unit: NUnit): CurrentState | null {
-  if (unit.location) return { t: Number.MIN_SAFE_INTEGER, location: unit.location };
+  if (unit.location)
+    return { t: Number.MIN_SAFE_INTEGER, location: unit.location, type: "initial" };
   return null;
 }
 
@@ -40,6 +40,7 @@ export function useScenarioTime(store: NewScenarioStore) {
             currentState = {
               t: timestamp,
               location: p.geometry.coordinates,
+              type: "interpolated",
             };
           }
           break;

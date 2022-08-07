@@ -9,7 +9,11 @@ export interface State extends Partial<ScenarioEventDescription> {
   via?: Position[];
 }
 
-export interface CurrentState extends Omit<State, "id"> {}
+export type CurrentStateType = "initial" | "interpolated";
+
+export interface CurrentState extends Omit<State, "id"> {
+  type?: CurrentStateType;
+}
 
 export interface LocationState extends State {
   location: Position;
