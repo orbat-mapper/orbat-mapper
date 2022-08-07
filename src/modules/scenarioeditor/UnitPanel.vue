@@ -15,61 +15,63 @@
       </ul>
     </header>
     <div class="mb-4 flex">
-      <BaseToolbar>
-        <ToolbarButton
-          start
-          :class="isEditMode && 'bg-gray-100 text-black'"
-          @click="toggleEditMode()"
-          :disabled="isMultiMode"
-          >Edit
-        </ToolbarButton>
-        <ToolbarButton end @click="handleChangeSymbol()">Change symbol </ToolbarButton>
-      </BaseToolbar>
-      <SplitButton class="ml-2" :items="buttonItems" />
+      <BaseButton end @click="handleChangeSymbol()">Edit symbol </BaseButton>
+
+      <SplitButton class="ml-1" :items="buttonItems" />
     </div>
 
-    <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="mt-0 space-y-4">
-      <InputGroup label="Name" v-model="form.name" id="name-input" />
-      <InputGroup
-        label="Short name"
-        description="Alternative name"
-        v-model="form.shortName"
-      />
-      <InputGroup label="External URL" description="" v-model="form.externalUrl" />
-      <SimpleMarkdownInput
-        label="Description"
-        v-model="form.description"
-        description="Use markdown syntax for formatting"
-      />
-
-      <div class="flex items-center justify-end space-x-2">
-        <BaseButton type="submit" small primary>Save</BaseButton>
-        <BaseButton small @click="toggleEditMode()">Cancel</BaseButton>
-      </div>
-    </form>
-    <div v-else-if="!isMultiMode" class="mb-4 space-y-4">
-      <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
-      <DescriptionItem v-if="unit.shortName" label="Short name"
-        >{{ unit.shortName }}
-      </DescriptionItem>
-      <DescriptionItem v-if="unit.externalUrl" label="External URL" dd-class="truncate"
-        ><a target="_blank" class="underline" :href="unit.externalUrl">{{
-          unit.externalUrl
-        }}</a></DescriptionItem
+    <section class="relative">
+      <BaseButton
+        v-if="!isMultiMode && !isEditMode"
+        small
+        class="absolute right-1"
+        :class="isEditMode && 'bg-gray-100 text-black'"
+        @click="toggleEditMode()"
+        >Edit</BaseButton
       >
-      <DescriptionItem v-if="unit.description" label="Description">
-        <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
-      </DescriptionItem>
+      <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="mt-0 mb-6 space-y-4">
+        <InputGroup label="Name" v-model="form.name" id="name-input" />
+        <InputGroup
+          label="Short name"
+          description="Alternative name"
+          v-model="form.shortName"
+        />
+        <InputGroup label="External URL" description="" v-model="form.externalUrl" />
+        <SimpleMarkdownInput
+          label="Description"
+          v-model="form.description"
+          description="Use markdown syntax for formatting"
+        />
 
-      <DescriptionItem v-if="unit.location" label="Initial location">
-        <div class="flex items-center justify-between">
-          <p>{{ formatPosition(unit.location) }}</p>
-          <IconButton @click="geoStore.panToLocation(unit.location)">
-            <CrosshairsGps class="h-5 w-5" />
-          </IconButton>
+        <div class="flex items-center justify-end space-x-2">
+          <BaseButton type="submit" small primary>Save</BaseButton>
+          <BaseButton small @click="toggleEditMode()">Cancel</BaseButton>
         </div>
-      </DescriptionItem>
-    </div>
+      </form>
+      <div v-else-if="!isMultiMode" class="mb-4 space-y-4">
+        <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
+        <DescriptionItem v-if="unit.shortName" label="Short name"
+          >{{ unit.shortName }}
+        </DescriptionItem>
+        <DescriptionItem v-if="unit.externalUrl" label="External URL" dd-class="truncate"
+          ><a target="_blank" class="underline" :href="unit.externalUrl">{{
+            unit.externalUrl
+          }}</a></DescriptionItem
+        >
+        <DescriptionItem v-if="unit.description" label="Description">
+          <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
+        </DescriptionItem>
+
+        <DescriptionItem v-if="unit.location" label="Initial location">
+          <div class="flex items-center justify-between">
+            <p>{{ formatPosition(unit.location) }}</p>
+            <IconButton @click="geoStore.panToLocation(unit.location)">
+              <CrosshairsGps class="h-5 w-5" />
+            </IconButton>
+          </div>
+        </DescriptionItem>
+      </div>
+    </section>
     <BaseButton @click="startGetLocation()" :disabled="isMultiMode"
       ><CrosshairsGps class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />{{
         isGetLocationActive ? "Select on map" : "Set location"
@@ -110,8 +112,6 @@ import { useGetMapLocation } from "@/composables/geoMapLocation";
 import OLMap from "ol/Map";
 import { useUiStore } from "@/stores/uiStore";
 import ToggleField from "@/components/ToggleField.vue";
-import BaseToolbar from "@/components/BaseToolbar.vue";
-import ToolbarButton from "@/components/ToolbarButton.vue";
 import { useSelectedUnits } from "@/stores/dragStore";
 
 const SimpleMarkdownInput = defineAsyncComponent(
