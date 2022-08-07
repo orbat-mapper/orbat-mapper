@@ -9,8 +9,9 @@
     <header v-else>
       <p class="font-medium">{{ selectedUnitIds.size }} units selected</p>
       <ul class="my-4 flex w-full flex-wrap gap-1">
-        <li v-for="sUnit in selectedUnits">
-          <MilSymbol :sidc="sUnit.sidc" :size="24" />
+        <li v-for="sUnit in selectedUnits" class="relative flex">
+          <MilSymbol :sidc="sUnit.sidc" :size="24" class="block" />
+          <span v-if="sUnit._state?.location" class="text-red-700">&deg;</span>
         </li>
       </ul>
     </header>
