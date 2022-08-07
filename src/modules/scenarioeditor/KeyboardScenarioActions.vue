@@ -12,6 +12,7 @@ import {
 } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
 import { TAB_LAYERS, UnitActions } from "@/types/constants";
+import { useGeoStore } from "@/stores/geoStore";
 
 const activeUnitId = injectStrict(activeUnitKey);
 const {
@@ -26,6 +27,7 @@ const { onUnitAction } = useUnitActions();
 const { onFeatureAction } = useScenarioFeatureActions();
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 const tabStore = useTabStore();
+const geo = useGeoStore();
 
 const activeUnit = computed(
   () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null
@@ -52,7 +54,10 @@ function handleZoomShortcut(e: KeyboardEvent) {
     const fIds = [...selectedFeatureIds.value];
     onFeatureAction(fIds.length > 1 ? fIds : fIds[0], "zoom");
   } else if (selectedUnitIds.value.size) {
-    onUnitAction(activeUnit.value, UnitActions.Zoom);
+    if (selectedUnitIds.value.size > 1) {
+      const units = [...selectedUnitIds.value].map((id) => state.getUnitById(id));
+      onUnitAction(units, UnitActions.Zoom);
+    } else onUnitAction(activeUnit.value, UnitActions.Zoom);
   }
 }
 
@@ -61,7 +66,10 @@ function handlePanShortcut(e: KeyboardEvent) {
     const fIds = [...selectedFeatureIds.value];
     onFeatureAction(fIds.length > 1 ? fIds : fIds[0], "pan");
   } else if (selectedUnitIds.value.size) {
-    onUnitAction(activeUnit.value, UnitActions.Pan);
+    if (selectedUnitIds.value.size > 1) {
+      const units = [...selectedUnitIds.value].map((id) => state.getUnitById(id));
+      onUnitAction(units, UnitActions.Pan);
+    } else onUnitAction(activeUnit.value, UnitActions.Pan);
   }
 }
 </script>

@@ -5,6 +5,11 @@ import { fromLonLat } from "ol/proj";
 import { MeasurementTypes } from "@/composables/geoMeasurement";
 import { NUnit } from "@/types/internalModels";
 import { Position } from "geojson";
+import { featureCollection, point as turfPoint } from "@turf/helpers";
+import { GeoJSON } from "ol/format";
+import turfEnvelope from "@turf/envelope";
+
+import Feature from "ol/Feature";
 
 export const useGeoStore = defineStore("geo", {
   state: () => ({
@@ -20,6 +25,20 @@ export const useGeoStore = defineStore("geo", {
         center: fromLonLat(location, view.getProjection()),
         duration,
       });
+    },
+
+    zoomToUnits(units: NUnit[], duration = 900) {
+      const points = units
+        .filter((u) => u._state?.location)
+        .map((u) => turfPoint(u._state?.location!));
+      if (!points.length) return;
+      const c = featureCollection(points);
+      const bb = new GeoJSON().readFeature(turfEnvelope(c), {
+        featureProjection: "EPSG:3857",
+        dataProjection: "EPSG:4326",
+      }) as Feature<any>;
+      if (!bb) return;
+      this.olMap!.getView().fit(bb.getGeometry(), { maxZoom: 17, duration });
     },
 
     zoomToLocation(location?: Position, duration = 900) {

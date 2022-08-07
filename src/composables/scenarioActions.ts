@@ -1,5 +1,5 @@
 import { OrbatItemData, Unit } from "@/types/scenarioModels";
-import { ScenarioFeatureActions, UnitActions } from "@/types/constants";
+import { UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
 import { computed, Ref } from "vue";
 import { NOrbatItemData, NUnit } from "@/types/internalModels";
@@ -28,7 +28,7 @@ export function useUnitActions(
   const { selectedUnitIds } = useSelectedUnits();
   const geoStore = useGeoStore();
 
-  const onUnitAction = (unit: NUnit | undefined | null, action: UnitActions) => {
+  const _onUnitAction = (unit: NUnit | undefined | null, action: UnitActions) => {
     if (!unit) return;
     if (action === UnitActions.AddSubordinate) {
       unit._isOpen = true;
@@ -87,6 +87,15 @@ export function useUnitActions(
       selectedUnitIds.value.delete(unit.id);
     }
   };
+
+  function onUnitAction(unitOrUnits: NUnit | NUnit[] | null, action: UnitActions) {
+    if (!unitOrUnits) return;
+    if (Array.isArray(unitOrUnits)) {
+      if (action === UnitActions.Zoom || action === UnitActions.Pan) {
+        geoStore.zoomToUnits(unitOrUnits, 500);
+      } else unitOrUnits.forEach((unit) => _onUnitAction(unit, action));
+    } else _onUnitAction(unitOrUnits, action);
+  }
   return { onUnitAction };
 }
 

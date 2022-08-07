@@ -206,7 +206,7 @@ const { onUnitAction } = useUnitActions();
 
 function actionWrapper(action: UnitActions) {
   if (isMultiMode) {
-    selectedUnits.value.forEach((unit) => onUnitAction(unit, action));
+    onUnitAction(selectedUnits.value, action);
     return;
   }
   onUnitAction(unit.value, action);
