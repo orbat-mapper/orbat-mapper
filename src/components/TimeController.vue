@@ -1,5 +1,11 @@
 <template>
   <div class="flex w-full items-center justify-between p-4">
+    <p
+      class="pointer-events-none fixed top-20 right-0 w-52 text-3xl font-bold text-black"
+      style="text-shadow: white 0 0 5px"
+    >
+      {{ scenarioTime.format("YYYY-MM-DD") }}
+    </p>
     <div>
       <p class="text-sm font-medium text-gray-700">
         {{ scenarioTime.format("YYYY-MM-DD") }}
