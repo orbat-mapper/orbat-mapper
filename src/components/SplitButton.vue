@@ -2,10 +2,10 @@
   <span class="relative z-0 inline-flex rounded-md shadow-sm">
     <button
       type="button"
-      @click="onClick(activeItem)"
+      @click="onClick(activeItemRef)"
       class="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
     >
-      {{ activeItem.label }}
+      {{ activeItemRef.label }}
     </button>
     <Menu>
       <span class="relative -ml-px block" ref="trigger">
@@ -64,22 +64,33 @@ import { ButtonGroupItem } from "./types";
 interface Props {
   items: ButtonGroupItem[];
   static?: boolean;
+  activeItem?: ButtonGroupItem | null | undefined;
 }
 const props = withDefaults(defineProps<Props>(), { static: false });
-
+const emit = defineEmits(["update:activeItem"]);
 let [trigger, container] = usePopper({
   placement: "bottom-end",
   strategy: "fixed",
   modifiers: [{ name: "offset", options: { offset: [0, 10] } }],
 });
 
-const activeItem = ref(props.items[0]);
+const _activeItem = ref(props.items[0]);
+
+const activeItemRef = computed({
+  get() {
+    return props.activeItem || _activeItem.value;
+  },
+  set(v) {
+    _activeItem.value = v;
+    emit("update:activeItem", v);
+  },
+});
 const menuItems = computed(() =>
-  props.items.filter((e) => e.label !== activeItem.value.label)
+  props.items.filter((e) => e.label !== activeItemRef.value?.label)
 );
 
 const onClick = (item: ButtonGroupItem) => {
-  if (!props.static) activeItem.value = item;
+  if (!props.static) activeItemRef.value = item;
   item.onClick();
 };
 </script>

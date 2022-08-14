@@ -7,6 +7,7 @@ export const useUiStore = defineStore("ui", {
     editToolbarActive: false,
     measurementActive: false,
     getLocationActive: false,
+    activeItem: null,
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,

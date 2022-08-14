@@ -18,7 +18,11 @@
     <div class="mb-4 flex">
       <BaseButton end @click="handleChangeSymbol()">Edit symbol </BaseButton>
 
-      <SplitButton class="ml-1" :items="buttonItems" />
+      <SplitButton
+        class="ml-1"
+        :items="buttonItems"
+        v-model:active-item="uiStore.activeItem"
+      />
     </div>
 
     <section class="relative">
