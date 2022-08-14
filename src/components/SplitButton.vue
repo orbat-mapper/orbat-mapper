@@ -54,48 +54,32 @@
   </span>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
 import { ChevronDownIcon } from "@heroicons/vue/solid";
-import { computed, defineComponent, PropType, ref } from "vue";
-import { usePopper } from "../composables/usePopper";
+import { computed, ref } from "vue";
+import { usePopper } from "@/composables/usePopper";
 import { ButtonGroupItem } from "./types";
 
-export default defineComponent({
-  components: {
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-    ChevronDownIcon,
-  },
-  props: {
-    items: { type: Array as PropType<ButtonGroupItem[]>, required: true },
-    static: { type: Boolean, default: false },
-  },
-  setup(props) {
-    let [trigger, container] = usePopper({
-      placement: "bottom-end",
-      strategy: "fixed",
-      modifiers: [{ name: "offset", options: { offset: [0, 10] } }],
-    });
+interface Props {
+  items: ButtonGroupItem[];
+  static?: boolean;
+}
+const props = withDefaults(defineProps<Props>(), { static: false });
 
-    const activeItem = ref(props.items[0]);
-    const menuItems = computed(() =>
-      props.items.filter((e) => e.label !== activeItem.value.label)
-    );
-
-    const onClick = (item: ButtonGroupItem) => {
-      if (!props.static) activeItem.value = item;
-      item.onClick();
-    };
-    return {
-      container,
-      trigger,
-      menuItems,
-      activeItem,
-      onClick,
-    };
-  },
+let [trigger, container] = usePopper({
+  placement: "bottom-end",
+  strategy: "fixed",
+  modifiers: [{ name: "offset", options: { offset: [0, 10] } }],
 });
+
+const activeItem = ref(props.items[0]);
+const menuItems = computed(() =>
+  props.items.filter((e) => e.label !== activeItem.value.label)
+);
+
+const onClick = (item: ButtonGroupItem) => {
+  if (!props.static) activeItem.value = item;
+  item.onClick();
+};
 </script>
