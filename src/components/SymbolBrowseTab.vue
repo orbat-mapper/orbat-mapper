@@ -13,6 +13,7 @@
             type="button"
             v-for="{ sidc, entity, entityType, entitySubtype, code } in entityIcons"
             :key="sidc"
+            :id="`scode-${code}`"
             @click="iconValue = code"
             class="flex w-full flex-col items-center justify-start rounded border border-transparent p-3 hover:border-gray-500"
           >
@@ -24,7 +25,8 @@
               {{ entityType }}
             </p>
             <p
-              class="mt-1 max-w-full overflow-hidden break-words text-center text-sm font-medium text-gray-900"
+              class="mt-1 max-w-full overflow-hidden break-words text-center text-sm font-medium"
+              :class="code === iconValue ? 'text-red-900' : 'text-gray-900'"
             >
               {{ entitySubtype || entityType || entity }}
             </p>
@@ -79,7 +81,7 @@
 <script setup lang="ts">
 import MilSymbol from "./MilSymbol.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
-import { computed, watch } from "vue";
+import { computed, nextTick, onMounted, watch } from "vue";
 import { groupBy } from "../utils";
 import { useSymbolItems } from "../composables/symbolData";
 
@@ -112,5 +114,14 @@ const iconsByEntity = computed(() => groupBy(icons.value, "entity"));
 
 watch([mod1Value, mod2Value, iconValue], (value, oldValue) => {
   emit("update-sidc", csidc.value);
+});
+
+onMounted(() => {
+  nextTick(() => {
+    const el = document.getElementById(`scode-${iconValue.value}`);
+    if (el) {
+      el.scrollIntoView({ block: "center" });
+    }
+  });
 });
 </script>
