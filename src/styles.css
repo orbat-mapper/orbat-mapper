@@ -19,3 +19,7 @@
     @apply mx-0.5 inline-flex items-center rounded border border-gray-200 px-2 font-sans font-mono text-sm font-medium text-gray-600;
   }
 }
+
+.location-control {
+  @apply absolute left-3 bottom-2 rounded bg-white bg-opacity-50 px-1 text-base tabular-nums tracking-tighter text-gray-800;
+}

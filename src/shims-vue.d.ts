@@ -5,3 +5,4 @@ declare module "*.vue" {
 }
 
 declare module "formatcoords";
+declare module "mgrs";

@@ -1,8 +1,12 @@
 <template>
   <div class="relative bg-white dark:bg-gray-900">
     <MapContainer @ready="onMapReady" @drop="onDrop" @dragover.prevent />
-    <MeasurementToolbar v-if="mapRef" class="absolute left-3 bottom-4" :ol-map="mapRef" />
-    <div v-if="mapRef" class="absolute left-3 bottom-16">
+    <MeasurementToolbar
+      v-if="mapRef"
+      class="absolute left-3 bottom-10"
+      :ol-map="mapRef"
+    />
+    <div v-if="mapRef" class="absolute bottom-[5.2rem] left-3">
       <BaseToolbar class="shadow">
         <ToolbarButton start end @click="toggleMoveUnit()">
           <CursorDefault v-if="moveUnitEnabled" class="h-5 w-5" aria-hidden="true" />
@@ -14,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, markRaw, onUnmounted, ref, shallowRef, watch } from "vue";
+import { computed, markRaw, onUnmounted, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { clearStyleCache } from "@/geo/unitStyles";
@@ -37,11 +41,12 @@ import ToolbarButton from "./ToolbarButton.vue";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, currentScenarioTabKey } from "@/components/injects";
+import { activeScenarioKey } from "@/components/injects";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { storeToRefs } from "pinia";
 import { TAB_LAYERS } from "@/types/constants";
 import { useTabStore } from "@/stores/uiStore";
+import { useShowLocationControl } from "@/composables/geoShowLocation";
 
 const {
   geo,
@@ -99,6 +104,12 @@ const onMapReady = (olMap: OLMap) => {
   useOlEvent(unitLayerGroup.on("change:visible", toggleMoveUnitInteraction));
   olMap.addInteraction(moveUnitInteraction);
 
+  const { enable: enableLocationControl } = useShowLocationControl(olMap, {
+    coordinateFormat: "DegreeMinuteSeconds",
+    enable: false,
+  });
+  enableLocationControl.value = true;
+
   drawUnits();
   drawHistory();
 
@@ -132,3 +143,9 @@ onUnmounted(() => {
   geoStore.olMap = undefined;
 });
 </script>
+
+<style>
+.jest {
+  font-variant-numeric: tabular-nums;
+}
+</style>
