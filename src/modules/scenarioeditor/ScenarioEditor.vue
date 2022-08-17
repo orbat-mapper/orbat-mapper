@@ -93,7 +93,7 @@
           </TabItem>
           <TabItem label="Layers" v-slot="{ isActive }">
             <keep-alive>
-              <ScenarioLayers
+              <ScenarioLayersTab
                 v-if="isActive"
                 v-model="showLayerPanel"
                 :active-layer-id="activeLayerId"
@@ -255,7 +255,7 @@ import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioAc
 import { storeToRefs } from "pinia";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
-const ScenarioLayers = defineAsyncComponent(() => import("./NScenarioLayers.vue"));
+const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
 const SymbolPickerModal = defineAsyncComponent(
   () => import("@/components/SymbolPickerModal.vue")
 );
