@@ -45,7 +45,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { storeToRefs } from "pinia";
 import { TAB_LAYERS } from "@/types/constants";
-import { useTabStore } from "@/stores/uiStore";
+import { useMapSelectStore, useTabStore } from "@/stores/uiStore";
 import { useShowLocationControl } from "@/composables/geoShowLocation";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
@@ -93,8 +93,10 @@ const onMapReady = (olMap: OLMap) => {
   });
 
   olMap.addInteraction(historyModify);
-
-  const { unitSelectInteraction } = useUnitSelectInteraction([unitLayer]);
+  const { unitSelectEnabled } = storeToRefs(useMapSelectStore());
+  const { unitSelectInteraction } = useUnitSelectInteraction([unitLayer], {
+    enable: unitSelectEnabled,
+  });
   olMap.addInteraction(unitSelectInteraction);
 
   const { moveInteraction: moveUnitInteraction } = useMoveInteraction(

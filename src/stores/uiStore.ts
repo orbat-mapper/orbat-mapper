@@ -26,3 +26,10 @@ export const useTabStore = defineStore("uiTabs", {
     activeScenarioTab: TAB_ORBAT,
   }),
 });
+
+export const useMapSelectStore = defineStore("uiMapSelect", {
+  state: () => ({
+    unitSelectEnabled: true,
+    featureSelectEnabled: true,
+  }),
+});

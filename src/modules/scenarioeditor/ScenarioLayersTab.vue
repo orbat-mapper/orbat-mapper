@@ -33,6 +33,8 @@ import {
   NScenarioLayer,
   ScenarioLayerUpdate,
 } from "@/types/internalModels";
+import { storeToRefs } from "pinia";
+import { useMapSelectStore } from "@/stores/uiStore";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -52,7 +54,7 @@ const toggleLayerPanel = useToggle(showLayerPanel);
 
 const isActive = ref(true);
 const mapRef = useGeoStore().olMap! as OLMap;
-const isSelectActive = ref(true);
+const { featureSelectEnabled: isSelectActive } = storeToRefs(useMapSelectStore());
 
 const {
   scenarioLayersGroup,
