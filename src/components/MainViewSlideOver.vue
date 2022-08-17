@@ -19,6 +19,7 @@
           />
         </div>
       </TabItem>
+      <TabItem label="Map settings"><MapSettingsPanel /></TabItem>
     </TabView>
   </SlideOver>
 </template>
@@ -31,6 +32,7 @@ import TabView from "./TabView.vue";
 import TabItem from "./TabItem.vue";
 import { useSettingsStore } from "@/stores/settingsStore";
 import NumberInputGroup from "./NumberInputGroup.vue";
+import MapSettingsPanel from "@/components/MapSettingsPanel.vue";
 
 const props = defineProps({ modelValue: Boolean });
 

@@ -47,6 +47,7 @@ import { storeToRefs } from "pinia";
 import { TAB_LAYERS } from "@/types/constants";
 import { useTabStore } from "@/stores/uiStore";
 import { useShowLocationControl } from "@/composables/geoShowLocation";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
 const {
   geo,
@@ -104,11 +105,11 @@ const onMapReady = (olMap: OLMap) => {
   useOlEvent(unitLayerGroup.on("change:visible", toggleMoveUnitInteraction));
   olMap.addInteraction(moveUnitInteraction);
 
-  const { enable: enableLocationControl } = useShowLocationControl(olMap, {
-    coordinateFormat: "DegreeMinuteSeconds",
-    enable: false,
+  const { showLocation, coordinateFormat } = storeToRefs(useMapSettingsStore());
+  const lc = useShowLocationControl(olMap, {
+    coordinateFormat,
+    enable: showLocation,
   });
-  enableLocationControl.value = true;
 
   drawUnits();
   drawHistory();

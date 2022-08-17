@@ -39,7 +39,11 @@ export function useShowLocationControl(
 
   watch(
     coordinateFormatRef,
-    (f) => mousePositionControl.setCoordinateFormat(getCoordinateFormat()),
+    (f) => {
+      mousePositionControl.setCoordinateFormat(getCoordinateFormat());
+      // @ts-ignore
+      if (enableRef.value) mousePositionControl.updateHTML_([0, 0]);
+    },
     { immediate: true }
   );
 

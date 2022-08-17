@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- Show mouse position coordinates on map.
+- Add a configurable widget/control for showing mouse position coordinates on map.
 - Zoom to multiple units (z keyboard shortcut).
 - Apply actions on multiple units at once (change symbol, duplicate etc.).
 - Add button for changing unit symbol directly.
