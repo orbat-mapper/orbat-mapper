@@ -8,6 +8,6 @@ export interface MapSettingsState {
 export const useMapSettingsStore = defineStore("mapSettings", {
   state: (): MapSettingsState => ({
     showLocation: true,
-    coordinateFormat: "DegreeMinuteSeconds",
+    coordinateFormat: "DecimalDegrees",
   }),
 });
