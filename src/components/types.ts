@@ -8,6 +8,12 @@ export interface ButtonGroupItem {
   disabled?: boolean;
 }
 
+export interface RadioGroupItem<T = string | number> {
+  name: string;
+  description?: string;
+  value: T;
+}
+
 export interface SelectItem<T = string | number> {
   label: string;
   value: T;

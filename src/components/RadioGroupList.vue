@@ -51,8 +51,7 @@
   </RadioGroup>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from "vue";
+<script setup lang="ts">
 import {
   RadioGroup,
   RadioGroupDescription,
@@ -60,30 +59,15 @@ import {
   RadioGroupOption,
 } from "@headlessui/vue";
 import { useVModel } from "@vueuse/core";
+import { RadioGroupItem } from "@/components/types";
 
-interface Setting {
-  name: string;
-  description?: string;
-  value: string;
+interface Props {
+  settings: RadioGroupItem[];
+  modelValue?: string;
+  label?: string;
 }
+const props = defineProps<Props>();
+const emit = defineEmits(["update:modelValue"]);
 
-export default defineComponent({
-  name: "RadioGroupList",
-  components: {
-    RadioGroup,
-    RadioGroupDescription,
-    RadioGroupLabel,
-    RadioGroupOption,
-  },
-  props: {
-    settings: { type: Array as PropType<Setting[]>, required: true },
-    modelValue: { type: String },
-    label: { type: String },
-  },
-  emits: ["update:modelValue"],
-  setup(props) {
-    const selected = useVModel(props, "modelValue");
-    return { selected };
-  },
-});
+const selected = useVModel(props, "modelValue", emit);
 </script>
