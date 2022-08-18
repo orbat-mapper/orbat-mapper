@@ -14,7 +14,12 @@
 
         <div class="grid grid-cols-2 place-items-center gap-4">
           <div class="aspect-w-5 aspect-h-2 overflow-hidden rounded-lg bg-gray-100">
-            <img src="/images/orbat-chart-demo.png" class="object-cover object-top" />
+            <img
+              src="/images/orbat-chart-demo-min.png"
+              width="2136"
+              height="1780"
+              class="object-cover object-top"
+            />
           </div>
           <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="flex-shrink-0"
             >Orbat chart test
