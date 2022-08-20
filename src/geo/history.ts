@@ -5,7 +5,6 @@ import { formatDateString } from "@/geo/utils";
 import CircleStyle from "ol/style/Circle";
 import { LocationState, Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
-import GeometryLayout from "ol/geom/GeometryLayout";
 import { nanoid } from "@/utils";
 
 const styleCache = new Map();
@@ -125,7 +124,7 @@ export function createHistoryFeature(unit: Unit | NUnit): Feature<LineString> {
       return [...s.location, s.t];
     })
     .flat(2);
-  const t = new LineString(geometry, GeometryLayout.XYM);
+  const t = new LineString(geometry, "XYM");
   t.transform("EPSG:4326", "EPSG:3857");
   const f = new Feature({ geometry: t, unitId: unit.id, unitName: unit.name });
   f.setId(nanoid());

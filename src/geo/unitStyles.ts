@@ -1,12 +1,10 @@
 import { FeatureLike } from "ol/Feature";
-import { Fill, Icon, RegularShape, Stroke, Style } from "ol/style";
+import { Icon, Style } from "ol/style";
 import { Unit } from "@/types/scenarioModels";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import { Symbol as MilSymbol } from "milsymbol";
-import IconAnchorUnits from "ol/style/IconAnchorUnits";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { OlUnitProps } from "@/types/internalModels";
-import CircleStyle from "ol/style/Circle";
 
 const unitStyleCache = new Map();
 const selectedUnitStyleCache = new Map();
@@ -24,8 +22,8 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
     color: "white",
     scale: 1,
     anchor: [x, y],
-    anchorXUnits: IconAnchorUnits.PIXELS,
-    anchorYUnits: IconAnchorUnits.PIXELS,
+    anchorXUnits: "pixels",
+    anchorYUnits: "pixels",
     imgSize: [Math.floor(width), Math.floor(height)],
     img: milSymbol.asCanvas(),
   });

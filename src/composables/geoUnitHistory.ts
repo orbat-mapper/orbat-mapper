@@ -7,7 +7,7 @@ import { createHistoryFeature, VIA_TIME } from "@/geo/history";
 import Modify, { ModifyEvent } from "ol/interaction/Modify";
 import { LineString } from "ol/geom";
 import { Feature } from "ol";
-import GeometryLayout from "ol/geom/GeometryLayout";
+
 import { createHistoryLayer } from "@/geo/layers";
 import { MaybeRef } from "@vueuse/core";
 import { ref, watch } from "vue";
@@ -97,8 +97,7 @@ export function useUnitHistory(
       const updatedGeometry = postGeometry
         ?.getCoordinates()
         .map((e) => [e[0], e[1], e[2] === 0 ? VIA_TIME : e[2]]);
-      if (updatedGeometry)
-        f.getGeometry()?.setCoordinates(updatedGeometry, GeometryLayout.XYM);
+      if (updatedGeometry) f.getGeometry()?.setCoordinates(updatedGeometry, "XYM");
     }
   });
 

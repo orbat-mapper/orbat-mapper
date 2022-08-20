@@ -20,7 +20,6 @@ export function useShowLocationControl(
   const enableRef = ref(options.enable ?? true);
   const mousePositionControl = new MousePosition({
     projection: projectionRef.value,
-    placeholder: false,
     className: "location-control",
   });
 
