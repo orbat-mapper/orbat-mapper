@@ -79,18 +79,18 @@
 
           <li>
             <p>
-              <a href="https://mgrs-mapper.com/">MGRS Mapper</a> -
-              <q>operational graphics tool for junior leaders</q>. Subscription based
-              service. A limited free version is available.
+              <a href="https://odin.syncpoint.io/en/"
+                >ODIN open source command and control information system</a
+              >. Desktop application available on most operating systems (Electron based).
+              
             </p>
           </li>
 
           <li>
             <p>
-              <a href="https://odin.syncpoint.io/en/"
-                >ODIN open source command and control information system</a
-              >. Desktop application available on most operating systems (Electron based).
-              Still under development, but looks very promising!
+              <a href="https://mgrs-mapper.com/">MGRS Mapper</a> -
+              <q>operational graphics tool for junior leaders</q>. Subscription based
+              service. A limited free version is available.
             </p>
           </li>
         </ul>
@@ -110,6 +110,10 @@
             >Netherlands Armed Forces ORDER OF BATTLE 1985</a
           >
           is a real treat.
+        </p>
+
+        <p><a href="https://www.naval-history.net/index.htm">Naval-History.net</a> contains a wealth of information about the history of the Royal Navy. 
+        The site also contains an online version of Gordon Smith's book <a href="https://www.naval-history.net/NAVAL1982FALKLANDS.htm">BATTLE ATLAS of the FALKLANDS WAR 1982 by Land, Sea and Air</a>.  This book is used as one of the sources for ORBAT mapper's main demo scenario.  
         </p>
       </ProseSection>
     </main>
