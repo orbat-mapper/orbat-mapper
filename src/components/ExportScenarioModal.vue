@@ -14,7 +14,7 @@
         />
         <InputCheckbox
           label="Include scenario features"
-          v-model="form.includeUnits"
+          v-model="form.includeFeatures"
           description=""
         />
       </fieldset>
@@ -39,11 +39,12 @@ import { ref } from "vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import { ExportFormat, ExportSettings } from "@/types/convert";
 import { useScenarioExport } from "@/composables/scenarioExport";
+import { useNotifications } from "@/composables/notifications";
 
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue", "cancel"]);
 
-const { downloadAsGeoJSON } = useScenarioExport();
+const { downloadAsGeoJSON, downloadAsKML } = useScenarioExport();
 
 const formatItems: SelectItem<ExportFormat>[] = [
   { label: "GeoJSON", value: "geojson" },
@@ -62,11 +63,18 @@ const form = ref<Form>({
 });
 
 const { focusId } = useFocusOnMount(undefined, 150);
-
+const { send } = useNotifications();
 const open = useVModel(props, "modelValue");
 const onCancel = () => (open.value = false);
 
-async function onExport(e: SubmitEvent) {
-  if (form.value.format === "geojson") await downloadAsGeoJSON(form.value);
+async function onExport(e: Event) {
+  const { format } = form.value;
+  if (format === "geojson") {
+    await downloadAsGeoJSON(form.value);
+  } else if (format === "kml") {
+    await downloadAsKML(form.value);
+  }
+  open.value = false;
+  send({ message: `Exported scenario as ${format}` });
 }
 </script>
