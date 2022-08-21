@@ -1,3 +1,4 @@
+<script src="../../../placemark/kmz.ts"></script>
 <template>
   <div class="relative flex items-start">
     <div class="flex h-5 items-center">
