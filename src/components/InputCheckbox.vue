@@ -4,12 +4,12 @@
       <input
         type="checkbox"
         v-model="localValue"
-        :id="id"
+        :id="_id"
         class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
       />
     </div>
     <div class="ml-3 text-sm">
-      <label :for="id" class="font-medium text-gray-700">
+      <label :for="_id" class="font-medium text-gray-700">
         <slot name="label">{{ label }}</slot>
       </label>
       <p v-if="description || $slots.description" class="text-gray-500">
@@ -29,8 +29,10 @@ interface Props {
   description?: string;
   modelValue?: boolean;
 }
-const props = withDefaults(defineProps<Props>(), { id: nanoid(5) });
+const props = withDefaults(defineProps<Props>(), {});
 const emit = defineEmits(["update:modelValue"]);
+
+const _id = props.id || nanoid(5);
 
 const localValue = computed({
   get: () => props.modelValue,
