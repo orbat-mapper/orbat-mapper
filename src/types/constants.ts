@@ -33,7 +33,8 @@ export type ScenarioActions =
   | "load"
   | "exportJson"
   | "loadNew"
-  | "exportToClipboard";
+  | "exportToClipboard"
+  | "export";
 
 export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
 //{

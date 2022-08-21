@@ -174,6 +174,7 @@
         v-model="showLoadModal"
         @loaded="loadScenario"
       />
+      <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
       <InputDateModal
         v-if="showDateModal"
         v-model="showDateModal"
@@ -259,6 +260,12 @@ const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab
 const SymbolPickerModal = defineAsyncComponent(
   () => import("@/components/SymbolPickerModal.vue")
 );
+const InputDateModal = defineAsyncComponent(
+  () => import("@/components/InputDateModal.vue")
+);
+const ExportScenarioModal = defineAsyncComponent(
+  () => import("@/components/ExportScenarioModal.vue")
+);
 
 const props = defineProps<{ activeScenario: TScenario }>();
 const activeUnitId = ref<EntityId | undefined | null>(null);
@@ -288,6 +295,7 @@ const isOpen = ref(false);
 const showSearch = ref(false);
 const showLoadModal = ref(false);
 const shortcutsModalVisible = ref(false);
+const showExportModal = ref(false);
 
 const activeUnitStore = useActiveUnitStore({
   activeScenario: props.activeScenario,
@@ -308,10 +316,6 @@ const activeFeatureId = ref<FeatureId | null>(null);
 // const isDark = useDark();
 // const toggleDark = useToggle(isDark);
 useTitle(windowTitle);
-
-const InputDateModal = defineAsyncComponent(
-  () => import("@/components/InputDateModal.vue")
-);
 
 const {
   showDateModal,
@@ -386,6 +390,7 @@ const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
   { label: "Load scenario", action: "loadNew" },
   { label: "Download as JSON", action: "exportJson" },
   { label: "Copy to clipboard", action: "exportToClipboard" },
+  { label: "Export scenario", action: "export" },
 ];
 
 async function onScenarioAction(action: ScenarioActions) {
@@ -404,6 +409,10 @@ async function onScenarioAction(action: ScenarioActions) {
   } else if (action === "exportToClipboard") {
     await copyToClipboard(io.stringifyScenario());
     if (copied.value) send({ message: "Scenario copied to clipboard" });
+  } else if (action === "export") {
+    showExportModal.value = true;
+  } else {
+    send({ message: "Not implemented yet" });
   }
 }
 
