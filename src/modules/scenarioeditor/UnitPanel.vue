@@ -87,7 +87,11 @@
       <ToggleField v-model="unitSettings.editHistory">Edit unit track on map</ToggleField>
     </div>
     <UnitPanelState v-if="!isMultiMode && unit?.state?.length" :unit="unit" />
-    <GlobalEvents :filter="inputEventFilter" @keyup.e="doFormFocus" />
+    <GlobalEvents
+      v-if="uiStore.shortcutsEnabled"
+      :filter="inputEventFilter"
+      @keyup.e="doFormFocus"
+    />
   </div>
 </template>
 
