@@ -27,6 +27,9 @@
         </div>
       </div>
       <div class="flex shrink-0 items-center space-x-2">
+        <DropdownMenu :items="fileMenuItems" @action="onScenarioAction"
+          >Scenario</DropdownMenu
+        >
         <button
           @click="showSearch = true"
           class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -254,6 +257,7 @@ import { useDateModal, useSidcModal } from "@/composables/modals";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import { storeToRefs } from "pinia";
+import DropdownMenu from "@/components/DropdownMenu.vue";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
@@ -385,6 +389,15 @@ const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
 
 const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
   { label: "Add new side", action: "addSide" },
+  { label: "Save to local storage", action: "save" },
+  { label: "Load from local storage", action: "load" },
+  { label: "Load scenario", action: "loadNew" },
+  { label: "Download as JSON", action: "exportJson" },
+  { label: "Copy to clipboard", action: "exportToClipboard" },
+  { label: "Export scenario", action: "export" },
+];
+
+const fileMenuItems: MenuItemData<ScenarioActions>[] = [
   { label: "Save to local storage", action: "save" },
   { label: "Load from local storage", action: "load" },
   { label: "Load scenario", action: "loadNew" },
