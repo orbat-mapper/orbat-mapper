@@ -66,7 +66,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
 
     FileSaver.saveAs(
       new Blob([foldersToKML(root)], {
-        type: "application/json",
+        type: "application/vnd.google-earth.kml+xml",
       }),
       "scenario.kml"
     );
