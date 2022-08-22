@@ -4,6 +4,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
 import { ExportSettings } from "@/types/convert";
 import * as FileSaver from "file-saver";
+import { symbolGenerator } from "@/symbology/milsymbwrapper";
 
 export interface UseScenarioExportOptions {
   activeScenario: TScenario;
@@ -43,7 +44,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
-  async function downloadAsKML(opts: ExportSettings) {
+  async function createKMLString(opts: ExportSettings) {
     const { foldersToKML } = await import("@placemarkio/tokml");
     const units = opts.includeUnits ? convertUnitsToGeoJson().features : [];
     const features = opts.includeFeatures
@@ -63,13 +64,48 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         children: features,
       });
     }
+    return foldersToKML(root);
+  }
 
+  async function downloadAsKML(opts: ExportSettings) {
+    const kmlString = await createKMLString(opts);
     FileSaver.saveAs(
-      new Blob([foldersToKML(root)], {
+      new Blob([kmlString], {
         type: "application/vnd.google-earth.kml+xml",
       }),
       "scenario.kml"
     );
   }
-  return { downloadAsGeoJSON, downloadAsKML };
+
+  async function downloadAsKMZ(opts: ExportSettings) {
+    const kmlString = await createKMLString(opts);
+    const { zipSync } = await import("fflate");
+
+    const data: Record<string, Uint8Array> = {};
+    data["doc.kml"] = new TextEncoder().encode(kmlString);
+    if (opts.embedIcons) {
+      for (const unit of geo.everyVisibleUnit.value) {
+        const { sidc } = unit;
+        if (!(sidc in data)) {
+          const symb = symbolGenerator(sidc);
+          const blob: Blob | null = await new Promise((resolve) =>
+            symb.asCanvas().toBlob(resolve)
+          );
+          if (blob) {
+            data[`icons/${sidc}.png`] = new Uint8Array(await blob.arrayBuffer());
+          }
+        }
+      }
+    }
+
+    const zipData = zipSync(data);
+    FileSaver.saveAs(
+      new Blob([zipData], {
+        type: "application/octet-stream",
+      }),
+      "scenario.kmz"
+    );
+  }
+
+  return { downloadAsGeoJSON, downloadAsKML, downloadAsKMZ };
 }

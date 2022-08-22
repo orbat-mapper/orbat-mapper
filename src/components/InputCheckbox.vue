@@ -6,6 +6,7 @@
         v-model="localValue"
         :id="_id"
         class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        v-bind="$attrs"
       />
     </div>
     <div class="ml-3 text-sm">
@@ -28,6 +29,7 @@ interface Props {
   label?: string;
   description?: string;
   modelValue?: boolean;
+  disabled?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {});
 const emit = defineEmits(["update:modelValue"]);
@@ -38,4 +40,10 @@ const localValue = computed({
   get: () => props.modelValue,
   set: (value) => emit("update:modelValue", value),
 });
+</script>
+
+<script lang="ts">
+export default {
+  inheritAttrs: false,
+};
 </script>

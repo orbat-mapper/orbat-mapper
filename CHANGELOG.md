@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Basic KMZ export.
 - Experimental GeoJSON export.
 - Experimental KML export.
 - Add a configurable widget/control for showing mouse position coordinates on map.
