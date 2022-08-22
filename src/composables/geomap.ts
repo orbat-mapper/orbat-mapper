@@ -1,5 +1,5 @@
 import { createUnitFeatureAt, createUnitLayer } from "@/geo/layers";
-import Fade from "ol-ext/featureanimation/Fade";
+// import Fade from "ol-ext/featureanimation/Fade";
 import { nextTick, ref, Ref, unref, watch } from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
@@ -38,10 +38,10 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       return createUnitFeatureAt(unit._state!.location!, unit);
     });
     unitLayer.getSource()?.addFeatures(units);
-    units.forEach((f) =>
-      //@ts-ignore
-      unitLayer.animateFeature(f, new Fade({ duration: 1000 }))
-    );
+    // units.forEach((f) =>
+    //   //@ts-ignore
+    //   unitLayer.animateFeature(f, new Fade({ duration: 1000 }))
+    // );
   };
   return { unitLayer, drawUnits, animateUnits };
 }
