@@ -8,9 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- Basic KMZ export.
-- Experimental GeoJSON export.
-- Experimental KML export.
+- Embed unit icons in KMZ export.
+- Basic KML/KMZ export.  
+- Basic GeoJSON export.
 - Add a configurable widget/control for showing mouse position coordinates on map.
 - Zoom to multiple units (z keyboard shortcut).
 - Apply actions on multiple units at once (change symbol, duplicate etc.).

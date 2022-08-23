@@ -9,9 +9,12 @@
       <div class="text-sm text-gray-700">
         <p v-if="isKml">
           KML is a file format used to display data in an Earth browser such as Google
-          Earth.
+          Earth. Use KMZ if you want to include unit icons.
         </p>
-        <p v-else-if="isKmz">KMZ is a compressed version of KML.</p>
+        <p v-else-if="isKmz">
+          KMZ is a compressed version of KML. Use this format if you want to include unit
+          icons.
+        </p>
       </div>
       <fieldset class="space-y-4">
         <InputCheckbox
@@ -29,7 +32,6 @@
           label="Include unit icons"
           v-model="form.embedIcons"
           description="Embed icons as images"
-          disabled
         />
       </fieldset>
 
@@ -72,11 +74,11 @@ interface Form extends ExportSettings {
 }
 
 const form = ref<Form>({
-  format: "geojson",
-  includeFeatures: true,
+  format: "kmz",
+  includeFeatures: false,
   includeUnits: true,
   fileName: "scenario.geojson",
-  embedIcons: false,
+  embedIcons: true,
 });
 
 const { focusId } = useFocusOnMount(undefined, 150);

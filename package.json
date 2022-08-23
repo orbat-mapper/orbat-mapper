@@ -18,8 +18,8 @@
   "dependencies": {
     "@headlessui/vue": "^1.5.0",
     "@heroicons/vue": "^1.0.6",
-    "@placemarkio/tokml": "^0.3.3",
     "@popperjs/core": "^2.11.5",
+    "@tmcw/togeojson": "^5.2.2",
     "@turf/turf": "^6.5.0",
     "@vueuse/core": "^9.0.0",
     "@vvo/tzdb": "^6.48.0",
@@ -43,9 +43,12 @@
     "pinia": "^2.0.14",
     "rfc6902": "^5.0.1",
     "scrollama": "^3.1.1",
+    "unist-builder": "^3.0.0",
     "vue": "^3.2.33",
     "vue-global-events": "^2.1.1",
-    "vue-router": "^4.0.15"
+    "vue-router": "^4.0.15",
+    "xast-util-to-xml": "^3.0.0",
+    "xastscript": "^3.0.0"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.0",
