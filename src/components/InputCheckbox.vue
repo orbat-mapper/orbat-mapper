@@ -29,7 +29,6 @@ interface Props {
   label?: string;
   description?: string;
   modelValue?: boolean;
-  disabled?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {});
 const emit = defineEmits(["update:modelValue"]);
