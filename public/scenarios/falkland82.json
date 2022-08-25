@@ -256,6 +256,182 @@
           "name": "Operation Corporate",
           "subUnits": [
             {
+              "name": "TG 317.8 CVG",
+              "sidc": "10033000001210030000",
+              "subUnits": [
+                {
+                  "name": "HMS Hermes",
+                  "sidc": "10033000001201000000",
+                  "subUnits": [
+                    {
+                      "name": "H1",
+                      "sidc": "10030100001101050000",
+                      "state": [],
+                      "id": "NRKyQ2BQ6SuK5zokH5l9d",
+                      "subUnits": []
+                    }
+                  ],
+                  "state": [],
+                  "id": "7PzaRoGKhIW96pSQQMJA0",
+                  "shortName": "Hermes",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Hermes_(R12)"
+                },
+                {
+                  "name": "HMS Invincible",
+                  "sidc": "10033000001201000000",
+                  "state": [],
+                  "id": "keMfWw0quLXJCDCLwl4xY",
+                  "shortName": "Invincible",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Invincible_(R05)",
+                  "subUnits": []
+                },
+                {
+                  "name": "HMS Glamorgan",
+                  "sidc": "10033000001202030000",
+                  "state": [],
+                  "id": "~y20tZKRCGHJF7SvooJTu",
+                  "shortName": "Glamorgan",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Glamorgan_(D19)",
+                  "subUnits": []
+                },
+                {
+                  "name": "HMS Antrim",
+                  "sidc": "10033000001202030000",
+                  "state": [],
+                  "id": "wdC42zpLxc",
+                  "shortName": "Antrim",
+                  "externalUrl": "",
+                  "subUnits": []
+                },
+                {
+                  "name": "HMS Cardiff",
+                  "sidc": "10033000001202030000",
+                  "state": [],
+                  "id": "d5ngItsfdR",
+                  "shortName": "",
+                  "externalUrl": "",
+                  "subUnits": []
+                },
+                {
+                  "name": "HMS Exeter",
+                  "sidc": "10033000001202030000",
+                  "state": [],
+                  "id": "XtwEXfSori",
+                  "shortName": "",
+                  "externalUrl": "",
+                  "subUnits": []
+                },
+                {
+                  "name": "HMS Sheffield",
+                  "sidc": "10033000001202030000",
+                  "state": [
+                    {
+                      "id": "dhVy6x08PT",
+                      "t": "1982-05-04T07:00:00-04:00",
+                      "location": [-57.150140048356505, -52.752119106842066],
+                      "title": "Sheffield hit by Exocet missile"
+                    }
+                  ],
+                  "id": "sBOIvsmCQG",
+                  "shortName": "Sheffield",
+                  "externalUrl": "",
+                  "subUnits": []
+                }
+              ],
+              "state": [],
+              "id": "b1quuSsVd5eC3lUykZayJ"
+            },
+            {
+              "name": "TG 317.0",
+              "sidc": "10033000001210030000",
+              "subUnits": [
+                {
+                  "name": "HMS Fearless",
+                  "sidc": "10033000001203010000",
+                  "id": "ZtFDRC8WKE",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "Fearless"
+                },
+                {
+                  "name": "HMS Intrepid",
+                  "sidc": "10033000001203060000",
+                  "id": "4Ab6AEdBAW",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "Intrepid"
+                },
+                {
+                  "name": "HMS Broadsword",
+                  "sidc": "10033000001202040000",
+                  "id": "oGbJJ2S6hG",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "Broadsword"
+                },
+                {
+                  "name": "HMS Brilliant",
+                  "sidc": "10033000001202040000",
+                  "id": "BcABqq8KZa",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "Brilliant"
+                },
+                {
+                  "name": "HMS Plymouth",
+                  "sidc": "10033000001202040000",
+                  "id": "0Ek8j6xGr6",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "Plymouth"
+                },
+                {
+                  "name": "HMS Argonaut",
+                  "sidc": "10033000001202040000",
+                  "id": "yNQd7mIeb7",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "Argonaut"
+                },
+                {
+                  "name": "HMS Coventry",
+                  "sidc": "10033000001202030000",
+                  "id": "pbqOfSQTZU",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "Coventry"
+                },
+                {
+                  "name": "HMS Yarmouth",
+                  "sidc": "10033000001202040000",
+                  "id": "8mU3ArN1Wz",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "Yarmouth"
+                },
+                {
+                  "name": "HMS Ardent",
+                  "sidc": "10033000001202040000",
+                  "id": "nzs6VHvEGH",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "Ardent"
+                },
+                {
+                  "name": "HMS Antelope",
+                  "sidc": "10033000001202040000",
+                  "id": "01pVFiyW7x",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "Antelope"
+                }
+              ],
+              "state": [],
+              "id": "oTkq8pX0E4",
+              "shortName": "",
+              "description": "Amphibious Task Group "
+            },
+            {
               "name": "TG 317.1 LG",
               "sidc": "10031004001211000000",
               "subUnits": [
@@ -589,49 +765,6 @@
               ],
               "state": [],
               "id": "Apc~4XNmoJDViPTPdcoJS"
-            },
-            {
-              "name": "TG 317.8 CVG",
-              "sidc": "10033000001210030000",
-              "subUnits": [
-                {
-                  "name": "HMS Hermes",
-                  "sidc": "10033000001201000000",
-                  "subUnits": [
-                    {
-                      "name": "H1",
-                      "sidc": "10030100001101050000",
-                      "state": [],
-                      "id": "NRKyQ2BQ6SuK5zokH5l9d",
-                      "subUnits": []
-                    }
-                  ],
-                  "state": [],
-                  "id": "7PzaRoGKhIW96pSQQMJA0",
-                  "shortName": "Hermes",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Hermes_(R12)"
-                },
-                {
-                  "name": "HMS Invincible",
-                  "sidc": "10033000001201000000",
-                  "state": [],
-                  "id": "keMfWw0quLXJCDCLwl4xY",
-                  "shortName": "Invincible",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Invincible_(R05)",
-                  "subUnits": []
-                },
-                {
-                  "name": "HMS Glamorgan",
-                  "sidc": "10033000001202030000",
-                  "state": [],
-                  "id": "~y20tZKRCGHJF7SvooJTu",
-                  "shortName": "Glamorgan",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Glamorgan_(D19)",
-                  "subUnits": []
-                }
-              ],
-              "state": [],
-              "id": "b1quuSsVd5eC3lUykZayJ"
             },
             {
               "name": "TG 324.3 SS",
