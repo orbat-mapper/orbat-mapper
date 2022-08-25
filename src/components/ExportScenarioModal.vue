@@ -34,6 +34,10 @@
           description="Embed icons as images"
         />
       </fieldset>
+      <p v-if="isKmz || isKml" class="text-sm text-gray-700">
+        Please note that the export functionality is experimental. Scenario feature export
+        is currently limited to geometries (no styles).
+      </p>
 
       <footer class="flex items-center justify-end space-x-2 pt-4">
         <BaseButton type="submit" primary small>Export</BaseButton>

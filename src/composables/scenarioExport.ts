@@ -59,9 +59,10 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         type: "folder",
         meta: { name: "Units" },
         children: units.map((unit) => {
+          const { name, description } = unit.properties;
           return {
             ...unit,
-            properties: { ...unit.properties, styleUrl: `#sidc${unit.properties.sidc}` },
+            properties: { name, description, styleUrl: `#sidc${unit.properties.sidc}` },
           };
         }),
       });
