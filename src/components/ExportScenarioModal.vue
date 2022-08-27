@@ -1,5 +1,5 @@
 <template>
-  <SimpleModal v-model="open" dialog-title="Export scenario" @cancel="emit('cancel')">
+  <SimpleModal v-model="open" dialog-title="Export scenario" @cancel="onCancel">
     <form @submit.prevent="onExport" class="mt-4 space-y-6">
       <SimpleSelect
         label="Select export format"
@@ -48,7 +48,6 @@
 </template>
 
 <script setup lang="ts">
-import { useVModel } from "@vueuse/core";
 import { useFocusOnMount } from "@/components/helpers";
 
 import BaseButton from "@/components/BaseButton.vue";
@@ -61,10 +60,11 @@ import { ExportFormat, ExportSettings } from "@/types/convert";
 import { useScenarioExport } from "@/composables/scenarioExport";
 import { useNotifications } from "@/composables/notifications";
 import NProgress from "nprogress";
+import { onBeforeRouteLeave, useRouter } from "vue-router";
 
-const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
+const router = useRouter();
+
 const emit = defineEmits(["update:modelValue", "cancel"]);
-
 const { downloadAsGeoJSON, downloadAsKML, downloadAsKMZ } = useScenarioExport();
 
 const formatItems: SelectItem<ExportFormat>[] = [
@@ -87,11 +87,15 @@ const form = ref<Form>({
 
 const { focusId } = useFocusOnMount(undefined, 150);
 const { send } = useNotifications();
-const open = useVModel(props, "modelValue");
-const onCancel = () => (open.value = false);
+const open = ref(true);
+
 const isGeojson = computed(() => form.value.format === "geojson");
 const isKml = computed(() => form.value.format === "kml");
 const isKmz = computed(() => form.value.format === "kmz");
+
+onBeforeRouteLeave((to, from) => {
+  open.value = false;
+});
 
 async function onExport(e: Event) {
   const { format } = form.value;
@@ -106,5 +110,11 @@ async function onExport(e: Event) {
   NProgress.done();
   open.value = false;
   send({ message: `Exported scenario as ${format}` });
+  router.back();
+}
+
+function onCancel() {
+  open.value = false;
+  router.back();
 }
 </script>

@@ -177,7 +177,6 @@
         v-model="showLoadModal"
         @loaded="loadScenario"
       />
-      <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
       <InputDateModal
         v-if="showDateModal"
         v-model="showDateModal"
@@ -194,6 +193,7 @@
         @cancel="cancelSidcModal"
       />
     </div>
+    <router-view />
   </div>
 </template>
 
@@ -258,6 +258,7 @@ import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vu
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import { storeToRefs } from "pinia";
 import DropdownMenu from "@/components/DropdownMenu.vue";
+import { EXPORT_SCENARIO_ROUTE } from "@/router/names";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
@@ -266,9 +267,6 @@ const SymbolPickerModal = defineAsyncComponent(
 );
 const InputDateModal = defineAsyncComponent(
   () => import("@/components/InputDateModal.vue")
-);
-const ExportScenarioModal = defineAsyncComponent(
-  () => import("@/components/ExportScenarioModal.vue")
 );
 
 const props = defineProps<{ activeScenario: TScenario }>();
@@ -423,7 +421,7 @@ async function onScenarioAction(action: ScenarioActions) {
     await copyToClipboard(io.stringifyScenario());
     if (copied.value) send({ message: "Scenario copied to clipboard" });
   } else if (action === "export") {
-    showExportModal.value = true;
+    router.push({ name: EXPORT_SCENARIO_ROUTE });
   } else {
     send({ message: "Not implemented yet" });
   }

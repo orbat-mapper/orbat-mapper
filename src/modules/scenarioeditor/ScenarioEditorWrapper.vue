@@ -8,10 +8,14 @@ const { scenario, isLoading, isReady } = useScenario();
 const route = useRoute();
 const router = useRouter();
 let demoLoaded = false;
+let currentDemo = "";
 
 if (route.query.load) {
-  scenario.value.io.loadDemoScenario(route.query.load as string);
+  if (currentDemo !== route.query.load) {
+    scenario.value.io.loadDemoScenario(route.query.load as string);
+  }
   demoLoaded = true;
+  currentDemo = route.query.load as string;
 } else {
   if (!isReady.value) scenario.value.io.loadEmptyScenario();
 }
@@ -20,8 +24,12 @@ watch(
   () => route.query.load,
   async (v) => {
     if (v) {
+      if (currentDemo !== route.query.load) {
+        await scenario.value.io.loadDemoScenario(v as string);
+      }
+
       demoLoaded = true;
-      await scenario.value.io.loadDemoScenario(v as string);
+      currentDemo = route.query.load as string;
     }
   }
 );

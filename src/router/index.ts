@@ -3,6 +3,7 @@ import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import LandingPage from "../views/LandingPage.vue";
 import {
+  EXPORT_SCENARIO_ROUTE,
   LANDING_PAGE_ROUTE,
   NEW_SCENARIO_ROUTE,
   ORBAT_CHART_ROUTE,
@@ -18,7 +19,7 @@ const OrbatChartView = () => import("../modules/charteditor/OrbatChartViewWrappe
 const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
 const GeoTestView = () => import("../views/GeoTestView.vue");
 const StoreTestView = () => import("../views/StoreTestViewWrapper.vue");
-
+const ExportScenarioModal = () => import("../components/ExportScenarioModal.vue");
 const routes = [
   {
     path: "/scenario",
@@ -27,6 +28,13 @@ const routes = [
     beforeEnter: (to, from) => {
       NProgress.start();
     },
+    children: [
+      {
+        path: "export",
+        name: EXPORT_SCENARIO_ROUTE,
+        component: ExportScenarioModal,
+      },
+    ],
   },
   {
     path: "/newscenario",

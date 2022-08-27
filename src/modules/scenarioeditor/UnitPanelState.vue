@@ -113,6 +113,7 @@ async function onStateAction(index: number, action: StateAction) {
   } else if (action === "changeTime") {
     const newTimestamp = await getModalTimestamp(state.value[index].t, {
       timeZone: store.state.info.timeZone,
+      title: "Set event time",
     });
     if (newTimestamp !== undefined) {
       unitActions.updateUnitStateEntry(props.unit.id, index, {
