@@ -5,7 +5,7 @@
       class="flex flex-shrink-0 items-center justify-between bg-gray-800 py-2 pr-4 pl-6 text-gray-200"
     >
       <div class="flex min-w-0 flex-auto items-center">
-        <router-link to="/" class="flex-shrink-0">
+        <router-link :to="{ name: LANDING_PAGE_ROUTE }" class="flex-shrink-0">
           <svg
             class="block h-7 w-auto fill-gray-700 stroke-gray-300"
             stroke="currentColor"
@@ -36,6 +36,11 @@
         >
           <SearchIcon class="block h-6 w-6" />
         </button>
+        <router-link
+          :to="{ name: BATCH_EDIT_ROUTE }"
+          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          >Batch edit</router-link
+        >
         <div class="flex items-center">
           <button
             @click="undo()"
@@ -70,7 +75,7 @@
         </button>
       </div>
     </nav>
-    <div class="flex min-h-0 flex-auto">
+    <div class="relative flex min-h-0 flex-auto">
       <aside
         class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100 dark:bg-gray-900"
       >
@@ -120,6 +125,7 @@
         >
           <TimeController class="" />
         </footer>
+        <router-view />
       </aside>
       <aside
         v-show="showLayerPanel"
@@ -193,7 +199,6 @@
         @cancel="cancelSidcModal"
       />
     </div>
-    <router-view />
   </div>
 </template>
 
@@ -258,7 +263,11 @@ import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vu
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import { storeToRefs } from "pinia";
 import DropdownMenu from "@/components/DropdownMenu.vue";
-import { EXPORT_SCENARIO_ROUTE } from "@/router/names";
+import {
+  EXPORT_SCENARIO_ROUTE,
+  BATCH_EDIT_ROUTE,
+  LANDING_PAGE_ROUTE,
+} from "@/router/names";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));

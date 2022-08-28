@@ -461,6 +461,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     deleteUnit,
     changeUnitParent,
     walkSubUnits,
+    walkSide,
     cloneUnit,
     reorderUnit,
     getUnitHierarchy,
