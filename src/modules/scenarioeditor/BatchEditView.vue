@@ -11,7 +11,12 @@
         <BaseButton @click="doClose()">Close</BaseButton>
       </header>
       <div class="relative min-w-0 max-w-none flex-auto overflow-auto pb-7">
-        <table class="min-w-full divide-y divide-gray-300">
+        <table class="w-full table-fixed divide-y divide-gray-300">
+          <colgroup>
+            <col />
+            <col />
+            <col class="w-1/4" />
+          </colgroup>
           <thead class="bg-gray-100">
             <tr>
               <th
@@ -20,13 +25,13 @@
               ></th>
               <th
                 scope="col"
-                class="sticky top-0 z-10 hidden border-b border-gray-300 bg-gray-100 bg-opacity-95 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter sm:table-cell"
+                class="sticky top-0 z-10 border-b border-gray-300 bg-gray-100 bg-opacity-95 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter"
               >
                 Name
               </th>
               <th
                 scope="col"
-                class="sticky top-0 z-10 hidden border-b border-gray-300 bg-gray-100 bg-opacity-95 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter lg:table-cell"
+                class="sticky top-0 z-10 border-b border-gray-300 bg-gray-100 bg-opacity-95 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter"
               >
                 Short name
               </th>
@@ -47,7 +52,7 @@
                   :style="`padding-left: ${item.level * 1 + 1}rem`"
                 >
                   <MilSymbol :sidc="item.unit.sidc" />
-                  <span class="ml-2">{{ item.unit.name }}</span>
+                  <span class="ml-2 truncate">{{ item.unit.name }}</span>
                 </td>
                 <td
                   class="whitespace-nowrap px-3 py-3 text-sm text-gray-500"
@@ -59,7 +64,7 @@
                   >
                     <input
                       type="text"
-                      class="-my-3 max-w-sm"
+                      class="-my-3 w-full"
                       :value="item.unit.name"
                       @vnode-mounted="onVMounted"
                       @keydown.tab="onTab(item.unit, itemIndex, 'name')"
@@ -80,7 +85,7 @@
                   >
                     <input
                       type="text"
-                      class="-my-3 flex max-w-sm"
+                      class="-my-3 w-full"
                       :value="item.unit.shortName"
                       @vnode-mounted="onVMounted"
                       @keydown.tab="onTab(item.unit, itemIndex, 'shortName')"
@@ -239,16 +244,24 @@ function onTab(unit: NUnit, itemIndex: number, column: "name" | "shortName") {
 
 function onDown(itemIndex: number) {
   if (!activeUnit.value) return;
-  const nextItem = items.value[itemIndex + 1];
+  let idx = itemIndex + 1;
+  let nextItem = items.value[idx];
+  while (nextItem && nextItem.type !== "unit") {
+    nextItem = items.value[++idx];
+  }
   if (nextItem.type === "unit") {
     activateEdit(nextItem.unit, itemIndex + 1, activeColumn.value!);
   }
 }
 function onUp(itemIndex: number) {
   if (!activeUnit.value) return;
-  const nextItem = items.value[itemIndex - 1];
-  if (nextItem.type === "unit") {
-    activateEdit(nextItem.unit, itemIndex - 1, activeColumn.value!);
+  let idx = itemIndex - 1;
+  let prevItem = items.value[idx];
+  while (prevItem && prevItem.type !== "unit") {
+    prevItem = items.value[--idx];
+  }
+  if (prevItem.type === "unit") {
+    activateEdit(prevItem.unit, itemIndex - 1, activeColumn.value!);
   }
 }
 
