@@ -4,4 +4,5 @@ export interface ExportSettings {
   includeUnits: boolean;
   includeFeatures: boolean;
   embedIcons: boolean;
+  useShortName: boolean;
 }

@@ -59,10 +59,14 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         type: "folder",
         meta: { name: "Units" },
         children: units.map((unit) => {
-          const { name, description } = unit.properties;
+          const { name, shortName, description } = unit.properties;
           return {
             ...unit,
-            properties: { name, description, styleUrl: `#sidc${unit.properties.sidc}` },
+            properties: {
+              name: opts.useShortName ? shortName || name : name,
+              description,
+              styleUrl: `#sidc${unit.properties.sidc}`,
+            },
           };
         }),
       });

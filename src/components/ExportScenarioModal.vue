@@ -28,6 +28,11 @@
           description=""
         />
         <InputCheckbox
+          v-if="isKml || isKmz"
+          label="Use short unit names"
+          v-model="form.useShortName"
+        />
+        <InputCheckbox
           v-if="isKmz"
           label="Include unit icons"
           v-model="form.embedIcons"
@@ -56,7 +61,7 @@ import SimpleSelect from "@/components/SimpleSelect.vue";
 import { SelectItem } from "@/components/types";
 import { computed, ref } from "vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";
-import { ExportFormat, ExportSettings } from "@/types/convert";
+import type { ExportFormat, ExportSettings } from "@/types/convert";
 import { useScenarioExport } from "@/composables/scenarioExport";
 import { useNotifications } from "@/composables/notifications";
 import NProgress from "nprogress";
@@ -83,6 +88,7 @@ const form = ref<Form>({
   includeUnits: true,
   fileName: "scenario.geojson",
   embedIcons: true,
+  useShortName: true,
 });
 
 const { focusId } = useFocusOnMount(undefined, 150);
