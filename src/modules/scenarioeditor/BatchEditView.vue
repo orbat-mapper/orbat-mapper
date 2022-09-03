@@ -11,7 +11,7 @@
         <BaseButton @click="doClose()">Close</BaseButton>
       </header>
       <div class="relative min-w-0 max-w-none flex-auto overflow-auto pb-7">
-        <table class="w-full table-fixed divide-y divide-gray-300">
+        <table class="w-full table-fixed">
           <colgroup>
             <col />
             <col />
@@ -22,7 +22,9 @@
               <th
                 scope="col"
                 class="sticky top-0 z-10 border-b border-gray-300 bg-gray-100 bg-opacity-95 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter sm:pl-6 lg:pl-8"
-              ></th>
+              >
+                <FilterQueryInput v-model="filterQuery" />
+              </th>
               <th
                 scope="col"
                 class="sticky top-0 z-10 border-b border-gray-300 bg-gray-100 bg-opacity-95 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter"
@@ -51,7 +53,22 @@
                   class="flex items-center whitespace-nowrap py-3 text-sm text-gray-900"
                   :style="`padding-left: ${item.level * 1 + 1}rem`"
                 >
-                  <MilSymbol :sidc="item.unit.sidc" />
+                  <button
+                    v-if="item.unit.subUnits.length"
+                    @click="item.unit._isOpen = !item.unit._isOpen"
+                    tabindex="-1"
+                  >
+                    <ChevronRightIcon
+                      class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+                      :class="{
+                        'rotate-90': item.unit._isOpen,
+                      }"
+                    />
+                  </button>
+                  <MilSymbol
+                    :sidc="item.unit.sidc"
+                    :class="{ 'ml-6': !item.unit.subUnits.length }"
+                  />
                   <span class="ml-2 truncate">{{ item.unit.name }}</span>
                 </td>
                 <td
@@ -114,6 +131,13 @@
                   class="sm:pl whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900"
                 >
                   {{ item.sideGroup.name }}
+                  <BaseButton
+                    small
+                    class="ml-2"
+                    tabindex="-1"
+                    @click="expandSideGroup(item.sideGroup)"
+                    >Expand/collapse</BaseButton
+                  >
                 </td>
               </tr>
             </template>
@@ -122,10 +146,15 @@
       </div>
       <footer class="h-12 flex-shrink-0 border-t border-gray-300 bg-gray-200"></footer>
     </div>
+
+    <!--    <GlobalEvents @keydown.tab="onTabTest" />-->
   </div>
 </template>
 
 <script setup lang="ts">
+import { GlobalEvents } from "vue-global-events";
+import { onStartTyping } from "@vueuse/core";
+import { ChevronRightIcon } from "@heroicons/vue/solid";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap";
 import BaseButton from "@/components/BaseButton.vue";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
@@ -136,6 +165,8 @@ import { activeScenarioKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import MilSymbol from "@/components/MilSymbol.vue";
+import FilterQueryInput from "@/components/FilterQueryInput.vue";
+import { SideGroup } from "@/types/scenarioModels";
 
 const router = useRouter();
 const uiStore = useUiStore();
@@ -157,7 +188,7 @@ const {
 } = activeScenario;
 
 const { updateUnit } = unitActions;
-
+const filterQuery = ref("");
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
 });
@@ -202,6 +233,7 @@ const items = computed(() => {
         currentSideGroup = sideGroup;
       }
       _items.push({ type: "unit", unit, id: unit.id, level });
+      if (unit.subUnits.length && unit._isOpen === false) return false;
     });
   });
   return _items;
@@ -232,6 +264,10 @@ function onSubmit(e?: Event) {
   editedValue.value = undefined;
 }
 
+function onTabTest(e: Event) {
+  console.log("Tabbiong", e);
+}
+
 function onTab(unit: NUnit, itemIndex: number, column: "name" | "shortName") {
   if (unit) {
     if (column === "name") {
@@ -249,7 +285,7 @@ function onDown(itemIndex: number) {
   while (nextItem && nextItem.type !== "unit") {
     nextItem = items.value[++idx];
   }
-  if (nextItem.type === "unit") {
+  if (nextItem?.type === "unit") {
     activateEdit(nextItem.unit, itemIndex + 1, activeColumn.value!);
   }
 }
@@ -260,7 +296,7 @@ function onUp(itemIndex: number) {
   while (prevItem && prevItem.type !== "unit") {
     prevItem = items.value[--idx];
   }
-  if (prevItem.type === "unit") {
+  if (prevItem?.type === "unit") {
     activateEdit(prevItem.unit, itemIndex - 1, activeColumn.value!);
   }
 }
@@ -270,4 +306,24 @@ function updateValue(event: Event) {
 }
 
 const onVMounted = ({ el }: VNode) => el?.focus();
+
+onStartTyping((e) => {
+  // console.log("Start typing", e);
+});
+
+const expandMap = new WeakSet<NSideGroup>();
+
+function expandSideGroup(sideGroup: NSideGroup) {
+  let open = true;
+  if (expandMap.has(sideGroup)) {
+    open = false;
+    expandMap.delete(sideGroup);
+  } else expandMap.add(sideGroup);
+
+  sideGroup.subUnits.forEach((unitId) => {
+    unitActions.walkSubUnits(unitId, (unit) => (unit._isOpen = open), {
+      includeParent: true,
+    });
+  });
+}
 </script>
