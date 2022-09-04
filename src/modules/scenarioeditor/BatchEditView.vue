@@ -116,28 +116,41 @@
               </tr>
 
               <tr v-else-if="item.type === 'side'" class="border-t border-gray-200">
-                <th
+                <td
                   colspan="3"
-                  scope="colgroup"
-                  class="bg-gray-50 px-4 py-2 text-left text-sm font-bold text-gray-900 sm:px-6"
+                  class="bg-gray-200 px-4 py-2 text-left text-sm font-bold text-gray-900 sm:px-6"
                 >
                   {{ item.side.name }}
-                </th>
+                </td>
               </tr>
 
               <tr v-else-if="item.type === 'sidegroup'">
-                <td
-                  colspan="3"
-                  class="sm:pl whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900"
-                >
-                  {{ item.sideGroup.name }}
-                  <BaseButton
-                    small
-                    class="ml-2"
-                    tabindex="-1"
-                    @click="expandSideGroup(item.sideGroup)"
-                    >Expand/collapse</BaseButton
+                <td colspan="3" class="">
+                  <div
+                    class="flex items-center whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900"
                   >
+                    <button
+                      tabindex="-1"
+                      @click="toggleSideGroup(item.sideGroup)"
+                      class="flex items-center"
+                    >
+                      <ChevronRightIcon
+                        class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+                        :class="{
+                          'rotate-90': sgOpen.get(item.sideGroup) ?? true,
+                        }"
+                      />
+
+                      <span>{{ item.sideGroup.name }}</span>
+                    </button>
+                    <BaseButton
+                      small
+                      class="ml-2"
+                      tabindex="-1"
+                      @click="expandSideGroup(item.sideGroup)"
+                      >Expand/collapse</BaseButton
+                    >
+                  </div>
                 </td>
               </tr>
             </template>
@@ -152,7 +165,6 @@
 </template>
 
 <script setup lang="ts">
-import { GlobalEvents } from "vue-global-events";
 import { onStartTyping } from "@vueuse/core";
 import { ChevronRightIcon } from "@heroicons/vue/solid";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap";
@@ -162,11 +174,11 @@ import { useUiStore } from "@/stores/uiStore";
 import { computed, ref, VNode } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { EntityId } from "@/types/base";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import MilSymbol from "@/components/MilSymbol.vue";
 import FilterQueryInput from "@/components/FilterQueryInput.vue";
-import { SideGroup } from "@/types/scenarioModels";
+import { TableItem } from "@/modules/scenarioeditor/types";
+import { EntityId } from "@/types/base";
 
 const router = useRouter();
 const uiStore = useUiStore();
@@ -187,6 +199,8 @@ const {
   unitActions,
 } = activeScenario;
 
+const sgOpen = ref(new Map<NSideGroup, boolean>());
+
 const { updateUnit } = unitActions;
 const filterQuery = ref("");
 const sides = computed(() => {
@@ -201,27 +215,6 @@ function rootUnits(sideGroup: NSideGroup) {
   return sideGroup.subUnits.map((unitId) => state.unitMap[unitId]);
 }
 
-interface UnitItem {
-  type: "unit";
-  id: EntityId;
-  unit: NUnit;
-  level: number;
-}
-
-interface SideItem {
-  type: "side";
-  id: EntityId;
-  side: NSide;
-}
-
-interface SideGroupItem {
-  type: "sidegroup";
-  id: EntityId;
-  sideGroup: NSideGroup;
-}
-
-type TableItem = SideItem | SideGroupItem | UnitItem;
-
 const items = computed(() => {
   const _items: TableItem[] = [];
   let currentSideGroup: NSideGroup;
@@ -231,6 +224,7 @@ const items = computed(() => {
       if (sideGroup !== currentSideGroup) {
         _items.push({ type: "sidegroup", sideGroup, id: sideGroup.id });
         currentSideGroup = sideGroup;
+        if (!(sgOpen.value.get(sideGroup) ?? true)) return true;
       }
       _items.push({ type: "unit", unit, id: unit.id, level });
       if (unit.subUnits.length && unit._isOpen === false) return false;
@@ -318,12 +312,19 @@ function expandSideGroup(sideGroup: NSideGroup) {
   if (expandMap.has(sideGroup)) {
     open = false;
     expandMap.delete(sideGroup);
-  } else expandMap.add(sideGroup);
+  } else {
+    expandMap.add(sideGroup);
+    sgOpen.value.set(sideGroup, true);
+  }
 
   sideGroup.subUnits.forEach((unitId) => {
     unitActions.walkSubUnits(unitId, (unit) => (unit._isOpen = open), {
       includeParent: true,
     });
   });
+}
+
+function toggleSideGroup(sideGroup: NSideGroup) {
+  sgOpen.value.set(sideGroup, !(sgOpen.value.get(sideGroup) ?? true));
 }
 </script>

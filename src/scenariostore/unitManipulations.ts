@@ -27,7 +27,7 @@ export type NWalkSideCallback = (
   parent: NUnit | NSideGroup,
   sideGroup: NSideGroup,
   side: NSide
-) => void | false;
+) => void | false | true;
 
 export interface WalkSubUnitsOptions {
   includeParent: boolean;
@@ -258,7 +258,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     ) {
       const currentUnit = s.unitMap[currentUnitId]!;
       const r = callback(currentUnit, level, parent, sideGroup, side);
-      if (r === false) return;
+      if (r !== undefined) return r;
       if (currentUnit.subUnits) {
         level += 1;
         for (const subUnitId of currentUnit.subUnits) {
@@ -270,7 +270,10 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
     for (const sideGroupId of side.groups) {
       const sideGroup = s.sideGroupMap[sideGroupId]!;
-      sideGroup.subUnits.forEach((unitId) => helper(unitId, sideGroup, sideGroup));
+      for (const unitId of sideGroup.subUnits) {
+        const r = helper(unitId, sideGroup, sideGroup);
+        if (r === true) break;
+      }
     }
   }
 
