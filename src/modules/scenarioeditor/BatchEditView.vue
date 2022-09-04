@@ -125,9 +125,9 @@
               </tr>
 
               <tr v-else-if="item.type === 'sidegroup'">
-                <td colspan="3" class="">
+                <td colspan="3" class="sticky top-16 z-10">
                   <div
-                    class="flex items-center whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900"
+                    class="flex items-center whitespace-nowrap border-b bg-emerald-50 py-2 pr-3 text-sm font-medium text-gray-900"
                   >
                     <button
                       tabindex="-1"
@@ -165,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { onStartTyping } from "@vueuse/core";
+import { onStartTyping, useDebounce } from "@vueuse/core";
 import { ChevronRightIcon } from "@heroicons/vue/solid";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap";
 import BaseButton from "@/components/BaseButton.vue";
@@ -178,7 +178,9 @@ import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import MilSymbol from "@/components/MilSymbol.vue";
 import FilterQueryInput from "@/components/FilterQueryInput.vue";
 import { TableItem } from "@/modules/scenarioeditor/types";
+import { filterUnits, NOrbatItemData } from "@/composables/filtering";
 import { EntityId } from "@/types/base";
+import { NWalkSideCallback } from "@/scenariostore/unitManipulations";
 
 const router = useRouter();
 const uiStore = useUiStore();
@@ -215,23 +217,84 @@ function rootUnits(sideGroup: NSideGroup) {
   return sideGroup.subUnits.map((unitId) => state.unitMap[unitId]);
 }
 
+const debouncedFilterQuery = useDebounce(filterQuery, 250);
+
+interface SideItem {
+  side: NSide;
+  children: SideGroupItem[];
+}
+interface SideGroupItem {
+  sideGroup: NSideGroup;
+  children: NOrbatItemData[];
+}
+
+const filteredOrbat = computed(() => {
+  const sideList: SideItem[] = [];
+  state.sides
+    .map((id) => state.sideMap[id])
+    .forEach((side) => {
+      const sideGroupList: SideGroupItem[] = [];
+      side.groups
+        .map((id) => state.sideGroupMap[id])
+        .forEach((sideGroup) => {
+          const filteredUnits = filterUnits(
+            sideGroup.subUnits,
+            state.unitMap,
+            debouncedFilterQuery.value
+          );
+          if (filteredUnits.length) {
+            sideGroupList.push({ sideGroup, children: filteredUnits });
+          }
+        });
+      if (sideGroupList.length) {
+        sideList.push({ side, children: sideGroupList });
+      }
+    });
+  return sideList;
+});
+
 const items = computed(() => {
   const _items: TableItem[] = [];
   let currentSideGroup: NSideGroup;
-  state.sides.forEach((sideId) => {
-    _items.push({ type: "side", side: state.sideMap[sideId], id: sideId });
-    unitActions.walkSide(sideId, (unit, level, parent, sideGroup) => {
-      if (sideGroup !== currentSideGroup) {
-        _items.push({ type: "sidegroup", sideGroup, id: sideGroup.id });
-        currentSideGroup = sideGroup;
-        if (!(sgOpen.value.get(sideGroup) ?? true)) return true;
-      }
-      _items.push({ type: "unit", unit, id: unit.id, level });
-      if (unit.subUnits.length && unit._isOpen === false) return false;
+  filteredOrbat.value.forEach(({ side, children: sideGroups }) => {
+    _items.push({ type: "side", side, id: side.id });
+    sideGroups.forEach((sg) => {
+      const { sideGroup } = sg;
+      _items.push({ type: "sidegroup", sideGroup, id: sideGroup.id });
+      if (!(sgOpen.value.get(sideGroup) ?? true)) return;
+      walkSideGroupItem(sg, (unit, level, parent, sideGroup) => {
+        _items.push({ type: "unit", unit, id: unit.id, level });
+        if (unit.subUnits.length && unit._isOpen === false) return false;
+      });
     });
   });
   return _items;
 });
+
+function walkSideGroupItem(
+  sideGroupItem: SideGroupItem,
+  callback: NWalkSideCallback,
+  s = state
+) {
+  let level = 0;
+
+  function helper({ unit, children }: NOrbatItemData, parent: NUnit | NSideGroup) {
+    const r = callback(unit, level, parent, sideGroupItem.sideGroup);
+    if (r !== undefined) return r;
+    if (children.length) {
+      level += 1;
+      for (const subUnitId of children) {
+        helper(subUnitId, unit);
+      }
+      level -= 1;
+    }
+  }
+
+  for (const unitId of sideGroupItem.children) {
+    const r = helper(unitId, sideGroupItem.sideGroup);
+    if (r === true) break;
+  }
+}
 
 uiStore.modalOpen = true;
 onBeforeRouteLeave(() => {

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Add filtering to batch edit mode.
 - Add batch edit mode (work in progress).
 - Embed unit icons in KMZ export.
 - Basic KML/KMZ export.

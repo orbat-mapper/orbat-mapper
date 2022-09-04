@@ -26,7 +26,7 @@ export type NWalkSideCallback = (
   level: number,
   parent: NUnit | NSideGroup,
   sideGroup: NSideGroup,
-  side: NSide
+  side?: NSide
 ) => void | false | true;
 
 export interface WalkSubUnitsOptions {
