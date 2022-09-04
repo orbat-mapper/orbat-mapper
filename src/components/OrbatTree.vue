@@ -4,7 +4,8 @@ import OrbatTreeItem from "./OrbatTreeItem.vue";
 import { UnitActions } from "@/types/constants";
 import { EntityId } from "@/types/base";
 import type { DropTarget } from "./types";
-import { NUnit } from "@/types/internalModels";
+import type { NUnit } from "@/types/internalModels";
+import { filterUnits } from "@/composables/filtering";
 
 interface Props {
   units: EntityId[];
@@ -33,60 +34,8 @@ const onUnitDrop = (unit: NUnit, destinationUnit: NUnit, target: DropTarget) =>
   emit("unit-drop", unit, destinationUnit, target);
 
 const filteredUnits = computed(() =>
-  filterUnits(props.units, props.filterQuery, props.locationFilter)
+  filterUnits(props.units, props.unitMap, props.filterQuery, props.locationFilter)
 );
-
-interface NOrbatItemData {
-  unit: NUnit;
-  children: NOrbatItemData[];
-}
-
-function filterUnits(
-  units: EntityId[],
-  query: string = "",
-  locationFilter = false
-): NOrbatItemData[] {
-  let filteredUnits: NOrbatItemData[] = [];
-  let re = new RegExp(query, "i");
-
-  function helper(currentUnitId: EntityId, parentMatched: boolean) {
-    const currentUnit = props.unitMap[currentUnitId] as NUnit;
-    if (!currentUnit) return [];
-    let oi: NOrbatItemData = {
-      unit: currentUnit,
-      children: [],
-    };
-    if (query) oi.unit._isOpen = true;
-    let matched = false;
-    let childMatched = false;
-    const hasPosition = Boolean(currentUnit?._state?.location);
-    let children = [];
-    if (currentUnit.name.search(re) >= 0) {
-      matched = locationFilter ? hasPosition : true;
-      // oi.unit._isOpen = !!query;
-    } else if (parentMatched) {
-      oi.unit._isOpen = false;
-    }
-    if (currentUnit.subUnits?.length) {
-      for (const subUnit of currentUnit.subUnits) {
-        let su = helper(subUnit, matched || parentMatched);
-        if (su.length) {
-          childMatched = true;
-          oi.children.push(...su);
-        }
-      }
-    }
-    if (matched || childMatched || (parentMatched && !locationFilter)) {
-      oi && children.push(oi);
-    }
-    return children;
-  }
-
-  for (const unitId of units) {
-    filteredUnits.push(...helper(unitId, false));
-  }
-  return filteredUnits;
-}
 </script>
 
 <template>
