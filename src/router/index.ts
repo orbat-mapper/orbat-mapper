@@ -22,15 +22,16 @@ const GeoTestView = () => import("../views/GeoTestView.vue");
 const StoreTestView = () => import("../views/StoreTestViewWrapper.vue");
 const ExportScenarioModal = () => import("../components/ExportScenarioModal.vue");
 const BatchEditView = () => import("@/modules/scenarioeditor/BatchEditView.vue");
+const ScenarioEditorGeo = () => import("@/modules/scenarioeditor/ScenarioEditorGeo.vue");
 const routes = [
   {
     path: "/scenario",
-    name: SCENARIO_ROUTE,
     component: ScenarioEditorWrapper,
     beforeEnter: (to, from) => {
       NProgress.start();
     },
     children: [
+      { path: "", component: ScenarioEditorGeo, name: SCENARIO_ROUTE },
       {
         path: "export",
         name: EXPORT_SCENARIO_ROUTE,

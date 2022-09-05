@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute z-10 h-full w-full bg-black bg-opacity-50 sm:p-4">
+  <div class="relative flex min-h-0 flex-auto">
     <div
       ref="target"
       class="flex h-full w-full flex-col overflow-hidden bg-gray-50 shadow sm:rounded-lg"
@@ -167,7 +167,6 @@
 <script setup lang="ts">
 import { onStartTyping, useDebounce } from "@vueuse/core";
 import { ChevronRightIcon } from "@heroicons/vue/solid";
-import { useFocusTrap } from "@vueuse/integrations/useFocusTrap";
 import BaseButton from "@/components/BaseButton.vue";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
@@ -179,17 +178,11 @@ import MilSymbol from "@/components/MilSymbol.vue";
 import FilterQueryInput from "@/components/FilterQueryInput.vue";
 import { TableItem } from "@/modules/scenarioeditor/types";
 import { filterUnits, NOrbatItemData } from "@/composables/filtering";
-import { EntityId } from "@/types/base";
 import { NWalkSideCallback } from "@/scenariostore/unitManipulations";
 
 const router = useRouter();
 const uiStore = useUiStore();
 const target = ref();
-const { hasFocus, activate, deactivate } = useFocusTrap(target, {
-  immediate: true,
-  allowOutsideClick: true,
-  escapeDeactivates: false,
-});
 
 const activeUnit = ref<NUnit | null | undefined>();
 const activeColumn = ref<"name" | "shortName">();
