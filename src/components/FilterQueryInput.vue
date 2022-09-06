@@ -34,6 +34,10 @@ const hasLocationFilter = useVModel(props, "locationFilter");
 const hasFilter = computed(() => {
   return !!(hasLocationFilter.value || localValue.value);
 });
+
+const updateValue = (event: Event) => {
+  localValue.value = (<HTMLInputElement>event.target).value;
+};
 </script>
 
 <template>
@@ -47,7 +51,8 @@ const hasFilter = computed(() => {
       <FilterVariant v-else class="h-5 w-5 text-gray-400" aria-hidden="true" />
     </div>
     <input
-      v-model="localValue"
+      :value="localValue"
+      @input="updateValue"
       type="text"
       class="block w-full rounded-md border-gray-300 pl-10 pr-10 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 sm:text-sm"
       placeholder="Filter"
