@@ -3,7 +3,7 @@ import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import LandingPage from "../views/LandingPage.vue";
 import {
-  BATCH_EDIT_ROUTE,
+  GRID_EDIT_ROUTE,
   EXPORT_SCENARIO_ROUTE,
   LANDING_PAGE_ROUTE,
   NEW_SCENARIO_ROUTE,
@@ -21,7 +21,7 @@ const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
 const GeoTestView = () => import("../views/GeoTestView.vue");
 const StoreTestView = () => import("../views/StoreTestViewWrapper.vue");
 const ExportScenarioModal = () => import("../components/ExportScenarioModal.vue");
-const BatchEditView = () => import("@/modules/scenarioeditor/BatchEditView.vue");
+const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ScenarioEditorGeo = () => import("@/modules/scenarioeditor/ScenarioEditorGeo.vue");
 const routes = [
   {
@@ -37,7 +37,7 @@ const routes = [
         name: EXPORT_SCENARIO_ROUTE,
         component: ExportScenarioModal,
       },
-      { path: "batch-edit", name: BATCH_EDIT_ROUTE, component: BatchEditView },
+      { path: "grid-edit", name: GRID_EDIT_ROUTE, component: GridEditView },
     ],
   },
   {

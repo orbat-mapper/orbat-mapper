@@ -7,8 +7,10 @@
       <header
         class="flex flex-shrink-0 items-center justify-between border-b border-gray-300 bg-gray-200 px-4 py-5 sm:px-6"
       >
-        <h1 class="text-lg font-semibold text-gray-900">Batch edit</h1>
-        <BaseButton @click="doClose()">Close</BaseButton>
+        <div class="flex items-center space-x-4">
+          <FilterQueryInput class="" v-model="filterQuery" />
+        </div>
+        <BaseButton @click="doClose()">Got to map mode</BaseButton>
       </header>
       <div class="relative min-w-0 max-w-none flex-auto overflow-auto pb-7">
         <table class="w-full table-fixed">
@@ -22,9 +24,7 @@
               <th
                 scope="col"
                 class="sticky top-0 z-10 border-b border-gray-300 bg-gray-100 bg-opacity-95 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter sm:pl-6 lg:pl-8"
-              >
-                <FilterQueryInput v-model="filterQuery" />
-              </th>
+              ></th>
               <th
                 scope="col"
                 class="sticky top-0 z-10 border-b border-gray-300 bg-gray-100 bg-opacity-95 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter"
@@ -125,7 +125,7 @@
               </tr>
 
               <tr v-else-if="item.type === 'sidegroup'">
-                <td colspan="3" class="sticky top-16 z-10">
+                <td colspan="3" class="sticky top-12 z-10">
                   <div
                     class="flex items-center whitespace-nowrap border-b bg-emerald-50 py-2 pr-3 text-sm font-medium text-gray-900"
                   >
