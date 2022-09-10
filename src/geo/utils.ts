@@ -10,6 +10,9 @@ export function formatDateString(value?: number, timeZone?: string) {
 
 export function formatPosition(value?: number[]) {
   if (value) {
-    return formatcoords(value, true).format({ decimalPlaces: 2 });
+    return formatcoords(value, true).format({
+      decimalPlaces: 2,
+      latLonSeparator: " ",
+    });
   }
 }
