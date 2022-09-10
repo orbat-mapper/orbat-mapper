@@ -11,13 +11,6 @@
         class="min-h-0"
       >
         <TabItem label="Units" class="relative">
-          <button
-            @click="showSearch = true"
-            class="absolute -top-1 right-6 text-gray-500 hover:text-gray-900"
-          >
-            <span class="sr-only">Search units</span>
-            <SearchIcon class="h-5 w-5" />
-          </button>
           <OrbatPanel class="pb-12" />
         </TabItem>
         <TabItem label="Info">
@@ -98,9 +91,7 @@ import { useActiveUnitStore } from "@/stores/dragStore";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import TimeController from "@/components/TimeController.vue";
-
-import { SearchIcon } from "@heroicons/vue/outline";
-import { onBeforeRouteUpdate, useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useTabStore, useUiStore } from "@/stores/uiStore";
 import { useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
@@ -111,7 +102,6 @@ import { useGeoStore } from "@/stores/geoStore";
 import CloseButton from "@/components/CloseButton.vue";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import NProgress from "nprogress";
-import { EntityId } from "@/types/base";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
 import ScenarioMap from "@/components/ScenarioMap.vue";
@@ -119,7 +109,6 @@ import { MenuItemData } from "@/components/types";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import { storeToRefs } from "pinia";
-import { EXPORT_SCENARIO_ROUTE } from "@/router/names";
 import { injectStrict } from "@/utils";
 
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
@@ -131,16 +120,14 @@ const uiTabs = useTabStore();
 const { activeScenarioTab } = storeToRefs(uiTabs);
 const activeScenario = injectStrict(activeScenarioKey);
 
-const { state, update, undo, redo, canRedo, canUndo } = activeScenario.store;
+const { state, update } = activeScenario.store;
 
-const { loadFromObject } = activeScenario.io;
 const { unitActions, io } = activeScenario;
 const route = useRoute();
 const router = useRouter();
 const { copy: copyToClipboard, copied } = useClipboard();
 const currentTab = ref(0);
 const isOpen = ref(false);
-const showSearch = ref(false);
 
 const activeUnitStore = useActiveUnitStore({
   activeScenario,
@@ -158,8 +145,6 @@ const showLayerPanel = ref(false);
 const activeLayerId = ref<FeatureId | null>(null);
 const activeFeatureId = ref<FeatureId | null>(null);
 
-// const isDark = useDark();
-// const toggleDark = useToggle(isDark);
 useTitle(windowTitle);
 
 onUnmounted(() => {
@@ -185,16 +170,6 @@ watch(activeScenarioTab, (value, prevValue) => {
 onActivated(() => {
   geoStore.updateMapSize();
 });
-
-const onLayerSelect = (layerId: FeatureId) => {
-  activeLayerId.value = layerId;
-  activeScenarioTab.value = TAB_LAYERS;
-};
-
-const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
-  activeFeatureId.value = featureId;
-  activeScenarioTab.value = TAB_LAYERS;
-};
 
 const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
   { label: "Add new side", action: "addSide" },
