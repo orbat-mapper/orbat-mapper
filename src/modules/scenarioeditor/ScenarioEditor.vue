@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-screen flex-col overflow-hidden bg-gray-300">
     <nav
-      class="flex flex-shrink-0 items-center justify-between bg-gray-800 py-2 pr-4 pl-6 text-gray-200"
+      class="flex flex-shrink-0 items-center justify-between bg-gray-900 py-2 pr-4 pl-6 text-gray-200"
     >
       <div class="flex min-w-0 flex-auto items-center">
         <router-link :to="{ name: LANDING_PAGE_ROUTE }" class="flex-shrink-0">
@@ -15,9 +15,9 @@
             <circle cx="100" cy="70" r="10" class="fill-gray-300" />
           </svg>
         </router-link>
-        <div class="ml-3 flex min-w-0 flex-auto items-center divide-gray-400 sm:divide-x">
+        <div class="ml-3 flex min-w-0 flex-auto items-center divide-gray-400 lg:divide-x">
           <span
-            class="hidden pr-3 text-sm font-medium tracking-tight text-gray-300 sm:block"
+            class="hidden pr-3 text-sm font-medium tracking-tight text-gray-300 lg:block"
             >ORBAT-Mapper</span
           >
           <span class="truncate pl-3 text-gray-400">
@@ -27,7 +27,7 @@
       </div>
       <div class="flex shrink-0 items-center space-x-2">
         <DropdownMenu :items="fileMenuItems" @action="onScenarioAction"
-          >Scenario</DropdownMenu
+          >File</DropdownMenu
         >
         <button
           @click="showSearch = true"
@@ -35,11 +35,22 @@
         >
           <SearchIcon class="block h-6 w-6" />
         </button>
-        <router-link
-          :to="{ name: GRID_EDIT_ROUTE }"
-          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-          >Grid edit</router-link
-        >
+        <div class="flex items-center rounded-lg bg-gray-800 px-1">
+          <router-link
+            :to="{ name: SCENARIO_ROUTE }"
+            title="Map edit mode"
+            exact-active-class="text-green-500"
+            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+            ><GlobeAltIcon class="h-6 w-6"
+          /></router-link>
+          <router-link
+            :to="{ name: GRID_EDIT_ROUTE }"
+            title="Grid edit mode"
+            exact-active-class="text-green-500"
+            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+            ><TableIcon class="h-6 w-6"
+          /></router-link>
+        </div>
         <div class="flex items-center">
           <button
             @click="undo()"
@@ -139,6 +150,7 @@ import { SelectedScenarioFeatures } from "@/stores/dragStore";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
 
 import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
+import { GlobeAltIcon, TableIcon } from "@heroicons/vue/solid";
 import { inputEventFilter } from "@/components/helpers";
 import SearchModal from "@/components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -175,7 +187,7 @@ import { useDateModal, useSidcModal } from "@/composables/modals";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import { storeToRefs } from "pinia";
 import DropdownMenu from "@/components/DropdownMenu.vue";
-import { GRID_EDIT_ROUTE, LANDING_PAGE_ROUTE } from "@/router/names";
+import { GRID_EDIT_ROUTE, LANDING_PAGE_ROUTE, SCENARIO_ROUTE } from "@/router/names";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(
