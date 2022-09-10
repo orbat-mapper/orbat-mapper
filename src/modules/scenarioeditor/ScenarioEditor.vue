@@ -153,7 +153,7 @@ import {
   Bars3Icon as MenuIcon,
   MagnifyingGlassIcon as SearchIcon,
 } from "@heroicons/vue/24/outline";
-import { GlobeAltIcon, TableCellsIcon as TableIcon } from "@heroicons/vue/24/solid";
+import { GlobeAltIcon, TableCellsIcon as TableIcon } from "@heroicons/vue/24/outline";
 import { inputEventFilter } from "@/components/helpers";
 import SearchModal from "@/components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
