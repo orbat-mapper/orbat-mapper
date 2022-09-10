@@ -10,7 +10,7 @@
         <div class="flex items-center space-x-4">
           <FilterQueryInput class="" v-model="filterQuery" />
         </div>
-        <BaseButton @click="doClose()">Got to map mode</BaseButton>
+        <BaseButton @click="doClose()">Go to map mode</BaseButton>
       </header>
       <div class="relative min-w-0 max-w-none flex-auto overflow-auto pb-7">
         <table class="w-full table-fixed">
