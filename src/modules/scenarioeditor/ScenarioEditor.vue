@@ -124,6 +124,7 @@
       @update:sidc="confirmSidcModal($event)"
       @cancel="cancelSidcModal"
     />
+    <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
   </div>
 </template>
 
@@ -170,11 +171,7 @@ import { useDateModal, useSidcModal } from "@/composables/modals";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import { storeToRefs } from "pinia";
 import DropdownMenu from "@/components/DropdownMenu.vue";
-import {
-  GRID_EDIT_ROUTE,
-  EXPORT_SCENARIO_ROUTE,
-  LANDING_PAGE_ROUTE,
-} from "@/router/names";
+import { GRID_EDIT_ROUTE, LANDING_PAGE_ROUTE } from "@/router/names";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(
@@ -182,6 +179,10 @@ const SymbolPickerModal = defineAsyncComponent(
 );
 const InputDateModal = defineAsyncComponent(
   () => import("@/components/InputDateModal.vue")
+);
+
+const ExportScenarioModal = defineAsyncComponent(
+  () => import("@/components/ExportScenarioModal.vue")
 );
 
 const props = defineProps<{ activeScenario: TScenario }>();
@@ -212,6 +213,7 @@ const isOpen = ref(false);
 const showSearch = ref(false);
 const showLoadModal = ref(false);
 const shortcutsModalVisible = ref(false);
+const showExportModal = ref(false);
 
 const uiStore = useUiStore();
 
@@ -303,7 +305,7 @@ async function onScenarioAction(action: ScenarioActions) {
     await copyToClipboard(io.stringifyScenario());
     if (copied.value) send({ message: "Scenario copied to clipboard" });
   } else if (action === "export") {
-    await router.push({ name: EXPORT_SCENARIO_ROUTE });
+    showExportModal.value = true;
   } else {
     send({ message: "Not implemented yet" });
   }

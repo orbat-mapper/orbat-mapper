@@ -4,7 +4,6 @@ import "nprogress/nprogress.css";
 import LandingPage from "../views/LandingPage.vue";
 import {
   GRID_EDIT_ROUTE,
-  EXPORT_SCENARIO_ROUTE,
   LANDING_PAGE_ROUTE,
   NEW_SCENARIO_ROUTE,
   ORBAT_CHART_ROUTE,
@@ -20,7 +19,6 @@ const OrbatChartView = () => import("../modules/charteditor/OrbatChartViewWrappe
 const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
 const GeoTestView = () => import("../views/GeoTestView.vue");
 const StoreTestView = () => import("../views/StoreTestViewWrapper.vue");
-const ExportScenarioModal = () => import("../components/ExportScenarioModal.vue");
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ScenarioEditorGeo = () => import("@/modules/scenarioeditor/ScenarioEditorGeo.vue");
 const routes = [
@@ -32,11 +30,6 @@ const routes = [
     },
     children: [
       { path: "", component: ScenarioEditorGeo, name: SCENARIO_ROUTE },
-      {
-        path: "export",
-        name: EXPORT_SCENARIO_ROUTE,
-        component: ExportScenarioModal,
-      },
       { path: "grid-edit", name: GRID_EDIT_ROUTE, component: GridEditView },
     ],
   },

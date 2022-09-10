@@ -65,13 +65,15 @@ import type { ExportFormat, ExportSettings } from "@/types/convert";
 import { useScenarioExport } from "@/composables/scenarioExport";
 import { useNotifications } from "@/composables/notifications";
 import NProgress from "nprogress";
-import { onBeforeRouteLeave, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
+import { useVModel } from "@vueuse/core";
 
 const router = useRouter();
 
+const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue", "cancel"]);
 const { downloadAsGeoJSON, downloadAsKML, downloadAsKMZ } = useScenarioExport();
-
+const open = useVModel(props, "modelValue", emit);
 const formatItems: SelectItem<ExportFormat>[] = [
   { label: "GeoJSON", value: "geojson" },
   { label: "KML", value: "kml" },
@@ -93,15 +95,10 @@ const form = ref<Form>({
 
 const { focusId } = useFocusOnMount(undefined, 150);
 const { send } = useNotifications();
-const open = ref(true);
 
 const isGeojson = computed(() => form.value.format === "geojson");
 const isKml = computed(() => form.value.format === "kml");
 const isKmz = computed(() => form.value.format === "kmz");
-
-onBeforeRouteLeave((to, from) => {
-  open.value = false;
-});
 
 async function onExport(e: Event) {
   const { format } = form.value;
@@ -116,11 +113,10 @@ async function onExport(e: Event) {
   NProgress.done();
   open.value = false;
   send({ message: `Exported scenario as ${format}` });
-  router.back();
 }
 
 function onCancel() {
   open.value = false;
-  router.back();
+  emit("cancel");
 }
 </script>
