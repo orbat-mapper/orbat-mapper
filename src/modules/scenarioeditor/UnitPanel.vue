@@ -7,7 +7,12 @@
       <p class="pt-2 font-medium">{{ unit.name }}</p>
     </header>
     <header v-else>
-      <p class="font-medium">{{ selectedUnitIds.size }} units selected</p>
+      <div class="flex items-center justify-between">
+        <p class="font-medium">{{ selectedUnitIds.size }} units selected</p>
+        <button @click="clearSelection()" class="text-indigo-600 hover:text-indigo-900">
+          Clear
+        </button>
+      </div>
       <ul class="my-4 flex w-full flex-wrap gap-1">
         <li v-for="sUnit in selectedUnits" class="relative flex">
           <MilSymbol :sidc="sUnit.sidc" :size="24" class="block" />
@@ -152,7 +157,7 @@ const {
   onGetLocation,
 } = useGetMapLocation(geoStore.olMap as OLMap);
 const uiStore = useUiStore();
-const { selectedUnitIds } = useSelectedUnits();
+const { selectedUnitIds, clear: clearSelection } = useSelectedUnits();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 const selectedUnits = computed(() =>
   [...selectedUnitIds.value].map((id) => store.state.getUnitById(id))
