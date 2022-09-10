@@ -31,7 +31,7 @@
 <script>
 import { computed, defineComponent } from "vue";
 import { nanoid } from "nanoid";
-import { MinusIcon, PlusIcon } from "@heroicons/vue/solid";
+import { MinusIcon, PlusIcon } from "@heroicons/vue/24/solid";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
 

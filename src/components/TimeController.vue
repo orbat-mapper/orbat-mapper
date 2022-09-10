@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { CalendarIcon } from "@heroicons/vue/solid";
+import { CalendarIcon } from "@heroicons/vue/24/solid";
 
 import { ChevronLeft, ChevronRight, SkipNext, SkipPrevious } from "mdue";
 import { GlobalEvents } from "vue-global-events";

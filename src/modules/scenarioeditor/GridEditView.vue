@@ -166,7 +166,7 @@
 
 <script setup lang="ts">
 import { onStartTyping, useDebounce } from "@vueuse/core";
-import { ChevronRightIcon } from "@heroicons/vue/solid";
+import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import BaseButton from "@/components/BaseButton.vue";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";

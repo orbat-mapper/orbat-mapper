@@ -57,7 +57,7 @@ import {
   TransitionChild,
   TransitionRoot,
 } from "@headlessui/vue";
-import { XIcon } from "@heroicons/vue/outline";
+import { XMarkIcon } from "@heroicons/vue/24/outline";
 import CloseButton from "./CloseButton.vue";
 
 export default defineComponent({
@@ -68,7 +68,7 @@ export default defineComponent({
     DialogTitle,
     TransitionChild,
     TransitionRoot,
-    XIcon,
+    XMarkIcon,
   },
   props: { modelValue: { type: Boolean, default: false }, title: String, left: Boolean },
   emits: ["update:modelValue"],

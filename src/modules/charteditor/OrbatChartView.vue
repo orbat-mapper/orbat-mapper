@@ -59,7 +59,7 @@ import {
 } from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "../../symbology/milsymbwrapper";
-import { MenuAlt2Icon } from "@heroicons/vue/solid";
+import { Bars3BottomLeftIcon as MenuAlt2Icon } from "@heroicons/vue/24/solid";
 import { promiseTimeout } from "@vueuse/core";
 import DotsMenu from "../../components/DotsMenu.vue";
 import FileSaver from "file-saver";

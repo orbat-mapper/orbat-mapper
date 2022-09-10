@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { useVModel } from "@vueuse/core";
 
-import { MenuAlt3Icon } from "@heroicons/vue/solid";
+import { Bars3BottomRightIcon as MenuAlt3Icon } from "@heroicons/vue/24/solid";
 import { injectStrict } from "@/utils";
 import { sidcModalKey } from "@/components/injects";
 

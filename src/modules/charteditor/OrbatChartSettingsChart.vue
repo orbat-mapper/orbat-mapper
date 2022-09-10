@@ -92,7 +92,7 @@ import { defineAsyncComponent, ref } from "vue";
 import MilSymbol from "@/components/MilSymbol.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import IconButton from "@/components/IconButton.vue";
-import { SearchIcon } from "@heroicons/vue/solid";
+import { MagnifyingGlassIcon as SearchIcon } from "@heroicons/vue/24/solid";
 import CreateEmtpyDashed from "@/components/CreateEmtpyDashed.vue";
 import { canvasSizeItems } from "./orbatchart/sizes";
 import AccordionPanel from "@/components/AccordionPanel.vue";

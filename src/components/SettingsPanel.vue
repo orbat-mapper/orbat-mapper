@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ChevronDownIcon } from "@heroicons/vue/solid";
+import { ChevronDownIcon } from "@heroicons/vue/24/solid";
 import { ref, watch } from "vue";
-import { nanoid } from "../utils";
+import { nanoid } from "@/utils";
 
 interface Props {
   label: string;

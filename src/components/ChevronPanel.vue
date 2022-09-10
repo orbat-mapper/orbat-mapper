@@ -1,5 +1,5 @@
 <script setup>
-import { ChevronRightIcon } from "@heroicons/vue/solid";
+import { ChevronRightIcon } from "@heroicons/vue/24/solid";
 import { ref, watch } from "vue";
 import { nanoid } from "../utils";
 

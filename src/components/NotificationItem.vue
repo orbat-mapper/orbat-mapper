@@ -36,8 +36,8 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import { InboxIcon } from "@heroicons/vue/outline";
-import { XIcon } from "@heroicons/vue/solid";
+import { InboxIcon } from "@heroicons/vue/24/outline";
+import { XMarkIcon as XIcon } from "@heroicons/vue/24/solid";
 import { useTimer } from "../composables/timing";
 
 export default defineComponent({

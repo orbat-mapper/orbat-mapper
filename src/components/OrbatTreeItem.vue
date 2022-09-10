@@ -99,7 +99,7 @@ import { computed, inject, ref } from "vue";
 import MilSymbol from "./MilSymbol.vue";
 import { Unit } from "@/types/scenarioModels";
 //@ts-ignore
-import { ChevronRightIcon } from "@heroicons/vue/solid";
+import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { useActiveUnitStore, useDragStore, useSelectedUnits } from "@/stores/dragStore";
 import { DragOperations, UnitActions } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";

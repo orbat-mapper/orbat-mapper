@@ -9,7 +9,7 @@
           @click="$emit('close')"
         >
           <span class="sr-only">Close</span>
-          <XIcon class="h-6 w-6" aria-hidden="true" />
+          <XMarkIcon class="h-6 w-6" aria-hidden="true" />
         </button>
       </div>
       <slot></slot>
@@ -19,10 +19,10 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { XIcon } from "@heroicons/vue/outline";
+import { XMarkIcon } from "@heroicons/vue/24/outline";
 
 export default defineComponent({
-  components: { XIcon },
+  components: { XMarkIcon },
   emits: ["close"],
   props: ["title"],
   name: "InlineFormPanel",

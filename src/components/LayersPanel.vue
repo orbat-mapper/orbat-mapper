@@ -25,7 +25,7 @@
               />
               <button class="ml-4 h-5 w-5 text-gray-500" @click="toggleLayer(layer)">
                 <EyeIcon v-if="layer.visible" />
-                <EyeOffIcon v-else />
+                <EyeSlashIcon v-else />
               </button>
             </div>
           </div>
@@ -47,7 +47,7 @@ import BaseLayer from "ol/layer/Base";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import LayerGroup from "ol/layer/Group";
-import { EyeIcon, EyeOffIcon } from "@heroicons/vue/solid";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/solid";
 import BaseLayerSwitcher from "./BaseLayerSwitcher.vue";
 import { AnyTileLayer, AnyVectorLayer, PointVectorLayer } from "../geo/types";
 import TileSource from "ol/source/Tile";
@@ -74,7 +74,7 @@ export default defineComponent({
     OpacityInput,
     BaseLayerSwitcher,
     EyeIcon,
-    EyeOffIcon,
+    EyeSlashIcon,
   },
   setup() {
     const geoStore = useGeoStore();

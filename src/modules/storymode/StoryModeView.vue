@@ -55,7 +55,7 @@ import { flyTo } from "@/geo/layers";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { clearStyleCache } from "@/geo/unitStyles";
 import SlideOver from "../../components/SlideOver.vue";
-import { MenuIcon, XIcon } from "@heroicons/vue/outline";
+import { Bars3Icon as MenuIcon, XMarkIcon as XIcon } from "@heroicons/vue/24/outline";
 import NumberInputGroup from "../../components/NumberInputGroup.vue";
 import MeasurementToolbar from "../../components/MeasurementToolbar.vue";
 import type { TScenario } from "@/scenariostore";

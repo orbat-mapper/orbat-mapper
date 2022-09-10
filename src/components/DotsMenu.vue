@@ -5,7 +5,7 @@
       class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-army2 focus:ring-offset-2"
     >
       <span class="sr-only">Open options</span>
-      <DotsVerticalIcon class="h-5 w-5" aria-hidden="true" />
+      <EllipsisVerticalIcon class="h-5 w-5" aria-hidden="true" />
     </MenuButton>
     <transition
       enter-active-class="transition ease-out duration-100"
@@ -45,7 +45,7 @@
 
 <script setup lang="ts">
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
-import { DotsVerticalIcon } from "@heroicons/vue/solid";
+import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
 import { MenuItemData } from "@/components/types";
 
 const props = defineProps<{ items: MenuItemData[] }>();

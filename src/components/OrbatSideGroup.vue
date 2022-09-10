@@ -54,7 +54,7 @@ import { ref } from "vue";
 import DotsMenu from "./DotsMenu.vue";
 import OrbatTree from "./OrbatTree.vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
-import { ChevronUpIcon } from "@heroicons/vue/solid";
+import { ChevronUpIcon } from "@heroicons/vue/24/solid";
 import { DragOperations, SideActions, UnitActions } from "@/types/constants";
 import { useDragStore } from "@/stores/dragStore";
 import SecondaryButton from "./SecondaryButton.vue";

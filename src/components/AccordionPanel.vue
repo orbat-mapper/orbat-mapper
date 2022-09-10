@@ -1,6 +1,6 @@
 <script setup>
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
-import { MinusSmIcon, PlusSmIcon } from "@heroicons/vue/solid";
+import { MinusSmallIcon, PlusSmallIcon } from "@heroicons/vue/24/solid";
 
 const props = defineProps(["label"]);
 const emit = defineEmits(["opened", "closed"]);
@@ -18,12 +18,12 @@ const emit = defineEmits(["opened", "closed"]);
         </span>
         <span class="ml-6 flex items-center">
           <slot name="right"></slot>
-          <PlusSmIcon
+          <PlusSmallIcon
             v-if="!open"
             class="h-5 w-5 group-hover:text-gray-500"
             aria-hidden="true"
           />
-          <MinusSmIcon
+          <MinusSmallIcon
             v-else
             class="h-5 w-5 group-hover:text-gray-500"
             aria-hidden="true"

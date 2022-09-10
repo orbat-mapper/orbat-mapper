@@ -149,8 +149,11 @@ import { GlobalEvents } from "vue-global-events";
 import { SelectedScenarioFeatures } from "@/stores/dragStore";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
 
-import { MenuIcon, SearchIcon } from "@heroicons/vue/outline";
-import { GlobeAltIcon, TableIcon } from "@heroicons/vue/solid";
+import {
+  Bars3Icon as MenuIcon,
+  MagnifyingGlassIcon as SearchIcon,
+} from "@heroicons/vue/24/outline";
+import { GlobeAltIcon, TableCellsIcon as TableIcon } from "@heroicons/vue/24/solid";
 import { inputEventFilter } from "@/components/helpers";
 import SearchModal from "@/components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";

@@ -6,7 +6,7 @@
         class="pointer-events-none absolute inset-y-0 left-0 flex items-center"
         aria-hidden="true"
       >
-        <SearchIcon class="h-5 w-5" aria-hidden="true" />
+        <MagnifyingGlassIcon class="h-5 w-5" aria-hidden="true" />
       </div>
       <input
         :id="inputId"
@@ -29,7 +29,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { useVModel } from "@vueuse/core";
-import { SearchIcon } from "@heroicons/vue/solid";
+import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 import { useFocusOnMount } from "./helpers";
 
 export default defineComponent({
@@ -42,7 +42,7 @@ export default defineComponent({
     focus: { type: Boolean, default: false },
   },
   emits: ["update:modelValue"],
-  components: { SearchIcon },
+  components: { MagnifyingGlassIcon },
   inheritAttrs: false,
   setup(props) {
     const inputValue = useVModel(props, "modelValue");

@@ -55,7 +55,7 @@
                 @click="doClose()"
               >
                 <span class="sr-only">Close</span>
-                <XIcon class="h-6 w-6" aria-hidden="true" />
+                <XMarkIcon class="h-6 w-6" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -74,7 +74,7 @@ import {
   TransitionChild,
   TransitionRoot,
 } from "@headlessui/vue";
-import { XIcon } from "@heroicons/vue/outline";
+import { XMarkIcon } from "@heroicons/vue/24/outline";
 import { promiseTimeout, useVModel } from "@vueuse/core";
 import { useUiStore } from "@/stores/uiStore";
 

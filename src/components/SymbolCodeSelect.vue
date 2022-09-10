@@ -85,10 +85,10 @@ import {
   ListboxOption,
   ListboxOptions,
 } from "@headlessui/vue";
-import { CheckIcon, SelectorIcon } from "@heroicons/vue/solid";
+import { CheckIcon, ChevronUpDownIcon as SelectorIcon } from "@heroicons/vue/20/solid";
 import MilSymbol from "./MilSymbol.vue";
 import { useVModel } from "@vueuse/core";
-import { SymbolItem } from "../types/constants";
+import { SymbolItem } from "@/types/constants";
 
 export default defineComponent({
   components: {

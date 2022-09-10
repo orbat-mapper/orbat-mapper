@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDark, useToggle } from "@vueuse/core";
 import { GlobalEvents } from "vue-global-events";
-import { MoonIcon, SunIcon } from "@heroicons/vue/solid";
+import { MoonIcon, SunIcon } from "@heroicons/vue/24/solid";
 import BaseButton from "@/components/BaseButton.vue";
 import { computed, onMounted, provide, ref } from "vue";
 import { EntityId } from "@/types/base";

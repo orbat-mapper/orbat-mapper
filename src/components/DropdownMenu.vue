@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
-import { ChevronDownIcon } from "@heroicons/vue/solid";
+import { ChevronDownIcon } from "@heroicons/vue/24/solid";
 import { MenuItemData } from "@/components/types";
 
 const props = defineProps<{ items: MenuItemData[]; label?: string }>();

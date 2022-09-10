@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { TrashIcon } from "@heroicons/vue/solid";
+import { TrashIcon } from "@heroicons/vue/24/solid";
 
 import {
   MapMarkerPath,
@@ -57,11 +57,11 @@ import {
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";
-import { useMeasurementInteraction } from "../composables/geoMeasurement";
+import { useMeasurementInteraction } from "@/composables/geoMeasurement";
 import { watch } from "vue";
 import { Fn, onKeyDown, onKeyStroke, useToggle } from "@vueuse/core";
 import { storeToRefs } from "pinia";
-import { useMeasurementsStore } from "../stores/geoStore";
+import { useMeasurementsStore } from "@/stores/geoStore";
 import { useUiStore } from "@/stores/uiStore";
 
 const props = defineProps<{ olMap: OLMap }>();

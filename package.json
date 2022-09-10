@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@headlessui/vue": "^1.5.0",
-    "@heroicons/vue": "^1.0.6",
+    "@heroicons/vue": "^2.0.10",
     "@popperjs/core": "^2.11.5",
     "@tmcw/togeojson": "^5.2.2",
     "@turf/turf": "^6.5.0",

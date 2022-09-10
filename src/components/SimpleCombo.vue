@@ -56,7 +56,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, PropType, ref } from "vue";
-import { CheckIcon, SelectorIcon } from "@heroicons/vue/solid";
+import { CheckIcon, ChevronUpDownIcon as SelectorIcon } from "@heroicons/vue/24/solid";
 import {
   Combobox,
   ComboboxButton,
