@@ -213,7 +213,7 @@ watch(
 const { onUnitAction } = useUnitActions();
 
 function actionWrapper(action: UnitActions) {
-  if (isMultiMode) {
+  if (isMultiMode.value) {
     onUnitAction(selectedUnits.value, action);
     return;
   }

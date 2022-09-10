@@ -53,7 +53,7 @@ function handleZoomShortcut(e: KeyboardEvent) {
   if (selectedFeatureIds.value.size && tabStore.activeScenarioTab === TAB_LAYERS) {
     const fIds = [...selectedFeatureIds.value];
     onFeatureAction(fIds.length > 1 ? fIds : fIds[0], "zoom");
-  } else if (selectedUnitIds.value.size) {
+  } else if (selectedUnitIds.value.size || activeUnit.value) {
     if (selectedUnitIds.value.size > 1) {
       const units = [...selectedUnitIds.value].map((id) => state.getUnitById(id));
       onUnitAction(units, UnitActions.Zoom);
@@ -65,7 +65,7 @@ function handlePanShortcut(e: KeyboardEvent) {
   if (selectedFeatureIds.value.size && tabStore.activeScenarioTab === TAB_LAYERS) {
     const fIds = [...selectedFeatureIds.value];
     onFeatureAction(fIds.length > 1 ? fIds : fIds[0], "pan");
-  } else if (selectedUnitIds.value.size) {
+  } else if (selectedUnitIds.value.size || activeUnit.value) {
     if (selectedUnitIds.value.size > 1) {
       const units = [...selectedUnitIds.value].map((id) => state.getUnitById(id));
       onUnitAction(units, UnitActions.Pan);
