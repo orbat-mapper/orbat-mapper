@@ -76,7 +76,11 @@
     </nav>
     <router-view v-slot="{ Component }">
       <keep-alive include="ScenarioEditorGeo">
-        <component :is="Component" />
+        <component
+          :is="Component"
+          @show-export="showExportModal = true"
+          @show-load="showLoadModal = true"
+        />
       </keep-alive>
     </router-view>
 

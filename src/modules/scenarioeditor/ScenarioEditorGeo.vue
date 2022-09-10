@@ -124,6 +124,7 @@ import { injectStrict } from "@/utils";
 
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
 
+const emit = defineEmits(["showExport", "showLoad"]);
 const activeUnitId = injectStrict(activeUnitKey);
 
 const uiTabs = useTabStore();
@@ -140,7 +141,6 @@ const { copy: copyToClipboard, copied } = useClipboard();
 const currentTab = ref(0);
 const isOpen = ref(false);
 const showSearch = ref(false);
-const showLoadModal = ref(false);
 
 const activeUnitStore = useActiveUnitStore({
   activeScenario,
@@ -218,12 +218,12 @@ async function onScenarioAction(action: ScenarioActions) {
   } else if (action === "exportJson") {
     await io.downloadAsJson();
   } else if (action === "loadNew") {
-    showLoadModal.value = true;
+    emit("showLoad");
   } else if (action === "exportToClipboard") {
     await copyToClipboard(io.stringifyScenario());
     if (copied.value) send({ message: "Scenario copied to clipboard" });
   } else if (action === "export") {
-    router.push({ name: EXPORT_SCENARIO_ROUTE });
+    emit("showExport");
   } else {
     send({ message: "Not implemented yet" });
   }
