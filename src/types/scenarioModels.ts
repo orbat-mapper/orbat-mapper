@@ -9,6 +9,10 @@ export interface State extends Partial<ScenarioEventDescription> {
   via?: Position[];
 }
 
+export interface StateAdd extends Omit<State, "id"> {
+  id?: string;
+}
+
 export type CurrentStateType = "initial" | "interpolated";
 
 export interface CurrentState extends Omit<State, "id"> {

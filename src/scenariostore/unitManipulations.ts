@@ -16,7 +16,7 @@ import { SID } from "@/symbology/values";
 import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
-import { State, Unit } from "@/types/scenarioModels";
+import { State, StateAdd, Unit } from "@/types/scenarioModels";
 import { Position } from "@/types/scenarioGeoModels";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
@@ -385,6 +385,28 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitState(unitId);
   }
 
+  function addUnitStateEntry(unitId: EntityId, state: StateAdd) {
+    update(
+      (s) => {
+        const u = s.getUnitById(unitId);
+
+        const newState = klona(state);
+        newState.id = nanoid();
+        if (!u.state) u.state = [];
+        const t = state.t;
+        for (let i = 0, len = u.state.length; i < len; i++) {
+          if (t <= u.state[i].t) {
+            u.state.splice(i, 0, newState as State);
+            return;
+          }
+        }
+        u.state.push(newState as State);
+      },
+      { label: "addUnitPosition", value: unitId }
+    );
+    updateUnitState(unitId);
+  }
+
   function updateUnitStateEntry(unitId: EntityId, index: number, data: Partial<State>) {
     update((s) => {
       const unit = s.getUnitById(unitId);
@@ -489,6 +511,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     expandUnit,
     updateUnitStateVia,
     updateUnitStateEntry,
+    addUnitStateEntry,
     convertStateEntryToInitialLocation,
     reorderSide,
     reorderSideGroup,

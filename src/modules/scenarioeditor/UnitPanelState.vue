@@ -79,6 +79,7 @@ const state = computed(() => props.unit.state || []);
 
 const menuItems: MenuItemData<StateAction>[] = [
   { label: "Delete", action: "delete" },
+  { label: "Duplicate", action: "duplicate" },
   { label: "Change time", action: "changeTime" },
   { label: "Edit title", action: "editTitle" },
   { label: "Convert to initial position", action: "convertToInitialPosition" },
@@ -122,6 +123,11 @@ async function onStateAction(index: number, action: StateAction) {
     }
   } else if (action === "editTitle") {
     editTitle(state.value[index]);
+  } else if (action === "duplicate") {
+    unitActions.addUnitStateEntry(props.unit.id, {
+      ...state.value[index],
+      t: store.state.currentTime,
+    });
   }
 }
 
