@@ -1,7 +1,9 @@
 <template>
   <div class="relative flex min-h-0 flex-auto">
     <aside
-      class="z-10 flex w-96 flex-col justify-between border-r-2 bg-gray-100 dark:bg-gray-900"
+      class="relative z-10 flex flex-col justify-between border-r-2 bg-gray-100 dark:bg-gray-900"
+      :style="{ width: panelWidthA + 'px' }"
+      ref="panelRef"
     >
       <TabView
         v-model:current-tab="activeScenarioTab"
@@ -42,15 +44,32 @@
       >
         <TimeController class="" />
       </footer>
+      <DragHandle
+        :parent-ref="panelRef"
+        @resizestart="initialWidthA = $event"
+        @resizing="panelWidthA = initialWidthA + $event"
+        @resizeend="geoStore.updateMapSize()"
+      />
     </aside>
     <aside
       v-show="showLayerPanel"
-      class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50"
+      class="relative flex flex-shrink-0 flex-col border-r-2 bg-gray-50"
       data-teleport-layer
-    ></aside>
+      ref="panelRefC"
+      :style="{ width: panelWidthC + 'px' }"
+    >
+      <DragHandle
+        :parent-ref="panelRefC"
+        @resizestart="initialWidthC = $event"
+        @resizing="panelWidthC = initialWidthC + $event"
+        @resizeend="geoStore.updateMapSize()"
+      />
+    </aside>
     <aside
-      class="flex w-96 flex-shrink-0 flex-col border-r-2 bg-gray-50 dark:bg-gray-800"
+      class="relative flex flex-shrink-0 flex-col border-r-2 bg-gray-50 dark:bg-gray-800"
       v-if="showUnitPanel"
+      :style="{ width: panelWidthB + 'px' }"
+      ref="panelRefB"
     >
       <TabView
         v-model:current-tab="currentTab"
@@ -67,6 +86,12 @@
           </div>
         </template>
       </TabView>
+      <DragHandle
+        :parent-ref="panelRefB"
+        @resizestart="initialWidthB = $event"
+        @resizing="panelWidthB = initialWidthB + $event"
+        @resizeend="geoStore.updateMapSize()"
+      />
     </aside>
     <ScenarioMap class="flex-1" data-teleport-map />
     <KeyboardScenarioActions v-if="geoStore.olMap" />
@@ -93,7 +118,7 @@ import TabItem from "@/components/TabItem.vue";
 import TimeController from "@/components/TimeController.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useTabStore, useUiStore } from "@/stores/uiStore";
-import { useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
+import { throttledRef, useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { ScenarioActions, TAB_LAYERS, TAB_ORBAT } from "@/types/constants";
@@ -110,6 +135,7 @@ import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vu
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import { storeToRefs } from "pinia";
 import { injectStrict } from "@/utils";
+import DragHandle from "@/components/DragHandle.vue";
 
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
 
@@ -210,4 +236,15 @@ watchOnce(
     NProgress.start();
   }
 );
+
+const initialWidthA = ref(382);
+const panelWidthA = ref(initialWidthA.value);
+const initialWidthB = ref(382);
+const panelWidthB = ref(initialWidthB.value);
+const initialWidthC = ref(382);
+const panelWidthC = ref(initialWidthC.value);
+
+const panelRef = ref(null);
+const panelRefB = ref(null);
+const panelRefC = ref(null);
 </script>

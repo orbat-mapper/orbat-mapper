@@ -70,3 +70,5 @@ export function injectStrictWithSelf<T>(key: InjectionKey<T>): T | undefined {
 
   return vm?.provides[key as any] || injectStrict(key);
 }
+
+export const isClient = typeof window !== "undefined";

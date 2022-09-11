@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Make sidebars resizable.
 - Add filtering to grid edit mode.
 - Add grid edit mode (work in progress).
 - Embed unit icons in KMZ export.
