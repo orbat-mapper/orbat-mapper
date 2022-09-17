@@ -1,27 +1,20 @@
 <template>
   <Menu as="div" class="relative text-left">
-    <MenuButton
-      @click.stop=""
-      class="group flex items-center rounded-md text-gray-300 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-army2 focus:ring-offset-2"
-    >
-      <span
-        ><slot>{{ label }}</slot></span
+    <Float placement="bottom-end" :offset="8" shift>
+      <MenuButton
+        @click.stop=""
+        class="group flex items-center rounded-md text-gray-300 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-army2 focus:ring-offset-2"
       >
-      <ChevronDownIcon
-        class="ml-1 h-5 w-5 text-gray-400 group-hover:text-gray-200"
-        aria-hidden="true"
-      />
-    </MenuButton>
-    <transition
-      enter-active-class="transition ease-out duration-100"
-      enter-from-class="transform opacity-0 scale-95"
-      enter-to-class="transform opacity-100 scale-100"
-      leave-active-class="transition ease-in duration-75"
-      leave-from-class="transform opacity-100 scale-100"
-      leave-to-class="transform opacity-0 scale-95"
-    >
+        <span
+          ><slot>{{ label }}</slot></span
+        >
+        <ChevronDownIcon
+          class="ml-1 h-5 w-5 text-gray-400 group-hover:text-gray-200"
+          aria-hidden="true"
+        />
+      </MenuButton>
       <MenuItems
-        class="absolute top-6 z-20 mx-3 mt-1 w-48 origin-top-right divide-y divide-gray-200 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 sm:right-0"
+        class="w-48 divide-y divide-gray-200 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800"
       >
         <div class="py-1">
           <MenuItem
@@ -44,7 +37,7 @@
           </MenuItem>
         </div>
       </MenuItems>
-    </transition>
+    </Float>
   </Menu>
 </template>
 
@@ -52,6 +45,7 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
 import { ChevronDownIcon } from "@heroicons/vue/24/solid";
 import { MenuItemData } from "@/components/types";
+import { Float } from "@headlessui-float/vue";
 
 const props = defineProps<{ items: MenuItemData[]; label?: string }>();
 const emit = defineEmits(["action"]);
