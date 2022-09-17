@@ -1,6 +1,6 @@
 <template>
   <div class="flex h-full flex-col">
-    <header class="flex-shrink-0">
+    <header class="flex-shrink-0 overflow-auto">
       <div class="border-b border-gray-300 dark:border-gray-400" :class="extraClass">
         <div class="flex justify-between">
           <nav class="-mb-px flex space-x-8" aria-label="Tabs">

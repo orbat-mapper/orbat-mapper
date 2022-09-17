@@ -10,7 +10,7 @@
     @touchstart="onButtonDown"
   >
     <div
-      class="flex h-8 flex-none items-center justify-center rounded bg-white shadow"
+      class="z-10 flex h-8 flex-none items-center justify-center rounded bg-white shadow"
       :class="{ 'rotate-90 transform': horizontal }"
       style="width: 0.9375rem"
     >

@@ -50,6 +50,12 @@
             class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
             ><TableIcon class="h-6 w-6"
           /></router-link>
+          <div
+            title="Chart edit mode"
+            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          >
+            <SitemapIcon class="h-6 w-6" />
+          </div>
         </div>
         <div class="flex items-center">
           <button
@@ -162,6 +168,7 @@ import {
   Keyboard as KeyboardIcon,
   RedoVariant as RedoIcon,
   UndoVariant as UndoIcon,
+  Sitemap as SitemapIcon,
 } from "mdue";
 import { useClipboard, useTitle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";

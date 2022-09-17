@@ -40,7 +40,7 @@
         </TabItem>
       </TabView>
       <footer
-        class="flex flex-shrink-0 items-center border-t border-gray-300 bg-gray-200 dark:bg-gray-700"
+        class="flex flex-shrink-0 items-center overflow-auto border-t border-gray-300 bg-gray-200 dark:bg-gray-700"
       >
         <TimeController class="" />
       </footer>
