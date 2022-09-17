@@ -16,6 +16,7 @@
     "clear_jest": "jest --clearCache"
   },
   "dependencies": {
+    "@headlessui-float/vue": "^0.9.1",
     "@headlessui/vue": "^1.5.0",
     "@heroicons/vue": "^2.0.10",
     "@popperjs/core": "^2.11.5",
@@ -69,6 +70,7 @@
     "@vue/compiler-sfc": "^3.2.33",
     "@vue/vue3-jest": "^27.0.0",
     "autoprefixer": "^10.4.7",
+    "inter-ui": "^3.19.3",
     "jest": "^27.5.1",
     "postcss": "^8.4.13",
     "prettier": "^2.6.2",
@@ -78,8 +80,7 @@
     "ts-jest": "^27.1.4",
     "typescript": "^4.6.4",
     "vite": "^3.0.3",
-    "vue-tsc": "^0.39.0",
-    "inter-ui": "^3.19.3"
+    "vue-tsc": "^0.39.0"
   },
   "engines": {
     "node": ">= 16.13.0",
