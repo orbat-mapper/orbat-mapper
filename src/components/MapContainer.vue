@@ -1,9 +1,5 @@
-<template>
-  <div ref="mapRoot" class="h-full w-full" />
-</template>
-
-<script lang="ts">
-import { defineComponent, markRaw, onMounted, onUnmounted, PropType, ref } from "vue";
+<script setup lang="ts">
+import { markRaw, onMounted, onUnmounted, ref } from "vue";
 
 import MapEvent from "ol/MapEvent";
 import OLMap from "ol/Map";
@@ -15,7 +11,15 @@ import { Coordinate } from "ol/coordinate";
 import { fromLonLat } from "ol/proj";
 import OSM from "ol/source/OSM";
 import XYZ from "ol/source/XYZ";
-import { useOlEvent } from "../composables/openlayersHelpers";
+import { useOlEvent } from "@/composables/openlayersHelpers";
+
+interface Props {
+  center?: Coordinate;
+  zoom?: number;
+}
+
+const props = withDefaults(defineProps<Props>(), { center: () => [30, 60], zoom: 5 });
+const emit = defineEmits(["ready", "moveend"]);
 
 function createBaseLayers() {
   const openStreetmapLayer = new TileLayer({
@@ -84,49 +88,40 @@ function createBaseLayers() {
   ];
 }
 
-export default defineComponent({
-  name: "MapContainer",
-  emits: ["ready", "moveend"],
-  props: {
-    center: { type: Array as PropType<Coordinate>, default: () => [30, 60] },
-    zoom: { default: 5 },
-  },
+const mapRoot = ref();
+let olMap: OLMap;
+const moveendHandler = (evt: MapEvent) => {
+  emit("moveend", { view: evt.map.getView() });
+};
 
-  setup(props, { emit }) {
-    const mapRoot = ref();
-    let olMap: OLMap;
-    const moveendHandler = (evt: MapEvent) => {
-      emit("moveend", { view: evt.map.getView() });
-    };
+onMounted(() => {
+  olMap = new OLMap({
+    target: mapRoot.value,
+    maxTilesLoading: 200,
+    layers: createBaseLayers(),
+    view: new View({
+      zoom: props.zoom,
+      center: fromLonLat(props.center),
+      constrainResolution: true,
+    }),
+    controls: defaultControls({
+      attributionOptions: {
+        collapsible: true,
+      },
+    }),
+  });
+  useOlEvent(olMap.on("moveend", moveendHandler));
+  emit("ready", markRaw(olMap));
+});
 
-    onMounted(() => {
-      olMap = new OLMap({
-        target: mapRoot.value,
-        maxTilesLoading: 200,
-        layers: createBaseLayers(),
-        view: new View({
-          zoom: props.zoom,
-          center: fromLonLat(props.center),
-          constrainResolution: true,
-        }),
-        controls: defaultControls({
-          attributionOptions: {
-            collapsible: true,
-          },
-        }),
-      });
-      useOlEvent(olMap.on("moveend", moveendHandler));
-      emit("ready", markRaw(olMap));
-    });
-
-    onUnmounted(() => {
-      olMap.setTarget(undefined);
-    });
-
-    return { mapRoot };
-  },
+onUnmounted(() => {
+  olMap.setTarget(undefined);
 });
 </script>
+
+<template>
+  <div ref="mapRoot" class="h-full w-full" />
+</template>
 
 <style>
 .ol-rotate {
