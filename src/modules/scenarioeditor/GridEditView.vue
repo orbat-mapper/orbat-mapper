@@ -5,12 +5,11 @@
       class="flex h-full w-full flex-col overflow-hidden bg-gray-50 shadow sm:rounded-lg"
     >
       <header
-        class="flex flex-shrink-0 items-center justify-between border-b border-gray-300 bg-gray-200 px-4 py-5 sm:px-6"
+        class="flex flex-shrink-0 items-center justify-between border-b border-gray-300 bg-gray-200 px-4 py-3 sm:px-6"
       >
-        <div class="flex items-center space-x-4">
+        <div class="w-full sm:w-auto">
           <FilterQueryInput class="" v-model="filterQuery" />
         </div>
-        <BaseButton @click="doClose()">Go to map mode</BaseButton>
       </header>
       <div class="relative min-w-0 max-w-none flex-auto overflow-auto pb-7">
         <table class="w-full table-fixed">
