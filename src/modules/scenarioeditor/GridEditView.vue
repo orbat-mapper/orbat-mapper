@@ -23,18 +23,17 @@
               <th
                 scope="col"
                 class="sticky top-0 z-10 border-b border-gray-300 bg-gray-100 bg-opacity-95 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter sm:pl-6 lg:pl-8"
-              ></th>
-              <th
-                scope="col"
-                class="sticky top-0 z-10 border-b border-gray-300 bg-gray-100 bg-opacity-95 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter"
               >
-                Name
+                Unit
               </th>
+
               <th
+                v-for="column in columns"
+                :key="column.field"
                 scope="col"
                 class="sticky top-0 z-10 border-b border-gray-300 bg-gray-100 bg-opacity-95 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter"
               >
-                Short name
+                {{ column.title }}
               </th>
             </tr>
           </thead>
@@ -71,52 +70,35 @@
                   <span class="ml-2 truncate">{{ item.unit.name }}</span>
                 </td>
                 <td
+                  v-for="column in columns"
+                  :key="column.field"
                   class="whitespace-nowrap px-3 py-3 text-sm text-gray-500"
-                  @click="activateEdit(item.unit, itemIndex, 'name')"
+                  @click="activateEdit(item.unit, itemIndex, column.field)"
                 >
                   <form
-                    v-if="activeUnit === item.unit && activeColumn === 'name'"
+                    v-if="activeUnit === item.unit && activeColumn === column.field"
                     @submit.prevent="onSubmit"
                   >
                     <input
                       type="text"
                       class="-my-3 w-full"
-                      :value="item.unit.name"
+                      :value="item.unit[column.field]"
                       @vnode-mounted="onVMounted"
-                      @keydown.tab="onTab(item.unit, itemIndex, 'name')"
+                      @keydown.tab.prevent.stop="
+                        onTab(item.unit, itemIndex, column.field)
+                      "
                       @keydown.down="onDown(itemIndex)"
                       @keydown.up="onUp(itemIndex)"
                       @input="updateValue"
                     />
                   </form>
-                  <span v-else>{{ item.unit.name }}</span>
-                </td>
-                <td
-                  class="whitespace-nowrap px-3 py-3 text-sm text-gray-500"
-                  @click="activateEdit(item.unit, itemIndex, 'shortName')"
-                >
-                  <form
-                    v-if="activeUnit === item.unit && activeColumn === 'shortName'"
-                    @submit.prevent="onSubmit"
-                  >
-                    <input
-                      type="text"
-                      class="-my-3 w-full"
-                      :value="item.unit.shortName"
-                      @vnode-mounted="onVMounted"
-                      @keydown.tab="onTab(item.unit, itemIndex, 'shortName')"
-                      @keydown.down="onDown(itemIndex)"
-                      @keydown.up="onUp(itemIndex)"
-                      @input="updateValue"
-                    />
-                  </form>
-                  <span v-else>{{ item.unit.shortName }}</span>
+                  <span v-else>{{ item.unit[column.field] }}</span>
                 </td>
               </tr>
 
               <tr v-else-if="item.type === 'side'" class="border-t border-gray-200">
                 <td
-                  colspan="3"
+                  :colspan="columns.length + 1"
                   class="bg-gray-200 px-4 py-2 text-left text-sm font-bold text-gray-900 sm:px-6"
                 >
                   {{ item.side.name }}
@@ -124,7 +106,7 @@
               </tr>
 
               <tr v-else-if="item.type === 'sidegroup'">
-                <td colspan="3" class="sticky top-12 z-10">
+                <td :colspan="columns.length + 1" class="sticky top-12 z-10">
                   <div
                     class="flex items-center whitespace-nowrap border-b bg-emerald-50 py-2 pr-3 text-sm font-medium text-gray-900"
                   >
@@ -147,8 +129,8 @@
                       class="ml-2"
                       tabindex="-1"
                       @click="expandSideGroup(item.sideGroup)"
-                      >Expand/collapse</BaseButton
-                    >
+                      >Expand/collapse
+                    </BaseButton>
                   </div>
                 </td>
               </tr>
@@ -169,7 +151,7 @@ import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import BaseButton from "@/components/BaseButton.vue";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
-import { computed, ref, VNode } from "vue";
+import { computed, nextTick, ref, VNode } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
@@ -184,7 +166,7 @@ const uiStore = useUiStore();
 const target = ref();
 
 const activeUnit = ref<NUnit | null | undefined>();
-const activeColumn = ref<"name" | "shortName">();
+const activeColumn = ref<ColumnField>();
 const activeItemIndex = ref(-1);
 const activeScenario = injectStrict(activeScenarioKey);
 const editedValue = ref<string | undefined>();
@@ -193,21 +175,23 @@ const {
   unitActions,
 } = activeScenario;
 
+type ColumnField = "name" | "shortName" | "sidc";
+
+interface TableColumn {
+  title: string;
+  field: ColumnField;
+}
+
+const columns = ref<TableColumn[]>([
+  { field: "name", title: "Name" },
+  { field: "shortName", title: "Short name" },
+  { field: "sidc", title: "Symbol code" },
+]);
+
 const sgOpen = ref(new Map<NSideGroup, boolean>());
 
 const { updateUnit } = unitActions;
 const filterQuery = ref("");
-const sides = computed(() => {
-  return state.sides.map((id) => state.sideMap[id]);
-});
-
-function sideGroups(side: NSide) {
-  return side.groups.map((id) => state.sideGroupMap[id]);
-}
-
-function rootUnits(sideGroup: NSideGroup) {
-  return sideGroup.subUnits.map((unitId) => state.unitMap[unitId]);
-}
 
 const debouncedFilterQuery = useDebounce(filterQuery, 250);
 
@@ -215,6 +199,7 @@ interface SideItem {
   side: NSide;
   children: SideGroupItem[];
 }
+
 interface SideGroupItem {
   sideGroup: NSideGroup;
   children: NOrbatItemData[];
@@ -247,7 +232,6 @@ const filteredOrbat = computed(() => {
 
 const items = computed(() => {
   const _items: TableItem[] = [];
-  let currentSideGroup: NSideGroup;
   filteredOrbat.value.forEach(({ side, children: sideGroups }) => {
     _items.push({ type: "side", side, id: side.id });
     sideGroups.forEach((sg) => {
@@ -297,8 +281,9 @@ function doClose() {
   router.back();
 }
 
-function activateEdit(unit: NUnit, itemIndex: number, column: "name" | "shortName") {
+function activateEdit(unit: NUnit, itemIndex: number, column: ColumnField) {
   onSubmit();
+
   activeUnit.value = unit;
   activeColumn.value = column;
   activeItemIndex.value = itemIndex;
@@ -313,17 +298,14 @@ function onSubmit(e?: Event) {
   editedValue.value = undefined;
 }
 
-function onTabTest(e: Event) {
-  console.log("Tabbiong", e);
-}
-
-function onTab(unit: NUnit, itemIndex: number, column: "name" | "shortName") {
+function onTab(unit: NUnit, itemIndex: number, column: ColumnField) {
   if (unit) {
-    if (column === "name") {
-      activateEdit(unit, itemIndex, "shortName");
-    } else {
-      activateEdit(unit, itemIndex, "name");
+    const columnIndex = columns.value.findIndex((c) => c.field === column);
+    let nextIndex = 0;
+    if (columnIndex < columns.value.length - 1) {
+      nextIndex = columnIndex + 1;
     }
+    activateEdit(unit, itemIndex, columns.value[nextIndex].field);
   }
 }
 
@@ -338,6 +320,7 @@ function onDown(itemIndex: number) {
     activateEdit(nextItem.unit, itemIndex + 1, activeColumn.value!);
   }
 }
+
 function onUp(itemIndex: number) {
   if (!activeUnit.value) return;
   let idx = itemIndex - 1;
@@ -354,7 +337,9 @@ function updateValue(event: Event) {
   editedValue.value = (<HTMLInputElement>event.target).value;
 }
 
-const onVMounted = ({ el }: VNode) => el?.focus();
+const onVMounted = ({ el }: VNode) => {
+  el?.focus();
+};
 
 onStartTyping((e) => {
   // console.log("Start typing", e);
