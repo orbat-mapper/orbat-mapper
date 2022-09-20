@@ -385,7 +385,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitState(unitId);
   }
 
-  function addUnitStateEntry(unitId: EntityId, state: StateAdd) {
+  function addUnitStateEntry(unitId: EntityId, state: StateAdd, merge = false) {
     update(
       (s) => {
         const u = s.getUnitById(unitId);
@@ -396,7 +396,13 @@ export function useUnitManipulations(store: NewScenarioStore) {
         const t = state.t;
         for (let i = 0, len = u.state.length; i < len; i++) {
           if (t <= u.state[i].t) {
-            u.state.splice(i, 0, newState as State);
+            if (merge && u.state[i].t === t) {
+              const { id, t, ...rest } = newState;
+              Object.assign(u.state[i], rest);
+            } else {
+              u.state.splice(i, 0, newState as State);
+            }
+
             return;
           }
         }

@@ -28,11 +28,11 @@ To start a development server run:
 
     $ npm run dev
 
-ORBAT mapper is now running on http://localhost:5173/. Any changes made to the source code will be instantly 
-available in the browser thanks to Vite's lightning fast hot module replacement. 
+ORBAT mapper is now running on http://localhost:5173/. Any changes made to the source code will be instantly
+available in the browser thanks to Vite's lightning fast hot module replacement.
 
 For an optimized and minified build run:
 
     $ npm run build
 
-See https://vitejs.dev/guide/static-deploy.html for various deploy options. 
+See https://vitejs.dev/guide/static-deploy.html for various deploy options.

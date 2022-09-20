@@ -1,8 +1,16 @@
 <template>
   <h3 class="mt-6 font-medium text-gray-900">Unit state</h3>
+  <div class="flex items-center">
+    <span class="text-sm">Change state</span>
+    <SplitButton
+      class="ml-2"
+      :items="stateItems"
+      v-model:active-item="uiState.activeStateItem"
+    ></SplitButton>
+  </div>
 
   <ul class="mt-2 divide-y divide-gray-200 border-t border-b border-gray-200">
-    <li v-for="(s, index) in state" class="relative flex items-center py-4" :key="s.t">
+    <li v-for="(s, index) in state" class="relative flex items-center py-4" :key="s.id">
       <div class="flex min-w-0 flex-auto flex-col text-sm">
         <p
           :class="
@@ -28,7 +36,8 @@
           {{ s.title }}
         </p>
 
-        <p class="text-gray-700">{{ formatPosition(s.location) }}</p>
+        <p class="text-gray-700" v-if="s.location">{{ formatPosition(s.location) }}</p>
+        <MapMarkerOffOutline v-if="s.location === null" class="h-5 w-5 text-gray-600" />
       </div>
 
       <div class="flex-0 relative flex items-center space-x-0">
@@ -54,9 +63,9 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, VNode } from "vue";
-import { State } from "@/types/scenarioModels";
+import { State, StateAdd } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
-import { CrosshairsGps, MapMarkerPath } from "mdue";
+import { CrosshairsGps, MapMarkerPath, MapMarkerOffOutline } from "mdue";
 import IconButton from "@/components/IconButton.vue";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { StateAction, UnitActions } from "@/types/constants";
@@ -65,7 +74,11 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import DotsMenu from "@/components/DotsMenu.vue";
 
-import { MenuItemData } from "@/components/types";
+import { ButtonGroupItem, MenuItemData } from "@/components/types";
+import BaseButton from "@/components/BaseButton.vue";
+import SplitButton from "@/components/SplitButton.vue";
+import { useUiStore } from "@/stores/uiStore";
+import { useNotifications } from "@/composables/notifications";
 
 interface Props {
   unit: NUnit;
@@ -75,15 +88,39 @@ const { store, time, unitActions } = injectStrict(activeScenarioKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
 
 const { onUnitAction } = useUnitActions();
+const { send } = useNotifications();
 const state = computed(() => props.unit.state || []);
+const uiState = useUiStore();
 
 const menuItems: MenuItemData<StateAction>[] = [
   { label: "Delete", action: "delete" },
   { label: "Duplicate", action: "duplicate" },
   { label: "Change time", action: "changeTime" },
   { label: "Edit title", action: "editTitle" },
+  { label: "Clear location", action: "clearLocation" },
   { label: "Convert to initial position", action: "convertToInitialPosition" },
 ];
+
+const stateItems = computed<ButtonGroupItem[]>(() => {
+  return [
+    {
+      label: "Change symbol",
+      onClick: () => {
+        send({ message: "Not implemented yet" });
+      },
+    },
+    {
+      label: "Remove from map",
+      onClick: () => {
+        const newState: StateAdd = {
+          location: null,
+          t: store.state.currentTime,
+        };
+        unitActions.addUnitStateEntry(props.unit.id, newState, true);
+      },
+    },
+  ];
+});
 
 const editedTitle = ref<State | null>();
 
@@ -127,6 +164,10 @@ async function onStateAction(index: number, action: StateAction) {
     unitActions.addUnitStateEntry(props.unit.id, {
       ...state.value[index],
       t: store.state.currentTime,
+    });
+  } else if (action === "clearLocation") {
+    unitActions.updateUnitStateEntry(props.unit.id, index, {
+      location: null,
     });
   }
 }

@@ -4,7 +4,7 @@ import { EntityId, ScenarioTime } from "./base";
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;
   t: ScenarioTime;
-  location?: Position;
+  location?: Position | null;
   sidc?: string;
   via?: Position[];
 }

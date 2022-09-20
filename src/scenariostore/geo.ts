@@ -24,7 +24,11 @@ export function useGeo(store: NewScenarioStore) {
     return Object.values(state.unitMap).filter((unit) => unit._state?.location);
   });
 
-  function addUnitPosition(unitId: EntityId, coordinates: Position, atTime?: number) {
+  function addUnitPosition(
+    unitId: EntityId,
+    coordinates: Position | null,
+    atTime?: number
+  ) {
     let newState: CurrentState | null = null;
     update(
       (s) => {
