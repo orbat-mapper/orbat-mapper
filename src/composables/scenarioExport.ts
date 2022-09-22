@@ -6,6 +6,9 @@ import { ExportSettings } from "@/types/convert";
 import * as FileSaver from "file-saver";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
+import { useSettingsStore } from "@/stores/settingsStore";
+
+const settingsStore = useSettingsStore();
 
 export interface UseScenarioExportOptions {
   activeScenario: TScenario;
@@ -19,7 +22,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       const { id, name, sidc, shortName, description } = unit;
       return point(
         unit._state?.location!,
-        { name, shortName, sidc, description },
+        { name, shortName, sidc: unit._state?.sidc || sidc, description },
         { id }
       );
     });
@@ -98,9 +101,12 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     const usedSidcs = new Set<string>();
     if (opts.embedIcons) {
       for (const unit of geo.everyVisibleUnit.value) {
-        const { sidc } = unit;
+        const sidc = unit._state?.sidc || unit.sidc;
         if (!usedSidcs.has(sidc)) {
-          const symb = symbolGenerator(sidc);
+          const symb = symbolGenerator(sidc, {
+            standard: settingsStore.symbologyStandard,
+            simpleStatusModifier: true,
+          });
           usedSidcs.add(sidc);
           const blob: Blob | null = await new Promise((resolve) =>
             symb.asCanvas().toBlob(resolve)
