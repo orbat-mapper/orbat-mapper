@@ -8,8 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Add 'remove unit from map/clear location' state action.
 - Make sidebars resizable.
 - Add filtering to grid edit mode.
+
+August 2022
+
 - Add grid edit mode (work in progress).
 - Embed unit icons in KMZ export.
 - Basic KML/KMZ export.
@@ -24,6 +28,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Select multiple units on the map with shift+click.
 - Deselect units/features by pressing the escape key.
 - Unit state change entries can now have a title.
+
+July 2022
+
 - Add scenario events panel with a basic timeline to the scenario editor.
 - Add button for clearing selected features.
 - Edit visibility of multiple features at once.
