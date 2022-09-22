@@ -46,7 +46,7 @@
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
             >
               <MilSymbol
-                :sidc="unit.sidc"
+                :sidc="unit._state?.sidc || unit.sidc"
                 :size="settingsStore.orbatIconSize"
                 :modifiers="{ standard: settingsStore.symbologyStandard }"
                 class=""

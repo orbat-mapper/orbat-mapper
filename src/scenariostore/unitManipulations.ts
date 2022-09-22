@@ -448,7 +448,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     let currentState = createInitialState(unit);
     for (const s of unit.state) {
       if (s.t <= timestamp) {
-        currentState = s;
+        currentState = { ...currentState, ...s };
       } else {
         break;
       }

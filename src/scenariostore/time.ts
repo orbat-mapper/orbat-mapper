@@ -9,7 +9,12 @@ import { lineString } from "@turf/helpers";
 
 export function createInitialState(unit: NUnit): CurrentState | null {
   if (unit.location)
-    return { t: Number.MIN_SAFE_INTEGER, location: unit.location, type: "initial" };
+    return {
+      t: Number.MIN_SAFE_INTEGER,
+      location: unit.location,
+      type: "initial",
+      sidc: unit.sidc,
+    };
   return null;
 }
 
@@ -25,7 +30,7 @@ export function useScenarioTime(store: NewScenarioStore) {
       let currentState = createInitialState(unit);
       for (const s of unit.state) {
         if (s.t <= timestamp) {
-          currentState = s;
+          currentState = { ...currentState, ...s };
         } else {
           if (currentState?.location && s.location) {
             const n = lineString(
@@ -38,6 +43,7 @@ export function useScenarioTime(store: NewScenarioStore) {
             const averageSpeed = pathLength / timeDiff;
             const p = turfAlong(n, averageSpeed * (timestamp - currentState.t));
             currentState = {
+              ...currentState,
               t: timestamp,
               location: p.geometry.coordinates,
               type: "interpolated",

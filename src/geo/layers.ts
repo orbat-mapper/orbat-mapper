@@ -41,7 +41,14 @@ export function createUnitFeatureAt(
   const geometry = new Point(fromLonLat(position));
   const { sidc, name, id, shortName } = unit;
   const stateType = unit._state?.type;
-  const feature = new Feature<Point>({ geometry, sidc, name, id, shortName, stateType });
+  const feature = new Feature<Point>({
+    geometry,
+    sidc: unit._state?.sidc || sidc,
+    name,
+    id,
+    shortName,
+    stateType,
+  });
   feature.setId(id);
   return feature;
 }

@@ -60,7 +60,7 @@ export function useSidcModal() {
   ): Promise<string | undefined> => {
     NProgress.start();
     initialSidcModalValue.value = initialValue;
-    sidcModalTitle.value = options.title || "Set scenario time";
+    sidcModalTitle.value = options.title || "Symbol picker";
     const { data, isCanceled } = await reveal();
     if (!isCanceled) {
       return data;

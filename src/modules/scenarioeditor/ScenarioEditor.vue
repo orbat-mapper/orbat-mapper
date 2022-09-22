@@ -144,6 +144,7 @@
       :sidc="initialSidcModalValue"
       @update:sidc="confirmSidcModal($event)"
       @cancel="cancelSidcModal"
+      :dialog-title="sidcModalTitle"
     />
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
   </div>
@@ -273,6 +274,7 @@ const {
   showSidcModal,
   cancelSidcModal,
   initialSidcModalValue,
+  sidcModalTitle,
 } = useSidcModal();
 provide(sidcModalKey, { getModalSidc });
 

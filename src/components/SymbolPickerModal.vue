@@ -1,5 +1,5 @@
 <template>
-  <SimpleModal v-model="open" dialog-title="Symbol picker" @cancel="emit('cancel')">
+  <SimpleModal v-model="open" :dialog-title="dialogTitle" @cancel="emit('cancel')">
     <div class="flex h-full flex-col">
       <header class="mt-4 h-20 w-16">
         <MilSymbol :sidc="csidc" :size="34" />
@@ -119,9 +119,13 @@ import { htmlTagEscape } from "../utils";
 interface Props {
   isVisible?: boolean;
   sidc?: string;
+  dialogTitle?: string;
 }
 
-const props = withDefaults(defineProps<Props>(), { isVisible: true });
+const props = withDefaults(defineProps<Props>(), {
+  isVisible: true,
+  dialogTitle: "Symbol picker",
+});
 const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
 
 const open = useVModel(props, "isVisible");

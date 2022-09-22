@@ -38,6 +38,11 @@
 
         <p class="text-gray-700" v-if="s.location">{{ formatPosition(s.location) }}</p>
         <MapMarkerOffOutline v-if="s.location === null" class="h-5 w-5 text-gray-600" />
+        <span
+          v-if="s.sidc"
+          class="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"
+          >sidc</span
+        >
       </div>
 
       <div class="flex-0 relative flex items-center space-x-0">
@@ -63,17 +68,16 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, VNode } from "vue";
+import { CrosshairsGps, MapMarkerPath, MapMarkerOffOutline } from "mdue";
 import { State, StateAdd } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
-import { CrosshairsGps, MapMarkerPath, MapMarkerOffOutline } from "mdue";
 import IconButton from "@/components/IconButton.vue";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { StateAction, UnitActions } from "@/types/constants";
 import type { NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, timeModalKey } from "@/components/injects";
+import { activeScenarioKey, sidcModalKey, timeModalKey } from "@/components/injects";
 import DotsMenu from "@/components/DotsMenu.vue";
-
 import { ButtonGroupItem, MenuItemData } from "@/components/types";
 import BaseButton from "@/components/BaseButton.vue";
 import SplitButton from "@/components/SplitButton.vue";
@@ -87,6 +91,7 @@ const props = defineProps<Props>();
 const { store, time, unitActions } = injectStrict(activeScenarioKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
 
+const { getModalSidc } = injectStrict(sidcModalKey);
 const { onUnitAction } = useUnitActions();
 const { send } = useNotifications();
 const state = computed(() => props.unit.state || []);
@@ -106,7 +111,7 @@ const stateItems = computed<ButtonGroupItem[]>(() => {
     {
       label: "Change symbol",
       onClick: () => {
-        send({ message: "Not implemented yet" });
+        handleChangeSymbol();
       },
     },
     {
@@ -195,4 +200,20 @@ function cancelEdit(s: State) {
 }
 
 const onVMounted = ({ el }: VNode) => el?.focus();
+
+async function handleChangeSymbol() {
+  const newSidcValue = await getModalSidc(props.unit.sidc, {
+    title: `Change symbol at ${formatDateString(
+      store.state.currentTime,
+      store.state.info.timeZone
+    )}`,
+  });
+  if (newSidcValue !== undefined) {
+    const newState: StateAdd = {
+      sidc: newSidcValue,
+      t: store.state.currentTime,
+    };
+    unitActions.addUnitStateEntry(props.unit.id, newState, true);
+  }
+}
 </script>
