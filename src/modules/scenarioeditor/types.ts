@@ -1,23 +1,30 @@
 import { EntityId } from "@/types/base";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 
-interface UnitItem {
+export interface UnitItem {
   type: "unit";
   id: EntityId;
   unit: NUnit;
   level: number;
 }
 
-interface SideItem {
+export interface SideItem {
   type: "side";
   id: EntityId;
   side: NSide;
 }
 
-interface SideGroupItem {
+export interface SideGroupItem {
   type: "sidegroup";
   id: EntityId;
   sideGroup: NSideGroup;
 }
 
 export type TableItem = SideItem | SideGroupItem | UnitItem;
+
+export type ColumnField = "name" | "shortName" | "sidc";
+
+export interface TableColumn {
+  title: string;
+  field: ColumnField;
+}

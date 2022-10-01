@@ -5,7 +5,7 @@
       class="flex h-full w-full flex-col overflow-hidden bg-gray-50 shadow sm:rounded-lg"
     >
       <header
-        class="flex flex-shrink-0 items-center justify-between border-b border-gray-300 bg-gray-200 px-4 py-3 sm:px-6"
+        class="flex flex-shrink-0 items-center justify-between border-b border-gray-300 px-4 py-3 sm:px-6"
       >
         <div class="w-full sm:w-auto">
           <FilterQueryInput class="" v-model="filterQuery" />
@@ -13,127 +13,37 @@
       </header>
       <div class="relative min-w-0 max-w-none flex-auto overflow-auto pb-7">
         <table class="w-full table-fixed">
-          <colgroup>
-            <col />
-            <col />
-            <col class="w-1/4" />
-          </colgroup>
-          <thead class="bg-gray-100">
-            <tr>
-              <th
-                scope="col"
-                class="sticky top-0 z-10 border-b border-gray-300 bg-gray-100 bg-opacity-95 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter sm:pl-6 lg:pl-8"
-              >
-                Unit
-              </th>
-
-              <th
-                v-for="column in columns"
-                :key="column.field"
-                scope="col"
-                class="sticky top-0 z-10 border-b border-gray-300 bg-gray-100 bg-opacity-95 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter"
-              >
-                {{ column.title }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-300 bg-white">
+          <GridHeader :columns="columns" />
+          <tbody class="divide-y divide-gray-200 bg-white">
             <template v-for="(item, itemIndex) in items" :key="item.id">
-              <tr
+              <GridSideUnitRow
                 v-if="item.type === 'unit'"
-                :class="
-                  activeUnit === item.unit
-                    ? 'bg-yellow-300 hover:bg-yellow-100'
-                    : 'hover:bg-gray-200'
-                "
-              >
-                <td
-                  class="flex items-center whitespace-nowrap py-3 text-sm text-gray-900"
-                  :style="`padding-left: ${item.level * 1 + 1}rem`"
-                >
-                  <button
-                    v-if="item.unit.subUnits.length"
-                    @click="item.unit._isOpen = !item.unit._isOpen"
-                    tabindex="-1"
-                  >
-                    <ChevronRightIcon
-                      class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
-                      :class="{
-                        'rotate-90': item.unit._isOpen,
-                      }"
-                    />
-                  </button>
-                  <MilSymbol
-                    :sidc="item.unit.sidc"
-                    :class="{ 'ml-6': !item.unit.subUnits.length }"
-                  />
-                  <span class="ml-2 truncate">{{ item.unit.name }}</span>
-                </td>
-                <td
-                  v-for="column in columns"
-                  :key="column.field"
-                  class="whitespace-nowrap px-3 py-3 text-sm text-gray-500"
-                  @click="activateEdit(item.unit, itemIndex, column.field)"
-                >
-                  <form
-                    v-if="activeUnit === item.unit && activeColumn === column.field"
-                    @submit.prevent="onSubmit"
-                  >
-                    <input
-                      type="text"
-                      class="-my-3 w-full"
-                      :value="item.unit[column.field]"
-                      @vnode-mounted="onVMounted"
-                      @keydown.tab.prevent.stop="
-                        onTab(item.unit, itemIndex, column.field)
-                      "
-                      @keydown.down="onDown(itemIndex)"
-                      @keydown.up="onUp(itemIndex)"
-                      @input="updateValue"
-                    />
-                  </form>
-                  <span v-else>{{ item.unit[column.field] }}</span>
-                </td>
-              </tr>
-
-              <tr v-else-if="item.type === 'side'" class="border-t border-gray-200">
-                <td
-                  :colspan="columns.length + 1"
-                  class="bg-gray-200 px-4 py-2 text-left text-sm font-bold text-gray-900 sm:px-6"
-                >
-                  {{ item.side.name }}
-                </td>
-              </tr>
-
-              <tr v-else-if="item.type === 'sidegroup'">
-                <td :colspan="columns.length + 1" class="sticky top-12 z-10">
-                  <div
-                    class="flex items-center whitespace-nowrap border-b bg-emerald-50 py-2 pr-3 text-sm font-medium text-gray-900"
-                  >
-                    <button
-                      tabindex="-1"
-                      @click="toggleSideGroup(item.sideGroup)"
-                      class="flex items-center"
-                    >
-                      <ChevronRightIcon
-                        class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
-                        :class="{
-                          'rotate-90': sgOpen.get(item.sideGroup) ?? true,
-                        }"
-                      />
-
-                      <span>{{ item.sideGroup.name }}</span>
-                    </button>
-                    <BaseButton
-                      small
-                      class="ml-2"
-                      tabindex="-1"
-                      @click="expandSideGroup(item.sideGroup)"
-                      >Expand/collapse
-                    </BaseButton>
-                  </div>
-                </td>
-              </tr>
+                :unit="item.unit"
+                :columns="columns"
+                :level="item.level"
+                :item-index="itemIndex"
+                :active-unit="activeUnit"
+                :active-column="activeColumn"
+                @edit="activateEdit"
+                @tab="onTab"
+                @up="onUp"
+                @down="onDown"
+                @submit="onSubmit"
+                @update="editedValue = $event"
+              />
+              <GridSideRow
+                v-else-if="item.type === 'side'"
+                :side="item.side"
+                :columns="columns"
+              />
+              <GridSideGroupRow
+                v-else-if="item.type === 'sidegroup'"
+                :side-group="item.sideGroup"
+                :columns="columns"
+                :sg-open="sgOpen"
+                @toggle="toggleSideGroup"
+                @expand="expandSideGroup"
+              />
             </template>
           </tbody>
         </table>
@@ -148,18 +58,21 @@
 <script setup lang="ts">
 import { onStartTyping, useDebounce } from "@vueuse/core";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
-import BaseButton from "@/components/BaseButton.vue";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
-import { computed, nextTick, ref, VNode } from "vue";
+import { computed, ref, VNode } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import MilSymbol from "@/components/MilSymbol.vue";
 import FilterQueryInput from "@/components/FilterQueryInput.vue";
-import { TableItem } from "@/modules/scenarioeditor/types";
+import { ColumnField, TableColumn, TableItem } from "@/modules/scenarioeditor/types";
 import { filterUnits, NOrbatItemData } from "@/composables/filtering";
 import { NWalkSideCallback } from "@/scenariostore/unitManipulations";
+import GridHeader from "@/modules/scenarioeditor/GridHeader.vue";
+import GridSideGroupRow from "@/modules/scenarioeditor/GridSideGroupRow.vue";
+import GridSideRow from "@/modules/scenarioeditor/GridSideRow.vue";
+import GridSideUnitRow from "@/modules/scenarioeditor/GridSideUnitRow.vue";
 
 const router = useRouter();
 const uiStore = useUiStore();
@@ -174,13 +87,6 @@ const {
   store: { state },
   unitActions,
 } = activeScenario;
-
-type ColumnField = "name" | "shortName" | "sidc";
-
-interface TableColumn {
-  title: string;
-  field: ColumnField;
-}
 
 const columns = ref<TableColumn[]>([
   { field: "name", title: "Name" },
@@ -276,10 +182,6 @@ uiStore.modalOpen = true;
 onBeforeRouteLeave(() => {
   uiStore.modalOpen = false;
 });
-
-function doClose() {
-  router.back();
-}
 
 function activateEdit(unit: NUnit, itemIndex: number, column: ColumnField) {
   onSubmit();

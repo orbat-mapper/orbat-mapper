@@ -1,4 +1,4 @@
-import { Ref, watch } from "vue";
+import { Ref, VNode, watch } from "vue";
 import { useTimeoutFn } from "@vueuse/core";
 
 // Based on https://vueuse.org/shared/bisyncref/#usage
@@ -35,3 +35,7 @@ export function biSyncDelayedRef<R extends Ref<any>>(a: R, b: R, delay = 200) {
     stop2();
   };
 }
+
+export const doFocus = ({ el }: VNode) => {
+  el?.focus();
+};
