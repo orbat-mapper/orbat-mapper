@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
-import BaseButton from "@/components/BaseButton.vue";
 import type { TableColumn } from "@/modules/scenarioeditor/types";
-import type { NSideGroup, NUnit } from "@/types/internalModels";
-import MilSymbol from "@/components/MilSymbol.vue";
 import { ColumnField } from "@/modules/scenarioeditor/types";
-import { ref, VNode } from "vue";
+import type { NUnit } from "@/types/internalModels";
+import MilSymbol from "@/components/MilSymbol.vue";
 import { doFocus } from "@/composables/utils";
 
 interface Props {
@@ -40,6 +38,7 @@ const updateValue = (event: Event) => {
       activeUnit === unit ? 'bg-yellow-300 hover:bg-yellow-100' : 'hover:bg-gray-100'
     "
   >
+    <td></td>
     <td
       class="flex items-center whitespace-nowrap py-3 text-sm text-gray-900"
       :style="`padding-left: ${level + 1}rem`"
@@ -56,7 +55,11 @@ const updateValue = (event: Event) => {
           }"
         />
       </button>
-      <MilSymbol :sidc="unit.sidc" :class="{ 'ml-6': !unit.subUnits.length }" />
+      <MilSymbol
+        :sidc="unit.sidc"
+        class="ml-2"
+        :class="{ 'ml-8': !unit.subUnits.length }"
+      />
       <span class="ml-2 truncate">{{ unit.name }}</span>
     </td>
     <td

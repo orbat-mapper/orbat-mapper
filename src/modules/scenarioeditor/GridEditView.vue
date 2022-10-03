@@ -57,14 +57,12 @@
 
 <script setup lang="ts">
 import { onStartTyping, useDebounce } from "@vueuse/core";
-import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import { computed, ref, VNode } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
-import MilSymbol from "@/components/MilSymbol.vue";
 import FilterQueryInput from "@/components/FilterQueryInput.vue";
 import { ColumnField, TableColumn, TableItem } from "@/modules/scenarioeditor/types";
 import { filterUnits, NOrbatItemData } from "@/composables/filtering";
