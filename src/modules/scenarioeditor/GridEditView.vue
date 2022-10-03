@@ -35,6 +35,8 @@
                 v-else-if="item.type === 'side'"
                 :side="item.side"
                 :columns="columns"
+                :side-open="sideOpen"
+                @toggle="toggleSide"
               />
               <GridSideGroupRow
                 v-else-if="item.type === 'sidegroup'"
@@ -93,6 +95,7 @@ const columns = ref<TableColumn[]>([
 ]);
 
 const sgOpen = ref(new Map<NSideGroup, boolean>());
+const sideOpen = ref(new Map<NSide, boolean>());
 
 const { updateUnit } = unitActions;
 const filterQuery = ref("");
@@ -131,6 +134,8 @@ const filteredOrbat = computed(() => {
         sideList.push({ side, children: sideGroupList });
       }
     });
+  sgOpen.value.clear();
+  sideOpen.value.clear();
   return sideList;
 });
 
@@ -138,6 +143,7 @@ const items = computed(() => {
   const _items: TableItem[] = [];
   filteredOrbat.value.forEach(({ side, children: sideGroups }) => {
     _items.push({ type: "side", side, id: side.id });
+    if (!(sideOpen.value.get(side) ?? true)) return;
     sideGroups.forEach((sg) => {
       const { sideGroup } = sg;
       _items.push({ type: "sidegroup", sideGroup, id: sideGroup.id });
@@ -266,5 +272,8 @@ function expandSideGroup(sideGroup: NSideGroup) {
 
 function toggleSideGroup(sideGroup: NSideGroup) {
   sgOpen.value.set(sideGroup, !(sgOpen.value.get(sideGroup) ?? true));
+}
+function toggleSide(side: NSide) {
+  sideOpen.value.set(side, !(sideOpen.value.get(side) ?? true));
 }
 </script>
