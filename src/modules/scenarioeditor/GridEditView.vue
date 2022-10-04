@@ -7,8 +7,9 @@
       <header
         class="flex flex-shrink-0 items-center justify-between border-b border-gray-300 px-4 py-3 sm:px-6"
       >
-        <div class="w-full sm:w-auto">
+        <div class="flex w-full items-center space-x-2 sm:w-auto">
           <FilterQueryInput class="" v-model="filterQuery" />
+          <BaseButton @click="toggleSides()" small>Toggle sides</BaseButton>
         </div>
       </header>
       <div class="relative min-w-0 max-w-none flex-auto overflow-auto pb-7">
@@ -73,6 +74,8 @@ import GridHeader from "@/modules/scenarioeditor/GridHeader.vue";
 import GridSideGroupRow from "@/modules/scenarioeditor/GridSideGroupRow.vue";
 import GridSideRow from "@/modules/scenarioeditor/GridSideRow.vue";
 import GridSideUnitRow from "@/modules/scenarioeditor/GridSideUnitRow.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import IconButton from "@/components/IconButton.vue";
 
 const router = useRouter();
 const uiStore = useUiStore();
@@ -99,7 +102,7 @@ const sideOpen = ref(new Map<NSide, boolean>());
 
 const { updateUnit } = unitActions;
 const filterQuery = ref("");
-
+const sidesToggled = ref(false);
 const debouncedFilterQuery = useDebounce(filterQuery, 250);
 
 interface SideItem {
@@ -275,5 +278,12 @@ function toggleSideGroup(sideGroup: NSideGroup) {
 }
 function toggleSide(side: NSide) {
   sideOpen.value.set(side, !(sideOpen.value.get(side) ?? true));
+}
+
+function toggleSides() {
+  state.sides
+    .map((id) => state.sideMap[id])
+    .forEach((side) => sideOpen.value.set(side, sidesToggled.value));
+  sidesToggled.value = !sidesToggled.value;
 }
 </script>

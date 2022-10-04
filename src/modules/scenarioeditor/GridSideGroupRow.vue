@@ -20,13 +20,16 @@ const emit = defineEmits(["toggle", "expand"]);
         class="h-12 items-center whitespace-nowrap border-b bg-gray-100 py-2 pr-3 text-sm font-medium text-gray-900"
       ></div>
     </td>
-    <td :colspan="columns.length + 1" class="sticky top-12 z-10">
+    <td
+      class="sticky top-12 z-10 hover:cursor-pointer"
+      @click="emit('toggle', sideGroup)"
+    >
       <div
         class="flex h-12 items-center whitespace-nowrap border-b bg-gray-100 py-2 pr-3 text-sm font-medium text-gray-900"
       >
         <button
           tabindex="-1"
-          @click="emit('toggle', sideGroup)"
+          @click.stop="emit('toggle', sideGroup)"
           class="ml-0 flex items-center"
         >
           <ChevronRightIcon
@@ -38,6 +41,19 @@ const emit = defineEmits(["toggle", "expand"]);
 
           <span class="ml-2">{{ sideGroup.name }}</span>
         </button>
+      </div>
+    </td>
+    <td class="sticky top-12 z-10">
+      <div
+        class="flex h-12 items-center whitespace-nowrap border-b bg-gray-100 py-2 pr-3 text-sm text-gray-500"
+      >
+        <span class="ml-3">{{ sideGroup.name }}</span>
+      </div>
+    </td>
+    <td :colspan="columns.length - 1" class="sticky top-12 z-10">
+      <div
+        class="flex h-12 items-center whitespace-nowrap border-b bg-gray-100 py-2 pr-3 text-sm font-medium text-gray-900"
+      >
         <BaseButton small class="ml-2" tabindex="-1" @click="emit('expand', sideGroup)"
           >Expand/collapse
         </BaseButton>
