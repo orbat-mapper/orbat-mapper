@@ -20,22 +20,18 @@ const emit = defineEmits(["toggle", "expand", "updateSide", "nextCell"]);
     <td></td>
     <td
       @click="emit('toggle', side)"
-      class="px-4 py-2 text-left font-bold text-gray-900 hover:cursor-pointer sm:px-0"
+      class="flex items-center px-4 py-2 text-left font-bold text-gray-900 hover:cursor-pointer sm:px-0"
     >
-      <button
-        tabindex="-1"
-        @click.stop="emit('toggle', side)"
-        class="ml-0 flex items-center"
-      >
+      <button tabindex="0" @click.stop="emit('toggle', side)" class="ml-0">
         <ChevronRightIcon
           class="h-6 w-6 transform text-red-800 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
           :class="{
             'rotate-90': sideOpen.get(side) ?? true,
           }"
         />
-
-        <span class="ml-2">{{ side.name }}</span>
       </button>
+
+      <span class="ml-2">{{ side.name }}</span>
     </td>
     <td class="">
       <GridEditableCell
