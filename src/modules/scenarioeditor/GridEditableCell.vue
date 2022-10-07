@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, nextTick, ref, VNode } from "vue";
+import { defineProps, ref } from "vue";
 import { doFocus } from "@/composables/utils";
 import { isTypedCharValid } from "@/components/helpers";
 
@@ -63,7 +63,7 @@ function onEditBlur() {
 }
 
 function onClick(e: any) {
-  if (!justFocused) editMode.value = true;
+  if (!justFocused) enterEditMode();
 }
 
 function onKeydown(event: KeyboardEvent) {
