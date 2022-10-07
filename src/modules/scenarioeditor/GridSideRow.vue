@@ -3,15 +3,17 @@ import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 
 import type { TableColumn } from "@/modules/scenarioeditor/types";
 import type { NSide } from "@/types/internalModels";
+import GridEditableCell from "@/modules/scenarioeditor/GridEditableCell.vue";
 
 interface Props {
   side: NSide;
   columns: TableColumn[];
   sideOpen: Map<NSide, boolean>;
+  itemIndex: number;
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["toggle", "expand"]);
+const emit = defineEmits(["toggle", "expand", "updateSide", "nextCell"]);
 </script>
 <template>
   <tr class="divide-x divide-gray-200 bg-slate-50">
@@ -35,8 +37,14 @@ const emit = defineEmits(["toggle", "expand"]);
         <span class="ml-2">{{ side.name }}</span>
       </button>
     </td>
-    <td class="whitespace-nowrap px-3 py-3 text-sm text-gray-500">
-      {{ side.name }}
+    <td class="">
+      <GridEditableCell
+        :value="side.name"
+        :col-index="1"
+        :row-index="itemIndex"
+        @update="emit('updateSide', side.id, { name: $event })"
+        @next-cell="emit('nextCell', $event)"
+      />
     </td>
     <td :colspan="columns.length - 1"></td>
   </tr>

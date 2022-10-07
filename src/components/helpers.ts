@@ -43,3 +43,22 @@ export function useFocusOnMount(id?: string, delay = 0) {
   });
   return { focusId };
 }
+
+// Copied from https://github.com/vueuse/vueuse/blob/main/packages/core/onStartTyping/index.ts
+export const isTypedCharValid = ({
+  keyCode,
+  metaKey,
+  ctrlKey,
+  altKey,
+}: KeyboardEvent) => {
+  if (metaKey || ctrlKey || altKey) return false;
+
+  // 0...9
+  if ((keyCode >= 48 && keyCode <= 57) || (keyCode >= 96 && keyCode <= 105)) return true;
+
+  // a...z
+  if (keyCode >= 65 && keyCode <= 90) return true;
+
+  // All other keys.
+  return false;
+};

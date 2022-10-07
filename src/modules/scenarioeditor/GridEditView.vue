@@ -1,5 +1,12 @@
 <template>
-  <div class="relative flex min-h-0 flex-auto">
+  <div
+    class="relative flex min-h-0 flex-auto"
+    @keydown.down="doArrows('down', $event)"
+    @keydown.up="doArrows('up', $event)"
+    @keydown.left="doArrows('left', $event)"
+    @keydown.right="doArrows('right', $event)"
+    tabindex="-1"
+  >
     <div
       ref="target"
       class="flex h-full w-full flex-col overflow-hidden bg-gray-50 shadow sm:rounded-lg"
@@ -25,12 +32,8 @@
                 :item-index="itemIndex"
                 :active-unit="activeUnit"
                 :active-column="activeColumn"
-                @edit="activateEdit"
-                @tab="onTab"
-                @up="onUp"
-                @down="onDown"
-                @submit="onSubmit"
-                @update="editedValue = $event"
+                @update-unit="updateUnit"
+                @next-cell="nextCell"
               />
               <GridSideRow
                 v-else-if="item.type === 'side'"
@@ -38,6 +41,9 @@
                 :columns="columns"
                 :side-open="sideOpen"
                 @toggle="toggleSide"
+                :item-index="itemIndex"
+                @next-cell="nextCell"
+                @update-side="updateSide"
               />
               <GridSideGroupRow
                 v-else-if="item.type === 'sidegroup'"
@@ -46,6 +52,9 @@
                 :sg-open="sgOpen"
                 @toggle="toggleSideGroup"
                 @expand="expandSideGroup"
+                :item-index="itemIndex"
+                @next-cell="nextCell"
+                @update-side-group="updateSideGroup"
               />
             </template>
           </tbody>
@@ -59,10 +68,10 @@
 </template>
 
 <script setup lang="ts">
-import { onStartTyping, useDebounce } from "@vueuse/core";
+import { useDebounce } from "@vueuse/core";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
-import { computed, ref, VNode } from "vue";
+import { computed, ref } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
@@ -75,7 +84,6 @@ import GridSideGroupRow from "@/modules/scenarioeditor/GridSideGroupRow.vue";
 import GridSideRow from "@/modules/scenarioeditor/GridSideRow.vue";
 import GridSideUnitRow from "@/modules/scenarioeditor/GridSideUnitRow.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import IconButton from "@/components/IconButton.vue";
 
 const router = useRouter();
 const uiStore = useUiStore();
@@ -83,7 +91,6 @@ const target = ref();
 
 const activeUnit = ref<NUnit | null | undefined>();
 const activeColumn = ref<ColumnField>();
-const activeItemIndex = ref(-1);
 const activeScenario = injectStrict(activeScenarioKey);
 const editedValue = ref<string | undefined>();
 const {
@@ -100,7 +107,7 @@ const columns = ref<TableColumn[]>([
 const sgOpen = ref(new Map<NSideGroup, boolean>());
 const sideOpen = ref(new Map<NSide, boolean>());
 
-const { updateUnit } = unitActions;
+const { updateUnit, updateSide, updateSideGroup } = unitActions;
 const filterQuery = ref("");
 const sidesToggled = ref(false);
 const debouncedFilterQuery = useDebounce(filterQuery, 250);
@@ -190,70 +197,6 @@ onBeforeRouteLeave(() => {
   uiStore.modalOpen = false;
 });
 
-function activateEdit(unit: NUnit, itemIndex: number, column: ColumnField) {
-  onSubmit();
-
-  activeUnit.value = unit;
-  activeColumn.value = column;
-  activeItemIndex.value = itemIndex;
-}
-
-function onSubmit(e?: Event) {
-  if (activeUnit.value && editedValue.value != undefined) {
-    updateUnit(activeUnit.value.id, { [activeColumn.value!]: editedValue.value });
-  }
-
-  activeUnit.value = null;
-  editedValue.value = undefined;
-}
-
-function onTab(unit: NUnit, itemIndex: number, column: ColumnField) {
-  if (unit) {
-    const columnIndex = columns.value.findIndex((c) => c.field === column);
-    let nextIndex = 0;
-    if (columnIndex < columns.value.length - 1) {
-      nextIndex = columnIndex + 1;
-    }
-    activateEdit(unit, itemIndex, columns.value[nextIndex].field);
-  }
-}
-
-function onDown(itemIndex: number) {
-  if (!activeUnit.value) return;
-  let idx = itemIndex + 1;
-  let nextItem = items.value[idx];
-  while (nextItem && nextItem.type !== "unit") {
-    nextItem = items.value[++idx];
-  }
-  if (nextItem?.type === "unit") {
-    activateEdit(nextItem.unit, itemIndex + 1, activeColumn.value!);
-  }
-}
-
-function onUp(itemIndex: number) {
-  if (!activeUnit.value) return;
-  let idx = itemIndex - 1;
-  let prevItem = items.value[idx];
-  while (prevItem && prevItem.type !== "unit") {
-    prevItem = items.value[--idx];
-  }
-  if (prevItem?.type === "unit") {
-    activateEdit(prevItem.unit, itemIndex - 1, activeColumn.value!);
-  }
-}
-
-function updateValue(event: Event) {
-  editedValue.value = (<HTMLInputElement>event.target).value;
-}
-
-const onVMounted = ({ el }: VNode) => {
-  el?.focus();
-};
-
-onStartTyping((e) => {
-  // console.log("Start typing", e);
-});
-
 const expandMap = new WeakSet<NSideGroup>();
 
 function expandSideGroup(sideGroup: NSideGroup) {
@@ -276,6 +219,7 @@ function expandSideGroup(sideGroup: NSideGroup) {
 function toggleSideGroup(sideGroup: NSideGroup) {
   sgOpen.value.set(sideGroup, !(sgOpen.value.get(sideGroup) ?? true));
 }
+
 function toggleSide(side: NSide) {
   sideOpen.value.set(side, !(sideOpen.value.get(side) ?? true));
 }
@@ -285,5 +229,41 @@ function toggleSides() {
     .map((id) => state.sideMap[id])
     .forEach((side) => sideOpen.value.set(side, sidesToggled.value));
   sidesToggled.value = !sidesToggled.value;
+}
+
+function doArrows(
+  direction: "up" | "down" | "left" | "right",
+  e: KeyboardEvent | { target: HTMLElement }
+) {
+  const target = e.target as HTMLElement;
+  if (!target.id.startsWith("cell-")) return;
+  if (e instanceof KeyboardEvent) e.preventDefault();
+  const [_, y, x] = target.id.split("-");
+  let nextY = +y;
+  let nextX = +x;
+  if (direction === "up") nextY--;
+  if (direction === "down") nextY++;
+  if (direction === "left") nextX--;
+  if (direction === "right") nextX++;
+
+  let nextId = `cell-${nextY}-${nextX}`;
+  let nextElement = document.getElementById(nextId);
+  if (!nextElement && (direction === "up" || direction === "down")) {
+    let nextItem = items.value[nextY];
+
+    while (nextItem) {
+      nextY = direction === "up" ? nextY - 1 : nextY + 1;
+      nextItem = items.value[nextY];
+      nextId = `cell-${nextY}-${nextX}`;
+      nextElement = document.getElementById(nextId);
+      if (nextElement) break;
+    }
+  }
+
+  nextElement?.focus({});
+}
+
+function nextCell(element: HTMLElement) {
+  doArrows("down", { target: element });
 }
 </script>

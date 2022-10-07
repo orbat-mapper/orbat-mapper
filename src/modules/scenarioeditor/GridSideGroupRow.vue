@@ -3,32 +3,32 @@ import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import BaseButton from "@/components/BaseButton.vue";
 import type { TableColumn } from "@/modules/scenarioeditor/types";
 import type { NSideGroup } from "@/types/internalModels";
+import GridEditableCell from "@/modules/scenarioeditor/GridEditableCell.vue";
 
 interface Props {
   sideGroup: NSideGroup;
   columns: TableColumn[];
   sgOpen: Map<NSideGroup, boolean>;
+  itemIndex: number;
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["toggle", "expand"]);
+const emit = defineEmits(["toggle", "expand", "updateSideGroup", "nextCell"]);
 </script>
 <template>
   <tr class="bg-gray-100">
-    <td class="sticky top-12 z-10">
+    <td class="">
       <div
-        class="h-12 items-center whitespace-nowrap border-b bg-gray-100 py-2 pr-3 text-sm font-medium text-gray-900"
+        class="h-12 items-center whitespace-nowrap py-2 pr-3 text-sm font-medium text-gray-900"
       ></div>
     </td>
-    <td
-      class="sticky top-12 z-10 hover:cursor-pointer"
-      @click="emit('toggle', sideGroup)"
-    >
+    <td class="hover:cursor-pointer" @click="emit('toggle', sideGroup)">
       <div
-        class="flex h-12 items-center whitespace-nowrap border-b bg-gray-100 py-2 pr-3 text-sm font-medium text-gray-900"
+        tabindex="0"
+        class="flex h-12 items-center whitespace-nowrap border border-gray-100 bg-gray-100 py-2 pr-3 text-sm font-medium text-gray-900 focus-within:border-red-800"
       >
         <button
-          tabindex="-1"
+          tabindex="0"
           @click.stop="emit('toggle', sideGroup)"
           class="ml-0 flex items-center"
         >
@@ -38,23 +38,25 @@ const emit = defineEmits(["toggle", "expand"]);
               'rotate-90': sgOpen.get(sideGroup) ?? true,
             }"
           />
-
-          <span class="ml-2">{{ sideGroup.name }}</span>
         </button>
+
+        <span class="ml-2">{{ sideGroup.name }}</span>
       </div>
     </td>
-    <td class="sticky top-12 z-10">
-      <div
-        class="flex h-12 items-center whitespace-nowrap border-b bg-gray-100 py-2 pr-3 text-sm text-gray-500"
-      >
-        <span class="ml-3">{{ sideGroup.name }}</span>
-      </div>
+    <td class="">
+      <GridEditableCell
+        :value="sideGroup.name"
+        :row-index="itemIndex"
+        :col-index="1"
+        @update="emit('updateSideGroup', sideGroup.id, { name: $event })"
+        @next-cell="emit('nextCell', $event)"
+      />
     </td>
-    <td :colspan="columns.length - 1" class="sticky top-12 z-10">
+    <td :colspan="columns.length - 1" class="">
       <div
-        class="flex h-12 items-center whitespace-nowrap border-b bg-gray-100 py-2 pr-3 text-sm font-medium text-gray-900"
+        class="flex h-12 items-center whitespace-nowrap py-2 pr-3 text-sm font-medium text-gray-900"
       >
-        <BaseButton small class="ml-2" tabindex="-1" @click="emit('expand', sideGroup)"
+        <BaseButton small class="ml-2" @click="emit('expand', sideGroup)"
           >Expand/collapse
         </BaseButton>
       </div>

@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Add grid edit mode
+
+September 2022
+
 - Change unit symbol at specific timestamps.
 - Add 'remove unit from map/clear location' state action.
 - Make sidebars resizable.
