@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, ref } from "vue";
+import { ref } from "vue";
 import { doFocus } from "@/composables/utils";
 import { isTypedCharValid } from "@/components/helpers";
 
@@ -77,7 +77,7 @@ function onKeydown(event: KeyboardEvent) {
 <template>
   <div
     ref="root"
-    class="truncate whitespace-nowrap border-2 border-white px-3 py-3 text-sm text-gray-500 outline-0 focus-within:border-red-800"
+    class="editable-cell truncate whitespace-nowrap border-2 border-white px-3 py-3 text-sm text-gray-500 outline-0 focus-within:border-red-800"
     tabindex="0"
     :id="`cell-${rowIndex}-${colIndex}`"
     @keydown="onKeydown"

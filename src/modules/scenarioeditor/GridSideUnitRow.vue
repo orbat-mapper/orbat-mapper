@@ -18,7 +18,7 @@ const props = defineProps<Props>();
 const emit = defineEmits(["toggle", "expand", "updateUnit", "nextCell"]);
 </script>
 <template>
-  <tr class="divide-x divide-gray-200 hover:bg-gray-100">
+  <tr :id="`item-${unit.id}`" class="divide-x divide-gray-200 hover:bg-gray-100">
     <td></td>
     <td
       class="flex items-center whitespace-nowrap py-3 text-sm text-gray-900"

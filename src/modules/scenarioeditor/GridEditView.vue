@@ -66,9 +66,9 @@
 
 <script setup lang="ts">
 import { useDebounce } from "@vueuse/core";
-import { onBeforeRouteLeave, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
@@ -81,6 +81,8 @@ import GridSideGroupRow from "@/modules/scenarioeditor/GridSideGroupRow.vue";
 import GridSideRow from "@/modules/scenarioeditor/GridSideRow.vue";
 import GridSideUnitRow from "@/modules/scenarioeditor/GridSideUnitRow.vue";
 import BaseButton from "@/components/BaseButton.vue";
+import { useSearchActions } from "@/composables/search";
+import { useNotifications } from "@/composables/notifications";
 
 const router = useRouter();
 const uiStore = useUiStore();
@@ -108,6 +110,8 @@ const filterQuery = ref("");
 const sidesToggled = ref(false);
 const debouncedFilterQuery = useDebounce(filterQuery, 250);
 const queryHasChanged = ref(true);
+
+const { send } = useNotifications();
 
 interface SideItem {
   side: NSide;
@@ -272,5 +276,24 @@ function nextCell(element: HTMLElement) {
 
 onMounted(() => {
   document.getElementById("cell-0-1")?.focus();
+});
+
+const { onUnitSelect } = useSearchActions();
+onUnitSelect(({ unitId }) => {
+  const { parents, side, sideGroup } = unitActions.getUnitHierarchy(unitId);
+  sgOpen.value.set(sideGroup, true);
+  sideOpen.value.set(side, true);
+  parents.forEach((p) => (p._isOpen = true));
+  nextTick(() => {
+    const el = document.getElementById(`item-${unitId}`);
+    if (el) {
+      const firstEditableCell = el.querySelector(".editable-cell") as HTMLElement;
+      if (firstEditableCell) {
+        setTimeout(() => firstEditableCell?.focus(), 200);
+      }
+    } else {
+      send({ message: "Unit is currently filtered out" });
+    }
+  });
 });
 </script>
