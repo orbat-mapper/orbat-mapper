@@ -5,7 +5,6 @@
     @keydown.up="doArrows('up', $event)"
     @keydown.left="doArrows('left', $event)"
     @keydown.right="doArrows('right', $event)"
-    tabindex="-1"
   >
     <div
       ref="target"
@@ -62,8 +61,6 @@
       </div>
       <footer class="h-12 flex-shrink-0 border-t border-gray-300 bg-gray-200"></footer>
     </div>
-
-    <!--    <GlobalEvents @keydown.tab="onTabTest" />-->
   </div>
 </template>
 
@@ -71,7 +68,7 @@
 import { useDebounce } from "@vueuse/core";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
@@ -277,4 +274,8 @@ function doArrows(
 function nextCell(element: HTMLElement) {
   doArrows("down", { target: element });
 }
+
+onMounted(() => {
+  document.getElementById("cell-0-1")?.focus();
+});
 </script>
