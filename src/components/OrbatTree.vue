@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import OrbatTreeItem from "./OrbatTreeItem.vue";
 import { UnitActions } from "@/types/constants";
 import { EntityId } from "@/types/base";
@@ -26,6 +26,13 @@ interface Emits {
 }
 const emit = defineEmits<Emits>();
 
+const queryHasChanged = ref(true);
+
+watch(
+  () => props.filterQuery,
+  () => (queryHasChanged.value = true)
+);
+
 const onUnitAction = (unit: NUnit, action: UnitActions) => {
   emit("unit-action", unit, action);
 };
@@ -33,9 +40,17 @@ const onUnitAction = (unit: NUnit, action: UnitActions) => {
 const onUnitDrop = (unit: NUnit, destinationUnit: NUnit, target: DropTarget) =>
   emit("unit-drop", unit, destinationUnit, target);
 
-const filteredUnits = computed(() =>
-  filterUnits(props.units, props.unitMap, props.filterQuery, props.locationFilter)
-);
+const filteredUnits = computed(() => {
+  const resetOpen = queryHasChanged.value;
+  queryHasChanged.value = false;
+  return filterUnits(
+    props.units,
+    props.unitMap,
+    props.filterQuery,
+    props.locationFilter,
+    resetOpen
+  );
+});
 </script>
 
 <template>

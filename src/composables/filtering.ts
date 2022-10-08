@@ -10,7 +10,8 @@ export function filterUnits(
   units: EntityId[],
   unitMap: Record<EntityId, NUnit>,
   query: string = "",
-  locationFilter = false
+  locationFilter = false,
+  resetOpen = true
 ): NOrbatItemData[] {
   let filteredUnits: NOrbatItemData[] = [];
   let re = new RegExp(query, "i");
@@ -22,15 +23,14 @@ export function filterUnits(
       unit: currentUnit,
       children: [],
     };
-    if (query) oi.unit._isOpen = true;
+    if (query && resetOpen) oi.unit._isOpen = true;
     let matched = false;
     let childMatched = false;
     const hasPosition = Boolean(currentUnit?._state?.location);
     let children = [];
     if (currentUnit.name.search(re) >= 0) {
       matched = locationFilter ? hasPosition : true;
-      // oi.unit._isOpen = !!query;
-    } else if (parentMatched) {
+    } else if (parentMatched && resetOpen) {
       oi.unit._isOpen = false;
     }
     if (currentUnit.subUnits?.length) {

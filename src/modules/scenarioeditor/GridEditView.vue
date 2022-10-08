@@ -71,7 +71,7 @@
 import { useDebounce } from "@vueuse/core";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
@@ -92,7 +92,6 @@ const target = ref();
 const activeUnit = ref<NUnit | null | undefined>();
 const activeColumn = ref<ColumnField>();
 const activeScenario = injectStrict(activeScenarioKey);
-const editedValue = ref<string | undefined>();
 const {
   store: { state },
   unitActions,
@@ -111,6 +110,7 @@ const { updateUnit, updateSide, updateSideGroup } = unitActions;
 const filterQuery = ref("");
 const sidesToggled = ref(false);
 const debouncedFilterQuery = useDebounce(filterQuery, 250);
+const queryHasChanged = ref(true);
 
 interface SideItem {
   side: NSide;
@@ -122,8 +122,14 @@ interface SideGroupItem {
   children: NOrbatItemData[];
 }
 
+watch(debouncedFilterQuery, (v) => {
+  queryHasChanged.value = true;
+});
+
 const filteredOrbat = computed(() => {
   const sideList: SideItem[] = [];
+  const resetOpen = queryHasChanged.value;
+  queryHasChanged.value = false;
   state.sides
     .map((id) => state.sideMap[id])
     .forEach((side) => {
@@ -134,7 +140,9 @@ const filteredOrbat = computed(() => {
           const filteredUnits = filterUnits(
             sideGroup.subUnits,
             state.unitMap,
-            debouncedFilterQuery.value
+            debouncedFilterQuery.value,
+            false,
+            resetOpen
           );
           if (filteredUnits.length) {
             sideGroupList.push({ sideGroup, children: filteredUnits });
@@ -144,8 +152,11 @@ const filteredOrbat = computed(() => {
         sideList.push({ side, children: sideGroupList });
       }
     });
-  sgOpen.value.clear();
-  sideOpen.value.clear();
+  if (queryHasChanged) {
+    sgOpen.value.clear();
+    sideOpen.value.clear();
+  }
+
   return sideList;
 });
 
