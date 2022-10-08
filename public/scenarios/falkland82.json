@@ -219,7 +219,7 @@
                   "id": "DRQ8JYJ0nUJYYZx5kSea4"
                 }
               ],
-              "id": "7xJ~ZOBnMRqkwaw~EiNFB",
+              "id": "7xJZOBnMRqkwawEiNFB",
               "externalUrl": "https://en.wikipedia.org/wiki/HMS_Endurance_(1967)",
               "description": "A Royal Navy ice patrol vessel that served from 1967 to 1991. "
             },
@@ -289,7 +289,7 @@
                   "name": "HMS Glamorgan",
                   "sidc": "10033000001202030000",
                   "state": [],
-                  "id": "~y20tZKRCGHJF7SvooJTu",
+                  "id": "y20tZKRCGHJF7SvooJTu",
                   "shortName": "Glamorgan",
                   "externalUrl": "https://en.wikipedia.org/wiki/HMS_Glamorgan_(D19)",
                   "subUnits": []
@@ -449,7 +449,7 @@
                         {
                           "name": "A",
                           "sidc": "10031000151211004600",
-                          "id": "IZI2tUkYvhmVxShmC8~n~",
+                          "id": "IZI2tUkYvhmVxShmC8n",
                           "state": [],
                           "subUnits": []
                         },
@@ -502,7 +502,7 @@
                       "name": "45 Cdo",
                       "sidc": "10031000161211004600",
                       "state": [],
-                      "id": "0fm4O5tSvrVwjnv9~6ECy",
+                      "id": "0fm4O5tSvrVwjnv96ECy",
                       "subUnits": [
                         {
                           "name": "X",
@@ -514,14 +514,14 @@
                         {
                           "name": "Y",
                           "sidc": "10031000151211004600",
-                          "id": "QrSxdjL5eV~w1mJkRhUzH",
+                          "id": "QrSxdjL5eVw1mJkRhUzH",
                           "state": [],
                           "subUnits": []
                         },
                         {
                           "name": "Z",
                           "sidc": "10031000151211004600",
-                          "id": "~WAhIuR0DjOs6vxdNmTcn",
+                          "id": "WAhIuR0DjOs6vxdNmTcn",
                           "state": [],
                           "subUnits": []
                         }
@@ -563,7 +563,7 @@
                         {
                           "name": "B COY",
                           "sidc": "10031000151211000001",
-                          "id": "rVxn2~0XEf8E7WeuPxUe6",
+                          "id": "rVxn20XEf8E7WeuPxUe6",
                           "state": [],
                           "shortName": "B",
                           "subUnits": []
@@ -579,7 +579,7 @@
                         {
                           "name": "D COY",
                           "sidc": "10031000151211000001",
-                          "id": "~78NfpA426AitI60JeWSa",
+                          "id": "78NfpA426AitI60JeWSa",
                           "state": [],
                           "shortName": "D",
                           "subUnits": []
@@ -603,7 +603,7 @@
                         {
                           "name": "B COY",
                           "sidc": "10031000151211000001",
-                          "id": "~8cVJd3hQNPr8exESXML9",
+                          "id": "8cVJd3hQNPr8exESXML9",
                           "state": [],
                           "shortName": "B",
                           "subUnits": []
@@ -619,7 +619,7 @@
                         {
                           "name": "D COY",
                           "sidc": "10031000151213000001",
-                          "id": "uUlcvH2~mvagZr1QGoZcP",
+                          "id": "uUlcvH2mvagZr1QGoZcP",
                           "state": [],
                           "shortName": "D",
                           "subUnits": []
@@ -679,7 +679,7 @@
                         {
                           "name": "A",
                           "sidc": "10031000151211000000",
-                          "id": "KpUf09vznddzJFYui~VqB",
+                          "id": "KpUf09vznddzJFYuiVqB",
                           "state": [],
                           "subUnits": []
                         },
@@ -693,7 +693,7 @@
                         {
                           "name": "C",
                           "sidc": "10031000151211000000",
-                          "id": "AVTtTTl74B4vb0~0Sgh2G",
+                          "id": "AVTtTTl74B4vb00Sgh2G",
                           "state": [],
                           "subUnits": []
                         }
@@ -709,7 +709,7 @@
                         {
                           "name": "A",
                           "sidc": "10031000151211000000",
-                          "id": "VLIG7n45M~rRSQwYxH_hG",
+                          "id": "VLIG7n45MrRSQwYxH_hG",
                           "state": [],
                           "subUnits": []
                         },
@@ -765,7 +765,7 @@
                 }
               ],
               "state": [],
-              "id": "Apc~4XNmoJDViPTPdcoJS"
+              "id": "Apc4XNmoJDViPTPdcoJS"
             },
             {
               "name": "TG 324.3 SS",
@@ -796,7 +796,7 @@
                 {
                   "name": "D Sq SAS",
                   "sidc": "10031000151211006300",
-                  "id": "Fwm8qrBL1Hjr4s~TzVfmd",
+                  "id": "Fwm8qrBL1Hjr4sTzVfmd",
                   "state": [],
                   "subUnits": []
                 },
@@ -946,7 +946,7 @@
                     }
                   ],
                   "subUnits": [],
-                  "id": "cIMXbLAS~uZNUIUhLwHga"
+                  "id": "cIMXbLASuZNUIUhLwHga"
                 },
                 {
                   "name": "ARA Santisima Trinidad",
@@ -1064,7 +1064,7 @@
                       "sidc": "10070100001102000703",
                       "state": [],
                       "subUnits": [],
-                      "id": "2OhtKWD1IG7qP0Zm3job~"
+                      "id": "2OhtKWD1IG7qP0Zm3job"
                     }
                   ],
                   "id": "BR7oviOZGg8vqWZ5_Ey88"
@@ -1239,7 +1239,7 @@
                   "name": "5th Inf Reg",
                   "sidc": "10071000171211000000",
                   "state": [],
-                  "id": "TPGeVJGtW~cgc~RNWQRcx",
+                  "id": "TPGeVJGtWcgcRNWQRcx",
                   "subUnits": []
                 },
                 {
