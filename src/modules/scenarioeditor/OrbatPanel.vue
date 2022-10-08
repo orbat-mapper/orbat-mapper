@@ -14,7 +14,7 @@
       @side-action="onSideAction"
       class="mt-4"
     />
-    <OrbatPanelAddSide v-if="showAdd" class="mt-8" @add="addSide()" />
+    <OrbatPanelAddSide v-if="sides.length < 2" class="mt-8" @add="addSide()" />
   </div>
 </template>
 
@@ -40,7 +40,6 @@ const { changeUnitParent, addSide } = unitActions;
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
 });
-const showAdd = computed(() => sides.value.length < 2);
 
 const { onUnitAction } = useUnitActions();
 const { selectedUnitIds } = useSelectedUnits();

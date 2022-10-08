@@ -1,4 +1,3 @@
-<!-- This example requires Tailwind CSS v2.0+ -->
 <template>
   <div class="text-center">
     <svg
@@ -16,7 +15,7 @@
         d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
       />
     </svg>
-    <h3 class="mt-2 text-sm font-medium text-gray-900">No sides</h3>
+    <h3 class="mt-2 text-sm font-medium text-gray-900">Side</h3>
     <p class="mt-1 text-sm text-gray-500">Get started by creating a side.</p>
     <div class="mt-6">
       <button
@@ -31,13 +30,8 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { PlusIcon } from "@heroicons/vue/24/solid";
 
-export default {
-  emits: ["add"],
-  components: {
-    PlusIcon,
-  },
-};
+const emit = defineEmits(["add"]);
 </script>
