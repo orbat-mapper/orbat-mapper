@@ -200,11 +200,6 @@ function walkSideGroupItem(
   }
 }
 
-uiStore.modalOpen = true;
-onBeforeRouteLeave(() => {
-  uiStore.modalOpen = false;
-});
-
 const expandMap = new WeakSet<NSideGroup>();
 
 function expandSideGroup(sideGroup: NSideGroup) {
