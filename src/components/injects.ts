@@ -4,6 +4,8 @@ import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
 import { SidcModalPromise, TimeModalPromise } from "@/composables/modals";
 import { SelectedScenarioFeatures } from "@/stores/dragStore";
+import { EventHook } from "@vueuse/core";
+import { FeatureId } from "@/types/scenarioGeoModels";
 
 export const activeUnitKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>
@@ -30,4 +32,10 @@ export const timeModalKey = Symbol("Time modal") as InjectionKey<{
 
 export const sidcModalKey = Symbol("SIDC modal") as InjectionKey<{
   getModalSidc: SidcModalPromise;
+}>;
+
+export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
+  onUnitSelectHook: EventHook<{ unitId: EntityId }>;
+  onLayerSelectHook: EventHook<{ layerId: FeatureId }>;
+  onFeatureSelectHook: EventHook<{ featureId: FeatureId; layerId: FeatureId }>;
 }>;

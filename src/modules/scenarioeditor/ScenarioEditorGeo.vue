@@ -118,7 +118,7 @@ import TabItem from "@/components/TabItem.vue";
 import TimeController from "@/components/TimeController.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useTabStore, useUiStore } from "@/stores/uiStore";
-import { throttledRef, useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
+import { useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { ScenarioActions, TAB_LAYERS, TAB_ORBAT } from "@/types/constants";
@@ -136,6 +136,7 @@ import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioAc
 import { storeToRefs } from "pinia";
 import { injectStrict } from "@/utils";
 import DragHandle from "@/components/DragHandle.vue";
+import { useSearchActions } from "@/composables/search";
 
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
 
@@ -145,12 +146,12 @@ const activeUnitId = injectStrict(activeUnitKey);
 const uiTabs = useTabStore();
 const { activeScenarioTab } = storeToRefs(uiTabs);
 const activeScenario = injectStrict(activeScenarioKey);
-
 const { state, update } = activeScenario.store;
-
 const { unitActions, io } = activeScenario;
 const route = useRoute();
 const router = useRouter();
+
+const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
 const { copy: copyToClipboard, copied } = useClipboard();
 const currentTab = ref(0);
 const isOpen = ref(false);
@@ -229,6 +230,29 @@ async function onScenarioAction(action: ScenarioActions) {
     send({ message: "Not implemented yet" });
   }
 }
+
+onUnitSelect(({ unitId }) => {
+  activeScenarioTab.value = TAB_ORBAT;
+  activeUnitId.value = unitId;
+  const { parents } = unitActions.getUnitHierarchy(unitId);
+  parents.forEach((p) => (p._isOpen = true));
+  nextTick(() => {
+    const el = document.getElementById(`o-${unitId}`);
+    if (el) {
+      el.scrollIntoView();
+    }
+  });
+});
+
+onLayerSelect(({ layerId }) => {
+  activeLayerId.value = layerId;
+  activeScenarioTab.value = TAB_LAYERS;
+});
+
+onFeatureSelect(({ featureId }) => {
+  activeFeatureId.value = featureId;
+  activeScenarioTab.value = TAB_LAYERS;
+});
 
 watchOnce(
   () => activeScenarioTab.value === TAB_LAYERS,

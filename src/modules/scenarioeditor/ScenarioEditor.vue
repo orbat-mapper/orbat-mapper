@@ -27,8 +27,8 @@
       </div>
       <div class="flex shrink-0 items-center space-x-2">
         <DropdownMenu :items="fileMenuItems" @action="onScenarioAction"
-          >File</DropdownMenu
-        >
+          >File
+        </DropdownMenu>
         <button
           @click="showSearch = true"
           class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -41,15 +41,17 @@
             title="Map edit mode"
             exact-active-class="text-green-500"
             class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-            ><GlobeAltIcon class="h-6 w-6"
-          /></router-link>
+          >
+            <GlobeAltIcon class="h-6 w-6" />
+          </router-link>
           <router-link
             :to="{ name: GRID_EDIT_ROUTE }"
             title="Grid edit mode"
             exact-active-class="text-green-500"
             class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-            ><TableIcon class="h-6 w-6"
-          /></router-link>
+          >
+            <TableIcon class="h-6 w-6" />
+          </router-link>
           <div
             title="Chart edit mode"
             class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -151,16 +153,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, onUnmounted, provide, ref } from "vue";
+import { computed, defineAsyncComponent, onUnmounted, provide, ref } from "vue";
 import { GlobalEvents } from "vue-global-events";
 import { SelectedScenarioFeatures } from "@/stores/dragStore";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
 
 import {
   Bars3Icon as MenuIcon,
+  GlobeAltIcon,
   MagnifyingGlassIcon as SearchIcon,
+  TableCellsIcon as TableIcon,
 } from "@heroicons/vue/24/outline";
-import { GlobeAltIcon, TableCellsIcon as TableIcon } from "@heroicons/vue/24/outline";
 import { inputEventFilter } from "@/components/helpers";
 import SearchModal from "@/components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -168,12 +171,12 @@ import { useTabStore, useUiStore } from "@/stores/uiStore";
 import {
   Keyboard as KeyboardIcon,
   RedoVariant as RedoIcon,
-  UndoVariant as UndoIcon,
   Sitemap as SitemapIcon,
+  UndoVariant as UndoIcon,
 } from "mdue";
-import { useClipboard, useTitle, watchOnce } from "@vueuse/core";
+import { createEventHook, useClipboard, useTitle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
-import { ScenarioActions, TAB_LAYERS, TAB_ORBAT } from "@/types/constants";
+import { ScenarioActions, TAB_LAYERS } from "@/types/constants";
 import AppNotifications from "@/components/AppNotifications.vue";
 import { useNotifications } from "@/composables/notifications";
 import { useGeoStore } from "@/stores/geoStore";
@@ -186,6 +189,7 @@ import {
   activeScenarioKey,
   activeUnitKey,
   currentScenarioTabKey,
+  searchActionsKey,
   selectedFeatureIdsKey,
   selectedUnitIdsKey,
   sidcModalKey,
@@ -228,6 +232,14 @@ provide(activeScenarioKey, props.activeScenario);
 provide(activeFeaturesKey, scnFeatures);
 provide(currentScenarioTabKey, activeScenarioTab);
 
+const onUnitSelectHook = createEventHook<{ unitId: EntityId }>();
+const onLayerSelectHook = createEventHook<{ layerId: FeatureId }>();
+const onFeatureSelectHook = createEventHook<{
+  featureId: FeatureId;
+  layerId: FeatureId;
+}>();
+provide(searchActionsKey, { onUnitSelectHook, onLayerSelectHook, onFeatureSelectHook });
+
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
 
 const { loadFromObject } = props.activeScenario.io;
@@ -248,9 +260,6 @@ const originalTitle = useTitle().value;
 const windowTitle = computed(() => state.info.name);
 const { send } = useNotifications();
 const geoStore = useGeoStore();
-
-const activeLayerId = ref<FeatureId | null>(null);
-const activeFeatureId = ref<FeatureId | null>(null);
 
 // const isDark = useDark();
 // const toggleDark = useToggle(isDark);
@@ -285,26 +294,15 @@ onUnmounted(() => {
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 
 const onUnitSelect = (unitId: EntityId) => {
-  activeScenarioTab.value = TAB_ORBAT;
-  activeUnitId.value = unitId;
-  const { parents } = unitActions.getUnitHierarchy(unitId);
-  parents.forEach((p) => (p._isOpen = true));
-  nextTick(() => {
-    const el = document.getElementById(`o-${unitId}`);
-    if (el) {
-      el.scrollIntoView();
-    }
-  });
+  onUnitSelectHook.trigger({ unitId });
 };
 
 const onLayerSelect = (layerId: FeatureId) => {
-  activeLayerId.value = layerId;
-  activeScenarioTab.value = TAB_LAYERS;
+  onLayerSelectHook.trigger({ layerId });
 };
 
 const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
-  activeFeatureId.value = featureId;
-  activeScenarioTab.value = TAB_LAYERS;
+  onFeatureSelectHook.trigger({ featureId, layerId });
 };
 
 const fileMenuItems: MenuItemData<ScenarioActions>[] = [
