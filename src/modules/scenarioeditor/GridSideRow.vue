@@ -20,7 +20,7 @@ const emit = defineEmits(["toggle", "expand", "updateSide", "nextCell"]);
     <td></td>
     <td
       @click="emit('toggle', side)"
-      class="flex items-center px-4 py-2 text-left font-bold text-gray-900 hover:cursor-pointer sm:px-0"
+      class="flex h-12 items-center px-4 py-2 text-left font-bold text-gray-900 hover:cursor-pointer sm:px-0"
     >
       <button tabindex="0" @click.stop="emit('toggle', side)" class="ml-0">
         <ChevronRightIcon
