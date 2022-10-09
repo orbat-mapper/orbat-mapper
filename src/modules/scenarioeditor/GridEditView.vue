@@ -23,7 +23,7 @@
           <GridHeader :columns="columns" />
           <tbody class="divide-y divide-gray-200 bg-white">
             <template v-for="(item, itemIndex) in items" :key="item.id">
-              <GridSideUnitRow
+              <GridUnitRow
                 v-if="item.type === 'unit'"
                 :unit="item.unit"
                 :columns="columns"
@@ -79,7 +79,7 @@ import { NWalkSideCallback } from "@/scenariostore/unitManipulations";
 import GridHeader from "@/modules/scenarioeditor/GridHeader.vue";
 import GridSideGroupRow from "@/modules/scenarioeditor/GridSideGroupRow.vue";
 import GridSideRow from "@/modules/scenarioeditor/GridSideRow.vue";
-import GridSideUnitRow from "@/modules/scenarioeditor/GridSideUnitRow.vue";
+import GridUnitRow from "@/modules/scenarioeditor/GridUnitRow.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { useSearchActions } from "@/composables/search";
 import { useNotifications } from "@/composables/notifications";
