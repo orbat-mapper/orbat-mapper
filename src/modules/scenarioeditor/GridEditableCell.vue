@@ -11,7 +11,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const emit = defineEmits(["update", "nextCell"]);
+const emit = defineEmits(["update", "nextCell", "active"]);
 
 const editMode = ref(false);
 const selected = ref(false);
@@ -40,6 +40,7 @@ function onFocus() {
   justFocused = true;
   selected.value = true;
   timeoutId = setTimeout(() => (justFocused = false), 500);
+  emit("active");
 }
 
 function onBlur() {

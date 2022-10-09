@@ -3,7 +3,6 @@ import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import type { TableColumn } from "@/modules/scenarioeditor/types";
 import type { NUnit } from "@/types/internalModels";
 import MilSymbol from "@/components/MilSymbol.vue";
-import { ref } from "vue";
 import GridEditableCell from "@/modules/scenarioeditor/GridEditableCell.vue";
 
 interface Props {
@@ -11,11 +10,10 @@ interface Props {
   itemIndex: number;
   level: number;
   columns: TableColumn[];
-  activeUnit: NUnit | null | undefined;
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["toggle", "expand", "updateUnit", "nextCell"]);
+const emit = defineEmits(["toggle", "expand", "updateUnit", "nextCell", "activeItem"]);
 </script>
 <template>
   <tr :id="`item-${unit.id}`" class="divide-x divide-gray-200 hover:bg-gray-100">
@@ -51,6 +49,7 @@ const emit = defineEmits(["toggle", "expand", "updateUnit", "nextCell"]);
         :col-index="colIndex + 1"
         @update="emit('updateUnit', unit.id, { [column.field]: $event })"
         @next-cell="emit('nextCell', $event)"
+        @active="emit('activeItem', column.field)"
       >
       </GridEditableCell>
     </td>

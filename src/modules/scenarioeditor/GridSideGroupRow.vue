@@ -13,7 +13,13 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["toggle", "expand", "updateSideGroup", "nextCell"]);
+const emit = defineEmits([
+  "toggle",
+  "expand",
+  "updateSideGroup",
+  "nextCell",
+  "activeItem",
+]);
 </script>
 <template>
   <tr class="bg-gray-100">
@@ -39,7 +45,6 @@ const emit = defineEmits(["toggle", "expand", "updateSideGroup", "nextCell"]);
             }"
           />
         </button>
-
         <span class="ml-2">{{ sideGroup.name }}</span>
       </div>
     </td>
@@ -50,6 +55,7 @@ const emit = defineEmits(["toggle", "expand", "updateSideGroup", "nextCell"]);
         :col-index="1"
         @update="emit('updateSideGroup', sideGroup.id, { name: $event })"
         @next-cell="emit('nextCell', $event)"
+        @active="emit('activeItem', 'name')"
       />
     </td>
     <td :colspan="columns.length - 1" class="">

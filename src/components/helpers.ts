@@ -22,7 +22,7 @@ export function useExpandTree(isOpen?: Ref<boolean>) {
   return { expandChildren, setItemRef };
 }
 
-export function inputEventFilter(event: Event, listener: EventListener, name: string) {
+export function inputEventFilter(event: Event) {
   return !["INPUT", "TEXTAREA"].includes((event.target as HTMLElement).tagName);
 }
 

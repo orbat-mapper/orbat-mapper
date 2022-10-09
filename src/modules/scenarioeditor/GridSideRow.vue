@@ -13,7 +13,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["toggle", "expand", "updateSide", "nextCell"]);
+const emit = defineEmits(["toggle", "expand", "updateSide", "nextCell", "activeItem"]);
 </script>
 <template>
   <tr class="divide-x divide-gray-200 bg-slate-50">
@@ -40,6 +40,7 @@ const emit = defineEmits(["toggle", "expand", "updateSide", "nextCell"]);
         :row-index="itemIndex"
         @update="emit('updateSide', side.id, { name: $event })"
         @next-cell="emit('nextCell', $event)"
+        @active="emit('activeItem', 'name')"
       />
     </td>
     <td :colspan="columns.length - 1"></td>

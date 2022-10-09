@@ -29,10 +29,10 @@
                 :columns="columns"
                 :level="item.level"
                 :item-index="itemIndex"
-                :active-unit="activeUnit"
                 :active-column="activeColumn"
                 @update-unit="updateUnit"
                 @next-cell="nextCell"
+                @active-item="onActiveItem(item, $event)"
               />
               <GridSideRow
                 v-else-if="item.type === 'side'"
@@ -43,6 +43,7 @@
                 :item-index="itemIndex"
                 @next-cell="nextCell"
                 @update-side="updateSide"
+                @active-item="onActiveItem(item, $event)"
               />
               <GridSideGroupRow
                 v-else-if="item.type === 'sidegroup'"
@@ -54,6 +55,7 @@
                 :item-index="itemIndex"
                 @next-cell="nextCell"
                 @update-side-group="updateSideGroup"
+                @active-item="onActiveItem(item, $event)"
               />
             </template>
           </tbody>
@@ -65,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { useDebounce } from "@vueuse/core";
+import { useDebounce, useEventListener } from "@vueuse/core";
 import { useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
@@ -83,12 +85,13 @@ import GridUnitRow from "@/modules/scenarioeditor/GridUnitRow.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { useSearchActions } from "@/composables/search";
 import { useNotifications } from "@/composables/notifications";
+import { inputEventFilter } from "@/components/helpers";
 
 const router = useRouter();
 const uiStore = useUiStore();
-const target = ref();
+const target = ref<HTMLDivElement>();
 
-const activeUnit = ref<NUnit | null | undefined>();
+const activeItem = ref<TableItem | null | undefined>();
 const activeColumn = ref<ColumnField>();
 const activeScenario = injectStrict(activeScenarioKey);
 const {
@@ -110,7 +113,6 @@ const filterQuery = ref("");
 const sidesToggled = ref(false);
 const debouncedFilterQuery = useDebounce(filterQuery, 250);
 const queryHasChanged = ref(true);
-
 const { send } = useNotifications();
 
 interface SideItem {
@@ -274,6 +276,9 @@ function nextCell(element: HTMLElement) {
   doArrows("down", { target: element });
 }
 
+useEventListener(target, "paste", onPaste);
+useEventListener(target, "copy", onCopy);
+
 onMounted(() => {
   document.getElementById("cell-0-1")?.focus();
 });
@@ -296,4 +301,53 @@ onUnitSelect(({ unitId }) => {
     }
   });
 });
+
+function onCopy(c: ClipboardEvent) {
+  const target = c.target as HTMLDivElement;
+  if (!inputEventFilter(c)) return;
+  if (
+    !(
+      target?.classList.contains("editable-cell") ||
+      target?.parentElement?.classList.contains("editable-cell")
+    )
+  )
+    return;
+
+  c.clipboardData?.setData("text/plain", target.textContent || "");
+  c.preventDefault();
+}
+
+function onPaste(e: ClipboardEvent) {
+  if (!inputEventFilter(e)) return;
+  const target = e.target as HTMLDivElement;
+  if (
+    !(
+      target?.classList.contains("editable-cell") ||
+      target?.parentElement?.classList.contains("editable-cell")
+    )
+  )
+    return;
+  e.preventDefault();
+  const txt = e.clipboardData?.getData("text/plain");
+  const item = activeItem.value;
+  const column = activeColumn.value;
+  if (item && column) {
+    switch (item.type) {
+      case "unit":
+        updateUnit(item.id, { [column]: txt });
+        break;
+      case "side":
+        updateSide(item.id, { [column]: txt });
+        break;
+      case "sidegroup":
+        updateSideGroup(item.id, { [column]: txt });
+        break;
+    }
+  }
+}
+
+function onActiveItem(item: TableItem, column: ColumnField) {
+  activeItem.value = item;
+  activeColumn.value = column;
+}
 </script>

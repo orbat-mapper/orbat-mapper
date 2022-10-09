@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- Add grid edit mode
+- Grid cell copy/paste
+- Grid edit mode keyboard navigation
 
 September 2022
 
