@@ -42,6 +42,7 @@ export interface LayerFeatureSearchResult extends LayerFeatureItem, SearchResult
 }
 
 export type DropTarget = "on" | "above" | "below";
+export type CloneTarget = "end" | "above" | "below";
 
 export interface UnitEmits {
   (e: "unit-action", unit: NUnit, action: UnitActions): void;

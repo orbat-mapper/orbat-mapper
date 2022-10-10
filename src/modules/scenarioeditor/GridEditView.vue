@@ -16,6 +16,8 @@
         <div class="flex w-full items-center space-x-2 sm:w-auto">
           <FilterQueryInput class="" v-model="filterQuery" />
           <BaseButton @click="toggleSides()" small>Toggle sides</BaseButton>
+          <BaseButton small @click="createNewItem">Create subordinate</BaseButton>
+          <BaseButton small @click="duplicateItem">Create unit</BaseButton>
         </div>
       </header>
       <div class="relative min-w-0 max-w-none flex-auto overflow-auto pb-7">
@@ -29,10 +31,10 @@
                 :columns="columns"
                 :level="item.level"
                 :item-index="itemIndex"
-                :active-column="activeColumn"
                 @update-unit="updateUnit"
                 @next-cell="nextCell"
                 @active-item="onActiveItem(item, $event)"
+                :is-active="activeItem?.id === item.id"
               />
               <GridSideRow
                 v-else-if="item.type === 'side'"
@@ -350,4 +352,16 @@ function onActiveItem(item: TableItem, column: ColumnField) {
   activeItem.value = item;
   activeColumn.value = column;
 }
+
+const createNewItem = () => {
+  const item = activeItem.value;
+  if (!item) return;
+  item.type === "unit" && unitActions.createSubordinateUnit(item.unit.id);
+};
+
+const duplicateItem = () => {
+  const item = activeItem.value;
+  if (!item) return;
+  item.type === "unit" && unitActions.cloneUnit(item.unit.id);
+};
 </script>

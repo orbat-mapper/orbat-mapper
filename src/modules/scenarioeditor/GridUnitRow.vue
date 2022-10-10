@@ -10,6 +10,7 @@ interface Props {
   itemIndex: number;
   level: number;
   columns: TableColumn[];
+  isActive: boolean;
 }
 
 const props = defineProps<Props>();
@@ -17,7 +18,9 @@ const emit = defineEmits(["toggle", "expand", "updateUnit", "nextCell", "activeI
 </script>
 <template>
   <tr :id="`item-${unit.id}`" class="divide-x divide-gray-200 hover:bg-gray-100">
-    <td></td>
+    <td class="relative">
+      <div v-if="isActive" class="absolute inset-y-0 right-0 w-0.5 bg-indigo-600"></div>
+    </td>
     <td
       class="flex items-center whitespace-nowrap py-3 text-sm text-gray-900"
       :style="`padding-left: ${level + 1}rem`"

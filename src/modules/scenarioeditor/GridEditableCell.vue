@@ -98,7 +98,6 @@ function onKeydown(event: KeyboardEvent) {
         @blur="onEditBlur"
       />
     </form>
-
     <span v-else>{{ value }}&nbsp;</span>
   </div>
 </template>

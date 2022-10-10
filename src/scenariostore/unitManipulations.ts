@@ -9,7 +9,7 @@ import {
   SideUpdate,
   UnitUpdate,
 } from "@/types/internalModels";
-import { DropTarget } from "@/components/types";
+import { CloneTarget, DropTarget } from "@/components/types";
 import { SID_INDEX, Sidc } from "@/symbology/sidc";
 import { setCharAt } from "@/components/helpers";
 import { SID } from "@/symbology/values";
@@ -303,7 +303,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     return s.sideGroupMap[id] || undefined;
   }
 
-  function addUnit(unit: NUnit, parentId: EntityId) {
+  function addUnit(unit: NUnit, parentId: EntityId, index?: number) {
     if (!unit.id) {
       unit.id = nanoid();
     }
@@ -313,7 +313,11 @@ export function useUnitManipulations(store: NewScenarioStore) {
       s.unitMap[unit.id] = unit;
       let parent = getUnitOrSideGroup(unit._pid);
       if (!parent) return;
-      parent.subUnits.push(unit.id);
+      if (index === undefined) {
+        parent.subUnits.push(unit.id);
+      } else {
+        parent.subUnits.splice(index, 0, unit.id);
+      }
     });
   }
 
@@ -351,7 +355,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     parent._isOpen = true;
   }
 
-  function cloneUnit(unitId: EntityId) {
+  function cloneUnit(unitId: EntityId, target: CloneTarget = "below") {
     const unit = state.unitMap[unitId];
     if (!unit) return;
     let newUnit = {
@@ -363,7 +367,16 @@ export function useUnitManipulations(store: NewScenarioStore) {
       subUnits: [],
     };
 
-    addUnit(newUnit, unit._pid);
+    let parent = getUnitOrSideGroup(unit._pid);
+    let idx;
+    if (target !== "end" && parent) {
+      idx = parent.subUnits.findIndex((id) => id === unitId);
+      if (target === "below") idx = idx + 1;
+
+      if (idx < 0) idx = undefined;
+    }
+
+    addUnit(newUnit, unit._pid, idx);
   }
 
   function reorderUnit(unitId: EntityId, direction: "up" | "down") {
