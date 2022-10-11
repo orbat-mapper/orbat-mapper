@@ -316,8 +316,8 @@ function onCopy(c: ClipboardEvent) {
     )
   )
     return;
-
-  c.clipboardData?.setData("text/plain", target.textContent || "");
+  const text = target.textContent || "";
+  c.clipboardData?.setData("text/plain", text.trim());
   c.preventDefault();
 }
 
@@ -332,7 +332,7 @@ function onPaste(e: ClipboardEvent) {
   )
     return;
   e.preventDefault();
-  const txt = e.clipboardData?.getData("text/plain");
+  const txt = e.clipboardData?.getData("text/plain").trim();
   const item = activeItem.value;
   const column = activeColumn.value;
   if (item && column) {
