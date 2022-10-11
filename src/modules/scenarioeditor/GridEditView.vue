@@ -278,8 +278,8 @@ function nextCell(element: HTMLElement) {
   doArrows("down", { target: element });
 }
 
-useEventListener(target, "paste", onPaste);
-useEventListener(target, "copy", onCopy);
+useEventListener(document, "paste", onPaste);
+useEventListener(document, "copy", onCopy);
 
 onMounted(() => {
   document.getElementById("cell-0-1")?.focus();
@@ -305,8 +305,10 @@ onUnitSelect(({ unitId }) => {
 });
 
 function onCopy(c: ClipboardEvent) {
-  const target = c.target as HTMLDivElement;
   if (!inputEventFilter(c)) return;
+  // Use document.activeElement instead of c.target because Chrome will not
+  // emit copy/paste events for programmatically focused div elements.
+  const target = document.activeElement as HTMLDivElement;
   if (
     !(
       target?.classList.contains("editable-cell") ||
@@ -321,7 +323,7 @@ function onCopy(c: ClipboardEvent) {
 
 function onPaste(e: ClipboardEvent) {
   if (!inputEventFilter(e)) return;
-  const target = e.target as HTMLDivElement;
+  const target = document.activeElement as HTMLDivElement;
   if (
     !(
       target?.classList.contains("editable-cell") ||
