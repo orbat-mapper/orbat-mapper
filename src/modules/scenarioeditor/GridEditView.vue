@@ -6,6 +6,8 @@
     @keydown.left="doArrows('left', $event)"
     @keydown.right="doArrows('right', $event)"
     @keydown.delete="doDelete"
+    @keydown.shift.enter="duplicateItem"
+    @keydown.alt.enter="createNewItem"
   >
     <div
       ref="target"

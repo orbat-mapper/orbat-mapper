@@ -82,7 +82,7 @@ function onKeydown(event: KeyboardEvent) {
     tabindex="0"
     :id="`cell-${rowIndex}-${colIndex}`"
     @keydown="onKeydown"
-    @keydown.enter="onEnter"
+    @keydown.enter.exact="onEnter"
     @keydown.esc="doCancel"
     @click="onClick"
     @focus="onFocus"
