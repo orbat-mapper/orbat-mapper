@@ -18,7 +18,10 @@
           <FilterQueryInput class="" v-model="filterQuery" />
           <BaseButton @click="toggleSides()" small>Toggle sides</BaseButton>
           <BaseButton small @click="createNewItem">Create subordinate</BaseButton>
-          <BaseButton small @click="duplicateItem">Create unit</BaseButton>
+          <BaseButton small @click="duplicateItem">Duplicate unit</BaseButton>
+          <BaseButton small @click="deleteItem" :disabled="!activeItem"
+            >Delete item</BaseButton
+          >
         </div>
       </header>
       <div class="relative min-w-0 max-w-none flex-auto overflow-auto pb-7">
@@ -355,6 +358,15 @@ const duplicateItem = () => {
   if (!item) return;
   item.type === "unit" && unitActions.cloneUnit(item.unit.id);
 };
+
+const deleteItem = () => {
+  const item = activeItem.value;
+  if (!item) return;
+  item.type === "unit" && unitActions.deleteUnit(item.unit.id);
+  item.type === "side" && unitActions.deleteSide(item.side.id);
+  item.type === "sidegroup" && unitActions.deleteSideGroup(item.sideGroup.id);
+};
+
 function updateActiveItemValue(txt: string) {
   const item = activeItem.value;
   const column = activeColumn.value;
