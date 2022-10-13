@@ -10,6 +10,7 @@ interface Props {
   columns: TableColumn[];
   sideOpen: Map<NSide, boolean>;
   itemIndex: number;
+  isActive: boolean;
 }
 
 const props = defineProps<Props>();
@@ -17,7 +18,9 @@ const emit = defineEmits(["toggle", "expand", "updateSide", "nextCell", "activeI
 </script>
 <template>
   <tr class="divide-x divide-gray-200 bg-slate-50">
-    <td></td>
+    <td class="relative">
+      <div v-if="isActive" class="absolute inset-y-0 right-0 w-0.5 bg-indigo-600"></div>
+    </td>
     <td
       @click="emit('toggle', side)"
       class="flex h-12 items-center px-4 py-2 text-left font-bold text-gray-900 hover:cursor-pointer sm:px-0"

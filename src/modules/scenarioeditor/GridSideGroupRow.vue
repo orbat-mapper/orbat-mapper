@@ -10,6 +10,7 @@ interface Props {
   columns: TableColumn[];
   sgOpen: Map<NSideGroup, boolean>;
   itemIndex: number;
+  isActive: boolean;
 }
 
 const props = defineProps<Props>();
@@ -23,10 +24,8 @@ const emit = defineEmits([
 </script>
 <template>
   <tr class="bg-gray-100">
-    <td class="">
-      <div
-        class="h-12 items-center whitespace-nowrap py-2 pr-3 text-sm font-medium text-gray-900"
-      ></div>
+    <td class="relative">
+      <div v-if="isActive" class="absolute inset-y-0 right-0 w-0.5 bg-indigo-600"></div>
     </td>
     <td class="hover:cursor-pointer" @click="emit('toggle', sideGroup)">
       <div

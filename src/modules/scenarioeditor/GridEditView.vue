@@ -47,6 +47,7 @@
                 @next-cell="nextCell"
                 @update-side="updateSide"
                 @active-item="onActiveItem(item, $event)"
+                :is-active="activeItem?.id === item.id"
               />
               <GridSideGroupRow
                 v-else-if="item.type === 'sidegroup'"
@@ -59,6 +60,7 @@
                 @next-cell="nextCell"
                 @update-side-group="updateSideGroup"
                 @active-item="onActiveItem(item, $event)"
+                :is-active="activeItem?.id === item.id"
               />
             </template>
           </tbody>
