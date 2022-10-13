@@ -102,8 +102,6 @@
         />
       </keep-alive>
     </router-view>
-
-    <KeyboardScenarioActions v-if="geoStore.olMap" />
     <GlobalEvents
       v-if="shortcutsEnabled"
       :filter="inputEventFilter"
@@ -199,7 +197,6 @@ import type { Scenario } from "@/types/scenarioModels";
 import { useFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
 import { useDateModal, useSidcModal } from "@/composables/modals";
-import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import { storeToRefs } from "pinia";
 import DropdownMenu from "@/components/DropdownMenu.vue";
 import { GRID_EDIT_ROUTE, LANDING_PAGE_ROUTE, SCENARIO_ROUTE } from "@/router/names";
