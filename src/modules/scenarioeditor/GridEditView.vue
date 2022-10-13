@@ -5,6 +5,7 @@
     @keydown.up="doArrows('up', $event)"
     @keydown.left="doArrows('left', $event)"
     @keydown.right="doArrows('right', $event)"
+    @keydown.delete="doDelete"
   >
     <div
       ref="target"
@@ -333,21 +334,7 @@ function onPaste(e: ClipboardEvent) {
     return;
   e.preventDefault();
   const txt = e.clipboardData?.getData("text/plain").trim();
-  const item = activeItem.value;
-  const column = activeColumn.value;
-  if (item && column) {
-    switch (item.type) {
-      case "unit":
-        updateUnit(item.id, { [column]: txt });
-        break;
-      case "side":
-        updateSide(item.id, { [column]: txt });
-        break;
-      case "sidegroup":
-        updateSideGroup(item.id, { [column]: txt });
-        break;
-    }
-  }
+  txt && updateActiveItemValue(txt);
 }
 
 function onActiveItem(item: TableItem, column: ColumnField) {
@@ -366,4 +353,29 @@ const duplicateItem = () => {
   if (!item) return;
   item.type === "unit" && unitActions.cloneUnit(item.unit.id);
 };
+function updateActiveItemValue(txt: string) {
+  const item = activeItem.value;
+  const column = activeColumn.value;
+  if (item && column) {
+    switch (item.type) {
+      case "unit":
+        updateUnit(item.id, { [column]: txt });
+        break;
+      case "side":
+        updateSide(item.id, { [column]: txt });
+        break;
+      case "sidegroup":
+        updateSideGroup(item.id, { [column]: txt });
+        break;
+    }
+  }
+}
+
+function doDelete(e: KeyboardEvent) {
+  const target = e.target as HTMLDivElement;
+  if (!target?.classList.contains("editable-cell")) return;
+  e.preventDefault();
+
+  updateActiveItemValue("");
+}
 </script>
