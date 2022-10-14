@@ -21,6 +21,10 @@ const emit = defineEmits([
   "nextCell",
   "activeItem",
 ]);
+
+function toggleOpen() {
+  emit("toggle", props.sideGroup);
+}
 </script>
 <template>
   <tr class="bg-gray-100">
@@ -29,8 +33,11 @@ const emit = defineEmits([
     </td>
     <td class="hover:cursor-pointer" @click="emit('toggle', sideGroup)">
       <div
+        :id="`cell-${itemIndex}-0`"
         tabindex="0"
-        class="flex h-12 items-center whitespace-nowrap border border-gray-100 bg-gray-100 py-2 pr-3 text-sm font-medium text-gray-900 focus-within:border-red-800"
+        class="flex h-12 items-center whitespace-nowrap border-2 border-gray-100 bg-gray-100 py-2 pr-3 text-sm font-medium text-gray-900 focus-within:border-red-800"
+        @click.self="toggleOpen()"
+        @keydown.enter.exact="toggleOpen()"
       >
         <button
           tabindex="0"
@@ -44,7 +51,7 @@ const emit = defineEmits([
             }"
           />
         </button>
-        <span class="ml-2">{{ sideGroup.name }}</span>
+        <button class="ml-2 hover:underline">{{ sideGroup.name }}</button>
       </div>
     </td>
     <td class="">

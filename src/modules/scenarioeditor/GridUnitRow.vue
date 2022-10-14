@@ -15,35 +15,40 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(["toggle", "expand", "updateUnit", "nextCell", "activeItem"]);
+
+function toggleOpen() {
+  props.unit._isOpen = !props.unit._isOpen;
+}
 </script>
 <template>
   <tr :id="`item-${unit.id}`" class="divide-x divide-gray-200 hover:bg-gray-100">
     <td class="relative">
       <div v-if="isActive" class="absolute inset-y-0 right-0 w-0.5 bg-indigo-600"></div>
     </td>
-    <td
-      class="flex items-center whitespace-nowrap py-3 text-sm text-gray-900"
-      :style="`padding-left: ${level + 1}rem`"
-      tabindex="0"
-    >
-      <button
-        v-if="unit.subUnits.length"
-        @click="unit._isOpen = !unit._isOpen"
+    <td>
+      <div
+        :id="`cell-${itemIndex}-0`"
+        class="flex items-center whitespace-nowrap border-2 border-white py-3 text-sm text-gray-900 outline-0 focus-within:border-red-800"
+        :style="`padding-left: ${level + 1}rem`"
         tabindex="0"
+        @keydown.enter.exact="toggleOpen()"
+        @click.self="toggleOpen()"
       >
-        <ChevronRightIcon
-          class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
-          :class="{
-            'rotate-90': unit._isOpen,
-          }"
+        <button v-if="unit.subUnits.length" @click="toggleOpen()">
+          <ChevronRightIcon
+            class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+            :class="{
+              'rotate-90': unit._isOpen,
+            }"
+          />
+        </button>
+        <MilSymbol
+          :sidc="unit.sidc"
+          class="ml-2"
+          :class="{ 'ml-8': !unit.subUnits.length }"
         />
-      </button>
-      <MilSymbol
-        :sidc="unit.sidc"
-        class="ml-2"
-        :class="{ 'ml-8': !unit.subUnits.length }"
-      />
-      <span class="ml-2 truncate">{{ unit.name }}</span>
+        <button class="ml-2 truncate hover:underline">{{ unit.name }}</button>
+      </div>
     </td>
     <td v-for="(column, colIndex) in columns" :key="column.field" class="">
       <GridEditableCell

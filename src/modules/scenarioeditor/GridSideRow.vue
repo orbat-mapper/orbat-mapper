@@ -21,20 +21,25 @@ const emit = defineEmits(["toggle", "expand", "updateSide", "nextCell", "activeI
     <td class="relative">
       <div v-if="isActive" class="absolute inset-y-0 right-0 w-0.5 bg-indigo-600"></div>
     </td>
-    <td
-      @click="emit('toggle', side)"
-      class="flex h-12 items-center px-4 py-2 text-left font-bold text-gray-900 hover:cursor-pointer sm:px-0"
-    >
-      <button tabindex="0" @click.stop="emit('toggle', side)" class="ml-0">
-        <ChevronRightIcon
-          class="h-6 w-6 transform text-red-800 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
-          :class="{
-            'rotate-90': sideOpen.get(side) ?? true,
-          }"
-        />
-      </button>
+    <td>
+      <div
+        :id="`cell-${itemIndex}-0`"
+        @click="emit('toggle', side)"
+        @keydown.enter.exact="emit('toggle', side)"
+        tabindex="0"
+        class="flex h-12 items-center items-center whitespace-nowrap border-2 border-gray-100 px-4 py-2 py-2 pr-3 text-left font-bold font-medium text-gray-900 text-gray-900 focus-within:border-red-800 hover:cursor-pointer sm:px-0"
+      >
+        <button @click.stop="emit('toggle', side)" class="ml-0">
+          <ChevronRightIcon
+            class="h-6 w-6 transform text-red-800 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+            :class="{
+              'rotate-90': sideOpen.get(side) ?? true,
+            }"
+          />
+        </button>
 
-      <span class="ml-2">{{ side.name }}</span>
+        <button class="ml-2 hover:underline">{{ side.name }}</button>
+      </div>
     </td>
     <td class="">
       <GridEditableCell
