@@ -16,7 +16,7 @@
       <header
         class="flex flex-shrink-0 items-center justify-between border-b border-gray-300 px-4 py-3 sm:px-6"
       >
-        <div class="flex w-full items-center space-x-2 sm:w-auto">
+        <div class="flex w-full items-center space-x-2 overflow-x-auto sm:w-auto">
           <FilterQueryInput class="" v-model="filterQuery" />
           <BaseButton @click="toggleSides()" small>Toggle sides</BaseButton>
           <BaseButton small @click="createNewItem">Create subordinate</BaseButton>
@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { useDebounce, useEventListener } from "@vueuse/core";
+import { useDebounce, useEventListener, useStorage } from "@vueuse/core";
 import { useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
@@ -121,7 +121,10 @@ const availableColumns: SelectItem<ColumnField>[] = [
   { value: "externalUrl", label: "URL" },
 ];
 
-const selectedColumns = ref(availableColumns.map((e) => e.value));
+const selectedColumns = useStorage(
+  "grid-columns",
+  availableColumns.map((e) => e.value)
+);
 
 const columns = computed(() =>
   selectedColumns.value.map((c) => {

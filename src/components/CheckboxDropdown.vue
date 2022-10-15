@@ -16,8 +16,8 @@ const emit = defineEmits(["update:modelValue"]);
 const selectedItems = useVModel(props, "modelValue", emit);
 </script>
 <template>
-  <PopoverGroup class="hidden sm:flex sm:items-baseline sm:space-x-8">
-    <Popover as="div" class="relative z-50 inline-block text-left">
+  <PopoverGroup class="flex items-baseline sm:space-x-8">
+    <Popover as="div" class="relative z-20 inline-block text-left">
       <div>
         <PopoverButton
           class="group inline-flex items-center justify-center text-sm font-medium text-gray-700 hover:text-gray-900"
