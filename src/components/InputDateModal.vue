@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useVModel } from "@vueuse/core";
+import { useStorage, useVModel } from "@vueuse/core";
 import { Switch, SwitchGroup, SwitchLabel } from "@headlessui/vue";
 
 import SimpleModal from "./SimpleModal.vue";
@@ -64,7 +64,7 @@ const emit = defineEmits(["update:modelValue", "update:timestamp", "cancel"]);
 const { focusId } = useFocusOnMount(undefined, 150);
 
 const open = useVModel(props, "modelValue");
-const enabled = ref(false);
+const enabled = useStorage("utc-mode", false);
 const isLocal = computed(() => !enabled.value);
 const { date, hour, minute, resDateTime } = useDateElements({
   timestamp: props.timestamp,
