@@ -267,9 +267,8 @@ function doArrows(
 
   let nextId = `cell-${nextY}-${nextX}`;
   let nextElement = document.getElementById(nextId);
+  let nextItem = items.value[nextY];
   if (!nextElement && (direction === "up" || direction === "down")) {
-    let nextItem = items.value[nextY];
-
     while (nextItem) {
       nextY = direction === "up" ? nextY - 1 : nextY + 1;
       nextItem = items.value[nextY];
@@ -279,7 +278,10 @@ function doArrows(
     }
   }
 
-  nextElement?.focus({});
+  if (nextElement) {
+    if (nextItem) activeItem.value = nextItem;
+    nextElement.focus({});
+  }
 }
 
 function nextCell(element: HTMLElement) {
