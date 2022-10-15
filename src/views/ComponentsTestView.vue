@@ -64,6 +64,13 @@
           </section>
 
           <section>
+            <h3 class="border-b text-lg">Filters</h3>
+            <div class="flex justify-end">
+              <CheckboxDropdown :options="items" v-model="sel">Test</CheckboxDropdown>
+            </div>
+          </section>
+
+          <section>
             <h3 class="border-b text-lg">Accordion panels</h3>
 
             <div class="grid grid-cols-3 gap-6">
@@ -117,6 +124,7 @@ import AccordionPanel from "@/components/AccordionPanel.vue";
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import SettingsPanel from "@/components/SettingsPanel.vue";
 import ToggleField from "@/components/ToggleField.vue";
+import CheckboxDropdown from "@/components/CheckboxDropdown.vue";
 
 const num = ref(1);
 const v = ref("Test");
@@ -127,6 +135,8 @@ const items = [
   { label: "Test", value: 2 },
   { label: "Another", value: 3 },
 ];
+
+const sel = ref([]);
 
 const toggle = ref(true);
 </script>

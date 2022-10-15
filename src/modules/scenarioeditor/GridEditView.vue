@@ -25,6 +25,9 @@
             >Delete item</BaseButton
           >
         </div>
+        <CheckboxDropdown :options="availableColumns" v-model="selectedColumns"
+          >Columns</CheckboxDropdown
+        >
       </header>
       <div class="relative min-w-0 max-w-none flex-auto overflow-auto pb-7">
         <table class="w-full table-fixed">
@@ -96,6 +99,8 @@ import BaseButton from "@/components/BaseButton.vue";
 import { useSearchActions } from "@/composables/search";
 import { useNotifications } from "@/composables/notifications";
 import { inputEventFilter } from "@/components/helpers";
+import { SelectItem } from "@/components/types";
+import CheckboxDropdown from "@/components/CheckboxDropdown.vue";
 
 const router = useRouter();
 const uiStore = useUiStore();
@@ -109,12 +114,21 @@ const {
   unitActions,
 } = activeScenario;
 
-const columns = ref<TableColumn[]>([
-  { field: "name", title: "Name" },
-  { field: "shortName", title: "Short name" },
-  { field: "sidc", title: "Symbol code" },
-  { field: "externalUrl", title: "URL" },
-]);
+const availableColumns: SelectItem<ColumnField>[] = [
+  { value: "name", label: "Name" },
+  { value: "shortName", label: "Short name" },
+  { value: "sidc", label: "Symbol code" },
+  { value: "externalUrl", label: "URL" },
+];
+
+const selectedColumns = ref(availableColumns.map((e) => e.value));
+
+const columns = computed(() =>
+  selectedColumns.value.map((c) => {
+    const i = availableColumns.find((e) => e.value === c);
+    return { field: c, title: i?.label || "NN" };
+  })
+);
 
 const sgOpen = ref(new Map<NSideGroup, boolean>());
 const sideOpen = ref(new Map<NSide, boolean>());
