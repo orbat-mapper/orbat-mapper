@@ -768,22 +768,69 @@
               "id": "Apc4XNmoJDViPTPdcoJS"
             },
             {
-              "name": "TG 324.3 SS",
+              "name": "TG 324.3 SSB",
               "sidc": "10033000001210030000",
               "subUnits": [
                 {
-                  "name": "SSN",
+                  "name": "HMS Conqueror",
                   "sidc": "10033500001101000006",
                   "state": [],
                   "id": "0h09CGo7tIGIAQ58vKCGT",
-                  "subUnits": []
+                  "subUnits": [],
+                  "shortName": "Conqueror",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Conqueror_(S48)"
+                },
+                {
+                  "name": "HMS Courageous",
+                  "sidc": "10033500001101000006",
+                  "state": [],
+                  "id": "cToWFOOWz0",
+                  "subUnits": [],
+                  "shortName": "Courageous",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Courageous_(S50)"
+                },
+                {
+                  "name": "HMS Spartan",
+                  "sidc": "10033500001101000006",
+                  "state": [],
+                  "id": "1D7ulqZ5MI",
+                  "subUnits": [],
+                  "shortName": "Spartan",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Spartan_(S105)"
+                },
+                {
+                  "name": "HMS Splendid",
+                  "sidc": "10033500001101000006",
+                  "state": [],
+                  "id": "auYiIqAQJQ",
+                  "subUnits": [],
+                  "shortName": "Splendid",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Splendid_(S106)"
+                },
+                {
+                  "name": "HMS Valiant",
+                  "sidc": "10033500001101000006",
+                  "state": [],
+                  "id": "pGnJLGNIS5",
+                  "subUnits": [],
+                  "shortName": "Valiant",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Valiant_(S102)"
+                },
+                {
+                  "name": "HMS Onyx",
+                  "sidc": "10033500001101000002",
+                  "state": [],
+                  "id": "a1AQwrDoCW",
+                  "subUnits": [],
+                  "shortName": "Onyx",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Onyx_(S21)"
                 }
               ],
               "state": [],
               "id": "MAzkbClTp_5rXVTFa9udy"
             },
             {
-              "name": "BG South Georgia",
+              "name": "TG 317.9 SGG",
               "sidc": "10031004151211004600",
               "subUnits": [
                 {
