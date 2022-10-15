@@ -22,7 +22,7 @@ export interface SideGroupItem {
 
 export type TableItem = SideItem | SideGroupItem | UnitItem;
 
-export type ColumnField = "name" | "shortName" | "sidc";
+export type ColumnField = "name" | "shortName" | "sidc" | "externalUrl";
 
 export interface TableColumn {
   title: string;

@@ -113,6 +113,7 @@ const columns = ref<TableColumn[]>([
   { field: "name", title: "Name" },
   { field: "shortName", title: "Short name" },
   { field: "sidc", title: "Symbol code" },
+  { field: "externalUrl", title: "URL" },
 ]);
 
 const sgOpen = ref(new Map<NSideGroup, boolean>());
