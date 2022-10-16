@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { doFocus } from "@/composables/utils";
 import { isTypedCharValid } from "@/components/helpers";
+import { CellType } from "@/modules/scenarioeditor/types";
 
 interface Props {
   value?: string | number;
   rowIndex: number;
   colIndex: number;
+  cellType?: CellType;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), { cellType: "text" });
 
-const emit = defineEmits(["update", "nextCell", "active"]);
+const emit = defineEmits(["update", "nextCell", "active", "edit"]);
 
 const editMode = ref(false);
 const selected = ref(false);
@@ -22,6 +24,8 @@ let justFocused = false;
 
 let valueCopy: string | number | undefined = "";
 const iValue = ref<string | number>("");
+
+const externalEdit = computed(() => ["sidc", "markdown"].includes(props.cellType));
 
 function enterEditMode(initialValue?: string | number) {
   if (editMode.value) return;
@@ -49,6 +53,11 @@ function onBlur() {
 }
 
 function onEnter() {
+  if (externalEdit.value) {
+    handleExternalEdit();
+    return;
+  }
+
   if (!editMode.value) {
     enterEditMode();
   } else {
@@ -64,7 +73,13 @@ function onEditBlur() {
 }
 
 function onClick(e: any) {
-  if (!justFocused) enterEditMode();
+  if (!justFocused) {
+    if (externalEdit.value) {
+      handleExternalEdit();
+    } else {
+      enterEditMode();
+    }
+  }
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -73,6 +88,10 @@ function onKeydown(event: KeyboardEvent) {
   if (isTypedCharValid(event)) {
     enterEditMode("");
   }
+}
+
+function handleExternalEdit() {
+  emit("edit", props.value);
 }
 </script>
 <template>
@@ -98,6 +117,6 @@ function onKeydown(event: KeyboardEvent) {
         @blur="onEditBlur"
       />
     </form>
-    <span v-else>{{ value }}&nbsp;</span>
+    <span v-else :class="{ 'cursor-pointer': externalEdit }">{{ value }}&nbsp;</span>
   </div>
 </template>

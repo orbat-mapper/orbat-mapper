@@ -44,6 +44,7 @@
                 @next-cell="nextCell"
                 @active-item="onActiveItem(item, $event)"
                 :is-active="activeItem?.id === item.id"
+                @edit="onUnitEdit"
               />
               <GridSideRow
                 v-else-if="item.type === 'side'"
@@ -85,7 +86,7 @@ import { useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, sidcModalKey } from "@/components/injects";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import FilterQueryInput from "@/components/FilterQueryInput.vue";
 import { ColumnField, TableColumn, TableItem } from "@/modules/scenarioeditor/types";
@@ -101,10 +102,13 @@ import { useNotifications } from "@/composables/notifications";
 import { inputEventFilter } from "@/components/helpers";
 import { SelectItem } from "@/components/types";
 import CheckboxDropdown from "@/components/CheckboxDropdown.vue";
+import { useSidcModal } from "@/composables/modals";
 
 const router = useRouter();
 const uiStore = useUiStore();
 const target = ref<HTMLDivElement>();
+
+const { getModalSidc } = injectStrict(sidcModalKey);
 
 const activeItem = ref<TableItem | null | undefined>();
 const activeColumn = ref<ColumnField>();
@@ -140,7 +144,6 @@ const sidesToggled = ref(false);
 const debouncedFilterQuery = useDebounce(filterQuery, 250);
 const queryHasChanged = ref(true);
 const { send } = useNotifications();
-
 interface SideItem {
   side: NSide;
   children: SideGroupItem[];
@@ -411,5 +414,14 @@ function doDelete(e: KeyboardEvent) {
   e.preventDefault();
 
   updateActiveItemValue("");
+}
+
+async function onUnitEdit(unit: NUnit, b: ColumnField, c: string) {
+  if (b === "sidc") {
+    const newSidcValue = await getModalSidc(c);
+    if (newSidcValue !== undefined) {
+      updateUnit(unit.id, { sidc: newSidcValue });
+    }
+  }
 }
 </script>

@@ -14,7 +14,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["toggle", "expand", "updateUnit", "nextCell", "activeItem"]);
+const emit = defineEmits([
+  "toggle",
+  "expand",
+  "updateUnit",
+  "nextCell",
+  "activeItem",
+  "edit",
+]);
 
 function toggleOpen() {
   props.unit._isOpen = !props.unit._isOpen;
@@ -55,9 +62,11 @@ function toggleOpen() {
         :value="unit[column.value]"
         :row-index="itemIndex"
         :col-index="colIndex + 1"
+        :cell-type="column.type"
         @update="emit('updateUnit', unit.id, { [column.value]: $event })"
         @next-cell="emit('nextCell', $event)"
         @active="emit('activeItem', column.value)"
+        @edit="emit('edit', unit, column.value, $event)"
       >
       </GridEditableCell>
     </td>
