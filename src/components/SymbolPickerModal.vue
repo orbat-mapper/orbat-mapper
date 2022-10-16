@@ -12,7 +12,7 @@
             placeholder="Search for symbol"
             v-model="searchQuery"
             @keydown.tab="onTab"
-            @keydown.esc.stop="hitsIsOpen ? (hitsIsOpen = false) : (open = false)"
+            @keydown.esc="onEsc"
             @keydown.enter.prevent="!hitsIsOpen && onSubmit()"
             focus
           />
@@ -195,6 +195,13 @@ const onSubmit = () => {
   emit("update:sidc", csidc.value);
   open.value = false;
 };
+
+function onEsc(e: KeyboardEvent) {
+  if (hitsIsOpen.value) {
+    hitsIsOpen.value = false;
+    e.stopPropagation();
+  }
+}
 
 function doKbd(direction: "up" | "down" | "pagedown" | "pageup") {
   const nHits = hits?.value?.length || 0;
