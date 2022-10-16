@@ -33,14 +33,14 @@ const props = defineProps<Props>();
 
       <th
         v-for="column in columns"
-        :key="column.field"
+        :key="column.value"
         scope="col"
         class="sticky top-0 z-10"
       >
         <div
           class="-my-[2px] -ml-[2px] border-b border-l border-gray-400 border-l-gray-200 bg-gray-100 py-3.5 pl-3 pr-3 text-left text-sm font-semibold text-gray-900"
         >
-          {{ column.title }}
+          {{ column.label }}
         </div>
       </th>
     </tr>

@@ -114,23 +114,21 @@ const {
   unitActions,
 } = activeScenario;
 
-const availableColumns: SelectItem<ColumnField>[] = [
-  { value: "name", label: "Name" },
-  { value: "shortName", label: "Short name" },
-  { value: "sidc", label: "Symbol code" },
-  { value: "externalUrl", label: "URL" },
+const availableColumns: TableColumn[] = [
+  { value: "name", label: "Name", type: "text" },
+  { value: "shortName", label: "Short name", type: "text" },
+  { value: "sidc", label: "Symbol code", type: "sidc" },
+  { value: "externalUrl", label: "URL", type: "text", hidden: true },
+  { value: "description", label: "Description", type: "markdown", hidden: true },
 ];
 
 const selectedColumns = useStorage(
-  "grid-columns",
-  availableColumns.map((e) => e.value)
+  "grid-columns-1",
+  availableColumns.filter((e) => !(e.hidden === true)).map((e) => e.value)
 );
 
 const columns = computed(() =>
-  selectedColumns.value.map((c) => {
-    const i = availableColumns.find((e) => e.value === c);
-    return { field: c, title: i?.label || "NN" };
-  })
+  availableColumns.filter((c) => selectedColumns.value.includes(c.value))
 );
 
 const sgOpen = ref(new Map<NSideGroup, boolean>());

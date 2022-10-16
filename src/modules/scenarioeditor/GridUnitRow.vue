@@ -50,14 +50,14 @@ function toggleOpen() {
         <button class="ml-2 truncate hover:underline">{{ unit.name }}</button>
       </div>
     </td>
-    <td v-for="(column, colIndex) in columns" :key="column.field" class="">
+    <td v-for="(column, colIndex) in columns" :key="column.value" class="">
       <GridEditableCell
-        :value="unit[column.field]"
+        :value="unit[column.value]"
         :row-index="itemIndex"
         :col-index="colIndex + 1"
-        @update="emit('updateUnit', unit.id, { [column.field]: $event })"
+        @update="emit('updateUnit', unit.id, { [column.value]: $event })"
         @next-cell="emit('nextCell', $event)"
-        @active="emit('activeItem', column.field)"
+        @active="emit('activeItem', column.value)"
       >
       </GridEditableCell>
     </td>
