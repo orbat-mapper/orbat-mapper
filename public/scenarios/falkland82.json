@@ -350,7 +350,13 @@
                   "name": "HMS Fearless",
                   "sidc": "10033000001203010000",
                   "id": "ZtFDRC8WKE",
-                  "state": [],
+                  "state": [
+                    {
+                      "id": "3LHzyH3dcS",
+                      "t": "1982-05-21T12:00:00-04:00",
+                      "location": [-59.139490323564374, -51.49727767960482]
+                    }
+                  ],
                   "subUnits": [],
                   "shortName": "Fearless"
                 },
@@ -358,7 +364,13 @@
                   "name": "HMS Intrepid",
                   "sidc": "10033000001203060000",
                   "id": "4Ab6AEdBAW",
-                  "state": [],
+                  "state": [
+                    {
+                      "id": "4z2546k7H0",
+                      "t": "1982-05-21T12:00:00-04:00",
+                      "location": [-59.13777370979484, -51.509459015174215]
+                    }
+                  ],
                   "subUnits": [],
                   "shortName": "Intrepid"
                 },
@@ -366,7 +378,13 @@
                   "name": "HMS Broadsword",
                   "sidc": "10033000001202040000",
                   "id": "oGbJJ2S6hG",
-                  "state": [],
+                  "state": [
+                    {
+                      "id": "GhdGhKkiuC",
+                      "t": "1982-05-21T12:00:00-04:00",
+                      "location": [-59.186182218095624, -51.443170337741705]
+                    }
+                  ],
                   "subUnits": [],
                   "shortName": "Broadsword"
                 },
@@ -374,7 +392,13 @@
                   "name": "HMS Brilliant",
                   "sidc": "10033000001202040000",
                   "id": "BcABqq8KZa",
-                  "state": [],
+                  "state": [
+                    {
+                      "id": "msf1E9qLaW",
+                      "t": "1982-05-21T12:00:00-04:00",
+                      "location": [-59.173822598955, -51.528258893873016]
+                    }
+                  ],
                   "subUnits": [],
                   "shortName": "Brilliant"
                 },
@@ -382,7 +406,13 @@
                   "name": "HMS Plymouth",
                   "sidc": "10033000001202040000",
                   "id": "0Ek8j6xGr6",
-                  "state": [],
+                  "state": [
+                    {
+                      "id": "Lw3cJpulVE",
+                      "t": "1982-05-21T12:00:00-04:00",
+                      "location": [-59.15184994270499, -51.49535401316384]
+                    }
+                  ],
                   "subUnits": [],
                   "shortName": "Plymouth"
                 },
@@ -390,7 +420,13 @@
                   "name": "HMS Argonaut",
                   "sidc": "10033000001202040000",
                   "id": "yNQd7mIeb7",
-                  "state": [],
+                  "state": [
+                    {
+                      "id": "n74m6QqHgr",
+                      "t": "1982-05-21T12:00:00-04:00",
+                      "location": [-59.19476528694327, -51.45172912901623]
+                    }
+                  ],
                   "subUnits": [],
                   "shortName": "Argonaut"
                 },
@@ -406,7 +442,13 @@
                   "name": "HMS Yarmouth",
                   "sidc": "10033000001202040000",
                   "id": "8mU3ArN1Wz",
-                  "state": [],
+                  "state": [
+                    {
+                      "id": "aWtwCcZfqx",
+                      "t": "1982-05-21T12:00:00-04:00",
+                      "location": [-59.16592617561515, -51.41577142400705]
+                    }
+                  ],
                   "subUnits": [],
                   "shortName": "Yarmouth"
                 },
@@ -414,7 +456,13 @@
                   "name": "HMS Ardent",
                   "sidc": "10033000001202040000",
                   "id": "nzs6VHvEGH",
-                  "state": [],
+                  "state": [
+                    {
+                      "id": "sTN5b3NyMj",
+                      "t": "1982-05-21T12:00:00-04:00",
+                      "location": [-59.1302206092089, -51.67774001315201]
+                    }
+                  ],
                   "subUnits": [],
                   "shortName": "Ardent"
                 },
@@ -443,7 +491,13 @@
                     {
                       "name": "40 Cdo",
                       "sidc": "10031000161211004600",
-                      "state": [],
+                      "state": [
+                        {
+                          "id": "qg1FtIMI6r",
+                          "t": "1982-05-21T12:00:00-04:00",
+                          "location": [-59.02439137031722, -51.575277987286114]
+                        }
+                      ],
                       "id": "u0xGEGuOLzIcIirsioK0h",
                       "subUnits": [
                         {
@@ -472,7 +526,13 @@
                     {
                       "name": "42 Cdo",
                       "sidc": "10031000161211004600",
-                      "state": [],
+                      "state": [
+                        {
+                          "id": "G3YVFmGghA",
+                          "t": "1982-05-21T12:00:00-04:00",
+                          "location": [-58.991089063188305, -51.49850664621707]
+                        }
+                      ],
                       "id": "xcEG3htG0iZEuisD9IhGY",
                       "subUnits": [
                         {
@@ -501,7 +561,13 @@
                     {
                       "name": "45 Cdo",
                       "sidc": "10031000161211004600",
-                      "state": [],
+                      "state": [
+                        {
+                          "id": "eTNg7rdLG8",
+                          "t": "1982-05-21T12:00:00-04:00",
+                          "location": [-59.08601780464338, -51.5648216429888]
+                        }
+                      ],
                       "id": "0fm4O5tSvrVwjnv96ECy",
                       "subUnits": [
                         {
@@ -585,7 +651,13 @@
                           "subUnits": []
                         }
                       ],
-                      "state": [],
+                      "state": [
+                        {
+                          "id": "N4AZYpar5r",
+                          "t": "1982-05-21T12:00:00-04:00",
+                          "location": [-59.01100178291491, -51.615373893500085]
+                        }
+                      ],
                       "id": "QyZAnvqo5EXsjcNis_GSE"
                     },
                     {
@@ -625,7 +697,13 @@
                           "subUnits": []
                         }
                       ],
-                      "state": [],
+                      "state": [
+                        {
+                          "id": "EhJ5aUnMGh",
+                          "t": "1982-05-21T12:00:00-04:00",
+                          "location": [-58.999843793412914, -51.49733111362477]
+                        }
+                      ],
                       "id": "UlbrqVz6kysuUCzz7hSTu"
                     }
                   ],
