@@ -8,6 +8,8 @@
     @keydown.delete="doDelete"
     @keydown.shift.enter="duplicateItem"
     @keydown.alt.enter="createNewItem"
+    @keydown.ctrl.e="toggleExpandItem"
+    @keydown.alt.x="toggleOpenItem"
   >
     <div
       ref="target"
@@ -100,9 +102,8 @@ import BaseButton from "@/components/BaseButton.vue";
 import { useSearchActions } from "@/composables/search";
 import { useNotifications } from "@/composables/notifications";
 import { inputEventFilter } from "@/components/helpers";
-import { SelectItem } from "@/components/types";
 import CheckboxDropdown from "@/components/CheckboxDropdown.vue";
-import { useSidcModal } from "@/composables/modals";
+import { EntityId } from "@/types/base";
 
 const router = useRouter();
 const uiStore = useUiStore();
@@ -237,6 +238,12 @@ function walkSideGroupItem(
 
 const expandMap = new WeakSet<NSideGroup>();
 
+function expandUnit(unitId: EntityId, open: boolean) {
+  unitActions.walkSubUnits(unitId, (unit) => (unit._isOpen = open), {
+    includeParent: true,
+  });
+}
+
 function expandSideGroup(sideGroup: NSideGroup) {
   let open = true;
   if (expandMap.has(sideGroup)) {
@@ -248,10 +255,36 @@ function expandSideGroup(sideGroup: NSideGroup) {
   }
 
   sideGroup.subUnits.forEach((unitId) => {
-    unitActions.walkSubUnits(unitId, (unit) => (unit._isOpen = open), {
-      includeParent: true,
-    });
+    expandUnit(unitId, open);
   });
+}
+
+function toggleExpandItem(e?: KeyboardEvent) {
+  if (!activeItem.value) return;
+  const item = activeItem.value;
+  const { type } = item;
+  if (type === "sidegroup") {
+    expandSideGroup(item.sideGroup);
+  } else if (type === "unit") {
+    const open = !(item.unit._isOpen ?? true);
+    expandUnit(item.unit.id, open);
+  } else if (type === "side") {
+    console.log("here");
+    const open = !(sideOpen.value.get(item.side) ?? true);
+    if (open) item.side.groups.forEach((g) => expandSideGroup(state.sideGroupMap[g]));
+  }
+}
+
+function toggleOpenItem(e: KeyboardEvent) {
+  if (!activeItem.value) return;
+  const { type } = activeItem.value;
+  if (type === "unit") {
+    activeItem.value.unit._isOpen = !activeItem.value.unit._isOpen;
+  } else if (type === "side") {
+    toggleSide(activeItem.value.side);
+  } else if (type === "sidegroup") {
+    toggleSideGroup(activeItem.value.sideGroup);
+  }
 }
 
 function toggleSideGroup(sideGroup: NSideGroup) {
