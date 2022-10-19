@@ -43,7 +43,7 @@ function doCancel() {
 function onFocus() {
   justFocused = true;
   selected.value = true;
-  timeoutId = setTimeout(() => (justFocused = false), 500);
+  timeoutId = window.setTimeout(() => (justFocused = false), 500);
   emit("active");
 }
 

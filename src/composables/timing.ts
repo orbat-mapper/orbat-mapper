@@ -8,7 +8,7 @@ export function useTimer(
   let startedAt = Date.now();
   let timeRemaining = unref(delay);
   const isPending = ref(true);
-  let timer: number | null = null;
+  let timer: ReturnType<typeof setTimeout> | null = null;
 
   timer = setTimeout(() => {
     isPending.value = false;
