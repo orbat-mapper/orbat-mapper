@@ -70,6 +70,7 @@
     "@vue/compiler-sfc": "^3.2.33",
     "autoprefixer": "^10.4.7",
     "inter-ui": "^3.19.3",
+    "jsdom": "^20.0.1",
     "postcss": "^8.4.13",
     "prettier": "^2.6.2",
     "prettier-plugin-tailwindcss": "^0.1.10",
