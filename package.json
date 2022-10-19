@@ -12,8 +12,8 @@
     "v-tsc": "vue-tsc --noEmit",
     "serve": "vite preview",
     "lint-fix": "prettier --write .",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "clear_jest": "jest --clearCache"
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@headlessui-float/vue": "^0.9.1",
@@ -61,25 +61,23 @@
     "@types/d3-selection": "^3.0.2",
     "@types/file-saver": "^2.0.5",
     "@types/geojson": "^7946.0.8",
-    "@types/jest": "^27.4.1",
     "@types/markdown-it": "^12.2.3",
     "@types/markdown-it-container": "^2.0.5",
     "@types/nprogress": "^0.2.0",
     "@types/ol-ext": "npm:@siedlerchr/types-ol-ext@^1.7.2",
     "@vitejs/plugin-vue": "^3.0.1",
+    "@vitest/ui": "^0.24.3",
     "@vue/compiler-sfc": "^3.2.33",
-    "@vue/vue3-jest": "^27.0.0",
     "autoprefixer": "^10.4.7",
     "inter-ui": "^3.19.3",
-    "jest": "^27.5.1",
     "postcss": "^8.4.13",
     "prettier": "^2.6.2",
     "prettier-plugin-tailwindcss": "^0.1.10",
     "rollup-plugin-visualizer": "^5.6.0",
     "tailwindcss": "^3.1.8",
-    "ts-jest": "^27.1.4",
     "typescript": "^4.6.4",
     "vite": "^3.0.3",
+    "vitest": "^0.24.3",
     "vue-tsc": "^0.39.0"
   },
   "engines": {
