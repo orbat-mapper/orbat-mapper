@@ -1,9 +1,4 @@
-import {
-  SID_MAP,
-  STATUS_MAP,
-  SYMBOL_MODIFIER_MAP,
-  letter2number,
-} from "@/symbology/legacy/mappings";
+import { SID_MAP, STATUS_MAP, SYMBOL_MODIFIER_MAP, letter2number } from "./mappings";
 
 export function replaceCharAt(text: string, index: number, replacementChar: string) {
   return text.substring(0, index) + replacementChar + text.substring(index + 1);
@@ -52,7 +47,5 @@ export function convertLetterSIDC2NumberSIDC(letterSidc: string): string {
       hit[2],
     ].join("");
   }
-  console.log(normalizedSidc, findSymbol(normalizedSidc));
-
-  return normalizedSidc;
+  return "";
 }

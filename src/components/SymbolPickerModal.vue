@@ -78,11 +78,18 @@
           </GlobalEvents>
         </TabItem>
         <TabItem label="Browse" v-slot="{ isActive }">
-          <SymbolBrowseTab
-            v-if="isActive"
-            :initial-sidc="csidc"
-            @update-sidc="updateFromBrowseTab"
-          />
+          <keep-alive>
+            <SymbolBrowseTab
+              v-if="isActive"
+              :initial-sidc="csidc"
+              @update-sidc="updateFromBrowseTab"
+            />
+          </keep-alive>
+        </TabItem>
+        <TabItem label="Legacy" v-slot="{ isActive }">
+          <keep-alive>
+            <LegacyConverter v-if="isActive" />
+          </keep-alive>
         </TabItem>
       </TabView>
       <div class="flex flex-shrink-0 justify-end space-x-2 pt-4">
@@ -98,14 +105,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch, watchEffect } from "vue";
+import { computed, defineAsyncComponent, nextTick, ref, watch, watchEffect } from "vue";
 import MilSymbol from "./MilSymbol.vue";
 import PrimaryButton from "./PrimaryButton.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
 import { onClickOutside, useDebounce, useVModel, whenever } from "@vueuse/core";
 import SimpleModal from "./SimpleModal.vue";
 import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
-import { useSymbolItems } from "../composables/symbolData";
+import { useSymbolItems } from "@/composables/symbolData";
 import NProgress from "nprogress";
 import SearchModalInput from "./SearchModalInput.vue";
 import { GlobalEvents } from "vue-global-events";
@@ -114,7 +121,11 @@ import TabItem from "./TabItem.vue";
 import SymbolBrowseTab from "./SymbolBrowseTab.vue";
 import SecondaryButton from "./SecondaryButton.vue";
 import * as fuzzysort from "fuzzysort";
-import { htmlTagEscape } from "../utils";
+import { htmlTagEscape } from "@/utils";
+
+const LegacyConverter = defineAsyncComponent(
+  () => import("@/components/LegacyConverter.vue")
+);
 
 interface Props {
   isVisible?: boolean;

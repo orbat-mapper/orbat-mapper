@@ -7,6 +7,10 @@ describe("fromCharlie2Delta", function () {
     expect(convertLetterSIDC2NumberSIDC).toBeDefined();
   });
 
+  it("invalid SIDC should return empty string", () => {
+    expect(convertLetterSIDC2NumberSIDC("ILLEGALVALUE")).toBe("");
+  });
+
   it("infantry", () => {
     expect(convertLetterSIDC2NumberSIDC("SFGPUCI-----")).toBe("10031000001211000000");
   });
