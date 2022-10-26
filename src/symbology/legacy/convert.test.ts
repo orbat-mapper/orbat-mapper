@@ -11,6 +11,16 @@ describe("fromCharlie2Delta", function () {
     expect(convertLetterSIDC2NumberSIDC("ILLEGALVALUE")).toBe("");
   });
 
+  describe("surface units", () => {
+    it("frigate", () => {
+      expect(convertLetterSIDC2NumberSIDC("SFSPCLFF----")).toBe("10033000001202040000");
+    });
+
+    it("littoral combatant towed array (short", () => {
+      expect(convertLetterSIDC2NumberSIDC("SFSPCLLL--NS")).toBe("10033000611202060000");
+    });
+  });
+
   it("infantry", () => {
     expect(convertLetterSIDC2NumberSIDC("SFGPUCI-----")).toBe("10031000001211000000");
   });

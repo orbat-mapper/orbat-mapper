@@ -3,10 +3,12 @@ import { csvParseRows, csvParse } from "d3-dsv";
 
 const INPUT_FILE =
   "../../../../joint-military-symbology-xml/samples/legacy_support/LegacyMappingTableCtoD.csv";
+const INPUT_FILE2 =
+  "../../../../joint-military-symbology-xml/samples/legacy_support/All_ID_Mapping_Latest.csv";
 
 async function loadData() {
   try {
-    const data = await fs.readFile(INPUT_FILE, { encoding: "utf8" });
+    const data = await fs.readFile(INPUT_FILE2, { encoding: "utf8" });
     return csvParse(data);
   } catch (err) {
     console.log(err);
@@ -22,19 +24,22 @@ function replaceCharAt(text, index, replacementChar) {
 
 const c = data
   .map((line) => {
-    const letters = normalizeLetterCode(line["2525Charlie1stTen"]);
-    const b = line["DeltaToCharlie"];
-    const symbolSet = line["2525DeltaSymbolSet"];
+    const { MainIcon, Modifier1, Modifier2, ExtraIcon, LegacyKey } = line;
+    const letters = normalizeLetterCode(LegacyKey);
+    // const b = line["DeltaToCharlie"];
+    if (MainIcon.includes("_") || LegacyKey.length !== 10) return;
+
+    const symbolSet = MainIcon.slice(0, 2);
+    if (isNaN(symbolSet) || symbolSet.length !== 2) return;
+    const mod1 = (Modifier1 && Modifier1.slice(2, 4)) || "00";
+    const mod2 = (Modifier2 && Modifier2.slice(2, 4)) || "00";
     // Is symbol retired?
     if (symbolSet === "98") return;
-    const rev = normalizeLetterCode(b).slice(0, 10);
-    const numbers = `${line["2525DeltaEntity"]}${line["2525DeltaMod1"] || "00"}${
-      line["2525DeltaMod2"] || "00"
-    }`;
+    // const rev = normalizeLetterCode(b).slice(0, 10);
+    const numbers = `${MainIcon.slice(2)}${mod1}${mod2}`;
+
     // return `${letters} -> ${numbers}`;
-    return rev && rev !== letters
-      ? [letters, symbolSet, numbers, rev]
-      : [letters, symbolSet, numbers];
+    return [letters, symbolSet, numbers];
   })
   .filter((e) => e) // remove empty entries
   .sort((aa, bb) => {
