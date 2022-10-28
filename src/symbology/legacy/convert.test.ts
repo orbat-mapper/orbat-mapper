@@ -21,6 +21,14 @@ describe("fromCharlie2Delta", function () {
     });
   });
 
+  describe("installations", () => {
+    it("dam", () => {
+      expect(convertLetterSIDC2NumberSIDC("EFFPMB----H****")).toBe(
+        "10032000001214020000"
+      );
+    });
+  });
+
   it("infantry", () => {
     expect(convertLetterSIDC2NumberSIDC("SFGPUCI-----")).toBe("10031000001211000000");
   });
