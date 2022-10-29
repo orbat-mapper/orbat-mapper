@@ -1,11 +1,9 @@
 <template>
   <SimpleModal v-model="open" dialog-title="Load scenario">
     <div
+      ref="dropZoneRef"
       class="mt-4 h-40 w-full rounded-lg border-2 border-dashed p-4 ring-offset-2 focus-within:ring-2 hover:border-gray-500"
-      :class="isDragOver ? 'cursor-crosshair border-green-500' : ''"
-      @dragover.prevent="isDragOver = true"
-      @drop.prevent="onDrop"
-      @dragleave="isDragOver = false"
+      :class="isOverDropZone ? 'cursor-crosshair border-green-500' : ''"
     >
       <input
         type="file"
@@ -27,7 +25,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { useVModel } from "@vueuse/core";
+import { useDropZone, useVModel } from "@vueuse/core";
 import SimpleModal from "@/components/SimpleModal.vue";
 import { type Scenario } from "@/types/scenarioModels";
 
@@ -36,8 +34,11 @@ const props = defineProps({
 });
 const emit = defineEmits(["update:modelValue", "loaded"]);
 
+const dropZoneRef = ref<HTMLDivElement>();
+
+const { isOverDropZone } = useDropZone(dropZoneRef, onDrop);
+
 const open = useVModel(props, "modelValue");
-const isDragOver = ref(false);
 const isError = ref(false);
 
 function readFile(file: File) {
@@ -68,9 +69,8 @@ const onFileLoad = (e: Event) => {
   if (file) readFile(file);
 };
 
-function onDrop(ev: DragEvent) {
-  const file = ev?.dataTransfer?.files[0];
+function onDrop(files: File[] | null) {
+  const file = files && files[0];
   if (file) readFile(file);
-  isDragOver.value = false;
 }
 </script>
