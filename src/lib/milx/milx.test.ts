@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { toDom } from "./domutils";
-import { getMilXLayers } from "@/lib/milx/index";
+import { convertMilXLayer, getMilXLayers } from "@/lib/milx/index";
 
 const TEST_DOCUMENT = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <MilXDocument_Layer xmlns="http://gs-soft.com/MilX/V3.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -137,5 +137,13 @@ describe("Convert from MilX", async function () {
   it("parses attributes", () => {
     expect(feature2.properties.ID).toBe("SFGPUCIA---D--G");
     expect(feature2.properties.M).toBe("3");
+  });
+
+  it("converts symbol properties", () => {
+    const a = convertMilXLayer(layers[0]);
+    const convertedFeature = a.features[0];
+    const convertedFeature2 = a.features[1];
+    expect(convertedFeature.properties.sidc).toBe("10031000161211000001");
+    expect(convertedFeature2.properties.higherFormation).toBe("3");
   });
 });

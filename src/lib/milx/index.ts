@@ -6,11 +6,14 @@ import {
 } from "@/lib/milx/domutils";
 import type { LineString, Point } from "geojson";
 import type {
+  MilSymbolProperties,
   MilXFeature,
   MilXGeoJsonCollection,
   MilXLayer,
   MilXSymbolProperties,
+  OrbatMapperGeoJsonCollection,
 } from "@/lib/milx/types";
+import { convertLetterSIDC2NumberSIDC } from "@/symbology/legacy";
 
 export function getMilXLayers(node: Document | Element): MilXLayer[] {
   const layers = getElements(node, "MilXLayer");
@@ -22,6 +25,24 @@ export function getMilXLayers(node: Document | Element): MilXLayer[] {
   }));
 }
 
+export function convertMilXLayer(layer: MilXLayer): OrbatMapperGeoJsonCollection {
+  const fc = layer.featureCollection;
+  const { features: nFeatures, ...rest } = fc;
+  const features = nFeatures
+    .filter((f) => f.geometry.type === "Point")
+    .map((f) => ({
+      ...f,
+      properties: convertProperties(f.properties),
+    }));
+  return { ...fc, features };
+}
+
+function convertProperties(f: MilXSymbolProperties): MilSymbolProperties {
+  const props: MilSymbolProperties = { sidc: convertLetterSIDC2NumberSIDC(f.ID) };
+  if (f.M) props.higherFormation = f.M;
+  if (f.T) props.name = f.T;
+  return props;
+}
 function getLayerName(node: Element): string | null {
   const nameNode = getOneElement(node, "Name");
   return nodeValue(nameNode);

@@ -26,6 +26,7 @@
     "@vueuse/core": "^9.0.0",
     "@vueuse/integrations": "^9.1.1",
     "@vvo/tzdb": "^6.48.0",
+    "@xmldom/xmldom": "^0.8.3",
     "d3-dsv": "^3.0.1",
     "d3-selection": "^3.0.0",
     "dayjs": "^1.11.2",

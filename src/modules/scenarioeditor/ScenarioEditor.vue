@@ -147,6 +147,7 @@
       :dialog-title="sidcModalTitle"
     />
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
+    <ImportModal v-if="showImportModal" v-model="showImportModal" />
   </div>
 </template>
 
@@ -213,6 +214,8 @@ const ExportScenarioModal = defineAsyncComponent(
   () => import("@/components/ExportScenarioModal.vue")
 );
 
+const ImportModal = defineAsyncComponent(() => import("@/components/ImportModal.vue"));
+
 const props = defineProps<{ activeScenario: TScenario }>();
 const activeUnitId = ref<EntityId | undefined | null>(null);
 const selectedUnitIdsRef = ref<Set<EntityId>>(new Set());
@@ -250,6 +253,7 @@ const showSearch = ref(false);
 const showLoadModal = ref(false);
 const shortcutsModalVisible = ref(false);
 const showExportModal = ref(false);
+const showImportModal = ref(false);
 
 const uiStore = useUiStore();
 
@@ -309,6 +313,7 @@ const fileMenuItems: MenuItemData<ScenarioActions>[] = [
   { label: "Download as JSON", action: "exportJson" },
   { label: "Copy to clipboard", action: "exportToClipboard" },
   { label: "Export scenario", action: "export" },
+  { label: "Import", action: "import" },
 ];
 
 async function onScenarioAction(action: ScenarioActions) {
@@ -329,6 +334,8 @@ async function onScenarioAction(action: ScenarioActions) {
     if (copied.value) send({ message: "Scenario copied to clipboard" });
   } else if (action === "export") {
     showExportModal.value = true;
+  } else if (action === "import") {
+    showImportModal.value = true;
   } else {
     send({ message: "Not implemented yet" });
   }

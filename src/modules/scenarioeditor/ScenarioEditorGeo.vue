@@ -206,6 +206,7 @@ const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
   { label: "Download as JSON", action: "exportJson" },
   { label: "Copy to clipboard", action: "exportToClipboard" },
   { label: "Export scenario", action: "export" },
+  { label: "Import", action: "import" },
 ];
 
 async function onScenarioAction(action: ScenarioActions) {

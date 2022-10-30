@@ -34,7 +34,8 @@ export type ScenarioActions =
   | "exportJson"
   | "loadNew"
   | "exportToClipboard"
-  | "export";
+  | "export"
+  | "import";
 
 export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
 //{
