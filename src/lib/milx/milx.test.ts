@@ -1,5 +1,5 @@
-import { expect, describe, it } from "vitest";
-import { createFromString, getElements, nodeValue } from "./domutils";
+import { describe, expect, it } from "vitest";
+import { toDom } from "./domutils";
 import { getMilXLayers } from "@/lib/milx/index";
 
 const TEST_DOCUMENT = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -107,34 +107,28 @@ const TEST_DOCUMENT = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 </MilXDocument_Layer>
 `;
 
-describe("Convert from MilX", function () {
+describe("Convert from MilX", async function () {
+  const dom = await toDom(TEST_DOCUMENT);
+  const layers = getMilXLayers(dom);
+  const feature1 = layers[0].featureCollection.features[0];
+  const feature2 = layers[0].featureCollection.features[1];
+
   it("parses layer name", () => {
-    const dom = createFromString(TEST_DOCUMENT);
-    const layers = getMilXLayers(dom);
-    console.log("helloe", JSON.stringify(layers, null, 2));
     expect(layers.length).toBe(2);
     expect(layers[0].name).toBe("Friend");
     expect(layers[1].name).toBe("Hostile");
   });
+
   it("parses coordinate system", () => {
-    const dom = createFromString(TEST_DOCUMENT);
-    const layers = getMilXLayers(dom);
     expect(layers.length).toBe(2);
     expect(layers[0].coordSystemType).toBe("WGS84");
   });
 
   it("creates geojson", () => {
-    const dom = createFromString(TEST_DOCUMENT);
-    const layers = getMilXLayers(dom);
     const layer = layers[0];
     expect(layer.featureCollection.type).toBe("FeatureCollection");
     expect(layer.featureCollection.features.length).toBe(6);
   });
-
-  const dom = createFromString(TEST_DOCUMENT);
-  const layers = getMilXLayers(dom);
-  const feature1 = layers[0].featureCollection.features[0];
-  const feature2 = layers[0].featureCollection.features[1];
 
   it("parses symbol code", () => {
     expect(feature1.properties.ID).toBe("SFGPUCIA---F--G");

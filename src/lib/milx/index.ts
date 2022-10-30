@@ -4,28 +4,13 @@ import {
   getOneElement,
   nodeValue,
 } from "@/lib/milx/domutils";
-import type { Feature, FeatureCollection, LineString, Point, Position } from "geojson";
-
-type CoordinateSystem = "WGS84" | string;
-
-export interface MilXSymbolProperties {
-  ID: string;
-  M?: string;
-}
-
-type MilXGeoJsonCollection = FeatureCollection<Point | LineString, MilXSymbolProperties>;
-type MilXFeature = Feature<Point | LineString, MilXSymbolProperties>;
-
-export interface MilXLayer {
-  name?: string | null;
-  coordSystemType?: CoordinateSystem;
-  featureCollection: MilXGeoJsonCollection;
-}
-
-interface MilXGraphic {
-  symbol?: {};
-  points: Position[];
-}
+import type { LineString, Point } from "geojson";
+import type {
+  MilXFeature,
+  MilXGeoJsonCollection,
+  MilXLayer,
+  MilXSymbolProperties,
+} from "@/lib/milx/types";
 
 export function getMilXLayers(node: Document | Element): MilXLayer[] {
   const layers = getElements(node, "MilXLayer");

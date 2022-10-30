@@ -1,7 +1,12 @@
+export async function toDom(xmlString: string) {
+  // https://github.com/placemark/togeojson#protips
+  const xmldom = await import("@xmldom/xmldom");
+  return new xmldom.DOMParser().parseFromString(xmlString, "text/xml");
+}
+
 export function createFromString(xmlString: string): Document {
   let parser = new DOMParser();
-  let doc = parser.parseFromString(xmlString, "text/xml");
-  return doc;
+  return parser.parseFromString(xmlString, "text/xml");
 }
 
 export function getElements(element: Element | Document, tagName: string): Element[] {
