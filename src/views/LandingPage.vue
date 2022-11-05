@@ -30,7 +30,7 @@
           class="mt-4 max-w-md mx-auto text-base text-green-900-500 sm:text-lg md:mt-6 md:text-xl md:max-w-3xl"
         >
           ORBAT mapper is currently under development. You can follow the
-          <a href="https://github.com/kjellmf/orbat-mapper">development on Github</a> and
+          <a href="https://github.com/orbat-mapper/orbat-mapper">development on Github</a> and
 
           <a href="https://preview--orbat-mapper.netlify.app"
             >try a work in progress preview</a
@@ -40,7 +40,7 @@
         <div class="mt-5 mx-auto sm:flex sm:justify-center md:mt-8">
           <div class="rounded-md shadow">
             <a
-              href="https://github.com/kjellmf/orbat-mapper"
+              href="https://github.com/orbat-mapper/orbat-mapper"
               class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
             >
               View on Github
@@ -82,7 +82,7 @@
               <a href="https://odin.syncpoint.io/en/"
                 >ODIN open source command and control information system</a
               >. Desktop application available on most operating systems (Electron based).
-              
+
             </p>
           </li>
 
@@ -112,8 +112,8 @@
           is a real treat.
         </p>
 
-        <p><a href="https://www.naval-history.net/index.htm">Naval-History.net</a> contains a wealth of information about the history of the Royal Navy. 
-        The site also contains an online version of Gordon Smith's book <a href="https://www.naval-history.net/NAVAL1982FALKLANDS.htm">BATTLE ATLAS of the FALKLANDS WAR 1982 by Land, Sea and Air</a>.  This book is used as one of the sources for ORBAT mapper's main demo scenario.  
+        <p><a href="https://www.naval-history.net/index.htm">Naval-History.net</a> contains a wealth of information about the history of the Royal Navy.
+        The site also contains an online version of Gordon Smith's book <a href="https://www.naval-history.net/NAVAL1982FALKLANDS.htm">BATTLE ATLAS of the FALKLANDS WAR 1982 by Land, Sea and Air</a>.  This book is used as one of the sources for ORBAT mapper's main demo scenario.
         </p>
       </ProseSection>
     </main>
