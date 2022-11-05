@@ -7,7 +7,7 @@
 
         <p>
           This is a work in progress prototype. Follow the development of
-          <a href="https://github.com/kjellmf/orbat-mapper"
+          <a href="https://github.com/orbat-mapper/orbat-mapper"
             >ORBAT Mapper on GitHub <GithubIcon class="inline h-10 w-10" /> </a
           >.
         </p>

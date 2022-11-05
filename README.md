@@ -14,7 +14,7 @@ _Screenshot of an early prototype:_
 
 Clone repo:
 
-    $ git clone https://github.com/kjellmf/orbat-mapper.git
+    $ git clone https://github.com/orbat-mapper/orbat-mapper.git
 
 Navigate to project root:
 
