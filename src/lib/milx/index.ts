@@ -13,7 +13,7 @@ import type {
   MilXSymbolProperties,
   OrbatMapperGeoJsonCollection,
 } from "@/lib/milx/types";
-import { convertLetterSIDC2NumberSIDC } from "@/symbology/legacy";
+import { convertLetterCode2NumberCode } from "@orbat-mapper/convert-symbology";
 
 export function getMilXLayers(node: Document | Element): MilXLayer[] {
   const layers = getElements(node, "MilXLayer");
@@ -38,7 +38,7 @@ export function convertMilXLayer(layer: MilXLayer): OrbatMapperGeoJsonCollection
 }
 
 function convertProperties(f: MilXSymbolProperties): MilSymbolProperties {
-  const props: MilSymbolProperties = { sidc: convertLetterSIDC2NumberSIDC(f.ID) };
+  const props: MilSymbolProperties = { sidc: convertLetterCode2NumberCode(f.ID) };
   if (f.M) props.higherFormation = f.M;
   if (f.T) props.name = f.T;
   return props;

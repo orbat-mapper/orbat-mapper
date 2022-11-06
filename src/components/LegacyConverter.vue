@@ -20,13 +20,13 @@
 <script setup lang="ts">
 import InputGroup from "@/components/InputGroup.vue";
 import { computed, ref } from "vue";
-import { convertLetterSIDC2NumberSIDC } from "@/symbology/legacy";
 import MilSymbol from "@/components/MilSymbol.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
+import { convertLetterCode2NumberCode } from "@orbat-mapper/convert-symbology";
 
 const letterSidc = ref("SFGPUCRH----");
 const numberSidc = computed(() => {
-  const c = convertLetterSIDC2NumberSIDC(letterSidc.value);
+  const c = convertLetterCode2NumberCode(letterSidc.value);
   return c || "Unknown symbol";
 });
 </script>
