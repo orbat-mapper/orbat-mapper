@@ -14,6 +14,7 @@ import type {
   OrbatMapperGeoJsonCollection,
 } from "@/lib/milx/types";
 import { convertLetterCode2NumberCode } from "@orbat-mapper/convert-symbology";
+import { nanoid } from "@/utils";
 
 export function getMilXLayers(node: Document | Element): MilXLayer[] {
   const layers = getElements(node, "MilXLayer");
@@ -32,6 +33,7 @@ export function convertMilXLayer(layer: MilXLayer): OrbatMapperGeoJsonCollection
     .filter((f) => f.geometry.type === "Point")
     .map((f) => ({
       ...f,
+      id: nanoid(),
       properties: convertProperties(f.properties),
     }));
   return { ...fc, features };

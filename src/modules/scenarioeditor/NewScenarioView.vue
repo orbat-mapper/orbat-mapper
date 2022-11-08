@@ -5,7 +5,7 @@
         <h1 class="text-3xl font-bold leading-tight text-gray-900">
           Create new scenario
         </h1>
-        <div class="prose prose-base mt-4">
+        <div class="prose-base prose mt-4">
           <p>
             Before you can start working on your new scenario we need some basic
             information and settings first. Remember that you can always change these

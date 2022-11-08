@@ -1,4 +1,4 @@
-import { injectStrict } from "@/utils";
+import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -10,7 +10,8 @@ import type {
 } from "@/lib/milx/types";
 
 export interface MilxImportedLayer {
-  name: string;
+  id: string;
+  name?: string;
   features: OrbatMapperGeoJsonFeature[];
 }
 
@@ -39,6 +40,7 @@ export function useScenarioImport(options: Partial<UseScenarioExportOptions> = {
     const milxLayers = getMilXLayers(dom);
     return milxLayers
       .map((mlayer) => ({
+        id: nanoid(),
         name: mlayer.name || "no name",
         features: convertMilXLayer(mlayer).features,
       }))

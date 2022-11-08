@@ -311,7 +311,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     unit._isOpen = false;
     update((s) => {
       s.unitMap[unit.id] = unit;
-      let parent = getUnitOrSideGroup(unit._pid);
+      let parent = getUnitOrSideGroup(unit._pid!);
       if (!parent) return;
       if (index === undefined) {
         parent.subUnits.push(unit.id);
@@ -503,6 +503,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
   }
 
   return {
+    addUnit,
     deleteUnit,
     changeUnitParent,
     walkSubUnits,

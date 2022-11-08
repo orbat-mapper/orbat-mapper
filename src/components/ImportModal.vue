@@ -9,12 +9,12 @@
       v-else-if="importState === 'milx'"
       @cancel="onCancel"
       :data="loadedData"
+      @loaded="onImport"
     />
   </SimpleModal>
 </template>
 
 <script setup lang="ts">
-import { useFocusOnMount } from "@/components/helpers";
 import SimpleModal from "./SimpleModal.vue";
 import { useNotifications } from "@/composables/notifications";
 import { useRouter } from "vue-router";
@@ -32,15 +32,17 @@ const loadedData = shallowRef<MilxImportedLayer[]>([]);
 
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue", "cancel"]);
-const open = useVModel(props, "modelValue", emit);
+const { send } = useNotifications();
 
+const open = useVModel(props, "modelValue", emit);
 function onLoaded(nextState: ImportState, data: any) {
   loadedData.value = data;
   importState.value = nextState;
 }
-
-const { focusId } = useFocusOnMount(undefined, 150);
-const { send } = useNotifications();
+function onImport() {
+  open.value = false;
+  send({ message: "Imported units" });
+}
 
 function onCancel() {
   open.value = false;

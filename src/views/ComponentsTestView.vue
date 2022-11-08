@@ -8,7 +8,7 @@
       </header>
       <main class="mt-4">
         <div class="mx-auto max-w-7xl space-y-4 sm:px-6 lg:px-8">
-          <section class="space-y-4">
+          <section class="space-y-4" @click="onClick">
             <h3 class="border-b text-lg">Basic button</h3>
             <p class="flex items-start space-x-2">
               <BaseButton small>Basic small</BaseButton>
@@ -106,13 +106,16 @@
               </SettingsPanel>
             </div>
           </section>
+          <div class="fixed top-10 left-20">
+            <DotsMenu :items="scenarioMenuItems" class="relative -mr-2 pt-2"></DotsMenu>
+          </div>
         </div>
       </main>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import BaseButton from "@/components/BaseButton.vue";
 import FormCard from "@/components/FormCard.vue";
 import { ref } from "vue";
@@ -125,6 +128,9 @@ import ChevronPanel from "@/components/ChevronPanel.vue";
 import SettingsPanel from "@/components/SettingsPanel.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import CheckboxDropdown from "@/components/CheckboxDropdown.vue";
+import DotsMenu from "@/components/DotsMenu.vue";
+import { MenuItemData } from "@/components/types";
+import { ScenarioActions } from "@/types/constants";
 
 const num = ref(1);
 const v = ref("Test");
@@ -139,4 +145,19 @@ const items = [
 const sel = ref([]);
 
 const toggle = ref(true);
+
+const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
+  { label: "Add new side", action: "addSide" },
+  { label: "Save to local storage", action: "save" },
+  { label: "Load from local storage", action: "load" },
+  { label: "Load scenario", action: "loadNew" },
+  { label: "Download as JSON", action: "exportJson" },
+  { label: "Copy to clipboard", action: "exportToClipboard" },
+  { label: "Export scenario", action: "export" },
+  { label: "Import", action: "import" },
+];
+
+function onClick(e: Event) {
+  console.log(e.target);
+}
 </script>
