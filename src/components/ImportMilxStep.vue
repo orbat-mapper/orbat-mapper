@@ -106,6 +106,7 @@ async function onLoad(e: Event) {
       };
     });
   units.forEach((unit) => unitActions.addUnit(unit, parentUnitId.value));
+  time.setCurrentTime(scnStore.state.currentTime);
   emit("loaded");
 }
 </script>
