@@ -100,15 +100,16 @@
 <script setup lang="ts">
 import { MilxImportedLayer } from "@/composables/scenarioImport";
 import MilSymbol from "@/components/MilSymbol.vue";
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useVModel } from "@vueuse/core";
 
 interface Props {
   layers: MilxImportedLayer[];
   selected: (string | number)[];
+  selectAll?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), { selectAll: false });
 const emit = defineEmits(["cancel", "loaded", "update:selected"]);
 
 const selectedUnits = useVModel(props, "selected", emit);
@@ -117,6 +118,12 @@ const indeterminate = computed(
   () =>
     selectedUnits.value.length > 0 && selectedUnits.value.length < totalUnits.value.length
 );
+
+onMounted(() => {
+  if (props.selectAll) {
+    selectedUnits.value = totalUnits.value.map((p) => p.id);
+  }
+});
 
 function toggleSelectAll(event: Event) {
   const isChecked = (<HTMLInputElement>event.target).checked;

@@ -18,7 +18,11 @@
           />
         </section>
         <section class="mt-4">
-          <ImportMilxStepTable :layers="data" v-model:selected="selectedUnits" />
+          <ImportMilxStepTable
+            :layers="data"
+            v-model:selected="selectedUnits"
+            select-all
+          />
         </section>
       </div>
 
@@ -53,7 +57,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
-const { unitActions, store: scnStore } = injectStrict(activeScenarioKey);
+const { unitActions, store: scnStore, time } = injectStrict(activeScenarioKey);
 const store = useImportStore();
 const { state } = scnStore;
 interface Form extends ImportSettings {
