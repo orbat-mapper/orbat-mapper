@@ -8,12 +8,16 @@ import { DragOperations } from "@/types/constants";
 import { fromLonLat, toLonLat } from "ol/proj";
 import { Point } from "ol/geom";
 import VectorSource from "ol/source/Vector";
-import { Modify, Select } from "ol/interaction";
+import { DragBox, Modify, Select } from "ol/interaction";
 import { ModifyEvent } from "ol/interaction/Modify";
 import { Feature } from "ol";
 import { MaybeRef } from "@vueuse/core";
 import { createSelectedUnitStyleFromFeature } from "@/geo/unitStyles";
-import { altKeyOnly, click as clickCondition } from "ol/events/condition";
+import {
+  altKeyOnly,
+  click as clickCondition,
+  platformModifierKeyOnly,
+} from "ol/events/condition";
 import { SelectEvent } from "ol/interaction/Select";
 import { useOlEvent } from "./openlayersHelpers";
 import { injectStrict } from "@/utils";
@@ -122,12 +126,15 @@ export function useMoveInteraction(
 
 export function useUnitSelectInteraction(
   layers: VectorLayer<any>[],
+  olMap: OLMap,
   options: Partial<{
     enable: MaybeRef<boolean>;
+    enableBoxSelect: MaybeRef<boolean>;
   }> = {}
 ) {
   let isInternal = false;
   const enableRef = ref(options.enable ?? true);
+  const enableBoxSelectRef = ref(options.enableBoxSelect ?? true);
 
   const { selectedUnitIds: selectedIds } = useSelectedUnits();
   const { geo } = injectStrict(activeScenarioKey);
@@ -138,13 +145,25 @@ export function useUnitSelectInteraction(
     condition: clickCondition,
     removeCondition: altKeyOnly,
   });
+
+  const boxSelectInteraction = new DragBox({ condition: platformModifierKeyOnly });
+
   const selectedFeatures = unitSelectInteraction.getFeatures();
 
   watch(
     enableRef,
     (enabled) => {
       unitSelectInteraction.setActive(enabled);
-      if (!enabled) unitSelectInteraction.getFeatures().clear();
+      if (!enabled) selectedFeatures.clear();
+    },
+    { immediate: true }
+  );
+
+  watch(
+    enableBoxSelectRef,
+    (enabled) => {
+      boxSelectInteraction.setActive(enabled);
+      selectedFeatures.clear();
     },
     { immediate: true }
   );
@@ -157,19 +176,57 @@ export function useUnitSelectInteraction(
     })
   );
 
-  /*function selectUnit(unitId: EntityId) {
-    const historyLayerSource = historyLayer.getSource();
-    historyLayerSource.clear(true);
+  useOlEvent(
+    boxSelectInteraction.on("boxend", function () {
+      // from https://openlayers.org/en/latest/examples/box-selection.html
+      const extent = boxSelectInteraction.getGeometry().getExtent();
+      const boxFeatures = layers
+        .map((layer) =>
+          layer
+            .getSource()
+            .getFeaturesInExtent(extent)
+            .filter((feature: Feature) => feature.getGeometry()!.intersectsExtent(extent))
+        )
+        .flat();
 
-    const existingFeature = layers[0].getSource().getFeatureById(unitId);
-    selectedFeatures.clear();
-    const unit = state.getUnitById(unitId);
-    if (existingFeature) {
-      const historyFeature = createHistoryFeature(unit);
-      historyLayerSource.addFeature(historyFeature);
-      selectedFeatures.push(existingFeature);
-    }
-  }*/
+      // features that intersect the box geometry are added to the
+      // collection of selected features
+
+      // if the view is not obliquely rotated the box geometry and
+      // its extent are equalivalent so intersecting features can
+      // be added directly to the collection
+      const rotation = olMap.getView().getRotation();
+      const oblique = rotation % (Math.PI / 2) !== 0;
+
+      // when the view is obliquely rotated the box extent will
+      // exceed its geometry so both the box and the candidate
+      // feature geometries are rotated around a common anchor
+      // to confirm that, with the box geometry aligned with its
+      // extent, the geometries intersect
+      if (oblique) {
+        const anchor = [0, 0];
+        const geometry = boxSelectInteraction.getGeometry().clone();
+        geometry.rotate(-rotation, anchor);
+        const extent = geometry.getExtent();
+        boxFeatures.forEach(function (feature) {
+          const geometry = feature.getGeometry().clone();
+          geometry.rotate(-rotation, anchor);
+          if (geometry.intersectsExtent(extent)) {
+            selectedIds.value.add(feature.getId() as string);
+            // selectedFeatures.push(feature);
+          }
+        });
+      } else {
+        boxFeatures.forEach((f) => selectedIds.value.add(f.getId() as string));
+      }
+    })
+  );
+
+  useOlEvent(
+    boxSelectInteraction.on("boxstart", function () {
+      selectedIds.value.clear();
+    })
+  );
 
   watch(
     () => [...selectedIds.value],
@@ -193,5 +250,5 @@ export function useUnitSelectInteraction(
     isInternal = false;
   }
 
-  return { unitSelectInteraction, isEnabled: enableRef };
+  return { unitSelectInteraction, isEnabled: enableRef, boxSelectInteraction };
 }

@@ -94,10 +94,15 @@ const onMapReady = (olMap: OLMap) => {
 
   olMap.addInteraction(historyModify);
   const { unitSelectEnabled } = storeToRefs(useMapSelectStore());
-  const { unitSelectInteraction } = useUnitSelectInteraction([unitLayer], {
-    enable: unitSelectEnabled,
-  });
+  const { unitSelectInteraction, boxSelectInteraction } = useUnitSelectInteraction(
+    [unitLayer],
+    olMap,
+    {
+      enable: unitSelectEnabled,
+    }
+  );
   olMap.addInteraction(unitSelectInteraction);
+  olMap.addInteraction(boxSelectInteraction);
 
   const { moveInteraction: moveUnitInteraction } = useMoveInteraction(
     olMap,
