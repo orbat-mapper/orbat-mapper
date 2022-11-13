@@ -23,7 +23,10 @@ export function useUnitActions(
     activeUnitId: Ref<EntityId | undefined | null>;
   }> = {}
 ) {
-  const { unitActions } = options.activeScenario || injectStrict(activeScenarioKey);
+  const {
+    unitActions,
+    store: { groupUpdate },
+  } = options.activeScenario || injectStrict(activeScenarioKey);
   const activeUnitId = options.activeUnitId || injectStrict(activeUnitKey);
   const { selectedUnitIds } = useSelectedUnits();
   const geoStore = useGeoStore();
@@ -91,9 +94,11 @@ export function useUnitActions(
   function onUnitAction(unitOrUnits: NUnit | NUnit[] | null, action: UnitActions) {
     if (!unitOrUnits) return;
     if (Array.isArray(unitOrUnits)) {
-      if (action === UnitActions.Zoom || action === UnitActions.Pan) {
-        geoStore.zoomToUnits(unitOrUnits, 500);
-      } else unitOrUnits.forEach((unit) => _onUnitAction(unit, action));
+      groupUpdate(() => {
+        if (action === UnitActions.Zoom || action === UnitActions.Pan) {
+          geoStore.zoomToUnits(unitOrUnits, 500);
+        } else unitOrUnits.forEach((unit) => _onUnitAction(unit, action));
+      });
     } else _onUnitAction(unitOrUnits, action);
   }
   return { onUnitAction };

@@ -171,7 +171,8 @@ export type ActionLabel =
   | "addSide"
   | "updateLayer"
   | "moveLayer"
-  | "moveFeature";
+  | "moveFeature"
+  | "batchLayer";
 
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);

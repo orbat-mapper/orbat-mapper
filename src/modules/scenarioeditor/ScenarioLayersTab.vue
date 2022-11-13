@@ -45,7 +45,7 @@ const emit = defineEmits(["update:modelValue"]);
 
 const {
   geo,
-  store: { onUndoRedo },
+  store: { onUndoRedo, groupUpdate, state },
 } = injectStrict(activeScenarioKey);
 
 const showLayerPanel = useVModel(props, "modelValue", emit);
@@ -75,6 +75,7 @@ const {
   panToFeature,
   addFeature,
   zoomToFeatures,
+  initializeFromStore,
 } = useScenarioLayers(mapRef);
 
 const { selectedIds, selectInteraction } = useScenarioFeatureSelect(mapRef, {
@@ -82,7 +83,7 @@ const { selectedIds, selectInteraction } = useScenarioFeatureSelect(mapRef, {
 });
 
 onUndoRedo(({ meta, patch, action }) => {
-  console.log(action, meta, patch);
+  // console.log(action, meta, patch);
   if (!meta) return;
   const { label, value } = meta;
   if (label === "deleteLayer") {
@@ -118,6 +119,9 @@ onUndoRedo(({ meta, patch, action }) => {
   } else if (label === "moveFeature") {
     const { feature } = geo.getFeatureById(value);
     moveFeature(feature, "down", true);
+  } else if (label === "batchLayer") {
+    // FIXME ugly hack
+    initializeFromStore(true, false);
   }
 });
 
@@ -161,23 +165,28 @@ function onFeatureAction(
     zoomToFeatures(featureOrFeaturesId);
     return;
   }
-  (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {
-    const { feature, layer } = geo.getFeatureById(featureId) || {};
-    if (action === "zoom") zoomToFeature(featureId);
-    if (action === "pan") panToFeature(featureId);
+  const tmp = isArray ? featureOrFeaturesId : [featureOrFeaturesId];
+  groupUpdate(
+    () =>
+      tmp.forEach((featureId) => {
+        const { feature, layer } = geo.getFeatureById(featureId) || {};
+        if (action === "zoom") zoomToFeature(featureId);
+        if (action === "pan") panToFeature(featureId);
 
-    if (!layer || !layer) return;
+        if (!layer || !layer) return;
 
-    if (action === "delete") {
-      if (feature === activeFeature.value) activeFeature.value = null;
-      showLayerPanel.value = false;
-      deleteFeature(feature.id);
-    }
-    if (action === "moveUp" || action === "moveDown") {
-      const direction = action === "moveUp" ? "up" : "down";
-      moveFeature(feature, direction);
-    }
-  });
+        if (action === "delete") {
+          if (feature === activeFeature.value) activeFeature.value = null;
+          showLayerPanel.value = false;
+          deleteFeature(feature.id);
+        }
+        if (action === "moveUp" || action === "moveDown") {
+          const direction = action === "moveUp" ? "up" : "down";
+          moveFeature(feature, direction);
+        }
+      }),
+    { label: "batchLayer", value: "dummy" }
+  );
 }
 
 function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerActions) {
@@ -288,7 +297,10 @@ function doUpdateFeature(
 ) {
   selectInteraction.setMap(null);
   if (Array.isArray(featureOrFeatures)) {
-    featureOrFeatures.forEach((f) => updateFeature(f, data));
+    groupUpdate(() => featureOrFeatures.forEach((f) => updateFeature(f, data)), {
+      label: "batchLayer",
+      value: "nil",
+    });
   } else {
     updateFeature(featureOrFeatures, data);
   }

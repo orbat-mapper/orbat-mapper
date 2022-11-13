@@ -109,8 +109,10 @@ async function onLoad(e: Event) {
         location: (f.geometry as Point).coordinates,
       };
     });
-  units.forEach((unit) => unitActions.addUnit(unit, parentUnitId.value));
-  time.setCurrentTime(scnStore.state.currentTime);
+  scnStore.groupUpdate(() => {
+    units.forEach((unit) => unitActions.addUnit(unit, parentUnitId.value));
+  });
+
   emit("loaded");
 }
 </script>
