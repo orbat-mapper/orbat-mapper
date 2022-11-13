@@ -47,7 +47,7 @@ import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NUnit } from "@/types/internalModels";
 import ImportMilxStepTable from "@/components/ImportMilxStepTable.vue";
-import { Point } from "geojson";
+import type { Point } from "geojson";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { SelectItem } from "@/components/types";
 

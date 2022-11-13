@@ -11,7 +11,7 @@ import { MapBrowserEvent } from "ol";
 import { toLonLat } from "ol/proj";
 import { EventsKey } from "ol/events";
 import { ref } from "vue";
-import { Position } from "geojson";
+import type { Position } from "geojson";
 
 export interface UseGetMapLocationOptions {
   cancelOnClickOutside?: boolean;

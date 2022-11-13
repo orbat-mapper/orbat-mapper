@@ -26,7 +26,7 @@ import { fromLonLat, ProjectionLike, toLonLat } from "ol/proj";
 import { getLength } from "ol/sphere";
 import LineString from "ol/geom/LineString";
 import { add as addCoordinate } from "ol/coordinate";
-import { Feature as GeoJsonFeature, Point } from "geojson";
+import type { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
 import { onUnmounted, ref, watch } from "vue";
 import { unByKey } from "ol/Observable";

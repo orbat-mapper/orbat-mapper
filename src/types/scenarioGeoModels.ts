@@ -1,4 +1,4 @@
-import { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
+import type { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
 import { SimpleStyleSpec } from "@/geo/simplestyle";
 import { ScenarioTime } from "@/types/base";
 

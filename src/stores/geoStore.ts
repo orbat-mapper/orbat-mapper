@@ -4,7 +4,7 @@ import { Unit } from "@/types/scenarioModels";
 import { fromLonLat } from "ol/proj";
 import { MeasurementTypes } from "@/composables/geoMeasurement";
 import { NUnit } from "@/types/internalModels";
-import { Position } from "geojson";
+import type { Position } from "geojson";
 import { featureCollection, point as turfPoint } from "@turf/helpers";
 import { GeoJSON } from "ol/format";
 import turfEnvelope from "@turf/envelope";
