@@ -30,7 +30,8 @@
           class="mt-4 max-w-md mx-auto text-base text-green-900-500 sm:text-lg md:mt-6 md:text-xl md:max-w-3xl"
         >
           ORBAT mapper is currently under development. You can follow the
-          <a href="https://github.com/orbat-mapper/orbat-mapper">development on Github</a> and
+          <a href="https://github.com/orbat-mapper/orbat-mapper">development on Github</a>
+          and
 
           <a href="https://preview--orbat-mapper.netlify.app"
             >try a work in progress preview</a
@@ -58,7 +59,29 @@
         </div>
       </div>
 
-      <ProseSection class=""></ProseSection>
+      <div class="bg-white">
+        <div class="mx-auto max-w-7xl py-16 px-4 sm:px-6 lg:py-24 lg:px-8">
+          <div class="mx-auto max-w-3xl text-center">
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900">Features</h2>
+            <p class="mt-4 text-lg text-gray-500">
+              Some of the things you can do with ORBAT mapper
+            </p>
+          </div>
+          <dl
+            class="mt-12 space-y-10 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-12 sm:space-y-0 lg:grid-cols-4 lg:gap-x-8"
+          >
+            <div v-for="feature in features" :key="feature.name" class="relative">
+              <dt>
+                <CheckIcon class="absolute h-6 w-6 text-green-500" aria-hidden="true" />
+                <p class="ml-9 text-lg font-medium leading-6 text-gray-900">
+                  {{ feature.name }}
+                </p>
+              </dt>
+              <dd class="mt-2 ml-9 text-base text-gray-500">{{ feature.description }}</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
 
       <ProseSection class="">
         <h2>Other tools and resources</h2>
@@ -82,7 +105,6 @@
               <a href="https://odin.syncpoint.io/en/"
                 >ODIN open source command and control information system</a
               >. Desktop application available on most operating systems (Electron based).
-
             </p>
           </li>
 
@@ -112,22 +134,48 @@
           is a real treat.
         </p>
 
-        <p><a href="https://www.naval-history.net/index.htm">Naval-History.net</a> contains a wealth of information about the history of the Royal Navy.
-        The site also contains an online version of Gordon Smith's book <a href="https://www.naval-history.net/NAVAL1982FALKLANDS.htm">BATTLE ATLAS of the FALKLANDS WAR 1982 by Land, Sea and Air</a>.  This book is used as one of the sources for ORBAT mapper's main demo scenario.
+        <p>
+          <a href="https://www.naval-history.net/index.htm">Naval-History.net</a> contains
+          a wealth of information about the history of the Royal Navy. The site also
+          contains an online version of Gordon Smith's book
+          <a href="https://www.naval-history.net/NAVAL1982FALKLANDS.htm"
+            >BATTLE ATLAS of the FALKLANDS WAR 1982 by Land, Sea and Air</a
+          >. This book is used as one of the sources for ORBAT mapper's main demo
+          scenario.
         </p>
       </ProseSection>
     </main>
   </div>
 </template>
 
-<script>
+<script setup>
 import ProseSection from "../components/ProseSection.vue";
 import { Github as GithubIcon } from "mdue";
-
-export default {
-  components: {
-    ProseSection,
-    GithubIcon,
+import { CheckIcon } from "@heroicons/vue/outline";
+const features = [
+  {
+    name: "Create ORBATs",
+    description: "Quickly build ORBATs.",
   },
-};
+  {
+    name: "Draw features",
+    description: "",
+  },
+  {
+    name: "Client side only",
+    description: "Everything is stored on your computer.",
+  },
+  {
+    name: "Grid edit moe",
+    description: "Efficient editing.",
+  },
+  {
+    name: "Export to KML/KMZ",
+    description: "View your scenario in 3D with Google Earth.",
+  },
+  {
+    name: "Import MilX",
+    description: "Import military map overlays from map.army.",
+  },
+];
 </script>
