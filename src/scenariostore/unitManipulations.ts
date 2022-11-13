@@ -309,6 +309,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
     }
     unit._pid = parentId;
     unit._isOpen = false;
+    if (!unit.state || !unit.state.length) {
+      unit._state = createInitialState(unit);
+    }
     update((s) => {
       s.unitMap[unit.id] = unit;
       let parent = getUnitOrSideGroup(unit._pid!);
