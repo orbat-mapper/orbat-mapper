@@ -81,7 +81,7 @@
 <script setup lang="ts">
 import MilSymbol from "./MilSymbol.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
-import { computed, nextTick, onMounted, watch } from "vue";
+import { computed, nextTick, onActivated, onMounted, watch } from "vue";
 import { groupBy } from "../utils";
 import { useSymbolItems } from "../composables/symbolData";
 
@@ -116,7 +116,7 @@ watch([mod1Value, mod2Value, iconValue], (value, oldValue) => {
   emit("update-sidc", csidc.value);
 });
 
-onMounted(() => {
+onActivated(() => {
   nextTick(() => {
     const el = document.getElementById(`scode-${iconValue.value}`);
     if (el) {
