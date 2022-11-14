@@ -9,7 +9,6 @@ export const STORY_MODE_ROUTE = "StoryModeRoute";
 export const ORBAT_CHART_ROUTE = "OrbatChartRoute";
 
 const routes = [
-
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];
 

@@ -151,7 +151,7 @@
 <script setup>
 import ProseSection from "../components/ProseSection.vue";
 import { Github as GithubIcon } from "mdue";
-import { CheckIcon } from "@heroicons/vue/outline";
+import { CheckIcon } from "@heroicons/vue/24/outline";
 const features = [
   {
     name: "Create ORBATs",
