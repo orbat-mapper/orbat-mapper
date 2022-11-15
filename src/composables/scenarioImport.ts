@@ -8,6 +8,8 @@ import type {
   OrbatMapperGeoJsonCollection,
   OrbatMapperGeoJsonFeature,
 } from "@/lib/milx/types";
+import type { FeatureCollection } from "geojson";
+import { convertGeojsonLayer } from "@/lib/milx";
 
 export interface MilxImportedLayer {
   id: string;
@@ -47,5 +49,11 @@ export function useScenarioImport(options: Partial<UseScenarioExportOptions> = {
       .filter((l) => l.features.length > 0);
   }
 
-  return { importMilxString };
+  function importGeojsonString(source: string): FeatureCollection {
+    const json = JSON.parse(source);
+
+    return convertGeojsonLayer(json) as FeatureCollection;
+  }
+
+  return { importMilxString, importGeojsonString };
 }

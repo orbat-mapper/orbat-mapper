@@ -8,6 +8,13 @@ export interface MilXSymbolProperties {
   T?: string;
 }
 
+export interface GeoJsonSymbolProperties {
+  sidc?: string;
+  name?: string;
+  m?: string;
+  t?: string;
+}
+
 export type MilXGeoJsonCollection = FeatureCollection<
   Point | LineString,
   MilXSymbolProperties
@@ -37,7 +44,7 @@ export interface MilSymbolProperties extends TacticalJsonProperties {
   description?: string;
 }
 
-export interface OrbatMapperGeoJsonCollection {
+export interface OrbatMapperGeoJsonCollection extends FeatureCollection {
   type: "FeatureCollection";
   features: OrbatMapperGeoJsonFeature[];
 }

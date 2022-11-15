@@ -64,6 +64,7 @@
         Basic support for importing MilX layers from
         <a href="https://www.map.army/">map.army</a>
       </p>
+      <p v-if="isGeojson">Import units and features.</p>
     </div>
     <p v-if="isMilx" class="prose-sm prose">
       Please note that the import functionality is experimental.
@@ -100,7 +101,7 @@ const emit = defineEmits(["cancel", "loaded"]);
 
 const formatItems: SelectItem<ImportFormat>[] = [
   { label: "MilX", value: "milx" },
-  // { label: "GeoJSON", value: "geojson" },
+  { label: "GeoJSON", value: "geojson" },
   // { label: "MSDL", value: "msdl" },
 ];
 
@@ -128,7 +129,8 @@ const form = ref<Form>({
 const { send } = useNotifications();
 
 const isMilx = computed(() => form.value.format === "milx");
-const { importMilxString } = useScenarioImport();
+const isGeojson = computed(() => form.value.format === "geojson");
+const { importMilxString, importGeojsonString } = useScenarioImport();
 
 async function onLoad(e: Event) {
   const { format } = form.value;
@@ -139,6 +141,12 @@ async function onLoad(e: Event) {
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
     emit("loaded", "milx", data);
+  }
+  if (format === "geojson" && stringSource.value) {
+    const data = importGeojsonString(stringSource.value);
+    send({ message: `Loaded data as ${format}` });
+    NProgress.done();
+    emit("loaded", "geojson", data);
   }
 
   NProgress.done();
@@ -175,6 +183,13 @@ async function handleFiles(files: File[]) {
       console.error(e);
       send({ message: `Failed to unzip file: ${e}` });
       return;
+    }
+  } else {
+    try {
+      const text = await file.text();
+      stringSource.value = text;
+    } catch (e) {
+      console.error(e);
     }
   }
 }

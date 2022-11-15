@@ -4,8 +4,9 @@ import {
   getOneElement,
   nodeValue,
 } from "@/lib/milx/domutils";
-import type { LineString, Point } from "geojson";
+import type { FeatureCollection, LineString, Point } from "geojson";
 import type {
+  GeoJsonSymbolProperties,
   MilSymbolProperties,
   MilXFeature,
   MilXGeoJsonCollection,
@@ -39,12 +40,35 @@ export function convertMilXLayer(layer: MilXLayer): OrbatMapperGeoJsonCollection
   return { ...fc, features };
 }
 
+export function convertGeojsonLayer(
+  layer: FeatureCollection
+): OrbatMapperGeoJsonCollection {
+  const fc = layer;
+  const { features: nFeatures, ...rest } = fc;
+  const features = nFeatures
+    .filter((f) => f.geometry.type === "Point")
+    .map((f) => ({
+      ...f,
+      id: nanoid(),
+      properties: convertGeojsonProperties(f.properties || {}),
+    }));
+  return { ...fc, features } as OrbatMapperGeoJsonCollection;
+}
+
 function convertProperties(f: MilXSymbolProperties): MilSymbolProperties {
   const props: MilSymbolProperties = { sidc: convertLetterCode2NumberCode(f.ID) };
   if (f.M) props.higherFormation = f.M;
   if (f.T) props.name = f.T;
   return props;
 }
+
+function convertGeojsonProperties(f: GeoJsonSymbolProperties): MilSymbolProperties {
+  const props: MilSymbolProperties = { sidc: convertLetterCode2NumberCode(f.sidc!) };
+  if (f.m) props.higherFormation = f.m;
+  props.name = f.name || f.t || "";
+  return props;
+}
+
 function getLayerName(node: Element): string | null {
   const nameNode = getOneElement(node, "Name");
   return nodeValue(nameNode);

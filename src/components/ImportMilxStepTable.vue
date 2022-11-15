@@ -33,7 +33,7 @@
             </thead>
             <tbody class="bg-white">
               <template v-for="layer in layers" :key="layer.id">
-                <tr class="border-t border-gray-200 bg-gray-50">
+                <tr class="border-t border-gray-200 bg-gray-50" v-if="layer.name">
                   <td class="relative w-12 px-6 sm:w-16 sm:px-8">
                     <div class="absolute inset-y-0 left-0 w-0.5 bg-indigo-600"></div>
                     <input
