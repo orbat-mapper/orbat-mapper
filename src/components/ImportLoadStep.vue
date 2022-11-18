@@ -54,6 +54,9 @@
         <TextAreaGroup rows="3" v-model="stringSource" />
       </div>
     </fieldset>
+    <p v-if="guessedFormat" class="text-sm">
+      The format seems to be <span class="text-red-900">{{ guessedFormat }}.</span>
+    </p>
     <SimpleSelect
       label="Select import format"
       :items="formatItems"
@@ -85,15 +88,15 @@ import BaseButton from "@/components/BaseButton.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { SelectItem } from "@/components/types";
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
-import type { ImportFormat, ImportSettings } from "@/types/convert";
+import type { GuessedImportFormat, ImportFormat, ImportSettings } from "@/types/convert";
 import { useNotifications } from "@/composables/notifications";
 import NProgress from "nprogress";
 import { useRouter } from "vue-router";
 import { useDropZone } from "@vueuse/core";
 import TextAreaGroup from "@/components/TextAreaGroup.vue";
 import { useImportStore } from "@/stores/importExportStore";
-import { unzip, useScenarioImport } from "@/composables/scenarioImport";
-import type { Unzipped } from "fflate";
+import { useScenarioImport } from "@/composables/scenarioImport";
+import { guessImportFormat } from "@/lib/fileHandling";
 
 const router = useRouter();
 
@@ -117,6 +120,8 @@ interface Form extends ImportSettings {
   format: ImportFormat;
 }
 
+const guessedFormat = ref<GuessedImportFormat>("unknown");
+
 const form = ref<Form>({
   format: store.format,
   includeFeatures: false,
@@ -132,25 +137,24 @@ const isMilx = computed(() => form.value.format === "milx");
 const isGeojson = computed(() => form.value.format === "geojson");
 const { importMilxString, importGeojsonString } = useScenarioImport();
 
-async function onLoad(e: Event) {
+async function onLoad(e?: Event) {
   const { format } = form.value;
-
   NProgress.start();
+
   if (format === "milx" && stringSource.value) {
     const data = await importMilxString(stringSource.value);
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
     emit("loaded", "milx", data);
   }
+
   if (format === "geojson" && stringSource.value) {
     const data = importGeojsonString(stringSource.value);
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
     emit("loaded", "geojson", data);
   }
-
   NProgress.done();
-  // open.value = false;
 }
 
 function onDrop(files: File[] | null) {
@@ -169,59 +173,17 @@ const onFileLoad = (e: Event) => {
 async function handleFiles(files: File[]) {
   const file = files[0];
   currentFilename.value = file.name;
-  if (isZipped(file)) {
-    try {
-      const unzipped = await readZippedFile(file);
-      const f = Object.entries(unzipped).find(([filename]) =>
-        filename.endsWith(".milxly")
-      );
-      if (f) {
-        const text = arrayBufferToString(f[1]);
-        stringSource.value = text;
-      }
-    } catch (e) {
-      console.error(e);
-      send({ message: `Failed to unzip file: ${e}` });
-      return;
-    }
-  } else {
-    try {
-      const text = await file.text();
-      stringSource.value = text;
-    } catch (e) {
-      console.error(e);
-    }
+  const info = await guessImportFormat(file);
+  if (info.isInvalid) {
+    info.errors.forEach((message) => send({ message }));
+    return;
   }
-}
 
-function isZipped(file: File): boolean {
-  const zippedTypes = ["application/vnd.google-earth.kmz", "application/zip"];
-  if (zippedTypes.includes(file.type)) return true;
-  if (file.name.endsWith(".kmz")) return true;
-  return file.name.endsWith(".milxlyz");
-}
-
-function arrayBufferToString(arrayBuffer: ArrayBuffer, decoderType = "utf-8") {
-  let decoder = new TextDecoder(decoderType);
-  return decoder.decode(arrayBuffer);
-}
-
-async function readZippedFile(file: File): Promise<Unzipped> {
-  const data = await file.arrayBuffer();
-  return unzip(data);
-}
-
-function readFileAsync(file: File): Promise<ArrayBuffer | null | string> {
-  return new Promise((resolve, reject) => {
-    let reader = new FileReader();
-
-    reader.onload = () => {
-      resolve(reader.result);
-    };
-
-    reader.onerror = reject;
-
-    reader.readAsArrayBuffer(file);
-  });
+  stringSource.value = info.dataAsString;
+  guessedFormat.value = info.format;
+  if (info.format !== "unknown") {
+    form.value.format = info.format;
+    await onLoad();
+  }
 }
 </script>
