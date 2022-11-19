@@ -16,6 +16,9 @@
     </header>
     <div class="mx-auto my-10 max-w-7xl sm:px-6 lg:px-8">
       <form class="mt-6 space-y-6" @submit.prevent="create()">
+        <div class="flex justify-end space-x-3 px-4 sm:px-0">
+          <BaseButton primary type="submit">Create scenario</BaseButton>
+        </div>
         <FormCard
           class=""
           label="Basic scenario info"
@@ -80,7 +83,6 @@
             v-model="newScenario.symbologyStandard"
           />
         </FormCard>
-        <!--        <FormCard label="Order of Battle"></FormCard>-->
         <div class="flex justify-end space-x-3 px-4 sm:px-0">
           <BaseButton primary type="submit">Create scenario</BaseButton>
           <BaseButton @click="cancel()">Cancel</BaseButton>
@@ -92,13 +94,13 @@
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import FormCard from "../../components/FormCard.vue";
-import InputGroup from "../../components/InputGroup.vue";
-import SimpleMarkdownInput from "../../components/SimpleMarkdownInput.vue";
-import TimezoneSelect from "../../components/TimezoneSelect.vue";
+import FormCard from "@/components/FormCard.vue";
+import InputGroup from "@/components/InputGroup.vue";
+import SimpleMarkdownInput from "@/components/SimpleMarkdownInput.vue";
+import TimezoneSelect from "@/components/TimezoneSelect.vue";
 import { useYMDElements } from "@/composables/scenarioTime";
-import RadioGroupList from "../../components/RadioGroupList.vue";
-import BaseButton from "../../components/BaseButton.vue";
+import RadioGroupList from "@/components/RadioGroupList.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import { useRouter } from "vue-router";
 import { SCENARIO_ROUTE } from "@/router/names";
 import { useScenario } from "@/scenariostore";
