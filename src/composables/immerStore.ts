@@ -84,11 +84,17 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     return true;
   };
 
+  const clearUndoRedoStack = () => {
+    past.splice(0);
+    future.splice(0);
+  };
+
   return {
     state,
     update,
     redo,
     undo,
+    clearUndoRedoStack,
     canRedo,
     canUndo,
     groupUpdate,

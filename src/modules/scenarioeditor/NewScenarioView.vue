@@ -162,7 +162,7 @@ function create() {
   newScenario.value.description = form.description;
   scenario.value.io.loadFromObject(newScenario.value);
   scenario.value.time.setCurrentTime(startTime);
-  const { state } = scenario.value.store;
+  const { state, clearUndoRedoStack } = scenario.value.store;
   const { unitActions } = scenario.value;
   if (!noInitialOrbat.value) {
     form.sides.forEach((sideData) => {
@@ -182,6 +182,7 @@ function create() {
       );
     });
   }
+  clearUndoRedoStack();
   router.push({ name: SCENARIO_ROUTE });
 }
 
