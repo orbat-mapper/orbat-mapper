@@ -3,13 +3,12 @@ import { computed, ref, watch } from "vue";
 import InputGroup from "./InputGroup.vue";
 import InlineFormPanel from "./InlineFormPanel.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
-import { standardIdentityValues } from "@/symbology/values";
-import type { SymbolItem } from "@/types/constants";
 import { useFocusOnMount } from "./helpers";
 import BaseButton from "./BaseButton.vue";
 import { activeScenarioKey } from "@/components/injects";
 import type { SideUpdate } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
+import { sidItems } from "@/symbology/helpers";
 
 const props = defineProps<{ sideId: string }>();
 const emit = defineEmits(["close"]);
@@ -33,14 +32,6 @@ const onFormSubmit = () => {
   unitActions.updateSide(props.sideId, { ...form.value });
   emit("close");
 };
-
-const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {
-  return {
-    code,
-    text,
-    sidc: "100" + code + 10 + "00" + "00" + "0000000000",
-  };
-});
 
 const { focusId } = useFocusOnMount();
 </script>

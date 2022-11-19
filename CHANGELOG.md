@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- Select multiple units with Ctrl+Drag (Command+Drag on Mac)
+- Improved new scenario form. Contains initial sides and root units.
+- Select multiple units on the map with Ctrl+Drag (Command+Drag on Mac)
 - Basic MilX (.milxlyz) import from map.army
 
 October 2022

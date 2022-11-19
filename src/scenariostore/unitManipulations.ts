@@ -39,13 +39,16 @@ let counter = 1;
 export function useUnitManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
 
-  function addSide(sideDate: Partial<SideUpdate> = {}) {
+  function addSide(
+    sideData: Partial<SideUpdate> = {},
+    { markAsNew } = { markAsNew: true }
+  ): EntityId {
     const newSide: NSide = {
       id: nanoid(),
-      name: sideDate.name || "New side",
-      standardIdentity: sideDate.standardIdentity || SID.Friend,
+      name: sideData.name || "New side",
+      standardIdentity: sideData.standardIdentity || SID.Friend,
       groups: [],
-      _isNew: true,
+      _isNew: markAsNew ?? true,
     };
     groupUpdate(
       () => {
@@ -57,6 +60,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       },
       { label: "addSide", value: newSide.id }
     );
+    return newSide.id;
   }
 
   function addSideGroup(sideId: EntityId, data: Partial<NSideGroup> = {}) {
