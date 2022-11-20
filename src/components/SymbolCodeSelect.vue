@@ -1,4 +1,3 @@
-<!-- This example requires Tailwind CSS v2.0+ -->
 <template>
   <Listbox as="div" v-model="selectedValue" class="">
     <ListboxLabel class="block text-sm font-medium text-gray-700">
@@ -76,8 +75,8 @@
   </Listbox>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, PropType } from "vue";
+<script setup lang="ts">
+import { computed } from "vue";
 import {
   Listbox,
   ListboxButton,
@@ -90,36 +89,18 @@ import MilSymbol from "./MilSymbol.vue";
 import { useVModel } from "@vueuse/core";
 import { SymbolItem } from "@/types/constants";
 
-export default defineComponent({
-  components: {
-    MilSymbol,
-    Listbox,
-    ListboxButton,
-    ListboxLabel,
-    ListboxOption,
-    ListboxOptions,
-    CheckIcon,
-    SelectorIcon,
-  },
-  props: {
-    modelValue: {
-      type: String,
-      default: "00",
-    },
-    label: String,
-    items: { type: Array as PropType<SymbolItem[]>, required: true },
-  },
+interface Props {
+  modelValue?: string;
+  label?: string;
+  items: SymbolItem[];
+}
 
-  setup(props, { emit }) {
-    const selectedValue = useVModel(props, "modelValue", emit);
-    const selected = computed(() =>
-      (props.items || []).find((i) => i.code === selectedValue.value)
-    );
+const props = withDefaults(defineProps<Props>(), { modelValue: "00" });
 
-    return {
-      selected,
-      selectedValue,
-    };
-  },
-});
+const emit = defineEmits(["update:modelValue"]);
+
+const selectedValue = useVModel(props, "modelValue", emit);
+const selected = computed(() =>
+  (props.items || []).find((i) => i.code === selectedValue.value)
+);
 </script>
