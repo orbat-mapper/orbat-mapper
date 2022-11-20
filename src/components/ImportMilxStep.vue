@@ -9,9 +9,7 @@
           </p>
         </div>
         <section class="p-1.5">
-          <!--          <p class="text-base font-medium">Options</p>-->
-          <!--          <InputCheckbox label="Include units" />-->
-          <SimpleSelect
+          <SymbolCodeSelect
             label="Parent unit"
             :items="rootUnitItems"
             v-model="parentUnitId"
@@ -36,20 +34,19 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useFocusOnMount } from "@/components/helpers";
 import BaseButton from "@/components/BaseButton.vue";
 import type { ImportFormat, ImportSettings } from "@/types/convert";
 import { useNotifications } from "@/composables/notifications";
 import { useImportStore } from "@/stores/importExportStore";
-import { MilxImportedLayer, useScenarioImport } from "@/composables/scenarioImport";
+import { MilxImportedLayer } from "@/composables/scenarioImport";
 
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NUnit } from "@/types/internalModels";
 import ImportMilxStepTable from "@/components/ImportMilxStepTable.vue";
 import type { Point } from "geojson";
-import SimpleSelect from "@/components/SimpleSelect.vue";
-import { SelectItem } from "@/components/types";
+import { SymbolItem } from "@/types/constants";
+import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 
 interface Props {
   data: MilxImportedLayer[];
@@ -73,26 +70,24 @@ const form = ref<Form>({
   useShortName: true,
 });
 
-const { focusId } = useFocusOnMount(undefined, 150);
 const { send } = useNotifications();
 const selectedUnits = ref<(string | number)[]>([]);
 
 const isMilx = computed(() => form.value.format === "milx");
-const { importMilxString } = useScenarioImport();
 
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
 });
 
-const rootUnitItems = computed((): SelectItem[] => {
+const rootUnitItems = computed((): SymbolItem[] => {
   return Object.values(state.sideGroupMap)
     .map((value) => value.subUnits)
     .flat()
     .map((e) => state.unitMap[e])
-    .map((u) => ({ label: u.name, value: u.id }));
+    .map((u) => ({ text: u.name, code: u.id, sidc: u.sidc }));
 });
 
-const parentUnitId = ref(rootUnitItems.value[0].value as string);
+const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
 async function onLoad(e: Event) {
   const features = props.data.map((l) => l.features).flat();
