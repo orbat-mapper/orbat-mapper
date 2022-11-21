@@ -1,5 +1,11 @@
 <template>
   <div class="relative bg-gray-50 py-5">
+    <div class="mx-auto max-w-3xl text-center">
+      <h2 class="text-3xl font-bold tracking-tight text-gray-900">Demo scenarios</h2>
+      <p class="mt-4 text-lg text-gray-500">
+        Try one of the bundled scenarios or create your own
+      </p>
+    </div>
     <p class="absolute right-6 top-2 z-10">
       <WipBadge />
     </p>

@@ -1,17 +1,31 @@
 <template>
   <div class="min-h-screen overflow-hidden bg-gray-100">
+    <p class="relative top-0 left-0 right-0 bg-gray-300 p-1 text-center text-gray-900">
+      This is a work in progress prototype. Follow the development of
+      <a href="https://github.com/orbat-mapper/orbat-mapper" class="underline"
+        >ORBAT Mapper on GitHub <GithubIcon class="inline h-10 w-10" /> </a
+      >.
+    </p>
     <main>
+      <div class="mx-auto mt-16 max-w-7xl px-4 sm:mt-24 sm:px-6">
+        <div class="text-center">
+          <h1
+            class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl"
+          >
+            <span class="text-red-900">ORBAT</span>
+            Mapper
+          </h1>
+          <p
+            class="mx-auto mt-3 max-w-md text-base text-gray-500 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl"
+          >
+            Recreate historic battles and military scenarios
+          </p>
+        </div>
+      </div>
+
+      <LandingPageScenarios class="mt-16" />
+
       <ProseSection class="">
-        <h1><span class="text-red-900">Order of Battle</span> Mapper</h1>
-        <p>Recreate historic battles and military scenarios.</p>
-
-        <p>
-          This is a work in progress prototype. Follow the development of
-          <a href="https://github.com/orbat-mapper/orbat-mapper"
-            >ORBAT Mapper on GitHub <GithubIcon class="inline h-10 w-10" /> </a
-          >.
-        </p>
-
         <div class="grid grid-cols-2 place-items-center gap-4">
           <div class="aspect-w-5 aspect-h-2 overflow-hidden rounded-lg bg-gray-100">
             <img
@@ -21,19 +35,14 @@
               class="object-cover object-top"
             />
           </div>
-          <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="flex-shrink-0"
-            >Orbat chart test
-          </router-link>
+          <ul class="flex flex-col gap-4">
+            <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="flex-shrink-0"
+              >Orbat chart test
+            </router-link>
+            <router-link to="/storymode" class="">Story mode test</router-link>
+          </ul>
         </div>
-        <ul class="flex flex-wrap gap-x-6 gap-y-2">
-          <router-link to="/storymode" class="">Story mode test</router-link>
-          <router-link :to="{ name: ORBAT_CHART_ROUTE }" class=""
-            >Orbat chart test
-          </router-link>
-        </ul>
       </ProseSection>
-
-      <LandingPageScenarios />
 
       <div class="bg-white">
         <div class="mx-auto max-w-7xl py-16 px-4 sm:px-6 lg:py-24 lg:px-8">
@@ -58,59 +67,6 @@
           </dl>
         </div>
       </div>
-
-      <ProseSection class="">
-        <h2>Other tools and resources</h2>
-
-        <p>
-          ORBAT mapper is created by a hobbyist. If you need something more professional
-          or you want to create military overlays, try some of these excellent tools
-          instead:
-        </p>
-
-        <ul>
-          <li>
-            <p>
-              <a href="https://www.map.army/about/en.html">map.army</a> - a really nice
-              web application for drawing map overlays with symbols and tactical graphics.
-            </p>
-          </li>
-
-          <li>
-            <p>
-              <a href="https://mgrs-mapper.com/">MGRS Mapper</a> -
-              <q>operational graphics tool for junior leaders</q>. Subscription based
-              service. A limited free version is available.
-            </p>
-          </li>
-
-          <li>
-            <p>
-              <a href="https://odin.syncpoint.io/en/"
-                >ODIN open source command and control information system</a
-              >. Desktop application available on most operating systems (Electron based).
-              Still under development, but looks very promising!
-            </p>
-          </li>
-        </ul>
-
-        <h3>Military history</h3>
-
-        <p>
-          If you are interested in WW2 history I highly recommend the site
-          <a href="https://www.project44.ca/">Project'44 the road to liberation</a>. Their
-          <a href="https://map.project44.ca/">interactive WWII web map</a> and
-          <a href="https://map.project44.ca/story-maps">story maps</a> are fantastic!
-        </p>
-
-        <p>
-          For those who are interested in Cold War history, Hans Boersma's site
-          <a href="https://www.orbat85.nl/"
-            >Netherlands Armed Forces ORDER OF BATTLE 1985</a
-          >
-          is a real treat.
-        </p>
-      </ProseSection>
     </main>
   </div>
 </template>
