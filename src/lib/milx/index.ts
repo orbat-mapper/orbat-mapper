@@ -17,6 +17,8 @@ import type {
 import { convertLetterCode2NumberCode } from "@orbat-mapper/convert-symbology";
 import { nanoid } from "@/utils";
 
+const isNumeric = /^\d+$/;
+
 export function getMilXLayers(node: Document | Element): MilXLayer[] {
   const layers = getElements(node, "MilXLayer");
 
@@ -63,7 +65,9 @@ function convertProperties(f: MilXSymbolProperties): MilSymbolProperties {
 }
 
 function convertGeojsonProperties(f: GeoJsonSymbolProperties): MilSymbolProperties {
-  const props: MilSymbolProperties = { sidc: convertLetterCode2NumberCode(f.sidc!) };
+  const props: MilSymbolProperties = {
+    sidc: isNumeric.test(f.sidc!) ? f.sidc! : convertLetterCode2NumberCode(f.sidc!),
+  };
   if (f.m) props.higherFormation = f.m;
   props.name = f.name || f.t || "";
   return props;
