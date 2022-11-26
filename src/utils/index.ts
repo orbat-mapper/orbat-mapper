@@ -10,6 +10,14 @@ export function groupBy<T extends object, K extends keyof T>(arr: T[], key: K) {
   }, new Map<T[K], T[]>());
 }
 
+export function groupByGetter<T extends object>(arr: T[], getter: (i: T) => string) {
+  return arr.reduce((acc, item) => {
+    const key = getter(item);
+    acc.set(key, [...(acc.get(key) || []), item]);
+    return acc;
+  }, new Map<string, T[]>());
+}
+
 export function enum2Items(enumType: { [key: number]: string }) {
   return Object.entries(enumType).map(([label, value]) => ({
     label,
