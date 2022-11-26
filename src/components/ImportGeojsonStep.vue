@@ -11,7 +11,7 @@
           />
         </section>
         <section class="mt-4">
-          <ImportMilxStepTable
+          <ImportSelectItems
             :layers="layers"
             v-model:selected="selectedUnits"
             select-all
@@ -36,7 +36,7 @@ import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NUnit } from "@/types/internalModels";
-import ImportMilxStepTable from "@/components/ImportMilxStepTable.vue";
+import ImportSelectItems from "@/components/ImportSelectItems.vue";
 import type { FeatureCollection, Point } from "geojson";
 import { MilxImportedLayer } from "@/composables/scenarioImport";
 import { SymbolItem } from "@/types/constants";
