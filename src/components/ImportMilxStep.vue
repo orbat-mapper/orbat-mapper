@@ -43,6 +43,8 @@ import type { Point } from "geojson";
 import { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import ImportSelectItems from "@/components/ImportSelectItems.vue";
+import { setCharAt } from "@/components/helpers";
+import { SID_INDEX } from "@/symbology/sidc";
 
 interface Props {
   data: MilxImportedLayer[];
@@ -87,6 +89,7 @@ const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
 async function onLoad(e: Event) {
   const features = props.data.map((l) => l.features).flat();
+  const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
 
   const units: NUnit[] = features
     .filter((e) => selectedUnits.value.includes(e.id!))
@@ -94,7 +97,7 @@ async function onLoad(e: Event) {
       return {
         id: nanoid(),
         name: f.properties.name || "",
-        sidc: f.properties.sidc,
+        sidc: setCharAt(f.properties.sidc, SID_INDEX, side.standardIdentity),
         subUnits: [],
         _pid: "",
         location: (f.geometry as Point).coordinates,
