@@ -1,13 +1,11 @@
 <template>
   <template v-for="([sid, values], i) in tLayer.entries()" :key="sid">
-    <div class="mt-8 flex flex-col">
-      <ImportSelectItemsTable
-        :layers="values"
-        :selected="lSelected[i]"
-        @update:selected="updateSelected(i, $event)"
-        :select-all="selectAll"
-      />
-    </div>
+    <ImportSelectItemsTable
+      :layers="values"
+      :selected="lSelected[i]"
+      @update:selected="updateSelected(i, $event)"
+      :select-all="selectAll"
+    />
   </template>
 </template>
 <script setup lang="ts">
