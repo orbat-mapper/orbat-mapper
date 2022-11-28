@@ -62,14 +62,14 @@
       :items="formatItems"
       v-model="form.format"
     />
-    <div class="prose-sm prose">
+    <div class="prose prose-sm">
       <p v-if="isMilx">
         Basic support for importing MilX layers from
         <a href="https://www.map.army/">map.army</a>
       </p>
       <p v-if="isGeojson">Import units and features.</p>
     </div>
-    <p v-if="isMilx" class="prose-sm prose">
+    <p v-if="isMilx" class="prose prose-sm">
       Please note that the import functionality is experimental.
     </p>
 

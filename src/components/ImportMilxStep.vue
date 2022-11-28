@@ -2,7 +2,7 @@
   <div class="">
     <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
       <div class="flex-auto overflow-auto">
-        <div class="prose-sm prose">
+        <div class="prose prose-sm">
           <p v-if="isMilx">
             Basic support for importing MilX layers from
             <a href="https://www.map.army/">map.army</a>

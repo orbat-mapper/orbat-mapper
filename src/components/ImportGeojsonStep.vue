@@ -2,7 +2,7 @@
   <div class="">
     <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
       <div class="flex-auto overflow-auto">
-        <div class="prose-sm prose"></div>
+        <div class="prose prose-sm"></div>
         <section class="p-1.5">
           <SymbolCodeSelect
             label="Parent unit"

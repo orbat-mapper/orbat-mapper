@@ -208,7 +208,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
         <section v-else-if="!isMultipleFeatures" class="space-y-4">
           <DescriptionItem label="Name">{{ feature.properties.name }}</DescriptionItem>
           <DescriptionItem v-if="feature.properties.description" label="Description">
-            <div class="prose-sm prose" v-html="hDescription"></div>
+            <div class="prose prose-sm" v-html="hDescription"></div>
           </DescriptionItem>
         </section>
       </div>

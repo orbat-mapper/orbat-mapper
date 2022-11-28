@@ -52,12 +52,14 @@
           >
             <TableIcon class="h-6 w-6" />
           </router-link>
-          <div
+          <router-link
+            :to="{ name: CHART_EDIT_MODE_ROUTE }"
             title="Chart edit mode"
+            exact-active-class="text-green-500"
             class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
           >
             <SitemapIcon class="h-6 w-6" />
-          </div>
+          </router-link>
         </div>
         <div class="flex items-center">
           <button
@@ -200,7 +202,12 @@ import { MenuItemData } from "@/components/types";
 import { useDateModal, useSidcModal } from "@/composables/modals";
 import { storeToRefs } from "pinia";
 import DropdownMenu from "@/components/DropdownMenu.vue";
-import { GRID_EDIT_ROUTE, LANDING_PAGE_ROUTE, SCENARIO_ROUTE } from "@/router/names";
+import {
+  GRID_EDIT_ROUTE,
+  LANDING_PAGE_ROUTE,
+  SCENARIO_ROUTE,
+  CHART_EDIT_MODE_ROUTE,
+} from "@/router/names";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(
