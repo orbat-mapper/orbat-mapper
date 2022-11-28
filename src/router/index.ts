@@ -3,6 +3,7 @@ import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import LandingPage from "../views/LandingPage.vue";
 import {
+  CHART_EDIT_MODE_ROUTE,
   GRID_EDIT_ROUTE,
   LANDING_PAGE_ROUTE,
   NEW_SCENARIO_ROUTE,
@@ -20,6 +21,7 @@ const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
 const GeoTestView = () => import("../views/GeoTestView.vue");
 const StoreTestView = () => import("../views/StoreTestViewWrapper.vue");
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
+const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
 const ScenarioEditorGeo = () => import("@/modules/scenarioeditor/ScenarioEditorGeo.vue");
 const routes = [
   {
@@ -29,8 +31,9 @@ const routes = [
       NProgress.start();
     },
     children: [
-      { path: "", component: ScenarioEditorGeo, name: SCENARIO_ROUTE },
+      { path: "", name: SCENARIO_ROUTE, component: ScenarioEditorGeo },
       { path: "grid-edit", name: GRID_EDIT_ROUTE, component: GridEditView },
+      { path: "chart-edit", name: CHART_EDIT_MODE_ROUTE, component: ChartEditView },
     ],
   },
   {
