@@ -3,7 +3,7 @@
     <p
       class="absolute inset-x-0 top-0 h-4 border-b bg-amber-200 text-center text-xs text-amber-700"
     >
-      Under development
+      Test
     </p>
     <header class="relative w-full bg-gray-100 p-4 md:flex-shrink-0">
       <h1>{{ state.info.name }}</h1>

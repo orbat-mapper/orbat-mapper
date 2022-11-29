@@ -1,10 +1,5 @@
 <template>
-  <div class="relative flex h-screen w-screen overflow-hidden pt-4">
-    <p
-      class="absolute inset-x-0 top-0 h-4 border-b bg-amber-200 text-center text-xs text-amber-700"
-    >
-      Under development
-    </p>
+  <div class="relative flex h-screen w-screen overflow-hidden">
     <aside
       class="hidden bg-gray-50 print:hidden lg:flex lg:w-[20rem] lg:flex-shrink-0 lg:border-r lg:border-gray-200"
     >

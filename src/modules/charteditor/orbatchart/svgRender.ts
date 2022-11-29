@@ -23,14 +23,14 @@ const HIGHLIGT_STYLE = `
   }
 
   .highlight {
-    stroke: gray;
+    stroke: none;
     stroke-dasharray: 5, 5;
     fill: white;
     fill-opacity: 0;
   }
 
   .highlight:hover {
-    stroke: red;
+    stroke: gray;
     stroke-width: 2pt;
     fill: #ccc;
     fill-opacity: 0.1;
