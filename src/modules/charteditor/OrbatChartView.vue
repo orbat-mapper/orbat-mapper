@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { computed, nextTick, provide, ref } from "vue";
 import OrbatChart from "./OrbatChart.vue";
-import ToggleField from "../../components/ToggleField.vue";
+import ToggleField from "@/components/ToggleField.vue";
 
 import {
   LevelLayout,
@@ -53,12 +53,12 @@ import {
   RenderedUnitNode,
 } from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
-import { symbolGenerator } from "../../symbology/milsymbwrapper";
+import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import { Bars3BottomLeftIcon as MenuAlt2Icon } from "@heroicons/vue/24/solid";
 import { promiseTimeout } from "@vueuse/core";
-import DotsMenu from "../../components/DotsMenu.vue";
+import DotsMenu from "@/components/DotsMenu.vue";
 import FileSaver from "file-saver";
-import SlideOver from "../../components/SlideOver.vue";
+import SlideOver from "@/components/SlideOver.vue";
 import OrbatChartSettings, { ChartTabs } from "./OrbatChartSettings.vue";
 import {
   useChartSettingsStore,

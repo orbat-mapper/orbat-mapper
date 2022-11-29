@@ -19,12 +19,9 @@
   </div>
 </template>
 
-<script lang="ts">
-import InputGroup from "../../components/InputGroup.vue";
+<script setup lang="ts">
 import { useSelectedChartElementStore } from "./chartSettingsStore";
-import SimpleSelect from "../../components/SimpleSelect.vue";
-import ToggleField from "../../components/ToggleField.vue";
-import { computed, defineComponent } from "vue";
+import { computed } from "vue";
 import MilSymbol from "../../components/MilSymbol.vue";
 import PlainButton from "../../components/PlainButton.vue";
 import { ChartItemType } from "./orbatchart";
@@ -32,29 +29,8 @@ import { useChartSettings } from "./composables";
 import SettingsUnit from "./SettingsUnit.vue";
 import AccordionPanel from "../../components/AccordionPanel.vue";
 
-export default defineComponent({
-  name: "OrbatChartSettingsUnit",
-  components: {
-    AccordionPanel,
-    SettingsUnit,
-    PlainButton,
-    MilSymbol,
-    ToggleField,
-    SimpleSelect,
-    InputGroup,
-  },
-  setup() {
-    const currentUnitNode = useSelectedChartElementStore();
-    const { clearSpecificOptions } = useChartSettings(ChartItemType.Unit);
+const currentUnitNode = useSelectedChartElementStore();
+const { clearSpecificOptions } = useChartSettings(ChartItemType.Unit);
 
-    const currentUnit = computed(() => currentUnitNode.node?.unit);
-
-    return {
-      currentUnit,
-      ChartItemType,
-
-      clearSpecificOptions,
-    };
-  },
-});
+const currentUnit = computed(() => currentUnitNode.node?.unit);
 </script>

@@ -13,13 +13,9 @@
   </div>
 </template>
 
-<script lang="ts">
-import InputGroup from "../../components/InputGroup.vue";
+<script setup lang="ts">
 import { useSelectedChartElementStore } from "./chartSettingsStore";
-import SimpleSelect from "../../components/SimpleSelect.vue";
-import ToggleField from "../../components/ToggleField.vue";
-import { computed, defineComponent } from "vue";
-import MilSymbol from "../../components/MilSymbol.vue";
+import { computed } from "vue";
 import PlainButton from "../../components/PlainButton.vue";
 import { ChartItemType } from "./orbatchart";
 import { useChartSettings } from "./composables";
@@ -27,28 +23,7 @@ import SettingsUnit from "./SettingsUnit.vue";
 import AccordionPanel from "../../components/AccordionPanel.vue";
 import SettingConnectors from "./SettingsConnectors.vue";
 
-export default defineComponent({
-  name: "OrbatChartSettingsBranch",
-  components: {
-    SettingConnectors,
-    AccordionPanel,
-    SettingsUnit,
-    PlainButton,
-    MilSymbol,
-    ToggleField,
-    SimpleSelect,
-    InputGroup,
-  },
-  setup() {
-    const selectedElement = useSelectedChartElementStore();
-    const { clearSpecificOptions } = useChartSettings(ChartItemType.Branch);
-    const currentBranch = computed(() => selectedElement.branch?.parent || null);
-
-    return {
-      currentBranch,
-      clearSpecificOptions,
-      ChartItemType,
-    };
-  },
-});
+const selectedElement = useSelectedChartElementStore();
+const { clearSpecificOptions } = useChartSettings(ChartItemType.Branch);
+const currentBranch = computed(() => selectedElement.branch?.parent || null);
 </script>

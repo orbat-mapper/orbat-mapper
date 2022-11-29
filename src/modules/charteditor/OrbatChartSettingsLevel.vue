@@ -14,9 +14,9 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { useSelectedChartElementStore } from "./chartSettingsStore";
-import { computed, defineComponent } from "vue";
+import { computed } from "vue";
 import PlainButton from "../../components/PlainButton.vue";
 import { ChartItemType } from "./orbatchart";
 import SettingsUnit from "./SettingsUnit.vue";
@@ -24,24 +24,7 @@ import { useChartSettings } from "./composables";
 import AccordionPanel from "../../components/AccordionPanel.vue";
 import SettingConnectors from "./SettingsConnectors.vue";
 
-export default defineComponent({
-  name: "OrbatChartSettingsLevel",
-  components: {
-    SettingConnectors,
-    AccordionPanel,
-    SettingsUnit,
-    PlainButton,
-  },
-  setup() {
-    const selectedElement = useSelectedChartElementStore();
-    const currentLevel = computed(() => selectedElement.level);
-    const { clearSpecificOptions } = useChartSettings(ChartItemType.Level);
-
-    return {
-      currentLevel,
-      ChartItemType,
-      clearSpecificOptions,
-    };
-  },
-});
+const selectedElement = useSelectedChartElementStore();
+const currentLevel = computed(() => selectedElement.level);
+const { clearSpecificOptions } = useChartSettings(ChartItemType.Level);
 </script>

@@ -57,36 +57,21 @@
   </div>
 </template>
 
-<script lang="ts">
-import InputGroup from "../../components/InputGroup.vue";
-import SimpleSelect from "../../components/SimpleSelect.vue";
-import ToggleField from "../../components/ToggleField.vue";
-import { defineComponent, PropType } from "vue";
-import PlainButton from "../../components/PlainButton.vue";
-import { enum2Items } from "../../utils";
+<script setup lang="ts">
+import InputGroup from "@/components/InputGroup.vue";
+import SimpleSelect from "@/components/SimpleSelect.vue";
+import ToggleField from "@/components/ToggleField.vue";
+import { enum2Items } from "@/utils";
 import { ChartItemType, FontStyle, FontWeight } from "./orbatchart";
 import { useChartSettings } from "./composables";
-import NumberInputGroup from "../../components/NumberInputGroup.vue";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
 
-export default defineComponent({
-  name: "SettingsUnit",
-  components: { NumberInputGroup, PlainButton, ToggleField, SimpleSelect, InputGroup },
-  props: {
-    itemType: { type: String as PropType<ChartItemType>, required: true },
-  },
-  setup(props) {
-    const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
+interface Props {
+  itemType: ChartItemType;
+}
+const props = defineProps<Props>();
+const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
 
-    const fontWeightItems = enum2Items(FontWeight);
-    const fontStyleItems = enum2Items(FontStyle);
-
-    return {
-      mergedOptions,
-      setValue,
-      usedOptions,
-      fontWeightItems,
-      fontStyleItems,
-    };
-  },
-});
+const fontWeightItems = enum2Items(FontWeight);
+const fontStyleItems = enum2Items(FontStyle);
 </script>
