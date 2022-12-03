@@ -1,5 +1,6 @@
 import { Position, ScenarioLayer } from "./scenarioGeoModels";
 import { EntityId, ScenarioTime } from "./base";
+import { SidValue } from "@/symbology/values";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;
@@ -42,7 +43,7 @@ export interface Unit {
 export interface SideData {
   name: string;
   description?: string;
-  standardIdentity: string;
+  standardIdentity: SidValue;
 }
 
 export interface SideGroup {

@@ -1,5 +1,5 @@
 import { OrbatItemData, Unit } from "@/types/scenarioModels";
-import { UnitActions } from "@/types/constants";
+import { UnitAction, UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
 import { computed, Ref } from "vue";
 import { NOrbatItemData, NUnit } from "@/types/internalModels";
@@ -31,7 +31,7 @@ export function useUnitActions(
   const { selectedUnitIds } = useSelectedUnits();
   const geoStore = useGeoStore();
 
-  const _onUnitAction = (unit: NUnit | undefined | null, action: UnitActions) => {
+  const _onUnitAction = (unit: NUnit | undefined | null, action: UnitAction) => {
     if (!unit) return;
     if (action === UnitActions.AddSubordinate) {
       unit._isOpen = true;
@@ -91,7 +91,7 @@ export function useUnitActions(
     }
   };
 
-  function onUnitAction(unitOrUnits: NUnit | NUnit[] | null, action: UnitActions) {
+  function onUnitAction(unitOrUnits: NUnit | NUnit[] | null, action: UnitAction) {
     if (!unitOrUnits) return;
     if (Array.isArray(unitOrUnits)) {
       groupUpdate(() => {
@@ -113,7 +113,7 @@ export function useUnitMenu(item: OrbatItemData | NOrbatItemData | Unit) {
     return Boolean(unit.subUnits && unit.subUnits.length);
   });
 
-  const unitMenuItems = computed((): MenuItemData<UnitActions>[] => {
+  const unitMenuItems = computed((): MenuItemData<UnitAction>[] => {
     return [
       { label: "Add subordinate", action: UnitActions.AddSubordinate },
       { label: "Delete", action: UnitActions.Delete },

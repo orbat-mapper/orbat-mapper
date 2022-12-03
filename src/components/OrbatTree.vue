@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import OrbatTreeItem from "./OrbatTreeItem.vue";
-import { UnitActions } from "@/types/constants";
+import { type UnitAction } from "@/types/constants";
 import { EntityId } from "@/types/base";
 import type { DropTarget } from "./types";
 import type { NUnit } from "@/types/internalModels";
@@ -20,7 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 interface Emits {
-  (e: "unit-action", unit: NUnit, action: UnitActions): void;
+  (e: "unit-action", unit: NUnit, action: UnitAction): void;
   (e: "unit-click", unit: NUnit, event: MouseEvent): void;
   (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
 }
@@ -33,7 +33,7 @@ watch(
   () => (queryHasChanged.value = true)
 );
 
-const onUnitAction = (unit: NUnit, action: UnitActions) => {
+const onUnitAction = (unit: NUnit, action: UnitAction) => {
   emit("unit-action", unit, action);
 };
 

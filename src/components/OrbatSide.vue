@@ -56,7 +56,7 @@ import DotsMenu from "./DotsMenu.vue";
 import { computed, ref } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
-import { SideActions, UnitActions } from "@/types/constants";
+import { SideAction, SideActions, type UnitAction, UnitActions } from "@/types/constants";
 import { useDebounce } from "@vueuse/core";
 import FilterQueryInput from "./FilterQueryInput.vue";
 import EditSideForm from "./EditSideForm.vue";
@@ -75,7 +75,7 @@ interface Props {
 const props = defineProps<Props>();
 
 interface Emits {
-  (e: "unit-action", unit: NUnit, action: UnitActions): void;
+  (e: "unit-action", unit: NUnit, action: UnitAction): void;
   (e: "unit-click", unit: NUnit, event: MouseEvent): void;
   (
     e: "unit-drop",
@@ -84,7 +84,7 @@ interface Emits {
     target: DropTarget
   ): void;
 
-  (e: "side-action", unit: NSide, action: SideActions): void;
+  (e: "side-action", unit: NSide, action: SideAction): void;
 }
 
 const emit = defineEmits<Emits>();
@@ -103,7 +103,7 @@ const showEditSideForm = ref(false);
 
 if (props.side._isNew) showEditSideForm.value = true;
 
-const sideMenuItems: MenuItemData<SideActions>[] = [
+const sideMenuItems: MenuItemData<SideAction>[] = [
   // { label: "Expand", action: SideActions.Expand },
   { label: "Edit", action: SideActions.Edit },
   { label: "Add group", action: SideActions.AddGroup },
@@ -112,7 +112,7 @@ const sideMenuItems: MenuItemData<SideActions>[] = [
   { label: "Move down", action: SideActions.MoveDown },
 ];
 
-const onSideAction = (action: SideActions) => {
+const onSideAction = (action: SideAction) => {
   if (action === SideActions.Expand) {
   } else if (action === SideActions.AddSubordinate) {
     // unitManipulationStore.createSubordinateUnit(props.side.groups[0]);
@@ -125,7 +125,7 @@ const onSideAction = (action: SideActions) => {
   }
 };
 
-function onSideGroupAction(sideGroup: NSideGroup, action: SideActions) {
+function onSideGroupAction(sideGroup: NSideGroup, action: SideAction) {
   if (action === SideActions.Delete) {
     unitActions.deleteSideGroup(sideGroup.id);
   } else if (action === SideActions.MoveDown) {
@@ -135,7 +135,7 @@ function onSideGroupAction(sideGroup: NSideGroup, action: SideActions) {
   }
 }
 
-const onUnitAction = (unit: NUnit, action: UnitActions) => {
+const onUnitAction = (unit: NUnit, action: UnitAction) => {
   emit("unit-action", unit, action);
 };
 

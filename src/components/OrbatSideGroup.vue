@@ -55,7 +55,13 @@ import DotsMenu from "./DotsMenu.vue";
 import OrbatTree from "./OrbatTree.vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
-import { DragOperations, SideActions, UnitActions } from "@/types/constants";
+import {
+  DragOperations,
+  SideAction,
+  SideActions,
+  UnitAction,
+  UnitActions,
+} from "@/types/constants";
 import { useDragStore } from "@/stores/dragStore";
 import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./EditSideGroupForm.vue";
@@ -74,7 +80,7 @@ interface Props {
 const props = defineProps<Props>();
 
 interface Emits {
-  (e: "unit-action", unit: NUnit, action: UnitActions): void;
+  (e: "unit-action", unit: NUnit, action: UnitAction): void;
   (e: "unit-click", unit: NUnit, event: MouseEvent): void;
   (
     e: "unit-drop",
@@ -82,7 +88,7 @@ interface Emits {
     destinationUnit: NUnit | NSideGroup,
     target: DropTarget
   ): void;
-  (e: "sidegroup-action", unit: NSideGroup, action: SideActions): void;
+  (e: "sidegroup-action", unit: NSideGroup, action: SideAction): void;
 }
 const emit = defineEmits<Emits>();
 
@@ -96,7 +102,7 @@ if (props.group._isNew) {
   showEditForm.value = true;
 }
 
-const sideGroupMenuItems: MenuItemData<SideActions>[] = [
+const sideGroupMenuItems: MenuItemData<SideAction>[] = [
   { label: "Expand", action: SideActions.Expand },
   { label: "Add root unit", action: SideActions.AddSubordinate },
   { label: "Edit group", action: SideActions.Edit },
@@ -105,7 +111,7 @@ const sideGroupMenuItems: MenuItemData<SideActions>[] = [
   { label: "Move down", action: SideActions.MoveDown },
 ];
 
-const onSideGroupAction = (group: NSideGroup, action: SideActions) => {
+const onSideGroupAction = (group: NSideGroup, action: SideAction) => {
   if (action === SideActions.Expand) {
   } else if (action === SideActions.AddSubordinate) {
     emit("unit-action", group as unknown as NUnit, UnitActions.AddSubordinate);
@@ -120,7 +126,7 @@ const addGroupUnit = (group: NSideGroup) => {
   onSideGroupAction(group, SideActions.AddSubordinate);
 };
 
-const onUnitAction = (unit: NUnit, action: UnitActions) => {
+const onUnitAction = (unit: NUnit, action: UnitAction) => {
   emit("unit-action", unit, action);
 };
 

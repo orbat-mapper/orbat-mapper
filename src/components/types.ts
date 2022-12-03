@@ -1,6 +1,6 @@
 import { LayerFeatureItem } from "../types/scenarioGeoModels";
 import { NUnit } from "../types/internalModels";
-import { UnitActions } from "../types/constants";
+import { UnitAction, UnitActions } from "../types/constants";
 
 export interface ButtonGroupItem {
   label: string;
@@ -45,7 +45,7 @@ export type DropTarget = "on" | "above" | "below";
 export type CloneTarget = "end" | "above" | "below";
 
 export interface UnitEmits {
-  (e: "unit-action", unit: NUnit, action: UnitActions): void;
+  (e: "unit-action", unit: NUnit, action: UnitAction): void;
   (e: "unit-click", unit: NUnit): void;
   (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
 }

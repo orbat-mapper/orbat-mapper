@@ -1,6 +1,6 @@
 // Values based on code from https://github.com/spatialillusions/milsymbol-generator
 
-import { SymbolValue } from "../types/constants";
+import { SymbolValue } from "@/types/constants";
 
 export const UNIT_SYMBOLSET_VALUE = "10";
 export const DISMOUNTED_SYMBOLSET_VALUE = "27";
@@ -112,17 +112,19 @@ export const standardIdentityValues: SymbolValue[] = [
   },
 ];
 
-export const enum SID {
-  Pending = "0",
-  Unknown = "1",
-  AssumedFriend = "2",
-  Friend = "3",
-  Neutral = "4",
-  Suspect = "5",
-  Joker = "5",
-  Hostile = "6",
-  Faker = "6",
-  Custom1 = "7",
-  Custom2 = "8",
-  Custom3 = "9",
-}
+export const SID = {
+  Pending: "0",
+  Unknown: "1",
+  AssumedFriend: "2",
+  Friend: "3",
+  Neutral: "4",
+  Suspect: "5",
+  Joker: "5",
+  Hostile: "6",
+  Faker: "6",
+  Custom1: "7",
+  Custom2: "8",
+  Custom3: "9",
+} as const;
+
+export type SidValue = typeof SID[keyof typeof SID];

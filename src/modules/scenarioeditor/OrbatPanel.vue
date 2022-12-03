@@ -25,7 +25,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import OrbatSide from "@/components/OrbatSide.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
-import { SideActions } from "@/types/constants";
+import { SideAction, SideActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { useSelectedUnits } from "@/stores/dragStore";
@@ -74,7 +74,7 @@ watch(
   { deep: true }
 );
 
-function onSideAction(side: NSide, action: SideActions) {
+function onSideAction(side: NSide, action: SideAction) {
   if (action === SideActions.Delete) {
     unitActions.deleteSide(side.id);
   } else if (action === SideActions.MoveDown) {

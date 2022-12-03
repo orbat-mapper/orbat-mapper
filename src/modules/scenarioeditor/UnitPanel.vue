@@ -113,7 +113,7 @@ import { useToggle } from "@vueuse/core";
 import { renderMarkdown } from "@/composables/formatting";
 import UnitPanelState from "./UnitPanelState.vue";
 import { useUnitActions } from "@/composables/scenarioActions";
-import { UnitActions } from "@/types/constants";
+import { UnitAction, UnitActions } from "@/types/constants";
 import SplitButton from "@/components/SplitButton.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { EntityId } from "@/types/base";
@@ -217,7 +217,7 @@ watch(
 
 const { onUnitAction } = useUnitActions();
 
-function actionWrapper(action: UnitActions) {
+function actionWrapper(action: UnitAction) {
   if (isMultiMode.value) {
     onUnitAction(selectedUnits.value, action);
     return;

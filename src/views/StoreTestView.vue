@@ -6,7 +6,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import { computed, onMounted, provide, ref } from "vue";
 import { EntityId } from "@/types/base";
 import { inputEventFilter } from "@/components/helpers";
-import { SideActions, UnitActions } from "@/types/constants";
+import { SideAction, SideActions, UnitAction, UnitActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
@@ -37,7 +37,7 @@ const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
 });
 
-function onUnitAction(unit: NUnit, action: UnitActions) {
+function onUnitAction(unit: NUnit, action: UnitAction) {
   console.log("On action", unit.name, action);
   if (action === UnitActions.Delete) deleteUnit(unit.id);
   if (action === UnitActions.Expand) {
@@ -69,7 +69,7 @@ function onUnitClick(unit: NUnit) {
   activeUnitId.value = unit.id;
 }
 
-function onSideAction(side: NSide, action: SideActions) {
+function onSideAction(side: NSide, action: SideAction) {
   if (action === SideActions.Delete) {
     unitActions.deleteSide(side.id);
   }

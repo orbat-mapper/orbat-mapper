@@ -6,7 +6,7 @@ import {
 } from "@/types/scenarioGeoModels";
 import { Eye as EyeIcon, EyeOff, Pencil as PencilIcon, ClockOutline } from "mdue";
 import DotsMenu from "@/components/DotsMenu.vue";
-import { ScenarioLayerActions } from "@/types/constants";
+import { ScenarioLayerAction, ScenarioLayerActions } from "@/types/constants";
 import { ref } from "vue";
 import EditLayerInlineForm from "./EditLayerInlineForm.vue";
 import ChevronPanel from "@/components/ChevronPanel.vue";
@@ -34,7 +34,7 @@ const emit = defineEmits([
 
 const showEditNameForm = ref(props.layer?._isNew || false);
 
-const layerMenuItems: MenuItemData<ScenarioLayerActions>[] = [
+const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Zoom to", action: ScenarioLayerActions.Zoom },
   { label: "Edit", action: ScenarioLayerActions.Rename },
   { label: "Move up", action: ScenarioLayerActions.MoveUp },
@@ -42,7 +42,7 @@ const layerMenuItems: MenuItemData<ScenarioLayerActions>[] = [
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ];
 
-function onLayerAction(action: ScenarioLayerActions) {
+function onLayerAction(action: ScenarioLayerAction) {
   if (action === ScenarioLayerActions.Rename) showEditNameForm.value = true;
   emit("layer-action", props.layer, action);
 }

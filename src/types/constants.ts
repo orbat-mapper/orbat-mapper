@@ -1,31 +1,35 @@
-export const enum DragOperations {
-  OrbatDrag = "OrbatDrag",
-}
+export const DragOperations = {
+  OrbatDrag: "OrbatDrag",
+} as const;
 
-export const enum UnitActions {
-  Delete = "Delete",
-  AddSubordinate = "AddSubordinate",
-  Expand = "Expand",
-  Zoom = "Zoom",
-  Edit = "Edit",
-  Copy = "Copy",
-  Paste = "Paste",
-  Clone = "Clone",
-  MoveUp = "MoveUp",
-  MoveDown = "MoveDown",
-  Pan = "Pan",
-}
+export const UnitActions = {
+  Delete: "Delete",
+  AddSubordinate: "AddSubordinate",
+  Expand: "Expand",
+  Zoom: "Zoom",
+  Edit: "Edit",
+  Copy: "Copy",
+  Paste: "Paste",
+  Clone: "Clone",
+  MoveUp: "MoveUp",
+  MoveDown: "MoveDown",
+  Pan: "Pan",
+} as const;
 
-export const enum SideActions {
-  Delete = "Delete",
-  AddSubordinate = "AddSubordinate",
-  Expand = "Expand",
-  AddGroup = "AddGroup",
-  Edit = "Edit",
-  Add = "Add",
-  MoveUp = "MoveUp",
-  MoveDown = "MoveDown",
-}
+export type UnitAction = typeof UnitActions[keyof typeof UnitActions];
+
+export const SideActions = {
+  Delete: "Delete",
+  AddSubordinate: "AddSubordinate",
+  Expand: "Expand",
+  AddGroup: "AddGroup",
+  Edit: "Edit",
+  Add: "Add",
+  MoveUp: "MoveUp",
+  MoveDown: "MoveDown",
+} as const;
+
+export type SideAction = typeof SideActions[keyof typeof SideActions];
 
 export type ScenarioActions =
   | "addSide"
@@ -38,22 +42,18 @@ export type ScenarioActions =
   | "import";
 
 export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
-//{
-//   Delete = "Delete",
-//   Zoom = "Zoom",
-//   MoveUp = "MoveUp",
-//   MoveDown = "MoveDown",
-//   Pan = "Pan",
-// }
 
-export const enum ScenarioLayerActions {
-  Delete = "Delete",
-  Rename = "Rename",
-  Edit = "Edit",
-  Zoom = "Zoom",
-  MoveUp = "MoveUp",
-  MoveDown = "MoveDown",
-}
+export const ScenarioLayerActions = {
+  Delete: "Delete",
+  Rename: "Rename",
+  Edit: "Edit",
+  Zoom: "Zoom",
+  MoveUp: "MoveUp",
+  MoveDown: "MoveDown",
+} as const;
+
+export type ScenarioLayerAction =
+  typeof ScenarioLayerActions[keyof typeof ScenarioLayerActions];
 
 export interface SymbolValue {
   code: string;

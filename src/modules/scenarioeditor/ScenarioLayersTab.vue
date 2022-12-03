@@ -20,7 +20,11 @@ import {
 } from "@/types/scenarioGeoModels";
 import CreateEmtpyDashed from "../../components/CreateEmtpyDashed.vue";
 import { injectStrict, nanoid } from "@/utils";
-import { type ScenarioFeatureActions, ScenarioLayerActions } from "@/types/constants";
+import {
+  type ScenarioFeatureActions,
+  ScenarioLayerAction,
+  ScenarioLayerActions,
+} from "@/types/constants";
 import ScenarioLayersListLayer from "./ScenarioLayersListLayer.vue";
 import { useDebounceFn, useToggle, useVModel } from "@vueuse/core";
 import Feature from "ol/Feature";
@@ -189,7 +193,7 @@ function onFeatureAction(
   );
 }
 
-function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerActions) {
+function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerAction) {
   if (action === ScenarioLayerActions.Zoom) zoomToLayer(layer.id);
   if (action === ScenarioLayerActions.Delete) {
     if (activeLayer.value === layer.id) {
