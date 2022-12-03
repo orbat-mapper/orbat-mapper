@@ -1,5 +1,5 @@
 import {
-  ChartOrientation,
+  ChartOrientations,
   DEFAULT_OPTIONS,
   OrbatChart,
   PartialOrbChartOptions,
@@ -90,14 +90,14 @@ describe("Symbol generator", () => {
 describe("OrbatChart orientation", () => {
   it("has default value 'TOP'", () => {
     let ob = new OrbatChart(DUMMY_UNIT);
-    expect(ob.options.orientation).toBe(ChartOrientation.Top);
+    expect(ob.options.orientation).toBe(ChartOrientations.Top);
   });
 
   it("can be changed", () => {
     let ob = new OrbatChart(DUMMY_UNIT, {
-      orientation: ChartOrientation.Bottom,
+      orientation: ChartOrientations.Bottom,
     });
-    expect(ob.options.orientation).toBe(ChartOrientation.Bottom);
+    expect(ob.options.orientation).toBe(ChartOrientations.Bottom);
   });
 });
 

@@ -62,7 +62,7 @@ import InputGroup from "@/components/InputGroup.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { enum2Items } from "@/utils";
-import { ChartItemType, FontStyle, FontWeight } from "./orbatchart";
+import { ChartItemType, FontStyles, FontWeights } from "./orbatchart";
 import { useChartSettings } from "./composables";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 
@@ -72,6 +72,6 @@ interface Props {
 const props = defineProps<Props>();
 const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
 
-const fontWeightItems = enum2Items(FontWeight);
-const fontStyleItems = enum2Items(FontStyle);
+const fontWeightItems = enum2Items(FontWeights);
+const fontStyleItems = enum2Items(FontStyles);
 </script>

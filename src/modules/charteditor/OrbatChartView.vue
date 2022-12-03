@@ -47,7 +47,7 @@ import OrbatChart from "./OrbatChart.vue";
 import ToggleField from "@/components/ToggleField.vue";
 
 import {
-  LevelLayout,
+  LevelLayouts,
   OnBranchClickCallback,
   OnLevelClickCallback,
   RenderedUnitNode,
@@ -88,7 +88,7 @@ const currentChartElements = useSelectedChartElementStore();
 rootUnitStore.unit =
   props.activeScenario.unitActions.getUnitByName("TG 317.1 LG") || ORBAT1;
 
-const lastLevelLayout = LevelLayout.TreeRight;
+const lastLevelLayout = LevelLayouts.TreeRight;
 const width = computed(() => sizeToWidthHeight(options.paperSize).width);
 const height = computed(() => sizeToWidthHeight(options.paperSize).height);
 

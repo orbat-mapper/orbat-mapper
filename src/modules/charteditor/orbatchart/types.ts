@@ -19,53 +19,67 @@ export interface NumberMap<T> {
   [idx: number]: T;
 }
 
-export enum ChartOrientation {
-  Top = "TOP",
-  Bottom = "BOTTOM",
+export const ChartOrientations = {
+  Top: "TOP",
+  Bottom: "BOTTOM",
   // Left = "LEFT",
   // Right = "RIGHT"
-}
+} as const;
+
+export type ChartOrientation = typeof ChartOrientations[keyof typeof ChartOrientations];
 
 /**
  * Different ways to place units
  */
-export enum LevelLayout {
-  Horizontal = "HORIZONTAL",
-  Stacked = "STACKED",
-  Tree = "TREE",
-  TreeLeft = "TREE_LEFT",
-  TreeRight = "TREE_RIGHT",
-}
+export const LevelLayouts = {
+  Horizontal: "HORIZONTAL",
+  Stacked: "STACKED",
+  Tree: "TREE",
+  TreeLeft: "TREE_LEFT",
+  TreeRight: "TREE_RIGHT",
+} as const;
 
-export enum UnitLevelDistance {
-  Fixed = "FIXED",
-  EqualPadding = "EQUAL_PADDING",
-}
+export type LevelLayout = typeof LevelLayouts[keyof typeof LevelLayouts];
 
-export enum VerticalAlignment {
-  Top = "TOP",
-  Middle = "MIDDLE",
-  Bottom = "BOTTOM",
-}
+export const UnitLevelDistances = {
+  Fixed: "FIXED",
+  EqualPadding: "EQUAL_PADDING",
+} as const;
 
-export enum FontWeight {
-  Normal = "normal",
-  Bold = "bold",
-  Bolder = "bolder",
-  Lighter = "lighter",
-}
+export type UnitLevelDistance =
+  typeof UnitLevelDistances[keyof typeof UnitLevelDistances];
 
-export enum FontStyle {
-  Normal = "normal",
-  Italic = "italic",
-}
+export const VerticalAlignments = {
+  Top: "TOP",
+  Middle: "MIDDLE",
+  Bottom: "BOTTOM",
+} as const;
 
-export enum ChartItemType {
-  Chart = "chart",
-  Level = "level",
-  Branch = "branch",
-  Unit = "unit",
-}
+export type VerticalAlignment =
+  typeof VerticalAlignments[keyof typeof VerticalAlignments];
+
+export const FontWeights = {
+  Normal: "normal",
+  Bold: "bold",
+  Bolder: "bolder",
+  Lighter: "lighter",
+} as const;
+
+export type FontWeight = typeof FontWeights[keyof typeof FontWeights];
+
+export const FontStyles = {
+  Normal: "normal",
+  Italic: "italic",
+} as const;
+
+export const ChartItemTypes = {
+  Chart: "chart",
+  Level: "level",
+  Branch: "branch",
+  Unit: "unit",
+} as const;
+
+export type ChartItemType = typeof ChartItemTypes[keyof typeof ChartItemTypes];
 
 export interface Size {
   width: number;

@@ -4,7 +4,8 @@ import {
   BasicUnitNode,
   GElementSelection,
   IdMap,
-  LevelLayout,
+  type LevelLayout,
+  LevelLayouts,
   OrbChartOptions,
   RenderedBranch,
   RenderedChart,
@@ -14,8 +15,8 @@ import {
   SVGElementSelection,
   ToSvgOptions,
   Unit,
-  UnitLevelDistance,
-  VerticalAlignment,
+  UnitLevelDistances,
+  VerticalAlignments,
 } from "./types";
 import {
   DEFAULT_CHART_HEIGHT,
@@ -39,27 +40,27 @@ import {
 } from "./svgRender";
 
 function isStackedLayout(layout: LevelLayout) {
-  return layout === LevelLayout.Stacked;
+  return layout === LevelLayouts.Stacked;
 }
 
 function isLeftRightLayout(layout: LevelLayout) {
-  return layout === LevelLayout.TreeRight || layout === LevelLayout.TreeLeft;
+  return layout === LevelLayouts.TreeRight || layout === LevelLayouts.TreeLeft;
 }
 
 export function isTreeLayout(layout: LevelLayout) {
   return (
-    layout === LevelLayout.TreeRight ||
-    layout === LevelLayout.TreeLeft ||
-    layout === LevelLayout.Tree
+    layout === LevelLayouts.TreeRight ||
+    layout === LevelLayouts.TreeLeft ||
+    layout === LevelLayouts.Tree
   );
 }
 
 export function isStackedTreeLayout(layout: LevelLayout) {
   return (
-    layout === LevelLayout.TreeRight ||
-    layout === LevelLayout.TreeLeft ||
-    layout === LevelLayout.Tree ||
-    layout === LevelLayout.Stacked
+    layout === LevelLayouts.TreeRight ||
+    layout === LevelLayouts.TreeLeft ||
+    layout === LevelLayouts.Tree ||
+    layout === LevelLayouts.Stacked
   );
 }
 
@@ -242,14 +243,14 @@ class OrbatChart {
     renderedChart.levels.forEach((renderedLevel, yIdx) => {
       // if (options.orientation === ChartOrientation.Bottom)
       let y: number;
-      if (this.options.verticalAlignment === VerticalAlignment.Middle) {
+      if (this.options.verticalAlignment === VerticalAlignments.Middle) {
         y = chartHeight * ((yIdx + 1) / (numberOfLevels + 1));
       } else {
         y = prevY;
         prevY += this.options.levelPadding;
       }
 
-      let levelLayout = LevelLayout.Horizontal;
+      let levelLayout: LevelLayout = LevelLayouts.Horizontal;
       if (yIdx === maxLevels - 1) levelLayout = this.options.lastLevelLayout;
       this._renderLevel(renderedLevel, y, levelLayout);
     });
@@ -258,7 +259,7 @@ class OrbatChart {
   private _renderLevel(
     renderedLevel: RenderedLevel,
     y: number,
-    levelLayout: LevelLayout = LevelLayout.Horizontal
+    levelLayout: LevelLayout = LevelLayouts.Horizontal
   ) {
     const levelOptions = { ...this.options, ...renderedLevel.options };
     const chartWidth = this.width;
@@ -274,15 +275,15 @@ class OrbatChart {
     const padding = availableSpace / numberOfUnitsOnLevel;
 
     switch (levelLayout) {
-      case LevelLayout.Horizontal:
+      case LevelLayouts.Horizontal:
         _doHorizontalLayout();
         break;
-      case LevelLayout.Tree:
+      case LevelLayouts.Tree:
         _doTreeLayout();
         break;
-      case LevelLayout.Stacked:
-      case LevelLayout.TreeRight:
-      case LevelLayout.TreeLeft:
+      case LevelLayouts.Stacked:
+      case LevelLayouts.TreeRight:
+      case LevelLayouts.TreeLeft:
         _doStackedLayout(levelLayout);
         break;
       default:
@@ -300,7 +301,7 @@ class OrbatChart {
         for (const unitNode of unitBranch.units) {
           let x;
           let unitOptions = { ...branchOptions, ...unitNode.options };
-          if (unitOptions.unitLevelDistance == UnitLevelDistance.EqualPadding) {
+          if (unitOptions.unitLevelDistance == UnitLevelDistances.EqualPadding) {
             x = prevX + unitNode.boundingBox.width / 2 + padding;
           } else {
             x = ((xIdx + 1) * chartWidth) / (numberOfUnitsOnLevel + 1);
@@ -361,9 +362,9 @@ class OrbatChart {
             ? unitNode.parent.x
             : ((groupIdx + 1) * chartWidth) / (groupsOnLevel + 1);
 
-          if (layout === LevelLayout.TreeRight) {
+          if (layout === LevelLayouts.TreeRight) {
             x += unitOptions.treeOffset;
-          } else if (layout === LevelLayout.TreeLeft) {
+          } else if (layout === LevelLayouts.TreeLeft) {
             x -= unitOptions.treeOffset;
           }
           const ny = prevY;
@@ -394,7 +395,7 @@ class OrbatChart {
       renderedLevel.branches.forEach((branch, groupIdx) => {
         const parent = branch.units[0].parent;
         let currentLevelLayout =
-          yIdx === nLevels - 1 ? this.options.lastLevelLayout : LevelLayout.Horizontal;
+          yIdx === nLevels - 1 ? this.options.lastLevelLayout : LevelLayouts.Horizontal;
         let branchOptions = { ...levelOptions, ...branch.options };
         if (!currentLevelGElement) return;
 
@@ -407,15 +408,15 @@ class OrbatChart {
         addConnectorAttributes(currentBranchElement, branchOptions);
         branch.units.forEach((unitNode, idx) => {
           let unitOptions = { ...branchOptions, ...unitNode.options };
-          if (currentLevelLayout === LevelLayout.Stacked && idx > 0) return;
+          if (currentLevelLayout === LevelLayouts.Stacked && idx > 0) return;
           if (isLeftRightLayout(currentLevelLayout)) return;
-          if (currentLevelLayout === LevelLayout.Tree) return;
+          if (currentLevelLayout === LevelLayouts.Tree) return;
           drawUnitBranchConnectorPath(currentBranchElement, unitNode, unitOptions);
         });
         switch (currentLevelLayout) {
-          case LevelLayout.TreeRight:
-          case LevelLayout.TreeLeft:
-          case LevelLayout.Tree:
+          case LevelLayouts.TreeRight:
+          case LevelLayouts.TreeLeft:
+          case LevelLayouts.Tree:
             drawUnitBranchTreeLeftRightConnectorPath(
               currentBranchElement,
               branch.units,

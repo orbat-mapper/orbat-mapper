@@ -13,7 +13,7 @@
       </header>
       <PlainButton @click="clearSpecificOptions()">Clear settings</PlainButton>
       <AccordionPanel label="Unit settings" default-open>
-        <SettingsUnit :item-type="ChartItemType.Unit" />
+        <SettingsUnit :item-type="ChartItemTypes.Unit" />
       </AccordionPanel>
     </div>
   </div>
@@ -24,13 +24,13 @@ import { useSelectedChartElementStore } from "./chartSettingsStore";
 import { computed } from "vue";
 import MilSymbol from "../../components/MilSymbol.vue";
 import PlainButton from "../../components/PlainButton.vue";
-import { ChartItemType } from "./orbatchart";
+import { ChartItemTypes } from "./orbatchart";
 import { useChartSettings } from "./composables";
 import SettingsUnit from "./SettingsUnit.vue";
 import AccordionPanel from "../../components/AccordionPanel.vue";
 
 const currentUnitNode = useSelectedChartElementStore();
-const { clearSpecificOptions } = useChartSettings(ChartItemType.Unit);
+const { clearSpecificOptions } = useChartSettings(ChartItemTypes.Unit);
 
 const currentUnit = computed(() => currentUnitNode.node?.unit);
 </script>

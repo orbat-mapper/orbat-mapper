@@ -4,10 +4,10 @@
     <div v-if="currentBranch !== null" class="mt-4">
       <PlainButton @click="clearSpecificOptions()">Clear settings</PlainButton>
       <AccordionPanel label="Unit settings" default-open>
-        <SettingsUnit :item-type="ChartItemType.Branch" />
+        <SettingsUnit :item-type="ChartItemTypes.Branch" />
       </AccordionPanel>
       <AccordionPanel label="Connectors">
-        <SettingConnectors :item-type="ChartItemType.Branch" />
+        <SettingConnectors :item-type="ChartItemTypes.Branch" />
       </AccordionPanel>
     </div>
   </div>
@@ -17,13 +17,13 @@
 import { useSelectedChartElementStore } from "./chartSettingsStore";
 import { computed } from "vue";
 import PlainButton from "../../components/PlainButton.vue";
-import { ChartItemType } from "./orbatchart";
+import { ChartItemTypes } from "./orbatchart";
 import { useChartSettings } from "./composables";
 import SettingsUnit from "./SettingsUnit.vue";
 import AccordionPanel from "../../components/AccordionPanel.vue";
 import SettingConnectors from "./SettingsConnectors.vue";
 
 const selectedElement = useSelectedChartElementStore();
-const { clearSpecificOptions } = useChartSettings(ChartItemType.Branch);
+const { clearSpecificOptions } = useChartSettings(ChartItemTypes.Branch);
 const currentBranch = computed(() => selectedElement.branch?.parent || null);
 </script>

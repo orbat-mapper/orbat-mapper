@@ -4,7 +4,8 @@ import {
   ConnectorOptions,
   FontOptions,
   GElementSelection,
-  LevelLayout,
+  type LevelLayout,
+  LevelLayouts,
   OrbChartOptions,
   PartialOrbChartOptions,
   RenderedLevel,
@@ -305,8 +306,8 @@ export function drawUnitBranchTreeLeftRightConnectorPath(
     let d1;
     const delta = Math.abs(unit.boundingBox.width / 2 - maxWidth / 2);
     if (
-      levelLayout === LevelLayout.TreeRight ||
-      (levelLayout === LevelLayout.Tree && yIdx % 2)
+      levelLayout === LevelLayouts.TreeRight ||
+      (levelLayout === LevelLayouts.Tree && yIdx % 2)
     )
       d1 = `M ${unit.lx - delta - options.connectorOffset}, ${unit.y}  H ${parentUnit.x}`;
     else

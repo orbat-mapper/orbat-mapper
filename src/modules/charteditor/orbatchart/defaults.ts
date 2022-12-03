@@ -1,9 +1,9 @@
 import {
-  ChartOrientation,
-  LevelLayout,
+  ChartOrientations,
+  LevelLayouts,
   OrbChartOptions,
-  UnitLevelDistance,
-  VerticalAlignment,
+  UnitLevelDistances,
+  VerticalAlignments,
 } from "./types";
 
 export const DEFAULT_CHART_WIDTH = 600;
@@ -17,11 +17,11 @@ export const DEFAULT_OPTIONS = {
   maxLevels: 0,
   debug: false,
   connectorOffset: 5,
-  orientation: ChartOrientation.Top,
-  unitLevelDistance: UnitLevelDistance.Fixed,
-  lastLevelLayout: LevelLayout.Horizontal,
-  layout: LevelLayout.Horizontal,
-  verticalAlignment: VerticalAlignment.Top,
+  orientation: ChartOrientations.Top,
+  unitLevelDistance: UnitLevelDistances.Fixed,
+  lastLevelLayout: LevelLayouts.Horizontal,
+  layout: LevelLayouts.Horizontal,
+  verticalAlignment: VerticalAlignments.Top,
   levelPadding: 175,
   treeOffset: TREE_LEFT_RIGHT_OFFSET,
   stackedOffset: STACKED_OFFSET,

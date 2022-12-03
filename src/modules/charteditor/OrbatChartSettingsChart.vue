@@ -85,7 +85,7 @@
 import InputGroup from "@/components/InputGroup.vue";
 import { useChartSettingsStore, useRootUnitStore } from "./chartSettingsStore";
 import SimpleSelect from "@/components/SimpleSelect.vue";
-import { FontStyle, FontWeight, LevelLayout, UnitLevelDistance } from "./orbatchart";
+import { FontStyles, FontWeights, LevelLayouts, UnitLevelDistances } from "./orbatchart";
 import ToggleField from "@/components/ToggleField.vue";
 import { enum2Items, injectStrict } from "@/utils";
 import { defineAsyncComponent, ref } from "vue";
@@ -106,10 +106,10 @@ const {
 } = injectStrict(activeScenarioKey);
 
 const options = useChartSettingsStore();
-const levelItems = enum2Items(LevelLayout);
-const spacingItems = enum2Items(UnitLevelDistance);
-const fontWeightItems = enum2Items(FontWeight);
-const fontStyleItems = enum2Items(FontStyle);
+const levelItems = enum2Items(LevelLayouts);
+const spacingItems = enum2Items(UnitLevelDistances);
+const fontWeightItems = enum2Items(FontWeights);
+const fontStyleItems = enum2Items(FontStyles);
 const rootUnitStore = useRootUnitStore();
 const showSearch = ref(false);
 

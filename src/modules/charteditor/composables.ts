@@ -1,4 +1,4 @@
-import { ChartItemType, Unit } from "./orbatchart";
+import { type ChartItemType, ChartItemTypes, type Unit } from "./orbatchart";
 import {
   useMergedChartOptionsStore,
   useSelectedChartElementStore,
@@ -13,11 +13,11 @@ export function useChartSettings(chartElementType: ChartItemType) {
   const mOptions = useMergedChartOptionsStore();
   const mergedOptions = computed(() => {
     switch (chartElementType) {
-      case ChartItemType.Level:
+      case ChartItemTypes.Level:
         return mOptions.level;
-      case ChartItemType.Branch:
+      case ChartItemTypes.Branch:
         return mOptions.branch;
-      case ChartItemType.Unit:
+      case ChartItemTypes.Unit:
         return mOptions.unit;
       default:
         return {};
@@ -26,11 +26,11 @@ export function useChartSettings(chartElementType: ChartItemType) {
 
   const currentElement = computed(() => {
     switch (chartElementType) {
-      case ChartItemType.Level:
+      case ChartItemTypes.Level:
         return selectedElementStore.level;
-      case ChartItemType.Branch:
+      case ChartItemTypes.Branch:
         return selectedElementStore.branch?.parent || null;
-      case ChartItemType.Unit:
+      case ChartItemTypes.Unit:
         return selectedElementStore.node?.unit || null;
       default:
         return null;
@@ -40,11 +40,11 @@ export function useChartSettings(chartElementType: ChartItemType) {
   const elementOptions = computed(() => {
     if (currentElement.value == null) return null;
     switch (chartElementType) {
-      case ChartItemType.Level:
+      case ChartItemTypes.Level:
         return specificOptionsStore.level[currentElement.value as number];
-      case ChartItemType.Branch:
+      case ChartItemTypes.Branch:
         return specificOptionsStore.branch[currentElement.value as string | number];
-      case ChartItemType.Unit:
+      case ChartItemTypes.Unit:
         return specificOptionsStore.unit[(currentElement.value as Unit).id] || null;
       default:
         return null;
@@ -55,13 +55,13 @@ export function useChartSettings(chartElementType: ChartItemType) {
     if (currentElement.value == null) return;
     const opts = { ...(elementOptions.value || {}), [name]: value };
     switch (chartElementType) {
-      case ChartItemType.Level:
+      case ChartItemTypes.Level:
         specificOptionsStore.level[currentElement.value as number] = opts;
         break;
-      case ChartItemType.Branch:
+      case ChartItemTypes.Branch:
         specificOptionsStore.branch[currentElement.value as string | number] = opts;
         break;
-      case ChartItemType.Unit:
+      case ChartItemTypes.Unit:
         specificOptionsStore.unit[(currentElement.value as Unit).id] = opts;
         break;
     }
@@ -71,13 +71,13 @@ export function useChartSettings(chartElementType: ChartItemType) {
     const opts = {};
     if (currentElement.value == null) return;
     switch (chartElementType) {
-      case ChartItemType.Level:
+      case ChartItemTypes.Level:
         specificOptionsStore.level[currentElement.value as number] = opts;
         break;
-      case ChartItemType.Branch:
+      case ChartItemTypes.Branch:
         specificOptionsStore.branch[currentElement.value as string | number] = opts;
         break;
-      case ChartItemType.Unit:
+      case ChartItemTypes.Unit:
         specificOptionsStore.unit[(currentElement.value as Unit).id] = opts;
         break;
     }
