@@ -98,10 +98,9 @@
 import { computed, inject, ref } from "vue";
 import MilSymbol from "./MilSymbol.vue";
 import { Unit } from "@/types/scenarioModels";
-//@ts-ignore
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { useActiveUnitStore, useDragStore, useSelectedUnits } from "@/stores/dragStore";
-import { DragOperations, type UnitAction, UnitActions } from "@/types/constants";
+import { DragOperations, type UnitAction } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "@/composables/scenarioActions";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -115,12 +114,13 @@ interface Props {
 
 const props = defineProps<Props>();
 
+// for some reason this throws a vue-tsc error
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitAction): void;
   (e: "unit-click", unit: NUnit, event: MouseEvent): void;
   (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
 }
-const emit = defineEmits<Emits>();
+const emit = defineEmits(["unit-action", "unit-click", "unit-drop"]);
 
 const activeUnitId = inject(activeUnitKey);
 
@@ -180,7 +180,7 @@ const onDrop = (ev: DragEvent) => {
 
 const activeUnitStore = useActiveUnitStore();
 
-const onUnitMenuAction = async (unit: NUnit, action: UnitAction) => {
+const onUnitMenuAction = (unit: NUnit, action: UnitAction) => {
   emit("unit-action", unit, action);
 };
 
