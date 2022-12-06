@@ -27,4 +27,10 @@ features:
     details: Quickly build order of battles.
   - title: Draw features
     details:
+  - title: Client side only
+    details: Quickly build order of battles.
+  - title: Grid edit mode
+  - title: Export to KML/KMZ
+    details: View your scenario in 3D with Google Earth.
+  - title: Export as GeoJSON
 ---

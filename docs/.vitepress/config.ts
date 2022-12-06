@@ -5,6 +5,7 @@ export default defineConfig({
   title: "ORBAT Mapper",
   description: "Just playing around.",
   themeConfig: {
+    outline: "deep",
     logo: "/favicon.svg",
     socialLinks: [
       { icon: "github", link: "https://github.com/orbat-mapper/orbat-mapper" },
@@ -13,7 +14,7 @@ export default defineConfig({
     nav: [
       { text: "Guide", link: "/guide/what-is-orbat-mapper", activeMatch: "/guide/" },
       { text: "Resources", link: "/resources/tools", activeMatch: "/resources/" },
-      // { text: "Changelog", link: "https://github.com/..." },
+      { text: "Open App", link: "https://orbat-mapper.app" },
     ],
     footer: {
       message: "Released under the MIT License.",
@@ -27,17 +28,13 @@ function sidebarGuide(): DefaultTheme.Sidebar {
   return [
     {
       text: "Introduction",
-      items: [
-        { text: "What is ORBAT Mapper?", link: "/guide/what-is-orbat-mapper" },
-        // { text: "Item B", link: "/item-b" },
-      ],
+      items: [{ text: "What is ORBAT Mapper?", link: "/guide/what-is-orbat-mapper" }],
     },
     {
       text: "Import and export",
       items: [
         { text: "Import data", link: "/guide/import-data" },
         { text: "Export data", link: "/guide/export-data" },
-        // { text: "Item B", link: "/item-b" },
       ],
     },
     {
