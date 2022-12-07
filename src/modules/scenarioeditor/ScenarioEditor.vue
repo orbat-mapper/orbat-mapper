@@ -26,6 +26,13 @@
         </div>
       </div>
       <div class="flex shrink-0 items-center space-x-2">
+        <a
+          href=https://docs.orbat-mapper.app/guide/what-is-orbat-mapper
+          target="_blank"
+          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white font-medium"
+        >
+          Help
+        </a>
         <DropdownMenu :items="fileMenuItems" @action="onScenarioAction"
           >File
         </DropdownMenu>
