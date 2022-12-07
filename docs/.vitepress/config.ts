@@ -4,6 +4,7 @@ export default defineConfig({
   cleanUrls: "without-subfolders",
   title: "ORBAT Mapper",
   description: "Just playing around.",
+  head: [["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }]],
   themeConfig: {
     outline: "deep",
     logo: "/favicon.svg",
@@ -28,7 +29,10 @@ function sidebarGuide(): DefaultTheme.Sidebar {
   return [
     {
       text: "Introduction",
-      items: [{ text: "What is ORBAT Mapper?", link: "/guide/what-is-orbat-mapper" }],
+      items: [
+        { text: "What is ORBAT Mapper?", link: "/guide/what-is-orbat-mapper" },
+        { text: "Military symbology", link: "/guide/military-symbology" },
+      ],
     },
     {
       text: "Import and export",
