@@ -20,6 +20,8 @@ export default defineComponent({
     const symb = new ms.Symbol(this.sidc || "", {
       size: this.size,
       simpleStatusModifier: true,
+      outlineColor: "white",
+      outlineWidth: 8,
       ...(this.modifiers ?? {}),
     });
     return h("span", {
@@ -29,8 +31,3 @@ export default defineComponent({
   },
 });
 </script>
-<style scoped>
-.milsymbol {
-  display: inline-flex;
-}
-</style>
