@@ -1,6 +1,6 @@
 # Import data
 
-![An image](./import.png)
+![An image](images/import.png)
 
 ## GeoJSON
 

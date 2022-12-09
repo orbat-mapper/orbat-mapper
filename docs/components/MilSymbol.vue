@@ -9,25 +9,26 @@ export default defineComponent({
     sidc: { type: String },
     size: {
       type: Number,
-      default: 15,
+      default: 25,
     },
     modifiers: {
       type: Object,
     },
   },
 
-  render() {
-    const symb = new ms.Symbol(this.sidc || "", {
-      size: this.size,
+  setup(props) {
+    const symb = new ms.Symbol(props.sidc || "", {
+      size: props.size,
       simpleStatusModifier: true,
       outlineColor: "white",
       outlineWidth: 8,
-      ...(this.modifiers ?? {}),
+      ...(props.modifiers ?? {}),
     });
-    return h("span", {
-      class: "milsymbol",
-      innerHTML: symb.asSVG(),
-    });
+    return () =>
+      h("span", {
+        class: "milsymbol",
+        innerHTML: symb.asSVG(),
+      });
   },
 });
 </script>
