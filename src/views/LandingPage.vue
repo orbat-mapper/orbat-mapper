@@ -38,11 +38,20 @@
           >.
         </p>
 
-        <div class="mt-5 mx-auto sm:flex sm:justify-center md:mt-8">
-          <div class="rounded-md shadow">
+        <div class="mt-5 mx-auto sm:flex sm:justify-center md:mt-8 sm:items-center">
+          <div class="mt-3 border border-gray-200 rounded-md shadow sm:mt-0">
+            <a
+                href="https://preview--orbat-mapper.netlify.app"
+                class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
+            >
+              Try preview
+              <img class="ml-4 w-8 h-8 inline" src="/favicon.svg"/>
+            </a>
+          </div>
+          <div class="rounded-md shadow sm:ml-3">
             <a
                 href="https://github.com/orbat-mapper/orbat-mapper"
-                class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
+                class="inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-6 py-3 text-base font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               View on Github
               <GithubIcon class="ml-4 w-8 h-8 inline"/>
@@ -50,12 +59,13 @@
           </div>
           <div class="mt-3 border border-gray-200 rounded-md shadow sm:mt-0 sm:ml-3">
             <a
-                href="https://preview--orbat-mapper.netlify.app"
+                href="https://docs.orbat-mapper.app"
                 class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
             >
-              Try preview
+              Documentation
             </a>
           </div>
+
         </div>
       </div>
       <FeatureSection/>
