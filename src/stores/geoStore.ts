@@ -94,8 +94,3 @@ export const useUnitSettingsStore = defineStore("unitSettings", {
     };
   },
 });
-
-if (import.meta.hot) {
-  // HMR code
-  import.meta.hot.decline();
-}

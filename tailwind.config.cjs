@@ -2,7 +2,13 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
   darkMode: "class",
-  content: ["src/**/*.html", "src/**/*.vue", "src/**/*.js", "**/*.html", "./docs/**/*.{md,html,js,vue}"],
+  content: [
+    "src/**/*.html",
+    "src/**/*.vue",
+    "src/**/*.js",
+    "**/*.html",
+    "./docs/**/*.{md,html,js,vue}",
+  ],
   theme: {
     extend: {
       fontFamily: {
