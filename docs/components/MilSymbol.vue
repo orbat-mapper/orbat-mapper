@@ -9,7 +9,7 @@ export default defineComponent({
     sidc: { type: String },
     size: {
       type: Number,
-      default: 25,
+      default: 32,
     },
     modifiers: {
       type: Object,

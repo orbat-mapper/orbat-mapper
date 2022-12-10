@@ -22,3 +22,17 @@ when displaying units, equipment and installations.
     <MilSymbol sidc="10041000000000000000" />
     <MilSymbol sidc="10061000000000000000" />
 </div>
+
+## Symbol identification codes
+
+MILSTD 2525D/APP-6D uses a 20 digit numeric symbol identification code (SIDC) to uniquely represent a symbol. You
+usually don't need to work with these codes directly, but understanding how they are constructed can be very useful. For
+exploring symbol codes you can try the [Joint military symbology explorer](https://explorer.milsymb.net/#/explore/) or
+browse the standards.
+
+### Legacy symbol codes
+
+Earlier versions of the symbology standards use a shorter, letter based, symbol identification code. There are plenty of
+systems that still use letter based codes, so ORBAT Mapper supports converting from letter based codes to numeric codes
+using the [convert-symbology](https://github.com/orbat-mapper/convert-symbology) library. Most symbols from 2525C/APP-6C
+are available in 2525D/APP-6D, but they may look different.

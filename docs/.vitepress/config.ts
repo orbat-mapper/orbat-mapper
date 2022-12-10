@@ -31,8 +31,8 @@ function sidebarGuide(): DefaultTheme.Sidebar {
       text: "Introduction",
       items: [
         { text: "What is ORBAT Mapper?", link: "/guide/what-is-orbat-mapper" },
-        { text: "Military symbology", link: "/guide/military-symbology" },
         { text: "Getting started", link: "/guide/getting-started" },
+        { text: "Military symbology", link: "/guide/military-symbology" },
       ],
     },
     {
