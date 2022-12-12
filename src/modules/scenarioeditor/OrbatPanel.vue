@@ -1,8 +1,6 @@
 <template>
-  <div>
-    <p class="pl-6 pr-2 text-xs font-medium uppercase tracking-wider text-gray-500">
-      Order of battle
-    </p>
+  <div class="space-y-4">
+    <slot name="header"></slot>
     <OrbatSide
       v-for="side in sides"
       :key="side.id"
@@ -12,7 +10,6 @@
       @unit-click="onUnitClick"
       @unit-drop="onUnitDrop"
       @side-action="onSideAction"
-      class="mt-4"
     />
     <OrbatPanelAddSide v-if="sides.length < 2" class="mt-8" @add="addSide()" />
   </div>

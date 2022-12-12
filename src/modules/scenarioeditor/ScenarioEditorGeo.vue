@@ -13,7 +13,15 @@
         class="min-h-0"
       >
         <TabItem label="Units" class="relative">
-          <OrbatPanel class="pb-12" />
+          <OrbatPanel class="pb-12">
+            <template #header
+              ><p
+                class="pl-6 pr-2 text-xs font-medium uppercase tracking-wider text-gray-500"
+              >
+                Order of battle
+              </p></template
+            >
+          </OrbatPanel>
         </TabItem>
         <TabItem label="Info">
           <ScenarioInfoPanel />
