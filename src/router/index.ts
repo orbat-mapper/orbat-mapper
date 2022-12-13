@@ -12,6 +12,13 @@ import {
   STORY_MODE_ROUTE,
 } from "@/router/names";
 
+declare module "vue-router" {
+  interface RouteMeta {
+    // is optional
+    helpUrl?: string;
+  }
+}
+
 const ScenarioEditorWrapper = () =>
   import("../modules/scenarioeditor/ScenarioEditorWrapper.vue");
 const NewScenarioView = () => import("../modules/scenarioeditor/NewScenarioView.vue");
@@ -31,9 +38,24 @@ const routes = [
       NProgress.start();
     },
     children: [
-      { path: "", name: SCENARIO_ROUTE, component: ScenarioEditorGeo },
-      { path: "grid-edit", name: GRID_EDIT_ROUTE, component: GridEditView },
-      { path: "chart-edit", name: CHART_EDIT_MODE_ROUTE, component: ChartEditView },
+      {
+        path: "",
+        name: SCENARIO_ROUTE,
+        component: ScenarioEditorGeo,
+        meta: { helpUrl: "https://docs.orbat-mapper.app/guide/map-edit-mode" },
+      },
+      {
+        path: "grid-edit",
+        name: GRID_EDIT_ROUTE,
+        component: GridEditView,
+        meta: { helpUrl: "https://docs.orbat-mapper.app/guide/grid-edit-mode" },
+      },
+      {
+        path: "chart-edit",
+        name: CHART_EDIT_MODE_ROUTE,
+        component: ChartEditView,
+        meta: { helpUrl: "https://docs.orbat-mapper.app/guide/chart-edit-mode" },
+      },
     ],
   },
   {
