@@ -248,7 +248,10 @@ export function calculateAnchorPoints(unitNode: RenderedUnitNode) {
   unitNode.rx = x + unitNode.boundingBox.width / 2;
 }
 
-export function drawDebugAnchors(svg: SVGElementSelection, unitNode: RenderedUnitNode) {
+export function drawDebugAnchors(
+  svg: SVGElementSelection | GElementSelection,
+  unitNode: RenderedUnitNode
+) {
   drawDebugPoint(svg, unitNode.x, unitNode.y);
   drawDebugPoint(svg, unitNode.x, unitNode.ly);
   drawDebugPoint(svg, unitNode.lx, unitNode.y);

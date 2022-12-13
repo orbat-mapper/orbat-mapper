@@ -38,6 +38,8 @@ import {
   drawUnitLevelConnectorPath,
   putGroupAt,
 } from "./svgRender";
+import type { PanZoom } from "panzoom";
+import createPanZoom from "panzoom";
 
 function isStackedLayout(layout: LevelLayout) {
   return layout === LevelLayouts.Stacked;
@@ -72,7 +74,8 @@ class OrbatChart {
   svg!: SVGElementSelection;
   connectorGroup!: GElementSelection;
   renderedChart!: RenderedChart;
-
+  wrapperGroup!: GElementSelection;
+  pz!: PanZoom;
   constructor(
     private rootNode: Unit,
     options: Partial<OrbChartOptions> = {},
@@ -88,6 +91,9 @@ class OrbatChart {
       this.svg.selectAll("g.o-unit").on("click", null);
       this._removeSelectEventListeners();
     }
+    if (this.pz) {
+      this.pz.dispose();
+    }
   }
 
   private _removeSelectEventListeners() {
@@ -101,7 +107,8 @@ class OrbatChart {
     this.width = width || DEFAULT_CHART_WIDTH;
     this.height = height || DEFAULT_CHART_HEIGHT;
     let renderedChart = this._createSvgRootElement(parentElement, elementId);
-    const chartGroup = createGroupElement(this.svg, "o-chart");
+    const chartGroup = createGroupElement(this.wrapperGroup, "o-chart");
+    this.pz = createPanZoom(this.wrapperGroup.node()!);
     addFontAttributes(chartGroup, this.options);
 
     this.connectorGroup = createGroupElement(chartGroup, "o-connectors");
@@ -179,8 +186,9 @@ class OrbatChart {
     svg.append("style").text(createChartStyle(this.options));
     svg.attr("width", "100%");
     svg.attr("height", "100%");
+    this.wrapperGroup = createGroupElement(svg, "o-wrapper");
     if (this.options.debug) {
-      svg
+      this.wrapperGroup
         .append<SVGRectElement>("rect")
         .attr("fill", "none")
         .attr("stroke", "red")
@@ -189,9 +197,13 @@ class OrbatChart {
         .attr("width", this.width)
         .attr("height", this.height);
     }
-    createGroupElement(svg, "", "o-highlight-layer");
+
+    createGroupElement(this.wrapperGroup, "", "o-highlight-layer");
     this.svg = svg;
-    return { groupElement: (<unknown>svg) as GElementSelection, levels: [] };
+    return {
+      groupElement: (<unknown>this.wrapperGroup) as GElementSelection,
+      levels: [],
+    };
   }
 
   private _computeOrbatInfo(rootNode: Unit) {
@@ -264,6 +276,8 @@ class OrbatChart {
     const levelOptions = { ...this.options, ...renderedLevel.options };
     const chartWidth = this.width;
     const svg = this.svg;
+    const wrapperGroup = this.wrapperGroup;
+
     const renderGroups = renderedLevel.branches;
     const unitsOnLevel = flattenArray<RenderedUnitNode>(
       renderGroups.map((unitGroup) => unitGroup.units)
@@ -314,7 +328,7 @@ class OrbatChart {
           prevX = unitNode.x + unitNode.boundingBox.width / 2;
           putGroupAt(unitNode.groupElement, unitNode, x, y, unitOptions.debug);
 
-          if (unitOptions.debug) drawDebugAnchors(svg, unitNode);
+          if (unitOptions.debug) drawDebugAnchors(wrapperGroup, unitNode);
           xIdx += 1;
         }
         if (branchOptions.debug) drawDebugRect(unitBranch.groupElement, "yellow");
@@ -345,7 +359,7 @@ class OrbatChart {
           if (yIdx % 2) prevY = unitNode.ly + unitOptions.stackedOffset;
 
           putGroupAt(unitNode.groupElement, unitNode, x, ny, unitOptions.debug);
-          if (unitOptions.debug) drawDebugAnchors(svg, unitNode);
+          if (unitOptions.debug) drawDebugAnchors(wrapperGroup, unitNode);
         }
         if (branchOptions.debug) drawDebugRect(unitBranch.groupElement, "yellow");
       });
@@ -374,7 +388,7 @@ class OrbatChart {
 
           prevY = unitNode.ly + unitOptions.stackedOffset;
           putGroupAt(unitNode.groupElement, unitNode, x, ny, unitOptions.debug);
-          if (unitOptions.debug) drawDebugAnchors(svg, unitNode);
+          if (unitOptions.debug) drawDebugAnchors(wrapperGroup, unitNode);
         }
         if (branchOptions.debug) drawDebugRect(unitBranch.groupElement, "yellow");
       });
