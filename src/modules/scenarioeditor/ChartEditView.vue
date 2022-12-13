@@ -7,7 +7,8 @@
         <template #header></template>
       </OrbatPanel>
     </aside>
-    <main class="relative min-w-0 flex-auto">
+    <main class="relative h-full flex-auto">
+      <p v-if="!activeUnit" class="p-8 text-center">Select a root unit in the sidebar</p>
       <OrbatChart
         :unit="activeUnit"
         :width="width"
