@@ -1,4 +1,4 @@
-# What is ORBAT Mapper?
+# About ORBAT Mapper
 
 ORBAT Mapper is a simple web application for building order of battles (ORBATs) and tracking unit location and state
 changes over time. With ORBAT Mapper you can recreate historic battles and military scenarios your browser. It is a tool

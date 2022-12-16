@@ -13,7 +13,7 @@ export default defineConfig({
     ],
 
     nav: [
-      { text: "Guide", link: "/guide/what-is-orbat-mapper", activeMatch: "/guide/" },
+      { text: "Guide", link: "/guide/about-orbat-mapper", activeMatch: "/guide/" },
       { text: "Resources", link: "/resources/tools", activeMatch: "/resources/" },
       { text: "Open App", link: "https://orbat-mapper.app" },
     ],
@@ -30,7 +30,7 @@ function sidebarGuide(): DefaultTheme.Sidebar {
     {
       text: "Introduction",
       items: [
-        { text: "What is ORBAT Mapper?", link: "/guide/what-is-orbat-mapper" },
+        { text: "What is ORBAT Mapper?", link: "/guide/about-orbat-mapper" },
         { text: "Getting started", link: "/guide/getting-started" },
         { text: "Military symbology", link: "/guide/military-symbology" },
       ],

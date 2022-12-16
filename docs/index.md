@@ -17,7 +17,7 @@ hero:
       link: https://preview--orbat-mapper.netlify.app/
     - theme: brand
       text: User guide
-      link: /guide/what-is-orbat-mapper
+      link: /guide/about-orbat-mapper
     - theme: alt
       text: View on GitHub
       link: https://github.com/orbat-mapper/orbat-mapper

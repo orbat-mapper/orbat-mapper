@@ -28,8 +28,7 @@
       <div class="flex shrink-0 items-center space-x-2">
         <a
           :href="
-            route.meta.helpUrl ||
-            'https://docs.orbat-mapper.app/guide/what-is-orbat-mapper'
+            route.meta.helpUrl || 'https://docs.orbat-mapper.app/guide/about-orbat-mapper'
           "
           target="_blank"
           class="inline-flex items-center justify-center rounded-md p-2 font-medium text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
