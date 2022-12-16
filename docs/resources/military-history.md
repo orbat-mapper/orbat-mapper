@@ -1,5 +1,9 @@
 # Military history
 
+The [Battle Order](https://www.battleorder.org/) website
+and [YouTube channel](https://www.youtube.com/channel/UCn6_Kza6erL9GCAhOpQLfBg) contains a wealth of in-depth content
+about ORBATs, TO&Es, tactics, logistics and more.
+
 If you are interested in WW2 history I highly recommend the
 site [Project'44 the road to liberation](https://www.project44.ca/). Their [interactive
 WWII web maps](https://map.project44.ca/) and [story maps](https://map.project44.ca/story-maps) are fantastic!
