@@ -1,11 +1,14 @@
 <template>
-  <div>
+  <div class="mt-4">
     <RadioGroup v-model="data">
       <!--    <RadioGroupLabel class="text-base font-medium text-gray-900"-->
       <!--      >Select standard identity</RadioGroupLabel-->
       <!--    >-->
 
-      <div class="mt-4 grid grid-cols-2 gap-y-4 gap-x-4 sm:grid-cols-4">
+      <div
+        class="grid gap-y-4 gap-x-4"
+        :class="compact ? 'grid-cols-2' : 'sm:grid-cols-4'"
+      >
         <RadioGroupOption
           as="template"
           v-for="sid in items"
@@ -80,9 +83,10 @@ import { useVModel } from "@vueuse/core";
 
 interface Props {
   modelValue: string;
+  compact?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), { modelValue: "3" });
+const props = withDefaults(defineProps<Props>(), { modelValue: "3", compact: false });
 const emit = defineEmits(["update:modelValue"]);
 
 const data = useVModel(props, "modelValue", emit);
