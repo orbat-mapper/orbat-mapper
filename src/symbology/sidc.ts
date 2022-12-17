@@ -18,6 +18,12 @@ export interface SicElements {
   modifierTwo: string;
 }
 
+export interface ExtendedSidcElements {
+  originatorIdentifier: string;
+  originatorSymbolSet: string;
+  data: string;
+}
+
 export class Sidc implements SicElements {
   version: string;
   context: string;
@@ -34,19 +40,19 @@ export class Sidc implements SicElements {
   modifierTwo: string;
 
   constructor(private sic: string = "10000000000000000000") {
-    this.version = sic.substr(0, 2);
-    this.context = sic.substr(2, 1);
-    this.standardIdentity = sic.substr(3, 1);
-    this.symbolSet = sic.substr(4, 2);
-    this.status = sic.substr(6, 1);
-    this.hqtfd = sic.substr(7, 1);
-    this.amplifier = sic.substr(8, 1);
-    this.amplifierDescriptor = sic.substr(9, 1);
-    this.entity = sic.substr(10, 2);
-    this.entityType = sic.substr(12, 2);
-    this.entitySubType = sic.substr(14, 2);
-    this.modifierOne = sic.substr(16, 2);
-    this.modifierTwo = sic.substr(18, 2);
+    this.version = sic.substring(0, 2);
+    this.context = sic.substring(2, 3);
+    this.standardIdentity = sic.substring(3, 4);
+    this.symbolSet = sic.substring(4, 6);
+    this.status = sic.substring(6, 7);
+    this.hqtfd = sic.substring(7, 8);
+    this.amplifier = sic.substring(8, 9);
+    this.amplifierDescriptor = sic.substring(9, 10);
+    this.entity = sic.substring(10, 12);
+    this.entityType = sic.substring(12, 14);
+    this.entitySubType = sic.substring(14, 16);
+    this.modifierOne = sic.substring(16, 18);
+    this.modifierTwo = sic.substring(18, 20);
   }
 
   get emt() {
@@ -78,3 +84,11 @@ export class Sidc implements SicElements {
 }
 
 export const SID_INDEX = 3;
+export const ORBAT_MAPPER_ORIGINATOR = "987";
+
+export function parseExtendedSidc(sidc: string): ExtendedSidcElements {
+  const originatorIdentifier = sidc.substring(20, 23);
+  const originatorSymbolSet = sidc.substring(23, 24);
+  const data = sidc.substring(24);
+  return { originatorIdentifier, originatorSymbolSet, data };
+}
