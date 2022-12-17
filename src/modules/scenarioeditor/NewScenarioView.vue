@@ -40,20 +40,16 @@
             >
           </div>
           <template v-if="!noInitialOrbat">
-            <div
-              v-for="sideData in form.sides"
-              class="grid grid-cols-2 gap-4 rounded-md border bg-gray-50 p-4"
-            >
-              <InputGroup v-model="sideData.name" label="Side name" />
-              <SymbolCodeSelect
-                v-model="sideData.standardIdentity"
-                label="Standard identity"
-                :items="sidItems"
-              />
-              <InputGroup
-                label="Root unit name"
-                v-model="sideData.rootUnitName"
-              ></InputGroup>
+            <div v-for="sideData in form.sides" class="rounded-md border bg-gray-50 p-4">
+              <div class="grid grid-cols-2 gap-4">
+                <InputGroup v-model="sideData.name" label="Side name" />
+
+                <InputGroup
+                  label="Root unit name"
+                  v-model="sideData.rootUnitName"
+                ></InputGroup>
+              </div>
+              <StandardIdentitySelect v-model="sideData.standardIdentity" />
             </div>
           </template>
         </FormCard>
@@ -112,6 +108,7 @@ import { ScenarioInfo, SideData } from "@/types/scenarioModels";
 import { SID } from "@/symbology/values";
 import { nanoid } from "@/utils";
 import { Sidc } from "@/symbology/sidc";
+import StandardIdentitySelect from "@/components/StandardIdentitySelect.vue";
 
 const router = useRouter();
 const { scenario } = useScenario();

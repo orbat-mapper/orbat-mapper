@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, h } from "vue";
 
-import { symbolGenerator } from "../symbology/milsymbwrapper";
+import { symbolGenerator } from "@/symbology/milsymbwrapper";
 
 export default defineComponent({
   name: "MilSymbol",
