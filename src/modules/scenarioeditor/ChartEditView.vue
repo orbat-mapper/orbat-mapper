@@ -3,7 +3,7 @@
     <aside
       class="relative z-10 flex flex-col justify-between overflow-auto border-r-2 bg-gray-100 dark:bg-gray-900"
     >
-      <OrbatPanel class="w-96 space-y-1">
+      <OrbatPanel class="w-96 space-y-1" hide-filter>
         <template #header></template>
       </OrbatPanel>
     </aside>

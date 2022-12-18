@@ -10,6 +10,7 @@
       @unit-click="onUnitClick"
       @unit-drop="onUnitDrop"
       @side-action="onSideAction"
+      :hide-filter="hideFilter"
     />
     <OrbatPanelAddSide
       v-if="sides.length < 2"
@@ -31,6 +32,12 @@ import { SideAction, SideActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { useSelectedUnits } from "@/stores/dragStore";
+
+interface Props {
+  hideFilter?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), { hideFilter: false });
 
 const activeScenario = injectStrict(activeScenarioKey);
 const { store, unitActions } = activeScenario;

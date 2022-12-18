@@ -27,7 +27,7 @@
         class="-ml-6"
       />
       <DisclosurePanel>
-        <div class="mt-4 mr-10">
+        <div v-if="!hideFilter" class="mt-4 mr-10">
           <FilterQueryInput
             v-model="filterQuery"
             v-model:location-filter="hasLocationFilter"
@@ -70,9 +70,10 @@ import { injectStrict } from "@/utils";
 interface Props {
   side: NSide;
   state: ScenarioState;
+  hideFilter?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), { hideFilter: false });
 
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitAction): void;
