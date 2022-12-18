@@ -7,7 +7,8 @@
         <template #header></template>
       </OrbatPanel>
     </aside>
-    <main class="relative h-full flex-auto">
+    <main class="relative h-full flex-auto bg-gray-50">
+      <SimpleBreadcrumbs class="absolute top-2 left-2" :items="breadcrumbItems" />
       <p v-if="!activeUnit" class="p-8 text-center">Select a root unit in the sidebar</p>
       <OrbatChart
         :unit="activeUnit"
@@ -35,6 +36,8 @@ import { sizeToWidthHeight } from "@/modules/charteditor/orbatchart/sizes";
 import OrbatChart from "@/modules/charteditor/OrbatChart.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import SimpleBreadcrumbs from "@/components/SimpleBreadcrumbs.vue";
+import { BreadcrumbItem } from "@/components/types";
 
 const rootUnitStore = useRootUnitStore();
 const options = useChartSettingsStore();
@@ -50,6 +53,17 @@ const activeUnit = computed(
       unitActions.expandUnit(state.getUnitById(activeUnitId.value))) ||
     null
 );
+
+const breadcrumbItems = computed((): BreadcrumbItem[] => {
+  if (!activeUnitId.value) return [];
+  const { side, sideGroup, parents } = unitActions.getUnitHierarchy(activeUnitId.value);
+  return [
+    { name: side.name, static: true },
+    { name: sideGroup.name, static: true },
+    ...parents.map((e) => ({ name: e.name, static: true })),
+    { name: activeUnit.value?.name!, static: true },
+  ];
+});
 
 rootUnitStore.unit = null;
 

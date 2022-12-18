@@ -55,3 +55,8 @@ export interface MenuItemData<T = string | Function> {
   action: T;
   disabled?: boolean;
 }
+
+export interface BreadcrumbItem {
+  name: string;
+  static?: boolean;
+}
