@@ -38,8 +38,7 @@ import {
   drawUnitLevelConnectorPath,
   putGroupAt,
 } from "./svgRender";
-import type { PanZoom } from "panzoom";
-import createPanZoom from "panzoom";
+import Panzoom, { type PanzoomObject } from "@panzoom/panzoom";
 
 function isStackedLayout(layout: LevelLayout) {
   return layout === LevelLayouts.Stacked;
@@ -75,7 +74,7 @@ class OrbatChart {
   connectorGroup!: GElementSelection;
   renderedChart!: RenderedChart;
   wrapperGroup!: GElementSelection;
-  pz: PanZoom | null;
+  pz: PanzoomObject | null;
   constructor(
     private rootNode: Unit,
     options: Partial<OrbChartOptions> = {},
@@ -93,7 +92,8 @@ class OrbatChart {
       this._removeSelectEventListeners();
     }
     if (this.pz) {
-      this.pz.dispose();
+      this.svg.node()?.parentElement?.removeEventListener("wheel", this.pz.zoomWithWheel);
+      this.pz.destroy();
     }
   }
 
@@ -114,11 +114,6 @@ class OrbatChart {
     this.height = height;
     let renderedChart = this._createSvgRootElement(parentElement, elementId);
     const chartGroup = createGroupElement(this.wrapperGroup, "o-chart");
-    if (enablePanZoom) {
-      this.pz = createPanZoom(this.wrapperGroup.node()!);
-    } else {
-      this.pz = null;
-    }
     addFontAttributes(chartGroup, this.options);
 
     this.connectorGroup = createGroupElement(chartGroup, "o-connectors");
@@ -136,6 +131,12 @@ class OrbatChart {
     this._doNodeLayout(renderedChart);
     this._drawConnectors(renderedChart);
     this.renderedChart = renderedChart;
+    if (enablePanZoom) {
+      this.pz = Panzoom(this.svg.node()!, { maxScale: 10 });
+      this.svg.node()?.parentElement?.addEventListener("wheel", this.pz.zoomWithWheel);
+    } else {
+      this.pz = null;
+    }
     return this.svg.node() as SVGElement;
   }
 
@@ -475,6 +476,18 @@ class OrbatChart {
 
   public highlightLevels(levelIndexes: number[]) {
     console.log("Not implemented yet", levelIndexes);
+  }
+
+  public resetZoom() {
+    this.pz?.reset();
+  }
+
+  public zoomIn() {
+    this.pz?.zoomIn();
+  }
+
+  public zoomOut() {
+    this.pz?.zoomOut();
   }
 }
 

@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { onBeforeUnmount, PropType, ref, watchEffect } from "vue";
 import {
+  MagnifyingGlassMinusIcon,
+  MagnifyingGlassPlusIcon,
+  ArrowsPointingOutIcon,
+} from "@heroicons/vue/20/solid";
+import {
   OrbatChart,
   PartialOrbChartOptions,
   SpecificOptions,
@@ -8,6 +13,8 @@ import {
   Unit,
   UnitNodeInfo,
 } from "./orbatchart";
+import BaseToolbar from "@/components/BaseToolbar.vue";
+import ToolbarButton from "@/components/ToolbarButton.vue";
 
 const props = defineProps({
   unit: { type: Object as PropType<Unit | null | undefined> },
@@ -21,6 +28,7 @@ const props = defineProps({
   symbolGenerator: { type: Function as PropType<SymbolGenerator> },
   chartId: { type: String },
   enablePanZoom: { type: Boolean, default: false },
+  hideToolbar: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["unitclick", "levelclick", "branchclick"]);
@@ -72,10 +80,29 @@ watchEffect(() => {
 onBeforeUnmount(() => {
   orbatChart?.cleanup();
 });
+
+function resetZoom() {
+  orbatChart.resetZoom();
+}
 </script>
 
 <template>
-  <div ref="chartRootElement" class="h-full w-full" />
+  <div class="relative h-full w-full">
+    <div ref="chartRootElement" class="h-full w-full" />
+    <nav v-if="enablePanZoom && !hideToolbar" class="absolute bottom-4 left-4">
+      <BaseToolbar class="">
+        <ToolbarButton start
+          ><MagnifyingGlassPlusIcon class="h-5 w-5" @click="orbatChart.zoomIn()"
+        /></ToolbarButton>
+        <ToolbarButton
+          ><MagnifyingGlassMinusIcon class="h-5 w-5" @click="orbatChart.zoomOut()"
+        /></ToolbarButton>
+        <ToolbarButton end
+          ><ArrowsPointingOutIcon class="h-5 w-5" @click="resetZoom()"
+        /></ToolbarButton>
+      </BaseToolbar>
+    </nav>
+  </div>
 </template>
 
 <style>
