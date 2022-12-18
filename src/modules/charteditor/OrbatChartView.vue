@@ -22,7 +22,7 @@
         :chart-id="chartId"
         :options="options.$state"
         :specific-options="specificOptions.$state"
-        class=""
+        enable-pan-zoom
       />
       <div class="absolute left-4 top-4 flex items-center space-x-4 print:hidden">
         <button

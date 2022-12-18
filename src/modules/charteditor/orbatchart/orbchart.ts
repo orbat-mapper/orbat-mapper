@@ -75,7 +75,7 @@ class OrbatChart {
   connectorGroup!: GElementSelection;
   renderedChart!: RenderedChart;
   wrapperGroup!: GElementSelection;
-  pz!: PanZoom;
+  pz: PanZoom | null;
   constructor(
     private rootNode: Unit,
     options: Partial<OrbChartOptions> = {},
@@ -83,6 +83,7 @@ class OrbatChart {
   ) {
     this.options = { ...DEFAULT_OPTIONS, ...options };
     if (rootNode) this._computeOrbatInfo(rootNode);
+    this.pz = null;
   }
 
   cleanup() {
@@ -102,13 +103,22 @@ class OrbatChart {
 
   toSVG(
     parentElement: HTMLElement,
-    { width, height, elementId }: ToSvgOptions = {}
+    {
+      width = DEFAULT_CHART_WIDTH,
+      height = DEFAULT_CHART_HEIGHT,
+      elementId,
+      enablePanZoom = false,
+    }: ToSvgOptions = {}
   ): SVGElement {
-    this.width = width || DEFAULT_CHART_WIDTH;
-    this.height = height || DEFAULT_CHART_HEIGHT;
+    this.width = width;
+    this.height = height;
     let renderedChart = this._createSvgRootElement(parentElement, elementId);
     const chartGroup = createGroupElement(this.wrapperGroup, "o-chart");
-    this.pz = createPanZoom(this.wrapperGroup.node()!);
+    if (enablePanZoom) {
+      this.pz = createPanZoom(this.wrapperGroup.node()!);
+    } else {
+      this.pz = null;
+    }
     addFontAttributes(chartGroup, this.options);
 
     this.connectorGroup = createGroupElement(chartGroup, "o-connectors");

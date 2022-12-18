@@ -18,6 +18,7 @@
         chart-id="chartId"
         :options="options.$state"
         :specific-options="specificOptions.$state"
+        enable-pan-zoom
       />
     </main>
   </div>

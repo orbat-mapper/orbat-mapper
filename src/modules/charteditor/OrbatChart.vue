@@ -20,6 +20,7 @@ const props = defineProps({
   height: { type: Number, default: 600 },
   symbolGenerator: { type: Function as PropType<SymbolGenerator> },
   chartId: { type: String },
+  enablePanZoom: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["unitclick", "levelclick", "branchclick"]);
@@ -63,6 +64,7 @@ watchEffect(() => {
     width: props.width,
     height: props.height,
     elementId: props.chartId,
+    enablePanZoom: props.enablePanZoom,
   });
   if (props.interactive) orbatChart.makeInteractive();
 });

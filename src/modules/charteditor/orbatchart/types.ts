@@ -210,4 +210,5 @@ export interface ToSvgOptions {
   width?: number;
   height?: number;
   elementId?: string;
+  enablePanZoom?: boolean;
 }
