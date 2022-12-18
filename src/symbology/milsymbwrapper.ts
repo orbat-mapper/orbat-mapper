@@ -3,8 +3,7 @@
  *
  */
 
-import * as ms from "milsymbol";
-import { Symbol as MilSymbol, SymbolOptions } from "milsymbol";
+import ms, { type Symbol as MilSymbol, type SymbolOptions } from "milsymbol";
 
 const customColorMode = ms.getColorMode("Light");
 customColorMode.Friend = "rgb(170, 176, 116)";
@@ -33,5 +32,5 @@ export function symbolGenerator(sidc: string, options: SymbolOptions = {}): MilS
     sidc = replaceAt(sidc, 3, "3");
     opts = { colorMode: cm2, ...options };
   }
-  return new MilSymbol(sidc, opts);
+  return new ms.Symbol(sidc, opts);
 }
