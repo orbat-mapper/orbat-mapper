@@ -2,12 +2,9 @@ import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { createFromString, toDom } from "@/lib/milx/domutils";
+import { toDom } from "@/lib/milx/domutils";
 import type { Unzipped } from "fflate";
-import type {
-  OrbatMapperGeoJsonCollection,
-  OrbatMapperGeoJsonFeature,
-} from "@/lib/milx/types";
+import type { OrbatMapperGeoJsonFeature } from "@/lib/milx/types";
 import type { FeatureCollection } from "geojson";
 import { convertGeojsonLayer } from "@/lib/milx";
 

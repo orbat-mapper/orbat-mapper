@@ -1,6 +1,6 @@
-import { Position, ScenarioLayer } from "./scenarioGeoModels";
-import { EntityId, ScenarioTime } from "./base";
-import { SidValue } from "@/symbology/values";
+import type { Position, ScenarioLayer } from "./scenarioGeoModels";
+import type { EntityId, ScenarioTime } from "./base";
+import type { SidValue } from "@/symbology/values";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;

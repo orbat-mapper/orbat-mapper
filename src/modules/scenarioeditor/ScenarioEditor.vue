@@ -219,10 +219,10 @@ import { useDateModal, useSidcModal } from "@/composables/modals";
 import { storeToRefs } from "pinia";
 import DropdownMenu from "@/components/DropdownMenu.vue";
 import {
+  CHART_EDIT_MODE_ROUTE,
   GRID_EDIT_ROUTE,
   LANDING_PAGE_ROUTE,
   SCENARIO_ROUTE,
-  CHART_EDIT_MODE_ROUTE,
 } from "@/router/names";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));

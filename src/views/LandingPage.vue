@@ -98,7 +98,6 @@ import { Github as GithubIcon } from "mdue";
 import { ORBAT_CHART_ROUTE } from "@/router/names";
 
 import { CheckIcon } from "@heroicons/vue/24/outline";
-import BaseButton from "@/components/BaseButton.vue";
 
 const features = [
   {

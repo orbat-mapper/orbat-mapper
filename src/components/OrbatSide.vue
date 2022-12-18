@@ -56,7 +56,7 @@ import DotsMenu from "./DotsMenu.vue";
 import { computed, ref } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
-import { SideAction, SideActions, type UnitAction, UnitActions } from "@/types/constants";
+import { SideAction, SideActions, type UnitAction } from "@/types/constants";
 import { useDebounce } from "@vueuse/core";
 import FilterQueryInput from "./FilterQueryInput.vue";
 import EditSideForm from "./EditSideForm.vue";

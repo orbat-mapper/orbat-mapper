@@ -1,10 +1,10 @@
-import { FeatureLike } from "ol/Feature";
+import type { FeatureLike } from "ol/Feature";
 import { Icon, Style } from "ol/style";
-import { Unit } from "@/types/scenarioModels";
+import type { Unit } from "@/types/scenarioModels";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
-import { Symbol as MilSymbol } from "milsymbol";
+import type { Symbol as MilSymbol } from "milsymbol";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { OlUnitProps } from "@/types/internalModels";
+import type { OlUnitProps } from "@/types/internalModels";
 
 const unitStyleCache = new Map();
 const selectedUnitStyleCache = new Map();

@@ -52,7 +52,7 @@ import { useNotifications } from "@/composables/notifications";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
-import { SelectedScenarioFeatures, useSelectedFeatures } from "@/stores/dragStore";
+import { useSelectedFeatures } from "@/stores/dragStore";
 
 const { send } = useNotifications();
 

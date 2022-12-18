@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { TAB_ORBAT } from "@/types/constants";
 import { ImportFormat } from "@/types/convert";
 
 export interface ImportState {

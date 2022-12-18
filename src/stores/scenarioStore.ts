@@ -1,22 +1,4 @@
-import { defineStore } from "pinia";
-
-import {
-  Scenario,
-  Side,
-  SideGroup,
-  State,
-  Unit,
-  UnitOrSide,
-} from "../types/scenarioModels";
-
-import { SID_INDEX } from "../symbology/sidc";
-import { setCharAt } from "../components/helpers";
-import { SID } from "../symbology/values";
-import dayjs from "dayjs";
-import { useSettingsStore } from "./settingsStore";
-import { Position } from "../types/scenarioGeoModels";
-import { nanoid } from "../utils";
-import { INTERNAL_NAMES } from "../types/internalModels";
+import { Side, SideGroup, Unit, UnitOrSide } from "../types/scenarioModels";
 
 /**
  * Visit every unit and apply callback

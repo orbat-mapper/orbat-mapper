@@ -8,14 +8,18 @@ import {
   Unit,
 } from "@/types/scenarioModels";
 import * as FileSaver from "file-saver";
-import { NewScenarioStore, ScenarioState, useNewScenarioStore } from "./newScenarioStore";
+import {
+  type NewScenarioStore,
+  type ScenarioState,
+  useNewScenarioStore,
+} from "./newScenarioStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { ShallowRef } from "vue";
 import { isLoading } from "@/scenariostore/index";
 import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
 import dayjs from "dayjs";
-import { ScenarioLayer } from "@/types/scenarioGeoModels";
-import { EntityId } from "@/types/base";
+import { type ScenarioLayer } from "@/types/scenarioGeoModels";
+import { type EntityId } from "@/types/base";
 
 const LOCALSTORAGE_KEY = "orbat-scenario4";
 

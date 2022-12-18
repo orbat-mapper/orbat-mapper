@@ -102,8 +102,6 @@ import { SCENARIO_ROUTE } from "@/router/names";
 import { useScenario } from "@/scenariostore";
 import { createEmptyScenario } from "@/scenariostore/io";
 import ToggleField from "@/components/ToggleField.vue";
-import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
-import { sidItems } from "@/symbology/helpers";
 import { ScenarioInfo, SideData } from "@/types/scenarioModels";
 import { SID } from "@/symbology/values";
 import { nanoid } from "@/utils";

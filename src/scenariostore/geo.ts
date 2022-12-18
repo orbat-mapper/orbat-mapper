@@ -1,6 +1,6 @@
 import { NewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { computed } from "vue";
-import { CurrentState, State } from "@/types/scenarioModels";
+import { CurrentState } from "@/types/scenarioModels";
 import {
   FeatureId,
   LayerFeatureItem,

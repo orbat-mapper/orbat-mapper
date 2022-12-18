@@ -68,8 +68,8 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, VNode } from "vue";
-import { CrosshairsGps, MapMarkerPath, MapMarkerOffOutline } from "mdue";
-import { State, StateAdd } from "@/types/scenarioModels";
+import { CrosshairsGps, MapMarkerOffOutline, MapMarkerPath } from "mdue";
+import type { State, StateAdd } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
 import { useUnitActions } from "@/composables/scenarioActions";
@@ -79,7 +79,6 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, sidcModalKey, timeModalKey } from "@/components/injects";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { ButtonGroupItem, MenuItemData } from "@/components/types";
-import BaseButton from "@/components/BaseButton.vue";
 import SplitButton from "@/components/SplitButton.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useNotifications } from "@/composables/notifications";

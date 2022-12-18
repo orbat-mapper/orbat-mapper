@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChevronDownIcon } from "@heroicons/vue/20/solid";
-import { PopoverButton, PopoverGroup, Popover, PopoverPanel } from "@headlessui/vue";
+import { Popover, PopoverButton, PopoverGroup, PopoverPanel } from "@headlessui/vue";
 import { SelectItem } from "@/components/types";
 import { useVModel } from "@vueuse/core";
 

@@ -4,7 +4,7 @@ import {
   defaultSimplestyleFill,
   defaultSimplestyleStroke,
 } from "./simplestyle";
-import Feature, { FeatureLike } from "ol/Feature";
+import { FeatureLike } from "ol/Feature";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import { TGeo } from "@/scenariostore";
 

@@ -4,7 +4,7 @@ import {
   ScenarioFeature,
   ScenarioLayerInstance,
 } from "@/types/scenarioGeoModels";
-import { Eye as EyeIcon, EyeOff, Pencil as PencilIcon, ClockOutline } from "mdue";
+import { ClockOutline, Eye as EyeIcon, EyeOff, Pencil as PencilIcon } from "mdue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { ScenarioLayerAction, ScenarioLayerActions } from "@/types/constants";
 import { ref } from "vue";

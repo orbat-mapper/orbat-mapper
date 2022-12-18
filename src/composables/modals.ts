@@ -1,6 +1,5 @@
 import { useConfirmDialog } from "@vueuse/core";
 import { computed, ref } from "vue";
-import { useScenario } from "@/scenariostore";
 import NProgress from "nprogress";
 
 export interface ModalTimestampOptions {

@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onUnmounted, ref, watch } from "vue";
+import { onUnmounted, ref, watch } from "vue";
 import {
   Dialog,
   DialogOverlay,
@@ -75,7 +75,7 @@ import {
   TransitionRoot,
 } from "@headlessui/vue";
 import { XMarkIcon } from "@heroicons/vue/24/outline";
-import { promiseTimeout, useVModel } from "@vueuse/core";
+import { promiseTimeout } from "@vueuse/core";
 import { useUiStore } from "@/stores/uiStore";
 
 interface Props {

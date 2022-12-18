@@ -1,6 +1,6 @@
 import { LayerFeatureItem } from "../types/scenarioGeoModels";
 import { NUnit } from "../types/internalModels";
-import { UnitAction, UnitActions } from "../types/constants";
+import { UnitAction } from "../types/constants";
 
 export interface ButtonGroupItem {
   label: string;
