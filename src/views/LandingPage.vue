@@ -27,6 +27,14 @@
             >
               Recreate historic battles and military scenarios
             </p>
+            <p class="mt-4">
+              <a
+                class="text-base font-semibold text-indigo-600 hover:text-indigo-700"
+                href="https://docs.orbat-mapper.app/guide/about-orbat-mapper"
+                target="_blank"
+                >View documentation →</a
+              >
+            </p>
           </div>
         </div>
       </section>
@@ -90,6 +98,7 @@ import { Github as GithubIcon } from "mdue";
 import { ORBAT_CHART_ROUTE } from "@/router/names";
 
 import { CheckIcon } from "@heroicons/vue/24/outline";
+import BaseButton from "@/components/BaseButton.vue";
 
 const features = [
   {

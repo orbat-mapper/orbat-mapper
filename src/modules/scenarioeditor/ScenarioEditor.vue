@@ -16,10 +16,17 @@
           </svg>
         </router-link>
         <div class="ml-3 flex min-w-0 flex-auto items-center divide-gray-400 lg:divide-x">
-          <span
-            class="hidden pr-3 text-sm font-medium tracking-tight text-gray-300 lg:block"
-            >ORBAT-Mapper</span
-          >
+          <div class="flex items-center">
+            <span
+              class="pr hidden text-sm font-medium tracking-tight text-gray-300 lg:block"
+              >ORBAT-Mapper</span
+            >
+            <span
+              class="ml-1.5 mr-2 inline-flex hidden items-center rounded-full bg-gray-300 px-2.5 py-0.5 text-xs font-medium text-gray-900 lg:block"
+              >dev</span
+            >
+          </div>
+
           <span class="truncate pl-3 text-gray-400">
             {{ activeScenario.store.state.info.name }}
           </span>
