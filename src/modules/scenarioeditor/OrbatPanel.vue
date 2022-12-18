@@ -11,7 +11,12 @@
       @unit-drop="onUnitDrop"
       @side-action="onSideAction"
     />
-    <OrbatPanelAddSide v-if="sides.length < 2" class="mt-8" @add="addSide()" />
+    <OrbatPanelAddSide
+      v-if="sides.length < 2"
+      :simple="sides.length >= 1"
+      class="mt-8"
+      @add="addSide()"
+    />
   </div>
 </template>
 

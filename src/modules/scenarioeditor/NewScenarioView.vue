@@ -40,16 +40,23 @@
             >
           </div>
           <template v-if="!noInitialOrbat">
-            <div v-for="sideData in form.sides" class="rounded-md border bg-gray-50 p-4">
+            <div
+              v-for="(sideData, idx) in form.sides"
+              class="relative rounded-md border bg-gray-50 p-4"
+            >
               <div class="grid grid-cols-2 gap-4">
                 <InputGroup v-model="sideData.name" label="Side name" />
-
-                <InputGroup
-                  label="Root unit name"
-                  v-model="sideData.rootUnitName"
-                ></InputGroup>
+                <InputGroup label="Root unit name" v-model="sideData.rootUnitName" />
               </div>
               <StandardIdentitySelect v-model="sideData.standardIdentity" />
+              <button
+                v-if="idx"
+                type="button"
+                class="absolute top-2 right-4 rounded-md bg-white text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                @click="form.sides.pop()"
+              >
+                Remove
+              </button>
             </div>
           </template>
         </FormCard>
