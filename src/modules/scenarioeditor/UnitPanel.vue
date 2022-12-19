@@ -230,6 +230,10 @@ const buttonItems = computed(() => [
     onClick: () => actionWrapper(UnitActions.Clone),
   },
   {
+    label: "Duplicate hierarchy",
+    onClick: () => actionWrapper(UnitActions.CloneWithSubordinates),
+  },
+  {
     label: "Move up",
     onClick: () => actionWrapper(UnitActions.MoveUp),
   },

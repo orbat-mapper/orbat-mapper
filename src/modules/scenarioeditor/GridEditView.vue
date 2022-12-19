@@ -125,6 +125,7 @@ const availableColumns: TableColumn[] = [
   { value: "sidc", label: "Symbol code", type: "sidc" },
   { value: "externalUrl", label: "URL", type: "text", hidden: true },
   { value: "description", label: "Description", type: "markdown", hidden: true },
+  { value: "id", label: "Id", type: "text", hidden: true },
 ];
 
 const selectedColumns = useStorage(

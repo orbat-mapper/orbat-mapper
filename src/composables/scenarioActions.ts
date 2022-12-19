@@ -70,6 +70,8 @@ export function useUnitActions(
     }
 
     action === UnitActions.Clone && unitActions.cloneUnit(unit.id);
+    action === UnitActions.CloneWithSubordinates &&
+      unitActions.cloneUnit(unit.id, { includeSubordinates: true });
     action === UnitActions.MoveUp && unitActions.reorderUnit(unit.id, "up");
     action === UnitActions.MoveDown && unitActions.reorderUnit(unit.id, "down");
     if (action === UnitActions.Expand) {
@@ -131,6 +133,10 @@ export function useUnitMenu(item: OrbatItemData | NOrbatItemData | Unit) {
       // { label: "Copy", action: UnitActions.Copy },
       // { label: "Paste", action: UnitActions.Paste },
       { label: "Duplicate", action: UnitActions.Clone },
+      {
+        label: "Duplicate hierarchy",
+        action: UnitActions.CloneWithSubordinates,
+      },
       { label: "Move up", action: UnitActions.MoveUp },
       { label: "Move down", action: UnitActions.MoveDown },
     ];

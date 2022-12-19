@@ -23,7 +23,13 @@ export interface SideGroupItem {
 
 export type TableItem = SideItem | SideGroupItem | UnitItem;
 
-export type ColumnField = "name" | "shortName" | "sidc" | "externalUrl" | "description";
+export type ColumnField =
+  | "id"
+  | "name"
+  | "shortName"
+  | "sidc"
+  | "externalUrl"
+  | "description";
 export type CellType = "text" | "sidc" | "markdown";
 
 export interface TableColumn extends SelectItem<ColumnField> {

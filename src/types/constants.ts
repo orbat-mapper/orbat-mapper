@@ -11,6 +11,7 @@ export const UnitActions = {
   Copy: "Copy",
   Paste: "Paste",
   Clone: "Clone",
+  CloneWithSubordinates: "CloneWithSubordinates",
   MoveUp: "MoveUp",
   MoveDown: "MoveDown",
   Pan: "Pan",

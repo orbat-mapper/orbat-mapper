@@ -34,6 +34,11 @@ export interface WalkSubUnitsOptions {
   state: ScenarioState;
 }
 
+export interface CloneUnitOptions {
+  target: CloneTarget;
+  includeSubordinates: boolean;
+}
+
 let counter = 1;
 
 export function useUnitManipulations(store: NewScenarioStore) {
@@ -362,7 +367,10 @@ export function useUnitManipulations(store: NewScenarioStore) {
     parent._isOpen = true;
   }
 
-  function cloneUnit(unitId: EntityId, target: CloneTarget = "below") {
+  function cloneUnit(
+    unitId: EntityId,
+    { target = "below", includeSubordinates = false }: Partial<CloneUnitOptions> = {}
+  ) {
     const unit = state.unitMap[unitId];
     if (!unit) return;
     let newUnit = {
@@ -375,15 +383,32 @@ export function useUnitManipulations(store: NewScenarioStore) {
     };
 
     let parent = getUnitOrSideGroup(unit._pid);
-    let idx;
+    let idx: number | undefined;
     if (target !== "end" && parent) {
       idx = parent.subUnits.findIndex((id) => id === unitId);
       if (target === "below") idx = idx + 1;
 
       if (idx < 0) idx = undefined;
     }
-
-    addUnit(newUnit, unit._pid, idx);
+    groupUpdate(() => {
+      addUnit(newUnit, unit._pid, idx);
+      if (includeSubordinates) {
+        function helper(currentUnitId: EntityId, parentId: EntityId) {
+          const currentUnit = state.unitMap[currentUnitId]!;
+          const newUnit = {
+            ...currentUnit,
+            name: currentUnit.name,
+            id: nanoid(),
+            state: [],
+            _state: null,
+            subUnits: [],
+          };
+          addUnit(newUnit, parentId);
+          currentUnit.subUnits.forEach((id) => helper(id, newUnit.id));
+        }
+        unit.subUnits.forEach((e) => helper(e, newUnit.id));
+      }
+    });
   }
 
   function reorderUnit(unitId: EntityId, direction: "up" | "down") {
