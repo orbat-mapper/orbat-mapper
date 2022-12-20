@@ -18,6 +18,7 @@ import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
 import { State, StateAdd, Unit } from "@/types/scenarioModels";
 import { Position } from "@/types/scenarioGeoModels";
+import { getNextEchelonBelow } from "@/symbology/helpers";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -339,16 +340,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     let sidc: Sidc;
     if ("sidc" in parent) {
       sidc = new Sidc(parent.sidc);
-      const echelon = +sidc.amplifierDescriptor;
-      if (echelon > 0) {
-        // Todo: Fix hard coded values
-        if (echelon === 8) {
-          // brigade
-          sidc.amplifierDescriptor = "6";
-        } else {
-          sidc.amplifierDescriptor = (echelon - 1).toString();
-        }
-      }
+      sidc.emt = getNextEchelonBelow(sidc.emt);
     } else {
       sidc = new Sidc("10031000000000000000");
       const side = state.sideMap[parent._pid!];

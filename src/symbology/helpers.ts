@@ -1,4 +1,4 @@
-import { standardIdentityValues } from "@/symbology/values";
+import { standardIdentityValues, echelonValues } from "@/symbology/values";
 import type { SymbolItem } from "@/types/constants";
 
 export const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {
@@ -8,3 +8,12 @@ export const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem 
     sidc: "100" + code + 10 + "00" + "00" + "0000000000",
   };
 });
+
+export function getNextEchelonBelow(echelon: string): string {
+  // brigade -> battalion (skip regiment)
+  if (echelon === "18") return "16";
+  const idx = echelonValues.findIndex((e) => e.code === echelon);
+  if (idx > 0) return echelonValues[idx - 1].code;
+
+  return echelon;
+}
