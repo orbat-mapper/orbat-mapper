@@ -8,7 +8,10 @@
       </OrbatPanel>
     </aside>
     <main class="relative h-full flex-auto bg-gray-50">
-      <SimpleBreadcrumbs class="absolute top-2 left-2" :items="breadcrumbItems" />
+      <SimpleBreadcrumbs
+        class="absolute top-2 left-2 z-10 bg-gray-50 bg-opacity-80"
+        :items="breadcrumbItems"
+      />
       <p v-if="!activeUnit" class="p-8 text-center">Select a root unit in the sidebar</p>
       <OrbatChart
         :unit="activeUnit"

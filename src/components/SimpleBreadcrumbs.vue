@@ -18,14 +18,14 @@
           <span
             v-if="item.static"
             type="button"
-            class="ml-2 text-sm font-medium text-gray-500"
+            class="ml-2 text-sm font-medium text-gray-600"
           >
             {{ item.name }}
           </span>
           <button
             v-else
             type="button"
-            class="ml-2 text-sm font-medium text-gray-500 hover:text-gray-700"
+            class="ml-2 text-sm font-medium text-gray-600 hover:text-gray-700"
           >
             {{ item.name }}
           </button>
