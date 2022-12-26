@@ -4,7 +4,7 @@ import { defineComponent, h } from "vue";
 import ms from "milsymbol";
 
 export default defineComponent({
-  name: "MilSymbol",
+  name: "DocMilSymbol",
   props: {
     sidc: { type: String },
     size: {
