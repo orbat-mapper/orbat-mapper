@@ -1,5 +1,5 @@
 <script setup>
-import DocMilSymbol from '../components/DocMilSymbol.vue'
+import DocMilSymbol from "../components/DocMilSymbol.vue";
 </script>
 
 # Military symbology
@@ -7,7 +7,8 @@ import DocMilSymbol from '../components/DocMilSymbol.vue'
 ORBAT Mapper uses military map symbols defined
 in [MIL-STD 2525D](https://www.jcs.mil/Portals/36/Documents/Doctrine/Other_Pubs/ms_2525d.pdf) and [NATO
 APP-6D](https://nso.nato.int/nso/nsdd/main/standards/ap-details/1912/EN).
-when displaying units, equipment and installations.
+when displaying units, equipment and installations. All symbols are rendered using
+the excellent [Milsymbol](https://spatialillusions.com/milsymbol/index.html) library.
 
 <div class="flex items-center gap-4 justify-center">
     <DocMilSymbol sidc="10031000131211004600" /> 
@@ -22,6 +23,14 @@ when displaying units, equipment and installations.
     <DocMilSymbol sidc="10041000000000000000" />
     <DocMilSymbol sidc="10061000000000000000" />
 </div>
+
+Military symbols may look strange and unfamiliar at first, but they are constructed in a logical way once you understand
+the basics. Here are a few starting points if you want to learn more:
+
+- [Military Symbols Study Guide](https://mgrs-mapper.com/blog/military_symbols_fundamentals/)
+- [NATO Joint Military Symbology wikipedia page](https://en.wikipedia.org/wiki/NATO_Joint_Military_Symbology)
+- The standard documents [MIL-STD 2525D](https://www.jcs.mil/Portals/36/Documents/Doctrine/Other_Pubs/ms_2525d.pdf) and [NATO
+  APP-6D](https://nso.nato.int/nso/nsdd/main/standards/ap-details/1912/EN)
 
 ## Symbol identification codes
 
