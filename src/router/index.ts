@@ -87,7 +87,7 @@ const routes = [
     component: ComponentsTestView,
   },
   {
-    path: "/geotests",
+    path: "/testgeo",
     component: GeoTestView,
   },
   {
