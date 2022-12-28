@@ -489,6 +489,19 @@ class OrbatChart {
   public zoomOut() {
     this.pz?.zoomOut();
   }
+
+  public getPanScale() {
+    if (this.pz) {
+      return { pan: this.pz.getPan(), scale: this.pz.getScale() };
+    } else return null;
+  }
+
+  public setPanScale(pan: { x: number; y: number }, scale: number) {
+    if (this.pz) {
+      this.pz.zoom(scale);
+      setTimeout(() => this.pz?.pan(pan.x, pan.y));
+    }
+  }
 }
 
 export { OrbatChart };

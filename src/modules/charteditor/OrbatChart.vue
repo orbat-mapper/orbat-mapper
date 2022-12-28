@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watchEffect } from "vue";
+import { nextTick, onBeforeUnmount, ref, watchEffect } from "vue";
 import {
   ArrowsPointingOutIcon,
   MagnifyingGlassMinusIcon,
@@ -62,9 +62,15 @@ function handleLevelHighlight(value: number[]) {
   orbatChart.highlightLevels([...value]);
 }
 
+const visible = ref(true);
+
 watchEffect(() => {
   if (!chartRootElement.value || !props.unit) return;
-  if (orbatChart) orbatChart.cleanup();
+  let panScaleCopy: { pan: { x: number; y: number }; scale: number } | null | undefined;
+  if (orbatChart) {
+    panScaleCopy = orbatChart.getPanScale();
+    orbatChart.cleanup();
+  }
   orbatChart = new OrbatChart(
     props.unit,
     {
@@ -85,6 +91,12 @@ watchEffect(() => {
     enablePanZoom: props.enablePanZoom,
   });
   if (props.interactive) orbatChart.makeInteractive();
+  if (panScaleCopy) {
+    orbatChart.setPanScale(
+      { x: panScaleCopy.pan.x, y: panScaleCopy.pan.y },
+      panScaleCopy.scale
+    );
+  }
 });
 
 onBeforeUnmount(() => {
@@ -98,7 +110,11 @@ function resetZoom() {
 
 <template>
   <div class="relative h-full w-full">
-    <div ref="chartRootElement" class="h-full w-full" />
+    <div
+      ref="chartRootElement"
+      class="animate h-full w-full"
+      :class="visible ? 'opacity-100' : 'opacity-0'"
+    />
     <nav v-if="enablePanZoom && !hideToolbar" class="absolute bottom-4 left-4">
       <BaseToolbar class="">
         <ToolbarButton start
