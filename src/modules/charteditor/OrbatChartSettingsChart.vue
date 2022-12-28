@@ -1,33 +1,35 @@
 <template>
   <div>
     <p class="text-sm text-gray-600">Settings that affect the whole chart.</p>
-    <InputGroupTemplate label="Root unit" v-if="rootUnitStore.unit" class="my-4">
-      <div class="flex items-start">
-        <div class="mt-2 w-16 flex-shrink-0">
-          <MilSymbol :sidc="rootUnitStore.unit.sidc" :size="30" />
+    <template v-if="!chartMode">
+      <InputGroupTemplate label="Root unit" v-if="rootUnitStore.unit" class="my-4">
+        <div class="flex items-start">
+          <div class="mt-2 w-16 flex-shrink-0">
+            <MilSymbol :sidc="rootUnitStore.unit.sidc" :size="30" />
+          </div>
+          <div class="min-w-0 flex-auto">
+            <p class="truncate pt-2 text-sm font-medium text-gray-700">
+              {{ rootUnitStore.unit.name }}
+            </p>
+            <p class="truncate text-sm text-sm text-gray-500">
+              {{ rootUnitStore.unit.shortName }}
+            </p>
+          </div>
+          <div class="mt-4 flex-none">
+            <IconButton @click="showSearch = true">
+              <SearchIcon class="h-5 w-5" />
+            </IconButton>
+          </div>
         </div>
-        <div class="min-w-0 flex-auto">
-          <p class="truncate pt-2 text-sm font-medium text-gray-700">
-            {{ rootUnitStore.unit.name }}
-          </p>
-          <p class="truncate text-sm text-sm text-gray-500">
-            {{ rootUnitStore.unit.shortName }}
-          </p>
-        </div>
-        <div class="mt-4 flex-none">
-          <IconButton @click="showSearch = true">
-            <SearchIcon class="h-5 w-5" />
-          </IconButton>
-        </div>
-      </div>
-    </InputGroupTemplate>
-    <CreateEmtpyDashed
-      v-else
-      @click="showSearch = true"
-      :icon="$options.components?.SearchIcon"
-      >Select root unit
-    </CreateEmtpyDashed>
+      </InputGroupTemplate>
 
+      <CreateEmtpyDashed
+        v-else
+        @click="showSearch = true"
+        :icon="$options.components?.SearchIcon"
+        >Select root unit
+      </CreateEmtpyDashed>
+    </template>
     <NumberInputGroup label="Levels" type="number" v-model="options.maxLevels" />
     <div class="mt-4 w-full border-t border-gray-200" />
     <AccordionPanel label="Page settings">
@@ -98,6 +100,8 @@ import { canvasSizeItems } from "./orbatchart/sizes";
 import AccordionPanel from "@/components/AccordionPanel.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { activeScenarioKey } from "@/components/injects";
+
+const props = defineProps({ chartMode: { type: Boolean, default: false } });
 
 const SearchModal = defineAsyncComponent(() => import("@/components/SearchModal.vue"));
 

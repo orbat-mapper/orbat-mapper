@@ -1,6 +1,6 @@
 <template>
   <div class="flex w-full flex-col">
-    <h3 class="hidden px-4 font-medium text-gray-900 lg:block lg:p-4">
+    <h3 v-if="!chartMode" class="hidden px-4 font-medium text-gray-900 lg:block lg:p-4">
       Chart layout settings
     </h3>
     <TabView
@@ -10,7 +10,7 @@
       class="min-h-0 flex-auto"
     >
       <TabItem label="Chart" class="mx-4">
-        <OrbatChartSettingsChart />
+        <OrbatChartSettingsChart :chart-mode="chartMode" />
       </TabItem>
       <TabItem label="Level" class="mx-4">
         <OrbatChartSettingsLevel />
@@ -37,8 +37,12 @@ import { type ChartTab, ChartTabs } from "@/modules/charteditor/constants";
 
 interface Props {
   tab?: ChartTab;
+  chartMode?: boolean;
 }
-const props = withDefaults(defineProps<Props>(), { tab: ChartTabs.Chart });
+const props = withDefaults(defineProps<Props>(), {
+  tab: ChartTabs.Chart,
+  chartMode: false,
+});
 const emit = defineEmits(["update:tab"]);
 const currentTab = useVModel(props, "tab", emit);
 </script>
