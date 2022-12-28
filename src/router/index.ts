@@ -27,6 +27,7 @@ const OrbatChartView = () => import("../modules/charteditor/OrbatChartViewWrappe
 const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
 const GeoTestView = () => import("../views/GeoTestView.vue");
 const StoreTestView = () => import("../views/StoreTestViewWrapper.vue");
+const GridTestView = () => import("@/modules/grid/GridTestView.vue");
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
 const ScenarioEditorGeo = () => import("@/modules/scenarioeditor/ScenarioEditorGeo.vue");
@@ -89,6 +90,10 @@ const routes = [
   {
     path: "/geotests",
     component: GeoTestView,
+  },
+  {
+    path: "/testgrid",
+    component: GridTestView,
   },
   { path: "/teststore", component: StoreTestView },
 
