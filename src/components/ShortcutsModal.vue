@@ -28,52 +28,26 @@
 <script setup lang="ts">
 import SimpleModal from "./SimpleModal.vue";
 import { useVModel } from "@vueuse/core";
+import {
+  defaultShortcuts,
+  gridEditModeShortcuts,
+  type KeyboardCategory,
+  mapEditModeShortcuts,
+} from "@/components/keyboardShortcuts";
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+import { GRID_EDIT_ROUTE, SCENARIO_ROUTE } from "@/router/names";
+const route = useRoute();
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
 });
 const emit = defineEmits(["update:modelValue"]);
 
-type KeyboardShortcut = string[];
-
-interface KeyboardEntry {
-  description: string;
-  shortcut: KeyboardShortcut[];
-}
-
-interface KeyboardCategory {
-  label: string;
-  shortcuts: KeyboardEntry[];
-}
-
-const shortcuts: KeyboardCategory[] = [
-  {
-    label: "Generic",
-    shortcuts: [
-      { shortcut: [["?"]], description: "Show help" },
-      { shortcut: [["ctrl", "k"], ["s"]], description: "Search" },
-      { shortcut: [["c"]], description: "Create subordinate unit" },
-      { shortcut: [["e"]], description: "Edit active unit" },
-      { shortcut: [["d"]], description: "Duplicate unit" },
-      { shortcut: [["t"]], description: "Set scenario time" },
-      { shortcut: [["ctrl", "z"]], description: "Undo" },
-      {
-        shortcut: [
-          ["ctrl", "shift", "z"],
-          ["ctrl", "y"],
-        ],
-        description: "Redo",
-      },
-    ],
-  },
-  {
-    label: "Map",
-    shortcuts: [
-      { shortcut: [["z"]], description: "Zoom to unit" },
-      { shortcut: [["p"]], description: "Pan to unit" },
-    ],
-  },
-];
-
 const open = useVModel(props, "modelValue");
+const shortcuts = computed((): KeyboardCategory[] => {
+  if (route.name === SCENARIO_ROUTE) return mapEditModeShortcuts;
+  if (route.name === GRID_EDIT_ROUTE) return gridEditModeShortcuts;
+  return defaultShortcuts;
+});
 </script>
