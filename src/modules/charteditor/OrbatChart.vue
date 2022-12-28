@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onBeforeUnmount, PropType, ref, watchEffect } from "vue";
+import { onBeforeUnmount, ref, watchEffect } from "vue";
 import {
+  ArrowsPointingOutIcon,
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon,
-  ArrowsPointingOutIcon,
 } from "@heroicons/vue/20/solid";
 import {
   OrbatChart,
@@ -16,19 +16,29 @@ import {
 import BaseToolbar from "@/components/BaseToolbar.vue";
 import ToolbarButton from "@/components/ToolbarButton.vue";
 
-const props = defineProps({
-  unit: { type: Object as PropType<Unit | null | undefined> },
-  debug: { type: Boolean, default: false },
-  options: { type: Object as PropType<PartialOrbChartOptions> },
-  specificOptions: { type: Object as PropType<SpecificOptions> },
-  interactive: { type: Boolean, default: false },
-  highlightedLevels: { type: Array, default: () => [] },
-  width: { type: Number, default: 600 },
-  height: { type: Number, default: 600 },
-  symbolGenerator: { type: Function as PropType<SymbolGenerator> },
-  chartId: { type: String },
-  enablePanZoom: { type: Boolean, default: false },
-  hideToolbar: { type: Boolean, default: false },
+interface Props {
+  unit?: Unit | null;
+  debug?: boolean;
+  options?: PartialOrbChartOptions;
+  specificOptions?: SpecificOptions;
+  interactive?: boolean;
+  highlightedLevels?: number[];
+  width?: number;
+  height?: number;
+  symbolGenerator?: SymbolGenerator;
+  chartId?: string;
+  enablePanZoom?: boolean;
+  hideToolbar?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  debug: false,
+  interactive: false,
+  highlightedLevels: () => [],
+  width: 600,
+  height: 600,
+  enablePanZoom: false,
+  hideToolbar: false,
 });
 
 const emit = defineEmits(["unitclick", "levelclick", "branchclick"]);
