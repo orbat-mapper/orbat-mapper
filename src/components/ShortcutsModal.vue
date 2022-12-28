@@ -25,11 +25,14 @@
   </SimpleModal>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-
+<script setup lang="ts">
 import SimpleModal from "./SimpleModal.vue";
 import { useVModel } from "@vueuse/core";
+
+const props = defineProps({
+  modelValue: { type: Boolean, default: false },
+});
+const emit = defineEmits(["update:modelValue"]);
 
 type KeyboardShortcut = string[];
 
@@ -72,22 +75,5 @@ const shortcuts: KeyboardCategory[] = [
   },
 ];
 
-export default defineComponent({
-  name: "ShortcutsModal",
-  components: {
-    SimpleModal,
-  },
-  props: {
-    modelValue: { type: Boolean, default: false },
-  },
-  emits: ["update:modelValue"],
-  setup(props) {
-    const open = useVModel(props, "modelValue");
-
-    return {
-      open,
-      shortcuts,
-    };
-  },
-});
+const open = useVModel(props, "modelValue");
 </script>
