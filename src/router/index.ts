@@ -26,7 +26,6 @@ const StoryModeView = () => import("../modules/storymode/StoryModeWrapper.vue");
 const OrbatChartView = () => import("../modules/charteditor/OrbatChartViewWrapper.vue");
 const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
 const GeoTestView = () => import("../views/GeoTestView.vue");
-const StoreTestView = () => import("../views/StoreTestViewWrapper.vue");
 const GridTestView = () => import("@/modules/grid/GridTestView.vue");
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
@@ -95,8 +94,6 @@ const routes = [
     path: "/testgrid",
     component: GridTestView,
   },
-  { path: "/teststore", component: StoreTestView },
-
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];
 
