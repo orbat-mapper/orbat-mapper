@@ -59,7 +59,7 @@ import { promiseTimeout } from "@vueuse/core";
 import DotsMenu from "@/components/DotsMenu.vue";
 import FileSaver from "file-saver";
 import SlideOver from "@/components/SlideOver.vue";
-import OrbatChartSettings, { ChartTabs } from "./OrbatChartSettings.vue";
+import OrbatChartSettings from "./OrbatChartSettings.vue";
 import {
   useChartSettingsStore,
   useRootUnitStore,
@@ -70,6 +70,7 @@ import { sizeToWidthHeight } from "./orbatchart/sizes";
 import { TScenario } from "@/scenariostore";
 import { activeScenarioKey } from "@/components/injects";
 import { MenuItemData } from "@/components/types";
+import { type ChartTab, ChartTabs } from "@/modules/charteditor/constants";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 provide(activeScenarioKey, props.activeScenario);
@@ -79,7 +80,7 @@ const isInteractive = ref(true);
 
 const chartId = "OrbatChart";
 const isMenuOpen = ref(false);
-const currentTab = ref<ChartTabs>(ChartTabs.Chart);
+const currentTab = ref<ChartTab>(ChartTabs.Chart);
 const rootUnitStore = useRootUnitStore();
 const options = useChartSettingsStore();
 const specificOptions = useSpecificChartOptionsStore();

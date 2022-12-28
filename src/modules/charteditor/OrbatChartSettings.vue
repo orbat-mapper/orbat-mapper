@@ -25,42 +25,20 @@
   </div>
 </template>
 
-<script lang="ts">
-import TabView from "../../components/TabView.vue";
-import TabItem from "../../components/TabItem.vue";
-import { defineComponent, PropType } from "vue";
+<script setup lang="ts">
 import { useVModel } from "@vueuse/core";
+import TabView from "@/components/TabView.vue";
+import TabItem from "@/components/TabItem.vue";
 import OrbatChartSettingsUnit from "./OrbatChartSettingsUnit.vue";
 import OrbatChartSettingsLevel from "./OrbatChartSettingsLevel.vue";
 import OrbatChartSettingsChart from "./OrbatChartSettingsChart.vue";
 import OrbatChartSettingsBranch from "./OrbatChartSettingsBranch.vue";
+import { type ChartTab, ChartTabs } from "@/modules/charteditor/constants";
 
-export const enum ChartTabs {
-  Chart = 0,
-  Level,
-  Branch,
-  Unit,
+interface Props {
+  tab?: ChartTab;
 }
-
-export default defineComponent({
-  name: "OrbatChartSettings",
-  components: {
-    OrbatChartSettingsChart,
-    OrbatChartSettingsLevel,
-    OrbatChartSettingsBranch,
-    OrbatChartSettingsUnit,
-
-    TabItem,
-    TabView,
-  },
-  props: {
-    tab: { type: Number as PropType<ChartTabs>, default: ChartTabs.Chart },
-  },
-  setup(props, { emit }) {
-    const currentTab = useVModel(props, "tab", emit);
-    return {
-      currentTab,
-    };
-  },
-});
+const props = withDefaults(defineProps<Props>(), { tab: ChartTabs.Chart });
+const emit = defineEmits(["update:tab"]);
+const currentTab = useVModel(props, "tab", emit);
 </script>
