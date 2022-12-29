@@ -236,7 +236,7 @@ class OrbatChart {
     function groupLevelsByParent(): BasicUnitNode[][][] {
       let groupedLevels: BasicUnitNode[][][] = [];
       levels.forEach((level, yIdx) => {
-        let groupedLevel = level.reduce(
+        groupedLevels[yIdx] = level.reduce(
           (accumulator: BasicUnitNode[][], currentValue, currentIndex, array) => {
             if (currentIndex === 0) {
               accumulator.push([currentValue]);
@@ -251,7 +251,6 @@ class OrbatChart {
           },
           []
         );
-        groupedLevels[yIdx] = groupedLevel;
       });
       return groupedLevels;
     }

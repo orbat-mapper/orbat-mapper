@@ -40,6 +40,10 @@
         class="absolute top-2 left-2 z-10 bg-gray-50 bg-opacity-80"
         :items="breadcrumbItems"
       />
+
+      <ToggleField class="absolute bottom-2 right-2 z-10" v-model="debug"
+        >Debug mode</ToggleField
+      >
       <p v-if="!activeUnit" class="p-8 text-center">Select a root unit in the sidebar</p>
       <OrbatChart
         :unit="activeUnit"
@@ -54,6 +58,7 @@
         @unitclick="onUnitClick"
         @levelclick="onLevelClick"
         @branchclick="onBranchClick"
+        :debug="debug"
       />
     </main>
   </div>
@@ -83,6 +88,7 @@ import {
   RenderedUnitNode,
 } from "@/modules/charteditor/orbatchart";
 import { ChartTab, ChartTabs } from "@/modules/charteditor/constants";
+import ToggleField from "@/components/ToggleField.vue";
 
 const rootUnitStore = useRootUnitStore();
 const options = useChartSettingsStore();
@@ -111,6 +117,7 @@ const breadcrumbItems = computed((): BreadcrumbItem[] => {
 });
 
 rootUnitStore.unit = null;
+const debug = ref(false);
 const currentTab = ref<ChartTab>(ChartTabs.Chart);
 const currentChartElements = useSelectedChartElementStore();
 
