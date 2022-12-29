@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, ref, watchEffect } from "vue";
+import { onBeforeUnmount, ref, watchEffect } from "vue";
 import {
   ArrowsPointingOutIcon,
   MagnifyingGlassMinusIcon,
@@ -117,15 +117,15 @@ function resetZoom() {
     />
     <nav v-if="enablePanZoom && !hideToolbar" class="absolute bottom-4 left-4">
       <BaseToolbar class="">
-        <ToolbarButton start
-          ><MagnifyingGlassPlusIcon class="h-5 w-5" @click="orbatChart.zoomIn()"
-        /></ToolbarButton>
-        <ToolbarButton
-          ><MagnifyingGlassMinusIcon class="h-5 w-5" @click="orbatChart.zoomOut()"
-        /></ToolbarButton>
-        <ToolbarButton end
-          ><ArrowsPointingOutIcon class="h-5 w-5" @click="resetZoom()"
-        /></ToolbarButton>
+        <ToolbarButton start @click="orbatChart.zoomIn()">
+          <MagnifyingGlassPlusIcon class="h-5 w-5" />
+        </ToolbarButton>
+        <ToolbarButton @click="orbatChart.zoomOut()">
+          <MagnifyingGlassMinusIcon class="h-5 w-5" />
+        </ToolbarButton>
+        <ToolbarButton end @click="resetZoom()">
+          <ArrowsPointingOutIcon class="h-5 w-5" />
+        </ToolbarButton>
       </BaseToolbar>
     </nav>
   </div>
