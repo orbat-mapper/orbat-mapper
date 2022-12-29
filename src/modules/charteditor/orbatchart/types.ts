@@ -5,20 +5,6 @@ export type SVGElementSelection = Selection<SVGElement, any, any, any>;
 export type GElementSelection = Selection<SVGGElement, any, any, any>;
 export type RectElementSelection = Selection<SVGRectElement, any, any, any>;
 
-export interface StringNumberMap<T> {
-  [key: string]: T;
-
-  [key: number]: T;
-}
-
-export interface IdMap<T> {
-  [key: string | number]: T;
-}
-
-export interface NumberMap<T> {
-  [idx: number]: T;
-}
-
 export const ChartOrientations = {
   Top: "TOP",
   Bottom: "BOTTOM",
@@ -156,9 +142,9 @@ export interface OrbChartOptions extends FontOptions, ConnectorOptions, LabelOpt
 }
 
 export type PartialOrbChartOptions = Partial<OrbChartOptions>;
-export type LevelSpecificOptions = NumberMap<PartialOrbChartOptions>;
-export type BranchSpecificOptions = StringNumberMap<PartialOrbChartOptions>;
-export type UnitSpecificOptions = StringNumberMap<PartialOrbChartOptions>;
+export type LevelSpecificOptions = Record<number, PartialOrbChartOptions>;
+export type BranchSpecificOptions = Record<string | number, PartialOrbChartOptions>;
+export type UnitSpecificOptions = Record<string | number, PartialOrbChartOptions>;
 
 export interface SpecificOptions {
   level?: LevelSpecificOptions;

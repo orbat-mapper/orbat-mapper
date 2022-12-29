@@ -3,7 +3,6 @@ import { arrSum, flattenArray, walkTree } from "./utils";
 import {
   BasicUnitNode,
   GElementSelection,
-  IdMap,
   type LevelLayout,
   LevelLayouts,
   OrbChartOptions,
@@ -219,7 +218,7 @@ class OrbatChart {
 
   private _computeOrbatInfo(rootNode: Unit) {
     let levels: BasicUnitNode[][] = [];
-    const nodeMap: IdMap<BasicUnitNode> = {};
+    const nodeMap: Record<string, BasicUnitNode> = {};
 
     walkTree(rootNode, (unit, levelIdx, parent) => {
       const unitNodeInfo: BasicUnitNode = { unit };
@@ -264,13 +263,13 @@ class OrbatChart {
     const chartHeight = this.height;
     let prevY = MARGIN_TOP;
     renderedChart.levels.forEach((renderedLevel, yIdx) => {
-      // if (options.orientation === ChartOrientation.Bottom)
+      const levelOptions = { ...this.options, ...renderedLevel.options };
       let y: number;
       if (this.options.verticalAlignment === VerticalAlignments.Middle) {
         y = chartHeight * ((yIdx + 1) / (numberOfLevels + 1));
       } else {
         y = prevY;
-        prevY += this.options.levelPadding;
+        prevY += levelOptions.levelPadding;
       }
 
       let levelLayout: LevelLayout = LevelLayouts.Horizontal;
@@ -286,7 +285,6 @@ class OrbatChart {
   ) {
     const levelOptions = { ...this.options, ...renderedLevel.options };
     const chartWidth = this.width;
-    const svg = this.svg;
     const wrapperGroup = this.wrapperGroup;
 
     const renderGroups = renderedLevel.branches;
@@ -326,7 +324,7 @@ class OrbatChart {
         for (const unitNode of unitBranch.units) {
           let x;
           let unitOptions = { ...branchOptions, ...unitNode.options };
-          if (unitOptions.unitLevelDistance == UnitLevelDistances.EqualPadding) {
+          if (unitOptions.unitLevelDistance === UnitLevelDistances.EqualPadding) {
             x = prevX + unitNode.boundingBox.width / 2 + padding;
           } else {
             x = ((xIdx + 1) * chartWidth) / (numberOfUnitsOnLevel + 1);

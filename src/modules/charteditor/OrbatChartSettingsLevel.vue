@@ -7,6 +7,26 @@
       <AccordionPanel label="Unit settings" default-open>
         <SettingsUnit :item-type="ChartItemTypes.Level" />
       </AccordionPanel>
+      <AccordionPanel label="Layout and spacing">
+        <NumberInputGroup
+          label="Level padding"
+          :model-value="mergedOptions.levelPadding"
+          @update:model-value="setValue('levelPadding', $event)"
+          :class="!usedOptions.has('levelPadding') && 'sepia-[50%]'"
+        />
+        <!--      <NumberInputGroup label="Tree offset" v-model="options.treeOffset" />-->
+        <!--      <NumberInputGroup label="Stacked offset" v-model="options.stackedOffset" />-->
+        <!--      <SimpleSelect-->
+        <!--        label="Last level layout"-->
+        <!--        v-model="options.lastLevelLayout"-->
+        <!--        :items="levelItems"-->
+        <!--      />-->
+        <!--      <SimpleSelect-->
+        <!--        label="Unit spacing"-->
+        <!--        v-model="options.unitLevelDistance"-->
+        <!--        :items="spacingItems"-->
+        <!--      />-->
+      </AccordionPanel>
       <AccordionPanel label="Connectors">
         <SettingConnectors :item-type="ChartItemTypes.Level" />
       </AccordionPanel>
@@ -23,8 +43,11 @@ import SettingsUnit from "./SettingsUnit.vue";
 import { useChartSettings } from "./composables";
 import AccordionPanel from "../../components/AccordionPanel.vue";
 import SettingConnectors from "./SettingsConnectors.vue";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
 
 const selectedElement = useSelectedChartElementStore();
 const currentLevel = computed(() => selectedElement.level);
-const { clearSpecificOptions } = useChartSettings(ChartItemTypes.Level);
+const { clearSpecificOptions, usedOptions, mergedOptions, setValue } = useChartSettings(
+  ChartItemTypes.Level
+);
 </script>

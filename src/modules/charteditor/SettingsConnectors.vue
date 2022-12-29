@@ -24,30 +24,13 @@
   </div>
 </template>
 
-<script lang="ts">
-import InputGroup from "../../components/InputGroup.vue";
-import SimpleSelect from "../../components/SimpleSelect.vue";
-import ToggleField from "../../components/ToggleField.vue";
-import { defineComponent, PropType } from "vue";
-import PlainButton from "../../components/PlainButton.vue";
+<script setup lang="ts">
 import { ChartItemType } from "./orbatchart";
 import { useChartSettings } from "./composables";
-import NumberInputGroup from "../../components/NumberInputGroup.vue";
+import InputGroup from "@/components/InputGroup.vue";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
 
-export default defineComponent({
-  name: "SettingConnectors",
-  components: { NumberInputGroup, PlainButton, ToggleField, SimpleSelect, InputGroup },
-  props: {
-    itemType: { type: String as PropType<ChartItemType>, required: true },
-  },
-  setup(props) {
-    const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
+const props = defineProps<{ itemType: ChartItemType }>();
 
-    return {
-      mergedOptions,
-      setValue,
-      usedOptions,
-    };
-  },
-});
+const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
 </script>
