@@ -1,11 +1,11 @@
 {
-  "name": "Battles of Narvik",
   "type": "ORBAT-mapper",
   "version": "0.6.0",
-  "symbologyStandard": "app6",
+  "name": "Battles of Narvik",
+  "startTime": "1940-04-09T01:00:00+02:00",
   "timeZone": "Europe/Oslo",
   "description": "The Battles of Narvik were fought from 9 April to 8 June 1940 as a naval battle in the Ofotfjord and as a land battle in the mountains surrounding the north Norwegian town of Narvik as part of the Norwegian Campaign of the Second World War. ",
-  "startTime": "1940-04-09T00:00:00+01:00",
+  "symbologyStandard": "app6",
   "sides": [
     {
       "id": "gjNibxLX9gQrtAiX9fv_F",
@@ -22,8 +22,9 @@
               "id": "EaPcn0Sv5yfULEaLgVpgN",
               "state": [
                 {
-                  "t": "1940-04-09T00:00:00+01:00",
-                  "location": [17.358257428615413, 68.43648675269745]
+                  "t": "1940-04-09T01:00:00+02:00",
+                  "location": [17.358257428615413, 68.43648675269745],
+                  "id": "Q1fHzoqeGL"
                 }
               ],
               "subUnits": [],
@@ -35,8 +36,9 @@
               "id": "gIm8WMiQbrOSM-8qe_iC5",
               "state": [
                 {
-                  "t": "1940-04-09T00:00:00+01:00",
-                  "location": [17.36531822155043, 68.42695781002979]
+                  "t": "1940-04-09T01:00:00+02:00",
+                  "location": [17.36531822155043, 68.42695781002979],
+                  "id": "6c7gunCadZ"
                 }
               ],
               "subUnits": [],
@@ -55,39 +57,44 @@
               "state": [],
               "subUnits": [
                 {
-                  "name": "Hardy",
+                  "name": "HMS Hardy",
                   "sidc": "10033000001202030000",
                   "id": "RjhMI5jVDqdnozd9CWF2c",
                   "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "shortName": "Hardy"
                 },
                 {
-                  "name": "Hotspur",
+                  "name": "HMS Hotspur",
                   "sidc": "10033000001202030000",
                   "id": "fAK5DNvzkEee-Bprww6Nn",
                   "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "shortName": "Hotspur"
                 },
                 {
-                  "name": "Hostile",
+                  "name": "HMS Hostile",
                   "sidc": "10033000001202030000",
                   "id": "WrV9f5KQLDt3dbBJIWNWX",
                   "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "shortName": "Hostile"
                 },
                 {
-                  "name": "Hunter",
+                  "name": "HMS Hunter",
                   "sidc": "10033000001202030000",
                   "id": "2jGbCsiwmZ-xau6MJuMuI",
                   "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "shortName": "Hunter"
                 },
                 {
-                  "name": "Havock",
+                  "name": "HMS Havock",
                   "sidc": "10033000001202030000",
                   "id": "ERVsIaBmNfyTvW-Df5XaL",
                   "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "shortName": "Havock"
                 }
               ]
             }
@@ -103,11 +110,104 @@
         {
           "id": "pl-AgS8PgCCqNBTifV9y9",
           "name": "Units",
-          "subUnits": []
+          "subUnits": [
+            {
+              "name": "Naval units",
+              "sidc": "10063000001210040000",
+              "id": "4jUDHDPiJn",
+              "state": [],
+              "subUnits": [
+                {
+                  "name": "Z19 Herman Künne",
+                  "sidc": "10063000001202030000",
+                  "id": "bpM1qg1xEY",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Z18 Hans Lüdemann",
+                  "sidc": "10063000001202030000",
+                  "id": "YogCVYqEEF",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Z17 Dieter von Roeder",
+                  "sidc": "10063000001202030000",
+                  "id": "afkHbgvnGM",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Z21 Wilhelm Heidkamp",
+                  "sidc": "10063000001202030000",
+                  "id": "KVM1ZdVb0i",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Z22 Anton Schmitt",
+                  "sidc": "10063000001202030000",
+                  "id": "FZ4oawwQsu",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Z13 Erich Koellner",
+                  "sidc": "10063000001202030000",
+                  "id": "IOhludOpmT",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Z2 Georg Thiele",
+                  "sidc": "10063000001202030000",
+                  "id": "k6q1mmbloJ",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Z11 Bernd von Arnim",
+                  "sidc": "10063000001202030000",
+                  "id": "hPIRsiduCe",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "Rauenfels",
+                  "sidc": "10063000001301010000",
+                  "id": "R1Lr1X6O3h",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "FLK Jan Wellem",
+                  "sidc": "10063000001301100000",
+                  "id": "OCyOmjWKBp",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "U-25",
+                  "sidc": "10063500001101000000",
+                  "id": "E9iEDHE3Xi",
+                  "state": [],
+                  "subUnits": []
+                },
+                {
+                  "name": "U-51",
+                  "sidc": "10063500001101000000",
+                  "id": "ukjG2w1sNn",
+                  "state": [],
+                  "subUnits": []
+                }
+              ]
+            }
+          ]
         }
       ]
     }
   ],
-  "events": [],
-  "layers": []
+  "layers": [],
+  "events": []
 }
