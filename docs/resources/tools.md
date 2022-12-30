@@ -10,3 +10,9 @@ try some of these excellent tools instead:
 - [MGRS Mapper](https://mgrs-mapper.com/) - "operational graphics tool for junior leaders". Subscription based service.
   A limited free version is
   available.
+
+There are not many specialized tools available for drawing ORBAT charts. Here are a few that I'm aware of:
+
+- [Order of Battle Generator](https://www.orbatgenerator.com/). Online editor. Perfect for
+  creating [Battle Order style](https://www.battleorder.org/us-orbat) charts.
+- [Battle Order chart templates](https://www.battleorder.org/icons) (PNGs for use in a drawing program)

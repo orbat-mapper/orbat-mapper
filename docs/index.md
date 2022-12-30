@@ -13,14 +13,11 @@ hero:
     alt: VitePress
   actions:
     - theme: brand
-      text: Try preview
-      link: https://preview--orbat-mapper.netlify.app/
-    - theme: brand
       text: User guide
       link: /guide/about-orbat-mapper
     - theme: alt
-      text: View on GitHub
-      link: https://github.com/orbat-mapper/orbat-mapper
+      text: Try preview
+      link: https://preview--orbat-mapper.netlify.app/
 
 features:
   - title: "Create ORBATs"
