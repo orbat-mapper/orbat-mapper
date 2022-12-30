@@ -91,9 +91,13 @@ export interface UnitNodeInfo extends BasicUnitNode {
   y: number;
   parent?: UnitNodeInfo;
   unit: Unit;
+  // bounding box (including label)
   ly: number;
   lx: number;
   rx: number;
+  // symbol box
+  lsx: number;
+  rsx: number;
 }
 
 export type OnUnitClickCallback = (unit: RenderedUnitNode) => void;

@@ -246,6 +246,9 @@ export function calculateAnchorPoints(unitNode: RenderedUnitNode) {
   unitNode.ly = y + (unitNode.boundingBox.height - unitNode.octagonAnchor.y);
   unitNode.lx = x - unitNode.boundingBox.width / 2;
   unitNode.rx = x + unitNode.boundingBox.width / 2;
+  // Todo: should use octagon width instead
+  unitNode.lsx = x - unitNode.symbolBoxSize.width / 2;
+  unitNode.rsx = x + unitNode.symbolBoxSize.width / 2;
 }
 
 export function drawDebugAnchors(
@@ -256,6 +259,8 @@ export function drawDebugAnchors(
   drawDebugPoint(svg, unitNode.x, unitNode.ly);
   drawDebugPoint(svg, unitNode.lx, unitNode.y);
   drawDebugPoint(svg, unitNode.rx, unitNode.y);
+  drawDebugPoint(svg, unitNode.rsx, unitNode.y);
+  drawDebugPoint(svg, unitNode.lsx, unitNode.y);
 }
 
 export function drawUnitBranchConnectorPath(
@@ -307,14 +312,19 @@ export function drawUnitBranchTreeLeftRightConnectorPath(
   let maxWidth = Math.max(...unitBranch.map((u) => u.boundingBox.width));
   for (const [yIdx, unit] of unitBranch.entries()) {
     let d1;
-    const delta = Math.abs(unit.boundingBox.width / 2 - maxWidth / 2);
+    // const delta = Math.abs(unit.boundingBox.width / 2 - maxWidth / 2);
+    const delta = 0;
     if (
       levelLayout === LevelLayouts.TreeRight ||
       (levelLayout === LevelLayouts.Tree && yIdx % 2)
     )
-      d1 = `M ${unit.lx - delta - options.connectorOffset}, ${unit.y}  H ${parentUnit.x}`;
+      d1 = `M ${unit.lsx - delta - options.connectorOffset}, ${unit.y}  H ${
+        parentUnit.x
+      }`;
     else
-      d1 = `M ${unit.rx + delta + options.connectorOffset}, ${unit.y}  H ${parentUnit.x}`;
+      d1 = `M ${unit.rsx + delta + options.connectorOffset}, ${unit.y}  H ${
+        parentUnit.x
+      }`;
     g.append("path").attr("d", d1).classed("o-line", true);
   }
 }
