@@ -22,7 +22,7 @@ const sideMenuItems: MenuItemData<SideAction>[] = [
 
 const columns = ref<ColumnProperties<NUnit>[]>([
   // { field: "id", label: "menu", type: "dots", width: 60, menu: sideMenuItems },
-  { field: "sidc", label: "Icon", type: "sidc", width: 65 },
+  { field: "sidc", label: "Icon", type: "sidc", width: 65, resizable: true },
   { field: "name", label: "Name" },
   { field: "shortName", label: "Short name" },
   { field: "externalUrl", label: "URL" },

@@ -3,6 +3,7 @@ import { ComputedRef, InjectionKey, Ref } from "vue";
 import { SelectedScenarioFeatures } from "@/stores/dragStore";
 
 export type CellType = "text" | "number" | "sidc" | "dots";
+export type ColumnWidths = Record<string, number>;
 
 export interface ColumnProperties<TData = Record<string, any>> {
   field: keyof TData;
@@ -11,6 +12,7 @@ export interface ColumnProperties<TData = Record<string, any>> {
   width?: number;
   type?: CellType;
   menu?: MenuItemData[];
+  resizable?: boolean;
 }
 
 export interface RuntimeColumnProperties extends Required<ColumnProperties> {}

@@ -2,6 +2,7 @@
 import {
   CheckedState,
   ColumnProperties,
+  ColumnWidths,
   RuntimeColumnProperties,
 } from "@/modules/grid/gridTypes";
 import { computed, ref } from "vue";
@@ -38,7 +39,12 @@ const columnDefs = computed((): RuntimeColumnProperties[] =>
     width: column.width || 300,
     type: column.type || "text",
     menu: column.menu || [],
+    resizable: column.resizable ?? true,
   }))
+);
+
+const columnWidths = ref<ColumnWidths>(
+  Object.fromEntries(columnDefs.value.map((e) => [e.id, e.width]))
 );
 
 const dd = computed(() => props.data);
@@ -77,6 +83,7 @@ function toggleSelectAll(isChecked: boolean) {
       :select="select"
       :checked-state="checkedState"
       @toggleSelect="toggleSelectAll"
+      v-model:column-widths="columnWidths"
     />
     <div v-bind="wrapperProps">
       <template v-for="{ index, data: item } in list" :key="index">
@@ -100,7 +107,10 @@ function toggleSelectAll(isChecked: boolean) {
           </div>
           <div
             v-for="column in columnDefs"
-            :style="{ width: column.width + 'px', minWidth: column.width + 'px' }"
+            :style="{
+              width: `${columnWidths[column.id]}px`,
+              minWidth: `${columnWidths[column.id]}px`,
+            }"
             class="flex-0 group flex items-center overflow-hidden border-b p-4"
             tabindex="0"
           >

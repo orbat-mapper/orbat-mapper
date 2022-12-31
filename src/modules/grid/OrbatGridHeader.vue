@@ -16,10 +16,20 @@
       <div
         v-for="column in columnDefs"
         :key="column.id"
-        :style="{ width: column.width + 'px', minWidth: column.width + 'px' }"
-        class="flex-0 flex w-full overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold text-gray-900"
+        :style="{
+          width: `${widths[column.id]}px`,
+          minWidth: `${widths[column.id]}px`,
+        }"
+        role="columnheader"
+        class="flex-0 relative flex w-full overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold text-gray-900"
       >
         <span class="truncate">{{ column.label }}</span>
+        <GridHeaderResizeHandle
+          v-if="column.resizable"
+          @update="updateWidth(column.id, $event)"
+          :width="columnWidths[column.id]"
+          @dblclick="resetWidth(column.id)"
+        />
       </div>
       <div></div>
     </div>
@@ -27,20 +37,39 @@
 </template>
 
 <script setup lang="ts">
-import { CheckedState, RuntimeColumnProperties } from "@/modules/grid/gridTypes";
+import {
+  CheckedState,
+  ColumnWidths,
+  RuntimeColumnProperties,
+} from "@/modules/grid/gridTypes";
+import GridHeaderResizeHandle from "@/modules/grid/GridHeaderResizeHandle.vue";
+import { useVModel } from "@vueuse/core";
 
 interface Props {
   columnDefs: RuntimeColumnProperties[];
   rowHeight?: number;
   select?: boolean;
   checkedState?: CheckedState;
+  columnWidths: ColumnWidths;
 }
 
 const props = withDefaults(defineProps<Props>(), { select: false, checkedState: false });
-const emit = defineEmits(["toggleSelect"]);
+const emit = defineEmits(["toggleSelect", "update:columnWidths"]);
+
+const widths = useVModel(props, "columnWidths", emit);
 
 function toggleSelectAll(event: Event) {
   const isChecked = (<HTMLInputElement>event.target).checked;
   emit("toggleSelect", isChecked);
+}
+
+function updateWidth(columnId: string, newWidth: number) {
+  widths.value[columnId] = newWidth;
+}
+
+function resetWidth(columnId: string) {
+  console.log("here");
+  widths.value[columnId] =
+    props.columnDefs.filter((c) => c.id === columnId)[0]?.width || 300;
 }
 </script>
