@@ -45,3 +45,13 @@ Earlier versions of the symbology standards use a shorter, letter based, symbol 
 systems that still use letter based codes, so ORBAT Mapper supports converting from letter based codes to numeric codes
 using the [convert-symbology](https://github.com/orbat-mapper/convert-symbology) library. Most symbols from 2525C/APP-6C
 are available in 2525D/APP-6D, but they may look different.
+
+## Differences between MILSTD 2525D and APP-6D
+
+ORBAT Mapper allows you to choose between MILSTD 2525 and APP-6. There are some differences between the versions. The most
+notable is that APP-6D has the dismounted individual symbol set:
+
+<div class="flex gap-4 items-center justify-center">
+    <DocMilSymbol sidc="10032700001101010039" />
+    <DocMilSymbol sidc="10032700001102090001" />
+</div>

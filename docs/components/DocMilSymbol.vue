@@ -22,6 +22,7 @@ export default defineComponent({
       simpleStatusModifier: true,
       outlineColor: "white",
       outlineWidth: 8,
+      standard: "APP6",
       ...(props.modifiers ?? {}),
     });
     return () =>

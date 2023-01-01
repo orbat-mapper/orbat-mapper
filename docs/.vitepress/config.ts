@@ -32,6 +32,7 @@ function sidebarGuide(): DefaultTheme.Sidebar {
       items: [
         { text: "What is ORBAT Mapper?", link: "/guide/about-orbat-mapper" },
         { text: "Getting started", link: "/guide/getting-started" },
+        { text: "Terminology", link: "/guide/terminology" },
         { text: "Military symbology", link: "/guide/military-symbology" },
       ],
     },
