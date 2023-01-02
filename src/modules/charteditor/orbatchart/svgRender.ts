@@ -41,6 +41,7 @@ const HIGHLIGT_STYLE = `
 export function createChartStyle(options: OrbChartOptions) {
   return `
 .o-line {
+stroke-linecap: round
  
 }
 
@@ -289,7 +290,8 @@ export function drawUnitLevelConnectorPath(
   const dy = firstUnitInGroup.y - (firstUnitInGroup.y - parentUnit.y) / 2;
   const d1 = `M ${parentUnit.x}, ${parentUnit.ly + options.connectorOffset} V ${dy}`;
   g.append("path").attr("d", d1).classed("o-line", true);
-  const d = `M ${firstUnitInGroup.x}, ${dy} H ${lastUnitInGroup.x}`;
+  const d = `M ${firstUnitInGroup.x}, ${dy} 
+  H ${Math.max(lastUnitInGroup.x, parentUnit.x)}`;
   g.append("path").attr("d", d).classed("o-line", true);
 }
 
