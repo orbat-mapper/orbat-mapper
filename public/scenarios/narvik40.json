@@ -17,32 +17,40 @@
           "name": "Norwegian units",
           "subUnits": [
             {
-              "name": "Eidsvold",
-              "sidc": "10033000001205000000",
-              "id": "EaPcn0Sv5yfULEaLgVpgN",
-              "state": [
+              "name": "Naval units",
+              "sidc": "10033000001210040000",
+              "id": "elmfZkws7F",
+              "state": [],
+              "subUnits": [
                 {
-                  "t": "1940-04-09T01:00:00+02:00",
-                  "location": [17.358257428615413, 68.43648675269745],
-                  "id": "Q1fHzoqeGL"
-                }
-              ],
-              "subUnits": [],
-              "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold"
-            },
-            {
-              "name": "Norge",
-              "sidc": "10033000001205000000",
-              "id": "gIm8WMiQbrOSM-8qe_iC5",
-              "state": [
+                  "name": "Eidsvold",
+                  "sidc": "10033000001205000000",
+                  "id": "EaPcn0Sv5yfULEaLgVpgN",
+                  "state": [
+                    {
+                      "t": "1940-04-09T01:00:00+02:00",
+                      "location": [17.358257428615413, 68.43648675269745],
+                      "id": "Q1fHzoqeGL"
+                    }
+                  ],
+                  "subUnits": [],
+                  "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold"
+                },
                 {
-                  "t": "1940-04-09T01:00:00+02:00",
-                  "location": [17.36531822155043, 68.42695781002979],
-                  "id": "6c7gunCadZ"
+                  "name": "Norge",
+                  "sidc": "10033000001205000000",
+                  "id": "gIm8WMiQbrOSM-8qe_iC5",
+                  "state": [
+                    {
+                      "t": "1940-04-09T01:00:00+02:00",
+                      "location": [17.36531822155043, 68.42695781002979],
+                      "id": "6c7gunCadZ"
+                    }
+                  ],
+                  "subUnits": [],
+                  "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold"
                 }
-              ],
-              "subUnits": [],
-              "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold"
+              ]
             }
           ]
         },
@@ -97,6 +105,67 @@
                   "shortName": "Havock"
                 }
               ]
+            },
+            {
+              "name": "North West Expeditionary Force",
+              "sidc": "10031004000000000000",
+              "id": "82kVsYph7f",
+              "state": [],
+              "subUnits": [
+                {
+                  "name": "24th Infantry Brigade",
+                  "sidc": "10031000181211000000",
+                  "id": "OHAwyNiM39",
+                  "state": [],
+                  "subUnits": [
+                    {
+                      "name": "1 SG",
+                      "sidc": "10031000161211000000",
+                      "id": "2az3bUhvA2",
+                      "state": [],
+                      "subUnits": [],
+                      "shortName": "1 SG"
+                    },
+                    {
+                      "name": "1 IG",
+                      "sidc": "10031000161211000000",
+                      "id": "65tzFbGUCe",
+                      "state": [],
+                      "subUnits": [],
+                      "shortName": ""
+                    },
+                    {
+                      "name": "2 SWB",
+                      "sidc": "10031000161211000000",
+                      "id": "gULg9WePVH",
+                      "state": [],
+                      "subUnits": [],
+                      "shortName": "",
+                      "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War"
+                    },
+                    {
+                      "name": "229 Field RE",
+                      "sidc": "10031000151407000000",
+                      "id": "weZFBcd0vw",
+                      "state": [],
+                      "subUnits": [],
+                      "shortName": "",
+                      "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War"
+                    },
+                    {
+                      "name": "230 Field RE",
+                      "sidc": "10031000151407000000",
+                      "id": "ypDWYk7VSY",
+                      "state": [],
+                      "subUnits": [],
+                      "shortName": "",
+                      "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War"
+                    }
+                  ],
+                  "shortName": "24 Guards"
+                }
+              ],
+              "shortName": "NWEF"
             }
           ]
         }
