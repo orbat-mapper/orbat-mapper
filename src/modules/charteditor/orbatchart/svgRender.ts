@@ -47,6 +47,7 @@ stroke-linecap: round
 
 .o-label {
   text-anchor: middle;
+  dominant-baseline: hanging;
 }
 
 .o-label-right {

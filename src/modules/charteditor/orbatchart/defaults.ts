@@ -28,7 +28,7 @@ export const DEFAULT_OPTIONS = {
   lineWidth: 1,
   fontSize: 12,
   useShortName: false,
-  labelOffset: 16,
+  labelOffset: 8,
   fontStyle: "normal",
   fontWeight: "normal",
   lineColor: "#1F2937",
