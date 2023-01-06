@@ -69,6 +69,11 @@
         :items="fontStyleItems"
       />
       <NumberInputGroup label="Label offset" v-model="options.labelOffset" />
+      <SimpleSelect
+        label="Label placement"
+        v-model="options.labelPlacement"
+        :items="labelPlacementItems"
+      />
       <InputGroup label="Font color" type="color" v-model="options.fontColor" />
       <ToggleField v-model="options.useShortName">Use short unit names</ToggleField>
       <ToggleField v-model="options.hideLabel">Hide label</ToggleField>
@@ -87,7 +92,13 @@
 import InputGroup from "@/components/InputGroup.vue";
 import { useChartSettingsStore, useRootUnitStore } from "./chartSettingsStore";
 import SimpleSelect from "@/components/SimpleSelect.vue";
-import { FontStyles, FontWeights, LevelLayouts, UnitLevelDistances } from "./orbatchart";
+import {
+  FontStyles,
+  FontWeights,
+  LabelPlacements,
+  LevelLayouts,
+  UnitLevelDistances,
+} from "./orbatchart";
 import ToggleField from "@/components/ToggleField.vue";
 import { enum2Items, injectStrict } from "@/utils";
 import { defineAsyncComponent, ref } from "vue";
@@ -114,6 +125,7 @@ const levelItems = enum2Items(LevelLayouts);
 const spacingItems = enum2Items(UnitLevelDistances);
 const fontWeightItems = enum2Items(FontWeights);
 const fontStyleItems = enum2Items(FontStyles);
+const labelPlacementItems = enum2Items(LabelPlacements);
 const rootUnitStore = useRootUnitStore();
 const showSearch = ref(false);
 

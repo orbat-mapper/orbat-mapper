@@ -58,6 +58,14 @@ export const FontStyles = {
   Italic: "italic",
 } as const;
 
+export const LabelPlacements = {
+  Below: "below",
+  // Left: "left",
+  Right: "right",
+} as const;
+
+export type LabelPlacement = typeof LabelPlacements[keyof typeof LabelPlacements];
+
 export const ChartItemTypes = {
   Chart: "chart",
   Level: "level",
@@ -124,6 +132,7 @@ export interface LabelOptions {
   useShortName: boolean;
   labelOffset: number;
   hideLabel: boolean;
+  labelPlacement: LabelPlacement;
 }
 
 export interface OrbChartOptions extends FontOptions, ConnectorOptions, LabelOptions {

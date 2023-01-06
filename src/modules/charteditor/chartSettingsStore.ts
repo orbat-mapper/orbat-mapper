@@ -54,6 +54,7 @@ export const useChartSettingsStore = defineStore("chartSettingsStore", {
     lineColor: DEFAULT_OPTIONS.lineColor,
     hideLabel: false,
     fontColor: DEFAULT_OPTIONS.fontColor,
+    labelPlacement: "below",
   }),
 });
 

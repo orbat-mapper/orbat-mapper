@@ -49,6 +49,11 @@ stroke-linecap: round
   text-anchor: middle;
 }
 
+.o-label-right {
+  text-anchor: start;
+  dominant-baseline: middle;
+}
+
 ${HIGHLIGT_STYLE}
 `;
 }
@@ -209,12 +214,25 @@ export function createUnitGroup(
     : unitNode.unit.name;
   g.append("g").html(unitNode.symb.asSVG());
   if (!options.hideLabel) {
+    let x = unitNode.octagonAnchor.x;
+    let y = unitNode.symbolBoxSize.height;
+    let dy = `${options.labelOffset}pt`;
+    let dx = "0";
+    let classes = "o-label";
+    if (options.labelPlacement === "right") {
+      y = unitNode.octagonAnchor.y;
+      x = x + unitNode.symbolBoxSize.width / 2;
+      dx = `${options.labelOffset}pt`;
+      dy = "0";
+      classes = "o-label-right";
+    }
     const text = g
       .append("text")
-      .attr("x", unitNode.octagonAnchor.x)
-      .attr("dy", `${options.labelOffset}pt`)
-      .attr("y", unitNode.symbolBoxSize.height)
-      .attr("class", "o-label")
+      .attr("x", x)
+      .attr("dy", dy)
+      .attr("dx", dx)
+      .attr("y", y)
+      .attr("class", classes)
       .text(unitLabel);
 
     if (specificOptions.fontSize) text.attr("font-size", `${options.fontSize}pt`);
