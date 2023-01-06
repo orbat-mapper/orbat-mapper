@@ -6,12 +6,13 @@
     :class="{ border: isDragging }"
     @pointerdown="onPointerDown"
     @pointerup="onPointerUp"
-    @pointermove="onPointerMove"
+    @pointermove="throttledOnPointerMove"
   ></div>
 </template>
 
 <script setup lang="ts">
 import { ref, unref } from "vue";
+import { useThrottleFn } from "@vueuse/core";
 
 const props = defineProps<{ width: number }>();
 const emit = defineEmits(["update"]);
@@ -38,4 +39,6 @@ function onPointerMove(evt: PointerEvent) {
     emit("update", initialWidth + (evt.clientX - startX));
   }
 }
+
+const throttledOnPointerMove = useThrottleFn(onPointerMove, 10);
 </script>
