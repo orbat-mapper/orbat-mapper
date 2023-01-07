@@ -90,10 +90,8 @@ class OrbatChart {
       this.svg.selectAll("g.o-unit").on("click", null);
       this._removeSelectEventListeners();
     }
-    if (this.pz) {
-      this.svg.node()?.parentElement?.removeEventListener("wheel", this.pz.zoomWithWheel);
-      this.pz.destroy();
-    }
+
+    this._cleanupPanZoomInteraction();
   }
 
   private _removeSelectEventListeners() {
@@ -131,12 +129,28 @@ class OrbatChart {
     this._drawConnectors(renderedChart);
     this.renderedChart = renderedChart;
     if (enablePanZoom) {
-      this.pz = Panzoom(this.svg.node()!, { maxScale: 10 });
-      this.svg.node()?.parentElement?.addEventListener("wheel", this.pz.zoomWithWheel);
+      this._addPanZoomInteraction();
     } else {
       this.pz = null;
     }
     return this.svg.node() as SVGElement;
+  }
+
+  private _addPanZoomInteraction() {
+    this.pz = Panzoom(this.svg.node()!, {
+      maxScale: 10,
+      pinchAndPan: true,
+    });
+    this.svg.node()?.parentElement?.addEventListener("wheel", (event: WheelEvent) => {
+      this.pz?.zoomWithWheel(event);
+    });
+  }
+
+  private _cleanupPanZoomInteraction() {
+    if (this.pz) {
+      this.svg.node()?.parentElement?.removeEventListener("wheel", this.pz.zoomWithWheel);
+      this.pz.destroy();
+    }
   }
 
   highlightLevel(levelNumber: number) {
