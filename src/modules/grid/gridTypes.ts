@@ -4,6 +4,7 @@ import { SelectedScenarioFeatures } from "@/stores/dragStore";
 
 export type CellType = "text" | "number" | "sidc" | "dots";
 export type ColumnWidths = Record<string, number>;
+export type SortDirection = "asc" | "desc";
 
 export interface ColumnProperties<TData = Record<string, any>> {
   field: keyof TData;
@@ -13,9 +14,12 @@ export interface ColumnProperties<TData = Record<string, any>> {
   type?: CellType;
   menu?: MenuItemData[];
   resizable?: boolean;
+  sortable?: boolean;
 }
 
-export interface RuntimeColumnProperties extends Required<ColumnProperties> {}
+export interface RuntimeColumnProperties extends Required<ColumnProperties> {
+  sorted: SortDirection | null;
+}
 
 export interface IId {
   id: string;

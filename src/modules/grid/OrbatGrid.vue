@@ -4,6 +4,7 @@ import {
   ColumnProperties,
   ColumnWidths,
   RuntimeColumnProperties,
+  SortDirection,
 } from "@/modules/grid/gridTypes";
 import { computed, ref } from "vue";
 import { nanoid } from "@/utils";
@@ -30,8 +31,10 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(["action", "update:selected"]);
 
 const selectedRows = useVModel(props, "selected", emit);
+const sortDirection = ref<SortDirection>("asc");
+const sortField = ref<string | null>(null);
 
-const columnDefs = computed((): RuntimeColumnProperties[] =>
+const columnDefs = ref<RuntimeColumnProperties[]>(
   props.columns.map((column) => ({
     ...column,
     label: column.label || column.field,
@@ -40,6 +43,8 @@ const columnDefs = computed((): RuntimeColumnProperties[] =>
     type: column.type || "text",
     menu: column.menu || [],
     resizable: column.resizable ?? true,
+    sortable: column.sortable ?? false,
+    sorted: null,
   }))
 );
 
@@ -47,7 +52,24 @@ const columnWidths = ref<ColumnWidths>(
   Object.fromEntries(columnDefs.value.map((e) => [e.id, e.width]))
 );
 
-const dd = computed(() => props.data);
+function ascending(a: string, b: string) {
+  return (a || "") > (b || "") ? 1 : -1;
+}
+
+function descending(a: any, b: any) {
+  return (a || "") < (b || "") ? 1 : -1;
+}
+
+const dd = computed(() => {
+  if (sortField.value) {
+    return [...props.data].sort((a, b) =>
+      sortDirection.value === "asc"
+        ? ascending(a[sortField.value!], b[sortField.value!])
+        : descending(a[sortField.value!], b[sortField.value!])
+    );
+  }
+  return [...props.data];
+});
 
 const { list, containerProps, wrapperProps, scrollTo } = useVirtualList(dd, {
   itemHeight: props.rowHeight,
@@ -72,6 +94,18 @@ function toggleSelectAll(isChecked: boolean) {
     selectedRows.value = [];
   }
 }
+
+function onColumnSort(column: RuntimeColumnProperties) {
+  if (sortField.value === column.field) {
+    sortDirection.value = sortDirection.value === "desc" ? "asc" : "desc";
+  } else {
+    sortField.value = column.field;
+    sortDirection.value = "asc";
+  }
+  columnDefs.value.forEach((c) => {
+    c.sorted = sortField.value === c.field ? sortDirection.value : null;
+  });
+}
 </script>
 
 <template>
@@ -84,6 +118,7 @@ function toggleSelectAll(isChecked: boolean) {
       :checked-state="checkedState"
       @toggleSelect="toggleSelectAll"
       v-model:column-widths="columnWidths"
+      @sort="onColumnSort"
     />
     <div v-bind="wrapperProps">
       <template v-for="{ index, data: item } in list" :key="index">

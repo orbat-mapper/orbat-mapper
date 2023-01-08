@@ -21,9 +21,22 @@
           minWidth: `${widths[column.id]}px`,
         }"
         role="columnheader"
-        class="flex-0 relative flex w-full overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold text-gray-900"
+        class="flex-0 relative flex w-full items-center justify-between overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold text-gray-900"
+        :class="{ 'cursor-pointer': column.sortable }"
+        @click="onColumnClick(column)"
       >
         <span class="truncate">{{ column.label }}</span>
+        <span
+          v-if="column.sortable && column.sorted"
+          class="flex-none rounded text-gray-700 group-hover:bg-gray-300"
+        >
+          <ArrowSmallDownIcon
+            v-if="column.sorted === 'asc'"
+            class="h-5 w-5"
+            aria-hidden="true"
+          />
+          <ArrowSmallUpIcon v-else class="h-5 w-5" aria-hidden="true" />
+        </span>
         <GridHeaderResizeHandle
           v-if="column.resizable"
           @update="updateWidth(column.id, $event)"
@@ -37,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+import { ArrowSmallDownIcon, ArrowSmallUpIcon } from "@heroicons/vue/20/solid";
 import {
   CheckedState,
   ColumnWidths,
@@ -54,7 +68,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), { select: false, checkedState: false });
-const emit = defineEmits(["toggleSelect", "update:columnWidths"]);
+const emit = defineEmits(["toggleSelect", "update:columnWidths", "sort"]);
 
 const widths = useVModel(props, "columnWidths", emit);
 
@@ -68,8 +82,14 @@ function updateWidth(columnId: string, newWidth: number) {
 }
 
 function resetWidth(columnId: string) {
-  console.log("here");
   widths.value[columnId] =
     props.columnDefs.filter((c) => c.id === columnId)[0]?.width || 300;
+}
+
+function onColumnClick(column: RuntimeColumnProperties) {
+  if (column.sortable) {
+    console.log("Sort", column.field);
+    emit("sort", column);
+  }
 }
 </script>
