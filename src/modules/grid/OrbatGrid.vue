@@ -33,6 +33,7 @@ const emit = defineEmits(["action", "update:selected"]);
 const selectedRows = useVModel(props, "selected", emit);
 const sortDirection = ref<SortDirection>("asc");
 const sortField = ref<string | null>(null);
+const isDragging = ref(false);
 
 const columnDefs = ref<RuntimeColumnProperties[]>(
   props.columns.map((column) => ({
@@ -96,6 +97,7 @@ function toggleSelectAll(isChecked: boolean) {
 }
 
 function onColumnSort(column: RuntimeColumnProperties) {
+  if (isDragging.value) return;
   if (sortField.value === column.field) {
     sortDirection.value = sortDirection.value === "desc" ? "asc" : "desc";
   } else {
@@ -106,10 +108,18 @@ function onColumnSort(column: RuntimeColumnProperties) {
     c.sorted = sortField.value === c.field ? sortDirection.value : null;
   });
 }
+
+function onDragging(value: boolean) {
+  isDragging.value = value;
+}
 </script>
 
 <template>
-  <div v-bind="containerProps" class="relative h-full rounded-lg border shadow">
+  <div
+    v-bind="containerProps"
+    class="relative h-full rounded-lg border shadow"
+    :class="{ 'touch-none': isDragging }"
+  >
     <OrbatGridHeader
       :column-defs="columnDefs"
       :row-height="rowHeight"
@@ -119,6 +129,7 @@ function onColumnSort(column: RuntimeColumnProperties) {
       @toggleSelect="toggleSelectAll"
       v-model:column-widths="columnWidths"
       @sort="onColumnSort"
+      @dragging="onDragging"
     />
     <div v-bind="wrapperProps">
       <template v-for="{ index, data: item } in list" :key="index">

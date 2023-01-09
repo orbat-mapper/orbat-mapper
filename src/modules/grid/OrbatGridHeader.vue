@@ -42,6 +42,8 @@
           @update="updateWidth(column.id, $event)"
           :width="columnWidths[column.id]"
           @dblclick="resetWidth(column.id)"
+          @dragging="emit('dragging', $event)"
+          class="z-5"
         />
       </div>
       <div></div>
@@ -68,7 +70,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), { select: false, checkedState: false });
-const emit = defineEmits(["toggleSelect", "update:columnWidths", "sort"]);
+const emit = defineEmits(["toggleSelect", "update:columnWidths", "sort", "dragging"]);
 
 const widths = useVModel(props, "columnWidths", emit);
 
@@ -88,7 +90,6 @@ function resetWidth(columnId: string) {
 
 function onColumnClick(column: RuntimeColumnProperties) {
   if (column.sortable) {
-    console.log("Sort", column.field);
     emit("sort", column);
   }
 }
