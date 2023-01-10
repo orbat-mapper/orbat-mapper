@@ -6,13 +6,14 @@ import {
   RuntimeColumnProperties,
   SortDirection,
 } from "@/modules/grid/gridTypes";
-import { computed, ref } from "vue";
-import { nanoid } from "@/utils";
+import { computed, onMounted, ref } from "vue";
+import { groupBy, nanoid } from "@/utils";
 import OrbatGridHeader from "@/modules/grid/OrbatGridHeader.vue";
 import { useVirtualList, useVModel } from "@vueuse/core";
 import OrbatGridRow from "@/modules/grid/OrbatGridRow.vue";
 import MilSymbol from "@/components/MilSymbol.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
+import OrbatGridGroupRow from "@/modules/grid/OrbatGridGroupRow.vue";
 
 interface Props {
   columns: ColumnProperties[];
@@ -46,8 +47,12 @@ const columnDefs = ref<RuntimeColumnProperties[]>(
     resizable: column.resizable ?? true,
     sortable: column.sortable ?? false,
     sorted: null,
+    rowGroup: column.rowGroup ?? false,
+    hide: column.hide ?? false,
   }))
 );
+
+const visibleColumnDefs = computed(() => columnDefs.value.filter((c) => !c.hide));
 
 const columnWidths = ref<ColumnWidths>(
   Object.fromEntries(columnDefs.value.map((e) => [e.id, e.width]))
@@ -61,7 +66,7 @@ function descending(a: any, b: any) {
   return (a || "") < (b || "") ? 1 : -1;
 }
 
-const dd = computed(() => {
+const sortedData = computed(() => {
   if (sortField.value) {
     return [...props.data].sort((a, b) =>
       sortDirection.value === "asc"
@@ -72,7 +77,31 @@ const dd = computed(() => {
   return [...props.data];
 });
 
-const { list, containerProps, wrapperProps, scrollTo } = useVirtualList(dd, {
+const groupField = computed(() => columnDefs.value.filter((c) => c.rowGroup)[0]?.field);
+
+const groupedData = computed(() => {
+  if (groupField.value) return groupBy(sortedData.value, groupField.value);
+  return sortedData.value;
+});
+
+const openMap = ref<Map<any, boolean>>(new Map());
+
+const visibleData = computed(() => {
+  if (groupField.value) {
+    return [...groupedData.value.entries()]
+      .map(([g, v]) => [
+        { type: "group", item: g },
+        openMap.value.get(g) === false
+          ? []
+          : v.map((e: any) => ({ type: "row", item: e })),
+      ])
+      .flat(2);
+  } else if (Array.isArray(groupedData.value))
+    return groupedData.value.map((e: any) => ({ type: "row", item: e }));
+  return [];
+});
+
+const { list, containerProps, wrapperProps, scrollTo } = useVirtualList(visibleData, {
   itemHeight: props.rowHeight,
   overscan: 10,
 });
@@ -112,6 +141,8 @@ function onColumnSort(column: RuntimeColumnProperties) {
 function onDragging(value: boolean) {
   isDragging.value = value;
 }
+
+onMounted(() => {});
 </script>
 
 <template>
@@ -121,7 +152,7 @@ function onDragging(value: boolean) {
     :class="{ 'touch-none': isDragging }"
   >
     <OrbatGridHeader
-      :column-defs="columnDefs"
+      :column-defs="visibleColumnDefs"
       :row-height="rowHeight"
       class=""
       :select="select"
@@ -132,16 +163,17 @@ function onDragging(value: boolean) {
       @dragging="onDragging"
     />
     <div v-bind="wrapperProps">
-      <template v-for="{ index, data: item } in list" :key="index">
+      <template v-for="{ index, data: { item, type } } in list" :key="index">
         <div
+          v-if="type === 'row'"
           :style="{
             height: `${rowHeight}px`,
           }"
-          class="group flex divide-x divide-gray-200 hover:bg-gray-50"
+          class="group flex w-full divide-x divide-gray-200 hover:bg-gray-50"
         >
           <div
             v-if="select"
-            class="flex-0 flex w-10 items-center justify-center overflow-hidden border-b px-4 py-3.5 text-gray-900"
+            class="flex w-10 flex-shrink-0 items-center justify-center overflow-hidden border-b px-4 py-3.5 text-gray-900"
           >
             <input
               type="checkbox"
@@ -152,7 +184,7 @@ function onDragging(value: boolean) {
             />
           </div>
           <div
-            v-for="column in columnDefs"
+            v-for="column in visibleColumnDefs"
             :style="{
               width: `${columnWidths[column.id]}px`,
               minWidth: `${columnWidths[column.id]}px`,
@@ -177,6 +209,16 @@ function onDragging(value: boolean) {
           </div>
           <div class=""></div>
         </div>
+        <OrbatGridGroupRow
+          v-else-if="type === 'group'"
+          :item="item"
+          :select="select"
+          :style="{
+            height: `${rowHeight}px`,
+          }"
+          :open="openMap.get(item) ?? true"
+          @toggle="openMap.set(item, !!$event)"
+        />
       </template>
     </div>
   </div>

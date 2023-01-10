@@ -10,6 +10,10 @@ import { SideAction, SideActions } from "@/types/constants";
 import ToggleField from "@/components/ToggleField.vue";
 import BaseButton from "@/components/BaseButton.vue";
 
+interface ExtendedUnit extends NUnit {
+  sideName: string;
+  sideId: string;
+}
 const data = ref<NUnit[]>([]);
 
 const sideMenuItems: MenuItemData<SideAction>[] = [
@@ -21,21 +25,33 @@ const sideMenuItems: MenuItemData<SideAction>[] = [
   { label: "Move down", action: SideActions.MoveDown },
 ];
 
-const columns = ref<ColumnProperties<NUnit>[]>([
+const columns = ref<ColumnProperties<ExtendedUnit>[]>([
   // { field: "id", label: "menu", type: "dots", width: 60, menu: sideMenuItems },
   { field: "sidc", label: "Icon", type: "sidc", width: 65, resizable: false },
   { field: "name", label: "Name", sortable: true },
   { field: "shortName", label: "Short name", sortable: true },
   { field: "externalUrl", label: "URL" },
+  { field: "sideName", label: "Side", rowGroup: true, sortable: true },
   { field: "id", label: "id" },
 ]);
 const { scenario, isReady } = useScenario();
 
-const selected = ref<NUnit[]>([]);
+const selected = ref<ExtendedUnit[]>([]);
 
 onMounted(async () => {
   await scenario.value.io.loadDemoScenario("falkland82");
-  data.value = Object.values(scenario.value.store.state.unitMap);
+
+  const { unitMap, sideGroupMap, sideMap } = scenario.value.store.state;
+  const unitData: ExtendedUnit[] = [];
+  Object.keys(sideMap).forEach((sideId) =>
+    scenario.value.unitActions.walkSide(
+      sideId,
+      (unit, level, parent, sideGroup, side) => {
+        unitData.push({ ...unit, sideId: side.id, sideName: side?.name });
+      }
+    )
+  );
+  data.value = unitData;
   // selected.value.push(data.value[10]);
 });
 

@@ -27,6 +27,14 @@ export type NWalkSideCallback = (
   level: number,
   parent: NUnit | NSideGroup,
   sideGroup: NSideGroup,
+  side: NSide
+) => void | false | true;
+
+export type NWalkSideGroupCallback = (
+  unit: NUnit,
+  level: number,
+  parent: NUnit | NSideGroup,
+  sideGroup: NSideGroup,
   side?: NSide
 ) => void | false | true;
 

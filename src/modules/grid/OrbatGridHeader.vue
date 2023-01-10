@@ -1,9 +1,9 @@
 <template>
-  <header class="sticky top-0">
+  <header class="sticky top-0 z-10">
     <div class="flex divide-x divide-gray-200">
       <div
         v-if="select"
-        class="flex-0 flex w-10 items-center justify-center overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-gray-900"
+        class="flex w-10 flex-shrink-0 items-center justify-center overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-gray-900"
       >
         <input
           type="checkbox"

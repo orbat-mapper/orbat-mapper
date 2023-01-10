@@ -15,6 +15,8 @@ export interface ColumnProperties<TData = Record<string, any>> {
   menu?: MenuItemData[];
   resizable?: boolean;
   sortable?: boolean;
+  rowGroup?: boolean;
+  hide?: boolean;
 }
 
 export interface RuntimeColumnProperties extends Required<ColumnProperties> {

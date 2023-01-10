@@ -93,7 +93,7 @@ import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import FilterQueryInput from "@/components/FilterQueryInput.vue";
 import { ColumnField, TableColumn, TableItem } from "@/modules/scenarioeditor/types";
 import { filterUnits, NOrbatItemData } from "@/composables/filtering";
-import { NWalkSideCallback } from "@/scenariostore/unitManipulations";
+import { type NWalkSideGroupCallback } from "@/scenariostore/unitManipulations";
 import GridHeader from "@/modules/scenarioeditor/GridHeader.vue";
 import GridSideGroupRow from "@/modules/scenarioeditor/GridSideGroupRow.vue";
 import GridSideRow from "@/modules/scenarioeditor/GridSideRow.vue";
@@ -214,7 +214,7 @@ const items = computed(() => {
 
 function walkSideGroupItem(
   sideGroupItem: SideGroupItem,
-  callback: NWalkSideCallback,
+  callback: NWalkSideGroupCallback,
   s = state
 ) {
   let level = 0;
