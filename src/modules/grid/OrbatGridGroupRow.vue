@@ -4,10 +4,12 @@ interface Props {
   select?: boolean;
   item: string;
   open?: boolean;
+  checked?: boolean;
+  indeterminate?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), { select: false, open: true });
-const emit = defineEmits(["toggle"]);
+const emit = defineEmits(["toggle", "change"]);
 </script>
 <template>
   <div class="group flex divide-x divide-gray-200 hover:bg-gray-50">
@@ -18,8 +20,10 @@ const emit = defineEmits(["toggle"]);
       <input
         type="checkbox"
         :id="item"
-        :value="item"
+        :checked="checked"
+        :indeterminate="indeterminate"
         class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6"
+        @change="emit('change', $event)"
       />
     </div>
     <div

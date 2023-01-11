@@ -14,6 +14,7 @@ import OrbatGridRow from "@/modules/grid/OrbatGridRow.vue";
 import MilSymbol from "@/components/MilSymbol.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import OrbatGridGroupRow from "@/modules/grid/OrbatGridGroupRow.vue";
+import { MilxImportedLayer } from "@/composables/scenarioImport";
 
 interface Props {
   columns: ColumnProperties[];
@@ -49,6 +50,7 @@ const columnDefs = ref<RuntimeColumnProperties[]>(
     sorted: null,
     rowGroup: column.rowGroup ?? false,
     hide: column.hide ?? false,
+    groupOpen: column.groupOpen ?? true,
   }))
 );
 
@@ -143,6 +145,31 @@ function onDragging(value: boolean) {
 }
 
 onMounted(() => {});
+
+function getGroupChecked(item: any) {
+  if (props.select) {
+    const groupItems = (groupedData.value as Map<any, any>).get(item);
+    const checked = groupItems.every((e: any) => selectedRows.value.includes(e));
+    return {
+      checked,
+      indeterminate:
+        !checked && groupItems.some((e: any) => selectedRows.value.includes(e)),
+    };
+  } else {
+    return { checked: false, indeterminate: false };
+  }
+}
+
+function toggleGroupSelect(item: any, event: Event) {
+  const isChecked = (<HTMLInputElement>event.target).checked;
+  const groupItems = (groupedData.value as Map<any, any>).get(item);
+
+  if (isChecked) {
+    selectedRows.value = [...new Set([...selectedRows.value, ...groupItems])];
+  } else {
+    selectedRows.value = selectedRows.value.filter((id) => !groupItems.includes(id));
+  }
+}
 </script>
 
 <template>
@@ -218,6 +245,8 @@ onMounted(() => {});
           }"
           :open="openMap.get(item) ?? true"
           @toggle="openMap.set(item, !!$event)"
+          v-bind="getGroupChecked(item)"
+          @change="toggleGroupSelect(item, $event)"
         />
       </template>
     </div>

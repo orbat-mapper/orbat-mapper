@@ -17,6 +17,7 @@ export interface ColumnProperties<TData = Record<string, any>> {
   sortable?: boolean;
   rowGroup?: boolean;
   hide?: boolean;
+  groupOpen?: boolean;
 }
 
 export interface RuntimeColumnProperties extends Required<ColumnProperties> {
