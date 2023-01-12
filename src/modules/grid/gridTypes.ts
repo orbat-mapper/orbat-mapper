@@ -7,7 +7,7 @@ export type ColumnWidths = Record<string, number>;
 export type SortDirection = "asc" | "desc";
 
 export interface ColumnProperties<TData = Record<string, any>> {
-  field: keyof TData;
+  field: keyof TData | string;
   id?: string;
   label?: string;
   width?: number;
@@ -22,6 +22,7 @@ export interface ColumnProperties<TData = Record<string, any>> {
 
 export interface RuntimeColumnProperties extends Required<ColumnProperties> {
   sorted: SortDirection | null;
+  objectPath: string[];
 }
 
 export interface IId {

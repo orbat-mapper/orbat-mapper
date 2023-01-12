@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<Props>(), { select: false, open: true });
 const emit = defineEmits(["toggle", "change"]);
 </script>
 <template>
-  <div class="group flex divide-x divide-gray-200 hover:bg-gray-50">
+  <div class="group flex divide-x divide-gray-200 bg-gray-50 hover:bg-gray-100">
     <div
       v-if="select"
       class="flex-0 flex w-10 items-center justify-center overflow-hidden border-b px-4 py-3.5 text-gray-900"

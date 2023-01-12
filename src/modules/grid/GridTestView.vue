@@ -33,6 +33,7 @@ const columns = ref<ColumnProperties<ExtendedUnit>[]>([
   { field: "externalUrl", label: "URL" },
   { field: "sideName", label: "Side", rowGroup: true, sortable: true },
   { field: "id", label: "id" },
+  { field: "state.0.location", label: "p[0]" },
 ]);
 const { scenario, isReady } = useScenario();
 

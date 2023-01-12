@@ -10,11 +10,10 @@ import { computed, onMounted, ref } from "vue";
 import { groupBy, nanoid } from "@/utils";
 import OrbatGridHeader from "@/modules/grid/OrbatGridHeader.vue";
 import { useVirtualList, useVModel } from "@vueuse/core";
-import OrbatGridRow from "@/modules/grid/OrbatGridRow.vue";
 import MilSymbol from "@/components/MilSymbol.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import OrbatGridGroupRow from "@/modules/grid/OrbatGridGroupRow.vue";
-import { MilxImportedLayer } from "@/composables/scenarioImport";
+import { getValue } from "./helpers";
 
 interface Props {
   columns: ColumnProperties[];
@@ -51,6 +50,7 @@ const columnDefs = ref<RuntimeColumnProperties[]>(
     rowGroup: column.rowGroup ?? false,
     hide: column.hide ?? false,
     groupOpen: column.groupOpen ?? true,
+    objectPath: column.field.split("."),
   }))
 );
 
@@ -231,7 +231,7 @@ function toggleGroupSelect(item: any, event: Event) {
             <span
               v-else-if="column.type === 'text'"
               class="truncate whitespace-nowrap text-sm text-gray-500"
-              >{{ item[column.field] }}</span
+              >{{ getValue(item, column.objectPath) }}</span
             >
           </div>
           <div class=""></div>
