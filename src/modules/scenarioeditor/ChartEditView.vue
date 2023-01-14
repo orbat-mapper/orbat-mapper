@@ -3,7 +3,7 @@
     <aside
       class="relative z-10 flex h-full w-96 flex-col justify-between overflow-auto border-r-2 bg-gray-100 dark:bg-gray-900"
     >
-      <TabGroup>
+      <TabGroup :selected-index="selectedTab" @change="changeTab">
         <TabList class="-mb-px flex border-b border-gray-200">
           <Tab
             as="template"
@@ -117,6 +117,15 @@ const breadcrumbItems = computed((): BreadcrumbItem[] => {
 });
 
 rootUnitStore.unit = null;
+const ORBAT_TAB = 0;
+const SETTINGS_TAB = 1;
+
+const selectedTab = ref(ORBAT_TAB);
+
+function changeTab(index: number) {
+  selectedTab.value = index;
+}
+
 const debug = ref(false);
 const currentTab = ref<ChartTab>(ChartTabs.Chart);
 const currentChartElements = useSelectedChartElementStore();
@@ -126,16 +135,19 @@ const height = computed(() => sizeToWidthHeight(options.paperSize).height);
 
 const onUnitClick = (unitNode: RenderedUnitNode) => {
   currentChartElements.selectUnit(unitNode);
+  changeTab(SETTINGS_TAB);
   nextTick(() => (currentTab.value = ChartTabs.Unit));
 };
 
 const onLevelClick: OnLevelClickCallback = (levelNumber: number) => {
   currentChartElements.selectLevel(levelNumber);
+  changeTab(SETTINGS_TAB);
   currentTab.value = ChartTabs.Level;
 };
 
 const onBranchClick: OnBranchClickCallback = (parentId, levelNumber) => {
   currentChartElements.selectBranch(parentId, levelNumber);
+  changeTab(SETTINGS_TAB);
   currentTab.value = ChartTabs.Branch;
 };
 </script>
