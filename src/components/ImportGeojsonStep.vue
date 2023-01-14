@@ -11,10 +11,12 @@
           />
         </section>
         <section class="mt-4">
-          <ImportSelectItems
-            :layers="layers"
-            v-model:selected="selectedUnits"
+          <OrbatGrid
+            :data="data.features"
+            :columns="columns"
+            select
             select-all
+            v-model:selected="selectedUnits"
           />
         </section>
       </div>
@@ -36,13 +38,14 @@ import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NUnit } from "@/types/internalModels";
-import ImportSelectItems from "@/components/ImportSelectItems.vue";
 import type { FeatureCollection, Point } from "geojson";
-import { MilxImportedLayer } from "@/composables/scenarioImport";
 import { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
+import OrbatGrid from "@/modules/grid/OrbatGrid.vue";
+import { ColumnProperties } from "@/modules/grid/gridTypes";
+import { OrbatMapperGeoJsonFeature } from "@/lib/milx/types";
 
 interface Props {
   data: FeatureCollection;
@@ -53,6 +56,7 @@ const emit = defineEmits(["cancel", "loaded"]);
 const { unitActions, store: scnStore, time } = injectStrict(activeScenarioKey);
 const store = useImportStore();
 const { state } = scnStore;
+
 interface Form extends ImportSettings {
   format: ImportFormat;
 }
@@ -67,10 +71,17 @@ const form = ref<Form>({
 });
 
 const { send } = useNotifications();
-const selectedUnits = ref<(string | number)[]>([]);
-const layers = computed(() => {
-  return [{ name: "", id: "jj", features: props.data.features } as MilxImportedLayer];
-});
+const selectedUnits = ref<OrbatMapperGeoJsonFeature[]>([]);
+
+const columns: ColumnProperties[] = [
+  {
+    type: "sidc",
+    width: 65,
+    field: "properties.sidc",
+    label: "Icon",
+  },
+  { type: "text", field: "properties.name", label: "Name" },
+];
 
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
@@ -91,7 +102,7 @@ async function onLoad(e: Event) {
   const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
 
   const units: NUnit[] = features
-    .filter((e) => selectedUnits.value.includes(e.id!))
+    .filter((e) => selectedUnits.value.includes(e as any))
     .map((f) => {
       return {
         id: nanoid(),

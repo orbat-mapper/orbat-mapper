@@ -21,12 +21,14 @@ interface Props {
   rowHeight?: number;
   select?: boolean;
   selected?: any[];
+  selectAll?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   rowHeight: 48,
   select: false,
   selected: () => [],
+  selectAll: false,
 });
 
 const emit = defineEmits(["action", "update:selected"]);
@@ -144,7 +146,11 @@ function onDragging(value: boolean) {
   isDragging.value = value;
 }
 
-onMounted(() => {});
+onMounted(() => {
+  if (props.selectAll && props.select) {
+    toggleSelectAll(true);
+  }
+});
 
 function getGroupChecked(item: any) {
   if (props.select) {
@@ -220,7 +226,7 @@ function toggleGroupSelect(item: any, event: Event) {
             tabindex="0"
           >
             <div v-if="column.type === 'sidc'" class="">
-              <MilSymbol :sidc="item[column.field]" :size="20" />
+              <MilSymbol :sidc="getValue(item, column.objectPath)" :size="20" />
             </div>
             <DotsMenu
               v-else-if="column.type === 'dots'"
