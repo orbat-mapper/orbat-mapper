@@ -32,17 +32,8 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  onBeforeMount,
-  onMounted,
-  provide,
-  reactive,
-  ref,
-  useSlots,
-  VNode,
-  watch,
-} from "vue";
+import { computed, onMounted, provide, reactive, useSlots, watch } from "vue";
+import { tabsProviderKey, TabsState } from "@/components/types";
 
 interface Props {
   currentTab?: number;
@@ -54,26 +45,18 @@ const props = defineProps<Props>();
 const slots = useSlots();
 const emit = defineEmits(["update:current-tab"]);
 
-const state = reactive({
+const state: TabsState = reactive({
   selectedIndex: 0,
   count: 0,
   tabClass: props.tabClass,
 });
 
-const tabs = ref([] as VNode[]);
-
-provide("TabsProvider", state);
+provide(tabsProviderKey, state);
 
 const selectTab = (i: number) => {
   state.selectedIndex = i;
   emit("update:current-tab", state.selectedIndex);
 };
-
-onBeforeMount(() => {
-  if (slots.default) {
-    tabs.value = slots.default().filter((child: any) => child.type.name === "TabItem");
-  }
-});
 
 onMounted(() => {
   selectTab(props.currentTab ?? 0);
@@ -87,6 +70,12 @@ watch(
 );
 
 const tabsInfo = computed(() => {
-  return tabs.value.map((t) => ({ label: t.props?.label }));
+  if (slots.default) {
+    return slots
+      .default()
+      .filter((child: any) => child.type.name === "TabItem")
+      .map((t) => ({ label: t.props?.label }));
+  }
+  return [];
 });
 </script>

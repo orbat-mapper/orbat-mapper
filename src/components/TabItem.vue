@@ -1,40 +1,40 @@
 <template>
-  <div v-show="isActive" class="mt-6" :class="tabClass">
+  <div v-show="isActive" class="mt-6" :class="tabs.tabClass">
     <slot :is-active="isActive"></slot>
   </div>
 </template>
-
 <script>
-import { defineComponent, inject, onBeforeMount, onBeforeUnmount, ref, watch } from "vue";
-
-export default defineComponent({
+export default {
   name: "TabItem",
-  props: {
-    label: String,
-  },
-  setup() {
-    const index = ref(0);
-    const isActive = ref(false);
+};
+</script>
 
-    const tabs = inject("TabsProvider");
+<script setup>
+import { onBeforeUnmount, ref, watch } from "vue";
+import { tabsProviderKey } from "@/components/types";
+import { injectStrict } from "@/utils/index";
 
-    watch(
-      () => tabs.selectedIndex,
-      () => {
-        isActive.value = index.value === tabs.selectedIndex;
-      }
-    );
+const props = defineProps({
+  label: String,
+});
 
-    onBeforeMount(() => {
-      index.value = tabs.count;
-      tabs.count++;
-      isActive.value = index.value === tabs.selectedIndex;
-    });
+const index = ref(0);
+const isActive = ref(false);
 
-    onBeforeUnmount(() => {
-      tabs.count--;
-    });
-    return { index, isActive, tabClass: tabs.tabClass };
-  },
+const tabs = injectStrict(tabsProviderKey);
+
+watch(
+  () => tabs.selectedIndex,
+  () => {
+    isActive.value = index.value === tabs.selectedIndex;
+  }
+);
+
+index.value = tabs.count;
+tabs.count++;
+isActive.value = index.value === tabs.selectedIndex;
+
+onBeforeUnmount(() => {
+  tabs.count--;
 });
 </script>

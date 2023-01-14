@@ -1,6 +1,7 @@
 import { LayerFeatureItem } from "../types/scenarioGeoModels";
 import { NUnit } from "../types/internalModels";
 import { UnitAction } from "../types/constants";
+import { InjectionKey } from "vue";
 
 export interface ButtonGroupItem {
   label: string;
@@ -60,3 +61,11 @@ export interface BreadcrumbItem {
   name: string;
   static?: boolean;
 }
+
+export interface TabsState {
+  selectedIndex: number;
+  count: number;
+  tabClass?: string;
+}
+
+export const tabsProviderKey = Symbol("TabsProvider") as InjectionKey<TabsState>;
