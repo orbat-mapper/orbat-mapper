@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+January 2023
+
+- Add setting for displaying short unit names in ORBAT panel.
+
 December 2022
 
 - Add basic chart edit view (work in process).

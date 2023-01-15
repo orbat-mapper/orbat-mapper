@@ -17,6 +17,9 @@
             type="number"
             v-model="settings.orbatIconSize"
           />
+          <ToggleField v-model="settings.orbatShortName"
+            >Use short names in ORBAT</ToggleField
+          >
         </div>
       </TabItem>
       <TabItem label="Map settings"><MapSettingsPanel /></TabItem>
@@ -33,6 +36,7 @@ import TabItem from "./TabItem.vue";
 import { useSettingsStore } from "@/stores/settingsStore";
 import NumberInputGroup from "./NumberInputGroup.vue";
 import MapSettingsPanel from "@/components/MapSettingsPanel.vue";
+import ToggleField from "@/components/ToggleField.vue";
 
 const props = defineProps({ modelValue: Boolean });
 

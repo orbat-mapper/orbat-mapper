@@ -7,6 +7,7 @@ export const useSettingsStore = defineStore("settings", {
     return {
       mapIconSize: useLocalStorage("mapIconSize", 30),
       orbatIconSize: useLocalStorage("orbatIconSize", 20),
+      orbatShortName: useLocalStorage("orbatShortName", false),
       symbologyStandard: "2525" as SymbologyStandard,
     };
   },

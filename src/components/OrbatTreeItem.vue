@@ -62,7 +62,7 @@
               @dragover.prevent="isDragOver = true"
               @drop.prevent="onDrop"
               @dragleave="isDragOver = false"
-              >{{ unit.name }}</span
+              >{{ unitLabel }}</span
             ><span v-if="unit._state?.location" class="text-red-700">&deg;</span>
           </div>
         </button>
@@ -143,6 +143,10 @@ const isOpen = computed({
 const dragStore = useDragStore();
 const settingsStore = useSettingsStore();
 const { selectedUnitIds } = useSelectedUnits();
+
+const unitLabel = computed(() =>
+  settingsStore.orbatShortName ? unit.value.shortName || unit.value.name : unit.value.name
+);
 
 const dragStart = (ev: DragEvent) => {
   const { dataTransfer } = ev;
