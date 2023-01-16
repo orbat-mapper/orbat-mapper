@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { SelectItem } from "@/components/types";
@@ -97,6 +97,7 @@ import TextAreaGroup from "@/components/TextAreaGroup.vue";
 import { useImportStore } from "@/stores/importExportStore";
 import { useScenarioImport } from "@/composables/scenarioImport";
 import { guessImportFormat } from "@/lib/fileHandling";
+import { useDragStore } from "@/stores/dragStore";
 
 const router = useRouter();
 
@@ -112,6 +113,7 @@ const stringSource = ref("");
 const currentFilename = ref("");
 
 const store = useImportStore();
+const dragStore = useDragStore();
 
 const dropZoneRef = ref<HTMLDivElement>();
 const { isOverDropZone } = useDropZone(dropZoneRef, onDrop);
@@ -160,6 +162,7 @@ async function onLoad(e?: Event) {
 function onDrop(files: File[] | null) {
   if (files) {
     handleFiles(files);
+    dragStore.draggedFiles = null;
   }
 }
 
@@ -186,4 +189,8 @@ async function handleFiles(files: File[]) {
     await onLoad();
   }
 }
+
+onMounted(() => {
+  if (dragStore.draggedFiles) onDrop(dragStore.draggedFiles);
+});
 </script>

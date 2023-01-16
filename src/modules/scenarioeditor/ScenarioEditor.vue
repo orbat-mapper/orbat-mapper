@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen flex-col overflow-hidden bg-gray-300">
+  <div class="flex h-screen flex-col overflow-hidden bg-gray-300" ref="dropZoneRef">
     <nav
       class="flex flex-shrink-0 items-center justify-between bg-gray-900 py-2 pr-4 pl-6 text-gray-200"
     >
@@ -166,13 +166,19 @@
     />
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
     <ImportModal v-if="showImportModal" v-model="showImportModal" />
+    <div
+      v-if="isOverDropZone"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/80"
+    >
+      <p class="rounded border bg-white/40 p-4 text-gray-900">Drop file to import data</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onUnmounted, provide, ref } from "vue";
 import { GlobalEvents } from "vue-global-events";
-import { SelectedScenarioFeatures } from "@/stores/dragStore";
+import { SelectedScenarioFeatures, useDragStore } from "@/stores/dragStore";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
 
 import {
@@ -191,7 +197,13 @@ import {
   Sitemap as SitemapIcon,
   UndoVariant as UndoIcon,
 } from "mdue";
-import { createEventHook, useClipboard, useTitle, watchOnce } from "@vueuse/core";
+import {
+  createEventHook,
+  useClipboard,
+  useDropZone,
+  useTitle,
+  watchOnce,
+} from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import { ScenarioActions, TAB_LAYERS } from "@/types/constants";
 import AppNotifications from "@/components/AppNotifications.vue";
@@ -224,6 +236,7 @@ import {
   LANDING_PAGE_ROUTE,
   SCENARIO_ROUTE,
 } from "@/router/names";
+import { useFileDropZone } from "@/composables/filedragdrop";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(
@@ -240,6 +253,8 @@ const ExportScenarioModal = defineAsyncComponent(
 const ImportModal = defineAsyncComponent(() => import("@/components/ImportModal.vue"));
 
 const props = defineProps<{ activeScenario: TScenario }>();
+
+const dropZoneRef = ref<HTMLDivElement>();
 const activeUnitId = ref<EntityId | undefined | null>(null);
 const selectedUnitIdsRef = ref<Set<EntityId>>(new Set());
 const selectedFeatureIdsRef = ref<SelectedScenarioFeatures>(new Set());
@@ -378,4 +393,12 @@ watchOnce(
 function loadScenario(v: Scenario) {
   loadFromObject(v);
 }
+
+function onDrop(files: File[] | null) {
+  const dragState = useDragStore();
+  dragState.draggedFiles = files;
+  showImportModal.value = true;
+}
+
+const { isOverDropZone } = useFileDropZone(dropZoneRef, onDrop);
 </script>

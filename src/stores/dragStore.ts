@@ -19,6 +19,7 @@ export type SelectedScenarioFeatures = Set<FeatureId>;
 export const useDragStore = defineStore("drag", {
   state: () => ({
     draggedUnit: null as Unit | null,
+    draggedFiles: null as File[] | null,
   }),
 });
 
