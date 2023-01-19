@@ -4,7 +4,11 @@ import DocMilSymbol from "../components/DocMilSymbol.vue";
 
 # Terminology
 
-A scenario in ORBAT Mapper consists of units organized into into _sides_ and groups.
+Under the hood ORBAT Mapper uses a data model loosely inspired by
+the [Military Scenario Definition Language (MSDL)](https://en.wikipedia.org/wiki/Military_Scenario_Definition_Language).
+In this section we will go through some terminology you will encounter when building a scenario.
+
+## Scenario
 
 ## Sides and groups
 
@@ -23,10 +27,28 @@ of the unit icons. The most commonly used ones are friend, neutral and hostile:
     <p>Hostile</p>
 </div>
 
-You can also select custom colors if you prefer that.
+You can also select custom colors. This is useful in cases when you do not want to label a side as hostile or want to
+distinguish different nations by symbol color.
 
-Each side is divided into one or more groups of units. The topmost unit in a hierarchy is called a _root
-unit_.
+Each side consists of one or more groups of units. A group is just a way to organize your units. They can for instance
+represent branches (army, navy, air-force, etc.), a task force, a battlefront, etc. The default group name is _Units_.
+
+A group consists of one or more unit hierarchies. The topmost unit in a hierarchy is called a _root unit_.
+
+## Units
+
+A unit is the basic building block of a scenario. It has properties like military symbol, name, description, echelon,
+location, etc.
+
+<div class="grid grid-cols-3 gap-0 items-center justify-items-center content-end">
+    <DocMilSymbol sidc="10031000161211000000" />
+    <DocMilSymbol sidc="10031000141205000000" />
+    <DocMilSymbol sidc="10061000151301020000" />
+</div>
+
+## Features
+
+## Events
 
 How you organize a scenario is up to you. One example is the Falklands demo scenario. It consists of two sides, Great
 Britain and Argentina.
