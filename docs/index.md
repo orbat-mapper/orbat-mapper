@@ -17,7 +17,7 @@ hero:
       link: /guide/about-orbat-mapper
     - theme: alt
       text: Try preview
-      link: https://preview--orbat-mapper.netlify.app/
+      link: https://orbat-mapper.app/
 
 features:
   - title: "Create ORBATs"
