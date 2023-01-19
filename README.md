@@ -1,10 +1,12 @@
 # ORBAT Mapper
 
-Recreate historic battles and military scenarios.
+Recreate historic battles and military scenarios in you browser.
 
-**Please note that this project is a work in progress. A working version of ORBAT Mapper has not been released yet.**
+**Please note that this project is a work in progress. A fully working version of ORBAT Mapper has not been released
+yet.**
 
-You can try the current version at https://preview--orbat-mapper.netlify.app/.
+You can try the work in progress version at https://orbat-mapper.app/ and browse the documentation
+at https://docs.orbat-mapper.app/.
 
 _Screenshot of an early prototype:_
 
