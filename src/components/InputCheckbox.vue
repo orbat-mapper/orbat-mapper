@@ -28,7 +28,7 @@ interface Props {
   id?: string;
   label?: string;
   description?: string;
-  modelValue?: boolean;
+  modelValue?: boolean | any[];
 }
 const props = withDefaults(defineProps<Props>(), {});
 const emit = defineEmits(["update:modelValue"]);

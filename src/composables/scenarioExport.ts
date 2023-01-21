@@ -2,11 +2,12 @@ import { featureCollection, point } from "@turf/helpers";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
-import { ExportSettings } from "@/types/convert";
+import { ColumnMapping, ExportSettings, XlsxSettings } from "@/types/convert";
 import * as FileSaver from "file-saver";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { NUnit } from "@/types/internalModels";
 
 const settingsStore = useSettingsStore();
 
@@ -14,8 +15,27 @@ export interface UseScenarioExportOptions {
   activeScenario: TScenario;
 }
 
+function columnMapper(data: any[], columnMap: ColumnMapping[]): Record<string, any>[] {
+  const mappedData: Record<string, any>[] = [];
+
+  data.forEach((item) => {
+    const mappedItem: Record<string, any> = {};
+    columnMap.forEach(({ label, field }) => {
+      mappedItem[label] = mapField(item[field]);
+    });
+    mappedData.push(mappedItem);
+  });
+  return mappedData;
+}
+
+function mapField(field: any): string | number | Date {
+  if (Array.isArray(field)) return JSON.stringify(field);
+  return field;
+}
+
 export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {}) {
-  const { geo } = options.activeScenario || injectStrict(activeScenarioKey);
+  const { geo, store, unitActions } =
+    options.activeScenario || injectStrict(activeScenarioKey);
 
   function convertUnitsToGeoJson() {
     const features = geo.everyVisibleUnit.value.map((unit) => {
@@ -130,5 +150,34 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
-  return { downloadAsGeoJSON, downloadAsKML, downloadAsKMZ };
+  async function downloadAsXlsx(opts: ExportSettings) {
+    const { writeFileXLSX, utils } = await import("xlsx");
+    const { unitMap, sideGroupMap, sideMap } = store.state;
+
+    const workbook = utils.book_new();
+    let unitData: any[] = [];
+    if (opts.oneSheetPerSide) {
+      Object.keys(sideMap).forEach((sideId) => {
+        unitData = [];
+        const sideName = sideMap[sideId].name;
+        unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
+          unitData.push({ ...unit, sideId: side.id, sideName: side?.name });
+        });
+        const ws = utils.json_to_sheet(columnMapper(unitData, opts.columns));
+        utils.book_append_sheet(workbook, ws, sideName);
+      });
+    } else {
+      Object.keys(sideMap).forEach((sideId) =>
+        unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
+          unitData.push({ ...unit, sideId: side.id, sideName: side?.name });
+        })
+      );
+      const ws = utils.json_to_sheet(columnMapper(unitData, opts.columns));
+      utils.book_append_sheet(workbook, ws, "Units");
+    }
+
+    writeFileXLSX(workbook, "scenario.xlsx");
+  }
+
+  return { downloadAsGeoJSON, downloadAsKML, downloadAsKMZ, downloadAsXlsx };
 }

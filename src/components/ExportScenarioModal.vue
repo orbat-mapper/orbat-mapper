@@ -16,29 +16,33 @@
           icons.
         </p>
       </div>
-      <fieldset class="space-y-4">
-        <InputCheckbox
-          label="Include units"
-          description="Units with a location at current scenario time"
-          v-model="form.includeUnits"
-        />
-        <InputCheckbox
-          label="Include scenario features"
-          v-model="form.includeFeatures"
-          description=""
-        />
-        <InputCheckbox
-          v-if="isKml || isKmz"
-          label="Use short unit names"
-          v-model="form.useShortName"
-        />
-        <InputCheckbox
-          v-if="isKmz"
-          label="Include unit icons"
-          v-model="form.embedIcons"
-          description="Embed icons as images"
-        />
-      </fieldset>
+      <ExportSettingsXlsx v-if="format === 'xlsx'" :format="format" v-model="form" />
+      <template v-else>
+        <fieldset class="space-y-4">
+          <InputCheckbox
+            label="Include units"
+            description="Units with a location at current scenario time"
+            v-model="form.includeUnits"
+          />
+          <InputCheckbox
+            label="Include scenario features"
+            v-model="form.includeFeatures"
+            description=""
+          />
+          <InputCheckbox
+            v-if="isKml || isKmz"
+            label="Use short unit names"
+            v-model="form.useShortName"
+          />
+          <InputCheckbox
+            v-if="isKmz"
+            label="Include unit icons"
+            v-model="form.embedIcons"
+            description="Embed icons as images"
+          />
+        </fieldset>
+      </template>
+
       <p v-if="isKmz || isKml" class="text-sm text-gray-700">
         Please note that the export functionality is experimental. Scenario feature export
         is currently limited to geometries (no styles).
@@ -67,17 +71,20 @@ import { useNotifications } from "@/composables/notifications";
 import NProgress from "nprogress";
 import { useRouter } from "vue-router";
 import { useVModel } from "@vueuse/core";
+import ExportSettingsXlsx from "@/components/ExportSettingsXlsx.vue";
 
 const router = useRouter();
 
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue", "cancel"]);
-const { downloadAsGeoJSON, downloadAsKML, downloadAsKMZ } = useScenarioExport();
+const { downloadAsGeoJSON, downloadAsKML, downloadAsKMZ, downloadAsXlsx } =
+  useScenarioExport();
 const open = useVModel(props, "modelValue", emit);
 const formatItems: SelectItem<ExportFormat>[] = [
   { label: "GeoJSON", value: "geojson" },
   { label: "KML", value: "kml" },
   { label: "KMZ", value: "kmz" },
+  { label: "XLSX", value: "xlsx" },
 ];
 
 interface Form extends ExportSettings {
@@ -91,11 +98,14 @@ const form = ref<Form>({
   fileName: "scenario.geojson",
   embedIcons: true,
   useShortName: true,
+  oneSheetPerSide: true,
+  columns: [],
 });
 
 const { focusId } = useFocusOnMount(undefined, 150);
 const { send } = useNotifications();
 
+const format = computed(() => form.value.format);
 const isGeojson = computed(() => form.value.format === "geojson");
 const isKml = computed(() => form.value.format === "kml");
 const isKmz = computed(() => form.value.format === "kmz");
@@ -109,6 +119,8 @@ async function onExport(e: Event) {
     await downloadAsKML(form.value);
   } else if (format === "kmz") {
     await downloadAsKMZ(form.value);
+  } else if (format === "xlsx") {
+    await downloadAsXlsx(form.value);
   }
   NProgress.done();
   open.value = false;

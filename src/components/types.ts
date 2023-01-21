@@ -1,7 +1,7 @@
-import { LayerFeatureItem } from "../types/scenarioGeoModels";
-import { NUnit } from "../types/internalModels";
-import { UnitAction } from "../types/constants";
-import { InjectionKey } from "vue";
+import type { LayerFeatureItem } from "@/types/scenarioGeoModels";
+import type { NUnit } from "@/types/internalModels";
+import type { UnitAction } from "@/types/constants";
+import type { InjectionKey } from "vue";
 
 export interface ButtonGroupItem {
   label: string;
