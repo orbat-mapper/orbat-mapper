@@ -39,6 +39,18 @@
         </div>
       </section>
 
+      <section v-if="info" class="mt-16 bg-yellow-800 text-yellow-200">
+        <p class="mx-auto max-w-7xl p-4 text-center sm:px-6">
+          Currently loaded scenario is <span class="font-bold">{{ info.name }}</span
+          >.
+          <router-link
+            to="/scenario"
+            class="font-semibold text-lime-300 hover:text-lime-600"
+            >Go to scenario editor →</router-link
+          >
+        </p>
+      </section>
+
       <section id="scenarios">
         <LandingPageScenarios class="mt-16" />
       </section>
@@ -145,14 +157,19 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import ProseSection from "../components/ProseSection.vue";
 import LandingPageScenarios from "./LandingPageScenarios.vue";
 import { Github as GithubIcon } from "mdue";
 import { ORBAT_CHART_ROUTE } from "@/router/names";
 
 import { CheckIcon } from "@heroicons/vue/24/outline";
+import { useScenario } from "@/scenariostore";
+import { computed } from "vue";
 
+const { scenario, isReady } = useScenario();
+
+const info = computed(() => isReady.value && scenario.value.store.state.info);
 const features = [
   {
     name: "Create ORBATs",
