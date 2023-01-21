@@ -45,9 +45,10 @@ import { activeScenarioKey } from "@/components/injects";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { storeToRefs } from "pinia";
 import { TAB_LAYERS } from "@/types/constants";
-import { useMapSelectStore, useTabStore } from "@/stores/uiStore";
 import { useShowLocationControl } from "@/composables/geoShowLocation";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { useTabStore } from "@/stores/tabStore";
+import { useMapSelectStore } from "@/stores/mapSelectStore";
 
 const {
   geo,

@@ -190,7 +190,7 @@ import {
 import { inputEventFilter } from "@/components/helpers";
 import SearchModal from "@/components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
-import { useTabStore, useUiStore } from "@/stores/uiStore";
+import { useUiStore } from "@/stores/uiStore";
 import {
   Keyboard as KeyboardIcon,
   RedoVariant as RedoIcon,
@@ -237,6 +237,7 @@ import {
   SCENARIO_ROUTE,
 } from "@/router/names";
 import { useFileDropZone } from "@/composables/filedragdrop";
+import { useTabStore } from "@/stores/tabStore";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(

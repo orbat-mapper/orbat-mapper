@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { GlobalEvents } from "vue-global-events";
 import { computed } from "vue";
-import { useTabStore, useUiStore } from "@/stores/uiStore";
+import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
@@ -13,6 +13,7 @@ import {
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
 import { TAB_LAYERS, UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
+import { useTabStore } from "@/stores/tabStore";
 
 const activeUnitId = injectStrict(activeUnitKey);
 const {

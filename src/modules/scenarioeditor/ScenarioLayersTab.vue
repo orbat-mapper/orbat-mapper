@@ -38,7 +38,7 @@ import {
   ScenarioLayerUpdate,
 } from "@/types/internalModels";
 import { storeToRefs } from "pinia";
-import { useMapSelectStore } from "@/stores/uiStore";
+import { useMapSelectStore } from "@/stores/mapSelectStore";
 
 const props = defineProps<{
   modelValue: boolean;

@@ -125,7 +125,7 @@ import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import TimeController from "@/components/TimeController.vue";
 import { useRoute, useRouter } from "vue-router";
-import { useTabStore, useUiStore } from "@/stores/uiStore";
+import { useUiStore } from "@/stores/uiStore";
 import { useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
@@ -145,6 +145,7 @@ import { storeToRefs } from "pinia";
 import { injectStrict } from "@/utils";
 import DragHandle from "@/components/DragHandle.vue";
 import { useSearchActions } from "@/composables/search";
+import { useTabStore } from "@/stores/tabStore";
 
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
 
