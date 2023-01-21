@@ -1,6 +1,6 @@
 <template>
   <SimpleModal v-model="open" dialog-title="Load scenario">
-    <LoadScenarioPanel @loaded="onLoaded" />
+    <LoadScenarioPanel class="mt-4 h-40" @loaded="onLoaded" />
   </SimpleModal>
 </template>
 

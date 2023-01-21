@@ -10,7 +10,7 @@
       <WipBadge />
     </p>
     <section class="mx-auto max-w-7xl p-6">
-      <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+      <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         <li
           v-for="scenario in scenarios"
           :key="scenario.name"
@@ -59,16 +59,20 @@
             </span>
           </button>
         </li>
+        <li class="col-span-1 flex"><LoadScenarioPanel @loaded="loadScenario" /></li>
       </ul>
     </section>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useRouter } from "vue-router";
 
 import WipBadge from "../components/WipBadge.vue";
 import { NEW_SCENARIO_ROUTE, SCENARIO_ROUTE } from "@/router/names";
+import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
+import { useScenario } from "@/scenariostore";
+import { Scenario } from "@/types/scenarioModels";
 
 const scenarios = [
   {
@@ -95,11 +99,18 @@ const scenarios = [
 ];
 
 const router = useRouter();
-const getScenarioTo = (scenarioId) => {
+const getScenarioTo = (scenarioId: string) => {
   return { name: SCENARIO_ROUTE, query: { load: scenarioId } };
 };
 
 const newScenario = () => {
   router.push({ name: NEW_SCENARIO_ROUTE });
 };
+
+const { scenario } = useScenario();
+
+function loadScenario(v: Scenario) {
+  scenario.value.io.loadFromObject(v);
+  router.push({ name: SCENARIO_ROUTE });
+}
 </script>
