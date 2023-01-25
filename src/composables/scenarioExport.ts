@@ -2,12 +2,11 @@ import { featureCollection, point } from "@turf/helpers";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
-import { ColumnMapping, ExportSettings, XlsxSettings } from "@/types/convert";
+import { ColumnMapping, ExportSettings } from "@/types/convert";
 import * as FileSaver from "file-saver";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { NUnit } from "@/types/internalModels";
 
 const settingsStore = useSettingsStore();
 
@@ -151,9 +150,8 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   }
 
   async function downloadAsXlsx(opts: ExportSettings) {
-    const { writeFileXLSX, utils } = await import("xlsx");
     const { unitMap, sideGroupMap, sideMap } = store.state;
-
+    const { writeFileXLSX, utils } = await import("@/extlib/xlsx-lazy");
     const workbook = utils.book_new();
     let unitData: any[] = [];
     if (opts.oneSheetPerSide) {
