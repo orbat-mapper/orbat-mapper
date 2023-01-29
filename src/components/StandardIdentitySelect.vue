@@ -56,13 +56,12 @@
     </RadioGroup>
     <div class="mt-2 flex justify-end">
       <button
-        v-if="!showAll"
         type="button"
-        @click="showAll = true"
+        @click="toggleShowAll()"
         class="text-sm font-semibold text-indigo-600 hover:text-indigo-500"
       >
-        View more
-        <span aria-hidden="true"> →</span>
+        <template v-if="showAll"><span aria-hidden="true"> ←</span> View less</template>
+        <template v-else>View more<span aria-hidden="true"> →</span></template>
       </button>
     </div>
   </div>
@@ -79,7 +78,7 @@ import {
 import { CheckCircleIcon } from "@heroicons/vue/20/solid";
 import { SymbolItem, SymbolValue } from "@/types/constants";
 import MilSymbol from "@/components/MilSymbol.vue";
-import { useVModel } from "@vueuse/core";
+import { useToggle, useVModel } from "@vueuse/core";
 
 interface Props {
   modelValue: string;
@@ -138,7 +137,7 @@ function addSymbol({ code, text }: SymbolValue): SymbolItem {
   };
 }
 
-const showAll = ref(false);
+const [showAll, toggleShowAll] = useToggle(false);
 const items = computed(() =>
   showAll.value ? sidItems : sidItems.filter((e) => ["3", "6", "4", "7"].includes(e.code))
 );
