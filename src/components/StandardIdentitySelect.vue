@@ -1,12 +1,11 @@
 <template>
   <div class="mt-4">
     <RadioGroup v-model="data">
-      <!--    <RadioGroupLabel class="text-base font-medium text-gray-900"-->
-      <!--      >Select standard identity</RadioGroupLabel-->
-      <!--    >-->
-
+      <RadioGroupLabel class="text-sm font-medium text-gray-700"
+        >Standard identity</RadioGroupLabel
+      >
       <div
-        class="grid gap-y-4 gap-x-4"
+        class="mt-1 grid gap-y-4 gap-x-4"
         :class="compact ? 'grid-cols-2' : 'sm:grid-cols-4'"
       >
         <RadioGroupOption

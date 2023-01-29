@@ -40,10 +40,7 @@ const { focusId } = useFocusOnMount();
   <InlineFormPanel @close="$emit('close')" title="Edit side info">
     <form @submit.prevent="onFormSubmit" class="space-y-4">
       <InputGroup label="Side name" v-model="form.name" :id="focusId" />
-      <InputGroupTemplate label="Standard identity">
-        <StandardIdentitySelect v-model="form.standardIdentity" compact />
-      </InputGroupTemplate>
-
+      <StandardIdentitySelect v-model="form.standardIdentity" compact />
       <div class="flex justify-end space-x-2">
         <BaseButton small primary type="submit">Save</BaseButton>
         <BaseButton @click="$emit('close')">Cancel</BaseButton>
