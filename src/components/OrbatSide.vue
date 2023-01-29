@@ -13,7 +13,17 @@
             class="h-6 w-6 text-gray-400 group-hover:text-gray-900"
           />
         </DisclosureButton>
-
+        <Switch
+          v-if="!hideFilter"
+          v-model="showFilter"
+          v-slot="{ checked }"
+          title="Toggle ORBAT filter"
+          class="ml-1 text-gray-400 hover:text-gray-900"
+        >
+          <span class="sr-only">Toggle ORBAT filter</span>
+          <FilterVariantPlus v-if="checked" class="h-5 w-5" aria-hidden="true" />
+          <FilterVariant v-else class="h-5 w-5" aria-hidden="true" />
+        </Switch>
         <DotsMenu
           :items="sideMenuItems"
           @action="onSideAction"
@@ -27,7 +37,7 @@
         class="-ml-6"
       />
       <DisclosurePanel>
-        <div v-if="!hideFilter" class="mt-4 mr-10">
+        <div v-if="showFilter" class="mt-4 mr-10">
           <FilterQueryInput
             v-model="filterQuery"
             v-model:location-filter="hasLocationFilter"
@@ -54,8 +64,9 @@
 <script setup lang="ts">
 import DotsMenu from "./DotsMenu.vue";
 import { computed, ref } from "vue";
-import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
+import { Disclosure, DisclosureButton, DisclosurePanel, Switch } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
+import { FilterVariant, FilterVariantPlus } from "mdue";
 import { SideAction, SideActions, type UnitAction } from "@/types/constants";
 import { useDebounce } from "@vueuse/core";
 import FilterQueryInput from "./FilterQueryInput.vue";
@@ -94,6 +105,7 @@ const { store, unitActions } = injectStrict(activeScenarioKey);
 
 const hasLocationFilter = ref(false);
 const filterQuery = ref("");
+const showFilter = ref(false);
 
 const debouncedFilterQuery = useDebounce(filterQuery, 100);
 const sideGroups = computed(() =>
