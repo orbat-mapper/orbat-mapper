@@ -7,9 +7,8 @@
         </h1>
         <div class="prose mt-4">
           <p>
-            Before you can start working on your new scenario we need some basic
-            information and settings first. Remember that you can always change these
-            settings later.
+            Here you can provide some initial data for your scenario if you want. You can
+            always change these settings later.
           </p>
         </div>
       </div>
@@ -44,11 +43,29 @@
               v-for="(sideData, idx) in form.sides"
               class="relative rounded-md border bg-gray-50 p-4"
             >
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid gap-4 md:grid-cols-2">
                 <InputGroup v-model="sideData.name" label="Side name" />
-                <InputGroup label="Root unit name" v-model="sideData.rootUnitName" />
               </div>
               <StandardIdentitySelect v-model="sideData.standardIdentity" />
+              <SimpleDivider class="mt-2 mb-4">Root units</SimpleDivider>
+              <div class="grid gap-4 md:grid-cols-2">
+                <InputGroup label="Root unit name" v-model="sideData.rootUnitName" />
+              </div>
+              <div class="mt-4 grid gap-4 md:grid-cols-2">
+                <SymbolCodeSelect
+                  class=""
+                  label="Main icon"
+                  v-model="sideData.rootUnitIcon"
+                  :items="iconItems(sideData.standardIdentity)"
+                />
+                <SymbolCodeSelect
+                  class=""
+                  label="Echelon"
+                  v-model="sideData.rootUnitEchelon"
+                  :items="echelonItems(sideData.standardIdentity)"
+                />
+              </div>
+
               <button
                 v-if="idx"
                 type="button"
@@ -110,10 +127,13 @@ import { useScenario } from "@/scenariostore";
 import { createEmptyScenario } from "@/scenariostore/io";
 import ToggleField from "@/components/ToggleField.vue";
 import { ScenarioInfo, SideData } from "@/types/scenarioModels";
-import { SID } from "@/symbology/values";
+import { echelonValues, SID, SidValue } from "@/symbology/values";
 import { nanoid } from "@/utils";
 import { Sidc } from "@/symbology/sidc";
 import StandardIdentitySelect from "@/components/StandardIdentitySelect.vue";
+import SimpleDivider from "@/components/SimpleDivider.vue";
+import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
+import { SymbolItem, SymbolValue } from "@/types/constants";
 
 const router = useRouter();
 const { scenario } = useScenario();
@@ -134,6 +154,8 @@ const standardSettings = [
 interface InitialSideData extends SideData {
   rootUnitName?: string;
   rootUnitSidc?: string;
+  rootUnitEchelon?: string;
+  rootUnitIcon?: string;
 }
 
 interface NewScenarioForm extends ScenarioInfo {
@@ -154,8 +176,20 @@ const form = reactive<NewScenarioForm>({
   name: "New scenario",
   description: "Scenario description",
   sides: [
-    { name: "Side 1", standardIdentity: SID.Friend, rootUnitName: "HQ" },
-    { name: "Side 2", standardIdentity: SID.Hostile, rootUnitName: "HQ" },
+    {
+      name: "Side 1",
+      standardIdentity: SID.Friend,
+      rootUnitName: "HQ",
+      rootUnitEchelon: "18",
+      rootUnitIcon: "000000",
+    },
+    {
+      name: "Side 2",
+      standardIdentity: SID.Hostile,
+      rootUnitName: "HQ",
+      rootUnitEchelon: "18",
+      rootUnitIcon: "110000",
+    },
   ],
 });
 
@@ -174,6 +208,8 @@ function create() {
       const parentId = state.getSideById(sideId).groups[0];
       const sidc = new Sidc("10031000000000000000");
       sidc.standardIdentity = sideData.standardIdentity;
+      sidc.emt = sideData.rootUnitEchelon || "00";
+      sidc.mainIcon = sideData.rootUnitIcon || "000000";
       unitActions.addUnit(
         {
           id: nanoid(),
@@ -192,5 +228,36 @@ function create() {
 
 function cancel() {
   router.back();
+}
+
+function echelonItems(sid: SidValue) {
+  return echelonValues.map(({ code, text }): SymbolItem => {
+    return {
+      code,
+      text,
+      sidc: "100" + sid + "10" + "00" + code + "0000000000",
+    };
+  });
+}
+
+const icons: SymbolValue[] = [
+  { code: "000000", text: "Unspecified" },
+  { code: "110000", text: "Command and Control" },
+  { code: "121100", text: "Infantry" },
+  { code: "121000", text: "Combined Arms" },
+  { code: "121102", text: "Mechanized" },
+  { code: "130300", text: "Artillery" },
+  { code: "120500", text: "Armor" },
+  { code: "160600", text: "Combat Service Support" },
+];
+
+function iconItems(sid: SidValue) {
+  return icons.map(({ code, text }): SymbolItem => {
+    return {
+      code,
+      text,
+      sidc: "100" + sid + "10" + "00" + "00" + code + "0000",
+    };
+  });
 }
 </script>
