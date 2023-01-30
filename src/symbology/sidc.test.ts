@@ -27,4 +27,18 @@ describe("Parse SIDC", function () {
     expect(originatorSymbolSet).toBe("1");
     expect(data).toBe("234567");
   });
+
+  it("gets main icon", () => {
+    const s = new Sidc(testSidc);
+    expect(s.mainIcon).toBe("667788");
+  });
+
+  it("sets main icon", () => {
+    const s = new Sidc(testSidc);
+    s.mainIcon = "123456";
+    expect(s.entity).toBe("12");
+    expect(s.entityType).toBe("34");
+    expect(s.entitySubType).toBe("56");
+    expect(s.mainIcon).toBe("123456");
+  });
 });

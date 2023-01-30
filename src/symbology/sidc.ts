@@ -64,6 +64,16 @@ export class Sidc implements SicElements {
     this.amplifierDescriptor = value[1];
   }
 
+  get mainIcon() {
+    return this.entity + this.entityType + this.entitySubType;
+  }
+
+  set mainIcon(value: string) {
+    this.entity = value.substring(0, 2);
+    this.entityType = value.substring(2, 4);
+    this.entitySubType = value.substring(4, 6);
+  }
+
   toString() {
     return (
       this.version +
