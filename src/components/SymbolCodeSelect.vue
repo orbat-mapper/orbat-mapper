@@ -7,15 +7,12 @@
       <ListboxButton
         class="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
       >
-        <span class="flex items-center">
-          <MilSymbol
-            :sidc="selected?.sidc || ''"
-            alt=""
-            :size="20"
-            class="h-8 w-10 flex-shrink-0 pt-0.5"
-          />
+        <div class="flex items-center">
+          <div class="flex h-8 w-10 flex-shrink-0 items-center">
+            <MilSymbol :sidc="selected?.sidc || ''" alt="" :size="20" />
+          </div>
           <span class="ml-3 block truncate">{{ selected?.text }}</span>
-        </span>
+        </div>
         <span
           class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2"
         >
@@ -44,8 +41,8 @@
                 'relative cursor-default select-none py-2 pl-3 pr-9',
               ]"
             >
-              <div class="flex items-start">
-                <p class="flex h-7 w-8 flex-shrink-0 justify-center">
+              <div class="flex items-center">
+                <p class="flex h-7 w-8 flex-shrink-0 items-center justify-center">
                   <MilSymbol :size="20" :sidc="item.sidc" />
                 </p>
                 <span
