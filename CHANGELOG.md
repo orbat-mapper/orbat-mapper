@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 January 2023
 
+- Add basic root unit icon and echelon selection to 'Create new scenario' form.
 - Add basic XLSX export.
 - Drop files directly on scenario editor to start import process. No need to select File->Import first.
 - Add setting for displaying short unit names in ORBAT panel.

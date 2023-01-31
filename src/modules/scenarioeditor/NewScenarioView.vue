@@ -15,7 +15,13 @@
     </header>
     <div class="mx-auto my-10 max-w-7xl sm:px-6 lg:px-8">
       <form class="mt-6 space-y-6" @submit.prevent="create()">
-        <div class="flex justify-end space-x-3 px-4 sm:px-0">
+        <div class="flex items-center justify-between space-x-3 px-4 sm:px-0">
+          <a
+            class="text-indigo-600 underline hover:text-indigo-900"
+            href="https://docs.orbat-mapper.app/guide/getting-started"
+            target="_blank"
+            >View documentation</a
+          >
           <BaseButton primary type="submit">Create scenario</BaseButton>
         </div>
         <FormCard
@@ -47,9 +53,10 @@
                 <InputGroup v-model="sideData.name" label="Side name" />
               </div>
               <StandardIdentitySelect v-model="sideData.standardIdentity" />
-              <SimpleDivider class="mt-2 mb-4">Root units</SimpleDivider>
-              <div class="grid gap-4 md:grid-cols-2">
+              <SimpleDivider class="mt-2 mb-4">Root unit</SimpleDivider>
+              <div class="flex items-end gap-4 md:grid md:grid-cols-2">
                 <InputGroup label="Root unit name" v-model="sideData.rootUnitName" />
+                <MilSymbol :size="32" :sidc="unitSidc(sideData)" />
               </div>
               <div class="mt-4 grid gap-4 md:grid-cols-2">
                 <SymbolCodeSelect
@@ -134,6 +141,7 @@ import StandardIdentitySelect from "@/components/StandardIdentitySelect.vue";
 import SimpleDivider from "@/components/SimpleDivider.vue";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { SymbolItem, SymbolValue } from "@/types/constants";
+import MilSymbol from "@/components/MilSymbol.vue";
 
 const router = useRouter();
 const { scenario } = useScenario();
@@ -181,7 +189,7 @@ const form = reactive<NewScenarioForm>({
       standardIdentity: SID.Friend,
       rootUnitName: "HQ",
       rootUnitEchelon: "18",
-      rootUnitIcon: "000000",
+      rootUnitIcon: "121000",
     },
     {
       name: "Side 2",
@@ -259,5 +267,9 @@ function iconItems(sid: SidValue) {
       sidc: "100" + sid + "10" + "00" + "00" + code + "0000",
     };
   });
+}
+
+function unitSidc({ standardIdentity, rootUnitEchelon, rootUnitIcon }: InitialSideData) {
+  return "100" + standardIdentity + "10" + "00" + rootUnitEchelon + rootUnitIcon + "0000";
 }
 </script>
