@@ -15,8 +15,9 @@ Start by adding a name and description:
 ![Create new scenario](images/create-new-scenario.png)
 
 Next you can add an initial ORBAT to get you started. Enter name of sides, root units and select the standard identity
-for each side.
-The standard identity determines the color and shape of the unit icons.
+for each side. The standard identity determines the color and shape of the unit icons. You can also assign unit icons
+and echelons. If you can't find the right icon don't worry. Only a small subset is displayed. You can change the icons
+later.
 
 ![Initial ORBAT](images/initial-orbat.png)
 
@@ -30,4 +31,5 @@ documentation.
 
 ![Symbology settings](images/symbology-standard.png)
 
-You are now ready to create your scenario. Click the _Create scenario_ button and you'll be redirected to the scenario editor.
+You are now ready to create your scenario. Click the _Create scenario_ button and you'll be redirected to the scenario
+editor.

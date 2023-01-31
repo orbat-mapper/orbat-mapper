@@ -6,7 +6,7 @@ import DocMilSymbol from "../components/DocMilSymbol.vue";
 
 Under the hood ORBAT Mapper uses a data model loosely inspired by
 the [Military Scenario Definition Language (MSDL)](https://en.wikipedia.org/wiki/Military_Scenario_Definition_Language).
-In this section we will go through some terminology you will encounter when building a scenario.
+In this section we will go through some terminology you will encounter while building a scenario.
 
 ## Scenario
 
