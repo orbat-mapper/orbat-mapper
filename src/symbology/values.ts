@@ -127,4 +127,4 @@ export const SID = {
   Custom3: "9",
 } as const;
 
-export type SidValue = typeof SID[keyof typeof SID];
+export type SidValue = (typeof SID)[keyof typeof SID];

@@ -17,7 +17,7 @@ export const UnitActions = {
   Pan: "Pan",
 } as const;
 
-export type UnitAction = typeof UnitActions[keyof typeof UnitActions];
+export type UnitAction = (typeof UnitActions)[keyof typeof UnitActions];
 
 export const SideActions = {
   Delete: "Delete",
@@ -30,7 +30,7 @@ export const SideActions = {
   MoveDown: "MoveDown",
 } as const;
 
-export type SideAction = typeof SideActions[keyof typeof SideActions];
+export type SideAction = (typeof SideActions)[keyof typeof SideActions];
 
 export type ScenarioActions =
   | "addSide"
@@ -54,7 +54,7 @@ export const ScenarioLayerActions = {
 } as const;
 
 export type ScenarioLayerAction =
-  typeof ScenarioLayerActions[keyof typeof ScenarioLayerActions];
+  (typeof ScenarioLayerActions)[keyof typeof ScenarioLayerActions];
 
 export interface SymbolValue {
   code: string;
@@ -76,7 +76,7 @@ const stateActions = [
   "editTitle",
   "clearLocation",
 ] as const;
-export type StateAction = typeof stateActions[number];
+export type StateAction = (typeof stateActions)[number];
 
 export const TAB_ORBAT = 0;
 export const TAB_INFO = 1;

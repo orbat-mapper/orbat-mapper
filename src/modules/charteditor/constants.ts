@@ -5,4 +5,4 @@ export const ChartTabs = {
   Unit: 3,
 } as const;
 
-export type ChartTab = typeof ChartTabs[keyof typeof ChartTabs];
+export type ChartTab = (typeof ChartTabs)[keyof typeof ChartTabs];

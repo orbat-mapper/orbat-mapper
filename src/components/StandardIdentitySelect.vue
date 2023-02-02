@@ -54,11 +54,7 @@
       </div>
     </RadioGroup>
     <div class="mt-2 flex justify-end">
-      <button
-        type="button"
-        @click="toggleShowAll()"
-        class="text-sm font-semibold text-indigo-600 hover:text-indigo-500"
-      >
+      <button type="button" @click="toggleShowAll()" class="btn-link">
         <template v-if="showAll"><span aria-hidden="true"> ←</span> View less</template>
         <template v-else>View more<span aria-hidden="true"> →</span></template>
       </button>

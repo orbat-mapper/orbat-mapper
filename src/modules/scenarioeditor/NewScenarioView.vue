@@ -74,14 +74,19 @@
               </div>
 
               <button
-                v-if="idx"
+                v-if="idx === form.sides.length - 1"
                 type="button"
-                class="absolute top-2 right-4 rounded-md bg-white text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                class="btn-link absolute top-2 right-4"
                 @click="form.sides.pop()"
               >
                 Remove
               </button>
             </div>
+            <footer class="mt-6 flex justify-end">
+              <button type="button" class="btn-link" @click="addSide()">
+                + Add side
+              </button>
+            </footer>
           </template>
         </FormCard>
         <FormCard label="Scenario start time">
@@ -182,7 +187,7 @@ const { year, month, day, hour, minute, resDateTime } = useYMDElements({
 
 const form = reactive<NewScenarioForm>({
   name: "New scenario",
-  description: "Scenario description",
+  description: "",
   sides: [
     {
       name: "Side 1",
@@ -271,5 +276,15 @@ function iconItems(sid: SidValue) {
 
 function unitSidc({ standardIdentity, rootUnitEchelon, rootUnitIcon }: InitialSideData) {
   return "100" + standardIdentity + "10" + "00" + rootUnitEchelon + rootUnitIcon + "0000";
+}
+
+function addSide() {
+  form.sides.push({
+    name: "Side",
+    standardIdentity: SID.Friend,
+    rootUnitName: "HQ",
+    rootUnitEchelon: "18",
+    rootUnitIcon: "121000",
+  });
 }
 </script>

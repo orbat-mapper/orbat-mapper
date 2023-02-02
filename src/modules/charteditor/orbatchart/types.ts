@@ -12,7 +12,7 @@ export const ChartOrientations = {
   // Right = "RIGHT"
 } as const;
 
-export type ChartOrientation = typeof ChartOrientations[keyof typeof ChartOrientations];
+export type ChartOrientation = (typeof ChartOrientations)[keyof typeof ChartOrientations];
 
 /**
  * Different ways to place units
@@ -25,7 +25,7 @@ export const LevelLayouts = {
   TreeRight: "TREE_RIGHT",
 } as const;
 
-export type LevelLayout = typeof LevelLayouts[keyof typeof LevelLayouts];
+export type LevelLayout = (typeof LevelLayouts)[keyof typeof LevelLayouts];
 
 export const UnitLevelDistances = {
   Fixed: "FIXED",
@@ -33,7 +33,7 @@ export const UnitLevelDistances = {
 } as const;
 
 export type UnitLevelDistance =
-  typeof UnitLevelDistances[keyof typeof UnitLevelDistances];
+  (typeof UnitLevelDistances)[keyof typeof UnitLevelDistances];
 
 export const VerticalAlignments = {
   Top: "TOP",
@@ -42,7 +42,7 @@ export const VerticalAlignments = {
 } as const;
 
 export type VerticalAlignment =
-  typeof VerticalAlignments[keyof typeof VerticalAlignments];
+  (typeof VerticalAlignments)[keyof typeof VerticalAlignments];
 
 export const FontWeights = {
   Normal: "normal",
@@ -51,7 +51,7 @@ export const FontWeights = {
   Lighter: "lighter",
 } as const;
 
-export type FontWeight = typeof FontWeights[keyof typeof FontWeights];
+export type FontWeight = (typeof FontWeights)[keyof typeof FontWeights];
 
 export const FontStyles = {
   Normal: "normal",
@@ -64,7 +64,7 @@ export const LabelPlacements = {
   Right: "right",
 } as const;
 
-export type LabelPlacement = typeof LabelPlacements[keyof typeof LabelPlacements];
+export type LabelPlacement = (typeof LabelPlacements)[keyof typeof LabelPlacements];
 
 export const ChartItemTypes = {
   Chart: "chart",
@@ -73,7 +73,7 @@ export const ChartItemTypes = {
   Unit: "unit",
 } as const;
 
-export type ChartItemType = typeof ChartItemTypes[keyof typeof ChartItemTypes];
+export type ChartItemType = (typeof ChartItemTypes)[keyof typeof ChartItemTypes];
 
 export interface Size {
   width: number;
