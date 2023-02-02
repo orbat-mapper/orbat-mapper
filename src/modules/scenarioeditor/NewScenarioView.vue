@@ -41,8 +41,8 @@
           <template #description> Sides and root units.</template>
           <div>
             <ToggleField v-model="noInitialOrbat"
-              >Add sides and root units later</ToggleField
-            >
+              >Add sides and root units later
+            </ToggleField>
           </div>
           <template v-if="!noInitialOrbat">
             <div
@@ -53,33 +53,51 @@
                 <InputGroup v-model="sideData.name" label="Side name" />
               </div>
               <StandardIdentitySelect v-model="sideData.standardIdentity" />
-              <SimpleDivider class="mt-2 mb-4">Root unit</SimpleDivider>
-              <div class="flex items-end gap-4 md:grid md:grid-cols-2">
-                <InputGroup label="Root unit name" v-model="sideData.rootUnitName" />
-                <MilSymbol :size="32" :sidc="unitSidc(sideData)" />
+              <SimpleDivider class="mt-2 mb-4">Root units</SimpleDivider>
+              <div class="space-y-6">
+                <template v-for="(unit, i) in sideData.units">
+                  <div class="flex items-end gap-4 md:grid md:grid-cols-2">
+                    <InputGroup label="Root unit name" v-model="unit.rootUnitName" />
+                    <MilSymbol :size="32" :sidc="unitSidc(unit, sideData)" />
+                  </div>
+                  <div class="mt-4 grid gap-4 md:grid-cols-2">
+                    <SymbolCodeSelect
+                      class=""
+                      label="Main icon"
+                      v-model="unit.rootUnitIcon"
+                      :items="iconItems(sideData.standardIdentity)"
+                    />
+                    <SymbolCodeSelect
+                      class=""
+                      label="Echelon"
+                      v-model="unit.rootUnitEchelon"
+                      :items="echelonItems(sideData.standardIdentity)"
+                    />
+                  </div>
+                  <SimpleDivider v-if="i < sideData.units.length - 1" />
+                </template>
               </div>
-              <div class="mt-4 grid gap-4 md:grid-cols-2">
-                <SymbolCodeSelect
-                  class=""
-                  label="Main icon"
-                  v-model="sideData.rootUnitIcon"
-                  :items="iconItems(sideData.standardIdentity)"
-                />
-                <SymbolCodeSelect
-                  class=""
-                  label="Echelon"
-                  v-model="sideData.rootUnitEchelon"
-                  :items="echelonItems(sideData.standardIdentity)"
-                />
-              </div>
-
+              <footer class="mt-6 flex justify-end gap-x-2">
+                <button
+                  type="button"
+                  class="btn-link"
+                  :disabled="!sideData.units.length"
+                  @click="removeUnit(sideData, sideData.units[sideData.units.length - 1])"
+                >
+                  Remove unit
+                </button>
+                <span class="text-gray-300">|</span>
+                <button type="button" class="btn-link" @click="addRootUnit(sideData)">
+                  + Add root unit
+                </button>
+              </footer>
               <button
                 v-if="idx === form.sides.length - 1"
                 type="button"
                 class="btn-link absolute top-2 right-4"
                 @click="form.sides.pop()"
               >
-                Remove
+                Remove side
               </button>
             </div>
             <footer class="mt-6 flex justify-end">
@@ -164,11 +182,15 @@ const standardSettings = [
   },
 ];
 
-interface InitialSideData extends SideData {
+interface RootUnit {
   rootUnitName?: string;
   rootUnitSidc?: string;
   rootUnitEchelon?: string;
   rootUnitIcon?: string;
+}
+
+interface InitialSideData extends SideData {
+  units: RootUnit[];
 }
 
 interface NewScenarioForm extends ScenarioInfo {
@@ -192,16 +214,12 @@ const form = reactive<NewScenarioForm>({
     {
       name: "Side 1",
       standardIdentity: SID.Friend,
-      rootUnitName: "HQ",
-      rootUnitEchelon: "18",
-      rootUnitIcon: "121000",
+      units: [{ rootUnitName: "HQ", rootUnitEchelon: "18", rootUnitIcon: "121000" }],
     },
     {
       name: "Side 2",
       standardIdentity: SID.Hostile,
-      rootUnitName: "HQ",
-      rootUnitEchelon: "18",
-      rootUnitIcon: "110000",
+      units: [{ rootUnitName: "HQ", rootUnitEchelon: "18", rootUnitIcon: "110000" }],
     },
   ],
 });
@@ -219,20 +237,22 @@ function create() {
     form.sides.forEach((sideData) => {
       const sideId = unitActions.addSide(sideData, { markAsNew: false });
       const parentId = state.getSideById(sideId).groups[0];
-      const sidc = new Sidc("10031000000000000000");
-      sidc.standardIdentity = sideData.standardIdentity;
-      sidc.emt = sideData.rootUnitEchelon || "00";
-      sidc.mainIcon = sideData.rootUnitIcon || "000000";
-      unitActions.addUnit(
-        {
-          id: nanoid(),
-          name: sideData.rootUnitName ?? "test",
-          sidc: sidc.toString(),
-          subUnits: [],
-          _pid: "nn",
-        },
-        parentId
-      );
+      sideData.units.forEach((u) => {
+        const sidc = new Sidc("10031000000000000000");
+        sidc.standardIdentity = sideData.standardIdentity;
+        sidc.emt = u.rootUnitEchelon || "00";
+        sidc.mainIcon = u.rootUnitIcon || "000000";
+        unitActions.addUnit(
+          {
+            id: nanoid(),
+            name: u.rootUnitName ?? "test",
+            sidc: sidc.toString(),
+            subUnits: [],
+            _pid: "nn",
+          },
+          parentId
+        );
+      });
     });
   }
   clearUndoRedoStack();
@@ -274,7 +294,10 @@ function iconItems(sid: SidValue) {
   });
 }
 
-function unitSidc({ standardIdentity, rootUnitEchelon, rootUnitIcon }: InitialSideData) {
+function unitSidc(
+  { rootUnitEchelon, rootUnitIcon }: RootUnit,
+  { standardIdentity }: SideData
+) {
   return "100" + standardIdentity + "10" + "00" + rootUnitEchelon + rootUnitIcon + "0000";
 }
 
@@ -282,9 +305,16 @@ function addSide() {
   form.sides.push({
     name: "Side",
     standardIdentity: SID.Friend,
-    rootUnitName: "HQ",
-    rootUnitEchelon: "18",
-    rootUnitIcon: "121000",
+    units: [{ rootUnitName: "HQ", rootUnitEchelon: "18", rootUnitIcon: "121000" }],
   });
+}
+
+function addRootUnit(side: InitialSideData) {
+  side.units.push({ rootUnitName: "HQ", rootUnitEchelon: "18", rootUnitIcon: "121000" });
+}
+
+function removeUnit(side: InitialSideData, unit: RootUnit) {
+  const idx = side.units.indexOf(unit);
+  if (idx >= 0) side.units.splice(idx, 1);
 }
 </script>
