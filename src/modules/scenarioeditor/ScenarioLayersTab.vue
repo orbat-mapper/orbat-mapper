@@ -242,6 +242,10 @@ function onFeatureAdd(olFeature: Feature, olLayer: AnyVectorLayer) {
   activeFeature.value = scenarioFeature;
 }
 
+function onFeatureDelete() {
+  onFeatureAction([...selectedIds.value.values()], "delete");
+}
+
 onActivated(() => (isActive.value = true));
 onDeactivated(() => (isActive.value = false));
 
@@ -354,6 +358,8 @@ function doUpdateFeature(
       @add="onFeatureAdd"
       @modify="onFeatureModify"
       :select="selectInteraction"
+      :delete-enabled="selectedIds.size > 0"
+      @delete="onFeatureDelete"
     />
   </Teleport>
   <Teleport to="[data-teleport-layer]" v-if="activeFeature">

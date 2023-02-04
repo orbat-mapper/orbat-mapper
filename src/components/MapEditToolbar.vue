@@ -20,12 +20,15 @@ import { onKeyStroke, useToggle } from "@vueuse/core";
 import Select from "ol/interaction/Select";
 import { useUiStore } from "@/stores/uiStore";
 
-const props = defineProps<{
+interface Props {
   olMap: OLMap;
   layer: VectorLayer<any>;
   select?: Select;
-}>();
-const emit = defineEmits(["add", "modify"]);
+  deleteEnabled?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), { deleteEnabled: false });
+const emit = defineEmits(["add", "modify", "delete"]);
 
 const [addMultiple, toggleAddMultiple] = useToggle(false);
 
@@ -105,7 +108,12 @@ onKeyStroke("Escape", (event) => {
       >
         <SquareEditOutline class="h-5 w-5" />
       </ToolbarButton>
-      <ToolbarButton bottom title="Delete feature" disabled>
+      <ToolbarButton
+        bottom
+        title="Delete feature"
+        :disabled="!deleteEnabled"
+        @click="emit('delete')"
+      >
         <TrashCanOutline class="h-5 w-5" />
       </ToolbarButton>
     </VerticalToolbar>
