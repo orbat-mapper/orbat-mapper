@@ -7,29 +7,32 @@ import {
   VectorCircleVariant,
   VectorLine,
   VectorTriangle,
+  LockOutline,
+  LockOpenVariantOutline,
 } from "mdue";
 import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";
 import { toRef, watch } from "vue";
 import VerticalToolbar from "./VerticalToolbar.vue";
 import VectorLayer from "ol/layer/Vector";
-import { useEditingInteraction } from "../composables/geoEditing";
-import { onKeyStroke } from "@vueuse/core";
+import { useEditingInteraction } from "@/composables/geoEditing";
+import { onKeyStroke, useToggle } from "@vueuse/core";
 import Select from "ol/interaction/Select";
 import { useUiStore } from "@/stores/uiStore";
 
 const props = defineProps<{
   olMap: OLMap;
   layer: VectorLayer<any>;
-  addMultiple?: boolean;
   select?: Select;
 }>();
 const emit = defineEmits(["add", "modify"]);
 
+const [addMultiple, toggleAddMultiple] = useToggle(false);
+
 const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing } =
   useEditingInteraction(props.olMap, toRef(props, "layer"), {
     emit,
-    addMultiple: props.addMultiple,
+    addMultiple: addMultiple,
     select: props.select,
   });
 
@@ -53,10 +56,13 @@ onKeyStroke("Escape", (event) => {
     <VerticalToolbar class="shadow">
       <ToolbarButton
         top
-        title="Select features"
-        @click="cancel()"
-        :active="!currentDrawType"
+        @click="toggleAddMultiple()"
+        title="Keep selected tool active after drawing "
       >
+        <LockOutline v-if="addMultiple" class="h-5 w-5" />
+        <LockOpenVariantOutline v-else class="h-5 w-5" />
+      </ToolbarButton>
+      <ToolbarButton title="Select features" @click="cancel()" :active="!currentDrawType">
         <CursorDefaultOutline class="h-5 w-5" />
       </ToolbarButton>
       <ToolbarButton

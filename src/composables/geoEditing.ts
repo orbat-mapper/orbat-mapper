@@ -70,8 +70,9 @@ export function useEditingInteraction(
 
   function onDrawEnd(e: DrawEvent) {
     if (!unref(addMultiple)) {
-      currentDrawInteraction?.setActive(false);
-      currentDrawType.value = null;
+      // currentDrawInteraction?.setActive(false);
+      // currentDrawType.value = null;
+      cancel();
     }
     emit && emit("add", e.feature, layerRef.value);
   }

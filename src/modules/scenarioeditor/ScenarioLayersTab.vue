@@ -353,7 +353,6 @@ function doUpdateFeature(
       class="absolute left-3 top-[150px]"
       @add="onFeatureAdd"
       @modify="onFeatureModify"
-      add-multiple
       :select="selectInteraction"
     />
   </Teleport>
