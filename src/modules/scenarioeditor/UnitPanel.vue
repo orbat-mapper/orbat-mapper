@@ -264,8 +264,10 @@ async function handleChangeSymbol() {
   const newSidcValue = await getModalSidc(unit.value.sidc);
   if (newSidcValue !== undefined) {
     if (isMultiMode.value) {
-      selectedUnitIds.value.forEach((unitId) =>
-        updateUnit(unitId, { sidc: newSidcValue })
+      store.groupUpdate(() =>
+        selectedUnitIds.value.forEach((unitId) =>
+          updateUnit(unitId, { sidc: newSidcValue })
+        )
       );
     } else updateUnit(props.unitId, { sidc: newSidcValue });
   }
