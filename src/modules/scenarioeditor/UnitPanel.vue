@@ -21,7 +21,7 @@
       </ul>
     </header>
     <div class="mb-4 flex">
-      <BaseButton end @click="handleChangeSymbol()">Edit symbol </BaseButton>
+      <BaseButton end @click="handleChangeSymbol()">Edit symbol</BaseButton>
 
       <SplitButton
         class="ml-1"
@@ -37,8 +37,8 @@
         class="absolute right-1"
         :class="isEditMode && 'bg-gray-100 text-black'"
         @click="toggleEditMode()"
-        >Edit</BaseButton
-      >
+        >Edit
+      </BaseButton>
       <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="mt-0 mb-6 space-y-4">
         <InputGroup label="Name" v-model="form.name" id="name-input" />
         <InputGroup
@@ -82,10 +82,9 @@
         </DescriptionItem>
       </div>
     </section>
-    <BaseButton @click="startGetLocation()" :disabled="isMultiMode"
-      ><CrosshairsGps class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />{{
-        isGetLocationActive ? "Select on map" : "Set location"
-      }}
+    <BaseButton @click="startGetLocation()" :disabled="isMultiMode">
+      <CrosshairsGps class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+      {{ isGetLocationActive ? "Select on map" : "Set location" }}
     </BaseButton>
     <div class="mt-4 space-y-2">
       <ToggleField v-model="unitSettings.showHistory">Show unit track on map</ToggleField>
@@ -107,7 +106,7 @@ import InputGroup from "@/components/InputGroup.vue";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import MilSymbol from "@/components/MilSymbol.vue";
 import { GlobalEvents } from "vue-global-events";
-import { inputEventFilter } from "@/components/helpers";
+import { inputEventFilter, setCharAt } from "@/components/helpers";
 import DescriptionItem from "@/components/DescriptionItem.vue";
 import { useToggle } from "@vueuse/core";
 import { renderMarkdown } from "@/composables/formatting";
@@ -127,6 +126,7 @@ import OLMap from "ol/Map";
 import { useUiStore } from "@/stores/uiStore";
 import ToggleField from "@/components/ToggleField.vue";
 import { useSelectedUnits } from "@/stores/dragStore";
+import { SID_INDEX } from "@/symbology/sidc";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -137,7 +137,7 @@ const activeScenario = injectStrict(activeScenarioKey);
 const {
   store,
   geo: { addUnitPosition },
-  unitActions: { updateUnit },
+  unitActions: { updateUnit, getUnitHierarchy },
 } = activeScenario;
 
 let form = ref<UnitUpdate>({
@@ -224,6 +224,7 @@ function actionWrapper(action: UnitAction) {
   }
   onUnitAction(unit.value, action);
 }
+
 const buttonItems = computed(() => [
   {
     label: "Duplicate",
@@ -265,9 +266,11 @@ async function handleChangeSymbol() {
   if (newSidcValue !== undefined) {
     if (isMultiMode.value) {
       store.groupUpdate(() =>
-        selectedUnitIds.value.forEach((unitId) =>
-          updateUnit(unitId, { sidc: newSidcValue })
-        )
+        selectedUnitIds.value.forEach((unitId) => {
+          const { side } = getUnitHierarchy(unitId);
+          const sidc = setCharAt(newSidcValue, SID_INDEX, side.standardIdentity);
+          updateUnit(unitId, { sidc });
+        })
       );
     } else updateUnit(props.unitId, { sidc: newSidcValue });
   }
