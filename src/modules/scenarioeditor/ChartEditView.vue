@@ -1,7 +1,8 @@
 <template>
   <div class="relative flex min-h-0 flex-auto">
-    <aside
-      class="relative z-10 flex h-full w-96 flex-col justify-between overflow-auto border-r-2 bg-gray-100 dark:bg-gray-900"
+    <ResizablePanel
+      v-model:width="panelWidth"
+      class="relative z-10 flex h-full flex-col justify-between overflow-auto overflow-visible border-r-2 bg-gray-100 dark:bg-gray-900"
     >
       <TabGroup :selected-index="selectedTab" @change="changeTab">
         <TabList class="-mb-px flex border-b border-gray-200">
@@ -34,7 +35,7 @@
           </TabPanel>
         </TabPanels>
       </TabGroup>
-    </aside>
+    </ResizablePanel>
     <main class="relative h-full flex-auto bg-gray-50">
       <SimpleBreadcrumbs
         class="absolute top-2 left-2 z-10 bg-gray-50 bg-opacity-80"
@@ -89,6 +90,7 @@ import {
 } from "@/modules/charteditor/orbatchart";
 import { ChartTab, ChartTabs } from "@/modules/charteditor/constants";
 import ToggleField from "@/components/ToggleField.vue";
+import ResizablePanel from "@/components/ResizablePanel.vue";
 
 const rootUnitStore = useRootUnitStore();
 const options = useChartSettingsStore();
@@ -126,6 +128,7 @@ function changeTab(index: number) {
   selectedTab.value = index;
 }
 
+const panelWidth = ref();
 const debug = ref(false);
 const currentTab = ref<ChartTab>(ChartTabs.Chart);
 const currentChartElements = useSelectedChartElementStore();
