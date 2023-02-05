@@ -229,6 +229,8 @@ function create() {
   newScenario.value.startTime = startTime;
   newScenario.value.name = form.name;
   newScenario.value.description = form.description;
+  newScenario.value.layers = [{ name: "Features", id: nanoid(), features: [] }];
+
   scenario.value.io.loadFromObject(newScenario.value);
   scenario.value.time.setCurrentTime(startTime);
   const { state, clearUndoRedoStack } = scenario.value.store;
