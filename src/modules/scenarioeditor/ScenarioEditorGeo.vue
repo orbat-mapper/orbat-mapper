@@ -1,9 +1,9 @@
 <template>
   <div class="relative flex min-h-0 flex-auto">
-    <aside
+    <ResizablePanel
       class="relative z-10 flex flex-col justify-between border-r-2 bg-gray-100 dark:bg-gray-900"
-      :style="{ width: panelWidthA + 'px' }"
-      ref="panelRef"
+      v-model:width="panelWidthA"
+      @resizeend="geoStore.updateMapSize()"
     >
       <TabView
         v-model:current-tab="activeScenarioTab"
@@ -52,32 +52,17 @@
       >
         <TimeController class="" />
       </footer>
-      <DragHandle
-        :parent-ref="panelRef"
-        @resizestart="initialWidthA = $event"
-        @resizing="panelWidthA = initialWidthA + $event"
-        @resizeend="geoStore.updateMapSize()"
-      />
-    </aside>
-    <aside
+    </ResizablePanel>
+    <ResizablePanel
       v-show="showLayerPanel"
-      class="relative flex flex-shrink-0 flex-col border-r-2 bg-gray-50"
       data-teleport-layer
-      ref="panelRefC"
-      :style="{ width: panelWidthC + 'px' }"
-    >
-      <DragHandle
-        :parent-ref="panelRefC"
-        @resizestart="initialWidthC = $event"
-        @resizing="panelWidthC = initialWidthC + $event"
-        @resizeend="geoStore.updateMapSize()"
-      />
-    </aside>
-    <aside
-      class="relative flex flex-shrink-0 flex-col border-r-2 bg-gray-50 dark:bg-gray-800"
+      v-model:width="panelWidthB"
+      @resizeend="geoStore.updateMapSize()"
+    />
+    <ResizablePanel
       v-if="showUnitPanel"
-      :style="{ width: panelWidthB + 'px' }"
-      ref="panelRefB"
+      @resizeend="geoStore.updateMapSize()"
+      v-model:width="panelWidthC"
     >
       <TabView
         v-model:current-tab="currentTab"
@@ -94,13 +79,7 @@
           </div>
         </template>
       </TabView>
-      <DragHandle
-        :parent-ref="panelRefB"
-        @resizestart="initialWidthB = $event"
-        @resizing="panelWidthB = initialWidthB + $event"
-        @resizeend="geoStore.updateMapSize()"
-      />
-    </aside>
+    </ResizablePanel>
     <ScenarioMap class="flex-1" data-teleport-map />
     <KeyboardScenarioActions v-if="geoStore.olMap" />
 
@@ -143,9 +122,9 @@ import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vu
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import { storeToRefs } from "pinia";
 import { injectStrict } from "@/utils";
-import DragHandle from "@/components/DragHandle.vue";
 import { useSearchActions } from "@/composables/search";
 import { useTabStore } from "@/stores/tabStore";
+import ResizablePanel from "@/components/ResizablePanel.vue";
 
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
 
@@ -271,14 +250,7 @@ watchOnce(
   }
 );
 
-const initialWidthA = ref(382);
-const panelWidthA = ref(initialWidthA.value);
-const initialWidthB = ref(382);
-const panelWidthB = ref(initialWidthB.value);
-const initialWidthC = ref(382);
-const panelWidthC = ref(initialWidthC.value);
-
-const panelRef = ref(null);
-const panelRefB = ref(null);
-const panelRefC = ref(null);
+const panelWidthA = ref(382);
+const panelWidthB = ref(382);
+const panelWidthC = ref(382);
 </script>
