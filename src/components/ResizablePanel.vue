@@ -4,10 +4,10 @@ import DragHandle from "@/components/DragHandle.vue";
 import { useVModel } from "@vueuse/core";
 
 interface Props {
-  width?: number;
+  width: number;
 }
 
-const props = withDefaults(defineProps<Props>(), { width: 382 });
+const props = defineProps<Props>();
 const emit = defineEmits(["resizeend", "update:width"]);
 
 const panelRef = ref();
