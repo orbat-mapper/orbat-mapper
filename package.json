@@ -24,6 +24,7 @@
     "@headlessui-float/vue": "^0.10.0",
     "@headlessui/vue": "^1.7.5",
     "@heroicons/vue": "^2.0.13",
+    "@imengyu/vue3-context-menu": "^1.2.2",
     "@orbat-mapper/convert-symbology": "^0.1.3",
     "@panzoom/panzoom": "^4.5.1",
     "@popperjs/core": "^2.11.6",

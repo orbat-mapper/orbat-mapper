@@ -1,6 +1,11 @@
 <template>
   <div class="relative bg-white dark:bg-gray-900">
-    <MapContainer @ready="onMapReady" @drop="onDrop" @dragover.prevent />
+    <MapContainer
+      @ready="onMapReady"
+      @drop="onDrop"
+      @dragover.prevent
+      @contextmenu="onContextMenu"
+    />
     <MeasurementToolbar
       v-if="mapRef"
       class="absolute left-3 bottom-10"
@@ -18,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw, onUnmounted, shallowRef, watch } from "vue";
+import { computed, h, markRaw, onUnmounted, ref, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { clearStyleCache } from "@/geo/unitStyles";
@@ -34,7 +39,7 @@ import {
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useToggle } from "@vueuse/core";
 import { ObjectEvent } from "ol/Object";
-import { CursorDefault, CursorMove } from "mdue";
+import { CogOutline, CursorDefault, CursorMove } from "mdue";
 import MeasurementToolbar from "./MeasurementToolbar.vue";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
@@ -49,6 +54,8 @@ import { useShowLocationControl } from "@/composables/geoShowLocation";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTabStore } from "@/stores/tabStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
+import ContextMenu, { type MenuOptions } from "@imengyu/vue3-context-menu";
+import { toLonLat } from "ol/proj";
 
 const {
   geo,
@@ -151,10 +158,67 @@ const { onDrop } = useDrop(mapRef, unitLayer);
 onUnmounted(() => {
   geoStore.olMap = undefined;
 });
-</script>
 
-<style>
-.jest {
-  font-variant-numeric: tabular-nums;
+function onContextMenu(e: MouseEvent) {
+  e.preventDefault();
+  const dropPosition = toLonLat(mapRef.value!.getEventCoordinate(e));
+  const settings = useMapSettingsStore();
+  const menu = ref<MenuOptions>({
+    items: [
+      {
+        label: "Map settings",
+        icon: h(CogOutline, { class: "text-gray-500" }),
+        children: [
+          {
+            label: "Show cursor location",
+            checked: computed(() => settings.showLocation) as unknown as boolean,
+            clickClose: false,
+            onClick: () => {
+              settings.showLocation = !settings.showLocation;
+            },
+          },
+          {
+            label: "Format",
+            disabled: true,
+          },
+          {
+            label: "Decimal degrees",
+            checked: computed(
+              () => settings.coordinateFormat === "DecimalDegrees"
+            ) as unknown as boolean,
+            clickClose: false,
+            onClick: () => {
+              settings.coordinateFormat = "DecimalDegrees";
+            },
+          },
+          {
+            label: "Degree Minutes Seconds",
+            checked: computed(
+              () => settings.coordinateFormat === "DegreeMinuteSeconds"
+            ) as unknown as boolean,
+            clickClose: false,
+            onClick: () => {
+              settings.coordinateFormat = "DegreeMinuteSeconds";
+            },
+          },
+          {
+            label: "MGRS",
+            checked: computed(
+              () => settings.coordinateFormat === "MGRS"
+            ) as unknown as boolean,
+            clickClose: false,
+            onClick: () => {
+              settings.coordinateFormat = "MGRS";
+            },
+          },
+        ],
+      },
+    ],
+    zIndex: 3,
+    minWidth: 230,
+    x: e.x,
+    y: e.y,
+  });
+  ContextMenu.showContextMenu(menu.value);
 }
-</style>
+</script>
