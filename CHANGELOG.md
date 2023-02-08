@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+February 2023
+
+- Add context menu to map.
+- Make chart mode sidebar resizable.
+- Allow adding an arbitrary number of sides and root units in the 'create new scenario form'.
+
 January 2023
 
 - Add basic root unit icon and echelon selection to 'Create new scenario' form.
