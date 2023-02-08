@@ -15,6 +15,7 @@ export default defineConfig({
     nav: [
       { text: "Guide", link: "/guide/about-orbat-mapper", activeMatch: "/guide/" },
       { text: "Resources", link: "/resources/tools", activeMatch: "/resources/" },
+      { text: "Support", link: "/support", activeMatch: "/support" },
       { text: "Open App", link: "https://orbat-mapper.app" },
     ],
     footer: {

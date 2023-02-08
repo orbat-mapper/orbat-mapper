@@ -7,5 +7,5 @@ With ORBAT Mapper you can recreate historic battles and military scenarios right
 Please note that this project is a work in progress. A fully working version of ORBAT Mapper has not been released yet.
 :::
 
-ORBAT Mapper is created by a hobbyist. Check out the the [tools section](../resources/tools.md) if you need something
+ORBAT Mapper is created by a hobbyist. Check out the [tools section](../resources/tools.md) if you need something
 more professional.

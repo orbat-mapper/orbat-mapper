@@ -131,6 +131,14 @@
               >Resources</a
             >
           </div>
+
+          <div class="pb-6">
+            <a
+              href="https://docs.orbat-mapper.app/support"
+              class="text-sm leading-6 text-gray-600 hover:text-gray-900"
+              >Support</a
+            >
+          </div>
         </nav>
         <div class="mt-10 flex justify-center space-x-10">
           <a
