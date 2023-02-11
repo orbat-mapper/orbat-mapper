@@ -2,3 +2,4 @@ dist
 package-lock.json
 standards/
 stats.html
+docs/.vitepress/cache/

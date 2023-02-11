@@ -1,7 +1,7 @@
 import { DefaultTheme, defineConfig } from "vitepress";
 
 export default defineConfig({
-  cleanUrls: "without-subfolders",
+  cleanUrls: true,
   title: "ORBAT Mapper (beta)",
   description: "Just playing around.",
   head: [["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }]],
