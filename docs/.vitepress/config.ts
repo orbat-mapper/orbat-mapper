@@ -38,8 +38,9 @@ function sidebarGuide(): DefaultTheme.Sidebar {
       ],
     },
     {
-      text: "Editing modes",
+      text: "Scenario editor",
       items: [
+        { text: "Editing modes", link: "/guide/editing-modes" },
         { text: "Map edit mode", link: "/guide/map-edit-mode" },
         { text: "Grid edit mode", link: "/guide/grid-edit-mode" },
         { text: "Chart edit mode", link: "/guide/chart-edit-mode" },
