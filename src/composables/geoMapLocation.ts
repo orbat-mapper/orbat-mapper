@@ -72,6 +72,6 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
     cancel,
     start,
     onGetLocation: onGetLocationHook.on,
-    onCancel: onGetLocationHook.on,
+    onCancel: onCancelHook.on,
   };
 }
