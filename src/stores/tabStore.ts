@@ -5,4 +5,7 @@ export const useTabStore = defineStore("uiTabs", {
   state: () => ({
     activeScenarioTab: TAB_ORBAT,
   }),
+  getters: {
+    orbatTabActive: (state) => state.activeScenarioTab === TAB_ORBAT,
+  },
 });

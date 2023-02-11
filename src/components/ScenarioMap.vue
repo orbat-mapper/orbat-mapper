@@ -19,6 +19,7 @@
         </ToolbarButton>
       </BaseToolbar>
     </div>
+    <slot />
   </div>
 </template>
 

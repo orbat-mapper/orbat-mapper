@@ -321,7 +321,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     return s.sideGroupMap[id] || undefined;
   }
 
-  function addUnit(unit: NUnit, parentId: EntityId, index?: number) {
+  function addUnit(unit: NUnit, parentId: EntityId, index?: number): EntityId {
     if (!unit.id) {
       unit.id = nanoid();
     }
@@ -340,22 +340,25 @@ export function useUnitManipulations(store: NewScenarioStore) {
         parent.subUnits.splice(index, 0, unit.id);
       }
     });
+
+    return unit.id;
   }
 
-  function createSubordinateUnit(parentId: EntityId) {
+  function createSubordinateUnit(parentId: EntityId, data: Partial<NUnit> = {}) {
     const parent = getUnitOrSideGroup(parentId);
     if (!parent) return;
     let sidc: Sidc;
     if ("sidc" in parent) {
-      sidc = new Sidc(parent.sidc);
-      sidc.emt = getNextEchelonBelow(sidc.emt);
+      const parentSidc = new Sidc(parent.sidc);
+      sidc = new Sidc(data.sidc || parent.sidc);
+      sidc.emt = getNextEchelonBelow(parentSidc.emt);
     } else {
       sidc = new Sidc("10031000000000000000");
       const side = state.sideMap[parent._pid!];
       sidc.standardIdentity = side?.standardIdentity || "0";
     }
     const newUnit: NUnit = {
-      name: parent.name + counter++,
+      name: data.name || parent.name + counter++,
       sidc: sidc.toString(),
       id: nanoid(),
       state: [],
@@ -363,8 +366,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
       _pid: parent.id,
       subUnits: [],
     };
-    addUnit(newUnit, parentId);
+    const newUnitId = addUnit(newUnit, parentId);
     parent._isOpen = true;
+    return newUnitId;
   }
 
   function cloneUnit(

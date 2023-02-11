@@ -1,0 +1,101 @@
+<script setup lang="ts">
+import FloatingPanel from "@/components/FloatingPanel.vue";
+import PanelSection from "@/components/PanelSection.vue";
+import MilSymbol from "@/components/MilSymbol.vue";
+import { SymbolItem, SymbolValue } from "@/types/constants";
+import { computed, ref } from "vue";
+import { useGetMapLocation } from "@/composables/geoMapLocation";
+import OLMap from "ol/Map";
+import { useGeoStore } from "@/stores/geoStore";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+
+const activeUnitId = injectStrict(activeUnitKey);
+const {
+  unitActions,
+  geo: { addUnitPosition },
+  store: { state, groupUpdate },
+} = injectStrict(activeScenarioKey);
+
+const activeUnit = computed(
+  () =>
+    (activeUnitId.value &&
+      unitActions.expandUnit(state.getUnitById(activeUnitId.value))) ||
+    null
+);
+
+const geoStore = useGeoStore();
+
+const icons: SymbolValue[] = [
+  { code: "121100", text: "Infantry" },
+  { code: "121000", text: "Combined Arms" },
+  { code: "121102", text: "Mechanized" },
+  { code: "130300", text: "Artillery" },
+  { code: "120500", text: "Armor" },
+  { code: "160600", text: "Combat Service Support" },
+];
+
+const iconItems = computed(() => {
+  const sid = activeUnit.value?.sidc ? activeUnit.value?.sidc[3] : "3";
+
+  return icons.map(({ code, text }): SymbolItem => {
+    return {
+      code,
+      text,
+      sidc: "100" + sid + "10" + "00" + "00" + code + "0000",
+    };
+  });
+});
+
+const activeSidc = ref<string | null>(null);
+
+const {
+  start: startGetLocation,
+  isActive: isGetLocationActive,
+  onGetLocation,
+  onCancel,
+} = useGetMapLocation(geoStore.olMap as OLMap);
+
+function addUnit(sidc: string) {
+  activeSidc.value = sidc;
+  startGetLocation();
+}
+
+onCancel(() => {
+  activeSidc.value = null;
+});
+onGetLocation((location) => {
+  groupUpdate(() => {
+    if (!activeUnit.value) return;
+    const unitId = unitActions.createSubordinateUnit(activeUnit.value.id, {
+      sidc: activeSidc.value!,
+    });
+    unitId && addUnitPosition(unitId, location);
+  });
+  activeSidc.value = null;
+});
+</script>
+<template>
+  <div>
+    <FloatingPanel class="flex flex-col" v-if="geoStore.olMap">
+      <PanelSection label="Add unit">
+        <div class="mt-1 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            v-for="{ sidc, text } in iconItems"
+            :key="sidc"
+            class="hover:drop-shadow hover:sepia"
+            :class="[activeSidc === sidc ? 'invert' : '']"
+            :title="text"
+            @click="addUnit(sidc)"
+          >
+            <MilSymbol :sidc="sidc" :size="24" />
+          </button>
+        </div>
+      </PanelSection>
+    </FloatingPanel>
+    <FloatingPanel v-if="isGetLocationActive" class="absolute bg-opacity-40 p-2 text-sm"
+      >Click on map to place unit</FloatingPanel
+    >
+  </div>
+</template>

@@ -80,7 +80,12 @@
         </template>
       </TabView>
     </ResizablePanel>
-    <ScenarioMap class="flex-1" data-teleport-map />
+    <ScenarioMap class="flex-1" data-teleport-map>
+      <ToolPanel
+        v-if="orbatTabActive && geoStore.olMap"
+        class="absolute left-3 top-[100px]"
+      />
+    </ScenarioMap>
     <KeyboardScenarioActions v-if="geoStore.olMap" />
 
     <MainViewSlideOver v-model="isOpen" />
@@ -104,7 +109,6 @@ import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import TimeController from "@/components/TimeController.vue";
 import { useRoute, useRouter } from "vue-router";
-import { useUiStore } from "@/stores/uiStore";
 import { useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
@@ -125,6 +129,7 @@ import { injectStrict } from "@/utils";
 import { useSearchActions } from "@/composables/search";
 import { useTabStore } from "@/stores/tabStore";
 import ResizablePanel from "@/components/ResizablePanel.vue";
+import ToolPanel from "@/modules/scenarioeditor/ToolPanel.vue";
 
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
 
@@ -132,7 +137,7 @@ const emit = defineEmits(["showExport", "showLoad"]);
 const activeUnitId = injectStrict(activeUnitKey);
 
 const uiTabs = useTabStore();
-const { activeScenarioTab } = storeToRefs(uiTabs);
+const { activeScenarioTab, orbatTabActive } = storeToRefs(uiTabs);
 const activeScenario = injectStrict(activeScenarioKey);
 const { state, update } = activeScenario.store;
 const { unitActions, io } = activeScenario;
@@ -148,7 +153,6 @@ const activeUnitStore = useActiveUnitStore({
   activeScenario,
   activeUnitId,
 });
-const uiStore = useUiStore();
 
 const originalTitle = useTitle().value;
 const windowTitle = computed(() => state.info.name);
