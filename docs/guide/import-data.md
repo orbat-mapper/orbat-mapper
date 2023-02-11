@@ -1,6 +1,6 @@
 # Import data
 
-ORBAT Mapper can import units and features from several sources and formats:
+ORBAT Mapper can import units and features from the following sources and formats:
 
 - [GeoJSON](#geojson)
 - [MilX](#milx)

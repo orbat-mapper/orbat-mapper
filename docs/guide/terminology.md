@@ -8,8 +8,6 @@ Under the hood ORBAT Mapper uses a data model loosely inspired by
 the [Military Scenario Definition Language (MSDL)](https://en.wikipedia.org/wiki/Military_Scenario_Definition_Language).
 In this section we will go through some terminology you will encounter while building a scenario.
 
-## Scenario
-
 ## Sides and groups
 
 A scenario consists of _units_ organized into _groups_ and _sides_. A side typically represents a nation or
@@ -35,7 +33,7 @@ represent branches (army, navy, air-force, etc.), a task force, a battlefront, e
 
 A group consists of one or more unit hierarchies. The topmost unit in a hierarchy is called a _root unit_.
 
-## Units
+## Units and equipment
 
 A unit is the basic building block of a scenario. It has properties like military symbol, name, description, echelon,
 location, etc.
@@ -46,11 +44,10 @@ location, etc.
     <DocMilSymbol sidc="10061000151301020000" />
 </div>
 
-## Features
-
-## Events
-
-How you organize a scenario is up to you. One example is the Falklands demo scenario. It consists of two sides, Great
-Britain and Argentina.
-
-![](images/sides-and-groups.png)
+[//]: # "## Features"
+[//]: # "## Events"
+[//]: #
+[//]: # "How you organize a scenario is up to you. One example is the Falklands demo scenario. It consists of two sides, Great"
+[//]: # "Britain and Argentina."
+[//]: #
+[//]: # "![](images/sides-and-groups.png)"

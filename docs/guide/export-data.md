@@ -1,14 +1,14 @@
 # Export data
 
-ORBAT Mapper can export units and features to several data formats:
+ORBAT Mapper can export units and features to the following data formats:
 
 - [GeoJSON](#geojson)
 - [KML/KMZ](#kml)
 
 ## Start the export process
 
-To start the import process
-select _Import_ from the _File_
+To start the export process
+select _Export scenario_ from the _File_
 menu.
 
 ![Import menu](images/export.png)
