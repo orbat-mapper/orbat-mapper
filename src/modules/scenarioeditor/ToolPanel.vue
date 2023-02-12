@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { LockOutline, LockOpenVariantOutline } from "mdue";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import PanelSection from "@/components/PanelSection.vue";
 import MilSymbol from "@/components/MilSymbol.vue";
@@ -9,6 +10,10 @@ import OLMap from "ol/Map";
 import { useGeoStore } from "@/stores/geoStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import ToolbarButton from "@/components/ToolbarButton.vue";
+import { useToggle } from "@vueuse/core";
+
+const [addMultiple, toggleAddMultiple] = useToggle(false);
 
 const activeUnitId = injectStrict(activeUnitKey);
 const {
@@ -64,6 +69,7 @@ function addUnit(sidc: string) {
 onCancel(() => {
   activeSidc.value = null;
 });
+
 onGetLocation((location) => {
   groupUpdate(() => {
     if (!activeUnit.value) return;
@@ -72,12 +78,26 @@ onGetLocation((location) => {
     });
     unitId && addUnitPosition(unitId, location);
   });
-  activeSidc.value = null;
+  if (addMultiple.value && activeSidc.value) {
+    addUnit(activeSidc.value);
+  } else {
+    activeSidc.value = null;
+  }
 });
 </script>
 <template>
   <div>
     <FloatingPanel class="flex flex-col" v-if="geoStore.olMap">
+      <PanelSection label="Tools">
+        <button
+          type="button"
+          class="absolute top-2 right-2 border-none text-gray-600"
+          @click="toggleAddMultiple()"
+          title="Lock tool selection"
+        >
+          <LockOutline v-if="addMultiple" class="h-5 w-5" />
+          <LockOpenVariantOutline v-else class="h-5 w-5" /></button
+      ></PanelSection>
       <PanelSection label="Add unit">
         <div class="mt-1 grid grid-cols-2 gap-2">
           <button
