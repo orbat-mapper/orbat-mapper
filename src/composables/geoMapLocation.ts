@@ -9,7 +9,7 @@ import {
 import { unByKey } from "ol/Observable";
 import { MapBrowserEvent } from "ol";
 import { toLonLat } from "ol/proj";
-import { EventsKey } from "ol/events";
+import type { EventsKey } from "ol/events";
 import { ref } from "vue";
 import type { Position } from "geojson";
 
@@ -46,10 +46,10 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
 
   function handleMapClickEvent(event: MapBrowserEvent<MouseEvent>) {
     event.stopPropagation();
+    cleanUp();
     onGetLocationHook.trigger(
       toLonLat(event.coordinate, olMap.getView().getProjection())
     );
-    cleanUp();
   }
 
   function cleanUp() {
@@ -61,8 +61,8 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
   }
 
   function cancel() {
-    onCancelHook.trigger(null);
     cleanUp();
+    onCancelHook.trigger(null);
   }
 
   tryOnBeforeUnmount(() => cleanUp());
