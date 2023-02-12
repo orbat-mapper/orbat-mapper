@@ -106,10 +106,11 @@ onGetLocation((location) => {
             type="button"
             v-for="{ sidc, text } in iconItems"
             :key="sidc"
-            class="hover:drop-shadow hover:sepia"
+            class="hover:drop-shadow hover:sepia disabled:opacity-50 disabled:hover:sepia-0"
             :class="[activeSidc === sidc ? 'invert' : '']"
             :title="text"
             @click="addUnit(sidc)"
+            :disabled="!activeUnitId"
           >
             <MilSymbol :sidc="sidc" :size="24" />
           </button>
