@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { LockOpenVariantOutline, LockOutline } from "mdue";
+import {
+  LockOpenVariantOutline,
+  LockOutline,
+  MapMarkerPath,
+  VectorPolylineEdit,
+} from "mdue";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import PanelSection from "@/components/PanelSection.vue";
 import MilSymbol from "@/components/MilSymbol.vue";
@@ -7,10 +12,11 @@ import { SymbolItem, SymbolValue } from "@/types/constants";
 import { computed, ref } from "vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 import OLMap from "ol/Map";
-import { useGeoStore } from "@/stores/geoStore";
+import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import { useToggle } from "@vueuse/core";
+import ToolbarButton from "@/components/ToolbarButton.vue";
 
 const [addMultiple, toggleAddMultiple] = useToggle(false);
 
@@ -29,6 +35,7 @@ const activeUnit = computed(
 );
 
 const geoStore = useGeoStore();
+const unitSettings = useUnitSettingsStore();
 
 const icons: SymbolValue[] = [
   { code: "121100", text: "Infantry" },
@@ -72,8 +79,10 @@ onCancel(() => {
 onGetLocation((location) => {
   groupUpdate(() => {
     if (!activeUnit.value) return;
+    const name = `${(activeUnit.value?.subUnits?.length ?? 0) + 1}`;
     const unitId = unitActions.createSubordinateUnit(activeUnit.value.id, {
       sidc: activeSidc.value!,
+      name,
     });
     unitId && addUnitPosition(unitId, location);
   });
@@ -86,6 +95,7 @@ onGetLocation((location) => {
 </script>
 <template>
   <div class="">
+    <!--    <OrbatBreadcrumbs class="absolute top-4 left-10" />-->
     <FloatingPanel
       class="absolute left-3 top-[100px] flex flex-col"
       v-if="geoStore.olMap"
@@ -114,6 +124,27 @@ onGetLocation((location) => {
           >
             <MilSymbol :sidc="sidc" :size="24" />
           </button>
+        </div>
+      </PanelSection>
+      <PanelSection label="Unit path">
+        <div class="grid grid-cols-2 gap-2">
+          <ToolbarButton
+            @click="unitSettings.showHistory = !unitSettings.showHistory"
+            class="rounded border-none"
+            title="Show unit track on map"
+            :active="unitSettings.showHistory"
+          >
+            <MapMarkerPath class="h-5 w-5" aria-hidden="true" />
+          </ToolbarButton>
+          <ToolbarButton
+            @click="unitSettings.editHistory = !unitSettings.editHistory"
+            class="rounded border-none"
+            title="Edit path"
+            :active="unitSettings.editHistory"
+            :disabled="!unitSettings.showHistory"
+          >
+            <VectorPolylineEdit class="h-5 w-5" aria-hidden="true" />
+          </ToolbarButton>
         </div>
       </PanelSection>
     </FloatingPanel>
