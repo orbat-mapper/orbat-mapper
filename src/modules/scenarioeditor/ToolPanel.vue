@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LockOutline, LockOpenVariantOutline } from "mdue";
+import { LockOpenVariantOutline, LockOutline } from "mdue";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import PanelSection from "@/components/PanelSection.vue";
 import MilSymbol from "@/components/MilSymbol.vue";
@@ -10,7 +10,6 @@ import OLMap from "ol/Map";
 import { useGeoStore } from "@/stores/geoStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
-import ToolbarButton from "@/components/ToolbarButton.vue";
 import { useToggle } from "@vueuse/core";
 
 const [addMultiple, toggleAddMultiple] = useToggle(false);
@@ -86,8 +85,11 @@ onGetLocation((location) => {
 });
 </script>
 <template>
-  <div>
-    <FloatingPanel class="flex flex-col" v-if="geoStore.olMap">
+  <div class="">
+    <FloatingPanel
+      class="absolute left-3 top-[100px] flex flex-col"
+      v-if="geoStore.olMap"
+    >
       <PanelSection label="Tools">
         <button
           type="button"
@@ -114,8 +116,11 @@ onGetLocation((location) => {
         </div>
       </PanelSection>
     </FloatingPanel>
-    <FloatingPanel v-if="isGetLocationActive" class="absolute bg-opacity-40 p-2 text-sm"
-      >Click on map to place unit</FloatingPanel
+    <FloatingPanel
+      v-if="isGetLocationActive"
+      class="absolute bottom-10 left-1/2 -translate-x-1/2 overflow-visible bg-opacity-75 p-2 px-4 text-sm"
     >
+      Click on map to place unit
+    </FloatingPanel>
   </div>
 </template>

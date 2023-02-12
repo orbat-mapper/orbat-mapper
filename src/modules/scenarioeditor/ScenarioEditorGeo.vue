@@ -81,10 +81,7 @@
       </TabView>
     </ResizablePanel>
     <ScenarioMap class="flex-1" data-teleport-map>
-      <ToolPanel
-        v-if="orbatTabActive && geoStore.olMap"
-        class="absolute left-3 top-[100px]"
-      />
+      <ToolPanel v-if="orbatTabActive && geoStore.olMap" />
     </ScenarioMap>
     <KeyboardScenarioActions v-if="geoStore.olMap" />
 
