@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { ImageFilterCenterFocus, MagnifyPlusOutline } from "mdue";
+import {
+  IconImageFilterCenterFocus,
+  IconMagnifyPlusOutline,
+} from "@iconify-prerendered/vue-mdi";
 import { GlobalEvents } from "vue-global-events";
 import {
   ScenarioFeature,
@@ -140,7 +143,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
                 start
                 title="Zoom to"
               >
-                <MagnifyPlusOutline class="h-5 w-5" />
+                <IconMagnifyPlusOutline class="h-5 w-5" />
               </ToolbarButton>
               <ToolbarButton
                 @click="
@@ -152,7 +155,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
                 "
                 title="Pan to"
               >
-                <ImageFilterCenterFocus class="h-5 w-5" />
+                <IconImageFilterCenterFocus class="h-5 w-5" />
               </ToolbarButton>
               <ToolbarButton
                 @click="toggleMetaEdit()"

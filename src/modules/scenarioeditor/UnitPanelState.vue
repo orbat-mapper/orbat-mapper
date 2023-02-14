@@ -37,7 +37,10 @@
         </p>
 
         <p class="text-gray-700" v-if="s.location">{{ formatPosition(s.location) }}</p>
-        <MapMarkerOffOutline v-if="s.location === null" class="h-5 w-5 text-gray-600" />
+        <IconMapMarkerOffOutline
+          v-if="s.location === null"
+          class="h-5 w-5 text-gray-600"
+        />
         <span
           v-if="s.sidc"
           class="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"
@@ -47,7 +50,7 @@
 
       <div class="flex-0 relative flex items-center space-x-0">
         <IconButton @click="changeToState(s)" class="bg-gray-50">
-          <CrosshairsGps class="h-5 w-5" aria-hidden="true" />
+          <IconCrosshairsGps class="h-5 w-5" aria-hidden="true" />
         </IconButton>
         <!--        <IconButton @click="deleteState(index)" class="bg-gray-50">-->
         <!--          <XIcon class="h-5 w-5" aria-hidden="true" />-->
@@ -59,7 +62,7 @@
         <div
           class="relative -left-1/2 flex items-center rounded-full border bg-white px-4 py-0.5"
         >
-          <MapMarkerPath class="h-5 w-5 text-gray-500" />
+          <IconMapMarkerPath class="h-5 w-5 text-gray-500" />
         </div>
       </div>
     </li>
@@ -68,7 +71,11 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, VNode } from "vue";
-import { CrosshairsGps, MapMarkerOffOutline, MapMarkerPath } from "mdue";
+import {
+  IconCrosshairsGps,
+  IconMapMarkerOffOutline,
+  IconMapMarkerPath,
+} from "@iconify-prerendered/vue-mdi";
 import type { State, StateAdd } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";

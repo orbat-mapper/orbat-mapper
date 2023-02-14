@@ -5,12 +5,12 @@ export default { inheritAttrs: false };
 <script setup lang="ts">
 import { computed } from "vue";
 import {
-  Close as CloseIcon,
-  CrosshairsGps,
-  CrosshairsOff,
-  FilterVariant,
-  FilterVariantPlus,
-} from "mdue";
+  IconClose as CloseIcon,
+  IconCrosshairsGps,
+  IconCrosshairsOff,
+  IconFilterVariant,
+  IconFilterVariantPlus,
+} from "@iconify-prerendered/vue-mdi";
 import { Switch } from "@headlessui/vue";
 import { useVModel } from "@vueuse/core";
 
@@ -43,12 +43,12 @@ const updateValue = (event: Event) => {
 <template>
   <div class="relative rounded-md shadow-sm">
     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-      <FilterVariantPlus
+      <IconFilterVariantPlus
         v-if="hasFilter"
         class="h-5 w-5 text-gray-400"
         aria-hidden="true"
       />
-      <FilterVariant v-else class="h-5 w-5 text-gray-400" aria-hidden="true" />
+      <IconFilterVariant v-else class="h-5 w-5 text-gray-400" aria-hidden="true" />
     </div>
     <input
       :value="localValue"
@@ -72,8 +72,8 @@ const updateValue = (event: Event) => {
         @click="hasLocationFilter = !hasLocationFilter"
         class="rounded-md text-gray-400 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
       >
-        <CrosshairsOff v-if="hasLocationFilter" class="h-5 w-5" aria-hidden="true" />
-        <CrosshairsGps v-else class="h-5 w-5" aria-hidden="true" />
+        <IconCrosshairsOff v-if="hasLocationFilter" class="h-5 w-5" aria-hidden="true" />
+        <IconCrosshairsGps v-else class="h-5 w-5" aria-hidden="true" />
       </Switch>
     </div>
   </div>

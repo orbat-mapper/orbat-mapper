@@ -74,7 +74,7 @@
             exact-active-class="text-green-500"
             class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
           >
-            <SitemapIcon class="h-6 w-6" />
+            <IconSitemap class="h-6 w-6" />
           </router-link>
         </div>
         <div class="flex items-center">
@@ -84,7 +84,7 @@
             title="Undo action (ctrl+z)"
             :disabled="!canUndo"
           >
-            <UndoIcon class="block h-6 w-6" />
+            <IconUndo class="block h-6 w-6" />
           </button>
           <button
             @click="redo()"
@@ -92,7 +92,7 @@
             title="Redo action"
             :disabled="!canRedo"
           >
-            <RedoIcon class="block h-6 w-6" />
+            <IconRedo class="block h-6 w-6" />
           </button>
         </div>
         <button
@@ -100,7 +100,7 @@
           class="inline-flex hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white sm:block"
           title="Show keyboard shortcuts"
         >
-          <KeyboardIcon class="block h-6 w-6" />
+          <IconKeyboard class="block h-6 w-6" />
         </button>
 
         <button
@@ -192,18 +192,12 @@ import SearchModal from "@/components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import {
-  Keyboard as KeyboardIcon,
-  RedoVariant as RedoIcon,
-  Sitemap as SitemapIcon,
-  UndoVariant as UndoIcon,
-} from "mdue";
-import {
-  createEventHook,
-  useClipboard,
-  useDropZone,
-  useTitle,
-  watchOnce,
-} from "@vueuse/core";
+  IconKeyboard,
+  IconRedoVariant as IconRedo,
+  IconSitemap,
+  IconUndoVariant as IconUndo,
+} from "@iconify-prerendered/vue-mdi";
+import { createEventHook, useClipboard, useTitle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import { ScenarioActions, TAB_LAYERS } from "@/types/constants";
 import AppNotifications from "@/components/AppNotifications.vue";

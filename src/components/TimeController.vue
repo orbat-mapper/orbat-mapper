@@ -22,19 +22,19 @@
       </ToolbarButton>
       <ToolbarButton @click="jumpToPrevEvent()">
         <span class="sr-only">Previous</span>
-        <SkipPrevious class="h-5 w-5" aria-hidden="true" />
+        <IconSkipPrevious class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
       <ToolbarButton @click="jumpToNextEvent()">
         <span class="sr-only">Next</span>
-        <SkipNext class="h-5 w-5" aria-hidden="true" />
+        <IconSkipNext class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
       <ToolbarButton type="button" @click="subtract(1, 'day', true)">
         <span class="sr-only">Previous</span>
-        <ChevronLeft class="h-5 w-5" aria-hidden="true" />
+        <IconChevronLeft class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
       <ToolbarButton @click="add(1, 'day', true)" end>
         <span class="sr-only">Next</span>
-        <ChevronRight class="h-5 w-5" aria-hidden="true" />
+        <IconChevronRight class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
     </BaseToolbar>
 
@@ -49,7 +49,12 @@
 <script setup lang="ts">
 import { CalendarIcon } from "@heroicons/vue/24/solid";
 
-import { ChevronLeft, ChevronRight, SkipNext, SkipPrevious } from "mdue";
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconSkipNext,
+  IconSkipPrevious,
+} from "@iconify-prerendered/vue-mdi";
 import { GlobalEvents } from "vue-global-events";
 import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "./helpers";

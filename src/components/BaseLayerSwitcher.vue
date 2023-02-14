@@ -64,7 +64,7 @@ import {
   RadioGroupLabel,
   RadioGroupOption,
 } from "@headlessui/vue";
-import { Opacity as OpacityIcon } from "mdue";
+import { IconOpacity as OpacityIcon } from "@iconify-prerendered/vue-mdi";
 import { LayerInfo } from "./LayersPanel.vue";
 import OpacityInput from "./OpacityInput.vue";
 

@@ -4,7 +4,7 @@ import BaseButton from "../../components/BaseButton.vue";
 import OLMap from "ol/Map";
 import MapEditToolbar from "@/components/MapEditToolbar.vue";
 import VectorLayer from "ol/layer/Vector";
-import { LayersPlus } from "mdue";
+import { IconLayersPlus } from "@iconify-prerendered/vue-mdi";
 import { useGeoStore } from "@/stores/geoStore";
 
 import {
@@ -322,7 +322,7 @@ function doUpdateFeature(
       <CreateEmtpyDashed
         v-if="layers.length === 0"
         @click="addNewLayer()"
-        :icon="LayersPlus"
+        :icon="IconLayersPlus"
       >
         Add a new scenario layer
       </CreateEmtpyDashed>

@@ -33,12 +33,12 @@ import { unByKey } from "ol/Observable";
 import { EventsKey } from "ol/events";
 import { AnyVectorLayer } from "@/geo/types";
 import {
-  LayersOutline,
-  MapMarker,
-  VectorCircleVariant,
-  VectorLine,
-  VectorTriangle,
-} from "mdue";
+  IconLayersOutline,
+  IconMapMarker,
+  IconVectorCircleVariant,
+  IconVectorLine,
+  IconVectorTriangle,
+} from "@iconify-prerendered/vue-mdi";
 import { ScenarioFeatureActions } from "@/types/constants";
 import Select, { SelectEvent } from "ol/interaction/Select";
 import { MaybeRef } from "@vueuse/core";
@@ -62,11 +62,11 @@ export enum LayerType {
 }
 
 const geometryIconMap: any = {
-  Point: MapMarker,
-  LineString: VectorLine,
-  Polygon: VectorTriangle,
-  Circle: VectorCircleVariant,
-  layer: LayersOutline,
+  Point: IconMapMarker,
+  LineString: IconVectorLine,
+  Polygon: IconVectorTriangle,
+  Circle: IconVectorCircleVariant,
+  layer: IconLayersOutline,
 };
 
 export function getGeometryIcon(feature: ScenarioFeature) {

@@ -14,8 +14,8 @@
     <div v-if="mapRef" class="absolute bottom-[5.2rem] left-3">
       <BaseToolbar class="shadow">
         <ToolbarButton start end @click="toggleMoveUnit()">
-          <CursorDefault v-if="moveUnitEnabled" class="h-5 w-5" aria-hidden="true" />
-          <CursorMove v-else class="h-5 w-5" aria-hidden="true" />
+          <IconCursorDefault v-if="moveUnitEnabled" class="h-5 w-5" aria-hidden="true" />
+          <IconCursorMove v-else class="h-5 w-5" aria-hidden="true" />
         </ToolbarButton>
       </BaseToolbar>
     </div>
@@ -40,7 +40,11 @@ import {
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useToggle } from "@vueuse/core";
 import { ObjectEvent } from "ol/Object";
-import { CogOutline, CursorDefault, CursorMove } from "mdue";
+import {
+  IconCogOutline,
+  IconCursorDefault,
+  IconCursorMove,
+} from "@iconify-prerendered/vue-mdi";
 import MeasurementToolbar from "./MeasurementToolbar.vue";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
@@ -168,7 +172,7 @@ function onContextMenu(e: MouseEvent) {
     items: [
       {
         label: "Map settings",
-        icon: h(CogOutline, { class: "text-gray-500" }),
+        icon: h(IconCogOutline, { class: "text-gray-500" }),
         children: [
           {
             label: "Show cursor location",

@@ -7,34 +7,34 @@
         title="Toggle measurements"
         @click="toggleMeasurements()"
       >
-        <RulerIcon class="h-5 w-5" :class="enableMeasurements && 'text-gray-900'" />
+        <IconRuler class="h-5 w-5" :class="enableMeasurements && 'text-gray-900'" />
       </ToolbarButton>
       <template v-if="enableMeasurements">
         <ToolbarButton
           @click="measurementType = 'LineString'"
           :active="measurementType === 'LineString'"
         >
-          <VectorPolyline class="h-5 w-5" />
+          <IconVectorPolyline class="h-5 w-5" />
         </ToolbarButton>
         <ToolbarButton
           @click="measurementType = 'Polygon'"
           :active="measurementType === 'Polygon'"
         >
-          <VectorPolygon class="h-5 w-5" />
+          <IconVectorPolygon class="h-5 w-5" />
         </ToolbarButton>
         <ToolbarButton
           title="Clear previous measurements"
           @click="clearPrevious = !clearPrevious"
           :active="!clearPrevious"
         >
-          <SelectionMultiple class="h-5 w-5" />
+          <IconSelectionMultiple class="h-5 w-5" />
         </ToolbarButton>
         <ToolbarButton
           title="Show segment lengths"
           @click="showSegments = !showSegments"
           :active="showSegments"
         >
-          <MapMarkerPath class="h-5 w-5" />
+          <IconMapMarkerPath class="h-5 w-5" />
         </ToolbarButton>
         <ToolbarButton end @click="clear()">
           <TrashIcon class="h-5 w-5" />
@@ -48,12 +48,12 @@
 import { TrashIcon } from "@heroicons/vue/24/solid";
 
 import {
-  MapMarkerPath,
-  Ruler as RulerIcon,
-  SelectionMultiple,
-  VectorPolygon,
-  VectorPolyline,
-} from "mdue";
+  IconMapMarkerPath,
+  IconRuler,
+  IconSelectionMultiple,
+  IconVectorPolygon,
+  IconVectorPolyline,
+} from "@iconify-prerendered/vue-mdi";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";

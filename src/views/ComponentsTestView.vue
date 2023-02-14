@@ -77,7 +77,7 @@
               <AccordionPanel label="Accordion title"> Accordion content </AccordionPanel>
               <AccordionPanel label="Accordion with right slot">
                 <template #right>
-                  <Earth class="h-5 w-5" />
+                  <IconEarth class="h-5 w-5" />
                 </template>
                 Accordion content
               </AccordionPanel>
@@ -119,7 +119,7 @@
 import BaseButton from "@/components/BaseButton.vue";
 import FormCard from "@/components/FormCard.vue";
 import { ref } from "vue";
-import { Earth } from "mdue";
+import { IconEarth } from "@iconify-prerendered/vue-mdi";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import InputGroup from "@/components/InputGroup.vue";
 import SimpleCombo from "@/components/SimpleCombo.vue";

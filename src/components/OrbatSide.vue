@@ -21,8 +21,8 @@
           class="ml-1 text-gray-400 hover:text-gray-900"
         >
           <span class="sr-only">Toggle ORBAT filter</span>
-          <FilterVariantPlus v-if="checked" class="h-5 w-5" aria-hidden="true" />
-          <FilterVariant v-else class="h-5 w-5" aria-hidden="true" />
+          <IconFilterVariantPlus v-if="checked" class="h-5 w-5" aria-hidden="true" />
+          <IconFilterVariant v-else class="h-5 w-5" aria-hidden="true" />
         </Switch>
         <DotsMenu
           :items="sideMenuItems"
@@ -66,7 +66,7 @@ import DotsMenu from "./DotsMenu.vue";
 import { computed, ref } from "vue";
 import { Disclosure, DisclosureButton, DisclosurePanel, Switch } from "@headlessui/vue";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
-import { FilterVariant, FilterVariantPlus } from "mdue";
+import { IconFilterVariant, IconFilterVariantPlus } from "@iconify-prerendered/vue-mdi";
 import { SideAction, SideActions, type UnitAction } from "@/types/constants";
 import { useDebounce } from "@vueuse/core";
 import FilterQueryInput from "./FilterQueryInput.vue";

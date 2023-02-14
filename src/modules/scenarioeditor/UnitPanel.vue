@@ -76,14 +76,14 @@
           <div class="flex items-center justify-between">
             <p>{{ formatPosition(unit.location) }}</p>
             <IconButton @click="geoStore.panToLocation(unit.location)">
-              <CrosshairsGps class="h-5 w-5" />
+              <IconCrosshairsGps class="h-5 w-5" />
             </IconButton>
           </div>
         </DescriptionItem>
       </div>
     </section>
     <BaseButton @click="startGetLocation()" :disabled="isMultiMode">
-      <CrosshairsGps class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+      <IconCrosshairsGps class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
       {{ isGetLocationActive ? "Select on map" : "Set location" }}
     </BaseButton>
     <div class="mt-4 space-y-2">
@@ -101,7 +101,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
-import { CrosshairsGps } from "mdue";
+import { IconCrosshairsGps } from "@iconify-prerendered/vue-mdi";
 import InputGroup from "@/components/InputGroup.vue";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import MilSymbol from "@/components/MilSymbol.vue";

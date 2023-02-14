@@ -4,7 +4,12 @@ import {
   ScenarioFeature,
   ScenarioLayerInstance,
 } from "@/types/scenarioGeoModels";
-import { ClockOutline, Eye as EyeIcon, EyeOff, Pencil as PencilIcon } from "mdue";
+import {
+  IconClockOutline,
+  IconEye,
+  IconEyeOff,
+  IconPencil,
+} from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { ScenarioLayerAction, ScenarioLayerActions } from "@/types/constants";
 import { ref } from "vue";
@@ -75,9 +80,9 @@ function onLayerAction(action: ScenarioLayerAction) {
         @keydown.stop
         class="text-gray-500 hover:text-gray-700"
       >
-        <PencilIcon class="h-5 w-5" />
+        <IconPencil class="h-5 w-5" />
       </button>
-      <ClockOutline
+      <IconClockOutline
         v-if="layer.visibleFromT || layer.visibleUntilT"
         class="h-5 w-5 text-gray-400"
       />
@@ -88,8 +93,8 @@ function onLayerAction(action: ScenarioLayerAction) {
         @keydown.stop
         class="ml-2 mr-2 text-gray-500 hover:text-gray-700"
       >
-        <EyeOff v-if="layer.isHidden" class="h-5 w-5" />
-        <EyeIcon class="h-5 w-5" v-else />
+        <IconEyeOff v-if="layer.isHidden" class="h-5 w-5" />
+        <IconEye class="h-5 w-5" v-else />
       </button>
       <DotsMenu :items="layerMenuItems" @action="onLayerAction" />
     </template>
@@ -124,7 +129,7 @@ function onLayerAction(action: ScenarioLayerAction) {
             </span>
           </button>
           <div class="relative flex items-center">
-            <ClockOutline
+            <IconClockOutline
               v-if="feature.properties.visibleFromT || feature.properties.visibleUntilT"
               class="h-5 w-5 text-gray-400"
             />

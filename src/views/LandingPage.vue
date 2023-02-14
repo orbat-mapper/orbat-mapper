@@ -168,9 +168,8 @@
 <script setup lang="ts">
 import ProseSection from "../components/ProseSection.vue";
 import LandingPageScenarios from "./LandingPageScenarios.vue";
-import { Github as GithubIcon } from "mdue";
+import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
 import { ORBAT_CHART_ROUTE } from "@/router/names";
-
 import { CheckIcon } from "@heroicons/vue/24/outline";
 import { useScenario } from "@/scenariostore";
 import { computed } from "vue";

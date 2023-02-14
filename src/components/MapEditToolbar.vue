@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import {
-  CursorDefaultOutline,
-  MapMarker,
-  SquareEditOutline,
-  TrashCanOutline,
-  VectorCircleVariant,
-  VectorLine,
-  VectorTriangle,
-  LockOutline,
-  LockOpenVariantOutline,
-} from "mdue";
+  IconCursorDefaultOutline,
+  IconLockOpenVariantOutline,
+  IconLockOutline,
+  IconMapMarker,
+  IconSquareEditOutline,
+  IconTrashCanOutline,
+  IconVectorCircleVariant,
+  IconVectorLine,
+  IconVectorTriangle,
+} from "@iconify-prerendered/vue-mdi";
 import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";
 import { toRef, watch } from "vue";
@@ -62,32 +62,32 @@ onKeyStroke("Escape", (event) => {
         @click="toggleAddMultiple()"
         title="Keep selected tool active after drawing "
       >
-        <LockOutline v-if="addMultiple" class="h-5 w-5" />
-        <LockOpenVariantOutline v-else class="h-5 w-5" />
+        <IconLockOutline v-if="addMultiple" class="h-5 w-5" />
+        <IconLockOpenVariantOutline v-else class="h-5 w-5" />
       </ToolbarButton>
       <ToolbarButton title="Select features" @click="cancel()" :active="!currentDrawType">
-        <CursorDefaultOutline class="h-5 w-5" />
+        <IconCursorDefaultOutline class="h-5 w-5" />
       </ToolbarButton>
       <ToolbarButton
         title="Draw point feature"
         @click="startDrawing('Point')"
         :active="currentDrawType === 'Point'"
       >
-        <MapMarker class="h-5 w-5" />
+        <IconMapMarker class="h-5 w-5" />
       </ToolbarButton>
       <ToolbarButton
         title="Draw polyline"
         @click="startDrawing('LineString')"
         :active="currentDrawType === 'LineString'"
       >
-        <VectorLine class="h-5 w-5" />
+        <IconVectorLine class="h-5 w-5" />
       </ToolbarButton>
       <ToolbarButton
         title="Draw polygon"
         @click="startDrawing('Polygon')"
         :active="currentDrawType === 'Polygon'"
       >
-        <VectorTriangle class="h-5 w-5" />
+        <IconVectorTriangle class="h-5 w-5" />
       </ToolbarButton>
       <ToolbarButton
         bottom
@@ -95,7 +95,7 @@ onKeyStroke("Escape", (event) => {
         @click="startDrawing('Circle')"
         :active="currentDrawType === 'Circle'"
       >
-        <VectorCircleVariant class="h-5 w-5" />
+        <IconVectorCircleVariant class="h-5 w-5" />
       </ToolbarButton>
     </VerticalToolbar>
 
@@ -106,7 +106,7 @@ onKeyStroke("Escape", (event) => {
         @click="startModify()"
         :active="isModifying"
       >
-        <SquareEditOutline class="h-5 w-5" />
+        <IconSquareEditOutline class="h-5 w-5" />
       </ToolbarButton>
       <ToolbarButton
         bottom
@@ -114,7 +114,7 @@ onKeyStroke("Escape", (event) => {
         :disabled="!deleteEnabled"
         @click="emit('delete')"
       >
-        <TrashCanOutline class="h-5 w-5" />
+        <IconTrashCanOutline class="h-5 w-5" />
       </ToolbarButton>
     </VerticalToolbar>
   </div>

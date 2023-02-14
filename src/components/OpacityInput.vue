@@ -24,7 +24,7 @@
 
 <script lang="ts">
 import { computed, defineComponent } from "vue";
-import { Opacity as OpacityIcon } from "mdue";
+import { IconOpacity as OpacityIcon } from "@iconify-prerendered/vue-mdi";
 import { useToggle, useVModel } from "@vueuse/core";
 
 export default defineComponent({
@@ -42,5 +42,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped></style>
