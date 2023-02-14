@@ -8,7 +8,7 @@
       top && 'rounded-t-md',
       bottom && 'rounded-b-md',
       active
-        ? 'bg-army2 text-gray-200 hover:text-gray-300'
+        ? 'bg-army2 text-gray-100 hover:text-gray-200'
         : 'bg-white text-gray-700 hover:bg-gray-50',
     ]"
   >

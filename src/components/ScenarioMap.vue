@@ -12,12 +12,7 @@
       :ol-map="mapRef"
     />
     <div v-if="mapRef" class="absolute bottom-[5.2rem] left-3">
-      <BaseToolbar class="shadow">
-        <ToolbarButton start end @click="toggleMoveUnit()">
-          <IconCursorDefault v-if="moveUnitEnabled" class="h-5 w-5" aria-hidden="true" />
-          <IconCursorMove v-else class="h-5 w-5" aria-hidden="true" />
-        </ToolbarButton>
-      </BaseToolbar>
+      <BaseToolbar class="shadow"> </BaseToolbar>
     </div>
     <slot />
   </div>
@@ -40,14 +35,9 @@ import {
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useToggle } from "@vueuse/core";
 import { ObjectEvent } from "ol/Object";
-import {
-  IconCogOutline,
-  IconCursorDefault,
-  IconCursorMove,
-} from "@iconify-prerendered/vue-mdi";
+import { IconCogOutline } from "@iconify-prerendered/vue-mdi";
 import MeasurementToolbar from "./MeasurementToolbar.vue";
 import BaseToolbar from "./BaseToolbar.vue";
-import ToolbarButton from "./ToolbarButton.vue";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
@@ -78,7 +68,7 @@ const unitSettingsStore = useUnitSettingsStore();
 const geoStore = useGeoStore();
 const settingsStore = useSettingsStore();
 const [measure, toggleMeasure] = useToggle(false);
-const [moveUnitEnabled, toggleMoveUnit] = useToggle(false);
+const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 
 const onMapReady = (olMap: OLMap) => {
   mapRef.value = olMap;

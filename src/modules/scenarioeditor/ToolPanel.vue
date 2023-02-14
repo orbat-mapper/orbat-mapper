@@ -4,6 +4,8 @@ import {
   IconLockOutline,
   IconMapMarkerPath,
   IconVectorPolylineEdit,
+  IconCursorMove,
+  IconCursorDefault,
 } from "@iconify-prerendered/vue-mdi";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import PanelSection from "@/components/PanelSection.vue";
@@ -108,8 +110,9 @@ onGetLocation((location) => {
           title="Lock tool selection"
         >
           <IconLockOutline v-if="addMultiple" class="h-5 w-5" />
-          <IconLockOpenVariantOutline v-else class="h-5 w-5" /></button
-      ></PanelSection>
+          <IconLockOpenVariantOutline v-else class="h-5 w-5" />
+        </button>
+      </PanelSection>
       <PanelSection label="Add unit">
         <div class="mt-1 grid grid-cols-2 gap-2">
           <button
@@ -126,11 +129,11 @@ onGetLocation((location) => {
           </button>
         </div>
       </PanelSection>
-      <PanelSection label="Unit path">
+      <PanelSection label=" ">
         <div class="grid grid-cols-2 gap-2">
           <ToolbarButton
             @click="unitSettings.showHistory = !unitSettings.showHistory"
-            class="rounded border-none"
+            class="rounded-lg border-none"
             title="Show unit track on map"
             :active="unitSettings.showHistory"
           >
@@ -144,6 +147,22 @@ onGetLocation((location) => {
             :disabled="!unitSettings.showHistory"
           >
             <IconVectorPolylineEdit class="h-5 w-5" aria-hidden="true" />
+          </ToolbarButton>
+          <ToolbarButton
+            @click="unitSettings.moveUnitEnabled = false"
+            class="rounded border-none"
+            title="Select"
+            :active="!unitSettings.moveUnitEnabled"
+          >
+            <IconCursorDefault class="h-5 w-5" />
+          </ToolbarButton>
+          <ToolbarButton
+            @click="unitSettings.moveUnitEnabled = true"
+            class="rounded border-none"
+            title="Move units"
+            :active="unitSettings.moveUnitEnabled"
+          >
+            <IconCursorMove class="h-5 w-5" />
           </ToolbarButton>
         </div>
       </PanelSection>

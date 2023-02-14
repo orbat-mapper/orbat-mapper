@@ -91,6 +91,7 @@ export const useUnitSettingsStore = defineStore("unitSettings", {
     return {
       showHistory: true,
       editHistory: true,
+      moveUnitEnabled: false,
     };
   },
 });
