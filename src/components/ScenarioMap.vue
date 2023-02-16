@@ -12,7 +12,7 @@
       :ol-map="mapRef"
     />
     <div v-if="mapRef" class="absolute bottom-[5.2rem] left-3">
-      <BaseToolbar class="shadow"> </BaseToolbar>
+      <BaseToolbar class="shadow"></BaseToolbar>
     </div>
     <slot />
   </div>
@@ -173,38 +173,39 @@ function onContextMenu(e: MouseEvent) {
             },
           },
           {
-            label: "Format",
-            disabled: true,
-          },
-          {
-            label: "Decimal degrees",
-            checked: computed(
-              () => settings.coordinateFormat === "DecimalDegrees"
-            ) as unknown as boolean,
-            clickClose: false,
-            onClick: () => {
-              settings.coordinateFormat = "DecimalDegrees";
-            },
-          },
-          {
-            label: "Degree Minutes Seconds",
-            checked: computed(
-              () => settings.coordinateFormat === "DegreeMinuteSeconds"
-            ) as unknown as boolean,
-            clickClose: false,
-            onClick: () => {
-              settings.coordinateFormat = "DegreeMinuteSeconds";
-            },
-          },
-          {
-            label: "MGRS",
-            checked: computed(
-              () => settings.coordinateFormat === "MGRS"
-            ) as unknown as boolean,
-            clickClose: false,
-            onClick: () => {
-              settings.coordinateFormat = "MGRS";
-            },
+            label: "Coordinate format",
+            children: [
+              {
+                label: "Decimal degrees",
+                checked: computed(
+                  () => settings.coordinateFormat === "DecimalDegrees"
+                ) as unknown as boolean,
+                clickClose: false,
+                onClick: () => {
+                  settings.coordinateFormat = "DecimalDegrees";
+                },
+              },
+              {
+                label: "Degree Minutes Seconds",
+                checked: computed(
+                  () => settings.coordinateFormat === "DegreeMinuteSeconds"
+                ) as unknown as boolean,
+                clickClose: false,
+                onClick: () => {
+                  settings.coordinateFormat = "DegreeMinuteSeconds";
+                },
+              },
+              {
+                label: "MGRS",
+                checked: computed(
+                  () => settings.coordinateFormat === "MGRS"
+                ) as unknown as boolean,
+                clickClose: false,
+                onClick: () => {
+                  settings.coordinateFormat = "MGRS";
+                },
+              },
+            ],
           },
         ],
       },
