@@ -5,7 +5,7 @@ import {
   IconMapMarkerPath,
   IconVectorPolylineEdit,
   IconCursorMove,
-  IconCursorDefault,
+  IconCursorDefaultOutline,
 } from "@iconify-prerendered/vue-mdi";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import PanelSection from "@/components/PanelSection.vue";
@@ -154,7 +154,7 @@ onGetLocation((location) => {
             title="Select"
             :active="!unitSettings.moveUnitEnabled"
           >
-            <IconCursorDefault class="h-5 w-5" />
+            <IconCursorDefaultOutline class="h-5 w-5" />
           </ToolbarButton>
           <ToolbarButton
             @click="unitSettings.moveUnitEnabled = true"
