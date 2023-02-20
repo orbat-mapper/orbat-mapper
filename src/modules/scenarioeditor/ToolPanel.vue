@@ -82,6 +82,7 @@ const customSidc = computed(() => {
 const {
   start: startGetLocation,
   isActive: isGetLocationActive,
+  cancel: cancelGetLocation,
   onGetLocation,
   onCancel,
 } = useGetMapLocation(geoStore.olMap as OLMap);
@@ -205,9 +206,16 @@ async function handleChangeSymbol() {
     </FloatingPanel>
     <FloatingPanel
       v-if="isGetLocationActive"
-      class="absolute bottom-10 left-1/2 -translate-x-1/2 overflow-visible bg-opacity-75 p-2 px-4 text-sm"
+      class="absolute bottom-6 left-1/2 -translate-x-1/2 overflow-visible bg-opacity-75 p-2 px-4 text-sm"
     >
-      Click on map to place unit
+      Click on map to place unit.
+      <button
+        type="button"
+        class="ml-4 font-medium text-blue-700 hover:text-blue-600"
+        @click="cancelGetLocation()"
+      >
+        Cancel
+      </button>
     </FloatingPanel>
   </div>
 </template>
