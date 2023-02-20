@@ -46,12 +46,14 @@ export function useDateModal() {
 
 export interface ModalSidcOptions {
   title: string;
+  hideModifiers: boolean;
 }
 
 export function useSidcModal() {
   const { isRevealed, reveal, confirm, cancel } = useConfirmDialog<string>();
   const initialSidcModalValue = ref("10031000001211000000");
   const sidcModalTitle = ref("Select symbol");
+  const hideModifiers = ref(false);
 
   const getModalSidc = async (
     initialValue: string,
@@ -60,6 +62,7 @@ export function useSidcModal() {
     NProgress.start();
     initialSidcModalValue.value = initialValue;
     sidcModalTitle.value = options.title || "Symbol picker";
+    hideModifiers.value = options.hideModifiers || false;
     const { data, isCanceled } = await reveal();
     if (!isCanceled) {
       return data;
@@ -80,6 +83,7 @@ export function useSidcModal() {
     cancelSidcModal: cancel,
     initialSidcModalValue,
     sidcModalTitle,
+    hideModifiers,
   };
 }
 

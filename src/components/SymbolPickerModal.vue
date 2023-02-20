@@ -38,23 +38,31 @@
             </ul>
           </div>
           <form class="space-y-4 px-0.5" @submit.prevent="onSubmit" v-if="isLoaded">
-            <!--      <input type="text" :value="sidc" />-->
             <SymbolCodeSelect
               v-model="symbolSetValue"
               label="Symbol set"
               :items="symbolSets"
             />
-            <SymbolCodeSelect v-model="statusValue" label="Status" :items="statusItems" />
-            <SymbolCodeSelect
-              v-model="hqtfdValue"
-              label="Headquaters / Task force / Dummy"
-              :items="hqtfdItems"
-            />
-            <SymbolCodeSelect
-              v-model="emtValue"
-              label="Echelon / Mobility / Towed array"
-              :items="emtItems"
-            />
+
+            <template v-if="!hideModifiers">
+              <SymbolCodeSelect
+                v-model="statusValue"
+                label="Status"
+                :items="statusItems"
+              />
+
+              <SymbolCodeSelect
+                v-model="hqtfdValue"
+                label="Headquaters / Task force / Dummy"
+                :items="hqtfdItems"
+              />
+              <SymbolCodeSelect
+                v-model="emtValue"
+                label="Echelon / Mobility / Towed array"
+                :items="emtItems"
+              />
+            </template>
+
             <SymbolCodeMultilineSelect
               v-model="iconValue"
               label="Main icon"
@@ -131,11 +139,13 @@ interface Props {
   isVisible?: boolean;
   sidc?: string;
   dialogTitle?: string;
+  hideModifiers?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isVisible: true,
   dialogTitle: "Symbol picker",
+  hideModifiers: false,
 });
 const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
 

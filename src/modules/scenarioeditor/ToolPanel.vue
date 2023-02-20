@@ -68,12 +68,15 @@ const iconItems = computed(() => {
 });
 
 const activeSidc = ref<string | null>(null);
+const activeEchelon = ref<string | null>(null);
 
 const customSidc = computed(() => {
   const sid = activeUnit.value?.sidc ? activeUnit.value?.sidc[3] : "3";
-  const s = new Sidc(customIcon.value.code);
-  s.standardIdentity = sid;
-  return s.toString();
+  const parsedSidc = new Sidc(customIcon.value.code);
+  parsedSidc.standardIdentity = sid;
+  parsedSidc.emt = "00";
+  parsedSidc.hqtfd = "0";
+  return parsedSidc.toString();
 });
 
 const {
@@ -112,9 +115,9 @@ onGetLocation((location) => {
 async function handleChangeSymbol() {
   const newSidcValue = await getModalSidc(customSidc.value, {
     title: "Select symbol",
+    hideModifiers: true,
   });
   if (newSidcValue !== undefined) {
-    const s = new Sidc(newSidcValue);
     customIcon.value.code = newSidcValue;
     addUnit(customSidc.value);
   }

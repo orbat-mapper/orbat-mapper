@@ -163,6 +163,7 @@
       @update:sidc="confirmSidcModal($event)"
       @cancel="cancelSidcModal"
       :dialog-title="sidcModalTitle"
+      :hide-modifiers="hideModifiers"
     />
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
     <ImportModal v-if="showImportModal" v-model="showImportModal" />
@@ -318,6 +319,7 @@ const {
   cancelSidcModal,
   initialSidcModalValue,
   sidcModalTitle,
+  hideModifiers,
 } = useSidcModal();
 provide(sidcModalKey, { getModalSidc });
 
