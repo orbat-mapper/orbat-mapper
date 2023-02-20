@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import {
+  IconCursorDefaultOutline,
+  IconCursorMove,
+  IconDotsHorizontal,
   IconLockOpenVariantOutline,
   IconLockOutline,
   IconMapMarkerPath,
   IconVectorPolylineEdit,
-  IconCursorMove,
-  IconCursorDefaultOutline,
 } from "@iconify-prerendered/vue-mdi";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import PanelSection from "@/components/PanelSection.vue";
@@ -16,10 +17,11 @@ import { useGetMapLocation } from "@/composables/geoMapLocation";
 import OLMap from "ol/Map";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import { activeScenarioKey, activeUnitKey, sidcModalKey } from "@/components/injects";
 import { useToggle } from "@vueuse/core";
 import ToolbarButton from "@/components/ToolbarButton.vue";
 import PanelToggle from "@/components/PanelToggle.vue";
+import { Sidc } from "@/symbology/sidc";
 
 const [addMultiple, toggleAddMultiple] = useToggle(false);
 
@@ -29,6 +31,8 @@ const {
   geo: { addUnitPosition },
   store: { state, groupUpdate },
 } = injectStrict(activeScenarioKey);
+
+const { getModalSidc } = injectStrict(sidcModalKey);
 
 const activeUnit = computed(
   () =>
@@ -49,6 +53,8 @@ const icons: SymbolValue[] = [
   { code: "160600", text: "Combat Service Support" },
 ];
 
+const customIcon = ref<SymbolValue>({ code: "10031000141211004600", text: "Infantry" });
+
 const iconItems = computed(() => {
   const sid = activeUnit.value?.sidc ? activeUnit.value?.sidc[3] : "3";
 
@@ -62,6 +68,13 @@ const iconItems = computed(() => {
 });
 
 const activeSidc = ref<string | null>(null);
+
+const customSidc = computed(() => {
+  const sid = activeUnit.value?.sidc ? activeUnit.value?.sidc[3] : "3";
+  const s = new Sidc(customIcon.value.code);
+  s.standardIdentity = sid;
+  return s.toString();
+});
 
 const {
   start: startGetLocation,
@@ -95,6 +108,17 @@ onGetLocation((location) => {
     activeSidc.value = null;
   }
 });
+
+async function handleChangeSymbol() {
+  const newSidcValue = await getModalSidc(customSidc.value, {
+    title: "Select symbol",
+  });
+  if (newSidcValue !== undefined) {
+    const s = new Sidc(newSidcValue);
+    customIcon.value.code = newSidcValue;
+    addUnit(customSidc.value);
+  }
+}
 </script>
 <template>
   <div class="">
@@ -134,6 +158,18 @@ onGetLocation((location) => {
       </PanelSection>
       <PanelSection label="Add unit">
         <div class="mt-1 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            class="flex items-center justify-center hover:drop-shadow hover:sepia disabled:opacity-50 disabled:hover:sepia-0"
+            :class="[activeSidc === customSidc ? 'invert' : '']"
+            @click="addUnit(customSidc)"
+            :disabled="!activeUnitId"
+          >
+            <MilSymbol :sidc="customSidc" :size="24" class="" />
+          </button>
+          <ToolbarButton @click="handleChangeSymbol()">
+            <IconDotsHorizontal class="h-5 w-5" />
+          </ToolbarButton>
           <button
             type="button"
             v-for="{ sidc, text } in iconItems"
