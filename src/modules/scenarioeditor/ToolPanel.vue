@@ -19,6 +19,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import { useToggle } from "@vueuse/core";
 import ToolbarButton from "@/components/ToolbarButton.vue";
+import PanelToggle from "@/components/PanelToggle.vue";
 
 const [addMultiple, toggleAddMultiple] = useToggle(false);
 
@@ -103,6 +104,24 @@ onGetLocation((location) => {
       v-if="geoStore.olMap"
     >
       <PanelSection label="Tools">
+        <div class="grid grid-cols-2 gap-2">
+          <ToolbarButton
+            @click="unitSettings.moveUnitEnabled = false"
+            class="rounded border-none"
+            title="Select"
+            :active="!unitSettings.moveUnitEnabled"
+          >
+            <IconCursorDefaultOutline class="h-5 w-5" />
+          </ToolbarButton>
+          <ToolbarButton
+            @click="unitSettings.moveUnitEnabled = true"
+            class="rounded border-none"
+            title="Move units"
+            :active="unitSettings.moveUnitEnabled"
+          >
+            <IconCursorMove class="h-5 w-5" />
+          </ToolbarButton>
+        </div>
         <button
           type="button"
           class="absolute top-2 right-2 border-none text-gray-600"
@@ -129,41 +148,19 @@ onGetLocation((location) => {
           </button>
         </div>
       </PanelSection>
-      <PanelSection label=" ">
+      <PanelSection label="Path" class="">
         <div class="grid grid-cols-2 gap-2">
-          <ToolbarButton
-            @click="unitSettings.showHistory = !unitSettings.showHistory"
-            class="rounded-lg border-none"
-            title="Show unit track on map"
-            :active="unitSettings.showHistory"
-          >
+          <PanelToggle v-model="unitSettings.showHistory" title="Show unit path">
             <IconMapMarkerPath class="h-5 w-5" aria-hidden="true" />
-          </ToolbarButton>
-          <ToolbarButton
-            @click="unitSettings.editHistory = !unitSettings.editHistory"
-            class="rounded border-none"
+          </PanelToggle>
+
+          <PanelToggle
             title="Edit path"
-            :active="unitSettings.editHistory"
+            v-model="unitSettings.editHistory"
             :disabled="!unitSettings.showHistory"
           >
             <IconVectorPolylineEdit class="h-5 w-5" aria-hidden="true" />
-          </ToolbarButton>
-          <ToolbarButton
-            @click="unitSettings.moveUnitEnabled = false"
-            class="rounded border-none"
-            title="Select"
-            :active="!unitSettings.moveUnitEnabled"
-          >
-            <IconCursorDefaultOutline class="h-5 w-5" />
-          </ToolbarButton>
-          <ToolbarButton
-            @click="unitSettings.moveUnitEnabled = true"
-            class="rounded border-none"
-            title="Move units"
-            :active="unitSettings.moveUnitEnabled"
-          >
-            <IconCursorMove class="h-5 w-5" />
-          </ToolbarButton>
+          </PanelToggle>
         </div>
       </PanelSection>
     </FloatingPanel>
