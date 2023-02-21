@@ -53,7 +53,10 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
   }
 
   function cleanUp() {
-    olMap.getTargetElement().style.cursor = prevCursor;
+    const el = olMap?.getTargetElement();
+    if (el) {
+      el.style.cursor = prevCursor;
+    }
     isActive.value = false;
     if (clickEventKey) unByKey(clickEventKey);
     if (stopEscListener) stopEscListener();
