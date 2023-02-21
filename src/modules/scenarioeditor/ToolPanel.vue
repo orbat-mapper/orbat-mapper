@@ -19,9 +19,9 @@ import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey, sidcModalKey } from "@/components/injects";
 import { useToggle } from "@vueuse/core";
-import ToolbarButton from "@/components/ToolbarButton.vue";
 import PanelToggle from "@/components/PanelToggle.vue";
 import { Sidc } from "@/symbology/sidc";
+import PanelButton from "@/components/PanelButton.vue";
 
 const [addMultiple, toggleAddMultiple] = useToggle(false);
 
@@ -133,22 +133,20 @@ async function handleChangeSymbol() {
     >
       <PanelSection label="Tools">
         <div class="grid grid-cols-2 gap-2">
-          <ToolbarButton
+          <PanelButton
             @click="unitSettings.moveUnitEnabled = false"
-            class="rounded border-none"
             title="Select"
             :active="!unitSettings.moveUnitEnabled"
           >
             <IconCursorDefaultOutline class="h-5 w-5" />
-          </ToolbarButton>
-          <ToolbarButton
+          </PanelButton>
+          <PanelButton
             @click="unitSettings.moveUnitEnabled = true"
-            class="rounded border-none"
             title="Move units"
             :active="unitSettings.moveUnitEnabled"
           >
             <IconCursorMove class="h-5 w-5" />
-          </ToolbarButton>
+          </PanelButton>
         </div>
         <button
           type="button"
@@ -171,14 +169,14 @@ async function handleChangeSymbol() {
           >
             <MilSymbol :sidc="customSidc" :size="24" class="" />
           </button>
-          <ToolbarButton @click="handleChangeSymbol()">
+          <PanelButton @click="handleChangeSymbol()" title="Select symbol">
             <IconDotsHorizontal class="h-5 w-5" />
-          </ToolbarButton>
+          </PanelButton>
           <button
             type="button"
             v-for="{ sidc, text } in iconItems"
             :key="sidc"
-            class="hover:drop-shadow hover:sepia disabled:opacity-50 disabled:hover:sepia-0"
+            class="rounded hover:drop-shadow hover:sepia disabled:opacity-50 disabled:hover:sepia-0"
             :class="[activeSidc === sidc ? 'invert' : '']"
             :title="text"
             @click="addUnit(sidc)"
