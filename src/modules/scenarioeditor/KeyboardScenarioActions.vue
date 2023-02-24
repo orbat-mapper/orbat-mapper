@@ -12,8 +12,9 @@ import {
 } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
 import { TAB_LAYERS, UnitActions } from "@/types/constants";
-import { useGeoStore } from "@/stores/geoStore";
+import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { useTabStore } from "@/stores/tabStore";
+import { KeyboardEntry } from "@/components/keyboardShortcuts";
 
 const activeUnitId = injectStrict(activeUnitKey);
 const {
@@ -29,6 +30,7 @@ const { onFeatureAction } = useScenarioFeatureActions();
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 const tabStore = useTabStore();
 const geo = useGeoStore();
+const unitSettings = useUnitSettingsStore();
 
 const activeUnit = computed(
   () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null
@@ -73,6 +75,10 @@ function handlePanShortcut(e: KeyboardEvent) {
     } else onUnitAction(activeUnit.value, UnitActions.Pan);
   }
 }
+
+function handleMoveShortcut(e: KeyboardEvent) {
+  unitSettings.moveUnitEnabled = !unitSettings.moveUnitEnabled;
+}
 </script>
 
 <template>
@@ -84,5 +90,6 @@ function handlePanShortcut(e: KeyboardEvent) {
     @keydown.esc="handleEscape"
     @keyup.z.exact="handleZoomShortcut"
     @keyup.p="handlePanShortcut"
+    @keyup.m="handleMoveShortcut"
   />
 </template>

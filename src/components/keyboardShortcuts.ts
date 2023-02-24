@@ -36,6 +36,7 @@ export const mapEditModeShortcuts: KeyboardCategory[] = [
       { shortcut: [["d"]], description: "Duplicate unit" },
       { shortcut: [["z"]], description: "Zoom to unit" },
       { shortcut: [["p"]], description: "Pan to unit" },
+      { shortcut: [["m"]], description: "Toggle move unit/feature mode" },
     ],
   },
   {
