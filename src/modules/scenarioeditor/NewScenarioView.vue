@@ -157,14 +157,15 @@ import { useScenario } from "@/scenariostore";
 import { createEmptyScenario } from "@/scenariostore/io";
 import ToggleField from "@/components/ToggleField.vue";
 import { ScenarioInfo, SideData } from "@/types/scenarioModels";
-import { echelonValues, SID, SidValue } from "@/symbology/values";
+import { SID, SidValue } from "@/symbology/values";
 import { nanoid } from "@/utils";
 import { Sidc } from "@/symbology/sidc";
 import StandardIdentitySelect from "@/components/StandardIdentitySelect.vue";
 import SimpleDivider from "@/components/SimpleDivider.vue";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
-import { SymbolItem, SymbolValue } from "@/types/constants";
+import type { SymbolItem, SymbolValue } from "@/types/constants";
 import MilSymbol from "@/components/MilSymbol.vue";
+import { echelonItems } from "@/symbology/helpers";
 
 const router = useRouter();
 const { scenario } = useScenario();
@@ -263,16 +264,6 @@ function create() {
 
 function cancel() {
   router.back();
-}
-
-function echelonItems(sid: SidValue) {
-  return echelonValues.map(({ code, text }): SymbolItem => {
-    return {
-      code,
-      text,
-      sidc: "100" + sid + "10" + "00" + code + "0000000000",
-    };
-  });
 }
 
 const icons: SymbolValue[] = [

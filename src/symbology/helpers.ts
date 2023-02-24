@@ -1,4 +1,4 @@
-import { standardIdentityValues, echelonValues } from "@/symbology/values";
+import { echelonValues, SidValue, standardIdentityValues } from "@/symbology/values";
 import type { SymbolItem } from "@/types/constants";
 
 export const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {
@@ -16,4 +16,14 @@ export function getNextEchelonBelow(echelon: string): string {
   if (idx > 0) return echelonValues[idx - 1].code;
 
   return echelon;
+}
+
+export function echelonItems(sid: SidValue) {
+  return echelonValues.map(({ code, text }): SymbolItem => {
+    return {
+      code,
+      text,
+      sidc: "100" + sid + "10" + "00" + code + "0000000000",
+    };
+  });
 }
