@@ -22,6 +22,7 @@ import { useToggle } from "@vueuse/core";
 import PanelToggle from "@/components/PanelToggle.vue";
 import { Sidc } from "@/symbology/sidc";
 import PanelButton from "@/components/PanelButton.vue";
+import PanelSymbolButton from "@/components/PanelSymbolButton.vue";
 
 const [addMultiple, toggleAddMultiple] = useToggle(false);
 
@@ -172,18 +173,15 @@ async function handleChangeSymbol() {
           <PanelButton @click="handleChangeSymbol()" title="Select symbol">
             <IconDotsHorizontal class="h-5 w-5" />
           </PanelButton>
-          <button
-            type="button"
+          <PanelSymbolButton
             v-for="{ sidc, text } in iconItems"
             :key="sidc"
-            class="rounded hover:drop-shadow hover:sepia disabled:opacity-50 disabled:hover:sepia-0"
-            :class="[activeSidc === sidc ? 'invert' : '']"
+            :sidc="sidc"
+            :active="activeSidc === sidc"
             :title="text"
             @click="addUnit(sidc)"
             :disabled="!activeUnitId"
-          >
-            <MilSymbol :sidc="sidc" :size="24" />
-          </button>
+          />
         </div>
       </PanelSection>
       <PanelSection label="Path" class="">
