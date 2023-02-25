@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 February 2023
 
+- Add tool panel for adding units to the map.
 - Add 'm' keyboard shortcut for toggling move unit interaction.
 - Add context menu to map.
 - Make chart mode sidebar resizable.

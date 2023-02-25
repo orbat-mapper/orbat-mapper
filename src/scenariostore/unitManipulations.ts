@@ -348,7 +348,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
     const parent = getUnitOrSideGroup(parentId);
     if (!parent) return;
     let sidc: Sidc;
-    if ("sidc" in parent) {
+    if (data.sidc) {
+      sidc = new Sidc(data.sidc);
+    } else if ("sidc" in parent) {
       const parentSidc = new Sidc(parent.sidc);
       sidc = new Sidc(data.sidc || parent.sidc);
       sidc.emt = getNextEchelonBelow(parentSidc.emt);
