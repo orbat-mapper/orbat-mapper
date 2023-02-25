@@ -224,7 +224,6 @@ function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => 
         </div>
       </PanelSection>
       <PanelSection label="Path" class="">
-        {{ currentSid }}
         <div class="grid grid-cols-2 gap-2">
           <PanelToggle v-model="unitSettings.showHistory" title="Show unit path">
             <IconMapMarkerPath class="h-5 w-5" aria-hidden="true" />
