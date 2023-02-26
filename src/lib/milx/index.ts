@@ -14,7 +14,7 @@ import type {
   MilXSymbolProperties,
   OrbatMapperGeoJsonCollection,
 } from "@/lib/milx/types";
-import { convertLetterCode2NumberCode } from "@orbat-mapper/convert-symbology";
+import { convertLetterSidc2NumberSidc } from "@orbat-mapper/convert-symbology";
 import { nanoid } from "@/utils";
 
 const isNumeric = /^\d+$/;
@@ -58,7 +58,7 @@ export function convertGeojsonLayer(
 }
 
 function convertProperties(f: MilXSymbolProperties): MilSymbolProperties {
-  const props: MilSymbolProperties = { sidc: convertLetterCode2NumberCode(f.ID) };
+  const props: MilSymbolProperties = { sidc: convertLetterSidc2NumberSidc(f.ID).sidc };
   if (f.M) props.higherFormation = f.M;
   if (f.T) props.name = f.T;
   return props;
@@ -66,7 +66,7 @@ function convertProperties(f: MilXSymbolProperties): MilSymbolProperties {
 
 function convertGeojsonProperties(f: GeoJsonSymbolProperties): MilSymbolProperties {
   const props: MilSymbolProperties = {
-    sidc: isNumeric.test(f.sidc!) ? f.sidc! : convertLetterCode2NumberCode(f.sidc!),
+    sidc: isNumeric.test(f.sidc!) ? f.sidc! : convertLetterSidc2NumberSidc(f.sidc!).sidc,
   };
   if (f.m) props.higherFormation = f.m;
   props.name = f.name || f.t || "";
