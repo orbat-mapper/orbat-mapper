@@ -1,17 +1,24 @@
 <template>
   <div class="w-full space-y-4 p-1 pb-8">
-    <p>Convert legacy letter based symbol identification codes</p>
+    <p>Convert from and to legacy letter based symbol identification codes</p>
     <div class="grid grid-cols-4 content-center items-center gap-8">
       <p class="col-span-3">
-        <InputGroup label="Letter based SIDC" v-model="letterSidc" class="" />
+        <InputGroup
+          label="Letter based SIDC"
+          v-model="letterSidcInput"
+          ref="letterTarget"
+          id="letterSIDC"
+        />
       </p>
       <MilSymbol :sidc="letterSidc" :size="30" />
-
-      <InputGroupTemplate label="Number based SIDC" class="col-span-3">
-        <div class="flex w-full items-center">
-          {{ numberSidc }}
-        </div>
-      </InputGroupTemplate>
+      <p class="col-span-3">
+        <InputGroup
+          label="Number based SIDC"
+          v-model="numberSidcInput"
+          class=""
+          ref="numberTarget"
+        />
+      </p>
       <MilSymbol :sidc="numberSidc" :size="30" />
     </div>
   </div>
@@ -19,14 +26,44 @@
 
 <script setup lang="ts">
 import InputGroup from "@/components/InputGroup.vue";
-import { computed, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
+import { useFocusWithin } from "@vueuse/core";
 import MilSymbol from "@/components/MilSymbol.vue";
-import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
-import { convertLetterSidc2NumberSidc } from "@orbat-mapper/convert-symbology";
+import {
+  convertLetterSidc2NumberSidc,
+  convertNumberSidc2LetterSidc,
+} from "@orbat-mapper/convert-symbology";
 
-const letterSidc = ref("SFGPUCRH----");
-const numberSidc = computed(() => {
-  const { sidc } = convertLetterSidc2NumberSidc(letterSidc.value);
-  return sidc || "Unknown symbol";
+const letterTarget = ref(null);
+const numberTarget = ref(null);
+const { focused: letterFocused } = useFocusWithin(letterTarget);
+const { focused: numberFocused } = useFocusWithin(numberTarget);
+
+const letterSidcInput = ref("SFGPUCRH----");
+const numberSidcInput = ref("");
+
+const letterSidc = ref("");
+const numberSidc = ref("");
+
+watch(
+  letterSidcInput,
+  (v) => {
+    if (letterFocused.value || !numberFocused.value) {
+      numberSidc.value = convertLetterSidc2NumberSidc(v).sidc || "Unknown value";
+      numberSidcInput.value = numberSidc.value;
+      letterSidc.value = v;
+    }
+  },
+  { immediate: true }
+);
+
+watch(numberSidcInput, (v) => {
+  if (numberFocused.value) {
+    letterSidc.value = convertNumberSidc2LetterSidc(v).sidc || "Unknown value";
+    letterSidcInput.value = letterSidc.value;
+    numberSidc.value = v;
+  }
 });
+
+onMounted(() => document.getElementById("letterSIDC")?.focus());
 </script>
