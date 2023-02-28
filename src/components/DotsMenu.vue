@@ -17,7 +17,7 @@
             v-slot="{ active, disabled }"
             v-for="item in items"
             :disabled="item.disabled"
-            @click.stop.prevent="onItemClick(item)"
+            @click="onItemClick(item)"
           >
             <a
               href="#"

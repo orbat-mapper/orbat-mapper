@@ -2,7 +2,6 @@
   <Menu as="div" class="relative text-left">
     <Float placement="bottom-end" :offset="8" shift>
       <MenuButton
-        @click.stop=""
         class="group flex items-center rounded-md text-gray-300 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-army2 focus:ring-offset-2"
       >
         <span
@@ -21,7 +20,7 @@
             v-slot="{ active, disabled }"
             v-for="item in items"
             :disabled="item.disabled"
-            @click.stop.prevent="onItemClick(item)"
+            @click="onItemClick(item)"
           >
             <a
               href="#"
