@@ -18,6 +18,7 @@ export interface ExportSettings extends XlsxSettings {
   includeFeatures: boolean;
   embedIcons: boolean;
   useShortName: boolean;
+  oneFolderPerSide: boolean;
 }
 
 export interface ImportSettings {

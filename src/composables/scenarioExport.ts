@@ -7,6 +7,7 @@ import * as FileSaver from "file-saver";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { NUnit } from "@/types/internalModels";
 
 const settingsStore = useSettingsStore();
 
@@ -35,9 +36,10 @@ function mapField(field: any): string | number | Date {
 export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {}) {
   const { geo, store, unitActions } =
     options.activeScenario || injectStrict(activeScenarioKey);
+  const { unitMap, sideGroupMap, sideMap } = store.state;
 
-  function convertUnitsToGeoJson() {
-    const features = geo.everyVisibleUnit.value.map((unit) => {
+  function convertUnitsToGeoJson(units: NUnit[]) {
+    const features = units.map((unit) => {
       const { id, name, sidc, shortName, description } = unit;
       return point(
         unit._state?.location!,
@@ -53,7 +55,9 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   }
 
   async function downloadAsGeoJSON(opts: ExportSettings) {
-    const units = opts.includeUnits ? convertUnitsToGeoJson().features : [];
+    const units = opts.includeUnits
+      ? convertUnitsToGeoJson(geo.everyVisibleUnit.value).features
+      : [];
     const features = opts.includeFeatures
       ? convertScenarioFeaturesToGeoJson().features
       : [];
@@ -69,29 +73,56 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
 
   async function createKMLString(sidcs: string[], opts: ExportSettings) {
     const { foldersToKML } = await import("@/extlib/tokml");
-    const units = opts.includeUnits ? convertUnitsToGeoJson().features : [];
+
     const features = opts.includeFeatures
       ? convertScenarioFeaturesToGeoJson().features
       : [];
 
     const root: Root = { type: "root", children: [] };
+    console.log("yo", opts);
 
     if (opts.includeUnits) {
-      root.children.push({
-        type: "folder",
-        meta: { name: "Units" },
-        children: units.map((unit) => {
-          const { name, shortName, description } = unit.properties;
-          return {
-            ...unit,
-            properties: {
-              name: opts.useShortName ? shortName || name : name,
-              description,
-              styleUrl: `#sidc${unit.properties.sidc}`,
-            },
-          };
-        }),
-      });
+      if (opts.oneFolderPerSide) {
+        Object.keys(sideMap).forEach((sideId) => {
+          const side = sideMap[sideId];
+          const units: NUnit[] = [];
+          unitActions.walkSide(sideId, (unit) => {
+            if (unit._state?.location) units.push(unit);
+          });
+          root.children.push({
+            type: "folder",
+            meta: { name: side.name },
+            children: convertUnitsToGeoJson(units).features.map((unit) => {
+              const { name, shortName, description } = unit.properties;
+              return {
+                ...unit,
+                properties: {
+                  name: opts.useShortName ? shortName || name : name,
+                  description,
+                  styleUrl: `#sidc${unit.properties.sidc}`,
+                },
+              };
+            }),
+          });
+        });
+      } else {
+        const units = convertUnitsToGeoJson(geo.everyVisibleUnit.value).features;
+        root.children.push({
+          type: "folder",
+          meta: { name: "Units" },
+          children: units.map((unit) => {
+            const { name, shortName, description } = unit.properties;
+            return {
+              ...unit,
+              properties: {
+                name: opts.useShortName ? shortName || name : name,
+                description,
+                styleUrl: `#sidc${unit.properties.sidc}`,
+              },
+            };
+          }),
+        });
+      }
     }
 
     if (opts.includeFeatures) {
@@ -150,7 +181,6 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   }
 
   async function downloadAsXlsx(opts: ExportSettings) {
-    const { unitMap, sideGroupMap, sideMap } = store.state;
     const { writeFileXLSX, utils } = await import("@/extlib/xlsx-lazy");
     const workbook = utils.book_new();
     let unitData: any[] = [];

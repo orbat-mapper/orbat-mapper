@@ -35,6 +35,11 @@
             v-model="form.useShortName"
           />
           <InputCheckbox
+            v-if="isKml || isKmz"
+            label="Use one folder per side"
+            v-model="form.oneFolderPerSide"
+          />
+          <InputCheckbox
             v-if="isKmz"
             label="Include unit icons"
             v-model="form.embedIcons"
@@ -100,6 +105,7 @@ const form = ref<Form>({
   useShortName: true,
   oneSheetPerSide: true,
   columns: [],
+  oneFolderPerSide: true,
 });
 
 const { focusId } = useFocusOnMount(undefined, 150);
