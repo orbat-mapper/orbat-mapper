@@ -73,13 +73,29 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
 
   async function createKMLString(sidcs: string[], opts: ExportSettings) {
     const { foldersToKML } = await import("@/extlib/tokml");
+    const root: Root = { type: "root", children: [] };
+
+    function createFolder(units: NUnit[], name: string) {
+      root.children.push({
+        type: "folder",
+        meta: { name },
+        children: convertUnitsToGeoJson(units).features.map((unit) => {
+          const { name, shortName, description } = unit.properties;
+          return {
+            ...unit,
+            properties: {
+              name: opts.useShortName ? shortName || name : name,
+              description,
+              styleUrl: `#sidc${unit.properties.sidc}`,
+            },
+          };
+        }),
+      });
+    }
 
     const features = opts.includeFeatures
       ? convertScenarioFeaturesToGeoJson().features
       : [];
-
-    const root: Root = { type: "root", children: [] };
-    console.log("yo", opts);
 
     if (opts.includeUnits) {
       if (opts.oneFolderPerSide) {
@@ -89,39 +105,10 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
           unitActions.walkSide(sideId, (unit) => {
             if (unit._state?.location) units.push(unit);
           });
-          root.children.push({
-            type: "folder",
-            meta: { name: side.name },
-            children: convertUnitsToGeoJson(units).features.map((unit) => {
-              const { name, shortName, description } = unit.properties;
-              return {
-                ...unit,
-                properties: {
-                  name: opts.useShortName ? shortName || name : name,
-                  description,
-                  styleUrl: `#sidc${unit.properties.sidc}`,
-                },
-              };
-            }),
-          });
+          createFolder(units, side.name);
         });
       } else {
-        const units = convertUnitsToGeoJson(geo.everyVisibleUnit.value).features;
-        root.children.push({
-          type: "folder",
-          meta: { name: "Units" },
-          children: units.map((unit) => {
-            const { name, shortName, description } = unit.properties;
-            return {
-              ...unit,
-              properties: {
-                name: opts.useShortName ? shortName || name : name,
-                description,
-                styleUrl: `#sidc${unit.properties.sidc}`,
-              },
-            };
-          }),
-        });
+        createFolder(geo.everyVisibleUnit.value, "Units");
       }
     }
 
