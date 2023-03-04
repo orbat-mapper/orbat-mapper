@@ -1978,7 +1978,7 @@ export const ms2525d: SymbolSetMap = {
         remarks: "",
       },
       {
-        modifier: "Cyberspace",
+        modifier: "Ranger",
         category: "Capability",
         code: "76",
         remarks: "",
