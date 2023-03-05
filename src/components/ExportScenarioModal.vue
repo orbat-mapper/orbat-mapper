@@ -25,6 +25,7 @@
             v-model="form.includeUnits"
           />
           <InputCheckbox
+            v-if="!isMilx"
             label="Include scenario features"
             v-model="form.includeFeatures"
             description=""
@@ -35,8 +36,8 @@
             v-model="form.useShortName"
           />
           <InputCheckbox
-            v-if="isKml || isKmz"
-            label="Use one folder per side"
+            v-if="isKml || isKmz || isMilx"
+            :label="isMilx ? 'Use one layer per side' : 'Use one folder per side'"
             v-model="form.oneFolderPerSide"
           />
           <InputCheckbox
@@ -51,6 +52,11 @@
       <p v-if="isKmz || isKml" class="text-sm text-gray-700">
         Please note that the export functionality is experimental. Scenario feature export
         is currently limited to geometries (no styles).
+      </p>
+
+      <p v-if="isMilx" class="text-sm text-gray-700">
+        Please note that the MilX export is experimental. It is currently limited and has
+        several bugs.
       </p>
 
       <footer class="flex items-center justify-end space-x-2 pt-4">
@@ -82,14 +88,20 @@ const router = useRouter();
 
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue", "cancel"]);
-const { downloadAsGeoJSON, downloadAsKML, downloadAsKMZ, downloadAsXlsx } =
-  useScenarioExport();
+const {
+  downloadAsGeoJSON,
+  downloadAsKML,
+  downloadAsKMZ,
+  downloadAsXlsx,
+  downloadAsMilx,
+} = useScenarioExport();
 const open = useVModel(props, "modelValue", emit);
 const formatItems: SelectItem<ExportFormat>[] = [
   { label: "GeoJSON", value: "geojson" },
   { label: "KML", value: "kml" },
   { label: "KMZ", value: "kmz" },
   { label: "XLSX", value: "xlsx" },
+  { label: "MilX", value: "milx" },
 ];
 
 interface Form extends ExportSettings {
@@ -115,6 +127,7 @@ const format = computed(() => form.value.format);
 const isGeojson = computed(() => form.value.format === "geojson");
 const isKml = computed(() => form.value.format === "kml");
 const isKmz = computed(() => form.value.format === "kmz");
+const isMilx = computed(() => form.value.format === "milx");
 
 async function onExport(e: Event) {
   const { format } = form.value;
@@ -127,6 +140,8 @@ async function onExport(e: Event) {
     await downloadAsKMZ(form.value);
   } else if (format === "xlsx") {
     await downloadAsXlsx(form.value);
+  } else if (format === "milx") {
+    await downloadAsMilx(form.value);
   }
   NProgress.done();
   open.value = false;

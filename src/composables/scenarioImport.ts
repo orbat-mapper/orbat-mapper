@@ -34,7 +34,7 @@ export function useScenarioImport(options: Partial<UseScenarioExportOptions> = {
   const { geo } = options.activeScenario || injectStrict(activeScenarioKey);
 
   async function importMilxString(source: string): Promise<MilxImportedLayer[]> {
-    const { getMilXLayers, convertMilXLayer } = await import("@/lib/milx/index");
+    const { getMilXLayers, convertMilXLayer } = await import("@/lib/milx");
     const dom = await toDom(source);
     const milxLayers = getMilXLayers(dom);
     return milxLayers

@@ -44,6 +44,11 @@ export interface MilSymbolProperties extends TacticalJsonProperties {
   description?: string;
 }
 
+export interface OrbatMapperGeoJsonLayer {
+  name: string;
+  featureCollection: OrbatMapperGeoJsonCollection;
+}
+
 export interface OrbatMapperGeoJsonCollection extends FeatureCollection {
   type: "FeatureCollection";
   features: OrbatMapperGeoJsonFeature[];

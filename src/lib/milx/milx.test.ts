@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { toDom } from "./domutils";
-import { convertMilXLayer, getMilXLayers } from "@/lib/milx/read";
+import { convertMilXLayer, getMilXLayers } from "@/lib/milx/readMilX";
+import { toMilx } from "@/lib/milx/writeMilX";
 
 const TEST_DOCUMENT = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <MilXDocument_Layer xmlns="http://gs-soft.com/MilX/V3.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -145,5 +146,64 @@ describe("Convert from MilX", async function () {
     const convertedFeature2 = a.features[1];
     expect(convertedFeature.properties.sidc).toBe("10031000161211000001");
     expect(convertedFeature2.properties.higherFormation).toBe("3");
+  });
+});
+
+describe("Convert to MilX", async function () {
+  const milx = toMilx([
+    {
+      name: "Friend",
+      featureCollection: {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [1, 2] },
+            properties: { sidc: "10031000161211000001" },
+            id: "sdf",
+          },
+        ],
+      },
+    },
+    {
+      name: "Hostile",
+      featureCollection: {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [1, 2] },
+            properties: { sidc: "10031000161211000001" },
+            id: "sdf",
+          },
+        ],
+      },
+    },
+  ]);
+  const dom = await toDom(milx);
+  const layers = getMilXLayers(dom);
+  const feature1 = layers[0].featureCollection.features[0];
+  const feature2 = layers[0].featureCollection.features[1];
+
+  it("writes layer name", () => {
+    expect(layers.length).toBe(2);
+    expect(layers[0].name).toBe("Friend");
+    expect(layers[1].name).toBe("Hostile");
+  });
+
+  it("writes coordinate system", () => {
+    expect(layers.length).toBe(2);
+    expect(layers[0].coordSystemType).toBe("WGS84");
+  });
+
+  it("writes symbol code", () => {
+    expect(feature1.properties.ID).toBe("SFGPUCIA---F--G");
+  });
+
+  it("writes coordinates", () => {
+    const { geometry } = feature1;
+    expect(geometry.coordinates.length).toBe(2);
+    expect(geometry.coordinates[0]).toBe(1);
+    expect(geometry.coordinates[1]).toBe(2);
   });
 });

@@ -1,4 +1,4 @@
-export type ExportFormat = "geojson" | "kml" | "kmz" | "msdl" | "xlsx";
+export type ExportFormat = "geojson" | "kml" | "kmz" | "msdl" | "xlsx" | "milx";
 export type ImportFormat = "geojson" | "milx" | "msdl";
 export type GuessedImportFormat = "unknown" | ImportFormat;
 

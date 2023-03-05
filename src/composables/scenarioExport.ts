@@ -8,6 +8,11 @@ import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { NUnit } from "@/types/internalModels";
+import {
+  MilSymbolProperties,
+  OrbatMapperGeoJsonCollection,
+  OrbatMapperGeoJsonLayer,
+} from "@/lib/milx/types";
 
 const settingsStore = useSettingsStore();
 
@@ -41,13 +46,13 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   function convertUnitsToGeoJson(units: NUnit[]) {
     const features = units.map((unit) => {
       const { id, name, sidc, shortName, description } = unit;
-      return point(
+      return point<MilSymbolProperties>(
         unit._state?.location!,
         { name, shortName, sidc: unit._state?.sidc || sidc, description },
         { id }
       );
     });
-    return featureCollection(features);
+    return featureCollection(features) as OrbatMapperGeoJsonCollection;
   }
 
   function convertScenarioFeaturesToGeoJson() {
@@ -167,6 +172,41 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
+  async function downloadAsMilx(opts: ExportSettings) {
+    const { toMilx } = await import("@/lib/milx");
+
+    const layers: OrbatMapperGeoJsonLayer[] = [];
+
+    if (opts.includeUnits) {
+      if (opts.oneFolderPerSide) {
+        Object.keys(sideMap).forEach((sideId) => {
+          const side = sideMap[sideId];
+          const units: NUnit[] = [];
+          unitActions.walkSide(sideId, (unit) => {
+            if (unit._state?.location) units.push(unit);
+          });
+          layers.push({
+            name: side.name,
+            featureCollection: convertUnitsToGeoJson(units),
+          });
+        });
+      } else {
+        layers.push({
+          name: "Units",
+          featureCollection: convertUnitsToGeoJson(geo.everyVisibleUnit.value),
+        });
+      }
+    }
+
+    const milxString = toMilx(layers);
+    FileSaver.saveAs(
+      new Blob([milxString], {
+        type: "application/xml",
+      }),
+      "scenario.milxly"
+    );
+  }
+
   async function downloadAsXlsx(opts: ExportSettings) {
     const { writeFileXLSX, utils } = await import("@/extlib/xlsx-lazy");
     const workbook = utils.book_new();
@@ -194,5 +234,11 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     writeFileXLSX(workbook, "scenario.xlsx");
   }
 
-  return { downloadAsGeoJSON, downloadAsKML, downloadAsKMZ, downloadAsXlsx };
+  return {
+    downloadAsGeoJSON,
+    downloadAsKML,
+    downloadAsKMZ,
+    downloadAsXlsx,
+    downloadAsMilx,
+  };
 }
