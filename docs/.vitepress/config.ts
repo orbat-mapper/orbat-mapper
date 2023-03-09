@@ -5,6 +5,11 @@ export default defineConfig({
   title: "ORBAT Mapper (beta)",
   description: "Just playing around.",
   head: [["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }]],
+  vite: {
+    ssr: {
+      noExternal: ["milsymbol"],
+    },
+  },
   themeConfig: {
     outline: "deep",
     logo: "/favicon.svg",
