@@ -1,11 +1,13 @@
 <template>
   <div
     class="absolute flex items-center justify-center border bg-gray-300"
-    :class="
+    :class="[
       horizontal
         ? 'inset-x-0 bottom-0 h-1 cursor-row-resize'
-        : 'inset-y-0 right-0 w-1 cursor-col-resize'
-    "
+        : 'inset-y-0 w-1 cursor-col-resize',
+      !horizontal && left ? 'left-0' : '',
+      !horizontal && !left ? 'right-0' : '',
+    ]"
     @mousedown="onButtonDown"
     @touchstart="onButtonDown"
   >
@@ -35,8 +37,9 @@ import { isClient } from "@/utils";
 interface Props {
   parentRef: HTMLElement | SVGElement | null | undefined;
   horizontal?: boolean;
+  left?: boolean;
 }
-const props = withDefaults(defineProps<Props>(), { horizontal: false });
+const props = withDefaults(defineProps<Props>(), { horizontal: false, left: false });
 
 const emit = defineEmits(["resizestart", "resizing", "resizeend"]);
 

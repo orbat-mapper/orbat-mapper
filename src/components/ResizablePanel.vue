@@ -5,9 +5,10 @@ import { useVModel } from "@vueuse/core";
 
 interface Props {
   width: number;
+  left?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), { left: false });
 const emit = defineEmits(["resizeend", "update:width"]);
 
 const panelRef = ref();
@@ -23,8 +24,9 @@ const panelWidth = useVModel(props, "width", emit);
     <slot></slot>
     <DragHandle
       :parent-ref="panelRef"
+      :left="left"
       @resizestart="initialWidth = $event"
-      @resizing="panelWidth = initialWidth + $event"
+      @resizing="panelWidth = props.left ? initialWidth - $event : initialWidth + $event"
       @resizeend="emit('resizeend')"
     />
   </aside>
