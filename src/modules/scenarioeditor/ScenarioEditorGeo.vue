@@ -82,6 +82,12 @@
     </ResizablePanel>
     <ScenarioMap class="flex-1" data-teleport-map>
       <ToolPanel v-if="orbatTabActive && geoStore.olMap" />
+      <p
+        class="pointer-events-none absolute top-2 right-4 text-3xl font-bold text-black"
+        style="text-shadow: white 0 0 5px"
+      >
+        {{ scenarioTime.format("YYYY-MM-DD") }}
+      </p>
     </ScenarioMap>
     <KeyboardScenarioActions v-if="geoStore.olMap" />
 
@@ -137,7 +143,11 @@ const uiTabs = useTabStore();
 const { activeScenarioTab, orbatTabActive } = storeToRefs(uiTabs);
 const activeScenario = injectStrict(activeScenarioKey);
 const { state, update } = activeScenario.store;
-const { unitActions, io } = activeScenario;
+const {
+  unitActions,
+  io,
+  time: { scenarioTime },
+} = activeScenario;
 const route = useRoute();
 const router = useRouter();
 
