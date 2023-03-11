@@ -171,6 +171,16 @@ export function useUnitSelectInteraction(
   useOlEvent(
     unitSelectInteraction.on("select", (event: SelectEvent) => {
       isInternal = true;
+      if (selectedIds.value.size && !event.mapBrowserEvent.originalEvent.shiftKey) {
+        selectedIds.value.clear();
+      }
+      if (
+        selectedFeatures.getLength() === 0 &&
+        !event.mapBrowserEvent.originalEvent.shiftKey
+      ) {
+        selectedIds.value.clear();
+        return;
+      }
       event.selected.forEach((f) => selectedIds.value.add(f.getId() as string));
       event.deselected.forEach((f) => selectedIds.value.delete(f.getId() as string));
     })

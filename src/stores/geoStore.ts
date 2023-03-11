@@ -90,7 +90,7 @@ export const useUnitSettingsStore = defineStore("unitSettings", {
   state() {
     return {
       showHistory: true,
-      editHistory: true,
+      editHistory: false,
       moveUnitEnabled: false,
     };
   },

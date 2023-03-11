@@ -70,7 +70,7 @@ function onUnitClick(unit: NUnit, event: MouseEvent) {
       ids.add(unit.id);
     }
   } else {
-    activeUnitId.value = activeUnitId.value === unit.id ? null : unit.id;
+    activeUnitId.value = unit.id;
     selectedUnitIds.value = new Set(activeUnitId.value ? [unit.id] : []);
   }
 }
@@ -79,6 +79,7 @@ watch(
   () => selectedUnitIds.value,
   (v) => {
     if (v.size === 1) activeUnitId.value = [...selectedUnitIds.value.values()].pop();
+    if (v.size === 0) activeUnitId.value = null;
   },
   { deep: true }
 );
