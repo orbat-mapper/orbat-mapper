@@ -1,6 +1,6 @@
 <template>
   <div
-    class="absolute flex items-center justify-center border bg-gray-300"
+    class="absolute flex items-center justify-center border bg-gray-300 hover:border-red-900 hover:bg-red-900"
     :class="[
       horizontal
         ? 'inset-x-0 bottom-0 h-1 cursor-row-resize'
