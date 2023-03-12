@@ -34,7 +34,7 @@
         >
           <ListboxOption
             as="template"
-            v-for="item in items"
+            v-for="item in renderedItems"
             :key="item.sidc"
             :value="item.code"
             v-slot="{ active, selected }"
@@ -45,17 +45,21 @@
                 'relative cursor-default select-none py-2 pl-3 pr-9',
               ]"
             >
-              <div class="flex items-start">
+              <div class="flex items-center">
                 <p class="flex h-7 w-8 flex-shrink-0 justify-center pt-1">
                   <MilSymbol :size="20" :sidc="item.sidc" />
                 </p>
                 <div :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 ']">
-                  <p class="text-sm text-gray-500">
-                    {{ item.entity }} / {{ item.entityType }}
+                  <p
+                    v-if="item.subLabel"
+                    class="text-xs text-gray-600"
+                    :class="{ 'text-white': active }"
+                  >
+                    {{ item.subLabel }}
                   </p>
 
-                  <p class="mt-1">
-                    {{ item.entitySubtype }}
+                  <p class="mt-0 text-sm">
+                    {{ item.label }}
                   </p>
                 </div>
               </div>
@@ -77,7 +81,7 @@
   </Listbox>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { computed, defineComponent, PropType } from "vue";
 import {
   Listbox,
@@ -91,36 +95,32 @@ import MilSymbol from "./MilSymbol.vue";
 import { useVModel } from "@vueuse/core";
 import { SymbolItem } from "@/types/constants";
 
-export default defineComponent({
-  components: {
-    MilSymbol,
-    Listbox,
-    ListboxButton,
-    ListboxLabel,
-    ListboxOption,
-    ListboxOptions,
-    CheckIcon,
-    SelectorIcon,
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: "00",
   },
-  props: {
-    modelValue: {
-      type: String,
-      default: "00",
-    },
-    label: String,
-    items: { type: Array as PropType<SymbolItem[]>, required: true },
-  },
-
-  setup(props, { emit }) {
-    const selectedValue = useVModel(props, "modelValue", emit);
-    const selected = computed(() =>
-      (props.items || []).find((i) => i.code === selectedValue.value)
-    );
-
-    return {
-      selected,
-      selectedValue,
-    };
-  },
+  label: String,
+  items: { type: Array as PropType<SymbolItem[]>, required: true },
 });
+
+const emit = defineEmits(["update:modelValue"]);
+
+const selectedValue = useVModel(props, "modelValue", emit);
+const selected = computed(() =>
+  (props.items || []).find((i) => i.code === selectedValue.value)
+);
+
+const renderedItems = computed(() =>
+  props.items.map((item) => ({
+    sidc: item.sidc,
+    code: item.code,
+    label: item.entitySubtype || item.entityType || item.entity,
+    subLabel: item.entitySubtype
+      ? `${item.entity} / ${item.entityType}`
+      : item.entityType
+      ? item.entity
+      : "",
+  }))
+);
 </script>
