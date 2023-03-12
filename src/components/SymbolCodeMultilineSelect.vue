@@ -15,7 +15,15 @@
             :size="20"
             class="h-8 w-10 flex-shrink-0 pt-0.5"
           />
-          <span class="ml-3 block">{{ selected?.text }}</span>
+          <div class="ml-3">
+            <p v-if="selected?.subLabel" class="text-xs text-gray-600">
+              {{ selected.subLabel }}
+            </p>
+
+            <p class="mt-0 text-sm">
+              {{ selected?.label }}
+            </p>
+          </div>
         </span>
         <span
           class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2"
@@ -82,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, PropType } from "vue";
+import { computed, PropType } from "vue";
 import {
   Listbox,
   ListboxButton,
@@ -107,12 +115,9 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue"]);
 
 const selectedValue = useVModel(props, "modelValue", emit);
-const selected = computed(() =>
-  (props.items || []).find((i) => i.code === selectedValue.value)
-);
 
-const renderedItems = computed(() =>
-  props.items.map((item) => ({
+function mapSymbolItem(item: SymbolItem) {
+  return {
     sidc: item.sidc,
     code: item.code,
     label: item.entitySubtype || item.entityType || item.entity,
@@ -121,6 +126,13 @@ const renderedItems = computed(() =>
       : item.entityType
       ? item.entity
       : "",
-  }))
-);
+  };
+}
+
+const renderedItems = computed(() => props.items.map(mapSymbolItem));
+
+const selected = computed(() => {
+  const v = (renderedItems.value || []).find((i) => i.code === selectedValue.value);
+  return v ? v : renderedItems.value[0];
+});
 </script>
