@@ -16,3 +16,14 @@ There are not many specialized tools available for drawing ORBAT charts. Here ar
 - [Order of Battle Generator](https://www.orbatgenerator.com/). Online editor. Perfect for
   creating [Battle Order style](https://www.battleorder.org/us-orbat) charts.
 - [Battle Order chart templates](https://www.battleorder.org/icons) (PNGs for use in a drawing program)
+
+Do you want to create your own tools and maps? Here are a few libraries and resources to get you started:
+
+- [milsymbol - Military Symbols in JavaScript](https://github.com/spatialillusions/milsymbol)
+- [MILSTD Military symbol standards in TSV and JS](https://github.com/spatialillusions/mil-std-2525)
+- [STANAG APP-6 Military symbol standards in TSV and JS](https://github.com/spatialillusions/stanag-app6)
+- [Joint Military Symbology Markup Language (JMSML)](https://github.com/Esri/joint-military-symbology-xml)
+- [Spatial Illusions](https://spatialillusions.com/) - home of milsymbol. Check out
+  the ["General Demos" section](https://spatialillusions.com/demos/index.html)
+- [@orbat-mapper/convert-symbology](https://github.com/orbat-mapper/convert-symbology) - NPM package for converting
+  between letter based and number based symbol identification codes
