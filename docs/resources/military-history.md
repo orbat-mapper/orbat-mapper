@@ -1,8 +1,9 @@
 # Military history
 
-The [Battle Order](https://www.battleorder.org/) website
-and [YouTube channel](https://www.youtube.com/channel/UCn6_Kza6erL9GCAhOpQLfBg) contains a wealth of in-depth content
-about ORBATs, TO&Es, tactics, logistics and more.
+There is a staggering amount of military history content available online. Here are some resources I find interesting
+and useful.
+
+## Websites
 
 If you are interested in WW2 history I highly recommend the
 site [Project'44 the road to liberation](https://www.project44.ca/). Their [interactive
@@ -22,3 +23,21 @@ version of Gordon Smith's
 book [BATTLE ATLAS of the FALKLANDS WAR 1982 by Land, Sea and Air](https://www.naval-history.net/NAVAL1982FALKLANDS.htm).
 This book is used as one of
 the sources for ORBAT mapper's main demo scenario.
+
+The [Battle Order](https://www.battleorder.org/) website contains a wealth of in-depth content about ORBATs, TO&Es,
+tactics, logistics and more.
+
+## YouTube
+
+- [Battle Order](https://www.youtube.com/@BattleOrder) - dedicated to military topics, including history, the
+  organization and equipment of military units and military doctrine
+- [DigitalBattlefieldTours](https://www.youtube.com/@DigitalBattlefieldTours) - get the full battlefield tour experience
+  from the comfort of your home
+- [Historigraph](https://www.youtube.com/@historigraph) - animated historical documentaries
+- [Mark Felton Productions](https://www.youtube.com/@MarkFeltonProductions) - a variety of fascinating historical
+  subjects, with particular focus on WWII and the Cold War
+- [The Great War](https://www.youtube.com/@TheGreatWarSeries)
+- [Sabaton History](https://www.youtube.com/@SabatonHistory) - brings you the historical background to all Sabaton songs
+- [Covert Cabal](https://www.youtube.com/@CovertCabal) - military analysis
+- [Military History Visualized](https://www.youtube.com/@MilitaryHistoryVisualized) - military history ranging from
+  Classical Times up to contemporary conflicts
