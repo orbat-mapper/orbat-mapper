@@ -41,3 +41,11 @@ tactics, logistics and more.
 - [Covert Cabal](https://www.youtube.com/@CovertCabal) - military analysis
 - [Military History Visualized](https://www.youtube.com/@MilitaryHistoryVisualized) - military history ranging from
   Classical Times up to contemporary conflicts
+
+## Podcasts
+
+- [Hardcore History](https://www.dancarlin.com/hardcore-history-series/)
+- [The Cold War Vault](https://www.coldwarvault.com/) - stories from the most dangerous decades in history
+- [Cold War Conversations](https://coldwarconversations.com/)
+- [History of the Cold War Podcast](https://www.historyofthecoldwarpodcast.com/)
+- [South African Border Wars](https://www.abwarpodcast.com/south-african-border-wars)
