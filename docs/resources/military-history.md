@@ -49,3 +49,6 @@ tactics, logistics and more.
 - [Cold War Conversations](https://coldwarconversations.com/)
 - [History of the Cold War Podcast](https://www.historyofthecoldwarpodcast.com/)
 - [South African Border Wars](https://www.abwarpodcast.com/south-african-border-wars)
+- [The Anglo-Boer war](https://podcasts.apple.com/us/podcast/the-anglo-boer-war/id1289060208)
+- [The Age of Napoleon](https://ageofnapoleon.com/)
+- [The Old Front Line](https://oldfrontline.co.uk/) - WW1 podcast
