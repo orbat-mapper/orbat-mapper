@@ -15,7 +15,7 @@ export interface MainIconEntity {
   entity: string;
   entityType: string;
   entitySubtype: string;
-  remarks: string;
+  remarks?: string;
   geometry?: string;
 }
 
@@ -23,5 +23,5 @@ export interface ModifierEntity {
   code: string;
   category?: string;
   modifier: string;
-  remarks: string;
+  remarks?: string;
 }

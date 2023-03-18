@@ -8,7 +8,7 @@
  *
  */
 
-import {SymbolSetMap} from "../types";
+import { SymbolSetMap } from "../types";
 
 export const app6d: SymbolSetMap = {
   "10": {
@@ -20,7 +20,6 @@ export const app6d: SymbolSetMap = {
         entityType: "",
         entitySubtype: "",
         code: "000000",
-        remarks: "",
       },
       {
         entity: "Command and Control",
@@ -34,42 +33,36 @@ export const app6d: SymbolSetMap = {
         entityType: "Broadcast Transmitter Antennae",
         entitySubtype: "",
         code: "110100",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Civil Affairs",
         entitySubtype: "",
         code: "110200",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Civil-Military Cooperation",
         entitySubtype: "",
         code: "110300",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Information Operations",
         entitySubtype: "",
         code: "110400",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Liaison",
         entitySubtype: "",
         code: "110500",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Liaison",
         entitySubtype: "Reconnaissance and Liaison Element",
         code: "110501",
-        remarks: "",
       },
       {
         entity: "Command and Control",
@@ -84,84 +77,72 @@ export const app6d: SymbolSetMap = {
         entityType: "Psychological Operations (PSYOPS)",
         entitySubtype: "Broadcast Transmitter Antennae",
         code: "110601",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Radio",
         entitySubtype: "",
         code: "110700",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Radio Relay",
         entitySubtype: "",
         code: "110800",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Radio Teletype Centre",
         entitySubtype: "",
         code: "110900",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Signal",
         entitySubtype: "",
         code: "111000",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Signal",
         entitySubtype: "Radio",
         code: "111001",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Signal",
         entitySubtype: "Radio Relay",
         code: "111002",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Signal",
         entitySubtype: "Teletype",
         code: "111003",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Signal",
         entitySubtype: "Tactical Satellite",
         code: "111004",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Signal",
         entitySubtype: "Video Imagery (Combat Camera)",
         code: "111005",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Tactical Satellite",
         entitySubtype: "",
         code: "111100",
-        remarks: "",
       },
       {
         entity: "Command and Control",
         entityType: "Video Imagery (Combat Camera)",
         entitySubtype: "",
         code: "111200",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
@@ -175,28 +156,24 @@ export const app6d: SymbolSetMap = {
         entityType: "Air Assault with Organic Lift",
         entitySubtype: "",
         code: "120100",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Air Traffic Services/Airfield Operations",
         entitySubtype: "",
         code: "120200",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Amphibious",
         entitySubtype: "",
         code: "120300",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Antitank/Antiarmour",
         entitySubtype: "",
         code: "120400",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
@@ -217,7 +194,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Armour/Armoured/Mechanized/Self-Propelled/ Tracked",
         entitySubtype: "",
         code: "120500",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
@@ -238,7 +214,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Army Aviation/Aviation Rotary Wing",
         entitySubtype: "",
         code: "120600",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
@@ -252,14 +227,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Aviation Composite",
         entitySubtype: "",
         code: "120700",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Aviation Fixed Wing",
         entitySubtype: "",
         code: "120800",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
@@ -273,21 +246,18 @@ export const app6d: SymbolSetMap = {
         entityType: "Combat",
         entitySubtype: "",
         code: "120900",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Combined Arms",
         entitySubtype: "",
         code: "121000",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Infantry",
         entitySubtype: "",
         code: "121100",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
@@ -329,21 +299,18 @@ export const app6d: SymbolSetMap = {
         entityType: "Infantry",
         entitySubtype: "Main Gun System/Heavy Weapon",
         code: "121106",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Observer",
         entitySubtype: "",
         code: "121200",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Reconnaissance/Cavalry/Scout",
         entitySubtype: "",
         code: "121300",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
@@ -371,35 +338,30 @@ export const app6d: SymbolSetMap = {
         entityType: "Sea Air Land (SEAL)",
         entitySubtype: "",
         code: "121400",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Sniper",
         entitySubtype: "",
         code: "121500",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Surveillance",
         entitySubtype: "",
         code: "121600",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Special Forces",
         entitySubtype: "",
         code: "121700",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
         entityType: "Special Operations Forces (SOF)",
         entitySubtype: "",
         code: "121800",
-        remarks: "",
       },
       {
         entity: "Movement and Manoeuvre",
@@ -442,7 +404,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Unmanned Aerial Systems",
         entitySubtype: "",
         code: "121900",
-        remarks: "",
       },
       {
         entity: "Fires",
@@ -456,7 +417,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Air Defence",
         entitySubtype: "",
         code: "130100",
-        remarks: "",
       },
       {
         entity: "Fires",
@@ -477,14 +437,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Air/Land Naval Gunfire Liaison",
         entitySubtype: "",
         code: "130200",
-        remarks: "",
       },
       {
         entity: "Fires",
         entityType: "Field Artillery",
         entitySubtype: "",
         code: "130300",
-        remarks: "",
       },
       {
         entity: "Fires",
@@ -512,35 +470,30 @@ export const app6d: SymbolSetMap = {
         entityType: "Field Artillery Observer",
         entitySubtype: "",
         code: "130400",
-        remarks: "",
       },
       {
         entity: "Fires",
         entityType: "Joint Fire Support",
         entitySubtype: "",
         code: "130500",
-        remarks: "",
       },
       {
         entity: "Fires",
         entityType: "Meteorological",
         entitySubtype: "",
         code: "130600",
-        remarks: "",
       },
       {
         entity: "Fires",
         entityType: "Missile",
         entitySubtype: "",
         code: "130700",
-        remarks: "",
       },
       {
         entity: "Fires",
         entityType: "Mortar",
         entitySubtype: "",
         code: "130800",
-        remarks: "",
       },
       {
         entity: "Fires",
@@ -568,7 +521,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Survey",
         entitySubtype: "",
         code: "130900",
-        remarks: "",
       },
       {
         entity: "Protection",
@@ -582,7 +534,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Chemical Biological Radiological Nuclear Defence",
         entitySubtype: "",
         code: "140100",
-        remarks: "",
       },
       {
         entity: "Protection",
@@ -624,49 +575,42 @@ export const app6d: SymbolSetMap = {
         entityType: "Combat Support (Manoeuvre Enhancement)",
         entitySubtype: "",
         code: "140200",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Criminal Investigation Division",
         entitySubtype: "",
         code: "140300",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Diving",
         entitySubtype: "",
         code: "140400",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Dog",
         entitySubtype: "",
         code: "140500",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Drilling",
         entitySubtype: "",
         code: "140600",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Engineer",
         entitySubtype: "",
         code: "140700",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Engineer",
         entitySubtype: "Mechanized",
         code: "140701",
-        remarks: "",
       },
       {
         entity: "Protection",
@@ -687,70 +631,60 @@ export const app6d: SymbolSetMap = {
         entityType: "Explosive Ordnance Disposal (EOD)",
         entitySubtype: "",
         code: "140800",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Field Camp Construction",
         entitySubtype: "",
         code: "140900",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Fire Fighting/Fire Protection",
         entitySubtype: "",
         code: "141000",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Geospatial Support/Geospatial Information Support",
         entitySubtype: "",
         code: "141100",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Military Police",
         entitySubtype: "",
         code: "141200",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Mine",
         entitySubtype: "",
         code: "141300",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Mine Clearing",
         entitySubtype: "",
         code: "141400",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Mine Launching",
         entitySubtype: "",
         code: "141500",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Mine Laying",
         entitySubtype: "",
         code: "141600",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Security",
         entitySubtype: "",
         code: "141700",
-        remarks: "",
       },
       {
         entity: "Protection",
@@ -778,21 +712,18 @@ export const app6d: SymbolSetMap = {
         entityType: "Security Police (Air)",
         entitySubtype: "",
         code: "141900",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Shore Patrol",
         entitySubtype: "",
         code: "142000",
-        remarks: "",
       },
       {
         entity: "Protection",
         entityType: "Topographic",
         entitySubtype: "",
         code: "142100",
-        remarks: "",
       },
       {
         entity: "Intelligence",
@@ -806,91 +737,78 @@ export const app6d: SymbolSetMap = {
         entityType: "Analysis",
         entitySubtype: "",
         code: "150100",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Counterintelligence",
         entitySubtype: "",
         code: "150200",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Direction Finding",
         entitySubtype: "",
         code: "150300",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Electronic Ranging",
         entitySubtype: "",
         code: "150400",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Electronic Warfare",
         entitySubtype: "",
         code: "150500",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Electronic Warfare",
         entitySubtype: "Analysis",
         code: "150501",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Electronic Warfare",
         entitySubtype: "Direction Finding",
         code: "150502",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Electronic Warfare",
         entitySubtype: "Intercept",
         code: "150503",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Electronic Warfare",
         entitySubtype: "Jamming",
         code: "150504",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Electronic Warfare",
         entitySubtype: "Search",
         code: "150505",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Intercept (Search and Recording)",
         entitySubtype: "",
         code: "150600",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Interrogation",
         entitySubtype: "",
         code: "150700",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Jamming",
         entitySubtype: "",
         code: "150800",
-        remarks: "",
       },
       {
         entity: "Intelligence",
@@ -904,63 +822,54 @@ export const app6d: SymbolSetMap = {
         entityType: "Military Intelligence",
         entitySubtype: "",
         code: "151000",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Search",
         entitySubtype: "",
         code: "151100",
-        remarks: "",
       },
       {
         entity: "Intelligence",
         entityType: "Sensor",
         entitySubtype: "",
         code: "151200",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "",
         entitySubtype: "",
         code: "160000",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Administrative",
         entitySubtype: "",
         code: "160100",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "All Classes of Supply",
         entitySubtype: "",
         code: "160200",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Airport of Debarkation/Airport of Embarkation",
         entitySubtype: "",
         code: "160300",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Ammunition",
         entitySubtype: "",
         code: "160400",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Band",
         entitySubtype: "",
         code: "160500",
-        remarks: "",
       },
       {
         entity: "Sustainment",
@@ -974,203 +883,174 @@ export const app6d: SymbolSetMap = {
         entityType: "Combat Service Support",
         entitySubtype: "",
         code: "160600",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Finance",
         entitySubtype: "",
         code: "160700",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Judge Advocate General",
         entitySubtype: "",
         code: "160800",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Labour",
         entitySubtype: "",
         code: "160900",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Laundry/Bath",
         entitySubtype: "",
         code: "161000",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Maintenance",
         entitySubtype: "",
         code: "161100",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Material",
         entitySubtype: "",
         code: "161200",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Medical",
         entitySubtype: "",
         code: "161300",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Medical Treatment Facility",
         entitySubtype: "",
         code: "161400",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Morale, Welfare and Recreation",
         entitySubtype: "",
         code: "161500",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Mortuary Affairs/Graves Registration",
         entitySubtype: "",
         code: "161600",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Multiple Classes of Supply",
         entitySubtype: "",
         code: "161700",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "NATO Supply Class I",
         entitySubtype: "",
         code: "161800",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "NATO Supply Class II",
         entitySubtype: "",
         code: "161900",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "NATO Supply Class III",
         entitySubtype: "",
         code: "162000",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "NATO Supply Class IV",
         entitySubtype: "",
         code: "162100",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "NATO Supply Class V",
         entitySubtype: "",
         code: "162200",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Ordnance",
         entitySubtype: "",
         code: "162300",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Personnel Services",
         entitySubtype: "",
         code: "162400",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Petroleum, Oil and Lubricants",
         entitySubtype: "",
         code: "162500",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Pipeline",
         entitySubtype: "",
         code: "162600",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Postal",
         entitySubtype: "",
         code: "162700",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Public Affairs/Public Information",
         entitySubtype: "",
         code: "162800",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Quartermaster",
         entitySubtype: "",
         code: "162900",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Railhead",
         entitySubtype: "",
         code: "163000",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Religious Support",
         entitySubtype: "",
         code: "163100",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Replacement Holding Unit",
         entitySubtype: "",
         code: "163200",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Seaport of Debarkation/Seaport of Embarkation",
         entitySubtype: "",
         code: "163300",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Supply",
         entitySubtype: "",
         code: "163400",
-        remarks: "",
       },
       {
         entity: "Sustainment",
@@ -1184,7 +1064,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Transportation",
         entitySubtype: "",
         code: "163600",
-        remarks: "",
       },
       {
         entity: "Sustainment",
@@ -1261,14 +1140,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Water",
         entitySubtype: "",
         code: "164700",
-        remarks: "",
       },
       {
         entity: "Sustainment",
         entityType: "Water Purification",
         entitySubtype: "",
         code: "164800",
-        remarks: "",
       },
       {
         entity: "Sustainment",
@@ -1289,7 +1166,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Naval",
         entitySubtype: "",
         code: "170100",
-        remarks: "",
       },
       {
         entity: "Named Headquarters",
@@ -1303,28 +1179,24 @@ export const app6d: SymbolSetMap = {
         entityType: "Allied Command Europe Rapid Reaction Corps (ARRC)",
         entitySubtype: "",
         code: "180100",
-        remarks: "",
       },
       {
         entity: "Named Headquarters",
         entityType: "Allied Command Operations",
         entitySubtype: "",
         code: "180200",
-        remarks: "",
       },
       {
         entity: "Named Headquarters",
         entityType: "International Security Assistance Force (ISAF)",
         entitySubtype: "",
         code: "180300",
-        remarks: "",
       },
       {
         entity: "Named Headquarters",
         entityType: "Multinational (MN)",
         entitySubtype: "",
         code: "180400",
-        remarks: "",
       },
       {
         entity: "Emergency Operation",
@@ -1430,7 +1302,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Internal Security Force",
         entitySubtype: "",
         code: "201300",
-        remarks: "",
       },
     ],
     modifierOne: [
@@ -1447,347 +1318,278 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Area",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Attack",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Biological",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Border",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Bridging",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Chemical",
         code: "07",
-        remarks: "",
       },
       {
         modifier: "Close Protection",
         code: "08",
-        remarks: "",
       },
       {
         modifier: "Combat",
         code: "09",
-        remarks: "",
       },
       {
         modifier: "Command and Control",
         code: "10",
-        remarks: "",
       },
       {
         modifier: "Communications Contingency Package",
         code: "11",
-        remarks: "",
       },
       {
         modifier: "Construction",
         code: "12",
-        remarks: "",
       },
       {
         modifier: "Cross Cultural Communication",
         code: "13",
-        remarks: "",
       },
       {
         modifier: "Crowd and Riot Control",
         code: "14",
-        remarks: "",
       },
       {
         modifier: "Decontamination",
         code: "15",
-        remarks: "",
       },
       {
         modifier: "Detention",
         code: "16",
-        remarks: "",
       },
       {
         modifier: "Direct Communications",
         code: "17",
-        remarks: "",
       },
       {
         modifier: "Diving",
         code: "18",
-        remarks: "",
       },
       {
         modifier: "Division",
         code: "19",
-        remarks: "",
       },
       {
         modifier: "Dog",
         code: "20",
-        remarks: "",
       },
       {
         modifier: "Drilling",
         code: "21",
-        remarks: "",
       },
       {
         modifier: "Electro-Optical",
         code: "22",
-        remarks: "",
       },
       {
         modifier: "Enhanced",
         code: "23",
-        remarks: "",
       },
       {
         modifier: "Explosive Ordnance Disposal (EOD)",
         code: "24",
-        remarks: "",
       },
       {
         modifier: "Fire Direction Centre",
         code: "25",
-        remarks: "",
       },
       {
         modifier: "Force",
         code: "26",
-        remarks: "",
       },
       {
         modifier: "Forward",
         code: "27",
-        remarks: "",
       },
       {
         modifier: "Ground Station Module",
         code: "28",
-        remarks: "",
       },
       {
         modifier: "Landing Support",
         code: "29",
-        remarks: "",
       },
       {
         modifier: "Large Extension Node",
         code: "30",
-        remarks: "",
       },
       {
         modifier: "Maintenance",
         code: "31",
-        remarks: "",
       },
       {
         modifier: "Meteorological",
         code: "32",
-        remarks: "",
       },
       {
         modifier: "Mine Countermeasure",
         code: "33",
-        remarks: "",
       },
       {
         modifier: "Missile",
         code: "34",
-        remarks: "",
       },
       {
         modifier: "Mobile Advisor and Support",
         code: "35",
-        remarks: "",
       },
       {
         modifier: "Mobile Subscriber Equipment",
         code: "36",
-        remarks: "",
       },
       {
         modifier: "Mobility Support",
         code: "37",
-        remarks: "",
       },
       {
         modifier: "Movement Control Centre",
         code: "38",
-        remarks: "",
       },
       {
         modifier: "Multinational",
         code: "39",
-        remarks: "",
       },
       {
         modifier: "Multinational Specialized Unit",
         code: "40",
-        remarks: "",
       },
       {
         modifier: "Multiple Rocket Launcher",
         code: "41",
-        remarks: "",
       },
       {
         modifier: "NATO Medical Role 1",
         code: "42",
-        remarks: "",
       },
       {
         modifier: "NATO Medical Role 2",
         code: "43",
-        remarks: "",
       },
       {
         modifier: "NATO Medical Role 3",
         code: "44",
-        remarks: "",
       },
       {
         modifier: "NATO Medical Role 4",
         code: "45",
-        remarks: "",
       },
       {
         modifier: "Naval",
         code: "46",
-        remarks: "",
       },
       {
         modifier: "Node Centre",
         code: "47",
-        remarks: "",
       },
       {
         modifier: "Nuclear",
         code: "48",
-        remarks: "",
       },
       {
         modifier: "Operations",
         code: "49",
-        remarks: "",
       },
       {
         modifier: "Radar",
         code: "50",
-        remarks: "",
       },
       {
         modifier: "Radio Frequency Identification (RFID) Interrogator / Sensor",
         code: "51",
-        remarks: "",
       },
       {
         modifier: "Radiological",
         code: "52",
-        remarks: "",
       },
       {
         modifier: "Search and Rescue",
         code: "53",
-        remarks: "",
       },
       {
         modifier: "Security",
         code: "54",
-        remarks: "",
       },
       {
         modifier: "Sensor",
         code: "55",
-        remarks: "",
       },
       {
         modifier: "Sensor Control Module (SCM)",
         code: "56",
-        remarks: "",
       },
       {
         modifier: "Signals Intelligence",
         code: "57",
-        remarks: "",
       },
       {
         modifier: "Single Shelter Switch",
         code: "58",
-        remarks: "",
       },
       {
         modifier: "Single Rocket Launcher",
         code: "59",
-        remarks: "",
       },
       {
         modifier: "Smoke",
         code: "60",
-        remarks: "",
       },
       {
         modifier: "Sniper",
         code: "61",
-        remarks: "",
       },
       {
         modifier: "Sound Ranging",
         code: "62",
-        remarks: "",
       },
       {
         modifier: "Special Operations Forces (SOF)",
         code: "63",
-        remarks: "",
       },
       {
         modifier: "Special Weapons and Tactics",
         code: "64",
-        remarks: "",
       },
       {
         modifier: "Survey",
         code: "65",
-        remarks: "",
       },
       {
         modifier: "Tactical Exploitation",
         code: "66",
-        remarks: "",
       },
       {
         modifier: "Target Acquisition",
         code: "67",
-        remarks: "",
       },
       {
         modifier: "Topographic",
         code: "68",
-        remarks: "",
       },
       {
         modifier: "Utility",
         code: "69",
-        remarks: "",
       },
       {
         modifier: "Video Imagery (Combat Camera)",
         code: "70",
-        remarks: "",
       },
       {
         modifier: "Medevac",
@@ -1857,274 +1659,220 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Reserved for Future Use",
         code: "71-74, 83-93",
-        remarks: "",
       },
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
     modifierTwo: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Airborne",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Arctic",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Battle Damage Repair",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Bicycle Equipped",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Casualty Staging",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Clearing",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Close Range",
         code: "07",
-        remarks: "",
       },
       {
         modifier: "Control",
         code: "08",
-        remarks: "",
       },
       {
         modifier: "Decontamination",
         code: "09",
-        remarks: "",
       },
       {
         modifier: "Demolition",
         code: "10",
-        remarks: "",
       },
       {
         modifier: "Dental",
         code: "11",
-        remarks: "",
       },
       {
         modifier: "Digital",
         code: "12",
-        remarks: "",
       },
       {
         modifier: "Enhanced Position Location Reporting System (EPLRS)",
         code: "13",
-        remarks: "",
       },
       {
         modifier: "Equipment",
         code: "14",
-        remarks: "",
       },
       {
         modifier: "Heavy",
         code: "15",
-        remarks: "",
       },
       {
         modifier: "High Altitude",
         code: "16",
-        remarks: "",
       },
       {
         modifier: "Intermodal",
         code: "17",
-        remarks: "",
       },
       {
         modifier: "Intensive Care",
         code: "18",
-        remarks: "",
       },
       {
         modifier: "Light",
         code: "19",
-        remarks: "",
       },
       {
         modifier: "Laboratory",
         code: "20",
-        remarks: "",
       },
       {
         modifier: "Launcher",
         code: "21",
-        remarks: "",
       },
       {
         modifier: "Long Range",
         code: "22",
-        remarks: "",
       },
       {
         modifier: "Low Altitude",
         code: "23",
-        remarks: "",
       },
       {
         modifier: "Medium",
         code: "24",
-        remarks: "",
       },
       {
         modifier: "Medium Altitude",
         code: "25",
-        remarks: "",
       },
       {
         modifier: "Medium Range",
         code: "26",
-        remarks: "",
       },
       {
         modifier: "Mountain",
         code: "27",
-        remarks: "",
       },
       {
         modifier: "High to Medium Altitude",
         code: "28",
-        remarks: "",
       },
       {
         modifier: "Multi-Channel",
         code: "29",
-        remarks: "",
       },
       {
         modifier: "Optical (Flash)",
         code: "30",
-        remarks: "",
       },
       {
         modifier: "Pack Animal",
         code: "31",
-        remarks: "",
       },
       {
         modifier: "Patient Evacuation Coordination",
         code: "32",
-        remarks: "",
       },
       {
         modifier: "Preventive Maintenance",
         code: "33",
-        remarks: "",
       },
       {
         modifier: "Psychological",
         code: "34",
-        remarks: "",
       },
       {
         modifier: "Radio Relay Line of Sight",
         code: "35",
-        remarks: "",
       },
       {
         modifier: "Railroad",
         code: "36",
-        remarks: "",
       },
       {
         modifier: "Recovery (Unmanned Systems)",
         code: "37",
-        remarks: "",
       },
       {
         modifier: "Recovery (Maintenance)",
         code: "38",
-        remarks: "",
       },
       {
         modifier: "Rescue Coordination Centre",
         code: "39",
-        remarks: "",
       },
       {
         modifier: "Riverine",
         code: "40",
-        remarks: "",
       },
       {
         modifier: "Single Channel",
         code: "41",
-        remarks: "",
       },
       {
         modifier: "Ski",
         code: "42",
-        remarks: "",
       },
       {
         modifier: "Short Range",
         code: "43",
-        remarks: "",
       },
       {
         modifier: "Strategic",
         code: "44",
-        remarks: "",
       },
       {
         modifier: "Support",
         code: "45",
-        remarks: "",
       },
       {
         modifier: "Tactical",
         code: "46",
-        remarks: "",
       },
       {
         modifier: "Towed",
         code: "47",
-        remarks: "",
       },
       {
         modifier: "Troop",
         code: "48",
-        remarks: "",
       },
       {
         modifier: "Vertical or Short Take-Off and Landing (VTOL/VSTOL)",
         code: "49",
-        remarks: "",
       },
       {
         modifier: "Veterinary",
         code: "50",
-        remarks: "",
       },
       {
         modifier: "Wheeled",
         code: "51",
-        remarks: "",
       },
       {
         modifier: "High to Low Altitude",
@@ -2164,7 +1912,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
   },
@@ -2177,7 +1924,6 @@ export const app6d: SymbolSetMap = {
         entityType: "",
         entitySubtype: "",
         code: "000000",
-        remarks: "",
       },
       {
         entity: "Civilian",
@@ -2191,56 +1937,48 @@ export const app6d: SymbolSetMap = {
         entityType: "Environmental Protection",
         entitySubtype: "",
         code: "110100",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Government Organization",
         entitySubtype: "",
         code: "110200",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Individual",
         entitySubtype: "",
         code: "110300",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Organization or Group",
         entitySubtype: "",
         code: "110400",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Killing Victim",
         entitySubtype: "",
         code: "110500",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Killing Victims",
         entitySubtype: "",
         code: "110600",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Victim of an Attempted Crime",
         entitySubtype: "",
         code: "110700",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Spy",
         entitySubtype: "",
         code: "110800",
-        remarks: "",
       },
       {
         entity: "Civilian",
@@ -2261,42 +1999,34 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Assassination",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Execution (Wrongful Killing)",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Murder Victims",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Hijacking",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Kidnapping",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Piracy",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Rape",
         code: "07",
-        remarks: "",
       },
       {
         modifier: "Civilian",
@@ -2306,58 +2036,46 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Displaced Person(s), Refugee(s) and Evacuee(s)",
         code: "09",
-        remarks: "",
       },
       {
         modifier: "Foreign Fighter(s)",
         code: "10",
-        remarks: "",
       },
       {
         modifier: "Gang Member or Gang",
         code: "11",
-        remarks: "",
       },
       {
         modifier: "Government Organization",
         code: "12",
-        remarks: "",
       },
       {
         modifier: "Leader or Leadership",
         code: "13",
-        remarks: "",
       },
       {
-        modifier:
-          "Non-governmental Organization Member or Non-governmental Organization",
+        modifier: "Non-governmental Organization Member or Non-governmental Organization",
         code: "14",
-        remarks: "",
       },
       {
         modifier: "Coerced/Impressed Recruit",
         code: "15",
-        remarks: "",
       },
       {
         modifier: "Willing Recruit",
         code: "16",
-        remarks: "",
       },
       {
         modifier: "Religious or Religious Organization",
         code: "17",
-        remarks: "",
       },
       {
         modifier: "Targeted Individual or Organization",
         code: "18",
-        remarks: "",
       },
       {
         modifier: "Terrorist or Terrorist Organization",
         code: "19",
-        remarks: "",
       },
       {
         modifier: "Speaker",
@@ -2392,19 +2110,16 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
     modifierTwo: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Leader or Leadership",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Reserved for Future Use",
@@ -2414,7 +2129,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
   },
@@ -2427,7 +2141,6 @@ export const app6d: SymbolSetMap = {
         entityType: "",
         entitySubtype: "",
         code: "000000",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
@@ -2441,273 +2154,234 @@ export const app6d: SymbolSetMap = {
         entityType: "Rifle",
         entitySubtype: "",
         code: "110100",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Rifle",
         entitySubtype: "Single Shot Rifle",
         code: "110101",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Rifle",
         entitySubtype: "Semiautomatic Rifle",
         code: "110102",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Rifle",
         entitySubtype: "Automatic Rifle",
         code: "110103",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Machine Gun",
         entitySubtype: "",
         code: "110200",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Machine Gun",
         entitySubtype: "Light",
         code: "110201",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Machine Gun",
         entitySubtype: "Medium",
         code: "110202",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Machine Gun",
         entitySubtype: "Heavy",
         code: "110203",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Grenade Launcher",
         entitySubtype: "",
         code: "110300",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Grenade Launcher",
         entitySubtype: "Light",
         code: "110301",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Grenade Launcher",
         entitySubtype: "Medium",
         code: "110302",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Grenade Launcher",
         entitySubtype: "Heavy",
         code: "110303",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Flame Thrower",
         entitySubtype: "",
         code: "110400",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Air Defence Gun",
         entitySubtype: "",
         code: "110500",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Air Defence Gun",
         entitySubtype: "Light",
         code: "110501",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Air Defence Gun",
         entitySubtype: "Medium",
         code: "110502",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Air Defence Gun",
         entitySubtype: "Heavy",
         code: "110503",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Antitank Gun",
         entitySubtype: "",
         code: "110600",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Antitank Gun",
         entitySubtype: "Light",
         code: "110601",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Antitank Gun",
         entitySubtype: "Medium",
         code: "110602",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Antitank Gun",
         entitySubtype: "Heavy",
         code: "110603",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Direct Fire Gun",
         entitySubtype: "",
         code: "110700",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Direct Fire Gun",
         entitySubtype: "Light",
         code: "110701",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Direct Fire Gun",
         entitySubtype: "Medium",
         code: "110702",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Direct Fire Gun",
         entitySubtype: "Heavy",
         code: "110703",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Recoilless Gun",
         entitySubtype: "",
         code: "110800",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Recoilless Gun",
         entitySubtype: "Light",
         code: "110801",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Recoilless Gun",
         entitySubtype: "Medium",
         code: "110802",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Recoilless Gun",
         entitySubtype: "Heavy",
         code: "110803",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Howitzer",
         entitySubtype: "",
         code: "110900",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Howitzer",
         entitySubtype: "Light",
         code: "110901",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Howitzer",
         entitySubtype: "Medium",
         code: "110902",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Howitzer",
         entitySubtype: "Heavy",
         code: "110903",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Missile Launcher",
         entitySubtype: "",
         code: "111000",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Missile Launcher",
         entitySubtype: "Light",
         code: "111001",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Missile Launcher",
         entitySubtype: "Medium",
         code: "111002",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Missile Launcher",
         entitySubtype: "Heavy",
         code: "111003",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Air Defence Missile Launcher",
         entitySubtype: "",
         code: "111100",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Air Defence Missile Launcher",
         entitySubtype: "Light",
         code: "111101",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
@@ -2728,7 +2402,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Air Defence Missile Launcher",
         entitySubtype: "Medium",
         code: "111104",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
@@ -2749,7 +2422,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Air Defence Missile Launcher",
         entitySubtype: "Heavy",
         code: "111107",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
@@ -2770,189 +2442,162 @@ export const app6d: SymbolSetMap = {
         entityType: "Antitank Missile Launcher",
         entitySubtype: "",
         code: "111200",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Antitank Missile Launcher",
         entitySubtype: "Light",
         code: "111201",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Antitank Missile Launcher",
         entitySubtype: "Medium",
         code: "111202",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Antitank Missile Launcher",
         entitySubtype: "Heavy",
         code: "111203",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Surface-to-Surface Missile Launcher",
         entitySubtype: "",
         code: "111300",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Surface-to-Surface Missile Launcher",
         entitySubtype: "Light",
         code: "111301",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Surface-to-Surface Missile Launcher",
         entitySubtype: "Medium",
         code: "111302",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Surface-to-Surface Missile Launcher",
         entitySubtype: "Heavy",
         code: "111303",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Mortar",
         entitySubtype: "",
         code: "111400",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Mortar",
         entitySubtype: "Light",
         code: "111401",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Mortar",
         entitySubtype: "Medium",
         code: "111402",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Mortar",
         entitySubtype: "Heavy",
         code: "111403",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Single Rocket Launcher",
         entitySubtype: "",
         code: "111500",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Single Rocket Launcher",
         entitySubtype: "Light",
         code: "111501",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Single Rocket Launcher",
         entitySubtype: "Medium",
         code: "111502",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Single Rocket Launcher",
         entitySubtype: "Heavy",
         code: "111503",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Multiple Rocket Launcher",
         entitySubtype: "",
         code: "111600",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Multiple Rocket Launcher",
         entitySubtype: "Light",
         code: "111601",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Multiple Rocket Launcher",
         entitySubtype: "Medium",
         code: "111602",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Multiple Rocket Launcher",
         entitySubtype: "Heavy",
         code: "111603",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Antitank Rocket Launcher",
         entitySubtype: "",
         code: "111700",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Antitank Rocket Launcher",
         entitySubtype: "Light",
         code: "111701",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Antitank Rocket Launcher",
         entitySubtype: "Medium",
         code: "111702",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Antitank Rocket Launcher",
         entitySubtype: "Heavy",
         code: "111703",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Non-lethal Weapon",
         entitySubtype: "",
         code: "111800",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Taser",
         entitySubtype: "",
         code: "111900",
-        remarks: "",
       },
       {
         entity: "Weapons/Weapons System",
         entityType: "Water Cannon",
         entitySubtype: "",
         code: "112000",
-        remarks: "",
       },
       {
         entity: "Vehicles",
@@ -2966,63 +2611,54 @@ export const app6d: SymbolSetMap = {
         entityType: "Armoured",
         entitySubtype: "",
         code: "120100",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Armoured",
         entitySubtype: "Armoured Fighting Vehicle",
         code: "120101",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Armoured",
         entitySubtype: "Armoured Fighting Vehicle Command and Control",
         code: "120102",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Armoured",
         entitySubtype: "Armoured Personnel Carrier",
         code: "120103",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Armoured",
         entitySubtype: "Armoured Personnel Carrier Ambulance",
         code: "120104",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Armoured",
         entitySubtype: "Armoured Protected Vehicle",
         code: "120105",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Armoured",
         entitySubtype: "Armoured Protected Vehicle Recovery",
         code: "120106",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Armoured",
         entitySubtype: "Armoured Protected Vehicle Medical Evacuation",
         code: "120107",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Armoured",
         entitySubtype: "Armoured Personnel Carrier, Recovery",
         code: "120108",
-        remarks: "",
       },
       {
         entity: "Vehicles",
@@ -3043,56 +2679,48 @@ export const app6d: SymbolSetMap = {
         entityType: "Tank",
         entitySubtype: "",
         code: "120200",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Tank",
         entitySubtype: "Light",
         code: "120201",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Tank",
         entitySubtype: "Medium",
         code: "120202",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Tank",
         entitySubtype: "Heavy",
         code: "120203",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Tank Recovery Vehicle",
         entitySubtype: "",
         code: "120300",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Tank Recovery Vehicle",
         entitySubtype: "Light",
         code: "120301",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Tank Recovery Vehicle",
         entitySubtype: "Medium",
         code: "120302",
-        remarks: "",
       },
       {
         entity: "Vehicles",
         entityType: "Tank Recovery Vehicle",
         entitySubtype: "Heavy",
         code: "120303",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
@@ -3106,77 +2734,66 @@ export const app6d: SymbolSetMap = {
         entityType: "Bridge",
         entitySubtype: "",
         code: "130100",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Bridge Mounted on Utility Vehicle",
         entitySubtype: "",
         code: "130200",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Fixed Bridge",
         entitySubtype: "",
         code: "130300",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Floating Bridge",
         entitySubtype: "",
         code: "130400",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Folding Girder Bridge",
         entitySubtype: "",
         code: "130500",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Hollow Deck Bridge",
         entitySubtype: "",
         code: "130600",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Drill",
         entitySubtype: "",
         code: "130700",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Drill",
         entitySubtype: "Drill Mounted on Utility Vehicle",
         code: "130701",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Earthmover",
         entitySubtype: "",
         code: "130800",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Earthmover",
         entitySubtype: "Multifunctional Earthmover/Digger",
         code: "130801",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Mine Clearing Equipment",
         entitySubtype: "",
         code: "130900",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
@@ -3190,21 +2807,18 @@ export const app6d: SymbolSetMap = {
         entityType: "Mine Clearing Equipment",
         entitySubtype: "Mine Clearing Equipment on Tank Chassis",
         code: "130902",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Mine Laying Equipment",
         entitySubtype: "",
         code: "131000",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
         entityType: "Mine Laying Equipment",
         entitySubtype: "Mine Laying Equipment on Utility Vehicle",
         code: "131001",
-        remarks: "",
       },
       {
         entity: "Engineer Vehicles and Equipment",
@@ -3281,91 +2895,78 @@ export const app6d: SymbolSetMap = {
         entityType: "Utility",
         entitySubtype: "",
         code: "140100",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Medical",
         entitySubtype: "",
         code: "140200",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Medical Evacuation (MEDEVAC)",
         entitySubtype: "",
         code: "140300",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Mobile Emergency Physician",
         entitySubtype: "",
         code: "140400",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Bus",
         entitySubtype: "",
         code: "140500",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Semi-Trailer and Truck",
         entitySubtype: "",
         code: "140600",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Semi-Trailer and Truck",
         entitySubtype: "Light",
         code: "140601",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Semi-Trailer and Truck",
         entitySubtype: "Medium",
         code: "140602",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Semi-Trailer and Truck",
         entitySubtype: "Heavy",
         code: "140603",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Limited Cross Country Truck",
         entitySubtype: "",
         code: "140700",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Cross Country Truck",
         entitySubtype: "",
         code: "140800",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Petroleum, Oil and Lubricant",
         entitySubtype: "",
         code: "140900",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
         entityType: "Water",
         entitySubtype: "",
         code: "141000",
-        remarks: "",
       },
       {
         entity: "Utility Vehicles",
@@ -3407,14 +3008,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Locomotive",
         entitySubtype: "",
         code: "150100",
-        remarks: "",
       },
       {
         entity: "Trains",
         entityType: "Railcar",
         entitySubtype: "",
         code: "150200",
-        remarks: "",
       },
       {
         entity: "Civilian Vehicles",
@@ -3779,35 +3378,30 @@ export const app6d: SymbolSetMap = {
         entityType: "Antennae",
         entitySubtype: "",
         code: "200100",
-        remarks: "",
       },
       {
         entity: "Other Equipment",
         entityType: "Bomb",
         entitySubtype: "",
         code: "200200",
-        remarks: "",
       },
       {
         entity: "Other Equipment",
         entityType: "Booby Trap",
         entitySubtype: "",
         code: "200300",
-        remarks: "",
       },
       {
         entity: "Other Equipment",
         entityType: "CBRN Defence Equipment",
         entitySubtype: "",
         code: "200400",
-        remarks: "",
       },
       {
         entity: "Other Equipment",
         entityType: "Computer System",
         entitySubtype: "",
         code: "200500",
-        remarks: "",
       },
       {
         entity: "Other Equipment",
@@ -3821,12 +3415,10 @@ export const app6d: SymbolSetMap = {
         entityType: "Generator Set",
         entitySubtype: "",
         code: "200700",
-        remarks: "",
       },
       {
         entity: "Other Equipment",
-        entityType:
-          "Ground-based Midcourse Defence (GMD) Fire Control (GFC) Centre",
+        entityType: "Ground-based Midcourse Defence (GMD) Fire Control (GFC) Centre",
         entitySubtype: "",
         code: "200800",
         remarks: "From MIL-STD-2525.",
@@ -3844,7 +3436,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Laser",
         entitySubtype: "",
         code: "201000",
-        remarks: "",
       },
       {
         entity: "Other Equipment",
@@ -3901,35 +3492,30 @@ export const app6d: SymbolSetMap = {
         entityType: "Land Mine",
         entitySubtype: "",
         code: "210100",
-        remarks: "",
       },
       {
         entity: "Land Mines",
         entityType: "Antipersonnel Land Mine (APL)",
         entitySubtype: "",
         code: "210200",
-        remarks: "",
       },
       {
         entity: "Land Mines",
         entityType: "Antitank Mine",
         entitySubtype: "",
         code: "210300",
-        remarks: "",
       },
       {
         entity: "Land Mines",
         entityType: "Improvised Explosive Device (IED)",
         entitySubtype: "",
         code: "210400",
-        remarks: "",
       },
       {
         entity: "Land Mines",
         entityType: "Less than lethal",
         entitySubtype: "",
         code: "210500",
-        remarks: "",
       },
       {
         entity: "Sensors",
@@ -3943,21 +3529,18 @@ export const app6d: SymbolSetMap = {
         entityType: "Sensor",
         entitySubtype: "",
         code: "220100",
-        remarks: "",
       },
       {
         entity: "Sensors",
         entityType: "Sensor Emplaced",
         entitySubtype: "",
         code: "220200",
-        remarks: "",
       },
       {
         entity: "Sensors",
         entityType: "Radar",
         entitySubtype: "",
         code: "220300",
-        remarks: "",
       },
       {
         entity: "Emergency Operation",
@@ -4047,7 +3630,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
     modifierTwo: [],
@@ -4061,7 +3643,6 @@ export const app6d: SymbolSetMap = {
         entityType: "",
         entitySubtype: "",
         code: "000000",
-        remarks: "",
       },
       {
         entity: "Installation",
@@ -4089,7 +3670,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Ammunition Cache",
         entitySubtype: "",
         code: "110300",
-        remarks: "",
       },
       {
         entity: "Installation",
@@ -4103,14 +3683,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Black List Location",
         entitySubtype: "",
         code: "110500",
-        remarks: "",
       },
       {
         entity: "Installation",
         entityType: "Chemical, Biological, Radiological and Nuclear (CBRN)",
         entitySubtype: "",
         code: "110600",
-        remarks: "",
       },
       {
         entity: "Installation",
@@ -4145,14 +3723,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Gray List Location",
         entitySubtype: "",
         code: "111000",
-        remarks: "",
       },
       {
         entity: "Installation",
         entityType: "Mass Grave Site",
         entitySubtype: "",
         code: "111100",
-        remarks: "",
       },
       {
         entity: "Installation",
@@ -4180,28 +3756,24 @@ export const app6d: SymbolSetMap = {
         entityType: "Nuclear (Non CBRN Defence)",
         entitySubtype: "",
         code: "111500",
-        remarks: "",
       },
       {
         entity: "Installation",
         entityType: "Printed Media",
         entitySubtype: "",
         code: "111600",
-        remarks: "",
       },
       {
         entity: "Installation",
         entityType: "Safe House",
         entitySubtype: "",
         code: "111700",
-        remarks: "",
       },
       {
         entity: "Installation",
         entityType: "White List Location",
         entitySubtype: "",
         code: "111800",
-        remarks: "",
       },
       {
         entity: "Installation",
@@ -4580,7 +4152,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Energy Facility Infrastructure",
         entitySubtype: "Electric Power",
         code: "120501",
-        remarks: "",
       },
       {
         entity: "Infrastructure",
@@ -4636,14 +4207,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Medical Infrastructure",
         entitySubtype: "Medical",
         code: "120701",
-        remarks: "",
       },
       {
         entity: "Infrastructure",
         entityType: "Medical Infrastructure",
         entitySubtype: "Medical Treatment Facility (Hospital)",
         code: "120702",
-        remarks: "",
       },
       {
         entity: "Infrastructure",
@@ -4762,14 +4331,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Telecommunications Infrastructure",
         entitySubtype: "Broadcast Transmitter Antennae",
         code: "121201",
-        remarks: "",
       },
       {
         entity: "Infrastructure",
         entityType: "Telecommunications Infrastructure",
         entitySubtype: "Telecommunications",
         code: "121202",
-        remarks: "",
       },
       {
         entity: "Infrastructure",
@@ -4790,7 +4357,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Transportation Infrastructure",
         entitySubtype: "Airport/Air Base",
         code: "121301",
-        remarks: "",
       },
       {
         entity: "Infrastructure",
@@ -4832,7 +4398,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Transportation Infrastructure",
         entitySubtype: "Railhead/Railroad Station",
         code: "121307",
-        remarks: "",
       },
       {
         entity: "Infrastructure",
@@ -4846,14 +4411,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Transportation Infrastructure",
         entitySubtype: "Sea Port/Naval Base",
         code: "121309",
-        remarks: "",
       },
       {
         entity: "Infrastructure",
         entityType: "Transportation Infrastructure",
         entitySubtype: "Ship Yard",
         code: "121310",
-        remarks: "",
       },
       {
         entity: "Infrastructure",
@@ -4881,7 +4444,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Water Supply Infrastructure",
         entitySubtype: "",
         code: "121400",
-        remarks: "",
       },
       {
         entity: "Infrastructure",
@@ -4951,31 +4513,26 @@ export const app6d: SymbolSetMap = {
         entityType: "Water Supply Infrastructure",
         entitySubtype: "Water",
         code: "121410",
-        remarks: "",
       },
       {
         entity: "Infrastructure",
         entityType: "Water Supply Infrastructure",
         entitySubtype: "Water Treatment",
         code: "121411",
-        remarks: "",
       },
     ],
     modifierOne: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Biological",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Chemical",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Nuclear",
@@ -5055,14 +4612,12 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
     modifierTwo: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Biological",
@@ -5112,7 +4667,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
   },
@@ -5124,7 +4678,6 @@ export const app6d: SymbolSetMap = {
         entity: "Command and Control Lines",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "110000",
         remarks: "For training or hierarchical purposes only",
       },
@@ -5142,7 +4695,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Lateral",
         geometry: "Line",
         code: "110101",
-        remarks: "",
       },
       {
         entity: "Command and Control Lines",
@@ -5150,7 +4702,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Forward",
         geometry: "Line",
         code: "110102",
-        remarks: "",
       },
       {
         entity: "Command and Control Lines",
@@ -5158,7 +4709,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rear",
         geometry: "Line",
         code: "110103",
-        remarks: "",
       },
       {
         entity: "Command and Control Lines",
@@ -5166,7 +4716,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "110200",
-        remarks: "",
       },
       {
         entity: "Command and Control Lines",
@@ -5174,13 +4723,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "110300",
-        remarks: "",
       },
       {
         entity: "Command and Control Areas",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "120000",
         remarks: "For training or hierarchical purposes only",
       },
@@ -5190,7 +4737,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "120100",
-        remarks: "",
       },
       {
         entity: "Command and Control Areas",
@@ -5198,7 +4744,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "120200",
-        remarks: "",
       },
       {
         entity: "Command and Control Areas",
@@ -5206,7 +4751,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "120300",
-        remarks: "",
       },
       {
         entity: "Command and Control Areas",
@@ -5214,7 +4758,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "120400",
-        remarks: "",
       },
       {
         entity: "Command and Control Areas",
@@ -5222,7 +4765,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "120500",
-        remarks: "",
       },
       {
         entity: "Command and Control Areas",
@@ -5230,13 +4772,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "120600",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "130000",
         remarks: "For training or hierarchical purposes only ",
       },
@@ -5246,7 +4786,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "130100",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5254,7 +4793,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "130200",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5262,7 +4800,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "130300",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5270,7 +4807,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "130400",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5278,7 +4814,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "130500",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5286,7 +4821,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "130600",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5294,7 +4828,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "130700",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5302,7 +4835,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "130800",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5310,13 +4842,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "130900",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
         entityType: "Fly-To-Point",
         entitySubtype: "",
-        geometry: "",
         code: "131000",
         remarks: "For training or hierarchical purposes only ",
       },
@@ -5326,7 +4856,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Sonobuoy",
         geometry: "Point",
         code: "131001",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5334,7 +4863,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Weapon",
         geometry: "Point",
         code: "131002",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5342,7 +4870,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Normal",
         geometry: "Point",
         code: "131003",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5350,7 +4877,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "131100",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5358,7 +4884,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "131200",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5366,7 +4891,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "131300",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5374,7 +4898,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Point of Interest - Launch Event",
         geometry: "Point",
         code: "131301",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5382,7 +4905,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "131400",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5390,7 +4912,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "131500",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5398,7 +4919,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "131600",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5406,7 +4926,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "131700",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5414,7 +4933,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "131800",
-        remarks: "",
       },
       {
         entity: "Command and Control Points",
@@ -5422,7 +4940,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "131900",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5438,7 +4955,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "140100",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5478,7 +4994,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "140200",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5486,7 +5001,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "140300",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5494,7 +5008,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "140400",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5502,7 +5015,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Proposed or On Order",
         geometry: "Line",
         code: "140401",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5510,7 +5022,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "140500",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5526,7 +5037,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Friendly Aviation",
         geometry: "Line",
         code: "140601",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5534,7 +5044,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Friendly Direction of Main Attack",
         geometry: "Line",
         code: "140602",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5542,7 +5051,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Friendly Direction of Supporting Attack",
         geometry: "Line",
         code: "140603",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5550,7 +5058,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Friendly Planned or On Order",
         geometry: "Line",
         code: "140604",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5558,7 +5065,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Feint",
         geometry: "Line",
         code: "140605",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5566,7 +5072,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Enemy Confirmed",
         geometry: "Line",
         code: "140606",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5574,7 +5079,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Enemy Templated or Suspected",
         geometry: "Line",
         code: "140607",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5582,7 +5086,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "140700",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5590,7 +5093,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "140800",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5598,7 +5100,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "140900",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5606,7 +5107,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "141000",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5614,7 +5114,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "141100",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5622,7 +5121,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "141200",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5630,7 +5128,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "141300",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5638,7 +5135,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "141400",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5646,7 +5142,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "141500",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5654,7 +5149,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "141600",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Lines",
@@ -5662,13 +5156,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "141700",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "150000",
         remarks: "For training or hierarchical purposes only ",
       },
@@ -5678,7 +5170,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "150100",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5686,7 +5177,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Friendly",
         geometry: "Area",
         code: "150101",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5694,7 +5184,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Friendly Planned or On Order",
         geometry: "Area",
         code: "150102",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5702,7 +5191,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Enemy Known or Confirmed",
         geometry: "Area",
         code: "150103",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5710,7 +5198,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Enemy Suspected",
         geometry: "Area",
         code: "150104",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5718,7 +5205,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "150200",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5726,7 +5212,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "150300",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5734,7 +5219,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Offset Unit",
         geometry: "Area",
         code: "150301",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5742,13 +5226,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Offset Units",
         geometry: "Area",
         code: "150302",
-        remarks: "",
       },
       {
         entity: "",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "150400",
         remarks: "Reserved for future use ",
       },
@@ -5766,7 +5248,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Joint Tactical Action Area (JTAA)",
         geometry: "Area",
         code: "150501",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5774,7 +5255,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Submarine Action Area (SAA)",
         geometry: "Area",
         code: "150502",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5782,7 +5262,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Submarine-Generated Action Area (SGAA)",
         geometry: "Area",
         code: "150503",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5790,7 +5269,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "150600",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5798,7 +5276,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "150700",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5806,7 +5283,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "150800",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5814,7 +5290,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "150900",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5822,7 +5297,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "151000",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5830,7 +5304,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "151100",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5838,7 +5311,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "151200",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5846,7 +5318,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Prepared (P) but not Occupied",
         geometry: "Area",
         code: "151202",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5854,7 +5325,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Strong Point",
         geometry: "Area",
         code: "151203",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5862,7 +5332,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Contain",
         geometry: "Area",
         code: "151204",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5870,7 +5339,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Retain",
         geometry: "Area",
         code: "151205",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5878,13 +5346,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "151300",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
         entityType: "Axis of Advance",
         entitySubtype: "",
-        geometry: "",
         code: "151400",
         remarks: "For training or hierarchical purposes only ",
       },
@@ -5894,7 +5360,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Friendly Airborne/Aviation",
         geometry: "Line",
         code: "151401",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5902,7 +5367,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Attack Helicopter",
         geometry: "Line",
         code: "151402",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5910,7 +5374,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Main Attack",
         geometry: "Line",
         code: "151403",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5918,7 +5381,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Supporting Attack",
         geometry: "Line",
         code: "151404",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5926,7 +5388,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Supporting Attack Planned or on Order",
         geometry: "Line",
         code: "151405",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5934,7 +5395,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Feint",
         geometry: "Line",
         code: "151406",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5942,7 +5402,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Enemy Confirmed",
         geometry: "Line",
         code: "151407",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5950,7 +5409,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Enemy Templated or Suspected",
         geometry: "Line",
         code: "151408",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5958,7 +5416,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "151500",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5966,7 +5423,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "151600",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5974,7 +5430,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "151700",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5982,7 +5437,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "151800",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5990,7 +5444,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Friendly",
         geometry: "Area",
         code: "151801",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -5998,7 +5451,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Enemy",
         geometry: "Area",
         code: "151802",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -6006,7 +5458,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "151900",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -6014,7 +5465,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "152000",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -6022,7 +5472,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "152100",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Areas",
@@ -6030,13 +5479,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "152200",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Points",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "160000",
         remarks: "For training or hierarchical purposes only",
       },
@@ -6046,7 +5493,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "160100",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Points",
@@ -6054,7 +5500,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "160200",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Points",
@@ -6062,7 +5507,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Reconnaissance Outpost",
         geometry: "Point",
         code: "160201",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Points",
@@ -6070,7 +5514,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Forward Observer Outpost",
         geometry: "Point",
         code: "160202",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Points",
@@ -6078,7 +5521,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "CBRN Observation Outpost",
         geometry: "Point",
         code: "160203",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Points",
@@ -6086,7 +5528,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Sensor Outpost /Listening Post",
         geometry: "Point",
         code: "160204",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Points",
@@ -6094,7 +5535,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Combat Outpost",
         geometry: "Point",
         code: "160205",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Points",
@@ -6102,7 +5542,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "160300",
-        remarks: "",
       },
       {
         entity: "Manoeuvre Points",
@@ -6110,13 +5549,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "160400",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "170000",
         remarks: "For training or hierarchical purposes only ",
       },
@@ -6126,7 +5563,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "170100",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6134,7 +5570,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Air Corridor With Multiple Segments",
         geometry: "Area",
         code: "170101",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6142,7 +5577,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "170200",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6150,7 +5584,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "170300",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6158,7 +5591,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "170400",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6166,7 +5598,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "170500",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6174,7 +5605,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "170600",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6182,7 +5612,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "170700",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6190,7 +5619,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "170800",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6198,7 +5626,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "170900",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6206,7 +5633,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "171000",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6214,7 +5640,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "171100",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6222,7 +5647,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "171200",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6230,7 +5654,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "171300",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6238,7 +5661,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "171400",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6246,7 +5668,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "171500",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6254,7 +5675,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "171600",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6262,7 +5682,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "171700",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6270,7 +5689,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "171800",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6278,7 +5696,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "171900",
-        remarks: "",
       },
       {
         entity: "Airspace Control (Corridors) Areas",
@@ -6286,15 +5703,12 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "172000",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "180000",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6302,7 +5716,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "180100",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6310,7 +5723,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "180200",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6318,7 +5730,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "180300",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6326,7 +5737,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "180400",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6334,7 +5744,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "180500",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6342,7 +5751,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "180600",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6350,7 +5758,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "180700",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6358,7 +5765,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "180800",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6366,7 +5772,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "180900",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6374,7 +5779,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "181000",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6382,7 +5786,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "181100",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6390,7 +5793,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "181200",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6398,7 +5800,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "181300",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6406,7 +5807,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "181400",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6414,7 +5814,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "181500",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6438,7 +5837,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "181800",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6446,7 +5844,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "181900",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6454,7 +5851,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "182000",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6463,7 +5859,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "182100",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6471,7 +5866,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "182200",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6479,7 +5873,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "182300",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6487,7 +5880,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "182400",
-        remarks: "",
       },
       {
         entity: "Airspace Control Points",
@@ -6495,13 +5887,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "182500",
-        remarks: "",
       },
       {
         entity: "Airspace Control Lines",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "190000",
         remarks: "For training or hierarchical purposes",
       },
@@ -6511,7 +5901,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "190100",
-        remarks: "",
       },
       {
         entity: "Airspace Control Lines",
@@ -6519,13 +5908,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "190200",
-        remarks: "",
       },
       {
         entity: "Maritime Control Areas",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "200000",
         remarks: "For training or hierarchical purposes",
       },
@@ -6533,7 +5920,6 @@ export const app6d: SymbolSetMap = {
         entity: "Maritime Control Areas",
         entityType: "Launch Area",
         entitySubtype: "",
-        geometry: "",
         code: "200100",
         remarks: "For training or hierarchical purposes",
       },
@@ -6543,13 +5929,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Ellipse/Circle",
         geometry: "Area",
         code: "200101",
-        remarks: "",
       },
       {
         entity: "Maritime Control Areas",
         entityType: "Defended Area",
         entitySubtype: "",
-        geometry: "",
         code: "200200",
         remarks: "For training or hierarchical purposes",
       },
@@ -6559,7 +5943,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Ellipse/Circle",
         geometry: "Area",
         code: "200201",
-        remarks: "",
       },
       {
         entity: "Maritime Control Areas",
@@ -6567,7 +5950,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangle",
         geometry: "Area",
         code: "200202",
-        remarks: "",
       },
       {
         entity: "Maritime Control Areas",
@@ -6575,7 +5957,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "200300",
-        remarks: "",
       },
       {
         entity: "Maritime Control Areas",
@@ -6583,7 +5964,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "200400",
-        remarks: "",
       },
       {
         entity: "Maritime Control Areas",
@@ -6591,7 +5971,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Ellipse/Circle",
         geometry: "Area",
         code: "200401",
-        remarks: "",
       },
       {
         entity: "Maritime Control Areas",
@@ -6599,7 +5978,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangle",
         geometry: "Area",
         code: "200402",
-        remarks: "",
       },
       {
         entity: "Maritime Control Areas",
@@ -6607,7 +5985,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "200500",
-        remarks: "",
       },
       {
         entity: "Maritime Control Areas",
@@ -6615,7 +5992,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point17",
         code: "200600",
-        remarks: "",
       },
       {
         entity: "Maritime Control Areas",
@@ -6623,13 +5999,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point18",
         code: "200700",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "210000",
         remarks: "For training or hierarchical purposes",
       },
@@ -6639,7 +6013,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "210100",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6647,7 +6020,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "210200",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6655,7 +6027,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "210300",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6663,7 +6034,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "210400",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6671,7 +6041,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "210500",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6679,7 +6048,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "210600",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6687,7 +6055,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "210700",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6695,7 +6062,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "210800",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6703,7 +6069,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "210900",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6711,7 +6076,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "211000",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6719,7 +6083,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "211100",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6727,7 +6090,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "211200",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6735,7 +6097,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "211300",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6743,7 +6104,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "211400",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6751,7 +6111,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "211500",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6759,7 +6118,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "211600",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6767,7 +6125,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "211700",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6775,7 +6132,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "211800",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6783,7 +6139,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "211900",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6791,7 +6146,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "212000",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6799,7 +6153,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "212100",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6807,7 +6160,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "212200",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6815,7 +6167,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "212300",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6823,7 +6174,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "212400",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6831,7 +6181,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "212500",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6839,7 +6188,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "212600",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6847,7 +6195,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "212700",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6855,7 +6202,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "212800",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6863,7 +6209,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "212900",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6871,7 +6216,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "A",
         geometry: "Point",
         code: "212901",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6879,7 +6223,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Q",
         geometry: "Point",
         code: "212902",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6887,7 +6230,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "X",
         geometry: "Point",
         code: "212903",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6895,7 +6237,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Y",
         geometry: "Point",
         code: "212904",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6903,7 +6244,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "213000",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6911,7 +6251,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "213100",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6919,7 +6258,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "213200",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6927,7 +6265,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "213300",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6935,7 +6272,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "213400",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6943,7 +6279,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "213500",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6951,7 +6286,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Ambient Noise",
         geometry: "Point",
         code: "213501",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6959,7 +6293,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Air Transportable Communication",
         geometry: "Point",
         code: "213502",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6967,7 +6300,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Barra",
         geometry: "Point",
         code: "213503",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6975,7 +6307,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Bathythermograph Transmitting",
         geometry: "Point",
         code: "213504",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6983,7 +6314,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Command Active MultiBeam (CAMBS)",
         geometry: "Point",
         code: "213505",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -6992,7 +6322,6 @@ export const app6d: SymbolSetMap = {
           "Command Active Sonobuoy Directional Command Active Sonobuoy System (CASS)",
         geometry: "Point",
         code: "213506",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7000,7 +6329,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Directional Frequency Analysis and Recording (DIFAR)",
         geometry: "Point",
         code: "213507",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7008,7 +6336,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Directional Command Active Sonobuoy System (DICASS)",
         geometry: "Point",
         code: "213508",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7016,7 +6343,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Expendable Reliable Acoustic Path Sonobuoy (ERAPS)",
         geometry: "Point",
         code: "213509",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7024,7 +6350,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Expired",
         geometry: "Point",
         code: "213510",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7032,7 +6357,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Kingpin",
         geometry: "Point",
         code: "213511",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7040,7 +6364,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Low Frequency Analysis and Recording (LOFAR)",
         geometry: "Point",
         code: "213512",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7048,7 +6371,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Pattern Centre",
         geometry: "Point",
         code: "213513",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7056,7 +6378,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Range Only",
         geometry: "Point",
         code: "213514",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7065,7 +6386,6 @@ export const app6d: SymbolSetMap = {
           "Vertical Line Array Directional Frequency Analysis and Recording (DIFAR)",
         geometry: "Point",
         code: "213515",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7073,7 +6393,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "213600",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7081,7 +6400,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "213700",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7089,7 +6407,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "213800",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7097,7 +6414,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "213900",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7105,7 +6421,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "214000",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7113,7 +6428,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "214100",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7121,7 +6435,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "214200",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7129,7 +6442,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "214300",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7137,7 +6449,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "214400",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7145,7 +6456,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "214500",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7153,7 +6463,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "214600",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7161,7 +6470,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "214700",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7169,7 +6477,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "214800",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7177,7 +6484,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "214900",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7185,7 +6491,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "215000",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7193,7 +6498,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "215100",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7201,7 +6505,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "215200",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7210,25 +6513,20 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "215300",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
-        entityType:
-          "Mine Warfare Unmanned Underwater Vehicle Subsurface Station",
+        entityType: "Mine Warfare Unmanned Underwater Vehicle Subsurface Station",
         entitySubtype: "",
         geometry: "Point",
         code: "215400",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
-        entityType:
-          "Surface Warfare Unmanned Underwater Vehicle Subsurface Station",
+        entityType: "Surface Warfare Unmanned Underwater Vehicle Subsurface Station",
         entitySubtype: "",
         geometry: "Point",
         code: "215500",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7236,7 +6534,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "215600",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7244,7 +6541,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "215700",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7252,7 +6548,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "215800",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7260,7 +6555,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "215900",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7268,7 +6562,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "216000",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7276,7 +6569,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "216100",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7284,7 +6576,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "216200",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7292,7 +6583,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "216300",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7300,7 +6590,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "216400",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7308,7 +6597,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "216500",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7317,7 +6605,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "216600",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7325,7 +6612,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "216700",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7334,7 +6620,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "216800",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7343,7 +6628,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "216900",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7351,7 +6635,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "217000",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7359,7 +6642,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "217100",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7367,7 +6649,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "217200",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7375,7 +6656,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "217300",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7383,7 +6663,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "217400",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7391,7 +6670,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "217500",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7399,7 +6677,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "217600",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7407,7 +6684,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "217700",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7415,7 +6691,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "217800",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7423,7 +6698,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "217900",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7431,7 +6705,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "218000",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7439,7 +6712,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "218100",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7447,7 +6719,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "218200",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7455,7 +6726,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "218300",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7463,7 +6733,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "218400",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7471,7 +6740,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "218500",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7479,7 +6747,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "218600",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7487,7 +6754,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "218700",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7496,7 +6762,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "218800",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7504,7 +6769,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "218900",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7512,7 +6776,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "219000",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7520,7 +6783,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "219100",
-        remarks: "",
       },
       {
         entity: "Maritime Control Points",
@@ -7528,13 +6790,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "219200",
-        remarks: "",
       },
       {
         entity: "Maritime Control Lines",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "220000",
         remarks: "For training or hierarchical purposes",
       },
@@ -7544,7 +6804,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "220100",
-        remarks: "",
       },
       {
         entity: "Maritime Control Lines",
@@ -7552,7 +6811,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Electronic",
         geometry: "Line",
         code: "220101",
-        remarks: "",
       },
       {
         entity: "Maritime Control Lines",
@@ -7560,7 +6818,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Electronic Warfare (EW)",
         geometry: "Line",
         code: "220102",
-        remarks: "",
       },
       {
         entity: "Maritime Control Lines",
@@ -7568,7 +6825,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Acoustic",
         geometry: "Line",
         code: "220103",
-        remarks: "",
       },
       {
         entity: "Maritime Control Lines",
@@ -7576,7 +6832,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Acoustic (Ambiguous)",
         geometry: "Line",
         code: "220104",
-        remarks: "",
       },
       {
         entity: "Maritime Control Lines",
@@ -7584,7 +6839,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Torpedo",
         geometry: "Line",
         code: "220105",
-        remarks: "",
       },
       {
         entity: "Maritime Control Lines",
@@ -7592,7 +6846,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Electro-Optical Intercept",
         geometry: "Line",
         code: "220106",
-        remarks: "",
       },
       {
         entity: "Maritime Control Lines",
@@ -7600,7 +6853,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Jammer",
         geometry: "Line",
         code: "220107",
-        remarks: "",
       },
       {
         entity: "Maritime Control Lines",
@@ -7608,13 +6860,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Radio Direction Finder (RDF)",
         geometry: "Line",
         code: "220108",
-        remarks: "",
       },
       {
         entity: "Deception",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "230000",
         remarks: "For training or hierarchical purposes",
       },
@@ -7622,23 +6872,18 @@ export const app6d: SymbolSetMap = {
         entity: "Deception",
         entityType: "Decoy/Dummy",
         entitySubtype: "",
-        geometry: "",
         code: "230100",
-        remarks: "",
       },
       {
         entity: "Deception",
         entityType: "Decoy/Dummy/Feint",
         entitySubtype: "",
-        geometry: "",
         code: "230200",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "240000",
         remarks: "For training or hierarchical purposes",
       },
@@ -7646,7 +6891,6 @@ export const app6d: SymbolSetMap = {
         entity: "Fires Areas",
         entityType: "Airspace Coordination Area",
         entitySubtype: "",
-        geometry: "",
         code: "240100",
         remarks: "For training or hierarchical purposes",
       },
@@ -7656,7 +6900,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "240101",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7664,7 +6907,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "240102",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7672,13 +6914,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "240103",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Free Fire Area",
         entitySubtype: "",
-        geometry: "",
         code: "240200",
         remarks: "For training or hierarchical purposes",
       },
@@ -7688,7 +6928,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "240201",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7696,7 +6935,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "240202",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7704,13 +6942,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "240203",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "No Fire Area",
         entitySubtype: "",
-        geometry: "",
         code: "240300",
         remarks: "For training or hierarchical purposes",
       },
@@ -7720,7 +6956,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "240301",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7728,7 +6963,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "240302",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7736,13 +6970,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "240303",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Restricted Fire Area",
         entitySubtype: "",
-        geometry: "",
         code: "240400",
         remarks: "For training or hierarchical purposes",
       },
@@ -7752,7 +6984,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "240401",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7760,7 +6991,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "240402",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7768,13 +6998,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "240403",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Position Area For Artillery (PAA)",
         entitySubtype: "",
-        geometry: "",
         code: "240500",
         remarks: "For training or hierarchical purposes",
       },
@@ -7784,7 +7012,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "240501",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7792,7 +7019,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "240502",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7800,15 +7026,12 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "240503",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Point Targets",
         entitySubtype: "",
-        geometry: "",
         code: "240600",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7824,7 +7047,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Nuclear Target",
         geometry: "Point",
         code: "240602",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7832,13 +7054,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Target-Recorded",
         geometry: "Point",
         code: "240603",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Linear Targets",
         entitySubtype: "",
-        geometry: "",
         code: "240700",
         remarks: "For training or hierarchical purposes",
       },
@@ -7848,7 +7068,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Linear Target",
         geometry: "Line",
         code: "240701",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7856,7 +7075,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Linear Smoke Target",
         geometry: "Line",
         code: "240702",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7864,13 +7082,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Final Protective Fire (FPF)",
         geometry: "Line",
         code: "240703",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Area Targets",
         entitySubtype: "",
-        geometry: "",
         code: "240800",
         remarks: "For training or hierarchical purposes",
       },
@@ -7880,7 +7096,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Area Target",
         geometry: "Area",
         code: "240801",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7888,7 +7103,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular Target",
         geometry: "Area",
         code: "240802",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7896,7 +7110,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular Target",
         geometry: "Area",
         code: "240803",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7904,7 +7117,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular Target - Single Target",
         geometry: "Area",
         code: "240804",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7912,7 +7124,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Series or Groups of Targets",
         geometry: "Area",
         code: "240805",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7920,13 +7131,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Smoke",
         geometry: "Area",
         code: "240806",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Area Targets",
         entitySubtype: "{reserved for future use}",
-        geometry: "",
         code: "240807",
         remarks: "Reserved for future use ",
       },
@@ -7936,7 +7145,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Bomb Area",
         geometry: "Area",
         code: "240808",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7944,13 +7152,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "240900",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Fire Support Area",
         entitySubtype: "",
-        geometry: "",
         code: "241000",
         remarks: "For training or hierarchical purposes",
       },
@@ -7960,7 +7166,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "241001",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7968,7 +7173,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "241002",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -7976,13 +7180,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "241003",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Artillery Target Intelligence Zone",
         entitySubtype: "",
-        geometry: "",
         code: "241100",
         remarks: "For training or hierarchical purposes",
       },
@@ -7992,7 +7194,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "241101",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8000,7 +7201,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "241102",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8008,13 +7208,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "241103",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Call for Fire Area",
         entitySubtype: "",
-        geometry: "",
         code: "241200",
         remarks: "For training or hierarchical purposes",
       },
@@ -8024,7 +7222,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "241201",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8032,7 +7229,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "241202",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8040,13 +7236,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "241203",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Censor Zone",
         entitySubtype: "",
-        geometry: "",
         code: "241300",
         remarks: "For training or hierarchical purposes",
       },
@@ -8056,7 +7250,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "241301",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8064,7 +7257,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "241302",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8072,13 +7264,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "241303",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Critical Friendly Zone",
         entitySubtype: "",
-        geometry: "",
         code: "241400",
         remarks: "For training or hierarchical purposes",
       },
@@ -8088,7 +7278,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "241401",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8096,7 +7285,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "241402",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8104,13 +7292,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "241403",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Dead Space Area",
         entitySubtype: "",
-        geometry: "",
         code: "241500",
         remarks: "For training or hierarchical purposes",
       },
@@ -8120,7 +7306,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "241501",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8128,7 +7313,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "241502",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8136,13 +7320,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "241503",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Sensor Zone",
         entitySubtype: "",
-        geometry: "",
         code: "241600",
         remarks: "For training or hierarchical purposes",
       },
@@ -8152,7 +7334,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "241601",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8160,7 +7341,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "241602",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8168,13 +7348,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "241603",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Target Build-up Area",
         entitySubtype: "",
-        geometry: "",
         code: "241700",
         remarks: "For training or hierarchical purposes",
       },
@@ -8184,7 +7362,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "241701",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8192,7 +7369,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "241702",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8200,13 +7376,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "241703",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Target Value Area",
         entitySubtype: "",
-        geometry: "",
         code: "241800",
         remarks: "For training or hierarchical purposes",
       },
@@ -8216,7 +7390,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "241801",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8224,7 +7397,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "241802",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8232,13 +7404,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "241803",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Zone of Responsibility",
         entitySubtype: "",
-        geometry: "",
         code: "241900",
         remarks: "For training or hierarchical purposes",
       },
@@ -8248,7 +7418,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular",
         geometry: "Area",
         code: "241901",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8256,7 +7425,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular",
         geometry: "Area",
         code: "241902",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8264,7 +7432,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular",
         geometry: "Area",
         code: "241903",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8272,7 +7439,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "242000",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8280,7 +7446,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "242100",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8288,13 +7453,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "242200",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
         entityType: "Kill Box",
         entitySubtype: "",
-        geometry: "",
         code: "242300",
         remarks: "For training or hierarchical purposes",
       },
@@ -8304,7 +7467,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular, Blue",
         geometry: "Area",
         code: "242301",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8312,7 +7474,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular, Blue",
         geometry: "Area",
         code: "242302",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8320,7 +7481,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular, Blue",
         geometry: "Area",
         code: "242303",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8328,7 +7488,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Irregular, Purple",
         geometry: "Area",
         code: "242304",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8336,7 +7495,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Rectangular, Purple",
         geometry: "Area",
         code: "242305",
-        remarks: "",
       },
       {
         entity: "Fires Areas",
@@ -8344,13 +7502,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Circular, Purple",
         geometry: "Area",
         code: "242306",
-        remarks: "",
       },
       {
         entity: "Fire Points",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "250000",
         remarks: "For training or hierarchical purposes",
       },
@@ -8360,7 +7516,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "250100",
-        remarks: "",
       },
       {
         entity: "Fire Points",
@@ -8368,7 +7523,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "250200",
-        remarks: "",
       },
       {
         entity: "Fire Points",
@@ -8376,7 +7530,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "250300",
-        remarks: "",
       },
       {
         entity: "Fire Points",
@@ -8384,7 +7537,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "250400",
-        remarks: "",
       },
       {
         entity: "Fire Points",
@@ -8392,13 +7544,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "250500",
-        remarks: "",
       },
       {
         entity: "Fire Lines",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "260000",
         remarks: "For training or hierarchical purposes",
       },
@@ -8408,7 +7558,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "260100",
-        remarks: "",
       },
       {
         entity: "Fire Lines",
@@ -8416,7 +7565,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "260200",
-        remarks: "",
       },
       {
         entity: "Fire Lines",
@@ -8424,7 +7572,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "260300",
-        remarks: "",
       },
       {
         entity: "Fire Lines",
@@ -8432,7 +7579,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "260400",
-        remarks: "",
       },
       {
         entity: "Fire Lines",
@@ -8440,7 +7586,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "260500",
-        remarks: "",
       },
       {
         entity: "Fire Lines",
@@ -8448,13 +7593,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "260600",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "270000",
         remarks: "For training or hierarchical purposes",
       },
@@ -8464,7 +7607,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "270100",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8472,7 +7614,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "270200",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8480,7 +7621,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "270300",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8488,7 +7628,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "270400",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8504,7 +7643,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Block",
         geometry: "Area",
         code: "270501",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8512,7 +7650,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Disrupt",
         geometry: "Area",
         code: "270502",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8520,7 +7657,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Fix",
         geometry: "Line",
         code: "270503",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8528,13 +7664,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Turn",
         geometry: "Line",
         code: "270504",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
         entityType: "Obstacle Bypass",
         entitySubtype: "",
-        geometry: "",
         code: "270600",
         remarks: "For training or hierarchical purposes",
       },
@@ -8544,7 +7678,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Easy",
         geometry: "Point12",
         code: "270601",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8552,7 +7685,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Difficult",
         geometry: "Point12",
         code: "270602",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8560,13 +7692,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Impossible",
         geometry: "Point12",
         code: "270603",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
         entityType: "Minefield",
         entitySubtype: "",
-        geometry: "",
         code: "270700",
         remarks: "For training or hierarchical purposes",
       },
@@ -8576,23 +7706,18 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Completed",
         geometry: "Point",
         code: "270701",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
         entityType: "Minefield",
         entitySubtype: "Dummy",
-        geometry: "",
         code: "270705",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
         entityType: "Minefield",
         entitySubtype: "Dummy Dynamic",
-        geometry: "",
         code: "270706",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8600,7 +7725,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Dynamic Depiction",
         geometry: "Area",
         code: "270707",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8608,23 +7732,18 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "270800",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
         entityType: "Decoy Mined Area",
         entitySubtype: "",
-        geometry: "",
         code: "270900",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
         entityType: "Decoy Mined Area",
         entitySubtype: "Fenced",
-        geometry: "",
         code: "270901",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8632,7 +7751,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "271000",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8640,13 +7758,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "271100",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
         entityType: "Roadblocks, Craters and Blown Bridges",
         entitySubtype: "",
-        geometry: "",
         code: "271200",
         remarks: "For training or hierarchical purposes",
       },
@@ -8656,7 +7772,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Planned",
         geometry: "Line",
         code: "271201",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8664,7 +7779,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Explosives, State of Readiness 1 (Safe)",
         geometry: "Line",
         code: "271202",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8672,7 +7786,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Explosives, State of Readiness 2 (armed but passable)",
         geometry: "Line",
         code: "271203",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8680,7 +7793,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Roadblock Complete (Executed)",
         geometry: "Line",
         code: "271204",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8688,15 +7800,12 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "271300",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
         entityType: "Bridge",
         entitySubtype: "",
-        geometry: "",
         code: "271400",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8704,7 +7813,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "271500",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8712,7 +7820,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "271600",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8720,7 +7827,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "271700",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8728,7 +7834,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Toxic Industrial Material",
         geometry: "Area",
         code: "271701",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8736,7 +7841,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "271800",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8744,7 +7848,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Toxic Industrial Material",
         geometry: "Area",
         code: "271801",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8752,7 +7855,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "271900",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8760,15 +7862,12 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "272000",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
         entityType: "Contaminated Area",
         entitySubtype: "",
-        geometry: "",
         code: "Area",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8776,7 +7875,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Toxic Industrial Material",
         geometry: "Area",
         code: "272001",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8784,7 +7882,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "272100",
-        remarks: "",
       },
       {
         entity: "Protection Areas",
@@ -8792,13 +7889,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "272200",
-        remarks: "",
       },
       {
         entity: "Protection Points",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "280000",
         remarks: "For training or hierarchical purposes",
       },
@@ -8808,7 +7903,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "280100",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8816,15 +7910,12 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "280200",
-        remarks: "",
       },
       {
         entity: "Protection Points",
         entityType: "Antipersonnel Mine",
         entitySubtype: "Antipersonnel Mine with Directional Effects",
-        geometry: "",
         code: "280201",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8832,7 +7923,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "280300",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8840,7 +7930,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "280400",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8848,7 +7937,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "280500",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8856,7 +7944,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "280600",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8864,7 +7951,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "280700",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8872,7 +7958,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "280800",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8880,7 +7965,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "280900",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8888,7 +7972,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "281000",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8896,7 +7979,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "281100",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8904,7 +7986,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "281200",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8912,7 +7993,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "281300",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8920,7 +8000,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Toxic Industrial Material",
         geometry: "Point",
         code: "281301",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8928,7 +8007,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "281400",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8936,7 +8014,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Toxic Industrial Material",
         geometry: "Point",
         code: "281401",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8944,7 +8021,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "281500",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8952,7 +8028,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "281600",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8960,7 +8035,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "281700",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8968,7 +8042,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Toxic Industrial Material",
         geometry: "Point",
         code: "281701",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8976,7 +8049,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "281800",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8984,7 +8056,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Alternate",
         geometry: "Point",
         code: "281801",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -8992,7 +8063,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Equipment",
         geometry: "Point",
         code: "281802",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -9000,7 +8070,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Troop",
         geometry: "Point",
         code: "281803",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -9008,7 +8077,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Equipment/Troop",
         geometry: "Point",
         code: "281804",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -9016,7 +8084,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Operational",
         geometry: "Point",
         code: "281805",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -9024,7 +8091,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Thorough",
         geometry: "Point",
         code: "281806",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -9032,7 +8098,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Main Equipment",
         geometry: "Point",
         code: "281807",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -9040,7 +8105,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Forward Troop",
         geometry: "Point",
         code: "281808",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -9048,13 +8112,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Wounded Personnel",
         geometry: "Point",
         code: "281809",
-        remarks: "",
       },
       {
         entity: "Protection Points",
         entityType: "Tetrahedrons, Dragons Teeth, and Other Similar Obstacles",
         entitySubtype: "",
-        geometry: "",
         code: "281900",
         remarks: "For training or hierarchical purposes",
       },
@@ -9064,7 +8126,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Fixed and Prefabricated",
         geometry: "Point",
         code: "281901",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -9072,7 +8133,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Movable",
         geometry: "Point",
         code: "281902",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -9080,13 +8140,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Movable and Prefabricated",
         geometry: "Point",
         code: "281903",
-        remarks: "",
       },
       {
         entity: "Protection Points",
         entityType: "Vertical Obstructions",
         entitySubtype: "",
-        geometry: "",
         code: "282000",
         remarks: "For training or hierarchical purposes",
       },
@@ -9096,7 +8154,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Tower, Low",
         geometry: "Point",
         code: "282001",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -9104,7 +8161,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Tower, High",
         geometry: "Point",
         code: "282002",
-        remarks: "",
       },
       {
         entity: "Protection Points",
@@ -9112,13 +8168,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Overhead Wire",
         geometry: "Line",
         code: "282003",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "290000",
         remarks: "For training or hierarchical purposes",
       },
@@ -9128,13 +8182,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "290100",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
         entityType: "Antitank Obstacles",
         entitySubtype: "",
-        geometry: "",
         code: "290200",
         remarks: "For training or hierarchical purposes",
       },
@@ -9144,7 +8196,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Under Construction",
         geometry: "Line",
         code: "290201",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9152,7 +8203,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Completed",
         geometry: "Line",
         code: "290202",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9160,7 +8210,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Reinforced, with Antitank Mines",
         geometry: "Line",
         code: "290203",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9168,13 +8217,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Antitank Wall",
         geometry: "Line",
         code: "290204",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
         entityType: "Wire Obstacles",
         entitySubtype: "",
-        geometry: "",
         code: "290300",
         remarks: "For training or hierarchical purposes",
       },
@@ -9184,7 +8231,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Unspecified Wire",
         geometry: "Line",
         code: "290301",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9192,7 +8238,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Single Fence Wire",
         geometry: "Line",
         code: "290302",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9200,7 +8245,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Double Fence Wire",
         geometry: "Line",
         code: "290303",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9208,7 +8252,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Double Apron Fence",
         geometry: "Line",
         code: "290304",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9216,7 +8259,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Low Wire Fence",
         geometry: "Line",
         code: "290305",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9224,7 +8266,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "High Wire Fence",
         geometry: "Line",
         code: "290306",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9232,7 +8273,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Single Concertina",
         geometry: "Line",
         code: "290307",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9240,7 +8280,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Double Strand Concertina",
         geometry: "Line",
         code: "290308",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9248,7 +8287,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Triple Strand Concertina",
         geometry: "Line",
         code: "290309",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9256,7 +8294,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "290400",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9264,7 +8301,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "290500",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9272,7 +8308,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "290600",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9280,7 +8315,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "290700",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9288,7 +8322,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "290800",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9296,7 +8329,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "290900",
-        remarks: "",
       },
       {
         entity: "Protection Lines",
@@ -9304,13 +8336,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "291000",
-        remarks: "",
       },
       {
         entity: "Intelligence Lines",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "300000",
         remarks: "For training or hierarchical purposes",
       },
@@ -9320,13 +8350,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "300100",
-        remarks: "",
       },
       {
         entity: "Sustainment Areas",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "310000",
         remarks: "For training or hierarchical purposes",
       },
@@ -9336,7 +8364,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "310100",
-        remarks: "",
       },
       {
         entity: "Sustainment Areas",
@@ -9344,7 +8371,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "310200",
-        remarks: "",
       },
       {
         entity: "Sustainment Areas",
@@ -9352,7 +8378,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "310300",
-        remarks: "",
       },
       {
         entity: "Sustainment Areas",
@@ -9360,7 +8385,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "310400",
-        remarks: "",
       },
       {
         entity: "Sustainment Areas",
@@ -9368,7 +8392,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "310500",
-        remarks: "",
       },
       {
         entity: "Sustainment Areas",
@@ -9376,7 +8399,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "310600",
-        remarks: "",
       },
       {
         entity: "Sustainment Areas",
@@ -9384,13 +8406,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "310700",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "320000",
         remarks: "For training or hierarchical purposes",
       },
@@ -9408,7 +8428,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Ambulance Exchange Point",
         geometry: "Point",
         code: "320101",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9416,7 +8435,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Ambulance Control Point",
         geometry: "Point",
         code: "320102",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9424,7 +8442,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Ambulance Load Point",
         geometry: "Point",
         code: "320103",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9432,7 +8449,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Ambulance Relay Point",
         geometry: "Point",
         code: "320104",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9440,7 +8456,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "320200",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9448,7 +8463,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "320300",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9456,7 +8470,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "320400",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9464,7 +8477,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "320500",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9472,7 +8484,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "320600",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9480,7 +8491,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "320700",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9488,7 +8498,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "320800",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9496,7 +8505,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "320900",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9504,7 +8512,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "321000",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9512,7 +8519,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "321100",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9520,7 +8526,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "321200",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9528,7 +8533,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "321300",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9536,7 +8540,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "321400",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9544,7 +8547,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "321500",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9552,7 +8554,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "321600",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9560,7 +8561,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "321700",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9568,7 +8568,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "NATO Class I Supply Point",
         geometry: "Point",
         code: "321701",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9576,7 +8575,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "NATO Class II Supply Point",
         geometry: "Point",
         code: "321702",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9584,7 +8582,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "NATO Class III Supply Point",
         geometry: "Point",
         code: "321703",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9592,7 +8589,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "NATO Class IV Supply Point",
         geometry: "Point",
         code: "321704",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9600,7 +8596,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "NATO Class V Supply Point",
         geometry: "Point",
         code: "321705",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9608,7 +8603,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "NATO Multiple Class Supply Point",
         geometry: "Point",
         code: "321706",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9616,7 +8610,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "US Class I Supply Point",
         geometry: "Point",
         code: "321707",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9624,7 +8617,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "US Class II Supply Point",
         geometry: "Point",
         code: "321708",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9632,7 +8624,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "US Class III Supply Point",
         geometry: "Point",
         code: "321709",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9640,7 +8631,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "US Class IV Supply Point",
         geometry: "Point",
         code: "321710",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9648,7 +8638,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "US Class V Supply Point",
         geometry: "Point",
         code: "321711",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9656,7 +8645,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "US Class VI Supply Point",
         geometry: "Point",
         code: "321712",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9664,7 +8652,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "US Class VII Supply Point",
         geometry: "Point",
         code: "321713",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9672,7 +8659,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "US Class VIII Supply Point",
         geometry: "Point",
         code: "321714",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9680,7 +8666,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "US Class IX Supply Point",
         geometry: "Point",
         code: "321715",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9688,7 +8673,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "US Class X Supply Point",
         geometry: "Point",
         code: "321716",
-        remarks: "",
       },
       {
         entity: "Sustainment Points",
@@ -9696,13 +8680,11 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "321800",
-        remarks: "",
       },
       {
         entity: "Sustainment Lines",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "330000",
         remarks: "For training or hierarchical purposes",
       },
@@ -9712,7 +8694,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "330100",
-        remarks: "",
       },
       {
         entity: "Sustainment Lines",
@@ -9720,7 +8701,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "330200",
-        remarks: "",
       },
       {
         entity: "Sustainment Lines",
@@ -9728,7 +8708,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "330300",
-        remarks: "",
       },
       {
         entity: "Sustainment Lines",
@@ -9736,7 +8715,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "One Way Traffic",
         geometry: "Line",
         code: "330301",
-        remarks: "",
       },
       {
         entity: "Sustainment Lines",
@@ -9744,7 +8722,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Two Way Traffic",
         geometry: "Line",
         code: "330302",
-        remarks: "",
       },
       {
         entity: "Sustainment Lines",
@@ -9752,7 +8729,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Alternating Traffic",
         geometry: "Line",
         code: "330303",
-        remarks: "",
       },
       {
         entity: "Sustainment Lines",
@@ -9760,7 +8736,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "330400",
-        remarks: "",
       },
       {
         entity: "Sustainment Lines",
@@ -9768,7 +8743,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "One Way Traffic",
         geometry: "Line",
         code: "330401",
-        remarks: "",
       },
       {
         entity: "Sustainment Lines",
@@ -9776,7 +8750,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Two Way Traffic",
         geometry: "Line",
         code: "330402",
-        remarks: "",
       },
       {
         entity: "Sustainment Lines",
@@ -9784,15 +8757,12 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Alternating Traffic",
         geometry: "Line",
         code: "330403",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "340000",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9800,7 +8770,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "340100",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9808,7 +8777,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "340200",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9816,7 +8784,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point12",
         code: "340300",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9824,7 +8791,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point12",
         code: "340400",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9832,7 +8798,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "340500",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9840,7 +8805,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "340600",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9848,7 +8812,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "340700",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9856,7 +8819,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "340800",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9864,7 +8826,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "340900",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9872,7 +8833,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "341000",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9880,7 +8840,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "341100",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9888,7 +8847,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "341200",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9896,7 +8854,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "341300",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9904,7 +8861,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "341400",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9912,7 +8868,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "341500",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9920,7 +8875,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Point",
         code: "341600",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9928,7 +8882,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "341700",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9936,7 +8889,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "341800",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9944,7 +8896,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "341900",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9952,7 +8903,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "342000",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9960,15 +8910,12 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Area",
         code: "342100",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
         entityType: "Security",
         entitySubtype: "",
-        geometry: "",
         code: "342200",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9976,7 +8923,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Cover",
         geometry: "Line",
         code: "342201",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9984,7 +8930,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Guard",
         geometry: "Line",
         code: "342202",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -9992,7 +8937,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Screen",
         geometry: "Line",
         code: "342203",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -10000,7 +8944,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "342300",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -10008,7 +8951,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "342400",
-        remarks: "",
       },
       {
         entity: "Mission Tasks",
@@ -10016,23 +8958,18 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "",
         geometry: "Line",
         code: "342500",
-        remarks: "",
       },
       {
         entity: "Space Debris",
         entityType: "",
         entitySubtype: "",
-        geometry: "",
         code: "350000",
-        remarks: "",
       },
       {
         entity: "Space Debris",
         entityType: "Man Made Space Debris",
         entitySubtype: "",
-        geometry: "",
         code: "350100",
-        remarks: "",
       },
       {
         entity: "Space Debris",
@@ -10040,7 +8977,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Man Made Space Debris Small",
         geometry: "Point",
         code: "350101",
-        remarks: "",
       },
       {
         entity: "Space Debris",
@@ -10048,7 +8984,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Man Made Space Debris Medium",
         geometry: "Point",
         code: "350102",
-        remarks: "",
       },
       {
         entity: "Space Debris",
@@ -10056,15 +8991,12 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Man Made Space Debris Big",
         geometry: "Point",
         code: "350103",
-        remarks: "",
       },
       {
         entity: "Space Debris",
         entityType: "Natural Space Debris",
         entitySubtype: "",
-        geometry: "",
         code: "350200",
-        remarks: "",
       },
       {
         entity: "Space Debris",
@@ -10072,7 +9004,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Natural Space Debris Small",
         geometry: "Point",
         code: "350201",
-        remarks: "",
       },
       {
         entity: "Space Debris",
@@ -10080,7 +9011,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Natural Space Debris Medium",
         geometry: "Point",
         code: "350202",
-        remarks: "",
       },
       {
         entity: "Space Debris",
@@ -10088,7 +9018,6 @@ export const app6d: SymbolSetMap = {
         entitySubtype: "Natural Space Debris Big",
         geometry: "Point",
         code: "350203",
-        remarks: "",
       },
     ],
     modifierOne: [],
@@ -10117,28 +9046,24 @@ export const app6d: SymbolSetMap = {
         entityType: "Service/Branch",
         entitySubtype: "Infantry",
         code: "110101",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Service/Branch",
         entitySubtype: "Medical",
         code: "110102",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Service/Branch",
         entitySubtype: "Reconnaissance",
         code: "110103",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Service/Branch",
         entitySubtype: "Signal",
         code: "110104",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -10152,70 +9077,60 @@ export const app6d: SymbolSetMap = {
         entityType: "Activity/Task",
         entitySubtype: "Explosive Ordnance Disposal",
         code: "110201",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Activity/Task",
         entitySubtype: "Field Artillery Observer",
         code: "110202",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Activity/Task",
         entitySubtype: "Joint Fire Support",
         code: "110203",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Activity/Task",
         entitySubtype: "Liaison",
         code: "110204",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Activity/Task",
         entitySubtype: "Messenger",
         code: "110205",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Activity/Task",
         entitySubtype: "Military Police",
         code: "110206",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Activity/Task",
         entitySubtype: "Observer",
         code: "110207",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Activity/Task",
         entitySubtype: "Security",
         code: "110208",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Activity/Task",
         entitySubtype: "Sniper",
         code: "110209",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Activity/Task",
         entitySubtype: "Special Operation Forces",
         code: "110210",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -10229,112 +9144,96 @@ export const app6d: SymbolSetMap = {
         entityType: "Lethal Weapons",
         entitySubtype: "Rifle",
         code: "110301",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Single Shot Rifle",
         code: "110302",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Semiautomatic Rifle",
         code: "110303",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Automatic Rifle",
         code: "110304",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Machine Gun",
         code: "110305",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Machine Gun - Light",
         code: "110306",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Machine Gun - Medium",
         code: "110307",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Machine Gun - Heavy",
         code: "110308",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Grenade Launcher",
         code: "110309",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Grenade Launcher - Light",
         code: "110310",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Grenade Launcher - Medium",
         code: "110311",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Grenade Launcher - Heavy",
         code: "110312",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Flame Thrower",
         code: "110313",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Mortar",
         code: "110314",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Single Rocket Launcher",
         code: "110315",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Lethal Weapons",
         entitySubtype: "Antitank Rocket Launcher",
         code: "110316",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -10348,21 +9247,18 @@ export const app6d: SymbolSetMap = {
         entityType: "Non-Lethal Weapons",
         entitySubtype: "Non-Lethal Weapon",
         code: "110401",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Non-Lethal Weapons",
         entitySubtype: "Non-Lethal Grenade Launcher",
         code: "110402",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Non-Lethal Weapons",
         entitySubtype: "Taser",
         code: "110403",
-        remarks: "",
       },
       {
         entity: "Civilian",
@@ -10383,289 +9279,232 @@ export const app6d: SymbolSetMap = {
         entityType: "Activity/Task",
         entitySubtype: "Police",
         code: "120101",
-        remarks: "",
       },
     ],
     modifierOne: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Close Protection",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Crowd and Riot Control",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Explosive Ordnance Disposal",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Security",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Sniper",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Special Weapons and Tactics",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Non-Governmental Organization Member",
         code: "07",
-        remarks: "",
       },
       {
         modifier: "Multinational",
         code: "08",
-        remarks: "",
       },
       {
         modifier: "Multinational Specialized Unit",
         code: "09",
-        remarks: "",
       },
       {
         modifier: "Governmental Organization Member",
         code: "10",
-        remarks: "",
       },
       {
         modifier: "Video Imagery (COMBAT CAMERA)",
         code: "11",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J1",
         code: "12",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J2",
         code: "13",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J3",
         code: "14",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J4",
         code: "15",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J5",
         code: "16",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J6",
         code: "17",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J7",
         code: "18",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J8",
         code: "19",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J9",
         code: "20",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-1",
         code: "21",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-2",
         code: "22",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-3",
         code: "23",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-4",
         code: "24",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-5",
         code: "25",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-6",
         code: "26",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-7",
         code: "27",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-8",
         code: "28",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-9",
         code: "29",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-10",
         code: "30",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-D",
         code: "31",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-1",
         code: "32",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-2",
         code: "33",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-3",
         code: "34",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-4",
         code: "35",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-5",
         code: "36",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-6",
         code: "37",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-7",
         code: "38",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-8",
         code: "39",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-9",
         code: "40",
-        remarks: "",
       },
       {
         modifier: "Rank Code WO-1",
         code: "41",
-        remarks: "",
       },
       {
         modifier: "Rank Code WO-2",
         code: "42",
-        remarks: "",
       },
       {
         modifier: "Rank Code WO-3",
         code: "43",
-        remarks: "",
       },
       {
         modifier: "Rank Code WO-4",
         code: "44",
-        remarks: "",
       },
       {
         modifier: "Rank Code WO-5",
         code: "45",
-        remarks: "",
       },
       {
         modifier: "Individual",
         code: "46",
-        remarks: "",
       },
       {
         modifier: "Team/Crew",
         code: "47",
-        remarks: "",
       },
       {
         modifier: "Squad",
         code: "48",
-        remarks: "",
       },
       {
         modifier: "Section",
         code: "49",
-        remarks: "",
       },
       {
         modifier: "Platoon/Detachment",
         code: "50",
-        remarks: "",
       },
       {
         modifier: "Company",
         code: "51",
-        remarks: "",
       },
       {
         modifier: "Battalion",
         code: "52",
-        remarks: "",
       },
       {
         modifier: "Regiment/Group",
         code: "53",
-        remarks: "",
       },
       {
         modifier: "Brigade",
         code: "54",
-        remarks: "",
       },
       {
         modifier: "Division",
         code: "55",
-        remarks: "",
       },
       {
         modifier: "Reserved for future Use",
@@ -10675,209 +9514,168 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
     modifierTwo: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Airborne",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Bicycle Equipped",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Demolition",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J1",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J2",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J3",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J4",
         code: "07",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J5",
         code: "08",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J6",
         code: "09",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J7",
         code: "10",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J8",
         code: "11",
-        remarks: "",
       },
       {
         modifier: "Functional Staff Area J9",
         code: "12",
-        remarks: "",
       },
       {
         modifier: "Mountain",
         code: "13",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-1",
         code: "14",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-2",
         code: "15",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-3",
         code: "16",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-4",
         code: "17",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-5",
         code: "18",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-6",
         code: "19",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-7",
         code: "20",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-8",
         code: "21",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-9",
         code: "22",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-10",
         code: "23",
-        remarks: "",
       },
       {
         modifier: "Rank Code OF-D",
         code: "24",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-1",
         code: "25",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-2",
         code: "26",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-3",
         code: "27",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-4",
         code: "28",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-5",
         code: "29",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-6",
         code: "30",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-7",
         code: "31",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-8",
         code: "32",
-        remarks: "",
       },
       {
         modifier: "Rank Code OR-9",
         code: "33",
-        remarks: "",
       },
       {
         modifier: "Rank Code WO-1",
         code: "34",
-        remarks: "",
       },
       {
         modifier: "Rank Code WO-2",
         code: "35",
-        remarks: "",
       },
       {
         modifier: "Rank Code WO-3",
         code: "36",
-        remarks: "",
       },
       {
         modifier: "Rank Code WO-4",
         code: "37",
-        remarks: "",
       },
       {
         modifier: "Rank Code WO-5",
         code: "38",
-        remarks: "",
       },
       {
         modifier: "SKI",
         code: "39",
-        remarks: "",
       },
       {
         modifier: "Reserved for future Use",
@@ -10887,7 +9685,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
   },
@@ -10914,63 +9711,54 @@ export const app6d: SymbolSetMap = {
         entityType: "Carrier",
         entitySubtype: "",
         code: "120100",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Surface Combatant, Line",
         entitySubtype: "",
         code: "120200",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Surface Combatant, Line",
         entitySubtype: "Battleship",
         code: "120201",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Surface Combatant, Line",
         entitySubtype: "Cruiser",
         code: "120202",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Surface Combatant, Line",
         entitySubtype: "Destroyer",
         code: "120203",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Surface Combatant, Line",
         entitySubtype: "Frigate",
         code: "120204",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Surface Combatant, Line",
         entitySubtype: "Corvette",
         code: "120205",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Surface Combatant, Line",
         entitySubtype: "Littoral Combatant Ship",
         code: "120206",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Amphibious Warfare Ship",
         entitySubtype: "",
         code: "120300",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
@@ -10984,35 +9772,30 @@ export const app6d: SymbolSetMap = {
         entityType: "Amphibious Warfare Ship",
         entitySubtype: "Amphibious Assault, Nonspecified",
         code: "120302",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Amphibious Warfare Ship",
         entitySubtype: "Amphibious Assault Ship, General",
         code: "120303",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Amphibious Warfare Ship",
         entitySubtype: "Amphibious Assault Ship, Multipurpose",
         code: "120304",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Amphibious Warfare Ship",
         entitySubtype: "Amphibious Assault Ship, Helicopter",
         code: "120305",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Amphibious Warfare Ship",
         entitySubtype: "Amphibious Transport Dock",
         code: "120306",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
@@ -11026,7 +9809,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Amphibious Warfare Ship",
         entitySubtype: "Landing Craft",
         code: "120308",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
@@ -11054,7 +9836,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Mine Warfare Ship, General",
         entitySubtype: "Mine Sweeper, Drone",
         code: "120403",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
@@ -11075,7 +9856,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Mine Warfare Ship, General",
         entitySubtype: "Mine Countermeasures, Support Ship",
         code: "120406",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
@@ -11089,7 +9869,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Patrol Boat General",
         entitySubtype: "Patrol Craft, Submarine Chaser/Escort, General",
         code: "120501",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
@@ -11103,14 +9882,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Decoy",
         entitySubtype: "",
         code: "120600",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Unmanned Surface Water Vehicle (USV)",
         entitySubtype: "",
         code: "120700",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
@@ -11124,63 +9901,54 @@ export const app6d: SymbolSetMap = {
         entityType: "Spdboat",
         entitySubtype: "Rigid-Hull Inflatable Boat (RHIB)",
         code: "120801",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Jet Ski",
         entitySubtype: "",
         code: "120900",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Navy Task Organization",
         entitySubtype: "",
         code: "121000",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Navy Task Organization",
         entitySubtype: "Navy Task Element",
         code: "121001",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Navy Task Organization",
         entitySubtype: "Navy Task Force",
         code: "121002",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Navy Task Organization",
         entitySubtype: "Navy Task Group",
         code: "121003",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Navy Task Organization",
         entitySubtype: "Navy Task Unit",
         code: "121004",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Navy Task Organization",
         entitySubtype: "Convoy",
         code: "121005",
-        remarks: "",
       },
       {
         entity: "Military Combatant",
         entityType: "Sea-Based X-Band Radar",
         entitySubtype: "",
         code: "121100",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
@@ -11201,7 +9969,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Auxiliary Ship General",
         entitySubtype: "Ammunition Ship",
         code: "130101",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
@@ -11222,28 +9989,24 @@ export const app6d: SymbolSetMap = {
         entityType: "Auxiliary Ship General",
         entitySubtype: "Intelligence Collector",
         code: "130104",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
         entityType: "Auxiliary Ship General",
         entitySubtype: "Oceanographic Research Ship (AGOR)",
         code: "130105",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
         entityType: "Auxiliary Ship General",
         entitySubtype: "Survey Ship",
         code: "130106",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
         entityType: "Auxiliary Ship General",
         entitySubtype: "Hospital Ship",
         code: "130107",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
@@ -11271,49 +10034,42 @@ export const app6d: SymbolSetMap = {
         entityType: "Auxiliary Ship General",
         entitySubtype: "Repair Ship",
         code: "130111",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
         entityType: "Auxiliary Ship General",
         entitySubtype: "Submarine Tender",
         code: "130112",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
         entityType: "Auxiliary Ship General",
         entitySubtype: "Tug, Ocean Going",
         code: "130113",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
         entityType: "Service Craft/Yard",
         entitySubtype: "",
         code: "130200",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
         entityType: "Service Craft/Yard",
         entitySubtype: "Barge, not Self-Propelled",
         code: "130201",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
         entityType: "Service Craft/Yard",
         entitySubtype: "Barge, Self-Propelled",
         code: "130202",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
         entityType: "Service Craft/Yard",
         entitySubtype: "Tug, Harbour",
         code: "130203",
-        remarks: "",
       },
       {
         entity: "Military Non Combatant",
@@ -11327,7 +10083,6 @@ export const app6d: SymbolSetMap = {
         entityType: "",
         entitySubtype: "",
         code: "140000",
-        remarks: "",
       },
       {
         entity: "Civilian",
@@ -11418,14 +10173,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Merchant Ship, General",
         entitySubtype: "Tow",
         code: "140112",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Merchant Ship, General",
         entitySubtype: "Transport Ship, Hazardous Material",
         code: "140113",
-        remarks: "",
       },
       {
         entity: "Civilian",
@@ -11439,14 +10192,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Merchant Ship, General",
         entitySubtype: "Barge, not Self-Propelled",
         code: "140115",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Merchant Ship, General",
         entitySubtype: "Hospital Ship",
         code: "140116",
-        remarks: "",
       },
       {
         entity: "Civilian",
@@ -11460,14 +10211,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Fishing Vessel, General",
         entitySubtype: "Drifter",
         code: "140201",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Fishing Vessel, General",
         entitySubtype: "Trawler",
         code: "140202",
-        remarks: "",
       },
       {
         entity: "Civilian",
@@ -11481,28 +10230,24 @@ export const app6d: SymbolSetMap = {
         entityType: "Law Enforcement Vessel",
         entitySubtype: "",
         code: "140300",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Leisure Craft, Sailing",
         entitySubtype: "",
         code: "140400",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Leisure Craft, Motorized",
         entitySubtype: "",
         code: "140500",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Leisure Craft, Motorized",
         entitySubtype: "Rigid-Hull Inflatable Boat (RHIB)",
         code: "140501",
-        remarks: "",
       },
       {
         entity: "Civilian",
@@ -11516,132 +10261,108 @@ export const app6d: SymbolSetMap = {
         entityType: "Jet Ski",
         entitySubtype: "",
         code: "140600",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Unmanned Surface Water Vehicle (USV)",
         entitySubtype: "",
         code: "140700",
-        remarks: "",
       },
       {
         entity: "Own Ship",
         entityType: "",
         entitySubtype: "",
         code: "150000",
-        remarks: "",
       },
       {
         entity: "Fused Track",
         entityType: "",
         entitySubtype: "",
         code: "160000",
-        remarks: "",
       },
       {
         entity: "Manual Track",
         entityType: "",
         entitySubtype: "",
         code: "170000",
-        remarks: "",
       },
     ],
     modifierOne: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Own Ship",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Anti-air Warfare",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Antisubmarine Warfare",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Escort",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Electronic Warfare",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Intelligence, Surveillance, Reconnaissance",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Mine Countermeasures",
         code: "07",
-        remarks: "",
       },
       {
         modifier: "Missile Defence",
         code: "08",
-        remarks: "",
       },
       {
         modifier: "Medical",
         code: "09",
-        remarks: "",
       },
       {
         modifier: "Mine Warfare",
         code: "10",
-        remarks: "",
       },
       {
         modifier: "Remote Multi-Mission Vehicle",
         code: "11",
-        remarks: "",
       },
       {
         modifier: "Special Operations Forces (SOF)",
         code: "12",
-        remarks: "",
       },
       {
         modifier: "Surface Warfare",
         code: "13",
-        remarks: "",
       },
       {
         modifier: "Ballistic Missile",
         code: "14",
-        remarks: "",
       },
       {
         modifier: "Guided Missile",
         code: "15",
-        remarks: "",
       },
       {
         modifier: "Other Guided Missile",
         code: "16",
-        remarks: "",
       },
       {
         modifier: "Torpedo",
         code: "17",
-        remarks: "",
       },
       {
         modifier: "Drone-Equipped",
         code: "18",
-        remarks: "",
       },
       {
         modifier: "Helicopter-Equipped/VSTOL",
@@ -11654,8 +10375,7 @@ export const app6d: SymbolSetMap = {
         remarks: "From MIL-STD-2525. ",
       },
       {
-        modifier:
-          "Ballistic Missile Defence, Long-Range Surveillance and Track (LRS&T)",
+        modifier: "Ballistic Missile Defence, Long-Range Surveillance and Track (LRS&T)",
         code: "21",
         remarks: "From MIL-STD-2525. ",
       },
@@ -11677,89 +10397,72 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
     modifierTwo: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Nuclear Powered",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Heavy",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Light",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Medium",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Dock",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Logistics",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Tank",
         code: "07",
-        remarks: "",
       },
       {
         modifier: "Vehicle",
         code: "08",
-        remarks: "",
       },
       {
         modifier: "Fast",
         code: "09",
-        remarks: "",
       },
       {
         modifier: "Air-Cushioned (US)",
         code: "10",
-        remarks: "",
       },
       {
         modifier: "Air-Cushioned (NATO)",
         code: "11",
-        remarks: "",
       },
       {
         modifier: "Hydrofoil",
         code: "12",
-        remarks: "",
       },
       {
         modifier: "Autonomous Control",
         code: "13",
-        remarks: "",
       },
       {
         modifier: "Remotely Piloted",
         code: "14",
-        remarks: "",
       },
       {
         modifier: "Expendable",
         code: "15",
-        remarks: "",
       },
       {
         modifier: "Reserved for Future Use",
@@ -11769,7 +10472,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
   },
@@ -11782,7 +10484,6 @@ export const app6d: SymbolSetMap = {
         entityType: "",
         entitySubtype: "",
         code: "110000",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -11796,35 +10497,30 @@ export const app6d: SymbolSetMap = {
         entityType: "Submarine, General",
         entitySubtype: "Submarine, Surfaced",
         code: "110101",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Submarine, General",
         entitySubtype: "Submarine, Snorkelling",
         code: "110102",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Submarine, General",
         entitySubtype: "Submarine, Bottomed",
         code: "110103",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Other Submersible",
         entitySubtype: "",
         code: "110200",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Nonsubmarine",
         entitySubtype: "",
         code: "110300",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -11832,21 +10528,18 @@ export const app6d: SymbolSetMap = {
           "Autonomous Underwater Vehicle (AUV)/Unmanned Underwater Vehicle (UUV)",
         entitySubtype: "",
         code: "110400",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Diver",
         entitySubtype: "",
         code: "110500",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "",
         entitySubtype: "",
         code: "120000",
-        remarks: "",
       },
       {
         entity: "Civilian",
@@ -11861,124 +10554,104 @@ export const app6d: SymbolSetMap = {
           "Autonomous Underwater Vehicle (AUV)/ Unmanned Underwater Vehicle (UUV)",
         entitySubtype: "",
         code: "120200",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Diver",
         entitySubtype: "",
         code: "120300",
-        remarks: "",
       },
       {
         entity: "Weapon",
         entityType: "",
         entitySubtype: "",
         code: "130000",
-        remarks: "",
       },
       {
         entity: "Weapon",
         entityType: "Torpedo",
         entitySubtype: "",
         code: "130100",
-        remarks: "",
       },
       {
         entity: "Weapon",
         entityType: "Improvised Explosive Device (IED)",
         entitySubtype: "",
         code: "130200",
-        remarks: "",
       },
       {
         entity: "Weapon",
         entityType: "Decoy",
         entitySubtype: "",
         code: "130300",
-        remarks: "",
       },
       {
         entity: "Echo Tracker Classifier (ETC) / Possible Contact (POSCON)",
         entityType: "",
         entitySubtype: "",
         code: "140000",
-        remarks: "",
       },
       {
         entity: "Fused Track",
         entityType: "",
         entitySubtype: "",
         code: "150000",
-        remarks: "",
       },
       {
         entity: "Manual Track",
         entityType: "",
         entitySubtype: "",
         code: "160000",
-        remarks: "",
       },
       {
         entity: "Sea Bed Installation Man-Made Military",
         entityType: "",
         entitySubtype: "",
         code: "200000",
-        remarks: "",
       },
       {
         entity: "Sea Bed Installation Man-Made Non-Military",
         entityType: "",
         entitySubtype: "",
         code: "210000",
-        remarks: "",
       },
     ],
     modifierOne: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Antisubmarine Warfare",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Auxiliary",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Command and Control",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Intelligence, Surveillance, Reconnaissance",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Mine Countermeasures",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Mine Warfare",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Surface Warfare",
         code: "07",
-        remarks: "",
       },
       {
         modifier: "Attack",
         code: "08",
-        remarks: "",
       },
       {
         modifier: "Ballistic Missile",
@@ -12038,7 +10711,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Hijacking/Hijacked",
         code: "20",
-        remarks: "",
       },
       {
         modifier: "Reserved for Future Use",
@@ -12048,14 +10720,12 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
     modifierTwo: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Air Independent Propulsion",
@@ -12145,7 +10815,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
   },
@@ -12158,42 +10827,36 @@ export const app6d: SymbolSetMap = {
         entityType: "",
         entitySubtype: "",
         code: "110000",
-        remarks: "",
       },
       {
         entity: "Sea Mine, General",
         entityType: "Sea Mine, Bottom",
         entitySubtype: "",
         code: "110100",
-        remarks: "",
       },
       {
         entity: "Sea Mine, General",
         entityType: "Sea Mine, Moored",
         entitySubtype: "",
         code: "110200",
-        remarks: "",
       },
       {
         entity: "Sea Mine, General",
         entityType: "Sea Mine, Floating",
         entitySubtype: "",
         code: "110300",
-        remarks: "",
       },
       {
         entity: "Sea Mine, General",
         entityType: "Sea Mine, Rising",
         entitySubtype: "",
         code: "110400",
-        remarks: "",
       },
       {
         entity: "Sea Mine, General",
         entityType: "Sea Mine, Other Position",
         entitySubtype: "",
         code: "110500",
-        remarks: "",
       },
       {
         entity: "Sea Mine, General",
@@ -12249,70 +10912,60 @@ export const app6d: SymbolSetMap = {
         entityType: "Neutralized Mine, General",
         entitySubtype: "",
         code: "110900",
-        remarks: "",
       },
       {
         entity: "Sea Mine, General",
         entityType: "Neutralized Mine, General",
         entitySubtype: "Neutralized Mine, Bottom",
         code: "110901",
-        remarks: "",
       },
       {
         entity: "Sea Mine, General",
         entityType: "Neutralized Mine, General",
         entitySubtype: "Neutralized Mine, Moored",
         code: "110902",
-        remarks: "",
       },
       {
         entity: "Sea Mine, General",
         entityType: "Neutralized Mine, General",
         entitySubtype: "Neutralized Mine, Floating",
         code: "110903",
-        remarks: "",
       },
       {
         entity: "Sea Mine, General",
         entityType: "Neutralized Mine, General",
         entitySubtype: "Neutralized Mine, Rising",
         code: "110904",
-        remarks: "",
       },
       {
         entity: "Sea Mine, General",
         entityType: "Neutralized Mine, General",
         entitySubtype: "Neutralized Mine, Other Position",
         code: "110905",
-        remarks: "",
       },
       {
         entity: "Unexploded Ordnance",
         entityType: "",
         entitySubtype: "",
         code: "120000",
-        remarks: "",
       },
       {
         entity: "Sea Mine Decoy",
         entityType: "",
         entitySubtype: "",
         code: "130000",
-        remarks: "",
       },
       {
         entity: "Sea Mine Decoy",
         entityType: "Sea Mine Decoy, Bottom",
         entitySubtype: "",
         code: "130100",
-        remarks: "",
       },
       {
         entity: "Sea Mine Decoy",
         entityType: "Sea Mine Decoy, Moored",
         entitySubtype: "",
         code: "130200",
-        remarks: "",
       },
       {
         entity: "Mine-Like Contact (MILCO)",
@@ -12635,7 +11288,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Criminal Activity Incident",
         entitySubtype: "Arrest",
         code: "110101",
-        remarks: "",
       },
       {
         entity: "Incident",
@@ -12649,56 +11301,48 @@ export const app6d: SymbolSetMap = {
         entityType: "Criminal Activity Incident",
         entitySubtype: "Attempted Criminal Activity",
         code: "110103",
-        remarks: "",
       },
       {
         entity: "Incident",
         entityType: "Criminal Activity Incident",
         entitySubtype: "Drive-by Shooting",
         code: "110104",
-        remarks: "",
       },
       {
         entity: "Incident",
         entityType: "Criminal Activity Incident",
         entitySubtype: "Drug Related",
         code: "110105",
-        remarks: "",
       },
       {
         entity: "Incident",
         entityType: "Criminal Activity Incident",
         entitySubtype: "Extortion",
         code: "110106",
-        remarks: "",
       },
       {
         entity: "Incident",
         entityType: "Criminal Activity Incident",
         entitySubtype: "Graffiti",
         code: "110107",
-        remarks: "",
       },
       {
         entity: "Incident",
         entityType: "Criminal Activity Incident",
         entitySubtype: "Killing",
         code: "110108",
-        remarks: "",
       },
       {
         entity: "Incident",
         entityType: "Criminal Activity Incident",
         entitySubtype: "Poisoning",
         code: "110109",
-        remarks: "",
       },
       {
         entity: "Incident",
         entityType: "Criminal Activity Incident",
         entitySubtype: "Civil Rioting",
         code: "110110",
-        remarks: "",
       },
       {
         entity: "Incident",
@@ -12859,7 +11503,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Illegal Drug Operation",
         entitySubtype: "",
         code: "110500",
-        remarks: "",
       },
       {
         entity: "Incident",
@@ -12880,7 +11523,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Explosion",
         entitySubtype: "",
         code: "110600",
-        remarks: "",
       },
       {
         entity: "Incident",
@@ -12936,7 +11578,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Demonstration",
         entitySubtype: "",
         code: "120100",
-        remarks: "",
       },
       {
         entity: "Operation",
@@ -12950,7 +11591,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Patrolling",
         entitySubtype: "",
         code: "130100",
-        remarks: "",
       },
       {
         entity: "Operation",
@@ -12965,14 +11605,12 @@ export const app6d: SymbolSetMap = {
         entityType: "PSYCHOLOGICAL OPERATIONS (PSYOPS)",
         entitySubtype: "TV and Radio Propaganda",
         code: "130201",
-        remarks: "",
       },
       {
         entity: "Operation",
         entityType: "Foraging/Searching",
         entitySubtype: "",
         code: "130300",
-        remarks: "",
       },
       {
         entity: "Operation",
@@ -13680,97 +12318,78 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Assassination",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Execution (Wrongful Killing)",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Hijacking/Hijacked",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "House-to-House",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Kidnapping",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Murder",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Piracy",
         code: "07",
-        remarks: "",
       },
       {
         modifier: "Rape",
         code: "08",
-        remarks: "",
       },
       {
         modifier: "Written Psychological Operations (PSYOPS)",
         code: "09",
-        remarks: "",
       },
       {
         modifier: "Pirate",
         code: "10",
-        remarks: "",
       },
       {
         modifier: "False",
         code: "11",
-        remarks: "",
       },
       {
         modifier: "Find",
         code: "12",
-        remarks: "",
       },
       {
         modifier: "Found and Cleared",
         code: "13",
-        remarks: "",
       },
       {
         modifier: "Hoax (Decoy)",
         code: "14",
-        remarks: "",
       },
       {
         modifier: "Attempted",
         code: "15",
-        remarks: "",
       },
       {
         modifier: "Accident",
         code: "16",
-        remarks: "",
       },
       {
         modifier: "Incident",
         code: "17",
-        remarks: "",
       },
       {
         modifier: "Theft",
         code: "18",
-        remarks: "",
       },
       {
         modifier: "Reserved for Future Use",
@@ -13780,7 +12399,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
     modifierTwo: [],
@@ -13794,7 +12412,6 @@ export const app6d: SymbolSetMap = {
         entityType: "",
         entitySubtype: "",
         code: "000000",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -13808,35 +12425,30 @@ export const app6d: SymbolSetMap = {
         entityType: "Fixed Wing",
         entitySubtype: "",
         code: "110100",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Medical Evacuation (MEDEVAC)",
         code: "110101",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Attack/Strike",
         code: "110102",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Bomber",
         code: "110103",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Fighter",
         code: "110104",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -13850,105 +12462,90 @@ export const app6d: SymbolSetMap = {
         entityType: "Fixed Wing",
         entitySubtype: "{reserved for future use}",
         code: "110106",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Cargo",
         code: "110107",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Electronic Combat (EC)/Jammer",
         code: "110108",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Tanker",
         code: "110109",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Patrol",
         code: "110110",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Reconnaissance",
         code: "110111",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Trainer",
         code: "110112",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Utility",
         code: "110113",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Vertical or Short Take-off and Landing (VSTOL)",
         code: "110114",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Airborne Command Post (ACP)",
         code: "110115",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Airborne Early Warning (AEW)",
         code: "110116",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Antisurface Warfare",
         code: "110117",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Antisubmarine Warfare",
         code: "110118",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Communications",
         code: "110119",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Combat Search and Rescue (CSAR)",
         code: "110120",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -13962,42 +12559,36 @@ export const app6d: SymbolSetMap = {
         entityType: "Fixed Wing",
         entitySubtype: "Government",
         code: "110122",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Mine Countermeasures (MCM)",
         code: "110123",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Personnel Recovery",
         code: "110124",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Search and Rescue",
         code: "110125",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Special Operations Forces",
         code: "110126",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Ultra Light",
         code: "110127",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -14011,21 +12602,18 @@ export const app6d: SymbolSetMap = {
         entityType: "Fixed Wing",
         entitySubtype: "Very Important Person (VIP)",
         code: "110129",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Suppression of Enemy Air Defence",
         code: "110130",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Fixed Wing",
         entitySubtype: "Passenger",
         code: "110131",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -14046,7 +12634,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Rotary Wing",
         entitySubtype: "",
         code: "110200",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -14054,7 +12641,6 @@ export const app6d: SymbolSetMap = {
           "Unmanned Aircraft (UA) / Unmanned Aerial Vehicle (UAV) / Unmanned Aircraft System (UAS) / Remotely Piloted Vehicle (RPV)",
         entitySubtype: "",
         code: "110300",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -14068,14 +12654,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Lighter Than Air",
         entitySubtype: "",
         code: "110500",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Airship",
         entitySubtype: "",
         code: "110600",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -14096,14 +12680,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Fixed Wing",
         entitySubtype: "",
         code: "120100",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Rotary Wing",
         entitySubtype: "",
         code: "120200",
-        remarks: "",
       },
       {
         entity: "Civilian",
@@ -14118,14 +12700,12 @@ export const app6d: SymbolSetMap = {
         entityType: "Lighter Than Air",
         entitySubtype: "",
         code: "120400",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Airship",
         entitySubtype: "",
         code: "120500",
-        remarks: "",
       },
       {
         entity: "Civilian",
@@ -14153,7 +12733,6 @@ export const app6d: SymbolSetMap = {
         entityType: "Decoy",
         entitySubtype: "",
         code: "130200",
-        remarks: "",
       },
       {
         entity: "Manual Track",
@@ -14167,123 +12746,99 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Not Applicable",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Attack/Strike",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Bomber",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Cargo",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Fighter",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Interceptor",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Tanker",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Utility",
         code: "07",
-        remarks: "",
       },
       {
         modifier:
           "Vertical or Short Take-off and Landing (VSTOL)/ Vertical Take-off and Landing (VTOL)",
         code: "08",
-        remarks: "",
       },
       {
         modifier: "Passenger",
         code: "09",
-        remarks: "",
       },
       {
         modifier: "Ultra Light",
         code: "10",
-        remarks: "",
       },
       {
         modifier: "Airborne Command Post (ACP)",
         code: "11",
-        remarks: "",
       },
       {
         modifier: "Airborne Early Warning (AEW)",
         code: "12",
-        remarks: "",
       },
       {
         modifier: "Government",
         code: "13",
-        remarks: "",
       },
       {
         modifier: "Medical Evacuation (MEDEVAC)",
         code: "14",
-        remarks: "",
       },
       {
         modifier: "Escort",
         code: "15",
-        remarks: "",
       },
       {
         modifier: "Electronic Combat (EC)/Jammer",
         code: "16",
-        remarks: "",
       },
       {
         modifier: "Patrol",
         code: "17",
-        remarks: "",
       },
       {
         modifier: "Reconnaissance",
         code: "18",
-        remarks: "",
       },
       {
         modifier: "Trainer",
         code: "19",
-        remarks: "",
       },
       {
         modifier: "Photographic Reconnaissance",
         code: "20",
-        remarks: "",
       },
       {
         modifier: "Personnel Recovery",
         code: "21",
-        remarks: "",
       },
       {
         modifier: "Antisubmarine Warfare",
         code: "22",
-        remarks: "",
       },
       {
         modifier: "Communications",
         code: "23",
-        remarks: "",
       },
       {
         modifier: "Electronic Support Measures (ESM)",
@@ -14293,42 +12848,34 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Mine Countermeasures (MCM)",
         code: "25",
-        remarks: "",
       },
       {
         modifier: "Search and Rescue",
         code: "26",
-        remarks: "",
       },
       {
         modifier: "Special Operations Forces",
         code: "27",
-        remarks: "",
       },
       {
         modifier: "Surface Warfare",
         code: "28",
-        remarks: "",
       },
       {
         modifier: "Very Important Person (VIP) Transport",
         code: "29",
-        remarks: "",
       },
       {
         modifier: "Combat Search and Rescue (CSAR)",
         code: "30",
-        remarks: "",
       },
       {
         modifier: "Suppression of Enemy Air Defences",
         code: "31",
-        remarks: "",
       },
       {
         modifier: "Antisurface Warfare",
         code: "32",
-        remarks: "",
       },
       {
         modifier: "Fighter/Bomber",
@@ -14338,7 +12885,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Intensive Care",
         code: "34",
-        remarks: "",
       },
       {
         modifier: "Electronic Attack (EA)",
@@ -14373,64 +12919,52 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
     modifierTwo: [
       {
         modifier: "Not Applicable",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Heavy",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Medium",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Light",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Boom-Only",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Drogue-Only",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Boom and Drogue",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Close Range",
         code: "07",
-        remarks: "",
       },
       {
         modifier: "Short Range",
         code: "08",
-        remarks: "",
       },
       {
         modifier: "Medium Range",
         code: "09",
-        remarks: "",
       },
       {
         modifier: "Long Range",
         code: "10",
-        remarks: "",
       },
       {
         modifier: "Downlinked",
@@ -14445,7 +12979,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
   },
@@ -14458,56 +12991,46 @@ export const app6d: SymbolSetMap = {
         entityType: "",
         entitySubtype: "",
         code: "000000",
-        remarks: "",
       },
       {
         entity: "Missile",
         entityType: "",
         entitySubtype: "",
         code: "110000",
-        remarks: "",
       },
     ],
     modifierOne: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Air",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Surface",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Subsurface",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Space",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Anti-Ballistic",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Ballistic",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Cruise",
         code: "07",
-        remarks: "",
       },
       {
         modifier: "Interceptor",
@@ -14522,39 +13045,32 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
     modifierTwo: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Air",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Surface",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Subsurface",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Space",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Launched",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Patriot",
@@ -14614,7 +13130,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
   },
@@ -14627,7 +13142,6 @@ export const app6d: SymbolSetMap = {
         entityType: "",
         entitySubtype: "",
         code: "000000",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -14641,126 +13155,108 @@ export const app6d: SymbolSetMap = {
         entityType: "Space Vehicle",
         entitySubtype: "",
         code: "110100",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Re-Entry Vehicle",
         entitySubtype: "",
         code: "110200",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Planet Lander",
         entitySubtype: "",
         code: "110300",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Orbiter Shuttle",
         entitySubtype: "",
         code: "110400",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Capsule",
         entitySubtype: "",
         code: "110500",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Satellite, General",
         entitySubtype: "",
         code: "110600",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Satellite",
         entitySubtype: "",
         code: "110700",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Antisatellite Weapon",
         entitySubtype: "",
         code: "110800",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Astronomical Satellite",
         entitySubtype: "",
         code: "110900",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Biosatellite",
         entitySubtype: "",
         code: "111000",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Communications Satellite",
         entitySubtype: "",
         code: "111100",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Earth Observation Satellite",
         entitySubtype: "",
         code: "111200",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Miniaturized Satellite",
         entitySubtype: "",
         code: "111300",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Navigational Satellite",
         entitySubtype: "",
         code: "111400",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Reconnaissance Satellite",
         entitySubtype: "",
         code: "111500",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Space Station",
         entitySubtype: "",
         code: "111600",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Tethered Satellite",
         entitySubtype: "",
         code: "111700",
-        remarks: "",
       },
       {
         entity: "Military",
         entityType: "Weather Satellite",
         entitySubtype: "",
         code: "111800",
-        remarks: "",
       },
       {
         entity: "Military",
@@ -14781,84 +13277,72 @@ export const app6d: SymbolSetMap = {
         entityType: "Orbiter Shuttle",
         entitySubtype: "",
         code: "120100",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Capsule",
         entitySubtype: "",
         code: "120200",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Satellite",
         entitySubtype: "",
         code: "120300",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Astronomical Satellite",
         entitySubtype: "",
         code: "120400",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Biosatellite",
         entitySubtype: "",
         code: "120500",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Communications Satellite",
         entitySubtype: "",
         code: "120600",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Earth Observation Satellite",
         entitySubtype: "",
         code: "120700",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Miniaturized Satellite",
         entitySubtype: "",
         code: "120800",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Navigational Satellite",
         entitySubtype: "",
         code: "120900",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Space Station",
         entitySubtype: "",
         code: "121000",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Tethered Satellite",
         entitySubtype: "",
         code: "121100",
-        remarks: "",
       },
       {
         entity: "Civilian",
         entityType: "Weather Satellite",
         entitySubtype: "",
         code: "121200",
-        remarks: "",
       },
       {
         entity: "Manual Track",
@@ -14872,37 +13356,30 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Low Earth Orbit (LEO)",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Medium Earth Orbit  (MEO)",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "High Earth Orbit  (HEO)",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Geosynchronous Orbit (GSO)",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Geostationary Orbit (GO)",
         code: "05",
-        remarks: "",
       },
       {
         modifier: "Molniya Orbit (MO)",
         code: "06",
-        remarks: "",
       },
       {
         modifier: "Reserved for Future Use",
@@ -14912,34 +13389,28 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
     modifierTwo: [
       {
         modifier: "Unspecified",
         code: "00",
-        remarks: "",
       },
       {
         modifier: "Optical",
         code: "01",
-        remarks: "",
       },
       {
         modifier: "Infrared",
         code: "02",
-        remarks: "",
       },
       {
         modifier: "Radar",
         code: "03",
-        remarks: "",
       },
       {
         modifier: "Signals Intelligence (SIGINT)",
         code: "04",
-        remarks: "",
       },
       {
         modifier: "Reserved for Future Use",
@@ -14949,7 +13420,6 @@ export const app6d: SymbolSetMap = {
       {
         modifier: "Version Extension Flag",
         code: "99",
-        remarks: "",
       },
     ],
   },

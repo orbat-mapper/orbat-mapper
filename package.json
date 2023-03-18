@@ -98,6 +98,7 @@
     "npm": ">= 8.1.0"
   },
   "prettier": {
-    "printWidth": 90
+    "printWidth": 90,
+    "quoteProps": "as-needed"
   }
 }
