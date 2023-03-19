@@ -13,8 +13,8 @@ export interface SymbolSet {
 export interface MainIconEntity {
   code: string;
   entity: string;
-  entityType: string;
-  entitySubtype: string;
+  entityType?: string;
+  entitySubtype?: string;
   remarks?: string;
   geometry?: string;
 }
