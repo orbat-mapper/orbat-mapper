@@ -68,7 +68,7 @@ function convertSymbol(properties: MilSymbolProperties) {
   const { sidc: numberSidc, name, shortName } = properties;
   const { sidc, match } = convertNumberSidc2LetterSidc(numberSidc);
   if (match === "partial" || match === "failed") {
-    console.warn("Failed to convert", properties, match);
+    console.warn("Failed to convert", properties, match, sidc);
   }
 
   const attributes = { name, shortName };
