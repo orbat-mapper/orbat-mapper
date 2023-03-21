@@ -16,7 +16,7 @@
       tabindex="0"
     >
       <div v-if="column.type === 'sidc'" class="">
-        <MilSymbol :sidc="data[column.field]" :size="20" />
+        <MilitarySymbol :sidc="data[column.field]" :size="20" />
       </div>
       <DotsMenu
         v-else-if="column.type === 'dots'"
@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { RuntimeColumnProperties } from "@/modules/grid/gridTypes";
 import DotsMenu from "@/components/DotsMenu.vue";
-import MilSymbol from "@/components/MilSymbol.vue";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 interface Props {
   columnDefs: RuntimeColumnProperties[];

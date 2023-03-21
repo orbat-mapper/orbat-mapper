@@ -45,11 +45,9 @@
               class="flex flex-shrink-0 cursor-move justify-center"
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
             >
-              <MilSymbol
+              <MilitarySymbol
                 :sidc="unit._state?.sidc || unit.sidc"
                 :size="settingsStore.orbatIconSize"
-                :modifiers="{ standard: settingsStore.symbologyStandard }"
-                class=""
                 @click.stop.prevent=""
               />
             </div>
@@ -107,6 +105,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { activeUnitKey } from "./injects";
 import type { DropTarget } from "./types";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 interface Props {
   item: NOrbatItemData;

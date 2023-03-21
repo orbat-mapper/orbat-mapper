@@ -15,7 +15,6 @@ import OLMap from "ol/Map";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/vue";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import PanelSection from "@/components/PanelSection.vue";
-import MilSymbol from "@/components/MilSymbol.vue";
 import { SymbolItem, SymbolValue } from "@/types/constants";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
@@ -28,6 +27,7 @@ import PanelButton from "@/components/PanelButton.vue";
 import PanelSymbolButton from "@/components/PanelSymbolButton.vue";
 import { echelonItems } from "@/symbology/helpers";
 import { SID, SidValue } from "@/symbology/values";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 const [addMultiple, toggleAddMultiple] = useToggle(false);
 
@@ -185,7 +185,7 @@ function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => 
             @click="addUnit(customSidc)"
             :disabled="!activeUnitId"
           >
-            <MilSymbol :sidc="customSidc" :size="24" class="" />
+            <MilitarySymbol :sidc="customSidc" :size="24" class="" />
           </button>
           <PanelButton @click="handleChangeSymbol()" title="Select symbol">
             <IconDotsHorizontal class="h-5 w-5" />
@@ -199,7 +199,7 @@ function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => 
             @click="addUnit(sidc)"
             :disabled="!activeUnitId"
           />
-          <MilSymbol :size="24" :sidc="echelonSidc || ''" class="self-center" />
+          <MilitarySymbol :size="24" :sidc="echelonSidc || ''" class="self-center" />
           <Popover as="template">
             <Float placement="right-start" :offset="12" flip shift portal>
               <PopoverButton as="template">

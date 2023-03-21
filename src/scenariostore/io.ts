@@ -13,7 +13,7 @@ import {
   type ScenarioState,
   useNewScenarioStore,
 } from "./newScenarioStore";
-import { useSettingsStore } from "@/stores/settingsStore";
+import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { ShallowRef } from "vue";
 import { isLoading } from "@/scenariostore/index";
 import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
@@ -24,7 +24,7 @@ import { type EntityId } from "@/types/base";
 const LOCALSTORAGE_KEY = "orbat-scenario4";
 
 export function createEmptyScenario(): Scenario {
-  const settingsStore = useSettingsStore();
+  const symbolSettings = useSymbolSettingsStore();
   let timeZone;
   try {
     timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -36,7 +36,7 @@ export function createEmptyScenario(): Scenario {
     description: "Empty scenario description",
     startTime: new Date().getTime(),
     timeZone,
-    symbologyStandard: settingsStore.symbologyStandard,
+    symbologyStandard: symbolSettings.symbologyStandard,
     sides: [],
     events: [],
     layers: [],
@@ -83,7 +83,7 @@ function getLayers(state: ScenarioState): ScenarioLayer[] {
 }
 
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
-  const settingsStore = useSettingsStore();
+  const settingsStore = useSymbolSettingsStore();
 
   function toObject(): Scenario {
     const { state } = store.value;

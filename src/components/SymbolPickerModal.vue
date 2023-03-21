@@ -2,7 +2,7 @@
   <SimpleModal v-model="open" :dialog-title="dialogTitle" @cancel="emit('cancel')">
     <div class="flex h-full flex-col">
       <header class="mt-4 h-20 w-16">
-        <MilSymbol :sidc="csidc" :size="34" />
+        <MilitarySymbol :sidc="csidc" :size="34" />
       </header>
 
       <TabView class="flex-auto">
@@ -31,7 +31,7 @@
                 @click="onSelect(index)"
               >
                 <p class="flex h-7 w-9 flex-shrink-0 justify-center">
-                  <MilSymbol :size="25" :sidc="item.sidc" />
+                  <MilitarySymbol :size="25" :sidc="item.sidc" />
                 </p>
                 <span class="ml-3 text-sm" v-html="item.highlight"></span>
               </li>
@@ -130,6 +130,7 @@ import SymbolBrowseTab from "./SymbolBrowseTab.vue";
 import SecondaryButton from "./SecondaryButton.vue";
 import * as fuzzysort from "fuzzysort";
 import { htmlTagEscape } from "@/utils";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue")

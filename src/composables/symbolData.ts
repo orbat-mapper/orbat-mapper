@@ -17,7 +17,7 @@ import {
 } from "@/symbology/values";
 import { Sidc } from "@/symbology/sidc";
 import { SymbolSetMap } from "@/symbology/types";
-import { useSettingsStore } from "@/stores/settingsStore";
+import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import { SymbologyStandard } from "@/types/scenarioModels";
 
 const symbology = shallowRef<SymbolSetMap | undefined>();
@@ -52,7 +52,7 @@ const searchSymbolRef = computed(() => {
 
 function useSymbologyData() {
   async function loadData() {
-    const settingsStore = useSettingsStore();
+    const settingsStore = useSymbolSettingsStore();
     if (
       symbology.value &&
       currentSymbologyStandard.value === settingsStore.symbologyStandard

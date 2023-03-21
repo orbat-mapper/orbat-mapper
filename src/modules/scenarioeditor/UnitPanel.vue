@@ -2,7 +2,7 @@
   <div v-if="unit" class="">
     <header v-if="!isMultiMode" class="flex">
       <div class="h-20 w-16 flex-shrink-0">
-        <MilSymbol :sidc="unit.sidc" :size="34" />
+        <MilitarySymbol :sidc="unit.sidc" :size="34" />
       </div>
       <p class="pt-2 font-medium">{{ unit.name }}</p>
     </header>
@@ -15,7 +15,7 @@
       </div>
       <ul class="my-4 flex w-full flex-wrap gap-1">
         <li v-for="sUnit in selectedUnits" class="relative flex">
-          <MilSymbol :sidc="sUnit.sidc" :size="24" class="block" />
+          <MilitarySymbol :sidc="sUnit.sidc" :size="24" class="block" />
           <span v-if="sUnit._state?.location" class="text-red-700">&deg;</span>
         </li>
       </ul>
@@ -104,7 +104,6 @@ import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
 import { IconCrosshairsGps } from "@iconify-prerendered/vue-mdi";
 import InputGroup from "@/components/InputGroup.vue";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
-import MilSymbol from "@/components/MilSymbol.vue";
 import { GlobalEvents } from "vue-global-events";
 import { inputEventFilter, setCharAt } from "@/components/helpers";
 import DescriptionItem from "@/components/DescriptionItem.vue";
@@ -127,6 +126,7 @@ import { useUiStore } from "@/stores/uiStore";
 import ToggleField from "@/components/ToggleField.vue";
 import { useSelectedUnits } from "@/stores/dragStore";
 import { SID_INDEX } from "@/symbology/sidc";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")

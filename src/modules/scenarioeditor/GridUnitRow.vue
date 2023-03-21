@@ -2,8 +2,8 @@
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import type { TableColumn } from "@/modules/scenarioeditor/types";
 import type { NUnit } from "@/types/internalModels";
-import MilSymbol from "@/components/MilSymbol.vue";
 import GridEditableCell from "@/modules/scenarioeditor/GridEditableCell.vue";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 interface Props {
   unit: NUnit;
@@ -49,7 +49,7 @@ function toggleOpen() {
             }"
           />
         </button>
-        <MilSymbol
+        <MilitarySymbol
           :sidc="unit.sidc"
           class="ml-2"
           :class="{ 'ml-8': !unit.subUnits.length }"

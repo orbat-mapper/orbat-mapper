@@ -58,7 +58,7 @@
                 <template v-for="(unit, i) in sideData.units">
                   <div class="flex items-end gap-4 md:grid md:grid-cols-2">
                     <InputGroup label="Root unit name" v-model="unit.rootUnitName" />
-                    <MilSymbol :size="32" :sidc="unitSidc(unit, sideData)" />
+                    <MilitarySymbol :size="32" :sidc="unitSidc(unit, sideData)" />
                   </div>
                   <div class="mt-4 grid gap-4 md:grid-cols-2">
                     <SymbolCodeSelect
@@ -164,8 +164,8 @@ import StandardIdentitySelect from "@/components/StandardIdentitySelect.vue";
 import SimpleDivider from "@/components/SimpleDivider.vue";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import type { SymbolItem, SymbolValue } from "@/types/constants";
-import MilSymbol from "@/components/MilSymbol.vue";
 import { echelonItems } from "@/symbology/helpers";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 const router = useRouter();
 const { scenario } = useScenario();

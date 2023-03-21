@@ -9,7 +9,7 @@
       >
         <div class="flex items-center">
           <div class="flex h-8 w-10 flex-shrink-0 items-center">
-            <MilSymbol :sidc="selected?.sidc || ''" alt="" :size="20" />
+            <MilitarySymbol :sidc="selected?.sidc || ''" alt="" :size="20" />
           </div>
           <span class="ml-3 block truncate">{{ selected?.text }}</span>
         </div>
@@ -43,7 +43,7 @@
             >
               <div class="flex items-center">
                 <p class="flex h-7 w-8 flex-shrink-0 items-center justify-center">
-                  <MilSymbol :size="20" :sidc="item.sidc" />
+                  <MilitarySymbol :size="20" :sidc="item.sidc" />
                 </p>
                 <span
                   :class="[
@@ -85,6 +85,7 @@ import { CheckIcon, ChevronUpDownIcon as SelectorIcon } from "@heroicons/vue/20/
 import MilSymbol from "./MilSymbol.vue";
 import { useVModel } from "@vueuse/core";
 import { SymbolItem } from "@/types/constants";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 interface Props {
   modelValue?: string;

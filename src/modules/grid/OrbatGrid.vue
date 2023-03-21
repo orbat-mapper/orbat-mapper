@@ -10,10 +10,10 @@ import { computed, onMounted, ref } from "vue";
 import { groupBy, nanoid } from "@/utils";
 import OrbatGridHeader from "@/modules/grid/OrbatGridHeader.vue";
 import { useVirtualList, useVModel } from "@vueuse/core";
-import MilSymbol from "@/components/MilSymbol.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import OrbatGridGroupRow from "@/modules/grid/OrbatGridGroupRow.vue";
 import { getValue } from "./helpers";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 interface Props {
   columns: ColumnProperties[];
@@ -226,7 +226,7 @@ function toggleGroupSelect(item: any, event: Event) {
             tabindex="0"
           >
             <div v-if="column.type === 'sidc'" class="">
-              <MilSymbol :sidc="getValue(item, column.objectPath)" :size="20" />
+              <MilitarySymbol :sidc="getValue(item, column.objectPath)" :size="20" />
             </div>
             <DotsMenu
               v-else-if="column.type === 'dots'"

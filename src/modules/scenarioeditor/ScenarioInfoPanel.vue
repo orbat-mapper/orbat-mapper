@@ -55,7 +55,7 @@ import { type ScenarioInfo } from "@/types/scenarioModels";
 import InputGroup from "@/components/InputGroup.vue";
 import dayjs from "dayjs";
 import RadioGroupList from "@/components/RadioGroupList.vue";
-import { useSettingsStore } from "@/stores/settingsStore";
+import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import { useNotifications } from "@/composables/notifications";
@@ -86,7 +86,7 @@ const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
 );
 
-const settingsStore = useSettingsStore();
+const settingsStore = useSymbolSettingsStore();
 const { state } = store;
 
 const isEditMode = ref(false);

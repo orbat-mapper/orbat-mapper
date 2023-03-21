@@ -6,7 +6,7 @@ import { ColumnMapping, ExportSettings } from "@/types/convert";
 import * as FileSaver from "file-saver";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
-import { useSettingsStore } from "@/stores/settingsStore";
+import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { NUnit } from "@/types/internalModels";
 import {
   MilSymbolProperties,
@@ -14,8 +14,7 @@ import {
   OrbatMapperGeoJsonLayer,
 } from "@/lib/milx/types";
 
-const settingsStore = useSettingsStore();
-
+const symbolSettings = useSymbolSettingsStore();
 export interface UseScenarioExportOptions {
   activeScenario: TScenario;
 }
@@ -145,10 +144,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       for (const unit of geo.everyVisibleUnit.value) {
         const sidc = unit._state?.sidc || unit.sidc;
         if (!usedSidcs.has(sidc)) {
-          const symb = symbolGenerator(sidc, {
-            standard: settingsStore.symbologyStandard,
-            simpleStatusModifier: true,
-          });
+          const symb = symbolGenerator(sidc, symbolSettings.symbolOptions);
           usedSidcs.add(sidc);
           const blob: Blob | null = await new Promise((resolve) =>
             symb.asCanvas().toBlob(resolve)

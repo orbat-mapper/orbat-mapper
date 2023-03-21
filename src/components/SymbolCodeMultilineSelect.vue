@@ -9,7 +9,7 @@
         class="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
       >
         <span class="flex items-center">
-          <MilSymbol
+          <MilitarySymbol
             :sidc="selected?.sidc || ''"
             alt=""
             :size="20"
@@ -55,7 +55,7 @@
             >
               <div class="flex items-center">
                 <p class="flex h-7 w-8 flex-shrink-0 justify-center pt-1">
-                  <MilSymbol :size="20" :sidc="item.sidc" />
+                  <MilitarySymbol :size="20" :sidc="item.sidc" />
                 </p>
                 <div :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 ']">
                   <p
@@ -99,9 +99,9 @@ import {
   ListboxOptions,
 } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon as SelectorIcon } from "@heroicons/vue/24/solid";
-import MilSymbol from "./MilSymbol.vue";
 import { useVModel } from "@vueuse/core";
 import { SymbolItem } from "@/types/constants";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 const props = defineProps({
   modelValue: {
