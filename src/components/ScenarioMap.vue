@@ -32,7 +32,7 @@ import {
   useUnitLayer,
   useUnitSelectInteraction,
 } from "@/composables/geomap";
-import { useSettingsStore } from "@/stores/settingsStore";
+import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import { useToggle } from "@vueuse/core";
 import { ObjectEvent } from "ol/Object";
 import { IconCogOutline } from "@iconify-prerendered/vue-mdi";
@@ -67,6 +67,7 @@ const unitSettingsStore = useUnitSettingsStore();
 
 const geoStore = useGeoStore();
 const settingsStore = useSettingsStore();
+const symbolSettings = useSymbolSettingsStore();
 const [measure, toggleMeasure] = useToggle(false);
 const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 
@@ -143,7 +144,7 @@ const onMapReady = (olMap: OLMap) => {
   });
 };
 
-watch(settingsStore, () => {
+watch([settingsStore, symbolSettings], () => {
   clearStyleCache();
   drawUnits();
 });

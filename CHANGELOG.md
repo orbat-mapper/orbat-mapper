@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 March 2023
 
+- Add setting for selecting simple status modifier.
 - Create one folder per side when exporting KML.
 
 February 2023

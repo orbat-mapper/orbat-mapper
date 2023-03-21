@@ -20,6 +20,9 @@
           <ToggleField v-model="settings.orbatShortName"
             >Use short names in ORBAT</ToggleField
           >
+          <ToggleField v-model="symbolSettings.simpleStatusModifier"
+            >Use simple status modifier</ToggleField
+          >
         </div>
       </TabItem>
       <TabItem label="Map settings"><MapSettingsPanel /></TabItem>
@@ -33,7 +36,7 @@ import { useVModel } from "@vueuse/core";
 import SlideOver from "./SlideOver.vue";
 import TabView from "./TabView.vue";
 import TabItem from "./TabItem.vue";
-import { useSettingsStore } from "@/stores/settingsStore";
+import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import NumberInputGroup from "./NumberInputGroup.vue";
 import MapSettingsPanel from "@/components/MapSettingsPanel.vue";
 import ToggleField from "@/components/ToggleField.vue";
@@ -42,4 +45,5 @@ const props = defineProps({ modelValue: Boolean });
 
 const open = useVModel(props, "modelValue");
 const settings = useSettingsStore();
+const symbolSettings = useSymbolSettingsStore();
 </script>

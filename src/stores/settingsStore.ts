@@ -16,7 +16,7 @@ export const useSymbolSettingsStore = defineStore("symbolSettings", {
   state() {
     return {
       symbologyStandard: "2525" as SymbologyStandard,
-      simpleStatusModifier: true,
+      simpleStatusModifier: useLocalStorage("simpleStatusModifier", false),
     };
   },
   getters: {
