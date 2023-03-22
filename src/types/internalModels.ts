@@ -7,7 +7,8 @@ export interface NUnit extends Omit<Unit, "subUnits" | "_pid"> {
   _pid: EntityId;
 }
 
-export interface OlUnitProps extends Pick<NUnit, "id" | "sidc" | "name" | "shortName"> {
+export interface OlUnitProps
+  extends Pick<NUnit, "id" | "sidc" | "name" | "shortName" | "symbolOptions"> {
   stateType: CurrentStateType;
 }
 

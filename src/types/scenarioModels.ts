@@ -1,6 +1,7 @@
 import type { Position, ScenarioLayer } from "./scenarioGeoModels";
 import type { EntityId, ScenarioTime } from "./base";
 import type { SidValue } from "@/symbology/values";
+import { type SymbolOptions } from "milsymbol";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;
@@ -24,6 +25,10 @@ export interface LocationState extends State {
   location: Position;
 }
 
+export interface UnitSymbolOptions extends SymbolOptions {
+  fillColor?: string;
+}
+
 export interface Unit {
   id: EntityId;
   name: string;
@@ -34,6 +39,7 @@ export interface Unit {
   subUnits?: Unit[];
   location?: Position;
   state?: State[];
+  symbolOptions?: UnitSymbolOptions;
   // internal runtime only state
   _state?: CurrentState | null;
   _pid?: EntityId;
@@ -44,6 +50,7 @@ export interface SideData {
   name: string;
   description?: string;
   standardIdentity: SidValue;
+  symbolOptions?: UnitSymbolOptions;
 }
 
 export interface SideGroup {
@@ -51,6 +58,7 @@ export interface SideGroup {
   name: string;
   description?: string;
   subUnits: Unit[];
+  symbolOptions?: UnitSymbolOptions;
   _pid?: EntityId;
   _isNew?: boolean;
 }
