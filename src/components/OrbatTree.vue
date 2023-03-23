@@ -6,12 +6,14 @@ import { EntityId } from "@/types/base";
 import type { DropTarget } from "./types";
 import type { NUnit } from "@/types/internalModels";
 import { filterUnits } from "@/composables/filtering";
+import { UnitSymbolOptions } from "@/types/scenarioModels";
 
 interface Props {
   units: EntityId[];
   unitMap: Record<EntityId, NUnit>;
   filterQuery?: string;
   locationFilter?: boolean;
+  symbolOptions?: UnitSymbolOptions;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -62,6 +64,7 @@ const filteredUnits = computed(() => {
       @unit-action="onUnitAction"
       @unit-click="(unit, event) => emit('unit-click', unit, event)"
       @unit-drop="onUnitDrop"
+      :symbolOptions="symbolOptions"
     />
   </ul>
 </template>

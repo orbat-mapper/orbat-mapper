@@ -48,6 +48,7 @@
               <MilitarySymbol
                 :sidc="unit._state?.sidc || unit.sidc"
                 :size="settingsStore.orbatIconSize"
+                :options="combinedOptions"
                 @click.stop.prevent=""
               />
             </div>
@@ -80,6 +81,7 @@
         @unit-action="onUnitMenuAction"
         @unit-click="onUnitClick"
         @unit-drop="onUnitDrop"
+        :symbolOptions="symbolOptions"
       />
     </ul>
     <div
@@ -106,12 +108,19 @@ import { activeUnitKey } from "./injects";
 import type { DropTarget } from "./types";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import { SymbolOptions } from "milsymbol";
 
 interface Props {
   item: NOrbatItemData;
+  symbolOptions?: SymbolOptions;
 }
 
 const props = defineProps<Props>();
+
+const combinedOptions = computed(() => ({
+  ...(props.symbolOptions || {}),
+  ...(props.item.unit.symbolOptions || {}),
+}));
 
 // for some reason this throws a vue-tsc error
 interface Emits {

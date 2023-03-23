@@ -38,6 +38,7 @@
         @unit-action="onUnitAction"
         @unit-click="(unit, event) => emit('unit-click', unit, event)"
         @unit-drop="onUnitDrop"
+        :symbol-options="combinedSymbolOptions"
       />
       <div
         v-if="!group.subUnits.length"
@@ -50,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import DotsMenu from "./DotsMenu.vue";
 import OrbatTree from "./OrbatTree.vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
@@ -94,6 +95,13 @@ const {
   unitActions,
   store: { state },
 } = injectStrict(activeScenarioKey);
+
+const combinedSymbolOptions = computed(() => {
+  return {
+    ...(state.sideMap[props.group._pid!].symbolOptions || {}),
+    ...(props.group.symbolOptions || {}),
+  };
+});
 
 const dragStore = useDragStore();
 const isDragOver = ref(false);

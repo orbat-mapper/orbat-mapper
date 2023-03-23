@@ -15,6 +15,9 @@ export default defineComponent({
     modifiers: {
       type: Object,
     },
+    options: {
+      type: Object,
+    },
   },
 
   setup(props) {
@@ -23,6 +26,7 @@ export default defineComponent({
       symbolGenerator(props.sidc || "", {
         size: props.size,
         ...settings.symbolOptions,
+        ...(props.options ?? {}),
         ...(props.modifiers ?? {}),
       })
     );
