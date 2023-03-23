@@ -16,7 +16,7 @@ import { SID } from "@/symbology/values";
 import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
-import { State, StateAdd, Unit } from "@/types/scenarioModels";
+import type { State, StateAdd, Unit, UnitSymbolOptions } from "@/types/scenarioModels";
 import { Position } from "@/types/scenarioGeoModels";
 import { getNextEchelonBelow } from "@/symbology/helpers";
 
@@ -371,6 +371,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
       state: [],
       _state: null,
       _pid: parent.id,
+      _gid: "",
+      _sid: "",
       subUnits: [],
     };
     const newUnitId = addUnit(newUnit, parentId);
@@ -545,6 +547,16 @@ export function useUnitManipulations(store: NewScenarioStore) {
     };
   }
 
+  function getCombinedSymbolOptions(unit: NUnit): UnitSymbolOptions {
+    const { _sid, _gid } = unit;
+
+    return {
+      ...(state.sideMap[_sid!].symbolOptions || {}),
+      ...(state.sideGroupMap[_gid!].symbolOptions || {}),
+      ...(unit.symbolOptions || {}),
+    };
+  }
+
   return {
     addUnit,
     deleteUnit,
@@ -578,5 +590,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     convertStateEntryToInitialLocation,
     reorderSide,
     reorderSideGroup,
+    getCombinedSymbolOptions,
   };
 }

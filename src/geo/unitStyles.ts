@@ -33,9 +33,15 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
 }
 
 export function createUnitStyleFromFeature(feature: FeatureLike): Style[] {
-  const { sidc, name, shortName, stateType } = feature.getProperties() as OlUnitProps;
+  const {
+    sidc,
+    name,
+    shortName,
+    stateType,
+    symbolOptions = {},
+  } = feature.getProperties() as OlUnitProps;
   const isInterpolated = stateType === "interpolated";
-  const key = sidc + name;
+  const key = sidc + name + symbolOptions.fillColor || "";
   if (!unitStyleCache.has(key)) {
     const settingsStore = useSettingsStore();
     const symbolSettings = useSymbolSettingsStore();
@@ -45,6 +51,7 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style[] {
       outlineColor: "white",
       outlineWidth: 8,
       ...symbolSettings.symbolOptions,
+      ...symbolOptions,
     });
     const style = createMilSymbolStyle(milSymbol);
     unitStyleCache.set(key, style);
@@ -53,8 +60,8 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style[] {
 }
 
 export function createSelectedUnitStyleFromFeature(feature: FeatureLike): Style {
-  const { sidc, name, shortName } = feature.getProperties() as Unit;
-  const key = sidc + name;
+  const { sidc, name, shortName, symbolOptions = {} } = feature.getProperties() as Unit;
+  const key = sidc + name + symbolOptions.fillColor || "";
   if (!selectedUnitStyleCache.has(key)) {
     const settingsStore = useSettingsStore();
     const symbolSettings = useSymbolSettingsStore();
@@ -64,6 +71,7 @@ export function createSelectedUnitStyleFromFeature(feature: FeatureLike): Style 
       outlineWidth: 21,
       uniqueDesignation: name || shortName,
       ...symbolSettings.symbolOptions,
+      ...symbolOptions,
     });
     const style = createMilSymbolStyle(milSymbol);
     style.setZIndex(10);

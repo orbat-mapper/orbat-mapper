@@ -110,6 +110,8 @@ async function onLoad(e: Event) {
         sidc: setCharAt(f.properties?.sidc, SID_INDEX, side.standardIdentity),
         subUnits: [],
         _pid: "",
+        _gid: "",
+        _sid: "",
         location: (f.geometry as Point).coordinates,
       };
     });

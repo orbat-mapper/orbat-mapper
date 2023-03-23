@@ -2,9 +2,11 @@ import { CurrentStateType, Side, SideGroup, Unit } from "./scenarioModels";
 import { EntityId } from "./base";
 import { FeatureId, ScenarioFeature, ScenarioLayer } from "@/types/scenarioGeoModels";
 
-export interface NUnit extends Omit<Unit, "subUnits" | "_pid"> {
+export interface NUnit extends Omit<Unit, "subUnits" | "_pid" | "_gid" | "_sid"> {
   subUnits: EntityId[];
   _pid: EntityId;
+  _gid: EntityId;
+  _sid: EntityId;
 }
 
 export interface OlUnitProps

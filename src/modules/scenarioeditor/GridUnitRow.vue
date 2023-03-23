@@ -4,6 +4,8 @@ import type { TableColumn } from "@/modules/scenarioeditor/types";
 import type { NUnit } from "@/types/internalModels";
 import GridEditableCell from "@/modules/scenarioeditor/GridEditableCell.vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey } from "@/components/injects";
 
 interface Props {
   unit: NUnit;
@@ -22,6 +24,10 @@ const emit = defineEmits([
   "activeItem",
   "edit",
 ]);
+
+const {
+  unitActions: { getCombinedSymbolOptions },
+} = injectStrict(activeScenarioKey);
 
 function toggleOpen() {
   props.unit._isOpen = !props.unit._isOpen;
@@ -53,6 +59,7 @@ function toggleOpen() {
           :sidc="unit.sidc"
           class="ml-2"
           :class="{ 'ml-8': !unit.subUnits.length }"
+          :options="getCombinedSymbolOptions(unit)"
         />
         <button class="ml-2 truncate hover:underline">{{ unit.name }}</button>
       </div>

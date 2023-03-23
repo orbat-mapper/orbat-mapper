@@ -1,7 +1,7 @@
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { Coordinate } from "ol/coordinate";
-import { Unit } from "@/types/scenarioModels";
+import type { Unit, UnitSymbolOptions } from "@/types/scenarioModels";
 import { Feature } from "ol";
 import { LineString, Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";
@@ -36,7 +36,8 @@ export function createHistoryLayer(): VectorLayer<VectorSource<Point | LineStrin
 
 export function createUnitFeatureAt(
   position: Coordinate,
-  unit: Unit | NUnit
+  unit: Unit | NUnit,
+  symbolOptions: UnitSymbolOptions
 ): Feature<Point> {
   const geometry = new Point(fromLonLat(position));
   const { sidc, name, id, shortName } = unit;
@@ -48,6 +49,7 @@ export function createUnitFeatureAt(
     id,
     shortName,
     stateType,
+    symbolOptions,
   });
   feature.setId(id);
   return feature;

@@ -252,6 +252,8 @@ function create() {
             sidc: sidc.toString(),
             subUnits: [],
             _pid: "nn",
+            _sid: "nn",
+            _gid: "nn",
           },
           parentId
         );

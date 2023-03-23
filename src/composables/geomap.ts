@@ -24,14 +24,22 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeUnitKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
+import { NUnit } from "@/types/internalModels";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
-  const { geo } = activeScenario || injectStrict(activeScenarioKey);
+  const {
+    geo,
+    unitActions: { getCombinedSymbolOptions },
+  } = activeScenario || injectStrict(activeScenarioKey);
   const unitLayer = createUnitLayer();
   const drawUnits = () => {
     unitLayer.getSource()?.clear();
     const units = geo.everyVisibleUnit.value.map((unit) => {
-      return createUnitFeatureAt(unit._state!.location!, unit);
+      return createUnitFeatureAt(
+        unit._state!.location!,
+        unit,
+        getCombinedSymbolOptions(unit)
+      );
     });
     unitLayer.getSource()?.addFeatures(units);
   };
@@ -39,7 +47,11 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
   const animateUnits = () => {
     unitLayer.getSource()?.clear();
     const units = geo.everyVisibleUnit.value.map((unit) => {
-      return createUnitFeatureAt(unit._state!.location!, unit);
+      return createUnitFeatureAt(
+        unit._state!.location!,
+        unit,
+        getCombinedSymbolOptions(unit)
+      );
     });
     unitLayer.getSource()?.addFeatures(units);
     // units.forEach((f) =>
@@ -55,7 +67,10 @@ export function useDrop(
   unitLayer: MaybeRef<VectorLayer<any>>
 ) {
   const dragStore = useDragStore();
-  const { geo } = injectStrict(activeScenarioKey);
+  const {
+    geo,
+    unitActions: { getCombinedSymbolOptions },
+  } = injectStrict(activeScenarioKey);
 
   const onDrop = (ev: DragEvent) => {
     const olMap = unref(mapRef);
@@ -76,7 +91,13 @@ export function useDrop(
       if (existingUnitFeature) {
         existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
       } else {
-        unitSource.addFeature(createUnitFeatureAt(dropPosition, dragStore.draggedUnit));
+        unitSource.addFeature(
+          createUnitFeatureAt(
+            dropPosition,
+            dragStore.draggedUnit,
+            getCombinedSymbolOptions(dragStore.draggedUnit as unknown as NUnit)
+          )
+        );
       }
     }
   };
