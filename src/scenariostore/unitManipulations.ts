@@ -210,13 +210,15 @@ export function useUnitManipulations(store: NewScenarioStore) {
       }
       const newParent = getUnitOrSideGroup(parentId, s);
       if (!(unit && newParent)) return;
-      const { side, parents } = getUnitHierarchy(newParent.id, s);
+      const { side, sideGroup, parents } = getUnitHierarchy(newParent.id, s);
       if (parents.includes(unit)) {
         console.error("Not allowed");
         return;
       }
       const originalParent = getUnitOrSideGroup(unit._pid, s);
       unit._pid = parentId;
+      unit._sid = side.id;
+      unit._gid = sideGroup.id;
 
       if (originalParent) {
         removeElement(unitId, originalParent.subUnits);
@@ -325,7 +327,10 @@ export function useUnitManipulations(store: NewScenarioStore) {
     if (!unit.id) {
       unit.id = nanoid();
     }
+    const { side, sideGroup } = getUnitHierarchy(parentId);
     unit._pid = parentId;
+    unit._gid = sideGroup.id;
+    unit._sid = side.id;
     unit._isOpen = false;
     if (!unit.state || !unit.state.length) {
       unit._state = createInitialState(unit);

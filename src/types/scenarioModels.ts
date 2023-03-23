@@ -42,7 +42,9 @@ export interface Unit {
   symbolOptions?: UnitSymbolOptions;
   // internal runtime only state
   _state?: CurrentState | null;
-  _pid?: EntityId;
+  _pid?: EntityId; // parent
+  _gid?: EntityId; // group
+  _sid?: EntityId; // side
   _isOpen?: boolean;
 }
 
