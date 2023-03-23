@@ -4,17 +4,22 @@
     class="rounded hover:drop-shadow hover:sepia disabled:opacity-50 disabled:hover:sepia-0"
     :class="[active ? 'invert' : '']"
   >
-    <slot><MilitarySymbol :sidc="sidc" :size="size" /></slot>
+    <slot><MilitarySymbol :sidc="sidc" :size="size" :options="symbolOptions" /></slot>
   </button>
 </template>
 <script setup lang="ts">
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import { UnitSymbolOptions } from "@/types/scenarioModels";
 
-const props = withDefaults(
-  defineProps<{ sidc: string; active?: boolean; size?: number }>(),
-  {
-    active: false,
-    size: 24,
-  }
-);
+interface Props {
+  sidc: string;
+  active?: boolean;
+  size?: number;
+  symbolOptions?: UnitSymbolOptions;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  active: false,
+  size: 24,
+});
 </script>

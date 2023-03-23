@@ -90,6 +90,10 @@ const customSidc = computed(() => {
   return parsedSidc.toString();
 });
 
+const symbolOptions = computed(() =>
+  activeUnit.value ? unitActions.getCombinedSymbolOptions(activeUnit.value, true) : {}
+);
+
 const {
   start: startGetLocation,
   isActive: isGetLocationActive,
@@ -185,7 +189,12 @@ function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => 
             @click="addUnit(customSidc)"
             :disabled="!activeUnitId"
           >
-            <MilitarySymbol :sidc="customSidc" :size="24" class="" />
+            <MilitarySymbol
+              :sidc="customSidc"
+              :size="24"
+              class=""
+              :options="symbolOptions"
+            />
           </button>
           <PanelButton @click="handleChangeSymbol()" title="Select symbol">
             <IconDotsHorizontal class="h-5 w-5" />
@@ -198,8 +207,14 @@ function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => 
             :title="text"
             @click="addUnit(sidc)"
             :disabled="!activeUnitId"
+            :symbol-options="symbolOptions"
           />
-          <MilitarySymbol :size="24" :sidc="echelonSidc || ''" class="self-center" />
+          <MilitarySymbol
+            :size="24"
+            :sidc="echelonSidc || ''"
+            class="self-center"
+            :options="symbolOptions"
+          />
           <Popover as="template">
             <Float placement="right-start" :offset="12" flip shift portal>
               <PopoverButton as="template">
@@ -216,6 +231,7 @@ function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => 
                     :sidc="sidc"
                     :title="text"
                     @click="selectEchelon(sidc, close)"
+                    :symbol-options="symbolOptions"
                   />
                 </FloatingPanel>
               </PopoverPanel>

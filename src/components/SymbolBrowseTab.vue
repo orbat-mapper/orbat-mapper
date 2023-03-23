@@ -1,6 +1,10 @@
 <template>
   <div class="min-h-[30rem] px-0.5">
-    <SymbolCodeSelect v-model="symbolSetValue" :items="symbolSets" />
+    <SymbolCodeSelect
+      v-model="symbolSetValue"
+      :items="symbolSets"
+      :symbol-options="symbolOptions"
+    />
     <div class="mt-4 max-h-[40rem] overflow-auto">
       <div v-for="[entity, entityIcons] in iconsByEntity" class="relative">
         <h3
@@ -17,7 +21,7 @@
             @click="iconValue = code"
             class="flex w-full flex-col items-center justify-start rounded border border-transparent p-3 hover:border-gray-500"
           >
-            <MilSymbol :size="symbolSize" :sidc="sidc" />
+            <MilSymbol :size="symbolSize" :sidc="sidc" :modifiers="symbolOptions" />
             <p
               v-if="entitySubtype && entityType"
               class="mt-1 max-w-full overflow-hidden truncate text-center text-sm text-gray-500"
@@ -46,7 +50,7 @@
           @click="mod1Value = code"
           class="flex w-full flex-col items-center justify-start rounded border border-transparent p-4 hover:border-gray-500"
         >
-          <MilSymbol :size="symbolSize" :sidc="sidc" />
+          <MilSymbol :size="symbolSize" :sidc="sidc" :modifiers="symbolOptions" />
           <p
             class="mt-1 max-w-full overflow-hidden break-words text-center text-sm text-gray-900"
           >
@@ -67,7 +71,7 @@
           @click="mod2Value = code"
           class="flex w-full flex-col items-center justify-start rounded border border-transparent p-4 hover:border-gray-500"
         >
-          <MilSymbol :size="symbolSize" :sidc="sidc" />
+          <MilSymbol :size="symbolSize" :sidc="sidc" :modifiers="symbolOptions" />
           <p
             class="mt-1 max-w-full overflow-hidden break-words text-center text-sm text-gray-900"
           >
@@ -84,10 +88,12 @@ import SymbolCodeSelect from "./SymbolCodeSelect.vue";
 import { computed, nextTick, onActivated, watch } from "vue";
 import { groupBy } from "../utils";
 import { useSymbolItems } from "../composables/symbolData";
+import { UnitSymbolOptions } from "@/types/scenarioModels";
 
 interface Props {
   initialSidc: string;
   symbolSize?: number;
+  symbolOptions?: UnitSymbolOptions;
 }
 
 const props = withDefaults(defineProps<Props>(), { symbolSize: 32 });

@@ -14,6 +14,7 @@
             alt=""
             :size="20"
             class="h-8 w-10 flex-shrink-0 pt-0.5"
+            :options="symbolOptions"
           />
           <div class="ml-3">
             <p v-if="selected?.subLabel" class="text-xs text-gray-600">
@@ -55,7 +56,7 @@
             >
               <div class="flex items-center">
                 <p class="flex h-7 w-8 flex-shrink-0 justify-center pt-1">
-                  <MilitarySymbol :size="20" :sidc="item.sidc" />
+                  <MilitarySymbol :size="20" :sidc="item.sidc" :options="symbolOptions" />
                 </p>
                 <div :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 ']">
                   <p
@@ -102,6 +103,7 @@ import { CheckIcon, ChevronUpDownIcon as SelectorIcon } from "@heroicons/vue/24/
 import { useVModel } from "@vueuse/core";
 import { SymbolItem } from "@/types/constants";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import { UnitSymbolOptions } from "@/types/scenarioModels";
 
 const props = defineProps({
   modelValue: {
@@ -110,6 +112,7 @@ const props = defineProps({
   },
   label: String,
   items: { type: Array as PropType<SymbolItem[]>, required: true },
+  symbolOptions: { type: Object as PropType<UnitSymbolOptions> },
 });
 
 const emit = defineEmits(["update:modelValue"]);

@@ -547,13 +547,13 @@ export function useUnitManipulations(store: NewScenarioStore) {
     };
   }
 
-  function getCombinedSymbolOptions(unit: NUnit): UnitSymbolOptions {
+  function getCombinedSymbolOptions(unit: NUnit, ignoreUnit = false): UnitSymbolOptions {
     const { _sid, _gid } = unit;
 
     return {
       ...(state.sideMap[_sid!].symbolOptions || {}),
       ...(state.sideGroupMap[_gid!].symbolOptions || {}),
-      ...(unit.symbolOptions || {}),
+      ...(ignoreUnit ? {} : unit.symbolOptions || {}),
     };
   }
 

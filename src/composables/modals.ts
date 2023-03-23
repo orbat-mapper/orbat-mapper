@@ -1,6 +1,7 @@
 import { useConfirmDialog } from "@vueuse/core";
 import { computed, ref } from "vue";
 import NProgress from "nprogress";
+import { UnitSymbolOptions } from "@/types/scenarioModels";
 
 export interface ModalTimestampOptions {
   timeZone: string;
@@ -47,6 +48,7 @@ export function useDateModal() {
 export interface ModalSidcOptions {
   title: string;
   hideModifiers: boolean;
+  symbolOptions: UnitSymbolOptions;
 }
 
 export function useSidcModal() {
@@ -54,6 +56,7 @@ export function useSidcModal() {
   const initialSidcModalValue = ref("10031000001211000000");
   const sidcModalTitle = ref("Select symbol");
   const hideModifiers = ref(false);
+  const symbolOptions = ref<UnitSymbolOptions>({});
 
   const getModalSidc = async (
     initialValue: string,
@@ -63,6 +66,7 @@ export function useSidcModal() {
     initialSidcModalValue.value = initialValue;
     sidcModalTitle.value = options.title || "Symbol picker";
     hideModifiers.value = options.hideModifiers || false;
+    symbolOptions.value = options.symbolOptions || {};
     const { data, isCanceled } = await reveal();
     if (!isCanceled) {
       return data;
@@ -84,6 +88,7 @@ export function useSidcModal() {
     initialSidcModalValue,
     sidcModalTitle,
     hideModifiers,
+    symbolOptions,
   };
 }
 

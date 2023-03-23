@@ -323,6 +323,7 @@ const {
   initialSidcModalValue,
   sidcModalTitle,
   hideModifiers,
+  symbolOptions,
 } = useSidcModal();
 provide(sidcModalKey, { getModalSidc });
 

@@ -2,7 +2,7 @@
   <SimpleModal v-model="open" :dialog-title="dialogTitle" @cancel="emit('cancel')">
     <div class="flex h-full flex-col">
       <header class="mt-4 h-20 w-16">
-        <MilitarySymbol :sidc="csidc" :size="34" />
+        <MilitarySymbol :sidc="csidc" :size="34" :options="combinedSymbolOptions" />
       </header>
 
       <TabView class="flex-auto">
@@ -31,7 +31,11 @@
                 @click="onSelect(index)"
               >
                 <p class="flex h-7 w-9 flex-shrink-0 justify-center">
-                  <MilitarySymbol :size="25" :sidc="item.sidc" />
+                  <MilitarySymbol
+                    :size="25"
+                    :sidc="item.sidc"
+                    :options="combinedSymbolOptions"
+                  />
                 </p>
                 <span class="ml-3 text-sm" v-html="item.highlight"></span>
               </li>
@@ -42,6 +46,7 @@
               v-model="symbolSetValue"
               label="Symbol set"
               :items="symbolSets"
+              :symbol-options="combinedSymbolOptions"
             />
 
             <template v-if="!hideModifiers">
@@ -49,17 +54,20 @@
                 v-model="statusValue"
                 label="Status"
                 :items="statusItems"
+                :symbol-options="combinedSymbolOptions"
               />
 
               <SymbolCodeSelect
                 v-model="hqtfdValue"
                 label="Headquaters / Task force / Dummy"
                 :items="hqtfdItems"
+                :symbol-options="combinedSymbolOptions"
               />
               <SymbolCodeSelect
                 v-model="emtValue"
                 label="Echelon / Mobility / Towed array"
                 :items="emtItems"
+                :symbol-options="combinedSymbolOptions"
               />
             </template>
 
@@ -67,9 +75,20 @@
               v-model="iconValue"
               label="Main icon"
               :items="icons"
+              :symbol-options="combinedSymbolOptions"
             />
-            <SymbolCodeSelect v-model="mod1Value" label="Modifier 1" :items="mod1Items" />
-            <SymbolCodeSelect v-model="mod2Value" label="Modifier 2" :items="mod2Items" />
+            <SymbolCodeSelect
+              v-model="mod1Value"
+              label="Modifier 1"
+              :items="mod1Items"
+              :symbol-options="combinedSymbolOptions"
+            />
+            <SymbolCodeSelect
+              v-model="mod2Value"
+              label="Modifier 2"
+              :items="mod2Items"
+              :symbol-options="combinedSymbolOptions"
+            />
 
             <div style="min-height: 14rem" class="flex justify-end py-4">
               <div class=""></div>
@@ -91,6 +110,7 @@
               v-if="isActive"
               :initial-sidc="csidc"
               @update-sidc="updateFromBrowseTab"
+              :symbol-options="combinedSymbolOptions"
             />
           </keep-alive>
         </TabItem>
@@ -131,6 +151,7 @@ import SecondaryButton from "./SecondaryButton.vue";
 import * as fuzzysort from "fuzzysort";
 import { htmlTagEscape } from "@/utils";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import { UnitSymbolOptions } from "@/types/scenarioModels";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue")
@@ -141,6 +162,7 @@ interface Props {
   sidc?: string;
   dialogTitle?: string;
   hideModifiers?: boolean;
+  symbolOptions?: UnitSymbolOptions;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -156,6 +178,11 @@ const debouncedQuery = useDebounce(searchQuery, 100);
 const currentIndex = ref(-1);
 const hitsIsOpen = ref(false);
 const hitsRef = ref(null);
+
+const combinedSymbolOptions = computed(() => ({
+  ...(props.symbolOptions || {}),
+  fillColor: "gray",
+}));
 
 onClickOutside(hitsRef, (event) => (hitsIsOpen.value = false));
 

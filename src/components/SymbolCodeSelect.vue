@@ -9,7 +9,12 @@
       >
         <div class="flex items-center">
           <div class="flex h-8 w-10 flex-shrink-0 items-center">
-            <MilitarySymbol :sidc="selected?.sidc || ''" alt="" :size="20" />
+            <MilitarySymbol
+              :sidc="selected?.sidc || ''"
+              alt=""
+              :size="20"
+              :options="symbolOptions"
+            />
           </div>
           <span class="ml-3 block truncate">{{ selected?.text }}</span>
         </div>
@@ -43,7 +48,7 @@
             >
               <div class="flex items-center">
                 <p class="flex h-7 w-8 flex-shrink-0 items-center justify-center">
-                  <MilitarySymbol :size="20" :sidc="item.sidc" />
+                  <MilitarySymbol :size="20" :sidc="item.sidc" :options="symbolOptions" />
                 </p>
                 <span
                   :class="[
@@ -82,19 +87,19 @@ import {
   ListboxOptions,
 } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon as SelectorIcon } from "@heroicons/vue/20/solid";
-import MilSymbol from "./MilSymbol.vue";
 import { useVModel } from "@vueuse/core";
 import { SymbolItem } from "@/types/constants";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import { UnitSymbolOptions } from "@/types/scenarioModels";
 
 interface Props {
   modelValue?: string;
   label?: string;
   items: SymbolItem[];
+  symbolOptions?: UnitSymbolOptions;
 }
 
 const props = withDefaults(defineProps<Props>(), { modelValue: "00" });
-
 const emit = defineEmits(["update:modelValue"]);
 
 const selectedValue = useVModel(props, "modelValue", emit);
