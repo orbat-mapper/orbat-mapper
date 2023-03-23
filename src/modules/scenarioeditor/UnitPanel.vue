@@ -2,7 +2,7 @@
   <div v-if="unit" class="">
     <header v-if="!isMultiMode" class="flex">
       <div class="h-20 w-16 flex-shrink-0">
-        <MilitarySymbol :sidc="unit.sidc" :size="34" />
+        <MilitarySymbol :sidc="unit.sidc" :size="34" :options="combinedSymbolOptions" />
       </div>
       <p class="pt-2 font-medium">{{ unit.name }}</p>
     </header>
@@ -15,7 +15,12 @@
       </div>
       <ul class="my-4 flex w-full flex-wrap gap-1">
         <li v-for="sUnit in selectedUnits" class="relative flex">
-          <MilitarySymbol :sidc="sUnit.sidc" :size="24" class="block" />
+          <MilitarySymbol
+            :sidc="sUnit.sidc"
+            :size="24"
+            class="block"
+            :options="combineOptions(sUnit)"
+          />
           <span v-if="sUnit._state?.location" class="text-red-700">&deg;</span>
         </li>
       </ul>
@@ -117,7 +122,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import { EntityId } from "@/types/base";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, sidcModalKey } from "@/components/injects";
-import { UnitUpdate } from "@/types/internalModels";
+import { NUnit, UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
@@ -139,6 +144,24 @@ const {
   geo: { addUnitPosition },
   unitActions: { updateUnit, getUnitHierarchy },
 } = activeScenario;
+
+const unit = computed(() => {
+  return store.state.unitMap[props.unitId];
+});
+
+function combineOptions(unit: NUnit) {
+  const { _sid, _gid } = unit;
+
+  return {
+    ...(store.state.sideMap[_sid!].symbolOptions || {}),
+    ...(store.state.sideGroupMap[_gid!].symbolOptions || {}),
+    ...(unit.symbolOptions || {}),
+  };
+}
+
+const combinedSymbolOptions = computed(() => {
+  return combineOptions(unit.value);
+});
 
 let form = ref<UnitUpdate>({
   name: "",
@@ -165,9 +188,6 @@ const selectedUnits = computed(() =>
 onGetLocation((location) => addUnitPosition(props.unitId, location));
 const isEditMode = ref(false);
 const toggleEditMode = useToggle(isEditMode);
-const unit = computed(() => {
-  return store.state.unitMap[props.unitId];
-});
 
 const onFormSubmit = () => {
   updateUnit(props.unitId, form.value);
