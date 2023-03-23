@@ -66,7 +66,6 @@ import { useDragStore } from "@/stores/dragStore";
 import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./EditSideGroupForm.vue";
 import { NSideGroup, NUnit } from "@/types/internalModels";
-import { ScenarioState } from "@/scenariostore/newScenarioStore";
 import { DropTarget, MenuItemData } from "./types";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
@@ -75,7 +74,6 @@ interface Props {
   group: NSideGroup;
   filterQuery?: string;
   hasLocationFilter?: boolean;
-  state: ScenarioState;
 }
 const props = defineProps<Props>();
 
@@ -92,7 +90,10 @@ interface Emits {
 }
 const emit = defineEmits<Emits>();
 
-const { unitActions } = injectStrict(activeScenarioKey);
+const {
+  unitActions,
+  store: { state },
+} = injectStrict(activeScenarioKey);
 
 const dragStore = useDragStore();
 const isDragOver = ref(false);

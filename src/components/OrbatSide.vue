@@ -48,7 +48,6 @@
             :group="group"
             :filter-query="debouncedFilterQuery"
             :has-location-filter="hasLocationFilter"
-            :state="state"
             @unit-action="onUnitAction"
             @unit-click="(unit, event) => emit('unit-click', unit, event)"
             @unit-drop="onUnitDrop"
@@ -73,14 +72,12 @@ import FilterQueryInput from "./FilterQueryInput.vue";
 import EditSideForm from "./EditSideForm.vue";
 import OrbatSideGroup from "./OrbatSideGroup.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
-import { ScenarioState } from "@/scenariostore/newScenarioStore";
 import { DropTarget, MenuItemData } from "./types";
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 
 interface Props {
   side: NSide;
-  state: ScenarioState;
   hideFilter?: boolean;
 }
 
@@ -109,7 +106,7 @@ const showFilter = ref(false);
 
 const debouncedFilterQuery = useDebounce(filterQuery, 100);
 const sideGroups = computed(() =>
-  props.side.groups.map((id) => props.state.sideGroupMap[id])
+  props.side.groups.map((id) => store.state.sideGroupMap[id])
 );
 
 const showEditSideForm = ref(false);

@@ -5,7 +5,6 @@
       v-for="side in sides"
       :key="side.id"
       :side="side"
-      :state="state"
       @unit-action="onUnitAction"
       @unit-click="onUnitClick"
       @unit-drop="onUnitDrop"
@@ -38,7 +37,6 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), { hideFilter: false });
-
 const activeScenario = injectStrict(activeScenarioKey);
 const { store, unitActions } = activeScenario;
 const activeUnitId = injectStrict(activeUnitKey);
