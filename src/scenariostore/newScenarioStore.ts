@@ -1,8 +1,9 @@
 import { useImmerStore } from "@/composables/immerStore";
-import {
+import type {
   Scenario,
   ScenarioEvent,
   ScenarioInfo,
+  Side,
   SideGroup,
   Unit,
 } from "@/types/scenarioModels";
@@ -59,7 +60,13 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     scenario.startTime = +dayjs(scenario.startTime);
   }
 
-  function prepareUnit(unit1: Unit, level: number, parent: Unit | SideGroup) {
+  function prepareUnit(
+    unit1: Unit,
+    level: number,
+    parent: Unit | SideGroup,
+    sideGroup: SideGroup,
+    side: Side
+  ) {
     const unit = klona(unit1);
     if (!unit.state) {
       unit.state = [];
@@ -88,6 +95,8 @@ function prepareScenario(scenario: Scenario): ScenarioState {
 
     unit._pid = parent.id;
     unit._isOpen = false;
+    unit._gid = sideGroup.id;
+    unit._sid = side.id;
 
     unitMap[unit1.id] = {
       ...unit,
