@@ -134,6 +134,7 @@ async function handleChangeSymbol() {
   const newSidcValue = await getModalSidc(customSidc.value, {
     title: "Select symbol",
     hideModifiers: true,
+    symbolOptions: symbolOptions.value,
   });
   if (newSidcValue !== undefined) {
     customIcon.value.code = newSidcValue;

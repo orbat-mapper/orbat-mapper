@@ -34,15 +34,23 @@ import { useVModel } from "@vueuse/core";
 import { Bars3BottomRightIcon as MenuAlt3Icon } from "@heroicons/vue/24/solid";
 import { injectStrict } from "@/utils";
 import { sidcModalKey } from "@/components/injects";
+import { UnitSymbolOptions } from "@/types/scenarioModels";
 
-const props = defineProps<{ modelValue?: string }>();
+interface Props {
+  modelValue?: string;
+  symbolOptions?: UnitSymbolOptions;
+}
+
+const props = defineProps<Props>();
 const emit = defineEmits(["update:modelValue"]);
 const sidcValue = useVModel(props, "modelValue", emit);
 
 const { getModalSidc } = injectStrict(sidcModalKey);
 
 const openModal = async () => {
-  const newSidcValue = await getModalSidc(props.modelValue || "");
+  const newSidcValue = await getModalSidc(props.modelValue || "", {
+    symbolOptions: props.symbolOptions,
+  });
   if (newSidcValue !== undefined) {
     emit("update:modelValue", newSidcValue);
   }

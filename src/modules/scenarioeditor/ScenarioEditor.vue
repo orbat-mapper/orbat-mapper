@@ -167,6 +167,7 @@
       @cancel="cancelSidcModal"
       :dialog-title="sidcModalTitle"
       :hide-modifiers="hideModifiers"
+      :symbol-options="symbolOptions"
     />
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
     <ImportModal v-if="showImportModal" v-model="showImportModal" />

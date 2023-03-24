@@ -181,7 +181,6 @@ const hitsRef = ref(null);
 
 const combinedSymbolOptions = computed(() => ({
   ...(props.symbolOptions || {}),
-  fillColor: "gray",
 }));
 
 onClickOutside(hitsRef, (event) => (hitsIsOpen.value = false));

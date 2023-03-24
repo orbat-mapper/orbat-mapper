@@ -452,7 +452,9 @@ function doDelete(e: KeyboardEvent) {
 
 async function onUnitEdit(unit: NUnit, b: ColumnField, c: string) {
   if (b === "sidc") {
-    const newSidcValue = await getModalSidc(c);
+    const newSidcValue = await getModalSidc(c, {
+      symbolOptions: unitActions.getCombinedSymbolOptions(unit),
+    });
     if (newSidcValue !== undefined) {
       updateUnit(unit.id, { sidc: newSidcValue });
     }

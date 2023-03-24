@@ -19,7 +19,7 @@
             :sidc="sUnit.sidc"
             :size="24"
             class="block"
-            :options="combineOptions(sUnit)"
+            :options="getCombinedSymbolOptions(sUnit)"
           />
           <span v-if="sUnit._state?.location" class="text-red-700">&deg;</span>
         </li>
@@ -142,25 +142,15 @@ const activeScenario = injectStrict(activeScenarioKey);
 const {
   store,
   geo: { addUnitPosition },
-  unitActions: { updateUnit, getUnitHierarchy },
+  unitActions: { updateUnit, getUnitHierarchy, getCombinedSymbolOptions },
 } = activeScenario;
 
 const unit = computed(() => {
   return store.state.unitMap[props.unitId];
 });
 
-function combineOptions(unit: NUnit) {
-  const { _sid, _gid } = unit;
-
-  return {
-    ...(store.state.sideMap[_sid!].symbolOptions || {}),
-    ...(store.state.sideGroupMap[_gid!].symbolOptions || {}),
-    ...(unit.symbolOptions || {}),
-  };
-}
-
 const combinedSymbolOptions = computed(() => {
-  return combineOptions(unit.value);
+  return getCombinedSymbolOptions(unit.value);
 });
 
 let form = ref<UnitUpdate>({
@@ -282,7 +272,9 @@ const buttonItems = computed(() => [
 ]);
 
 async function handleChangeSymbol() {
-  const newSidcValue = await getModalSidc(unit.value.sidc);
+  const newSidcValue = await getModalSidc(unit.value.sidc, {
+    symbolOptions: getCombinedSymbolOptions(unit.value),
+  });
   if (newSidcValue !== undefined) {
     if (isMultiMode.value) {
       store.groupUpdate(() =>

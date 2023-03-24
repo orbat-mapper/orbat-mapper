@@ -213,6 +213,7 @@ async function handleChangeSymbol() {
       store.state.currentTime,
       store.state.info.timeZone
     )}`,
+    symbolOptions: unitActions.getCombinedSymbolOptions(props.unit),
   });
   if (newSidcValue !== undefined) {
     const newState: StateAdd = {
