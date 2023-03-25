@@ -217,8 +217,9 @@ async function handleChangeSymbol() {
   });
   if (newSidcValue !== undefined) {
     const newState: StateAdd = {
-      sidc: newSidcValue,
+      sidc: newSidcValue.sidc,
       t: store.state.currentTime,
+      symbolOptions: newSidcValue.symbolOptions,
     };
     unitActions.addUnitStateEntry(props.unit.id, newState, true);
   }

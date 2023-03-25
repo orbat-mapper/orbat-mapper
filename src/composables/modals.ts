@@ -51,6 +51,11 @@ export interface ModalSidcOptions {
   symbolOptions: UnitSymbolOptions;
 }
 
+export interface ModalSidcReturn {
+  sidc: string;
+  symbolOptions: UnitSymbolOptions;
+}
+
 export function useSidcModal() {
   const { isRevealed, reveal, confirm, cancel } = useConfirmDialog<string>();
   const initialSidcModalValue = ref("10031000001211000000");
@@ -61,7 +66,7 @@ export function useSidcModal() {
   const getModalSidc = async (
     initialValue: string,
     options: Partial<ModalSidcOptions> = {}
-  ): Promise<string | undefined> => {
+  ): Promise<ModalSidcReturn | undefined> => {
     NProgress.start();
     initialSidcModalValue.value = initialValue;
     sidcModalTitle.value = options.title || "Symbol picker";

@@ -456,7 +456,10 @@ async function onUnitEdit(unit: NUnit, b: ColumnField, c: string) {
       symbolOptions: unitActions.getCombinedSymbolOptions(unit),
     });
     if (newSidcValue !== undefined) {
-      updateUnit(unit.id, { sidc: newSidcValue });
+      updateUnit(unit.id, {
+        sidc: newSidcValue.sidc,
+        symbolOptions: newSidcValue.symbolOptions,
+      });
     }
   }
 }

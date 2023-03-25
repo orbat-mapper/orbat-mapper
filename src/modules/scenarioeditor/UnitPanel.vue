@@ -276,15 +276,16 @@ async function handleChangeSymbol() {
     symbolOptions: getCombinedSymbolOptions(unit.value),
   });
   if (newSidcValue !== undefined) {
+    const { sidc, symbolOptions = {} } = newSidcValue;
     if (isMultiMode.value) {
       store.groupUpdate(() =>
         selectedUnitIds.value.forEach((unitId) => {
           const { side } = getUnitHierarchy(unitId);
-          const sidc = setCharAt(newSidcValue, SID_INDEX, side.standardIdentity);
-          updateUnit(unitId, { sidc });
+          const nsidc = setCharAt(sidc, SID_INDEX, side.standardIdentity);
+          updateUnit(unitId, { sidc: nsidc });
         })
       );
-    } else updateUnit(props.unitId, { sidc: newSidcValue });
+    } else updateUnit(props.unitId, { sidc, symbolOptions });
   }
 }
 </script>

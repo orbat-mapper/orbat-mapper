@@ -9,6 +9,7 @@ export interface State extends Partial<ScenarioEventDescription> {
   location?: Position | null;
   sidc?: string;
   via?: Position[];
+  symbolOptions?: UnitSymbolOptions;
 }
 
 export interface StateAdd extends Omit<State, "id"> {

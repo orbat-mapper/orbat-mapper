@@ -240,7 +240,7 @@ const onTab = (event: KeyboardEvent) => {
 };
 
 const onSubmit = () => {
-  emit("update:sidc", csidc.value);
+  emit("update:sidc", { sidc: csidc.value, symbolOptions: {} });
   open.value = false;
 };
 

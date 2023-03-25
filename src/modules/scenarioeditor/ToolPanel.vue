@@ -137,7 +137,7 @@ async function handleChangeSymbol() {
     symbolOptions: symbolOptions.value,
   });
   if (newSidcValue !== undefined) {
-    customIcon.value.code = newSidcValue;
+    customIcon.value.code = newSidcValue.sidc;
     addUnit(customSidc.value);
   }
 }
