@@ -28,6 +28,12 @@ of the unit icons. The most commonly used ones are friend, neutral and hostile:
 You can also select custom colors. This is useful in cases when you do not want to label a side as hostile or want to
 distinguish different nations by symbol color.
 
+<div class="grid grid-cols-3 gap-0 items-center justify-items-center content-end">
+    <DocMilSymbol sidc="10031000000000000000" :modifiers="{fillColor: '#aab074'}"/>
+    <DocMilSymbol sidc="10031000000000000000" :modifiers="{fillColor: '#ffd00b'}"/>
+    <DocMilSymbol sidc="10031000000000000000" :modifiers="{fillColor: '#ff3333'}"/>
+</div>
+
 Each side consists of one or more groups of units. A group is just a way to organize your units. They can for instance
 represent branches (army, navy, air-force, etc.), a task force, a battlefront, etc. The default group name is _Units_.
 
