@@ -52,5 +52,7 @@ export const INTERNAL_NAMES = [
   "_isNew",
   "_zIndex",
   "_hidden",
+  "_gid",
+  "_sid",
 ];
 export const TIMESTAMP_NAMES = ["t", "visibleFromT", "visibleUntilT", "startTime"];
