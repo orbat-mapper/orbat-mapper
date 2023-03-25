@@ -65,7 +65,6 @@
         :items="colorIconItems"
         v-model="fillColorValue"
       />
-      <p>{{ fillColorValue }}</p>
     </div>
   </div>
 </template>

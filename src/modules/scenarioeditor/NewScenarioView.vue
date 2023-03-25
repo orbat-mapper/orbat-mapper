@@ -61,7 +61,11 @@
                 <template v-for="(unit, i) in sideData.units">
                   <div class="flex items-end gap-4 md:grid md:grid-cols-2">
                     <InputGroup label="Root unit name" v-model="unit.rootUnitName" />
-                    <MilitarySymbol :size="32" :sidc="unitSidc(unit, sideData)" />
+                    <MilitarySymbol
+                      :size="32"
+                      :sidc="unitSidc(unit, sideData)"
+                      :options="sideData.symbolOptions"
+                    />
                   </div>
                   <div class="mt-4 grid gap-4 md:grid-cols-2">
                     <SymbolCodeSelect
@@ -69,12 +73,14 @@
                       label="Main icon"
                       v-model="unit.rootUnitIcon"
                       :items="iconItems(sideData.standardIdentity)"
+                      :symbol-options="sideData.symbolOptions"
                     />
                     <SymbolCodeSelect
                       class=""
                       label="Echelon"
                       v-model="unit.rootUnitEchelon"
                       :items="echelonItems(sideData.standardIdentity)"
+                      :symbol-options="sideData.symbolOptions"
                     />
                   </div>
                   <SimpleDivider v-if="i < sideData.units.length - 1" />
