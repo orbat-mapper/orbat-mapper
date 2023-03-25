@@ -119,7 +119,7 @@ export interface ScenarioInfo {
 }
 
 export type SymbologyStandard = "2525" | "app6";
-export type ScenarioVersion = "0.6.0";
+export type ScenarioVersion = "0.7.0" | "0.6.0";
 
 export interface Scenario extends ScenarioInfo {
   type: "ORBAT-mapper";

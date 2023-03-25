@@ -89,7 +89,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     const { state } = store.value;
     return {
       type: "ORBAT-mapper",
-      version: "0.6.0",
+      version: "0.7.0",
       ...getScenarioInfo(state),
       sides: getSides(state),
       layers: getLayers(state),
