@@ -1,4 +1,4 @@
-import { type ChartItemType, ChartItemTypes, type Unit } from "./orbatchart";
+import { type ChartItemType, ChartItemTypes, type ChartUnit } from "./orbatchart";
 import {
   useMergedChartOptionsStore,
   useSelectedChartElementStore,
@@ -45,7 +45,7 @@ export function useChartSettings(chartElementType: ChartItemType) {
       case ChartItemTypes.Branch:
         return specificOptionsStore.branch[currentElement.value as string | number];
       case ChartItemTypes.Unit:
-        return specificOptionsStore.unit[(currentElement.value as Unit).id] || null;
+        return specificOptionsStore.unit[(currentElement.value as ChartUnit).id] || null;
       default:
         return null;
     }
@@ -62,7 +62,7 @@ export function useChartSettings(chartElementType: ChartItemType) {
         specificOptionsStore.branch[currentElement.value as string | number] = opts;
         break;
       case ChartItemTypes.Unit:
-        specificOptionsStore.unit[(currentElement.value as Unit).id] = opts;
+        specificOptionsStore.unit[(currentElement.value as ChartUnit).id] = opts;
         break;
     }
   }
@@ -78,7 +78,7 @@ export function useChartSettings(chartElementType: ChartItemType) {
         specificOptionsStore.branch[currentElement.value as string | number] = opts;
         break;
       case ChartItemTypes.Unit:
-        specificOptionsStore.unit[(currentElement.value as Unit).id] = opts;
+        specificOptionsStore.unit[(currentElement.value as ChartUnit).id] = opts;
         break;
     }
   }

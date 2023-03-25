@@ -13,7 +13,7 @@ import {
   SpecificOptions,
   SVGElementSelection,
   ToSvgOptions,
-  Unit,
+  ChartUnit,
   UnitLevelDistances,
   VerticalAlignments,
 } from "./types";
@@ -75,7 +75,7 @@ class OrbatChart {
   wrapperGroup!: GElementSelection;
   pz: PanzoomObject | null;
   constructor(
-    private rootNode: Unit,
+    private rootNode: ChartUnit,
     options: Partial<OrbChartOptions> = {},
     private specificOptions: SpecificOptions = {}
   ) {
@@ -230,7 +230,7 @@ class OrbatChart {
     };
   }
 
-  private _computeOrbatInfo(rootNode: Unit) {
+  private _computeOrbatInfo(rootNode: ChartUnit) {
     let levels: BasicUnitNode[][] = [];
     const nodeMap: Record<string, BasicUnitNode> = {};
 

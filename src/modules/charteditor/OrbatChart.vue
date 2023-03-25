@@ -10,14 +10,14 @@ import {
   PartialOrbChartOptions,
   SpecificOptions,
   SymbolGenerator,
-  Unit,
+  ChartUnit,
   UnitNodeInfo,
 } from "./orbatchart";
 import BaseToolbar from "@/components/BaseToolbar.vue";
 import ToolbarButton from "@/components/ToolbarButton.vue";
 
 interface Props {
-  unit?: Unit | null;
+  unit?: ChartUnit | null;
   debug?: boolean;
   options?: PartialOrbChartOptions;
   specificOptions?: SpecificOptions;

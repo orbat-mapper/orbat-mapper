@@ -86,7 +86,7 @@ export interface Point {
 }
 
 export interface BasicUnitNode {
-  unit: Unit;
+  unit: ChartUnit;
   parent?: BasicUnitNode;
 }
 
@@ -98,7 +98,7 @@ export interface UnitNodeInfo extends BasicUnitNode {
   x: number;
   y: number;
   parent?: UnitNodeInfo;
-  unit: Unit;
+  unit: ChartUnit;
   // bounding box (including label)
   ly: number;
   lx: number;
@@ -166,16 +166,16 @@ export interface SpecificOptions {
 }
 
 export type UnitNodeVisitorCallback = (
-  unit: Unit,
+  unit: ChartUnit,
   level: number,
-  parent: Unit | null
+  parent: ChartUnit | null
 ) => void;
 
-export interface Unit {
+export interface ChartUnit {
   name: string;
   sidc: string;
   shortName?: string;
-  subUnits?: Unit[];
+  subUnits?: ChartUnit[];
   id: string;
 }
 

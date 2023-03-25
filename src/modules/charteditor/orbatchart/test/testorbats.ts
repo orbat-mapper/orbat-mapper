@@ -1,6 +1,6 @@
-import { Unit } from "../types";
+import { ChartUnit } from "../types";
 
-export const ORBAT1: Unit = {
+export const ORBAT1: ChartUnit = {
   name: "A Bde",
   sidc: "10031000181211004600",
   id: "1",

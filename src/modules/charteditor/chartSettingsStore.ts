@@ -5,7 +5,7 @@ import {
   PartialOrbChartOptions,
   RenderedUnitNode,
   SpecificOptions,
-  Unit,
+  ChartUnit,
 } from "./orbatchart";
 
 export interface State {
@@ -21,7 +21,7 @@ export interface SelectedState {
 }
 
 export interface RootUnitState {
-  unit: Unit | null | undefined;
+  unit: ChartUnit | null | undefined;
 }
 
 export interface ChartSettingsState extends PartialOrbChartOptions {

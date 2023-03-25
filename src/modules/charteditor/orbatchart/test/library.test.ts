@@ -4,7 +4,7 @@ import {
   OrbatChart,
   PartialOrbChartOptions,
   SymbolGenerator,
-  Unit,
+  ChartUnit,
 } from "../index";
 import { ORBAT1 } from "./testorbats";
 import ms from "milsymbol";
@@ -46,7 +46,7 @@ describe("OrbatChart SVG rendering", () => {
   });
 });
 
-const DUMMY_UNIT: Unit = {
+const DUMMY_UNIT: ChartUnit = {
   name: "Unit A",
   shortName: "A Bde",
   id: "1",
