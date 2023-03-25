@@ -5,7 +5,11 @@
       <InputGroupTemplate label="Root unit" v-if="rootUnitStore.unit" class="my-4">
         <div class="flex items-start">
           <div class="mt-2 w-16 flex-shrink-0">
-            <MilSymbol :sidc="rootUnitStore.unit.sidc" :size="30" />
+            <MilSymbol
+              :sidc="rootUnitStore.unit.sidc"
+              :size="30"
+              :modifiers="rootUnitStore.unit.symbolOptions"
+            />
           </div>
           <div class="min-w-0 flex-auto">
             <p class="truncate pt-2 text-sm font-medium text-gray-700">
@@ -117,7 +121,7 @@ const props = defineProps({ chartMode: { type: Boolean, default: false } });
 const SearchModal = defineAsyncComponent(() => import("@/components/SearchModal.vue"));
 
 const {
-  unitActions: { expandUnit, getUnitById },
+  unitActions: { expandUnitWithSymbolOptions, getUnitById },
 } = injectStrict(activeScenarioKey);
 
 const options = useChartSettingsStore();
@@ -130,7 +134,7 @@ const rootUnitStore = useRootUnitStore();
 const showSearch = ref(false);
 
 const onUnitSelect = (unitId: string) => {
-  const unit = expandUnit(getUnitById(unitId));
+  const unit = expandUnitWithSymbolOptions(getUnitById(unitId));
   if (unit) rootUnitStore.unit = unit;
 };
 </script>

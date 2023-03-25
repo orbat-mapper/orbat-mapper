@@ -103,7 +103,7 @@ const {
 const activeUnit = computed(
   () =>
     (activeUnitId.value &&
-      unitActions.expandUnit(state.getUnitById(activeUnitId.value))) ||
+      unitActions.expandUnitWithSymbolOptions(state.getUnitById(activeUnitId.value))) ||
     null
 );
 

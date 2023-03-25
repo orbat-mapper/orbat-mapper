@@ -91,6 +91,7 @@ const unitHits = computed(() => {
         }),
       score: u.score,
       category: "Units",
+      symbolOptions: unitActions.getCombinedSymbolOptions(u.obj),
     }));
 });
 

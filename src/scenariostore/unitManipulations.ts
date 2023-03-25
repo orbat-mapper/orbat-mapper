@@ -548,6 +548,16 @@ export function useUnitManipulations(store: NewScenarioStore) {
     };
   }
 
+  function expandUnitWithSymbolOptions(unit: NUnit): Unit {
+    return {
+      ...unit,
+      symbolOptions: getCombinedSymbolOptions(unit),
+      subUnits: unit.subUnits.map((subUnitId) =>
+        expandUnitWithSymbolOptions(state.unitMap[subUnitId])
+      ),
+    };
+  }
+
   function getCombinedSymbolOptions(unit: NUnit, ignoreUnit = false): UnitSymbolOptions {
     const { _sid, _gid } = unit;
 
@@ -592,5 +602,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     reorderSide,
     reorderSideGroup,
     getCombinedSymbolOptions,
+    expandUnitWithSymbolOptions,
   };
 }

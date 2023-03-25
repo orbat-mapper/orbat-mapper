@@ -2,6 +2,7 @@ import type { LayerFeatureItem } from "@/types/scenarioGeoModels";
 import type { NUnit } from "@/types/internalModels";
 import type { UnitAction } from "@/types/constants";
 import type { InjectionKey } from "vue";
+import { UnitSymbolOptions } from "@/types/scenarioModels";
 
 export interface ButtonGroupItem {
   label: string;
@@ -36,6 +37,7 @@ export interface UnitSearchResult extends SearchResult {
     sidc: string;
     name: string;
   };
+  symbolOptions?: UnitSymbolOptions;
 }
 
 export interface LayerFeatureSearchResult extends LayerFeatureItem, SearchResult {

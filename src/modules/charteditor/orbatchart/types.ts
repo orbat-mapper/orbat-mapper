@@ -177,6 +177,7 @@ export interface ChartUnit {
   shortName?: string;
   subUnits?: ChartUnit[];
   id: string;
+  symbolOptions?: SymbolOptions;
 }
 
 export interface RenderedElement {
