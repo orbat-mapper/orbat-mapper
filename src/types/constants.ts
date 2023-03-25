@@ -1,3 +1,5 @@
+import { UnitSymbolOptions } from "@/types/scenarioModels";
+
 export const DragOperations = {
   OrbatDrag: "OrbatDrag",
 } as const;
@@ -66,6 +68,7 @@ export interface SymbolItem extends SymbolValue {
   entity?: string;
   entityType?: string;
   entitySubtype?: string;
+  symbolOptions?: UnitSymbolOptions;
 }
 
 const stateActions = [

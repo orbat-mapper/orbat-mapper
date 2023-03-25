@@ -52,8 +52,11 @@
               <div class="grid gap-4 md:grid-cols-2">
                 <InputGroup v-model="sideData.name" label="Side name" />
               </div>
-              <StandardIdentitySelect v-model="sideData.standardIdentity" />
-              <SimpleDivider class="mt-2 mb-4">Root units</SimpleDivider>
+              <StandardIdentitySelect
+                v-model="sideData.standardIdentity"
+                v-model:fill-color="sideData.symbolOptions.fillColor"
+              />
+              <SimpleDivider class="mt-4 mb-4">Root units</SimpleDivider>
               <div class="space-y-6">
                 <template v-for="(unit, i) in sideData.units">
                   <div class="flex items-end gap-4 md:grid md:grid-cols-2">
@@ -156,7 +159,7 @@ import { SCENARIO_ROUTE } from "@/router/names";
 import { useScenario } from "@/scenariostore";
 import { createEmptyScenario } from "@/scenariostore/io";
 import ToggleField from "@/components/ToggleField.vue";
-import { ScenarioInfo, SideData } from "@/types/scenarioModels";
+import { ScenarioInfo, SideData, UnitSymbolOptions } from "@/types/scenarioModels";
 import { SID, SidValue } from "@/symbology/values";
 import { nanoid } from "@/utils";
 import { Sidc } from "@/symbology/sidc";
@@ -191,6 +194,7 @@ interface RootUnit {
 }
 
 interface InitialSideData extends SideData {
+  symbolOptions: UnitSymbolOptions;
   units: RootUnit[];
 }
 
@@ -215,11 +219,13 @@ const form = reactive<NewScenarioForm>({
     {
       name: "Side 1",
       standardIdentity: SID.Friend,
+      symbolOptions: {},
       units: [{ rootUnitName: "HQ", rootUnitEchelon: "18", rootUnitIcon: "121000" }],
     },
     {
       name: "Side 2",
       standardIdentity: SID.Hostile,
+      symbolOptions: {},
       units: [{ rootUnitName: "HQ", rootUnitEchelon: "18", rootUnitIcon: "110000" }],
     },
   ],
@@ -300,6 +306,7 @@ function addSide() {
   form.sides.push({
     name: "Side",
     standardIdentity: SID.Friend,
+    symbolOptions: {},
     units: [{ rootUnitName: "HQ", rootUnitEchelon: "18", rootUnitIcon: "121000" }],
   });
 }

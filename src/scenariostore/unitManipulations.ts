@@ -61,6 +61,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       id: nanoid(),
       name: sideData.name || "New side",
       standardIdentity: sideData.standardIdentity || SID.Friend,
+      symbolOptions: sideData.symbolOptions || {},
       groups: [],
       _isNew: markAsNew ?? true,
     };

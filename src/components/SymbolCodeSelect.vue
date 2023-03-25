@@ -13,7 +13,7 @@
               :sidc="selected?.sidc || ''"
               alt=""
               :size="20"
-              :options="symbolOptions"
+              :options="{ ...symbolOptions, ...selected?.symbolOptions }"
             />
           </div>
           <span class="ml-3 block truncate">{{ selected?.text }}</span>
@@ -48,7 +48,11 @@
             >
               <div class="flex items-center">
                 <p class="flex h-7 w-8 flex-shrink-0 items-center justify-center">
-                  <MilitarySymbol :size="20" :sidc="item.sidc" :options="symbolOptions" />
+                  <MilitarySymbol
+                    :size="20"
+                    :sidc="item.sidc"
+                    :options="{ ...symbolOptions, ...item.symbolOptions }"
+                  />
                 </p>
                 <span
                   :class="[

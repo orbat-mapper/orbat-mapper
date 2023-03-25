@@ -14,22 +14,29 @@ const props = defineProps<{ sideId: string }>();
 const emit = defineEmits(["close"]);
 const { store, unitActions } = injectStrict(activeScenarioKey);
 
-let form = ref<Partial<SideUpdate>>({ name: "New side", standardIdentity: "3" });
+interface Form {
+  name: string;
+  standardIdentity: string;
+  symbolOptions: {
+    fillColor?: string;
+  };
+}
+let form = ref<Form>({ name: "New side", standardIdentity: "3", symbolOptions: {} });
 
 const side = computed(() => store?.state.sideMap[props.sideId]);
 watch(
   () => props.sideId,
   (sideId) => {
     if (sideId && side.value) {
-      const { name, standardIdentity } = side.value;
-      form.value = { name, standardIdentity };
+      const { name, standardIdentity, symbolOptions = {} } = side.value;
+      form.value = { name, standardIdentity, symbolOptions };
     }
   },
   { immediate: true }
 );
 
 const onFormSubmit = () => {
-  unitActions.updateSide(props.sideId, { ...form.value });
+  unitActions.updateSide(props.sideId, { ...form.value } as SideUpdate);
   emit("close");
 };
 
@@ -40,7 +47,11 @@ const { focusId } = useFocusOnMount();
   <InlineFormPanel @close="$emit('close')" title="Edit side info">
     <form @submit.prevent="onFormSubmit" class="space-y-4">
       <InputGroup label="Side name" v-model="form.name" :id="focusId" />
-      <StandardIdentitySelect v-model="form.standardIdentity" compact />
+      <StandardIdentitySelect
+        v-model="form.standardIdentity"
+        v-model:fill-color="form.symbolOptions.fillColor"
+        compact
+      />
       <div class="flex justify-end space-x-2">
         <BaseButton small primary type="submit">Save</BaseButton>
         <BaseButton @click="$emit('close')">Cancel</BaseButton>

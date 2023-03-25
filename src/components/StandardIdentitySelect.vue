@@ -2,8 +2,8 @@
   <div class="mt-4">
     <RadioGroup v-model="data">
       <RadioGroupLabel class="text-sm font-medium text-gray-700"
-        >Standard identity</RadioGroupLabel
-      >
+        >Standard identity
+      </RadioGroupLabel>
       <div
         class="mt-1 grid gap-y-4 gap-x-4"
         :class="compact ? 'grid-cols-2' : 'sm:grid-cols-4'"
@@ -59,6 +59,14 @@
         <template v-else>View more<span aria-hidden="true"> →</span></template>
       </button>
     </div>
+    <div class="mt-0 grid gap-4" :class="compact ? 'grid-cols-1' : 'sm:grid-cols-2'">
+      <SymbolCodeSelect
+        label="Fill color"
+        :items="colorIconItems"
+        v-model="fillColorValue"
+      />
+      <p>{{ fillColorValue }}</p>
+    </div>
   </div>
 </template>
 
@@ -74,16 +82,23 @@ import { CheckCircleIcon } from "@heroicons/vue/20/solid";
 import { SymbolItem, SymbolValue } from "@/types/constants";
 import MilSymbol from "@/components/MilSymbol.vue";
 import { useToggle, useVModel } from "@vueuse/core";
+import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 
 interface Props {
   modelValue: string;
   compact?: boolean;
+  fillColor?: string;
 }
 
-const props = withDefaults(defineProps<Props>(), { modelValue: "3", compact: false });
-const emit = defineEmits(["update:modelValue"]);
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: "3",
+  compact: false,
+  fillColor: "",
+});
+const emit = defineEmits(["update:modelValue", "update:fillColor"]);
 
 const data = useVModel(props, "modelValue", emit);
+const fillColorValue = useVModel(props, "fillColor", emit);
 
 const sidItems = [
   {
@@ -97,14 +112,6 @@ const sidItems = [
   {
     code: "4",
     text: "Neutral",
-  },
-  {
-    code: "7",
-    text: "Custom 1",
-  },
-  {
-    code: "8",
-    text: "Custom 2",
   },
   {
     code: "1",
@@ -134,6 +141,25 @@ function addSymbol({ code, text }: SymbolValue): SymbolItem {
 
 const [showAll, toggleShowAll] = useToggle(false);
 const items = computed(() =>
-  showAll.value ? sidItems : sidItems.filter((e) => ["3", "6", "4", "7"].includes(e.code))
+  showAll.value
+    ? sidItems
+    : sidItems.filter((e) => ["1", "3", "6", "4", "7"].includes(e.code))
+);
+
+const colors: Omit<SymbolItem, "sidc">[] = [
+  { code: "", text: "Standard" },
+  { code: "#0000ff", text: "Blue" },
+  { code: "#00ff00", text: "Green" },
+  { code: "#ff0000", text: "Red" },
+  { code: "#ffff00", text: "Yellow" },
+  { code: "#ffffff", text: "White" },
+];
+
+const colorIconItems = computed((): SymbolItem[] =>
+  colors.map((item) => ({
+    ...item,
+    sidc: "100" + data.value + 10 + "00" + "00" + "0000000000",
+    symbolOptions: item.code ? { fillColor: item.code } : undefined,
+  }))
 );
 </script>
