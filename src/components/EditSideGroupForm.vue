@@ -2,6 +2,11 @@
   <InlineFormPanel @close="$emit('close')" title="Edit group info">
     <form @submit.prevent="onFormSubmit" class="space-y-4">
       <InputGroup label="Group name" v-model="form.name" :id="focusId" />
+      <SymbolFillColorSelect
+        v-model="form.symbolOptions.fillColor"
+        :default-fill-color="side?.symbolOptions?.fillColor"
+        :sid="side?.standardIdentity"
+      />
 
       <div class="flex justify-end space-x-2">
         <PrimaryButton type="submit">Save</PrimaryButton>
@@ -21,22 +26,29 @@ import { useFocusOnMount } from "./helpers";
 import type { EntityId } from "@/types/base";
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
-import { NSideGroup } from "@/types/internalModels";
+import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
+import { UnitSymbolOptions } from "@/types/scenarioModels";
 
 const { store, unitActions } = injectStrict(activeScenarioKey);
 const props = defineProps<{ sideGroupId: EntityId }>();
 const emit = defineEmits(["close"]);
 
-let form = ref<Partial<NSideGroup>>({ name: "Units" });
+interface Form {
+  name: string;
+  symbolOptions: UnitSymbolOptions;
+}
+let form = ref<Form>({ name: "Units", symbolOptions: {} });
 const sideGroup = computed(() =>
   props.sideGroupId ? store?.state.sideGroupMap[props.sideGroupId] : undefined
 );
+
+const side = computed(() => store.state.getSideById(sideGroup.value?._pid!));
 watch(
   () => props.sideGroupId,
   (sideGroupId) => {
     if (sideGroupId && sideGroup.value) {
-      const { name } = sideGroup.value;
-      form.value = { name };
+      const { name, symbolOptions = {} } = sideGroup.value;
+      form.value = { name, symbolOptions: { ...symbolOptions } };
     }
   },
   { immediate: true }
