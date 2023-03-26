@@ -60,17 +60,13 @@
       </button>
     </div>
     <div class="mt-0 grid gap-4" :class="compact ? 'grid-cols-1' : 'sm:grid-cols-2'">
-      <SymbolCodeSelect
-        label="Fill color"
-        :items="colorIconItems"
-        v-model="fillColorValue"
-      />
+      <SymbolFillColorSelect v-model="fillColorValue" :sid="data" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import {
   RadioGroup,
   RadioGroupDescription,
@@ -81,7 +77,7 @@ import { CheckCircleIcon } from "@heroicons/vue/20/solid";
 import { SymbolItem, SymbolValue } from "@/types/constants";
 import MilSymbol from "@/components/MilSymbol.vue";
 import { useToggle, useVModel } from "@vueuse/core";
-import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
+import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 
 interface Props {
   modelValue: string;
@@ -143,29 +139,5 @@ const items = computed(() =>
   showAll.value
     ? sidItems
     : sidItems.filter((e) => ["1", "3", "6", "4", "7"].includes(e.code))
-);
-
-const colors: Omit<SymbolItem, "sidc">[] = [
-  { code: "", text: "Standard" },
-  { code: "#80e0ff", text: "Blue (standard)" },
-  { code: "#ff8080", text: "Red (standard)" },
-  { code: "#aaffaa", text: "Green (standard)" },
-  { code: "#ffff80", text: "Yellow (standard)" },
-  { code: "#ffa1ff", text: "Pink (civilian)" },
-  { code: "#aab074", text: "Olive" },
-  { code: "#5baa5b", text: "Infantry (Battle Order)" },
-  { code: "#ffd00b", text: "Armor (Battle Order)" },
-  { code: "#ff3333", text: "Artillery (Battle Order)" },
-  { code: "#f7f7f7", text: "Combat Support (Battle Order)" },
-  { code: "#d87600", text: "Service Support (Battle Order)" },
-  { code: "#a2e3e8", text: "Aviation (Battle Order)" },
-];
-
-const colorIconItems = computed((): SymbolItem[] =>
-  colors.map((item) => ({
-    ...item,
-    sidc: "100" + data.value + 10 + "00" + "00" + "0000000000",
-    symbolOptions: item.code ? { fillColor: item.code } : undefined,
-  }))
 );
 </script>
