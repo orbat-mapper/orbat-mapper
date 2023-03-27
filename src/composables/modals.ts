@@ -49,6 +49,7 @@ export interface ModalSidcOptions {
   title: string;
   hideModifiers: boolean;
   symbolOptions: UnitSymbolOptions;
+  inheritedSymbolOptions: UnitSymbolOptions;
 }
 
 export interface ModalSidcReturn {
@@ -62,6 +63,7 @@ export function useSidcModal() {
   const sidcModalTitle = ref("Select symbol");
   const hideModifiers = ref(false);
   const symbolOptions = ref<UnitSymbolOptions>({});
+  const inheritedSymbolOptions = ref<UnitSymbolOptions>({});
 
   const getModalSidc = async (
     initialValue: string,
@@ -71,6 +73,7 @@ export function useSidcModal() {
     initialSidcModalValue.value = initialValue;
     sidcModalTitle.value = options.title || "Symbol picker";
     hideModifiers.value = options.hideModifiers || false;
+    inheritedSymbolOptions.value = options.inheritedSymbolOptions || {};
     symbolOptions.value = options.symbolOptions || {};
     const { data, isCanceled } = await reveal();
     if (!isCanceled) {
@@ -94,6 +97,7 @@ export function useSidcModal() {
     sidcModalTitle,
     hideModifiers,
     symbolOptions,
+    inheritedSymbolOptions,
   };
 }
 

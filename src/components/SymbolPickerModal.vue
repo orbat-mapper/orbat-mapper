@@ -89,10 +89,10 @@
               :items="mod2Items"
               :symbol-options="combinedSymbolOptions"
             />
-
-            <!--            <div style="min-height: 14rem" class="flex justify-end py-4">-->
-            <!--              <div class=""></div>-->
-            <!--            </div>-->
+            <SymbolFillColorSelect
+              v-model="internalSymbolOptions.fillColor"
+              :default-fill-color="inheritedSymbolOptions?.fillColor"
+            />
           </form>
           <GlobalEvents
             v-if="isActive && hits?.length && hitsIsOpen"
@@ -151,6 +151,7 @@ import * as fuzzysort from "fuzzysort";
 import { htmlTagEscape } from "@/utils";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { UnitSymbolOptions } from "@/types/scenarioModels";
+import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue")
@@ -161,6 +162,7 @@ interface Props {
   sidc?: string;
   dialogTitle?: string;
   hideModifiers?: boolean;
+  inheritedSymbolOptions?: UnitSymbolOptions;
   symbolOptions?: UnitSymbolOptions;
 }
 
@@ -178,9 +180,24 @@ const currentIndex = ref(-1);
 const hitsIsOpen = ref(false);
 const hitsRef = ref(null);
 
-const combinedSymbolOptions = computed(() => ({
+const internalSymbolOptions = ref<UnitSymbolOptions>({
   ...(props.symbolOptions || {}),
+});
+
+const combinedSymbolOptions = computed(() => ({
+  ...(props.inheritedSymbolOptions || {}),
+  ...cleanObject(internalSymbolOptions.value || {}),
 }));
+
+// remove empty values in object
+const cleanObject = (obj: any) => {
+  Object.keys(obj).forEach((key) => {
+    if (obj[key] && typeof obj[key] === "object") cleanObject(obj[key]);
+    else if (obj[key] === "" || obj[key] === null || obj[key] === undefined)
+      delete obj[key];
+  });
+  return obj;
+};
 
 onClickOutside(hitsRef, (event) => (hitsIsOpen.value = false));
 
@@ -239,7 +256,12 @@ const onTab = (event: KeyboardEvent) => {
 };
 
 const onSubmit = () => {
-  emit("update:sidc", { sidc: csidc.value, symbolOptions: {} });
+  emit("update:sidc", {
+    sidc: csidc.value,
+    symbolOptions: internalSymbolOptions.value.fillColor
+      ? { fillColor: internalSymbolOptions.value.fillColor }
+      : {},
+  });
   open.value = false;
 };
 

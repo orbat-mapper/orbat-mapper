@@ -273,7 +273,8 @@ const buttonItems = computed(() => [
 
 async function handleChangeSymbol() {
   const newSidcValue = await getModalSidc(unit.value.sidc, {
-    symbolOptions: getCombinedSymbolOptions(unit.value),
+    symbolOptions: unit.value.symbolOptions,
+    inheritedSymbolOptions: getCombinedSymbolOptions(unit.value, true),
   });
   if (newSidcValue !== undefined) {
     const { sidc, symbolOptions = {} } = newSidcValue;

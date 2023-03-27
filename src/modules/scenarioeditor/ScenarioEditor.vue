@@ -167,6 +167,7 @@
       @cancel="cancelSidcModal"
       :dialog-title="sidcModalTitle"
       :hide-modifiers="hideModifiers"
+      :inherited-symbol-options="inheritedSymbolOptions"
       :symbol-options="symbolOptions"
     />
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
@@ -325,6 +326,7 @@ const {
   sidcModalTitle,
   hideModifiers,
   symbolOptions,
+  inheritedSymbolOptions,
 } = useSidcModal();
 provide(sidcModalKey, { getModalSidc });
 
