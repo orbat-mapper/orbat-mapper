@@ -9,7 +9,8 @@ export function formatDecimalDegrees(p: Position, precision: number) {
 }
 
 export function formatMGRS(p: Position | undefined, precision: 1 | 2 | 3 | 4 | 5 = 5) {
-  const mgrs: string = p && forward(p, precision);
+  if (!p) return "";
+  const mgrs: string = p && forward(p as [number, number], precision);
   const n = mgrs.length;
   const eastingI = n - precision * 2;
   return `${mgrs.slice(0, eastingI - 2)} ${mgrs.slice(
