@@ -90,9 +90,9 @@
               :symbol-options="combinedSymbolOptions"
             />
 
-            <div style="min-height: 14rem" class="flex justify-end py-4">
-              <div class=""></div>
-            </div>
+            <!--            <div style="min-height: 14rem" class="flex justify-end py-4">-->
+            <!--              <div class=""></div>-->
+            <!--            </div>-->
           </form>
           <GlobalEvents
             v-if="isActive && hits?.length && hitsIsOpen"
@@ -134,7 +134,6 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, ref, watch, watchEffect } from "vue";
-import MilSymbol from "./MilSymbol.vue";
 import PrimaryButton from "./PrimaryButton.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
 import { onClickOutside, useDebounce, useVModel, whenever } from "@vueuse/core";
