@@ -78,10 +78,12 @@ function convertSymbol(properties: MilSymbolProperties) {
     console.warn("Failed to convert", properties, match, sidc);
   }
 
-  // const attributes = { name, shortName };
   const attributes: Record<string, string> = {};
   if (fillColor) {
     attributes["XO"] = convertColor(fillColor);
+  }
+  if (shortName || name) {
+    attributes["T"] = (shortName || name)!;
   }
 
   return tagValue(

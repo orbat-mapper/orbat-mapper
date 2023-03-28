@@ -141,6 +141,11 @@
                   "t": "1982-04-04T18:00:00-04:00",
                   "location": [-57.872586, -51.6919],
                   "id": "SgUyheDi70"
+                },
+                {
+                  "location": null,
+                  "t": "1982-05-26T20:00:00-04:00",
+                  "id": "PPTh8iQTS8"
                 }
               ],
               "id": "06Nc9BTRjs",
@@ -944,7 +949,9 @@
       "name": "Argentina",
       "id": "2z_VnZcgikjkTzSOFibbE",
       "standardIdentity": "3",
-      "symbolOptions": { "fillColor": "#aab074" },
+      "symbolOptions": {
+        "fillColor": "#aab074"
+      },
       "groups": [
         {
           "id": "FkpNiWEqlI",
@@ -983,6 +990,11 @@
                       "t": "1982-04-02T18:00:00-04:00",
                       "location": [-57.800875, -51.678995],
                       "id": "BR9Z0cZAbF"
+                    },
+                    {
+                      "location": null,
+                      "t": "1982-05-26T20:00:00-04:00",
+                      "id": "929pPngnPQ"
                     }
                   ],
                   "id": "W2ZO6vxg0q",
@@ -1098,6 +1110,11 @@
                       "t": "1982-04-02T18:00:00-04:00",
                       "location": [-57.857437, -51.725912],
                       "id": "YX7GN0VxZG"
+                    },
+                    {
+                      "location": null,
+                      "t": "1982-05-26T20:00:00-04:00",
+                      "id": "FtPyxllBy5"
                     }
                   ],
                   "subUnits": [],
@@ -1388,7 +1405,47 @@
                   "sidc": "10031000171211000000",
                   "state": [],
                   "id": "BoAMPXKcSq",
-                  "subUnits": []
+                  "subUnits": [
+                    {
+                      "name": "A",
+                      "sidc": "10031000161211000000",
+                      "id": "e2Dd1jHi3I",
+                      "state": [
+                        {
+                          "id": "mqG97vVJpu",
+                          "t": "1982-05-26T20:00:00-04:00",
+                          "location": [-58.97594045601976, -51.825991847559145]
+                        }
+                      ],
+                      "subUnits": []
+                    },
+                    {
+                      "name": "B",
+                      "sidc": "10031000161211000000",
+                      "id": "wsQpmn3OGI",
+                      "state": [
+                        {
+                          "id": "O1Yodf25k6",
+                          "t": "1982-05-26T20:00:00-04:00",
+                          "location": [-58.111871431119695, -51.67344058266559]
+                        }
+                      ],
+                      "subUnits": []
+                    },
+                    {
+                      "name": "C",
+                      "sidc": "10031000161211000000",
+                      "id": "zE8dqBnoiU",
+                      "state": [
+                        {
+                          "id": "sUADx0xyRO",
+                          "t": "1982-05-26T20:00:00-04:00",
+                          "location": [-58.971863498317134, -51.82771586853235]
+                        }
+                      ],
+                      "subUnits": []
+                    }
+                  ]
                 },
                 {
                   "name": "5th Inf Reg",
