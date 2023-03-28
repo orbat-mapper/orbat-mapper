@@ -10,7 +10,7 @@ import type {
   OrbatMapperGeoJsonLayer,
 } from "@/lib/milx/types";
 
-import { BR, BRTAB, tagValue } from "@/lib/milx/domutils";
+import { BR, BRTAB, tagIdValue, tagValue } from "@/lib/milx/domutils";
 
 export function toMilx(layers: OrbatMapperGeoJsonLayer[]): string {
   return toXml(
@@ -64,14 +64,25 @@ function convertFeature(feature: OrbatMapperGeoJsonFeature) {
   );
 }
 
+function convertColor(color: string) {
+  const r = color.slice(1, 3);
+  const g = color.slice(3, 5);
+  const b = color.slice(5, 7);
+  return "$" + "00" + b + g + r;
+}
+
 function convertSymbol(properties: MilSymbolProperties) {
-  const { sidc: numberSidc, name, shortName } = properties;
+  const { sidc: numberSidc, name, shortName, fillColor } = properties;
   const { sidc, match } = convertNumberSidc2LetterSidc(numberSidc);
   if (match === "partial" || match === "failed") {
     console.warn("Failed to convert", properties, match, sidc);
   }
 
-  const attributes = { name, shortName };
+  // const attributes = { name, shortName };
+  const attributes: Record<string, string> = {};
+  if (fillColor) {
+    attributes["XO"] = convertColor(fillColor);
+  }
 
   return tagValue(
     "MssStringXML",
@@ -79,8 +90,8 @@ function convertSymbol(properties: MilSymbolProperties) {
       u("root", [
         x(
           "Symbol",
-          { ID: sidc }
-          // ...Object.entries(attributes).map(([k, v]) => tagIdValue("Attribute", k, v!))
+          { ID: sidc },
+          ...Object.entries(attributes).map(([k, v]) => tagIdValue("Attribute", k, v!))
         ),
       ])
     )
