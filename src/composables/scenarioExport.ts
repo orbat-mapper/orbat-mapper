@@ -40,14 +40,22 @@ function mapField(field: any): string | number | Date {
 export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {}) {
   const { geo, store, unitActions } =
     options.activeScenario || injectStrict(activeScenarioKey);
-  const { unitMap, sideGroupMap, sideMap } = store.state;
+  const { sideMap } = store.state;
 
   function convertUnitsToGeoJson(units: NUnit[]) {
     const features = units.map((unit) => {
       const { id, name, sidc, shortName, description } = unit;
+      const symbolOptions = unitActions.getCombinedSymbolOptions(unit);
+
       return point<MilSymbolProperties>(
         unit._state?.location!,
-        { name, shortName, sidc: unit._state?.sidc || sidc, description },
+        {
+          name,
+          shortName,
+          sidc: unit._state?.sidc || sidc,
+          description,
+          ...symbolOptions,
+        },
         { id }
       );
     });
@@ -90,7 +98,9 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
             properties: {
               name: opts.useShortName ? shortName || name : name,
               description,
-              styleUrl: `#sidc${unit.properties.sidc}`,
+              styleUrl: `#sidc${unit.properties.sidc}${(
+                unit.properties.fillColor || ""
+              ).replaceAll("#", "")}`,
             },
           };
         }),
@@ -143,14 +153,19 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     if (opts.embedIcons) {
       for (const unit of geo.everyVisibleUnit.value) {
         const sidc = unit._state?.sidc || unit.sidc;
-        if (!usedSidcs.has(sidc)) {
-          const symb = symbolGenerator(sidc, symbolSettings.symbolOptions);
-          usedSidcs.add(sidc);
+        const symbolOptions = unitActions.getCombinedSymbolOptions(unit);
+        const cacheKey = (sidc + (symbolOptions.fillColor || "")).replaceAll("#", "");
+        if (!usedSidcs.has(cacheKey)) {
+          const symb = symbolGenerator(sidc, {
+            ...symbolSettings.symbolOptions,
+            ...symbolOptions,
+          });
+          usedSidcs.add(cacheKey);
           const blob: Blob | null = await new Promise((resolve) =>
             symb.asCanvas().toBlob(resolve)
           );
           if (blob) {
-            data[`icons/${sidc}.png`] = new Uint8Array(await blob.arrayBuffer());
+            data[`icons/${cacheKey}.png`] = new Uint8Array(await blob.arrayBuffer());
           }
         }
       }
