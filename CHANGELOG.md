@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 March 2023
 
+- Add download menu to chart edit mode view.
 - Add name field to units when exporting to MilX format.
 - Add support for custom symbol fill colors for MilX export.
 - Add custom symbol fill color support for groups.
