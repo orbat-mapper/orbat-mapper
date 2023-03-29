@@ -13,6 +13,7 @@ try some of these excellent tools instead:
 
 There are not many specialized tools available for drawing ORBAT charts. Here are a few that I'm aware of:
 
+- [Spatial Illusions unit generator](https://spatialillusions.com/unitgenerator2/).
 - [Order of Battle Generator](https://www.orbatgenerator.com/). Online editor. Perfect for
   creating [Battle Order style](https://www.battleorder.org/us-orbat) charts.
 - [Battle Order chart templates](https://www.battleorder.org/icons) (PNGs for use in a drawing program)
