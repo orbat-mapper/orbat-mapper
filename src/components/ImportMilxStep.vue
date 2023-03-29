@@ -103,6 +103,9 @@ async function onLoad(e: Event) {
         _gid: "",
         _sid: "",
         location: (f.geometry as Point).coordinates,
+        symbolOptions: f.properties.fillColor
+          ? { fillColor: f.properties.fillColor }
+          : {},
       };
     });
   scnStore.groupUpdate(() => {

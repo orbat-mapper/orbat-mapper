@@ -6,6 +6,7 @@ export interface MilXSymbolProperties {
   ID: string;
   M?: string;
   T?: string;
+  XO?: string;
 }
 
 export interface GeoJsonSymbolProperties {

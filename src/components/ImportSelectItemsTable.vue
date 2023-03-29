@@ -83,7 +83,11 @@
                   <td
                     class="flex items-center justify-center whitespace-nowrap py-2 pr-3 text-sm font-medium text-gray-900"
                   >
-                    <MilSymbol :sidc="feature.properties.sidc" :size="20" />
+                    <MilSymbol
+                      :sidc="feature.properties.sidc"
+                      :size="20"
+                      :modifiers="{ fillColor: feature.properties.fillColor }"
+                    />
                   </td>
                   <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-500">
                     {{ feature.properties.name || feature.properties.sidc }}

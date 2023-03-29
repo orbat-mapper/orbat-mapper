@@ -20,7 +20,7 @@ const TEST_DOCUMENT = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 				</PointList>
 			</MilXGraphic>
 			<MilXGraphic>
-				<MssStringXML>&lt;Symbol ID="SFGPUCIA---D--G"&gt;&lt;Attribute ID="M"&gt;3&lt;/Attribute&gt;&lt;/Symbol&gt;</MssStringXML>
+				<MssStringXML>&lt;Symbol ID="SFGPUCIA---D--G"&gt;&lt;Attribute ID="M"&gt;3&lt;/Attribute&gt;&gt;&lt;Attribute ID="XO"&gt;$000080FF&lt;/Attribute&gt;&lt;/Symbol&gt;</MssStringXML>
 				<PointList>
 					<Point>
 						<X>-58.9290235662824</X>
@@ -146,6 +146,7 @@ describe("Convert from MilX", async function () {
     const convertedFeature2 = a.features[1];
     expect(convertedFeature.properties.sidc).toBe("10031000161211000001");
     expect(convertedFeature2.properties.higherFormation).toBe("3");
+    expect(convertedFeature2.properties.fillColor).toBe("#FF8000");
   });
 });
 

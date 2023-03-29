@@ -61,7 +61,16 @@ function convertProperties(f: MilXSymbolProperties): MilSymbolProperties {
   const props: MilSymbolProperties = { sidc: convertLetterSidc2NumberSidc(f.ID).sidc };
   if (f.M) props.higherFormation = f.M;
   if (f.T) props.name = f.T;
+  if (f.XO) props.fillColor = convertColor(f.XO);
   return props;
+}
+
+function convertColor(milxColor: string): string {
+  const a = milxColor.substring(1, 3);
+  const b = milxColor.substring(3, 5);
+  const g = milxColor.substring(5, 7);
+  const r = milxColor.substring(7, 9);
+  return "#" + r + g + b;
 }
 
 function convertGeojsonProperties(f: GeoJsonSymbolProperties): MilSymbolProperties {
