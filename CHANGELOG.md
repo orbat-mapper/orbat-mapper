@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+April 2023
+
+- Add imperial and nautical measurement units.
+
 March 2023
 
 - Add download menu to chart edit mode view.

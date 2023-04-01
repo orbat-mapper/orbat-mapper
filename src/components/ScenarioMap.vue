@@ -23,7 +23,11 @@ import { computed, h, markRaw, onUnmounted, ref, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { clearStyleCache } from "@/geo/unitStyles";
-import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
+import {
+  useGeoStore,
+  useMeasurementsStore,
+  useUnitSettingsStore,
+} from "@/stores/geoStore";
 import LayerGroup from "ol/layer/Group";
 
 import {
@@ -159,6 +163,7 @@ function onContextMenu(e: MouseEvent) {
   e.preventDefault();
   const dropPosition = toLonLat(mapRef.value!.getEventCoordinate(e));
   const settings = useMapSettingsStore();
+  const measurementSettings = useMeasurementsStore();
   const menu = ref<MenuOptions>({
     items: [
       {
@@ -172,6 +177,41 @@ function onContextMenu(e: MouseEvent) {
             onClick: () => {
               settings.showLocation = !settings.showLocation;
             },
+          },
+          {
+            label: "Measurement unit",
+            children: [
+              {
+                label: "Metric",
+                checked: computed(
+                  () => measurementSettings.unit === "metric"
+                ) as unknown as boolean,
+                clickClose: false,
+                onClick: () => {
+                  measurementSettings.unit = "metric";
+                },
+              },
+              {
+                label: "Imperial",
+                checked: computed(
+                  () => measurementSettings.unit === "imperial"
+                ) as unknown as boolean,
+                clickClose: false,
+                onClick: () => {
+                  measurementSettings.unit = "imperial";
+                },
+              },
+              {
+                label: "Nautical",
+                checked: computed(
+                  () => measurementSettings.unit === "nautical"
+                ) as unknown as boolean,
+                clickClose: false,
+                onClick: () => {
+                  measurementSettings.unit = "nautical";
+                },
+              },
+            ],
           },
           {
             label: "Coordinate format",

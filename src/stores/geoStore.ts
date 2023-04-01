@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import OLMap from "ol/Map";
 import { Unit } from "@/types/scenarioModels";
 import { fromLonLat } from "ol/proj";
-import { MeasurementTypes } from "@/composables/geoMeasurement";
+import { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement";
 import { NUnit } from "@/types/internalModels";
 import type { Position } from "geojson";
 import { featureCollection, point as turfPoint } from "@turf/helpers";
@@ -82,6 +82,7 @@ export const useMeasurementsStore = defineStore("measurements", {
       measurementType: "LineString" as MeasurementTypes,
       clearPrevious: true,
       showSegments: true,
+      unit: "metric" as MeasurementUnit,
     };
   },
 });

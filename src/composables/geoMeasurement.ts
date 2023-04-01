@@ -12,6 +12,7 @@ import { MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
 import { ref, unref, watch } from "vue";
 
 export type MeasurementTypes = "LineString" | "Polygon";
+export type MeasurementUnit = "metric" | "imperial" | "nautical";
 
 const style = new Style({
   fill: new Fill({
@@ -128,24 +129,59 @@ const segmentStyle = new Style({
   }),
 });
 
-const formatLength = function (line: Geometry) {
+const formatLength = function (line: Geometry, unit: MeasurementUnit = "metric") {
   const length = getLength(line);
-  let output;
-  if (length > 100) {
-    output = Math.round((length / 1000) * 100) / 100 + " km";
-  } else {
-    output = Math.round(length * 100) / 100 + " m";
+  let output: string = "";
+  if (unit === "metric") {
+    if (length > 100) {
+      output = Math.round((length / 1000) * 100) / 100 + " km";
+    } else {
+      output = Math.round(length * 100) / 100 + " m";
+    }
+  } else if (unit === "imperial") {
+    const miles = length * 0.000621371192;
+    if (miles > 0.1) {
+      output = miles.toFixed(2) + " mi";
+    } else {
+      output = (miles * 5280).toFixed(2) + " ft";
+    }
+  } else if (unit === "nautical") {
+    const nm = length * 0.000539956803;
+    if (nm > 0.1) {
+      output = nm.toFixed(2) + " nm";
+    } else {
+      output = nm.toFixed(3) + " nm";
+    }
   }
   return output;
 };
 
-const formatArea = function (polygon: Geometry) {
+const formatArea = function (
+  polygon: Geometry,
+  unit: MeasurementUnit = "metric"
+): string {
   const area = getArea(polygon);
-  let output;
-  if (area > 10000) {
-    output = Math.round((area / 1000000) * 100) / 100 + " km\xB2";
-  } else {
-    output = Math.round(area * 100) / 100 + " m\xB2";
+  let output = "";
+  if (unit === "metric") {
+    if (area > 10000) {
+      output = Math.round((area / 1000000) * 100) / 100 + " km\xB2";
+    } else {
+      output = Math.round(area * 100) / 100 + " m\xB2";
+    }
+  } else if (unit === "imperial") {
+    const squareMiles = area * 0.0000003861021585424458;
+    if (squareMiles > 0.1) {
+      output = squareMiles.toFixed(2) + " mi\xB2";
+    } else {
+      output = (area * 10.7639104167097).toFixed(2) + " ft\xB2";
+    }
+  } else if (unit === "nautical") {
+    const squareNM = area * 0.0000003599999999999999;
+    if (squareNM > 0.1) {
+      output = squareNM.toFixed(2) + " nm\xB2";
+    } else {
+      output = (area * 10.7639104167097).toFixed(2) + " ft\xB2";
+    }
   }
   return output;
 };
@@ -153,13 +189,15 @@ const formatArea = function (polygon: Geometry) {
 function measurementInteractionWrapper(
   olMap: OLMap,
   drawType: MeasurementTypes,
-  options = {
+  options: { clearPrevious: boolean; showSegments: boolean; unit: MeasurementUnit } = {
     showSegments: true,
     clearPrevious: true,
+    unit: "metric",
   }
 ) {
   let showSegments = options.showSegments;
   let clearPrevious = options.clearPrevious;
+  let unit = options.unit;
   let tipPoint: Point;
   let drawInteraction: Draw;
   const segmentStyles = [segmentStyle];
@@ -192,11 +230,11 @@ function measurementInteractionWrapper(
     if (!drawType || drawType === type) {
       if (type === "Polygon") {
         point = (geometry as Polygon).getInteriorPoint();
-        label = formatArea(geometry);
+        label = formatArea(geometry, unit);
         line = new LineString(geometry.getCoordinates()![0]);
       } else if (type === "LineString") {
         point = new Point(geometry.getLastCoordinate());
-        label = formatLength(geometry);
+        label = formatLength(geometry, unit);
         line = geometry as LineString;
       }
     }
@@ -204,7 +242,7 @@ function measurementInteractionWrapper(
       let count = 0;
       line.forEachSegment(function (a, b) {
         const segment = new LineString([a, b]);
-        const label = formatLength(segment);
+        const label = formatLength(segment, unit);
         if (segmentStyles.length - 1 < count) {
           segmentStyles.push(segmentStyle.clone());
         }
@@ -290,6 +328,12 @@ function measurementInteractionWrapper(
     drawInteraction.setActive(enabled);
   }
 
+  function setUnit(newUnit: MeasurementUnit) {
+    unit = newUnit;
+    vector.changed();
+    drawInteraction.getOverlay().changed();
+  }
+
   function cleanup() {
     vector.getSource()?.clear();
     olMap.removeLayer(vector);
@@ -309,6 +353,7 @@ function measurementInteractionWrapper(
     setShowSegments,
     setClearPrevious,
     setActive,
+    setUnit,
     cleanup,
     clear,
   };
@@ -321,29 +366,34 @@ export function useMeasurementInteraction(
     showSegments: MaybeRef<boolean>;
     clearPrevious: MaybeRef<boolean>;
     enable: MaybeRef<boolean>;
+    unit: MaybeRef<MeasurementUnit>;
   }> = {}
 ) {
   const measurementTypeRef = ref(measurementType);
   const showSegmentsRef = ref(options.showSegments ?? true);
   const clearPreviousRef = ref(options.clearPrevious ?? true);
   const enableRef = ref(options.enable ?? true);
+  const unitRef = ref(options.unit ?? "metric");
 
   const {
     changeMeasurementType,
     setShowSegments,
     setClearPrevious,
     setActive,
+    setUnit,
     cleanup,
     clear,
   } = measurementInteractionWrapper(olMap, unref(measurementTypeRef), {
     clearPrevious: unref(clearPreviousRef),
     showSegments: unref(showSegmentsRef),
+    unit: unref(unitRef),
   });
 
   watch(measurementTypeRef, (type) => changeMeasurementType(type));
   watch(showSegmentsRef, (v) => setShowSegments(v));
   watch(clearPreviousRef, (v) => setClearPrevious(v), { immediate: true });
   watch(enableRef, (enabled) => setActive(enabled), { immediate: true });
+  watch(unitRef, (unit) => setUnit(unit), { immediate: true });
 
   tryOnBeforeUnmount(() => {
     cleanup();
