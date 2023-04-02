@@ -83,7 +83,7 @@
     <ScenarioMap class="flex-1" data-teleport-map>
       <ToolPanel v-if="orbatTabActive && geoStore.olMap" />
       <p
-        class="pointer-events-none absolute top-2 right-4 text-3xl font-bold text-black"
+        class="pointer-events-none absolute right-4 top-2 text-3xl font-bold text-black"
         style="text-shadow: white 0 0 5px"
       >
         {{ scenarioTime.format("YYYY-MM-DD") }}
