@@ -4,7 +4,7 @@
     ref="dropZoneRef"
   >
     <nav
-      class="flex flex-shrink-0 items-center justify-between bg-gray-900 py-2 pr-4 pl-6 text-gray-200"
+      class="flex flex-shrink-0 items-center justify-between bg-gray-900 py-2 pl-6 pr-4 text-gray-200"
     >
       <div class="flex min-w-0 flex-auto items-center">
         <router-link :to="{ name: LANDING_PAGE_ROUTE }" class="flex-shrink-0">
@@ -35,13 +35,13 @@
           </span>
         </div>
       </div>
-      <div class="flex shrink-0 items-center space-x-2">
+      <div class="flex shrink-0 items-center space-x-1 sm:space-x-2">
         <a
           :href="
             route.meta.helpUrl || 'https://docs.orbat-mapper.app/guide/about-orbat-mapper'
           "
           target="_blank"
-          class="inline-flex items-center justify-center rounded-md p-2 font-medium text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          class="hidden items-center justify-center rounded-md p-2 font-medium text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white sm:inline-flex"
         >
           Help
         </a>
@@ -78,6 +78,14 @@
             class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
           >
             <IconSitemap class="h-6 w-6" />
+          </router-link>
+          <router-link
+            :to="{ name: MAP_EDIT_MODE_ROUTE }"
+            title="Experimental map mode"
+            exact-active-class="text-green-500"
+            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          >
+            <IconFlaskOutline class="h-6 w-6" />
           </router-link>
         </div>
         <div class="flex items-center">
@@ -202,6 +210,7 @@ import {
   IconRedoVariant as IconRedo,
   IconSitemap,
   IconUndoVariant as IconUndo,
+  IconFlaskOutline,
 } from "@iconify-prerendered/vue-mdi";
 import { createEventHook, useClipboard, useTitle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
@@ -224,6 +233,7 @@ import {
   sidcModalKey,
   timeModalKey,
 } from "@/components/injects";
+
 import type { Scenario } from "@/types/scenarioModels";
 import { useFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
@@ -234,6 +244,7 @@ import {
   CHART_EDIT_MODE_ROUTE,
   GRID_EDIT_ROUTE,
   LANDING_PAGE_ROUTE,
+  MAP_EDIT_MODE_ROUTE,
   SCENARIO_ROUTE,
 } from "@/router/names";
 import { useFileDropZone } from "@/composables/filedragdrop";

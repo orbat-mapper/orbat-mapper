@@ -6,6 +6,7 @@ import {
   CHART_EDIT_MODE_ROUTE,
   GRID_EDIT_ROUTE,
   LANDING_PAGE_ROUTE,
+  MAP_EDIT_MODE_ROUTE,
   NEW_SCENARIO_ROUTE,
   ORBAT_CHART_ROUTE,
   SCENARIO_ROUTE,
@@ -30,6 +31,7 @@ const GridTestView = () => import("@/modules/grid/GridTestView.vue");
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
 const ScenarioEditorGeo = () => import("@/modules/scenarioeditor/ScenarioEditorGeo.vue");
+const ScenarioEditorMap = () => import("@/modules/scenarioeditor/ScenarioEditorMap.vue");
 const routes = [
   {
     path: "/scenario",
@@ -42,6 +44,12 @@ const routes = [
         path: "",
         name: SCENARIO_ROUTE,
         component: ScenarioEditorGeo,
+        meta: { helpUrl: "https://docs.orbat-mapper.app/guide/map-edit-mode" },
+      },
+      {
+        path: "map-test",
+        name: MAP_EDIT_MODE_ROUTE,
+        component: ScenarioEditorMap,
         meta: { helpUrl: "https://docs.orbat-mapper.app/guide/map-edit-mode" },
       },
       {
