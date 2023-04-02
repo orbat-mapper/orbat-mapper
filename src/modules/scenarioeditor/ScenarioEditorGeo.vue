@@ -44,7 +44,7 @@
           />
         </template>
         <TabItem label="Events">
-          <ScenarioEventsPanel></ScenarioEventsPanel>
+          <ScenarioEventsPanel class="px-6" />
         </TabItem>
       </TabView>
       <footer

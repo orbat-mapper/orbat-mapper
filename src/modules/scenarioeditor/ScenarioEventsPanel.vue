@@ -13,7 +13,7 @@ const events = computed(() => store.state.mergedEvents);
 const t = computed(() => store.state.currentTime);
 </script>
 <template>
-  <div class="px-6">
+  <div class="">
     <h2 class="font-medium text-gray-900">Scenario events</h2>
 
     <div class="flow-root">
@@ -22,7 +22,7 @@ const t = computed(() => store.state.currentTime);
           <div class="relative pb-4">
             <span
               v-if="eventIdx !== events.length - 1"
-              class="absolute top-2 left-2 -ml-px h-full w-0.5 bg-gray-200"
+              class="absolute left-2 top-2 -ml-px h-full w-0.5 bg-gray-200"
               aria-hidden="true"
             />
             <div class="relative flex space-x-4">
@@ -35,7 +35,10 @@ const t = computed(() => store.state.currentTime);
                   'bg-red-900': event.startTime === t,
                 }"
               ></button>
-              <div class="min-w-0 flex-1 text-sm">
+              <div
+                class="min-w-0 flex-1 cursor-pointer text-sm"
+                @click="setCurrentTime(event.startTime)"
+              >
                 <p class="text-xs font-medium text-red-900">
                   {{ formatDateString(event.startTime, timeZone).split("T")[0] }}
                 </p>
