@@ -45,6 +45,7 @@ import { groupBy, htmlTagEscape, injectStrict } from "../utils";
 import SearchFeatureHit from "./SearchFeatureHit.vue";
 import * as fuzzysort from "fuzzysort";
 import { activeScenarioKey } from "@/components/injects";
+import { NUnit } from "@/types/internalModels";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits([
@@ -77,22 +78,28 @@ const unitHits = computed(() => {
       return true;
     })
     .slice(0, 10)
-    .map((u, i) => ({
-      name: u.obj.name,
-      sidc: u.obj.sidc,
-      id: u.obj.id,
-      parent: u.obj._pid && state.getUnitById(u.obj._pid),
-      highlight:
-        u[0] &&
-        fuzzysort.highlight({
-          ...u[0],
-          score: u.score,
-          target: htmlTagEscape(u[0].target),
-        }),
-      score: u.score,
-      category: "Units",
-      symbolOptions: unitActions.getCombinedSymbolOptions(u.obj),
-    }));
+    .map((u, i) => {
+      const parent = u.obj._pid && ({ ...state.getUnitById(u.obj._pid) } as NUnit);
+      if (parent) {
+        parent.symbolOptions = unitActions.getCombinedSymbolOptions(parent);
+      }
+      return {
+        name: u.obj.name,
+        sidc: u.obj.sidc,
+        id: u.obj.id,
+        parent,
+        highlight:
+          u[0] &&
+          fuzzysort.highlight({
+            ...u[0],
+            score: u.score,
+            target: htmlTagEscape(u[0].target),
+          }),
+        score: u.score,
+        category: "Units",
+        symbolOptions: unitActions.getCombinedSymbolOptions(u.obj),
+      };
+    });
 });
 
 const featureHits = computed(() => {

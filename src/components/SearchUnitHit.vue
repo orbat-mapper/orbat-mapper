@@ -15,7 +15,12 @@
     </div>
 
     <p v-if="unit.parent" class="flex self-start text-xs text-gray-600">
-      <MilSymbol :size="12" :sidc="unit.parent.sidc" class="mr-1 opacity-80" />
+      <MilSymbol
+        :size="12"
+        :sidc="unit.parent.sidc"
+        :modifiers="unit.parent.symbolOptions"
+        class="mr-1 opacity-80"
+      />
       {{ unit.parent.name }}
     </p>
   </div>

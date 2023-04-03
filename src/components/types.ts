@@ -36,6 +36,7 @@ export interface UnitSearchResult extends SearchResult {
   parent?: {
     sidc: string;
     name: string;
+    symbolOptions?: UnitSymbolOptions;
   };
   symbolOptions?: UnitSymbolOptions;
 }
