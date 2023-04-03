@@ -1,4 +1,13 @@
-export type ExportFormat = "geojson" | "kml" | "kmz" | "msdl" | "xlsx" | "milx";
+import { EntityId } from "@/types/base";
+
+export type ExportFormat =
+  | "geojson"
+  | "kml"
+  | "kmz"
+  | "msdl"
+  | "xlsx"
+  | "milx"
+  | "unitgenerator";
 export type ImportFormat = "geojson" | "milx" | "msdl";
 export type GuessedImportFormat = "unknown" | ImportFormat;
 
@@ -7,12 +16,21 @@ export interface ColumnMapping<TData = Record<string, any>> {
   field: keyof TData | string;
 }
 
-export interface XlsxSettings {
+export interface BaseExportSettings {
+  customColors: boolean;
+}
+
+export interface XlsxSettings extends BaseExportSettings {
   oneSheetPerSide: boolean;
   columns: ColumnMapping[];
 }
 
-export interface ExportSettings extends XlsxSettings {
+export interface UnitGeneratorSettings extends BaseExportSettings {
+  rootUnit: EntityId;
+  maxLevels: number;
+}
+
+export interface ExportSettings extends XlsxSettings, UnitGeneratorSettings {
   fileName: string;
   includeUnits: boolean;
   includeFeatures: boolean;

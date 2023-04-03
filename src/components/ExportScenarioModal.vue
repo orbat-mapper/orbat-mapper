@@ -17,6 +17,11 @@
         </p>
       </div>
       <ExportSettingsXlsx v-if="format === 'xlsx'" :format="format" v-model="form" />
+      <ExportSettingsSpatialIllusions
+        v-else-if="format === 'unitgenerator'"
+        :format="format"
+        v-model="form"
+      />
       <template v-else>
         <fieldset class="space-y-4">
           <InputCheckbox
@@ -83,6 +88,7 @@ import NProgress from "nprogress";
 import { useRouter } from "vue-router";
 import { useVModel } from "@vueuse/core";
 import ExportSettingsXlsx from "@/components/ExportSettingsXlsx.vue";
+import ExportSettingsSpatialIllusions from "@/components/ExportSettingsSpatialIllusions.vue";
 
 const router = useRouter();
 
@@ -94,6 +100,7 @@ const {
   downloadAsKMZ,
   downloadAsXlsx,
   downloadAsMilx,
+  downloadAsSpatialIllusions,
 } = useScenarioExport();
 const open = useVModel(props, "modelValue", emit);
 const formatItems: SelectItem<ExportFormat>[] = [
@@ -102,6 +109,7 @@ const formatItems: SelectItem<ExportFormat>[] = [
   { label: "KMZ", value: "kmz" },
   { label: "XLSX", value: "xlsx" },
   { label: "MilX", value: "milx" },
+  { label: "Spatial Illusions ORBAT builder", value: "unitgenerator" },
 ];
 
 interface Form extends ExportSettings {
@@ -118,6 +126,9 @@ const form = ref<Form>({
   oneSheetPerSide: true,
   columns: [],
   oneFolderPerSide: true,
+  customColors: true,
+  rootUnit: "",
+  maxLevels: 3,
 });
 
 const { focusId } = useFocusOnMount(undefined, 150);
@@ -142,6 +153,8 @@ async function onExport(e: Event) {
     await downloadAsXlsx(form.value);
   } else if (format === "milx") {
     await downloadAsMilx(form.value);
+  } else if (format === "unitgenerator") {
+    await downloadAsSpatialIllusions(form.value);
   }
   NProgress.done();
   open.value = false;

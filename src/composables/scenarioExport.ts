@@ -2,7 +2,7 @@ import { featureCollection, point } from "@turf/helpers";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
-import { ColumnMapping, ExportSettings } from "@/types/convert";
+import { ColumnMapping, ExportSettings, UnitGeneratorSettings } from "@/types/convert";
 import * as FileSaver from "file-saver";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
@@ -13,6 +13,7 @@ import {
   OrbatMapperGeoJsonCollection,
   OrbatMapperGeoJsonLayer,
 } from "@/lib/milx/types";
+import { Unit } from "@/types/scenarioModels";
 
 const symbolSettings = useSymbolSettingsStore();
 export interface UseScenarioExportOptions {
@@ -245,11 +246,40 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     writeFileXLSX(workbook, "scenario.xlsx");
   }
 
+  function downloadAsSpatialIllusions(opts: UnitGeneratorSettings) {
+    const { rootUnit } = opts;
+    const hierarchy = unitActions.expandUnitWithSymbolOptions(
+      store.state.getUnitById(rootUnit)
+    );
+
+    const d = convertUnit(hierarchy, 0);
+    function convertUnit(unit: Unit, level: number): any {
+      return {
+        options: {
+          uniqueDesignation: unit.name,
+          sidc: unit.sidc,
+          fillColor: unit.symbolOptions?.fillColor,
+        },
+        subOrganizations:
+          level < opts.maxLevels
+            ? unit.subUnits?.map((subUnit) => convertUnit(subUnit, level + 1)) || []
+            : [],
+      };
+    }
+    FileSaver.saveAs(
+      new Blob([JSON.stringify(d, undefined, 2)], {
+        type: "application/json",
+      }),
+      "spatialillusions-orbat.json"
+    );
+  }
+
   return {
     downloadAsGeoJSON,
     downloadAsKML,
     downloadAsKMZ,
     downloadAsXlsx,
     downloadAsMilx,
+    downloadAsSpatialIllusions,
   };
 }

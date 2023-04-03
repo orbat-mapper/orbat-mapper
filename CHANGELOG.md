@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 April 2023
 
+- Add Spatial Illusions ORBAT builder export.
 - Add imperial and nautical measurement units.
 - You can now select a root unit in the chart edit view by searching.
 
