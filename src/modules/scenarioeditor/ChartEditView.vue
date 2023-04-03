@@ -17,7 +17,7 @@
                 selected
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                'w-1/2 border-b-2 py-4 px-1 text-center text-sm font-medium',
+                'w-1/2 border-b-2 px-1 py-4 text-center text-sm font-medium',
               ]"
             >
               {{ tab }}
@@ -38,7 +38,7 @@
     </ResizablePanel>
     <main class="relative h-full flex-auto bg-gray-50">
       <SimpleBreadcrumbs
-        class="absolute top-2 left-2 z-10 bg-gray-50 bg-opacity-80"
+        class="absolute left-2 top-2 z-10 bg-gray-50 bg-opacity-80"
         :items="breadcrumbItems"
       />
       <nav class="absolute right-4 top-2 z-10 rounded-full bg-white">
@@ -97,6 +97,7 @@ import ResizablePanel from "@/components/ResizablePanel.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { promiseTimeout } from "@vueuse/core";
 import FileSaver from "file-saver";
+import { useSearchActions } from "@/composables/search";
 
 const rootUnitStore = useRootUnitStore();
 const options = useChartSettingsStore();
@@ -112,6 +113,12 @@ const activeUnit = computed(
       unitActions.expandUnitWithSymbolOptions(state.getUnitById(activeUnitId.value))) ||
     null
 );
+
+const { onUnitSelect } = useSearchActions();
+
+onUnitSelect(({ unitId }) => {
+  activeUnitId.value = unitId;
+});
 
 const breadcrumbItems = computed((): BreadcrumbItem[] => {
   if (!activeUnitId.value) return [];
