@@ -92,7 +92,12 @@ const rootUnitItems = computed((): SymbolItem[] => {
     .map((value) => value.subUnits)
     .flat()
     .map((e) => state.unitMap[e])
-    .map((u) => ({ text: u.name, code: u.id, sidc: u.sidc }));
+    .map((u) => ({
+      text: u.name,
+      code: u.id,
+      sidc: u.sidc,
+      symbolOptions: unitActions.getCombinedSymbolOptions(u),
+    }));
 });
 
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
