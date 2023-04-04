@@ -67,7 +67,13 @@
         Basic support for importing MilX layers from
         <a href="https://www.map.army/">map.army</a>
       </p>
-      <p v-if="isGeojson">Import units and features.</p>
+      <p v-else-if="isGeojson">Import units and features.</p>
+      <p v-else-if="isUnitgenerator">
+        Import ORBAT generated with
+        <a href="https://spatialillusions.com/unitgenerator2/" target="_blank"
+          >Spatial Illusions Orbat builder</a
+        >.
+      </p>
     </div>
     <p v-if="isMilx" class="prose prose-sm">
       Please note that the import functionality is experimental.
@@ -98,6 +104,7 @@ import { useImportStore } from "@/stores/importExportStore";
 import { useScenarioImport } from "@/composables/scenarioImport";
 import { guessImportFormat } from "@/lib/fileHandling";
 import { useDragStore } from "@/stores/dragStore";
+import { SpatialIllusionsOrbat } from "@/types/externalModels";
 
 const router = useRouter();
 
@@ -106,6 +113,7 @@ const emit = defineEmits(["cancel", "loaded"]);
 const formatItems: SelectItem<ImportFormat>[] = [
   { label: "MilX", value: "milx" },
   { label: "GeoJSON", value: "geojson" },
+  { label: "Spatial Illusions ORBAT builder", value: "unitgenerator" },
   // { label: "MSDL", value: "msdl" },
 ];
 
@@ -137,7 +145,8 @@ const { send } = useNotifications();
 
 const isMilx = computed(() => form.value.format === "milx");
 const isGeojson = computed(() => form.value.format === "geojson");
-const { importMilxString, importGeojsonString } = useScenarioImport();
+const isUnitgenerator = computed(() => form.value.format === "unitgenerator");
+const { importMilxString, importGeojsonString, importJsonString } = useScenarioImport();
 
 async function onLoad(e?: Event) {
   const { format } = form.value;
@@ -155,6 +164,14 @@ async function onLoad(e?: Event) {
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
     emit("loaded", "geojson", data);
+  }
+
+  if (format === "unitgenerator" && stringSource.value) {
+    const data = importJsonString<SpatialIllusionsOrbat>(stringSource.value);
+    send({ message: `Loaded data as ${format}` });
+    NProgress.done();
+    console.log(data);
+    emit("loaded", "unitgenerator", data);
   }
   NProgress.done();
 }

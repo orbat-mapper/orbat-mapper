@@ -1,6 +1,7 @@
 import { CurrentStateType, Side, SideGroup, Unit } from "./scenarioModels";
 import { EntityId } from "./base";
 import { FeatureId, ScenarioFeature, ScenarioLayer } from "@/types/scenarioGeoModels";
+import { Optional } from "@/types/helpers";
 
 export interface NUnit extends Omit<Unit, "subUnits" | "_pid" | "_gid" | "_sid"> {
   subUnits: EntityId[];
@@ -8,6 +9,8 @@ export interface NUnit extends Omit<Unit, "subUnits" | "_pid" | "_gid" | "_sid">
   _gid: EntityId;
   _sid: EntityId;
 }
+
+export interface NUnitAdd extends Optional<NUnit, "id" | "_pid" | "_gid" | "_sid"> {}
 
 export interface OlUnitProps
   extends Pick<NUnit, "id" | "sidc" | "name" | "shortName" | "symbolOptions"> {

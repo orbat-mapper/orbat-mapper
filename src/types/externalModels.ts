@@ -2,7 +2,7 @@
 
 export interface SpatialIllusionsOrbat {
   options: SpatialIllusionsOptions;
-  subOrganizations: SpatialIllusionsOrbat[];
+  subOrganizations?: SpatialIllusionsOrbat[];
 }
 
 export interface SpatialIllusionsOptions {

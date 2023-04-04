@@ -52,5 +52,10 @@ export function useScenarioImport(options: Partial<UseScenarioExportOptions> = {
     return convertGeojsonLayer(json) as FeatureCollection;
   }
 
-  return { importMilxString, importGeojsonString };
+  function importJsonString<T>(source: string) {
+    const json = JSON.parse(source) as T;
+    return json;
+  }
+
+  return { importMilxString, importGeojsonString, importJsonString };
 }

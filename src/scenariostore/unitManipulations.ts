@@ -5,6 +5,7 @@ import {
   NSide,
   NSideGroup,
   NUnit,
+  NUnitAdd,
   SideGroupUpdate,
   SideUpdate,
   UnitUpdate,
@@ -324,7 +325,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     return s.sideGroupMap[id] || undefined;
   }
 
-  function addUnit(unit: NUnit, parentId: EntityId, index?: number): EntityId {
+  function addUnit(newUnit: NUnitAdd, parentId: EntityId, index?: number): EntityId {
+    const unit = { ...newUnit } as NUnit;
     if (!unit.id) {
       unit.id = nanoid();
     }

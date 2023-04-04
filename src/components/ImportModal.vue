@@ -17,6 +17,12 @@
       :data="loadedData"
       @loaded="onImport"
     />
+    <ImportSpatialIllusionsStep
+      v-else-if="importState === 'unitgenerator'"
+      @cancel="onCancel"
+      :data="loadedData"
+      @loaded="onImport"
+    />
   </SimpleModal>
 </template>
 
@@ -29,10 +35,11 @@ import ImportLoadStep from "@/components/ImportLoadStep.vue";
 import { ref, shallowRef } from "vue";
 import ImportMilxStep from "@/components/ImportMilxStep.vue";
 import ImportGeojsonStep from "@/components/ImportGeojsonStep.vue";
+import ImportSpatialIllusionsStep from "@/components/ImportSpatialIllusionsStep.vue";
 
 const router = useRouter();
 
-type ImportState = "select" | "milx" | "geojson";
+type ImportState = "select" | "milx" | "geojson" | "unitgenerator";
 const importState = ref<ImportState>("select");
 const loadedData = shallowRef<any>([]);
 

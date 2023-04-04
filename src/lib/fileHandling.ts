@@ -64,6 +64,8 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     guess.dataAsString = text;
     if (json.type && json.type === "FeatureCollection") {
       guess.format = "geojson";
+    } else if (json.options && json.subOrganizations) {
+      guess.format = "unitgenerator";
     }
   } catch (e) {}
 
