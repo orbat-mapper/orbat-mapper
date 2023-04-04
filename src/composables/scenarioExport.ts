@@ -13,7 +13,8 @@ import {
   OrbatMapperGeoJsonCollection,
   OrbatMapperGeoJsonLayer,
 } from "@/lib/milx/types";
-import { Unit } from "@/types/scenarioModels";
+import type { Unit } from "@/types/scenarioModels";
+import type { SpatialIllusionsOrbat } from "@/types/externalModels";
 
 const symbolSettings = useSymbolSettingsStore();
 export interface UseScenarioExportOptions {
@@ -253,7 +254,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
 
     const d = convertUnit(hierarchy, 0);
-    function convertUnit(unit: Unit, level: number): any {
+    function convertUnit(unit: Unit, level: number): SpatialIllusionsOrbat {
       return {
         options: {
           uniqueDesignation: unit.name,
