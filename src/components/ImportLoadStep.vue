@@ -74,6 +74,12 @@
           >Spatial Illusions Orbat builder</a
         >.
       </p>
+      <p v-else-if="isOrbatGenerator">
+        Import ORBAT generated with
+        <a href="https://www.orbatgenerator.com/" target="_blank"
+          >Order of Battle Generator</a
+        >.
+      </p>
     </div>
     <p v-if="isMilx" class="prose prose-sm">
       Please note that the import functionality is experimental.
@@ -147,6 +153,7 @@ const { send } = useNotifications();
 const isMilx = computed(() => form.value.format === "milx");
 const isGeojson = computed(() => form.value.format === "geojson");
 const isUnitgenerator = computed(() => form.value.format === "unitgenerator");
+const isOrbatGenerator = computed(() => form.value.format === "orbatgenerator");
 const { importMilxString, importGeojsonString, importJsonString } = useScenarioImport();
 
 async function onLoad(e?: Event) {
