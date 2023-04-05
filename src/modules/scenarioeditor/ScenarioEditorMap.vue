@@ -1,13 +1,13 @@
 <template>
   <div class="relative flex min-h-0 flex-auto">
-    <ScenarioMap class="flex-1" />
-    <main class="pointer-events-none absolute inset-0 flex flex-col p-2">
+    <ScenarioMap class="flex-1" @mapReady="onMapReady" hide-measurements />
+    <main v-if="mapRef" class="pointer-events-none absolute inset-0 flex flex-col p-2">
       <header class="flex flex-none justify-end">
         <MapTimeController class="pointer-events-auto" />
       </header>
       <section class="flex flex-auto justify-between">
         <aside
-          class="pointer-events-auto mt-4 max-h-[70vh] w-96 overflow-auto rounded-md bg-white p-2"
+          class="pointer-events-auto mt-4 hidden max-h-[70vh] w-96 overflow-auto rounded-md bg-white p-2 md:block"
         >
           <OrbatPanel />
         </aside>
@@ -20,26 +20,35 @@
         <div v-else></div>
       </section>
       <footer class="flex justify-center">
-        <nav class="h-10 w-96 rounded bg-white"></nav>
+        <MapEditorMainToolbar />
+        <!--        <MapEditorSecondaryToolbar class="absolute bottom-16" v-if="store.showToolbar" />-->
+        <MapEditorMeasurementToolbar
+          class="absolute bottom-16"
+          v-if="store.showMeasurementsToolbar"
+        />
       </footer>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onActivated, onUnmounted, ref, watch } from "vue";
+import { onActivated, onUnmounted, provide, shallowRef, watch } from "vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useNotifications } from "@/composables/notifications";
 import { useGeoStore } from "@/stores/geoStore";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import { activeMapKey, activeScenarioKey, activeUnitKey } from "@/components/injects";
 import ScenarioMap from "@/components/ScenarioMap.vue";
 import { injectStrict } from "@/utils";
 import { useSearchActions } from "@/composables/search";
 import UnitPanel from "@/modules/scenarioeditor/UnitPanel.vue";
 import MapTimeController from "@/components/MapTimeController.vue";
-import ResizablePanel from "@/components/ResizablePanel.vue";
 import { useGeoEditorViewStore } from "@/stores/geoEditorViewStore";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
+import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
+import MapEditorSecondaryToolbar from "@/modules/scenarioeditor/MapEditorSecondaryToolbar.vue";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
+import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
+import OLMap from "ol/Map";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -48,6 +57,12 @@ const { state, update } = activeScenario.store;
 const { unitActions, io } = activeScenario;
 
 const layout = useGeoEditorViewStore();
+const mapRef = shallowRef<OLMap>();
+provide(activeMapKey, mapRef);
+
+function onMapReady(map: OLMap) {
+  mapRef.value = map;
+}
 
 watch(
   activeUnitId,
@@ -86,4 +101,6 @@ onLayerSelect(({ layerId }) => {
 onFeatureSelect(({ featureId }) => {
   console.warn("Not implemented");
 });
+
+const store = useMainToolbarStore();
 </script>

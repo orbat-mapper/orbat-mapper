@@ -5,7 +5,7 @@
     @click="toggle()"
     :title="title"
     :aria-label="title"
-    class="rounded p-2 text-sm disabled:opacity-50"
+    class="rounded-md p-2 text-sm disabled:opacity-50"
     :class="enabled ? 'bg-army2 text-white' : 'text-gray-700 hover:bg-gray-200'"
   >
     <slot />

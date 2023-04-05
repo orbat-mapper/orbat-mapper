@@ -7,13 +7,13 @@
       @contextmenu="onContextMenu"
     />
     <MeasurementToolbar
-      v-if="mapRef"
-      class="absolute left-3 bottom-10"
+      v-if="!hideMeasurements && mapRef"
+      class="absolute bottom-10 left-3"
       :ol-map="mapRef"
     />
-    <div v-if="mapRef" class="absolute bottom-[5.2rem] left-3">
-      <BaseToolbar class="shadow"></BaseToolbar>
-    </div>
+    <!--        <div v-if="mapRef" class="absolute bottom-[5.2rem] left-3">-->
+    <!--          <BaseToolbar class="shadow"></BaseToolbar>-->
+    <!--        </div>-->
     <slot />
   </div>
 </template>
@@ -41,7 +41,6 @@ import { useToggle } from "@vueuse/core";
 import { ObjectEvent } from "ol/Object";
 import { IconCogOutline } from "@iconify-prerendered/vue-mdi";
 import MeasurementToolbar from "./MeasurementToolbar.vue";
-import BaseToolbar from "./BaseToolbar.vue";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
@@ -56,6 +55,9 @@ import { useMapSelectStore } from "@/stores/mapSelectStore";
 import ContextMenu, { type MenuOptions } from "@imengyu/vue3-context-menu";
 import { toLonLat } from "ol/proj";
 
+const props = withDefaults(defineProps<{ hideMeasurements?: boolean }>(), {
+  hideMeasurements: false,
+});
 const emit = defineEmits<{ (e: "map-ready", value: OLMap): void }>();
 
 const {

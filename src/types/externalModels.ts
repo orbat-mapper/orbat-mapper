@@ -1,11 +1,12 @@
-// Types for the Spatial Illusions ORBAT builder
+// TypeScript types for the Spatial Illusions ORBAT builder export format
+import { type SymbolOptions } from "milsymbol";
 
 export interface SpatialIllusionsOrbat {
   options: SpatialIllusionsOptions;
   subOrganizations?: SpatialIllusionsOrbat[];
 }
 
-export interface SpatialIllusionsOptions {
+export interface SpatialIllusionsOptions extends SymbolOptions {
   uniqueDesignation?: string;
   sidc: string;
   fillColor?: string;

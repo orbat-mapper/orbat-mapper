@@ -10,6 +10,8 @@ import { getArea, getLength } from "ol/sphere";
 import Feature from "ol/Feature";
 import { MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
 import { ref, unref, watch } from "vue";
+import primaryButton from "@/components/PrimaryButton.vue";
+import { primaryAction } from "ol/events/condition";
 
 export type MeasurementTypes = "LineString" | "Polygon";
 export type MeasurementUnit = "metric" | "imperial" | "nautical";
@@ -279,6 +281,7 @@ function measurementInteractionWrapper(
     drawInteraction = new Draw({
       source: source,
       type: drawType,
+      condition: primaryAction,
       style: function (feature) {
         return styleFunction(
           feature as Feature<SimpleGeometry>,
@@ -338,6 +341,7 @@ function measurementInteractionWrapper(
     vector.getSource()?.clear();
     olMap.removeLayer(vector);
     olMap.removeInteraction(modifyInteraction);
+    olMap.removeInteraction(drawInteraction);
   }
 
   function clear() {

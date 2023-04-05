@@ -1,4 +1,4 @@
-import type { InjectionKey, Ref } from "vue";
+import type { InjectionKey, Ref, ShallowRef } from "vue";
 import type { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
@@ -6,7 +6,7 @@ import { SidcModalPromise, TimeModalPromise } from "@/composables/modals";
 import { SelectedScenarioFeatures } from "@/stores/dragStore";
 import { EventHook } from "@vueuse/core";
 import { FeatureId } from "@/types/scenarioGeoModels";
-
+import type OLMap from "ol/Map";
 export const activeUnitKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>
 >;
@@ -39,3 +39,5 @@ export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
   onLayerSelectHook: EventHook<{ layerId: FeatureId }>;
   onFeatureSelectHook: EventHook<{ featureId: FeatureId; layerId: FeatureId }>;
 }>;
+
+export const activeMapKey = Symbol("Active map") as InjectionKey<ShallowRef<OLMap>>;
