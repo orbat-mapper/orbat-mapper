@@ -11,3 +11,7 @@ export interface SpatialIllusionsOptions {
   fillColor?: string;
   stack?: number;
 }
+
+export type OrbatGeneratorOrbat = OrbatGeneratorItem[];
+// sidc, level, position, unit name, subtitle, color
+export type OrbatGeneratorItem = [string, string, string, string, string, string];

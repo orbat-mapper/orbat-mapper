@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 April 2023
 
+- Add Order of Battle Generator import (https://www.orbatgenerator.com/) .
 - Add Spatial Illusions ORBAT builder import.
 - Add Spatial Illusions ORBAT builder export.
 - Add imperial and nautical measurement units.

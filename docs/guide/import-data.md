@@ -5,6 +5,7 @@ ORBAT Mapper can import units and features from the following sources and format
 - [GeoJSON](#geojson)
 - [MilX](#milx)
 - [Spatial Illusions ORBAT Builder](#spatial-illusions-orbat-builder)
+- [Order of Battle Generator](#order-of-battle-generator)
 
 ## Start the import process
 
@@ -36,5 +37,9 @@ Map.army uses letter based MILSTD 2525C/APP6-C symbol codes. ORBAT Mapper will t
 
 ## Spatial Illusions ORBAT Builder
 
-[Spatial Illusions ORBAT Builder](https://www.spatialillusions.com/unitgenerator2/) is a tool for creating military symbols
-and ORBATs. The tool supports exporting of ORBATs in a simple JSON format that is supported by ORBAT Mapper.
+[Spatial Illusions ORBAT Builder](https://www.spatialillusions.com/unitgenerator2/) is a tool for creating military
+symbols and ORBATs. The tool supports exporting of ORBATs in a simple JSON format that is supported by ORBAT Mapper.
+
+## Order of Battle Generator
+
+Import from [Order of Battle Generator](https://www.orbatgenerator.com/).

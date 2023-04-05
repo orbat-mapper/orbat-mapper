@@ -104,7 +104,7 @@ import { useImportStore } from "@/stores/importExportStore";
 import { useScenarioImport } from "@/composables/scenarioImport";
 import { guessImportFormat } from "@/lib/fileHandling";
 import { useDragStore } from "@/stores/dragStore";
-import { SpatialIllusionsOrbat } from "@/types/externalModels";
+import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
 
 const router = useRouter();
 
@@ -114,6 +114,7 @@ const formatItems: SelectItem<ImportFormat>[] = [
   { label: "MilX", value: "milx" },
   { label: "GeoJSON", value: "geojson" },
   { label: "Spatial Illusions ORBAT builder", value: "unitgenerator" },
+  { label: "Order of Battle Generator", value: "orbatgenerator" },
   // { label: "MSDL", value: "msdl" },
 ];
 
@@ -172,6 +173,13 @@ async function onLoad(e?: Event) {
     NProgress.done();
     console.log(data);
     emit("loaded", "unitgenerator", data);
+  }
+
+  if (format === "orbatgenerator" && stringSource.value) {
+    const data = importJsonString<OrbatGeneratorOrbat>(stringSource.value);
+    send({ message: `Loaded data as ${format}` });
+    NProgress.done();
+    emit("loaded", "orbatgenerator", data);
   }
   NProgress.done();
 }

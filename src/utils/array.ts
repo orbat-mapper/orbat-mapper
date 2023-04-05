@@ -46,3 +46,16 @@ export function moveItemMutable<T>(array: T[], fromIndex: number, toIndex: numbe
   array.splice(toIndex, 0, item);
   return array;
 }
+
+// sort array by object property
+export function sortBy<T extends object, K extends keyof T>(arr: T[], key: K) {
+  return arr.sort((a, b) => {
+    if (a[key] < b[key]) {
+      return -1;
+    }
+    if (a[key] > b[key]) {
+      return 1;
+    }
+    return 0;
+  });
+}

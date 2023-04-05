@@ -8,7 +8,13 @@ export type ExportFormat =
   | "xlsx"
   | "milx"
   | "unitgenerator";
-export type ImportFormat = "geojson" | "milx" | "msdl" | "unitgenerator";
+
+export type ImportFormat =
+  | "geojson"
+  | "milx"
+  | "msdl"
+  | "unitgenerator"
+  | "orbatgenerator";
 export type GuessedImportFormat = "unknown" | ImportFormat;
 
 export interface ColumnMapping<TData = Record<string, any>> {

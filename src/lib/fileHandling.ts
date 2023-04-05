@@ -66,6 +66,8 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
       guess.format = "geojson";
     } else if (json.options && json.subOrganizations) {
       guess.format = "unitgenerator";
+    } else if (Array.isArray(json) && Array.isArray(json[0]) && json[0].length >= 6) {
+      guess.format = "orbatgenerator";
     }
   } catch (e) {}
 

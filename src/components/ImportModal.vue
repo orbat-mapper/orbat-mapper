@@ -8,19 +8,25 @@
     <ImportMilxStep
       v-else-if="importState === 'milx'"
       @cancel="onCancel"
-      :data="loadedData"
+      :data="loadedData as MilxImportedLayer[]"
       @loaded="onImport"
     />
     <ImportGeojsonStep
       v-else-if="importState === 'geojson'"
       @cancel="onCancel"
-      :data="loadedData"
+      :data="loadedData as FeatureCollection"
       @loaded="onImport"
     />
     <ImportSpatialIllusionsStep
       v-else-if="importState === 'unitgenerator'"
       @cancel="onCancel"
-      :data="loadedData"
+      :data="loadedData as SpatialIllusionsOrbat"
+      @loaded="onImport"
+    />
+    <ImportOrbatGeneratorStep
+      v-else-if="importState === 'orbatgenerator'"
+      @cancel="onCancel"
+      :data="loadedData as OrbatGeneratorOrbat"
       @loaded="onImport"
     />
   </SimpleModal>
@@ -36,10 +42,14 @@ import { ref, shallowRef } from "vue";
 import ImportMilxStep from "@/components/ImportMilxStep.vue";
 import ImportGeojsonStep from "@/components/ImportGeojsonStep.vue";
 import ImportSpatialIllusionsStep from "@/components/ImportSpatialIllusionsStep.vue";
+import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
+import { FeatureCollection } from "geojson";
+import { MilxImportedLayer } from "@/composables/scenarioImport";
+import ImportOrbatGeneratorStep from "@/components/ImportOrbatGeneratorStep.vue";
 
 const router = useRouter();
 
-type ImportState = "select" | "milx" | "geojson" | "unitgenerator";
+type ImportState = "select" | "milx" | "geojson" | "unitgenerator" | "orbatgenerator";
 const importState = ref<ImportState>("select");
 const loadedData = shallowRef<any>([]);
 
