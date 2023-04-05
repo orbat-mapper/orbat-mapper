@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, markRaw, onUnmounted, ref, shallowRef, watch } from "vue";
+import { computed, h, onUnmounted, ref, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { clearStyleCache } from "@/geo/unitStyles";
@@ -56,6 +56,8 @@ import { useMapSelectStore } from "@/stores/mapSelectStore";
 import ContextMenu, { type MenuOptions } from "@imengyu/vue3-context-menu";
 import { toLonLat } from "ol/proj";
 
+const emit = defineEmits<{ (e: "map-ready", value: OLMap): void }>();
+
 const {
   geo,
   store: { state },
@@ -77,7 +79,7 @@ const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 
 const onMapReady = (olMap: OLMap) => {
   mapRef.value = olMap;
-  geoStore.olMap = markRaw(olMap);
+  geoStore.olMap = olMap;
 
   const unitLayerGroup = new LayerGroup({
     layers: [unitLayer],
@@ -146,6 +148,8 @@ const onMapReady = (olMap: OLMap) => {
     drawUnits();
     drawHistory();
   });
+
+  emit("map-ready", olMap);
 };
 
 watch([settingsStore, symbolSettings], () => {

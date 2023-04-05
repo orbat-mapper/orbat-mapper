@@ -10,10 +10,11 @@ import { GeoJSON } from "ol/format";
 import turfEnvelope from "@turf/envelope";
 
 import Feature from "ol/Feature";
+import { shallowRef } from "vue";
 
 export const useGeoStore = defineStore("geo", {
   state: () => ({
-    olMap: null as OLMap | null | undefined,
+    olMap: shallowRef<OLMap | null | undefined>(null),
   }),
   actions: {
     zoomToUnit(unit?: Unit | NUnit | null, duration = 900) {

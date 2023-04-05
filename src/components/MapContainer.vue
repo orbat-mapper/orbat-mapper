@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { markRaw, onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 import MapEvent from "ol/MapEvent";
 import OLMap from "ol/Map";
@@ -111,7 +111,7 @@ onMounted(() => {
     }),
   });
   useOlEvent(olMap.on("moveend", moveendHandler));
-  emit("ready", markRaw(olMap));
+  emit("ready", olMap);
 });
 
 onUnmounted(() => {
