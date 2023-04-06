@@ -11,23 +11,16 @@
       class="absolute bottom-10 left-3"
       :ol-map="mapRef"
     />
-    <!--        <div v-if="mapRef" class="absolute bottom-[5.2rem] left-3">-->
-    <!--          <BaseToolbar class="shadow"></BaseToolbar>-->
-    <!--        </div>-->
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, h, onUnmounted, ref, shallowRef, watch } from "vue";
+import { computed, onUnmounted, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { clearStyleCache } from "@/geo/unitStyles";
-import {
-  useGeoStore,
-  useMeasurementsStore,
-  useUnitSettingsStore,
-} from "@/stores/geoStore";
+import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import LayerGroup from "ol/layer/Group";
 
 import {
@@ -39,7 +32,6 @@ import {
 import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import { useToggle } from "@vueuse/core";
 import { ObjectEvent } from "ol/Object";
-import { IconCogOutline } from "@iconify-prerendered/vue-mdi";
 import MeasurementToolbar from "./MeasurementToolbar.vue";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
@@ -52,8 +44,7 @@ import { useShowLocationControl } from "@/composables/geoShowLocation";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTabStore } from "@/stores/tabStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
-import ContextMenu, { type MenuOptions } from "@imengyu/vue3-context-menu";
-import { toLonLat } from "ol/proj";
+import { useMapContextMenu } from "@/composables/mapContextMenu";
 
 const props = withDefaults(defineProps<{ hideMeasurements?: boolean }>(), {
   hideMeasurements: false,
@@ -165,103 +156,5 @@ onUnmounted(() => {
   geoStore.olMap = undefined;
 });
 
-function onContextMenu(e: MouseEvent) {
-  e.preventDefault();
-  const dropPosition = toLonLat(mapRef.value!.getEventCoordinate(e));
-  const settings = useMapSettingsStore();
-  const measurementSettings = useMeasurementsStore();
-  const menu = ref<MenuOptions>({
-    items: [
-      {
-        label: "Map settings",
-        icon: h(IconCogOutline, { class: "text-gray-500" }),
-        children: [
-          {
-            label: "Show cursor location",
-            checked: computed(() => settings.showLocation) as unknown as boolean,
-            clickClose: false,
-            onClick: () => {
-              settings.showLocation = !settings.showLocation;
-            },
-          },
-          {
-            label: "Measurement unit",
-            children: [
-              {
-                label: "Metric",
-                checked: computed(
-                  () => measurementSettings.unit === "metric"
-                ) as unknown as boolean,
-                clickClose: false,
-                onClick: () => {
-                  measurementSettings.unit = "metric";
-                },
-              },
-              {
-                label: "Imperial",
-                checked: computed(
-                  () => measurementSettings.unit === "imperial"
-                ) as unknown as boolean,
-                clickClose: false,
-                onClick: () => {
-                  measurementSettings.unit = "imperial";
-                },
-              },
-              {
-                label: "Nautical",
-                checked: computed(
-                  () => measurementSettings.unit === "nautical"
-                ) as unknown as boolean,
-                clickClose: false,
-                onClick: () => {
-                  measurementSettings.unit = "nautical";
-                },
-              },
-            ],
-          },
-          {
-            label: "Coordinate format",
-            children: [
-              {
-                label: "Decimal degrees",
-                checked: computed(
-                  () => settings.coordinateFormat === "DecimalDegrees"
-                ) as unknown as boolean,
-                clickClose: false,
-                onClick: () => {
-                  settings.coordinateFormat = "DecimalDegrees";
-                },
-              },
-              {
-                label: "Degree Minutes Seconds",
-                checked: computed(
-                  () => settings.coordinateFormat === "DegreeMinuteSeconds"
-                ) as unknown as boolean,
-                clickClose: false,
-                onClick: () => {
-                  settings.coordinateFormat = "DegreeMinuteSeconds";
-                },
-              },
-              {
-                label: "MGRS",
-                checked: computed(
-                  () => settings.coordinateFormat === "MGRS"
-                ) as unknown as boolean,
-                clickClose: false,
-                onClick: () => {
-                  settings.coordinateFormat = "MGRS";
-                },
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    zIndex: 3,
-    minWidth: 230,
-    x: e.x,
-    y: e.y,
-  });
-  ContextMenu.showContextMenu(menu.value);
-}
+const { onContextMenu } = useMapContextMenu(mapRef);
 </script>
