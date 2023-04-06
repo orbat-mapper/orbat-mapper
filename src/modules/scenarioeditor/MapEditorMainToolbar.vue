@@ -5,12 +5,20 @@
     <MainToolbarButton>
       <SelectIcon class="h-6 w-6" />
     </MainToolbarButton>
-    <PanelToggle v-model="store.showMeasurementsToolbar" title="Measurements">
+    <MainToolbarButton
+      :active="store.currentToolbar === 'measurements'"
+      @click="store.toggleToolbar('measurements')"
+      title="Measurements"
+    >
       <MeasurementIcon class="h-6 w-6" />
-    </PanelToggle>
-    <!--    <PanelToggle v-model="store.showToolbar" title="Draw">-->
-    <!--      <DrawIcon class="h-6 w-6" />-->
-    <!--    </PanelToggle>-->
+    </MainToolbarButton>
+    <MainToolbarButton
+      :active="store.currentToolbar === 'draw'"
+      @click="store.toggleToolbar('draw')"
+      title="Draw"
+    >
+      <DrawIcon class="h-6 w-6" />
+    </MainToolbarButton>
   </FloatingPanel>
 </template>
 <script setup lang="ts">
@@ -21,7 +29,6 @@ import {
 } from "@iconify-prerendered/vue-mdi";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
-import PanelToggle from "@/components/PanelToggle.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 
 const store = useMainToolbarStore();

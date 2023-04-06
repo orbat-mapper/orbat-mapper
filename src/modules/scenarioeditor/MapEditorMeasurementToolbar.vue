@@ -35,10 +35,7 @@
       <TrashIcon class="h-5 w-5" />
     </MainToolbarButton>
 
-    <MainToolbarButton
-      title="Toggle toolbar"
-      @click="store.showMeasurementsToolbar = false"
-    >
+    <MainToolbarButton title="Toggle toolbar" @click="store.clearToolbar()">
       <CloseIcon class="h-5 w-5" />
     </MainToolbarButton>
   </FloatingPanel>
@@ -55,7 +52,7 @@ import {
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
-import { onKeyDown, useToggle } from "@vueuse/core";
+import { onKeyDown } from "@vueuse/core";
 import { activeMapKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { useMeasurementInteraction } from "@/composables/geoMeasurement";
@@ -69,18 +66,12 @@ const store = useMainToolbarStore();
 const { showSegments, clearPrevious, measurementType, unit } = storeToRefs(
   useMeasurementsStore()
 );
-const [enableMeasurements, toggleMeasurements] = useToggle(true);
 const { clear } = useMeasurementInteraction(mapRef.value, measurementType, {
   showSegments,
   clearPrevious,
   unit,
 });
 
-onKeyDown("Escape", () => {
-  store.showMeasurementsToolbar = false;
-});
-
-onUnmounted(() => {
-  clear();
-});
+onKeyDown("Escape", () => store.clearToolbar());
+onUnmounted(() => clear());
 </script>
