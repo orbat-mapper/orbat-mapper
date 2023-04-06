@@ -1,6 +1,6 @@
 <template>
   <div class="relative flex min-h-0 flex-auto">
-    <ScenarioMap class="flex-1" @mapReady="onMapReady" hide-measurements />
+    <NewScenarioMap class="flex-1" @mapReady="onMapReady" />
     <main v-if="mapRef" class="pointer-events-none absolute inset-0 flex flex-col p-2">
       <header class="flex flex-none justify-end">
         <MapTimeController class="pointer-events-auto" />
@@ -49,6 +49,7 @@ import MapEditorSecondaryToolbar from "@/modules/scenarioeditor/MapEditorSeconda
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import OLMap from "ol/Map";
+import NewScenarioMap from "@/components/NewScenarioMap.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
