@@ -38,6 +38,7 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTabStore } from "@/stores/tabStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useMapContextMenu } from "@/composables/mapContextMenu";
+import { useMapHover } from "@/composables/geoHover";
 
 interface Props {}
 
@@ -50,18 +51,19 @@ const {
   unitActions,
 } = injectStrict(activeScenarioKey);
 
-const uiTabs = useTabStore();
-const doNotFilterLayers = computed(() => uiTabs.activeScenarioTab === TAB_LAYERS);
 const mapRef = shallowRef<OLMap>();
 
-const { unitLayer, drawUnits } = useUnitLayer();
+const uiTabs = useTabStore();
+const doNotFilterLayers = computed(() => uiTabs.activeScenarioTab === TAB_LAYERS);
 const unitSettingsStore = useUnitSettingsStore();
-
 const geoStore = useGeoStore();
 const settingsStore = useSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
-
 const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
+
+const { unitLayer, drawUnits } = useUnitLayer();
+const { onDrop } = useDrop(mapRef, unitLayer);
+const { onContextMenu } = useMapContextMenu(mapRef);
 
 const onMapReady = (olMap: OLMap) => {
   mapRef.value = olMap;
@@ -71,6 +73,8 @@ const onMapReady = (olMap: OLMap) => {
     layers: [unitLayer],
   });
 
+  unitLayerGroup.set("title", "Units");
+
   const { showHistory, editHistory } = storeToRefs(unitSettingsStore);
 
   const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
@@ -78,10 +82,9 @@ const onMapReady = (olMap: OLMap) => {
     showHistory,
     editHistory,
   });
+  const { enable } = useMapHover(olMap);
 
-  historyLayer.set("title", "History");
   olMap.addLayer(historyLayer);
-  unitLayerGroup.set("title", "Units");
   olMap.addLayer(unitLayerGroup);
 
   watch([() => state.currentTime, doNotFilterLayers], (v) => {
@@ -127,9 +130,6 @@ const onMapReady = (olMap: OLMap) => {
     moveUnitInteraction.setActive(isUnitLayerVisible && moveUnitEnabled.value);
   }
 
-  const layerCollection = olMap.getLayers();
-  useOlEvent(layerCollection.on(["add", "remove"], (event) => {}));
-
   watch(geo.everyVisibleUnit, () => {
     drawUnits();
     drawHistory();
@@ -143,11 +143,7 @@ watch([settingsStore, symbolSettings], () => {
   drawUnits();
 });
 
-const { onDrop } = useDrop(mapRef, unitLayer);
-
 onUnmounted(() => {
   geoStore.olMap = undefined;
 });
-
-const { onContextMenu } = useMapContextMenu(mapRef);
 </script>

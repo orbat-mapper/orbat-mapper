@@ -34,6 +34,7 @@ export function useUnitHistory(
   const activeUnitId = injectStrict(activeUnitKey);
   const { selectedUnitIds } = useSelectedUnits();
   const historyLayer = createHistoryLayer();
+  historyLayer.set("title", "History");
 
   onUndoRedo(({ meta }) => {
     if (meta?.value === activeUnitId.value) drawHistory();
