@@ -1,9 +1,9 @@
 import OLMap from "ol/Map";
 import MousePosition from "ol/control/MousePosition";
-import { type CoordinateFormat, toStringHDMS } from "ol/coordinate";
+import { type CoordinateFormat } from "ol/coordinate";
 import { type MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
 import { ref, watch } from "vue";
-import { formatDecimalDegrees, formatMGRS } from "@/utils/geoConvert";
+import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 
 export type CoordinateFormatType = "MGRS" | "DecimalDegrees" | "DegreeMinuteSeconds";
 export interface GeoShowLocationOptions {
@@ -47,9 +47,7 @@ export function useShowLocationControl(
 
   function getCoordinateFormat(): CoordinateFormat {
     const format = coordinateFormatRef.value;
-    if (format === "DegreeMinuteSeconds") return (v: any) => toStringHDMS(v, 0);
-    if (format === "MGRS") return (v) => formatMGRS(v, 4);
-    return (v: any) => formatDecimalDegrees(v, 3);
+    return getCoordinateFormatFunction(format);
   }
 
   return { enable: enableRef };

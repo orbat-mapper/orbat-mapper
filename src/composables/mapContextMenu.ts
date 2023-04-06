@@ -4,9 +4,15 @@ import { toLonLat } from "ol/proj";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import ContextMenu, { MenuOptions } from "@imengyu/vue3-context-menu";
-import { IconCogOutline } from "@iconify-prerendered/vue-mdi";
+import { IconCogOutline, IconMapMarker } from "@iconify-prerendered/vue-mdi";
+import { getCoordinateFormatFunction } from "@/utils/geoConvert";
+import { useNotifications } from "@/composables/notifications";
+import { useClipboard } from "@vueuse/core";
 
 export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
+  const { send } = useNotifications();
+  const { copy: copyToClipboard, copied } = useClipboard();
+
   function onContextMenu(e: MouseEvent) {
     e.preventDefault();
     if (!mapRef.value) {
@@ -15,9 +21,28 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
     }
     const dropPosition = toLonLat(mapRef.value.getEventCoordinate(e));
     const settings = useMapSettingsStore();
+    const formattedPosition = computed(() =>
+      getCoordinateFormatFunction(settings.coordinateFormat)(dropPosition)
+    );
+
     const measurementSettings = useMeasurementsStore();
     const menu = ref<MenuOptions>({
       items: [
+        {
+          label: () =>
+            h(
+              "div",
+              { class: "text-sm text-gray-600 font-medium" },
+              formattedPosition.value
+            ),
+          icon: h(IconMapMarker, { class: "text-gray-500" }),
+          onClick: async () => {
+            await copyToClipboard(formattedPosition.value);
+            send({
+              message: `Copied ${formattedPosition.value} to the clipboard`,
+            });
+          },
+        },
         {
           label: "Map settings",
           icon: h(IconCogOutline, { class: "text-gray-500" }),
