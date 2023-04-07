@@ -2,10 +2,18 @@
   <FloatingPanel
     class="pointer-events-auto flex w-full max-w-sm items-center justify-between rounded-md bg-white p-1"
   >
-    <div class="flex items-center justify-between -space-x-1">
-      <MainToolbarButton>
+    <div class="flex items-center justify-between">
+      <MainToolbarButton @click="toggleMoveUnit(false)" :active="!moveUnitEnabled">
         <SelectIcon class="h-6 w-6" />
       </MainToolbarButton>
+      <MainToolbarButton
+        :active="moveUnitEnabled"
+        @click="toggleMoveUnit(true)"
+        title="Move unit"
+      >
+        <MoveIcon class="h-6 w-6" />
+      </MainToolbarButton>
+      <div class="mx-1 h-7 border-l-2 border-gray-300" />
       <MainToolbarButton
         :active="store.currentToolbar === 'measurements'"
         @click="store.toggleToolbar('measurements')"
@@ -38,15 +46,22 @@ import {
   IconRulerSquareCompass as MeasurementIcon,
   IconRedoVariant as RedoIcon,
   IconUndoVariant as UndoIcon,
+  IconCursorMove as MoveIcon,
 } from "@iconify-prerendered/vue-mdi";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
+import { storeToRefs } from "pinia";
+import { useUnitSettingsStore } from "@/stores/geoStore";
+import { useToggle } from "@vueuse/core";
 
 const {
   store: { undo, redo, canRedo, canUndo },
 } = injectStrict(activeScenarioKey);
 const store = useMainToolbarStore();
+const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
+
+const toggleMoveUnit = useToggle(moveUnitEnabled);
 </script>

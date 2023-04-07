@@ -31,12 +31,20 @@
         />
       </footer>
     </main>
+    <div class="prose prose-sm fixed bottom-10 right-2 hidden lg:block">
+      <pre>Features: {{ selectedFeatureIds }}</pre>
+      <pre>Units: {{ selectedUnitIds }}</pre>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onActivated, onUnmounted, provide, shallowRef, watch } from "vue";
-import { useActiveUnitStore } from "@/stores/dragStore";
+import {
+  useActiveUnitStore,
+  useSelectedFeatures,
+  useSelectedUnits,
+} from "@/stores/dragStore";
 import { useNotifications } from "@/composables/notifications";
 import { useGeoStore } from "@/stores/geoStore";
 import {
@@ -91,6 +99,8 @@ watch(
 );
 
 const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
+const { selectedFeatureIds } = useSelectedFeatures();
+const { selectedUnitIds } = useSelectedUnits();
 
 const activeUnitStore = useActiveUnitStore({
   activeScenario,
