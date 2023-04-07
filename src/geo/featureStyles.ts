@@ -40,7 +40,7 @@ export function useFeatureStyles(geo: TGeo) {
     let style = styleCache.get(featureId);
     if (!style) {
       const { feature: scenarioFeature } = geo.getFeatureById(featureId);
-      style = createSimpleStyle(scenarioFeature.properties) || defaultStyle;
+      style = createSimpleStyle(scenarioFeature.properties || {}) || defaultStyle;
       // @ts-ignore
       feature.set("_zIndex", scenarioFeature.properties._zIndex, true);
       styleCache.set(featureId, style);

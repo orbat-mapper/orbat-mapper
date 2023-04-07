@@ -25,6 +25,10 @@
           class="absolute bottom-16"
           v-if="store.currentToolbar === 'measurements'"
         />
+        <MapEditorDrawToolbar
+          class="absolute bottom-16"
+          v-if="store.currentToolbar === 'draw'"
+        />
       </footer>
     </main>
   </div>
@@ -47,6 +51,7 @@ import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/NewScenarioMap.vue";
+import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);

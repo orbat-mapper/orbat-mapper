@@ -2,7 +2,7 @@
   <FloatingPanel
     class="pointer-events-auto flex items-center space-x-0.5 rounded-md bg-white p-1"
   >
-    <p class="px-2 text-sm font-medium text-gray-500">Measurements</p>
+    <p class="px-2 text-sm font-medium text-gray-500">Measure</p>
     <MainToolbarButton
       title="Length"
       @click="measurementType = 'LineString'"
@@ -17,6 +17,7 @@
     >
       <AreaIcon class="h-5 w-5" />
     </MainToolbarButton>
+    <div class="h-5 border-l border-gray-300" />
     <MainToolbarButton
       title="Show segment lengths"
       @click="showSegments = !showSegments"
