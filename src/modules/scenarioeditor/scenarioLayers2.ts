@@ -216,32 +216,31 @@ export function useScenarioLayers(
   const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
     VectorLayer<any>
   >;
-  const projection = olMap.getView().getProjection();
 
   function createScenarioVectorLayer(
-    l: ScenarioLayer,
+    layer: ScenarioLayer,
     projection: ProjectionLike = "EPSG:3837",
     filterVisible = true
   ) {
     const vectorLayer = new VectorLayer({
       source: new VectorSource({
         features: createScenarioLayerFeatures(
-          l.features.filter((f) => !filterVisible || !f._hidden),
+          layer.features.filter((f) => !filterVisible || !f._hidden),
           projection
         ),
       }),
       style: scenarioFeatureStyle,
-      properties: { id: l.id, title: l.name, layerType: LayerType.overlay },
+      properties: { id: layer.id, title: layer.name, layerType: LayerType.overlay },
       updateWhileAnimating: true,
     });
-    if (l.isHidden) vectorLayer.setVisible(false);
+    if (layer.isHidden) vectorLayer.setVisible(false);
     return vectorLayer;
   }
 
   function initializeFromStore(doClearCache = true, filterVisible = true) {
     if (doClearCache) clearCache();
     scenarioLayersOl.clear();
-
+    const projection = olMap.getView().getProjection();
     geo.layers.value
       .filter((l) => !filterVisible || !l._hidden)
       .forEach((l) => {
@@ -250,10 +249,10 @@ export function useScenarioLayers(
       });
   }
 
-  function getOlLayerById(id: FeatureId) {
+  function getOlLayerById(layerId: FeatureId) {
     return scenarioLayersOl
       .getArray()
-      .find((e) => e.get("id") === id) as VectorLayer<any>;
+      .find((e) => e.get("id") === layerId) as VectorLayer<any>;
   }
 
   function addLayer(newLayer: NScenarioLayer, isUndoRedo = false) {
