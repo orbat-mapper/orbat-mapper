@@ -20,6 +20,7 @@ import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
 import dayjs from "dayjs";
 import { type ScenarioLayer } from "@/types/scenarioGeoModels";
 import { type EntityId } from "@/types/base";
+import { nanoid } from "@/utils";
 
 const LOCALSTORAGE_KEY = "orbat-scenario4";
 
@@ -39,7 +40,7 @@ export function createEmptyScenario(): Scenario {
     symbologyStandard: symbolSettings.symbologyStandard,
     sides: [],
     events: [],
-    layers: [],
+    layers: [{ id: nanoid(), name: "Features", features: [] }],
   };
 }
 
