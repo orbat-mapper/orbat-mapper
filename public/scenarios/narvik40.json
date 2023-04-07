@@ -277,6 +277,12 @@
       ]
     }
   ],
-  "layers": [],
+  "layers": [
+    {
+      "name": "Features",
+      "id": "vN7ltfakRq23",
+      "features": []
+    }
+  ],
   "events": []
 }
