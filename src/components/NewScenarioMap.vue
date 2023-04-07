@@ -39,6 +39,7 @@ import { useTabStore } from "@/stores/tabStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useMapContextMenu } from "@/composables/mapContextMenu";
 import { useMapHover } from "@/composables/geoHover";
+import { useGeoLayersUndoRedo } from "@/composables/geoUndoRedo";
 
 interface Props {}
 
@@ -78,6 +79,7 @@ const onMapReady = (olMap: OLMap) => {
   const { showHistory, editHistory } = storeToRefs(unitSettingsStore);
 
   const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
+  useGeoLayersUndoRedo(olMap);
   const { historyLayer, drawHistory, historyModify } = useUnitHistory({
     showHistory,
     editHistory,

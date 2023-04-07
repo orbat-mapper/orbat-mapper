@@ -39,6 +39,7 @@ import {
 } from "@/types/internalModels";
 import { storeToRefs } from "pinia";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
+import { useGeoLayersUndoRedo } from "@/composables/geoUndoRedo";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -86,48 +87,7 @@ const { selectedIds, selectInteraction } = useScenarioFeatureSelect(mapRef, {
   enable: isSelectActive,
 });
 
-onUndoRedo(({ meta, patch, action }) => {
-  // console.log(action, meta, patch);
-  if (!meta) return;
-  const { label, value } = meta;
-  if (label === "deleteLayer") {
-    if (action === "undo") {
-      const layer = geo.getLayerById(value);
-      addLayer(layer, true);
-    } else deleteLayer(value as FeatureId, true);
-  } else if (label === "deleteFeature") {
-    if (action === "undo") {
-      const { feature } = geo.getFeatureById(value);
-      addFeature(feature, true);
-    } else {
-      deleteFeature(value, true);
-    }
-  } else if (label === "addFeature") {
-    if (action === "undo") {
-      deleteFeature(value, true);
-    } else {
-      const { feature } = geo.getFeatureById(value);
-      addFeature(feature, true);
-    }
-  } else if (label === "updateFeatureGeometry") {
-    deleteFeature(value, true);
-    const { feature } = geo.getFeatureById(value);
-    addFeature(feature, true);
-  } else if (label === "updateLayer") {
-    const layer = geo.getLayerById(value);
-    updateLayer(value, layer, true);
-  } else if (label === "moveLayer") {
-    moveLayer(value, "down", true);
-  } else if (label === "updateFeature") {
-    updateFeature(value, {}, true);
-  } else if (label === "moveFeature") {
-    const { feature } = geo.getFeatureById(value);
-    moveFeature(feature, "down", true);
-  } else if (label === "batchLayer") {
-    // FIXME ugly hack
-    initializeFromStore(true, false);
-  }
-});
+useGeoLayersUndoRedo(mapRef);
 
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 const activeLayer = ref<FeatureId | null>(null);
