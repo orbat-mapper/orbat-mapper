@@ -7,6 +7,7 @@ import { SelectedScenarioFeatures } from "@/stores/dragStore";
 import { EventHook } from "@vueuse/core";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import type OLMap from "ol/Map";
+import type Select from "ol/interaction/Select";
 export const activeUnitKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>
 >;
@@ -41,3 +42,6 @@ export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
 }>;
 
 export const activeMapKey = Symbol("Active map") as InjectionKey<ShallowRef<OLMap>>;
+export const activeFeatureSelectInteractionKey = Symbol(
+  "Active feature select"
+) as InjectionKey<ShallowRef<Select>>;

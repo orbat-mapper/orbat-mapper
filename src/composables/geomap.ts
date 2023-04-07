@@ -169,13 +169,13 @@ export function useUnitSelectInteraction(
 
   const boxSelectInteraction = new DragBox({ condition: platformModifierKeyOnly });
 
-  const selectedFeatures = unitSelectInteraction.getFeatures();
+  const selectedUnitFeatures = unitSelectInteraction.getFeatures();
 
   watch(
     enableRef,
     (enabled) => {
       unitSelectInteraction.setActive(enabled);
-      if (!enabled) selectedFeatures.clear();
+      if (!enabled) selectedUnitFeatures.clear();
     },
     { immediate: true }
   );
@@ -184,7 +184,7 @@ export function useUnitSelectInteraction(
     enableBoxSelectRef,
     (enabled) => {
       boxSelectInteraction.setActive(enabled);
-      selectedFeatures.clear();
+      selectedUnitFeatures.clear();
     },
     { immediate: true }
   );
@@ -196,7 +196,7 @@ export function useUnitSelectInteraction(
         selectedIds.value.clear();
       }
       if (
-        selectedFeatures.getLength() === 0 &&
+        selectedUnitFeatures.getLength() === 0 &&
         !event.mapBrowserEvent.originalEvent.shiftKey
       ) {
         selectedIds.value.clear();
@@ -272,10 +272,10 @@ export function useUnitSelectInteraction(
 
   function redrawSelectedLayer(v: EntityId[]) {
     if (!isInternal) {
-      selectedFeatures.clear();
+      selectedUnitFeatures.clear();
       v.forEach((fid) => {
         const feature = layers[0].getSource().getFeatureById(fid);
-        if (feature) selectedFeatures.push(feature);
+        if (feature) selectedUnitFeatures.push(feature);
       });
     }
     isInternal = false;

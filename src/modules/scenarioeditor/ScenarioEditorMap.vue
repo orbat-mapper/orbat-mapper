@@ -39,7 +39,12 @@ import { onActivated, onUnmounted, provide, shallowRef, watch } from "vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useNotifications } from "@/composables/notifications";
 import { useGeoStore } from "@/stores/geoStore";
-import { activeMapKey, activeScenarioKey, activeUnitKey } from "@/components/injects";
+import {
+  activeFeatureSelectInteractionKey,
+  activeMapKey,
+  activeScenarioKey,
+  activeUnitKey,
+} from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { useSearchActions } from "@/composables/search";
 import UnitPanel from "@/modules/scenarioeditor/UnitPanel.vue";
@@ -52,6 +57,7 @@ import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasu
 import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/NewScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
+import Select from "ol/interaction/Select";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -61,10 +67,19 @@ const { unitActions, io } = activeScenario;
 
 const layout = useGeoEditorViewStore();
 const mapRef = shallowRef<OLMap>();
+const featureSelectInteractionRef = shallowRef<Select>();
 provide(activeMapKey, mapRef);
+provide(activeFeatureSelectInteractionKey, featureSelectInteractionRef);
 
-function onMapReady(map: OLMap) {
-  mapRef.value = map;
+function onMapReady({
+  olMap,
+  featureSelectInteraction,
+}: {
+  olMap: OLMap;
+  featureSelectInteraction: Select;
+}) {
+  mapRef.value = olMap;
+  featureSelectInteractionRef.value = featureSelectInteraction;
 }
 
 watch(

@@ -27,7 +27,10 @@ import {
 import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import { ObjectEvent } from "ol/Object";
 import { useOlEvent } from "@/composables/openlayersHelpers";
-import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
+import {
+  useScenarioFeatureSelect,
+  useScenarioLayers,
+} from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
@@ -40,11 +43,21 @@ import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useMapContextMenu } from "@/composables/mapContextMenu";
 import { useMapHover } from "@/composables/geoHover";
 import { useGeoLayersUndoRedo } from "@/composables/geoUndoRedo";
+import type Select from "ol/interaction/Select";
 
 interface Props {}
 
 // const props = defineProps<Props>();
-const emit = defineEmits<{ (e: "map-ready", value: OLMap): void }>();
+const emit = defineEmits<{
+  (
+    e: "map-ready",
+    value: {
+      olMap: OLMap;
+      featureSelectInteraction: Select;
+      unitSelectInteraction: Select;
+    }
+  ): void;
+}>();
 
 const {
   geo,
@@ -94,7 +107,7 @@ const onMapReady = (olMap: OLMap) => {
   });
 
   olMap.addInteraction(historyModify);
-  const { unitSelectEnabled } = storeToRefs(useMapSelectStore());
+  const { unitSelectEnabled, featureSelectEnabled } = storeToRefs(useMapSelectStore());
   const { unitSelectInteraction, boxSelectInteraction } = useUnitSelectInteraction(
     [unitLayer],
     olMap,
@@ -104,6 +117,13 @@ const onMapReady = (olMap: OLMap) => {
   );
   olMap.addInteraction(unitSelectInteraction);
   olMap.addInteraction(boxSelectInteraction);
+
+  const { selectInteraction: featureSelectInteraction } = useScenarioFeatureSelect(
+    olMap,
+    {
+      enable: featureSelectEnabled,
+    }
+  );
 
   const { moveInteraction: moveUnitInteraction } = useMoveInteraction(
     olMap,
@@ -137,7 +157,7 @@ const onMapReady = (olMap: OLMap) => {
     drawHistory();
   });
 
-  emit("map-ready", olMap);
+  emit("map-ready", { olMap, featureSelectInteraction, unitSelectInteraction });
 };
 
 watch([settingsStore, symbolSettings], () => {

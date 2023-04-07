@@ -50,7 +50,7 @@
       </MainToolbarButton>
       <MainToolbarButton
         title="Delete"
-        :disabled="selectedIds.size === 0"
+        :disabled="selectedFeatureIds.size === 0"
         @click="onFeatureDelete()"
       >
         <DeleteIcon class="h-5 w-5" />
@@ -77,15 +77,17 @@ import {
 import FloatingPanel from "@/components/FloatingPanel.vue";
 
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
-import { activeMapKey, activeScenarioKey } from "@/components/injects";
+import {
+  activeFeatureSelectInteractionKey,
+  activeMapKey,
+  activeScenarioKey,
+} from "@/components/injects";
 import { injectStrict } from "@/utils";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { onKeyStroke, useToggle } from "@vueuse/core";
-import {
-  useScenarioFeatureSelect,
-  useScenarioLayers,
-} from "@/modules/scenarioeditor/scenarioLayers2";
+import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useEditingInteraction } from "@/composables/geoEditing";
+import { useSelectedFeatures } from "@/stores/dragStore";
 
 const [addMultiple, toggleAddMultiple] = useToggle(false);
 
@@ -94,6 +96,7 @@ const {
 } = injectStrict(activeScenarioKey);
 
 const mapRef = injectStrict(activeMapKey);
+const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
 const {
   scenarioLayers,
   getOlLayerById,
@@ -101,9 +104,8 @@ const {
   updateFeatureGeometryFromOlFeature,
   deleteFeature,
 } = useScenarioLayers(mapRef.value);
-const { selectedIds, selectInteraction } = useScenarioFeatureSelect(mapRef.value, {
-  enable: true,
-});
+
+const { selectedFeatureIds } = useSelectedFeatures();
 
 let layer: any;
 if (scenarioLayers.value?.length > 0) {
@@ -113,7 +115,7 @@ if (scenarioLayers.value?.length > 0) {
 const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing } =
   useEditingInteraction(mapRef.value, layer, {
     addMultiple: addMultiple,
-    select: selectInteraction,
+    select: featureSelectInteractionRef.value,
     addHandler: (olFeature, olLayer) => {
       addOlFeature(olFeature, olLayer);
     },
@@ -126,7 +128,9 @@ const store = useMainToolbarStore();
 
 function onFeatureDelete() {
   groupUpdate(() => {
-    [...selectedIds.value.values()].forEach((featureId) => deleteFeature(featureId));
+    [...selectedFeatureIds.value.values()].forEach((featureId) =>
+      deleteFeature(featureId)
+    );
   });
 }
 
