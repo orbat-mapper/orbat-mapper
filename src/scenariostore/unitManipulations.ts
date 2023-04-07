@@ -564,8 +564,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     const { _sid, _gid } = unit;
 
     return {
-      ...(state.sideMap[_sid!].symbolOptions || {}),
-      ...(state.sideGroupMap[_gid!].symbolOptions || {}),
+      ...(state.sideMap[_sid!]?.symbolOptions || {}),
+      ...(state.sideGroupMap[_gid!]?.symbolOptions || {}),
       ...(ignoreUnit ? {} : unit.symbolOptions || {}),
     };
   }
