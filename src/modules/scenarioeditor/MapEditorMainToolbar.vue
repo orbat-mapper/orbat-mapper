@@ -1,6 +1,6 @@
 <template>
   <FloatingPanel
-    class="pointer-events-auto flex w-full max-w-lg items-center justify-between rounded-md bg-white p-1"
+    class="pointer-events-auto flex w-full max-w-sm items-center justify-between rounded-md bg-white p-1"
   >
     <div class="flex items-center justify-between -space-x-1">
       <MainToolbarButton>

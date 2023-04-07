@@ -59,9 +59,6 @@
     <MainToolbarButton title="Toggle toolbar" @click="store.clearToolbar()">
       <CloseIcon class="h-5 w-5" />
     </MainToolbarButton>
-    <div class="prose fixed bottom-4 right-4 hidden lg:block">
-      <pre>{{ selectedIds }} {{ scenarioLayers.length }}</pre>
-    </div>
   </FloatingPanel>
 </template>
 <script setup lang="ts">
