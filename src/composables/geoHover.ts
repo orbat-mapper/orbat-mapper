@@ -15,6 +15,12 @@ export function useMapHover(olMap: OLMap, options: MapHoverOptions = {}) {
   watch(
     enableRef,
     (enabled) => {
+      const touch = matchMedia("(hover: none)").matches;
+      if (touch) {
+        // Touch device detected, disabling hover
+        return;
+      }
+
       if (!enabled) {
         pointerMoveKey && unByKey(pointerMoveKey);
         pointerMoveKey = null;
