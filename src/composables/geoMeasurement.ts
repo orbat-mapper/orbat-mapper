@@ -274,8 +274,9 @@ function measurementInteractionWrapper(
   }
 
   function addInteraction(map: OLMap, drawType: MeasurementTypes) {
-    const activeTip =
-      "Click to continue drawing the " + (drawType === "Polygon" ? "polygon" : "line");
+    // const activeTip =
+    //   "Click to continue drawing the " + (drawType === "Polygon" ? "polygon" : "line");
+    const activeTip = "";
     const idleTip = "Click to start measuring";
     let tip = idleTip;
     drawInteraction = new Draw({
