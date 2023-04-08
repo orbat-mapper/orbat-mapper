@@ -49,6 +49,7 @@
     "markdown-it-container": "^3.0.0",
     "mgrs": "^2.0.0",
     "milsymbol": "^2.2.0",
+    "mobile-drag-drop": "^3.0.0-rc.0",
     "nanoid": "^4.0.2",
     "nprogress": "^0.2.0",
     "ol": "^7.3.0",
