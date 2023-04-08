@@ -43,7 +43,7 @@ import ImportMilxStep from "@/components/ImportMilxStep.vue";
 import ImportGeojsonStep from "@/components/ImportGeojsonStep.vue";
 import ImportSpatialIllusionsStep from "@/components/ImportSpatialIllusionsStep.vue";
 import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
-import { FeatureCollection } from "geojson";
+import type { FeatureCollection } from "geojson";
 import { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportOrbatGeneratorStep from "@/components/ImportOrbatGeneratorStep.vue";
 
