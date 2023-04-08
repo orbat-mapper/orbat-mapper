@@ -35,13 +35,13 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
 export function createUnitStyleFromFeature(feature: FeatureLike): Style[] {
   const {
     sidc,
-    name,
-    shortName,
+    name = "",
+    shortName = "",
     stateType,
     symbolOptions = {},
   } = feature.getProperties() as OlUnitProps;
   const isInterpolated = stateType === "interpolated";
-  const key = sidc + shortName || name + symbolOptions.fillColor || "";
+  const key = sidc + shortName + name + symbolOptions.fillColor || "";
   if (!unitStyleCache.has(key)) {
     const settingsStore = useSettingsStore();
     const symbolSettings = useSymbolSettingsStore();
@@ -60,8 +60,13 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style[] {
 }
 
 export function createSelectedUnitStyleFromFeature(feature: FeatureLike): Style {
-  const { sidc, name, shortName, symbolOptions = {} } = feature.getProperties() as Unit;
-  const key = sidc + shortName || name + symbolOptions.fillColor || "";
+  const {
+    sidc,
+    name = "",
+    shortName = "",
+    symbolOptions = {},
+  } = feature.getProperties() as Unit;
+  const key = sidc + shortName + name + symbolOptions.fillColor || "";
   if (!selectedUnitStyleCache.has(key)) {
     const settingsStore = useSettingsStore();
     const symbolSettings = useSymbolSettingsStore();
