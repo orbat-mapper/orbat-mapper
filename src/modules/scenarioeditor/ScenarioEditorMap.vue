@@ -1,11 +1,11 @@
 <template>
   <div class="relative flex min-h-0 flex-auto">
     <NewScenarioMap class="flex-1" @mapReady="onMapReady" />
-    <main v-if="mapRef" class="pointer-events-none absolute inset-0 flex flex-col p-2">
-      <header class="flex flex-none justify-end">
+    <main v-if="mapRef" class="pointer-events-none absolute inset-0 flex flex-col">
+      <header class="flex flex-none justify-end p-2">
         <MapTimeController class="pointer-events-auto" />
       </header>
-      <section class="flex flex-auto justify-between">
+      <section class="flex flex-auto justify-between p-2">
         <aside
           class="pointer-events-auto mt-4 hidden max-h-[70vh] w-96 overflow-auto rounded-md bg-white p-2 md:block"
         >
@@ -19,14 +19,14 @@
         </aside>
         <div v-else></div>
       </section>
-      <footer class="flex justify-center">
+      <footer class="flex justify-center sm:p-2">
         <MapEditorMainToolbar />
         <MapEditorMeasurementToolbar
-          class="absolute bottom-16"
+          class="absolute bottom-14 sm:bottom-16"
           v-if="store.currentToolbar === 'measurements'"
         />
         <MapEditorDrawToolbar
-          class="absolute bottom-16"
+          class="absolute bottom-14 sm:bottom-16"
           v-if="store.currentToolbar === 'draw'"
         />
       </footer>

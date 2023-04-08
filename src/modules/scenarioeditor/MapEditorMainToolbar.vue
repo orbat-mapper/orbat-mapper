@@ -1,8 +1,8 @@
 <template>
-  <FloatingPanel
-    class="pointer-events-auto flex w-full max-w-sm items-center justify-between rounded-md bg-white p-1"
+  <nav
+    class="pointer-events-auto flex w-full items-center justify-between border border-gray-300 bg-gray-50 p-1 text-sm shadow sm:max-w-sm sm:rounded-xl"
   >
-    <div class="flex items-center justify-between">
+    <section class="flex items-center justify-between">
       <MainToolbarButton @click="toggleMoveUnit(false)" :active="!moveUnitEnabled">
         <SelectIcon class="h-6 w-6" />
       </MainToolbarButton>
@@ -28,27 +28,26 @@
       >
         <DrawIcon class="h-6 w-6" />
       </MainToolbarButton>
-    </div>
-    <div class="flex items-center -space-x-1">
+    </section>
+    <section class="flex items-center -space-x-1">
       <MainToolbarButton title="Undo" @click="undo()" :disabled="!canUndo">
         <UndoIcon class="h-6 w-6" />
       </MainToolbarButton>
       <MainToolbarButton title="Redo" @click="redo()" :disabled="!canRedo">
         <RedoIcon class="h-6 w-6" />
       </MainToolbarButton>
-    </div>
-  </FloatingPanel>
+    </section>
+  </nav>
 </template>
 <script setup lang="ts">
 import {
   IconCursorDefaultOutline as SelectIcon,
-  IconPencil as DrawIcon,
-  IconRulerSquareCompass as MeasurementIcon,
-  IconRedoVariant as RedoIcon,
-  IconUndoVariant as UndoIcon,
   IconCursorMove as MoveIcon,
+  IconPencil as DrawIcon,
+  IconRedoVariant as RedoIcon,
+  IconRulerSquareCompass as MeasurementIcon,
+  IconUndoVariant as UndoIcon,
 } from "@iconify-prerendered/vue-mdi";
-import FloatingPanel from "@/components/FloatingPanel.vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { injectStrict } from "@/utils";
