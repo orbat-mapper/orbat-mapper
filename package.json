@@ -25,7 +25,7 @@
     "@headlessui/vue": "^1.7.12",
     "@heroicons/vue": "^2.0.17",
     "@iconify-prerendered/vue-mdi": "^0.22.1678433397",
-    "@imengyu/vue3-context-menu": "^1.2.3",
+    "@imengyu/vue3-context-menu": "^1.2.4",
     "@orbat-mapper/convert-symbology": "^0.3.0",
     "@panzoom/panzoom": "^4.5.1",
     "@popperjs/core": "^2.11.7",
