@@ -3,7 +3,7 @@ import OLMap from "ol/Map";
 import { toLonLat } from "ol/proj";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
-import ContextMenu, { MenuOptions } from "@imengyu/vue3-context-menu";
+import ContextMenu from "@imengyu/vue3-context-menu";
 import { IconCogOutline, IconMapMarker } from "@iconify-prerendered/vue-mdi";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import { useNotifications } from "@/composables/notifications";
@@ -26,7 +26,7 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
     );
 
     const measurementSettings = useMeasurementsStore();
-    const menu = ref<MenuOptions>({
+    const menu = ref<any>({
       items: [
         {
           label: () =>
