@@ -41,7 +41,7 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style[] {
     symbolOptions = {},
   } = feature.getProperties() as OlUnitProps;
   const isInterpolated = stateType === "interpolated";
-  const key = sidc + name + symbolOptions.fillColor || "";
+  const key = sidc + shortName || name + symbolOptions.fillColor || "";
   if (!unitStyleCache.has(key)) {
     const settingsStore = useSettingsStore();
     const symbolSettings = useSymbolSettingsStore();
@@ -61,7 +61,7 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style[] {
 
 export function createSelectedUnitStyleFromFeature(feature: FeatureLike): Style {
   const { sidc, name, shortName, symbolOptions = {} } = feature.getProperties() as Unit;
-  const key = sidc + name + symbolOptions.fillColor || "";
+  const key = sidc + shortName || name + symbolOptions.fillColor || "";
   if (!selectedUnitStyleCache.has(key)) {
     const settingsStore = useSettingsStore();
     const symbolSettings = useSymbolSettingsStore();
