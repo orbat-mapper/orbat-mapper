@@ -1,40 +1,53 @@
 <template>
-  <div class="relative flex min-h-0 flex-auto">
-    <NewScenarioMap class="flex-1" @mapReady="onMapReady" />
-    <main v-if="mapRef" class="pointer-events-none absolute inset-0 flex flex-col">
-      <header class="flex flex-none justify-end p-2">
-        <MapTimeController class="pointer-events-auto" />
-      </header>
-      <section class="flex flex-auto justify-between p-2">
-        <aside
-          class="pointer-events-auto mt-4 hidden max-h-[70vh] w-96 overflow-auto rounded-md bg-white p-2 md:block"
-        >
-          <OrbatPanel />
-        </aside>
-        <aside
-          v-if="layout.showDetailsPanel"
-          class="pointer-events-auto mt-4 h-96 max-h-full w-96 overflow-auto rounded-md bg-white p-2"
-        >
-          <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId"></UnitPanel>
-        </aside>
-        <div v-else></div>
-      </section>
-      <footer class="flex justify-center sm:p-2">
-        <MapEditorMainToolbar />
-        <MapEditorMeasurementToolbar
-          class="absolute bottom-14 sm:bottom-16"
-          v-if="store.currentToolbar === 'measurements'"
-        />
-        <MapEditorDrawToolbar
-          class="absolute bottom-14 sm:bottom-16"
-          v-if="store.currentToolbar === 'draw'"
-        />
-      </footer>
-    </main>
-    <div class="prose prose-sm fixed bottom-10 right-2 hidden lg:block">
-      <pre>Features: {{ selectedFeatureIds }}</pre>
-      <pre>Units: {{ selectedUnitIds }}</pre>
+  <div class="relative flex min-h-0 flex-auto flex-col">
+    <div class="relative flex flex-auto">
+      <NewScenarioMap class="flex-auto" @mapReady="onMapReady" />
+      <main
+        v-if="mapRef"
+        class="pointer-events-none absolute inset-0 flex flex-col justify-between"
+      >
+        <header class="flex flex-none justify-end p-2">
+          <MapTimeController class="pointer-events-auto" />
+        </header>
+        <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
+          <aside
+            class="pointer-events-auto mt-4 hidden max-h-[70vh] w-96 overflow-auto rounded-md bg-white p-2 md:block"
+          >
+            <OrbatPanel />
+          </aside>
+          <aside
+            v-if="layout.showDetailsPanel"
+            class="pointer-events-auto mt-4 h-96 max-h-full w-96 overflow-auto rounded-md bg-white p-2"
+          >
+            <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId"></UnitPanel>
+          </aside>
+          <div v-else></div>
+        </section>
+        <footer class="flex justify-center sm:p-2">
+          <MapEditorMainToolbar />
+          <MapEditorMeasurementToolbar
+            class="absolute bottom-14 sm:bottom-16"
+            v-if="store.currentToolbar === 'measurements'"
+          />
+          <MapEditorDrawToolbar
+            class="absolute bottom-14 sm:bottom-16"
+            v-if="store.currentToolbar === 'draw'"
+          />
+        </footer>
+      </main>
     </div>
+    <template v-if="isMobile">
+      <main class="h-3/6 overflow-auto bg-white">
+        <TabView extra-class="px-4">
+          <TabItem label="ORBAT">
+            <OrbatPanel />
+          </TabItem>
+          <TabItem label="Details" class="px-4">
+            <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId"></UnitPanel>
+          </TabItem>
+        </TabView>
+      </main>
+    </template>
   </div>
 </template>
 
@@ -66,6 +79,9 @@ import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/NewScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
+import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
+import TabView from "@/components/TabView.vue";
+import TabItem from "@/components/TabItem.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -78,6 +94,9 @@ const mapRef = shallowRef<OLMap>();
 const featureSelectInteractionRef = shallowRef<Select>();
 provide(activeMapKey, mapRef);
 provide(activeFeatureSelectInteractionKey, featureSelectInteractionRef);
+
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smallerOrEqual("sm");
 
 function onMapReady({
   olMap,
