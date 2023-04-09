@@ -38,8 +38,13 @@
     </div>
     <template v-if="isMobile">
       <main class="overflow-auto bg-white" :class="[showBottomPanel ? 'h-1/2' : 'h-12']">
-        <div v-if="!showBottomPanel" class="flex h-full items-center justify-center">
-          <IconButton>
+        <div
+          v-show="!showBottomPanel"
+          class="flex h-full items-center justify-center"
+          ref="swipeUpEl"
+          @click="toggleBottomPanel()"
+        >
+          <IconButton class="inset-0" @click.stop>
             <IconChevronDoubleUp class="h-6 w-6" @click="toggleBottomPanel()" />
           </IconButton>
         </div>
@@ -60,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { onActivated, onUnmounted, provide, shallowRef, watch } from "vue";
+import { onActivated, onUnmounted, provide, ref, shallowRef, watch } from "vue";
 import { IconChevronDoubleUp } from "@iconify-prerendered/vue-mdi";
 import {
   useActiveUnitStore,
@@ -88,7 +93,7 @@ import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/NewScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
-import { breakpointsTailwind, useBreakpoints, useToggle } from "@vueuse/core";
+import { breakpointsTailwind, useBreakpoints, useSwipe, useToggle } from "@vueuse/core";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import CloseButton from "@/components/CloseButton.vue";
@@ -108,6 +113,7 @@ provide(activeFeatureSelectInteractionKey, featureSelectInteractionRef);
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("sm");
+const swipeUpEl = ref<HTMLElement | null>(null);
 
 function onMapReady({
   olMap,
@@ -142,6 +148,13 @@ const geoStore = useGeoStore();
 
 const [showBottomPanel, toggleBottomPanel] = useToggle(true);
 
+const { isSwiping, direction } = useSwipe(swipeUpEl);
+
+watch(isSwiping, (swiping) => {
+  if (swiping && direction.value === "UP") {
+    showBottomPanel.value = true;
+  }
+});
 onUnmounted(() => {
   activeUnitStore.clearActiveUnit();
 });
