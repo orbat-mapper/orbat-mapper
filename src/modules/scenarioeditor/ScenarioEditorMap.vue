@@ -48,17 +48,41 @@
             <IconChevronDoubleUp class="h-6 w-6" @click="toggleBottomPanel()" />
           </IconButton>
         </div>
-        <TabView extra-class="px-4" :class="{ hidden: !showBottomPanel }">
-          <template #extra>
-            <CloseButton @click="toggleBottomPanel()" class="mt-4" />
-          </template>
-          <TabItem label="ORBAT">
-            <OrbatPanel />
-          </TabItem>
-          <TabItem label="Details" class="px-4">
-            <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId"></UnitPanel>
-          </TabItem>
-        </TabView>
+        <TabGroup
+          as="div"
+          class="flex h-full flex-col"
+          :class="{ hidden: !showBottomPanel }"
+        >
+          <TabList class="flex-0 flex justify-between border-b border-gray-500">
+            <div class="flex flex-auto items-center justify-evenly">
+              <Tab
+                as="template"
+                v-for="tab in ['ORBAT', 'Details', 'Layers']"
+                :key="tab"
+                v-slot="{ selected }"
+              >
+                <button
+                  :class="[
+                    selected
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                    'w-1/2 border-b-2 px-1 py-4 text-center text-sm font-medium',
+                  ]"
+                >
+                  {{ tab }}
+                </button>
+              </Tab>
+            </div>
+            <CloseButton @click="toggleBottomPanel()" class="px-4" />
+          </TabList>
+          <TabPanels class="flex-auto overflow-y-auto">
+            <TabPanel :unmount="false"><OrbatPanel /></TabPanel>
+            <TabPanel class="p-2">
+              <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" />
+            </TabPanel>
+            <TabPanel class="p-2"><p>Not implemented yet</p></TabPanel>
+          </TabPanels>
+        </TabGroup>
       </main>
     </template>
   </div>
@@ -98,6 +122,7 @@ import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import CloseButton from "@/components/CloseButton.vue";
 import IconButton from "@/components/IconButton.vue";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -129,6 +154,7 @@ function onMapReady({
 watch(
   activeUnitId,
   (unitId) => {
+    console.log("activeUnitId", unitId);
     layout.showDetailsPanel = Boolean(activeUnitId.value);
   },
   { immediate: true }
@@ -155,6 +181,7 @@ watch(isSwiping, (swiping) => {
     showBottomPanel.value = true;
   }
 });
+
 onUnmounted(() => {
   activeUnitStore.clearActiveUnit();
 });
