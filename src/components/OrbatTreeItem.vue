@@ -1,7 +1,7 @@
 <template>
   <li :id="'o-' + unit.id" class="relative text-gray-900 dark:text-gray-400">
     <div
-      class="absolute top-0 left-8 right-0 z-10 h-3"
+      class="absolute left-8 right-0 top-0 z-10 h-3"
       :class="{ 'border-t-4 border-gray-500': isDragOverAbove }"
       @dragover.prevent="isDragOverAbove = true"
       @drop.prevent="onDrop"
@@ -34,16 +34,13 @@
           </button>
         </div>
         <button class="flex items-center space-x-1">
-          <div
-            class="flex items-center space-x-1"
-            draggable="true"
-            @dragstart="dragStart"
-            @dragend="dragEnd"
-            :class="{ 'opacity-20': isDragged }"
-          >
+          <div class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
             <div
               class="flex flex-shrink-0 cursor-move justify-center"
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
+              draggable="true"
+              @dragstart="dragStart"
+              @dragend="dragEnd"
             >
               <MilitarySymbol
                 :sidc="unit._state?.sidc || unit.sidc"
