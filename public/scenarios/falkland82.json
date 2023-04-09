@@ -1375,8 +1375,8 @@
           "name": "Falklands war",
           "subUnits": [
             {
-              "name": "3 Mech Inf Bde",
-              "sidc": "10031000181211020000",
+              "name": "3rd Mechanized Infantry Brigade",
+              "sidc": "10031000181211000000",
               "subUnits": [
                 {
                   "name": "4th Inf Reg",
@@ -1463,14 +1463,73 @@
                 }
               ],
               "state": [],
-              "id": "uPYcvYQqch"
+              "id": "uPYcvYQqch",
+              "symbolOptions": {
+                "fillColor": "#aab074"
+              }
             },
             {
-              "name": "10 Mech Inf Bde",
-              "sidc": "10031000181211040000",
+              "name": "10 Mechanized Infantry Brigade",
+              "sidc": "10031000181211000000",
               "state": [],
               "id": "WEi8zOQmnr",
-              "subUnits": []
+              "subUnits": [
+                {
+                  "name": "3rd Inf Reg",
+                  "sidc": "10031000171211000000",
+                  "id": "EVkwU3z8me",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "3 Inf Reg"
+                },
+                {
+                  "name": "7th Infantry Regiment",
+                  "sidc": "10031000171211000000",
+                  "id": "h7MAj2W9Ub",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "7 Inf Reg"
+                },
+                {
+                  "name": "6th Infantry Regiment",
+                  "sidc": "10031000171211000000",
+                  "id": "K6QslV9ovo",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "6 Inf Reg"
+                },
+                {
+                  "name": "25th Infantry Regiment",
+                  "sidc": "10031000171211000000",
+                  "id": "52lP3wBqgH",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "25 Inf Reg"
+                },
+                {
+                  "name": "181st Armoured Cavalry Squadron",
+                  "sidc": "10031000151205010000",
+                  "id": "jksAfGOypF",
+                  "state": [],
+                  "subUnits": [],
+                  "symbolOptions": {
+                    "fillColor": "#aab074"
+                  },
+                  "shortName": "181 Arm Cav Sqd"
+                }
+              ],
+              "shortName": "10 Mech Inf"
+            },
+            {
+              "name": "5th Marine Infantry Battalion",
+              "sidc": "10031000161211004600",
+              "state": [],
+              "id": "b2stPeJbsj",
+              "subUnits": [],
+              "symbolOptions": {
+                "fillColor": "#aab074"
+              },
+              "shortName": "5 Mar Inf Btn"
             }
           ]
         }
