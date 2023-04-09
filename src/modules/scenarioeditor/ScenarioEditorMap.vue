@@ -37,8 +37,16 @@
       </main>
     </div>
     <template v-if="isMobile">
-      <main class="h-3/6 overflow-auto bg-white">
-        <TabView extra-class="px-4">
+      <main class="overflow-auto bg-white" :class="[showBottomPanel ? 'h-1/2' : 'h-12']">
+        <div v-if="!showBottomPanel" class="flex h-full items-center justify-center">
+          <IconButton>
+            <IconChevronDoubleUp class="h-6 w-6" @click="toggleBottomPanel()" />
+          </IconButton>
+        </div>
+        <TabView extra-class="px-4" :class="{ hidden: !showBottomPanel }">
+          <template #extra>
+            <CloseButton @click="toggleBottomPanel()" class="mt-4" />
+          </template>
           <TabItem label="ORBAT">
             <OrbatPanel />
           </TabItem>
@@ -53,6 +61,7 @@
 
 <script setup lang="ts">
 import { onActivated, onUnmounted, provide, shallowRef, watch } from "vue";
+import { IconChevronDoubleUp } from "@iconify-prerendered/vue-mdi";
 import {
   useActiveUnitStore,
   useSelectedFeatures,
@@ -79,9 +88,11 @@ import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/NewScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
-import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
+import { breakpointsTailwind, useBreakpoints, useToggle } from "@vueuse/core";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
+import CloseButton from "@/components/CloseButton.vue";
+import IconButton from "@/components/IconButton.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -128,6 +139,8 @@ const activeUnitStore = useActiveUnitStore({
 
 const { send } = useNotifications();
 const geoStore = useGeoStore();
+
+const [showBottomPanel, toggleBottomPanel] = useToggle(true);
 
 onUnmounted(() => {
   activeUnitStore.clearActiveUnit();
