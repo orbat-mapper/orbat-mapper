@@ -60,10 +60,12 @@ import { useMeasurementInteraction } from "@/composables/geoMeasurement";
 import { storeToRefs } from "pinia";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import { onUnmounted } from "vue";
+import { useMapSelectStore } from "@/stores/mapSelectStore";
 
 const mapRef = injectStrict(activeMapKey);
 
 const store = useMainToolbarStore();
+const selectStore = useMapSelectStore();
 const { showSegments, clearPrevious, measurementType, unit } = storeToRefs(
   useMeasurementsStore()
 );
@@ -73,6 +75,13 @@ const { clear } = useMeasurementInteraction(mapRef.value, measurementType, {
   unit,
 });
 
+selectStore.unitSelectEnabled = false;
+selectStore.featureSelectEnabled = false;
+
 onKeyDown("Escape", () => store.clearToolbar());
-onUnmounted(() => clear());
+onUnmounted(() => {
+  clear();
+  selectStore.unitSelectEnabled = true;
+  selectStore.featureSelectEnabled = true;
+});
 </script>

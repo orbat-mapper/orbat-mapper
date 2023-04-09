@@ -404,5 +404,5 @@ export function useMeasurementInteraction(
     cleanup();
   });
 
-  return { clear };
+  return { clear, enabled: enableRef };
 }

@@ -88,6 +88,8 @@ import { onKeyStroke, useToggle } from "@vueuse/core";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useEditingInteraction } from "@/composables/geoEditing";
 import { useSelectedFeatures } from "@/stores/dragStore";
+import { useMapSelectStore } from "@/stores/mapSelectStore";
+import { watch } from "vue";
 
 const [addMultiple, toggleAddMultiple] = useToggle(false);
 
@@ -125,6 +127,17 @@ const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawi
   });
 
 const store = useMainToolbarStore();
+const selectStore = useMapSelectStore();
+
+watch(isDrawing, (isDrawing) => {
+  if (isDrawing) {
+    selectStore.unitSelectEnabled = false;
+    selectStore.featureSelectEnabled = false;
+  } else {
+    selectStore.unitSelectEnabled = true;
+    selectStore.featureSelectEnabled = true;
+  }
+});
 
 function onFeatureDelete() {
   groupUpdate(() => {
