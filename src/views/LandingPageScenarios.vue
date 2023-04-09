@@ -16,11 +16,16 @@
           :key="scenario.name"
           class="col-span-1 flex flex-col divide-y divide-gray-200 overflow-hidden rounded-lg border bg-white text-center shadow focus-within:border-blue-800 hover:border-army"
         >
-          <router-link :to="getScenarioTo(scenario.id)" class="flex flex-1 flex-col">
+          <router-link
+            :to="getScenarioTo(scenario.id)"
+            class="flex flex-1 flex-col"
+            draggable="false"
+          >
             <img
               class="mx-auto h-52 w-full flex-shrink-0 bg-black object-cover object-top"
               :src="scenario.imageUrl"
               alt=""
+              draggable="false"
             />
             <h3 class="mt-6 text-sm font-medium text-gray-900">
               {{ scenario.name }}
