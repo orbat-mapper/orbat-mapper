@@ -57,7 +57,7 @@
             <div class="flex flex-auto items-center justify-evenly">
               <Tab
                 as="template"
-                v-for="tab in ['ORBAT', 'Details', 'Layers']"
+                v-for="tab in ['ORBAT', 'Details', 'Events', 'Layers']"
                 :key="tab"
                 v-slot="{ selected }"
               >
@@ -77,10 +77,14 @@
           </TabList>
           <TabPanels class="flex-auto overflow-y-auto">
             <TabPanel :unmount="false"><OrbatPanel /></TabPanel>
-            <TabPanel class="p-2">
+            <TabPanel class="p-4">
               <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" />
+              <p v-else>
+                No unit selected. Select a unit on the map or in the ORBAT panel.
+              </p>
             </TabPanel>
-            <TabPanel class="p-2"><p>Not implemented yet</p></TabPanel>
+            <TabPanel class="p-4"><ScenarioEventsPanel /></TabPanel>
+            <TabPanel class="p-4"><p>Not implemented yet</p></TabPanel>
           </TabPanels>
         </TabGroup>
       </main>
@@ -118,11 +122,10 @@ import NewScenarioMap from "@/components/NewScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
 import { breakpointsTailwind, useBreakpoints, useSwipe, useToggle } from "@vueuse/core";
-import TabView from "@/components/TabView.vue";
-import TabItem from "@/components/TabItem.vue";
 import CloseButton from "@/components/CloseButton.vue";
 import IconButton from "@/components/IconButton.vue";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
+import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
