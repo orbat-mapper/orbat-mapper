@@ -81,10 +81,10 @@ import { Scenario } from "@/types/scenarioModels";
 
 const scenarios = [
   {
-    name: "Falklands war 1982",
+    name: "The Falklands War 1982",
     id: "falkland82",
     summary:
-      "A 10-week undeclared war between Argentina and the United Kingdom in 1982 over two British dependent territories in the South Atlantic: the Falkland Islands and its territorial dependency, South Georgia and the South Sandwich Islands. ",
+      "The Falklands War was a military conflict that took place in 1982 between Argentina and the United Kingdom. Argentina invaded the Falkland Islands on April 2, 1982, and the UK responded by sending a task force to retake the islands.",
     role: "Admin",
 
     imageUrl:
@@ -95,7 +95,7 @@ const scenarios = [
     name: "Battles of Narvik 1940",
     id: "narvik40",
     summary:
-      "Fought from 9 April to 8 June 1940 as a naval battle in the Ofotfjord and as a land battle in the mountains surrounding the north Norwegian town of Narvik as part of the Norwegian Campaign of the Second World War. ",
+      "A series of naval and land engagements fought between German and Allied forces from April to June 1940. The battles marked the first Allied victory against Germany in the war.",
     role: "Admin",
     imageUrl:
       "https://upload.wikimedia.org/wikipedia/commons/5/5f/Norwegian_Army_Colt_heavy_machine_gun_at_the_Narvik_front.jpg",
