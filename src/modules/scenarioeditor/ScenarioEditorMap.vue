@@ -27,11 +27,11 @@
           <MapEditorMainToolbar />
           <MapEditorMeasurementToolbar
             class="absolute bottom-14 sm:bottom-16"
-            v-if="store.currentToolbar === 'measurements'"
+            v-if="toolbarStore.currentToolbar === 'measurements'"
           />
           <MapEditorDrawToolbar
             class="absolute bottom-14 sm:bottom-16"
-            v-if="store.currentToolbar === 'draw'"
+            v-if="toolbarStore.currentToolbar === 'draw'"
           />
         </footer>
       </main>
@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { onActivated, onUnmounted, provide, ref, shallowRef, watch } from "vue";
+import { nextTick, onActivated, onUnmounted, provide, ref, shallowRef, watch } from "vue";
 import { IconChevronDoubleUp } from "@iconify-prerendered/vue-mdi";
 import {
   useActiveUnitStore,
@@ -101,7 +101,6 @@ import {
   useSelectedUnits,
 } from "@/stores/dragStore";
 import { useNotifications } from "@/composables/notifications";
-import { useGeoStore } from "@/stores/geoStore";
 import {
   activeFeatureSelectInteractionKey,
   activeMapKey,
@@ -133,16 +132,23 @@ const activeUnitId = injectStrict(activeUnitKey);
 const { state, update } = activeScenario.store;
 const { unitActions, io } = activeScenario;
 
+const toolbarStore = useMainToolbarStore();
 const layout = useGeoEditorViewStore();
-const mapRef = shallowRef<OLMap>();
-const featureSelectInteractionRef = shallowRef<Select>();
-provide(activeMapKey, mapRef);
-provide(activeFeatureSelectInteractionKey, featureSelectInteractionRef);
+const activeUnitStore = useActiveUnitStore({
+  activeScenario,
+  activeUnitId,
+});
 
-const breakpoints = useBreakpoints(breakpointsTailwind);
-const isMobile = breakpoints.smallerOrEqual("sm");
+const mapRef = shallowRef<OLMap>();
 const swipeUpEl = ref<HTMLElement | null>(null);
 
+const featureSelectInteractionRef = shallowRef<Select>();
+provide(activeMapKey, mapRef);
+
+provide(activeFeatureSelectInteractionKey, featureSelectInteractionRef);
+const breakpoints = useBreakpoints(breakpointsTailwind);
+
+const isMobile = breakpoints.smallerOrEqual("sm");
 function onMapReady({
   olMap,
   featureSelectInteraction,
@@ -162,18 +168,11 @@ watch(
   },
   { immediate: true }
 );
-
 const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
 const { selectedFeatureIds } = useSelectedFeatures();
 const { selectedUnitIds } = useSelectedUnits();
 
-const activeUnitStore = useActiveUnitStore({
-  activeScenario,
-  activeUnitId,
-});
-
 const { send } = useNotifications();
-const geoStore = useGeoStore();
 
 const [showBottomPanel, toggleBottomPanel] = useToggle(true);
 
@@ -190,11 +189,21 @@ onUnmounted(() => {
 });
 
 onActivated(() => {
-  geoStore.updateMapSize();
+  mapRef.value?.updateSize();
 });
 
 onUnitSelect(({ unitId }) => {
-  console.warn("Not implemented");
+  activeUnitId.value = unitId;
+  selectedUnitIds.value.clear();
+  selectedUnitIds.value.add(unitId);
+  const { parents } = unitActions.getUnitHierarchy(unitId);
+  parents.forEach((p) => (p._isOpen = true));
+  nextTick(() => {
+    const el = document.getElementById(`o-${unitId}`);
+    if (el) {
+      el.scrollIntoView();
+    }
+  });
 });
 
 onLayerSelect(({ layerId }) => {
@@ -204,6 +213,4 @@ onLayerSelect(({ layerId }) => {
 onFeatureSelect(({ featureId }) => {
   console.warn("Not implemented");
 });
-
-const store = useMainToolbarStore();
 </script>
