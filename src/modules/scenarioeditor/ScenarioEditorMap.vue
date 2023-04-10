@@ -16,10 +16,15 @@
             <OrbatPanel />
           </aside>
           <aside
-            v-if="layout.showDetailsPanel"
+            v-if="showDetailsPanel"
             class="pointer-events-auto mt-4 h-96 max-h-full w-96 overflow-auto rounded-md bg-white p-2"
           >
             <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId"></UnitPanel>
+            <ScenarioFeatureDetails
+              :selected-ids="selectedFeatureIds"
+              v-else
+              class="p-2"
+            />
           </aside>
           <div v-else></div>
         </section>
@@ -81,7 +86,11 @@
             <TabPanel :unmount="false"><OrbatPanel /></TabPanel>
             <TabPanel class="">
               <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" class="p-4" />
-
+              <ScenarioFeatureDetails
+                :selected-ids="selectedFeatureIds"
+                v-else-if="selectedFeatureIds.size > 0"
+                class="p-4"
+              />
               <ScenarioInfoPanel v-else />
               <!--              <p v-else>-->
               <!--                No unit selected. Select a unit on the map or in the ORBAT panel.-->
@@ -98,7 +107,16 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onActivated, onUnmounted, provide, ref, shallowRef, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onActivated,
+  onUnmounted,
+  provide,
+  ref,
+  shallowRef,
+  watch,
+} from "vue";
 import { IconChevronDoubleUp } from "@iconify-prerendered/vue-mdi";
 import {
   useActiveUnitStore,
@@ -132,6 +150,7 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
+import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -167,6 +186,14 @@ function onMapReady({
   featureSelectInteractionRef.value = featureSelectInteraction;
 }
 
+const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
+const { selectedFeatureIds } = useSelectedFeatures();
+const { selectedUnitIds } = useSelectedUnits();
+
+const showDetailsPanel = computed(() => {
+  return Boolean(selectedFeatureIds.value.size || selectedUnitIds.value.size);
+});
+
 watch(
   activeUnitId,
   (unitId) => {
@@ -175,9 +202,6 @@ watch(
   },
   { immediate: true }
 );
-const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
-const { selectedFeatureIds } = useSelectedFeatures();
-const { selectedUnitIds } = useSelectedUnits();
 
 const { send } = useNotifications();
 
