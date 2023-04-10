@@ -90,8 +90,6 @@
       </p>
     </ScenarioMap>
     <KeyboardScenarioActions v-if="geoStore.olMap" />
-
-    <MainViewSlideOver v-model="isOpen" />
   </div>
 </template>
 
@@ -113,7 +111,6 @@ import TabItem from "@/components/TabItem.vue";
 import TimeController from "@/components/TimeController.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useClipboard, useTitle, useToggle, watchOnce } from "@vueuse/core";
-import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { ScenarioActions, TAB_LAYERS, TAB_ORBAT } from "@/types/constants";
 import { useNotifications } from "@/composables/notifications";

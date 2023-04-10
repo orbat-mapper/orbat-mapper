@@ -52,6 +52,8 @@
           as="div"
           class="flex h-full flex-col"
           :class="{ hidden: !showBottomPanel }"
+          :selected-index="activeTabIndex"
+          @change="changeTab"
         >
           <TabList class="flex-0 flex justify-between border-b border-gray-500">
             <div class="flex flex-auto items-center justify-evenly">
@@ -177,6 +179,11 @@ const { selectedUnitIds } = useSelectedUnits();
 const { send } = useNotifications();
 
 const [showBottomPanel, toggleBottomPanel] = useToggle(true);
+
+const activeTabIndex = ref(0);
+function changeTab(index: number) {
+  activeTabIndex.value = index;
+}
 
 const { isSwiping, direction } = useSwipe(swipeUpEl);
 
