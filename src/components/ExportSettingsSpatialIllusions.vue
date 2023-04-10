@@ -45,7 +45,7 @@ if (!settings.value.rootUnit) {
   <section class="prose prose-sm">
     <p>
       Export a unit hierarchy for use with the
-      <a href="https://spatialillusions.com/unitgenerator2/" target="_blank"
+      <a href="https://spatialillusions.com/unitgenerator/" target="_blank"
         >Spatial Illusions Orbat builder</a
       >
     </p>

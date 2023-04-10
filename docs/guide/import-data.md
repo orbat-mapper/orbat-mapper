@@ -37,7 +37,7 @@ Map.army uses letter based MILSTD 2525C/APP6-C symbol codes. ORBAT Mapper will t
 
 ## Spatial Illusions ORBAT Builder
 
-[Spatial Illusions ORBAT Builder](https://www.spatialillusions.com/unitgenerator2/) is a tool for creating military
+[Spatial Illusions ORBAT Builder](https://www.spatialillusions.com/unitgenerator/) is a tool for creating military
 symbols and ORBATs. The tool supports exporting of ORBATs in a simple JSON format that is supported by ORBAT Mapper.
 
 ## Order of Battle Generator
