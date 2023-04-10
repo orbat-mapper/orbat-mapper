@@ -89,6 +89,7 @@
         </TabGroup>
       </main>
     </template>
+    <KeyboardScenarioActions v-if="mapRef" />
   </div>
 </template>
 
@@ -125,6 +126,7 @@ import CloseButton from "@/components/CloseButton.vue";
 import IconButton from "@/components/IconButton.vue";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
+import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
