@@ -19,8 +19,9 @@
       </div>
     </form>
     <div v-else class="space-y-4 p-6">
-      <DescriptionItem label="Title">{{ state.info.name }}</DescriptionItem>
-
+      <DescriptionItem label="Title"
+        ><span class="font-medium">{{ state.info.name }}</span></DescriptionItem
+      >
       <DescriptionItem label="Description">
         <div class="prose-esm prose dark:prose-invert" v-html="hDescription"></div>
       </DescriptionItem>

@@ -79,11 +79,13 @@
           </TabList>
           <TabPanels class="flex-auto overflow-y-auto">
             <TabPanel :unmount="false"><OrbatPanel /></TabPanel>
-            <TabPanel class="p-4">
-              <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" />
-              <p v-else>
-                No unit selected. Select a unit on the map or in the ORBAT panel.
-              </p>
+            <TabPanel class="">
+              <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" class="p-4" />
+
+              <ScenarioInfoPanel v-else />
+              <!--              <p v-else>-->
+              <!--                No unit selected. Select a unit on the map or in the ORBAT panel.-->
+              <!--              </p>-->
             </TabPanel>
             <TabPanel class="p-4"><ScenarioEventsPanel /></TabPanel>
             <TabPanel class="p-4"><p>Not implemented yet</p></TabPanel>
@@ -129,6 +131,7 @@ import IconButton from "@/components/IconButton.vue";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
+import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -180,7 +183,7 @@ const { send } = useNotifications();
 
 const [showBottomPanel, toggleBottomPanel] = useToggle(true);
 
-const activeTabIndex = ref(0);
+const activeTabIndex = ref(1);
 function changeTab(index: number) {
   activeTabIndex.value = index;
 }
