@@ -173,7 +173,7 @@ function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => 
         </div>
         <button
           type="button"
-          class="absolute top-2 right-2 border-none text-gray-600"
+          class="absolute right-2 top-2 border-none text-gray-600"
           @click="toggleAddMultiple()"
           title="Lock tool selection"
         >

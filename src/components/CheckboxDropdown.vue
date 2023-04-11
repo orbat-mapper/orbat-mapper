@@ -26,7 +26,7 @@ const selectedItems = useVModel(props, "modelValue", emit);
             ><slot>{{ label }}</slot></span
           >
           <span
-            class="ml-1.5 rounded bg-gray-200 py-0.5 px-1.5 text-xs font-semibold tabular-nums text-gray-700"
+            class="ml-1.5 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-gray-700"
             >{{ selectedItems.length }}</span
           >
           <ChevronDownIcon

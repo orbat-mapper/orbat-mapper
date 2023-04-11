@@ -10,7 +10,7 @@
       <button
         type="button"
         @click="toggleSidebar()"
-        class="fixed top-2 right-4 z-20 inline-flex items-center justify-center rounded-md bg-white bg-opacity-75 p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        class="fixed right-4 top-2 z-20 inline-flex items-center justify-center rounded-md bg-white bg-opacity-75 p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
       >
         <span class="sr-only">Open main menu</span>
         <MenuIcon v-if="!sidebarIsOpen" class="block h-6 w-6" aria-hidden="true" />

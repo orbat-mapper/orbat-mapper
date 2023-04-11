@@ -44,7 +44,7 @@
         @click="toggleEditMode()"
         >Edit
       </BaseButton>
-      <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="mt-0 mb-6 space-y-4">
+      <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="mb-6 mt-0 space-y-4">
         <InputGroup label="Name" v-model="form.name" id="name-input" />
         <InputGroup
           label="Short name"

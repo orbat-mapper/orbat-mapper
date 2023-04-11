@@ -2,7 +2,7 @@
   <div
     ref="el"
     role="separator"
-    class="absolute top-0 right-0 h-full w-4 cursor-col-resize hover:bg-red-100 sm:w-2"
+    class="absolute right-0 top-0 h-full w-4 cursor-col-resize hover:bg-red-100 sm:w-2"
     :class="{ border: isDragging }"
     @click.stop
     @pointerdown="onPointerDown"

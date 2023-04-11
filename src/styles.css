@@ -16,7 +16,7 @@
   }
 
   .kbd-shortcut {
-    @apply mx-0.5 inline-flex items-center rounded border border-gray-200 px-2 font-sans font-mono text-sm font-medium text-gray-600;
+    @apply mx-0.5 inline-flex items-center rounded border border-gray-200 px-2 font-mono font-sans text-sm font-medium text-gray-600;
   }
 
   .btn-link {
@@ -25,5 +25,5 @@
 }
 
 .location-control {
-  @apply absolute left-3 bottom-2 rounded bg-white bg-opacity-50 px-1 text-base tabular-nums tracking-tighter text-gray-800;
+  @apply absolute bottom-2 left-3 rounded bg-white bg-opacity-50 px-1 text-base tabular-nums tracking-tighter text-gray-800;
 }

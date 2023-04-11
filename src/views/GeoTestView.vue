@@ -79,10 +79,10 @@ function doGetLocation() {
       @modify="onModify"
       @add="onAdd"
     />
-    <MeasurementToolbar v-if="mapRef" :ol-map="mapRef" class="absolute left-3 bottom-4" />
+    <MeasurementToolbar v-if="mapRef" :ol-map="mapRef" class="absolute bottom-4 left-3" />
     <template v-if="nn">
       <BaseButton
-        class="fixed top-20 left-2"
+        class="fixed left-2 top-20"
         :class="{ 'bg-red-100': nn.isActive }"
         @click="nn?.start()"
         >Get location</BaseButton

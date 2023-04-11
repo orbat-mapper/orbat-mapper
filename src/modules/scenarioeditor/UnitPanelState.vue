@@ -9,7 +9,7 @@
     ></SplitButton>
   </div>
 
-  <ul class="mt-2 divide-y divide-gray-200 border-t border-b border-gray-200">
+  <ul class="mt-2 divide-y divide-gray-200 border-b border-t border-gray-200">
     <li v-for="(s, index) in state" class="relative flex items-center py-4" :key="s.id">
       <div class="flex min-w-0 flex-auto flex-col text-sm">
         <p

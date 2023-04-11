@@ -215,7 +215,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
           </DescriptionItem>
         </section>
       </div>
-      <div class="-mx-6 mt-6 divide-y divide-gray-300 border-t border-b border-gray-300">
+      <div class="-mx-6 mt-6 divide-y divide-gray-300 border-b border-t border-gray-300">
         <FeatureVisibilitySettings :feature="feature" @update="updateVisibility" />
         <FeatureMarkerSettings
           v-if="geometryType === 'Point'"

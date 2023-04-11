@@ -106,7 +106,7 @@
               </SettingsPanel>
             </div>
           </section>
-          <div class="fixed top-10 left-20">
+          <div class="fixed left-20 top-10">
             <DotsMenu :items="scenarioMenuItems" class="relative -mr-2 pt-2"></DotsMenu>
           </div>
         </div>

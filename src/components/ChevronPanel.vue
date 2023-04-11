@@ -56,7 +56,7 @@ const panelId = nanoid(5);
         <slot name="right"></slot>
       </span>
     </h3>
-    <div :id="panelId" v-show="isOpen" class="space-y-4 pt-6 pl-6">
+    <div :id="panelId" v-show="isOpen" class="space-y-4 pl-6 pt-6">
       <slot></slot>
     </div>
   </div>

@@ -8,7 +8,7 @@
     <div class="mt-4 max-h-[40rem] overflow-auto">
       <div v-for="[entity, entityIcons] in iconsByEntity" class="relative">
         <h3
-          class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
+          class="sticky top-0 border-b border-t border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
         >
           {{ entity }}
         </h3>
@@ -38,7 +38,7 @@
         </div>
       </div>
       <h3
-        class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
+        class="sticky top-0 border-b border-t border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
       >
         Modifier 1
       </h3>
@@ -59,7 +59,7 @@
         </button>
       </div>
       <p
-        class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
+        class="sticky top-0 border-b border-t border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
       >
         Modifier 2
       </p>

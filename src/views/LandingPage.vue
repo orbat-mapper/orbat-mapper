@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col bg-gray-100">
     <header>
-      <p class="relative top-0 left-0 right-0 bg-gray-300 p-1 text-center text-gray-900">
+      <p class="relative left-0 right-0 top-0 bg-gray-300 p-1 text-center text-gray-900">
         This is a work in progress prototype. Follow the
         <a href="https://github.com/orbat-mapper/orbat-mapper" class="underline"
           >development on GitHub <GithubIcon class="inline h-6 w-6 sm:h-10 sm:w-10" /> </a
@@ -56,7 +56,7 @@
       </section>
 
       <section id="features" class="bg-white">
-        <div class="mx-auto max-w-7xl py-16 px-4 sm:px-6 lg:py-24 lg:px-8">
+        <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div class="mx-auto max-w-3xl text-center">
             <h2 class="text-3xl font-bold tracking-tight text-gray-900">Features</h2>
             <p class="mt-4 text-lg text-gray-500">
@@ -73,7 +73,7 @@
                   {{ feature.name }}
                 </p>
               </dt>
-              <dd class="mt-2 ml-9 text-base text-gray-500">{{ feature.description }}</dd>
+              <dd class="ml-9 mt-2 text-base text-gray-500">{{ feature.description }}</dd>
             </div>
           </dl>
         </div>
@@ -103,7 +103,7 @@
       </section>
     </main>
     <footer class="bg-white">
-      <div class="mx-auto max-w-7xl overflow-hidden py-20 px-6 sm:py-24 lg:px-8">
+      <div class="mx-auto max-w-7xl overflow-hidden px-6 py-20 sm:py-24 lg:px-8">
         <nav
           class="-mb-6 columns-2 sm:flex sm:justify-center sm:space-x-12"
           aria-label="Footer"

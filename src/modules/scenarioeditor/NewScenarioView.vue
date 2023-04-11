@@ -56,7 +56,7 @@
                 v-model="sideData.standardIdentity"
                 v-model:fill-color="sideData.symbolOptions.fillColor"
               />
-              <SimpleDivider class="mt-4 mb-4">Root units</SimpleDivider>
+              <SimpleDivider class="mb-4 mt-4">Root units</SimpleDivider>
               <div class="space-y-6">
                 <template v-for="(unit, i) in sideData.units">
                   <div class="flex items-end gap-4 md:grid md:grid-cols-2">
@@ -103,7 +103,7 @@
               <button
                 v-if="idx === form.sides.length - 1"
                 type="button"
-                class="btn-link absolute top-2 right-4"
+                class="btn-link absolute right-4 top-2"
                 @click="form.sides.pop()"
               >
                 Remove side

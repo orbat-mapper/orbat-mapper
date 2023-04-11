@@ -5,7 +5,7 @@
         >Standard identity
       </RadioGroupLabel>
       <div
-        class="mt-1 grid gap-y-4 gap-x-4"
+        class="mt-1 grid gap-x-4 gap-y-4"
         :class="compact ? 'grid-cols-2' : 'sm:grid-cols-4'"
       >
         <RadioGroupOption

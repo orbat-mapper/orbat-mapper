@@ -10,7 +10,7 @@
       :initialFocus="initialFocus"
     >
       <div
-        class="flex min-h-screen items-start justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0"
+        class="flex min-h-screen items-start justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0"
       >
         <TransitionChild
           as="template"
@@ -35,10 +35,10 @@
           leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         >
           <div
-            class="inline-block w-full transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all sm:my-8 sm:max-w-xl sm:p-6 sm:align-middle md:my-16"
+            class="inline-block w-full transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all sm:my-8 sm:max-w-xl sm:p-6 sm:align-middle md:my-16"
           >
             <div class="">
-              <div class="mt-3 sm:mt-0 sm:ml-2">
+              <div class="mt-3 sm:ml-2 sm:mt-0">
                 <DialogTitle
                   as="h3"
                   class="text-center text-lg font-medium leading-6 text-gray-900 sm:text-left"
@@ -48,7 +48,7 @@
                 <slot></slot>
               </div>
             </div>
-            <div class="absolute top-0 right-0 pt-4 pr-4 sm:block">
+            <div class="absolute right-0 top-0 pr-4 pt-4 sm:block">
               <button
                 type="button"
                 class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"

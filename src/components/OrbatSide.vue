@@ -37,7 +37,7 @@
         class="-ml-6"
       />
       <DisclosurePanel>
-        <div v-if="showFilter" class="mt-4 mr-10">
+        <div v-if="showFilter" class="mr-10 mt-4">
           <FilterQueryInput
             v-model="filterQuery"
             v-model:location-filter="hasLocationFilter"

@@ -105,7 +105,7 @@ function onLayerAction(action: ScenarioLayerAction) {
         @close="showEditNameForm = false"
         @update="emit('update-layer', layer, $event)"
       />
-      <ul class="-mt-5 divide-y divide-gray-200 border-t border-b">
+      <ul class="-mt-5 divide-y divide-gray-200 border-b border-t">
         <li
           v-for="feature in layer.features"
           class="group flex items-center justify-between py-4"
