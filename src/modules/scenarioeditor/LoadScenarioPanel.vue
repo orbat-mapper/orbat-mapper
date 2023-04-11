@@ -62,6 +62,9 @@ function readFile(file: File) {
       const scenarioData = JSON.parse(content) as Scenario;
       if (scenarioData?.type === "ORBAT-mapper") {
         emit("loaded", scenarioData);
+      } else {
+        console.error("Failed to load", file.name);
+        isError.value = true;
       }
     } catch (e) {
       console.error("Failed to load", file.name);
