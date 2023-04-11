@@ -65,6 +65,9 @@
           </button>
         </li>
         <li class="col-span-1 flex"><LoadScenarioPanel @loaded="loadScenario" /></li>
+        <li class="col-span-1 flex">
+          <LoadScenarioFromUrlPanel @loaded="loadScenario" />
+        </li>
       </ul>
     </section>
   </div>
@@ -78,6 +81,7 @@ import { NEW_SCENARIO_ROUTE, SCENARIO_ROUTE } from "@/router/names";
 import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
 import { useScenario } from "@/scenariostore";
 import { Scenario } from "@/types/scenarioModels";
+import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromUrlPanel.vue";
 
 const scenarios = [
   {
