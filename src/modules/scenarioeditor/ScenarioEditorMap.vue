@@ -61,7 +61,7 @@
           @change="changeTab"
         >
           <TabList class="flex-0 flex justify-between border-b border-gray-500">
-            <div class="flex flex-auto items-center justify-evenly">
+            <div ref="swipeDownEl" class="flex flex-auto items-center justify-evenly">
               <Tab
                 as="template"
                 v-for="tab in ['ORBAT', 'Details', 'Events', 'Layers']"
@@ -167,6 +167,7 @@ const activeUnitStore = useActiveUnitStore({
 
 const mapRef = shallowRef<OLMap>();
 const swipeUpEl = ref<HTMLElement | null>(null);
+const swipeDownEl = ref<HTMLElement | null>(null);
 
 const featureSelectInteractionRef = shallowRef<Select>();
 provide(activeMapKey, mapRef);
@@ -213,10 +214,17 @@ function changeTab(index: number) {
 }
 
 const { isSwiping, direction } = useSwipe(swipeUpEl);
+const { isSwiping: isSwipingDown, direction: downDirection } = useSwipe(swipeDownEl);
 
 watch(isSwiping, (swiping) => {
   if (swiping && direction.value === "UP") {
     showBottomPanel.value = true;
+  }
+});
+
+watch(isSwipingDown, (swiping) => {
+  if (swiping && downDirection.value === "DOWN") {
+    showBottomPanel.value = false;
   }
 });
 
