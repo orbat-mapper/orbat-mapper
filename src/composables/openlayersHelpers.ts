@@ -6,6 +6,7 @@ import VectorLayer from "ol/layer/Vector";
 import { Collection } from "ol";
 import { AnyVectorLayer } from "@/geo/types";
 import { FeatureId } from "@/types/scenarioGeoModels";
+import { tryOnBeforeUnmount } from "@vueuse/core";
 
 /**
  * Unregister open layers event automatically on unmount
@@ -13,7 +14,7 @@ import { FeatureId } from "@/types/scenarioGeoModels";
  */
 export function useOlEvent(eventKey: EventsKey | EventsKey[]): EventsKey | EventsKey[] {
   const eKey = eventKey;
-  onUnmounted(() => {
+  tryOnBeforeUnmount(() => {
     if (Array.isArray(eKey)) {
       eKey.forEach((key) => unByKey(key));
     } else unByKey(eKey);

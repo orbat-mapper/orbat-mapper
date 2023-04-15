@@ -410,6 +410,7 @@ function loadScenario(v: Scenario) {
 }
 
 function onDrop(files: File[] | null) {
+  if (!files || !files.length) return;
   const dragState = useDragStore();
   dragState.draggedFiles = files;
   showImportModal.value = true;

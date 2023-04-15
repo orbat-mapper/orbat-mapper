@@ -92,12 +92,15 @@ const onMapReady = (olMap: OLMap) => {
   const { showHistory, editHistory } = storeToRefs(unitSettingsStore);
 
   const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
+  const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } = storeToRefs(
+    useMapSelectStore()
+  );
   useGeoLayersUndoRedo(olMap);
   const { historyLayer, drawHistory, historyModify } = useUnitHistory({
     showHistory,
     editHistory,
   });
-  const { enable } = useMapHover(olMap);
+  const r = useMapHover(olMap, { enable: hoverEnabled });
 
   olMap.addLayer(historyLayer);
   olMap.addLayer(unitLayerGroup);
@@ -107,7 +110,7 @@ const onMapReady = (olMap: OLMap) => {
   });
 
   olMap.addInteraction(historyModify);
-  const { unitSelectEnabled, featureSelectEnabled } = storeToRefs(useMapSelectStore());
+
   const { unitSelectInteraction, boxSelectInteraction } = useUnitSelectInteraction(
     [unitLayer],
     olMap,

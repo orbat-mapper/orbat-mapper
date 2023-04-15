@@ -12,7 +12,10 @@ export interface UseFileDropZoneReturn {
 }
 
 function hasFiles(dataTransfer: DataTransfer): boolean {
-  return Array.from(dataTransfer.items).some((item) => item.kind === "file");
+  return (
+    dataTransfer.items &&
+    Array.from(dataTransfer.items).some((item) => item.kind === "file")
+  );
 }
 
 export function useFileDropZone(

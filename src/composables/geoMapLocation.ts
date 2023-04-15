@@ -30,9 +30,11 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
 
   const onGetLocationHook = createEventHook<Position>();
   const onCancelHook = createEventHook();
+  const onStartHook = createEventHook();
 
   function start() {
     isActive.value = true;
+    onStartHook.trigger(null);
     olMap.getTargetElement().style.cursor = "crosshair";
     if (cancelOnClickOutside) {
       stopClickOutside = onClickOutside(olMap.getTargetElement(), (e) => {
@@ -74,6 +76,7 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
     isActive,
     cancel,
     start,
+    onStart: onStartHook.on,
     onGetLocation: onGetLocationHook.on,
     onCancel: onCancelHook.on,
   };
