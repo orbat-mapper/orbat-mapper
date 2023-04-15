@@ -19,8 +19,7 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
   const { width, height } = milSymbol.getSize();
   const image = new Icon({
     // temporary workaround for ol bug (https://github.com/openlayers/openlayers/issues/12574)
-    color: "white",
-    scale: 1,
+    scale: 1 / (window.devicePixelRatio || 1),
     anchor: [x, y],
     anchorXUnits: "pixels",
     anchorYUnits: "pixels",
@@ -46,7 +45,7 @@ export function createUnitStyleFromFeature(feature: FeatureLike): Style[] {
     const settingsStore = useSettingsStore();
     const symbolSettings = useSymbolSettingsStore();
     const milSymbol = symbolGenerator(sidc, {
-      size: settingsStore.mapIconSize,
+      size: settingsStore.mapIconSize * (window.devicePixelRatio || 1),
       uniqueDesignation: shortName || name,
       outlineColor: "white",
       outlineWidth: 8,
@@ -71,7 +70,7 @@ export function createSelectedUnitStyleFromFeature(feature: FeatureLike): Style 
     const settingsStore = useSettingsStore();
     const symbolSettings = useSymbolSettingsStore();
     const milSymbol = symbolGenerator(sidc, {
-      size: settingsStore.mapIconSize,
+      size: settingsStore.mapIconSize * (window.devicePixelRatio || 1),
       outlineColor: "Yellow",
       outlineWidth: 21,
       uniqueDesignation: name || shortName,
