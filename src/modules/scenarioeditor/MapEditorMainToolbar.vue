@@ -78,14 +78,14 @@
                   :sidc="sidc"
                   :title="text"
                   :symbol-options="symbolOptions"
-                  @click="addUnit(sidc)"
+                  @click="addUnit(sidc, close)"
                 />
                 <PanelSymbolButton
                   class="self-end"
                   :sidc="customSidc"
                   :title="customIcon.text"
                   :symbol-options="symbolOptions"
-                  @click="addUnit(customSidc)"
+                  @click="addUnit(customSidc, close)"
                 />
                 <PanelButton @click="handleChangeSymbol()" title="Select symbol">
                   <IconDotsHorizontal class="h-5 w-5" />
@@ -105,6 +105,19 @@
         <RedoIcon class="h-6 w-6" />
       </MainToolbarButton>
     </section>
+    <FloatingPanel
+      v-if="isGetLocationActive"
+      class="absolute bottom-14 overflow-visible bg-opacity-75 p-2 px-4 text-sm sm:bottom-16 sm:left-1/2 sm:-translate-x-1/2"
+    >
+      Click on map to place unit.
+      <button
+        type="button"
+        class="ml-4 font-medium text-blue-700 hover:text-blue-600"
+        @click="cancelGetLocation()"
+      >
+        Cancel
+      </button>
+    </FloatingPanel>
   </nav>
 </template>
 <script setup lang="ts">
@@ -200,8 +213,9 @@ const {
   onStart,
 } = useGetMapLocation(mapRef.value);
 
-function addUnit(sidc: string) {
+function addUnit(sidc: string, closePopover?: (ref?: Ref | HTMLElement) => void) {
   activeSidc.value = sidc;
+  closePopover && closePopover();
   startGetLocation();
 }
 
