@@ -226,7 +226,8 @@
               ],
               "id": "Ev1wliqyqA",
               "externalUrl": "https://en.wikipedia.org/wiki/HMS_Endurance_(1967)",
-              "description": "A Royal Navy ice patrol vessel that served from 1967 to 1991. "
+              "description": "A Royal Navy ice patrol vessel that served from 1967 to 1991. ",
+              "shortName": "END"
             },
             {
               "name": "British Antarctic Survey",
@@ -276,7 +277,13 @@
                       "subUnits": []
                     }
                   ],
-                  "state": [],
+                  "state": [
+                    {
+                      "id": "d09SuXbW8s",
+                      "t": "1982-03-15T10:00:00-04:00",
+                      "location": [-14.418087245317073, -7.967106969050562]
+                    }
+                  ],
                   "id": "bW9e77jLCT",
                   "shortName": "HER",
                   "externalUrl": "https://en.wikipedia.org/wiki/HMS_Hermes_(R12)"
@@ -378,6 +385,57 @@
                   ],
                   "subUnits": [],
                   "shortName": "INT"
+                },
+                {
+                  "name": "RFA Sir Tristram",
+                  "sidc": "10033000001203070000",
+                  "id": "SQVUQ1npSg",
+                  "state": [
+                    {
+                      "id": "wTbs6AUBFp",
+                      "t": "1982-03-16T10:00:00-04:00",
+                      "location": [-14.412079097123714, -7.966426950615244]
+                    }
+                  ],
+                  "subUnits": [],
+                  "shortName": "TRI",
+                  "symbolOptions": {}
+                },
+                {
+                  "name": "RFA Sir Bedivere",
+                  "sidc": "10033000001203070000",
+                  "id": "yYeXx4Eykk",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "BED",
+                  "symbolOptions": {}
+                },
+                {
+                  "name": "RFA Sir Galahad",
+                  "sidc": "10033000001203070000",
+                  "id": "kCkMABqNoJ",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "GAL",
+                  "symbolOptions": {}
+                },
+                {
+                  "name": "RFA Sir Geraint",
+                  "sidc": "10033000001203070000",
+                  "id": "cUgwn9vQQs",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "GER",
+                  "symbolOptions": {}
+                },
+                {
+                  "name": "RFA Sir Lancelot",
+                  "sidc": "10033000001203070000",
+                  "id": "HFpxW4hzrz",
+                  "state": [],
+                  "subUnits": [],
+                  "shortName": "LAN",
+                  "symbolOptions": {}
                 },
                 {
                   "name": "HMS Broadsword",
@@ -990,6 +1048,17 @@
                       "t": "1982-04-02T18:00:00-04:00",
                       "location": [-57.800875, -51.678995],
                       "id": "BR9Z0cZAbF"
+                    },
+                    {
+                      "t": "1982-04-14T10:00:00-04:00",
+                      "location": [-57.800875, -51.678995],
+                      "id": "dCYHWzWGo5",
+                      "title": "ARA Cabo San Antonio departs Stanley"
+                    },
+                    {
+                      "id": "6SPQdml02H",
+                      "t": "1982-04-16T12:00:00-04:00",
+                      "location": [-62.082969626339114, -38.92137309870187]
                     },
                     {
                       "location": null,
