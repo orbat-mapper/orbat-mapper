@@ -83,8 +83,8 @@
             <CloseButton @click="toggleBottomPanel()" class="px-4" />
           </TabList>
           <TabPanels class="flex-auto overflow-y-auto">
-            <TabPanel :unmount="false"><OrbatPanel /></TabPanel>
-            <TabPanel class="">
+            <TabPanel :unmount="false" class="pb-10"><OrbatPanel /></TabPanel>
+            <TabPanel class="pb-10">
               <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" class="p-4" />
               <ScenarioFeatureDetails
                 :selected-ids="selectedFeatureIds"
@@ -96,8 +96,8 @@
               <!--                No unit selected. Select a unit on the map or in the ORBAT panel.-->
               <!--              </p>-->
             </TabPanel>
-            <TabPanel class="p-4"><ScenarioEventsPanel /></TabPanel>
-            <TabPanel class="p-4"><p>Not implemented yet</p></TabPanel>
+            <TabPanel class="p-4 pb-10"><ScenarioEventsPanel /></TabPanel>
+            <TabPanel class="p-4 pb-10"><p>Not implemented yet</p></TabPanel>
           </TabPanels>
         </TabGroup>
       </main>
