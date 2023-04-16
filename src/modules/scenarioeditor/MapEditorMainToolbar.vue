@@ -1,8 +1,16 @@
 <template>
   <nav
-    class="pointer-events-auto flex w-full items-center justify-between border border-gray-300 bg-gray-50 p-1 text-sm shadow sm:max-w-md sm:rounded-xl"
+    class="pointer-events-auto flex w-full items-center justify-between overflow-x-auto border border-gray-300 bg-gray-50 p-1 text-sm shadow sm:max-w-md sm:rounded-xl"
   >
     <section class="flex items-center justify-between">
+      <MainToolbarButton
+        title="Keep selected tool active after drawing"
+        @click="toggleAddMultiple()"
+        class="hidden sm:block"
+      >
+        <IconLockOutline v-if="addMultiple" class="h-5 w-5" />
+        <IconLockOpenVariantOutline v-else class="h-5 w-5" />
+      </MainToolbarButton>
       <MainToolbarButton @click="toggleMoveUnit(false)" :active="!moveUnitEnabled">
         <SelectIcon class="h-6 w-6" />
       </MainToolbarButton>
@@ -126,6 +134,8 @@ import {
   IconCursorDefaultOutline as SelectIcon,
   IconCursorMove as MoveIcon,
   IconDotsHorizontal,
+  IconLockOpenVariantOutline,
+  IconLockOutline,
   IconPencil as DrawIcon,
   IconRedoVariant as RedoIcon,
   IconRulerSquareCompass as MeasurementIcon,
@@ -164,8 +174,10 @@ const activeUnitId = injectStrict(activeUnitKey);
 const { getModalSidc } = injectStrict(sidcModalKey);
 
 const store = useMainToolbarStore();
+const { addMultiple } = storeToRefs(store);
 const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const selectStore = useMapSelectStore();
+const toggleAddMultiple = useToggle(addMultiple);
 
 const {
   currentSid,
@@ -179,7 +191,6 @@ const {
 } = useToolbarUnitSymbolData({});
 
 const activeParent = ref();
-const addMultiple = ref(false);
 
 const computedSidc = computed(() => {
   const parsedSidc = new Sidc(activeSidc.value);

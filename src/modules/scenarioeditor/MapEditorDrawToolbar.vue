@@ -2,14 +2,7 @@
   <FloatingPanel
     class="pointer-events-auto flex items-center space-x-0 rounded-md bg-white p-1"
   >
-    <p class="pl-2 text-sm font-medium text-gray-500">Draw</p>
-    <MainToolbarButton
-      title="Keep selected tool active after drawing"
-      @click="toggleAddMultiple()"
-    >
-      <IconLockOutline v-if="addMultiple" class="h-5 w-5" />
-      <IconLockOpenVariantOutline v-else class="h-5 w-5" />
-    </MainToolbarButton>
+    <p class="px-2 text-sm font-medium text-gray-500">Draw</p>
     <div class="h-5 border-l border-gray-300" />
     <MainToolbarButton title="Point" :active="!currentDrawType" @click="cancel()">
       <SelectIcon class="h-5 w-5" />
