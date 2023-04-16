@@ -1463,10 +1463,7 @@
                 }
               ],
               "state": [],
-              "id": "uPYcvYQqch",
-              "symbolOptions": {
-                "fillColor": "#aab074"
-              }
+              "id": "uPYcvYQqch"
             },
             {
               "name": "10 Mechanized Infantry Brigade",
@@ -1512,9 +1509,6 @@
                   "id": "jksAfGOypF",
                   "state": [],
                   "subUnits": [],
-                  "symbolOptions": {
-                    "fillColor": "#aab074"
-                  },
                   "shortName": "181 Arm Cav Sqd"
                 }
               ],
@@ -1526,9 +1520,6 @@
               "state": [],
               "id": "b2stPeJbsj",
               "subUnits": [],
-              "symbolOptions": {
-                "fillColor": "#aab074"
-              },
               "shortName": "5 Mar Inf Btn"
             }
           ]
