@@ -73,7 +73,7 @@
         <Popover as="template">
           <Float placement="top" :offset="12" flip shift portal>
             <PopoverButton as="template">
-              <PanelButton title="Select icons" class="ml-1"
+              <PanelButton title="Select icons" class="ml-1" @click="store.clearToolbar()"
                 ><IconChevronUp class="h-6 w-6"
               /></PanelButton>
             </PopoverButton>
@@ -235,6 +235,7 @@ onCancel(() => {
 
 onStart(() => {
   selectStore.hoverEnabled = false;
+  store.clearToolbar();
 });
 
 onGetLocation((location) => {
