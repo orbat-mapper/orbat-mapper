@@ -18,7 +18,6 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
   const { x, y } = milSymbol.getAnchor();
   const { width, height } = milSymbol.getSize();
   const image = new Icon({
-    // temporary workaround for ol bug (https://github.com/openlayers/openlayers/issues/12574)
     scale: 1 / (window.devicePixelRatio || 1),
     anchor: [x, y],
     anchorXUnits: "pixels",
