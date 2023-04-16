@@ -90,8 +90,7 @@ import { useEditingInteraction } from "@/composables/geoEditing";
 import { useSelectedFeatures } from "@/stores/dragStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { watch } from "vue";
-
-const [addMultiple, toggleAddMultiple] = useToggle(false);
+import { storeToRefs } from "pinia";
 
 const {
   store: { groupUpdate },
@@ -99,6 +98,7 @@ const {
 
 const mapRef = injectStrict(activeMapKey);
 const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
+
 const {
   scenarioLayers,
   getOlLayerById,
@@ -106,8 +106,10 @@ const {
   updateFeatureGeometryFromOlFeature,
   deleteFeature,
 } = useScenarioLayers(mapRef.value);
-
 const { selectedFeatureIds } = useSelectedFeatures();
+
+const { addMultiple } = storeToRefs(useMainToolbarStore());
+const toggleAddMultiple = useToggle(addMultiple);
 
 let layer: any;
 if (scenarioLayers.value?.length > 0) {
