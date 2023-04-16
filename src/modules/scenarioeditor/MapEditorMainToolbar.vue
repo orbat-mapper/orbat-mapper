@@ -44,7 +44,7 @@
               <FloatingPanel class="grid grid-cols-5 justify-items-center gap-2 p-2">
                 <PanelSymbolButton
                   class="self-end"
-                  v-for="{ sidc, text } in echelons"
+                  v-for="{ sidc, text } in emtItems"
                   :key="sidc"
                   :sidc="sidc"
                   :title="text"
@@ -171,16 +171,15 @@ const {
   currentSid,
   currentEchelon,
   iconItems,
-  echelons,
+  emtItems,
   echelonSidc,
   customIcon,
   customSidc,
+  activeSidc,
 } = useToolbarUnitSymbolData({});
 
 const activeParent = ref();
 const addMultiple = ref(false);
-
-const activeSidc = ref<string>(iconItems.value[0].sidc);
 
 const computedSidc = computed(() => {
   const parsedSidc = new Sidc(activeSidc.value);
