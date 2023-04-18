@@ -42,65 +42,7 @@
       </main>
     </div>
     <template v-if="isMobile">
-      <main class="overflow-auto bg-white" :class="[showBottomPanel ? 'h-1/2' : 'h-12']">
-        <div
-          v-show="!showBottomPanel"
-          class="flex h-full items-center justify-center"
-          ref="swipeUpEl"
-          @click="toggleBottomPanel()"
-        >
-          <IconButton class="inset-0" @click.stop>
-            <IconChevronDoubleUp class="h-6 w-6" @click="toggleBottomPanel()" />
-          </IconButton>
-        </div>
-        <TabGroup
-          as="div"
-          class="flex h-full flex-col"
-          :class="{ hidden: !showBottomPanel }"
-          :selected-index="activeTabIndex"
-          @change="changeTab"
-        >
-          <TabList class="flex-0 flex justify-between border-b border-gray-500">
-            <div ref="swipeDownEl" class="flex flex-auto items-center justify-evenly">
-              <Tab
-                as="template"
-                v-for="tab in ['ORBAT', 'Details', 'Events', 'Layers']"
-                :key="tab"
-                v-slot="{ selected }"
-              >
-                <button
-                  :class="[
-                    selected
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                    'w-1/2 border-b-2 px-1 py-4 text-center text-sm font-medium',
-                  ]"
-                >
-                  {{ tab }}
-                </button>
-              </Tab>
-            </div>
-            <CloseButton @click="toggleBottomPanel()" class="px-4" />
-          </TabList>
-          <TabPanels class="flex-auto overflow-y-auto">
-            <TabPanel :unmount="false" class="pb-10"><OrbatPanel /></TabPanel>
-            <TabPanel class="pb-10">
-              <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" class="p-4" />
-              <ScenarioFeatureDetails
-                :selected-ids="selectedFeatureIds"
-                v-else-if="selectedFeatureIds.size > 0"
-                class="p-4"
-              />
-              <ScenarioInfoPanel v-else />
-              <!--              <p v-else>-->
-              <!--                No unit selected. Select a unit on the map or in the ORBAT panel.-->
-              <!--              </p>-->
-            </TabPanel>
-            <TabPanel class="p-4 pb-10"><ScenarioEventsPanel /></TabPanel>
-            <TabPanel class="p-4 pb-10"><p>Not implemented yet</p></TabPanel>
-          </TabPanels>
-        </TabGroup>
-      </main>
+      <MapEditorMobilePanel />
     </template>
     <KeyboardScenarioActions v-if="mapRef" />
   </div>
@@ -117,7 +59,6 @@ import {
   shallowRef,
   watch,
 } from "vue";
-import { IconChevronDoubleUp } from "@iconify-prerendered/vue-mdi";
 import {
   useActiveUnitStore,
   useSelectedFeatures,
@@ -143,14 +84,10 @@ import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/NewScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
-import { breakpointsTailwind, useBreakpoints, useSwipe, useToggle } from "@vueuse/core";
-import CloseButton from "@/components/CloseButton.vue";
-import IconButton from "@/components/IconButton.vue";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
-import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
+import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
-import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
+import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -166,8 +103,6 @@ const activeUnitStore = useActiveUnitStore({
 });
 
 const mapRef = shallowRef<OLMap>();
-const swipeUpEl = ref<HTMLElement | null>(null);
-const swipeDownEl = ref<HTMLElement | null>(null);
 
 const featureSelectInteractionRef = shallowRef<Select>();
 provide(activeMapKey, mapRef);
@@ -206,27 +141,11 @@ watch(
 
 const { send } = useNotifications();
 
-const [showBottomPanel, toggleBottomPanel] = useToggle(true);
+const activeTabIndex = ref(0);
 
-const activeTabIndex = ref(1);
 function changeTab(index: number) {
   activeTabIndex.value = index;
 }
-
-const { isSwiping, direction } = useSwipe(swipeUpEl);
-const { isSwiping: isSwipingDown, direction: downDirection } = useSwipe(swipeDownEl);
-
-watch(isSwiping, (swiping) => {
-  if (swiping && direction.value === "UP") {
-    showBottomPanel.value = true;
-  }
-});
-
-watch(isSwipingDown, (swiping) => {
-  if (swiping && downDirection.value === "DOWN") {
-    showBottomPanel.value = false;
-  }
-});
 
 onUnmounted(() => {
   activeUnitStore.clearActiveUnit();
