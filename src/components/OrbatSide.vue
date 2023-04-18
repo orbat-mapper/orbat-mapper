@@ -1,8 +1,8 @@
 <template>
   <Disclosure v-slot="{ open }" default-open>
-    <section class="pl-6">
+    <section class="pl-4">
       <header
-        class="relative -ml-6 block flex items-center justify-between border-b-2 border-t-2 border-gray-300 bg-gray-200 py-1 pl-6 dark:border-gray-600 dark:bg-gray-700"
+        class="relative -ml-4 block flex items-center justify-between border-b-2 border-t-2 border-gray-300 bg-gray-200 py-1 pl-4 dark:border-gray-600 dark:bg-gray-700"
       >
         <DisclosureButton class="flex w-full items-center justify-between text-left">
           <h4 class="text-base font-medium text-gray-900 dark:text-gray-200">

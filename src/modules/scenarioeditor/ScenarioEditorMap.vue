@@ -11,9 +11,9 @@
         </header>
         <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
           <aside
-            class="pointer-events-auto mt-4 hidden max-h-[70vh] w-96 overflow-auto rounded-md bg-white p-2 md:block"
+            class="pointer-events-auto mt-4 hidden max-h-[70vh] w-96 overflow-auto rounded-md bg-white md:block"
           >
-            <OrbatPanel />
+            <MapEditorDesktopPanel />
           </aside>
           <aside
             v-if="showDetailsPanel"
@@ -88,6 +88,7 @@ import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
+import MapEditorDesktopPanel from "@/modules/scenarioeditor/MapEditorDesktopPanel.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
