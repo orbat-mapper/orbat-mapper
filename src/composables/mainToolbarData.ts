@@ -15,39 +15,78 @@ import {
 import { SymbolItem, SymbolValue } from "@/types/constants";
 import { Sidc } from "@/symbology/sidc";
 
+export type SymbolPage = "land" | "sea" | "air" | "space" | "equipment";
+
 export interface UseToolbarUnitSymbolDataOptions {
   currentSid?: MaybeRef<string>;
   currentEchelon?: MaybeRef<string>;
   activeSidc?: MaybeRef<string>;
+  symbolPage?: MaybeRef<SymbolPage>;
 }
 
+interface ExtendedSymbolValue extends SymbolValue {
+  symbolSet: string;
+}
+
+const landIcons: ExtendedSymbolValue[] = [
+  { symbolSet: "10", code: "121100", text: "Infantry" },
+  { symbolSet: "10", code: "121102", text: "Mechanized Infantry" },
+  { symbolSet: "10", code: "121300", text: "Scout" },
+  { symbolSet: "10", code: "130300", text: "Artillery" },
+  { symbolSet: "10", code: "120500", text: "Armor" },
+  { symbolSet: "10", code: "160600", text: "Combat Service Support" },
+  { symbolSet: "10", code: "130100", text: "Air Defense" },
+  { symbolSet: "10", code: "140700", text: "Engineer" },
+];
+
+const seaIcons: ExtendedSymbolValue[] = [
+  { symbolSet: "30", code: "110000", text: "Military" },
+  { symbolSet: "30", code: "120100", text: "Carrier" },
+  { symbolSet: "30", code: "120204", text: "Frigate" },
+  { symbolSet: "30", code: "120300", text: "Amphibious Warfare Ship" },
+  { symbolSet: "30", code: "120500", text: "Patrol Boat" },
+  { symbolSet: "35", code: "110100", text: "Submarine" },
+  { symbolSet: "35", code: "130100", text: "Torpedo" },
+];
+
+const airIcons: ExtendedSymbolValue[] = [
+  { symbolSet: "01", code: "110100", text: "Fixed Wing" },
+  { symbolSet: "01", code: "110104", text: "Fighter" },
+  { symbolSet: "01", code: "110103", text: "Bomber" },
+  { symbolSet: "01", code: "110200", text: "Rotary Wing" },
+  { symbolSet: "02", code: "110000", text: "Missile" },
+];
+
 export function useToolbarUnitSymbolData(options: UseToolbarUnitSymbolDataOptions = {}) {
+  const symbolPage = ref(options.symbolPage ?? "land");
   const currentSid = ref(options.currentSid ?? SID.Friend);
   const currentEchelon = ref(options.currentEchelon ?? "16");
   const customIcon = ref<SymbolValue>({ code: "10031000141211000000", text: "Infantry" });
   const activeSidc = ref(options.activeSidc ?? "10031000141211000000");
-  const emtStore: Record<string, string> = { [UNIT_SYMBOLSET_VALUE]: "16" };
 
-  const icons: SymbolValue[] = [
-    { code: "121100", text: "Infantry" },
-    { code: "121000", text: "Combined Arms" },
-    { code: "121102", text: "Mechanized" },
-    { code: "130300", text: "Artillery" },
-    { code: "120500", text: "Armor" },
-    { code: "160600", text: "Combat Service Support" },
-  ];
+  const emtStore: Record<string, string> = { [UNIT_SYMBOLSET_VALUE]: "16" };
 
   const symbolSetValue = computed(() => new Sidc(activeSidc.value).symbolSet);
 
+  function mapSymbolCode({ code, text, symbolSet }: ExtendedSymbolValue): SymbolItem {
+    return {
+      code,
+      text,
+      sidc: "100" + currentSid.value + symbolSet + "00" + "00" + code + "0000",
+    };
+  }
   const iconItems = computed(() => {
-    return icons.map(({ code, text }): SymbolItem => {
-      return {
-        code,
-        text,
-        sidc: "100" + currentSid.value + "10" + "00" + "00" + code + "0000",
-      };
-    });
+    switch (symbolPage.value) {
+      case "land":
+        return landIcons.map(mapSymbolCode);
+      case "sea":
+        return seaIcons.map(mapSymbolCode);
+      case "air":
+        return airIcons.map(mapSymbolCode);
+    }
+    return [];
   });
+  const seaItems = computed(() => seaIcons.map(mapSymbolCode));
 
   const echelonSidc = computed(
     () =>
@@ -110,5 +149,7 @@ export function useToolbarUnitSymbolData(options: UseToolbarUnitSymbolDataOption
     customSidc,
     customIcon,
     emtItems,
+    seaItems,
+    symbolPage,
   };
 }

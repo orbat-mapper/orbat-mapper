@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="pointer-events-auto flex w-full items-center justify-between overflow-x-auto border border-gray-300 bg-gray-50 p-1 text-sm shadow sm:max-w-md sm:rounded-xl"
+    class="pointer-events-auto flex w-full items-center justify-between border border-gray-300 bg-gray-50 p-1 text-sm shadow sm:max-w-md sm:rounded-xl"
   >
     <section class="flex items-center justify-between">
       <MainToolbarButton
@@ -78,26 +78,65 @@
               /></PanelButton>
             </PopoverButton>
             <PopoverPanel focus v-slot="{ close }">
-              <FloatingPanel class="grid grid-cols-4 justify-items-center gap-2 p-2">
-                <PanelSymbolButton
-                  class="self-end"
-                  v-for="{ sidc, text } in iconItems"
-                  :key="sidc"
-                  :sidc="sidc"
-                  :title="text"
-                  :symbol-options="symbolOptions"
-                  @click="addUnit(sidc, close)"
-                />
-                <PanelSymbolButton
-                  class="self-end"
-                  :sidc="customSidc"
-                  :title="customIcon.text"
-                  :symbol-options="symbolOptions"
-                  @click="addUnit(customSidc, close)"
-                />
-                <PanelButton @click="handleChangeSymbol()" title="Select symbol">
-                  <IconDotsHorizontal class="h-5 w-5" />
-                </PanelButton>
+              <FloatingPanel class="overflow-hidden p-2">
+                <RadioGroup
+                  v-model="symbolPage"
+                  class="isolate -mx-2 -mt-2 flex divide-x divide-gray-200 shadow focus:outline-none"
+                  ><RadioGroupOption
+                    as="template"
+                    v-for="{ id, sidc, title } in symbolTabs"
+                    :key="id"
+                    v-slot="{ checked, active }"
+                    :value="id"
+                  >
+                    <div
+                      :class="[
+                        checked ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700',
+                        'group relative min-w-0  justify-self-center  overflow-hidden bg-white px-4 py-2 hover:bg-gray-50  focus:z-10 focus:outline-none',
+                      ]"
+                    >
+                      <MilitarySymbol
+                        :sidc="sidc"
+                        :title="title"
+                        :size="15"
+                        :options="{
+                          monoColor: checked ? 'black' : 'black',
+                          strokeWidth: 8,
+                        }"
+                      />
+                      <span
+                        aria-hidden="true"
+                        :class="[
+                          checked ? 'bg-army' : 'bg-transparent',
+                          'absolute inset-x-0 bottom-0 h-0.5',
+                        ]"
+                      />
+                    </div>
+                  </RadioGroupOption>
+                </RadioGroup>
+                <div
+                  class="mt-3 grid h-20 grid-cols-5 place-items-center items-center gap-2"
+                >
+                  <PanelSymbolButton
+                    class=""
+                    v-for="{ sidc, text } in iconItems"
+                    :key="sidc"
+                    :sidc="sidc"
+                    :title="text"
+                    :symbol-options="symbolOptions"
+                    @click="addUnit(sidc, close)"
+                  />
+                  <PanelSymbolButton
+                    class=""
+                    :sidc="customSidc"
+                    :title="customIcon.text"
+                    :symbol-options="symbolOptions"
+                    @click="addUnit(customSidc, close)"
+                  />
+                  <PanelButton @click="handleChangeSymbol()" title="Add symbol">
+                    <AddSymbolIcon class="h-5 w-5" />
+                  </PanelButton>
+                </div>
               </FloatingPanel>
             </PopoverPanel>
           </Float>
@@ -133,10 +172,10 @@ import {
   IconChevronUp,
   IconCursorDefaultOutline as SelectIcon,
   IconCursorMove as MoveIcon,
-  IconDotsHorizontal,
   IconLockOpenVariantOutline,
   IconLockOutline,
   IconPencil as DrawIcon,
+  IconPlus as AddSymbolIcon,
   IconRedoVariant as RedoIcon,
   IconRulerSquareCompass as MeasurementIcon,
   IconUndoVariant as UndoIcon,
@@ -155,7 +194,13 @@ import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useToggle } from "@vueuse/core";
 import PanelSymbolButton from "@/components/PanelSymbolButton.vue";
 import { Float } from "@headlessui-float/vue";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/vue";
+import {
+  Popover,
+  PopoverButton,
+  PopoverPanel,
+  RadioGroup,
+  RadioGroupOption,
+} from "@headlessui/vue";
 import PanelButton from "@/components/PanelButton.vue";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import { computed, Ref, ref, watch } from "vue";
@@ -163,6 +208,7 @@ import { SID_INDEX, Sidc } from "@/symbology/sidc";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useToolbarUnitSymbolData } from "@/composables/mainToolbarData";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 const {
   store: { undo, redo, canRedo, canUndo, groupUpdate, state },
@@ -188,7 +234,15 @@ const {
   customIcon,
   customSidc,
   activeSidc,
+  seaItems,
+  symbolPage,
 } = useToolbarUnitSymbolData({});
+
+const symbolTabs = ref([
+  { title: "Land", sidc: "30031000001211000000", id: "land" },
+  { title: "Sea", sidc: "10033000001201000000", id: "sea" },
+  { title: "Air", sidc: "30030100001101000000", id: "air" },
+]);
 
 const activeParent = ref();
 
