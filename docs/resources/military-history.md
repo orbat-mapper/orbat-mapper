@@ -13,9 +13,14 @@ Another fascinating site is Dr. Leo
 Niehorster's [World War II Armed Forces — Orders of Battle and Organizations](http://niehorster.org/). The site
 is a gold mine of information.
 
+[HyperWar, A hypertext history of the second world war](https://www.ibiblio.org/hyperwar/) contains a vast
+collection of documents, maps, photographs, and other materials related to the war. Users can browse the resources by
+country, theater of war, or service branch.
+
 For those who are interested in Cold War history, Hans Boersma's
 site [Netherlands Armed Forces ORDER OF BATTLE 1985](https://www.orbat85.nl/) is a
-real treat.
+real treat. The site provides information on the orders of battle, equipment, and organization of NATO and Warsaw Pact
+armed forces during the Cold War
 
 [Naval-History.net](https://www.naval-history.net/index.htm) contains a wealth of information about the history of the
 Royal Navy. The site also contains an online
