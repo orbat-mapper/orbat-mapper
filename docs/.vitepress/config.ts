@@ -28,6 +28,9 @@ export default defineConfig({
       copyright: "",
     },
     sidebar: sidebarGuide(),
+    search: {
+      provider: "local",
+    },
   },
 });
 
