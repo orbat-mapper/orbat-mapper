@@ -1,6 +1,6 @@
 <template>
   <div class="relative flex min-h-0 flex-auto flex-col">
-    <div class="relative flex flex-auto">
+    <div class="relative flex flex-auto flex-col">
       <NewScenarioMap class="flex-auto" @mapReady="onMapReady" />
       <main
         v-if="mapRef"
@@ -28,18 +28,21 @@
           </aside>
           <div v-else></div>
         </section>
-        <footer class="flex justify-center sm:p-2">
-          <MapEditorMainToolbar />
-          <MapEditorMeasurementToolbar
-            class="absolute bottom-14 sm:bottom-16"
-            v-if="toolbarStore.currentToolbar === 'measurements'"
-          />
-          <MapEditorDrawToolbar
-            class="absolute bottom-14 sm:bottom-16"
-            v-if="toolbarStore.currentToolbar === 'draw'"
-          />
-        </footer>
       </main>
+      <footer
+        v-if="mapRef"
+        class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
+      >
+        <MapEditorMainToolbar />
+        <MapEditorMeasurementToolbar
+          class="absolute bottom-14 sm:bottom-16"
+          v-if="toolbarStore.currentToolbar === 'measurements'"
+        />
+        <MapEditorDrawToolbar
+          class="absolute bottom-14 sm:bottom-16"
+          v-if="toolbarStore.currentToolbar === 'draw'"
+        />
+      </footer>
     </div>
     <template v-if="isMobile">
       <MapEditorMobilePanel />
@@ -112,6 +115,7 @@ provide(activeFeatureSelectInteractionKey, featureSelectInteractionRef);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 
 const isMobile = breakpoints.smallerOrEqual("sm");
+
 function onMapReady({
   olMap,
   featureSelectInteraction,
