@@ -11,7 +11,7 @@
         </header>
         <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
           <aside
-            class="pointer-events-auto mt-4 hidden max-h-[70vh] w-96 overflow-auto rounded-md bg-white md:block"
+            class="pointer-events-auto -mt-12 hidden max-h-[80vh] w-96 overflow-auto rounded-md bg-white shadow md:block"
           >
             <MapEditorDesktopPanel />
           </aside>
