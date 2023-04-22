@@ -8,12 +8,13 @@
       @dragleave="isDragOverAbove = false"
     />
     <div
-      class="group relative flex items-center justify-between py-2 pl-2 hover:bg-gray-200 dark:hover:bg-gray-700"
+      class="group relative flex items-center justify-between border-l-2 border-transparent py-2 pl-2 hover:bg-gray-200 dark:hover:bg-gray-700"
       @dblclick="isOpen = !isOpen"
       @click="onUnitClick(unit, $event)"
       :class="{
         'bg-yellow-100 hover:bg-yellow-200':
           selectedUnitIds.has(unit.id) && selectedUnitIds.size > 1,
+        'border-red-800 bg-red-50': isActiveParent,
       }"
     >
       <div class="flex items-center space-x-1">
@@ -34,10 +35,7 @@
           </button>
         </div>
         <button class="flex items-center space-x-1">
-          <div
-            class="flex items-center space-x-1"
-            :class="{ 'opacity-20': isDragged, 'bg-red-100': isActiveParent }"
-          >
+          <div class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
             <div
               class="flex flex-shrink-0 cursor-move justify-center"
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
@@ -95,8 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from "vue";
-import MilSymbol from "./MilSymbol.vue";
+import { computed, ref } from "vue";
 import { Unit } from "@/types/scenarioModels";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { useActiveUnitStore, useDragStore, useSelectedUnits } from "@/stores/dragStore";
