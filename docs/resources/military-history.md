@@ -46,6 +46,8 @@ tactics, logistics and more.
 - [Covert Cabal](https://www.youtube.com/@CovertCabal) - military analysis
 - [Military History Visualized](https://www.youtube.com/@MilitaryHistoryVisualized) - military history ranging from
   Classical Times up to contemporary conflicts
+- [Eastory](https://www.youtube.com/@Eastory) - a history channel with a particular focus on Eastern European and
+  military history
 
 ## Podcasts
 
