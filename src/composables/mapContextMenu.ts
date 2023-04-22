@@ -61,31 +61,31 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
                 {
                   label: "Metric",
                   checked: computed(
-                    () => measurementSettings.unit === "metric"
+                    () => measurementSettings.measurementUnit === "metric"
                   ) as unknown as boolean,
                   clickClose: false,
                   onClick: () => {
-                    measurementSettings.unit = "metric";
+                    measurementSettings.measurementUnit = "metric";
                   },
                 },
                 {
                   label: "Imperial",
                   checked: computed(
-                    () => measurementSettings.unit === "imperial"
+                    () => measurementSettings.measurementUnit === "imperial"
                   ) as unknown as boolean,
                   clickClose: false,
                   onClick: () => {
-                    measurementSettings.unit = "imperial";
+                    measurementSettings.measurementUnit = "imperial";
                   },
                 },
                 {
                   label: "Nautical",
                   checked: computed(
-                    () => measurementSettings.unit === "nautical"
+                    () => measurementSettings.measurementUnit === "nautical"
                   ) as unknown as boolean,
                   clickClose: false,
                   onClick: () => {
-                    measurementSettings.unit = "nautical";
+                    measurementSettings.measurementUnit = "nautical";
                   },
                 },
               ],

@@ -66,13 +66,13 @@ const mapRef = injectStrict(activeMapKey);
 
 const store = useMainToolbarStore();
 const selectStore = useMapSelectStore();
-const { showSegments, clearPrevious, measurementType, unit } = storeToRefs(
+const { showSegments, clearPrevious, measurementType, measurementUnit } = storeToRefs(
   useMeasurementsStore()
 );
 const { clear } = useMeasurementInteraction(mapRef.value, measurementType, {
   showSegments,
   clearPrevious,
-  unit,
+  measurementUnit,
 });
 
 selectStore.unitSelectEnabled = false;

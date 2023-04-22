@@ -191,15 +191,19 @@ const formatArea = function (
 function measurementInteractionWrapper(
   olMap: OLMap,
   drawType: MeasurementTypes,
-  options: { clearPrevious: boolean; showSegments: boolean; unit: MeasurementUnit } = {
+  options: {
+    clearPrevious: boolean;
+    showSegments: boolean;
+    measurementUnit: MeasurementUnit;
+  } = {
     showSegments: true,
     clearPrevious: true,
-    unit: "metric",
+    measurementUnit: "metric",
   }
 ) {
   let showSegments = options.showSegments;
   let clearPrevious = options.clearPrevious;
-  let unit = options.unit;
+  let measurementUnit = options.measurementUnit;
   let tipPoint: Point;
   let drawInteraction: Draw;
   const segmentStyles = [segmentStyle];
@@ -232,11 +236,11 @@ function measurementInteractionWrapper(
     if (!drawType || drawType === type) {
       if (type === "Polygon") {
         point = (geometry as Polygon).getInteriorPoint();
-        label = formatArea(geometry, unit);
+        label = formatArea(geometry, measurementUnit);
         line = new LineString(geometry.getCoordinates()![0]);
       } else if (type === "LineString") {
         point = new Point(geometry.getLastCoordinate());
-        label = formatLength(geometry, unit);
+        label = formatLength(geometry, measurementUnit);
         line = geometry as LineString;
       }
     }
@@ -244,7 +248,7 @@ function measurementInteractionWrapper(
       let count = 0;
       line.forEachSegment(function (a, b) {
         const segment = new LineString([a, b]);
-        const label = formatLength(segment, unit);
+        const label = formatLength(segment, measurementUnit);
         if (segmentStyles.length - 1 < count) {
           segmentStyles.push(segmentStyle.clone());
         }
@@ -333,7 +337,7 @@ function measurementInteractionWrapper(
   }
 
   function setUnit(newUnit: MeasurementUnit) {
-    unit = newUnit;
+    measurementUnit = newUnit;
     vector.changed();
     drawInteraction.getOverlay().changed();
   }
@@ -364,21 +368,23 @@ function measurementInteractionWrapper(
   };
 }
 
+export interface MeasurementInteractionOptions {
+  showSegments?: MaybeRef<boolean>;
+  clearPrevious?: MaybeRef<boolean>;
+  enable?: MaybeRef<boolean>;
+  measurementUnit?: MaybeRef<MeasurementUnit>;
+}
+
 export function useMeasurementInteraction(
   olMap: OLMap,
   measurementType: MaybeRef<MeasurementTypes>,
-  options: Partial<{
-    showSegments: MaybeRef<boolean>;
-    clearPrevious: MaybeRef<boolean>;
-    enable: MaybeRef<boolean>;
-    unit: MaybeRef<MeasurementUnit>;
-  }> = {}
+  options: MeasurementInteractionOptions = {}
 ) {
   const measurementTypeRef = ref(measurementType);
   const showSegmentsRef = ref(options.showSegments ?? true);
   const clearPreviousRef = ref(options.clearPrevious ?? true);
   const enableRef = ref(options.enable ?? true);
-  const unitRef = ref(options.unit ?? "metric");
+  const measurementUnitRef = ref(options.measurementUnit ?? "metric");
 
   const {
     changeMeasurementType,
@@ -391,14 +397,14 @@ export function useMeasurementInteraction(
   } = measurementInteractionWrapper(olMap, unref(measurementTypeRef), {
     clearPrevious: unref(clearPreviousRef),
     showSegments: unref(showSegmentsRef),
-    unit: unref(unitRef),
+    measurementUnit: unref(measurementUnitRef),
   });
 
   watch(measurementTypeRef, (type) => changeMeasurementType(type));
   watch(showSegmentsRef, (v) => setShowSegments(v));
   watch(clearPreviousRef, (v) => setClearPrevious(v), { immediate: true });
   watch(enableRef, (enabled) => setActive(enabled), { immediate: true });
-  watch(unitRef, (unit) => setUnit(unit), { immediate: true });
+  watch(measurementUnitRef, (unit) => setUnit(unit), { immediate: true });
 
   tryOnBeforeUnmount(() => {
     cleanup();

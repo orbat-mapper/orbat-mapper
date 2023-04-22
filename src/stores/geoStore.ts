@@ -83,7 +83,7 @@ export const useMeasurementsStore = defineStore("measurements", {
       measurementType: "LineString" as MeasurementTypes,
       clearPrevious: true,
       showSegments: true,
-      unit: "metric" as MeasurementUnit,
+      measurementUnit: "metric" as MeasurementUnit,
     };
   },
 });
