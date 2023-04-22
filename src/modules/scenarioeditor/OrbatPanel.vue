@@ -31,6 +31,8 @@ import { SideAction, SideActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { useSelectedUnits } from "@/stores/dragStore";
+import { useEventBus } from "@vueuse/core";
+import { orbatUnitClick } from "@/components/eventKeys";
 
 interface Props {
   hideFilter?: boolean;
@@ -44,6 +46,7 @@ const activeParentId = injectStrict(activeParentKey);
 
 const { state } = store;
 const { changeUnitParent, addSide } = unitActions;
+const bus = useEventBus(orbatUnitClick);
 
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
@@ -73,6 +76,7 @@ function onUnitClick(unit: NUnit, event: MouseEvent) {
     selectedUnitIds.value = new Set(activeUnitId.value ? [unit.id] : []);
     activeParentId.value = unit.id;
   }
+  bus.emit(unit);
 }
 
 watch(

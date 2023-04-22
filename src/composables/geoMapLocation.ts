@@ -19,7 +19,7 @@ export interface UseGetMapLocationOptions {
 }
 
 export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOptions = {}) {
-  const { cancelOnClickOutside = true } = options;
+  const { cancelOnClickOutside = true, stopPropagationOnClickOutside = true } = options;
 
   const isActive = ref(false);
 
@@ -38,7 +38,7 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
     olMap.getTargetElement().style.cursor = "crosshair";
     if (cancelOnClickOutside) {
       stopClickOutside = onClickOutside(olMap.getTargetElement(), (e) => {
-        e.stopPropagation();
+        if (stopPropagationOnClickOutside) e.stopPropagation();
         cancel();
       });
     }

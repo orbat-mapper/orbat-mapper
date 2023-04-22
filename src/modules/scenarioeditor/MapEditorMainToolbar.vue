@@ -156,7 +156,7 @@
       v-if="isGetLocationActive"
       class="absolute bottom-14 overflow-visible bg-opacity-75 p-2 px-4 text-sm sm:bottom-16 sm:left-1/2 sm:-translate-x-1/2"
     >
-      Click on map to place unit.
+      Click on map or ORBAT to place unit.
       <button
         type="button"
         class="ml-4 font-medium text-blue-700 hover:text-blue-600"
@@ -186,7 +186,7 @@ import { injectStrict } from "@/utils";
 import { activeMapKey, activeScenarioKey, sidcModalKey } from "@/components/injects";
 import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
-import { useToggle } from "@vueuse/core";
+import { useEventBus, useToggle } from "@vueuse/core";
 import PanelSymbolButton from "@/components/PanelSymbolButton.vue";
 import { Float } from "@headlessui-float/vue";
 import {
@@ -205,6 +205,7 @@ import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useToolbarUnitSymbolData } from "@/composables/mainToolbarData";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
+import { orbatUnitClick } from "@/components/eventKeys";
 
 const {
   store: { undo, redo, canRedo, canUndo, groupUpdate, state },
@@ -219,7 +220,7 @@ const { addMultiple } = storeToRefs(store);
 const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const selectStore = useMapSelectStore();
 const toggleAddMultiple = useToggle(addMultiple);
-
+const bus = useEventBus(orbatUnitClick);
 const { activeUnitId, resetActiveParent, activeParent, activeParentId } =
   useActiveUnitStore();
 
@@ -267,7 +268,10 @@ const {
   onGetLocation,
   onCancel,
   onStart,
-} = useGetMapLocation(mapRef.value);
+} = useGetMapLocation(mapRef.value, {
+  cancelOnClickOutside: false,
+  stopPropagationOnClickOutside: false,
+});
 
 function addUnit(sidc: string, closePopover?: (ref?: Ref | HTMLElement) => void) {
   activeSidc.value = sidc;
@@ -306,9 +310,23 @@ onGetLocation((location) => {
   }
 });
 
+bus.on((unit) => {
+  if (isGetLocationActive.value) {
+    if (!(addMultiple.value && activeSidc.value)) {
+      cancelGetLocation();
+    }
+    const name = `${(activeParent.value?.subUnits?.length ?? 0) + 1}`;
+    const sidc = new Sidc(activeSidc.value!);
+    sidc.emt = currentEchelon.value;
+    const unitId = unitActions.createSubordinateUnit(unit.id, {
+      sidc: sidc.toString(),
+      name,
+    });
+  }
+});
+
 watch(activeParent, (unitOrSideGroup) => {
   if (!unitOrSideGroup) return;
-
   if ("sidc" in unitOrSideGroup) {
     currentSid.value = unitOrSideGroup.sidc[SID_INDEX];
   } else {
