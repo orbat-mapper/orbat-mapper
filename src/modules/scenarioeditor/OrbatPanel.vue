@@ -24,7 +24,7 @@
 import { computed, watch } from "vue";
 import OrbatPanelAddSide from "@/components/OrbatPanelAddSide.vue";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import { activeParentKey, activeScenarioKey, activeUnitKey } from "@/components/injects";
 import OrbatSide from "@/components/OrbatSide.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { SideAction, SideActions } from "@/types/constants";
@@ -40,6 +40,7 @@ const props = withDefaults(defineProps<Props>(), { hideFilter: false });
 const activeScenario = injectStrict(activeScenarioKey);
 const { store, unitActions } = activeScenario;
 const activeUnitId = injectStrict(activeUnitKey);
+const activeParentId = injectStrict(activeParentKey);
 
 const { state } = store;
 const { changeUnitParent, addSide } = unitActions;
@@ -70,6 +71,7 @@ function onUnitClick(unit: NUnit, event: MouseEvent) {
   } else {
     activeUnitId.value = unit.id;
     selectedUnitIds.value = new Set(activeUnitId.value ? [unit.id] : []);
+    activeParentId.value = unit.id;
   }
 }
 

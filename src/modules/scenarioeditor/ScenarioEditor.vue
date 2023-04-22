@@ -224,6 +224,7 @@ import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
 import {
   activeFeaturesKey,
+  activeParentKey,
   activeScenarioKey,
   activeUnitKey,
   currentScenarioTabKey,
@@ -268,6 +269,7 @@ const props = defineProps<{ activeScenario: TScenario }>();
 
 const dropZoneRef = ref<HTMLDivElement>();
 const activeUnitId = ref<EntityId | undefined | null>(null);
+const activeParentId = ref<EntityId | undefined | null>(null);
 const selectedUnitIdsRef = ref<Set<EntityId>>(new Set());
 const selectedFeatureIdsRef = ref<SelectedScenarioFeatures>(new Set());
 const scnFeatures = useFeatureStyles(props.activeScenario.geo);
@@ -276,6 +278,7 @@ const uiTabs = useTabStore();
 const { activeScenarioTab } = storeToRefs(uiTabs);
 
 provide(activeUnitKey, activeUnitId);
+provide(activeParentKey, activeParentId);
 provide(selectedUnitIdsKey, selectedUnitIdsRef);
 provide(selectedFeatureIdsKey, selectedFeatureIdsRef);
 provide(activeScenarioKey, props.activeScenario);

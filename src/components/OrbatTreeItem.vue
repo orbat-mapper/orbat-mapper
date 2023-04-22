@@ -34,7 +34,10 @@
           </button>
         </div>
         <button class="flex items-center space-x-1">
-          <div class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
+          <div
+            class="flex items-center space-x-1"
+            :class="{ 'opacity-20': isDragged, 'bg-red-100': isActiveParent }"
+          >
             <div
               class="flex flex-shrink-0 cursor-move justify-center"
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
@@ -101,11 +104,12 @@ import { DragOperations, type UnitAction } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "@/composables/scenarioActions";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { activeUnitKey } from "./injects";
+import { activeParentKey, activeUnitKey } from "./injects";
 import type { DropTarget } from "./types";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { SymbolOptions } from "milsymbol";
+import { injectStrict } from "@/utils";
 
 interface Props {
   item: NOrbatItemData;
@@ -127,7 +131,8 @@ interface Emits {
 }
 const emit = defineEmits(["unit-action", "unit-click", "unit-drop"]);
 
-const activeUnitId = inject(activeUnitKey);
+const activeUnitId = injectStrict(activeUnitKey);
+const activeParentId = injectStrict(activeParentKey);
 
 let isDragged = ref(false);
 let subTree = ref();
@@ -200,7 +205,8 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
 const onUnitDrop = (unit: NUnit, destinationUnit: NUnit, target: DropTarget) =>
   emit("unit-drop", unit, destinationUnit, target);
 
-const isActiveUnit = computed(() => activeUnitId?.value === props.item.unit.id);
+const isActiveUnit = computed(() => activeUnitId.value === props.item.unit.id);
+const isActiveParent = computed(() => activeParentId.value === props.item.unit.id);
 
 const hasActiveChildren = computed(() =>
   activeUnitStore.activeUnitParentIds.value.includes(props.item.unit.id)

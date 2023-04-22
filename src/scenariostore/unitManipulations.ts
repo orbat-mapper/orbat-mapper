@@ -560,13 +560,23 @@ export function useUnitManipulations(store: NewScenarioStore) {
     };
   }
 
-  function getCombinedSymbolOptions(unit: NUnit, ignoreUnit = false): UnitSymbolOptions {
-    const { _sid, _gid } = unit;
-
+  function getCombinedSymbolOptions(
+    unitOrSideGroup: NUnit | NSideGroup,
+    ignoreUnit = false
+  ): UnitSymbolOptions {
+    let _sid, _gid;
+    if ("sidc" in unitOrSideGroup) {
+      _sid = unitOrSideGroup._sid;
+      _gid = unitOrSideGroup._gid;
+    } else {
+      _sid = unitOrSideGroup._pid;
+      _gid = unitOrSideGroup.id;
+      ignoreUnit = true;
+    }
     return {
       ...(state.sideMap[_sid!]?.symbolOptions || {}),
       ...(state.sideGroupMap[_gid!]?.symbolOptions || {}),
-      ...(ignoreUnit ? {} : unit.symbolOptions || {}),
+      ...(ignoreUnit ? {} : unitOrSideGroup.symbolOptions || {}),
     };
   }
 
@@ -589,6 +599,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnit,
     deleteUnitStateEntry,
     units: computed(() => Object.values(state.unitMap)),
+    getUnitOrSideGroup,
     getUnitById: (id: EntityId) => state.unitMap[id],
     getUnitByName: (name: string) => {
       for (const unit of Object.values(state.unitMap)) {

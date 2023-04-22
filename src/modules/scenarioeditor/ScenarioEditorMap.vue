@@ -135,7 +135,6 @@ const showDetailsPanel = computed(() => {
 watch(
   activeUnitId,
   (unitId) => {
-    console.log("activeUnitId", unitId);
     layout.showDetailsPanel = Boolean(activeUnitId.value);
   },
   { immediate: true }

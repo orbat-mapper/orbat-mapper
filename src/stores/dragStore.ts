@@ -2,15 +2,15 @@ import { defineStore } from "pinia";
 
 import { Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
-import { computed, Ref, ref } from "vue";
+import { computed, Ref } from "vue";
 import { injectStrict } from "@/utils";
 import {
+  activeParentKey,
   activeScenarioKey,
   activeUnitKey,
   selectedFeatureIdsKey,
   selectedUnitIdsKey,
 } from "@/components/injects";
-import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
 import { FeatureId } from "@/types/scenarioGeoModels";
 
@@ -23,18 +23,19 @@ export const useDragStore = defineStore("drag", {
   }),
 });
 
-export function useActiveUnitStore(
-  options: Partial<{
-    activeScenario: TScenario;
-    activeUnitId: Ref<EntityId | undefined | null>;
-  }> = {}
-) {
-  const { unitActions, store } =
-    options.activeScenario || injectStrict(activeScenarioKey);
-  const activeUnitId = options.activeUnitId || injectStrict(activeUnitKey);
+export function useActiveUnitStore() {
+  const { unitActions, store } = injectStrict(activeScenarioKey);
+  const activeUnitId = injectStrict(activeUnitKey);
+  const activeParentId = injectStrict(activeParentKey);
 
   const activeUnit = computed(
     () => (activeUnitId.value && store.state.getUnitById(activeUnitId.value)) || null
+  );
+
+  const activeParent = computed(
+    () =>
+      (activeParentId.value && unitActions.getUnitOrSideGroup(activeParentId.value)) ||
+      null
   );
 
   const activeUnitParentIds = computed(() => {
@@ -43,9 +44,18 @@ export function useActiveUnitStore(
     return parents.map((p) => p.id);
   });
 
+  function resetActiveParent() {
+    const firstSideId = store.state.sides[0];
+    const firstGroup = store.state.getSideById(firstSideId)?.groups[0];
+    activeParentId.value = store.state.getSideGroupById(firstGroup)?.subUnits[0];
+  }
+
   return {
     activeUnitId,
     activeUnit,
+    activeParent,
+    activeParentId,
+    resetActiveParent,
     activeUnitParentIds,
     clearActiveUnit() {
       activeUnitId.value = null;

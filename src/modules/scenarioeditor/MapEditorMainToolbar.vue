@@ -183,12 +183,7 @@ import {
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { injectStrict } from "@/utils";
-import {
-  activeMapKey,
-  activeScenarioKey,
-  activeUnitKey,
-  sidcModalKey,
-} from "@/components/injects";
+import { activeMapKey, activeScenarioKey, sidcModalKey } from "@/components/injects";
 import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useToggle } from "@vueuse/core";
@@ -203,7 +198,7 @@ import {
 } from "@headlessui/vue";
 import PanelButton from "@/components/PanelButton.vue";
 import FloatingPanel from "@/components/FloatingPanel.vue";
-import { computed, Ref, ref, watch } from "vue";
+import { computed, onMounted, Ref, ref, watch } from "vue";
 import { SID_INDEX, Sidc } from "@/symbology/sidc";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
@@ -225,7 +220,8 @@ const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const selectStore = useMapSelectStore();
 const toggleAddMultiple = useToggle(addMultiple);
 
-const { activeUnit, activeUnitId } = useActiveUnitStore();
+const { activeUnitId, resetActiveParent, activeParent, activeParentId } =
+  useActiveUnitStore();
 
 const {
   currentSid,
@@ -236,7 +232,6 @@ const {
   customIcon,
   customSidc,
   activeSidc,
-  seaItems,
   symbolPage,
 } = useToolbarUnitSymbolData({});
 
@@ -245,8 +240,6 @@ const symbolTabs = ref([
   { title: "Sea", sidc: "10033000001201000000", id: "sea" },
   { title: "Air", sidc: "30030100001101000000", id: "air" },
 ]);
-
-const activeParent = ref();
 
 const computedSidc = computed(() => {
   const parsedSidc = new Sidc(activeSidc.value);
@@ -264,7 +257,7 @@ function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => 
 }
 
 const symbolOptions = computed(() =>
-  activeUnit.value ? unitActions.getCombinedSymbolOptions(activeUnit.value, true) : {}
+  activeParent.value ? unitActions.getCombinedSymbolOptions(activeParent.value, true) : {}
 );
 
 const {
@@ -282,6 +275,10 @@ function addUnit(sidc: string, closePopover?: (ref?: Ref | HTMLElement) => void)
   startGetLocation();
 }
 
+onMounted(() => {
+  if (!activeParentId.value) resetActiveParent();
+});
+
 onCancel(() => {
   selectStore.hoverEnabled = true;
 });
@@ -294,11 +291,11 @@ onStart(() => {
 onGetLocation((location) => {
   selectStore.hoverEnabled = true;
   groupUpdate(() => {
-    if (!activeUnit.value) return;
-    const name = `${(activeUnit.value?.subUnits?.length ?? 0) + 1}`;
+    if (!activeParentId.value) return;
+    const name = `${(activeParent.value?.subUnits?.length ?? 0) + 1}`;
     const sidc = new Sidc(activeSidc.value!);
     sidc.emt = currentEchelon.value;
-    const unitId = unitActions.createSubordinateUnit(activeUnit.value.id, {
+    const unitId = unitActions.createSubordinateUnit(activeParentId.value, {
       sidc: sidc.toString(),
       name,
     });
@@ -309,9 +306,14 @@ onGetLocation((location) => {
   }
 });
 
-watch(activeUnit, (unit) => {
-  if (!unit) return;
-  currentSid.value = unit.sidc[SID_INDEX];
+watch(activeParent, (unitOrSideGroup) => {
+  if (!unitOrSideGroup) return;
+
+  if ("sidc" in unitOrSideGroup) {
+    currentSid.value = unitOrSideGroup.sidc[SID_INDEX];
+  } else {
+    currentSid.value = state.getSideById(unitOrSideGroup._pid).standardIdentity;
+  }
 });
 
 async function handleChangeSymbol() {

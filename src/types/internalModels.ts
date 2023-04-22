@@ -24,9 +24,10 @@ export interface NSide extends Omit<Side, "groups"> {
 
 export interface SideUpdate extends Omit<NSide, "id"> {}
 
-export interface NSideGroup extends Omit<SideGroup, "subUnits"> {
+export interface NSideGroup extends Omit<SideGroup, "subUnits" | "_pid"> {
   subUnits: EntityId[];
   _isOpen?: boolean;
+  _pid: EntityId;
 }
 
 export interface NScenarioLayer extends Omit<ScenarioLayer, "features"> {
