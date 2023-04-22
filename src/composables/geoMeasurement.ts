@@ -10,8 +10,9 @@ import { getArea, getLength } from "ol/sphere";
 import Feature from "ol/Feature";
 import { MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
 import { ref, unref, watch } from "vue";
-import primaryButton from "@/components/PrimaryButton.vue";
 import { primaryAction } from "ol/events/condition";
+import Snap from "ol/interaction/Snap";
+import { Collection } from "ol";
 
 export type MeasurementTypes = "LineString" | "Polygon";
 export type MeasurementUnit = "metric" | "imperial" | "nautical";
@@ -373,6 +374,7 @@ export interface MeasurementInteractionOptions {
   clearPrevious?: MaybeRef<boolean>;
   enable?: MaybeRef<boolean>;
   measurementUnit?: MaybeRef<MeasurementUnit>;
+  snap?: MaybeRef<boolean>;
 }
 
 export function useMeasurementInteraction(
@@ -385,6 +387,10 @@ export function useMeasurementInteraction(
   const clearPreviousRef = ref(options.clearPrevious ?? true);
   const enableRef = ref(options.enable ?? true);
   const measurementUnitRef = ref(options.measurementUnit ?? "metric");
+  const snapRef = ref(options.snap ?? true);
+
+  let snapInteraction: Snap | undefined | null;
+  const featureCollection = new Collection<Feature<Geometry>>();
 
   const {
     changeMeasurementType,
@@ -403,11 +409,46 @@ export function useMeasurementInteraction(
   watch(measurementTypeRef, (type) => changeMeasurementType(type));
   watch(showSegmentsRef, (v) => setShowSegments(v));
   watch(clearPreviousRef, (v) => setClearPrevious(v), { immediate: true });
-  watch(enableRef, (enabled) => setActive(enabled), { immediate: true });
+  watch(
+    enableRef,
+    (enabled) => {
+      if (enabled) {
+        const features = olMap
+          .getAllLayers()
+          .filter((l) => l.getVisible() && l.getSource() instanceof VectorSource)
+          .map((l) => (l.getSource() as VectorSource)?.getFeatures())
+          .flat();
+        featureCollection.clear();
+        featureCollection.extend(features);
+      } else {
+        featureCollection.clear();
+      }
+      setActive(enabled);
+    },
+    { immediate: true }
+  );
   watch(measurementUnitRef, (unit) => setUnit(unit), { immediate: true });
+  watch(
+    snapRef,
+    (snap) => {
+      if (snap) {
+        if (snapInteraction) olMap.removeInteraction(snapInteraction);
+
+        snapInteraction = new Snap({
+          features: featureCollection,
+        });
+        olMap.addInteraction(snapInteraction);
+      } else {
+        if (snapInteraction) olMap.removeInteraction(snapInteraction);
+      }
+    },
+    { immediate: true }
+  );
 
   tryOnBeforeUnmount(() => {
     cleanup();
+    if (snapInteraction) olMap.removeInteraction(snapInteraction);
+    featureCollection.clear();
   });
 
   return { clear, enabled: enableRef };
