@@ -318,6 +318,7 @@ bus.on((unit) => {
     const name = `${(activeParent.value?.subUnits?.length ?? 0) + 1}`;
     const sidc = new Sidc(activeSidc.value!);
     sidc.emt = currentEchelon.value;
+    sidc.standardIdentity = unit.sidc[SID_INDEX];
     const unitId = unitActions.createSubordinateUnit(unit.id, {
       sidc: sidc.toString(),
       name,
