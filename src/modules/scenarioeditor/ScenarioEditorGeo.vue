@@ -153,10 +153,7 @@ const { copy: copyToClipboard, copied } = useClipboard();
 const currentTab = ref(0);
 const isOpen = ref(false);
 
-const activeUnitStore = useActiveUnitStore({
-  activeScenario,
-  activeUnitId,
-});
+const activeUnitStore = useActiveUnitStore();
 
 const originalTitle = useTitle().value;
 const windowTitle = computed(() => state.info.name);

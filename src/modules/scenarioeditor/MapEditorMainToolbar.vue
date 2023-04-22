@@ -209,6 +209,7 @@ import { useGetMapLocation } from "@/composables/geoMapLocation";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useToolbarUnitSymbolData } from "@/composables/mainToolbarData";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import { useActiveUnitStore } from "@/stores/dragStore";
 
 const {
   store: { undo, redo, canRedo, canUndo, groupUpdate, state },
@@ -216,7 +217,6 @@ const {
   geo: { addUnitPosition },
 } = injectStrict(activeScenarioKey);
 const mapRef = injectStrict(activeMapKey);
-const activeUnitId = injectStrict(activeUnitKey);
 const { getModalSidc } = injectStrict(sidcModalKey);
 
 const store = useMainToolbarStore();
@@ -224,6 +224,8 @@ const { addMultiple } = storeToRefs(store);
 const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const selectStore = useMapSelectStore();
 const toggleAddMultiple = useToggle(addMultiple);
+
+const { activeUnit, activeUnitId } = useActiveUnitStore();
 
 const {
   currentSid,
@@ -255,9 +257,6 @@ const computedSidc = computed(() => {
 });
 
 const toggleMoveUnit = useToggle(moveUnitEnabled);
-const activeUnit = computed(
-  () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null
-);
 
 function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => void) {
   currentEchelon.value = new Sidc(sidc).emt;

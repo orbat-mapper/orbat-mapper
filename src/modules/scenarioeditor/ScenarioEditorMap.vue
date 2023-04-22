@@ -101,10 +101,7 @@ const { unitActions, io } = activeScenario;
 
 const toolbarStore = useMainToolbarStore();
 const layout = useGeoEditorViewStore();
-const activeUnitStore = useActiveUnitStore({
-  activeScenario,
-  activeUnitId,
-});
+const activeUnitStore = useActiveUnitStore();
 
 const mapRef = shallowRef<OLMap>();
 

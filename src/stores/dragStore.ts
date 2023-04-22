@@ -29,33 +29,37 @@ export function useActiveUnitStore(
     activeUnitId: Ref<EntityId | undefined | null>;
   }> = {}
 ) {
-  const { unitActions } = options.activeScenario || injectStrict(activeScenarioKey);
-  const activeUnitIdRef = options.activeUnitId || injectStrict(activeUnitKey);
+  const { unitActions, store } =
+    options.activeScenario || injectStrict(activeScenarioKey);
+  const activeUnitId = options.activeUnitId || injectStrict(activeUnitKey);
 
-  const activeUnit = ref<NUnit | null>(null);
+  const activeUnit = computed(
+    () => (activeUnitId.value && store.state.getUnitById(activeUnitId.value)) || null
+  );
 
   const activeUnitParentIds = computed(() => {
-    if (!activeUnitIdRef.value) return [];
-    const { parents } = unitActions.getUnitHierarchy(activeUnitIdRef.value);
+    if (!activeUnitId.value) return [];
+    const { parents } = unitActions.getUnitHierarchy(activeUnitId.value);
     return parents.map((p) => p.id);
   });
 
   return {
+    activeUnitId,
     activeUnit,
     activeUnitParentIds,
     clearActiveUnit() {
-      activeUnitIdRef.value = null;
+      activeUnitId.value = null;
     },
 
     setActiveUnit(unit: NUnit | Unit) {
-      activeUnitIdRef.value = unit.id;
+      activeUnitId.value = unit.id;
     },
 
     toggleActiveUnit(unit: NUnit | Unit) {
-      if (activeUnitIdRef.value === unit.id) {
+      if (activeUnitId.value === unit.id) {
         this.clearActiveUnit();
       } else {
-        activeUnitIdRef.value = unit.id;
+        activeUnitId.value = unit.id;
       }
     },
   };
