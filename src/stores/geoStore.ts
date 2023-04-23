@@ -84,6 +84,7 @@ export const useMeasurementsStore = defineStore("measurements", {
       clearPrevious: true,
       showSegments: true,
       measurementUnit: "metric" as MeasurementUnit,
+      snap: true,
     };
   },
 });

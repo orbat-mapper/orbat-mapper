@@ -22,7 +22,7 @@ export interface GeoEditingOptions {
   select?: Select;
   addHandler?: (feature: Feature, layer: VectorLayer<any>) => void;
   modifyHandler?: (features: Feature[]) => void;
-  snap?: boolean;
+  snap?: MaybeRef<boolean>;
 }
 
 export function useEditingInteraction(

@@ -37,7 +37,10 @@
       <CircleIcon class="h-5 w-5" />
     </MainToolbarButton>
     <div class="h-5 border-l border-gray-300" />
-    <div class="flex items-center -space-x-1">
+    <div class="flex items-center">
+      <MainToolbarButton title="Snap to grid" @click="toggleSnap()" :active="snap">
+        <SnapIcon class="h-5 w-5" />
+      </MainToolbarButton>
       <MainToolbarButton title="Edit" @click="startModify()" :active="isModifying">
         <EditIcon class="h-5 w-5" />
       </MainToolbarButton>
@@ -64,6 +67,7 @@ import {
   IconVectorCircleVariant as CircleIcon,
   IconVectorLine as LineStringIcon,
   IconVectorSquare as PolygonIcon,
+  IconMagnet as SnapIcon,
 } from "@iconify-prerendered/vue-mdi";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 
@@ -100,8 +104,7 @@ const {
 const { selectedFeatureIds } = useSelectedFeatures();
 
 const { addMultiple } = storeToRefs(useMainToolbarStore());
-const toggleAddMultiple = useToggle(addMultiple);
-
+const [snap, toggleSnap] = useToggle(true);
 let layer: any;
 if (scenarioLayers.value?.length > 0) {
   layer = getOlLayerById(scenarioLayers.value[0].id);
@@ -117,6 +120,7 @@ const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawi
     modifyHandler: (olFeatures) => {
       olFeatures.forEach((f) => updateFeatureGeometryFromOlFeature(f));
     },
+    snap,
   });
 
 const store = useMainToolbarStore();
