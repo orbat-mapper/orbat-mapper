@@ -1,43 +1,47 @@
 <template>
-  <TabGroup
-    as="div"
-    class="flex h-full flex-auto flex-col"
-    :class="{ hidden: !showBottomPanel }"
-    :selected-index="activeTabIndex"
-    @change="changeTab"
+  <aside
+    class="pointer-events-auto -mt-12 hidden max-h-[80vh] w-96 overflow-auto rounded-md bg-white shadow md:block"
   >
-    <TabList class="flex-0 flex justify-between border-b border-gray-500">
-      <div ref="swipeDownEl" class="flex flex-auto items-center justify-evenly">
-        <Tab
-          as="template"
-          v-for="tab in ['ORBAT', 'Events', 'Layers']"
-          :key="tab"
-          v-slot="{ selected }"
-        >
-          <button
-            :class="[
-              selected
-                ? 'border-indigo-500 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-              'w-1/2 border-b-2 px-1 py-4 text-center text-sm font-medium',
-            ]"
+    <TabGroup
+      as="div"
+      class="flex h-full flex-auto flex-col"
+      :class="{ hidden: !showBottomPanel }"
+      :selected-index="activeTabIndex"
+      @change="changeTab"
+    >
+      <TabList class="flex-0 flex justify-between border-b border-gray-500">
+        <div class="flex flex-auto items-center justify-evenly">
+          <Tab
+            as="template"
+            v-for="tab in ['ORBAT', 'Events', 'Layers']"
+            :key="tab"
+            v-slot="{ selected }"
           >
-            {{ tab }}
-          </button>
-        </Tab>
-      </div>
-      <!--<CloseButton @click="toggleBottomPanel()" class="px-4" />-->
-    </TabList>
-    <TabPanels class="flex-auto overflow-y-auto">
-      <TabPanel :unmount="false" class="pb-10">
-        <OrbatPanel />
-      </TabPanel>
-      <TabPanel class="p-4 pb-10">
-        <ScenarioEventsPanel />
-      </TabPanel>
-      <TabPanel class="p-4 pb-10"><p>Not implemented yet</p></TabPanel>
-    </TabPanels>
-  </TabGroup>
+            <button
+              :class="[
+                selected
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                'w-1/2 border-b-2 px-1 py-4 text-center text-sm font-medium',
+              ]"
+            >
+              {{ tab }}
+            </button>
+          </Tab>
+        </div>
+        <CloseButton @click="emit('close')" class="px-4" />
+      </TabList>
+      <TabPanels class="flex-auto overflow-y-auto">
+        <TabPanel :unmount="false" class="pb-10">
+          <OrbatPanel />
+        </TabPanel>
+        <TabPanel class="p-4 pb-10">
+          <ScenarioEventsPanel />
+        </TabPanel>
+        <TabPanel class="p-4 pb-10"><p>Not implemented yet</p></TabPanel>
+      </TabPanels>
+    </TabGroup>
+  </aside>
 </template>
 <script setup lang="ts">
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
@@ -49,6 +53,8 @@ import { useToggle } from "@vueuse/core";
 import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
 import { injectStrict } from "@/utils";
 import { activeUnitKey } from "@/components/injects";
+
+const emit = defineEmits(["close"]);
 
 const activeUnitId = injectStrict(activeUnitKey);
 const { selectedFeatureIds } = useSelectedFeatures();

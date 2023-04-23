@@ -10,11 +10,17 @@
           <MapTimeController class="pointer-events-auto" />
         </header>
         <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
-          <aside
-            class="pointer-events-auto -mt-12 hidden max-h-[80vh] w-96 overflow-auto rounded-md bg-white shadow md:block"
-          >
-            <MapEditorDesktopPanel />
-          </aside>
+          <MapEditorDesktopPanel v-if="showLeftPanel" @close="toggleLeftPanel()" />
+          <div v-else>
+            <button
+              type="button"
+              @click="toggleLeftPanel()"
+              title="Show panel"
+              class="pointer-events-auto absolute -my-12 rounded bg-white bg-opacity-70 p-1 text-gray-600 hover:text-gray-900"
+            >
+              <ShowPanelIcon class="h-7 w-7" />
+            </button>
+          </div>
           <MapEditorDetailsPanel v-if="showDetailsPanel" @close="onCloseDetailsPanel()">
             <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" />
             <ScenarioFeatureDetails
@@ -71,6 +77,7 @@ import {
   activeScenarioKey,
   activeUnitKey,
 } from "@/components/injects";
+import { IconChevronRightBoxOutline as ShowPanelIcon } from "@iconify-prerendered/vue-mdi";
 import { injectStrict } from "@/utils";
 import { useSearchActions } from "@/composables/search";
 import UnitPanel from "@/modules/scenarioeditor/UnitPanel.vue";
@@ -84,12 +91,13 @@ import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/NewScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
-import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
+import { breakpointsTailwind, useBreakpoints, useToggle } from "@vueuse/core";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
 import MapEditorDesktopPanel from "@/modules/scenarioeditor/MapEditorDesktopPanel.vue";
 import MapEditorDetailsPanel from "@/modules/scenarioeditor/MapEditorDetailsPanel.vue";
+import IconButton from "@/components/IconButton.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -125,6 +133,8 @@ function onMapReady({
 const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
 const { selectedFeatureIds } = useSelectedFeatures();
 const { selectedUnitIds } = useSelectedUnits();
+
+const [showLeftPanel, toggleLeftPanel] = useToggle(true);
 
 const showDetailsPanel = computed(() => {
   return Boolean(selectedFeatureIds.value.size || selectedUnitIds.value.size);
