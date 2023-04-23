@@ -15,17 +15,14 @@
           >
             <MapEditorDesktopPanel />
           </aside>
-          <aside
-            v-if="showDetailsPanel"
-            class="pointer-events-auto mt-4 h-96 max-h-full w-96 overflow-auto rounded-md bg-white p-2"
-          >
-            <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId"></UnitPanel>
+          <MapEditorDetailsPanel v-if="showDetailsPanel" @close="onCloseDetailsPanel()">
+            <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" />
             <ScenarioFeatureDetails
-              :selected-ids="selectedFeatureIds"
               v-else
+              :selected-ids="selectedFeatureIds"
               class="p-2"
             />
-          </aside>
+          </MapEditorDetailsPanel>
           <div v-else></div>
         </section>
       </main>
@@ -92,6 +89,7 @@ import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioAc
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
 import MapEditorDesktopPanel from "@/modules/scenarioeditor/MapEditorDesktopPanel.vue";
+import MapEditorDetailsPanel from "@/modules/scenarioeditor/MapEditorDetailsPanel.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -111,7 +109,7 @@ provide(activeMapKey, mapRef);
 provide(activeFeatureSelectInteractionKey, featureSelectInteractionRef);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 
-const isMobile = breakpoints.smallerOrEqual("sm");
+const isMobile = breakpoints.smallerOrEqual("md");
 
 function onMapReady({
   olMap,
@@ -177,4 +175,9 @@ onLayerSelect(({ layerId }) => {
 onFeatureSelect(({ featureId }) => {
   console.warn("Not implemented");
 });
+
+function onCloseDetailsPanel() {
+  selectedUnitIds.value.clear();
+  selectedFeatureIds.value.clear();
+}
 </script>
