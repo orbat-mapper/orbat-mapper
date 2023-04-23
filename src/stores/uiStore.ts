@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { useLocalStorage } from "@vueuse/core";
 
 export const useUiStore = defineStore("ui", {
   state: () => ({
@@ -8,6 +9,7 @@ export const useUiStore = defineStore("ui", {
     getLocationActive: false,
     activeItem: null,
     activeStateItem: null,
+    debugMode: useLocalStorage("debugMode", false),
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,

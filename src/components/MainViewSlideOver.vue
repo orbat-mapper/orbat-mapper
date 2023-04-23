@@ -23,6 +23,7 @@
           <ToggleField v-model="symbolSettings.simpleStatusModifier"
             >Use simple status modifier</ToggleField
           >
+          <ToggleField v-model="uiSettings.debugMode">Debug mode</ToggleField>
         </div>
       </TabItem>
       <TabItem label="Map settings"><MapSettingsPanel /></TabItem>
@@ -40,10 +41,12 @@ import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore
 import NumberInputGroup from "./NumberInputGroup.vue";
 import MapSettingsPanel from "@/components/MapSettingsPanel.vue";
 import ToggleField from "@/components/ToggleField.vue";
+import { useUiStore } from "@/stores/uiStore";
 
 const props = defineProps({ modelValue: Boolean });
 
 const open = useVModel(props, "modelValue");
 const settings = useSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
+const uiSettings = useUiStore();
 </script>
