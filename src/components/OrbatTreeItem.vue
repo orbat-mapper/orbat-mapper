@@ -8,14 +8,15 @@
       @dragleave="isDragOverAbove = false"
     />
     <div
-      class="group relative flex items-center justify-between border-l-2 border-transparent py-2 pl-2 hover:bg-gray-200 dark:hover:bg-gray-700"
+      class="group relative flex items-center justify-between border-l-2 py-2 pl-2 hover:bg-gray-200 dark:hover:bg-gray-700"
       @dblclick="isOpen = !isOpen"
       @click="onUnitClick(unit, $event)"
-      :class="{
-        'bg-yellow-100 hover:bg-yellow-200':
-          selectedUnitIds.has(unit.id) && selectedUnitIds.size > 1,
-        'border-red-800 bg-red-50': isActiveParent,
-      }"
+      :class="[
+        selectedUnitIds.has(unit.id) && selectedUnitIds.size > 1
+          ? 'bg-yellow-100 hover:bg-yellow-200'
+          : '',
+        isActiveParent ? 'border-red-800 bg-red-50' : 'border-transparent',
+      ]"
     >
       <div class="flex items-center space-x-1">
         <div class="h-6 w-6">
