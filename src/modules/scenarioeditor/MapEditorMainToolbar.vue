@@ -70,11 +70,13 @@
           :symbol-options="symbolOptions"
           @click="addUnit(activeSidc)"
         />
-        <Popover as="template">
+        <Popover as="template" v-slot="{ open }">
           <Float placement="top" :offset="12" flip shift portal>
             <PopoverButton as="template">
               <PanelButton title="Select icons" class="ml-1" @click="store.clearToolbar()"
-                ><IconChevronUp class="h-6 w-6"
+                ><IconChevronUp
+                  class="h-6 w-6"
+                  :class="{ ' scale-150 text-red-800 ': open }"
               /></PanelButton>
             </PopoverButton>
             <PopoverPanel focus v-slot="{ close }">
