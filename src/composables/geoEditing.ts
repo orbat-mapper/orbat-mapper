@@ -2,15 +2,17 @@ import OLMap from "ol/Map";
 import { MaybeRef } from "@vueuse/core";
 import type VectorLayer from "ol/layer/Vector";
 import type VectorSource from "ol/source/Vector";
-import { onUnmounted, ref, unref } from "vue";
+import { onUnmounted, ref, unref, watch } from "vue";
 import Draw, { DrawEvent } from "ol/interaction/Draw";
 import Snap from "ol/interaction/Snap";
 import Select from "ol/interaction/Select";
 import Layer from "ol/layer/Layer";
 import { Modify } from "ol/interaction";
-import { useOlEvent } from "./openlayersHelpers";
+import { getSnappableFeatures, useOlEvent } from "./openlayersHelpers";
 import { click as clickCondition } from "ol/events/condition";
 import type Feature from "ol/Feature";
+import { Collection } from "ol";
+import { Geometry } from "ol/geom";
 
 export type DrawType = "Point" | "LineString" | "Polygon" | "Circle";
 
@@ -20,6 +22,7 @@ export interface GeoEditingOptions {
   select?: Select;
   addHandler?: (feature: Feature, layer: VectorLayer<any>) => void;
   modifyHandler?: (features: Feature[]) => void;
+  snap?: boolean;
 }
 
 export function useEditingInteraction(
@@ -27,7 +30,11 @@ export function useEditingInteraction(
   vectorLayer: MaybeRef<VectorLayer<VectorSource<any>>>,
   options: GeoEditingOptions = {}
 ) {
+  let snapInteraction: Snap | undefined | null;
+  const featureCollection = new Collection<Feature<Geometry>>();
+
   const layerRef = ref(vectorLayer);
+  const snapRef = ref(options.snap ?? true);
   let currentDrawInteraction: Draw | null | undefined;
   const source = layerRef.value.getSource()!;
   const { lineDraw, polygonDraw, pointDraw, circleDraw } =
@@ -71,8 +78,21 @@ export function useEditingInteraction(
   olMap.addInteraction(modify);
   modify.setActive(false);
 
-  const snap = new Snap({ source });
-  olMap.addInteraction(snap);
+  watch(
+    snapRef,
+    (snap) => {
+      if (snap) {
+        if (snapInteraction) olMap.removeInteraction(snapInteraction);
+        snapInteraction = new Snap({
+          features: featureCollection,
+        });
+        olMap.addInteraction(snapInteraction);
+      } else {
+        if (snapInteraction) olMap.removeInteraction(snapInteraction);
+      }
+    },
+    { immediate: true }
+  );
 
   function onDrawEnd(e: DrawEvent) {
     if (!unref(addMultiple)) {
@@ -131,7 +151,7 @@ export function useEditingInteraction(
   }
 
   onUnmounted(() => {
-    olMap.removeInteraction(snap);
+    snapInteraction && olMap.removeInteraction(snapInteraction);
     olMap.removeInteraction(pointDraw);
     olMap.removeInteraction(lineDraw);
     olMap.removeInteraction(polygonDraw);
@@ -139,6 +159,21 @@ export function useEditingInteraction(
     if (!options.select) olMap.removeInteraction(select);
     olMap.removeInteraction(modify);
   });
+
+  watch(
+    [isDrawing, isModifying],
+    ([enabledDrawing, enabledModifying]) => {
+      const enabled = enabledDrawing || enabledModifying;
+      if (enabled && snapRef.value) {
+        const features = getSnappableFeatures(olMap);
+        featureCollection.clear();
+        featureCollection.extend(features);
+      } else {
+        featureCollection.clear();
+      }
+    },
+    { immediate: true }
+  );
 
   return { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing };
 }

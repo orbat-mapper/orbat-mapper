@@ -430,7 +430,6 @@ export function useMeasurementInteraction(
     (snap) => {
       if (snap) {
         if (snapInteraction) olMap.removeInteraction(snapInteraction);
-
         snapInteraction = new Snap({
           features: featureCollection,
         });

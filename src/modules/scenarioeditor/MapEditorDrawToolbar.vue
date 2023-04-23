@@ -58,8 +58,6 @@
 import {
   IconClose as CloseIcon,
   IconCursorDefaultOutline as SelectIcon,
-  IconLockOpenVariantOutline,
-  IconLockOutline,
   IconMapMarker as PointIcon,
   IconSquareEditOutline as EditIcon,
   IconTrashCanOutline as DeleteIcon,
