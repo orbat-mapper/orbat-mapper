@@ -2,11 +2,13 @@ import { EventsKey } from "ol/events";
 import { onUnmounted } from "vue";
 import { unByKey } from "ol/Observable";
 import Feature from "ol/Feature";
+import type OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import { Collection } from "ol";
 import { AnyVectorLayer } from "@/geo/types";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import { tryOnBeforeUnmount } from "@vueuse/core";
+import { Vector as VectorSource } from "ol/source";
 
 /**
  * Unregister open layers event automatically on unmount
@@ -50,4 +52,12 @@ export function getFeatureIndex(feature: Feature, layer: VectorLayer<any>) {
     }
   }
   return -1;
+}
+
+export function getSnappableFeatures(olMap: OLMap, options = {}) {
+  return olMap
+    .getAllLayers()
+    .filter((l) => l.getVisible() && l.getSource() instanceof VectorSource)
+    .map((l) => (l.getSource() as VectorSource)?.getFeatures())
+    .flat();
 }

@@ -13,6 +13,7 @@ import { ref, unref, watch } from "vue";
 import { primaryAction } from "ol/events/condition";
 import Snap from "ol/interaction/Snap";
 import { Collection } from "ol";
+import { getSnappableFeatures } from "@/composables/openlayersHelpers";
 
 export type MeasurementTypes = "LineString" | "Polygon";
 export type MeasurementUnit = "metric" | "imperial" | "nautical";
@@ -413,11 +414,7 @@ export function useMeasurementInteraction(
     enableRef,
     (enabled) => {
       if (enabled) {
-        const features = olMap
-          .getAllLayers()
-          .filter((l) => l.getVisible() && l.getSource() instanceof VectorSource)
-          .map((l) => (l.getSource() as VectorSource)?.getFeatures())
-          .flat();
+        const features = getSnappableFeatures(olMap);
         featureCollection.clear();
         featureCollection.extend(features);
       } else {
