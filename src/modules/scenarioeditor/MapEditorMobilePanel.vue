@@ -1,14 +1,16 @@
 <template>
   <main class="overflow-auto bg-white" :class="[showBottomPanel ? 'h-1/2' : 'h-12']">
-    <div
-      v-show="!showBottomPanel"
-      class="flex h-full items-center justify-center"
-      ref="swipeUpEl"
-      @click="toggleBottomPanel()"
-    >
-      <IconButton class="inset-0" @click.stop>
-        <IconChevronDoubleUp class="h-6 w-6" @click="toggleBottomPanel()" />
-      </IconButton>
+    <div v-show="!showBottomPanel" class="flex h-full items-center" ref="swipeUpEl">
+      <div
+        class="relative flex flex-1 items-center justify-center"
+        @click="toggleBottomPanel()"
+      >
+        <IconButton class="" @click.stop>
+          <IconChevronDoubleUp class="h-6 w-6" @click="toggleBottomPanel()" />
+        </IconButton>
+      </div>
+
+      <MapTimeController class="flex-none" hide-time />
     </div>
     <TabGroup
       as="div"
@@ -75,12 +77,16 @@ import { useSwipe, useToggle } from "@vueuse/core";
 import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
 import { injectStrict } from "@/utils";
 import { activeUnitKey } from "@/components/injects";
+import MapTimeController from "@/components/MapTimeController.vue";
+import { useUiStore } from "@/stores/uiStore";
+import { storeToRefs } from "pinia";
 
 const activeUnitId = injectStrict(activeUnitKey);
 const { selectedFeatureIds } = useSelectedFeatures();
 const { selectedUnitIds } = useSelectedUnits();
+const { mobilePanelOpen: showBottomPanel } = storeToRefs(useUiStore());
 
-const [showBottomPanel, toggleBottomPanel] = useToggle(true);
+const toggleBottomPanel = useToggle(showBottomPanel);
 
 const activeTabIndex = ref(1);
 

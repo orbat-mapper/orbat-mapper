@@ -7,7 +7,10 @@
         class="pointer-events-none absolute inset-0 flex flex-col justify-between"
       >
         <header class="flex flex-none justify-end p-2">
-          <MapTimeController class="pointer-events-auto" />
+          <MapTimeController
+            class="pointer-events-auto"
+            :show-controls="ui.mobilePanelOpen"
+          />
         </header>
         <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
           <MapEditorDesktopPanel v-if="showLeftPanel" @close="toggleLeftPanel()" />
@@ -98,6 +101,7 @@ import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.
 import MapEditorDesktopPanel from "@/modules/scenarioeditor/MapEditorDesktopPanel.vue";
 import MapEditorDetailsPanel from "@/modules/scenarioeditor/MapEditorDetailsPanel.vue";
 import IconButton from "@/components/IconButton.vue";
+import { useUiStore } from "@/stores/uiStore";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -108,7 +112,7 @@ const { unitActions, io } = activeScenario;
 const toolbarStore = useMainToolbarStore();
 const layout = useGeoEditorViewStore();
 const activeUnitStore = useActiveUnitStore();
-
+const ui = useUiStore();
 const mapRef = shallowRef<OLMap>();
 
 const featureSelectInteractionRef = shallowRef<Select>();

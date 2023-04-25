@@ -1,12 +1,13 @@
 <template>
   <div class="flex items-center space-x-2">
     <p
+      v-if="!hideTime"
       class="pointer-events-none font-mono text-xl font-bold sm:text-2xl"
       style="text-shadow: white 0 0 5px"
     >
       {{ scenarioTime.format("YYYY-MM-DD") }}
     </p>
-    <BaseToolbar>
+    <BaseToolbar v-if="showControls">
       <ToolbarButton @click="openTimeDialog" start>
         <span class="sr-only">Select time and date</span>
         <CalendarIcon class="h-5 w-5" aria-hidden="true" />
@@ -45,6 +46,14 @@ import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";
+
+const props = withDefaults(
+  defineProps<{
+    showControls: boolean;
+    hideTime: boolean;
+  }>(),
+  { showControls: true, hideTime: false }
+);
 
 const {
   store: { state },
