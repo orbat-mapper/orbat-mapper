@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="pointer-events-auto flex w-full items-center justify-between border border-gray-300 bg-gray-50 p-1 text-sm shadow sm:max-w-md sm:rounded-xl"
+    class="pointer-events-auto flex w-full items-center justify-between border border-gray-300 bg-gray-50 p-1 text-sm shadow sm:rounded-xl md:w-auto"
   >
     <section class="flex items-center justify-between">
       <MainToolbarButton
@@ -145,13 +145,26 @@
         </Popover>
       </div>
     </section>
-    <section class="flex items-center -space-x-1">
+    <section class="flex items-center">
       <div class="h-7 border-l-2 border-gray-300 sm:mx-1" />
       <MainToolbarButton title="Undo" @click="undo()" :disabled="!canUndo">
         <UndoIcon class="h-6 w-6" />
       </MainToolbarButton>
       <MainToolbarButton title="Redo" @click="redo()" :disabled="!canRedo">
         <RedoIcon class="h-6 w-6" />
+      </MainToolbarButton>
+      <div class="mx-1 hidden h-7 border-l-2 border-gray-300 sm:block" />
+      <MainToolbarButton class="hidden sm:block" @click="emit('open-time-modal')">
+        <span class="sr-only">Select time and date</span>
+        <CalendarIcon class="h-5 w-5" aria-hidden="true" />
+      </MainToolbarButton>
+      <MainToolbarButton class="hidden sm:block" @click="emit('dec-day')">
+        <span class="sr-only">Previous</span>
+        <IconChevronLeft class="h-5 w-5" aria-hidden="true" />
+      </MainToolbarButton>
+      <MainToolbarButton class="hidden sm:block" @click="emit('inc-day')">
+        <span class="sr-only">Next</span>
+        <IconChevronRight class="h-5 w-5" aria-hidden="true" />
       </MainToolbarButton>
     </section>
     <FloatingPanel
@@ -171,6 +184,8 @@
 </template>
 <script setup lang="ts">
 import {
+  IconChevronLeft,
+  IconChevronRight,
   IconChevronUp,
   IconCursorDefaultOutline as SelectIcon,
   IconCursorMove as MoveIcon,
@@ -208,6 +223,10 @@ import { useToolbarUnitSymbolData } from "@/composables/mainToolbarData";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { orbatUnitClick } from "@/components/eventKeys";
+import ToolbarButton from "@/components/ToolbarButton.vue";
+import { CalendarIcon } from "@heroicons/vue/24/solid";
+
+const emit = defineEmits(["open-time-modal", "inc-day", "dec-day"]);
 
 const {
   store: { undo, redo, canRedo, canUndo, groupUpdate, state },

@@ -10,7 +10,13 @@
         </IconButton>
       </div>
 
-      <MapTimeController class="flex-none" hide-time />
+      <MapTimeController
+        class="flex-none"
+        hide-time
+        @open-time-modal="emit('open-time-modal')"
+        @dec-day="emit('dec-day')"
+        @inc-day="emit('inc-day')"
+      />
     </div>
     <TabGroup
       as="div"
@@ -80,6 +86,8 @@ import { activeUnitKey } from "@/components/injects";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
+
+const emit = defineEmits(["open-time-modal", "inc-day", "dec-day"]);
 
 const activeUnitId = injectStrict(activeUnitKey);
 const { selectedFeatureIds } = useSelectedFeatures();

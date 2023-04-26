@@ -9,7 +9,10 @@
         <header class="flex flex-none justify-end p-2">
           <MapTimeController
             class="pointer-events-auto"
-            :show-controls="isMobile ? ui.mobilePanelOpen : true"
+            :show-controls="isMobile ? ui.mobilePanelOpen : false"
+            @open-time-modal="openTimeDialog()"
+            @inc-day="onIncDay()"
+            @dec-day="onDecDay()"
           />
         </header>
         <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
@@ -39,7 +42,11 @@
         v-if="mapRef"
         class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
       >
-        <MapEditorMainToolbar />
+        <MapEditorMainToolbar
+          @open-time-modal="openTimeDialog()"
+          @inc-day="onIncDay()"
+          @dec-day="onDecDay()"
+        />
         <MapEditorMeasurementToolbar
           class="absolute bottom-14 sm:bottom-16"
           v-if="toolbarStore.currentToolbar === 'measurements'"
@@ -51,9 +58,18 @@
       </footer>
     </div>
     <template v-if="isMobile">
-      <MapEditorMobilePanel />
+      <MapEditorMobilePanel
+        @open-time-modal="openTimeDialog()"
+        @inc-day="onIncDay()"
+        @dec-day="onDecDay()"
+      />
     </template>
     <KeyboardScenarioActions v-if="mapRef" />
+    <GlobalEvents
+      v-if="ui.shortcutsEnabled"
+      :filter="inputEventFilter"
+      @keyup.t="openTimeDialog"
+    />
   </div>
 </template>
 
@@ -79,6 +95,7 @@ import {
   activeMapKey,
   activeScenarioKey,
   activeUnitKey,
+  timeModalKey,
 } from "@/components/injects";
 import { IconChevronRightBoxOutline as ShowPanelIcon } from "@iconify-prerendered/vue-mdi";
 import { injectStrict } from "@/utils";
@@ -86,7 +103,6 @@ import { useSearchActions } from "@/composables/search";
 import UnitPanel from "@/modules/scenarioeditor/UnitPanel.vue";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useGeoEditorViewStore } from "@/stores/geoEditorViewStore";
-import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
@@ -100,14 +116,19 @@ import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDeta
 import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
 import MapEditorDesktopPanel from "@/modules/scenarioeditor/MapEditorDesktopPanel.vue";
 import MapEditorDetailsPanel from "@/modules/scenarioeditor/MapEditorDetailsPanel.vue";
-import IconButton from "@/components/IconButton.vue";
 import { useUiStore } from "@/stores/uiStore";
+import { inputEventFilter } from "@/components/helpers";
+import { GlobalEvents } from "vue-global-events";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
 const activeUnitId = injectStrict(activeUnitKey);
 const { state, update } = activeScenario.store;
-const { unitActions, io } = activeScenario;
+const {
+  unitActions,
+  io,
+  time: { setCurrentTime, add, subtract, jumpToNextEvent, jumpToPrevEvent },
+} = activeScenario;
 
 const toolbarStore = useMainToolbarStore();
 const layout = useGeoEditorViewStore();
@@ -137,6 +158,7 @@ function onMapReady({
 const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
 const { selectedFeatureIds } = useSelectedFeatures();
 const { selectedUnitIds } = useSelectedUnits();
+const { getModalTimestamp } = injectStrict(timeModalKey);
 
 const [showLeftPanel, toggleLeftPanel] = useToggle(true);
 
@@ -193,5 +215,22 @@ onFeatureSelect(({ featureId }) => {
 function onCloseDetailsPanel() {
   selectedUnitIds.value.clear();
   selectedFeatureIds.value.clear();
+}
+
+const openTimeDialog = async () => {
+  const newTimestamp = await getModalTimestamp(state.currentTime, {
+    timeZone: state.info.timeZone,
+  });
+  if (newTimestamp !== undefined) {
+    setCurrentTime(newTimestamp);
+  }
+};
+
+function onIncDay() {
+  add(1, "day", true);
+}
+
+function onDecDay() {
+  subtract(1, "day", true);
 }
 </script>
