@@ -40,6 +40,7 @@ export interface TacticalJsonProperties {
 }
 
 export interface MilSymbolProperties extends TacticalJsonProperties {
+  id?: string;
   name?: string;
   shortName?: string;
   description?: string;

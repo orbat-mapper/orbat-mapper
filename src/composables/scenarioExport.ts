@@ -2,7 +2,12 @@ import { featureCollection, point } from "@turf/helpers";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
-import { ColumnMapping, ExportSettings, UnitGeneratorSettings } from "@/types/convert";
+import {
+  ColumnMapping,
+  ExportSettings,
+  GeoJsonSettings,
+  UnitGeneratorSettings,
+} from "@/types/convert";
 import * as FileSaver from "file-saver";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
@@ -44,21 +49,24 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     options.activeScenario || injectStrict(activeScenarioKey);
   const { sideMap } = store.state;
 
-  function convertUnitsToGeoJson(units: NUnit[]) {
+  function convertUnitsToGeoJson(units: NUnit[], options: Partial<GeoJsonSettings> = {}) {
     const features = units.map((unit) => {
+      const includeIdInProperties = options.includeIdInProperties ?? false;
       const { id, name, sidc, shortName, description } = unit;
+
       const symbolOptions = unitActions.getCombinedSymbolOptions(unit);
 
       return point<MilSymbolProperties>(
         unit._state?.location!,
         {
+          id: includeIdInProperties ? id : undefined,
           name,
           shortName,
           sidc: unit._state?.sidc || sidc,
           description,
           ...symbolOptions,
         },
-        { id }
+        { id: options.includeId ? id : undefined }
       );
     });
     return featureCollection(features) as OrbatMapperGeoJsonCollection;
@@ -68,9 +76,9 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     return featureCollection(geo.layers.value.map((layer) => layer.features).flat(1));
   }
 
-  async function downloadAsGeoJSON(opts: ExportSettings) {
+  async function downloadAsGeoJSON(opts: GeoJsonSettings) {
     const units = opts.includeUnits
-      ? convertUnitsToGeoJson(geo.everyVisibleUnit.value).features
+      ? convertUnitsToGeoJson(geo.everyVisibleUnit.value, opts).features
       : [];
     const features = opts.includeFeatures
       ? convertScenarioFeaturesToGeoJson().features

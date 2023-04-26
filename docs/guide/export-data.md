@@ -5,6 +5,8 @@ ORBAT Mapper can export units and features to the following data formats:
 - [GeoJSON](#geojson)
 - [KML/KMZ](#kml)
 - [MilX](#milx)
+- [XLSX](#xlsx)
+- [Spatial Illusions ORBAT Builder](#spatial-illusions-orbat-builder)
 
 ## Start the export process
 
@@ -16,11 +18,16 @@ menu.
 
 ## GeoJSON
 
+GeoJSON is a popular open standard format for representing simple geographical features, along with their non-spatial
+attributes.
+
 ## KML
 
 ORBAT Mapper does not support a 3D view, but you kan export you scenario as KMZ and view your scenario in Google Earth.
 
 ![Google earh](images/google-earth.png)
+
+## XLSX
 
 ## MilX
 
@@ -32,3 +39,5 @@ Map.army uses letter based MILSTD 2525C/APP6-C symbol codes. Conversion from 252
 possible. ORBAT mapper will try to find the closest matching symbol, but this process may fail.
 
 :::
+
+## Spatial Illusions ORBAT Builder

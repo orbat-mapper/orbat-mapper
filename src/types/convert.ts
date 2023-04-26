@@ -24,6 +24,7 @@ export interface ColumnMapping<TData = Record<string, any>> {
 
 export interface BaseExportSettings {
   customColors: boolean;
+  fileName: string;
 }
 
 export interface XlsxSettings extends BaseExportSettings {
@@ -36,7 +37,17 @@ export interface UnitGeneratorSettings extends BaseExportSettings {
   maxLevels: number;
 }
 
-export interface ExportSettings extends XlsxSettings, UnitGeneratorSettings {
+export interface GeoJsonSettings extends BaseExportSettings {
+  includeUnits: boolean;
+  includeFeatures: boolean;
+  includeIdInProperties: boolean;
+  includeId: boolean;
+}
+
+export interface ExportSettings
+  extends XlsxSettings,
+    UnitGeneratorSettings,
+    GeoJsonSettings {
   fileName: string;
   includeUnits: boolean;
   includeFeatures: boolean;

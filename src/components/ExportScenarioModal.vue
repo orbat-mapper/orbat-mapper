@@ -22,6 +22,11 @@
         :format="format"
         v-model="form"
       />
+      <ExportSettingsGeoJson
+        v-else-if="format === 'geojson'"
+        :format="format"
+        v-model="form"
+      />
       <template v-else>
         <fieldset class="space-y-4">
           <InputCheckbox
@@ -89,6 +94,7 @@ import { useRouter } from "vue-router";
 import { useVModel } from "@vueuse/core";
 import ExportSettingsXlsx from "@/components/ExportSettingsXlsx.vue";
 import ExportSettingsSpatialIllusions from "@/components/ExportSettingsSpatialIllusions.vue";
+import ExportSettingsGeoJson from "@/components/ExportSettingsGeoJson.vue";
 
 const router = useRouter();
 
@@ -129,6 +135,8 @@ const form = ref<Form>({
   customColors: true,
   rootUnit: "",
   maxLevels: 3,
+  includeIdInProperties: false,
+  includeId: true,
 });
 
 const { focusId } = useFocusOnMount(undefined, 150);
