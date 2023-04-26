@@ -9,7 +9,7 @@
         <header class="flex flex-none justify-end p-2">
           <MapTimeController
             class="pointer-events-auto"
-            :show-controls="ui.mobilePanelOpen"
+            :show-controls="isMobile ? ui.mobilePanelOpen : true"
           />
         </header>
         <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
