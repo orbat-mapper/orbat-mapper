@@ -49,8 +49,8 @@ import { activeScenarioKey, timeModalKey } from "@/components/injects";
 
 const props = withDefaults(
   defineProps<{
-    showControls: boolean;
-    hideTime: boolean;
+    showControls?: boolean;
+    hideTime?: boolean;
   }>(),
   { showControls: true, hideTime: false }
 );
