@@ -8,7 +8,7 @@
       @dragleave="isDragOverAbove = false"
     />
     <div
-      class="group relative flex items-center justify-between border-l-2 py-2 pl-2 hover:bg-gray-200 dark:hover:bg-gray-700"
+      class="group relative flex items-center justify-between border-l-2 py-2 pl-2 hover:bg-gray-200 dark:hover:bg-gray-700 sm:pl-0"
       @dblclick="isOpen = !isOpen"
       @click="onUnitClick(unit, $event)"
       :class="[

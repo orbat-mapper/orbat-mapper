@@ -56,7 +56,7 @@ const filteredUnits = computed(() => {
 </script>
 
 <template>
-  <ul class="space-y-1">
+  <ul class="">
     <OrbatTreeItem
       :item="orbatItem"
       v-for="orbatItem in filteredUnits"
