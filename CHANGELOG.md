@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 April 2023
 
+- Add 'DEL' keyboard shortcut for deleting selected units.
 - Snap to every feature in drawing mode.
 - Add snapping to measurement tool.
 - Add a copy current location entry to map context menu.

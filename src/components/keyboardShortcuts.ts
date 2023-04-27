@@ -31,6 +31,7 @@ export const mapEditModeShortcuts: KeyboardCategory[] = [
   {
     label: "Unit editing and manipulation",
     shortcuts: [
+      { shortcut: [["del"]], description: "Delete selected units" },
       { shortcut: [["c"]], description: "Create subordinate unit" },
       { shortcut: [["e"]], description: "Edit active unit" },
       { shortcut: [["d"]], description: "Duplicate unit" },

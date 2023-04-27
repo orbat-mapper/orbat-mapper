@@ -32,6 +32,10 @@ const tabStore = useTabStore();
 const geo = useGeoStore();
 const unitSettings = useUnitSettingsStore();
 
+const selectedUnits = computed(() =>
+  [...selectedUnitIds.value].map((id) => state.getUnitById(id))
+);
+
 const activeUnit = computed(
   () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null
 );
@@ -79,6 +83,10 @@ function handlePanShortcut(e: KeyboardEvent) {
 function handleMoveShortcut(e: KeyboardEvent) {
   unitSettings.moveUnitEnabled = !unitSettings.moveUnitEnabled;
 }
+
+function handleDelete(e: KeyboardEvent) {
+  onUnitAction(selectedUnits.value, UnitActions.Delete);
+}
 </script>
 
 <template>
@@ -91,5 +99,6 @@ function handleMoveShortcut(e: KeyboardEvent) {
     @keyup.z.exact="handleZoomShortcut"
     @keyup.p="handlePanShortcut"
     @keyup.m="handleMoveShortcut"
+    @keyup.delete="handleDelete"
   />
 </template>

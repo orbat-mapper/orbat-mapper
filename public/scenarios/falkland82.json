@@ -1700,7 +1700,7 @@
           },
           "properties": {
             "type": "Point",
-            "name": "Rio Gallego AB",
+            "name": "Rio Gallegos AB",
             "fill": "#a40000",
             "fill-opacity": 1,
             "marker-symbol": "star",
