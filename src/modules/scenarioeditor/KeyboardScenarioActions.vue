@@ -86,6 +86,7 @@ function handleMoveShortcut(e: KeyboardEvent) {
 
 function handleDelete(e: KeyboardEvent) {
   onUnitAction(selectedUnits.value, UnitActions.Delete);
+  onFeatureAction([...selectedFeatureIds.value], "delete");
 }
 </script>
 

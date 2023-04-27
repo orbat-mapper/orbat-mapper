@@ -147,22 +147,32 @@ export function useUnitMenu(item: OrbatItemData | NOrbatItemData | Unit) {
 
 export function useScenarioFeatureActions() {
   const mapRef = useGeoStore().olMap! as OLMap;
+  const {
+    store: { groupUpdate },
+  } = injectStrict(activeScenarioKey);
 
-  const { zoomToFeature, panToFeature, zoomToFeatures } = useScenarioLayers(mapRef);
+  const { zoomToFeature, panToFeature, zoomToFeatures, deleteFeature } =
+    useScenarioLayers(mapRef);
 
   function onFeatureAction(
     featureOrFeaturesId: FeatureId | FeatureId[],
-    action: "zoom" | "pan"
+    action: "zoom" | "pan" | "delete"
   ) {
     const isArray = Array.isArray(featureOrFeaturesId);
     if (isArray && (action === "zoom" || action === "pan")) {
       zoomToFeatures(featureOrFeaturesId);
       return;
     }
-    (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {
-      if (action === "zoom") zoomToFeature(featureId);
-      if (action === "pan") panToFeature(featureId);
-    });
+    groupUpdate(
+      () => {
+        (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {
+          if (action === "zoom") zoomToFeature(featureId);
+          if (action === "pan") panToFeature(featureId);
+          if (action === "delete") deleteFeature(featureId);
+        });
+      },
+      { label: "batchLayer", value: "dummy" }
+    );
   }
 
   return { onFeatureAction };
