@@ -320,6 +320,7 @@ onGetLocation((location) => {
     const name = `${(activeParent.value?.subUnits?.length ?? 0) + 1}`;
     const sidc = new Sidc(activeSidc.value!);
     sidc.emt = currentEchelon.value;
+    sidc.standardIdentity = currentSid.value;
     const unitId = unitActions.createSubordinateUnit(activeParentId.value, {
       sidc: sidc.toString(),
       name,
