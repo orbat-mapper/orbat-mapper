@@ -4,12 +4,12 @@
     class="rounded hover:drop-shadow hover:sepia disabled:opacity-50 disabled:hover:sepia-0"
     :class="[active ? 'invert' : '']"
   >
-    <slot
-      ><MilitarySymbol
-        :sidc="sidc"
-        :size="size"
-        :options="{ ...symbolOptions, square: true }"
-    /></slot>
+    <MilitarySymbol
+      :sidc="sidc"
+      :size="size"
+      :options="{ ...symbolOptions, square: true }"
+    />
+    <slot />
   </button>
 </template>
 <script setup lang="ts">

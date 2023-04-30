@@ -66,10 +66,15 @@
         <PanelSymbolButton
           :size="22"
           :sidc="computedSidc"
-          class="ml-5"
+          class="group relative ml-5"
           :symbol-options="symbolOptions"
           @click="addUnit(activeSidc)"
-        />
+          title="Add unit"
+        >
+          <AddSymbolIcon
+            class="absolute -right-2 bottom-0 h-4 w-4 rounded-full bg-white bg-opacity-70 text-gray-600 group-hover:text-gray-900"
+          />
+        </PanelSymbolButton>
         <Popover as="template" v-slot="{ open }">
           <Float placement="top" :offset="12" flip shift portal>
             <PopoverButton as="template">
