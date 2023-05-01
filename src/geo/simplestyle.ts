@@ -135,7 +135,7 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
   let stroke: Stroke | undefined = defaultSimplestyleStroke;
   let fill: Fill | undefined = defaultSimplestyleFill;
   const markerSize = opts["marker-size"] || "medium";
-  if (opts.stroke === undefined && opts.fill === undefined) return; // use default layer style
+  //if (opts.stroke === undefined && opts.fill === undefined) return; // use default layer style
 
   if (opts.stroke) {
     let strokeColor = [...olColor.fromString(opts.stroke)];
