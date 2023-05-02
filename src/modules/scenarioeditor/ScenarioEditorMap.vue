@@ -110,7 +110,12 @@ import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/NewScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
-import { breakpointsTailwind, useBreakpoints, useToggle } from "@vueuse/core";
+import {
+  breakpointsTailwind,
+  useBreakpoints,
+  useDebounceFn,
+  useToggle,
+} from "@vueuse/core";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
@@ -119,6 +124,8 @@ import MapEditorDetailsPanel from "@/modules/scenarioeditor/MapEditorDetailsPane
 import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { GlobalEvents } from "vue-global-events";
+import { FeatureId, ScenarioFeatureProperties } from "@/types/scenarioGeoModels";
+import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
