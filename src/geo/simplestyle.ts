@@ -51,7 +51,7 @@ export interface SimpleStyleSpec extends StrokeStyleSpec, FillStyleSpec, MarkerS
 const scaleMap: Record<MarkerSize, number> = { medium: 1, large: 1.5, small: 0.75 };
 
 // based on https://openlayers.org/en/latest/examples/regularshape.html
-function createMarkerSymbol(
+export function createMarkerSymbol(
   markerSymbol: MarkerSymbol,
   size: MarkerSize,
   fill: Fill | undefined,

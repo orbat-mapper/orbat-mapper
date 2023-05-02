@@ -11,6 +11,7 @@ import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { ScenarioFeatureProperties } from "@/types/scenarioGeoModels";
 import { useDebounceFn } from "@vueuse/core";
 import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeatureMarkerSettings.vue";
+import DrawMarker from "@/components/DrawMarker.vue";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -96,5 +97,6 @@ function doUpdateFeature(data: Partial<ScenarioFeatureProperties>) {
       :feature="feature"
       @update="doUpdateFeature"
     />
+    <DrawMarker />
   </div>
 </template>
