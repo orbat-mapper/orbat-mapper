@@ -129,7 +129,7 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number) {
         class="mt-4"
         :model-value="marker['marker-color']"
         @update:model-value="updateValue('marker-color', $event)"
-        label="Select color"
+        label="Color"
       />
     </section>
   </div>

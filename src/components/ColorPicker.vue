@@ -5,7 +5,7 @@
       class="block text-sm font-medium leading-6 text-gray-900"
       ><slot name="label">{{ label }}</slot></RadioGroupLabel
     >
-    <div class="mt-4 flex items-center space-x-3">
+    <div class="mt-4 flex flex-wrap items-center gap-2">
       <RadioGroupOption
         as="template"
         v-for="color in colors"
@@ -26,7 +26,7 @@
             aria-hidden="true"
             :class="[
               color.bgColor,
-              'h-8 w-8 rounded-full border border-black border-opacity-10',
+              'h-7 w-7 rounded-full border border-black border-opacity-10',
             ]"
           />
         </div>
@@ -43,12 +43,7 @@ export const colors = [
     bgColor: "bg-slate-500",
     selectedColor: "ring-slate-500",
   },
-  {
-    name: "Pink",
-    value: "#ec4899",
-    bgColor: "bg-pink-500",
-    selectedColor: "ring-pink-500",
-  },
+
   {
     name: "Purple",
     value: "#a855f7",
@@ -72,6 +67,18 @@ export const colors = [
     value: "#eab308",
     bgColor: "bg-yellow-500",
     selectedColor: "ring-yellow-500",
+  },
+  {
+    name: "Pink",
+    value: "#ec4899",
+    bgColor: "bg-pink-500",
+    selectedColor: "ring-pink-500",
+  },
+  {
+    name: "Rose",
+    value: "#f43f5e",
+    bgColor: "bg-rose-500",
+    selectedColor: "ring-rose-500",
   },
 ];
 </script>
