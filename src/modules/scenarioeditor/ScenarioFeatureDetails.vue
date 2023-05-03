@@ -97,6 +97,5 @@ function doUpdateFeature(data: Partial<ScenarioFeatureProperties>) {
       :feature="feature"
       @update="doUpdateFeature"
     />
-    <DrawMarker />
   </div>
 </template>

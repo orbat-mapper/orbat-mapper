@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
-import { MarkerStyleSpec, MarkerSymbol } from "@/geo/simplestyle";
+import { MarkerStyleSpec, MarkerSymbol, SimpleStyleSpec } from "@/geo/simplestyle";
 import { ScenarioFeature } from "@/types/scenarioGeoModels";
 import { SelectItem } from "@/components/types";
 import DrawMarker from "@/components/DrawMarker.vue";
+import ColorPicker from "@/components/ColorPicker.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
-const emit = defineEmits<{ (e: "update", value: Partial<MarkerStyleSpec>): void }>();
+const emit = defineEmits<{ (e: "update", value: Partial<SimpleStyleSpec>): void }>();
+
+const color = ref("#eab308");
 
 const sizeOptions = [
   { name: "S", value: "small" },
@@ -30,13 +33,22 @@ const markerItems: SelectItem<MarkerSymbol>[] = [
 const marker = computed((): Partial<MarkerStyleSpec> => {
   const { properties } = props.feature;
   return {
+    "marker-color": properties["marker-color"] || "black",
     "marker-symbol": properties["marker-symbol"] || "circle",
     "marker-size": properties["marker-size"] || "medium",
   };
 });
 
 function updateValue(name: keyof MarkerStyleSpec, value: string | number) {
-  emit("update", { [name]: value });
+  if (name === "marker-color") {
+    emit("update", {
+      fill: value as string,
+      stroke: value as string,
+      "marker-color": value as string,
+    });
+  } else {
+    emit("update", { [name]: value });
+  }
 }
 </script>
 <template>
@@ -106,11 +118,19 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number) {
               <RadioGroupLabel as="span" class="sr-only">{{
                 option.label
               }}</RadioGroupLabel>
-              <span aria-hidden="true"><DrawMarker :marker="option.value" /></span>
+              <span aria-hidden="true"
+                ><DrawMarker :marker="option.value" :color="marker['marker-color']"
+              /></span>
             </div>
           </RadioGroupOption>
         </div>
       </RadioGroup>
+      <ColorPicker
+        class="mt-4"
+        :model-value="marker['marker-color']"
+        @update:model-value="updateValue('marker-color', $event)"
+        label="Select color"
+      />
     </section>
   </div>
 </template>
