@@ -64,7 +64,7 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number) {
         class="mt-2"
       >
         <RadioGroupLabel class="sr-only">Select marker size</RadioGroupLabel>
-        <div class="grid grid-cols-3 gap-3 sm:grid-cols-6">
+        <div class="grid grid-cols-6 gap-3">
           <RadioGroupOption
             as="template"
             v-for="option in sizeOptions"
@@ -98,7 +98,7 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number) {
         class="mt-2"
       >
         <RadioGroupLabel class="sr-only">Select marker size</RadioGroupLabel>
-        <div class="grid gap-1 sm:grid-cols-8">
+        <div class="grid grid-cols-8 gap-1">
           <RadioGroupOption
             as="template"
             v-for="option in markerItems"
