@@ -33,12 +33,8 @@ function drawSymbol(el: HTMLCanvasElement, color: string) {
   const vectorContext = toContext(canvasRef.value.getContext("2d"), {
     size: [props.size * 2, props.size * 2],
   });
-  const fill = new Fill({ color });
-  const stroke = new Stroke({ color });
   const style = new Style({
-    fill: fill,
-    stroke: stroke,
-    image: createMarkerSymbol(props.marker, "medium", fill, stroke),
+    image: createMarkerSymbol(props.marker, "medium", color),
   });
   vectorContext.setStyle(style);
   vectorContext.drawGeometry(new Point([10, 10]));

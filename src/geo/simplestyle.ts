@@ -54,10 +54,14 @@ const scaleMap: Record<MarkerSize, number> = { medium: 1, large: 1.5, small: 0.7
 export function createMarkerSymbol(
   markerSymbol: MarkerSymbol,
   size: MarkerSize,
-  fill: Fill | undefined,
-  stroke: Stroke | undefined
+  markerColor: string = "#7e7e7e"
 ) {
   const sizeScale = scaleMap[size] || 1;
+  const fill = new Fill({ color: markerColor });
+  const stroke = new Stroke({
+    color: ["cross", "x"].includes(markerSymbol) ? markerColor : "#fafafa",
+    width: 2,
+  });
   switch (markerSymbol) {
     case "square":
       return new RegularShape({
@@ -159,8 +163,7 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
     image: createMarkerSymbol(
       opts["marker-symbol"] || "circle",
       markerSize,
-      fill,
-      stroke
+      opts["marker-color"] || "#7e7e7e"
     ),
   });
 }

@@ -1636,8 +1636,7 @@
           "properties": {
             "type": "Point",
             "name": "Red Beach",
-            "description": "21 May: 45 Cdo",
-            "fill": null
+            "description": "21 May: 45 Cdo"
           },
           "id": "Zn3Qm3COkjrR-11cL98fB"
         },
@@ -1650,8 +1649,7 @@
           "properties": {
             "type": "Point",
             "name": "Blue Beach",
-            "description": "21 May: \n - 2 Para\n - 40 Cdo\n\n1-2 Jun: \n- 1/GR\n- 1WG\n- 2SG",
-            "fill": null
+            "description": "21 May: \n - 2 Para\n - 40 Cdo\n\n1-2 Jun: \n- 1/GR\n- 1WG\n- 2SG"
           },
           "id": "3nXZXzD74ZoLNsrm3arDE"
         },
@@ -1664,8 +1662,7 @@
           "properties": {
             "type": "Point",
             "name": "Green Beach",
-            "description": "21 May: 3 Para, 42 Cdo",
-            "fill": null
+            "description": "21 May: 3 Para, 42 Cdo"
           },
           "id": "Zi5qS3x-JmHsb_M23xL3F"
         }
@@ -1684,11 +1681,8 @@
           "properties": {
             "type": "Point",
             "name": "Rio Grande AB",
-            "fill": "#a40000",
-            "fill-opacity": 1,
-            "marker-symbol": "star",
-            "stroke": "#ffffff",
-            "stroke-width": 1
+            "marker-color": "#a40000",
+            "marker-symbol": "star"
           },
           "id": "dm1UDXs2xW"
         },
@@ -1701,11 +1695,8 @@
           "properties": {
             "type": "Point",
             "name": "Rio Gallegos AB",
-            "fill": "#a40000",
-            "fill-opacity": 1,
-            "marker-symbol": "star",
-            "stroke-width": 1,
-            "stroke": "#ffffff"
+            "marker-color": "#a40000",
+            "marker-symbol": "star"
           },
           "id": "dm1UssDXs2xW"
         },
@@ -1718,11 +1709,8 @@
           "properties": {
             "type": "Point",
             "name": "Puerto Belgrano",
-            "fill": "#a40000",
-            "fill-opacity": 1,
+            "marker-color": "#a40000",
             "marker-symbol": "pentagon",
-            "stroke-width": 1,
-            "stroke": "#ffffff",
             "marker-size": "small"
           },
           "id": "EYeIuLNE9V"
@@ -1737,12 +1725,9 @@
             "type": "Point",
             "name": "Corbeta Uruguay base",
             "marker-symbol": "triangle",
-            "stroke": "#ffffff",
-            "fill": "#a40000",
-            "fill-opacity": 1,
+            "marker-color": "#a40000",
             "description": "An Argentinian military outpost established in 1976",
-            "marker-size": "small",
-            "stroke-width": 1
+            "marker-size": "small"
           },
           "id": "uGTaeM6ZUd"
         },
@@ -1756,11 +1741,8 @@
             "type": "Point",
             "name": "Orcadas",
             "marker-symbol": "triangle",
-            "stroke": "#ffffff",
-            "fill": "#a40000",
-            "fill-opacity": 1,
-            "marker-size": "small",
-            "stroke-width": 1
+            "marker-color": "#a40000",
+            "marker-size": "small"
           },
           "id": "Jl2579NHvw"
         }
@@ -1779,12 +1761,8 @@
           "properties": {
             "type": "Point",
             "name": "RAF Ascension Island",
-            "fill": "#3465a4",
-            "fill-opacity": 1,
-            "stroke-opacity": 1,
-            "marker-symbol": "star",
-            "stroke-width": 1,
-            "stroke": "#ffffff"
+            "marker-color": "#3465a4",
+            "marker-symbol": "star"
           },
           "id": "VIyMHgWoWS"
         },
@@ -1797,11 +1775,8 @@
           "properties": {
             "type": "Point",
             "name": "HMNB Portsmouth",
-            "fill": "#3465a4",
-            "fill-opacity": 1,
+            "marker-color": "#3465a4",
             "marker-symbol": "pentagon",
-            "stroke-width": 1,
-            "stroke": "#ffffff",
             "marker-size": "small"
           },
           "id": "ibuQYToiiN"
@@ -1816,11 +1791,8 @@
             "type": "Point",
             "name": "British Antarctic Survey",
             "marker-symbol": "triangle",
-            "stroke": "#ffffff",
-            "fill": "#4e9a06",
-            "fill-opacity": 1,
-            "marker-size": "small",
-            "stroke-width": 1
+            "marker-color": "#4e9a06",
+            "marker-size": "small"
           },
           "id": "9GEGHFNoIK"
         }
