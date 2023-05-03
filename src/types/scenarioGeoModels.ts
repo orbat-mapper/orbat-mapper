@@ -1,6 +1,7 @@
 import type { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
 import { SimpleStyleSpec } from "@/geo/simplestyle";
 import { ScenarioTime } from "@/types/base";
+import { CurrentStateType, ScenarioEventDescription } from "@/types/scenarioModels";
 
 export interface VisibilityInfo {
   visibleFromT: ScenarioTime;
@@ -30,12 +31,25 @@ export interface ScenarioFeatureProperties
   [attribute: string]: any;
 }
 
-// A scenario feature is just a GeoJSON Feature with a required id field.
-// Might have to change this to support time varying geometries
+export interface ScenarioFeatureState extends Partial<ScenarioEventDescription> {
+  id: string;
+  t: ScenarioTime;
+  geometry?: Point | LineString | Polygon;
+  properties?: ScenarioFeatureProperties;
+}
+
+export interface CurrentScenarioFeatureState extends Omit<ScenarioFeatureState, "id"> {
+  type?: CurrentStateType;
+}
+
+// A scenario feature is basically just a GeoJSON Feature with a required id field.
 export interface ScenarioFeature
   extends GeoJsonFeature<Point | LineString | Polygon, ScenarioFeatureProperties> {
   id: FeatureId;
+  state?: ScenarioFeatureState[];
+  // internal runtime only state
   _hidden?: boolean;
+  _state?: CurrentScenarioFeatureState | null;
 }
 
 export interface ScenarioLayer extends Partial<VisibilityInfo> {
