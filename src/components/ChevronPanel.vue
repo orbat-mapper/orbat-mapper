@@ -33,7 +33,7 @@ const panelId = nanoid(5);
 
 <template>
   <div as="div" class="border-b border-gray-200 py-6">
-    <h3 class="-my-3 flex w-full items-center justify-between py-3">
+    <h3 class="group -my-3 flex w-full items-center justify-between py-3">
       <button
         type="button"
         class="group flex min-w-0 flex-auto items-center text-sm text-gray-400"
@@ -42,7 +42,7 @@ const panelId = nanoid(5);
         :aria-controls="panelId"
       >
         <ChevronRightIcon
-          class="h-6 w-6 flex-none transform text-gray-500 transition-transform group-hover:text-gray-900"
+          class="h-5 w-5 flex-none transform text-gray-500 transition-transform group-hover:text-gray-900"
           :class="{
             'rotate-90': isOpen,
           }"

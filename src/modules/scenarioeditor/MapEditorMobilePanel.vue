@@ -63,7 +63,7 @@
         <TabPanel class="p-4 pb-10">
           <ScenarioEventsPanel />
         </TabPanel>
-        <TabPanel class="p-4 pb-10"><p>Not implemented yet</p></TabPanel>
+        <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
       </TabPanels>
     </TabGroup>
   </main>
@@ -86,6 +86,7 @@ import { activeUnitKey } from "@/components/injects";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
+import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 
 const emit = defineEmits(["open-time-modal", "inc-day", "dec-day"]);
 

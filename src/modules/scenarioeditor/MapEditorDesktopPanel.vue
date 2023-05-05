@@ -38,7 +38,7 @@
         <TabPanel class="p-4 pb-10">
           <ScenarioEventsPanel />
         </TabPanel>
-        <TabPanel class="p-4 pb-10"><p>Not implemented yet</p></TabPanel>
+        <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
       </TabPanels>
     </TabGroup>
   </aside>
@@ -53,6 +53,7 @@ import { useToggle } from "@vueuse/core";
 import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
 import { injectStrict } from "@/utils";
 import { activeUnitKey } from "@/components/injects";
+import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 
 const emit = defineEmits(["close"]);
 

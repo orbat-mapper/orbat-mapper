@@ -44,6 +44,7 @@ import { useMapContextMenu } from "@/composables/mapContextMenu";
 import { useMapHover } from "@/composables/geoHover";
 import { useGeoLayersUndoRedo } from "@/composables/geoUndoRedo";
 import type Select from "ol/interaction/Select";
+import { useUiStore } from "@/stores/uiStore";
 
 interface Props {}
 
@@ -68,7 +69,8 @@ const {
 const mapRef = shallowRef<OLMap>();
 
 const uiTabs = useTabStore();
-const doNotFilterLayers = computed(() => uiTabs.activeScenarioTab === TAB_LAYERS);
+const uiStore = useUiStore();
+const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
 const unitSettingsStore = useUnitSettingsStore();
 const geoStore = useGeoStore();
 const settingsStore = useSettingsStore();

@@ -11,6 +11,7 @@ export const useUiStore = defineStore("ui", {
     activeStateItem: null,
     debugMode: useLocalStorage("debugMode", false),
     mobilePanelOpen: false,
+    layersPanelActive: false,
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,
