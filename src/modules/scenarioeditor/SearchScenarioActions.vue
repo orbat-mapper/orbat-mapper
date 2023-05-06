@@ -47,6 +47,19 @@ onLayerSelect(({ layerId }) => {
 
 onFeatureSelect(({ featureId }) => {
   ui.activeTabIndex = TAB_LAYERS;
+  const { feature, layer } = activeScenario.geo.getFeatureById(featureId);
+  nextTick(() => {
+    if (layer) {
+      layer._isOpen = true;
+    }
+    if (feature) {
+      selectedUnitIds.value.clear();
+      selectedFeatureIds.value.clear();
+      selectedFeatureIds.value.add(featureId);
+
+      l.zoomToFeature(featureId);
+    }
+  });
 });
 </script>
 <template></template>
