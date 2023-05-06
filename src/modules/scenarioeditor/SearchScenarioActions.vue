@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { nextTick, onMounted } from "vue";
+import { nextTick } from "vue";
 import { useSearchActions } from "@/composables/search";
-import { TAB_LAYERS, TAB_ORBAT } from "@/types/constants";
+import { TAB_LAYERS, TAB_ORBAT, UnitActions } from "@/types/constants";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
 import { activeMapKey, activeScenarioKey, activeUnitKey } from "@/components/injects";
 import { useUiStore } from "@/stores/uiStore";
 import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
+import { useUnitActions } from "@/composables/scenarioActions";
 
 const mapRef = injectStrict(activeMapKey);
 const activeUnitId = injectStrict(activeUnitKey);
@@ -17,12 +18,14 @@ const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
 const ui = useUiStore();
 const { selectedFeatureIds } = useSelectedFeatures();
 const { selectedUnitIds } = useSelectedUnits();
+const { onUnitAction } = useUnitActions();
 
 onUnitSelect(({ unitId }) => {
   ui.activeTabIndex = TAB_ORBAT;
   activeUnitId.value = unitId;
   selectedUnitIds.value.clear();
   selectedUnitIds.value.add(unitId);
+  const unit = activeScenario.unitActions.getUnitById(unitId);
   const { parents } = activeScenario.unitActions.getUnitHierarchy(unitId);
   parents.forEach((p) => (p._isOpen = true));
   nextTick(() => {
@@ -31,6 +34,7 @@ onUnitSelect(({ unitId }) => {
       el.scrollIntoView();
     }
   });
+  onUnitAction(unit, UnitActions.Zoom);
 });
 
 onLayerSelect(({ layerId }) => {
