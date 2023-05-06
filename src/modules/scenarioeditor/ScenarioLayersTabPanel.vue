@@ -104,9 +104,7 @@ function onLayerAction(
     v-model:open="layer._isOpen"
   >
     <template #label
-      ><span :class="layer.isHidden ? 'opacity-50' : ''"
-        >{{ layer.name }} {{ layer._isOpen }}</span
-      ></template
+      ><span :class="layer.isHidden ? 'opacity-50' : ''">{{ layer.name }}</span></template
     >
     <template #right
       ><div class="flex items-center space-x-1">
