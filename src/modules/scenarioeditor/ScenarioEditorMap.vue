@@ -65,6 +65,7 @@
       />
     </template>
     <KeyboardScenarioActions v-if="mapRef" />
+    <SearchScenarioActions v-if="mapRef" />
     <GlobalEvents
       v-if="ui.shortcutsEnabled"
       :filter="inputEventFilter"
@@ -74,16 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  nextTick,
-  onActivated,
-  onUnmounted,
-  provide,
-  ref,
-  shallowRef,
-  watch,
-} from "vue";
+import { computed, onActivated, onUnmounted, provide, shallowRef, watch } from "vue";
 import {
   useActiveUnitStore,
   useSelectedFeatures,
@@ -110,12 +102,7 @@ import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/NewScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
-import {
-  breakpointsTailwind,
-  useBreakpoints,
-  useDebounceFn,
-  useToggle,
-} from "@vueuse/core";
+import { breakpointsTailwind, useBreakpoints, useToggle } from "@vueuse/core";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
@@ -124,33 +111,33 @@ import MapEditorDetailsPanel from "@/modules/scenarioeditor/MapEditorDetailsPane
 import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { GlobalEvents } from "vue-global-events";
-import { FeatureId, ScenarioFeatureProperties } from "@/types/scenarioGeoModels";
-import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
+import SearchScenarioActions from "@/modules/scenarioeditor/SearchScenarioActions.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
 const activeUnitId = injectStrict(activeUnitKey);
+const { getModalTimestamp } = injectStrict(timeModalKey);
+
 const { state, update } = activeScenario.store;
+
 const {
   unitActions,
   io,
   time: { setCurrentTime, add, subtract, jumpToNextEvent, jumpToPrevEvent },
 } = activeScenario;
-
 const toolbarStore = useMainToolbarStore();
 const layout = useGeoEditorViewStore();
 const activeUnitStore = useActiveUnitStore();
 const ui = useUiStore();
-const mapRef = shallowRef<OLMap>();
 
+const mapRef = shallowRef<OLMap>();
 const featureSelectInteractionRef = shallowRef<Select>();
 provide(activeMapKey, mapRef);
-
 provide(activeFeatureSelectInteractionKey, featureSelectInteractionRef);
+
 const breakpoints = useBreakpoints(breakpointsTailwind);
 
 const isMobile = breakpoints.smallerOrEqual("md");
-
 function onMapReady({
   olMap,
   featureSelectInteraction,
@@ -161,11 +148,9 @@ function onMapReady({
   mapRef.value = olMap;
   featureSelectInteractionRef.value = featureSelectInteraction;
 }
-
 const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
 const { selectedFeatureIds } = useSelectedFeatures();
 const { selectedUnitIds } = useSelectedUnits();
-const { getModalTimestamp } = injectStrict(timeModalKey);
 
 const [showLeftPanel, toggleLeftPanel] = useToggle(true);
 
@@ -183,40 +168,12 @@ watch(
 
 const { send } = useNotifications();
 
-const activeTabIndex = ref(0);
-
-function changeTab(index: number) {
-  activeTabIndex.value = index;
-}
-
 onUnmounted(() => {
   activeUnitStore.clearActiveUnit();
 });
 
 onActivated(() => {
   mapRef.value?.updateSize();
-});
-
-onUnitSelect(({ unitId }) => {
-  activeUnitId.value = unitId;
-  selectedUnitIds.value.clear();
-  selectedUnitIds.value.add(unitId);
-  const { parents } = unitActions.getUnitHierarchy(unitId);
-  parents.forEach((p) => (p._isOpen = true));
-  nextTick(() => {
-    const el = document.getElementById(`o-${unitId}`);
-    if (el) {
-      el.scrollIntoView();
-    }
-  });
-});
-
-onLayerSelect(({ layerId }) => {
-  console.warn("Not implemented");
-});
-
-onFeatureSelect(({ featureId }) => {
-  console.warn("Not implemented");
 });
 
 function onCloseDetailsPanel() {
