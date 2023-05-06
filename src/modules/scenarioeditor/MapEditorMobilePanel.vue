@@ -29,7 +29,7 @@
         <div ref="swipeDownEl" class="flex flex-auto items-center justify-evenly">
           <Tab
             as="template"
-            v-for="tab in ['ORBAT', 'Details', 'Events', 'Layers']"
+            v-for="tab in ['ORBAT', 'Events', 'Layers', 'Details']"
             :key="tab"
             v-slot="{ selected }"
           >
@@ -51,6 +51,10 @@
         <TabPanel :unmount="false" class="pb-10">
           <OrbatPanel />
         </TabPanel>
+        <TabPanel class="p-4 pb-10">
+          <ScenarioEventsPanel />
+        </TabPanel>
+        <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
         <TabPanel class="pb-10">
           <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" class="p-4" />
           <ScenarioFeatureDetails
@@ -60,10 +64,6 @@
           />
           <ScenarioInfoPanel v-else />
         </TabPanel>
-        <TabPanel class="p-4 pb-10">
-          <ScenarioEventsPanel />
-        </TabPanel>
-        <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
       </TabPanels>
     </TabGroup>
   </main>
@@ -97,7 +97,7 @@ const { mobilePanelOpen: showBottomPanel } = storeToRefs(useUiStore());
 
 const toggleBottomPanel = useToggle(showBottomPanel);
 
-const activeTabIndex = ref(1);
+const { activeTabIndex } = storeToRefs(useUiStore());
 
 function changeTab(index: number) {
   activeTabIndex.value = index;

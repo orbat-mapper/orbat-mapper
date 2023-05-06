@@ -48,12 +48,13 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import CloseButton from "@/components/CloseButton.vue";
-import { ref } from "vue";
 import { useToggle } from "@vueuse/core";
 import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
 import { injectStrict } from "@/utils";
 import { activeUnitKey } from "@/components/injects";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
+import { storeToRefs } from "pinia";
+import { useUiStore } from "@/stores/uiStore";
 
 const emit = defineEmits(["close"]);
 
@@ -63,7 +64,7 @@ const { selectedUnitIds } = useSelectedUnits();
 
 const [showBottomPanel, toggleBottomPanel] = useToggle(true);
 
-const activeTabIndex = ref(0);
+const { activeTabIndex } = storeToRefs(useUiStore());
 
 function changeTab(index: number) {
   activeTabIndex.value = index;
