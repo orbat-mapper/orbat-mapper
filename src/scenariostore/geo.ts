@@ -56,6 +56,7 @@ export function useGeo(store: NewScenarioStore) {
     const newLayer = klona({ ...data, _isNew: true });
     if (!newLayer.id) newLayer.id = nanoid();
     newLayer._isNew = true;
+    newLayer._isOpen = true;
     update(
       (s) => {
         s.layers.push(newLayer.id);
@@ -104,6 +105,15 @@ export function useGeo(store: NewScenarioStore) {
       .map((layerId) => state.layerMap[layerId])
       .map((layer) => ({
         ...layer,
+        features: layer.features.map((featureId) => state.featureMap[featureId]),
+      }));
+  });
+
+  const layersFeatures = computed(() => {
+    return state.layers
+      .map((layerId) => state.layerMap[layerId])
+      .map((layer) => ({
+        layer,
         features: layer.features.map((featureId) => state.featureMap[featureId]),
       }));
   });
@@ -229,5 +239,6 @@ export function useGeo(store: NewScenarioStore) {
     updateFeature,
     itemsInfo,
     layers,
+    layersFeatures,
   };
 }

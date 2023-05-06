@@ -12,12 +12,7 @@ import { computed, onUnmounted } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import { ScenarioLayer } from "@/types/scenarioGeoModels";
 import CloseButton from "@/components/CloseButton.vue";
-import {
-  IconClockOutline,
-  IconEye,
-  IconEyeOff,
-  IconPencil,
-} from "@iconify-prerendered/vue-mdi";
+import { IconClockOutline, IconEye, IconEyeOff } from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { MenuItemData } from "@/components/types";
@@ -32,7 +27,7 @@ uiStore.layersPanelActive = true;
 onUnmounted(() => (uiStore.layersPanelActive = false));
 
 const {
-  scenarioLayers,
+  scenarioLayersFeatures,
   scenarioLayersGroup,
   toggleLayerVisibility,
   moveLayer,
@@ -52,7 +47,7 @@ const activeFeatureId = computed(() => {
 
 function onFeatureClick(
   feature: NScenarioFeature,
-  layer: ScenarioLayer,
+  layer: NScenarioLayer,
   event?: MouseEvent
 ) {
   const isMultiSelect = event?.ctrlKey || event?.shiftKey;
@@ -79,7 +74,10 @@ const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ];
 
-function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerAction) {
+function onLayerAction(
+  layer: ScenarioLayer | NScenarioLayer,
+  action: ScenarioLayerAction
+) {
   if (action === ScenarioLayerActions.Zoom) zoomToLayer(layer.id);
   if (action === ScenarioLayerActions.Delete) {
     /* if (activeLayer.value === layer.id) {
@@ -100,13 +98,15 @@ function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerAction) {
 
 <template>
   <ChevronPanel
-    v-for="layer in scenarioLayers"
+    v-for="{ layer, features } in scenarioLayersFeatures"
     :key="layer.id"
     :label="layer.name"
     v-model:open="layer._isOpen"
   >
     <template #label
-      ><span :class="layer.isHidden ? 'opacity-50' : ''">{{ layer.name }}</span></template
+      ><span :class="layer.isHidden ? 'opacity-50' : ''"
+        >{{ layer.name }} {{ layer._isOpen }}</span
+      ></template
     >
     <template #right
       ><div class="flex items-center space-x-1">
@@ -127,7 +127,7 @@ function onLayerAction(layer: ScenarioLayer, action: ScenarioLayerAction) {
     ></template>
     <ul class="-mt-4">
       <li
-        v-for="feature in layer.features"
+        v-for="feature in features"
         class="group flex h-10 items-center justify-between hover:bg-amber-50"
         :key="feature.id"
         :class="{ 'bg-yellow-100': selectedFeatureIds.has(feature.id) }"

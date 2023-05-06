@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
+import { TAB_ORBAT } from "@/types/constants";
 
 export const useUiStore = defineStore("ui", {
   state: () => ({
@@ -12,7 +13,7 @@ export const useUiStore = defineStore("ui", {
     debugMode: useLocalStorage("debugMode", false),
     mobilePanelOpen: false,
     layersPanelActive: false,
-    activeTabIndex: 0,
+    activeTabIndex: TAB_ORBAT,
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,

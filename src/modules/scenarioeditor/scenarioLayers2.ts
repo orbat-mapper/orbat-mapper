@@ -422,7 +422,7 @@ export function useScenarioLayers(
     geo.updateFeature(id, dataUpdate, true, true);
   }
 
-  function toggleLayerVisibility(scenarioLayer: ScenarioLayer) {
+  function toggleLayerVisibility(scenarioLayer: ScenarioLayer | NScenarioLayer) {
     const olLayer = getOlLayerById(scenarioLayer.id);
     if (!olLayer) return;
     const isVisible = olLayer.getVisible();
@@ -435,10 +435,15 @@ export function useScenarioLayers(
     return layer;
   }
 
+  function getLayerById(layerId: FeatureId): NScenarioLayer | undefined | null {
+    return geo.getLayerById(layerId);
+  }
+
   return {
     scenarioLayersGroup,
     initializeFromStore,
     scenarioLayers: geo.layers,
+    scenarioLayersFeatures: geo.layersFeatures,
     getOlLayerById,
     addLayer,
     zoomToFeature,
@@ -460,6 +465,7 @@ export function useScenarioLayers(
       const { feature, layer } = getFeatureAndLayerById(id, scenarioLayersOl) || {};
       return feature;
     },
+    getLayerById,
   };
 }
 

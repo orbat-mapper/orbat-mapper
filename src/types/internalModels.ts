@@ -32,6 +32,7 @@ export interface NSideGroup extends Omit<SideGroup, "subUnits" | "_pid"> {
 
 export interface NScenarioLayer extends Omit<ScenarioLayer, "features"> {
   features: FeatureId[];
+  _isOpen?: boolean;
 }
 export interface NScenarioFeature extends ScenarioFeature {
   _pid: FeatureId;

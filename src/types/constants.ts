@@ -82,6 +82,6 @@ const stateActions = [
 export type StateAction = (typeof stateActions)[number];
 
 export const TAB_ORBAT = 0;
-export const TAB_INFO = 1;
+export const TAB_EVENTS = 1;
 export const TAB_LAYERS = 2;
-export const TAB_EVENTS = 3;
+export const TAB_INFO = 3;
