@@ -8,5 +8,25 @@
 </template>
 <script setup lang="ts">
 import CloseButton from "@/components/CloseButton.vue";
+import { onMounted, onUnmounted } from "vue";
+import { injectStrict } from "@/utils";
+import { activeMapKey } from "@/components/injects";
 const emit = defineEmits(["close"]);
+const mapRef = injectStrict(activeMapKey);
+
+onMounted(() => {
+  const padding = mapRef.value.getView().padding;
+  if (padding) {
+    const [top, right, bottom, left] = padding;
+    mapRef.value.getView().padding = [top, 400, bottom, left];
+  }
+});
+
+onUnmounted(() => {
+  const padding = mapRef.value.getView().padding;
+  if (padding) {
+    const [top, right, bottom, left] = padding;
+    mapRef.value.getView().padding = [top, 0, bottom, left];
+  }
+});
 </script>

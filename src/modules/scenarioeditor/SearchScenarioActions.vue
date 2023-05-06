@@ -44,7 +44,7 @@ onLayerSelect(({ layerId }) => {
     const layer = l.getLayerById(layerId);
     if (layer) {
       layer._isOpen = true;
-      l.zoomToLayer(layerId);
+      nextTick(() => l.zoomToLayer(layerId));
     }
   });
 });
@@ -61,7 +61,7 @@ onFeatureSelect(({ featureId }) => {
       selectedFeatureIds.value.clear();
       selectedFeatureIds.value.add(featureId);
 
-      l.zoomToFeature(featureId);
+      nextTick(() => l.zoomToFeature(featureId));
     }
   });
 });

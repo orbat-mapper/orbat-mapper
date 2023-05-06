@@ -51,14 +51,16 @@ import CloseButton from "@/components/CloseButton.vue";
 import { useToggle } from "@vueuse/core";
 import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
 import { injectStrict } from "@/utils";
-import { activeUnitKey } from "@/components/injects";
+import { activeMapKey, activeUnitKey } from "@/components/injects";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 import { storeToRefs } from "pinia";
 import { useUiStore } from "@/stores/uiStore";
+import { onMounted, onUnmounted } from "vue";
 
 const emit = defineEmits(["close"]);
 
 const activeUnitId = injectStrict(activeUnitKey);
+const mapRef = injectStrict(activeMapKey);
 const { selectedFeatureIds } = useSelectedFeatures();
 const { selectedUnitIds } = useSelectedUnits();
 
@@ -69,4 +71,20 @@ const { activeTabIndex } = storeToRefs(useUiStore());
 function changeTab(index: number) {
   activeTabIndex.value = index;
 }
+
+onMounted(() => {
+  const padding = mapRef.value.getView().padding;
+  if (padding) {
+    const [top, right, bottom, left] = padding;
+    mapRef.value.getView().padding = [top, right, bottom, 400];
+  }
+});
+
+onUnmounted(() => {
+  const padding = mapRef.value.getView().padding;
+  if (padding) {
+    const [top, right, bottom, left] = padding;
+    mapRef.value.getView().padding = [top, right, bottom, 0];
+  }
+});
 </script>
