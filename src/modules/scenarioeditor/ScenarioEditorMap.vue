@@ -28,12 +28,12 @@
             </button>
           </div>
           <MapEditorDetailsPanel v-if="showDetailsPanel" @close="onCloseDetailsPanel()">
-            <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" />
             <ScenarioFeatureDetails
-              v-else
+              v-if="selectedFeatureIds.size"
               :selected-ids="selectedFeatureIds"
               class="p-2"
             />
+            <UnitPanel v-else-if="activeUnitId" :unit-id="activeUnitId" />
           </MapEditorDetailsPanel>
           <div v-else></div>
         </section>
