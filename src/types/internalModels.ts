@@ -1,4 +1,4 @@
-import { CurrentStateType, Side, SideGroup, Unit } from "./scenarioModels";
+import { CurrentStateType, ScenarioEvent, Side, SideGroup, Unit } from "./scenarioModels";
 import { EntityId } from "./base";
 import { FeatureId, ScenarioFeature, ScenarioLayer } from "@/types/scenarioGeoModels";
 import { Optional } from "@/types/helpers";
@@ -61,3 +61,8 @@ export const INTERNAL_NAMES = [
   "_sid",
 ];
 export const TIMESTAMP_NAMES = ["t", "visibleFromT", "visibleUntilT", "startTime"];
+
+export interface NScenarioEvent extends ScenarioEvent {
+  id: string;
+  _type: "unit" | "scenario";
+}

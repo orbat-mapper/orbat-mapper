@@ -108,6 +108,7 @@ export interface ScenarioEvent extends ScenarioEventDescription {
   startTime: ScenarioTime;
   uiActions?: UIAction[];
   id?: string;
+  _type?: "unit" | "scenario";
 }
 
 export interface ScenarioInfo {

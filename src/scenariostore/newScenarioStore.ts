@@ -13,6 +13,7 @@ import { walkSide } from "@/stores/scenarioStore";
 import { klona } from "klona";
 import type { EntityId } from "@/types/base";
 import type {
+  NScenarioEvent,
   NScenarioFeature,
   NScenarioLayer,
   NSide,
@@ -33,7 +34,7 @@ export interface ScenarioState {
   featureMap: Record<FeatureId, NScenarioFeature>;
   info: ScenarioInfo;
   events: ScenarioEvent[];
-  mergedEvents: ScenarioEvent[];
+  mergedEvents: NScenarioEvent[];
   currentTime: number;
   getUnitById: (id: EntityId) => NUnit;
   getSideById: (id: EntityId) => NSide;
@@ -55,7 +56,11 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     startTime: +dayjs(e.startTime),
   }));
 
-  const mergedEvents: ScenarioEvent[] = [...events];
+  const mergedEvents: NScenarioEvent[] = events.map((e) => ({
+    ...e,
+    _type: "scenario",
+    id: e.id ?? nanoid(),
+  }));
 
   if (scenario.startTime !== undefined) {
     scenario.startTime = +dayjs(scenario.startTime);
@@ -83,10 +88,12 @@ function prepareScenario(scenario: Scenario): ScenarioState {
       .forEach((s) => {
         const { t: startTime, subTitle, description } = s;
         mergedEvents.push({
+          id: s.id || nanoid(),
           startTime,
           title: s.title || "NN",
           subTitle,
           description,
+          _type: "unit",
         });
       });
     unit._state = null;

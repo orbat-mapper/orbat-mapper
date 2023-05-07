@@ -43,7 +43,9 @@ const t = computed(() => store.state.currentTime);
                   {{ formatDateString(event.startTime, timeZone).split("T")[0] }}
                 </p>
                 <p class="font-medium">{{ event.title }}</p>
-                <p v-if="event.subTitle" class="text-gray-700">{{ event.subTitle }}</p>
+                <p v-if="event.subTitle" class="text-gray-700">
+                  {{ event.subTitle }}
+                </p>
               </div>
             </div>
           </div>
