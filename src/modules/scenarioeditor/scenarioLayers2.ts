@@ -265,7 +265,7 @@ export function useScenarioLayers(
     const { feature: olFeature } =
       getFeatureAndLayerById(featureId, scenarioLayersOl) || {};
     if (!olFeature) return;
-    olMap.getView().fit(olFeature.getGeometry(), { maxZoom: 17 });
+    olMap.getView().fit(olFeature.getGeometry(), { maxZoom: 15 });
   }
 
   function zoomToFeatures(featureIds: FeatureId[]) {

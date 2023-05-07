@@ -57,7 +57,7 @@ function handleEscape(e: KeyboardEvent) {
 }
 
 function handleZoomShortcut(e: KeyboardEvent) {
-  if (selectedFeatureIds.value.size && tabStore.activeScenarioTab === TAB_LAYERS) {
+  if (selectedFeatureIds.value.size) {
     const fIds = [...selectedFeatureIds.value];
     onFeatureAction(fIds.length > 1 ? fIds : fIds[0], "zoom");
   } else if (selectedUnitIds.value.size || activeUnit.value) {
@@ -69,7 +69,7 @@ function handleZoomShortcut(e: KeyboardEvent) {
 }
 
 function handlePanShortcut(e: KeyboardEvent) {
-  if (selectedFeatureIds.value.size && tabStore.activeScenarioTab === TAB_LAYERS) {
+  if (selectedFeatureIds.value.size) {
     const fIds = [...selectedFeatureIds.value];
     onFeatureAction(fIds.length > 1 ? fIds : fIds[0], "pan");
   } else if (selectedUnitIds.value.size || activeUnit.value) {
