@@ -73,11 +73,9 @@ function changeTab(index: number) {
 }
 
 onMounted(() => {
-  const padding = mapRef.value.getView().padding;
-  if (padding) {
-    const [top, right, bottom, left] = padding;
-    mapRef.value.getView().padding = [top, right, bottom, 400];
-  }
+  const padding = mapRef.value.getView().padding || [0, 0, 0, 0];
+  const [top, right, bottom, left] = padding;
+  mapRef.value.getView().padding = [top, right, bottom, 400];
 });
 
 onUnmounted(() => {

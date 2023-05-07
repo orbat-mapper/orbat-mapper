@@ -15,11 +15,9 @@ const emit = defineEmits(["close"]);
 const mapRef = injectStrict(activeMapKey);
 
 onMounted(() => {
-  const padding = mapRef.value.getView().padding;
-  if (padding) {
-    const [top, right, bottom, left] = padding;
-    mapRef.value.getView().padding = [top, 400, bottom, left];
-  }
+  const padding = mapRef.value.getView().padding || [0, 0, 0, 0];
+  const [top, right, bottom, left] = padding;
+  mapRef.value.getView().padding = [top, 400, bottom, left];
 });
 
 onUnmounted(() => {
