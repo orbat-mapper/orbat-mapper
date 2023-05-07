@@ -12,6 +12,8 @@ import { ScenarioFeatureProperties } from "@/types/scenarioGeoModels";
 import { useDebounceFn } from "@vueuse/core";
 import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeatureMarkerSettings.vue";
 import DrawMarker from "@/components/DrawMarker.vue";
+import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeatureStrokeSettings.vue";
+import ScenarioFeatureFillSettings from "@/modules/scenarioeditor/ScenarioFeatureFillSettings.vue";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -45,6 +47,11 @@ watch(
 );
 
 const geometryType = computed(() => feature.value?.properties.type);
+const hasStroke = computed(() => geometryType.value !== "Point");
+const hasFill = computed(
+  () => !["Point", "LineString"].includes(geometryType.value || "")
+);
+
 const isMultipleFeatures = computed(() => props.selectedIds.size > 1);
 
 function onKey(e: KeyboardEvent) {
@@ -94,6 +101,16 @@ function doUpdateFeature(data: Partial<ScenarioFeatureProperties>) {
     </header>
     <ScenarioFeatureMarkerSettings
       v-if="feature && geometryType === 'Point'"
+      :feature="feature"
+      @update="doUpdateFeature"
+    />
+    <ScenarioFeatureStrokeSettings
+      v-if="feature && hasStroke"
+      :feature="feature"
+      @update="doUpdateFeature"
+    />
+    <ScenarioFeatureFillSettings
+      v-if="feature && hasFill"
       :feature="feature"
       @update="doUpdateFeature"
     />

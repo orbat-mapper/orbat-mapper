@@ -141,13 +141,14 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
   const markerSize = opts["marker-size"] || "medium";
   //if (opts.stroke === undefined && opts.fill === undefined) return; // use default layer style
 
-  if (opts.stroke) {
-    let strokeColor = [...olColor.fromString(opts.stroke)];
+  if (opts.stroke || opts["stroke-width"] || opts["stroke-opacity"]) {
+    let strokeColor = [...olColor.fromString(opts.stroke || "#555555")];
     if (opts["stroke-opacity"]) strokeColor[3] = opts["stroke-opacity"];
     stroke = new Stroke({ color: strokeColor, width: opts["stroke-width"] || 2 });
   } else if (opts.stroke === null) {
     stroke = undefined;
   }
+  if (opts["stroke-opacity"] === 0) stroke = undefined;
 
   if (opts.fill) {
     let fillColor = [...olColor.fromString(opts.fill)];
@@ -156,6 +157,7 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
   } else if (opts.fill === null) {
     fill = undefined;
   }
+  if (opts["fill-opacity"] === 0) fill = undefined;
 
   return new Style({
     stroke,

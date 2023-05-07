@@ -87,7 +87,7 @@ import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
 import { useVModel } from "@vueuse/core";
 
 interface Props {
-  modelValue?: string;
+  modelValue: string;
   label?: string;
 }
 const props = withDefaults(defineProps<Props>(), { modelValue: colors[1].selectedColor });
