@@ -32,7 +32,7 @@ const panelId = nanoid(5);
 </script>
 
 <template>
-  <div as="div" class="border-b border-gray-200 py-6">
+  <div as="div" class="border-b border-gray-200 py-2">
     <h3 class="group -my-3 flex w-full items-center justify-between py-3">
       <button
         type="button"

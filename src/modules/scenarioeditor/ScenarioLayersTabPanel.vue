@@ -33,6 +33,7 @@ const {
   moveLayer,
   deleteLayer,
   zoomToLayer,
+  zoomToFeature,
 } = useScenarioLayers(mapRef.value);
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 
@@ -64,6 +65,14 @@ function onFeatureClick(
     }
   }
   emit("feature-click", feature, layer, event);
+}
+
+function onFeatureDoubleClick(
+  feature: NScenarioFeature,
+  layer: NScenarioLayer,
+  event?: MouseEvent
+) {
+  zoomToFeature(feature.id);
 }
 
 const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
@@ -123,14 +132,22 @@ function onLayerAction(
         />
         <DotsMenu :items="layerMenuItems" @action="onLayerAction(layer, $event)" /></div
     ></template>
-    <ul class="-mt-4">
+    <ul class="-mt-6">
       <li
         v-for="feature in features"
-        class="group flex h-10 items-center justify-between hover:bg-amber-50"
+        class="group flex items-center justify-between border-l pl-1 hover:bg-amber-50"
         :key="feature.id"
-        :class="{ 'bg-yellow-100': selectedFeatureIds.has(feature.id) }"
+        :class="
+          selectedFeatureIds.has(feature.id)
+            ? 'border-yellow-500 bg-yellow-100'
+            : 'border-transparent'
+        "
       >
-        <button @click="onFeatureClick(feature, layer, $event)" class="flex items-center">
+        <button
+          @click="onFeatureClick(feature, layer, $event)"
+          @dblclick="onFeatureDoubleClick(feature, layer, $event)"
+          class="flex flex-auto items-center py-2.5 sm:py-2"
+        >
           <component :is="getGeometryIcon(feature)" class="h-5 w-5 text-gray-400" />
           <span
             class="ml-2 text-left text-sm text-gray-700 group-hover:text-gray-900"
@@ -144,9 +161,7 @@ function onLayerAction(
             }}
           </span>
         </button>
-        <div class="flex hidden text-sm group-focus-within:block group-hover:block">
-          <CloseButton />
-        </div>
+        <div class="flex hidden text-sm group-focus-within:block group-hover:block"></div>
       </li>
     </ul>
   </ChevronPanel>
