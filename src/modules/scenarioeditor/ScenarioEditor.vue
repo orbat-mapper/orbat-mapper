@@ -30,7 +30,7 @@
             >
           </div>
 
-          <span class="truncate pl-3 text-gray-400">
+          <span class="hidden truncate pl-3 text-gray-400 sm:block">
             {{ activeScenario.store.state.info.name }}
           </span>
         </div>
