@@ -74,6 +74,7 @@ import FloatingPanel from "@/components/FloatingPanel.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import {
   activeFeatureSelectInteractionKey,
+  activeLayerKey,
   activeMapKey,
   activeScenarioKey,
 } from "@/components/injects";
@@ -84,7 +85,7 @@ import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useEditingInteraction } from "@/composables/geoEditing";
 import { useSelectedFeatures } from "@/stores/dragStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
-import { watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 const {
@@ -93,6 +94,7 @@ const {
 
 const mapRef = injectStrict(activeMapKey);
 const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
+const activeLayerIdRef = injectStrict(activeLayerKey);
 
 const {
   scenarioLayers,
@@ -105,13 +107,22 @@ const { selectedFeatureIds } = useSelectedFeatures();
 
 const { addMultiple } = storeToRefs(useMainToolbarStore());
 const [snap, toggleSnap] = useToggle(true);
-let layer: any;
-if (scenarioLayers.value?.length > 0) {
-  layer = getOlLayerById(scenarioLayers.value[0].id);
-}
+let layer = ref<any>();
+
+watch(
+  activeLayerIdRef,
+  (layerId) => {
+    if (layerId) {
+      layer.value = getOlLayerById(layerId);
+    } else if (scenarioLayers.value?.length > 0) {
+      layer.value = getOlLayerById(scenarioLayers.value[0].id);
+    }
+  },
+  { immediate: true }
+);
 
 const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing } =
-  useEditingInteraction(mapRef.value, layer, {
+  useEditingInteraction(mapRef.value, layer.value, {
     addMultiple: addMultiple,
     select: featureSelectInteractionRef.value,
     addHandler: (olFeature, olLayer) => {

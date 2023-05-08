@@ -15,6 +15,10 @@ export const activeParentKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>
 >;
 
+export const activeLayerKey = Symbol("Active layer") as InjectionKey<
+  Ref<FeatureId | undefined | null>
+>;
+
 export const selectedUnitIdsKey = Symbol("Selected units") as InjectionKey<
   Ref<Set<EntityId>>
 >;

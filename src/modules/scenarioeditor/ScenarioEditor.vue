@@ -241,6 +241,7 @@ import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
 import {
   activeFeaturesKey,
+  activeLayerKey,
   activeParentKey,
   activeScenarioKey,
   activeUnitKey,
@@ -287,6 +288,7 @@ const props = defineProps<{ activeScenario: TScenario }>();
 const dropZoneRef = ref<HTMLDivElement>();
 const activeUnitId = ref<EntityId | undefined | null>(null);
 const activeParentId = ref<EntityId | undefined | null>(null);
+const activeLayerId = ref<FeatureId | undefined | null>(null);
 const selectedUnitIdsRef = ref<Set<EntityId>>(new Set());
 const selectedFeatureIdsRef = ref<SelectedScenarioFeatures>(new Set());
 const scnFeatures = useFeatureStyles(props.activeScenario.geo);
@@ -296,6 +298,7 @@ const { activeScenarioTab } = storeToRefs(uiTabs);
 
 provide(activeUnitKey, activeUnitId);
 provide(activeParentKey, activeParentId);
+provide(activeLayerKey, activeLayerId);
 provide(selectedUnitIdsKey, selectedUnitIdsRef);
 provide(selectedFeatureIdsKey, selectedFeatureIdsRef);
 provide(activeScenarioKey, props.activeScenario);
@@ -437,4 +440,8 @@ function onDrop(files: File[] | null) {
 }
 
 const { isOverDropZone } = useFileDropZone(dropZoneRef, onDrop);
+
+if (state.layers.length > 0) {
+  activeLayerId.value = state.layers[0];
+}
 </script>

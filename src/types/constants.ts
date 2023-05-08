@@ -53,6 +53,7 @@ export const ScenarioLayerActions = {
   Zoom: "Zoom",
   MoveUp: "MoveUp",
   MoveDown: "MoveDown",
+  SetActive: "SetActive",
 } as const;
 
 export type ScenarioLayerAction =

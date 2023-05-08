@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { injectStrict } from "@/utils";
-import { activeMapKey } from "@/components/injects";
+import { activeLayerKey, activeMapKey } from "@/components/injects";
 import {
   getGeometryIcon,
   useScenarioLayers,
@@ -11,7 +11,6 @@ import { useSelectedFeatures } from "@/stores/dragStore";
 import { computed, onUnmounted } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import { ScenarioLayer } from "@/types/scenarioGeoModels";
-import CloseButton from "@/components/CloseButton.vue";
 import { IconClockOutline, IconEye, IconEyeOff } from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
@@ -21,6 +20,7 @@ import { ScenarioLayerAction, ScenarioLayerActions } from "@/types/constants";
 const emit = defineEmits(["feature-click"]);
 
 const mapRef = injectStrict(activeMapKey);
+const activeLayerId = injectStrict(activeLayerKey);
 const uiStore = useUiStore();
 
 uiStore.layersPanelActive = true;
@@ -77,6 +77,7 @@ function onFeatureDoubleClick(
 
 const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Zoom to", action: ScenarioLayerActions.Zoom },
+  { label: "Set as active", action: ScenarioLayerActions.SetActive },
   //{ label: "Edit", action: ScenarioLayerActions.Rename },
   { label: "Move up", action: ScenarioLayerActions.MoveUp },
   { label: "Move down", action: ScenarioLayerActions.MoveDown },
@@ -87,6 +88,7 @@ function onLayerAction(
   layer: ScenarioLayer | NScenarioLayer,
   action: ScenarioLayerAction
 ) {
+  if (action === ScenarioLayerActions.SetActive) activeLayerId.value = layer.id;
   if (action === ScenarioLayerActions.Zoom) zoomToLayer(layer.id);
   if (action === ScenarioLayerActions.Delete) {
     /* if (activeLayer.value === layer.id) {
@@ -113,7 +115,14 @@ function onLayerAction(
     v-model:open="layer._isOpen"
   >
     <template #label
-      ><span :class="layer.isHidden ? 'opacity-50' : ''">{{ layer.name }}</span></template
+      ><span
+        @dblclick="activeLayerId = layer.id"
+        :class="[
+          layer.isHidden ? 'opacity-50' : '',
+          layer.id === activeLayerId ? 'text-red-900' : '',
+        ]"
+        >{{ layer.name }}</span
+      ></template
     >
     <template #right
       ><div class="flex items-center space-x-1">
