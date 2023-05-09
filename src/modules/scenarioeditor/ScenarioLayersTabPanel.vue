@@ -130,7 +130,7 @@ function onLayerAction(
           type="button"
           @click="toggleLayerVisibility(layer)"
           @keydown.stop
-          class="hidden text-gray-500 hover:text-gray-700 group-focus-within:block group-hover:block"
+          class="text-gray-500 opacity-0 hover:text-gray-700 group-focus-within:opacity-100 group-hover:opacity-100"
         >
           <IconEyeOff v-if="layer.isHidden" class="h-5 w-5" />
           <IconEye class="h-5 w-5" v-else />
@@ -139,7 +139,11 @@ function onLayerAction(
           v-if="layer.visibleFromT || layer.visibleUntilT"
           class="h-5 w-5 text-gray-400"
         />
-        <DotsMenu :items="layerMenuItems" @action="onLayerAction(layer, $event)" /></div
+        <DotsMenu
+          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+          :items="layerMenuItems"
+          @action="onLayerAction(layer, $event)"
+        /></div
     ></template>
     <ul class="-mt-6">
       <li

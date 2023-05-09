@@ -67,7 +67,7 @@
       </div>
 
       <DotsMenu
-        class="flex-shrink-0 pr-2"
+        class="flex-shrink-0 pr-2 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
         :items="menuItems"
         @action="onUnitMenuAction(unit, $event)"
       />
