@@ -27,3 +27,15 @@
 .location-control {
   @apply absolute bottom-2 left-3 rounded bg-white bg-opacity-50 px-1 text-base tabular-nums tracking-tighter text-gray-800;
 }
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  border: transparent;
+}
