@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { injectStrict } from "@/utils";
-import { activeLayerKey, activeMapKey } from "@/components/injects";
+import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
 import {
+  featureMenuItems,
   getGeometryIcon,
   useScenarioLayers,
   useScenarioLayerSync,
@@ -10,19 +11,26 @@ import ChevronPanel from "@/components/ChevronPanel.vue";
 import { useSelectedFeatures } from "@/stores/dragStore";
 import { computed, onUnmounted } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
-import { ScenarioLayer } from "@/types/scenarioGeoModels";
+import { FeatureId, ScenarioLayer } from "@/types/scenarioGeoModels";
 import { IconClockOutline, IconEye, IconEyeOff } from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { MenuItemData } from "@/components/types";
-import { ScenarioLayerAction, ScenarioLayerActions } from "@/types/constants";
+import {
+  ScenarioFeatureActions,
+  ScenarioLayerAction,
+  ScenarioLayerActions,
+} from "@/types/constants";
 
 const emit = defineEmits(["feature-click"]);
 
 const mapRef = injectStrict(activeMapKey);
 const activeLayerId = injectStrict(activeLayerKey);
 const uiStore = useUiStore();
-
+const {
+  geo,
+  store: { groupUpdate },
+} = injectStrict(activeScenarioKey);
 uiStore.layersPanelActive = true;
 onUnmounted(() => (uiStore.layersPanelActive = false));
 
@@ -34,6 +42,10 @@ const {
   deleteLayer,
   zoomToLayer,
   zoomToFeature,
+  zoomToFeatures,
+  deleteFeature,
+  panToFeature,
+  moveFeature,
 } = useScenarioLayers(mapRef.value);
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 
@@ -105,6 +117,38 @@ function onLayerAction(
     moveLayer(layer.id, direction);
   }
 }
+
+function onFeatureAction(
+  featureOrFeaturesId: FeatureId | FeatureId[],
+  action: ScenarioFeatureActions
+) {
+  const isArray = Array.isArray(featureOrFeaturesId);
+
+  if (isArray && (action === "zoom" || action === "pan")) {
+    zoomToFeatures(featureOrFeaturesId);
+    return;
+  }
+  const tmp = isArray ? featureOrFeaturesId : [featureOrFeaturesId];
+  groupUpdate(
+    () =>
+      tmp.forEach((featureId) => {
+        const { feature, layer } = geo.getFeatureById(featureId) || {};
+        if (action === "zoom") zoomToFeature(featureId);
+        if (action === "pan") panToFeature(featureId);
+
+        if (!layer || !layer) return;
+
+        if (action === "delete") {
+          deleteFeature(feature.id);
+        }
+        if (action === "moveUp" || action === "moveDown") {
+          const direction = action === "moveUp" ? "up" : "down";
+          moveFeature(feature, direction);
+        }
+      }),
+    { label: "batchLayer", value: "dummy" }
+  );
+}
 </script>
 
 <template>
@@ -125,7 +169,7 @@ function onLayerAction(
       ></template
     >
     <template #right
-      ><div class="flex items-center space-x-1">
+      ><div class="flex items-center">
         <button
           type="button"
           @click="toggleLayerVisibility(layer)"
@@ -174,7 +218,17 @@ function onLayerAction(
             }}
           </span>
         </button>
-        <div class="flex hidden text-sm group-focus-within:block group-hover:block"></div>
+        <div class="relative flex items-center">
+          <IconClockOutline
+            v-if="feature.properties.visibleFromT || feature.properties.visibleUntilT"
+            class="h-5 w-5 text-gray-400"
+          />
+          <DotsMenu
+            :items="featureMenuItems"
+            @action="onFeatureAction(feature.id, $event)"
+            class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+          />
+        </div>
       </li>
     </ul>
   </ChevronPanel>
