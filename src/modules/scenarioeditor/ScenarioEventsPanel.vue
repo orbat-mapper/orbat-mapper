@@ -3,6 +3,14 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed } from "vue";
 import { formatDateString } from "@/geo/utils";
+import { ScenarioEvent } from "@/types/scenarioModels";
+
+interface Props {
+  selectOnly?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), { selectOnly: false });
+const emit = defineEmits(["event-click"]);
 
 const {
   store,
@@ -11,6 +19,11 @@ const {
 
 const events = computed(() => store.state.mergedEvents);
 const t = computed(() => store.state.currentTime);
+
+function onEventClick(event: ScenarioEvent) {
+  if (!props.selectOnly) setCurrentTime(event.startTime);
+  emit("event-click", event);
+}
 </script>
 <template>
   <div class="">
@@ -27,7 +40,7 @@ const t = computed(() => store.state.currentTime);
             />
             <div class="relative flex space-x-4">
               <button
-                @click="setCurrentTime(event.startTime)"
+                @click="onEventClick(event)"
                 class="mt-1 flex h-4 w-4 items-center justify-center rounded-full ring-4 ring-white"
                 :class="{
                   'bg-amber-500': event.startTime > t,
@@ -37,7 +50,7 @@ const t = computed(() => store.state.currentTime);
               ></button>
               <div
                 class="min-w-0 flex-1 cursor-pointer text-sm"
-                @click="setCurrentTime(event.startTime)"
+                @click="onEventClick(event)"
               >
                 <p class="text-xs font-medium text-red-900">
                   {{ formatDateString(event.startTime, timeZone).split("T")[0] }}
