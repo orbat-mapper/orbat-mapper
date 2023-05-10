@@ -14,7 +14,7 @@ import {
   useOlEvent,
 } from "@/composables/openlayersHelpers";
 import { GeoJSON } from "ol/format";
-import Feature from "ol/Feature";
+import Feature, { FeatureLike } from "ol/Feature";
 import type {
   FeatureId,
   ScenarioFeature,
@@ -53,8 +53,20 @@ import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
 import { useSelectedFeatures } from "@/stores/dragStore";
+import { Fill, Style } from "ol/style";
+import Stroke from "ol/style/Stroke";
+import CircleStyle from "ol/style/Circle";
 
 const { send } = useNotifications();
+const selectStyle = new Style({ stroke: new Stroke({ color: "#ffff00", width: 9 }) });
+const selectMarkerStyle = new Style({
+  image: new CircleStyle({
+    radius: 15,
+    fill: new Fill({
+      color: "#ffff00",
+    }),
+  }),
+});
 
 export enum LayerType {
   overlay = "OVERLAY",
@@ -137,6 +149,7 @@ export function useScenarioFeatureSelect(
     enable: MaybeRef<boolean>;
   }> = {}
 ) {
+  const { scenarioFeatureStyle } = injectStrict(activeFeaturesKey);
   const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
   const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
     VectorLayer<any>
@@ -150,6 +163,17 @@ export function useScenarioFeatureSelect(
     condition: clickCondition,
     hitTolerance: 20,
     layers: scenarioLayersOl.getArray(),
+    style: (feature: FeatureLike, res: number): Style | Style[] => {
+      const s = scenarioFeatureStyle(feature, res);
+      let activeSelectStyle: Style;
+      if (feature.getGeometry()?.getType() === "Point") {
+        activeSelectStyle = selectMarkerStyle;
+      } else {
+        selectStyle.getStroke().setWidth((s.getStroke().getWidth() || 0) + 8);
+        activeSelectStyle = selectStyle;
+      }
+      return [activeSelectStyle, s];
+    },
   });
   const selectedFeatures = selectInteraction.getFeatures();
   let isInternal = false;
