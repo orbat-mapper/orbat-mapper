@@ -42,7 +42,7 @@
         </form>
       </TabItem>
       <TabItem label="Events">
-        <ScenarioEventsPanel class="" />
+        <ScenarioEventsPanel select-only @event-click="onEventClick" />
       </TabItem>
     </TabView>
   </SimpleModal>
@@ -62,12 +62,20 @@ import { useFocusOnMount } from "@/components/helpers";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
+import { ScenarioEvent } from "@/types/scenarioModels";
 
-const props = defineProps({
-  dialogTitle: { type: String, default: "Set scenario date and time" },
-  timestamp: { type: Number, default: 386467200000 },
-  modelValue: { type: Boolean, default: false },
-  timeZone: { type: String, default: "UTC" },
+interface Props {
+  dialogTitle?: string;
+  timestamp?: number;
+  modelValue?: boolean;
+  timeZone?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  dialogTitle: "Set scenario date and time",
+  timestamp: 386467200000,
+  modelValue: false,
+  timeZone: "UTC",
 });
 const emit = defineEmits(["update:modelValue", "update:timestamp", "cancel"]);
 
@@ -86,4 +94,9 @@ const updateTime = () => {
   emit("update:timestamp", resDateTime.value.valueOf());
   open.value = false;
 };
+
+function onEventClick(event: ScenarioEvent) {
+  emit("update:timestamp", event.startTime);
+  open.value = false;
+}
 </script>
