@@ -111,6 +111,7 @@ function onLayerAction(
   if (action === ScenarioLayerActions.Zoom) zoomToLayer(layer.id);
   if (action === ScenarioLayerActions.Edit) {
     editedLayerId.value = layer.id;
+    layer._isOpen = true;
   }
   if (action === ScenarioLayerActions.Delete) {
     /* if (activeLayer.value === layer.id) {
