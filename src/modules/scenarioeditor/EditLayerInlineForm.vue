@@ -13,7 +13,7 @@ import DescriptionItem from "@/components/DescriptionItem.vue";
 import PlainButton from "@/components/PlainButton.vue";
 
 const props = defineProps<{
-  layer: ScenarioLayerInstance;
+  layer: ScenarioLayerInstance | NScenarioLayer;
 }>();
 const emit = defineEmits(["close", "update"]);
 
@@ -62,6 +62,8 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
         >{{ formatDateString(form.visibleFromT, timeZone) }}
         <PlainButton @click="doShowTimeModal('visibleFromT')" class="ml-2"
           >Change</PlainButton
+        ><PlainButton v-if="form.visibleFromT" @click="form.visibleFromT = undefined"
+          >X</PlainButton
         >
       </DescriptionItem>
 
@@ -69,6 +71,9 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
         >{{ formatDateString(form.visibleUntilT, timeZone) }}
         <PlainButton @click="doShowTimeModal('visibleUntilT')" class="ml-2"
           >Change</PlainButton
+        >
+        <PlainButton v-if="form.visibleUntilT" @click="form.visibleUntilT = undefined"
+          >X</PlainButton
         >
       </DescriptionItem>
 
