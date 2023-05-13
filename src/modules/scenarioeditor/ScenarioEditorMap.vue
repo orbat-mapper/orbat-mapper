@@ -75,7 +75,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onActivated, onUnmounted, provide, shallowRef, watch } from "vue";
+import {
+  computed,
+  onActivated,
+  onUnmounted,
+  provide,
+  ShallowRef,
+  shallowRef,
+  watch,
+} from "vue";
 import {
   useActiveUnitStore,
   useSelectedFeatures,
@@ -132,8 +140,11 @@ const ui = useUiStore();
 
 const mapRef = shallowRef<OLMap>();
 const featureSelectInteractionRef = shallowRef<Select>();
-provide(activeMapKey, mapRef);
-provide(activeFeatureSelectInteractionKey, featureSelectInteractionRef);
+provide(activeMapKey, mapRef as ShallowRef<OLMap>);
+provide(
+  activeFeatureSelectInteractionKey,
+  featureSelectInteractionRef as ShallowRef<Select>
+);
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 

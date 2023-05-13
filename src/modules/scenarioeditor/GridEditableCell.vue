@@ -112,7 +112,7 @@ function handleExternalEdit() {
         type="text"
         class="m-0 -my-3 w-full border-none p-0 focus:ring-0"
         v-model="iValue"
-        @vnode-mounted="doFocus"
+        @vue:mounted="doFocus"
         @focus="selected = true"
         @blur="onEditBlur"
       />

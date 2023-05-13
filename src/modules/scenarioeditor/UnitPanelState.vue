@@ -23,7 +23,7 @@
           v-if="s === editedTitle"
           type="text"
           v-model="newTitle"
-          @vnode-mounted="onVMounted"
+          @vue:mounted="onVMounted"
           @blur="doneEdit(s)"
           @keyup.enter="doneEdit(s)"
           @keyup.escape="cancelEdit(s)"

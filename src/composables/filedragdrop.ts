@@ -4,7 +4,7 @@ and https://github.com/vueuse/vueuse/issues/2057#issuecomment-1215027426
 
 
  */
-import { isClient, MaybeComputedRef, useEventListener } from "@vueuse/core";
+import { isClient, MaybeRefOrGetter, useEventListener } from "@vueuse/core";
 import { ref, type Ref } from "vue";
 
 export interface UseFileDropZoneReturn {
@@ -19,7 +19,7 @@ function hasFiles(dataTransfer: DataTransfer): boolean {
 }
 
 export function useFileDropZone(
-  target: MaybeComputedRef<HTMLElement | null | undefined>,
+  target: MaybeRefOrGetter<HTMLElement | null | undefined>,
   onDrop?: (files: File[] | null) => void
 ): UseFileDropZoneReturn {
   const isOverDropZone = ref(false);

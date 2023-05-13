@@ -110,13 +110,13 @@ const { isSwiping, direction } = useSwipe(swipeUpEl);
 const { isSwiping: isSwipingDown, direction: downDirection } = useSwipe(swipeDownEl);
 
 watch(isSwiping, (swiping) => {
-  if (swiping && direction.value === "UP") {
+  if (swiping && direction.value === "up") {
     showBottomPanel.value = true;
   }
 });
 
 watch(isSwipingDown, (swiping) => {
-  if (swiping && downDirection.value === "DOWN") {
+  if (swiping && downDirection.value === "down") {
     showBottomPanel.value = false;
   }
 });
