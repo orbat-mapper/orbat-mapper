@@ -6,7 +6,7 @@
         v-if="mapRef"
         class="pointer-events-none absolute inset-0 flex flex-col justify-between"
       >
-        <header class="flex flex-none justify-end p-2">
+        <header class="flex flex-none items-center justify-end p-2">
           <MapTimeController
             class="pointer-events-auto"
             :show-controls="isMobile ? ui.mobilePanelOpen : false"
@@ -14,6 +14,12 @@
             @inc-day="onIncDay()"
             @dec-day="onDecDay()"
           />
+          <IconButton
+            @click.stop="ui.showGeoSearch = true"
+            class="pointer-events-auto ml-2"
+            title="Search"
+            ><MagnifyingGlassIcon class="h-5 w-5 text-gray-500"
+          /></IconButton>
         </header>
         <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
           <MapEditorDesktopPanel v-if="showLeftPanel" @close="toggleLeftPanel()" />
@@ -66,10 +72,12 @@
     </template>
     <KeyboardScenarioActions v-if="mapRef" />
     <SearchScenarioActions v-if="mapRef" />
+    <GeoSearch v-if="mapRef" v-model="ui.showGeoSearch" />
     <GlobalEvents
       v-if="ui.shortcutsEnabled"
       :filter="inputEventFilter"
       @keyup.t="openTimeDialog"
+      @keyup.s="ui.showGeoSearch = true"
     />
   </div>
 </template>
@@ -80,6 +88,7 @@ import {
   onActivated,
   onUnmounted,
   provide,
+  ref,
   ShallowRef,
   shallowRef,
   watch,
@@ -120,6 +129,9 @@ import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { GlobalEvents } from "vue-global-events";
 import SearchScenarioActions from "@/modules/scenarioeditor/SearchScenarioActions.vue";
+import GeoSearch from "@/components/GeoSearch.vue";
+import IconButton from "@/components/IconButton.vue";
+import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);

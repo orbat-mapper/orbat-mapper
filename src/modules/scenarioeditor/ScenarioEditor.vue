@@ -135,7 +135,6 @@
       v-if="shortcutsEnabled"
       :filter="inputEventFilter"
       @keyup.?="showKeyboardShortcuts"
-      @keyup.s="showSearch = true"
       @keydown.ctrl.k.prevent="showSearch = true"
       @keyup.prevent.alt.k="showSearch = true"
     />
