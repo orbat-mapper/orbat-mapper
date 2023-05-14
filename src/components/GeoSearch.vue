@@ -59,7 +59,7 @@
                   >
                     <div class="pt-1">
                       <component
-                        :is="item.properties?.extent ? IconVectorSquare : IconMapMarker"
+                        :is="item.properties.extent ? IconVectorSquare : IconMapMarker"
                         class="h-5 w-5 text-gray-400"
                         aria-hidden="true"
                       />
@@ -71,19 +71,24 @@
                           active ? 'text-gray-900' : 'text-gray-700',
                         ]"
                       >
-                        {{ item.properties?.name }}
+                        {{ item.properties.name }}
                       </p>
-                      <p
+                      <div
                         :class="[
-                          ' space-x-1 text-sm',
-                          active ? 'text-gray-700' : 'text-gray-500',
+                          ' flex justify-between text-sm',
+                          active ? 'text-gray-700' : 'text-gray-600',
                         ]"
                       >
-                        <span class="text-xs">{{ item.properties?.osm_key }}</span>
-                        <span>{{ item.properties?.city }}</span>
-                        <span>{{ item.properties?.state }}</span>
-                        <span>{{ item.properties?.country }}</span>
-                      </p>
+                        <div class="space-x-1">
+                          <span class="text-xs uppercase text-gray-400">{{
+                            item.properties.category
+                          }}</span>
+                          <span>{{ item.properties.city }}</span>
+                          <span>{{ item.properties.state }}</span>
+                          <span>{{ item.properties.country }}</span>
+                        </div>
+                        <span class="oldstyle-nums">{{ getFromCenter(item) }}</span>
+                      </div>
                     </div>
                   </li>
                 </ComboboxOption>
@@ -97,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import { IconMapMarker, IconVectorSquare } from "@iconify-prerendered/vue-mdi";
 import {
@@ -121,34 +126,92 @@ import { applyTransform } from "ol/extent";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import OlFeature from "ol/Feature";
+import { getDistance } from "ol/sphere";
+import { formatLength } from "@/geo/utils";
+import { useMeasurementsStore } from "@/stores/geoStore";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits(["update:modelValue"]);
 
+interface PhotonFeatureProperties {
+  name: string;
+  country?: string;
+  city?: string;
+  state?: string;
+  extent?: number[];
+  osm_key?: string;
+}
+
+interface GeoSearchProperties {
+  name: string;
+  country?: string;
+  city?: string;
+  state?: string;
+  extent?: number[];
+  category?: string;
+  distance?: number;
+}
+
 const mapRef = injectStrict(activeMapKey);
+const measurementsStore = useMeasurementsStore();
 const searchUrl = ref("");
 const { data, isFetching, error, execute } = useFetch(searchUrl, {
   immediate: false,
 })
   .get()
-  .json<FeatureCollection<Point, any>>();
+  .json<FeatureCollection<Point, PhotonFeatureProperties>>();
 
-const filteredItems = ref<Feature<Point>[]>([]);
+const filteredItems = ref<Feature<Point, GeoSearchProperties>[]>([]);
 
 const open = useVModel(props, "modelValue", emit);
 const query = ref("");
+const center = ref<number[]>();
+
+watch(
+  open,
+  (v) => {
+    if (v) {
+      const mapCenter = mapRef.value.getView().getCenter();
+      center.value = mapCenter && toLonLat(mapCenter);
+    }
+  },
+  { immediate: true }
+);
+
+function getFromCenter(f: Feature<Point, GeoSearchProperties>) {
+  const distance = center.value && getDistance(center.value, f.geometry.coordinates);
+  return distance ? formatLength(distance, measurementsStore.measurementUnit) : "";
+}
+
 watchDebounced(
   query,
   async (q) => {
     if (q === "") return;
     searchUrl.value = `https://photon.komoot.io/api/?q=${q}&limit=10&lang=en`;
     const mapCenter = mapRef.value.getView().getCenter();
-    if (mapCenter) {
-      const [lon, lat] = toLonLat(mapCenter);
+    const center = mapCenter && toLonLat(mapCenter);
+    if (center) {
+      const [lon, lat] = center;
       searchUrl.value += `&lon=${lon}&lat=${lat}`;
     }
     await execute();
-    filteredItems.value = data.value ? data.value.features : [];
+    if (data.value) {
+      filteredItems.value = data.value.features.map(
+        (item): Feature<Point, GeoSearchProperties> => {
+          return {
+            ...item,
+            properties: {
+              name: item.properties.name,
+              country: item.properties.country,
+              city: item.properties.city,
+              state: item.properties.state,
+              extent: item.properties.extent,
+              category: item.properties.osm_key,
+            },
+          };
+        }
+      );
+    } else filteredItems.value = [];
   },
   { debounce: 500 }
 );
