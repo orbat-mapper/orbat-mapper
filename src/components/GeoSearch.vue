@@ -53,10 +53,17 @@
                 >
                   <li
                     :class="[
-                      'flex cursor-default select-none rounded-xl p-3',
+                      'flex cursor-default select-none  rounded-xl p-3',
                       active && 'bg-gray-100',
                     ]"
                   >
+                    <div class="pt-1">
+                      <component
+                        :is="item.properties?.extent ? IconVectorSquare : IconMapMarker"
+                        class="h-5 w-5 text-gray-400"
+                        aria-hidden="true"
+                      />
+                    </div>
                     <div class="ml-4 flex-auto">
                       <p
                         :class="[
@@ -92,6 +99,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
+import { IconMapMarker, IconVectorSquare } from "@iconify-prerendered/vue-mdi";
 import {
   Combobox,
   ComboboxInput,
@@ -103,12 +111,16 @@ import {
   TransitionRoot,
 } from "@headlessui/vue";
 import OlPoint from "ol/geom/Point";
+import { fromExtent as polygonFromExtent } from "ol/geom/Polygon";
 import { useFetch, useVModel, watchDebounced } from "@vueuse/core";
 import { Feature, FeatureCollection, Point } from "geojson";
 import { injectStrict } from "@/utils";
 import { activeMapKey } from "@/components/injects";
 import { getTransform, toLonLat } from "ol/proj";
 import { applyTransform } from "ol/extent";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import OlFeature from "ol/Feature";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits(["update:modelValue"]);
@@ -147,12 +159,29 @@ function onSelect(item: Feature<Point>) {
 
   const extent =
     item.properties?.extent && applyTransform(item.properties?.extent, transform);
+  const polygon = extent && polygonFromExtent(extent);
   const p = new OlPoint(item.geometry.coordinates).transform(
     "EPSG:4326",
     map.getView().getProjection()
   ) as any;
 
-  map.getView().fit(extent || p, { maxZoom: 15 });
+  // add temporary layer
+  const layer = new VectorLayer({
+    source: new VectorSource({
+      features: [new OlFeature({ geometry: polygon || p })],
+    }),
+    style: {
+      "stroke-color": "#f00",
+      "stroke-width": 2,
+      "circle-radius": 12,
+      "circle-stroke-color": "#f00",
+      "circle-stroke-width": 4,
+    },
+  });
+  layer.setMap(map);
+  setTimeout(() => layer.setMap(null), 2000);
+
+  map.getView().fit(polygon || p, { maxZoom: 15 });
   open.value = false;
 }
 </script>
