@@ -14,6 +14,7 @@ import { primaryAction } from "ol/events/condition";
 import Snap from "ol/interaction/Snap";
 import { Collection } from "ol";
 import { getSnappableFeatures } from "@/composables/openlayersHelpers";
+import { formatArea, formatLength } from "@/geo/utils";
 
 export type MeasurementTypes = "LineString" | "Polygon";
 export type MeasurementUnit = "metric" | "imperial" | "nautical";
@@ -133,63 +134,6 @@ const segmentStyle = new Style({
   }),
 });
 
-const formatLength = function (line: Geometry, unit: MeasurementUnit = "metric") {
-  const length = getLength(line);
-  let output: string = "";
-  if (unit === "metric") {
-    if (length > 100) {
-      output = Math.round((length / 1000) * 100) / 100 + " km";
-    } else {
-      output = Math.round(length * 100) / 100 + " m";
-    }
-  } else if (unit === "imperial") {
-    const miles = length * 0.000621371192;
-    if (miles > 0.1) {
-      output = miles.toFixed(2) + " mi";
-    } else {
-      output = (miles * 5280).toFixed(2) + " ft";
-    }
-  } else if (unit === "nautical") {
-    const nm = length * 0.000539956803;
-    if (nm > 0.1) {
-      output = nm.toFixed(2) + " nm";
-    } else {
-      output = nm.toFixed(3) + " nm";
-    }
-  }
-  return output;
-};
-
-const formatArea = function (
-  polygon: Geometry,
-  unit: MeasurementUnit = "metric"
-): string {
-  const area = getArea(polygon);
-  let output = "";
-  if (unit === "metric") {
-    if (area > 10000) {
-      output = Math.round((area / 1000000) * 100) / 100 + " km\xB2";
-    } else {
-      output = Math.round(area * 100) / 100 + " m\xB2";
-    }
-  } else if (unit === "imperial") {
-    const squareMiles = area * 0.0000003861021585424458;
-    if (squareMiles > 0.1) {
-      output = squareMiles.toFixed(2) + " mi\xB2";
-    } else {
-      output = (area * 10.7639104167097).toFixed(2) + " ft\xB2";
-    }
-  } else if (unit === "nautical") {
-    const squareNM = area * 0.0000003599999999999999;
-    if (squareNM > 0.1) {
-      output = squareNM.toFixed(2) + " nm\xB2";
-    } else {
-      output = (area * 10.7639104167097).toFixed(2) + " ft\xB2";
-    }
-  }
-  return output;
-};
-
 function measurementInteractionWrapper(
   olMap: OLMap,
   drawType: MeasurementTypes,
@@ -238,11 +182,11 @@ function measurementInteractionWrapper(
     if (!drawType || drawType === type) {
       if (type === "Polygon") {
         point = (geometry as Polygon).getInteriorPoint();
-        label = formatArea(geometry, measurementUnit);
+        label = formatArea(getArea(geometry), measurementUnit);
         line = new LineString(geometry.getCoordinates()![0]);
       } else if (type === "LineString") {
         point = new Point(geometry.getLastCoordinate());
-        label = formatLength(geometry, measurementUnit);
+        label = formatLength(getLength(geometry), measurementUnit);
         line = geometry as LineString;
       }
     }
@@ -250,7 +194,7 @@ function measurementInteractionWrapper(
       let count = 0;
       line.forEachSegment(function (a, b) {
         const segment = new LineString([a, b]);
-        const label = formatLength(segment, measurementUnit);
+        const label = formatLength(getLength(segment), measurementUnit);
         if (segmentStyles.length - 1 < count) {
           segmentStyles.push(segmentStyle.clone());
         }
