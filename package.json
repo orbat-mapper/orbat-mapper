@@ -63,7 +63,7 @@
     "vue-router": "^4.2.0",
     "xast-util-to-xml": "^3.0.2",
     "xastscript": "^3.1.1",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.1/xlsx-0.19.1.tgz"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",
