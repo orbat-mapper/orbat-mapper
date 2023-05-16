@@ -118,7 +118,7 @@ import {
 import OlPoint from "ol/geom/Point";
 import { fromExtent as polygonFromExtent } from "ol/geom/Polygon";
 import { useFetch, useVModel, watchDebounced } from "@vueuse/core";
-import { Feature, FeatureCollection, Point } from "geojson";
+import type { Feature, FeatureCollection, Point } from "geojson";
 import { injectStrict } from "@/utils";
 import { activeMapKey } from "@/components/injects";
 import { getTransform, toLonLat } from "ol/proj";
