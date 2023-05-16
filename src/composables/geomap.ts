@@ -1,6 +1,6 @@
 import { createUnitFeatureAt, createUnitLayer } from "@/geo/layers";
 // import Fade from "ol-ext/featureanimation/Fade";
-import { nextTick, ref, Ref, unref, watch } from "vue";
+import { ref, Ref, unref, watch } from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import { useDragStore, useSelectedUnits } from "@/stores/dragStore";
@@ -21,7 +21,7 @@ import {
 import { SelectEvent } from "ol/interaction/Select";
 import { useOlEvent } from "./openlayersHelpers";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import { activeScenarioKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
 import { NUnit } from "@/types/internalModels";
@@ -114,7 +114,6 @@ export function useMoveInteraction(
     geo,
     store: { state },
   } = injectStrict(activeScenarioKey);
-  const activeUnitId = injectStrict(activeUnitKey);
   const modifyInteraction = new Modify({
     hitDetection: unitLayer,
     source: unitLayer.getSource()!,
@@ -130,9 +129,6 @@ export function useMoveInteraction(
         if (!movedUnitId) return;
         const newCoordinate = unitFeature.getGeometry()?.getCoordinates();
         if (newCoordinate) geo.addUnitPosition(movedUnitId, toLonLat(newCoordinate));
-        if (activeUnitId.value === movedUnitId) {
-          nextTick(() => (activeUnitId.value = movedUnitId));
-        }
       }
     }
   });
@@ -281,5 +277,9 @@ export function useUnitSelectInteraction(
     isInternal = false;
   }
 
-  return { unitSelectInteraction, isEnabled: enableRef, boxSelectInteraction };
+  function redraw() {
+    redrawSelectedLayer([...selectedIds.value]);
+  }
+
+  return { unitSelectInteraction, isEnabled: enableRef, boxSelectInteraction, redraw };
 }

@@ -113,13 +113,13 @@ const onMapReady = (olMap: OLMap) => {
 
   olMap.addInteraction(historyModify);
 
-  const { unitSelectInteraction, boxSelectInteraction } = useUnitSelectInteraction(
-    [unitLayer],
-    olMap,
-    {
-      enable: unitSelectEnabled,
-    }
-  );
+  const {
+    unitSelectInteraction,
+    boxSelectInteraction,
+    redraw: redrawSelectedUnits,
+  } = useUnitSelectInteraction([unitLayer], olMap, {
+    enable: unitSelectEnabled,
+  });
   olMap.addInteraction(unitSelectInteraction);
   olMap.addInteraction(boxSelectInteraction);
 
@@ -160,6 +160,7 @@ const onMapReady = (olMap: OLMap) => {
   watch(geo.everyVisibleUnit, () => {
     drawUnits();
     drawHistory();
+    redrawSelectedUnits();
   });
 
   emit("map-ready", { olMap, featureSelectInteraction, unitSelectInteraction });
