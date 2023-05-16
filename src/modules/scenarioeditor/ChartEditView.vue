@@ -97,7 +97,7 @@ import ResizablePanel from "@/components/ResizablePanel.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { promiseTimeout } from "@vueuse/core";
 import FileSaver from "file-saver";
-import { useSearchActions } from "@/composables/search";
+import { useSearchActions } from "@/composables/searchActions";
 
 const rootUnitStore = useRootUnitStore();
 const options = useChartSettingsStore();

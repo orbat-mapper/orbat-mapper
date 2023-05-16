@@ -126,7 +126,7 @@ import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vu
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import { storeToRefs } from "pinia";
 import { injectStrict } from "@/utils";
-import { useSearchActions } from "@/composables/search";
+import { useSearchActions } from "@/composables/searchActions";
 import { useTabStore } from "@/stores/tabStore";
 import ResizablePanel from "@/components/ResizablePanel.vue";
 import ToolPanel from "@/modules/scenarioeditor/ToolPanel.vue";

@@ -108,7 +108,7 @@ import {
 } from "@/components/injects";
 import { IconChevronRightBoxOutline as ShowPanelIcon } from "@iconify-prerendered/vue-mdi";
 import { injectStrict } from "@/utils";
-import { useSearchActions } from "@/composables/search";
+import { useSearchActions } from "@/composables/searchActions";
 import UnitPanel from "@/modules/scenarioeditor/UnitPanel.vue";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useGeoEditorViewStore } from "@/stores/geoEditorViewStore";

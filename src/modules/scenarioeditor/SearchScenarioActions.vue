@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick } from "vue";
-import { useSearchActions } from "@/composables/search";
+import { useSearchActions } from "@/composables/searchActions";
 import { TAB_LAYERS, TAB_ORBAT, UnitActions } from "@/types/constants";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";

@@ -99,7 +99,7 @@ import GridSideGroupRow from "@/modules/scenarioeditor/GridSideGroupRow.vue";
 import GridSideRow from "@/modules/scenarioeditor/GridSideRow.vue";
 import GridUnitRow from "@/modules/scenarioeditor/GridUnitRow.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { useSearchActions } from "@/composables/search";
+import { useSearchActions } from "@/composables/searchActions";
 import { useNotifications } from "@/composables/notifications";
 import { inputEventFilter } from "@/components/helpers";
 import CheckboxDropdown from "@/components/CheckboxDropdown.vue";
