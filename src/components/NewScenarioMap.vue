@@ -35,10 +35,8 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { storeToRefs } from "pinia";
-import { TAB_LAYERS } from "@/types/constants";
 import { useShowLocationControl } from "@/composables/geoShowLocation";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
-import { useTabStore } from "@/stores/tabStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useMapContextMenu } from "@/composables/mapContextMenu";
 import { useMapHover } from "@/composables/geoHover";
@@ -68,7 +66,6 @@ const {
 
 const mapRef = shallowRef<OLMap>();
 
-const uiTabs = useTabStore();
 const uiStore = useUiStore();
 const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
 const unitSettingsStore = useUnitSettingsStore();

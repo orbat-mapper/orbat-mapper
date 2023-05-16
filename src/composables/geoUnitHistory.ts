@@ -31,13 +31,12 @@ export function useUnitHistory(
     unitActions,
     store: { onUndoRedo, state },
   } = injectStrict(activeScenarioKey);
-  const activeUnitId = injectStrict(activeUnitKey);
   const { selectedUnitIds } = useSelectedUnits();
   const historyLayer = createHistoryLayer();
   historyLayer.set("title", "History");
 
   onUndoRedo(({ meta }) => {
-    if (meta?.value === activeUnitId.value) drawHistory();
+    if (meta?.value && selectedUnitIds.value.has(meta.value as string)) drawHistory();
   });
 
   const historyModify = new Modify({ source: historyLayer.getSource()! });
@@ -152,7 +151,6 @@ export function useUnitHistory(
   const drawHistory = () => {
     const historyLayerSource = historyLayer.getSource()!;
     historyLayerSource.clear();
-    if (!activeUnitId.value) return;
     if (!showHistoryRef.value) return;
     selectedUnitIds.value.forEach((unitId) => {
       const unit = state.getUnitById(unitId);
@@ -164,13 +162,9 @@ export function useUnitHistory(
   };
 
   watch(
-    () => [...selectedUnitIds.value.values()],
-    (v) => {
-      drawHistory();
-    }
+    () => showHistoryRef.value && [...selectedUnitIds.value.values()],
+    () => drawHistory()
   );
-
-  watch(showHistoryRef, () => drawHistory());
 
   return {
     historyLayer,
