@@ -146,11 +146,11 @@
     />
     <ShortcutsModal v-model="shortcutsModalVisible" />
     <MainViewSlideOver v-model="isOpen" />
-    <SearchModal
+    <CommandPalette
       v-model="showSearch"
       @select-unit="onUnitSelect"
-      @select-layer="onLayerSelect"
       @select-feature="onFeatureSelect"
+      @select-layer="onLayerSelect"
     />
     <AppNotifications />
     <LoadScenarioDialog
@@ -218,15 +218,14 @@ import {
   TableCellsIcon as TableIcon,
 } from "@heroicons/vue/24/outline";
 import { inputEventFilter } from "@/components/helpers";
-import SearchModal from "@/components/SearchModal.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import {
+  IconFlaskOutline,
   IconKeyboard,
   IconRedoVariant as IconRedo,
   IconSitemap,
   IconUndoVariant as IconUndo,
-  IconFlaskOutline,
 } from "@iconify-prerendered/vue-mdi";
 import { createEventHook, useClipboard, useTitle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
@@ -267,6 +266,7 @@ import {
 } from "@/router/names";
 import { useFileDropZone } from "@/composables/filedragdrop";
 import { useTabStore } from "@/stores/tabStore";
+import CommandPalette from "@/components/CommandPalette.vue";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(
@@ -334,8 +334,6 @@ const windowTitle = computed(() => state.info.name);
 const { send } = useNotifications();
 const geoStore = useGeoStore();
 
-// const isDark = useDark();
-// const toggleDark = useToggle(isDark);
 useTitle(windowTitle);
 
 const {
