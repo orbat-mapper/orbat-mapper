@@ -33,8 +33,8 @@ onUnitSelect(({ unitId }) => {
     if (el) {
       el.scrollIntoView();
     }
+    onUnitAction(unit, UnitActions.Zoom);
   });
-  onUnitAction(unit, UnitActions.Zoom);
 });
 
 onLayerSelect(({ layerId }) => {

@@ -23,7 +23,7 @@ export const useGeoStore = defineStore("geo", {
       if (!location) return;
       const view = this.olMap.getView();
       view.animate({
-        zoom: 10,
+        zoom: 15,
         center: fromLonLat(location, view.getProjection()),
         duration,
       });
