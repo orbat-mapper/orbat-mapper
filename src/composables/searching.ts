@@ -43,6 +43,7 @@ export function useScenarioSearch() {
           score: u.score,
           category: "Units",
           symbolOptions: unitActions.getCombinedSymbolOptions(u.obj),
+          _state: u.obj._state,
         } as unknown as UnitSearchResult;
       });
   }

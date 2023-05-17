@@ -5,7 +5,7 @@
       active ? 'bg-army text-white' : 'even:bg-gray-100',
     ]"
   >
-    <div class="flex w-7 justify-center">
+    <div class="relative flex w-7 justify-center">
       <MilSymbol
         :sidc="item.sidc"
         :size="20"
@@ -16,6 +16,12 @@
           outlineWidth: 8,
         }"
       />
+      <span
+        v-if="item._state?.location"
+        class="absolute -right-1 bottom-0 block translate-x-1/2 translate-y-1/2 transform rounded-full border-2 border-white"
+      >
+        <span class="block h-1.5 w-1.5 rounded-full bg-red-800" />
+      </span>
     </div>
     <p
       class="ml-3 flex-auto truncate"
