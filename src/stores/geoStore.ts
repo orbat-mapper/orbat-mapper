@@ -18,9 +18,10 @@ export const useGeoStore = defineStore("geo", {
   }),
   actions: {
     zoomToUnit(unit?: Unit | NUnit | null, duration = 900) {
+      if (!this.olMap) return;
       const location = unit?._state?.location;
       if (!location) return;
-      const view = this.olMap!.getView();
+      const view = this.olMap.getView();
       view.animate({
         zoom: 10,
         center: fromLonLat(location, view.getProjection()),
@@ -29,6 +30,7 @@ export const useGeoStore = defineStore("geo", {
     },
 
     zoomToUnits(units: NUnit[], duration = 900) {
+      if (!this.olMap) return;
       const points = units
         .filter((u) => u._state?.location)
         .map((u) => turfPoint(u._state?.location!));
@@ -39,10 +41,11 @@ export const useGeoStore = defineStore("geo", {
         dataProjection: "EPSG:4326",
       }) as Feature<any>;
       if (!bb) return;
-      this.olMap!.getView().fit(bb.getGeometry(), { maxZoom: 17, duration });
+      this.olMap.getView().fit(bb.getGeometry(), { maxZoom: 17, duration });
     },
 
     zoomToLocation(location?: Position, duration = 900) {
+      if (!this.olMap) return;
       if (!location) return;
       const view = this.olMap!.getView();
       view.animate({
@@ -53,9 +56,10 @@ export const useGeoStore = defineStore("geo", {
     },
 
     panToUnit(unit?: Unit | NUnit | null, duration = 900) {
+      if (!this.olMap) return;
       const location = unit?._state?.location;
       if (!location) return;
-      const view = this.olMap!.getView();
+      const view = this.olMap.getView();
       view.animate({
         center: fromLonLat(location, view.getProjection()),
         duration,
@@ -63,8 +67,9 @@ export const useGeoStore = defineStore("geo", {
     },
 
     panToLocation(location?: Position, duration = 900) {
+      if (!this.olMap) return;
       if (!location) return;
-      const view = this.olMap!.getView();
+      const view = this.olMap.getView();
       view.animate({
         center: fromLonLat(location, view.getProjection()),
         duration,
