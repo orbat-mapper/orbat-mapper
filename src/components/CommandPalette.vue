@@ -88,11 +88,7 @@
                   aria-hidden="true"
                 />
                 <p class="mt-4 font-semibold text-gray-900">No results found</p>
-                <p class="mt-2 text-gray-500">
-                  We couldn’t find anything with that term. Please try again.
-                </p>
               </div>
-
               <CommandPaletteFooter :raw-query="rawQuery" />
             </Combobox>
           </DialogPanel>

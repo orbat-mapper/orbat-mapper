@@ -117,8 +117,8 @@ import {
 } from "@headlessui/vue";
 import OlPoint from "ol/geom/Point";
 import { fromExtent as polygonFromExtent } from "ol/geom/Polygon";
-import { useFetch, useVModel, watchDebounced } from "@vueuse/core";
-import type { Feature, FeatureCollection, Point } from "geojson";
+import { useVModel, watchDebounced } from "@vueuse/core";
+import type { Feature, Point } from "geojson";
 import { injectStrict } from "@/utils";
 import { activeMapKey } from "@/components/injects";
 import { getTransform, toLonLat } from "ol/proj";
@@ -129,37 +129,15 @@ import OlFeature from "ol/Feature";
 import { getDistance } from "ol/sphere";
 import { formatLength } from "@/geo/utils";
 import { useMeasurementsStore } from "@/stores/geoStore";
+import { GeoSearchProperties } from "@/types/search";
+import { useGeoSearch } from "@/composables/geosearching";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits(["update:modelValue"]);
 
-interface PhotonFeatureProperties {
-  name: string;
-  country?: string;
-  city?: string;
-  state?: string;
-  extent?: number[];
-  osm_key?: string;
-}
-
-interface GeoSearchProperties {
-  name: string;
-  country?: string;
-  city?: string;
-  state?: string;
-  extent?: number[];
-  category?: string;
-  distance?: number;
-}
-
 const mapRef = injectStrict(activeMapKey);
 const measurementsStore = useMeasurementsStore();
-const searchUrl = ref("");
-const { data, isFetching, error, execute } = useFetch(searchUrl, {
-  immediate: false,
-})
-  .get()
-  .json<FeatureCollection<Point, PhotonFeatureProperties>>();
+const { photonSearch } = useGeoSearch();
 
 const filteredItems = ref<Feature<Point, GeoSearchProperties>[]>([]);
 
@@ -186,32 +164,8 @@ function getFromCenter(f: Feature<Point, GeoSearchProperties>) {
 watchDebounced(
   query,
   async (q) => {
-    if (q === "") return;
-    searchUrl.value = `https://photon.komoot.io/api/?q=${q}&limit=10&lang=en`;
-    const mapCenter = mapRef.value.getView().getCenter();
-    const center = mapCenter && toLonLat(mapCenter);
-    if (center) {
-      const [lon, lat] = center;
-      searchUrl.value += `&lon=${lon}&lat=${lat}`;
-    }
-    await execute();
-    if (data.value) {
-      filteredItems.value = data.value.features.map(
-        (item): Feature<Point, GeoSearchProperties> => {
-          return {
-            ...item,
-            properties: {
-              name: item.properties.name,
-              country: item.properties.country,
-              city: item.properties.city,
-              state: item.properties.state,
-              extent: item.properties.extent,
-              category: item.properties.osm_key,
-            },
-          };
-        }
-      );
-    } else filteredItems.value = [];
+    if (q.trim() === "") return;
+    filteredItems.value = await photonSearch(q, { mapCenter: center.value });
   },
   { debounce: 500 }
 );

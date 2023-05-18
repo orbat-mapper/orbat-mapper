@@ -22,7 +22,7 @@ export interface SelectItem<T = string | number> {
 }
 
 export interface SearchResult {
-  category: "Units" | "Features" | "Events";
+  category: "Units" | "Features" | "Events" | "Places";
   index: number;
   id: string | number;
   score: number;
