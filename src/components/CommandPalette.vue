@@ -71,7 +71,14 @@
                         :active="active"
                         :item="item"
                       />
-                      <p v-else></p>
+                      <CommandPalettePlaceItem
+                        :item="item"
+                        v-else-if="item.category === 'Places'"
+                        :active="active"
+                        :center="mapCenter"
+                      />
+
+                      <p v-else>{{ item }}</p>
                     </ComboboxOption>
                   </ul>
                 </li>
@@ -99,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import {
@@ -121,9 +128,14 @@ import CommandPaletteLayerFeatureItem from "@/components/CommandPaletteLayerFeat
 import {
   EventSearchResult,
   LayerFeatureSearchResult,
+  SearchResult,
   UnitSearchResult,
 } from "@/components/types";
 import CommandPaletteEventItem from "@/components/CommandPaletteEventItem.vue";
+import { useGeoStore } from "@/stores/geoStore";
+import { toLonLat } from "ol/proj";
+import { PhotonSearchResult, useGeoSearch } from "@/composables/geosearching";
+import CommandPalettePlaceItem from "@/components/CommandPalettePlaceItem.vue";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits([
@@ -135,6 +147,8 @@ const emit = defineEmits([
   "select-event",
 ]);
 
+const geoStore = useGeoStore();
+const { photonSearch } = useGeoSearch();
 const open = useVModel(props, "modelValue", emit);
 
 const rawQuery = ref("");
@@ -143,19 +157,57 @@ const showHelp = computed(() => rawQuery.value === "?");
 const isGeoSearch = computed(() => rawQuery.value.startsWith("@"));
 
 const debouncedQuery = useDebounce(query, 200);
+const geoDebouncedQuery = useDebounce(query, 500);
 const { search } = useScenarioSearch();
-const groupedHits = ref<ReturnType<typeof search>["groups"]>();
+
+interface ExtendedPhotonSearchResult extends PhotonSearchResult {
+  category: "Places";
+}
+
+const groupedHits = ref<
+  ReturnType<typeof search>["groups"] | Map<"Places", ExtendedPhotonSearchResult[]>
+>();
+const mapCenter = ref<number[] | null | undefined>();
 
 const hitCount = ref(0);
 
+watch(open, (isOpen) => {
+  if (isOpen) {
+    if (geoStore.olMap) {
+      const center = geoStore.olMap.getView().getCenter();
+      mapCenter.value = center && toLonLat(center);
+    } else {
+      mapCenter.value = null;
+    }
+  }
+});
+
 watchEffect(() => {
-  if (!debouncedQuery.value.trim()) return;
+  if (isGeoSearch.value || !debouncedQuery.value.trim()) return;
   const { numberOfHits, groups } = search(debouncedQuery.value);
   hitCount.value = numberOfHits;
   groupedHits.value = groups;
 });
 
-function onSelect(item: UnitSearchResult | LayerFeatureSearchResult | EventSearchResult) {
+watch(
+  () => isGeoSearch.value && geoDebouncedQuery.value.trim(),
+  async (q) => {
+    if (!q) return;
+    const data = await photonSearch(q, { mapCenter: mapCenter.value });
+    groupedHits.value = new Map([
+      ["Places", data.map((d) => ({ ...d, category: "Places" }))],
+    ]);
+    hitCount.value = data.length;
+  }
+);
+
+function onSelect(
+  item:
+    | UnitSearchResult
+    | LayerFeatureSearchResult
+    | EventSearchResult
+    | ExtendedPhotonSearchResult
+) {
   if (item.category === "Units") emit("select-unit", item.id);
   else if (item.category === "Features") {
     if (item.type === "layer") {
@@ -165,6 +217,8 @@ function onSelect(item: UnitSearchResult | LayerFeatureSearchResult | EventSearc
     }
   } else if (item.category === "Events") {
     emit("select-event", item);
+  } else if (item.category === "Places") {
+    emit("select-place", item);
   }
   open.value = false;
 }

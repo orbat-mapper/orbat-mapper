@@ -13,6 +13,13 @@ import {
 import { useUiStore } from "@/stores/uiStore";
 import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
 import { useUnitActions } from "@/composables/scenarioActions";
+import { getTransform } from "ol/proj";
+import { applyTransform } from "ol/extent";
+import { fromExtent as polygonFromExtent } from "ol/geom/Polygon";
+import OlPoint from "ol/geom/Point";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import OlFeature from "ol/Feature";
 
 const mapRef = injectStrict(activeMapKey);
 const activeUnitId = injectStrict(activeUnitKey);
@@ -21,7 +28,7 @@ const activeLayerId = injectStrict(activeLayerKey);
 
 const l = useScenarioLayers(mapRef.value);
 
-const { onUnitSelect, onFeatureSelect, onLayerSelect, onEventSelect } =
+const { onUnitSelect, onFeatureSelect, onLayerSelect, onEventSelect, onPlaceSelect } =
   useSearchActions();
 const ui = useUiStore();
 const { selectedFeatureIds } = useSelectedFeatures();
@@ -77,6 +84,37 @@ onFeatureSelect(({ featureId }) => {
 
 onEventSelect((e) => {
   activeScenario.time.setCurrentTime(e.startTime);
+});
+
+onPlaceSelect((item) => {
+  const map = mapRef.value;
+  const transform = getTransform("EPSG:4326", map.getView().getProjection());
+
+  const extent =
+    item.properties?.extent && applyTransform(item.properties?.extent, transform);
+  const polygon = extent && polygonFromExtent(extent);
+  const p = new OlPoint(item.geometry.coordinates).transform(
+    "EPSG:4326",
+    map.getView().getProjection()
+  ) as any;
+
+  // add temporary layer
+  const layer = new VectorLayer({
+    source: new VectorSource({
+      features: [new OlFeature({ geometry: polygon || p })],
+    }),
+    style: {
+      "stroke-color": "#f00",
+      "stroke-width": 2,
+      "circle-radius": 12,
+      "circle-stroke-color": "#f00",
+      "circle-stroke-width": 4,
+    },
+  });
+  layer.setMap(map);
+  setTimeout(() => layer.setMap(null), 2000);
+
+  map.getView().fit(polygon || p, { maxZoom: 15 });
 });
 </script>
 <template></template>

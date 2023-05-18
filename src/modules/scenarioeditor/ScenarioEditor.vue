@@ -152,6 +152,7 @@
       @select-feature="onFeatureSelect"
       @select-layer="onLayerSelect"
       @select-event="onEventSelect"
+      @select-place="onPlaceSelectHook.trigger($event)"
     />
     <AppNotifications />
     <LoadScenarioDialog
@@ -268,6 +269,7 @@ import {
 import { useFileDropZone } from "@/composables/filedragdrop";
 import { useTabStore } from "@/stores/tabStore";
 import CommandPalette from "@/components/CommandPalette.vue";
+import { PhotonSearchResult } from "@/composables/geosearching";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(
@@ -312,11 +314,13 @@ const onFeatureSelectHook = createEventHook<{
   layerId: FeatureId;
 }>();
 const onEventSelectHook = createEventHook<EventSearchResult>();
+const onPlaceSelectHook = createEventHook<PhotonSearchResult>();
 provide(searchActionsKey, {
   onUnitSelectHook,
   onLayerSelectHook,
   onFeatureSelectHook,
   onEventSelectHook,
+  onPlaceSelectHook,
 });
 
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;

@@ -4,10 +4,12 @@ import type { Feature, FeatureCollection, Point } from "geojson";
 import { GeoSearchProperties, PhotonFeatureProperties } from "@/types/search";
 
 export interface GeoSearchOptions {
-  mapCenter?: number[];
+  mapCenter?: number[] | null;
   limit?: number;
   lang?: string;
 }
+
+export type PhotonSearchResult = Feature<Point, GeoSearchProperties>;
 
 export function useGeoSearch() {
   const searchUrl = ref("");
@@ -17,7 +19,10 @@ export function useGeoSearch() {
     .get()
     .json<FeatureCollection<Point, PhotonFeatureProperties>>();
 
-  async function photonSearch(q: string, options: GeoSearchOptions = {}) {
+  async function photonSearch(
+    q: string,
+    options: GeoSearchOptions = {}
+  ): Promise<PhotonSearchResult[]> {
     const { mapCenter, limit = 10, lang = "en" } = options;
     searchUrl.value = `https://photon.komoot.io/api/?q=${q}&limit=${limit}&lang=${lang}`;
     if (mapCenter) {
@@ -26,7 +31,7 @@ export function useGeoSearch() {
     }
     await execute();
     if (data.value) {
-      return data.value.features.map((item): Feature<Point, GeoSearchProperties> => {
+      return data.value.features.map((item) => {
         return {
           ...item,
           properties: {
@@ -37,7 +42,7 @@ export function useGeoSearch() {
             extent: item.properties.extent,
             category: item.properties.osm_key,
           },
-        };
+        } as PhotonSearchResult;
       });
     } else return [];
   }
