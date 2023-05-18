@@ -1,4 +1,4 @@
-export const SCENARIO_ROUTE = "ScenarioRoute";
+export const OLD_MAP_ROUTE = "ScenarioRoute";
 export const NEW_SCENARIO_ROUTE = "NewScenarioRoute";
 export const LANDING_PAGE_ROUTE = "LandingPageRoute";
 export const STORY_MODE_ROUTE = "StoryModeRoute";

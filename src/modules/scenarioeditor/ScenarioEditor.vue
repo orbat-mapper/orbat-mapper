@@ -56,7 +56,7 @@
         </button>
         <div class="flex items-center rounded-lg bg-gray-800 px-1">
           <router-link
-            :to="{ name: SCENARIO_ROUTE }"
+            :to="{ name: MAP_EDIT_MODE_ROUTE }"
             title="Map edit mode"
             exact-active-class="text-green-500"
             class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -80,12 +80,12 @@
             <IconSitemap class="h-6 w-6" />
           </router-link>
           <router-link
-            :to="{ name: MAP_EDIT_MODE_ROUTE }"
-            title="Experimental map mode"
+            :to="{ name: OLD_MAP_ROUTE }"
+            title="Legacy map mode"
             exact-active-class="text-green-500"
             class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
           >
-            <IconFlaskOutline class="h-6 w-6" />
+            <IconEarthRemove class="h-6 w-6" />
           </router-link>
         </div>
         <div class="flex items-center">
@@ -224,6 +224,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import {
   IconFlaskOutline,
+  IconEarthRemove,
   IconKeyboard,
   IconRedoVariant as IconRedo,
   IconSitemap,
@@ -264,7 +265,7 @@ import {
   GRID_EDIT_ROUTE,
   LANDING_PAGE_ROUTE,
   MAP_EDIT_MODE_ROUTE,
-  SCENARIO_ROUTE,
+  OLD_MAP_ROUTE,
 } from "@/router/names";
 import { useFileDropZone } from "@/composables/filedragdrop";
 import { useTabStore } from "@/stores/tabStore";

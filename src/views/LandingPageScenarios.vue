@@ -77,7 +77,7 @@
 import { useRouter } from "vue-router";
 
 import WipBadge from "../components/WipBadge.vue";
-import { NEW_SCENARIO_ROUTE, SCENARIO_ROUTE } from "@/router/names";
+import { MAP_EDIT_MODE_ROUTE, NEW_SCENARIO_ROUTE, OLD_MAP_ROUTE } from "@/router/names";
 import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
 import { useScenario } from "@/scenariostore";
 import { Scenario } from "@/types/scenarioModels";
@@ -109,7 +109,7 @@ const scenarios = [
 
 const router = useRouter();
 const getScenarioTo = (scenarioId: string) => {
-  return { name: SCENARIO_ROUTE, query: { load: scenarioId } };
+  return { name: MAP_EDIT_MODE_ROUTE, query: { load: scenarioId } };
 };
 
 const newScenario = () => {
@@ -120,6 +120,6 @@ const { scenario } = useScenario();
 
 function loadScenario(v: Scenario) {
   scenario.value.io.loadFromObject(v);
-  router.push({ name: SCENARIO_ROUTE });
+  router.push({ name: MAP_EDIT_MODE_ROUTE });
 }
 </script>

@@ -9,7 +9,7 @@ import {
   MAP_EDIT_MODE_ROUTE,
   NEW_SCENARIO_ROUTE,
   ORBAT_CHART_ROUTE,
-  SCENARIO_ROUTE,
+  OLD_MAP_ROUTE,
   STORY_MODE_ROUTE,
 } from "@/router/names";
 
@@ -42,14 +42,14 @@ const routes = [
     children: [
       {
         path: "",
-        name: SCENARIO_ROUTE,
-        component: ScenarioEditorGeo,
+        name: MAP_EDIT_MODE_ROUTE,
+        component: ScenarioEditorMap,
         meta: { helpUrl: "https://docs.orbat-mapper.app/guide/map-edit-mode" },
       },
       {
-        path: "map-test",
-        name: MAP_EDIT_MODE_ROUTE,
-        component: ScenarioEditorMap,
+        path: "map-old",
+        name: OLD_MAP_ROUTE,
+        component: ScenarioEditorGeo,
         meta: { helpUrl: "https://docs.orbat-mapper.app/guide/map-edit-mode" },
       },
       {
