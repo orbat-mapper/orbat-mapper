@@ -87,7 +87,6 @@ import {
   onActivated,
   onUnmounted,
   provide,
-  ref,
   ShallowRef,
   shallowRef,
   watch,
@@ -107,7 +106,6 @@ import {
 } from "@/components/injects";
 import { IconChevronRightBoxOutline as ShowPanelIcon } from "@iconify-prerendered/vue-mdi";
 import { injectStrict } from "@/utils";
-import { useSearchActions } from "@/composables/searchActions";
 import UnitPanel from "@/modules/scenarioeditor/UnitPanel.vue";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useGeoEditorViewStore } from "@/stores/geoEditorViewStore";
@@ -128,7 +126,6 @@ import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { GlobalEvents } from "vue-global-events";
 import SearchScenarioActions from "@/modules/scenarioeditor/SearchScenarioActions.vue";
-import GeoSearch from "@/components/GeoSearch.vue";
 import IconButton from "@/components/IconButton.vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 
@@ -170,7 +167,6 @@ function onMapReady({
   mapRef.value = olMap;
   featureSelectInteractionRef.value = featureSelectInteraction;
 }
-const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
 const { selectedFeatureIds } = useSelectedFeatures();
 const { selectedUnitIds } = useSelectedUnits();
 
