@@ -14,7 +14,8 @@ export const useUiStore = defineStore("ui", {
     mobilePanelOpen: false,
     layersPanelActive: false,
     activeTabIndex: TAB_ORBAT,
-    showGeoSearch: false,
+    showSearch: false,
+    searchGeoMode: false,
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,

@@ -332,13 +332,13 @@ const router = useRouter();
 const { copy: copyToClipboard, copied } = useClipboard();
 
 const isOpen = ref(false);
-const showSearch = ref(false);
 const showLoadModal = ref(false);
 const shortcutsModalVisible = ref(false);
 const showExportModal = ref(false);
 const showImportModal = ref(false);
 
 const uiStore = useUiStore();
+const { showSearch } = storeToRefs(uiStore);
 
 const originalTitle = useTitle().value;
 const windowTitle = computed(() => state.info.name);

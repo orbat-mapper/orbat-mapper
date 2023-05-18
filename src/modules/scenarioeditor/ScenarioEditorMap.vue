@@ -15,7 +15,7 @@
             @dec-day="onDecDay()"
           />
           <IconButton
-            @click.stop="ui.showGeoSearch = true"
+            @click.stop="onShowPlaceSearch"
             class="pointer-events-auto ml-2"
             title="Search"
             ><MagnifyingGlassIcon class="h-5 w-5 text-gray-500"
@@ -72,12 +72,11 @@
     </template>
     <KeyboardScenarioActions v-if="mapRef" />
     <SearchScenarioActions v-if="mapRef" />
-    <GeoSearch v-if="mapRef" v-model="ui.showGeoSearch" />
     <GlobalEvents
       v-if="ui.shortcutsEnabled"
       :filter="inputEventFilter"
       @keyup.t="openTimeDialog"
-      @keyup.s="ui.showGeoSearch = true"
+      @keyup.s="ui.showSearch = true"
     />
   </div>
 </template>
@@ -219,5 +218,10 @@ function onIncDay() {
 
 function onDecDay() {
   subtract(1, "day", true);
+}
+
+function onShowPlaceSearch() {
+  ui.searchGeoMode = true;
+  ui.showSearch = true;
 }
 </script>

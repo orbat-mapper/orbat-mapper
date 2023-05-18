@@ -87,7 +87,7 @@
               <CommandPaletteHelp v-if="showHelp" />
 
               <div
-                v-if="query !== '' && rawQuery !== '?' && hitCount === 0"
+                v-if="geoDebouncedQuery !== '' && rawQuery !== '?' && hitCount === 0"
                 class="px-6 py-14 text-center text-sm sm:px-14"
               >
                 <ExclamationTriangleIcon
@@ -136,6 +136,7 @@ import { useGeoStore } from "@/stores/geoStore";
 import { toLonLat } from "ol/proj";
 import { PhotonSearchResult, useGeoSearch } from "@/composables/geosearching";
 import CommandPalettePlaceItem from "@/components/CommandPalettePlaceItem.vue";
+import { useUiStore } from "@/stores/uiStore";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits([
@@ -148,13 +149,16 @@ const emit = defineEmits([
 ]);
 
 const geoStore = useGeoStore();
+const uiStore = useUiStore();
 const { photonSearch } = useGeoSearch();
 const open = useVModel(props, "modelValue", emit);
 
 const rawQuery = ref("");
 const query = computed(() => rawQuery.value.toLowerCase().replace(/^[#>@]/, ""));
 const showHelp = computed(() => rawQuery.value === "?");
-const isGeoSearch = computed(() => rawQuery.value.startsWith("@"));
+const isGeoSearch = computed(
+  () => uiStore.searchGeoMode || rawQuery.value.startsWith("@")
+);
 
 const debouncedQuery = useDebounce(query, 200);
 const geoDebouncedQuery = useDebounce(query, 500);
