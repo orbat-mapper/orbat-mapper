@@ -8,6 +8,7 @@ import { EventHook } from "@vueuse/core";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import type OLMap from "ol/Map";
 import type Select from "ol/interaction/Select";
+import { EventSearchResult } from "@/components/types";
 export const activeUnitKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>
 >;
@@ -46,6 +47,7 @@ export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
   onUnitSelectHook: EventHook<{ unitId: EntityId }>;
   onLayerSelectHook: EventHook<{ layerId: FeatureId }>;
   onFeatureSelectHook: EventHook<{ featureId: FeatureId; layerId: FeatureId }>;
+  onEventSelectHook: EventHook<EventSearchResult>;
 }>;
 
 export const activeMapKey = Symbol("Active map") as InjectionKey<ShallowRef<OLMap>>;

@@ -2,7 +2,11 @@ import fuzzysort from "fuzzysort";
 import { NUnit } from "@/types/internalModels";
 import { groupBy, htmlTagEscape, injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { LayerFeatureSearchResult, UnitSearchResult } from "@/components/types";
+import {
+  LayerFeatureSearchResult,
+  UnitSearchResult,
+  EventSearchResult,
+} from "@/components/types";
 
 export function useScenarioSearch() {
   const {
@@ -32,6 +36,7 @@ export function useScenarioSearch() {
           name: u.obj.name,
           sidc: u.obj.sidc,
           id: u.obj.id,
+          index: i,
           parent,
           highlight:
             u[0] &&
@@ -44,7 +49,7 @@ export function useScenarioSearch() {
           category: "Units",
           symbolOptions: unitActions.getCombinedSymbolOptions(u.obj),
           _state: u.obj._state,
-        } as unknown as UnitSearchResult;
+        } as UnitSearchResult;
       });
   }
 
@@ -68,7 +73,31 @@ export function useScenarioSearch() {
     );
   }
 
-  function combineHits(hits: (UnitSearchResult[] | LayerFeatureSearchResult[])[]) {
+  function searchEvents(query: string) {
+    const q = query.trim();
+    if (!q) return [];
+
+    const hits = fuzzysort.go(q, state.mergedEvents, { key: ["title"] });
+
+    return hits.slice(0, 10).map(
+      (u, i) =>
+        ({
+          ...u.obj,
+          index: i,
+          name: u.obj.title,
+          highlight: fuzzysort.highlight({
+            ...u,
+            target: htmlTagEscape(u.target),
+          }),
+          score: u.score,
+          category: "Events",
+        } as EventSearchResult)
+    );
+  }
+
+  function combineHits(
+    hits: (UnitSearchResult[] | LayerFeatureSearchResult[] | EventSearchResult[])[]
+  ) {
     const combinedHits = hits.sort((a, b) => {
       const scoreA = a[0]?.score ?? 1000;
       const scoreB = b[0]?.score ?? 1000;
@@ -77,16 +106,17 @@ export function useScenarioSearch() {
     return [...combinedHits.flat()].map((e, index) => ({
       ...e,
       index,
-    })) as (UnitSearchResult | LayerFeatureSearchResult)[];
+    }));
   }
 
   function search(query: string) {
     const unitHits = searchUnits(query);
     const featureHits = searchLayerFeatures(query);
-    const allHits = combineHits([unitHits, featureHits]);
-    const numberOfHits = unitHits.length + featureHits.length;
+    const eventHits = searchEvents(query);
+    const allHits = combineHits([unitHits, featureHits, eventHits]);
+    const numberOfHits = unitHits.length + featureHits.length + eventHits.length;
     return { numberOfHits, groups: groupBy(allHits, "category") };
   }
 
-  return { searchUnits, searchLayerFeatures, search };
+  return { search };
 }

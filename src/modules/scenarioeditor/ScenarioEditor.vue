@@ -151,6 +151,7 @@
       @select-unit="onUnitSelect"
       @select-feature="onFeatureSelect"
       @select-layer="onLayerSelect"
+      @select-event="onEventSelect"
     />
     <AppNotifications />
     <LoadScenarioDialog
@@ -253,7 +254,7 @@ import {
 
 import type { Scenario } from "@/types/scenarioModels";
 import { useFeatureStyles } from "@/geo/featureStyles";
-import { MenuItemData } from "@/components/types";
+import { EventSearchResult, MenuItemData } from "@/components/types";
 import { useDateModal, useSidcModal } from "@/composables/modals";
 import { storeToRefs } from "pinia";
 import DropdownMenu from "@/components/DropdownMenu.vue";
@@ -310,7 +311,13 @@ const onFeatureSelectHook = createEventHook<{
   featureId: FeatureId;
   layerId: FeatureId;
 }>();
-provide(searchActionsKey, { onUnitSelectHook, onLayerSelectHook, onFeatureSelectHook });
+const onEventSelectHook = createEventHook<EventSearchResult>();
+provide(searchActionsKey, {
+  onUnitSelectHook,
+  onLayerSelectHook,
+  onFeatureSelectHook,
+  onEventSelectHook,
+});
 
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
 
@@ -373,6 +380,10 @@ const onUnitSelect = (unitId: EntityId) => {
 
 const onLayerSelect = (layerId: FeatureId) => {
   onLayerSelectHook.trigger({ layerId });
+};
+
+const onEventSelect = (e: EventSearchResult) => {
+  onEventSelectHook.trigger(e);
 };
 
 const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {

@@ -14,7 +14,8 @@ const activeUnitId = injectStrict(activeUnitKey);
 const activeScenario = injectStrict(activeScenarioKey);
 const l = useScenarioLayers(mapRef.value);
 
-const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
+const { onUnitSelect, onFeatureSelect, onLayerSelect, onEventSelect } =
+  useSearchActions();
 const ui = useUiStore();
 const { selectedFeatureIds } = useSelectedFeatures();
 const { selectedUnitIds } = useSelectedUnits();
@@ -64,6 +65,10 @@ onFeatureSelect(({ featureId }) => {
       nextTick(() => l.zoomToFeature(featureId));
     }
   });
+});
+
+onEventSelect((e) => {
+  activeScenario.time.setCurrentTime(e.startTime);
 });
 </script>
 <template></template>

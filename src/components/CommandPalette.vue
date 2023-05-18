@@ -25,6 +25,7 @@
         >
           <DialogPanel
             class="mx-auto max-w-xl transform divide-y divide-gray-100 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 transition-all"
+            :class="isGeoSearch && 'bg-red-500'"
           >
             <Combobox @update:modelValue="onSelect">
               <div class="relative">
@@ -65,7 +66,12 @@
                         :active="active"
                         :item="item"
                       />
-                      <p v-else>Missing</p>
+                      <CommandPaletteEventItem
+                        v-else-if="item.category === 'Events'"
+                        :active="active"
+                        :item="item"
+                      />
+                      <p v-else></p>
                     </ComboboxOption>
                   </ul>
                 </li>
@@ -99,7 +105,7 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
-import { ExclamationTriangleIcon, FolderIcon } from "@heroicons/vue/24/outline";
+import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import {
   Combobox,
   ComboboxInput,
@@ -114,10 +120,14 @@ import CommandPaletteFooter from "@/components/CommandPaletteFooter.vue";
 import CommandPaletteHelp from "@/components/CommandPaletteHelp.vue";
 import { useDebounce, useVModel } from "@vueuse/core";
 import { useScenarioSearch } from "@/composables/searching";
-import MilSymbol from "@/components/MilSymbol.vue";
 import CommandPaletteUnitItem from "@/components/CommandPaletteUnitItem.vue";
 import CommandPaletteLayerFeatureItem from "@/components/CommandPaletteLayerFeatureItem.vue";
-import { LayerFeatureSearchResult, UnitSearchResult } from "@/components/types";
+import {
+  EventSearchResult,
+  LayerFeatureSearchResult,
+  UnitSearchResult,
+} from "@/components/types";
+import CommandPaletteEventItem from "@/components/CommandPaletteEventItem.vue";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits([
@@ -125,36 +135,40 @@ const emit = defineEmits([
   "select-unit",
   "select-layer",
   "select-feature",
+  "select-place",
+  "select-event",
 ]);
 
 const open = useVModel(props, "modelValue", emit);
 
 const rawQuery = ref("");
-const query = computed(() => rawQuery.value.toLowerCase().replace(/^[#>]/, ""));
-const debouncedQuery = useDebounce(query, 200);
-const { searchUnits, search } = useScenarioSearch();
+const query = computed(() => rawQuery.value.toLowerCase().replace(/^[#>@]/, ""));
+const showHelp = computed(() => rawQuery.value === "?");
+const isGeoSearch = computed(() => rawQuery.value.startsWith("@"));
 
-const filteredUnits = ref<any[]>([]);
+const debouncedQuery = useDebounce(query, 200);
+const { search } = useScenarioSearch();
 const groupedHits = ref<ReturnType<typeof search>["groups"]>();
+
 const hitCount = ref(0);
 
-const showHelp = computed(() => rawQuery.value === "?");
-
 watchEffect(() => {
-  filteredUnits.value = showHelp.value ? [] : searchUnits(debouncedQuery.value);
+  if (!debouncedQuery.value.trim()) return;
   const { numberOfHits, groups } = search(debouncedQuery.value);
   hitCount.value = numberOfHits;
   groupedHits.value = groups;
 });
 
-function onSelect(item: UnitSearchResult | LayerFeatureSearchResult) {
+function onSelect(item: UnitSearchResult | LayerFeatureSearchResult | EventSearchResult) {
   if (item.category === "Units") emit("select-unit", item.id);
-  if (item.category === "Features") {
+  else if (item.category === "Features") {
     if (item.type === "layer") {
       emit("select-layer", item.id);
     } else {
       emit("select-feature", item.id);
     }
+  } else if (item.category === "Events") {
+    emit("select-event", item);
   }
   open.value = false;
 }

@@ -1,5 +1,5 @@
 import type { LayerFeatureItem } from "@/types/scenarioGeoModels";
-import type { NUnit } from "@/types/internalModels";
+import type { NUnit, ScenarioEventType } from "@/types/internalModels";
 import type { UnitAction } from "@/types/constants";
 import type { InjectionKey } from "vue";
 import { CurrentState, UnitSymbolOptions } from "@/types/scenarioModels";
@@ -22,7 +22,7 @@ export interface SelectItem<T = string | number> {
 }
 
 export interface SearchResult {
-  category: "Units" | "Features";
+  category: "Units" | "Features" | "Events";
   index: number;
   id: string | number;
   score: number;
@@ -44,6 +44,12 @@ export interface UnitSearchResult extends SearchResult {
 
 export interface LayerFeatureSearchResult extends LayerFeatureItem, SearchResult {
   category: "Features";
+}
+
+export interface EventSearchResult extends SearchResult {
+  category: "Events";
+  _type: ScenarioEventType;
+  startTime: number;
 }
 
 export type DropTarget = "on" | "above" | "below";
