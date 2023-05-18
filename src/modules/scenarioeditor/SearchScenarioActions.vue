@@ -4,7 +4,12 @@ import { useSearchActions } from "@/composables/searchActions";
 import { TAB_LAYERS, TAB_ORBAT, UnitActions } from "@/types/constants";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
-import { activeMapKey, activeScenarioKey, activeUnitKey } from "@/components/injects";
+import {
+  activeLayerKey,
+  activeMapKey,
+  activeScenarioKey,
+  activeUnitKey,
+} from "@/components/injects";
 import { useUiStore } from "@/stores/uiStore";
 import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
 import { useUnitActions } from "@/composables/scenarioActions";
@@ -12,6 +17,8 @@ import { useUnitActions } from "@/composables/scenarioActions";
 const mapRef = injectStrict(activeMapKey);
 const activeUnitId = injectStrict(activeUnitKey);
 const activeScenario = injectStrict(activeScenarioKey);
+const activeLayerId = injectStrict(activeLayerKey);
+
 const l = useScenarioLayers(mapRef.value);
 
 const { onUnitSelect, onFeatureSelect, onLayerSelect, onEventSelect } =
@@ -47,6 +54,7 @@ onLayerSelect(({ layerId }) => {
       layer._isOpen = true;
       nextTick(() => l.zoomToLayer(layerId));
     }
+    activeLayerId.value = layerId;
   });
 });
 
