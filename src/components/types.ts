@@ -55,6 +55,7 @@ export interface EventSearchResult extends SearchResult {
 export interface ActionSearchResult extends SearchResult {
   category: "Actions";
   action: ScenarioActions;
+  icon?: string;
 }
 
 export type DropTarget = "on" | "above" | "below";

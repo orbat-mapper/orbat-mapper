@@ -126,25 +126,31 @@ export function useScenarioSearch() {
 interface ActionItem {
   action: ScenarioActions;
   label: string;
+  icon?: string;
 }
 const actionItems: ActionItem[] = [
   {
     action: "save",
     label: "Save scenario",
+    icon: "save",
   },
   {
     action: "exportJson",
     label: "Export scenario as JSON",
+    icon: "download",
   },
   {
     action: "import",
     label: "Import data",
+    icon: "upload",
   },
   {
     action: "export",
     label: "Export data",
+    icon: "download",
   },
   { action: "exportToClipboard", label: "Copy scenario to clipboard" },
+  { action: "addSide", label: "Add side", icon: "add" },
 ];
 
 export function useActionSearch() {
