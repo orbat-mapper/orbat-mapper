@@ -6,7 +6,9 @@ import {
   LayerFeatureSearchResult,
   UnitSearchResult,
   EventSearchResult,
+  ActionSearchResult,
 } from "@/components/types";
+import { ScenarioActions } from "@/types/constants";
 
 export function useScenarioSearch() {
   const {
@@ -119,4 +121,68 @@ export function useScenarioSearch() {
   }
 
   return { search };
+}
+
+interface ActionItem {
+  action: ScenarioActions;
+  label: string;
+}
+const actionItems: ActionItem[] = [
+  {
+    action: "save",
+    label: "Save scenario",
+  },
+  {
+    action: "exportJson",
+    label: "Export scenario as JSON",
+  },
+  {
+    action: "import",
+    label: "Import data",
+  },
+  {
+    action: "export",
+    label: "Export data",
+  },
+  { action: "exportToClipboard", label: "Copy scenario to clipboard" },
+];
+
+export function useActionSearch() {
+  function searchActions(query: string) {
+    const q = query.trim();
+    if (!q) return [];
+
+    const hits = fuzzysort.go(q, actionItems, { key: ["label"] });
+
+    return hits.map(
+      (u, i) =>
+        ({
+          ...u.obj,
+          id: i,
+          name: u.obj.label,
+          index: i,
+          highlight: fuzzysort.highlight({
+            ...u,
+            target: htmlTagEscape(u.target),
+          }),
+          score: u.score,
+          category: "Actions",
+        } as ActionSearchResult)
+    );
+  }
+
+  return {
+    searchActions,
+    actionItems: actionItems.map(
+      (a, i): ActionSearchResult => ({
+        ...a,
+        category: "Actions",
+        index: i,
+        id: i,
+        name: a.label,
+        highlight: "",
+        score: 0,
+      })
+    ),
+  };
 }

@@ -153,6 +153,7 @@
       @select-layer="onLayerSelect"
       @select-event="onEventSelect"
       @select-place="onPlaceSelectHook.trigger($event)"
+      @select-action="onScenarioAction"
     />
     <AppNotifications />
     <LoadScenarioDialog

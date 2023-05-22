@@ -15,8 +15,21 @@
         >@</kbd
       >
       <span class="sm:hidden">for places,</span>
-      <span class="hidden sm:inline">to search for places</span>
+      <span class="hidden sm:inline">to search for places,</span>
+      <button class="flex" @click="emit('click-actions')">
+        <kbd
+          :class="[
+            'mx-1 flex h-5 w-5 items-center justify-center rounded border bg-white  font-semibold sm:mx-2',
+            rawQuery.startsWith('#')
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-gray-400 text-gray-900',
+          ]"
+          >#</kbd
+        >
+        <span class="">for actions</span>
+      </button>
       <kbd
+        class="hidden sm:flex"
         :class="[
           'mx-1 flex h-5 w-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2',
           rawQuery === '?'
@@ -25,7 +38,7 @@
         ]"
         >?</kbd
       >
-      for help.
+      <span class="hidden sm:flex">for help.</span>
     </div>
     <div><ToggleField v-model="uiStore.searchGeoMode">Place mode</ToggleField></div>
   </div>
@@ -34,6 +47,7 @@
 import ToggleField from "@/components/ToggleField.vue";
 import { useUiStore } from "@/stores/uiStore";
 
+const emit = defineEmits(["click-actions"]);
 const uiStore = useUiStore();
 const props = defineProps<{
   rawQuery: string;

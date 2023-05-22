@@ -77,7 +77,11 @@
                         :active="active"
                         :center="mapCenter"
                       />
-
+                      <CommandPaletteActionItem
+                        v-else-if="item.category === 'Actions'"
+                        :active="active"
+                        :item="item"
+                      />
                       <p v-else>{{ item }}</p>
                     </ComboboxOption>
                   </ul>
@@ -96,7 +100,10 @@
                 />
                 <p class="mt-4 font-semibold text-gray-900">No results found</p>
               </div>
-              <CommandPaletteFooter :raw-query="rawQuery" />
+              <CommandPaletteFooter
+                :raw-query="rawQuery"
+                @click-actions="rawQuery = '>'"
+              />
             </Combobox>
           </DialogPanel>
         </TransitionChild>
@@ -122,10 +129,11 @@ import {
 import CommandPaletteFooter from "@/components/CommandPaletteFooter.vue";
 import CommandPaletteHelp from "@/components/CommandPaletteHelp.vue";
 import { useDebounce, useVModel } from "@vueuse/core";
-import { useScenarioSearch } from "@/composables/searching";
+import { useActionSearch, useScenarioSearch } from "@/composables/searching";
 import CommandPaletteUnitItem from "@/components/CommandPaletteUnitItem.vue";
 import CommandPaletteLayerFeatureItem from "@/components/CommandPaletteLayerFeatureItem.vue";
 import {
+  ActionSearchResult,
   EventSearchResult,
   LayerFeatureSearchResult,
   SearchResult,
@@ -137,6 +145,7 @@ import { toLonLat } from "ol/proj";
 import { PhotonSearchResult, useGeoSearch } from "@/composables/geosearching";
 import CommandPalettePlaceItem from "@/components/CommandPalettePlaceItem.vue";
 import { useUiStore } from "@/stores/uiStore";
+import CommandPaletteActionItem from "@/components/CommandPaletteActionItem.vue";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits([
@@ -146,19 +155,23 @@ const emit = defineEmits([
   "select-feature",
   "select-place",
   "select-event",
+  "select-action",
 ]);
 
 const geoStore = useGeoStore();
 const uiStore = useUiStore();
 const { photonSearch } = useGeoSearch();
+const { searchActions, actionItems } = useActionSearch();
 const open = useVModel(props, "modelValue", emit);
 
 const rawQuery = ref("");
-const query = computed(() => rawQuery.value.toLowerCase().replace(/^[#>@]/, ""));
+const query = computed(() => rawQuery.value.replace(/^[#@]/, ""));
 const showHelp = computed(() => rawQuery.value === "?");
 const isGeoSearch = computed(
   () => uiStore.searchGeoMode || rawQuery.value.startsWith("@")
 );
+
+const isActionSearch = computed(() => rawQuery.value.startsWith("#"));
 
 const debouncedQuery = useDebounce(query, 200);
 const geoDebouncedQuery = useDebounce(query, 500);
@@ -169,7 +182,9 @@ interface ExtendedPhotonSearchResult extends PhotonSearchResult {
 }
 
 const groupedHits = ref<
-  ReturnType<typeof search>["groups"] | Map<"Places", ExtendedPhotonSearchResult[]>
+  | ReturnType<typeof search>["groups"]
+  | Map<"Places", ExtendedPhotonSearchResult[]>
+  | Map<"Actions", ActionSearchResult[]>
 >();
 const mapCenter = ref<number[] | null | undefined>();
 
@@ -187,7 +202,7 @@ watch(open, (isOpen) => {
 });
 
 watchEffect(() => {
-  if (isGeoSearch.value || !debouncedQuery.value.trim()) return;
+  if (isGeoSearch.value || isActionSearch.value || !debouncedQuery.value.trim()) return;
   const { numberOfHits, groups } = search(debouncedQuery.value);
   hitCount.value = numberOfHits;
   groupedHits.value = groups;
@@ -205,12 +220,20 @@ watch(
   }
 );
 
+watch([() => isActionSearch.value, () => query.value.trim()], async ([isa, q]) => {
+  if (!isa) return;
+  const filteredActions = q ? searchActions(q) : actionItems;
+  groupedHits.value = new Map([["Actions", filteredActions]]);
+  hitCount.value = filteredActions.length;
+});
+
 function onSelect(
   item:
     | UnitSearchResult
     | LayerFeatureSearchResult
     | EventSearchResult
     | ExtendedPhotonSearchResult
+    | ActionSearchResult
 ) {
   if (item.category === "Units") emit("select-unit", item.id);
   else if (item.category === "Features") {
@@ -223,6 +246,8 @@ function onSelect(
     emit("select-event", item);
   } else if (item.category === "Places") {
     emit("select-place", item);
+  } else if (item.category === "Actions") {
+    emit("select-action", item.action);
   }
   open.value = false;
 }
