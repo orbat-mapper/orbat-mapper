@@ -161,7 +161,7 @@ import { useYMDElements } from "@/composables/scenarioTime";
 import RadioGroupList from "@/components/RadioGroupList.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { useRouter } from "vue-router";
-import { OLD_MAP_ROUTE } from "@/router/names";
+import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { useScenario } from "@/scenariostore";
 import { createEmptyScenario } from "@/scenariostore/io";
 import ToggleField from "@/components/ToggleField.vue";
@@ -273,7 +273,7 @@ function create() {
     });
   }
   clearUndoRedoStack();
-  router.push({ name: OLD_MAP_ROUTE });
+  router.push({ name: MAP_EDIT_MODE_ROUTE });
 }
 
 function cancel() {
