@@ -52,6 +52,8 @@
           @open-time-modal="openTimeDialog()"
           @inc-day="onIncDay()"
           @dec-day="onDecDay()"
+          @next-event="jumpToNextEvent()"
+          @prev-event="jumpToPrevEvent()"
         />
         <MapEditorMeasurementToolbar
           class="absolute bottom-14 sm:bottom-16"
@@ -68,6 +70,8 @@
         @open-time-modal="openTimeDialog()"
         @inc-day="onIncDay()"
         @dec-day="onDecDay()"
+        @next-event="jumpToNextEvent"
+        @prev-event="jumpToPrevEvent"
       />
     </template>
     <KeyboardScenarioActions v-if="mapRef" />

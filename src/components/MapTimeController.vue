@@ -16,9 +16,17 @@
         <span class="sr-only">Previous</span>
         <IconChevronLeft class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
-      <ToolbarButton @click="emit('inc-day')" end>
+      <ToolbarButton @click="emit('inc-day')">
         <span class="sr-only">Next</span>
         <IconChevronRight class="h-5 w-5" aria-hidden="true" />
+      </ToolbarButton>
+      <ToolbarButton @click="emit('prev-event')">
+        <span class="sr-only">Next</span>
+        <IconSkipPrevious class="h-5 w-5" aria-hidden="true" />
+      </ToolbarButton>
+      <ToolbarButton @click="emit('next-event')" end>
+        <span class="sr-only">Next</span>
+        <IconSkipNext class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
     </BaseToolbar>
   </div>
@@ -47,7 +55,13 @@ const props = withDefaults(
   { showControls: true, hideTime: false }
 );
 
-const emit = defineEmits(["open-time-modal", "inc-day", "dec-day"]);
+const emit = defineEmits([
+  "open-time-modal",
+  "inc-day",
+  "dec-day",
+  "next-event",
+  "prev-event",
+]);
 const {
   store: { state },
   time: { scenarioTime },

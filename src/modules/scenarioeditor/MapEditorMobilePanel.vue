@@ -16,6 +16,8 @@
         @open-time-modal="emit('open-time-modal')"
         @dec-day="emit('dec-day')"
         @inc-day="emit('inc-day')"
+        @next-event="emit('next-event')"
+        @prev-event="emit('prev-event')"
       />
     </div>
     <TabGroup

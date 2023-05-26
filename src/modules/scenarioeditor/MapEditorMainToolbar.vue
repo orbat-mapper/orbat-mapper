@@ -171,6 +171,14 @@
         <span class="sr-only">Next</span>
         <IconChevronRight class="h-5 w-5" aria-hidden="true" />
       </MainToolbarButton>
+      <MainToolbarButton class="hidden sm:block" @click="emit('prev-event')">
+        <span class="sr-only">Previous event</span>
+        <IconSkipPrevious class="h-5 w-5" aria-hidden="true" />
+      </MainToolbarButton>
+      <MainToolbarButton class="hidden sm:block" @click="emit('next-event')">
+        <span class="sr-only">Next event</span>
+        <IconSkipNext class="h-5 w-5" aria-hidden="true" />
+      </MainToolbarButton>
     </section>
     <FloatingPanel
       v-if="isGetLocationActive"
@@ -201,6 +209,8 @@ import {
   IconRedoVariant as RedoIcon,
   IconRulerSquareCompass as MeasurementIcon,
   IconUndoVariant as UndoIcon,
+  IconSkipPrevious,
+  IconSkipNext,
 } from "@iconify-prerendered/vue-mdi";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
@@ -231,7 +241,13 @@ import { orbatUnitClick } from "@/components/eventKeys";
 import ToolbarButton from "@/components/ToolbarButton.vue";
 import { CalendarIcon } from "@heroicons/vue/24/solid";
 
-const emit = defineEmits(["open-time-modal", "inc-day", "dec-day"]);
+const emit = defineEmits([
+  "open-time-modal",
+  "inc-day",
+  "dec-day",
+  "next-event",
+  "prev-event",
+]);
 
 const {
   store: { undo, redo, canRedo, canUndo, groupUpdate, state },
