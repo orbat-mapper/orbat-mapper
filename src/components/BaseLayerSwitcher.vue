@@ -1,6 +1,6 @@
 <template>
   <RadioGroup v-model="selected">
-    <RadioGroupLabel class="sr-only"> Privacy setting</RadioGroupLabel>
+    <RadioGroupLabel class="sr-only">Select base map layer</RadioGroupLabel>
     <div class="-space-y-px rounded-md bg-white">
       <RadioGroupOption
         as="template"
@@ -56,48 +56,24 @@
   </RadioGroup>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from "vue";
+<script setup lang="ts">
 import {
   RadioGroup,
   RadioGroupDescription,
   RadioGroupLabel,
   RadioGroupOption,
 } from "@headlessui/vue";
-import { IconOpacity as OpacityIcon } from "@iconify-prerendered/vue-mdi";
 import { LayerInfo } from "./LayersPanel.vue";
 import OpacityInput from "./OpacityInput.vue";
+import { useVModel } from "@vueuse/core";
 
-export default defineComponent({
-  components: {
-    OpacityInput,
-    RadioGroup,
-    RadioGroupDescription,
-    RadioGroupLabel,
-    RadioGroupOption,
-    OpacityIcon,
-  },
-  props: {
-    settings: { type: Array as PropType<LayerInfo<any>[]>, required: true },
-    modelValue: { type: Object as PropType<LayerInfo<any>> },
-  },
-  emits: ["update:modelValue", "update:layerOpacity"],
-  // setup(props) {
-  //   const selected = ref(props.settings[0]);
-  //
-  //   return {
-  //     selected,
-  //   };
-  // },
-  computed: {
-    selected: {
-      get(): LayerInfo | undefined {
-        return this.modelValue;
-      },
-      set(v: LayerInfo) {
-        this.$emit("update:modelValue", v);
-      },
-    },
-  },
-});
+interface Props {
+  settings: LayerInfo<any>[];
+  modelValue?: LayerInfo<any>;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits(["update:modelValue", "update:layerOpacity"]);
+
+const selected = useVModel(props, "modelValue", emit);
 </script>
