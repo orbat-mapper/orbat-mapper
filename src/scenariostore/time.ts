@@ -116,6 +116,23 @@ export function useScenarioTime(store: NewScenarioStore) {
     if (newTime > Number.MIN_SAFE_INTEGER) setCurrentTime(newTime);
   }
 
+  function goToNextScenarioEvent() {
+    const nextEvent = state.mergedEvents.find(
+      (event) => event.startTime > state.currentTime
+    );
+    const newTime = nextEvent?.startTime || Number.MAX_SAFE_INTEGER;
+    if (newTime < Number.MAX_SAFE_INTEGER) setCurrentTime(newTime);
+  }
+
+  function goToPrevScenarioEvent() {
+    const prevEvent = state.mergedEvents
+      .slice()
+      .reverse()
+      .find((event) => event.startTime < state.currentTime);
+    const newTime = prevEvent?.startTime || Number.MIN_SAFE_INTEGER;
+    if (newTime > Number.MIN_SAFE_INTEGER) setCurrentTime(newTime);
+  }
+
   const utcTime = computed(() => {
     return dayjs.utc(state.currentTime);
   });
@@ -139,5 +156,7 @@ export function useScenarioTime(store: NewScenarioStore) {
     timeZone,
     jumpToNextEvent,
     jumpToPrevEvent,
+    goToNextScenarioEvent,
+    goToPrevScenarioEvent,
   };
 }

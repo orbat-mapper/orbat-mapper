@@ -13,6 +13,8 @@
             @open-time-modal="openTimeDialog()"
             @inc-day="onIncDay()"
             @dec-day="onDecDay()"
+            @next-event="goToNextScenarioEvent()"
+            @prev-event="goToPrevScenarioEvent()"
           />
           <IconButton
             @click.stop="onShowPlaceSearch"
@@ -52,8 +54,8 @@
           @open-time-modal="openTimeDialog()"
           @inc-day="onIncDay()"
           @dec-day="onDecDay()"
-          @next-event="jumpToNextEvent()"
-          @prev-event="jumpToPrevEvent()"
+          @next-event="goToNextScenarioEvent()"
+          @prev-event="goToPrevScenarioEvent()"
         />
         <MapEditorMeasurementToolbar
           class="absolute bottom-14 sm:bottom-16"
@@ -70,8 +72,8 @@
         @open-time-modal="openTimeDialog()"
         @inc-day="onIncDay()"
         @dec-day="onDecDay()"
-        @next-event="jumpToNextEvent"
-        @prev-event="jumpToPrevEvent"
+        @next-event="goToNextScenarioEvent()"
+        @prev-event="goToPrevScenarioEvent()"
       />
     </template>
     <KeyboardScenarioActions v-if="mapRef" />
@@ -143,7 +145,15 @@ const { state, update } = activeScenario.store;
 const {
   unitActions,
   io,
-  time: { setCurrentTime, add, subtract, jumpToNextEvent, jumpToPrevEvent },
+  time: {
+    setCurrentTime,
+    add,
+    subtract,
+    jumpToNextEvent,
+    jumpToPrevEvent,
+    goToNextScenarioEvent,
+    goToPrevScenarioEvent,
+  },
 } = activeScenario;
 const toolbarStore = useMainToolbarStore();
 const layout = useGeoEditorViewStore();

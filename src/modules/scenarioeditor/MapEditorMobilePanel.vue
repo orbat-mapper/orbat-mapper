@@ -90,7 +90,13 @@ import { useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 
-const emit = defineEmits(["open-time-modal", "inc-day", "dec-day"]);
+const emit = defineEmits([
+  "open-time-modal",
+  "inc-day",
+  "dec-day",
+  "next-event",
+  "prev-event",
+]);
 
 const activeUnitId = injectStrict(activeUnitKey);
 const { selectedFeatureIds } = useSelectedFeatures();
