@@ -11,9 +11,9 @@ import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { ScenarioFeatureProperties } from "@/types/scenarioGeoModels";
 import { useDebounceFn } from "@vueuse/core";
 import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeatureMarkerSettings.vue";
-import DrawMarker from "@/components/DrawMarker.vue";
 import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeatureStrokeSettings.vue";
 import ScenarioFeatureFillSettings from "@/modules/scenarioeditor/ScenarioFeatureFillSettings.vue";
+import EditableLabel from "@/components/EditableLabel.vue";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -54,12 +54,8 @@ const hasFill = computed(
 
 const isMultipleFeatures = computed(() => props.selectedIds.size > 1);
 
-function onKey(e: KeyboardEvent) {
-  (e.target as HTMLInputElement).blur();
-}
-
-function updateValue() {
-  feature.value && updateFeature(feature.value?.id, { name: featureName.value });
+function updateValue(value: string) {
+  feature.value && updateFeature(feature.value?.id, { name: value });
 }
 
 const debouncedResetMap = useDebounceFn(
@@ -87,15 +83,7 @@ function doUpdateFeature(data: Partial<ScenarioFeatureProperties>) {
   <div>
     <header class="">
       <div v-if="feature" class="">
-        <input
-          type="text"
-          v-model="featureName"
-          @keyup.esc="onKey"
-          @keyup.enter="onKey"
-          @blur="updateValue()"
-          class="-mx-3 rounded-md border-0 text-base font-semibold leading-6 text-gray-900 ring-0 ring-inset hover:ring-1 focus:ring-2 focus:ring-inset"
-        />
-
+        <EditableLabel v-model="featureName" @update-value="updateValue" />
         <p class="whitespace-pre-wrap">{{ feature.properties.description }}</p>
       </div>
     </header>
