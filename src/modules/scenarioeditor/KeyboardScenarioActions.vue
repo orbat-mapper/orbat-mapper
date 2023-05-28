@@ -4,19 +4,23 @@ import { computed } from "vue";
 import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import {
+  activeScenarioEventKey,
+  activeScenarioKey,
+  activeUnitKey,
+} from "@/components/injects";
 import {
   useActiveUnitStore,
   useSelectedFeatures,
   useSelectedUnits,
 } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
-import { TAB_LAYERS, UnitActions } from "@/types/constants";
+import { UnitActions } from "@/types/constants";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { useTabStore } from "@/stores/tabStore";
-import { KeyboardEntry } from "@/components/keyboardShortcuts";
 
 const activeUnitId = injectStrict(activeUnitKey);
+const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const {
   unitActions,
   store: { state },
@@ -53,6 +57,7 @@ function handleEscape(e: KeyboardEvent) {
     clearSelectedUnits();
     activeUnitStore.clearActiveUnit();
     clearSelectedFeatures();
+    activeScenarioEventId.value = null;
   }
 }
 

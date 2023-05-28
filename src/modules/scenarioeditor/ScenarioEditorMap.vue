@@ -42,6 +42,10 @@
               class="p-2"
             />
             <UnitPanel v-else-if="activeUnitId" :unit-id="activeUnitId" />
+            <ScenarioEventDetails
+              v-else-if="activeScenarioEventId"
+              :event-id="activeScenarioEventId"
+            />
           </MapEditorDetailsPanel>
           <div v-else></div>
         </section>
@@ -106,6 +110,7 @@ import { useNotifications } from "@/composables/notifications";
 import {
   activeFeatureSelectInteractionKey,
   activeMapKey,
+  activeScenarioEventKey,
   activeScenarioKey,
   activeUnitKey,
   timeModalKey,
@@ -134,10 +139,12 @@ import { GlobalEvents } from "vue-global-events";
 import SearchScenarioActions from "@/modules/scenarioeditor/SearchScenarioActions.vue";
 import IconButton from "@/components/IconButton.vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
+import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
 const activeUnitId = injectStrict(activeUnitKey);
+const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
 
 const { state, update } = activeScenario.store;
@@ -145,15 +152,7 @@ const { state, update } = activeScenario.store;
 const {
   unitActions,
   io,
-  time: {
-    setCurrentTime,
-    add,
-    subtract,
-    jumpToNextEvent,
-    jumpToPrevEvent,
-    goToNextScenarioEvent,
-    goToPrevScenarioEvent,
-  },
+  time: { setCurrentTime, add, subtract, goToNextScenarioEvent, goToPrevScenarioEvent },
 } = activeScenario;
 const toolbarStore = useMainToolbarStore();
 const layout = useGeoEditorViewStore();
@@ -187,7 +186,11 @@ const { selectedUnitIds } = useSelectedUnits();
 const [showLeftPanel, toggleLeftPanel] = useToggle(true);
 
 const showDetailsPanel = computed(() => {
-  return Boolean(selectedFeatureIds.value.size || selectedUnitIds.value.size);
+  return Boolean(
+    selectedFeatureIds.value.size ||
+      selectedUnitIds.value.size ||
+      activeScenarioEventId.value
+  );
 });
 
 watch(
@@ -211,6 +214,7 @@ onActivated(() => {
 function onCloseDetailsPanel() {
   selectedUnitIds.value.clear();
   selectedFeatureIds.value.clear();
+  activeScenarioEventId.value = null;
 }
 
 const openTimeDialog = async () => {

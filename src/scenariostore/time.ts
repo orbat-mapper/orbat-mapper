@@ -6,6 +6,7 @@ import { computed } from "vue";
 import turfLength from "@turf/length";
 import turfAlong from "@turf/along";
 import { lineString } from "@turf/helpers";
+import { EntityId } from "@/types/base";
 
 export function createInitialState(unit: NUnit): CurrentState | null {
   if (unit.location)
@@ -147,6 +148,10 @@ export function useScenarioTime(store: NewScenarioStore) {
     return zone;
   });
 
+  function getEventById(id: EntityId) {
+    return state.mergedEvents.find((event) => event.id === id);
+  }
+
   return {
     setCurrentTime,
     add,
@@ -158,5 +163,6 @@ export function useScenarioTime(store: NewScenarioStore) {
     jumpToPrevEvent,
     goToNextScenarioEvent,
     goToPrevScenarioEvent,
+    getEventById,
   };
 }

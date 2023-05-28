@@ -245,6 +245,7 @@ import {
   activeFeaturesKey,
   activeLayerKey,
   activeParentKey,
+  activeScenarioEventKey,
   activeScenarioKey,
   activeUnitKey,
   currentScenarioTabKey,
@@ -293,6 +294,7 @@ const dropZoneRef = ref<HTMLDivElement>();
 const activeUnitId = ref<EntityId | undefined | null>(null);
 const activeParentId = ref<EntityId | undefined | null>(null);
 const activeLayerId = ref<FeatureId | undefined | null>(null);
+const activeScenarioEventId = ref<EntityId | undefined | null>(null);
 const selectedUnitIdsRef = ref<Set<EntityId>>(new Set());
 const selectedFeatureIdsRef = ref<SelectedScenarioFeatures>(new Set());
 const scnFeatures = useFeatureStyles(props.activeScenario.geo);
@@ -308,6 +310,7 @@ provide(selectedFeatureIdsKey, selectedFeatureIdsRef);
 provide(activeScenarioKey, props.activeScenario);
 provide(activeFeaturesKey, scnFeatures);
 provide(currentScenarioTabKey, activeScenarioTab);
+provide(activeScenarioEventKey, activeScenarioEventId);
 
 const onUnitSelectHook = createEventHook<{ unitId: EntityId }>();
 const onLayerSelectHook = createEventHook<{ layerId: FeatureId }>();

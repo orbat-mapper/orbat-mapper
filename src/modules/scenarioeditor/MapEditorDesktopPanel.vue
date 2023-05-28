@@ -36,7 +36,7 @@
           <OrbatPanel />
         </TabPanel>
         <TabPanel class="p-4 pb-10">
-          <ScenarioEventsPanel />
+          <ScenarioEventsPanel @event-click="onEventClick" />
         </TabPanel>
         <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
       </TabPanels>
@@ -51,15 +51,21 @@ import CloseButton from "@/components/CloseButton.vue";
 import { useToggle } from "@vueuse/core";
 import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
 import { injectStrict } from "@/utils";
-import { activeMapKey, activeUnitKey } from "@/components/injects";
+import {
+  activeMapKey,
+  activeScenarioEventKey,
+  activeUnitKey,
+} from "@/components/injects";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 import { storeToRefs } from "pinia";
 import { useUiStore } from "@/stores/uiStore";
 import { onMounted, onUnmounted } from "vue";
+import { ScenarioEvent } from "@/types/scenarioModels";
 
 const emit = defineEmits(["close"]);
 
 const activeUnitId = injectStrict(activeUnitKey);
+const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const mapRef = injectStrict(activeMapKey);
 const { selectedFeatureIds } = useSelectedFeatures();
 const { selectedUnitIds } = useSelectedUnits();
@@ -85,4 +91,9 @@ onUnmounted(() => {
     mapRef.value.getView().padding = [top, right, bottom, 0];
   }
 });
+
+function onEventClick(scenarioEvent: ScenarioEvent) {
+  console.log(scenarioEvent);
+  activeScenarioEventId.value = scenarioEvent.id;
+}
 </script>
