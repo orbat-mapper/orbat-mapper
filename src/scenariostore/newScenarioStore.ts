@@ -95,6 +95,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
           subTitle,
           description,
           _type: "unit",
+          _pid: unit.id,
         };
         eventMap[nEvent.id] = nEvent;
       });

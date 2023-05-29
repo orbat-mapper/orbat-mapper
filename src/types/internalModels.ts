@@ -67,4 +67,5 @@ export type ScenarioEventType = "unit" | "scenario";
 export interface NScenarioEvent extends ScenarioEvent {
   id: string;
   _type: ScenarioEventType;
+  _pid?: EntityId;
 }
