@@ -93,7 +93,6 @@ onUnmounted(() => {
 });
 
 function onEventClick(scenarioEvent: ScenarioEvent) {
-  console.log(scenarioEvent);
   activeScenarioEventId.value = scenarioEvent.id;
 }
 </script>

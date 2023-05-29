@@ -2,7 +2,8 @@
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
+import EditableLabel from "@/components/EditableLabel.vue";
 
 interface Props {
   eventId: EntityId;
@@ -11,17 +12,35 @@ interface Props {
 const props = defineProps<Props>();
 
 const {
+  time: { updateScenarioEvent },
+} = injectStrict(activeScenarioKey);
+
+const title = ref("");
+
+const {
   geo,
   store: { groupUpdate },
   time,
 } = injectStrict(activeScenarioKey);
 
 const scenarioEvent = computed(() => time.getEventById(props.eventId));
+
+watch(
+  () => props.eventId,
+  () => {
+    title.value = scenarioEvent.value?.title ?? "";
+  },
+  { immediate: true }
+);
+
+function updateTitle(value: string) {
+  updateScenarioEvent(props.eventId, { title: value });
+}
 </script>
 <template>
-  <div>
+  <div v-if="scenarioEvent" :key="scenarioEvent.id">
     <header class="">
-      <p>Event</p>
+      <EditableLabel v-model="title" @updateValue="updateTitle" />
     </header>
     <pre>{{ scenarioEvent }}</pre>
   </div>
