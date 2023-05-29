@@ -36,7 +36,7 @@
 import { IconMapMarker, IconVectorSquare } from "@iconify-prerendered/vue-mdi";
 import { formatLength } from "@/geo/utils";
 import { PhotonSearchResult } from "@/composables/geosearching";
-import { Feature, Point } from "geojson";
+import type { Feature, Point } from "geojson";
 import { GeoSearchProperties } from "@/types/search";
 import { getDistance } from "ol/sphere";
 import { useMeasurementsStore } from "@/stores/geoStore";
