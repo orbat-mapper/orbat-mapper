@@ -78,8 +78,9 @@ export function useScenarioSearch() {
   function searchEvents(query: string) {
     const q = query.trim();
     if (!q) return [];
+    const mergedEvents = state.events.map((id) => state.eventMap[id]);
 
-    const hits = fuzzysort.go(q, state.mergedEvents, { key: ["title"] });
+    const hits = fuzzysort.go(q, mergedEvents, { key: ["title"] });
 
     return hits.slice(0, 10).map(
       (u, i) =>

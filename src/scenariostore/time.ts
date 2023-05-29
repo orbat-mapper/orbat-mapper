@@ -1,12 +1,13 @@
 import { NewScenarioStore } from "./newScenarioStore";
 import { CurrentState } from "@/types/scenarioModels";
-import { NUnit } from "@/types/internalModels";
+import { NUnit, ScenarioEventUpdate } from "@/types/internalModels";
 import dayjs, { ManipulateType } from "dayjs";
 import { computed } from "vue";
 import turfLength from "@turf/length";
 import turfAlong from "@turf/along";
 import { lineString } from "@turf/helpers";
 import { EntityId } from "@/types/base";
+import { klona } from "klona";
 
 export function createInitialState(unit: NUnit): CurrentState | null {
   if (unit.location)
@@ -20,7 +21,7 @@ export function createInitialState(unit: NUnit): CurrentState | null {
 }
 
 export function useScenarioTime(store: NewScenarioStore) {
-  const { state } = store;
+  const { state, update } = store;
 
   function setCurrentTime(timestamp: number) {
     Object.values(state.unitMap).forEach((unit) => {
@@ -118,19 +119,21 @@ export function useScenarioTime(store: NewScenarioStore) {
   }
 
   function goToNextScenarioEvent() {
-    const nextEvent = state.mergedEvents.find(
-      (event) => event.startTime > state.currentTime
+    const nextEventId = state.events.find(
+      (event) => state.eventMap[event].startTime > state.currentTime
     );
-    const newTime = nextEvent?.startTime || Number.MAX_SAFE_INTEGER;
+    const nextEvent = nextEventId && state.eventMap[nextEventId];
+    const newTime = nextEvent ? nextEvent.startTime : Number.MAX_SAFE_INTEGER;
     if (newTime < Number.MAX_SAFE_INTEGER) setCurrentTime(newTime);
   }
 
   function goToPrevScenarioEvent() {
-    const prevEvent = state.mergedEvents
+    const prevEventId = state.events
       .slice()
       .reverse()
-      .find((event) => event.startTime < state.currentTime);
-    const newTime = prevEvent?.startTime || Number.MIN_SAFE_INTEGER;
+      .find((event) => state.eventMap[event].startTime < state.currentTime);
+    const prevEvent = prevEventId && state.eventMap[prevEventId];
+    const newTime = prevEvent ? prevEvent.startTime : Number.MIN_SAFE_INTEGER;
     if (newTime > Number.MIN_SAFE_INTEGER) setCurrentTime(newTime);
   }
 
@@ -149,7 +152,21 @@ export function useScenarioTime(store: NewScenarioStore) {
   });
 
   function getEventById(id: EntityId) {
-    return state.mergedEvents.find((event) => event.id === id);
+    return state.eventMap[id];
+  }
+
+  function updateScenarioEvent(id: EntityId, data: ScenarioEventUpdate) {
+    const event = getEventById(id);
+    if (!event) return;
+    if (event._type === "scenario") {
+      update((s) => {
+        const e = s.eventMap[id];
+        if (!e) return;
+        s.eventMap[e.id] = klona(Object.assign(e, { ...data }));
+      });
+    } else {
+      console.warn("Cannot update non-scenario event yet");
+    }
   }
 
   return {
@@ -164,5 +181,6 @@ export function useScenarioTime(store: NewScenarioStore) {
     goToNextScenarioEvent,
     goToPrevScenarioEvent,
     getEventById,
+    updateScenarioEvent,
   };
 }

@@ -49,7 +49,9 @@ function getScenarioInfo(state: ScenarioState): ScenarioInfo {
 }
 
 function getScenarioEvents(state: ScenarioState): ScenarioEvent[] {
-  return state.events;
+  return state.events
+    .filter((id) => state.eventMap[id]._type === "scenario")
+    .map((id) => state.eventMap[id]);
 }
 
 function getSides(state: ScenarioState): Side[] {

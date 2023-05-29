@@ -17,7 +17,7 @@ const {
   time: { timeZone, setCurrentTime },
 } = injectStrict(activeScenarioKey);
 
-const events = computed(() => store.state.mergedEvents);
+const events = computed(() => store.state.events.map((id) => store.state.eventMap[id]));
 const t = computed(() => store.state.currentTime);
 
 function onEventClick(event: ScenarioEvent) {

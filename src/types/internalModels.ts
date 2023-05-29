@@ -44,6 +44,7 @@ export interface ScenarioLayerUpdate
 
 export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id">> {}
 export interface UnitUpdate extends Partial<Omit<NUnit, "id">> {}
+export interface ScenarioEventUpdate extends Partial<Omit<NScenarioEvent, "id">> {}
 
 export interface NOrbatItemData {
   unit: NUnit;
@@ -59,6 +60,7 @@ export const INTERNAL_NAMES = [
   "_hidden",
   "_gid",
   "_sid",
+  "_type",
 ];
 export const TIMESTAMP_NAMES = ["t", "visibleFromT", "visibleUntilT", "startTime"];
 export type ScenarioEventType = "unit" | "scenario";

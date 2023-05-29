@@ -28,13 +28,13 @@ export interface ScenarioState {
   unitMap: Record<EntityId, NUnit>;
   sideMap: Record<EntityId, NSide>;
   sideGroupMap: Record<EntityId, NSideGroup>;
+  eventMap: Record<EntityId, NScenarioEvent>;
   sides: EntityId[];
   layers: FeatureId[];
   layerMap: Record<FeatureId, NScenarioLayer>;
   featureMap: Record<FeatureId, NScenarioFeature>;
   info: ScenarioInfo;
-  events: ScenarioEvent[];
-  mergedEvents: NScenarioEvent[];
+  events: EntityId[];
   currentTime: number;
   getUnitById: (id: EntityId) => NUnit;
   getSideById: (id: EntityId) => NSide;
@@ -47,20 +47,21 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const unitMap: Record<EntityId, NUnit> = {};
   const sideMap: Record<EntityId, NSide> = {};
   const sideGroupMap: Record<EntityId, NSideGroup> = {};
+  const eventMap: Record<EntityId, NScenarioEvent> = {};
   const sides: EntityId[] = [];
   const layers: FeatureId[] = [];
   const layerMap: Record<FeatureId, NScenarioLayer> = {};
   const featureMap: Record<FeatureId, NScenarioFeature> = {};
-  const events = [...scenario.events].map((e) => ({
-    ...e,
-    startTime: +dayjs(e.startTime),
-  }));
 
-  const mergedEvents: NScenarioEvent[] = events.map((e) => ({
-    ...e,
-    _type: "scenario",
-    id: e.id ?? nanoid(),
-  }));
+  scenario.events.forEach((e) => {
+    const nEvent: NScenarioEvent = {
+      ...e,
+      startTime: +dayjs(e.startTime),
+      id: e.id ?? nanoid(),
+      _type: "scenario",
+    };
+    eventMap[nEvent.id] = nEvent;
+  });
 
   if (scenario.startTime !== undefined) {
     scenario.startTime = +dayjs(scenario.startTime);
@@ -87,14 +88,15 @@ function prepareScenario(scenario: Scenario): ScenarioState {
       .filter((s) => s.title)
       .forEach((s) => {
         const { t: startTime, subTitle, description } = s;
-        mergedEvents.push({
+        const nEvent: NScenarioEvent = {
           id: s.id || nanoid(),
           startTime,
           title: s.title || "NN",
           subTitle,
           description,
           _type: "unit",
-        });
+        };
+        eventMap[nEvent.id] = nEvent;
       });
     unit._state = null;
     if (!unit.id) {
@@ -157,12 +159,19 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     });
   });
 
-  mergedEvents.sort(({ startTime: a }, { startTime: b }) => (a < b ? -1 : a > b ? 1 : 0));
+  const events = Object.values(eventMap).map((e) => e.id);
+
+  events.sort((la, lb) => {
+    const a = eventMap[la].startTime;
+    const b = eventMap[lb].startTime;
+    return a < b ? -1 : a > b ? 1 : 0;
+  });
 
   return {
     layers,
     layerMap,
     featureMap,
+    eventMap,
     id: nanoid(),
     currentTime: scenario.startTime || 0,
     info,
@@ -171,7 +180,6 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     sideMap,
     sideGroupMap,
     events,
-    mergedEvents,
     getUnitById(id: EntityId) {
       return this.unitMap[id];
     },
