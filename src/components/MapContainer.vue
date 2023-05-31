@@ -16,21 +16,29 @@ import { useOlEvent } from "@/composables/openlayersHelpers";
 interface Props {
   center?: Coordinate;
   zoom?: number;
+  baseLayerName?: string;
 }
 
-const props = withDefaults(defineProps<Props>(), { center: () => [30, 60], zoom: 5 });
+const props = withDefaults(defineProps<Props>(), {
+  center: () => [30, 60],
+  zoom: 5,
+  baseLayerName: "osm",
+});
 const emit = defineEmits(["ready", "moveend"]);
 
 function createBaseLayers() {
   const openStreetmapLayer = new TileLayer({
     source: new OSM(),
-    visible: true,
+    visible: props.baseLayerName === "osm",
     preload: Infinity,
+    properties: {
+      title: "OSM",
+      name: "osm",
+    },
   });
-  openStreetmapLayer.set("title", "OSM");
   const lightGrayLayer = new TileLayer({
     preload: Infinity,
-    visible: false,
+    visible: props.baseLayerName === "grayBasemap",
     source: new XYZ({
       attributions:
         'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/' +
@@ -39,9 +47,11 @@ function createBaseLayers() {
         "https://server.arcgisonline.com/ArcGIS/rest/services/" +
         "Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
     }),
+    properties: {
+      title: "Gray Basemap",
+      name: "grayBasemap",
+    },
   });
-
-  lightGrayLayer.set("title", "Gray Basemap");
 
   const openTopoMap = new TileLayer({
     source: new XYZ({
@@ -50,32 +60,38 @@ function createBaseLayers() {
       attributions:
         'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
     }),
-    visible: false,
+    visible: props.baseLayerName === "openTopoMap",
+    properties: {
+      title: "Open topo map",
+      name: "openTopoMap",
+    },
   });
-
-  openTopoMap.set("title", "Open topo map");
 
   const esriWorldImagery = new TileLayer({
     preload: Infinity,
-    visible: false,
+    visible: props.baseLayerName === "esriWorldImagery",
     source: new XYZ({
       transition: 0, // should be set to 0 when opacity is < 1
       attributions:
         "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
       url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     }),
+    properties: {
+      name: "esriWorldImagery",
+      title: "ESRI World imagery",
+    },
   });
 
-  esriWorldImagery.set("title", "ESRI World imagery");
-
   const kartverketTopo4 = new TileLayer({
-    visible: false,
     source: new XYZ({
       url: "https://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo4&zoom={z}&x={x}&y={y}",
       attributions: '<a href="http://www.kartverket.no/">Kartverket</a>',
     }),
+    properties: {
+      title: "Topographic Map Norway",
+      name: "kartverketTopo4",
+    },
   });
-  kartverketTopo4.set("title", "Topographic Map Norway");
 
   // https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}
 
@@ -128,6 +144,7 @@ onUnmounted(() => {
   top: 5.5em;
   right: 0.5em;
 }
+
 .ol-zoom {
   @apply bottom-12 left-[unset] right-2 top-[unset] sm:bottom-10;
 }
