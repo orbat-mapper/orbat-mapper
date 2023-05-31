@@ -5,6 +5,7 @@
       @drop="onDrop"
       @dragover.prevent
       @contextmenu="onContextMenu"
+      :base-layer-name="mapSettings.baseLayerName"
     />
     <slot />
   </div>
@@ -43,6 +44,7 @@ import { useMapHover } from "@/composables/geoHover";
 import { useGeoLayersUndoRedo } from "@/composables/geoUndoRedo";
 import type Select from "ol/interaction/Select";
 import { useUiStore } from "@/stores/uiStore";
+const mapSettings = useMapSettingsStore();
 
 interface Props {}
 

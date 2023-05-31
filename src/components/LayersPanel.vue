@@ -55,9 +55,11 @@ import { toLonLat } from "ol/proj";
 import OpacityInput from "./OpacityInput.vue";
 import { getUid } from "ol";
 import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
 export interface LayerInfo<T extends BaseLayer = BaseLayer> {
   id: string;
+  name: string;
   title: string;
   visible: boolean;
   zIndex: number;
@@ -78,6 +80,7 @@ export default defineComponent({
   },
   setup() {
     const geoStore = useGeoStore();
+    const mapSettings = useMapSettingsStore();
     let tileLayers = ref<LayerInfo<TileLayer<TileSource>>[]>([]);
     let vectorLayers = ref<LayerInfo<PointVectorLayer>[]>([]);
     let activeBaseLayer = shallowRef<LayerInfo<TileLayer<TileSource>>>();
@@ -99,8 +102,9 @@ export default defineComponent({
 
     watch(activeBaseLayer, (layerInfo) => {
       if (!layerInfo) return;
+      mapSettings.baseLayerName = layerInfo.layer.get("name");
       tileLayers.value.forEach((l) => {
-        const isVisible = l.title === layerInfo.title;
+        const isVisible = l.name === layerInfo.name;
         l.layer.setOpacity(layerInfo.opacity);
         l.visible = isVisible;
         l.layer.setVisible(isVisible);
@@ -114,6 +118,7 @@ export default defineComponent({
         const l: LayerInfo<BaseLayer> = {
           id: getUid(layer),
           title: layer.get("title") || layer.get("name"),
+          name: layer.get("name"),
           layerType: layer.get("layerType"),
           visible: layer.getVisible(),
           zIndex: layer.getZIndex(),

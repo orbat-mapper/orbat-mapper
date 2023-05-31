@@ -83,6 +83,7 @@ function createBaseLayers() {
   });
 
   const kartverketTopo4 = new TileLayer({
+    visible: props.baseLayerName === "kartverketTopo4",
     source: new XYZ({
       url: "https://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo4&zoom={z}&x={x}&y={y}",
       attributions: '<a href="http://www.kartverket.no/">Kartverket</a>',
