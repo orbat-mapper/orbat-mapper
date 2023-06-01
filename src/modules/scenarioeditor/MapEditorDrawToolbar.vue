@@ -83,10 +83,10 @@ import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { onKeyStroke, useToggle } from "@vueuse/core";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useEditingInteraction } from "@/composables/geoEditing";
-import { useSelectedFeatures } from "@/stores/dragStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import { useSelectedFeatures } from "@/stores/selectedStore";
 
 const {
   store: { groupUpdate },

@@ -101,11 +101,7 @@ import {
   shallowRef,
   watch,
 } from "vue";
-import {
-  useActiveUnitStore,
-  useSelectedFeatures,
-  useSelectedUnits,
-} from "@/stores/dragStore";
+import { useActiveUnitStore } from "@/stores/dragStore";
 import { useNotifications } from "@/composables/notifications";
 import {
   activeFeatureSelectInteractionKey,
@@ -140,6 +136,7 @@ import SearchScenarioActions from "@/modules/scenarioeditor/SearchScenarioAction
 import IconButton from "@/components/IconButton.vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
+import { useSelectedFeatures, useSelectedUnits } from "@/stores/selectedStore";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);

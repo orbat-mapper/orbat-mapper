@@ -10,12 +10,12 @@ import { multiPoint } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
 import { GeoJSON } from "ol/format";
 import Feature from "ol/Feature";
-import { useSelectedUnits } from "@/stores/dragStore";
 import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import OLMap from "ol/Map";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
+import { useSelectedUnits } from "@/stores/selectedStore";
 
 export function useUnitActions(
   options: Partial<{

@@ -3,13 +3,13 @@ import type { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
 import { SidcModalPromise, TimeModalPromise } from "@/composables/modals";
-import { SelectedScenarioFeatures } from "@/stores/dragStore";
 import { EventHook } from "@vueuse/core";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import type OLMap from "ol/Map";
 import type Select from "ol/interaction/Select";
 import { EventSearchResult } from "@/components/types";
 import { PhotonSearchResult } from "@/composables/geosearching";
+import { SelectedScenarioFeatures } from "@/stores/selectedStore";
 export const activeUnitKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>
 >;

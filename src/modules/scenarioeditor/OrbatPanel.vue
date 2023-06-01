@@ -30,9 +30,9 @@ import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { SideAction, SideActions } from "@/types/constants";
 import { DropTarget } from "@/components/types";
 import { useUnitActions } from "@/composables/scenarioActions";
-import { useSelectedUnits } from "@/stores/dragStore";
 import { useEventBus } from "@vueuse/core";
 import { orbatUnitClick } from "@/components/eventKeys";
+import { useSelectedUnits } from "@/stores/selectedStore";
 
 interface Props {
   hideFilter?: boolean;

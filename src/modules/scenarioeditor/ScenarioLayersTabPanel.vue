@@ -8,7 +8,6 @@ import {
   useScenarioLayerSync,
 } from "@/modules/scenarioeditor/scenarioLayers2";
 import ChevronPanel from "@/components/ChevronPanel.vue";
-import { useSelectedFeatures } from "@/stores/dragStore";
 import { computed, onUnmounted, ref } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import { FeatureId, ScenarioLayer } from "@/types/scenarioGeoModels";
@@ -24,6 +23,7 @@ import {
 import BaseButton from "@/components/BaseButton.vue";
 import { PlusIcon } from "@heroicons/vue/24/solid";
 import EditLayerInlineForm from "@/modules/scenarioeditor/EditLayerInlineForm.vue";
+import { useSelectedFeatures } from "@/stores/selectedStore";
 
 const emit = defineEmits(["feature-click"]);
 

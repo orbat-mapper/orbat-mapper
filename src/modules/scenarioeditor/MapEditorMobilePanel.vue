@@ -82,13 +82,13 @@ import CloseButton from "@/components/CloseButton.vue";
 import IconButton from "@/components/IconButton.vue";
 import { ref, watch } from "vue";
 import { useSwipe, useToggle } from "@vueuse/core";
-import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
 import { injectStrict } from "@/utils";
 import { activeUnitKey } from "@/components/injects";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
+import { useSelectedFeatures, useSelectedUnits } from "@/stores/selectedStore";
 
 const emit = defineEmits([
   "open-time-modal",

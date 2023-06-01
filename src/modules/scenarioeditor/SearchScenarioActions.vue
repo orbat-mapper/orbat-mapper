@@ -11,7 +11,6 @@ import {
   activeUnitKey,
 } from "@/components/injects";
 import { useUiStore } from "@/stores/uiStore";
-import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { getTransform } from "ol/proj";
 import { applyTransform } from "ol/extent";
@@ -20,6 +19,7 @@ import OlPoint from "ol/geom/Point";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import OlFeature from "ol/Feature";
+import { useSelectedFeatures, useSelectedUnits } from "@/stores/selectedStore";
 
 const mapRef = injectStrict(activeMapKey);
 const activeUnitId = injectStrict(activeUnitKey);

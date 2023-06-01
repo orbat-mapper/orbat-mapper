@@ -49,7 +49,6 @@ import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vu
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import CloseButton from "@/components/CloseButton.vue";
 import { useToggle } from "@vueuse/core";
-import { useSelectedFeatures, useSelectedUnits } from "@/stores/dragStore";
 import { injectStrict } from "@/utils";
 import {
   activeMapKey,
@@ -61,6 +60,7 @@ import { storeToRefs } from "pinia";
 import { useUiStore } from "@/stores/uiStore";
 import { onMounted, onUnmounted } from "vue";
 import { ScenarioEvent } from "@/types/scenarioModels";
+import { useSelectedFeatures, useSelectedUnits } from "@/stores/selectedStore";
 
 const emit = defineEmits(["close"]);
 

@@ -9,15 +9,12 @@ import {
   activeScenarioKey,
   activeUnitKey,
 } from "@/components/injects";
-import {
-  useActiveUnitStore,
-  useSelectedFeatures,
-  useSelectedUnits,
-} from "@/stores/dragStore";
+import { useActiveUnitStore } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { useTabStore } from "@/stores/tabStore";
+import { useSelectedFeatures, useSelectedUnits } from "@/stores/selectedStore";
 
 const activeUnitId = injectStrict(activeUnitKey);
 const activeScenarioEventId = injectStrict(activeScenarioEventKey);

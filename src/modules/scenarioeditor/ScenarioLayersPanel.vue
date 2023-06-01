@@ -35,7 +35,8 @@ import {
 import FeatureFillSettings from "./FeatureFillSettings.vue";
 import FeatureMarkerSettings from "@/modules/scenarioeditor/FeatureMarkerSettings.vue";
 import FeatureVisibilitySettings from "@/modules/scenarioeditor/FeatureVisibilitySettings.vue";
-import { SelectedScenarioFeatures } from "@/stores/dragStore";
+
+import { SelectedScenarioFeatures } from "@/stores/selectedStore";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")

@@ -52,10 +52,10 @@ import { useNotifications } from "@/composables/notifications";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
-import { useSelectedFeatures } from "@/stores/dragStore";
 import { Fill, Style } from "ol/style";
 import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
+import { useSelectedFeatures } from "@/stores/selectedStore";
 
 const { send } = useNotifications();
 const selectStyle = new Style({ stroke: new Stroke({ color: "#ffff00", width: 9 }) });

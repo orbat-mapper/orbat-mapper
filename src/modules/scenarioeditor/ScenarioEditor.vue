@@ -211,7 +211,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onUnmounted, provide, ref } from "vue";
 import { GlobalEvents } from "vue-global-events";
-import { SelectedScenarioFeatures, useDragStore } from "@/stores/dragStore";
+import { useDragStore } from "@/stores/dragStore";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
 
 import {
@@ -273,6 +273,7 @@ import { useFileDropZone } from "@/composables/filedragdrop";
 import { useTabStore } from "@/stores/tabStore";
 import CommandPalette from "@/components/CommandPalette.vue";
 import { PhotonSearchResult } from "@/composables/geosearching";
+import { SelectedScenarioFeatures } from "@/stores/selectedStore";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(

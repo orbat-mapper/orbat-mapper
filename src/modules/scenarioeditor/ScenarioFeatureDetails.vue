@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { SelectedScenarioFeatures } from "@/stores/dragStore";
 import { injectStrict } from "@/utils";
 import {
   activeFeatureSelectInteractionKey,
@@ -14,6 +13,7 @@ import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeat
 import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeatureStrokeSettings.vue";
 import ScenarioFeatureFillSettings from "@/modules/scenarioeditor/ScenarioFeatureFillSettings.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
+import { SelectedScenarioFeatures } from "@/stores/selectedStore";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;

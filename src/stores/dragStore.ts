@@ -2,19 +2,9 @@ import { defineStore } from "pinia";
 
 import { Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
-import { computed, Ref } from "vue";
+import { computed } from "vue";
 import { injectStrict } from "@/utils";
-import {
-  activeParentKey,
-  activeScenarioKey,
-  activeUnitKey,
-  selectedFeatureIdsKey,
-  selectedUnitIdsKey,
-} from "@/components/injects";
-import { EntityId } from "@/types/base";
-import { FeatureId } from "@/types/scenarioGeoModels";
-
-export type SelectedScenarioFeatures = Set<FeatureId>;
+import { activeParentKey, activeScenarioKey, activeUnitKey } from "@/components/injects";
 
 export const useDragStore = defineStore("drag", {
   state: () => ({
@@ -71,31 +61,6 @@ export function useActiveUnitStore() {
       } else {
         activeUnitId.value = unit.id;
       }
-    },
-  };
-}
-
-export function useSelectedUnits(selectedUnitIdsRef?: Ref<Set<EntityId>>) {
-  const selectedUnitIds = selectedUnitIdsRef || injectStrict(selectedUnitIdsKey);
-
-  return {
-    selectedUnitIds,
-    clear() {
-      if (selectedUnitIds.value.size > 0) selectedUnitIds.value.clear();
-    },
-  };
-}
-
-export function useSelectedFeatures(
-  selectedFeaturesIdsRef?: Ref<SelectedScenarioFeatures>
-) {
-  const selectedFeatureIds =
-    selectedFeaturesIdsRef || injectStrict(selectedFeatureIdsKey);
-
-  return {
-    selectedFeatureIds,
-    clear() {
-      if (selectedFeatureIds.value.size > 0) selectedFeatureIds.value.clear();
     },
   };
 }

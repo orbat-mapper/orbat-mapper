@@ -3,7 +3,7 @@ import { createUnitFeatureAt, createUnitLayer } from "@/geo/layers";
 import { ref, Ref, unref, watch } from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
-import { useDragStore, useSelectedUnits } from "@/stores/dragStore";
+import { useDragStore } from "@/stores/dragStore";
 import { DragOperations } from "@/types/constants";
 import { fromLonLat, toLonLat } from "ol/proj";
 import { Point } from "ol/geom";
@@ -25,6 +25,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
 import { NUnit } from "@/types/internalModels";
+import { useSelectedUnits } from "@/stores/selectedStore";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const {

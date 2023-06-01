@@ -11,7 +11,8 @@ import { Feature } from "ol";
 import { createHistoryLayer } from "@/geo/layers";
 import { MaybeRef } from "@vueuse/core";
 import { ref, watch } from "vue";
-import { useSelectedUnits } from "@/stores/dragStore";
+
+import { useSelectedUnits } from "@/stores/selectedStore";
 
 /**
  * Code for displaying and manipulating unit history on the map

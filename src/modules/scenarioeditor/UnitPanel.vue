@@ -129,9 +129,9 @@ import { useGetMapLocation } from "@/composables/geoMapLocation";
 import OLMap from "ol/Map";
 import { useUiStore } from "@/stores/uiStore";
 import ToggleField from "@/components/ToggleField.vue";
-import { useSelectedUnits } from "@/stores/dragStore";
 import { SID_INDEX } from "@/symbology/sidc";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import { useSelectedUnits } from "@/stores/selectedStore";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")

@@ -97,7 +97,7 @@
 import { computed, ref } from "vue";
 import { Unit } from "@/types/scenarioModels";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
-import { useActiveUnitStore, useDragStore, useSelectedUnits } from "@/stores/dragStore";
+import { useActiveUnitStore, useDragStore } from "@/stores/dragStore";
 import { DragOperations, type UnitAction } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "@/composables/scenarioActions";
@@ -108,6 +108,7 @@ import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { SymbolOptions } from "milsymbol";
 import { injectStrict } from "@/utils";
+import { useSelectedUnits } from "@/stores/selectedStore";
 
 interface Props {
   item: NOrbatItemData;
