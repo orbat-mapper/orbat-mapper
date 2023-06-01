@@ -14,7 +14,7 @@ import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenari
 import { UnitActions } from "@/types/constants";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { useTabStore } from "@/stores/tabStore";
-import { useSelectedFeatures, useSelectedUnits } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const activeUnitId = injectStrict(activeUnitKey);
 const activeScenarioEventId = injectStrict(activeScenarioEventKey);
@@ -24,8 +24,7 @@ const {
 } = injectStrict(activeScenarioKey);
 const uiStore = useUiStore();
 const activeUnitStore = useActiveUnitStore();
-const { clear: clearSelectedUnits, selectedUnitIds } = useSelectedUnits();
-const { clear: clearSelectedFeatures, selectedFeatureIds } = useSelectedFeatures();
+const { clear: clearSelected, selectedUnitIds, selectedFeatureIds } = useSelectedItems();
 const { onUnitAction } = useUnitActions();
 const { onFeatureAction } = useScenarioFeatureActions();
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
@@ -51,9 +50,8 @@ const duplicateUnit = () => {
 
 function handleEscape(e: KeyboardEvent) {
   if (uiStore.escEnabled) {
-    clearSelectedUnits();
+    clearSelected();
     activeUnitStore.clearActiveUnit();
-    clearSelectedFeatures();
     activeScenarioEventId.value = null;
   }
 }

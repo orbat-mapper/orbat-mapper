@@ -32,7 +32,7 @@ import { DropTarget } from "@/components/types";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { useEventBus } from "@vueuse/core";
 import { orbatUnitClick } from "@/components/eventKeys";
-import { useSelectedUnits } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 interface Props {
   hideFilter?: boolean;
@@ -53,7 +53,7 @@ const sides = computed(() => {
 });
 
 const { onUnitAction } = useUnitActions();
-const { selectedUnitIds } = useSelectedUnits();
+const { selectedUnitIds } = useSelectedItems();
 
 function onUnitDrop(
   unit: NUnit,

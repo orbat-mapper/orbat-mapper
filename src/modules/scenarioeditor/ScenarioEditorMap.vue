@@ -136,7 +136,7 @@ import SearchScenarioActions from "@/modules/scenarioeditor/SearchScenarioAction
 import IconButton from "@/components/IconButton.vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
-import { useSelectedFeatures, useSelectedUnits } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -177,8 +177,7 @@ function onMapReady({
   mapRef.value = olMap;
   featureSelectInteractionRef.value = featureSelectInteraction;
 }
-const { selectedFeatureIds } = useSelectedFeatures();
-const { selectedUnitIds } = useSelectedUnits();
+const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();
 
 const [showLeftPanel, toggleLeftPanel] = useToggle(true);
 

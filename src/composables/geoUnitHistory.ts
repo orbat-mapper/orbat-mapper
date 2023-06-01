@@ -12,7 +12,7 @@ import { createHistoryLayer } from "@/geo/layers";
 import { MaybeRef } from "@vueuse/core";
 import { ref, watch } from "vue";
 
-import { useSelectedUnits } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 /**
  * Code for displaying and manipulating unit history on the map
@@ -32,7 +32,7 @@ export function useUnitHistory(
     unitActions,
     store: { onUndoRedo, state },
   } = injectStrict(activeScenarioKey);
-  const { selectedUnitIds } = useSelectedUnits();
+  const { selectedUnitIds } = useSelectedItems();
   const historyLayer = createHistoryLayer();
   historyLayer.set("title", "History");
 

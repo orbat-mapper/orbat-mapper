@@ -122,7 +122,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import { EntityId } from "@/types/base";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, sidcModalKey } from "@/components/injects";
-import { NUnit, UnitUpdate } from "@/types/internalModels";
+import { UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
@@ -131,7 +131,7 @@ import { useUiStore } from "@/stores/uiStore";
 import ToggleField from "@/components/ToggleField.vue";
 import { SID_INDEX } from "@/symbology/sidc";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import { useSelectedUnits } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -170,7 +170,7 @@ const {
   onGetLocation,
 } = useGetMapLocation(geoStore.olMap as OLMap);
 const uiStore = useUiStore();
-const { selectedUnitIds, clear: clearSelection } = useSelectedUnits();
+const { selectedUnitIds, clear: clearSelection } = useSelectedItems();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 const selectedUnits = computed(() =>
   [...selectedUnitIds.value].map((id) => store.state.getUnitById(id))

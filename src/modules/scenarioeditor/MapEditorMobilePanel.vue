@@ -88,7 +88,7 @@ import MapTimeController from "@/components/MapTimeController.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
-import { useSelectedFeatures, useSelectedUnits } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const emit = defineEmits([
   "open-time-modal",
@@ -99,8 +99,7 @@ const emit = defineEmits([
 ]);
 
 const activeUnitId = injectStrict(activeUnitKey);
-const { selectedFeatureIds } = useSelectedFeatures();
-const { selectedUnitIds } = useSelectedUnits();
+const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();
 const { mobilePanelOpen: showBottomPanel } = storeToRefs(useUiStore());
 
 const toggleBottomPanel = useToggle(showBottomPanel);

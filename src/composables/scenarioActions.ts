@@ -15,7 +15,7 @@ import { EntityId } from "@/types/base";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import OLMap from "ol/Map";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
-import { useSelectedUnits } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 export function useUnitActions(
   options: Partial<{
@@ -28,7 +28,7 @@ export function useUnitActions(
     store: { groupUpdate },
   } = options.activeScenario || injectStrict(activeScenarioKey);
   const activeUnitId = options.activeUnitId || injectStrict(activeUnitKey);
-  const { selectedUnitIds } = useSelectedUnits();
+  const { selectedUnitIds } = useSelectedItems();
   const geoStore = useGeoStore();
 
   const _onUnitAction = (unit: NUnit | undefined | null, action: UnitAction) => {

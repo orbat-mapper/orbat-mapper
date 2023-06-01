@@ -25,7 +25,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
 import { NUnit } from "@/types/internalModels";
-import { useSelectedUnits } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const {
@@ -154,7 +154,7 @@ export function useUnitSelectInteraction(
   const enableRef = ref(options.enable ?? true);
   const enableBoxSelectRef = ref(options.enableBoxSelect ?? true);
 
-  const { selectedUnitIds: selectedIds } = useSelectedUnits();
+  const { selectedUnitIds: selectedIds } = useSelectedItems();
   const { geo } = injectStrict(activeScenarioKey);
 
   const unitSelectInteraction = new Select({

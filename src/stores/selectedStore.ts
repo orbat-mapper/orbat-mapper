@@ -5,27 +5,21 @@ import { FeatureId } from "@/types/scenarioGeoModels";
 import { EntityId } from "@/types/base";
 
 export type SelectedScenarioFeatures = Set<FeatureId>;
+export interface SelectedItemsOptions {
+  selectedUnitIdsRef?: Ref<Set<EntityId>>;
+  selectedFeaturesIdsRef?: Ref<SelectedScenarioFeatures>;
+}
 
-export function useSelectedUnits(selectedUnitIdsRef?: Ref<Set<EntityId>>) {
-  const selectedUnitIds = selectedUnitIdsRef || injectStrict(selectedUnitIdsKey);
+export function useSelectedItems(options: SelectedItemsOptions = {}) {
+  const selectedUnitIds = options.selectedUnitIdsRef ?? injectStrict(selectedUnitIdsKey);
+  const selectedFeatureIds =
+    options.selectedFeaturesIdsRef ?? injectStrict(selectedFeatureIdsKey);
 
   return {
     selectedUnitIds,
-    clear() {
-      if (selectedUnitIds.value.size > 0) selectedUnitIds.value.clear();
-    },
-  };
-}
-
-export function useSelectedFeatures(
-  selectedFeaturesIdsRef?: Ref<SelectedScenarioFeatures>
-) {
-  const selectedFeatureIds =
-    selectedFeaturesIdsRef || injectStrict(selectedFeatureIdsKey);
-
-  return {
     selectedFeatureIds,
     clear() {
+      if (selectedUnitIds.value.size > 0) selectedUnitIds.value.clear();
       if (selectedFeatureIds.value.size > 0) selectedFeatureIds.value.clear();
     },
   };

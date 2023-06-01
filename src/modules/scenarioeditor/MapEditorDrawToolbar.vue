@@ -61,13 +61,13 @@
 import {
   IconClose as CloseIcon,
   IconCursorDefaultOutline as SelectIcon,
+  IconMagnet as SnapIcon,
   IconMapMarker as PointIcon,
   IconSquareEditOutline as EditIcon,
   IconTrashCanOutline as DeleteIcon,
   IconVectorCircleVariant as CircleIcon,
   IconVectorLine as LineStringIcon,
   IconVectorSquare as PolygonIcon,
-  IconMagnet as SnapIcon,
 } from "@iconify-prerendered/vue-mdi";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 
@@ -84,9 +84,9 @@ import { onKeyStroke, useToggle } from "@vueuse/core";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useEditingInteraction } from "@/composables/geoEditing";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
-import { computed, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
-import { useSelectedFeatures } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const {
   store: { groupUpdate },
@@ -103,7 +103,7 @@ const {
   updateFeatureGeometryFromOlFeature,
   deleteFeature,
 } = useScenarioLayers(mapRef.value);
-const { selectedFeatureIds } = useSelectedFeatures();
+const { selectedFeatureIds } = useSelectedItems();
 
 const { addMultiple } = storeToRefs(useMainToolbarStore());
 const [snap, toggleSnap] = useToggle(true);

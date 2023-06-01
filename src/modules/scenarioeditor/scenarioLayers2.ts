@@ -55,7 +55,7 @@ import { MenuItemData } from "@/components/types";
 import { Fill, Style } from "ol/style";
 import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
-import { useSelectedFeatures } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const { send } = useNotifications();
 const selectStyle = new Style({ stroke: new Stroke({ color: "#ffff00", width: 9 }) });
@@ -155,7 +155,7 @@ export function useScenarioFeatureSelect(
     VectorLayer<any>
   >;
 
-  const { selectedFeatureIds: selectedIds } = useSelectedFeatures();
+  const { selectedFeatureIds: selectedIds } = useSelectedItems();
 
   const enableRef = ref(options.enable ?? true);
 

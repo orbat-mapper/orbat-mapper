@@ -60,15 +60,14 @@ import { storeToRefs } from "pinia";
 import { useUiStore } from "@/stores/uiStore";
 import { onMounted, onUnmounted } from "vue";
 import { ScenarioEvent } from "@/types/scenarioModels";
-import { useSelectedFeatures, useSelectedUnits } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const emit = defineEmits(["close"]);
 
 const activeUnitId = injectStrict(activeUnitKey);
 const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const mapRef = injectStrict(activeMapKey);
-const { selectedFeatureIds } = useSelectedFeatures();
-const { selectedUnitIds } = useSelectedUnits();
+const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();
 
 const [showBottomPanel, toggleBottomPanel] = useToggle(true);
 

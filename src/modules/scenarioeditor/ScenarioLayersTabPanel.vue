@@ -23,7 +23,7 @@ import {
 import BaseButton from "@/components/BaseButton.vue";
 import { PlusIcon } from "@heroicons/vue/24/solid";
 import EditLayerInlineForm from "@/modules/scenarioeditor/EditLayerInlineForm.vue";
-import { useSelectedFeatures } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const emit = defineEmits(["feature-click"]);
 
@@ -54,7 +54,7 @@ const {
 } = useScenarioLayers(mapRef.value);
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 
-const { selectedFeatureIds } = useSelectedFeatures();
+const { selectedFeatureIds } = useSelectedItems();
 
 const activeFeatureId = computed(() => {
   if (selectedFeatureIds.value.size === 1) {

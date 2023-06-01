@@ -108,7 +108,7 @@ import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { SymbolOptions } from "milsymbol";
 import { injectStrict } from "@/utils";
-import { useSelectedUnits } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 interface Props {
   item: NOrbatItemData;
@@ -125,9 +125,12 @@ const combinedOptions = computed(() => ({
 // for some reason this throws a vue-tsc error
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitAction): void;
+
   (e: "unit-click", unit: NUnit, event: MouseEvent): void;
+
   (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
 }
+
 const emit = defineEmits(["unit-action", "unit-click", "unit-drop"]);
 
 const activeUnitId = injectStrict(activeUnitKey);
@@ -151,7 +154,7 @@ const isOpen = computed({
 
 const dragStore = useDragStore();
 const settingsStore = useSettingsStore();
-const { selectedUnitIds } = useSelectedUnits();
+const { selectedUnitIds } = useSelectedItems();
 
 const unitLabel = computed(() =>
   settingsStore.orbatShortName ? unit.value.shortName || unit.value.name : unit.value.name

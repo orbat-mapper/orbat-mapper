@@ -19,7 +19,7 @@ import OlPoint from "ol/geom/Point";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import OlFeature from "ol/Feature";
-import { useSelectedFeatures, useSelectedUnits } from "@/stores/selectedStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const mapRef = injectStrict(activeMapKey);
 const activeUnitId = injectStrict(activeUnitKey);
@@ -31,8 +31,7 @@ const l = useScenarioLayers(mapRef.value);
 const { onUnitSelect, onFeatureSelect, onLayerSelect, onEventSelect, onPlaceSelect } =
   useSearchActions();
 const ui = useUiStore();
-const { selectedFeatureIds } = useSelectedFeatures();
-const { selectedUnitIds } = useSelectedUnits();
+const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();
 const { onUnitAction } = useUnitActions();
 
 onUnitSelect(({ unitId }) => {
