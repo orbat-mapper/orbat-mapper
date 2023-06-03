@@ -10,7 +10,7 @@ import type Select from "ol/interaction/Select";
 import { EventSearchResult } from "@/components/types";
 import { PhotonSearchResult } from "@/composables/geosearching";
 import { SelectedScenarioFeatures } from "@/stores/selectedStore";
-export const activeUnitKey = Symbol("Active unit") as InjectionKey<
+export const activeUnitIdKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>
 >;
 export const activeParentKey = Symbol("Active unit") as InjectionKey<

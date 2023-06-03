@@ -7,7 +7,7 @@ import { injectStrict } from "@/utils";
 import {
   activeScenarioEventKey,
   activeScenarioKey,
-  activeUnitKey,
+  activeUnitIdKey,
 } from "@/components/injects";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
@@ -16,7 +16,7 @@ import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { useTabStore } from "@/stores/tabStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 
-const activeUnitId = injectStrict(activeUnitKey);
+const activeUnitId = injectStrict(activeUnitIdKey);
 const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const {
   unitActions,

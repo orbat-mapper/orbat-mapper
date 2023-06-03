@@ -53,7 +53,7 @@ import { injectStrict } from "@/utils";
 import {
   activeMapKey,
   activeScenarioEventKey,
-  activeUnitKey,
+  activeUnitIdKey,
 } from "@/components/injects";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 import { storeToRefs } from "pinia";
@@ -64,7 +64,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 
 const emit = defineEmits(["close"]);
 
-const activeUnitId = injectStrict(activeUnitKey);
+const activeUnitId = injectStrict(activeUnitIdKey);
 const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const mapRef = injectStrict(activeMapKey);
 const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();

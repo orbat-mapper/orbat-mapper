@@ -8,7 +8,7 @@ import {
   activeLayerKey,
   activeMapKey,
   activeScenarioKey,
-  activeUnitKey,
+  activeUnitIdKey,
 } from "@/components/injects";
 import { useUiStore } from "@/stores/uiStore";
 import { useUnitActions } from "@/composables/scenarioActions";
@@ -22,7 +22,7 @@ import OlFeature from "ol/Feature";
 import { useSelectedItems } from "@/stores/selectedStore";
 
 const mapRef = injectStrict(activeMapKey);
-const activeUnitId = injectStrict(activeUnitKey);
+const activeUnitId = injectStrict(activeUnitIdKey);
 const activeScenario = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
 

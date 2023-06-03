@@ -83,7 +83,7 @@ import IconButton from "@/components/IconButton.vue";
 import { ref, watch } from "vue";
 import { useSwipe, useToggle } from "@vueuse/core";
 import { injectStrict } from "@/utils";
-import { activeUnitKey } from "@/components/injects";
+import { activeUnitIdKey } from "@/components/injects";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
@@ -98,7 +98,7 @@ const emit = defineEmits([
   "prev-event",
 ]);
 
-const activeUnitId = injectStrict(activeUnitKey);
+const activeUnitId = injectStrict(activeUnitIdKey);
 const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();
 const { mobilePanelOpen: showBottomPanel } = storeToRefs(useUiStore());
 

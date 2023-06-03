@@ -4,7 +4,7 @@ import { useGeoStore } from "@/stores/geoStore";
 import { computed, Ref } from "vue";
 import { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import { activeScenarioKey, activeUnitIdKey } from "@/components/injects";
 import { MenuItemData } from "@/components/types";
 import { multiPoint } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
@@ -27,7 +27,7 @@ export function useUnitActions(
     unitActions,
     store: { groupUpdate },
   } = options.activeScenario || injectStrict(activeScenarioKey);
-  const activeUnitId = options.activeUnitId || injectStrict(activeUnitKey);
+  const activeUnitId = options.activeUnitId || injectStrict(activeUnitIdKey);
   const { selectedUnitIds } = useSelectedItems();
   const geoStore = useGeoStore();
 

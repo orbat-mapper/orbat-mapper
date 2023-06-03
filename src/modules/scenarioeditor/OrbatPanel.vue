@@ -24,7 +24,11 @@
 import { computed, watch } from "vue";
 import OrbatPanelAddSide from "@/components/OrbatPanelAddSide.vue";
 import { injectStrict } from "@/utils";
-import { activeParentKey, activeScenarioKey, activeUnitKey } from "@/components/injects";
+import {
+  activeParentKey,
+  activeScenarioKey,
+  activeUnitIdKey,
+} from "@/components/injects";
 import OrbatSide from "@/components/OrbatSide.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { SideAction, SideActions } from "@/types/constants";
@@ -41,7 +45,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), { hideFilter: false });
 const activeScenario = injectStrict(activeScenarioKey);
 const { store, unitActions } = activeScenario;
-const activeUnitId = injectStrict(activeUnitKey);
+const activeUnitId = injectStrict(activeUnitIdKey);
 const activeParentId = injectStrict(activeParentKey);
 
 const { state } = store;

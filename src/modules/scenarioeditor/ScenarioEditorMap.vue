@@ -108,7 +108,7 @@ import {
   activeMapKey,
   activeScenarioEventKey,
   activeScenarioKey,
-  activeUnitKey,
+  activeUnitIdKey,
   timeModalKey,
 } from "@/components/injects";
 import { IconChevronRightBoxOutline as ShowPanelIcon } from "@iconify-prerendered/vue-mdi";
@@ -140,7 +140,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
-const activeUnitId = injectStrict(activeUnitKey);
+const activeUnitId = injectStrict(activeUnitIdKey);
 const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
 

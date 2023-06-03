@@ -247,7 +247,7 @@ import {
   activeParentKey,
   activeScenarioEventKey,
   activeScenarioKey,
-  activeUnitKey,
+  activeUnitIdKey,
   currentScenarioTabKey,
   searchActionsKey,
   selectedFeatureIdsKey,
@@ -303,7 +303,7 @@ const scnFeatures = useFeatureStyles(props.activeScenario.geo);
 const uiTabs = useTabStore();
 const { activeScenarioTab } = storeToRefs(uiTabs);
 
-provide(activeUnitKey, activeUnitId);
+provide(activeUnitIdKey, activeUnitId);
 provide(activeParentKey, activeParentId);
 provide(activeLayerKey, activeLayerId);
 provide(selectedUnitIdsKey, selectedUnitIdsRef);

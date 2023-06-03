@@ -118,7 +118,7 @@ import { useGeoStore } from "@/stores/geoStore";
 import CloseButton from "@/components/CloseButton.vue";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import NProgress from "nprogress";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import { activeScenarioKey, activeUnitIdKey } from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
 import ScenarioMap from "@/components/ScenarioMap.vue";
 import { MenuItemData } from "@/components/types";
@@ -134,7 +134,7 @@ import ToolPanel from "@/modules/scenarioeditor/ToolPanel.vue";
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
 
 const emit = defineEmits(["showExport", "showLoad"]);
-const activeUnitId = injectStrict(activeUnitKey);
+const activeUnitId = injectStrict(activeUnitIdKey);
 
 const uiTabs = useTabStore();
 const { activeScenarioTab, orbatTabActive } = storeToRefs(uiTabs);

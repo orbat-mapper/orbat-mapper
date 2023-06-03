@@ -102,7 +102,7 @@ import { DragOperations, type UnitAction } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "@/composables/scenarioActions";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { activeParentKey, activeUnitKey } from "./injects";
+import { activeParentKey, activeUnitIdKey } from "./injects";
 import type { DropTarget } from "./types";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
@@ -133,7 +133,7 @@ interface Emits {
 
 const emit = defineEmits(["unit-action", "unit-click", "unit-drop"]);
 
-const activeUnitId = injectStrict(activeUnitKey);
+const activeUnitId = injectStrict(activeUnitIdKey);
 const activeParentId = injectStrict(activeParentKey);
 
 let isDragged = ref(false);

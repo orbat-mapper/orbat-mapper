@@ -82,7 +82,7 @@ import {
 import { sizeToWidthHeight } from "@/modules/charteditor/orbatchart/sizes";
 import OrbatChart from "@/modules/charteditor/OrbatChart.vue";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitKey } from "@/components/injects";
+import { activeScenarioKey, activeUnitIdKey } from "@/components/injects";
 import SimpleBreadcrumbs from "@/components/SimpleBreadcrumbs.vue";
 import { BreadcrumbItem, MenuItemData } from "@/components/types";
 import OrbatChartSettings from "@/modules/charteditor/OrbatChartSettings.vue";
@@ -102,7 +102,7 @@ import { useSearchActions } from "@/composables/searchActions";
 const rootUnitStore = useRootUnitStore();
 const options = useChartSettingsStore();
 const specificOptions = useSpecificChartOptionsStore();
-const activeUnitId = injectStrict(activeUnitKey);
+const activeUnitId = injectStrict(activeUnitIdKey);
 const {
   unitActions,
   store: { state },
