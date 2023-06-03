@@ -107,7 +107,6 @@ import { IconChevronRightBoxOutline as ShowPanelIcon } from "@iconify-prerendere
 import { injectStrict } from "@/utils";
 import UnitPanel from "@/modules/scenarioeditor/UnitPanel.vue";
 import MapTimeController from "@/components/MapTimeController.vue";
-import { useGeoEditorViewStore } from "@/stores/geoEditorViewStore";
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
@@ -143,7 +142,6 @@ const {
   time: { setCurrentTime, add, subtract, goToNextScenarioEvent, goToPrevScenarioEvent },
 } = activeScenario;
 const toolbarStore = useMainToolbarStore();
-const layout = useGeoEditorViewStore();
 const activeUnitStore = useActiveUnitStore();
 const ui = useUiStore();
 

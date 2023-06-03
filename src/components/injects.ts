@@ -23,9 +23,6 @@ export const activeScenarioEventKey = Symbol("Active scenario event") as Injecti
   Ref<EntityId | undefined | null>
 >;
 
-export const selectedFeatureIdsKey = Symbol("Selected features") as InjectionKey<
-  Ref<SelectedScenarioFeatures>
->;
 export const activeScenarioKey = Symbol("Active scenario") as InjectionKey<TScenario>;
 export const activeFeaturesKey = Symbol(
   "Active features"

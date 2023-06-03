@@ -248,7 +248,6 @@ import {
   activeScenarioKey,
   currentScenarioTabKey,
   searchActionsKey,
-  selectedFeatureIdsKey,
   sidcModalKey,
   timeModalKey,
 } from "@/components/injects";
@@ -270,7 +269,6 @@ import { useFileDropZone } from "@/composables/filedragdrop";
 import { useTabStore } from "@/stores/tabStore";
 import CommandPalette from "@/components/CommandPalette.vue";
 import { PhotonSearchResult } from "@/composables/geosearching";
-import { SelectedScenarioFeatures } from "@/stores/selectedStore";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(
@@ -292,7 +290,6 @@ const dropZoneRef = ref<HTMLDivElement>();
 const activeParentId = ref<EntityId | undefined | null>(null);
 const activeLayerId = ref<FeatureId | undefined | null>(null);
 const activeScenarioEventId = ref<EntityId | undefined | null>(null);
-const selectedFeatureIdsRef = ref<SelectedScenarioFeatures>(new Set());
 const scnFeatures = useFeatureStyles(props.activeScenario.geo);
 
 const uiTabs = useTabStore();
@@ -300,7 +297,6 @@ const { activeScenarioTab } = storeToRefs(uiTabs);
 
 provide(activeParentKey, activeParentId);
 provide(activeLayerKey, activeLayerId);
-provide(selectedFeatureIdsKey, selectedFeatureIdsRef);
 provide(activeScenarioKey, props.activeScenario);
 provide(activeFeaturesKey, scnFeatures);
 provide(currentScenarioTabKey, activeScenarioTab);
