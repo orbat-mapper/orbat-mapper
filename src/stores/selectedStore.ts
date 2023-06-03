@@ -47,7 +47,7 @@ const activeUnitId = computed({
   get: () => activeUnitIdRef.value,
   set: (v) => {
     activeUnitIdRef.value = v;
-    selectedUnitIds.value.clear();
+    clear();
     if (v) selectedUnitIds.value.add(v);
   },
 });
@@ -56,7 +56,7 @@ const activeFeatureId = computed({
   get: () => activeFeatureIdRef.value,
   set: (v) => {
     activeFeatureIdRef.value = v;
-    selectedFeatureIds.value.clear();
+    clear();
     if (v) selectedFeatureIds.value.add(v);
   },
 });
@@ -65,10 +65,16 @@ const activeScenarioEventId = computed({
   get: () => activeScenarioEventIdRef.value,
   set: (v) => {
     activeScenarioEventIdRef.value = v;
-    selectedScenarioEventIds.value.clear();
+    clear();
     if (v) selectedScenarioEventIds.value.add(v);
   },
 });
+
+function clear() {
+  if (selectedUnitIds.value.size > 0) selectedUnitIds.value.clear();
+  if (selectedFeatureIds.value.size > 0) selectedFeatureIds.value.clear();
+  if (selectedScenarioEventIds.value.size > 0) selectedScenarioEventIds.value.clear();
+}
 
 export function useSelectedItems() {
   return {
@@ -78,10 +84,6 @@ export function useSelectedItems() {
     activeFeatureId,
     activeScenarioEventId,
     selectedScenarioEventIds,
-    clear() {
-      if (selectedUnitIds.value.size > 0) selectedUnitIds.value.clear();
-      if (selectedFeatureIds.value.size > 0) selectedFeatureIds.value.clear();
-      if (selectedScenarioEventIds.value.size > 0) selectedScenarioEventIds.value.clear();
-    },
+    clear,
   };
 }
