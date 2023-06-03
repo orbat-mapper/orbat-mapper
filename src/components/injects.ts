@@ -19,10 +19,6 @@ export const activeLayerKey = Symbol("Active layer") as InjectionKey<
   Ref<FeatureId | undefined | null>
 >;
 
-export const activeScenarioEventKey = Symbol("Active scenario event") as InjectionKey<
-  Ref<EntityId | undefined | null>
->;
-
 export const activeScenarioKey = Symbol("Active scenario") as InjectionKey<TScenario>;
 export const activeFeaturesKey = Symbol(
   "Active features"

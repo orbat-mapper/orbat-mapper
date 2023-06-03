@@ -4,7 +4,7 @@ import { computed } from "vue";
 import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { injectStrict } from "@/utils";
-import { activeScenarioEventKey, activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey } from "@/components/injects";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
@@ -12,7 +12,6 @@ import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { useTabStore } from "@/stores/tabStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 
-const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const {
   unitActions,
   store: { state },
@@ -24,6 +23,7 @@ const {
   selectedUnitIds,
   selectedFeatureIds,
   activeUnitId,
+  activeScenarioEventId,
 } = useSelectedItems();
 const { onUnitAction } = useUnitActions();
 const { onFeatureAction } = useScenarioFeatureActions();

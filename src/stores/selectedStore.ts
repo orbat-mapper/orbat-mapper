@@ -9,6 +9,9 @@ const activeUnitIdRef = ref<EntityId | undefined | null>();
 const selectedFeatureIds = ref<SelectedScenarioFeatures>(new Set());
 const activeFeatureIdRef = ref<FeatureId | undefined | null>();
 
+const selectedScenarioEventIds = ref<Set<EntityId>>(new Set());
+const activeScenarioEventIdRef = ref<EntityId | undefined | null>(null);
+
 watch(
   selectedUnitIds.value,
   (v) => {
@@ -31,6 +34,15 @@ watch(
   { deep: true }
 );
 
+watch(selectedScenarioEventIds, (v) => {
+  if (
+    v.size === 1 &&
+    !(activeScenarioEventIdRef.value && v.has(activeScenarioEventIdRef.value))
+  )
+    activeScenarioEventId.value = [...selectedScenarioEventIds.value.values()].pop();
+  if (v.size === 0) activeScenarioEventId.value = null;
+});
+
 const activeUnitId = computed({
   get: () => activeUnitIdRef.value,
   set: (v) => {
@@ -49,15 +61,27 @@ const activeFeatureId = computed({
   },
 });
 
+const activeScenarioEventId = computed({
+  get: () => activeScenarioEventIdRef.value,
+  set: (v) => {
+    activeScenarioEventIdRef.value = v;
+    selectedScenarioEventIds.value.clear();
+    if (v) selectedScenarioEventIds.value.add(v);
+  },
+});
+
 export function useSelectedItems() {
   return {
     selectedUnitIds,
     activeUnitId,
     selectedFeatureIds,
     activeFeatureId,
+    activeScenarioEventId,
+    selectedScenarioEventIds,
     clear() {
       if (selectedUnitIds.value.size > 0) selectedUnitIds.value.clear();
       if (selectedFeatureIds.value.size > 0) selectedFeatureIds.value.clear();
+      if (selectedScenarioEventIds.value.size > 0) selectedScenarioEventIds.value.clear();
     },
   };
 }

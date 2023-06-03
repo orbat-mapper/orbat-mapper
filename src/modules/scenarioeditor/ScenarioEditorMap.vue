@@ -99,7 +99,6 @@ import { useNotifications } from "@/composables/notifications";
 import {
   activeFeatureSelectInteractionKey,
   activeMapKey,
-  activeScenarioEventKey,
   activeScenarioKey,
   timeModalKey,
 } from "@/components/injects";
@@ -131,7 +130,6 @@ import { useSelectedItems } from "@/stores/selectedStore";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
-const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
 
 const { state, update } = activeScenario.store;
@@ -168,7 +166,8 @@ function onMapReady({
   featureSelectInteractionRef.value = featureSelectInteraction;
 }
 
-const { selectedUnitIds, selectedFeatureIds, activeUnitId } = useSelectedItems();
+const { selectedUnitIds, selectedFeatureIds, activeUnitId, activeScenarioEventId } =
+  useSelectedItems();
 
 const [showLeftPanel, toggleLeftPanel] = useToggle(true);
 

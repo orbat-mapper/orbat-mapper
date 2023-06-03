@@ -244,7 +244,6 @@ import {
   activeFeaturesKey,
   activeLayerKey,
   activeParentKey,
-  activeScenarioEventKey,
   activeScenarioKey,
   currentScenarioTabKey,
   searchActionsKey,
@@ -300,7 +299,6 @@ provide(activeLayerKey, activeLayerId);
 provide(activeScenarioKey, props.activeScenario);
 provide(activeFeaturesKey, scnFeatures);
 provide(currentScenarioTabKey, activeScenarioTab);
-provide(activeScenarioEventKey, activeScenarioEventId);
 
 const onUnitSelectHook = createEventHook<{ unitId: EntityId }>();
 const onLayerSelectHook = createEventHook<{ layerId: FeatureId }>();
