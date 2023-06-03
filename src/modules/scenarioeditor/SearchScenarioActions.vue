@@ -4,12 +4,7 @@ import { useSearchActions } from "@/composables/searchActions";
 import { TAB_LAYERS, TAB_ORBAT, UnitActions } from "@/types/constants";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
-import {
-  activeLayerKey,
-  activeMapKey,
-  activeScenarioKey,
-  activeUnitIdKey,
-} from "@/components/injects";
+import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
 import { useUiStore } from "@/stores/uiStore";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { getTransform } from "ol/proj";
@@ -22,7 +17,6 @@ import OlFeature from "ol/Feature";
 import { useSelectedItems } from "@/stores/selectedStore";
 
 const mapRef = injectStrict(activeMapKey);
-const activeUnitId = injectStrict(activeUnitIdKey);
 const activeScenario = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
 
@@ -31,7 +25,7 @@ const l = useScenarioLayers(mapRef.value);
 const { onUnitSelect, onFeatureSelect, onLayerSelect, onEventSelect, onPlaceSelect } =
   useSearchActions();
 const ui = useUiStore();
-const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();
+const { selectedUnitIds, selectedFeatureIds, activeUnitId } = useSelectedItems();
 const { onUnitAction } = useUnitActions();
 
 onUnitSelect(({ unitId }) => {

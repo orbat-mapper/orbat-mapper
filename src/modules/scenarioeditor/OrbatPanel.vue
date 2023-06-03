@@ -21,14 +21,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import OrbatPanelAddSide from "@/components/OrbatPanelAddSide.vue";
 import { injectStrict } from "@/utils";
-import {
-  activeParentKey,
-  activeScenarioKey,
-  activeUnitIdKey,
-} from "@/components/injects";
+import { activeParentKey, activeScenarioKey } from "@/components/injects";
 import OrbatSide from "@/components/OrbatSide.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { SideAction, SideActions } from "@/types/constants";
@@ -45,7 +41,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), { hideFilter: false });
 const activeScenario = injectStrict(activeScenarioKey);
 const { store, unitActions } = activeScenario;
-const activeUnitId = injectStrict(activeUnitIdKey);
 const activeParentId = injectStrict(activeParentKey);
 
 const { state } = store;
@@ -57,7 +52,7 @@ const sides = computed(() => {
 });
 
 const { onUnitAction } = useUnitActions();
-const { selectedUnitIds } = useSelectedItems();
+const { selectedUnitIds, activeUnitId } = useSelectedItems();
 
 function onUnitDrop(
   unit: NUnit,
@@ -77,20 +72,10 @@ function onUnitClick(unit: NUnit, event: MouseEvent) {
     }
   } else {
     activeUnitId.value = unit.id;
-    selectedUnitIds.value = new Set(activeUnitId.value ? [unit.id] : []);
     activeParentId.value = unit.id;
   }
   bus.emit(unit);
 }
-
-watch(
-  () => selectedUnitIds.value,
-  (v) => {
-    if (v.size === 1) activeUnitId.value = [...selectedUnitIds.value.values()].pop();
-    if (v.size === 0) activeUnitId.value = null;
-  },
-  { deep: true }
-);
 
 function onSideAction(side: NSide, action: SideAction) {
   if (action === SideActions.Delete) {

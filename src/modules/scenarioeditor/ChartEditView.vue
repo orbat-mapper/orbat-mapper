@@ -70,7 +70,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from "vue";
-import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/vue";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import {
@@ -82,7 +82,7 @@ import {
 import { sizeToWidthHeight } from "@/modules/charteditor/orbatchart/sizes";
 import OrbatChart from "@/modules/charteditor/OrbatChart.vue";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitIdKey } from "@/components/injects";
+import { activeScenarioKey } from "@/components/injects";
 import SimpleBreadcrumbs from "@/components/SimpleBreadcrumbs.vue";
 import { BreadcrumbItem, MenuItemData } from "@/components/types";
 import OrbatChartSettings from "@/modules/charteditor/OrbatChartSettings.vue";
@@ -98,11 +98,12 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { promiseTimeout } from "@vueuse/core";
 import FileSaver from "file-saver";
 import { useSearchActions } from "@/composables/searchActions";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const rootUnitStore = useRootUnitStore();
 const options = useChartSettingsStore();
 const specificOptions = useSpecificChartOptionsStore();
-const activeUnitId = injectStrict(activeUnitIdKey);
+const { activeUnitId } = useSelectedItems();
 const {
   unitActions,
   store: { state },

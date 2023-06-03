@@ -102,7 +102,7 @@ import { DragOperations, type UnitAction } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "@/composables/scenarioActions";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { activeParentKey, activeUnitIdKey } from "./injects";
+import { activeParentKey } from "./injects";
 import type { DropTarget } from "./types";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
@@ -133,7 +133,6 @@ interface Emits {
 
 const emit = defineEmits(["unit-action", "unit-click", "unit-drop"]);
 
-const activeUnitId = injectStrict(activeUnitIdKey);
 const activeParentId = injectStrict(activeParentKey);
 
 let isDragged = ref(false);
@@ -154,7 +153,7 @@ const isOpen = computed({
 
 const dragStore = useDragStore();
 const settingsStore = useSettingsStore();
-const { selectedUnitIds } = useSelectedItems();
+const { selectedUnitIds, activeUnitId } = useSelectedItems();
 
 const unitLabel = computed(() =>
   settingsStore.orbatShortName ? unit.value.shortName || unit.value.name : unit.value.name

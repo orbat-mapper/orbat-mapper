@@ -4,11 +4,7 @@ import { computed } from "vue";
 import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { injectStrict } from "@/utils";
-import {
-  activeScenarioEventKey,
-  activeScenarioKey,
-  activeUnitIdKey,
-} from "@/components/injects";
+import { activeScenarioEventKey, activeScenarioKey } from "@/components/injects";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
@@ -16,7 +12,6 @@ import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { useTabStore } from "@/stores/tabStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 
-const activeUnitId = injectStrict(activeUnitIdKey);
 const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const {
   unitActions,
@@ -24,7 +19,12 @@ const {
 } = injectStrict(activeScenarioKey);
 const uiStore = useUiStore();
 const activeUnitStore = useActiveUnitStore();
-const { clear: clearSelected, selectedUnitIds, selectedFeatureIds } = useSelectedItems();
+const {
+  clear: clearSelected,
+  selectedUnitIds,
+  selectedFeatureIds,
+  activeUnitId,
+} = useSelectedItems();
 const { onUnitAction } = useUnitActions();
 const { onFeatureAction } = useScenarioFeatureActions();
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);

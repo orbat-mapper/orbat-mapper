@@ -4,11 +4,8 @@ import { Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
 import { computed } from "vue";
 import { injectStrict } from "@/utils";
-import {
-  activeParentKey,
-  activeScenarioKey,
-  activeUnitIdKey,
-} from "@/components/injects";
+import { activeParentKey, activeScenarioKey } from "@/components/injects";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 export const useDragStore = defineStore("drag", {
   state: () => ({
@@ -19,7 +16,7 @@ export const useDragStore = defineStore("drag", {
 
 export function useActiveUnitStore() {
   const { unitActions, store } = injectStrict(activeScenarioKey);
-  const activeUnitId = injectStrict(activeUnitIdKey);
+  const { activeUnitId } = useSelectedItems();
   const activeParentId = injectStrict(activeParentKey);
 
   const activeUnit = computed(

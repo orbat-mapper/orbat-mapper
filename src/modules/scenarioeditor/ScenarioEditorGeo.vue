@@ -118,7 +118,7 @@ import { useGeoStore } from "@/stores/geoStore";
 import CloseButton from "@/components/CloseButton.vue";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import NProgress from "nprogress";
-import { activeScenarioKey, activeUnitIdKey } from "@/components/injects";
+import { activeScenarioKey } from "@/components/injects";
 import ScenarioInfoPanel from "./ScenarioInfoPanel.vue";
 import ScenarioMap from "@/components/ScenarioMap.vue";
 import { MenuItemData } from "@/components/types";
@@ -130,11 +130,11 @@ import { useSearchActions } from "@/composables/searchActions";
 import { useTabStore } from "@/stores/tabStore";
 import ResizablePanel from "@/components/ResizablePanel.vue";
 import ToolPanel from "@/modules/scenarioeditor/ToolPanel.vue";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const ScenarioLayersTab = defineAsyncComponent(() => import("./ScenarioLayersTab.vue"));
 
 const emit = defineEmits(["showExport", "showLoad"]);
-const activeUnitId = injectStrict(activeUnitIdKey);
 
 const uiTabs = useTabStore();
 const { activeScenarioTab, orbatTabActive } = storeToRefs(uiTabs);
@@ -148,6 +148,7 @@ const {
 const route = useRoute();
 const router = useRouter();
 
+const { activeUnitId } = useSelectedItems();
 const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
 const { copy: copyToClipboard, copied } = useClipboard();
 const currentTab = ref(0);

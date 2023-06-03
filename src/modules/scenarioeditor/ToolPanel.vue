@@ -19,7 +19,7 @@ import { SymbolItem, SymbolValue } from "@/types/constants";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitIdKey, sidcModalKey } from "@/components/injects";
+import { activeScenarioKey, sidcModalKey } from "@/components/injects";
 import { useToggle } from "@vueuse/core";
 import PanelToggle from "@/components/PanelToggle.vue";
 import { SID_INDEX, Sidc } from "@/symbology/sidc";
@@ -28,10 +28,10 @@ import PanelSymbolButton from "@/components/PanelSymbolButton.vue";
 import { echelonItems } from "@/symbology/helpers";
 import { SID, SidValue } from "@/symbology/values";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const [addMultiple, toggleAddMultiple] = useToggle(false);
 
-const activeUnitId = injectStrict(activeUnitIdKey);
 const {
   unitActions,
   geo: { addUnitPosition },
@@ -39,6 +39,7 @@ const {
 } = injectStrict(activeScenarioKey);
 
 const { getModalSidc } = injectStrict(sidcModalKey);
+const { activeUnitId } = useSelectedItems();
 
 const activeUnit = computed(
   () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null

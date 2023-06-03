@@ -1,5 +1,5 @@
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitIdKey } from "@/components/injects";
+import { activeScenarioKey } from "@/components/injects";
 import { EntityId, HistoryAction } from "@/types/base";
 import { Coordinate } from "ol/coordinate";
 import { toLonLat } from "ol/proj";

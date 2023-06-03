@@ -82,8 +82,6 @@ import CloseButton from "@/components/CloseButton.vue";
 import IconButton from "@/components/IconButton.vue";
 import { ref, watch } from "vue";
 import { useSwipe, useToggle } from "@vueuse/core";
-import { injectStrict } from "@/utils";
-import { activeUnitIdKey } from "@/components/injects";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
@@ -98,8 +96,7 @@ const emit = defineEmits([
   "prev-event",
 ]);
 
-const activeUnitId = injectStrict(activeUnitIdKey);
-const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();
+const { selectedUnitIds, selectedFeatureIds, activeUnitId } = useSelectedItems();
 const { mobilePanelOpen: showBottomPanel } = storeToRefs(useUiStore());
 
 const toggleBottomPanel = useToggle(showBottomPanel);

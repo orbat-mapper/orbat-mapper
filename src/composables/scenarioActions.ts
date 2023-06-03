@@ -1,17 +1,16 @@
 import { OrbatItemData, Unit } from "@/types/scenarioModels";
 import { UnitAction, UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
-import { computed, Ref } from "vue";
+import { computed } from "vue";
 import { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, activeUnitIdKey } from "@/components/injects";
+import { activeScenarioKey } from "@/components/injects";
 import { MenuItemData } from "@/components/types";
 import { multiPoint } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
 import { GeoJSON } from "ol/format";
 import Feature from "ol/Feature";
 import { TScenario } from "@/scenariostore";
-import { EntityId } from "@/types/base";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import OLMap from "ol/Map";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
@@ -20,15 +19,13 @@ import { useSelectedItems } from "@/stores/selectedStore";
 export function useUnitActions(
   options: Partial<{
     activeScenario: TScenario;
-    activeUnitId: Ref<EntityId | undefined | null>;
   }> = {}
 ) {
   const {
     unitActions,
     store: { groupUpdate },
   } = options.activeScenario || injectStrict(activeScenarioKey);
-  const activeUnitId = options.activeUnitId || injectStrict(activeUnitIdKey);
-  const { selectedUnitIds } = useSelectedItems();
+  const { selectedUnitIds, activeUnitId } = useSelectedItems();
   const geoStore = useGeoStore();
 
   const _onUnitAction = (unit: NUnit | undefined | null, action: UnitAction) => {

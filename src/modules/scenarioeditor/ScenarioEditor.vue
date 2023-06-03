@@ -224,7 +224,6 @@ import { inputEventFilter } from "@/components/helpers";
 import { useRoute, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
 import {
-  IconFlaskOutline,
   IconEarthRemove,
   IconKeyboard,
   IconRedoVariant as IconRedo,
@@ -247,11 +246,9 @@ import {
   activeParentKey,
   activeScenarioEventKey,
   activeScenarioKey,
-  activeUnitIdKey,
   currentScenarioTabKey,
   searchActionsKey,
   selectedFeatureIdsKey,
-  selectedUnitIdsKey,
   sidcModalKey,
   timeModalKey,
 } from "@/components/injects";
@@ -292,21 +289,17 @@ const ImportModal = defineAsyncComponent(() => import("@/components/ImportModal.
 const props = defineProps<{ activeScenario: TScenario }>();
 
 const dropZoneRef = ref<HTMLDivElement>();
-const activeUnitId = ref<EntityId | undefined | null>(null);
 const activeParentId = ref<EntityId | undefined | null>(null);
 const activeLayerId = ref<FeatureId | undefined | null>(null);
 const activeScenarioEventId = ref<EntityId | undefined | null>(null);
-const selectedUnitIdsRef = ref<Set<EntityId>>(new Set());
 const selectedFeatureIdsRef = ref<SelectedScenarioFeatures>(new Set());
 const scnFeatures = useFeatureStyles(props.activeScenario.geo);
 
 const uiTabs = useTabStore();
 const { activeScenarioTab } = storeToRefs(uiTabs);
 
-provide(activeUnitIdKey, activeUnitId);
 provide(activeParentKey, activeParentId);
 provide(activeLayerKey, activeLayerId);
-provide(selectedUnitIdsKey, selectedUnitIdsRef);
 provide(selectedFeatureIdsKey, selectedFeatureIdsRef);
 provide(activeScenarioKey, props.activeScenario);
 provide(activeFeaturesKey, scnFeatures);

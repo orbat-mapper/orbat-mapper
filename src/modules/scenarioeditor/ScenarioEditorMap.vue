@@ -20,8 +20,9 @@
             @click.stop="onShowPlaceSearch"
             class="pointer-events-auto ml-2"
             title="Search"
-            ><MagnifyingGlassIcon class="h-5 w-5 text-gray-500"
-          /></IconButton>
+          >
+            <MagnifyingGlassIcon class="h-5 w-5 text-gray-500" />
+          </IconButton>
         </header>
         <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
           <MapEditorDesktopPanel v-if="showLeftPanel" @close="toggleLeftPanel()" />
@@ -92,15 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  onActivated,
-  onUnmounted,
-  provide,
-  ShallowRef,
-  shallowRef,
-  watch,
-} from "vue";
+import { computed, onActivated, onUnmounted, provide, ShallowRef, shallowRef } from "vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useNotifications } from "@/composables/notifications";
 import {
@@ -108,7 +101,6 @@ import {
   activeMapKey,
   activeScenarioEventKey,
   activeScenarioKey,
-  activeUnitIdKey,
   timeModalKey,
 } from "@/components/injects";
 import { IconChevronRightBoxOutline as ShowPanelIcon } from "@iconify-prerendered/vue-mdi";
@@ -140,7 +132,6 @@ import { useSelectedItems } from "@/stores/selectedStore";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
-const activeUnitId = injectStrict(activeUnitIdKey);
 const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
 
@@ -167,6 +158,7 @@ provide(
 const breakpoints = useBreakpoints(breakpointsTailwind);
 
 const isMobile = breakpoints.smallerOrEqual("md");
+
 function onMapReady({
   olMap,
   featureSelectInteraction,
@@ -177,7 +169,8 @@ function onMapReady({
   mapRef.value = olMap;
   featureSelectInteractionRef.value = featureSelectInteraction;
 }
-const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();
+
+const { selectedUnitIds, selectedFeatureIds, activeUnitId } = useSelectedItems();
 
 const [showLeftPanel, toggleLeftPanel] = useToggle(true);
 
@@ -188,14 +181,6 @@ const showDetailsPanel = computed(() => {
       activeScenarioEventId.value
   );
 });
-
-watch(
-  activeUnitId,
-  (unitId) => {
-    layout.showDetailsPanel = Boolean(activeUnitId.value);
-  },
-  { immediate: true }
-);
 
 const { send } = useNotifications();
 

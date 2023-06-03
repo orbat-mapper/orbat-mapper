@@ -50,11 +50,7 @@ import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import CloseButton from "@/components/CloseButton.vue";
 import { useToggle } from "@vueuse/core";
 import { injectStrict } from "@/utils";
-import {
-  activeMapKey,
-  activeScenarioEventKey,
-  activeUnitIdKey,
-} from "@/components/injects";
+import { activeMapKey, activeScenarioEventKey } from "@/components/injects";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 import { storeToRefs } from "pinia";
 import { useUiStore } from "@/stores/uiStore";
@@ -64,10 +60,9 @@ import { useSelectedItems } from "@/stores/selectedStore";
 
 const emit = defineEmits(["close"]);
 
-const activeUnitId = injectStrict(activeUnitIdKey);
 const activeScenarioEventId = injectStrict(activeScenarioEventKey);
 const mapRef = injectStrict(activeMapKey);
-const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();
+const { selectedUnitIds, selectedFeatureIds, activeUnitId } = useSelectedItems();
 
 const [showBottomPanel, toggleBottomPanel] = useToggle(true);
 
