@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick } from "vue";
 import { useSearchActions } from "@/composables/searchActions";
-import { TAB_LAYERS, TAB_ORBAT, UnitActions } from "@/types/constants";
+import { TAB_EVENTS, TAB_LAYERS, TAB_ORBAT, UnitActions } from "@/types/constants";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
 import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
@@ -25,7 +25,8 @@ const l = useScenarioLayers(mapRef.value);
 const { onUnitSelect, onFeatureSelect, onLayerSelect, onEventSelect, onPlaceSelect } =
   useSearchActions();
 const ui = useUiStore();
-const { selectedUnitIds, selectedFeatureIds, activeUnitId } = useSelectedItems();
+const { selectedUnitIds, selectedFeatureIds, activeUnitId, activeScenarioEventId } =
+  useSelectedItems();
 const { onUnitAction } = useUnitActions();
 
 onUnitSelect(({ unitId }) => {
@@ -77,6 +78,8 @@ onFeatureSelect(({ featureId }) => {
 
 onEventSelect((e) => {
   activeScenario.time.setCurrentTime(e.startTime);
+  activeScenarioEventId.value = e.id as string;
+  ui.activeTabIndex = TAB_EVENTS;
 });
 
 onPlaceSelect((item) => {
