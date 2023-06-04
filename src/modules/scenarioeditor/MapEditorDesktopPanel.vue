@@ -46,7 +46,6 @@
       :width="orbatPanelWidth"
       @update="orbatPanelWidth = $event"
       @reset="widthStore.resetOrbatPanelWidth()"
-      class="absolute bottom-0 right-0 top-0 w-1.5 hover-none:w-3 hover-none:bg-army2 hover-hover:hover:bg-army2"
     />
   </aside>
 </template>

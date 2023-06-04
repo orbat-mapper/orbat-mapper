@@ -2,20 +2,24 @@
   <button
     ref="el"
     role="separator"
-    class="cursor-col-resize"
-    @click.stop
+    class="absolute bottom-0 top-0 w-1.5 cursor-col-resize touch-none hover-none:w-3 hover-none:bg-army2 hover-hover:hover:bg-army2"
+    :class="left ? 'left-0' : 'right-0'"
     @dblclick="resetWidth"
     @pointerdown="onPointerDown"
     @pointerup="onPointerUp"
     @pointermove="throttledOnPointerMove"
+    type="button"
   ></button>
 </template>
 
 <script setup lang="ts">
 import { ref, unref } from "vue";
 import { useThrottleFn } from "@vueuse/core";
-
-const props = defineProps<{ width: number }>();
+interface Props {
+  width: number;
+  left?: boolean;
+}
+const props = withDefaults(defineProps<Props>(), { left: false });
 const emit = defineEmits(["update", "dragging", "reset"]);
 
 const isDragging = ref(false);
@@ -39,7 +43,12 @@ function onPointerUp(evt: PointerEvent) {
 
 function onPointerMove(evt: PointerEvent) {
   if (isDragging.value) {
-    emit("update", initialWidth + (evt.clientX - startX));
+    emit(
+      "update",
+      props.left
+        ? initialWidth - (evt.clientX - startX)
+        : initialWidth + (evt.clientX - startX)
+    );
   }
 }
 

@@ -1,7 +1,8 @@
 <template>
   <div class="">
     <aside
-      class="pointer-events-auto relative mt-4 flex max-h-[70vh] w-96 flex-col overflow-clip rounded-md bg-white shadow"
+      class="pointer-events-auto relative mt-4 flex max-h-[70vh] flex-col overflow-clip rounded-md bg-white shadow"
+      :style="{ width: widthStore.detailsWidth + 'px' }"
     >
       <header class="flex-0 flex items-center justify-end bg-gray-100 p-2 px-4 shadow">
         <CloseButton @click="emit('close')" class="" />
@@ -9,6 +10,12 @@
       <div class="flex-auto overflow-auto p-4">
         <slot />
       </div>
+      <PanelResizeHandle
+        :width="widthStore.detailsWidth"
+        @update="widthStore.detailsWidth = $event"
+        @reset="widthStore.resetDetailsWidth()"
+        left
+      />
     </aside>
   </div>
 </template>
@@ -17,9 +24,11 @@ import CloseButton from "@/components/CloseButton.vue";
 import { onMounted, onUnmounted } from "vue";
 import { injectStrict } from "@/utils";
 import { activeMapKey } from "@/components/injects";
+import { useWidthStore } from "@/stores/uiStore";
+import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
 const emit = defineEmits(["close"]);
 const mapRef = injectStrict(activeMapKey);
-
+const widthStore = useWidthStore();
 onMounted(() => {
   const padding = mapRef.value.getView().padding || [0, 0, 0, 0];
   const [top, right, bottom, left] = padding;
