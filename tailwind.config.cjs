@@ -18,6 +18,10 @@ module.exports = {
         army: "#4b5320",
         army2: "#a5b646",
       },
+      screens: {
+        'hover-none': {'raw': '(hover: none)'},
+        'hover-hover': {'raw': '(hover: hover)'},
+      }
     },
   },
   plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],

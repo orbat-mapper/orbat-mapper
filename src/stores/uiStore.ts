@@ -28,3 +28,14 @@ export const useUiStore = defineStore("ui", {
       ),
   },
 });
+
+export const useWidthStore = defineStore("panelWidth", {
+  state: () => ({
+    orbatPanelWidth: useLocalStorage("orbatPanelWidth", 400),
+  }),
+  actions: {
+    resetOrbatPanelWidth() {
+      this.orbatPanelWidth = 400;
+    },
+  },
+});

@@ -1,10 +1,11 @@
 <template>
   <aside
-    class="pointer-events-auto -mt-12 hidden max-h-[80vh] w-96 overflow-auto rounded-md bg-white shadow md:block"
+    class="pointer-events-auto relative -mt-12 hidden max-h-[80vh] overflow-auto rounded-md shadow md:block"
+    :style="{ width: orbatPanelWidth + 'px' }"
   >
     <TabGroup
       as="div"
-      class="flex h-full flex-auto flex-col"
+      class="mr-1.5 flex h-full flex-auto flex-col bg-white hover-none:mr-3"
       :class="{ hidden: !showBottomPanel }"
       :selected-index="activeTabIndex"
       @change="changeTab"
@@ -41,6 +42,12 @@
         <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
       </TabPanels>
     </TabGroup>
+    <PanelResizeHandle
+      :width="orbatPanelWidth"
+      @update="orbatPanelWidth = $event"
+      @reset="widthStore.resetOrbatPanelWidth()"
+      class="absolute bottom-0 right-0 top-0 w-1.5 hover-none:w-3 hover-none:bg-army2 hover-hover:hover:bg-army2"
+    />
   </aside>
 </template>
 <script setup lang="ts">
@@ -53,10 +60,11 @@ import { injectStrict } from "@/utils";
 import { activeMapKey } from "@/components/injects";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 import { storeToRefs } from "pinia";
-import { useUiStore } from "@/stores/uiStore";
+import { useUiStore, useWidthStore } from "@/stores/uiStore";
 import { onMounted, onUnmounted } from "vue";
 import { ScenarioEvent } from "@/types/scenarioModels";
 import { useSelectedItems } from "@/stores/selectedStore";
+import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
 
 const emit = defineEmits(["close"]);
 
@@ -66,6 +74,8 @@ const { selectedUnitIds, activeUnitId, activeScenarioEventId } = useSelectedItem
 const [showBottomPanel, toggleBottomPanel] = useToggle(true);
 
 const { activeTabIndex } = storeToRefs(useUiStore());
+const widthStore = useWidthStore();
+const { orbatPanelWidth } = storeToRefs(widthStore);
 
 function changeTab(index: number) {
   activeTabIndex.value = index;
@@ -87,5 +97,9 @@ onUnmounted(() => {
 
 function onEventClick(scenarioEvent: ScenarioEvent) {
   activeScenarioEventId.value = scenarioEvent.id;
+}
+
+function resetWidth() {
+  orbatPanelWidth.value = 400;
 }
 </script>
