@@ -103,7 +103,7 @@ const {
   updateFeatureGeometryFromOlFeature,
   deleteFeature,
 } = useScenarioLayers(mapRef.value);
-const { selectedFeatureIds } = useSelectedItems();
+const { selectedFeatureIds, activeFeatureId } = useSelectedItems();
 
 const { addMultiple } = storeToRefs(useMainToolbarStore());
 const [snap, toggleSnap] = useToggle(true);
@@ -126,7 +126,8 @@ const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawi
     addMultiple: addMultiple,
     select: featureSelectInteractionRef.value,
     addHandler: (olFeature, olLayer) => {
-      addOlFeature(olFeature, olLayer);
+      const newFeature = addOlFeature(olFeature, olLayer);
+      activeFeatureId.value = newFeature.id;
     },
     modifyHandler: (olFeatures) => {
       olFeatures.forEach((f) => updateFeatureGeometryFromOlFeature(f));
