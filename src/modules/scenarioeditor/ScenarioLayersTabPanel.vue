@@ -11,7 +11,13 @@ import ChevronPanel from "@/components/ChevronPanel.vue";
 import { computed, onUnmounted, ref } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import { FeatureId, ScenarioLayer } from "@/types/scenarioGeoModels";
-import { IconClockOutline, IconEye, IconEyeOff } from "@iconify-prerendered/vue-mdi";
+import {
+  IconClockOutline,
+  IconEye,
+  IconEyeOff,
+  IconStar,
+  IconStarOutline,
+} from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { MenuItemData } from "@/components/types";
@@ -195,13 +201,25 @@ function addNewLayer() {
         <div class="flex items-center">
           <button
             type="button"
-            @click="toggleLayerVisibility(layer)"
+            @click="activeLayerId = layer.id"
             @keydown.stop
             class="text-gray-500 opacity-0 hover:text-gray-700 group-focus-within:opacity-100 group-hover:opacity-100"
+            title="Set as active layer"
+          >
+            <IconStar v-if="activeLayerId === layer.id" class="h-5 w-5" />
+            <IconStarOutline class="h-5 w-5" v-else />
+          </button>
+          <button
+            type="button"
+            @click="toggleLayerVisibility(layer)"
+            @keydown.stop
+            class="ml-1 text-gray-500 opacity-0 hover:text-gray-700 group-focus-within:opacity-100 group-hover:opacity-100"
+            title="Toggle layer visibility"
           >
             <IconEyeOff v-if="layer.isHidden" class="h-5 w-5" />
             <IconEye class="h-5 w-5" v-else />
           </button>
+
           <IconClockOutline
             v-if="layer.visibleFromT || layer.visibleUntilT"
             class="h-5 w-5 text-gray-400"
@@ -266,9 +284,10 @@ function addNewLayer() {
       </ul>
     </ChevronPanel>
     <p class="my-8 text-right">
-      <BaseButton @click="addNewLayer()" small secondary
-        ><PlusIcon class="-ml-1 mr-1 h-4 w-4" aria-hidden="true" />Add layer</BaseButton
-      >
+      <BaseButton @click="addNewLayer()" small secondary>
+        <PlusIcon class="-ml-1 mr-1 h-4 w-4" aria-hidden="true" />
+        Add layer
+      </BaseButton>
     </p>
   </div>
 </template>
