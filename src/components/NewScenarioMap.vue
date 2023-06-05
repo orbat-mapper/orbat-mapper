@@ -16,7 +16,11 @@ import { computed, onUnmounted, shallowRef, watch } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { clearStyleCache } from "@/geo/unitStyles";
-import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
+import {
+  useGeoStore,
+  useMeasurementsStore,
+  useUnitSettingsStore,
+} from "@/stores/geoStore";
 import LayerGroup from "ol/layer/Group";
 
 import {
@@ -44,6 +48,7 @@ import { useMapHover } from "@/composables/geoHover";
 import { useGeoLayersUndoRedo } from "@/composables/geoUndoRedo";
 import type Select from "ol/interaction/Select";
 import { useUiStore } from "@/stores/uiStore";
+import { useShowScaleLine } from "@/composables/geoScaleLine";
 const mapSettings = useMapSettingsStore();
 
 interface Props {}
@@ -137,10 +142,17 @@ const onMapReady = (olMap: OLMap) => {
   useOlEvent(unitLayerGroup.on("change:visible", toggleMoveUnitInteraction));
   olMap.addInteraction(moveUnitInteraction);
 
-  const { showLocation, coordinateFormat } = storeToRefs(useMapSettingsStore());
+  const { showLocation, coordinateFormat, showScaleLine } = storeToRefs(
+    useMapSettingsStore()
+  );
   const lc = useShowLocationControl(olMap, {
     coordinateFormat,
     enable: showLocation,
+  });
+  const { measurementUnit } = storeToRefs(useMeasurementsStore());
+  useShowScaleLine(olMap, {
+    enabled: showScaleLine,
+    measurementUnits: measurementUnit,
   });
 
   drawUnits();
@@ -174,3 +186,8 @@ onUnmounted(() => {
   geoStore.olMap = undefined;
 });
 </script>
+<style>
+.ol-scale-line {
+  bottom: 2.2rem;
+}
+</style>

@@ -6,12 +6,14 @@ export interface MapSettingsState {
   showLocation: boolean;
   coordinateFormat: CoordinateFormatType;
   baseLayerName: string;
+  showScaleLine: boolean;
 }
 export const useMapSettingsStore = defineStore("mapSettings", {
   state: () =>
-    useLocalStorage<MapSettingsState>("mapSettings4", {
+    useLocalStorage<MapSettingsState>("mapSettings5", {
       showLocation: true,
       coordinateFormat: "DecimalDegrees",
       baseLayerName: "osm",
+      showScaleLine: true,
     }),
 });

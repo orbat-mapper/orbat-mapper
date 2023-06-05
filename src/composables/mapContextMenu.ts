@@ -56,6 +56,14 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
               },
             },
             {
+              label: "Show scale line",
+              checked: computed(() => settings.showScaleLine) as unknown as boolean,
+              clickClose: false,
+              onClick: () => {
+                settings.showScaleLine = !settings.showScaleLine;
+              },
+            },
+            {
               label: "Measurement unit",
               children: [
                 {
@@ -69,7 +77,7 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
                   },
                 },
                 {
-                  label: "Imperial",
+                  label: "US/Imperial",
                   checked: computed(
                     () => measurementSettings.measurementUnit === "imperial"
                   ) as unknown as boolean,
