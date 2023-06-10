@@ -85,9 +85,9 @@ onEventSelect((e) => {
 onPlaceSelect((item) => {
   const map = mapRef.value;
   const transform = getTransform("EPSG:4326", map.getView().getProjection());
-
   const extent =
-    item.properties?.extent && applyTransform(item.properties?.extent, transform);
+    item.properties?.extent &&
+    applyTransform(fixExtent(item.properties.extent), transform);
   const polygon = extent && polygonFromExtent(extent);
   const p = new OlPoint(item.geometry.coordinates).transform(
     "EPSG:4326",
@@ -112,5 +112,15 @@ onPlaceSelect((item) => {
 
   map.getView().fit(polygon || p, { maxZoom: 15 });
 });
+
+function fixExtent(extent: number[]) {
+  const [minx, miny, maxx, maxy] = extent;
+  return [
+    Math.min(minx, maxx),
+    Math.min(miny, maxy),
+    Math.max(minx, maxx),
+    Math.max(miny, maxy),
+  ];
+}
 </script>
 <template></template>
