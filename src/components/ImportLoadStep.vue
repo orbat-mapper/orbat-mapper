@@ -84,6 +84,7 @@
     <p v-if="isMilx" class="prose prose-sm">
       Please note that the import functionality is experimental.
     </p>
+    <img v-if="objectUrl" :src="objectUrl" />
 
     <footer class="flex items-center justify-end space-x-2 pt-4">
       <BaseButton type="submit" primary small :disabled="!currentFilename"
@@ -95,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, shallowRef } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { SelectItem } from "@/components/types";
@@ -108,7 +109,7 @@ import { useDropZone } from "@vueuse/core";
 import TextAreaGroup from "@/components/TextAreaGroup.vue";
 import { useImportStore } from "@/stores/importExportStore";
 import { useScenarioImport } from "@/composables/scenarioImport";
-import { guessImportFormat } from "@/lib/fileHandling";
+import { guessImportFormat, ImportedFileInfo } from "@/lib/fileHandling";
 import { useDragStore } from "@/stores/dragStore";
 import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
 
@@ -126,6 +127,8 @@ const formatItems: SelectItem<ImportFormat>[] = [
 
 const stringSource = ref("");
 const currentFilename = ref("");
+const objectUrl = ref("");
+const fileInfo = shallowRef<ImportedFileInfo>();
 
 const store = useImportStore();
 const dragStore = useDragStore();
@@ -158,20 +161,27 @@ const { importMilxString, importGeojsonString, importJsonString } = useScenarioI
 
 async function onLoad(e?: Event) {
   const { format } = form.value;
+
   NProgress.start();
 
   if (format === "milx" && stringSource.value) {
     const data = await importMilxString(stringSource.value);
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
-    emit("loaded", "milx", data);
+    emit("loaded", "milx", data, fileInfo.value);
+  }
+
+  if (format === "image" && objectUrl.value) {
+    send({ message: `Loaded data as ${format}` });
+    NProgress.done();
+    emit("loaded", "image", objectUrl.value, fileInfo.value);
   }
 
   if (format === "geojson" && stringSource.value) {
     const data = importGeojsonString(stringSource.value);
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
-    emit("loaded", "geojson", data);
+    emit("loaded", "geojson", data, fileInfo.value);
   }
 
   if (format === "unitgenerator" && stringSource.value) {
@@ -179,14 +189,14 @@ async function onLoad(e?: Event) {
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
     console.log(data);
-    emit("loaded", "unitgenerator", data);
+    emit("loaded", "unitgenerator", data, fileInfo.value);
   }
 
   if (format === "orbatgenerator" && stringSource.value) {
     const data = importJsonString<OrbatGeneratorOrbat>(stringSource.value);
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
-    emit("loaded", "orbatgenerator", data);
+    emit("loaded", "orbatgenerator", data, fileInfo.value);
   }
   NProgress.done();
 }
@@ -209,12 +219,14 @@ async function handleFiles(files: File[]) {
   const file = files[0];
   currentFilename.value = file.name;
   const info = await guessImportFormat(file);
+  fileInfo.value = info;
   if (info.isInvalid) {
     info.errors.forEach((message) => send({ message }));
     return;
   }
 
   stringSource.value = info.dataAsString;
+  objectUrl.value = info.objectUrl;
   guessedFormat.value = info.format;
   if (info.format !== "unknown") {
     form.value.format = info.format;

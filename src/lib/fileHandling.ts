@@ -2,7 +2,7 @@ import { Unzipped } from "fflate";
 import { GuessedImportFormat } from "@/types/convert";
 import { unzip } from "@/composables/scenarioImport";
 
-interface ImportedFileInfo {
+export interface ImportedFileInfo {
   dataAsString: string;
   errors: string[];
   format: GuessedImportFormat;
@@ -10,6 +10,8 @@ interface ImportedFileInfo {
   isInvalid: boolean;
   isJson: boolean;
   isZipped: boolean;
+  objectUrl: string;
+  fileName: string;
 }
 
 export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
@@ -21,6 +23,8 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     dataAsString: "Unknown data",
     isInvalid: false,
     errors: [],
+    objectUrl: "",
+    fileName: file.name,
   };
 
   if (hasZippedFileType(file)) {
@@ -44,6 +48,11 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     }
 
     // TODO: odin, kmz
+  } else if (hasImageFileType(file)) {
+    guess.format = "image";
+    guess.dataAsString = file.name;
+    guess.objectUrl = URL.createObjectURL(file);
+    return guess;
   }
 
   // read as text
@@ -80,6 +89,10 @@ function hasZippedFileType(file: File): boolean {
   if (file.name.endsWith(".kmz")) return true;
   if (file.name.endsWith(".odin")) return true;
   return file.name.endsWith(".milxlyz");
+}
+
+function hasImageFileType(file: File): boolean {
+  return file.type.startsWith("image/");
 }
 
 function arrayBufferToString(arrayBuffer: ArrayBuffer, decoderType = "utf-8") {

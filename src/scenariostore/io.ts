@@ -18,7 +18,7 @@ import { ShallowRef } from "vue";
 import { isLoading } from "@/scenariostore/index";
 import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
 import dayjs from "dayjs";
-import { type ScenarioLayer } from "@/types/scenarioGeoModels";
+import { ScenarioImageLayer, type ScenarioLayer } from "@/types/scenarioGeoModels";
 import { type EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
 
@@ -32,7 +32,7 @@ export function createEmptyScenario(): Scenario {
   } catch (e) {}
   return {
     type: "ORBAT-mapper",
-    version: "0.6.0",
+    version: "0.8.0",
     name: "New scenario",
     description: "Empty scenario description",
     startTime: new Date().getTime(),
@@ -41,6 +41,7 @@ export function createEmptyScenario(): Scenario {
     sides: [],
     events: [],
     layers: [{ id: nanoid(), name: "Features", features: [] }],
+    imageLayers: [],
   };
 }
 
@@ -85,6 +86,10 @@ function getLayers(state: ScenarioState): ScenarioLayer[] {
     }));
 }
 
+function getImageLayers(state: ScenarioState): ScenarioImageLayer[] {
+  return state.imageLayers.map((id) => state.imageLayerMap[id]);
+}
+
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   const settingsStore = useSymbolSettingsStore();
 
@@ -92,11 +97,12 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     const { state } = store.value;
     return {
       type: "ORBAT-mapper",
-      version: "0.7.0",
+      version: "0.8.0",
       ...getScenarioInfo(state),
       sides: getSides(state),
       layers: getLayers(state),
       events: getScenarioEvents(state),
+      imageLayers: getImageLayers(state),
     };
   }
 

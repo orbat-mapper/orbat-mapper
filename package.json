@@ -76,7 +76,6 @@
     "@types/markdown-it": "^12.2.3",
     "@types/markdown-it-container": "^2.0.5",
     "@types/nprogress": "^0.2.0",
-    "@types/ol-ext": "npm:@siedlerchr/types-ol-ext@^3.2.0",
     "@vitejs/plugin-vue": "^4.2.3",
     "@vitest/ui": "^0.31.0",
     "@vue/compiler-sfc": "^3.3.2",

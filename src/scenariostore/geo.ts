@@ -5,6 +5,7 @@ import {
   FeatureId,
   LayerFeatureItem,
   Position,
+  ScenarioImageLayer,
   ScenarioLayer,
 } from "@/types/scenarioGeoModels";
 import { EntityId } from "@/types/base";
@@ -12,13 +13,27 @@ import {
   NScenarioFeature,
   NScenarioLayer,
   ScenarioFeatureUpdate,
+  ScenarioImageLayerUpdate,
   ScenarioLayerUpdate,
 } from "@/types/internalModels";
 import { klona } from "klona";
 import { moveItemMutable, nanoid, removeElement } from "@/utils";
+import { createEventHook } from "@vueuse/core";
+
+export type ScenarioLayerEvent = {
+  type: "add" | "remove" | "update";
+  id: FeatureId;
+  data: any;
+};
+
+export type UpdateOptions = {
+  undoable?: boolean;
+  noEmit?: boolean;
+};
 
 export function useGeo(store: NewScenarioStore) {
   const { state, update } = store;
+  const imageLayerEvent = createEventHook<ScenarioLayerEvent>();
 
   const everyVisibleUnit = computed(() => {
     return Object.values(state.unitMap).filter((unit) => unit._state?.location);
@@ -67,6 +82,16 @@ export function useGeo(store: NewScenarioStore) {
     return state.layerMap[newLayer.id];
   }
 
+  function addImageLayer(data: ScenarioImageLayer) {
+    const newLayer = klona({ ...data, _isNew: true });
+    if (!newLayer.id) newLayer.id = nanoid();
+    update((s) => {
+      s.imageLayers.push(newLayer.id);
+      s.imageLayerMap[newLayer.id] = newLayer;
+    });
+    imageLayerEvent.trigger({ type: "add", id: newLayer.id, data: newLayer });
+  }
+
   function moveLayer(layerId: FeatureId, toIndex: number) {
     const fromIndex = state.layers.indexOf(layerId);
     update(
@@ -109,6 +134,10 @@ export function useGeo(store: NewScenarioStore) {
       }));
   });
 
+  const imageLayers = computed(() => {
+    return state.imageLayers.map((layerId) => state.imageLayerMap[layerId]);
+  });
+
   const layersFeatures = computed(() => {
     return state.layers
       .map((layerId) => state.layerMap[layerId])
@@ -131,6 +160,29 @@ export function useGeo(store: NewScenarioStore) {
       const layer = state.layerMap[layerId];
       Object.assign(layer, data);
     }
+  }
+
+  function updateImageLayer(
+    layerId: FeatureId,
+    data: ScenarioImageLayerUpdate,
+    options: UpdateOptions = {}
+  ) {
+    const undoable = options.undoable ?? true;
+    const noEmit = options.noEmit ?? false;
+    if (undoable) {
+      update(
+        (s) => {
+          const layer = s.imageLayerMap[layerId];
+          Object.assign(layer, data);
+        },
+        { label: "updateImageLayer", value: layerId }
+      );
+    } else {
+      const layer = state.imageLayerMap[layerId];
+      Object.assign(layer, data);
+    }
+    if (noEmit) return;
+    imageLayerEvent.trigger({ type: "update", id: layerId, data });
   }
 
   function deleteLayer(layerId: FeatureId) {
@@ -240,5 +292,9 @@ export function useGeo(store: NewScenarioStore) {
     itemsInfo,
     layers,
     layersFeatures,
+    imageLayers,
+    addImageLayer,
+    updateImageLayer,
+    onImageLayerEvent: imageLayerEvent.on,
   };
 }

@@ -10,19 +10,21 @@ import {
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import { computed, onUnmounted, ref } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
-import { FeatureId, ScenarioLayer } from "@/types/scenarioGeoModels";
+import { FeatureId, ScenarioImageLayer, ScenarioLayer } from "@/types/scenarioGeoModels";
 import {
   IconClockOutline,
   IconEye,
   IconEyeOff,
   IconStar,
   IconStarOutline,
+  IconImage as ImageIcon,
 } from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { MenuItemData } from "@/components/types";
 import {
   ScenarioFeatureActions,
+  ScenarioImageLayerAction,
   ScenarioLayerAction,
   ScenarioLayerActions,
 } from "@/types/constants";
@@ -30,6 +32,8 @@ import BaseButton from "@/components/BaseButton.vue";
 import { PlusIcon } from "@heroicons/vue/24/solid";
 import EditLayerInlineForm from "@/modules/scenarioeditor/EditLayerInlineForm.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useEventBus } from "@vueuse/core";
+import { imageLayerAction } from "@/components/eventKeys";
 
 const emit = defineEmits(["feature-click"]);
 
@@ -38,10 +42,17 @@ const activeLayerId = injectStrict(activeLayerKey);
 const uiStore = useUiStore();
 const {
   geo,
-  store: { groupUpdate },
+  store: { groupUpdate, state },
 } = injectStrict(activeScenarioKey);
+
+const { imageLayers } = geo;
 uiStore.layersPanelActive = true;
 onUnmounted(() => (uiStore.layersPanelActive = false));
+
+const imageLayerMenuItems: MenuItemData<ScenarioImageLayerAction>[] = [
+  { label: "Zoom to", action: "zoom" },
+  // { label: "Delete", action: "delete" },
+];
 
 const {
   scenarioLayersFeatures,
@@ -100,6 +111,11 @@ function onFeatureDoubleClick(
   zoomToFeature(feature.id);
 }
 
+const bus = useEventBus(imageLayerAction);
+function onImageLayerDoubleClick(layer: ScenarioImageLayer) {
+  bus.emit({ action: "zoom", id: layer.id });
+}
+
 const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Zoom to", action: ScenarioLayerActions.Zoom },
   { label: "Set as active", action: ScenarioLayerActions.SetActive },
@@ -108,6 +124,10 @@ const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Move down", action: ScenarioLayerActions.MoveDown },
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ];
+
+function onImageLayerAction(layer: ScenarioImageLayer, action: ScenarioImageLayerAction) {
+  if (action === "zoom") bus.emit({ action, id: layer.id });
+}
 
 function onLayerAction(
   layer: ScenarioLayer | NScenarioLayer,
@@ -177,10 +197,70 @@ function addNewLayer() {
   activeLayerId.value = addedLayer.id;
   editedLayerId.value = addedLayer.id;
 }
+
+function addImageLayer() {
+  geo.addImageLayer({
+    id: nanoid(),
+    name: "Test",
+    url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Achin,_Plan_de_la_ville_de_Paris_repr%C3%A9sentant_les_nouvelles_voitures_publiques,_1828.jpg",
+    attributions: [
+      "<a href='http://www.geoportail.gouv.fr/actualite/181/telechargez-les-cartes-et-photographies-aeriennes-historiques'>Photo historique &copy; IGN</a>",
+    ],
+  });
+}
+
+function toggleImageLayerVisibility(layer: ScenarioImageLayer) {
+  geo.updateImageLayer(layer.id, { isHidden: !layer.isHidden });
+}
 </script>
 
 <template>
   <div>
+    <ChevronPanel label="Image layers" class="mb-4">
+      <ul class="-mt-6">
+        <li
+          v-for="layer in imageLayers"
+          class="group flex items-center justify-between border-l pl-1 hover:bg-amber-50"
+          :key="layer.id"
+          @dblclick="onImageLayerDoubleClick(layer)"
+          :class="
+            selectedFeatureIds.has(layer.id)
+              ? 'border-yellow-500 bg-yellow-100'
+              : 'border-transparent'
+          "
+        >
+          <button class="flex flex-auto items-center py-2.5 sm:py-2">
+            <ImageIcon class="h-5 w-5 text-gray-400" />
+            <span
+              class="ml-2 text-left text-sm text-gray-700 group-hover:text-gray-900"
+              :class="{
+                'font-bold': activeFeatureId === layer.id,
+                'opacity-50': layer.isHidden,
+              }"
+            >
+              {{ layer.name }}
+            </span>
+          </button>
+          <div class="relative flex items-center">
+            <button
+              type="button"
+              @click="toggleImageLayerVisibility(layer)"
+              @keydown.stop
+              class="ml-1 text-gray-500 opacity-0 hover:text-gray-700 group-focus-within:opacity-100 group-hover:opacity-100"
+              title="Toggle layer visibility"
+            >
+              <IconEyeOff v-if="layer.isHidden" class="h-5 w-5" />
+              <IconEye class="h-5 w-5" v-else />
+            </button>
+            <DotsMenu
+              :items="imageLayerMenuItems"
+              @action="onImageLayerAction(layer, $event)"
+              class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+            />
+          </div>
+        </li>
+      </ul>
+    </ChevronPanel>
     <ChevronPanel
       v-for="{ layer, features } in scenarioLayersFeatures"
       :key="layer.id"
@@ -287,6 +367,10 @@ function addNewLayer() {
       <BaseButton @click="addNewLayer()" small secondary>
         <PlusIcon class="-ml-1 mr-1 h-4 w-4" aria-hidden="true" />
         Add layer
+      </BaseButton>
+      <BaseButton @click="addImageLayer()" small secondary class="ml-2">
+        <PlusIcon class="-ml-1 mr-1 h-4 w-4" aria-hidden="true" />
+        Add image layer
       </BaseButton>
     </p>
   </div>

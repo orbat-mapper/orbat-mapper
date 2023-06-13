@@ -29,6 +29,13 @@
       :data="loadedData as OrbatGeneratorOrbat"
       @loaded="onImport"
     />
+    <ImportImageStep
+      v-else-if="importState === 'image' && fileInfo"
+      :object-url="loadedData as string"
+      :file-info="fileInfo"
+      @cancel="onCancel"
+      @loaded="onImport"
+    />
   </SimpleModal>
 </template>
 
@@ -46,29 +53,43 @@ import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalMode
 import type { FeatureCollection } from "geojson";
 import { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportOrbatGeneratorStep from "@/components/ImportOrbatGeneratorStep.vue";
+import ImportImageStep from "@/components/ImportImageStep.vue";
+import { ImportedFileInfo } from "@/lib/fileHandling";
 
 const router = useRouter();
 
-type ImportState = "select" | "milx" | "geojson" | "unitgenerator" | "orbatgenerator";
+type ImportState =
+  | "select"
+  | "milx"
+  | "geojson"
+  | "unitgenerator"
+  | "orbatgenerator"
+  | "image";
 const importState = ref<ImportState>("select");
 const loadedData = shallowRef<any>([]);
-
+const fileInfo = shallowRef<ImportedFileInfo>();
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue", "cancel"]);
 const { send } = useNotifications();
 
 const open = useVModel(props, "modelValue", emit);
-function onLoaded(nextState: ImportState, data: any) {
+
+function onLoaded(nextState: ImportState, data: any, info: ImportedFileInfo) {
   loadedData.value = data;
   importState.value = nextState;
+  fileInfo.value = info;
 }
+
 function onImport() {
   open.value = false;
-  send({ message: "Imported units" });
+  // send({ message: "Imported units" });
 }
 
 function onCancel() {
   open.value = false;
+  if (importState.value === "image" && loadedData.value !== undefined) {
+    URL.revokeObjectURL(loadedData.value);
+  }
   emit("cancel");
 }
 </script>

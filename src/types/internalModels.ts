@@ -1,6 +1,11 @@
 import { CurrentStateType, ScenarioEvent, Side, SideGroup, Unit } from "./scenarioModels";
 import { EntityId } from "./base";
-import { FeatureId, ScenarioFeature, ScenarioLayer } from "@/types/scenarioGeoModels";
+import {
+  FeatureId,
+  ScenarioFeature,
+  ScenarioImageLayer,
+  ScenarioLayer,
+} from "@/types/scenarioGeoModels";
 import { Optional } from "@/types/helpers";
 
 export interface NUnit extends Omit<Unit, "subUnits" | "_pid" | "_gid" | "_sid"> {
@@ -41,6 +46,9 @@ export interface NScenarioFeature extends ScenarioFeature {
 export interface ScenarioFeatureUpdate extends Partial<Omit<NScenarioFeature, "id">> {}
 export interface ScenarioLayerUpdate
   extends Partial<Omit<NScenarioLayer, "id" | "features">> {}
+
+export interface ScenarioImageLayerUpdate
+  extends Partial<Omit<ScenarioImageLayer, "id">> {}
 
 export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id">> {}
 export interface UnitUpdate extends Partial<Omit<NUnit, "id">> {}

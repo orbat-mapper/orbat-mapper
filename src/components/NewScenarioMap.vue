@@ -49,6 +49,7 @@ import { useGeoLayersUndoRedo } from "@/composables/geoUndoRedo";
 import type Select from "ol/interaction/Select";
 import { useUiStore } from "@/stores/uiStore";
 import { useShowScaleLine } from "@/composables/geoScaleLine";
+import { useScenarioImageLayers } from "@/modules/scenarioeditor/scenarioImageLayers";
 const mapSettings = useMapSettingsStore();
 
 interface Props {}
@@ -97,6 +98,7 @@ const onMapReady = (olMap: OLMap) => {
 
   const { showHistory, editHistory } = storeToRefs(unitSettingsStore);
 
+  const { initializeFromStore: loadImageLayers } = useScenarioImageLayers(olMap);
   const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
   const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } = storeToRefs(
     useMapSelectStore()
@@ -158,6 +160,7 @@ const onMapReady = (olMap: OLMap) => {
   drawUnits();
   drawHistory();
 
+  loadImageLayers();
   loadScenarioLayers();
   const extent = unitLayer.getSource()?.getExtent();
   if (extent && !unitLayer.getSource()?.isEmpty())

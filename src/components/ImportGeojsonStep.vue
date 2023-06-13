@@ -57,19 +57,6 @@ const { unitActions, store: scnStore, time } = injectStrict(activeScenarioKey);
 const store = useImportStore();
 const { state } = scnStore;
 
-interface Form extends ImportSettings {
-  format: ImportFormat;
-}
-
-const form = ref<Form>({
-  format: store.format,
-  includeFeatures: false,
-  includeUnits: true,
-  fileName: "scenario.geojson",
-  embedIcons: true,
-  useShortName: true,
-});
-
 const { send } = useNotifications();
 const selectedUnits = ref<OrbatMapperGeoJsonFeature[]>([]);
 

@@ -1,6 +1,6 @@
 {
   "type": "ORBAT-mapper",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "name": "Battles of Narvik",
   "startTime": "1940-04-09T01:00:00+02:00",
   "timeZone": "Europe/Oslo",

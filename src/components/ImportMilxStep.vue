@@ -3,7 +3,7 @@
     <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
       <div class="flex-auto overflow-auto">
         <div class="prose prose-sm">
-          <p v-if="isMilx">
+          <p>
             Basic support for importing MilX layers from
             <a href="https://www.map.army/">map.army</a>
           </p>
@@ -55,23 +55,9 @@ const emit = defineEmits(["cancel", "loaded"]);
 const { unitActions, store: scnStore, time } = injectStrict(activeScenarioKey);
 const store = useImportStore();
 const { state } = scnStore;
-interface Form extends ImportSettings {
-  format: ImportFormat;
-}
-
-const form = ref<Form>({
-  format: store.format,
-  includeFeatures: false,
-  includeUnits: true,
-  fileName: "scenario.geojson",
-  embedIcons: true,
-  useShortName: true,
-});
 
 const { send } = useNotifications();
 const selectedUnits = ref<(string | number)[]>([]);
-
-const isMilx = computed(() => form.value.format === "milx");
 
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);

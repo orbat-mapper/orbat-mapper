@@ -56,6 +56,7 @@ import OpacityInput from "./OpacityInput.vue";
 import { getUid } from "ol";
 import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import ImageLayer from "ol/layer/Image";
 
 export interface LayerInfo<T extends BaseLayer = BaseLayer> {
   id: string;
@@ -150,7 +151,10 @@ export default defineComponent({
       )[0] as LayerInfo<AnyTileLayer>;
 
       vectorLayers.value = mappedLayers.filter(
-        ({ layer }) => layer instanceof VectorLayer || layer instanceof LayerGroup
+        ({ layer }) =>
+          layer instanceof VectorLayer ||
+          layer instanceof LayerGroup ||
+          layer instanceof ImageLayer
       ) as LayerInfo<AnyVectorLayer>[];
     }
 

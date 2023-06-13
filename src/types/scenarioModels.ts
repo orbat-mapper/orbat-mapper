@@ -1,4 +1,4 @@
-import type { Position, ScenarioLayer } from "./scenarioGeoModels";
+import type { Position, ScenarioImageLayer, ScenarioLayer } from "./scenarioGeoModels";
 import type { EntityId, ScenarioTime } from "./base";
 import type { SidValue } from "@/symbology/values";
 import { type SymbolOptions } from "milsymbol";
@@ -120,7 +120,7 @@ export interface ScenarioInfo {
 }
 
 export type SymbologyStandard = "2525" | "app6";
-export type ScenarioVersion = "0.7.0" | "0.6.0";
+export type ScenarioVersion = "0.8.0" | "0.7.0" | "0.6.0";
 
 export interface Scenario extends ScenarioInfo {
   type: "ORBAT-mapper";
@@ -128,6 +128,7 @@ export interface Scenario extends ScenarioInfo {
   sides: Side[];
   events: ScenarioEvent[];
   layers: ScenarioLayer[];
+  imageLayers: ScenarioImageLayer[];
 }
 
 export type UnitOrSide = Unit | Side;

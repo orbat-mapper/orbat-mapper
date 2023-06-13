@@ -1,6 +1,6 @@
 {
   "type": "ORBAT-mapper",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
   "timeZone": "Atlantic/Stanley",
@@ -1840,6 +1840,17 @@
       "title": "Battle of Goose Green",
       "startTime": "1982-05-26T20:00:00-04:00",
       "id": "L7sLKYe3xMRELH2bEA7Da"
+    }
+  ],
+  "imageLayers": [
+    {
+      "url": "scenarios/images/Battle_of_Goose_Green.png",
+      "name": "Battle_of_Goose_Green",
+      "id": "xj1kv8wno4",
+      "isHidden": false,
+      "imageCenter": [-58.96816549275583, -51.79901410430646],
+      "imageRotate": 0.028235478069220242,
+      "imageScale": [19.703891001458558, 19.703891001458558]
     }
   ]
 }

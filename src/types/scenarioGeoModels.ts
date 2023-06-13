@@ -63,6 +63,19 @@ export interface ScenarioLayer extends Partial<VisibilityInfo> {
   _hidden?: boolean;
 }
 
+export interface ScenarioImageLayer extends Partial<VisibilityInfo> {
+  id: FeatureId;
+  name: string;
+  description?: string;
+  attributions?: string | string[];
+  url: string;
+  imageCenter?: number[];
+  imageScale?: number | number[];
+  imageRotate?: number;
+  opacity?: number;
+  isHidden?: boolean;
+}
+
 export interface ScenarioLayerInstance extends ScenarioLayer {
   //isVisible?: boolean;
 }
