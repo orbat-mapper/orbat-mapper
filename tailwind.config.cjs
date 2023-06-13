@@ -19,9 +19,9 @@ module.exports = {
         army2: "#a5b646",
       },
       screens: {
-        'hover-none': {'raw': '(hover: none)'},
-        'hover-hover': {'raw': '(hover: hover)'},
-      }
+        "hover-none": { raw: "(hover: none)" },
+        "hover-hover": { raw: "(hover: hover)" },
+      },
     },
   },
   plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],
