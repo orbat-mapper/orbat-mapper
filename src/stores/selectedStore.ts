@@ -8,6 +8,8 @@ const selectedUnitIds = ref<Set<EntityId>>(new Set());
 const activeUnitIdRef = ref<EntityId | undefined | null>();
 const selectedFeatureIds = ref<SelectedScenarioFeatures>(new Set());
 const activeFeatureIdRef = ref<FeatureId | undefined | null>();
+const activeImageLayerIdRef = ref<FeatureId | undefined | null>();
+const selectedImageLayerIds = ref<SelectedScenarioFeatures>(new Set());
 
 const selectedScenarioEventIds = ref<Set<EntityId>>(new Set());
 const activeScenarioEventIdRef = ref<EntityId | undefined | null>(null);
@@ -31,7 +33,7 @@ watch(
       if (v.size === 0) activeFeatureIdRef.value = null;
     }
   },
-  { deep: true }
+  { deep: true, flush: "sync" }
 );
 
 watch(selectedScenarioEventIds, (v) => {
@@ -42,6 +44,19 @@ watch(selectedScenarioEventIds, (v) => {
     activeScenarioEventId.value = [...selectedScenarioEventIds.value.values()].pop();
   if (v.size === 0) activeScenarioEventId.value = null;
 });
+
+watch(
+  selectedImageLayerIds,
+  (v) => {
+    if (
+      v.size === 1 &&
+      !(activeImageLayerIdRef.value && v.has(activeImageLayerIdRef.value))
+    )
+      activeImageLayerId.value = [...selectedImageLayerIds.value.values()].pop();
+    if (v.size === 0) activeImageLayerId.value = null;
+  },
+  { deep: true }
+);
 
 const activeUnitId = computed({
   get: () => activeUnitIdRef.value,
@@ -70,10 +85,20 @@ const activeScenarioEventId = computed({
   },
 });
 
+const activeImageLayerId = computed({
+  get: () => activeImageLayerIdRef.value,
+  set: (v) => {
+    activeImageLayerIdRef.value = v;
+    clear();
+    if (v) selectedImageLayerIds.value.add(v);
+  },
+});
+
 function clear() {
   if (selectedUnitIds.value.size > 0) selectedUnitIds.value.clear();
   if (selectedFeatureIds.value.size > 0) selectedFeatureIds.value.clear();
   if (selectedScenarioEventIds.value.size > 0) selectedScenarioEventIds.value.clear();
+  if (selectedImageLayerIds.value.size > 0) selectedImageLayerIds.value.clear();
 }
 
 export function useSelectedItems() {
@@ -84,6 +109,8 @@ export function useSelectedItems() {
     activeFeatureId,
     activeScenarioEventId,
     selectedScenarioEventIds,
+    selectedImageLayerIds,
+    activeImageLayerId,
     clear,
   };
 }

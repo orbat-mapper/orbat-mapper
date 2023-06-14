@@ -8,16 +8,16 @@ import {
   useScenarioLayerSync,
 } from "@/modules/scenarioeditor/scenarioLayers2";
 import ChevronPanel from "@/components/ChevronPanel.vue";
-import { computed, onUnmounted, ref } from "vue";
+import { nextTick, onUnmounted, ref } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import { FeatureId, ScenarioImageLayer, ScenarioLayer } from "@/types/scenarioGeoModels";
 import {
   IconClockOutline,
   IconEye,
   IconEyeOff,
+  IconImage as ImageIcon,
   IconStar,
   IconStarOutline,
-  IconImage as ImageIcon,
 } from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
@@ -71,14 +71,8 @@ const {
 } = useScenarioLayers(mapRef.value);
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 
-const { selectedFeatureIds } = useSelectedItems();
-
-const activeFeatureId = computed(() => {
-  if (selectedFeatureIds.value.size === 1) {
-    return selectedFeatureIds.value.values().next().value;
-  }
-  return null;
-});
+const { selectedFeatureIds, selectedImageLayerIds, activeImageLayerId, activeFeatureId } =
+  useSelectedItems();
 
 const editedLayerId = ref<FeatureId | null>(null);
 
@@ -92,7 +86,8 @@ function onFeatureClick(
   const alreadySelected = selectedFeatureIds.value.has(feature.id);
   if (!isMultiSelect) {
     selectedFeatureIds.value.clear();
-    selectedFeatureIds.value.add(feature.id);
+    selectedImageLayerIds.value.clear();
+    nextTick(() => selectedFeatureIds.value.add(feature.id));
   } else {
     if (alreadySelected && event?.ctrlKey) {
       selectedFeatureIds.value.delete(feature.id);
@@ -112,6 +107,19 @@ function onFeatureDoubleClick(
 }
 
 const bus = useEventBus(imageLayerAction);
+
+function onImageLayerClick(layer: ScenarioImageLayer, event?: MouseEvent) {
+  if (event?.ctrlKey || event?.shiftKey) {
+    if (selectedImageLayerIds.value.has(layer.id)) {
+      selectedImageLayerIds.value.delete(layer.id);
+    } else {
+      selectedImageLayerIds.value.add(layer.id);
+    }
+  } else {
+    selectedImageLayerIds.value.clear();
+    selectedImageLayerIds.value.add(layer.id);
+  }
+}
 function onImageLayerDoubleClick(layer: ScenarioImageLayer) {
   bus.emit({ action: "zoom", id: layer.id });
 }
@@ -223,8 +231,9 @@ function toggleImageLayerVisibility(layer: ScenarioImageLayer) {
           class="group flex items-center justify-between border-l pl-1 hover:bg-amber-50"
           :key="layer.id"
           @dblclick="onImageLayerDoubleClick(layer)"
+          @click="onImageLayerClick(layer, $event)"
           :class="
-            selectedFeatureIds.has(layer.id)
+            selectedImageLayerIds.has(layer.id)
               ? 'border-yellow-500 bg-yellow-100'
               : 'border-transparent'
           "
@@ -234,7 +243,7 @@ function toggleImageLayerVisibility(layer: ScenarioImageLayer) {
             <span
               class="ml-2 text-left text-sm text-gray-700 group-hover:text-gray-900"
               :class="{
-                'font-bold': activeFeatureId === layer.id,
+                'font-bold': activeImageLayerId === layer.id,
                 'opacity-50': layer.isHidden,
               }"
             >

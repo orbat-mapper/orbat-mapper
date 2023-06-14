@@ -33,8 +33,14 @@ const {
   onImageLayerSelect,
 } = useSearchActions();
 const ui = useUiStore();
-const { selectedUnitIds, selectedFeatureIds, activeUnitId, activeScenarioEventId } =
-  useSelectedItems();
+const {
+  selectedUnitIds,
+  selectedFeatureIds,
+  activeUnitId,
+  activeScenarioEventId,
+  activeImageLayerId,
+  clear: clearSelected,
+} = useSelectedItems();
 const { onUnitAction } = useUnitActions();
 
 onUnitSelect(({ unitId }) => {
@@ -72,6 +78,7 @@ onImageLayerSelect(({ layerId }) => {
   ui.activeTabIndex = TAB_LAYERS;
   nextTick(() => {
     imageLayerBus.emit({ action: "zoom", id: layerId });
+    activeImageLayerId.value = layerId;
   });
 });
 
