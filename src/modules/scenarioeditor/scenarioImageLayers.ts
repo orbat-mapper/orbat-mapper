@@ -9,7 +9,6 @@ import { fromLonLat, toLonLat } from "ol/proj";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import { isEmpty } from "ol/extent";
-import VectorLayer from "ol/layer/Vector";
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
@@ -88,6 +87,9 @@ export function useScenarioImageLayers(olMap: OLMap) {
       if (layer) {
         if (event.data.isHidden !== undefined) {
           layer.setVisible(!event.data.isHidden);
+        }
+        if (event.data.opacity !== undefined) {
+          layer.setOpacity(event.data.opacity);
         }
       }
     }

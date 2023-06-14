@@ -83,7 +83,7 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function addImageLayer(data: ScenarioImageLayer) {
-    const newLayer = klona({ ...data, _isNew: true });
+    const newLayer = klona({ opacity: 0.7, ...data, _isNew: true });
     if (!newLayer.id) newLayer.id = nanoid();
     update((s) => {
       s.imageLayers.push(newLayer.id);
@@ -295,6 +295,7 @@ export function useGeo(store: NewScenarioStore) {
     imageLayers,
     addImageLayer,
     updateImageLayer,
+    getImageLayerById: (id: FeatureId) => state.imageLayerMap[id],
     onImageLayerEvent: imageLayerEvent.on,
   };
 }

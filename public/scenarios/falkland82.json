@@ -1845,12 +1845,13 @@
   "imageLayers": [
     {
       "url": "scenarios/images/Battle_of_Goose_Green.png",
-      "name": "Battle_of_Goose_Green",
+      "name": "Battle of Goose Green map",
       "id": "xj1kv8wno4",
       "isHidden": false,
       "imageCenter": [-58.96816549275583, -51.79901410430646],
       "imageRotate": 0.028235478069220242,
-      "imageScale": [19.703891001458558, 19.703891001458558]
+      "imageScale": [19.703891001458558, 19.703891001458558],
+      "opacity": 0.8
     }
   ]
 }

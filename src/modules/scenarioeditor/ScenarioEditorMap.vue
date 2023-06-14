@@ -47,6 +47,10 @@
               v-else-if="activeScenarioEventId"
               :event-id="activeScenarioEventId"
             />
+            <ScenarioImageLayerDetails
+              v-else-if="activeImageLayerId"
+              :layer-id="activeImageLayerId"
+            />
           </MapEditorDetailsPanel>
           <div v-else></div>
         </section>
@@ -127,6 +131,7 @@ import IconButton from "@/components/IconButton.vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
+import ScenarioImageLayerDetails from "@/modules/scenarioeditor/ScenarioImageLayerDetails.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -166,8 +171,14 @@ function onMapReady({
   featureSelectInteractionRef.value = featureSelectInteraction;
 }
 
-const { selectedUnitIds, selectedFeatureIds, activeUnitId, activeScenarioEventId } =
-  useSelectedItems();
+const {
+  selectedUnitIds,
+  selectedFeatureIds,
+  activeUnitId,
+  activeScenarioEventId,
+  activeImageLayerId,
+  clear: clearSelected,
+} = useSelectedItems();
 
 const [showLeftPanel, toggleLeftPanel] = useToggle(true);
 
@@ -175,7 +186,8 @@ const showDetailsPanel = computed(() => {
   return Boolean(
     selectedFeatureIds.value.size ||
       selectedUnitIds.value.size ||
-      activeScenarioEventId.value
+      activeScenarioEventId.value ||
+      activeImageLayerId.value
   );
 });
 
@@ -190,9 +202,7 @@ onActivated(() => {
 });
 
 function onCloseDetailsPanel() {
-  selectedUnitIds.value.clear();
-  selectedFeatureIds.value.clear();
-  activeScenarioEventId.value = null;
+  clearSelected();
 }
 
 const openTimeDialog = async () => {
