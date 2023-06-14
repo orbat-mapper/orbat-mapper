@@ -15,15 +15,23 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import OlFeature from "ol/Feature";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useEventBus } from "@vueuse/core";
+import { imageLayerAction } from "@/components/eventKeys";
 
 const mapRef = injectStrict(activeMapKey);
 const activeScenario = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
-
+const imageLayerBus = useEventBus(imageLayerAction);
 const l = useScenarioLayers(mapRef.value);
 
-const { onUnitSelect, onFeatureSelect, onLayerSelect, onEventSelect, onPlaceSelect } =
-  useSearchActions();
+const {
+  onUnitSelect,
+  onFeatureSelect,
+  onLayerSelect,
+  onEventSelect,
+  onPlaceSelect,
+  onImageLayerSelect,
+} = useSearchActions();
 const ui = useUiStore();
 const { selectedUnitIds, selectedFeatureIds, activeUnitId, activeScenarioEventId } =
   useSelectedItems();
@@ -56,6 +64,14 @@ onLayerSelect(({ layerId }) => {
       nextTick(() => l.zoomToLayer(layerId));
     }
     activeLayerId.value = layerId;
+  });
+});
+
+onImageLayerSelect(({ layerId }) => {
+  if (!mapRef.value) return;
+  ui.activeTabIndex = TAB_LAYERS;
+  nextTick(() => {
+    imageLayerBus.emit({ action: "zoom", id: layerId });
   });
 });
 

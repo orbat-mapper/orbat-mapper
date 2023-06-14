@@ -149,7 +149,8 @@ const route = useRoute();
 const router = useRouter();
 
 const { activeUnitId } = useSelectedItems();
-const { onUnitSelect, onFeatureSelect, onLayerSelect } = useSearchActions();
+const { onUnitSelect, onFeatureSelect, onLayerSelect, onImageLayerSelect } =
+  useSearchActions();
 const { copy: copyToClipboard, copied } = useClipboard();
 const currentTab = ref(0);
 const isOpen = ref(false);

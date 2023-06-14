@@ -3,10 +3,11 @@ import { NUnit } from "@/types/internalModels";
 import { groupBy, htmlTagEscape, injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import {
+  ActionSearchResult,
+  EventSearchResult,
+  ImageLayerSearchResult,
   LayerFeatureSearchResult,
   UnitSearchResult,
-  EventSearchResult,
-  ActionSearchResult,
 } from "@/components/types";
 import { ScenarioActions } from "@/types/constants";
 
@@ -75,6 +76,27 @@ export function useScenarioSearch() {
     );
   }
 
+  function searchImageLayers(query: string) {
+    const q = query.trim();
+    if (!q) return [];
+
+    const hits = fuzzysort.go(q, geo.imageLayers.value, { key: ["name"] });
+
+    return hits.slice(0, 10).map(
+      (u, i) =>
+        ({
+          ...u.obj,
+          index: i,
+          highlight: fuzzysort.highlight({
+            ...u,
+            target: htmlTagEscape(u.target),
+          }),
+          score: u.score,
+          category: "Image layers",
+        } as ImageLayerSearchResult)
+    );
+  }
+
   function searchEvents(query: string) {
     const q = query.trim();
     if (!q) return [];
@@ -99,7 +121,12 @@ export function useScenarioSearch() {
   }
 
   function combineHits(
-    hits: (UnitSearchResult[] | LayerFeatureSearchResult[] | EventSearchResult[])[]
+    hits: (
+      | UnitSearchResult[]
+      | LayerFeatureSearchResult[]
+      | EventSearchResult[]
+      | ImageLayerSearchResult[]
+    )[]
   ) {
     const combinedHits = hits.sort((a, b) => {
       const scoreA = a[0]?.score ?? 1000;
@@ -115,9 +142,11 @@ export function useScenarioSearch() {
   function search(query: string) {
     const unitHits = searchUnits(query);
     const featureHits = searchLayerFeatures(query);
+    const imageLayerHits = searchImageLayers(query);
     const eventHits = searchEvents(query);
-    const allHits = combineHits([unitHits, featureHits, eventHits]);
-    const numberOfHits = unitHits.length + featureHits.length + eventHits.length;
+    const allHits = combineHits([unitHits, featureHits, eventHits, imageLayerHits]);
+    const numberOfHits =
+      unitHits.length + featureHits.length + eventHits.length + imageLayerHits.length;
     return { numberOfHits, groups: groupBy(allHits, "category") };
   }
 

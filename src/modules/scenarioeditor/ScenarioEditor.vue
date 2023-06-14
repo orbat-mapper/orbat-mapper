@@ -151,6 +151,7 @@
       @select-unit="onUnitSelect"
       @select-feature="onFeatureSelect"
       @select-layer="onLayerSelect"
+      @select-image-layer="onImageLayerSelect"
       @select-event="onEventSelect"
       @select-place="onPlaceSelectHook.trigger($event)"
       @select-action="onScenarioAction"
@@ -302,6 +303,7 @@ provide(currentScenarioTabKey, activeScenarioTab);
 
 const onUnitSelectHook = createEventHook<{ unitId: EntityId }>();
 const onLayerSelectHook = createEventHook<{ layerId: FeatureId }>();
+const onImageLayerSelectHook = createEventHook<{ layerId: FeatureId }>();
 const onFeatureSelectHook = createEventHook<{
   featureId: FeatureId;
   layerId: FeatureId;
@@ -314,6 +316,7 @@ provide(searchActionsKey, {
   onFeatureSelectHook,
   onEventSelectHook,
   onPlaceSelectHook,
+  onImageLayerSelectHook,
 });
 
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
@@ -377,6 +380,10 @@ const onUnitSelect = (unitId: EntityId) => {
 
 const onLayerSelect = (layerId: FeatureId) => {
   onLayerSelectHook.trigger({ layerId });
+};
+
+const onImageLayerSelect = (layerId: FeatureId) => {
+  onImageLayerSelectHook.trigger({ layerId });
 };
 
 const onEventSelect = (e: EventSearchResult) => {

@@ -6,6 +6,7 @@ export function useSearchActions() {
     onUnitSelectHook,
     onFeatureSelectHook,
     onLayerSelectHook,
+    onImageLayerSelectHook,
     onEventSelectHook,
     onPlaceSelectHook,
   } = injectStrict(searchActionsKey);
@@ -13,6 +14,7 @@ export function useSearchActions() {
     onUnitSelect: onUnitSelectHook.on,
     onFeatureSelect: onFeatureSelectHook.on,
     onLayerSelect: onLayerSelectHook.on,
+    onImageLayerSelect: onImageLayerSelectHook.on,
     onEventSelect: onEventSelectHook.on,
     onPlaceSelect: onPlaceSelectHook.on,
   };

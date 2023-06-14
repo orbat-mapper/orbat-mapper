@@ -66,6 +66,11 @@
                         :active="active"
                         :item="item"
                       />
+                      <CommandPaletteImageLayerItem
+                        v-else-if="item.category === 'Image layers'"
+                        :active="active"
+                        :item="item"
+                      />
                       <CommandPaletteEventItem
                         v-else-if="item.category === 'Events'"
                         :active="active"
@@ -135,6 +140,7 @@ import CommandPaletteLayerFeatureItem from "@/components/CommandPaletteLayerFeat
 import {
   ActionSearchResult,
   EventSearchResult,
+  ImageLayerSearchResult,
   LayerFeatureSearchResult,
   SearchResult,
   UnitSearchResult,
@@ -146,6 +152,7 @@ import { PhotonSearchResult, useGeoSearch } from "@/composables/geosearching";
 import CommandPalettePlaceItem from "@/components/CommandPalettePlaceItem.vue";
 import { useUiStore } from "@/stores/uiStore";
 import CommandPaletteActionItem from "@/components/CommandPaletteActionItem.vue";
+import CommandPaletteImageLayerItem from "@/components/CommandPaletteImageLayerItem.vue";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits([
@@ -156,6 +163,7 @@ const emit = defineEmits([
   "select-place",
   "select-event",
   "select-action",
+  "select-image-layer",
 ]);
 
 const geoStore = useGeoStore();
@@ -234,6 +242,7 @@ function onSelect(
     | EventSearchResult
     | ExtendedPhotonSearchResult
     | ActionSearchResult
+    | ImageLayerSearchResult
 ) {
   if (item.category === "Units") emit("select-unit", item.id);
   else if (item.category === "Features") {
@@ -242,6 +251,8 @@ function onSelect(
     } else {
       emit("select-feature", item.id);
     }
+  } else if (item.category === "Image layers") {
+    emit("select-image-layer", item.id);
   } else if (item.category === "Events") {
     emit("select-event", item);
   } else if (item.category === "Places") {

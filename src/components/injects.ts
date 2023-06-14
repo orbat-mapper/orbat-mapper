@@ -39,6 +39,7 @@ export const sidcModalKey = Symbol("SIDC modal") as InjectionKey<{
 export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
   onUnitSelectHook: EventHook<{ unitId: EntityId }>;
   onLayerSelectHook: EventHook<{ layerId: FeatureId }>;
+  onImageLayerSelectHook: EventHook<{ layerId: FeatureId }>;
   onFeatureSelectHook: EventHook<{ featureId: FeatureId; layerId: FeatureId }>;
   onEventSelectHook: EventHook<EventSearchResult>;
   onPlaceSelectHook: EventHook<PhotonSearchResult>;
