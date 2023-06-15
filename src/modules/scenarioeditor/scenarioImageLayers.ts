@@ -18,6 +18,8 @@ export function useScenarioImageLayers(olMap: OLMap) {
   const bus = useEventBus(imageLayerAction);
   const imageLayersGroup = getOrCreateLayerGroup(olMap);
 
+  const { onUndoRedo } = scn.store;
+
   function initializeFromStore() {
     imageLayersGroup.getLayers().clear();
     scn.geo.imageLayers.value.forEach((imageLayer) => addImageLayer(imageLayer));
@@ -83,13 +85,16 @@ export function useScenarioImageLayers(olMap: OLMap) {
       addImageLayer(event.data);
     }
     if (event.type === "update") {
-      const layer = getOlLayerById(event.id);
+      const layer = getOlLayerById(event.id) as any;
       if (layer) {
         if (event.data.isHidden !== undefined) {
           layer.setVisible(!event.data.isHidden);
         }
         if (event.data.opacity !== undefined) {
           layer.setOpacity(event.data.opacity);
+        }
+        if (event.data.imageRotate !== undefined) {
+          layer.getSource().setRotation(event.data.imageRotate);
         }
       }
     }
@@ -105,6 +110,15 @@ export function useScenarioImageLayers(olMap: OLMap) {
         !isEmpty(layerExtent) && layerExtent && olMap.getView().fit(layerExtent);
       }
     }
+  });
+
+  onUndoRedo(({ action, meta }) => {
+    if (
+      !meta ||
+      !["addImageLayer", "updateImageLayer", "deleteImageLayer"].includes(meta.label)
+    )
+      return;
+    console.warn("undo/redo for image layers not implemented yet");
   });
 
   return { initializeFromStore };

@@ -224,7 +224,7 @@ function toggleImageLayerVisibility(layer: ScenarioImageLayer) {
 
 <template>
   <div>
-    <ChevronPanel label="Image layers" class="mb-4">
+    <ChevronPanel label="Image layers" class="mb-4" open>
       <ul class="-mt-6">
         <li
           v-for="layer in imageLayers"

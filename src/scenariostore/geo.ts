@@ -85,10 +85,13 @@ export function useGeo(store: NewScenarioStore) {
   function addImageLayer(data: ScenarioImageLayer) {
     const newLayer = klona({ opacity: 0.7, ...data, _isNew: true });
     if (!newLayer.id) newLayer.id = nanoid();
-    update((s) => {
-      s.imageLayers.push(newLayer.id);
-      s.imageLayerMap[newLayer.id] = newLayer;
-    });
+    update(
+      (s) => {
+        s.imageLayers.push(newLayer.id);
+        s.imageLayerMap[newLayer.id] = newLayer;
+      },
+      { label: "addImageLayer", value: newLayer.id }
+    );
     imageLayerEvent.trigger({ type: "add", id: newLayer.id, data: newLayer });
   }
 
@@ -198,6 +201,18 @@ export function useGeo(store: NewScenarioStore) {
     );
   }
 
+  function deleteImageLayer(layerId: FeatureId) {
+    update(
+      (s) => {
+        const layer = s.imageLayerMap[layerId];
+        if (!layer) return;
+        delete s.imageLayerMap[layerId];
+        removeElement(layerId, s.imageLayers);
+      },
+      { label: "deleteImageLayer", value: layerId }
+    );
+  }
+
   function addFeature(data: NScenarioFeature, layerId: FeatureId) {
     const newFeature = klona(data);
     if (!newFeature.id) newFeature.id = nanoid();
@@ -294,6 +309,7 @@ export function useGeo(store: NewScenarioStore) {
     layersFeatures,
     imageLayers,
     addImageLayer,
+    deleteImageLayer,
     updateImageLayer,
     getImageLayerById: (id: FeatureId) => state.imageLayerMap[id],
     onImageLayerEvent: imageLayerEvent.on,
