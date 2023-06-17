@@ -7,6 +7,7 @@ import {
   Position,
   ScenarioImageLayer,
   ScenarioLayer,
+  ScenarioMapLayer,
 } from "@/types/scenarioGeoModels";
 import { EntityId } from "@/types/base";
 import {
@@ -82,7 +83,7 @@ export function useGeo(store: NewScenarioStore) {
     return state.layerMap[newLayer.id];
   }
 
-  function addMapLayer(data: ScenarioImageLayer) {
+  function addMapLayer(data: ScenarioMapLayer) {
     const newLayer = klona({ opacity: 0.7, ...data, _isNew: true });
     if (!newLayer.id) newLayer.id = nanoid();
     update(

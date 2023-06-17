@@ -27,7 +27,9 @@ const {
   store: { groupUpdate },
 } = injectStrict(activeScenarioKey);
 
-const imageLayer = computed(() => geo.getMapLayerById(props.layerId));
+const imageLayer = computed(
+  () => geo.getMapLayerById(props.layerId) as ScenarioImageLayer
+);
 
 const layerName = ref("DD");
 

@@ -22,7 +22,9 @@ export function useScenarioMapLayers(olMap: OLMap) {
 
   function initializeFromStore() {
     mapLayersGroup.getLayers().clear();
-    scn.geo.mapLayers.value.forEach((mapLayer) => addImageLayer(mapLayer));
+    scn.geo.mapLayers.value.forEach((mapLayer) => {
+      if (mapLayer.type === "ImageLayer") addImageLayer(mapLayer);
+    });
   }
 
   function getOlLayerById(layerId: FeatureId) {

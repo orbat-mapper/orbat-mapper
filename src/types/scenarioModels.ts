@@ -1,4 +1,4 @@
-import type { Position, ScenarioImageLayer, ScenarioLayer } from "./scenarioGeoModels";
+import type { Position, ScenarioLayer, ScenarioMapLayer } from "./scenarioGeoModels";
 import type { EntityId, ScenarioTime } from "./base";
 import type { SidValue } from "@/symbology/values";
 import { type SymbolOptions } from "milsymbol";
@@ -128,7 +128,7 @@ export interface Scenario extends ScenarioInfo {
   sides: Side[];
   events: ScenarioEvent[];
   layers: ScenarioLayer[];
-  mapLayers: ScenarioImageLayer[];
+  mapLayers: ScenarioMapLayer[];
 }
 
 export type UnitOrSide = Unit | Side;

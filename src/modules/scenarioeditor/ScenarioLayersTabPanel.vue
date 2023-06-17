@@ -10,7 +10,12 @@ import {
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import { nextTick, onUnmounted, ref } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
-import { FeatureId, ScenarioImageLayer, ScenarioLayer } from "@/types/scenarioGeoModels";
+import {
+  FeatureId,
+  ScenarioImageLayer,
+  ScenarioLayer,
+  ScenarioMapLayer,
+} from "@/types/scenarioGeoModels";
 import {
   IconClockOutline,
   IconEye,
@@ -108,7 +113,7 @@ function onFeatureDoubleClick(
 
 const bus = useEventBus(imageLayerAction);
 
-function onImageLayerClick(layer: ScenarioImageLayer, event?: MouseEvent) {
+function onImageLayerClick(layer: ScenarioMapLayer, event?: MouseEvent) {
   if (event?.ctrlKey || event?.shiftKey) {
     if (selectedImageLayerIds.value.has(layer.id)) {
       selectedImageLayerIds.value.delete(layer.id);
@@ -120,7 +125,7 @@ function onImageLayerClick(layer: ScenarioImageLayer, event?: MouseEvent) {
     selectedImageLayerIds.value.add(layer.id);
   }
 }
-function onImageLayerDoubleClick(layer: ScenarioImageLayer) {
+function onImageLayerDoubleClick(layer: ScenarioMapLayer) {
   bus.emit({ action: "zoom", id: layer.id });
 }
 
@@ -133,7 +138,7 @@ const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ];
 
-function onImageLayerAction(layer: ScenarioImageLayer, action: ScenarioMapLayerAction) {
+function onImageLayerAction(layer: ScenarioMapLayer, action: ScenarioMapLayerAction) {
   if (action === "zoom") bus.emit({ action, id: layer.id });
 }
 
@@ -209,6 +214,7 @@ function addNewLayer() {
 function addImageLayer() {
   geo.addMapLayer({
     id: nanoid(),
+    type: "ImageLayer",
     name: "Test",
     url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Achin,_Plan_de_la_ville_de_Paris_repr%C3%A9sentant_les_nouvelles_voitures_publiques,_1828.jpg",
     attributions: [
@@ -217,7 +223,7 @@ function addImageLayer() {
   });
 }
 
-function toggleImageLayerVisibility(layer: ScenarioImageLayer) {
+function toggleImageLayerVisibility(layer: ScenarioMapLayer) {
   geo.updateMapLayer(layer.id, { isHidden: !layer.isHidden });
 }
 </script>

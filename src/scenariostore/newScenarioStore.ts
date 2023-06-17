@@ -24,6 +24,7 @@ import { useScenarioTime } from "./time";
 import type {
   FeatureId,
   ScenarioImageLayer,
+  ScenarioMapLayer,
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
 
@@ -38,7 +39,7 @@ export interface ScenarioState {
   layerMap: Record<FeatureId, NScenarioLayer>;
   featureMap: Record<FeatureId, NScenarioFeature>;
   mapLayers: FeatureId[];
-  mapLayerMap: Record<FeatureId, ScenarioImageLayer>;
+  mapLayerMap: Record<FeatureId, ScenarioMapLayer>;
   info: ScenarioInfo;
   events: EntityId[];
   currentTime: number;
@@ -59,7 +60,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const mapLayers: FeatureId[] = [];
   const layerMap: Record<FeatureId, NScenarioLayer> = {};
   const featureMap: Record<FeatureId, NScenarioFeature> = {};
-  const mapLayerMap: Record<FeatureId, ScenarioImageLayer> = {};
+  const mapLayerMap: Record<FeatureId, ScenarioMapLayer> = {};
 
   scenario.events.forEach((e) => {
     const nEvent: NScenarioEvent = {

@@ -18,7 +18,11 @@ import { ShallowRef } from "vue";
 import { isLoading } from "@/scenariostore/index";
 import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
 import dayjs from "dayjs";
-import { ScenarioImageLayer, type ScenarioLayer } from "@/types/scenarioGeoModels";
+import {
+  ScenarioImageLayer,
+  type ScenarioLayer,
+  ScenarioMapLayer,
+} from "@/types/scenarioGeoModels";
 import { type EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
 
@@ -86,7 +90,7 @@ function getLayers(state: ScenarioState): ScenarioLayer[] {
     }));
 }
 
-function getMapLayers(state: ScenarioState): ScenarioImageLayer[] {
+function getMapLayers(state: ScenarioState): ScenarioMapLayer[] {
   return state.mapLayers.map((id) => state.mapLayerMap[id]);
 }
 
