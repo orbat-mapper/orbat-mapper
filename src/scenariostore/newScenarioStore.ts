@@ -37,8 +37,8 @@ export interface ScenarioState {
   layers: FeatureId[];
   layerMap: Record<FeatureId, NScenarioLayer>;
   featureMap: Record<FeatureId, NScenarioFeature>;
-  imageLayers: FeatureId[];
-  imageLayerMap: Record<FeatureId, ScenarioImageLayer>;
+  mapLayers: FeatureId[];
+  mapLayerMap: Record<FeatureId, ScenarioImageLayer>;
   info: ScenarioInfo;
   events: EntityId[];
   currentTime: number;
@@ -56,10 +56,10 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const eventMap: Record<EntityId, NScenarioEvent> = {};
   const sides: EntityId[] = [];
   const layers: FeatureId[] = [];
-  const imageLayers: FeatureId[] = [];
+  const mapLayers: FeatureId[] = [];
   const layerMap: Record<FeatureId, NScenarioLayer> = {};
   const featureMap: Record<FeatureId, NScenarioFeature> = {};
-  const imageLayerMap: Record<FeatureId, ScenarioImageLayer> = {};
+  const mapLayerMap: Record<FeatureId, ScenarioImageLayer> = {};
 
   scenario.events.forEach((e) => {
     const nEvent: NScenarioEvent = {
@@ -168,9 +168,9 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     });
   });
 
-  scenario.imageLayers?.forEach((layer) => {
-    imageLayers.push(layer.id);
-    imageLayerMap[layer.id] = {
+  scenario.mapLayers?.forEach((layer) => {
+    mapLayers.push(layer.id);
+    mapLayerMap[layer.id] = {
       ...layer,
       ...mapVisibility(layer),
     };
@@ -186,8 +186,8 @@ function prepareScenario(scenario: Scenario): ScenarioState {
 
   return {
     layers,
-    imageLayers,
-    imageLayerMap,
+    mapLayers: mapLayers,
+    mapLayerMap: mapLayerMap,
     layerMap,
     featureMap,
     eventMap,
@@ -224,9 +224,9 @@ export type ActionLabel =
   | "moveLayer"
   | "moveFeature"
   | "batchLayer"
-  | "addImageLayer"
-  | "deleteImageLayer"
-  | "updateImageLayer";
+  | "addMapLayer"
+  | "deleteMapLayer"
+  | "updateMapLayer";
 
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);

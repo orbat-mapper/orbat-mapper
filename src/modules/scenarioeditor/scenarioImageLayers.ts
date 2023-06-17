@@ -13,20 +13,20 @@ import { isEmpty } from "ol/extent";
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
 // Responsible for creating and managing the OpenLayers image layers for the scenario editor
-export function useScenarioImageLayers(olMap: OLMap) {
+export function useScenarioMapLayers(olMap: OLMap) {
   const scn = injectStrict(activeScenarioKey);
   const bus = useEventBus(imageLayerAction);
-  const imageLayersGroup = getOrCreateLayerGroup(olMap);
+  const mapLayersGroup = getOrCreateLayerGroup(olMap);
 
   const { onUndoRedo } = scn.store;
 
   function initializeFromStore() {
-    imageLayersGroup.getLayers().clear();
-    scn.geo.imageLayers.value.forEach((imageLayer) => addImageLayer(imageLayer));
+    mapLayersGroup.getLayers().clear();
+    scn.geo.mapLayers.value.forEach((mapLayer) => addImageLayer(mapLayer));
   }
 
   function getOlLayerById(layerId: FeatureId) {
-    return imageLayersGroup
+    return mapLayersGroup
       .getLayers()
       .getArray()
       .find((e) => e.get("id") === layerId);
@@ -61,7 +61,7 @@ export function useScenarioImageLayers(olMap: OLMap) {
         const w = newLayer.getSource().getGeoImage().width as number;
         newLayer.getSource().setScale((res * 96 * 10) / w);
         newLayer.setVisible(true);
-        scn.geo.updateImageLayer(
+        scn.geo.updateMapLayer(
           data.id,
           {
             imageCenter: toLonLat(
@@ -77,10 +77,10 @@ export function useScenarioImageLayers(olMap: OLMap) {
     } else {
       newLayer.setVisible(!(data.isHidden ?? false));
     }
-    imageLayersGroup.getLayers().push(newLayer);
+    mapLayersGroup.getLayers().push(newLayer);
   }
 
-  scn.geo.onImageLayerEvent((event) => {
+  scn.geo.onMapLayerEvent((event) => {
     if (event.type === "add") {
       addImageLayer(event.data);
     }
@@ -128,7 +128,7 @@ function getOrCreateLayerGroup(olMap: OLMap) {
   if (layersMap.has(olMap)) return layersMap.get(olMap)!;
 
   const layerGroup = new LayerGroup({
-    properties: { id: nanoid(), title: "Image layers" },
+    properties: { id: nanoid(), title: "Map layers" },
   });
   layersMap.set(olMap, layerGroup);
   olMap.addLayer(layerGroup);

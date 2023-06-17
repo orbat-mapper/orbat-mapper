@@ -24,7 +24,7 @@ import { useUiStore } from "@/stores/uiStore";
 import { MenuItemData } from "@/components/types";
 import {
   ScenarioFeatureActions,
-  ScenarioImageLayerAction,
+  ScenarioMapLayerAction,
   ScenarioLayerAction,
   ScenarioLayerActions,
 } from "@/types/constants";
@@ -45,11 +45,11 @@ const {
   store: { groupUpdate, state },
 } = injectStrict(activeScenarioKey);
 
-const { imageLayers } = geo;
+const { mapLayers } = geo;
 uiStore.layersPanelActive = true;
 onUnmounted(() => (uiStore.layersPanelActive = false));
 
-const imageLayerMenuItems: MenuItemData<ScenarioImageLayerAction>[] = [
+const imageLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
   { label: "Zoom to", action: "zoom" },
   // { label: "Delete", action: "delete" },
 ];
@@ -133,7 +133,7 @@ const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ];
 
-function onImageLayerAction(layer: ScenarioImageLayer, action: ScenarioImageLayerAction) {
+function onImageLayerAction(layer: ScenarioImageLayer, action: ScenarioMapLayerAction) {
   if (action === "zoom") bus.emit({ action, id: layer.id });
 }
 
@@ -207,7 +207,7 @@ function addNewLayer() {
 }
 
 function addImageLayer() {
-  geo.addImageLayer({
+  geo.addMapLayer({
     id: nanoid(),
     name: "Test",
     url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Achin,_Plan_de_la_ville_de_Paris_repr%C3%A9sentant_les_nouvelles_voitures_publiques,_1828.jpg",
@@ -218,16 +218,16 @@ function addImageLayer() {
 }
 
 function toggleImageLayerVisibility(layer: ScenarioImageLayer) {
-  geo.updateImageLayer(layer.id, { isHidden: !layer.isHidden });
+  geo.updateMapLayer(layer.id, { isHidden: !layer.isHidden });
 }
 </script>
 
 <template>
   <div>
-    <ChevronPanel label="Image layers" class="mb-4" open>
+    <ChevronPanel label="Map layers" class="mb-4" open>
       <ul class="-mt-6">
         <li
-          v-for="layer in imageLayers"
+          v-for="layer in mapLayers"
           class="group flex items-center justify-between border-l pl-1 hover:bg-amber-50"
           :key="layer.id"
           @dblclick="onImageLayerDoubleClick(layer)"

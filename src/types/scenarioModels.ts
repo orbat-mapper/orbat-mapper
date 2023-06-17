@@ -128,7 +128,7 @@ export interface Scenario extends ScenarioInfo {
   sides: Side[];
   events: ScenarioEvent[];
   layers: ScenarioLayer[];
-  imageLayers: ScenarioImageLayer[];
+  mapLayers: ScenarioImageLayer[];
 }
 
 export type UnitOrSide = Unit | Side;

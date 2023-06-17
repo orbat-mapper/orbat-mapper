@@ -80,7 +80,7 @@ export function useScenarioSearch() {
     const q = query.trim();
     if (!q) return [];
 
-    const hits = fuzzysort.go(q, geo.imageLayers.value, { key: ["name"] });
+    const hits = fuzzysort.go(q, geo.mapLayers.value, { key: ["name"] });
 
     return hits.slice(0, 10).map(
       (u, i) =>
@@ -92,7 +92,7 @@ export function useScenarioSearch() {
             target: htmlTagEscape(u.target),
           }),
           score: u.score,
-          category: "Image layers",
+          category: "Map layers",
         } as ImageLayerSearchResult)
     );
   }

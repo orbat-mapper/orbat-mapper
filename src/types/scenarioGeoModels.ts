@@ -9,6 +9,7 @@ export interface VisibilityInfo {
 }
 
 export type FeatureId = string | number;
+export type LayerId = string | number;
 export type Position = number[];
 export type ScenarioFeatureType =
   | "Point"

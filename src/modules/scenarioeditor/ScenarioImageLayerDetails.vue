@@ -12,7 +12,7 @@ import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { MenuItemData } from "@/components/types";
-import { ScenarioImageLayerAction } from "@/types/constants";
+import { ScenarioMapLayerAction } from "@/types/constants";
 
 interface Props {
   layerId: FeatureId;
@@ -27,7 +27,7 @@ const {
   store: { groupUpdate },
 } = injectStrict(activeScenarioKey);
 
-const imageLayer = computed(() => geo.getImageLayerById(props.layerId));
+const imageLayer = computed(() => geo.getMapLayerById(props.layerId));
 
 const layerName = ref("DD");
 
@@ -50,20 +50,20 @@ watch(
 );
 
 function updateValue(name: string, value: string) {
-  imageLayer.value && geo.updateImageLayer(imageLayer.value.id, { [name]: value });
+  imageLayer.value && geo.updateMapLayer(imageLayer.value.id, { [name]: value });
 }
 
 function updateLayer(data: ScenarioImageLayerUpdate) {
-  imageLayer.value && geo.updateImageLayer(props.layerId, data);
+  imageLayer.value && geo.updateMapLayer(props.layerId, data);
 }
 const opacityAsPercent = computed(() => (opacity.value! * 100).toFixed(0));
 
-const imageLayerMenuItems: MenuItemData<ScenarioImageLayerAction>[] = [
+const imageLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
   { label: "Zoom to", action: "zoom" },
   { label: "Delete", action: "delete" },
 ];
 
-function onImageLayerAction(action: ScenarioImageLayerAction) {
+function onImageLayerAction(action: ScenarioMapLayerAction) {
   if (action === "zoom") imageBus.emit({ action, id: imageLayer.value.id });
 }
 </script>

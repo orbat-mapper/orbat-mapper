@@ -33,7 +33,7 @@ export type UpdateOptions = {
 
 export function useGeo(store: NewScenarioStore) {
   const { state, update } = store;
-  const imageLayerEvent = createEventHook<ScenarioLayerEvent>();
+  const mapLayerEvent = createEventHook<ScenarioLayerEvent>();
 
   const everyVisibleUnit = computed(() => {
     return Object.values(state.unitMap).filter((unit) => unit._state?.location);
@@ -82,17 +82,17 @@ export function useGeo(store: NewScenarioStore) {
     return state.layerMap[newLayer.id];
   }
 
-  function addImageLayer(data: ScenarioImageLayer) {
+  function addMapLayer(data: ScenarioImageLayer) {
     const newLayer = klona({ opacity: 0.7, ...data, _isNew: true });
     if (!newLayer.id) newLayer.id = nanoid();
     update(
       (s) => {
-        s.imageLayers.push(newLayer.id);
-        s.imageLayerMap[newLayer.id] = newLayer;
+        s.mapLayers.push(newLayer.id);
+        s.mapLayerMap[newLayer.id] = newLayer;
       },
-      { label: "addImageLayer", value: newLayer.id }
+      { label: "addMapLayer", value: newLayer.id }
     );
-    imageLayerEvent.trigger({ type: "add", id: newLayer.id, data: newLayer });
+    mapLayerEvent.trigger({ type: "add", id: newLayer.id, data: newLayer });
   }
 
   function moveLayer(layerId: FeatureId, toIndex: number) {
@@ -137,8 +137,8 @@ export function useGeo(store: NewScenarioStore) {
       }));
   });
 
-  const imageLayers = computed(() => {
-    return state.imageLayers.map((layerId) => state.imageLayerMap[layerId]);
+  const mapLayers = computed(() => {
+    return state.mapLayers.map((layerId) => state.mapLayerMap[layerId]);
   });
 
   const layersFeatures = computed(() => {
@@ -165,7 +165,7 @@ export function useGeo(store: NewScenarioStore) {
     }
   }
 
-  function updateImageLayer(
+  function updateMapLayer(
     layerId: FeatureId,
     data: ScenarioImageLayerUpdate,
     options: UpdateOptions = {}
@@ -175,17 +175,17 @@ export function useGeo(store: NewScenarioStore) {
     if (undoable) {
       update(
         (s) => {
-          const layer = s.imageLayerMap[layerId];
+          const layer = s.mapLayerMap[layerId];
           Object.assign(layer, data);
         },
-        { label: "updateImageLayer", value: layerId }
+        { label: "updateMapLayer", value: layerId }
       );
     } else {
-      const layer = state.imageLayerMap[layerId];
+      const layer = state.mapLayerMap[layerId];
       Object.assign(layer, data);
     }
     if (noEmit) return;
-    imageLayerEvent.trigger({ type: "update", id: layerId, data });
+    mapLayerEvent.trigger({ type: "update", id: layerId, data });
   }
 
   function deleteLayer(layerId: FeatureId) {
@@ -201,15 +201,15 @@ export function useGeo(store: NewScenarioStore) {
     );
   }
 
-  function deleteImageLayer(layerId: FeatureId) {
+  function deleteMapLayer(layerId: FeatureId) {
     update(
       (s) => {
-        const layer = s.imageLayerMap[layerId];
+        const layer = s.mapLayerMap[layerId];
         if (!layer) return;
-        delete s.imageLayerMap[layerId];
-        removeElement(layerId, s.imageLayers);
+        delete s.mapLayerMap[layerId];
+        removeElement(layerId, s.mapLayers);
       },
-      { label: "deleteImageLayer", value: layerId }
+      { label: "deleteMapLayer", value: layerId }
     );
   }
 
@@ -307,11 +307,11 @@ export function useGeo(store: NewScenarioStore) {
     itemsInfo,
     layers,
     layersFeatures,
-    imageLayers,
-    addImageLayer,
-    deleteImageLayer,
-    updateImageLayer,
-    getImageLayerById: (id: FeatureId) => state.imageLayerMap[id],
-    onImageLayerEvent: imageLayerEvent.on,
+    mapLayers,
+    addMapLayer,
+    deleteMapLayer,
+    updateMapLayer,
+    getMapLayerById: (id: FeatureId) => state.mapLayerMap[id],
+    onMapLayerEvent: mapLayerEvent.on,
   };
 }

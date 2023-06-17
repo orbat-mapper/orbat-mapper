@@ -41,7 +41,7 @@ export function createEmptyScenario(): Scenario {
     sides: [],
     events: [],
     layers: [{ id: nanoid(), name: "Features", features: [] }],
-    imageLayers: [],
+    mapLayers: [],
   };
 }
 
@@ -86,8 +86,8 @@ function getLayers(state: ScenarioState): ScenarioLayer[] {
     }));
 }
 
-function getImageLayers(state: ScenarioState): ScenarioImageLayer[] {
-  return state.imageLayers.map((id) => state.imageLayerMap[id]);
+function getMapLayers(state: ScenarioState): ScenarioImageLayer[] {
+  return state.mapLayers.map((id) => state.mapLayerMap[id]);
 }
 
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
@@ -102,7 +102,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       sides: getSides(state),
       layers: getLayers(state),
       events: getScenarioEvents(state),
-      imageLayers: getImageLayers(state),
+      mapLayers: getMapLayers(state),
     };
   }
 

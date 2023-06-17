@@ -1842,7 +1842,7 @@
       "id": "L7sLKYe3xMRELH2bEA7Da"
     }
   ],
-  "imageLayers": [
+  "mapLayers": [
     {
       "url": "scenarios/images/Battle_of_Goose_Green.png",
       "name": "Battle of Goose Green map",

@@ -22,7 +22,7 @@ export interface SelectItem<T = string | number> {
 }
 
 export interface SearchResult {
-  category: "Units" | "Features" | "Events" | "Places" | "Actions" | "Image layers";
+  category: "Units" | "Features" | "Events" | "Places" | "Actions" | "Map layers";
   index: number;
   id: string | number;
   score: number;
@@ -47,7 +47,7 @@ export interface LayerFeatureSearchResult extends LayerFeatureItem, SearchResult
 }
 
 export interface ImageLayerSearchResult extends SearchResult {
-  category: "Image layers";
+  category: "Map layers";
 }
 
 export interface EventSearchResult extends SearchResult {

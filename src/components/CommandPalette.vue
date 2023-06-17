@@ -67,7 +67,7 @@
                         :item="item"
                       />
                       <CommandPaletteImageLayerItem
-                        v-else-if="item.category === 'Image layers'"
+                        v-else-if="item.category === 'Map layers'"
                         :active="active"
                         :item="item"
                       />
@@ -251,7 +251,7 @@ function onSelect(
     } else {
       emit("select-feature", item.id);
     }
-  } else if (item.category === "Image layers") {
+  } else if (item.category === "Map layers") {
     emit("select-image-layer", item.id);
   } else if (item.category === "Events") {
     emit("select-event", item);

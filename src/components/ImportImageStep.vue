@@ -51,7 +51,7 @@ const imageHeight = ref(0);
 const { send } = useNotifications();
 
 async function onLoad(e: Event) {
-  geo.addImageLayer({ url: props.objectUrl, name: form.value.layerName, id: nanoid() });
+  geo.addMapLayer({ url: props.objectUrl, name: form.value.layerName, id: nanoid() });
   emit("loaded");
 }
 
