@@ -2,13 +2,23 @@ import OLMap from "ol/Map";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import LayerGroup from "ol/layer/Group";
-import { FeatureId, ScenarioImageLayer } from "@/types/scenarioGeoModels";
+import {
+  FeatureId,
+  ScenarioImageLayer,
+  ScenarioMapLayer,
+  ScenarioTileJSONLayer,
+} from "@/types/scenarioGeoModels";
 import GeoImageLayer from "ol-ext/layer/GeoImage";
 import GeoImage from "ol-ext/source/GeoImage";
-import { fromLonLat, toLonLat } from "ol/proj";
+import { fromLonLat, toLonLat, transformExtent } from "ol/proj";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import { isEmpty } from "ol/extent";
+import TileLayer from "ol/layer/Tile";
+import { TileJSON } from "ol/source";
+import { unByKey } from "ol/Observable";
+import { fixExtent } from "@/utils/geoConvert";
+import { IconImage as ImageIcon, IconWebBox } from "@iconify-prerendered/vue-mdi";
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
@@ -81,22 +91,61 @@ export function useScenarioMapLayers(olMap: OLMap) {
     }
     mapLayersGroup.getLayers().push(newLayer);
   }
+  function addTileJSONLayer(data: ScenarioTileJSONLayer) {
+    const source = new TileJSON({
+      url: data.url,
+    });
+    const newLayer = new TileLayer({
+      opacity: data.opacity ?? 0.7,
+      visible: false,
+      source,
+      properties: {
+        id: data.id,
+        title: data.name,
+        name: data.name,
+      },
+    });
+
+    let key = source.on("change", function () {
+      if (source.getState() == "ready") {
+        unByKey(key);
+        const tileJson = source.getTileJSON();
+        if (tileJson?.bounds) {
+          const extent = fixExtent(
+            transformExtent(tileJson.bounds, "EPSG:4326", olMap.getView().getProjection())
+          );
+          console.log("NN", extent, tileJson.bounds);
+          extent && newLayer.setExtent(extent);
+        }
+        newLayer.setVisible(!(data.isHidden ?? false));
+      }
+    });
+    mapLayersGroup.getLayers().push(newLayer);
+  }
 
   scn.geo.onMapLayerEvent((event) => {
+    const mapLayer = scn.geo.getMapLayerById(event.id);
+    if (!mapLayer) return;
     if (event.type === "add") {
-      addImageLayer(event.data);
+      if (event.data.type === "ImageLayer")
+        addImageLayer(event.data as ScenarioImageLayer);
+      if (event.data.type === "TileJSONLayer")
+        addTileJSONLayer(event.data as ScenarioTileJSONLayer);
     }
     if (event.type === "update") {
       const layer = getOlLayerById(event.id) as any;
-      if (layer) {
-        if (event.data.isHidden !== undefined) {
-          layer.setVisible(!event.data.isHidden);
-        }
-        if (event.data.opacity !== undefined) {
-          layer.setOpacity(event.data.opacity);
-        }
-        if (event.data.imageRotate !== undefined) {
-          layer.getSource().setRotation(event.data.imageRotate);
+      if (!layer) return;
+
+      if (event.data.isHidden !== undefined) {
+        layer.setVisible(!event.data.isHidden);
+      }
+      if (event.data.opacity !== undefined) {
+        layer.setOpacity(event.data.opacity);
+      }
+      if (mapLayer.type === "ImageLayer") {
+        const d = event.data as ScenarioImageLayer;
+        if (d.imageRotate !== undefined) {
+          layer.getSource().setRotation(d.imageRotate);
         }
       }
     }
@@ -107,9 +156,13 @@ export function useScenarioMapLayers(olMap: OLMap) {
     if (olLayer) {
       if (action === "zoom") {
         // @ts-ignore
-        const layerExtent = olLayer.getSource().getExtent();
-
-        !isEmpty(layerExtent) && layerExtent && olMap.getView().fit(layerExtent);
+        let layerExtent = olLayer.getExtent() || olLayer.getSource()?.getExtent?.();
+        if (!layerExtent) {
+          // @ts-ignore
+          layerExtent = olLayer.getSource()?.getTileGrid?.().getExtent();
+        }
+        layerExtent = fixExtent(layerExtent);
+        layerExtent && !isEmpty(layerExtent) && olMap.getView().fit(layerExtent);
       }
     }
   });
@@ -135,4 +188,10 @@ function getOrCreateLayerGroup(olMap: OLMap) {
   layersMap.set(olMap, layerGroup);
   olMap.addLayer(layerGroup);
   return layerGroup;
+}
+
+export function getMapLayerIcon(mapLayer: ScenarioMapLayer) {
+  if (mapLayer.type === "ImageLayer") return ImageIcon;
+  if (mapLayer.type === "TileJSONLayer") return IconWebBox;
+  return ImageIcon;
 }

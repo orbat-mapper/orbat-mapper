@@ -140,7 +140,7 @@ import CommandPaletteLayerFeatureItem from "@/components/CommandPaletteLayerFeat
 import {
   ActionSearchResult,
   EventSearchResult,
-  ImageLayerSearchResult,
+  MapLayerSearchResult,
   LayerFeatureSearchResult,
   SearchResult,
   UnitSearchResult,
@@ -242,7 +242,7 @@ function onSelect(
     | EventSearchResult
     | ExtendedPhotonSearchResult
     | ActionSearchResult
-    | ImageLayerSearchResult
+    | MapLayerSearchResult
 ) {
   if (item.category === "Units") emit("select-unit", item.id);
   else if (item.category === "Features") {

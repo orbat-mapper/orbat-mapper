@@ -21,7 +21,12 @@ export type ScenarioFeatureType =
   | "MultiPolygon"
   | "GeometryCollection";
 
-export type MapLayerType = "ImageLayer" | "XYZLayer" | "WMSLayer" | "WMTSLayer";
+export type MapLayerType =
+  | "ImageLayer"
+  | "TileJSONLayer"
+  | "XYZLayer"
+  | "WMSLayer"
+  | "WMTSLayer";
 
 export interface ScenarioFeatureProperties
   extends Partial<SimpleStyleSpec>,
@@ -87,7 +92,12 @@ export interface ScenarioXYZLayer extends ScenarioMapLayerBase {
   type: "XYZLayer";
 }
 
-export type ScenarioMapLayer = ScenarioImageLayer | ScenarioXYZLayer;
+export interface ScenarioTileJSONLayer extends ScenarioMapLayerBase {
+  type: "TileJSONLayer";
+  url: string;
+}
+
+export type ScenarioMapLayer = ScenarioImageLayer | ScenarioTileJSONLayer;
 
 export interface ScenarioLayerInstance extends ScenarioLayer {
   //isVisible?: boolean;

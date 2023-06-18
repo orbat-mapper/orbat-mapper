@@ -6,7 +6,7 @@
     ]"
   >
     <div class="flex w-7 justify-center">
-      <IconImage class="h-6 w-6 text-gray-400" />
+      <component :is="icon" class="h-6 w-6 text-gray-400" />
     </div>
     <p
       class="ml-3 flex-auto truncate"
@@ -15,8 +15,11 @@
   </li>
 </template>
 <script setup lang="ts">
-import { ImageLayerSearchResult } from "@/components/types";
-import { IconImage } from "@iconify-prerendered/vue-mdi";
+import { MapLayerSearchResult } from "@/components/types";
+import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
+import { computed } from "vue";
+import { ScenarioMapLayer } from "@/types/scenarioGeoModels";
 
-const props = defineProps<{ item: ImageLayerSearchResult; active?: boolean }>();
+const props = defineProps<{ item: MapLayerSearchResult; active?: boolean }>();
+const icon = computed(() => getMapLayerIcon(props.item as unknown as ScenarioMapLayer));
 </script>

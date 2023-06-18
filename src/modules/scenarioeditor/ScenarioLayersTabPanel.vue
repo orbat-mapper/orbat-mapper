@@ -10,17 +10,11 @@ import {
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import { nextTick, onUnmounted, ref } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
-import {
-  FeatureId,
-  ScenarioImageLayer,
-  ScenarioLayer,
-  ScenarioMapLayer,
-} from "@/types/scenarioGeoModels";
+import { FeatureId, ScenarioLayer, ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import {
   IconClockOutline,
   IconEye,
   IconEyeOff,
-  IconImage as ImageIcon,
   IconStar,
   IconStarOutline,
 } from "@iconify-prerendered/vue-mdi";
@@ -29,9 +23,9 @@ import { useUiStore } from "@/stores/uiStore";
 import { MenuItemData } from "@/components/types";
 import {
   ScenarioFeatureActions,
-  ScenarioMapLayerAction,
   ScenarioLayerAction,
   ScenarioLayerActions,
+  ScenarioMapLayerAction,
 } from "@/types/constants";
 import BaseButton from "@/components/BaseButton.vue";
 import { PlusIcon } from "@heroicons/vue/24/solid";
@@ -39,6 +33,7 @@ import EditLayerInlineForm from "@/modules/scenarioeditor/EditLayerInlineForm.vu
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
+import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 
 const emit = defineEmits(["feature-click"]);
 
@@ -76,7 +71,7 @@ const {
 } = useScenarioLayers(mapRef.value);
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 
-const { selectedFeatureIds, selectedImageLayerIds, activeImageLayerId, activeFeatureId } =
+const { selectedFeatureIds, selectedMapLayerIds, activeMapLayerId, activeFeatureId } =
   useSelectedItems();
 
 const editedLayerId = ref<FeatureId | null>(null);
@@ -91,7 +86,7 @@ function onFeatureClick(
   const alreadySelected = selectedFeatureIds.value.has(feature.id);
   if (!isMultiSelect) {
     selectedFeatureIds.value.clear();
-    selectedImageLayerIds.value.clear();
+    selectedMapLayerIds.value.clear();
     nextTick(() => selectedFeatureIds.value.add(feature.id));
   } else {
     if (alreadySelected && event?.ctrlKey) {
@@ -115,14 +110,14 @@ const bus = useEventBus(imageLayerAction);
 
 function onImageLayerClick(layer: ScenarioMapLayer, event?: MouseEvent) {
   if (event?.ctrlKey || event?.shiftKey) {
-    if (selectedImageLayerIds.value.has(layer.id)) {
-      selectedImageLayerIds.value.delete(layer.id);
+    if (selectedMapLayerIds.value.has(layer.id)) {
+      selectedMapLayerIds.value.delete(layer.id);
     } else {
-      selectedImageLayerIds.value.add(layer.id);
+      selectedMapLayerIds.value.add(layer.id);
     }
   } else {
-    selectedImageLayerIds.value.clear();
-    selectedImageLayerIds.value.add(layer.id);
+    selectedMapLayerIds.value.clear();
+    selectedMapLayerIds.value.add(layer.id);
   }
 }
 function onImageLayerDoubleClick(layer: ScenarioMapLayer) {
@@ -223,7 +218,16 @@ function addImageLayer() {
   });
 }
 
-function toggleImageLayerVisibility(layer: ScenarioMapLayer) {
+function addMapLayer() {
+  geo.addMapLayer({
+    id: nanoid(),
+    type: "TileJSONLayer",
+    name: "Town plans of Sicily, Messina",
+    url: "https://maps.georeferencer.com/georeferences/c589e97e-4ee3-572f-9c17-ec267dc1e41d/2019-10-01T08:40:08.006175Z/map.json?key=TT2V1y0PsmpHjZjDoUgL",
+  });
+}
+
+function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
   geo.updateMapLayer(layer.id, { isHidden: !layer.isHidden });
 }
 </script>
@@ -239,17 +243,17 @@ function toggleImageLayerVisibility(layer: ScenarioMapLayer) {
           @dblclick="onImageLayerDoubleClick(layer)"
           @click="onImageLayerClick(layer, $event)"
           :class="
-            selectedImageLayerIds.has(layer.id)
+            selectedMapLayerIds.has(layer.id)
               ? 'border-yellow-500 bg-yellow-100'
               : 'border-transparent'
           "
         >
           <button class="flex flex-auto items-center py-2.5 sm:py-2">
-            <ImageIcon class="h-5 w-5 text-gray-400" />
+            <component :is="getMapLayerIcon(layer)" class="h-5 w-5 text-gray-400" />
             <span
               class="ml-2 text-left text-sm text-gray-700 group-hover:text-gray-900"
               :class="{
-                'font-bold': activeImageLayerId === layer.id,
+                'font-bold': activeMapLayerId === layer.id,
                 'opacity-50': layer.isHidden,
               }"
             >
@@ -259,7 +263,7 @@ function toggleImageLayerVisibility(layer: ScenarioMapLayer) {
           <div class="relative flex items-center">
             <button
               type="button"
-              @click="toggleImageLayerVisibility(layer)"
+              @click="toggleMapLayerVisibility(layer)"
               @keydown.stop
               class="ml-1 text-gray-500 opacity-0 hover:text-gray-700 group-focus-within:opacity-100 group-hover:opacity-100"
               title="Toggle layer visibility"
@@ -383,7 +387,7 @@ function toggleImageLayerVisibility(layer: ScenarioMapLayer) {
         <PlusIcon class="-ml-1 mr-1 h-4 w-4" aria-hidden="true" />
         Add layer
       </BaseButton>
-      <BaseButton @click="addImageLayer()" small secondary class="ml-2">
+      <BaseButton @click="addMapLayer()" small secondary class="ml-2">
         <PlusIcon class="-ml-1 mr-1 h-4 w-4" aria-hidden="true" />
         Add image layer
       </BaseButton>

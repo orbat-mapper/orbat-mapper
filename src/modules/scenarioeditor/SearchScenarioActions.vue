@@ -17,6 +17,7 @@ import OlFeature from "ol/Feature";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
+import { fixExtent } from "@/utils/geoConvert";
 
 const mapRef = injectStrict(activeMapKey);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -38,7 +39,7 @@ const {
   selectedFeatureIds,
   activeUnitId,
   activeScenarioEventId,
-  activeImageLayerId,
+  activeMapLayerId,
   clear: clearSelected,
 } = useSelectedItems();
 const { onUnitAction } = useUnitActions();
@@ -78,7 +79,7 @@ onImageLayerSelect(({ layerId }) => {
   ui.activeTabIndex = TAB_LAYERS;
   nextTick(() => {
     imageLayerBus.emit({ action: "zoom", id: layerId });
-    activeImageLayerId.value = layerId;
+    activeMapLayerId.value = layerId;
   });
 });
 
@@ -108,10 +109,8 @@ onEventSelect((e) => {
 onPlaceSelect((item) => {
   const map = mapRef.value;
   const transform = getTransform("EPSG:4326", map.getView().getProjection());
-  const extent =
-    item.properties?.extent &&
-    applyTransform(fixExtent(item.properties.extent), transform);
-  const polygon = extent && polygonFromExtent(extent);
+  const extent = fixExtent(item.properties.extent);
+  const polygon = extent && polygonFromExtent(applyTransform(extent, transform));
   const p = new OlPoint(item.geometry.coordinates).transform(
     "EPSG:4326",
     map.getView().getProjection()
@@ -135,15 +134,5 @@ onPlaceSelect((item) => {
 
   map.getView().fit(polygon || p, { maxZoom: 15 });
 });
-
-function fixExtent(extent: number[]) {
-  const [minx, miny, maxx, maxy] = extent;
-  return [
-    Math.min(minx, maxx),
-    Math.min(miny, maxy),
-    Math.max(minx, maxx),
-    Math.max(miny, maxy),
-  ];
-}
 </script>
 <template></template>

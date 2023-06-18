@@ -8,11 +8,10 @@ import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import "ol/ol.css";
 import { Coordinate } from "ol/coordinate";
-import { fromLonLat, getTransform } from "ol/proj";
+import { fromLonLat, transformExtent } from "ol/proj";
 import OSM from "ol/source/OSM";
 import XYZ from "ol/source/XYZ";
 import { useOlEvent } from "@/composables/openlayersHelpers";
-import { applyTransform } from "ol/extent";
 
 interface Props {
   center?: Coordinate;
@@ -28,7 +27,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(["ready", "moveend"]);
 
 function createBaseLayers(view: View) {
-  const transform = getTransform("EPSG:4326", view.getProjection());
   const openStreetmapLayer = new TileLayer({
     source: new OSM(),
     visible: props.baseLayerName === "osm",
@@ -94,10 +92,8 @@ function createBaseLayers(view: View) {
       title: "Topographic Map Norway",
       name: "kartverketTopo4",
     },
-    extent: applyTransform([2, 57, 33, 72], transform),
+    extent: transformExtent([2, 57, 33, 72], "EPSG:4326", view.getProjection()),
   });
-
-  // https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}
 
   return [
     openStreetmapLayer,

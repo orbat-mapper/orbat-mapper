@@ -28,3 +28,14 @@ export function getCoordinateFormatFunction(
   if (format === "MGRS") return (v: any) => formatMGRS(v, 4);
   return (v: any) => formatDecimalDegrees(v, 3);
 }
+
+export function fixExtent(extent: number[] = []) {
+  if (!extent || extent.length === 0) return;
+  const [minx, miny, maxx, maxy] = extent;
+  return [
+    Math.min(minx, maxx),
+    Math.min(miny, maxy),
+    Math.max(minx, maxx),
+    Math.max(miny, maxy),
+  ];
+}

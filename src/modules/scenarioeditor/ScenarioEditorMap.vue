@@ -47,9 +47,9 @@
               v-else-if="activeScenarioEventId"
               :event-id="activeScenarioEventId"
             />
-            <ScenarioImageLayerDetails
-              v-else-if="activeImageLayerId"
-              :layer-id="activeImageLayerId"
+            <ScenarioMapLayerDetails
+              v-else-if="activeMapLayerId"
+              :layer-id="activeMapLayerId"
             />
           </MapEditorDetailsPanel>
           <div v-else></div>
@@ -131,7 +131,7 @@ import IconButton from "@/components/IconButton.vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
-import ScenarioImageLayerDetails from "@/modules/scenarioeditor/ScenarioImageLayerDetails.vue";
+import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -176,7 +176,7 @@ const {
   selectedFeatureIds,
   activeUnitId,
   activeScenarioEventId,
-  activeImageLayerId,
+  activeMapLayerId,
   clear: clearSelected,
 } = useSelectedItems();
 
@@ -187,7 +187,7 @@ const showDetailsPanel = computed(() => {
     selectedFeatureIds.value.size ||
       selectedUnitIds.value.size ||
       activeScenarioEventId.value ||
-      activeImageLayerId.value
+      activeMapLayerId.value
   );
 });
 

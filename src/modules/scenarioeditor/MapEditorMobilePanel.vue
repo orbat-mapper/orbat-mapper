@@ -64,6 +64,16 @@
             v-else-if="selectedFeatureIds.size > 0"
             class="p-4"
           />
+          <ScenarioEventDetails
+            v-else-if="activeScenarioEventId"
+            :event-id="activeScenarioEventId"
+            class="p-4"
+          />
+          <ScenarioMapLayerDetails
+            v-else-if="activeMapLayerId"
+            :layer-id="activeMapLayerId"
+            class="p-4"
+          />
           <ScenarioInfoPanel v-else />
         </TabPanel>
       </TabPanels>
@@ -87,6 +97,8 @@ import { useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
+import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
+import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
 
 const emit = defineEmits([
   "open-time-modal",
@@ -96,7 +108,13 @@ const emit = defineEmits([
   "prev-event",
 ]);
 
-const { selectedUnitIds, selectedFeatureIds, activeUnitId } = useSelectedItems();
+const {
+  selectedUnitIds,
+  selectedFeatureIds,
+  activeUnitId,
+  activeScenarioEventId,
+  activeMapLayerId,
+} = useSelectedItems();
 const { mobilePanelOpen: showBottomPanel } = storeToRefs(useUiStore());
 
 const toggleBottomPanel = useToggle(showBottomPanel);

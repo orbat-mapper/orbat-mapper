@@ -49,7 +49,7 @@ import { useGeoLayersUndoRedo } from "@/composables/geoUndoRedo";
 import type Select from "ol/interaction/Select";
 import { useUiStore } from "@/stores/uiStore";
 import { useShowScaleLine } from "@/composables/geoScaleLine";
-import { useScenarioMapLayers } from "@/modules/scenarioeditor/scenarioImageLayers";
+import { useScenarioMapLayers } from "@/modules/scenarioeditor/scenarioMapLayers";
 const mapSettings = useMapSettingsStore();
 
 interface Props {}

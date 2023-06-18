@@ -5,7 +5,7 @@ import { activeScenarioKey } from "@/components/injects";
 import {
   ActionSearchResult,
   EventSearchResult,
-  ImageLayerSearchResult,
+  MapLayerSearchResult,
   LayerFeatureSearchResult,
   UnitSearchResult,
 } from "@/components/types";
@@ -93,7 +93,7 @@ export function useScenarioSearch() {
           }),
           score: u.score,
           category: "Map layers",
-        } as ImageLayerSearchResult)
+        } as MapLayerSearchResult)
     );
   }
 
@@ -125,7 +125,7 @@ export function useScenarioSearch() {
       | UnitSearchResult[]
       | LayerFeatureSearchResult[]
       | EventSearchResult[]
-      | ImageLayerSearchResult[]
+      | MapLayerSearchResult[]
     )[]
   ) {
     const combinedHits = hits.sort((a, b) => {

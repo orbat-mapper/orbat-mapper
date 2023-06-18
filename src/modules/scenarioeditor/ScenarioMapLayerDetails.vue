@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { IconMagnifyExpand as ZoomIcon } from "@iconify-prerendered/vue-mdi";
+import {
+  IconMagnifyExpand as ZoomIcon,
+  IconEye,
+  IconEyeOff,
+} from "@iconify-prerendered/vue-mdi";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed, ref, watch } from "vue";
 import { FeatureId, ScenarioImageLayer } from "@/types/scenarioGeoModels";
 import EditableLabel from "@/components/EditableLabel.vue";
-import { ScenarioImageLayerUpdate } from "@/types/internalModels";
+import { ScenarioMapLayerUpdate } from "@/types/internalModels";
 import InputGroup from "@/components/InputGroup.vue";
 import IconButton from "@/components/IconButton.vue";
 import { useEventBus } from "@vueuse/core";
@@ -27,24 +31,23 @@ const {
   store: { groupUpdate },
 } = injectStrict(activeScenarioKey);
 
-const imageLayer = computed(
-  () => geo.getMapLayerById(props.layerId) as ScenarioImageLayer
-);
+const mapLayer = computed(() => geo.getMapLayerById(props.layerId) as ScenarioImageLayer);
+const isVisible = computed(() => !(mapLayer.value?.isHidden ?? false));
 
 const layerName = ref("DD");
 
 const opacity = computed({
-  get: () => imageLayer.value?.opacity,
+  get: () => mapLayer.value?.opacity,
   set: (v) => updateLayer({ opacity: v }),
 });
 
 const rotation = computed({
-  get: () => imageLayer.value?.imageRotate ?? 0,
+  get: () => mapLayer.value?.imageRotate ?? 0,
   set: (v) => updateLayer({ imageRotate: v }),
 });
 
 watch(
-  () => imageLayer.value?.name,
+  () => mapLayer.value?.name,
   (v) => {
     layerName.value = v ?? "";
   },
@@ -52,11 +55,11 @@ watch(
 );
 
 function updateValue(name: string, value: string) {
-  imageLayer.value && geo.updateMapLayer(imageLayer.value.id, { [name]: value });
+  mapLayer.value && geo.updateMapLayer(mapLayer.value.id, { [name]: value });
 }
 
-function updateLayer(data: ScenarioImageLayerUpdate) {
-  imageLayer.value && geo.updateMapLayer(props.layerId, data);
+function updateLayer(data: ScenarioMapLayerUpdate) {
+  mapLayer.value && geo.updateMapLayer(props.layerId, data);
 }
 const opacityAsPercent = computed(() => (opacity.value! * 100).toFixed(0));
 
@@ -66,15 +69,19 @@ const imageLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
 ];
 
 function onImageLayerAction(action: ScenarioMapLayerAction) {
-  if (action === "zoom") imageBus.emit({ action, id: imageLayer.value.id });
+  if (action === "zoom") imageBus.emit({ action, id: mapLayer.value.id });
+}
+
+function toggleLayerVisibility() {
+  updateLayer({ isHidden: !(mapLayer.value.isHidden ?? false) });
 }
 </script>
 <template>
   <div>
     <header class="">
-      <div v-if="imageLayer" class="">
+      <div v-if="mapLayer" class="">
         <EditableLabel v-model="layerName" @update-value="updateValue('name', $event)" />
-        <p class="whitespace-pre-wrap">{{ imageLayer.description }}</p>
+        <p class="whitespace-pre-wrap">{{ mapLayer.description }}</p>
         <div class="flex">
           <div class="flex flex-auto items-center">
             <input
@@ -89,13 +96,20 @@ function onImageLayerAction(action: ScenarioMapLayerAction) {
             <span class="ml-2 w-8 flex-shrink-0 text-sm">{{ opacityAsPercent }}%</span>
           </div>
           <div class="ml-2 flex shrink-0 items-center">
-            <IconButton @click="imageBus.emit({ action: 'zoom', id: layerId })">
+            <IconButton
+              @click="imageBus.emit({ action: 'zoom', id: layerId })"
+              title="Zoom to layer extent"
+            >
               <ZoomIcon class="h-6 w-6" />
+            </IconButton>
+            <IconButton @click="toggleLayerVisibility()" title="Toggle visibility">
+              <IconEye v-if="isVisible" class="h-6 w-6" />
+              <IconEyeOff v-else class="h-6 w-6" />
             </IconButton>
             <DotsMenu :items="imageLayerMenuItems" @action="onImageLayerAction" />
           </div>
         </div>
-        <section class="mt-4 grid w-full grid-cols-1 gap-x-6 gap-y-2 text-sm">
+        <!--        <section class="mt-4 grid w-full grid-cols-1 gap-x-6 gap-y-2 text-sm">
           <InputGroup
             label="Rotation"
             v-model.number="rotation"
@@ -106,7 +120,7 @@ function onImageLayerAction(action: ScenarioMapLayerAction) {
             class=""
           >
           </InputGroup>
-        </section>
+        </section>-->
       </div>
     </header>
   </div>

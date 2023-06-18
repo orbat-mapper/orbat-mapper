@@ -46,8 +46,9 @@ export interface LayerFeatureSearchResult extends LayerFeatureItem, SearchResult
   category: "Features";
 }
 
-export interface ImageLayerSearchResult extends SearchResult {
+export interface MapLayerSearchResult extends SearchResult {
   category: "Map layers";
+  type: "ImageLayer" | "TileJSONLayer";
 }
 
 export interface EventSearchResult extends SearchResult {

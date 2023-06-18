@@ -5,7 +5,6 @@ import {
   FeatureId,
   LayerFeatureItem,
   Position,
-  ScenarioImageLayer,
   ScenarioLayer,
   ScenarioMapLayer,
 } from "@/types/scenarioGeoModels";
@@ -14,17 +13,17 @@ import {
   NScenarioFeature,
   NScenarioLayer,
   ScenarioFeatureUpdate,
-  ScenarioImageLayerUpdate,
   ScenarioLayerUpdate,
+  ScenarioMapLayerUpdate,
 } from "@/types/internalModels";
 import { klona } from "klona";
 import { moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
 
-export type ScenarioLayerEvent = {
+export type ScenarioMapLayerEvent = {
   type: "add" | "remove" | "update";
   id: FeatureId;
-  data: any;
+  data: ScenarioMapLayer | ScenarioMapLayerUpdate;
 };
 
 export type UpdateOptions = {
@@ -34,7 +33,7 @@ export type UpdateOptions = {
 
 export function useGeo(store: NewScenarioStore) {
   const { state, update } = store;
-  const mapLayerEvent = createEventHook<ScenarioLayerEvent>();
+  const mapLayerEvent = createEventHook<ScenarioMapLayerEvent>();
 
   const everyVisibleUnit = computed(() => {
     return Object.values(state.unitMap).filter((unit) => unit._state?.location);
@@ -168,7 +167,7 @@ export function useGeo(store: NewScenarioStore) {
 
   function updateMapLayer(
     layerId: FeatureId,
-    data: ScenarioImageLayerUpdate,
+    data: ScenarioMapLayerUpdate,
     options: UpdateOptions = {}
   ) {
     const undoable = options.undoable ?? true;
