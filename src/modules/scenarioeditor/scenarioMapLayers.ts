@@ -34,6 +34,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     mapLayersGroup.getLayers().clear();
     scn.geo.mapLayers.value.forEach((mapLayer) => {
       if (mapLayer.type === "ImageLayer") addImageLayer(mapLayer);
+      if (mapLayer.type === "TileJSONLayer") addTileJSONLayer(mapLayer);
     });
   }
 
@@ -91,6 +92,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     }
     mapLayersGroup.getLayers().push(newLayer);
   }
+
   function addTileJSONLayer(data: ScenarioTileJSONLayer) {
     const source = new TileJSON({
       url: data.url,

@@ -93,6 +93,7 @@ export function useGeo(store: NewScenarioStore) {
       { label: "addMapLayer", value: newLayer.id }
     );
     mapLayerEvent.trigger({ type: "add", id: newLayer.id, data: newLayer });
+    return state.mapLayerMap[newLayer.id];
   }
 
   function moveLayer(layerId: FeatureId, toIndex: number) {

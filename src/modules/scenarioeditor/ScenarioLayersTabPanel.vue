@@ -20,7 +20,7 @@ import {
 } from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
-import { MenuItemData } from "@/components/types";
+import { ButtonGroupItem, MenuItemData } from "@/components/types";
 import {
   ScenarioFeatureActions,
   ScenarioLayerAction,
@@ -34,6 +34,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
+import SplitButton from "@/components/SplitButton.vue";
 
 const emit = defineEmits(["feature-click"]);
 
@@ -49,9 +50,26 @@ const { mapLayers } = geo;
 uiStore.layersPanelActive = true;
 onUnmounted(() => (uiStore.layersPanelActive = false));
 
-const imageLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
+const mapLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
   { label: "Zoom to", action: "zoom" },
   // { label: "Delete", action: "delete" },
+];
+
+const mapLayerButtonItems: ButtonGroupItem[] = [
+  {
+    label: "Add feature layer",
+    onClick: () => {
+      const newLayer = addNewLayer();
+    },
+  },
+  {
+    label: "Add image layer",
+    onClick: () => addImageLayer(),
+  },
+  {
+    label: "Add TileJSON layer",
+    onClick: () => addMapLayer(),
+  },
 ];
 
 const {
@@ -133,6 +151,11 @@ const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ];
 
+const mapLayersMenuItems: MenuItemData[] = [
+  { label: "Add image layer", action: () => addImageLayer() },
+  { label: "Add TileJSON json", action: () => addMapLayer() },
+];
+
 function onImageLayerAction(layer: ScenarioMapLayer, action: ScenarioMapLayerAction) {
   if (action === "zoom") bus.emit({ action, id: layer.id });
 }
@@ -204,10 +227,11 @@ function addNewLayer() {
   });
   activeLayerId.value = addedLayer.id;
   editedLayerId.value = addedLayer.id;
+  return addedLayer;
 }
 
 function addImageLayer() {
-  geo.addMapLayer({
+  const newLayer = geo.addMapLayer({
     id: nanoid(),
     type: "ImageLayer",
     name: "Test",
@@ -216,15 +240,25 @@ function addImageLayer() {
       "<a href='http://www.geoportail.gouv.fr/actualite/181/telechargez-les-cartes-et-photographies-aeriennes-historiques'>Photo historique &copy; IGN</a>",
     ],
   });
+  uiStore.mapLayersPanelOpen = true;
+  nextTick(() => {
+    activeMapLayerId.value = newLayer.id;
+  });
+  return newLayer;
 }
 
 function addMapLayer() {
-  geo.addMapLayer({
+  const newLayer = geo.addMapLayer({
     id: nanoid(),
     type: "TileJSONLayer",
     name: "Town plans of Sicily, Messina",
     url: "https://maps.georeferencer.com/georeferences/c589e97e-4ee3-572f-9c17-ec267dc1e41d/2019-10-01T08:40:08.006175Z/map.json?key=TT2V1y0PsmpHjZjDoUgL",
   });
+  uiStore.mapLayersPanelOpen = true;
+  nextTick(() => {
+    activeMapLayerId.value = newLayer.id;
+  });
+  return newLayer;
 }
 
 function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
@@ -234,7 +268,19 @@ function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
 
 <template>
   <div>
-    <ChevronPanel label="Map layers" class="mb-4" open>
+    <ChevronPanel
+      label="Map layers"
+      class="mb-4"
+      v-model:open="uiStore.mapLayersPanelOpen"
+    >
+      <template #right>
+        <div class="flex items-center">
+          <DotsMenu
+            class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+            :items="mapLayersMenuItems"
+          />
+        </div>
+      </template>
       <ul class="-mt-6">
         <li
           v-for="layer in mapLayers"
@@ -272,7 +318,7 @@ function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
               <IconEye class="h-5 w-5" v-else />
             </button>
             <DotsMenu
-              :items="imageLayerMenuItems"
+              :items="mapLayerMenuItems"
               @action="onImageLayerAction(layer, $event)"
               class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
             />
@@ -382,15 +428,8 @@ function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
         </li>
       </ul>
     </ChevronPanel>
-    <p class="my-8 text-right">
-      <BaseButton @click="addNewLayer()" small secondary>
-        <PlusIcon class="-ml-1 mr-1 h-4 w-4" aria-hidden="true" />
-        Add layer
-      </BaseButton>
-      <BaseButton @click="addMapLayer()" small secondary class="ml-2">
-        <PlusIcon class="-ml-1 mr-1 h-4 w-4" aria-hidden="true" />
-        Add image layer
-      </BaseButton>
-    </p>
+    <footer class="my-8 text-right">
+      <SplitButton :items="mapLayerButtonItems" />
+    </footer>
   </div>
 </template>

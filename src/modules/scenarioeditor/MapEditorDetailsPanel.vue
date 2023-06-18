@@ -4,7 +4,10 @@
       class="pointer-events-auto relative mt-4 flex max-h-[70vh] flex-col overflow-clip rounded-md bg-white shadow"
       :style="{ width: widthStore.detailsWidth + 'px' }"
     >
-      <header class="flex-0 flex items-center justify-end bg-gray-100 p-2 px-4 shadow">
+      <header
+        class="flex-0 flex items-center justify-between bg-gray-100 p-2 px-4 shadow"
+      >
+        <div></div>
         <CloseButton @click="emit('close')" class="" />
       </header>
       <div class="flex-auto overflow-auto p-4">

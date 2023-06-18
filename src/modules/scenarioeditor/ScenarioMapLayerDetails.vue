@@ -17,6 +17,7 @@ import { imageLayerAction } from "@/components/eventKeys";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { MenuItemData } from "@/components/types";
 import { ScenarioMapLayerAction } from "@/types/constants";
+import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 
 interface Props {
   layerId: FeatureId;
@@ -84,6 +85,10 @@ function toggleLayerVisibility() {
         <p class="whitespace-pre-wrap">{{ mapLayer.description }}</p>
         <div class="flex">
           <div class="flex flex-auto items-center">
+            <component
+              :is="getMapLayerIcon(mapLayer)"
+              class="mr-2 h-7 w-7 text-gray-500"
+            />
             <input
               id="stroke-opacity"
               v-model.number="opacity"
