@@ -18,6 +18,7 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { MenuItemData } from "@/components/types";
 import { ScenarioMapLayerAction } from "@/types/constants";
 import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 interface Props {
   layerId: FeatureId;
@@ -31,6 +32,8 @@ const {
   geo,
   store: { groupUpdate },
 } = injectStrict(activeScenarioKey);
+
+const { clear } = useSelectedItems();
 
 const mapLayer = computed(() => geo.getMapLayerById(props.layerId) as ScenarioImageLayer);
 const isVisible = computed(() => !(mapLayer.value?.isHidden ?? false));
@@ -71,6 +74,10 @@ const imageLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
 
 function onImageLayerAction(action: ScenarioMapLayerAction) {
   if (action === "zoom") imageBus.emit({ action, id: mapLayer.value.id });
+  if (action === "delete") {
+    geo.deleteMapLayer(mapLayer.value.id);
+    clear();
+  }
 }
 
 function toggleLayerVisibility() {

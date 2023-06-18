@@ -116,7 +116,6 @@ export function useScenarioMapLayers(olMap: OLMap) {
           const extent = fixExtent(
             transformExtent(tileJson.bounds, "EPSG:4326", olMap.getView().getProjection())
           );
-          console.log("NN", extent, tileJson.bounds);
           extent && newLayer.setExtent(extent);
         }
         newLayer.setVisible(!(data.isHidden ?? false));
@@ -127,14 +126,21 @@ export function useScenarioMapLayers(olMap: OLMap) {
 
   scn.geo.onMapLayerEvent((event) => {
     const mapLayer = scn.geo.getMapLayerById(event.id);
-    if (!mapLayer) return;
+
     if (event.type === "add") {
       if (event.data.type === "ImageLayer")
         addImageLayer(event.data as ScenarioImageLayer);
       if (event.data.type === "TileJSONLayer")
         addTileJSONLayer(event.data as ScenarioTileJSONLayer);
-    }
-    if (event.type === "update") {
+    } else if (event.type === "remove") {
+      const layer = getOlLayerById(event.id);
+      if (layer) {
+        mapLayersGroup.getLayers().remove(layer);
+        // @ts-ignore
+        layer.getSource?.().clear?.();
+      }
+    } else if (event.type === "update") {
+      if (!mapLayer) return;
       const layer = getOlLayerById(event.id) as any;
       if (!layer) return;
 
@@ -172,7 +178,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
   onUndoRedo(({ action, meta }) => {
     if (
       !meta ||
-      !["addImageLayer", "updateImageLayer", "deleteImageLayer"].includes(meta.label)
+      !["addImageLayer", "updateImageLayer", "deleteMapLayer"].includes(meta.label)
     )
       return;
     console.warn("undo/redo for image layers not implemented yet");

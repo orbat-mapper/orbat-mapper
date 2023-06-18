@@ -52,7 +52,7 @@ onUnmounted(() => (uiStore.layersPanelActive = false));
 
 const mapLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
   { label: "Zoom to", action: "zoom" },
-  // { label: "Delete", action: "delete" },
+  { label: "Delete", action: "delete" },
 ];
 
 const mapLayerButtonItems: ButtonGroupItem[] = [
@@ -158,6 +158,10 @@ const mapLayersMenuItems: MenuItemData[] = [
 
 function onImageLayerAction(layer: ScenarioMapLayer, action: ScenarioMapLayerAction) {
   if (action === "zoom") bus.emit({ action, id: layer.id });
+  if (action === "delete") {
+    geo.deleteMapLayer(layer.id);
+    activeMapLayerId.value = null;
+  }
 }
 
 function onLayerAction(

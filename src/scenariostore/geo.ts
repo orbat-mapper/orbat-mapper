@@ -202,7 +202,8 @@ export function useGeo(store: NewScenarioStore) {
     );
   }
 
-  function deleteMapLayer(layerId: FeatureId) {
+  function deleteMapLayer(layerId: FeatureId, options: UpdateOptions = {}) {
+    const noEmit = options.noEmit ?? false;
     update(
       (s) => {
         const layer = s.mapLayerMap[layerId];
@@ -212,6 +213,8 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "deleteMapLayer", value: layerId }
     );
+    if (noEmit) return;
+    mapLayerEvent.trigger({ type: "remove", id: layerId, data: {} });
   }
 
   function addFeature(data: NScenarioFeature, layerId: FeatureId) {
