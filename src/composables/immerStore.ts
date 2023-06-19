@@ -42,9 +42,13 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     action: "undo" | "redo";
   }>();
 
-  const update = (updater: (currentState: T) => void, meta?: MetaEntry<M>) => {
+  const update = (
+    updater: (currentState: T) => void,
+    meta?: MetaEntry<M>,
+    force = false
+  ) => {
     const [, patches, inversePatches] = produceWithPatches(toRaw(state), updater);
-    if (patches.length === 0) return;
+    if (patches.length === 0 && !force) return;
     applyPatchWrapper(state, patches);
     past.push({ patches, inversePatches, meta });
     future.splice(0);

@@ -29,6 +29,8 @@ export type ScenarioMapLayerEvent = {
 export type UpdateOptions = {
   undoable?: boolean;
   noEmit?: boolean;
+  force?: boolean;
+  emitOnly?: boolean;
 };
 
 export function useGeo(store: NewScenarioStore) {
@@ -173,6 +175,7 @@ export function useGeo(store: NewScenarioStore) {
   ) {
     const undoable = options.undoable ?? true;
     const noEmit = options.noEmit ?? false;
+    const emitOnly = options.emitOnly ?? false;
     if (undoable) {
       update(
         (s) => {
@@ -181,7 +184,7 @@ export function useGeo(store: NewScenarioStore) {
         },
         { label: "updateMapLayer", value: layerId }
       );
-    } else {
+    } else if (!emitOnly) {
       const layer = state.mapLayerMap[layerId];
       Object.assign(layer, data);
     }

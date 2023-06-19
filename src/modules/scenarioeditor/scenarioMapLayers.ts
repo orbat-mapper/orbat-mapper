@@ -19,6 +19,7 @@ import { TileJSON } from "ol/source";
 import { unByKey } from "ol/Observable";
 import { fixExtent } from "@/utils/geoConvert";
 import { IconImage as ImageIcon, IconWebBox } from "@iconify-prerendered/vue-mdi";
+import { ScenarioMapLayerUpdate } from "@/types/internalModels";
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
@@ -124,38 +125,47 @@ export function useScenarioMapLayers(olMap: OLMap) {
     mapLayersGroup.getLayers().push(newLayer);
   }
 
+  function deleteLayer(layerId: FeatureId) {
+    const layer = getOlLayerById(layerId);
+    if (layer) {
+      mapLayersGroup.getLayers().remove(layer);
+      // @ts-ignore
+      layer.getSource?.().clear?.();
+    }
+  }
+
+  function addLayer(layerId: FeatureId) {
+    const mapLayer = scn.geo.getMapLayerById(layerId);
+    if (mapLayer.type === "ImageLayer") addImageLayer(mapLayer);
+    if (mapLayer.type === "TileJSONLayer") addTileJSONLayer(mapLayer);
+  }
+
+  function updateLayer(layerId: FeatureId, data: ScenarioMapLayerUpdate) {
+    const mapLayer = scn.geo.getMapLayerById(layerId);
+    const layer = getOlLayerById(layerId) as any;
+    if (!layer) return;
+
+    if (data.isHidden !== undefined) {
+      layer.setVisible(!data.isHidden);
+    }
+    if (data.opacity !== undefined) {
+      layer.setOpacity(data.opacity);
+    }
+    if (mapLayer.type === "ImageLayer") {
+      const d = data as ScenarioImageLayer;
+      if (d.imageRotate !== undefined) {
+        layer.getSource().setRotation(d.imageRotate);
+      }
+    }
+  }
+
   scn.geo.onMapLayerEvent((event) => {
-    const mapLayer = scn.geo.getMapLayerById(event.id);
-
     if (event.type === "add") {
-      if (event.data.type === "ImageLayer")
-        addImageLayer(event.data as ScenarioImageLayer);
-      if (event.data.type === "TileJSONLayer")
-        addTileJSONLayer(event.data as ScenarioTileJSONLayer);
+      addLayer(event.id);
     } else if (event.type === "remove") {
-      const layer = getOlLayerById(event.id);
-      if (layer) {
-        mapLayersGroup.getLayers().remove(layer);
-        // @ts-ignore
-        layer.getSource?.().clear?.();
-      }
+      deleteLayer(event.id);
     } else if (event.type === "update") {
-      if (!mapLayer) return;
-      const layer = getOlLayerById(event.id) as any;
-      if (!layer) return;
-
-      if (event.data.isHidden !== undefined) {
-        layer.setVisible(!event.data.isHidden);
-      }
-      if (event.data.opacity !== undefined) {
-        layer.setOpacity(event.data.opacity);
-      }
-      if (mapLayer.type === "ImageLayer") {
-        const d = event.data as ScenarioImageLayer;
-        if (d.imageRotate !== undefined) {
-          layer.getSource().setRotation(d.imageRotate);
-        }
-      }
+      updateLayer(event.id, event.data);
     }
   });
 
@@ -178,10 +188,26 @@ export function useScenarioMapLayers(olMap: OLMap) {
   onUndoRedo(({ action, meta }) => {
     if (
       !meta ||
-      !["addImageLayer", "updateImageLayer", "deleteMapLayer"].includes(meta.label)
+      !["addMapLayer", "updateMapLayer", "deleteMapLayer"].includes(meta.label)
     )
       return;
-    console.warn("undo/redo for image layers not implemented yet");
+    const { label, value: layerId } = meta;
+    if (label === "addMapLayer") {
+      if (action === "undo") {
+        deleteLayer(layerId);
+      } else {
+        addLayer(layerId);
+      }
+    } else if (label === "deleteMapLayer") {
+      if (action === "undo") {
+        addLayer(layerId);
+      } else {
+        deleteLayer(layerId);
+      }
+    } else if (label === "updateMapLayer") {
+      const data = scn.geo.getMapLayerById(layerId);
+      updateLayer(layerId, data);
+    }
   });
 
   return { initializeFromStore };

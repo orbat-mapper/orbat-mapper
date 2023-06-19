@@ -12,7 +12,7 @@ import EditableLabel from "@/components/EditableLabel.vue";
 import { ScenarioMapLayerUpdate } from "@/types/internalModels";
 import InputGroup from "@/components/InputGroup.vue";
 import IconButton from "@/components/IconButton.vue";
-import { useEventBus } from "@vueuse/core";
+import { useDebounceFn, useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { MenuItemData } from "@/components/types";
@@ -42,7 +42,7 @@ const layerName = ref("DD");
 
 const opacity = computed({
   get: () => mapLayer.value?.opacity,
-  set: (v) => updateLayer({ opacity: v }),
+  set: (v) => updateLayer({ opacity: v }, true),
 });
 
 const rotation = computed({
@@ -62,8 +62,14 @@ function updateValue(name: string, value: string) {
   mapLayer.value && geo.updateMapLayer(mapLayer.value.id, { [name]: value });
 }
 
-function updateLayer(data: ScenarioMapLayerUpdate) {
-  mapLayer.value && geo.updateMapLayer(props.layerId, data);
+const debouncedUpdate = useDebounceFn((data: ScenarioMapLayerUpdate) => {
+  geo.updateMapLayer(props.layerId, data, { noEmit: true });
+}, 500);
+
+function updateLayer(data: ScenarioMapLayerUpdate, debounce = false) {
+  debounce && debouncedUpdate(data);
+  mapLayer.value &&
+    geo.updateMapLayer(props.layerId, data, { undoable: !debounce, emitOnly: debounce });
 }
 const opacityAsPercent = computed(() => (opacity.value! * 100).toFixed(0));
 
