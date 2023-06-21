@@ -28,6 +28,10 @@
   @apply absolute bottom-2 left-3 rounded bg-white bg-opacity-50 px-1 text-base tabular-nums tracking-tighter text-gray-800;
 }
 
+.badge {
+  @apply inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10;
+}
+
 ::-webkit-scrollbar {
   width: 4px;
 }

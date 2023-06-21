@@ -19,7 +19,10 @@ import { TileJSON } from "ol/source";
 import { unByKey } from "ol/Observable";
 import { fixExtent } from "@/utils/geoConvert";
 import { IconImage as ImageIcon, IconWebBox } from "@iconify-prerendered/vue-mdi";
-import { ScenarioMapLayerUpdate } from "@/types/internalModels";
+import {
+  ScenarioMapLayerUpdate,
+  ScenarioTileJSONLayerUpdate,
+} from "@/types/internalModels";
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
@@ -75,6 +78,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
         const w = newLayer.getSource().getGeoImage().width as number;
         newLayer.getSource().setScale((res * 96 * 10) / w);
         newLayer.setVisible(true);
+        const layerExtent = newLayer.getExtent();
         scn.geo.updateMapLayer(
           data.id,
           {
@@ -84,6 +88,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
             ),
             imageRotate: newLayer.getSource().getRotation(),
             imageScale: newLayer.getSource().getScale(),
+            extent: layerExtent,
           },
           { noEmit: true }
         );
@@ -95,8 +100,13 @@ export function useScenarioMapLayers(olMap: OLMap) {
   }
 
   function addTileJSONLayer(data: ScenarioTileJSONLayer) {
+    if (!data.url) {
+      console.warn("Missing url for tile layer");
+      return;
+    }
     const source = new TileJSON({
       url: data.url,
+      crossOrigin: "anonymous",
     });
     const newLayer = new TileLayer({
       opacity: data.opacity ?? 0.7,
@@ -108,18 +118,44 @@ export function useScenarioMapLayers(olMap: OLMap) {
         name: data.name,
       },
     });
+    scn.geo.updateMapLayer(
+      data.id,
+      { _status: "loading" },
+      { noEmit: true, undoable: false }
+    );
 
     let key = source.on("change", function () {
       if (source.getState() == "ready") {
         unByKey(key);
         const tileJson = source.getTileJSON();
+        const dataUpdate: ScenarioTileJSONLayerUpdate = {};
         if (tileJson?.bounds) {
           const extent = fixExtent(
             transformExtent(tileJson.bounds, "EPSG:4326", olMap.getView().getProjection())
           );
-          extent && newLayer.setExtent(extent);
+          if (extent && !isEmpty(extent)) {
+            newLayer.setExtent(extent);
+            dataUpdate.extent = extent;
+          }
+          if (tileJson?.attribution) {
+            dataUpdate.attributions = tileJson.attribution;
+          }
+          scn.geo.updateMapLayer(data.id, dataUpdate, { noEmit: true, undoable: false });
+          scn.geo.updateMapLayer(
+            data.id,
+            { _status: "initialized" },
+            { noEmit: true, undoable: false }
+          );
         }
         newLayer.setVisible(!(data.isHidden ?? false));
+      } else if (source.getState() == "error") {
+        unByKey(key);
+        scn.geo.updateMapLayer(
+          data.id,
+          { _status: "error" },
+          { noEmit: true, undoable: false }
+        );
+        mapLayersGroup.getLayers().remove(newLayer);
       }
     });
     mapLayersGroup.getLayers().push(newLayer);
@@ -128,9 +164,9 @@ export function useScenarioMapLayers(olMap: OLMap) {
   function deleteLayer(layerId: FeatureId) {
     const layer = getOlLayerById(layerId);
     if (layer) {
-      mapLayersGroup.getLayers().remove(layer);
       // @ts-ignore
       layer.getSource?.().clear?.();
+      mapLayersGroup.getLayers().remove(layer);
     }
   }
 
@@ -143,7 +179,10 @@ export function useScenarioMapLayers(olMap: OLMap) {
   function updateLayer(layerId: FeatureId, data: ScenarioMapLayerUpdate) {
     const mapLayer = scn.geo.getMapLayerById(layerId);
     const layer = getOlLayerById(layerId) as any;
-    if (!layer) return;
+    if (!layer) {
+      addLayer(layerId);
+      return;
+    }
 
     if (data.isHidden !== undefined) {
       layer.setVisible(!data.isHidden);
@@ -151,6 +190,14 @@ export function useScenarioMapLayers(olMap: OLMap) {
     if (data.opacity !== undefined) {
       layer.setOpacity(data.opacity);
     }
+
+    if (mapLayer.type === "TileJSONLayer") {
+      if ("url" in data && data.url !== undefined) {
+        deleteLayer(layerId);
+        addLayer(layerId);
+      }
+    }
+
     if (mapLayer.type === "ImageLayer") {
       const d = data as ScenarioImageLayer;
       if (d.imageRotate !== undefined) {
@@ -165,7 +212,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     } else if (event.type === "remove") {
       deleteLayer(event.id);
     } else if (event.type === "update") {
-      updateLayer(event.id, event.data);
+      updateLayer(event.id, event.data as ScenarioMapLayerUpdate);
     }
   });
 

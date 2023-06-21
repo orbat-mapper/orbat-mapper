@@ -7,7 +7,11 @@ import {
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed, ref, watch } from "vue";
-import { FeatureId, ScenarioImageLayer } from "@/types/scenarioGeoModels";
+import {
+  FeatureId,
+  ScenarioImageLayer,
+  ScenarioMapLayer,
+} from "@/types/scenarioGeoModels";
 import EditableLabel from "@/components/EditableLabel.vue";
 import { ScenarioMapLayerUpdate } from "@/types/internalModels";
 import InputGroup from "@/components/InputGroup.vue";
@@ -19,6 +23,9 @@ import { MenuItemData } from "@/components/types";
 import { ScenarioMapLayerAction } from "@/types/constants";
 import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
+import ImageMapLayerSettings from "@/modules/scenarioeditor/ImageMapLayerSettings.vue";
+import TileJSONMapLayerSettings from "@/modules/scenarioeditor/TileJSONMapLayerSettings.vue";
 
 interface Props {
   layerId: FeatureId;
@@ -35,7 +42,7 @@ const {
 
 const { clear } = useSelectedItems();
 
-const mapLayer = computed(() => geo.getMapLayerById(props.layerId) as ScenarioImageLayer);
+const mapLayer = computed(() => geo.getMapLayerById(props.layerId) as ScenarioMapLayer);
 const isVisible = computed(() => !(mapLayer.value?.isHidden ?? false));
 
 const layerName = ref("DD");
@@ -43,11 +50,6 @@ const layerName = ref("DD");
 const opacity = computed({
   get: () => mapLayer.value?.opacity,
   set: (v) => updateLayer({ opacity: v }, true),
-});
-
-const rotation = computed({
-  get: () => mapLayer.value?.imageRotate ?? 0,
-  set: (v) => updateLayer({ imageRotate: v }),
 });
 
 watch(
@@ -103,7 +105,6 @@ function toggleLayerVisibility() {
               class="mr-2 h-7 w-7 text-gray-500"
             />
             <input
-              id="stroke-opacity"
               v-model.number="opacity"
               type="range"
               min="0"
@@ -127,18 +128,36 @@ function toggleLayerVisibility() {
             <DotsMenu :items="imageLayerMenuItems" @action="onImageLayerAction" />
           </div>
         </div>
-        <!--        <section class="mt-4 grid w-full grid-cols-1 gap-x-6 gap-y-2 text-sm">
-          <InputGroup
-            label="Rotation"
-            v-model.number="rotation"
-            type="range"
-            min="-3"
-            max="3"
-            step="0.01"
-            class=""
-          >
-          </InputGroup>
-        </section>-->
+        <TabGroup class="-mx-4 mt-2" as="div">
+          <TabList class="mb-2 flex space-x-4 border-b-2 px-4" v-slot="{ selectedIndex }">
+            <Tab
+              v-for="(tab, i) in ['Settings', 'Debug']"
+              :class="[
+                selectedIndex === i ? 'border-army  text-army' : 'border-transparent',
+                'border-b-2 px-1 py-2 ',
+              ]"
+              >{{ tab }}</Tab
+            >
+          </TabList>
+          <TabPanels class="w-full overflow-auto px-4">
+            <TabPanel>
+              <ImageMapLayerSettings
+                v-if="mapLayer.type === 'ImageLayer'"
+                :layer="mapLayer"
+                @update="updateLayer"
+              />
+              <TileJSONMapLayerSettings
+                v-else-if="mapLayer.type === 'TileJSONLayer'"
+                :layer="mapLayer"
+                @update="updateLayer"
+                @action="onImageLayerAction"
+              />
+            </TabPanel>
+            <TabPanel class="prose prose-sm max-w-none">
+              <pre>{{ mapLayer }}</pre>
+            </TabPanel>
+          </TabPanels>
+        </TabGroup>
       </div>
     </header>
   </div>

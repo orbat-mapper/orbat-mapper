@@ -252,11 +252,18 @@ function addImageLayer() {
 }
 
 function addMapLayer() {
+  // const newLayer = geo.addMapLayer({
+  //   id: nanoid(),
+  //   type: "TileJSONLayer",
+  //   name: "Town plans of Sicily, Messina",
+  //   url: "https://maps.georeferencer.com/georeferences/c589e97e-4ee3-572f-9c17-ec267dc1e41d/2019-10-01T08:40:08.006175Z/map.json?key=TT2V1y0PsmpHjZjDoUgL",
+  // });
   const newLayer = geo.addMapLayer({
     id: nanoid(),
     type: "TileJSONLayer",
-    name: "Town plans of Sicily, Messina",
-    url: "https://maps.georeferencer.com/georeferences/c589e97e-4ee3-572f-9c17-ec267dc1e41d/2019-10-01T08:40:08.006175Z/map.json?key=TT2V1y0PsmpHjZjDoUgL",
+    name: "New map layer",
+    url: "",
+    _status: "uninitialized",
   });
   uiStore.mapLayersPanelOpen = true;
   nextTick(() => {

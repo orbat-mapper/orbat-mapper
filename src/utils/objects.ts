@@ -4,3 +4,16 @@ export function enum2Items(enumType: { [key: number]: string }) {
     value,
   }));
 }
+
+export function getChangedValues<T extends Record<string, any>>(
+  obj1: T,
+  obj2: T
+): Partial<T> {
+  const diff: any = {};
+  Object.keys(obj1).forEach((key) => {
+    if (obj2[key] !== obj1[key]) {
+      diff[key] = obj1[key];
+    }
+  });
+  return diff;
+}
