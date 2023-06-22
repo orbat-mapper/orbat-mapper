@@ -237,6 +237,15 @@ export function useScenarioMapLayers(olMap: OLMap) {
     }
   }
 
+  function moveLayer(layerId: FeatureId) {
+    const layer = getOlLayerById(layerId);
+    const newIndex = scn.geo.getMapLayerIndex(layerId);
+    if (layer) {
+      mapLayersGroup.getLayers().remove(layer);
+      mapLayersGroup.getLayers().insertAt(newIndex, layer);
+    }
+  }
+
   scn.geo.onMapLayerEvent((event) => {
     if (event.type === "add") {
       addLayer(event.id);
@@ -244,6 +253,8 @@ export function useScenarioMapLayers(olMap: OLMap) {
       deleteLayer(event.id);
     } else if (event.type === "update") {
       updateLayer(event.id, event.data as ScenarioMapLayerUpdate);
+    } else if (event.type === "move") {
+      moveLayer(event.id);
     }
   });
 
@@ -266,7 +277,9 @@ export function useScenarioMapLayers(olMap: OLMap) {
   onUndoRedo(({ action, meta }) => {
     if (
       !meta ||
-      !["addMapLayer", "updateMapLayer", "deleteMapLayer"].includes(meta.label)
+      !["addMapLayer", "updateMapLayer", "deleteMapLayer", "moveMapLayer"].includes(
+        meta.label
+      )
     )
       return;
     const { label, value: layerId } = meta;
@@ -285,6 +298,8 @@ export function useScenarioMapLayers(olMap: OLMap) {
     } else if (label === "updateMapLayer") {
       const data = scn.geo.getMapLayerById(layerId);
       updateLayer(layerId, data);
+    } else if (label === "moveMapLayer") {
+      moveLayer(layerId);
     }
   });
 
@@ -304,6 +319,7 @@ function getOrCreateLayerGroup(olMap: OLMap) {
 
 export function getMapLayerIcon(mapLayer: ScenarioMapLayer) {
   if (mapLayer.type === "ImageLayer") return ImageIcon;
-  if (mapLayer.type === "TileJSONLayer") return IconWebBox;
+  if (mapLayer.type === "TileJSONLayer" || mapLayer.type === "XYZLayer")
+    return IconWebBox;
   return ImageIcon;
 }

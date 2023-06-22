@@ -78,6 +78,7 @@ export const INTERNAL_NAMES = [
   "_gid",
   "_sid",
   "_type",
+  "_status",
 ];
 export const TIMESTAMP_NAMES = ["t", "visibleFromT", "visibleUntilT", "startTime"];
 export type ScenarioEventType = "unit" | "scenario";

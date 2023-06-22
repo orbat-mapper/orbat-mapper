@@ -20,11 +20,13 @@ import { klona } from "klona";
 import { moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
 
-export type ScenarioMapLayerEvent = {
-  type: "add" | "remove" | "update";
-  id: FeatureId;
-  data: ScenarioMapLayer | ScenarioMapLayerUpdate;
-};
+export type ScenarioMapLayerEvent =
+  | {
+      type: "add" | "remove" | "update";
+      id: FeatureId;
+      data: ScenarioMapLayer | ScenarioMapLayerUpdate;
+    }
+  | { type: "move"; id: FeatureId; index: number };
 
 export type UpdateOptions = {
   undoable?: boolean;
@@ -32,6 +34,11 @@ export type UpdateOptions = {
   force?: boolean;
   emitOnly?: boolean;
 };
+
+export interface MoveLayerOptions {
+  toIndex?: number;
+  direction?: "up" | "down";
+}
 
 export function useGeo(store: NewScenarioStore) {
   const { state, update } = store;
@@ -106,6 +113,19 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "moveLayer", value: layerId }
     );
+  }
+
+  function moveMapLayer(layerId: FeatureId, options: MoveLayerOptions) {
+    const fromIndex = state.mapLayers.indexOf(layerId);
+    const toIndex =
+      options.toIndex ?? (options.direction === "up" ? fromIndex - 1 : fromIndex + 1);
+    update(
+      (s) => {
+        moveItemMutable(s.mapLayers, fromIndex, toIndex);
+      },
+      { label: "moveMapLayer", value: layerId }
+    );
+    mapLayerEvent.trigger({ type: "move", id: layerId, index: toIndex });
   }
 
   function moveFeature(featureId: FeatureId, toIndex: number) {
@@ -319,6 +339,8 @@ export function useGeo(store: NewScenarioStore) {
     deleteMapLayer,
     updateMapLayer,
     getMapLayerById: (id: FeatureId) => state.mapLayerMap[id],
+    getMapLayerIndex: (id: FeatureId) => state.mapLayers.indexOf(id),
     onMapLayerEvent: mapLayerEvent.on,
+    moveMapLayer,
   };
 }

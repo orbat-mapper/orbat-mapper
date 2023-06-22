@@ -227,7 +227,8 @@ export type ActionLabel =
   | "batchLayer"
   | "addMapLayer"
   | "deleteMapLayer"
-  | "updateMapLayer";
+  | "updateMapLayer"
+  | "moveMapLayer";
 
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);

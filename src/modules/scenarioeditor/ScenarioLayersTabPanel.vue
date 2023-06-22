@@ -57,7 +57,9 @@ onUnmounted(() => (uiStore.layersPanelActive = false));
 
 const mapLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
   { label: "Zoom to", action: "zoom" },
-  { label: "Delete", action: "delete" },
+  { label: "Move up", action: "moveUp" },
+  { label: "Move down", action: "moveDown" },
+  { label: "Delete", action: "moveDown" },
 ];
 
 const mapLayerButtonItems: ButtonGroupItem[] = [
@@ -166,11 +168,17 @@ const mapLayersMenuItems: MenuItemData[] = [
   { label: "Add TileJSON json", action: () => addMapLayer("TileJSONLayer") },
 ];
 
-function onImageLayerAction(layer: ScenarioMapLayer, action: ScenarioMapLayerAction) {
+function onMapLayerAction(layer: ScenarioMapLayer, action: ScenarioMapLayerAction) {
   if (action === "zoom") bus.emit({ action, id: layer.id });
   if (action === "delete") {
     geo.deleteMapLayer(layer.id);
     activeMapLayerId.value = null;
+  }
+  if (action === "moveUp") {
+    geo.moveMapLayer(layer.id, { direction: "up" });
+  }
+  if (action === "moveDown") {
+    geo.moveMapLayer(layer.id, { direction: "down" });
   }
 }
 
@@ -348,7 +356,7 @@ function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
             </button>
             <DotsMenu
               :items="mapLayerMenuItems"
-              @action="onImageLayerAction(layer, $event)"
+              @action="onMapLayerAction(layer, $event)"
               class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
             />
           </div>

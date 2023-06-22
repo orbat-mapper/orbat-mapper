@@ -56,7 +56,7 @@ export const ScenarioLayerActions = {
   SetActive: "SetActive",
 } as const;
 
-export type ScenarioMapLayerAction = "zoom" | "delete";
+export type ScenarioMapLayerAction = "zoom" | "delete" | "moveUp" | "moveDown";
 
 export type ScenarioLayerAction =
   (typeof ScenarioLayerActions)[keyof typeof ScenarioLayerActions];
