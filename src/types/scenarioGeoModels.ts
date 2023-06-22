@@ -86,6 +86,7 @@ export interface ScenarioImageLayer extends ScenarioMapLayerBase {
 
 export interface ScenarioXYZLayer extends ScenarioMapLayerBase {
   type: "XYZLayer";
+  url: string;
 }
 
 export interface ScenarioTileJSONLayer extends ScenarioMapLayerBase {

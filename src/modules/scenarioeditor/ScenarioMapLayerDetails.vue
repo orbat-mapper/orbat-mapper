@@ -69,6 +69,7 @@ const debouncedUpdate = useDebounceFn((data: ScenarioMapLayerUpdate) => {
 }, 500);
 
 function updateLayer(data: ScenarioMapLayerUpdate, debounce = false) {
+  console.log("updateLayer", data);
   debounce && debouncedUpdate(data);
   mapLayer.value &&
     geo.updateMapLayer(props.layerId, data, { undoable: !debounce, emitOnly: debounce });
@@ -147,7 +148,9 @@ function toggleLayerVisibility() {
                 @update="updateLayer"
               />
               <TileJSONMapLayerSettings
-                v-else-if="mapLayer.type === 'TileJSONLayer'"
+                v-else-if="
+                  mapLayer.type === 'TileJSONLayer' || mapLayer.type === 'XYZLayer'
+                "
                 :layer="mapLayer"
                 @update="updateLayer"
                 @action="onImageLayerAction"

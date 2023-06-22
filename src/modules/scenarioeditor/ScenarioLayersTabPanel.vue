@@ -10,7 +10,12 @@ import {
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import { nextTick, onUnmounted, ref } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
-import { FeatureId, ScenarioLayer, ScenarioMapLayer } from "@/types/scenarioGeoModels";
+import {
+  FeatureId,
+  ScenarioLayer,
+  ScenarioMapLayer,
+  ScenarioMapLayerType,
+} from "@/types/scenarioGeoModels";
 import {
   IconClockOutline,
   IconEye,
@@ -64,11 +69,15 @@ const mapLayerButtonItems: ButtonGroupItem[] = [
   },
   {
     label: "Add image layer",
-    onClick: () => addImageLayer(),
+    onClick: () => addMapLayer("ImageLayer"),
+  },
+  {
+    label: "Add XYZ tile layer",
+    onClick: () => addMapLayer("XYZLayer"),
   },
   {
     label: "Add TileJSON layer",
-    onClick: () => addMapLayer(),
+    onClick: () => addMapLayer("TileJSONLayer"),
   },
 ];
 
@@ -152,8 +161,9 @@ const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
 ];
 
 const mapLayersMenuItems: MenuItemData[] = [
-  { label: "Add image layer", action: () => addImageLayer() },
-  { label: "Add TileJSON json", action: () => addMapLayer() },
+  { label: "Add image layer", action: () => addMapLayer("ImageLayer") },
+  { label: "Add XYZ tile layer", action: () => addMapLayer("XYZLayer") },
+  { label: "Add TileJSON json", action: () => addMapLayer("TileJSONLayer") },
 ];
 
 function onImageLayerAction(layer: ScenarioMapLayer, action: ScenarioMapLayerAction) {
@@ -234,37 +244,45 @@ function addNewLayer() {
   return addedLayer;
 }
 
-function addImageLayer() {
-  const newLayer = geo.addMapLayer({
-    id: nanoid(),
-    type: "ImageLayer",
-    name: "Test",
-    url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Achin,_Plan_de_la_ville_de_Paris_repr%C3%A9sentant_les_nouvelles_voitures_publiques,_1828.jpg",
-    attributions: [
-      "<a href='http://www.geoportail.gouv.fr/actualite/181/telechargez-les-cartes-et-photographies-aeriennes-historiques'>Photo historique &copy; IGN</a>",
-    ],
-  });
-  uiStore.mapLayersPanelOpen = true;
-  nextTick(() => {
-    activeMapLayerId.value = newLayer.id;
-  });
-  return newLayer;
-}
-
-function addMapLayer() {
+function addMapLayer(layerType: ScenarioMapLayerType): ScenarioMapLayer {
   // const newLayer = geo.addMapLayer({
   //   id: nanoid(),
   //   type: "TileJSONLayer",
   //   name: "Town plans of Sicily, Messina",
   //   url: "https://maps.georeferencer.com/georeferences/c589e97e-4ee3-572f-9c17-ec267dc1e41d/2019-10-01T08:40:08.006175Z/map.json?key=TT2V1y0PsmpHjZjDoUgL",
   // });
-  const newLayer = geo.addMapLayer({
-    id: nanoid(),
-    type: "TileJSONLayer",
-    name: "New map layer",
-    url: "",
-    _status: "uninitialized",
-  });
+  let newLayer: ScenarioMapLayer;
+  if (layerType === "TileJSONLayer") {
+    newLayer = geo.addMapLayer({
+      id: nanoid(),
+      type: "TileJSONLayer",
+      name: "New map layer",
+      url: "",
+      _status: "uninitialized",
+    });
+  } else if (layerType === "XYZLayer") {
+    newLayer = geo.addMapLayer({
+      id: nanoid(),
+      type: "XYZLayer",
+      name: "New XYZ map layer",
+      url: "",
+      _status: "uninitialized",
+    });
+  } else if (layerType === "ImageLayer") {
+    newLayer = geo.addMapLayer({
+      id: nanoid(),
+      type: "ImageLayer",
+      name: "Test",
+      url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Achin,_Plan_de_la_ville_de_Paris_repr%C3%A9sentant_les_nouvelles_voitures_publiques,_1828.jpg",
+      attributions: [
+        "<a href='http://www.geoportail.gouv.fr/actualite/181/telechargez-les-cartes-et-photographies-aeriennes-historiques'>Photo historique &copy; IGN</a>",
+      ],
+      _status: "uninitialized",
+    });
+  } else {
+    throw new Error(`Unknown layer type ${layerType}`);
+  }
+
   uiStore.mapLayersPanelOpen = true;
   nextTick(() => {
     activeMapLayerId.value = newLayer.id;

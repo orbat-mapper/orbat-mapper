@@ -7,6 +7,7 @@ import {
   ScenarioImageLayer,
   ScenarioMapLayer,
   ScenarioTileJSONLayer,
+  ScenarioXYZLayer,
 } from "@/types/scenarioGeoModels";
 import GeoImageLayer from "ol-ext/layer/GeoImage";
 import GeoImage from "ol-ext/source/GeoImage";
@@ -23,6 +24,7 @@ import {
   ScenarioMapLayerUpdate,
   ScenarioTileJSONLayerUpdate,
 } from "@/types/internalModels";
+import XYZ from "ol/source/XYZ";
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
@@ -160,6 +162,34 @@ export function useScenarioMapLayers(olMap: OLMap) {
     });
     mapLayersGroup.getLayers().push(newLayer);
   }
+  function addXYZLayer(data: ScenarioXYZLayer) {
+    if (!data.url) {
+      console.warn("Missing url for tile layer");
+      return;
+    }
+    const source = new XYZ({
+      url: data.url,
+      attributions: data.attributions,
+    });
+
+    const newLayer = new TileLayer({
+      opacity: data.opacity ?? 0.7,
+      visible: !(data.isHidden ?? false),
+      source,
+      properties: {
+        id: data.id,
+        title: data.name,
+        name: data.name,
+      },
+    });
+    scn.geo.updateMapLayer(
+      data.id,
+      { _status: "initialized" },
+      { noEmit: true, undoable: false }
+    );
+
+    mapLayersGroup.getLayers().push(newLayer);
+  }
 
   function deleteLayer(layerId: FeatureId) {
     const layer = getOlLayerById(layerId);
@@ -174,6 +204,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     const mapLayer = scn.geo.getMapLayerById(layerId);
     if (mapLayer.type === "ImageLayer") addImageLayer(mapLayer);
     if (mapLayer.type === "TileJSONLayer") addTileJSONLayer(mapLayer);
+    if (mapLayer.type === "XYZLayer") addXYZLayer(mapLayer);
   }
 
   function updateLayer(layerId: FeatureId, data: ScenarioMapLayerUpdate) {
@@ -191,7 +222,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
       layer.setOpacity(data.opacity);
     }
 
-    if (mapLayer.type === "TileJSONLayer") {
+    if (mapLayer.type === "TileJSONLayer" || mapLayer.type === "XYZLayer") {
       if ("url" in data && data.url !== undefined) {
         deleteLayer(layerId);
         addLayer(layerId);
