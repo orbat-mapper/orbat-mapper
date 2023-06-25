@@ -36,14 +36,18 @@ watch(
   { deep: true, flush: "sync" }
 );
 
-watch(selectedScenarioEventIds, (v) => {
-  if (
-    v.size === 1 &&
-    !(activeScenarioEventIdRef.value && v.has(activeScenarioEventIdRef.value))
-  )
-    activeScenarioEventId.value = [...selectedScenarioEventIds.value.values()].pop();
-  if (v.size === 0) activeScenarioEventId.value = null;
-});
+watch(
+  selectedScenarioEventIds,
+  (v) => {
+    if (
+      v.size === 1 &&
+      !(activeScenarioEventIdRef.value && v.has(activeScenarioEventIdRef.value))
+    )
+      activeScenarioEventId.value = [...selectedScenarioEventIds.value.values()].pop();
+    if (v.size === 0) activeScenarioEventId.value = null;
+  },
+  { deep: true }
+);
 
 watch(
   selectedMapLayerIds,
@@ -59,7 +63,7 @@ const activeUnitId = computed({
   get: () => activeUnitIdRef.value,
   set: (v) => {
     activeUnitIdRef.value = v;
-    clear();
+    v && clear();
     if (v) selectedUnitIds.value.add(v);
   },
 });
@@ -68,7 +72,7 @@ const activeFeatureId = computed({
   get: () => activeFeatureIdRef.value,
   set: (v) => {
     activeFeatureIdRef.value = v;
-    clear();
+    v && clear();
     if (v) selectedFeatureIds.value.add(v);
   },
 });
@@ -77,7 +81,7 @@ const activeScenarioEventId = computed({
   get: () => activeScenarioEventIdRef.value,
   set: (v) => {
     activeScenarioEventIdRef.value = v;
-    clear();
+    v && clear();
     if (v) selectedScenarioEventIds.value.add(v);
   },
 });
@@ -86,7 +90,7 @@ const activeMapLayerId = computed({
   get: () => activeMapLayerIdRef.value,
   set: (v) => {
     activeMapLayerIdRef.value = v;
-    clear();
+    v && clear();
     if (v) selectedMapLayerIds.value.add(v);
   },
 });
