@@ -34,6 +34,7 @@ function createBaseLayers(view: View) {
     properties: {
       title: "OSM",
       name: "osm",
+      layerType: "baselayer",
     },
   });
   const lightGrayLayer = new TileLayer({
@@ -50,6 +51,7 @@ function createBaseLayers(view: View) {
     properties: {
       title: "Gray Basemap",
       name: "grayBasemap",
+      layerType: "baselayer",
     },
   });
 
@@ -64,6 +66,7 @@ function createBaseLayers(view: View) {
     properties: {
       title: "Open topo map",
       name: "openTopoMap",
+      layerType: "baselayer",
     },
   });
 
@@ -79,6 +82,7 @@ function createBaseLayers(view: View) {
     properties: {
       name: "esriWorldImagery",
       title: "ESRI World imagery",
+      layerType: "baselayer",
     },
   });
 
@@ -91,6 +95,7 @@ function createBaseLayers(view: View) {
     properties: {
       title: "Topographic Map Norway",
       name: "kartverketTopo4",
+      layerType: "baselayer",
     },
     extent: transformExtent([2, 57, 33, 72], "EPSG:4326", view.getProjection()),
   });

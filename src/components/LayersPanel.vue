@@ -4,7 +4,7 @@
 
     <BaseLayerSwitcher
       class="mt-4"
-      :settings="tileLayers"
+      :settings="baseLayers"
       v-model="activeBaseLayer"
       @update:layer-opacity="updateOpacity"
     />
@@ -68,7 +68,7 @@ export interface LayerInfo<T extends BaseLayer = BaseLayer> {
   layer: T;
   subLayers?: LayerInfo<T>[];
   description?: string;
-  layerType?: LayerType;
+  layerType?: LayerType | "baselayer";
 }
 
 const geoStore = useGeoStore();
@@ -76,6 +76,16 @@ const mapSettings = useMapSettingsStore();
 let tileLayers = ref<LayerInfo<TileLayer<TileSource>>[]>([]);
 let vectorLayers = ref<LayerInfo<PointVectorLayer>[]>([]);
 let activeBaseLayer = shallowRef<LayerInfo<TileLayer<TileSource>>>();
+
+const noneLayer = { title: "None", id: null, description: "", opacity: -1, name: "None" };
+const baseLayers = computed(() => {
+  const l = tileLayers.value
+    .map((l) => ({ ...l, name: l.title, description: "" }))
+    .filter((l) => l.layerType === "baselayer");
+  // @ts-ignore
+  l.push(noneLayer);
+  return l;
+});
 
 const mapView = computed(() => {
   if (!geoStore.olMap) return;
@@ -94,20 +104,20 @@ watch(
 
 watch(activeBaseLayer, (layerInfo) => {
   if (!layerInfo) return;
-  mapSettings.baseLayerName = layerInfo.layer.get("name");
-  tileLayers.value.forEach((l) => {
+  mapSettings.baseLayerName = layerInfo.layer?.get("name") || "None";
+  baseLayers.value.forEach((l) => {
     const isVisible = l.name === layerInfo.name;
-    l.layer.setOpacity(layerInfo.opacity);
+    //l.layer.setOpacity(layerInfo.opacity);
     l.visible = isVisible;
-    l.layer.setVisible(isVisible);
+    if (l.layer) l.layer.setVisible(isVisible);
   });
 });
 
 function updateLayers() {
   if (!geoStore.olMap) return;
 
-  const transformLayer = (layer: BaseLayer): LayerInfo<BaseLayer> => {
-    const l: LayerInfo<BaseLayer> = {
+  const transformLayer = (layer: BaseLayer): LayerInfo => {
+    const l: LayerInfo = {
       id: getUid(layer),
       title: layer.get("title") || layer.get("name"),
       name: layer.get("name"),
@@ -137,7 +147,7 @@ function updateLayers() {
     ({ layer }) => layer instanceof TileLayer
   ) as LayerInfo<AnyTileLayer>[];
 
-  activeBaseLayer.value = tileLayers.value.filter(
+  activeBaseLayer.value = baseLayers.value.filter(
     (l) => l.visible
   )[0] as LayerInfo<AnyTileLayer>;
 
@@ -154,10 +164,6 @@ const toggleLayer = (l: LayerInfo<any>) => {
   l.layer.setOpacity(l.opacity);
   l.layer.setVisible(l.visible);
 };
-
-const baseLayers = computed(() =>
-  tileLayers.value.map((l) => ({ ...l, name: l.title, description: "" }))
-);
 
 function updateOpacity(l: LayerInfo<any>, opacity: number) {
   l.opacity = opacity;

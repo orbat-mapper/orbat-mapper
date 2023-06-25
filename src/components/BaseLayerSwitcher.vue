@@ -4,7 +4,7 @@
     <div class="-space-y-px rounded-md bg-white">
       <RadioGroupOption
         as="template"
-        v-for="(setting, settingIdx) in settings"
+        v-for="(setting, settingIdx) in nsettings"
         :key="setting.title"
         :value="setting"
         v-slot="{ checked, active }"
@@ -37,7 +37,9 @@
               ]"
             >
               <span class="flex-auto truncate">{{ setting.title }}</span>
+              <span v-if="setting.title === 'None'" />
               <OpacityInput
+                v-else
                 :model-value="setting.opacity"
                 @update:model-value="$emit('update:layerOpacity', setting, $event)"
                 class="flex-shrink-0"
@@ -66,6 +68,7 @@ import {
 import { LayerInfo } from "./LayersPanel.vue";
 import OpacityInput from "./OpacityInput.vue";
 import { useVModel } from "@vueuse/core";
+import { computed } from "vue";
 
 interface Props {
   settings: LayerInfo<any>[];
@@ -76,4 +79,5 @@ const props = defineProps<Props>();
 const emit = defineEmits(["update:modelValue", "update:layerOpacity"]);
 
 const selected = useVModel(props, "modelValue", emit);
+const nsettings = computed(() => [...props.settings]);
 </script>
