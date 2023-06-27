@@ -6,6 +6,7 @@ import {
   FeatureId,
   ScenarioImageLayer,
   ScenarioMapLayer,
+  ScenarioMapLayerType,
   ScenarioTileJSONLayer,
   ScenarioXYZLayer,
 } from "@/types/scenarioGeoModels";
@@ -25,6 +26,7 @@ import {
   ScenarioTileJSONLayerUpdate,
 } from "@/types/internalModels";
 import XYZ from "ol/source/XYZ";
+import { TGeo } from "@/scenariostore";
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
@@ -322,4 +324,52 @@ export function getMapLayerIcon(mapLayer: ScenarioMapLayer) {
   if (mapLayer.type === "TileJSONLayer" || mapLayer.type === "XYZLayer")
     return IconWebBox;
   return ImageIcon;
+}
+
+export function addMapLayer(
+  layerType: ScenarioMapLayerType,
+  geo: TGeo
+): ScenarioMapLayer {
+  // const newLayer = geo.addMapLayer({
+  //   id: nanoid(),
+  //   type: "TileJSONLayer",
+  //   name: "Town plans of Sicily, Messina",
+  //   url: "https://maps.georeferencer.com/georeferences/c589e97e-4ee3-572f-9c17-ec267dc1e41d/2019-10-01T08:40:08.006175Z/map.json?key=TT2V1y0PsmpHjZjDoUgL",
+  // });
+  let newLayer: ScenarioMapLayer;
+  if (layerType === "TileJSONLayer") {
+    newLayer = geo.addMapLayer({
+      id: nanoid(),
+      type: "TileJSONLayer",
+      name: "New map layer",
+      url: "",
+      _status: "uninitialized",
+      _isNew: true,
+    });
+  } else if (layerType === "XYZLayer") {
+    newLayer = geo.addMapLayer({
+      id: nanoid(),
+      type: "XYZLayer",
+      name: "New XYZ map layer",
+      url: "",
+      _status: "uninitialized",
+      _isNew: true,
+    });
+  } else if (layerType === "ImageLayer") {
+    newLayer = geo.addMapLayer({
+      id: nanoid(),
+      type: "ImageLayer",
+      name: "Test",
+      url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Achin,_Plan_de_la_ville_de_Paris_repr%C3%A9sentant_les_nouvelles_voitures_publiques,_1828.jpg",
+      attributions: [
+        "<a href='http://www.geoportail.gouv.fr/actualite/181/telechargez-les-cartes-et-photographies-aeriennes-historiques'>Photo historique &copy; IGN</a>",
+      ],
+      _status: "uninitialized",
+      _isNew: true,
+    });
+  } else {
+    throw new Error(`Unknown layer type ${layerType}`);
+  }
+
+  return newLayer;
 }

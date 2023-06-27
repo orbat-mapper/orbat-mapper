@@ -38,7 +38,7 @@ import EditLayerInlineForm from "@/modules/scenarioeditor/EditLayerInlineForm.vu
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
-import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
+import { addMapLayer, getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 import SplitButton from "@/components/SplitButton.vue";
 
 const emit = defineEmits(["feature-click"]);
@@ -71,15 +71,15 @@ const mapLayerButtonItems: ButtonGroupItem[] = [
   },
   {
     label: "Add image layer",
-    onClick: () => addMapLayer("ImageLayer"),
+    onClick: () => addNewMapLayer("ImageLayer"),
   },
   {
     label: "Add XYZ tile layer",
-    onClick: () => addMapLayer("XYZLayer"),
+    onClick: () => addNewMapLayer("XYZLayer"),
   },
   {
     label: "Add TileJSON layer",
-    onClick: () => addMapLayer("TileJSONLayer"),
+    onClick: () => addNewMapLayer("TileJSONLayer"),
   },
 ];
 
@@ -163,9 +163,9 @@ const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
 ];
 
 const mapLayersMenuItems: MenuItemData[] = [
-  { label: "Add image layer", action: () => addMapLayer("ImageLayer") },
-  { label: "Add XYZ tile layer", action: () => addMapLayer("XYZLayer") },
-  { label: "Add TileJSON json", action: () => addMapLayer("TileJSONLayer") },
+  { label: "Add image layer", action: () => addNewMapLayer("ImageLayer") },
+  { label: "Add XYZ tile layer", action: () => addNewMapLayer("XYZLayer") },
+  { label: "Add TileJSON json", action: () => addNewMapLayer("TileJSONLayer") },
 ];
 
 function onMapLayerAction(layer: ScenarioMapLayer, action: ScenarioMapLayerAction) {
@@ -252,45 +252,15 @@ function addNewLayer() {
   return addedLayer;
 }
 
-function addMapLayer(layerType: ScenarioMapLayerType): ScenarioMapLayer {
+function addNewMapLayer(layerType: ScenarioMapLayerType): ScenarioMapLayer {
   // const newLayer = geo.addMapLayer({
   //   id: nanoid(),
   //   type: "TileJSONLayer",
   //   name: "Town plans of Sicily, Messina",
   //   url: "https://maps.georeferencer.com/georeferences/c589e97e-4ee3-572f-9c17-ec267dc1e41d/2019-10-01T08:40:08.006175Z/map.json?key=TT2V1y0PsmpHjZjDoUgL",
   // });
-  let newLayer: ScenarioMapLayer;
-  if (layerType === "TileJSONLayer") {
-    newLayer = geo.addMapLayer({
-      id: nanoid(),
-      type: "TileJSONLayer",
-      name: "New map layer",
-      url: "",
-      _status: "uninitialized",
-    });
-  } else if (layerType === "XYZLayer") {
-    newLayer = geo.addMapLayer({
-      id: nanoid(),
-      type: "XYZLayer",
-      name: "New XYZ map layer",
-      url: "",
-      _status: "uninitialized",
-    });
-  } else if (layerType === "ImageLayer") {
-    newLayer = geo.addMapLayer({
-      id: nanoid(),
-      type: "ImageLayer",
-      name: "Test",
-      url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Achin,_Plan_de_la_ville_de_Paris_repr%C3%A9sentant_les_nouvelles_voitures_publiques,_1828.jpg",
-      attributions: [
-        "<a href='http://www.geoportail.gouv.fr/actualite/181/telechargez-les-cartes-et-photographies-aeriennes-historiques'>Photo historique &copy; IGN</a>",
-      ],
-      _status: "uninitialized",
-    });
-  } else {
-    throw new Error(`Unknown layer type ${layerType}`);
-  }
 
+  const newLayer = addMapLayer(layerType, geo);
   uiStore.mapLayersPanelOpen = true;
   nextTick(() => {
     activeMapLayerId.value = newLayer.id;
