@@ -42,7 +42,9 @@ export type ScenarioActions =
   | "loadNew"
   | "exportToClipboard"
   | "export"
-  | "import";
+  | "import"
+  | "addTileJSONLayer"
+  | "addXYZLayer";
 
 export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
 

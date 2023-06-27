@@ -18,6 +18,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import { fixExtent } from "@/utils/geoConvert";
+import { addMapLayer } from "@/modules/scenarioeditor/scenarioMapLayers";
 
 const mapRef = injectStrict(activeMapKey);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -32,6 +33,7 @@ const {
   onEventSelect,
   onPlaceSelect,
   onImageLayerSelect,
+  onScenarioAction,
 } = useSearchActions();
 const ui = useUiStore();
 const {
@@ -81,6 +83,19 @@ onImageLayerSelect(({ layerId }) => {
     imageLayerBus.emit({ action: "zoom", id: layerId });
     activeMapLayerId.value = layerId;
   });
+});
+
+onScenarioAction(({ action }) => {
+  if (!mapRef.value) return;
+  if (action === "addTileJSONLayer" || action === "addXYZLayer") {
+    const layerType = action === "addXYZLayer" ? "XYZLayer" : "TileJSONLayer";
+    ui.activeTabIndex = TAB_LAYERS;
+    const newLayer = addMapLayer(layerType, activeScenario.geo);
+    ui.mapLayersPanelOpen = true;
+    nextTick(() => {
+      activeMapLayerId.value = newLayer.id;
+    });
+  }
 });
 
 onFeatureSelect(({ featureId }) => {

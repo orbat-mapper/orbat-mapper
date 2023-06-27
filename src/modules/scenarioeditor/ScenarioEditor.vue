@@ -310,6 +310,7 @@ const onFeatureSelectHook = createEventHook<{
 }>();
 const onEventSelectHook = createEventHook<EventSearchResult>();
 const onPlaceSelectHook = createEventHook<PhotonSearchResult>();
+const onScenarioActionHook = createEventHook<{ action: ScenarioActions }>();
 provide(searchActionsKey, {
   onUnitSelectHook,
   onLayerSelectHook,
@@ -317,6 +318,7 @@ provide(searchActionsKey, {
   onEventSelectHook,
   onPlaceSelectHook,
   onImageLayerSelectHook,
+  onScenarioActionHook,
 });
 
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
@@ -424,9 +426,11 @@ async function onScenarioAction(action: ScenarioActions) {
     showExportModal.value = true;
   } else if (action === "import") {
     showImportModal.value = true;
+  } else if (action === "addTileJSONLayer") {
   } else {
     send({ message: "Not implemented yet" });
   }
+  await onScenarioActionHook.trigger({ action });
 }
 
 function showKeyboardShortcuts() {

@@ -181,6 +181,8 @@ const actionItems: ActionItem[] = [
   },
   { action: "exportToClipboard", label: "Copy scenario to clipboard" },
   { action: "addSide", label: "Add side", icon: "add" },
+  { action: "addTileJSONLayer", label: "Add TileJSON map layer", icon: "add" },
+  { action: "addXYZLayer", label: "Add XYZ map layer", icon: "add" },
 ];
 
 export function useActionSearch() {
