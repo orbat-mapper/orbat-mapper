@@ -147,7 +147,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
           scn.geo.updateMapLayer(data.id, dataUpdate, { noEmit: true, undoable: false });
           scn.geo.updateMapLayer(
             data.id,
-            { _status: "initialized" },
+            { _status: "initialized", _isNew: false },
             { noEmit: true, undoable: false }
           );
         }

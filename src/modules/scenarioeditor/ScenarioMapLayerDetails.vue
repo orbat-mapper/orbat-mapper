@@ -25,7 +25,7 @@ import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import ImageMapLayerSettings from "@/modules/scenarioeditor/ImageMapLayerSettings.vue";
-import TileJSONMapLayerSettings from "@/modules/scenarioeditor/TileJSONMapLayerSettings.vue";
+import TileJSONMapLayerSettings from "@/modules/scenarioeditor/TileMapLayerSettings.vue";
 
 interface Props {
   layerId: FeatureId;
@@ -69,7 +69,6 @@ const debouncedUpdate = useDebounceFn((data: ScenarioMapLayerUpdate) => {
 }, 500);
 
 function updateLayer(data: ScenarioMapLayerUpdate, debounce = false) {
-  console.log("updateLayer", data);
   debounce && debouncedUpdate(data);
   mapLayer.value &&
     geo.updateMapLayer(props.layerId, data, { undoable: !debounce, emitOnly: debounce });
