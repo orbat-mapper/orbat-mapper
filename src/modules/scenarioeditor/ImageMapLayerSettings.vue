@@ -74,7 +74,7 @@ function updateData(formData: ScenarioImageLayerUpdate) {
           layer.attributions || "Not set"
         }}</span></DescriptionItem
       >
-      <footer class="mt-4 flex justify-end space-x-2">
+      <footer class="mt-4 flex justify-end space-x-2 pb-1">
         <BaseButton small type="button" @click="editMode = true">Edit</BaseButton>
       </footer>
     </div>

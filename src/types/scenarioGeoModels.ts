@@ -69,6 +69,7 @@ interface ScenarioMapLayerBase extends Partial<VisibilityInfo> {
   name: string;
   description?: string;
   attributions?: string;
+  externalUrl?: string;
   isHidden?: boolean;
   opacity?: number;
   extent?: number[];

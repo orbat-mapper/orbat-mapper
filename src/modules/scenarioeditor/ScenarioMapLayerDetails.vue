@@ -23,6 +23,7 @@ import ImageMapLayerSettings from "@/modules/scenarioeditor/ImageMapLayerSetting
 import TileJSONMapLayerSettings from "@/modules/scenarioeditor/TileMapLayerSettings.vue";
 import { LayerUpdateOptions } from "@/composables/geoMapLayers";
 import { useUiStore } from "@/stores/uiStore";
+import MapLayerMetaSettings from "@/modules/scenarioeditor/MapLayerMetaSettings.vue";
 
 interface Props {
   layerId: FeatureId;
@@ -112,7 +113,6 @@ function toggleLayerVisibility() {
     <header class="">
       <div v-if="mapLayer" class="">
         <EditableLabel v-model="layerName" @update-value="updateValue('name', $event)" />
-        <p class="whitespace-pre-wrap">{{ mapLayer.description }}</p>
         <div class="flex">
           <div class="flex flex-auto items-center">
             <component
@@ -160,7 +160,9 @@ function toggleLayerVisibility() {
             >
           </TabList>
           <TabPanels class="w-full overflow-auto px-4">
-            <TabPanel> dtails </TabPanel>
+            <TabPanel
+              ><MapLayerMetaSettings :layer="mapLayer" @update="updateLayer"
+            /></TabPanel>
             <TabPanel>
               <ImageMapLayerSettings
                 v-if="mapLayer.type === 'ImageLayer'"
