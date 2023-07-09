@@ -106,8 +106,18 @@ export function useScenarioMapLayers(olMap: OLMap) {
           },
           { noEmit: true }
         );
+        scn.geo.updateMapLayer(
+          data.id,
+          { _status: "initialized", _isNew: false },
+          { noEmit: true, undoable: false }
+        );
       });
     } else {
+      scn.geo.updateMapLayer(
+        data.id,
+        { _status: "initialized", _isNew: false },
+        { noEmit: true, undoable: false }
+      );
       newLayer.setVisible(!(data.isHidden ?? false));
     }
     mapLayersGroup.getLayers().push(newLayer);
@@ -234,10 +244,15 @@ export function useScenarioMapLayers(olMap: OLMap) {
       layer.setOpacity(data.opacity);
     }
 
-    if (mapLayer.type === "TileJSONLayer" || mapLayer.type === "XYZLayer") {
+    if (
+      mapLayer.type === "TileJSONLayer" ||
+      mapLayer.type === "XYZLayer" ||
+      mapLayer.type === "ImageLayer"
+    ) {
       if ("url" in data && data.url !== undefined) {
         deleteLayer(layerId);
         addLayer(layerId);
+        if (imageTransformIsActive.value) startTransform(layer, layerId);
       }
     }
 
@@ -252,6 +267,10 @@ export function useScenarioMapLayers(olMap: OLMap) {
 
       if (d.imageRotate !== undefined) {
         layer.getSource().setRotation(d.imageRotate);
+      }
+
+      if (d.attributions !== undefined) {
+        layer.getSource().setAttributions(d.attributions);
       }
     }
   }
@@ -395,10 +414,9 @@ export function addMapLayer(
     newLayer = geo.addMapLayer({
       id: nanoid(),
       type: "ImageLayer",
-      name: "Test",
-      url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Achin,_Plan_de_la_ville_de_Paris_repr%C3%A9sentant_les_nouvelles_voitures_publiques,_1828.jpg",
-      attributions:
-        "<a href='http://www.geoportail.gouv.fr/actualite/181/telechargez-les-cartes-et-photographies-aeriennes-historiques'>Photo historique &copy; IGN</a>",
+      name: "New image layer",
+      url: "",
+      attributions: "",
       _status: "uninitialized",
       _isNew: true,
     });

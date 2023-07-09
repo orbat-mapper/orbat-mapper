@@ -3,11 +3,12 @@ import { ScenarioTileJSONLayer, ScenarioXYZLayer } from "@/types/scenarioGeoMode
 import InputGroup from "@/components/InputGroup.vue";
 import { computed, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { getChangedValues, nanoid } from "@/utils";
+import { getChangedValues, nanoid, sanitizeHTML } from "@/utils";
 import { useFocusOnMount } from "@/components/helpers";
+import { ScenarioImageLayerUpdate } from "@/types/internalModels";
 
 interface Props {
-  layer: ScenarioTileJSONLayer | ScenarioXYZLayer;
+  layer: ScenarioTileJSONLayer | ScenarioXYZLayer | ScenarioImageLayerUpdate;
 }
 const props = defineProps<Props>();
 const emit = defineEmits(["update", "action", "cancel"]);
@@ -32,6 +33,8 @@ const status = computed(() => props.layer._status);
 const urlLabel = computed(() => {
   if (props.layer.type === "TileJSONLayer") {
     return "TileJSON URL";
+  } else if (props.layer.type === "ImageLayer") {
+    return "Image URL";
   } else {
     return "XYZ tile URL template";
   }
@@ -45,6 +48,9 @@ watch(status, (v) => {
 
 function updateData() {
   const diff = getChangedValues({ ...formData.value }, props.layer);
+  if (diff.attributions) {
+    diff.attributions = sanitizeHTML(diff.attributions);
+  }
   emit("update", diff);
 }
 </script>
@@ -61,7 +67,7 @@ function updateData() {
         required
       />
       <InputGroup
-        v-if="layer.type === 'XYZLayer'"
+        v-if="layer.type === 'XYZLayer' || layer.type === 'ImageLayer'"
         label="Attributions"
         type="text"
         class=""

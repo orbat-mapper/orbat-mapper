@@ -1,31 +1,37 @@
 <script setup lang="ts">
 import { ScenarioImageLayer } from "@/types/scenarioGeoModels";
-import InputGroup from "@/components/InputGroup.vue";
-import { computed, onMounted, onUnmounted, watch } from "vue";
-import { ScenarioMapLayerUpdate } from "@/types/internalModels";
+import { onMounted, onUnmounted, ref, watch } from "vue";
+import { ScenarioImageLayerUpdate, ScenarioMapLayerUpdate } from "@/types/internalModels";
 import { LayerUpdateOptions, useMapLayerInfo } from "@/composables/geoMapLayers";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
+import { getChangedValues } from "@/utils";
+import DescriptionItem from "@/components/DescriptionItem.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import TileMapLayerSettingsForm from "@/modules/scenarioeditor/TileMapLayerSettingsForm.vue";
 
 interface Props {
   layer: ScenarioImageLayer;
 }
 const props = defineProps<Props>();
-
-const bus = useEventBus(imageLayerAction);
 const emit = defineEmits<{
-  update: [d: ScenarioMapLayerUpdate, options: LayerUpdateOptions];
+  update: [d: ScenarioMapLayerUpdate, options?: LayerUpdateOptions];
 }>();
 
-const { layerTypeLabel } = useMapLayerInfo(props.layer);
+const bus = useEventBus(imageLayerAction);
+const editMode = ref(props.layer._isNew ?? false);
 
-const rotation = computed({
-  get: () => (props.layer.imageRotate ?? 0) * (180 / Math.PI),
-  set: (v) => emit("update", { imageRotate: v * (Math.PI / 180) }, { debounce: true }),
+const { layerTypeLabel, status, isInitialized } = useMapLayerInfo(props.layer);
+
+watch(status, (v) => {
+  if (v === "initialized") {
+    bus.emit({ action: "zoom", id: props.layer.id });
+    bus.emit({ action: "startTransform", id: props.layer.id });
+  }
 });
 
 onMounted(() => {
-  bus.emit({ action: "startTransform", id: props.layer.id });
+  if (isInitialized.value) bus.emit({ action: "startTransform", id: props.layer.id });
 });
 
 onUnmounted(() => {
@@ -39,23 +45,44 @@ watch(
     bus.emit({ action: "startTransform", id: v });
   }
 );
+
+function updateData(formData: ScenarioImageLayerUpdate) {
+  const diff = getChangedValues({ ...formData }, props.layer);
+  emit("update", diff);
+  editMode.value = false;
+}
 </script>
 
 <template>
-  <header class="flex justify-end">
-    <span class="badge">{{ layerTypeLabel }}</span>
-  </header>
-  <section class="mt-4 grid w-full grid-cols-1 gap-x-6 gap-y-2 text-sm">
-    <InputGroup
-      label="Rotation"
-      v-model.number="rotation"
-      type="range"
-      min="-360"
-      max="360"
-      step=".1"
-      class=""
-    >
-    </InputGroup>
-    {{ rotation }}
+  <section>
+    <header class="flex justify-end">
+      <span class="badge">{{ layerTypeLabel }}</span>
+    </header>
+    <TileMapLayerSettingsForm
+      v-if="editMode"
+      :key="layer.id"
+      :layer="layer"
+      @cancel="editMode = false"
+      @update="updateData"
+    />
+    <div v-else>
+      <DescriptionItem label="Image URL"
+        ><span class="break-all">{{ layer.url || "Not set" }}</span></DescriptionItem
+      >
+      <DescriptionItem label="Attributions" class="mt-4"
+        ><span class="break-all">{{
+          layer.attributions || "Not set"
+        }}</span></DescriptionItem
+      >
+      <footer class="mt-4 flex justify-end space-x-2">
+        <BaseButton small type="button" @click="editMode = true">Edit</BaseButton>
+      </footer>
+    </div>
+    <p v-if="!isInitialized" class="mt-2 text-sm text-gray-500">
+      This layer has not been initialized yet.
+    </p>
+    <p v-if="status === 'error'" class="mt-2 text-sm text-red-600">
+      Failed to load layer.
+    </p>
   </section>
 </template>

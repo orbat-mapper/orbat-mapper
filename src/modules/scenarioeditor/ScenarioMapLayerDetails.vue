@@ -165,6 +165,7 @@ function toggleLayerVisibility() {
               <ImageMapLayerSettings
                 v-if="mapLayer.type === 'ImageLayer'"
                 :layer="mapLayer"
+                :key="mapLayer.id"
                 @update="updateLayer"
               />
               <TileJSONMapLayerSettings
