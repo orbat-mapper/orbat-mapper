@@ -15,7 +15,7 @@ import GeoImage from "ol-ext/source/GeoImage";
 import { fromLonLat, toLonLat, transformExtent } from "ol/proj";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
-import { boundingExtent, isEmpty } from "ol/extent";
+import { isEmpty } from "ol/extent";
 import TileLayer from "ol/layer/Tile";
 import { TileJSON } from "ol/source";
 import { unByKey } from "ol/Observable";
@@ -27,8 +27,6 @@ import {
 } from "@/types/internalModels";
 import XYZ from "ol/source/XYZ";
 import { TGeo } from "@/scenariostore";
-import { fromExtent } from "ol/geom/Polygon";
-import Feature from "ol/Feature";
 import {
   TransformUpdate,
   useImageLayerTransformInteraction,
@@ -397,7 +395,8 @@ export function addMapLayer(
       type: "ImageLayer",
       name: "Test",
       url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Achin,_Plan_de_la_ville_de_Paris_repr%C3%A9sentant_les_nouvelles_voitures_publiques,_1828.jpg",
-      attributions: ['<iframe src="javascript:alert(1)"></iframe>'],
+      attributions:
+        "<a href='http://www.geoportail.gouv.fr/actualite/181/telechargez-les-cartes-et-photographies-aeriennes-historiques'>Photo historique &copy; IGN</a>",
       _status: "uninitialized",
       _isNew: true,
     });
