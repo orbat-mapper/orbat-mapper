@@ -3,7 +3,7 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { Fill, Stroke, Style } from "ol/style";
 import TransformInteraction from "ol-ext/interaction/Transform";
-import { onUnmounted } from "vue";
+import { onUnmounted, ref } from "vue";
 import { fromExtent } from "ol/geom/Polygon";
 import Feature from "ol/Feature";
 import { boundingExtent, getCenter, getHeight, getWidth } from "ol/extent";
@@ -28,6 +28,8 @@ export function useImageLayerTransformInteraction(
   olMap: OLMap,
   options: GeoImageLayerInteractionOptions = {}
 ) {
+  const isActive = ref(false);
+
   const features = new Collection<Feature>();
   const overlayLayer = createOverlayLayer();
   const interaction = new TransformInteraction({
@@ -60,8 +62,6 @@ export function useImageLayerTransformInteraction(
     center = [...newLayer.getSource().getCenter()];
     scale = [...newLayer.getSource().getScale()];
     rotation = startRotation;
-
-    console.log("initializeTransform", startRotation, center, scale);
   }
 
   useOlEvent(
@@ -87,17 +87,17 @@ export function useImageLayerTransformInteraction(
   useOlEvent(
     interaction.on(["translating", "rotating", "scaling"], (e: any) => {
       const feature = e.feature;
-      const geom = feature.getGeometry().clone();
       if (e.type === "rotating") {
         rotation = startRotation - e.angle;
       }
+      const geom = feature.getGeometry().clone();
       const c = getCenter(geom.getExtent());
       geom.rotate(rotation, c);
       const extent = geom.getExtent();
       const width = getWidth(extent);
       const height = getHeight(extent);
+
       if (e.type === "scaling") {
-        // console.log("scaling", e);
         newScale[0] = (scale[0] * width) / iWidth;
         newScale[1] = (scale[1] * height) / iHeight;
       } else {
@@ -131,6 +131,7 @@ export function useImageLayerTransformInteraction(
   );
 
   function startTransform(newLayer: any, layerId: FeatureId) {
+    isActive.value = true;
     currentLayerId = layerId;
     currentLayer = newLayer;
     const polygon = fromExtent(newLayer.getSource().getExtent());
@@ -145,13 +146,14 @@ export function useImageLayerTransformInteraction(
   }
 
   function endTransform() {
+    isActive.value = false;
     currentLayerId = null;
     interaction.setActive(false);
     overlayLayer.getSource()?.clear();
     features.clear();
   }
 
-  return { startTransform, endTransform };
+  return { startTransform, endTransform, isActive };
 }
 
 function createOverlayLayer() {

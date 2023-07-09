@@ -43,7 +43,11 @@ export function useScenarioMapLayers(olMap: OLMap) {
   const mapLayersGroup = getOrCreateLayerGroup(olMap);
 
   const { onUndoRedo } = scn.store;
-  const { startTransform, endTransform } = useImageLayerTransformInteraction(olMap, {
+  const {
+    startTransform,
+    endTransform,
+    isActive: imageTransformIsActive,
+  } = useImageLayerTransformInteraction(olMap, {
     updateHandler: handleTransformUpdate,
   });
   function initializeFromStore() {
@@ -328,6 +332,10 @@ export function useScenarioMapLayers(olMap: OLMap) {
     } else if (label === "updateMapLayer") {
       const data = scn.geo.getMapLayerById(layerId);
       updateLayer(layerId, data);
+      if (imageTransformIsActive) {
+        const olLayer = getOlLayerById(layerId);
+        startTransform(olLayer, layerId);
+      }
     } else if (label === "moveMapLayer") {
       moveLayer(layerId);
     }
