@@ -59,7 +59,7 @@ const mapLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
   { label: "Zoom to", action: "zoom" },
   { label: "Move up", action: "moveUp" },
   { label: "Move down", action: "moveDown" },
-  { label: "Delete", action: "moveDown" },
+  { label: "Delete", action: "delete" },
 ];
 
 const mapLayerButtonItems: ButtonGroupItem[] = [
