@@ -9,7 +9,6 @@ import Feature from "ol/Feature";
 import { boundingExtent, getCenter, getHeight, getWidth } from "ol/extent";
 import { Collection } from "ol";
 import { useOlEvent } from "@/composables/openlayersHelpers";
-import { EntityId } from "@/types/base";
 import { FeatureId } from "@/types/scenarioGeoModels";
 
 export interface TransformUpdate {
@@ -66,21 +65,12 @@ export function useImageLayerTransformInteraction(
 
   useOlEvent(
     interaction.on(["translatestart", "rotatestart", "scalestart"], (e: any) => {
+      initializeTransform(currentLayer);
       const geom = e.feature.getGeometry().clone();
-
-      geom.rotate(rotation, getCenter(geom.getExtent()));
+      geom.rotate(startRotation, getCenter(geom.getExtent()));
       const extent = geom.getExtent();
       iWidth = getWidth(extent);
       iHeight = getHeight(extent);
-      initializeTransform(currentLayer);
-      currentLayerId &&
-        options.updateHandler?.({
-          rotation,
-          center,
-          scale,
-          active: true,
-          id: currentLayerId,
-        });
     })
   );
 

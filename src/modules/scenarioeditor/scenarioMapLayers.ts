@@ -317,6 +317,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     const { label, value: layerId } = meta;
     if (label === "addMapLayer") {
       if (action === "undo") {
+        if (imageTransformIsActive.value) endTransform();
         deleteLayer(layerId);
       } else {
         addLayer(layerId);
@@ -325,12 +326,13 @@ export function useScenarioMapLayers(olMap: OLMap) {
       if (action === "undo") {
         addLayer(layerId);
       } else {
+        if (imageTransformIsActive.value) endTransform();
         deleteLayer(layerId);
       }
     } else if (label === "updateMapLayer") {
       const data = scn.geo.getMapLayerById(layerId);
       updateLayer(layerId, data);
-      if (imageTransformIsActive) {
+      if (imageTransformIsActive.value) {
         const olLayer = getOlLayerById(layerId);
         startTransform(olLayer, layerId);
       }
