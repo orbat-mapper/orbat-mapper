@@ -15,7 +15,7 @@ import GeoImage from "ol-ext/source/GeoImage";
 import { fromLonLat, toLonLat, transformExtent } from "ol/proj";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
-import { isEmpty } from "ol/extent";
+import { boundingExtent, isEmpty } from "ol/extent";
 import TileLayer from "ol/layer/Tile";
 import { TileJSON } from "ol/source";
 import { unByKey } from "ol/Observable";
@@ -27,6 +27,12 @@ import {
 } from "@/types/internalModels";
 import XYZ from "ol/source/XYZ";
 import { TGeo } from "@/scenariostore";
+import { fromExtent } from "ol/geom/Polygon";
+import Feature from "ol/Feature";
+import {
+  TransformUpdate,
+  useImageLayerTransformInteraction,
+} from "@/composables/geoImageLayerInteraction";
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
@@ -37,7 +43,9 @@ export function useScenarioMapLayers(olMap: OLMap) {
   const mapLayersGroup = getOrCreateLayerGroup(olMap);
 
   const { onUndoRedo } = scn.store;
-
+  const { startTransform, endTransform } = useImageLayerTransformInteraction(olMap, {
+    updateHandler: handleTransformUpdate,
+  });
   function initializeFromStore() {
     mapLayersGroup.getLayers().clear();
     scn.geo.mapLayers.value.forEach((mapLayer) => {
@@ -233,6 +241,13 @@ export function useScenarioMapLayers(olMap: OLMap) {
 
     if (mapLayer.type === "ImageLayer") {
       const d = data as ScenarioImageLayer;
+      if (d.imageCenter !== undefined) {
+        layer.getSource().setCenter(fromLonLat(d.imageCenter));
+      }
+      if (d.imageScale !== undefined) {
+        layer.getSource().setScale(d.imageScale);
+      }
+
       if (d.imageRotate !== undefined) {
         layer.getSource().setRotation(d.imageRotate);
       }
@@ -262,19 +277,32 @@ export function useScenarioMapLayers(olMap: OLMap) {
 
   bus.on(({ action, id }) => {
     const olLayer = getOlLayerById(id);
-    if (olLayer) {
-      if (action === "zoom") {
+    if (!olLayer) return;
+    if (action === "zoom") {
+      // @ts-ignore
+      let layerExtent = olLayer.getExtent() || olLayer.getSource()?.getExtent?.();
+      if (!layerExtent) {
         // @ts-ignore
-        let layerExtent = olLayer.getExtent() || olLayer.getSource()?.getExtent?.();
-        if (!layerExtent) {
-          // @ts-ignore
-          layerExtent = olLayer.getSource()?.getTileGrid?.().getExtent();
-        }
-        layerExtent = fixExtent(layerExtent);
-        layerExtent && !isEmpty(layerExtent) && olMap.getView().fit(layerExtent);
+        layerExtent = olLayer.getSource()?.getTileGrid?.().getExtent();
       }
+      layerExtent = fixExtent(layerExtent);
+      layerExtent && !isEmpty(layerExtent) && olMap.getView().fit(layerExtent);
+    } else if (action === "startTransform") {
+      startTransform(olLayer, id);
+    } else if (action === "endTransform") {
+      endTransform();
     }
   });
+
+  function handleTransformUpdate(v: TransformUpdate) {
+    const { id, rotation, center, scale, active } = v;
+
+    scn.geo.updateMapLayer(
+      id,
+      { imageRotate: rotation, imageCenter: toLonLat(center), imageScale: scale },
+      { emitOnly: active, undoable: !active }
+    );
+  }
 
   onUndoRedo(({ action, meta }) => {
     if (
@@ -361,9 +389,7 @@ export function addMapLayer(
       type: "ImageLayer",
       name: "Test",
       url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Achin,_Plan_de_la_ville_de_Paris_repr%C3%A9sentant_les_nouvelles_voitures_publiques,_1828.jpg",
-      attributions: [
-        "<a href='http://www.geoportail.gouv.fr/actualite/181/telechargez-les-cartes-et-photographies-aeriennes-historiques'>Photo historique &copy; IGN</a>",
-      ],
+      attributions: ['<iframe src="javascript:alert(1)"></iframe>'],
       _status: "uninitialized",
       _isNew: true,
     });

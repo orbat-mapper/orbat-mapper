@@ -1,26 +1,23 @@
 <script setup lang="ts">
 import { ScenarioTileJSONLayer, ScenarioXYZLayer } from "@/types/scenarioGeoModels";
-import InputGroup from "@/components/InputGroup.vue";
 import { computed, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { getChangedValues, nanoid } from "@/utils";
-import { useFocusOnMount } from "@/components/helpers";
+import { getChangedValues } from "@/utils";
 import TileMapLayerSettingsForm from "@/modules/scenarioeditor/TileMapLayerSettingsForm.vue";
 import DescriptionItem from "@/components/DescriptionItem.vue";
 import {
-  ScenarioMapLayerUpdate,
   ScenarioTileJSONLayerUpdate,
   ScenarioXYZLayerUpdate,
 } from "@/types/internalModels";
+import { useMapLayerInfo } from "@/composables/geoMapLayers";
 
 interface Props {
   layer: ScenarioTileJSONLayer | ScenarioXYZLayer;
 }
 const props = defineProps<Props>();
 const emit = defineEmits(["update", "action"]);
+const { status, isInitialized, layerTypeLabel } = useMapLayerInfo(props.layer);
 
-const isInitialized = computed(() => props.layer._status === "initialized");
-const status = computed(() => props.layer._status);
 const urlLabel = computed(() => {
   if (props.layer.type === "TileJSONLayer") {
     return "TileJSON URL";
@@ -54,7 +51,7 @@ function updateData(formData: ScenarioTileJSONLayerUpdate | ScenarioXYZLayerUpda
 <template>
   <section>
     <header class="flex justify-end">
-      <span class="badge">{{ layer.type }}</span>
+      <span class="badge">{{ layerTypeLabel }}</span>
     </header>
     <TileMapLayerSettingsForm
       v-if="editMode"

@@ -26,14 +26,15 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import ImageMapLayerSettings from "@/modules/scenarioeditor/ImageMapLayerSettings.vue";
 import TileJSONMapLayerSettings from "@/modules/scenarioeditor/TileMapLayerSettings.vue";
+import { LayerUpdateOptions } from "@/composables/geoMapLayers";
 
 interface Props {
   layerId: FeatureId;
 }
 
-const imageBus = useEventBus(imageLayerAction);
-
 const props = defineProps<Props>();
+
+const imageBus = useEventBus(imageLayerAction);
 
 const {
   geo,
@@ -44,18 +45,30 @@ const { clear } = useSelectedItems();
 
 const mapLayer = computed(() => geo.getMapLayerById(props.layerId) as ScenarioMapLayer);
 const isVisible = computed(() => !(mapLayer.value?.isHidden ?? false));
-
 const layerName = ref("DD");
+const selectedTab = ref(0);
+
+function changeTab(index: number) {
+  selectedTab.value = index;
+}
 
 const opacity = computed({
   get: () => mapLayer.value?.opacity,
-  set: (v) => updateLayer({ opacity: v }, true),
+  set: (v) => updateLayer({ opacity: v }, { undoable: false, debounce: false }),
 });
 
 watch(
   () => mapLayer.value?.name,
   (v) => {
     layerName.value = v ?? "";
+  },
+  { immediate: true }
+);
+
+watch(
+  mapLayer,
+  (v) => {
+    if (v && v._isNew) selectedTab.value = 1;
   },
   { immediate: true }
 );
@@ -68,10 +81,12 @@ const debouncedUpdate = useDebounceFn((data: ScenarioMapLayerUpdate) => {
   geo.updateMapLayer(props.layerId, data, { noEmit: true });
 }, 500);
 
-function updateLayer(data: ScenarioMapLayerUpdate, debounce = false) {
+function updateLayer(data: ScenarioMapLayerUpdate, options: LayerUpdateOptions = {}) {
+  const debounce = options.debounce ?? false;
+  const undoable = options.undoable ?? !debounce;
   debounce && debouncedUpdate(data);
   mapLayer.value &&
-    geo.updateMapLayer(props.layerId, data, { undoable: !debounce, emitOnly: debounce });
+    geo.updateMapLayer(props.layerId, data, { undoable, emitOnly: debounce });
 }
 const opacityAsPercent = computed(() => (opacity.value! * 100).toFixed(0));
 
@@ -128,10 +143,15 @@ function toggleLayerVisibility() {
             <DotsMenu :items="imageLayerMenuItems" @action="onImageLayerAction" />
           </div>
         </div>
-        <TabGroup class="-mx-4 mt-2" as="div">
+        <TabGroup
+          :selected-index="selectedTab"
+          @change="changeTab"
+          class="-mx-4 mt-2"
+          as="div"
+        >
           <TabList class="mb-2 flex space-x-4 border-b-2 px-4" v-slot="{ selectedIndex }">
             <Tab
-              v-for="(tab, i) in ['Settings', 'Debug']"
+              v-for="(tab, i) in ['Details', 'Settings', 'Debug']"
               :class="[
                 selectedIndex === i ? 'border-army  text-army' : 'border-transparent',
                 'border-b-2 px-1 py-2 ',
@@ -140,6 +160,7 @@ function toggleLayerVisibility() {
             >
           </TabList>
           <TabPanels class="w-full overflow-auto px-4">
+            <TabPanel> dtails </TabPanel>
             <TabPanel>
               <ImageMapLayerSettings
                 v-if="mapLayer.type === 'ImageLayer'"
