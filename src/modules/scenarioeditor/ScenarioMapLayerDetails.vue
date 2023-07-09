@@ -1,20 +1,15 @@
 <script setup lang="ts">
 import {
-  IconMagnifyExpand as ZoomIcon,
   IconEye,
   IconEyeOff,
+  IconMagnifyExpand as ZoomIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed, ref, watch } from "vue";
-import {
-  FeatureId,
-  ScenarioImageLayer,
-  ScenarioMapLayer,
-} from "@/types/scenarioGeoModels";
+import { FeatureId, ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import EditableLabel from "@/components/EditableLabel.vue";
 import { ScenarioMapLayerUpdate } from "@/types/internalModels";
-import InputGroup from "@/components/InputGroup.vue";
 import IconButton from "@/components/IconButton.vue";
 import { useDebounceFn, useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
@@ -27,6 +22,7 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import ImageMapLayerSettings from "@/modules/scenarioeditor/ImageMapLayerSettings.vue";
 import TileJSONMapLayerSettings from "@/modules/scenarioeditor/TileMapLayerSettings.vue";
 import { LayerUpdateOptions } from "@/composables/geoMapLayers";
+import { useUiStore } from "@/stores/uiStore";
 
 interface Props {
   layerId: FeatureId;
@@ -35,7 +31,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const imageBus = useEventBus(imageLayerAction);
-
+const uiStore = useUiStore();
 const {
   geo,
   store: { groupUpdate },
@@ -71,6 +67,10 @@ watch(
     if (v && v._isNew) selectedTab.value = 1;
   },
   { immediate: true }
+);
+
+const tabList = computed(() =>
+  uiStore.debugMode ? ["Details", "Settings", "Debug"] : ["Details", "Settings"]
 );
 
 function updateValue(name: string, value: string) {
@@ -151,7 +151,7 @@ function toggleLayerVisibility() {
         >
           <TabList class="mb-2 flex space-x-4 border-b-2 px-4" v-slot="{ selectedIndex }">
             <Tab
-              v-for="(tab, i) in ['Details', 'Settings', 'Debug']"
+              v-for="(tab, i) in tabList"
               :class="[
                 selectedIndex === i ? 'border-army  text-army' : 'border-transparent',
                 'border-b-2 px-1 py-2 ',
@@ -177,7 +177,7 @@ function toggleLayerVisibility() {
                 @action="onImageLayerAction"
               />
             </TabPanel>
-            <TabPanel class="prose prose-sm max-w-none">
+            <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
               <pre>{{ mapLayer }}</pre>
             </TabPanel>
           </TabPanels>
