@@ -85,41 +85,35 @@ export function useScenarioMapLayers(olMap: OLMap) {
         name: data.name,
       },
     });
-    if (!data.imageScale) {
-      newLayer.getSource().once("change", () => {
-        const res = olMap.getView().getResolution() || 1;
-        //  scale to resolution of image
-        const w = newLayer.getSource().getGeoImage().width as number;
-        newLayer.getSource().setScale((res * 96 * 10) / w);
-        newLayer.setVisible(true);
-        const layerExtent = newLayer.getExtent();
-        scn.geo.updateMapLayer(
-          data.id,
-          {
-            imageCenter: toLonLat(
-              newLayer.getSource().getCenter(),
-              olMap.getView().getProjection()
-            ),
-            imageRotate: newLayer.getSource().getRotation(),
-            imageScale: newLayer.getSource().getScale(),
-            extent: layerExtent,
-          },
-          { noEmit: true }
-        );
-        scn.geo.updateMapLayer(
-          data.id,
-          { _status: "initialized", _isNew: false },
-          { noEmit: true, undoable: false }
-        );
-      });
-    } else {
+
+    newLayer.getSource().once("change", () => {
+      const res = olMap.getView().getResolution() || 1;
+      //  scale to resolution of image
+      const w = newLayer.getSource().getGeoImage().width as number;
+      if (w === 0) return;
+      if (!data.imageScale) newLayer.getSource().setScale((res * 96 * 10) / w);
+      newLayer.setVisible(true);
+      const layerExtent = newLayer.getExtent();
+      scn.geo.updateMapLayer(
+        data.id,
+        {
+          imageCenter: toLonLat(
+            newLayer.getSource().getCenter(),
+            olMap.getView().getProjection()
+          ),
+          imageRotate: newLayer.getSource().getRotation(),
+          imageScale: newLayer.getSource().getScale(),
+          extent: layerExtent,
+        },
+        { noEmit: true }
+      );
       scn.geo.updateMapLayer(
         data.id,
         { _status: "initialized", _isNew: false },
         { noEmit: true, undoable: false }
       );
-      newLayer.setVisible(!(data.isHidden ?? false));
-    }
+    });
+
     mapLayersGroup.getLayers().push(newLayer);
   }
 

@@ -61,7 +61,9 @@ function updateData(formData: ScenarioTileJSONLayerUpdate | ScenarioXYZLayerUpda
       @update="updateData"
     />
     <div v-else>
-      <DescriptionItem :label="urlLabel">{{ layer.url || "Not set" }}</DescriptionItem>
+      <DescriptionItem :label="urlLabel" dd-class="truncate">{{
+        layer.url || "Not set"
+      }}</DescriptionItem>
       <footer class="mt-4 flex justify-end space-x-2">
         <BaseButton small type="button" @click="editMode = true">Edit</BaseButton>
       </footer>
