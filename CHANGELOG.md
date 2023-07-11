@@ -8,6 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+July 2023
+
+- Add support for image layers.
+- Add support for TileJSON layers.
+- Add support for XYZ layers.
+
+June 2023
+
+- Make ORBAT and details panel resizable.
+- Add scale bar to map.
+
+May 2023
+
+- Add place name search.
+- New map editing mode layout.
+
 April 2023
 
 - Add 'DEL' keyboard shortcut for deleting selected units.
