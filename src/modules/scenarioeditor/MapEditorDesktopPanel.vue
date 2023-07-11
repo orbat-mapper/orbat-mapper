@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="pointer-events-auto relative -mt-12 hidden max-h-[80vh] overflow-auto rounded-md shadow md:block"
+    class="pointer-events-auto relative -mt-12 hidden max-h-[80vh] overflow-auto rounded-md border-b border-l border-t border-gray-300 shadow md:block"
     :style="{ width: orbatPanelWidth + 'px' }"
   >
     <TabGroup

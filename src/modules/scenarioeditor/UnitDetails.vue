@@ -2,9 +2,13 @@
   <div v-if="unit" class="">
     <header class="-mx-4 -mt-4 px-4 pt-4">
       <div v-if="!isMultiMode" class="flex">
-        <div class="mr-1 h-20 w-16 flex-shrink-0">
+        <button
+          type="button"
+          class="mr-1 inline-flex h-20 w-16 flex-shrink-0"
+          @click="handleChangeSymbol()"
+        >
           <MilitarySymbol :sidc="unit.sidc" :size="34" :options="combinedSymbolOptions" />
-        </div>
+        </button>
         <div class="-mt-1.5 w-full">
           <EditableLabel
             v-model="unitName"

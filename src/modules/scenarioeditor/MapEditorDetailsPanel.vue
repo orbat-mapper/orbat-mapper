@@ -1,7 +1,7 @@
 <template>
   <div class="">
     <aside
-      class="pointer-events-auto relative mt-4 flex max-h-[70vh] flex-col overflow-clip rounded-md bg-white shadow"
+      class="pointer-events-auto relative mt-4 flex max-h-[70vh] flex-col overflow-clip rounded-md border border-gray-300 bg-white shadow"
       :style="{ width: widthStore.detailsWidth + 'px' }"
     >
       <header
