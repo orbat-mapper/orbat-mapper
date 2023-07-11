@@ -42,7 +42,7 @@
               :selected-ids="selectedFeatureIds"
               class="p-2"
             />
-            <UnitPanel v-else-if="activeUnitId" :unit-id="activeUnitId" />
+            <UnitDetails v-else-if="activeUnitId" :unit-id="activeUnitId" />
             <ScenarioEventDetails
               v-else-if="activeScenarioEventId"
               :event-id="activeScenarioEventId"
@@ -108,7 +108,6 @@ import {
 } from "@/components/injects";
 import { IconChevronRightBoxOutline as ShowPanelIcon } from "@iconify-prerendered/vue-mdi";
 import { injectStrict } from "@/utils";
-import UnitPanel from "@/modules/scenarioeditor/UnitPanel.vue";
 import MapTimeController from "@/components/MapTimeController.vue";
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
@@ -132,6 +131,7 @@ import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
+import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);

@@ -58,7 +58,7 @@
         </TabPanel>
         <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
         <TabPanel class="pb-10">
-          <UnitPanel v-if="activeUnitId" :unit-id="activeUnitId" class="p-4" />
+          <UnitDetails v-if="activeUnitId" :unit-id="activeUnitId" class="p-4" />
           <ScenarioFeatureDetails
             :selected-ids="selectedFeatureIds"
             v-else-if="selectedFeatureIds.size > 0"
@@ -85,7 +85,6 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import { IconChevronDoubleUp } from "@iconify-prerendered/vue-mdi";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
-import UnitPanel from "@/modules/scenarioeditor/UnitPanel.vue";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import CloseButton from "@/components/CloseButton.vue";
@@ -99,6 +98,7 @@ import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPa
 import { useSelectedItems } from "@/stores/selectedStore";
 import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
 import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
+import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 
 const emit = defineEmits([
   "open-time-modal",
