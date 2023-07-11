@@ -109,83 +109,75 @@ function toggleLayerVisibility() {
 }
 </script>
 <template>
-  <div>
-    <header class="">
-      <div v-if="mapLayer" class="">
-        <EditableLabel v-model="layerName" @update-value="updateValue('name', $event)" />
-        <div class="flex">
-          <div class="flex flex-auto items-center">
-            <component
-              :is="getMapLayerIcon(mapLayer)"
-              class="mr-2 h-7 w-7 text-gray-500"
-            />
-            <input
-              v-model.number="opacity"
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              class="transparent h-1 w-full cursor-pointer appearance-none rounded-lg border-transparent bg-red-800"
-            />
-            <span class="ml-2 w-8 flex-shrink-0 text-sm">{{ opacityAsPercent }}%</span>
-          </div>
-          <div class="ml-2 flex shrink-0 items-center">
-            <IconButton
-              @click="imageBus.emit({ action: 'zoom', id: layerId })"
-              title="Zoom to layer extent"
-            >
-              <ZoomIcon class="h-6 w-6" />
-            </IconButton>
-            <IconButton @click="toggleLayerVisibility()" title="Toggle visibility">
-              <IconEye v-if="isVisible" class="h-6 w-6" />
-              <IconEyeOff v-else class="h-6 w-6" />
-            </IconButton>
-            <DotsMenu :items="imageLayerMenuItems" @action="onImageLayerAction" />
-          </div>
+  <div v-if="mapLayer">
+    <header>
+      <EditableLabel v-model="layerName" @update-value="updateValue('name', $event)" />
+      <div class="flex">
+        <div class="flex flex-auto items-center">
+          <component :is="getMapLayerIcon(mapLayer)" class="mr-2 h-7 w-7 text-gray-500" />
+          <input
+            v-model.number="opacity"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            class="transparent h-1 w-full cursor-pointer appearance-none rounded-lg border-transparent bg-red-800"
+          />
+          <span class="ml-2 w-8 flex-shrink-0 text-sm">{{ opacityAsPercent }}%</span>
         </div>
-        <TabGroup
-          :selected-index="selectedTab"
-          @change="changeTab"
-          class="-mx-4 mt-2"
-          as="div"
-        >
-          <TabList class="mb-2 flex space-x-4 border-b-2 px-4" v-slot="{ selectedIndex }">
-            <Tab
-              v-for="(tab, i) in tabList"
-              :class="[
-                selectedIndex === i ? 'border-army  text-army' : 'border-transparent',
-                'border-b-2 px-1 py-2 ',
-              ]"
-              >{{ tab }}</Tab
-            >
-          </TabList>
-          <TabPanels class="w-full overflow-auto px-4">
-            <TabPanel
-              ><MapLayerMetaSettings :layer="mapLayer" @update="updateLayer"
-            /></TabPanel>
-            <TabPanel>
-              <ImageMapLayerSettings
-                v-if="mapLayer.type === 'ImageLayer'"
-                :layer="mapLayer"
-                :key="mapLayer.id"
-                @update="updateLayer"
-              />
-              <TileJSONMapLayerSettings
-                v-else-if="
-                  mapLayer.type === 'TileJSONLayer' || mapLayer.type === 'XYZLayer'
-                "
-                :layer="mapLayer"
-                @update="updateLayer"
-                @action="onImageLayerAction"
-              />
-            </TabPanel>
-            <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
-              <pre>{{ mapLayer }}</pre>
-            </TabPanel>
-          </TabPanels>
-        </TabGroup>
+        <div class="ml-2 flex shrink-0 items-center">
+          <IconButton
+            @click="imageBus.emit({ action: 'zoom', id: layerId })"
+            title="Zoom to layer extent"
+          >
+            <ZoomIcon class="h-6 w-6" />
+          </IconButton>
+          <IconButton @click="toggleLayerVisibility()" title="Toggle visibility">
+            <IconEye v-if="isVisible" class="h-6 w-6" />
+            <IconEyeOff v-else class="h-6 w-6" />
+          </IconButton>
+          <DotsMenu :items="imageLayerMenuItems" @action="onImageLayerAction" />
+        </div>
       </div>
     </header>
+    <TabGroup
+      :selected-index="selectedTab"
+      @change="changeTab"
+      class="-mx-4 mt-2"
+      as="div"
+    >
+      <TabList class="mb-2 flex space-x-4 border-b-2 px-4" v-slot="{ selectedIndex }">
+        <Tab
+          v-for="(tab, i) in tabList"
+          :class="[
+            selectedIndex === i ? 'border-army  text-army' : 'border-transparent',
+            'border-b-2 px-1 py-2 ',
+          ]"
+          >{{ tab }}</Tab
+        >
+      </TabList>
+      <TabPanels class="w-full overflow-auto px-4">
+        <TabPanel
+          ><MapLayerMetaSettings :layer="mapLayer" @update="updateLayer"
+        /></TabPanel>
+        <TabPanel>
+          <ImageMapLayerSettings
+            v-if="mapLayer.type === 'ImageLayer'"
+            :layer="mapLayer"
+            :key="mapLayer.id"
+            @update="updateLayer"
+          />
+          <TileJSONMapLayerSettings
+            v-else-if="mapLayer.type === 'TileJSONLayer' || mapLayer.type === 'XYZLayer'"
+            :layer="mapLayer"
+            @update="updateLayer"
+            @action="onImageLayerAction"
+          />
+        </TabPanel>
+        <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
+          <pre>{{ mapLayer }}</pre>
+        </TabPanel>
+      </TabPanels>
+    </TabGroup>
   </div>
 </template>
-<style></style>
