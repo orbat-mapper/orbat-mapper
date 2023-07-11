@@ -2,10 +2,16 @@
   <div v-if="unit" class="">
     <header class="-mx-4 -mt-4 px-4 pt-4">
       <div v-if="!isMultiMode" class="flex">
-        <div class="h-20 w-16 flex-shrink-0">
+        <div class="mr-1 h-20 w-16 flex-shrink-0">
           <MilitarySymbol :sidc="unit.sidc" :size="34" :options="combinedSymbolOptions" />
         </div>
-        <p class="pt-2 font-medium">{{ unit.name }}</p>
+        <div class="-mt-1.5 w-full">
+          <EditableLabel
+            v-model="unitName"
+            @update-value="updateUnit(unitId, { name: $event })"
+          />
+          <p class="-mt-1 text-sm leading-none text-gray-500">{{ unit.shortName }}</p>
+        </div>
       </div>
       <div v-else>
         <div class="flex items-center justify-between">
@@ -176,6 +182,7 @@ import { SID_INDEX } from "@/symbology/sidc";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
+import EditableLabel from "@/components/EditableLabel.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue")
@@ -190,6 +197,7 @@ const {
 } = activeScenario;
 
 const selectedTab = ref(0);
+const unitName = ref("");
 function changeTab(index: number) {
   selectedTab.value = index;
 }
@@ -200,6 +208,14 @@ const tabList = computed(() =>
 const unit = computed(() => {
   return store.state.getUnitById(props.unitId);
 });
+
+watch(
+  () => unit.value.name,
+  () => {
+    unitName.value = unit.value.name;
+  },
+  { immediate: true }
+);
 
 const combinedSymbolOptions = computed(() => {
   return getCombinedSymbolOptions(unit.value);
