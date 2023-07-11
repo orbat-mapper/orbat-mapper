@@ -92,7 +92,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
       const w = newLayer.getSource().getGeoImage().width as number;
       if (w === 0) return;
       if (!data.imageScale) newLayer.getSource().setScale((res * 96 * 10) / w);
-      newLayer.setVisible(true);
+      newLayer.setVisible(!(data.isHidden ?? false));
       const layerExtent = newLayer.getExtent();
       scn.geo.updateMapLayer(
         data.id,
