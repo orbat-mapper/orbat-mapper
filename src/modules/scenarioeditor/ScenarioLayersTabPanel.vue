@@ -164,8 +164,8 @@ const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
 
 const mapLayersMenuItems: MenuItemData[] = [
   { label: "Add image layer", action: () => addNewMapLayer("ImageLayer") },
+  { label: "Add TileJSON layer", action: () => addNewMapLayer("TileJSONLayer") },
   { label: "Add XYZ tile layer", action: () => addNewMapLayer("XYZLayer") },
-  { label: "Add TileJSON json", action: () => addNewMapLayer("TileJSONLayer") },
 ];
 
 function onMapLayerAction(layer: ScenarioMapLayer, action: ScenarioMapLayerAction) {

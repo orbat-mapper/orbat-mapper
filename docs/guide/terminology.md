@@ -50,7 +50,14 @@ location, etc.
     <DocMilSymbol sidc="10061000151301020000" />
 </div>
 
-[//]: # "## Features"
+## Map layers and features
+
+The map is an important part of a scenario. A scenario map consists of multiple layers. The _base layer_ is drawn first
+an on top of that you can add raster _map layers_ and then _feature layers_.
+
+A raster map layer consists of one or more raster images. Typical raster map sources are aerial photos and scanned maps.
+Feature layers consists of one or more _features_. A feature is a styled point, line or polygon on the map.
+
 [//]: # "## Events"
 [//]: #
 [//]: # "How you organize a scenario is up to you. One example is the Falklands demo scenario. It consists of two sides, Great"
