@@ -30,7 +30,7 @@
     "@panzoom/panzoom": "^4.5.1",
     "@popperjs/core": "^2.11.7",
     "@tmcw/togeojson": "^5.6.1",
-    "@turf/turf": "^6.5.0",
+    "@turf/turf": "^7.0.0-alpha.0",
     "@vueuse/core": "^10.1.2",
     "@vueuse/integrations": "^10.1.2",
     "@vvo/tzdb": "^6.107.0",
