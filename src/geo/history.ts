@@ -48,7 +48,7 @@ const viaStyle = new CircleStyle({
 
 export function createHistoryStylesFromFeature(
   feature: FeatureLike,
-  viewResolution: number
+  viewResolution: number,
 ): Style[] {
   const geometry = (feature as Feature<LineString>).getGeometry();
   const coordinates = geometry!.getCoordinates();
@@ -75,7 +75,7 @@ export function createHistoryStylesFromFeature(
         fill: new Fill({ color: "#aa3300" }),
         stroke: new Stroke({ color: "white", width: 4 }),
       }),
-    })
+    }),
   );
 
   let ii = 0;
@@ -98,7 +98,7 @@ export function createHistoryStylesFromFeature(
           fill: new Fill({ color: "#aa3300" }),
           stroke: new Stroke({ color: "white", width: 4 }),
         }),
-      })
+      }),
     );
     i++;
   });

@@ -95,7 +95,7 @@ export function useToolbarUnitSymbolData(options: UseToolbarUnitSymbolDataOption
       symbolSetValue.value +
       "00" +
       currentEchelon.value +
-      "0000000000"
+      "0000000000",
   );
 
   const customSidc = computed(() => {

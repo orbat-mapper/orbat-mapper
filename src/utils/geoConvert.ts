@@ -6,7 +6,7 @@ import { CoordinateFormatType } from "@/composables/geoShowLocation";
 export function formatDecimalDegrees(p: Position, precision: number) {
   const [lon, lat] = p;
   return `${Math.abs(lat).toFixed(precision)}° ${lat >= 0 ? "N" : "S"} ${Math.abs(
-    lon
+    lon,
   ).toFixed(precision)}° ${lon >= 0 ? "E" : "W"}`;
 }
 
@@ -17,12 +17,12 @@ export function formatMGRS(p: Position | undefined, precision: 1 | 2 | 3 | 4 | 5
   const eastingI = n - precision * 2;
   return `${mgrs.slice(0, eastingI - 2)} ${mgrs.slice(
     eastingI - 2,
-    eastingI
+    eastingI,
   )} ${mgrs.slice(eastingI, n - precision)} ${mgrs.slice(n - precision)}`;
 }
 
 export function getCoordinateFormatFunction(
-  format: CoordinateFormatType
+  format: CoordinateFormatType,
 ): CoordinateFormat {
   if (format === "DegreeMinuteSeconds") return (v: any) => toStringHDMS(v, 0);
   if (format === "MGRS") return (v: any) => formatMGRS(v, 4);

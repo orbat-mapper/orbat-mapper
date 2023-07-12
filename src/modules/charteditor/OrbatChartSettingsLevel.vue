@@ -45,7 +45,7 @@ import { type SelectItem } from "@/components/types";
 const selectedElement = useSelectedChartElementStore();
 const specificStore = useSpecificChartOptionsStore();
 const { clearSpecificOptions, usedOptions, mergedOptions, setValue } = useChartSettings(
-  ChartItemTypes.Level
+  ChartItemTypes.Level,
 );
 
 const test = computed({

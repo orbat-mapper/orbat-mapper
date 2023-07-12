@@ -112,7 +112,7 @@ export type OnUnitClickCallback = (unit: RenderedUnitNode) => void;
 export type OnLevelClickCallback = (levelNumber: number) => void;
 export type OnBranchClickCallback = (
   parentId: string | number,
-  levelNumber: number
+  levelNumber: number,
 ) => void;
 export type SymbolGenerator = (sidc: string, options: SymbolOptions) => MilSymbol;
 
@@ -168,7 +168,7 @@ export interface SpecificOptions {
 export type UnitNodeVisitorCallback = (
   unit: ChartUnit,
   level: number,
-  parent: ChartUnit | null
+  parent: ChartUnit | null,
 ) => void;
 
 export interface ChartUnit {

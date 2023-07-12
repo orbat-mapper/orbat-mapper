@@ -21,7 +21,7 @@ export const activeLayerKey = Symbol("Active layer") as InjectionKey<
 
 export const activeScenarioKey = Symbol("Active scenario") as InjectionKey<TScenario>;
 export const activeFeaturesKey = Symbol(
-  "Active features"
+  "Active features",
 ) as InjectionKey<UseFeatureStyles>;
 
 export const currentScenarioTabKey = Symbol("Current scenario tab") as InjectionKey<
@@ -48,5 +48,5 @@ export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
 
 export const activeMapKey = Symbol("Active map") as InjectionKey<ShallowRef<OLMap>>;
 export const activeFeatureSelectInteractionKey = Symbol(
-  "Active feature select"
+  "Active feature select",
 ) as InjectionKey<ShallowRef<Select>>;

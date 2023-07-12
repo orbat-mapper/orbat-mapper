@@ -37,7 +37,7 @@ watch(
   (v) => {
     editMode.value = props.layer._isNew ?? false;
   },
-  { immediate: true }
+  { immediate: true },
 );
 function updateData(formData: ScenarioMapLayerUpdate) {
   const diff = getChangedValues({ ...formData }, props.layer);

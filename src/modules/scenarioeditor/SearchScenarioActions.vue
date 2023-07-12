@@ -128,7 +128,7 @@ onPlaceSelect((item) => {
   const polygon = extent && polygonFromExtent(applyTransform(extent, transform));
   const p = new OlPoint(item.geometry.coordinates).transform(
     "EPSG:4326",
-    map.getView().getProjection()
+    map.getView().getProjection(),
   ) as any;
 
   // add temporary layer

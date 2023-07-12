@@ -138,6 +138,6 @@ const [showAll, toggleShowAll] = useToggle(false);
 const items = computed(() =>
   showAll.value
     ? sidItems
-    : sidItems.filter((e) => ["1", "3", "6", "4", "7"].includes(e.code))
+    : sidItems.filter((e) => ["1", "3", "6", "4", "7"].includes(e.code)),
 );
 </script>

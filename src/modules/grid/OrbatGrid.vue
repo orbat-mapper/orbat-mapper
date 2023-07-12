@@ -53,13 +53,13 @@ const columnDefs = ref<RuntimeColumnProperties[]>(
     hide: column.hide ?? false,
     groupOpen: column.groupOpen ?? true,
     objectPath: column.field.split("."),
-  }))
+  })),
 );
 
 const visibleColumnDefs = computed(() => columnDefs.value.filter((c) => !c.hide));
 
 const columnWidths = ref<ColumnWidths>(
-  Object.fromEntries(columnDefs.value.map((e) => [e.id, e.width]))
+  Object.fromEntries(columnDefs.value.map((e) => [e.id, e.width])),
 );
 
 function ascending(a: string, b: string) {
@@ -75,7 +75,7 @@ const sortedData = computed(() => {
     return [...props.data].sort((a, b) =>
       sortDirection.value === "asc"
         ? ascending(a[sortField.value!], b[sortField.value!])
-        : descending(a[sortField.value!], b[sortField.value!])
+        : descending(a[sortField.value!], b[sortField.value!]),
     );
   }
   return [...props.data];
@@ -111,7 +111,7 @@ const { list, containerProps, wrapperProps, scrollTo } = useVirtualList(visibleD
 });
 
 const indeterminate = computed(
-  () => selectedRows.value.length > 0 && selectedRows.value.length < props.data.length
+  () => selectedRows.value.length > 0 && selectedRows.value.length < props.data.length,
 );
 
 const checkedState = computed((): CheckedState => {

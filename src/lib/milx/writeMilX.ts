@@ -31,15 +31,15 @@ export function toMilx(layers: OrbatMapperGeoJsonLayer[]): string {
 
         ...layers.map((l) => convertLayer(l.featureCollection, l.name)),
 
-        BR
+        BR,
       ),
-    ])
+    ]),
   );
 }
 
 function convertLayer(
   featureCollection: OrbatMapperGeoJsonCollection,
-  layerName = "Layer"
+  layerName = "Layer",
 ) {
   return x("MilXLayer", [
     BRTAB,
@@ -60,7 +60,7 @@ function convertFeature(feature: OrbatMapperGeoJsonFeature) {
   return x(
     "MilXGraphic",
     [BR, convertSymbol(feature.properties), BR, convertGeometry(feature.geometry)],
-    BR
+    BR,
   );
 }
 
@@ -93,10 +93,10 @@ function convertSymbol(properties: MilSymbolProperties) {
         x(
           "Symbol",
           { ID: sidc },
-          ...Object.entries(attributes).map(([k, v]) => tagIdValue("Attribute", k, v!))
+          ...Object.entries(attributes).map(([k, v]) => tagIdValue("Attribute", k, v!)),
         ),
-      ])
-    )
+      ]),
+    ),
   );
 }
 

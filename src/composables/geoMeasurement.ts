@@ -145,7 +145,7 @@ function measurementInteractionWrapper(
     showSegments: true,
     clearPrevious: true,
     measurementUnit: "metric",
-  }
+  },
 ) {
   let showSegments = options.showSegments;
   let clearPrevious = options.clearPrevious;
@@ -170,7 +170,7 @@ function measurementInteractionWrapper(
     feature: Feature<SimpleGeometry>,
     segments: boolean,
     drawType?: "Polygon" | "LineString",
-    tip?: string
+    tip?: string,
   ) {
     const styles = [lineBackgroundStyle, style];
     const geometry = feature.getGeometry();
@@ -238,7 +238,7 @@ function measurementInteractionWrapper(
           feature as Feature<SimpleGeometry>,
           showSegments,
           drawType,
-          tip
+          tip,
         );
       },
     });
@@ -325,7 +325,7 @@ export interface MeasurementInteractionOptions {
 export function useMeasurementInteraction(
   olMap: OLMap,
   measurementType: MaybeRef<MeasurementTypes>,
-  options: MeasurementInteractionOptions = {}
+  options: MeasurementInteractionOptions = {},
 ) {
   const measurementTypeRef = ref(measurementType);
   const showSegmentsRef = ref(options.showSegments ?? true);
@@ -366,7 +366,7 @@ export function useMeasurementInteraction(
       }
       setActive(enabled);
     },
-    { immediate: true }
+    { immediate: true },
   );
   watch(measurementUnitRef, (unit) => setUnit(unit), { immediate: true });
   watch(
@@ -382,7 +382,7 @@ export function useMeasurementInteraction(
         if (snapInteraction) olMap.removeInteraction(snapInteraction);
       }
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   tryOnBeforeUnmount(() => {

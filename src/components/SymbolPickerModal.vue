@@ -154,7 +154,7 @@ import { UnitSymbolOptions } from "@/types/scenarioModels";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 
 const LegacyConverter = defineAsyncComponent(
-  () => import("@/components/LegacyConverter.vue")
+  () => import("@/components/LegacyConverter.vue"),
 );
 
 interface Props {
@@ -305,10 +305,11 @@ function onSelect(index?: number) {
 
 watchEffect(() => {
   if (!hits?.value?.length || currentIndex.value < 0) return;
-  nextTick(() =>
-    document
-      .getElementById(hits.value![currentIndex.value].sidc)
-      ?.scrollIntoView?.({ block: "nearest" })
+  nextTick(
+    () =>
+      document
+        .getElementById(hits.value![currentIndex.value].sidc)
+        ?.scrollIntoView?.({ block: "nearest" }),
   );
 });
 

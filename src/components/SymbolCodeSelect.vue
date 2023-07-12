@@ -116,6 +116,6 @@ const emit = defineEmits(["update:modelValue"]);
 
 const selectedValue = useVModel(props, "modelValue", emit);
 const selected = computed(() =>
-  (props.items || []).find((i) => i.code === selectedValue.value)
+  (props.items || []).find((i) => i.code === selectedValue.value),
 );
 </script>

@@ -30,7 +30,7 @@ watch(
   (v) => {
     formData.value = { externalUrl: v.externalUrl, description: v.description };
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const status = computed(() => props.layer._status);

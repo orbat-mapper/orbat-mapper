@@ -28,7 +28,7 @@ export interface GeoEditingOptions {
 export function useEditingInteraction(
   olMap: OLMap,
   vectorLayer: MaybeRef<VectorLayer<VectorSource<any>>>,
-  options: GeoEditingOptions = {}
+  options: GeoEditingOptions = {},
 ) {
   let snapInteraction: Snap | undefined | null;
   const featureCollection = new Collection<Feature<Geometry>>();
@@ -73,7 +73,7 @@ export function useEditingInteraction(
     modify.on("modifyend", (event) => {
       emit && emit("modify", event.features.getArray());
       options.modifyHandler && options.modifyHandler(event.features.getArray());
-    })
+    }),
   );
   olMap.addInteraction(modify);
   modify.setActive(false);
@@ -91,7 +91,7 @@ export function useEditingInteraction(
         if (snapInteraction) olMap.removeInteraction(snapInteraction);
       }
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   function onDrawEnd(e: DrawEvent) {
@@ -172,7 +172,7 @@ export function useEditingInteraction(
         featureCollection.clear();
       }
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   return { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing };

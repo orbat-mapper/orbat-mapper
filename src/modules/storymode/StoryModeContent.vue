@@ -50,7 +50,7 @@ export default defineComponent({
           //@ts-ignore
           else scroller?.offset(0.5);
         },
-        { immediate: true }
+        { immediate: true },
       );
     });
 

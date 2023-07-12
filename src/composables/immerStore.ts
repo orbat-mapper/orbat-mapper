@@ -45,7 +45,7 @@ export function useImmerStore<T extends object, M>(baseState: T) {
   const update = (
     updater: (currentState: T) => void,
     meta?: MetaEntry<M>,
-    force = false
+    force = false,
   ) => {
     const [, patches, inversePatches] = produceWithPatches(toRaw(state), updater);
     if (patches.length === 0 && !force) return;

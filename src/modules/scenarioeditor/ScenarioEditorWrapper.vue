@@ -31,7 +31,7 @@ watch(
       demoLoaded = true;
       currentDemo = route.query.load as string;
     }
-  }
+  },
 );
 
 watch(scenario, (v) => {

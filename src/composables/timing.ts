@@ -3,7 +3,7 @@ import { ref, unref } from "vue";
 
 export function useTimer(
   cb: (...args: unknown[]) => any,
-  delay: MaybeRef<number> = 4000
+  delay: MaybeRef<number> = 4000,
 ) {
   let startedAt = Date.now();
   let timeRemaining = unref(delay);

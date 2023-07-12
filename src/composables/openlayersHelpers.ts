@@ -30,7 +30,7 @@ export function isCircle(feature: Feature) {
 
 export function getFeatureAndLayerById(
   featureId: FeatureId,
-  layerCollection: Collection<AnyVectorLayer>
+  layerCollection: Collection<AnyVectorLayer>,
 ) {
   for (let index = 0, ii = layerCollection.getLength(); index < ii; ++index) {
     const layer = layerCollection.item(index);

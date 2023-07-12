@@ -32,7 +32,7 @@ watch(
       form.value = { name, standardIdentity, symbolOptions };
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const onFormSubmit = () => {

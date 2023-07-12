@@ -11,7 +11,7 @@ export function filterUnits(
   unitMap: Record<EntityId, NUnit>,
   query: string = "",
   locationFilter = false,
-  resetOpen = true
+  resetOpen = true,
 ): NOrbatItemData[] {
   let filteredUnits: NOrbatItemData[] = [];
   let re = new RegExp(query, "i");

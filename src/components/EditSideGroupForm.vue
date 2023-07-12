@@ -39,7 +39,7 @@ interface Form {
 }
 let form = ref<Form>({ name: "Units", symbolOptions: {} });
 const sideGroup = computed(() =>
-  props.sideGroupId ? store?.state.sideGroupMap[props.sideGroupId] : undefined
+  props.sideGroupId ? store?.state.sideGroupMap[props.sideGroupId] : undefined,
 );
 
 const side = computed(() => store.state.getSideById(sideGroup.value?._pid!));
@@ -51,7 +51,7 @@ watch(
       form.value = { name, symbolOptions: { ...symbolOptions } };
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const onFormSubmit = () => {

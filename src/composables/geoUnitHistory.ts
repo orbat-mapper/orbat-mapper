@@ -22,7 +22,7 @@ export function useUnitHistory(
   options: Partial<{
     showHistory: MaybeRef<boolean>;
     editHistory: MaybeRef<boolean>;
-  }> = {}
+  }> = {},
 ) {
   const showHistoryRef = ref(options.showHistory || true);
   const editHistoryRef = ref(options.editHistory || true);
@@ -92,7 +92,7 @@ export function useUnitHistory(
         elementIndex,
         isVia,
         postCoords,
-        preCoords
+        preCoords,
       );
 
       const updatedGeometry = postGeometry
@@ -108,7 +108,7 @@ export function useUnitHistory(
     elementIndex: number,
     isVia: boolean,
     postCoordinates: Coordinate[],
-    preCoordinates: Coordinate[]
+    preCoordinates: Coordinate[],
   ) {
     const unit = unitActions.getUnitById(unitId);
     const changedCoords = postCoordinates[elementIndex];
@@ -119,14 +119,14 @@ export function useUnitHistory(
       let viaElementIndex = -1;
       if (action === "remove") {
         const a = [...preCoordinates.entries()].filter(
-          ([i, c]) => !(c[2] === VIA_TIME || c[2] === 0)
+          ([i, c]) => !(c[2] === VIA_TIME || c[2] === 0),
         );
         stateElementIndex = a.findIndex(([i]) => {
           return i > elementIndex;
         });
       } else {
         const a = [...postCoordinates.entries()].filter(
-          ([i, c]) => !(c[2] === VIA_TIME || c[2] === 0)
+          ([i, c]) => !(c[2] === VIA_TIME || c[2] === 0),
         );
         stateElementIndex = a.findIndex(([i], idx) => {
           return i > elementIndex;
@@ -138,7 +138,7 @@ export function useUnitHistory(
         action,
         stateElementIndex,
         viaElementIndex,
-        llChangedCoords
+        llChangedCoords,
       );
     } else {
       if (action === "remove") {
@@ -164,7 +164,7 @@ export function useUnitHistory(
 
   watch(
     () => showHistoryRef.value && [...selectedUnitIds.value.values()],
-    () => drawHistory()
+    () => drawHistory(),
   );
 
   return {

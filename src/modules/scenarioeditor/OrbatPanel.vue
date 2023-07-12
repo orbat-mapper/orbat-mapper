@@ -57,7 +57,7 @@ const { selectedUnitIds, activeUnitId } = useSelectedItems();
 function onUnitDrop(
   unit: NUnit,
   destinationUnit: NUnit | NSideGroup,
-  target: DropTarget
+  target: DropTarget,
 ) {
   changeUnitParent(unit.id, destinationUnit.id, target);
 }

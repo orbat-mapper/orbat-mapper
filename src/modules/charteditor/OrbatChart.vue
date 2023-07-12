@@ -81,7 +81,7 @@ watchEffect(() => {
       onLevelClick,
       onBranchClick,
     },
-    props.specificOptions || {}
+    props.specificOptions || {},
   );
 
   orbatChart.toSVG(chartRootElement.value, {
@@ -94,7 +94,7 @@ watchEffect(() => {
   if (panScaleCopy) {
     orbatChart.setPanScale(
       { x: panScaleCopy.pan.x, y: panScaleCopy.pan.y },
-      panScaleCopy.scale
+      panScaleCopy.scale,
     );
   }
 });

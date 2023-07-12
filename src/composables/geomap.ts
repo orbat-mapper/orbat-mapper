@@ -39,7 +39,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       return createUnitFeatureAt(
         unit._state!.location!,
         unit,
-        getCombinedSymbolOptions(unit)
+        getCombinedSymbolOptions(unit),
       );
     });
     unitLayer.getSource()?.addFeatures(units);
@@ -51,7 +51,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       return createUnitFeatureAt(
         unit._state!.location!,
         unit,
-        getCombinedSymbolOptions(unit)
+        getCombinedSymbolOptions(unit),
       );
     });
     unitLayer.getSource()?.addFeatures(units);
@@ -65,7 +65,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
 
 export function useDrop(
   mapRef: MaybeRef<OLMap | null | undefined>,
-  unitLayer: MaybeRef<VectorLayer<any>>
+  unitLayer: MaybeRef<VectorLayer<any>>,
 ) {
   const dragStore = useDragStore();
   const {
@@ -96,8 +96,8 @@ export function useDrop(
           createUnitFeatureAt(
             dropPosition,
             dragStore.draggedUnit,
-            getCombinedSymbolOptions(dragStore.draggedUnit as unknown as NUnit)
-          )
+            getCombinedSymbolOptions(dragStore.draggedUnit as unknown as NUnit),
+          ),
         );
       }
     }
@@ -109,7 +109,7 @@ export function useDrop(
 export function useMoveInteraction(
   mapRef: OLMap,
   unitLayer: VectorLayer<VectorSource<Point>>,
-  enabled: Ref<boolean>
+  enabled: Ref<boolean>,
 ) {
   const {
     geo,
@@ -148,7 +148,7 @@ export function useUnitSelectInteraction(
   options: Partial<{
     enable: MaybeRef<boolean>;
     enableBoxSelect: MaybeRef<boolean>;
-  }> = {}
+  }> = {},
 ) {
   let isInternal = false;
   const enableRef = ref(options.enable ?? true);
@@ -174,7 +174,7 @@ export function useUnitSelectInteraction(
       unitSelectInteraction.setActive(enabled);
       if (!enabled) selectedUnitFeatures.clear();
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   watch(
@@ -183,7 +183,7 @@ export function useUnitSelectInteraction(
       boxSelectInteraction.setActive(enabled);
       selectedUnitFeatures.clear();
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   useOlEvent(
@@ -201,7 +201,7 @@ export function useUnitSelectInteraction(
       }
       event.selected.forEach((f) => selectedIds.value.add(f.getId() as string));
       event.deselected.forEach((f) => selectedIds.value.delete(f.getId() as string));
-    })
+    }),
   );
 
   useOlEvent(
@@ -213,7 +213,9 @@ export function useUnitSelectInteraction(
           layer
             .getSource()
             .getFeaturesInExtent(extent)
-            .filter((feature: Feature) => feature.getGeometry()!.intersectsExtent(extent))
+            .filter((feature: Feature) =>
+              feature.getGeometry()!.intersectsExtent(extent),
+            ),
         )
         .flat();
 
@@ -247,19 +249,19 @@ export function useUnitSelectInteraction(
       } else {
         boxFeatures.forEach((f) => selectedIds.value.add(f.getId() as string));
       }
-    })
+    }),
   );
 
   useOlEvent(
     boxSelectInteraction.on("boxstart", function () {
       selectedIds.value.clear();
-    })
+    }),
   );
 
   watch(
     () => [...selectedIds.value],
     (v) => redrawSelectedLayer(v),
-    { immediate: true }
+    { immediate: true },
   );
 
   watch(geo.everyVisibleUnit, () => {

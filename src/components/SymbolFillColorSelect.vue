@@ -44,6 +44,6 @@ const colorIconItems = computed((): SymbolItem[] =>
       : props.defaultFillColor
       ? { fillColor: props.defaultFillColor }
       : undefined,
-  }))
+  })),
 );
 </script>

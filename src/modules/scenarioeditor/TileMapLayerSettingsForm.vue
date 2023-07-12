@@ -32,7 +32,7 @@ watch(
   (v) => {
     formData.value = { url: v.url, attributions: v.attributions, _isNew: false };
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const status = computed(() => props.layer._status);

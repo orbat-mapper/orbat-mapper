@@ -43,7 +43,7 @@ export function convertMilXLayer(layer: MilXLayer): OrbatMapperGeoJsonCollection
 }
 
 export function convertGeojsonLayer(
-  layer: FeatureCollection
+  layer: FeatureCollection,
 ): OrbatMapperGeoJsonCollection {
   const fc = layer;
   const { features: nFeatures, ...rest } = fc;
@@ -117,7 +117,7 @@ function getSymbol(node: Element): MilXSymbolProperties {
     getElements(symbElement!, "Attribute").map((e) => [
       e.getAttribute("ID"),
       nodeValue(e),
-    ])
+    ]),
   );
   return { ID, ...attributes };
 }

@@ -84,7 +84,7 @@ async function onLoad(e: Event) {
         sortKey: level + xPosition,
       };
     }),
-    "sortKey"
+    "sortKey",
   );
 
   const parentMap: Record<string, EntityId> = {};
@@ -102,7 +102,7 @@ async function onLoad(e: Event) {
       const parentSortKey = `1${xPosition}`;
       const newUnitId = unitActions.addUnit(
         newUnit as NUnit,
-        parentMap[parentSortKey] || parentMap["00"] || parentUnitId.value
+        parentMap[parentSortKey] || parentMap["00"] || parentUnitId.value,
       );
       parentMap[sortKey] = newUnitId;
     });

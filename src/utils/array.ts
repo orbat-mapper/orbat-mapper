@@ -18,7 +18,7 @@ export function groupByGetter<T extends object>(arr: T[], getter: (i: T) => stri
 
 export function removeElement(
   value: EntityId | FeatureId,
-  array: (EntityId | FeatureId)[]
+  array: (EntityId | FeatureId)[],
 ) {
   const index = array.indexOf(value);
   if (index > -1) {

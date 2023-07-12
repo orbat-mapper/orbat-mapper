@@ -43,7 +43,7 @@ watch(
   (v) => {
     bus.emit({ action: "endTransform", id: v });
     bus.emit({ action: "startTransform", id: v });
-  }
+  },
 );
 
 function updateData(formData: ScenarioImageLayerUpdate) {

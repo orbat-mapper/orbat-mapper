@@ -102,7 +102,7 @@ const onMapReady = (olMap: OLMap) => {
     olMap,
     {
       enable: unitSelectEnabled,
-    }
+    },
   );
   olMap.addInteraction(unitSelectInteraction);
   olMap.addInteraction(boxSelectInteraction);
@@ -110,7 +110,7 @@ const onMapReady = (olMap: OLMap) => {
   const { moveInteraction: moveUnitInteraction } = useMoveInteraction(
     olMap,
     unitLayer,
-    moveUnitEnabled
+    moveUnitEnabled,
   );
   useOlEvent(unitLayerGroup.on("change:visible", toggleMoveUnitInteraction));
   olMap.addInteraction(moveUnitInteraction);

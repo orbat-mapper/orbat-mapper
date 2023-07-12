@@ -43,13 +43,13 @@ watch(
   (v) => {
     featureName.value = v ?? "";
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const geometryType = computed(() => feature.value?.properties.type);
 const hasStroke = computed(() => geometryType.value !== "Point");
 const hasFill = computed(
-  () => !["Point", "LineString"].includes(geometryType.value || "")
+  () => !["Point", "LineString"].includes(geometryType.value || ""),
 );
 
 const isMultipleFeatures = computed(() => props.selectedIds.size > 1);
@@ -60,7 +60,7 @@ function updateValue(value: string) {
 
 const debouncedResetMap = useDebounceFn(
   () => featureSelectInteractionRef.value.setMap(olMapRef.value),
-  3000
+  3000,
 );
 
 function doUpdateFeature(data: Partial<ScenarioFeatureProperties>) {

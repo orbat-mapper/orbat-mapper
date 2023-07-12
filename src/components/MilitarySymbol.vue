@@ -28,7 +28,7 @@ export default defineComponent({
         ...settings.symbolOptions,
         ...(props.options ?? {}),
         ...(props.modifiers ?? {}),
-      })
+      }),
     );
     return () =>
       h("span", {

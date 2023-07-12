@@ -17,7 +17,7 @@ watch(
   () => route.query.load,
   async (v) => {
     if (v) await scenario.value.io.loadDemoScenario(v as string);
-  }
+  },
 );
 </script>
 <template>

@@ -33,11 +33,11 @@ const geo = useGeoStore();
 const unitSettings = useUnitSettingsStore();
 
 const selectedUnits = computed(() =>
-  [...selectedUnitIds.value].map((id) => state.getUnitById(id))
+  [...selectedUnitIds.value].map((id) => state.getUnitById(id)),
 );
 
 const activeUnit = computed(
-  () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null
+  () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null,
 );
 
 const createNewUnit = () => {

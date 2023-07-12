@@ -77,7 +77,7 @@ export default defineComponent({
       [{ name: "Write" }, { name: "Preview" }].map((item, index) => ({
         ...item,
         current: index === currentTab.value,
-      }))
+      })),
     );
 
     const renderedMarkdown = computed(() => {

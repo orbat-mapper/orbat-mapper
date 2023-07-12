@@ -43,7 +43,7 @@ const emit = defineEmits<{
       olMap: OLMap;
       featureSelectInteraction: Select;
       unitSelectInteraction: Select;
-    }
+    },
   ): void;
 }>();
 
@@ -79,7 +79,7 @@ unitLayerGroup.set("title", "Units");
 
 const { showHistory, editHistory } = storeToRefs(unitSettingsStore);
 const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } = storeToRefs(
-  useMapSelectStore()
+  useMapSelectStore(),
 );
 
 const { initializeFromStore: loadMapLayers } = useScenarioMapLayers(olMap);
@@ -112,14 +112,14 @@ const { selectInteraction: featureSelectInteraction } = useScenarioFeatureSelect
 const { moveInteraction: moveUnitInteraction } = useMoveInteraction(
   olMap,
   unitLayer,
-  moveUnitEnabled
+  moveUnitEnabled,
 );
 
 useOlEvent(unitLayerGroup.on("change:visible", toggleMoveUnitInteraction));
 olMap.addInteraction(moveUnitInteraction);
 
 const { showLocation, coordinateFormat, showScaleLine } = storeToRefs(
-  useMapSettingsStore()
+  useMapSettingsStore(),
 );
 
 const lc = useShowLocationControl(olMap, {

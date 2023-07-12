@@ -81,7 +81,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     level: number,
     parent: Unit | SideGroup,
     sideGroup: SideGroup,
-    side: Side
+    side: Side,
   ) {
     const unit = klona(unit1);
     if (!unit.state) {

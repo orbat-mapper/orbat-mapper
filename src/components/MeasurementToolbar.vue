@@ -66,7 +66,7 @@ import { useUiStore } from "@/stores/uiStore";
 
 const props = defineProps<{ olMap: OLMap }>();
 const { showSegments, clearPrevious, measurementType, measurementUnit } = storeToRefs(
-  useMeasurementsStore()
+  useMeasurementsStore(),
 );
 
 const uiStore = useUiStore();

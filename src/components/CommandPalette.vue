@@ -176,7 +176,7 @@ const rawQuery = ref("");
 const query = computed(() => rawQuery.value.replace(/^[#@]/, ""));
 const showHelp = computed(() => rawQuery.value === "?");
 const isGeoSearch = computed(
-  () => uiStore.searchGeoMode || rawQuery.value.startsWith("@")
+  () => uiStore.searchGeoMode || rawQuery.value.startsWith("@"),
 );
 
 const isActionSearch = computed(() => rawQuery.value.startsWith("#"));
@@ -225,7 +225,7 @@ watch(
       ["Places", data.map((d) => ({ ...d, category: "Places" }))],
     ]);
     hitCount.value = data.length;
-  }
+  },
 );
 
 watch([() => isActionSearch.value, () => query.value.trim()], async ([isa, q]) => {
@@ -242,7 +242,7 @@ function onSelect(
     | EventSearchResult
     | ExtendedPhotonSearchResult
     | ActionSearchResult
-    | MapLayerSearchResult
+    | MapLayerSearchResult,
 ) {
   if (item.category === "Units") emit("select-unit", item.id);
   else if (item.category === "Features") {

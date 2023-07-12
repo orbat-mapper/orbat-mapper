@@ -112,7 +112,7 @@ const activeUnit = computed(
   () =>
     (activeUnitId.value &&
       unitActions.expandUnitWithSymbolOptions(state.getUnitById(activeUnitId.value))) ||
-    null
+    null,
 );
 
 const { onUnitSelect } = useSearchActions();
@@ -227,7 +227,7 @@ function downloadElementAsSVG(elementId: string) {
     new Blob([new XMLSerializer().serializeToString(svgElement)], {
       type: "image/svg+xml",
     }),
-    "orbat-chart.svg"
+    "orbat-chart.svg",
   );
 }
 

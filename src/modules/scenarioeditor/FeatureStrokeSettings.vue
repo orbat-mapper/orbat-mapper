@@ -35,8 +35,8 @@ const usedOptions = computed(
     new Set(
       Object.entries(stroke.value || {})
         .filter(([k, v]) => v !== undefined)
-        .map(([k, v]) => k)
-    )
+        .map(([k, v]) => k),
+    ),
 );
 
 const hasStroke = computed(() => stroke.value.stroke !== null);

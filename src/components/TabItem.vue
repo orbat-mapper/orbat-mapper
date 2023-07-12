@@ -27,7 +27,7 @@ watch(
   () => tabs.selectedIndex,
   () => {
     isActive.value = index.value === tabs.selectedIndex;
-  }
+  },
 );
 
 index.value = tabs.count;

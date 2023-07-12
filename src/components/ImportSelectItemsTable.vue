@@ -120,7 +120,8 @@ const selectedUnits = useVModel(props, "selected", emit);
 const totalUnits = computed(() => props.layers.map((e) => e.features).flat());
 const indeterminate = computed(
   () =>
-    selectedUnits.value.length > 0 && selectedUnits.value.length < totalUnits.value.length
+    selectedUnits.value.length > 0 &&
+    selectedUnits.value.length < totalUnits.value.length,
 );
 
 onMounted(() => {

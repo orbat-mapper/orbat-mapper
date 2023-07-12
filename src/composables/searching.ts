@@ -72,7 +72,7 @@ export function useScenarioSearch() {
           }),
           score: u.score,
           category: "Features",
-        } as LayerFeatureSearchResult)
+        }) as LayerFeatureSearchResult,
     );
   }
 
@@ -93,7 +93,7 @@ export function useScenarioSearch() {
           }),
           score: u.score,
           category: "Map layers",
-        } as MapLayerSearchResult)
+        }) as MapLayerSearchResult,
     );
   }
 
@@ -116,7 +116,7 @@ export function useScenarioSearch() {
           }),
           score: u.score,
           category: "Events",
-        } as EventSearchResult)
+        }) as EventSearchResult,
     );
   }
 
@@ -126,7 +126,7 @@ export function useScenarioSearch() {
       | LayerFeatureSearchResult[]
       | EventSearchResult[]
       | MapLayerSearchResult[]
-    )[]
+    )[],
   ) {
     const combinedHits = hits.sort((a, b) => {
       const scoreA = a[0]?.score ?? 1000;
@@ -205,7 +205,7 @@ export function useActionSearch() {
           }),
           score: u.score,
           category: "Actions",
-        } as ActionSearchResult)
+        }) as ActionSearchResult,
     );
   }
 
@@ -220,7 +220,7 @@ export function useActionSearch() {
         name: a.label,
         highlight: "",
         score: 0,
-      })
+      }),
     ),
   };
 }

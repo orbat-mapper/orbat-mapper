@@ -25,7 +25,7 @@ watch(
   (v) => {
     isOpen.value = v;
     v ? emit("opened") : emit("closed");
-  }
+  },
 );
 
 const panelId = nanoid(5);

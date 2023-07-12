@@ -32,7 +32,7 @@ const queryHasChanged = ref(true);
 
 watch(
   () => props.filterQuery,
-  () => (queryHasChanged.value = true)
+  () => (queryHasChanged.value = true),
 );
 
 const onUnitAction = (unit: NUnit, action: UnitAction) => {
@@ -50,7 +50,7 @@ const filteredUnits = computed(() => {
     props.unitMap,
     props.filterQuery,
     props.locationFilter,
-    resetOpen
+    resetOpen,
   );
 });
 </script>

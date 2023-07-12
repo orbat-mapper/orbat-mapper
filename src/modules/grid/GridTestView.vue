@@ -49,8 +49,8 @@ onMounted(async () => {
       sideId,
       (unit, level, parent, sideGroup, side) => {
         unitData.push({ ...unit, sideId: side.id, sideName: side?.name });
-      }
-    )
+      },
+    ),
   );
   data.value = unitData;
   // selected.value.push(data.value[10]);

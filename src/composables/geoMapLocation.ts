@@ -50,7 +50,7 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
     event.stopPropagation();
     cleanUp();
     onGetLocationHook.trigger(
-      toLonLat(event.coordinate, olMap.getView().getProjection())
+      toLonLat(event.coordinate, olMap.getView().getProjection()),
     );
   }
 

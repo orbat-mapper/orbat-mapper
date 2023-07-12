@@ -61,7 +61,7 @@ ${HIGHLIGT_STYLE}
 
 function convertBasicUnitNode2UnitNodeInfo(
   basicUnitNode: BasicUnitNode,
-  options: Partial<OrbChartOptions>
+  options: Partial<OrbChartOptions>,
 ): UnitNodeInfo {
   let symb: ms.Symbol;
   const symbolOptions = { size: options.symbolSize, ...basicUnitNode.unit.symbolOptions };
@@ -70,7 +70,7 @@ function convertBasicUnitNode2UnitNodeInfo(
   } else {
     symb = new ms.Symbol(
       basicUnitNode.unit.sidc,
-      symbolOptions
+      symbolOptions,
       // {uniqueDesignation: node.shortName || node.name},
     );
   }
@@ -92,7 +92,7 @@ export function createInitialNodeStructure(
   parentElement: SVGElementSelection | GElementSelection,
   groupedLevels: BasicUnitNode[][][],
   options: OrbChartOptions,
-  specificOptions: SpecificOptions
+  specificOptions: SpecificOptions,
 ): RenderedLevel[] {
   let renderedLevels: RenderedLevel[] = [];
   for (const [levelNumber, currentLevel] of groupedLevels.entries()) {
@@ -101,7 +101,7 @@ export function createInitialNodeStructure(
     let levelGElement = createGroupElement(
       parentElement,
       "o-level",
-      `o-level-${levelNumber}`
+      `o-level-${levelNumber}`,
     );
     addFontAttributes(levelGElement, levelSpecificOptions);
 
@@ -134,7 +134,7 @@ export function createInitialNodeStructure(
           convertBasicUnitNode2UnitNodeInfo(unitNode, unitOptions),
           unitOptions,
           unitSpecificOptions,
-          levelNumber
+          levelNumber,
         );
         renderedUnitNode.options = unitSpecificOptions;
         return renderedUnitNode;
@@ -156,7 +156,7 @@ export function putGroupAt(
   node: UnitNodeInfo,
   x: number,
   y: number,
-  debug = false
+  debug = false,
 ) {
   const dx = x - node.octagonAnchor.x;
   const dy = y - node.octagonAnchor.y;
@@ -166,7 +166,7 @@ export function putGroupAt(
 export function createGroupElement(
   parentElement: any,
   className: string,
-  id = ""
+  id = "",
 ): GElementSelection {
   let el = parentElement.append("g").attr("class", className);
   if (id) {
@@ -207,7 +207,7 @@ export function createUnitGroup(
   unitNode: UnitNodeInfo,
   options: OrbChartOptions,
   specificOptions: PartialOrbChartOptions,
-  level: number
+  level: number,
 ): RenderedUnitNode {
   const g = createGroupElement(parentElement, "o-unit");
   const unitLabel = options.useShortName
@@ -273,7 +273,7 @@ export function calculateAnchorPoints(unitNode: RenderedUnitNode) {
 
 export function drawDebugAnchors(
   svg: SVGElementSelection | GElementSelection,
-  unitNode: RenderedUnitNode
+  unitNode: RenderedUnitNode,
 ) {
   drawDebugPoint(svg, unitNode.x, unitNode.y);
   drawDebugPoint(svg, unitNode.x, unitNode.ly);
@@ -286,7 +286,7 @@ export function drawDebugAnchors(
 export function drawUnitBranchConnectorPath(
   g: GElementSelection,
   unit: UnitNodeInfo,
-  options: any
+  options: any,
 ) {
   const { x, y } = unit;
   if (unit.parent) {
@@ -299,7 +299,7 @@ export function drawUnitBranchConnectorPath(
 export function drawUnitLevelConnectorPath(
   g: GElementSelection,
   unitBranch: RenderedUnitNode[],
-  options: OrbChartOptions
+  options: OrbChartOptions,
 ) {
   let firstUnitInGroup = unitBranch[0];
   let parentUnit = firstUnitInGroup.parent;
@@ -318,7 +318,7 @@ export function drawUnitBranchTreeLeftRightConnectorPath(
   g: GElementSelection,
   unitBranch: RenderedUnitNode[],
   levelLayout: LevelLayout,
-  options: OrbChartOptions
+  options: OrbChartOptions,
 ) {
   let lastUnitInGroup = unitBranch[unitBranch.length - 1];
   let parentUnit = lastUnitInGroup.parent as RenderedUnitNode;
@@ -352,7 +352,7 @@ export function drawUnitBranchTreeLeftRightConnectorPath(
 
 export function addFontAttributes(
   group: GElementSelection,
-  options: Partial<FontOptions>
+  options: Partial<FontOptions>,
 ) {
   const { fontSize, fontWeight, fontStyle, fontColor } = options;
   fontSize && group.attr("font-size", `${fontSize}pt`);
@@ -363,7 +363,7 @@ export function addFontAttributes(
 
 export function addConnectorAttributes(
   group: GElementSelection,
-  options: Partial<ConnectorOptions>
+  options: Partial<ConnectorOptions>,
 ) {
   const { lineColor, lineWidth } = options;
   lineColor && group.attr("stroke", lineColor);

@@ -80,11 +80,11 @@ const standardSettings = [
 ];
 
 const TimezoneSelect = defineAsyncComponent(
-  () => import("@/components/TimezoneSelect.vue")
+  () => import("@/components/TimezoneSelect.vue"),
 );
 
 const SimpleMarkdownInput = defineAsyncComponent(
-  () => import("@/components/SimpleMarkdownInput.vue")
+  () => import("@/components/SimpleMarkdownInput.vue"),
 );
 
 const settingsStore = useSymbolSettingsStore();
@@ -116,7 +116,7 @@ watch(
       symbologyStandard,
     };
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const computedStartTime = computed(() => {

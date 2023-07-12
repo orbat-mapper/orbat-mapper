@@ -156,7 +156,9 @@ const settingsStore = useSettingsStore();
 const { selectedUnitIds, activeUnitId } = useSelectedItems();
 
 const unitLabel = computed(() =>
-  settingsStore.orbatShortName ? unit.value.shortName || unit.value.name : unit.value.name
+  settingsStore.orbatShortName
+    ? unit.value.shortName || unit.value.name
+    : unit.value.name,
 );
 
 const dragStart = (ev: DragEvent) => {
@@ -210,12 +212,12 @@ const isActiveUnit = computed(() => activeUnitId.value === props.item.unit.id);
 const isActiveParent = computed(() => activeParentId.value === props.item.unit.id);
 
 const hasActiveChildren = computed(() =>
-  activeUnitStore.activeUnitParentIds.value.includes(props.item.unit.id)
+  activeUnitStore.activeUnitParentIds.value.includes(props.item.unit.id),
 );
 
 const { unitMenuItems: menuItems } = useUnitMenu(props.item);
 
 const isParent = computed(() =>
-  Boolean(props.item.children && props.item.children.length)
+  Boolean(props.item.children && props.item.children.length),
 );
 </script>

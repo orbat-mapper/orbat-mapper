@@ -90,7 +90,7 @@ interface Emits {
     e: "unit-drop",
     unit: NUnit,
     destinationUnit: NUnit | NSideGroup,
-    target: DropTarget
+    target: DropTarget,
   ): void;
 
   (e: "side-action", unit: NSide, action: SideAction): void;
@@ -106,7 +106,7 @@ const showFilter = ref(false);
 
 const debouncedFilterQuery = useDebounce(filterQuery, 100);
 const sideGroups = computed(() =>
-  props.side.groups.map((id) => store.state.sideGroupMap[id])
+  props.side.groups.map((id) => store.state.sideGroupMap[id]),
 );
 
 const showEditSideForm = ref(false);
@@ -152,6 +152,6 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
 const onUnitDrop = (
   unit: NUnit,
   destinationUnit: NUnit | NSideGroup,
-  target: DropTarget
+  target: DropTarget,
 ) => emit("unit-drop", unit, destinationUnit, target);
 </script>

@@ -99,18 +99,18 @@ export function useScenarioMapLayers(olMap: OLMap) {
         {
           imageCenter: toLonLat(
             newLayer.getSource().getCenter(),
-            olMap.getView().getProjection()
+            olMap.getView().getProjection(),
           ),
           imageRotate: newLayer.getSource().getRotation(),
           imageScale: newLayer.getSource().getScale(),
           extent: layerExtent,
         },
-        { noEmit: true }
+        { noEmit: true },
       );
       scn.geo.updateMapLayer(
         data.id,
         { _status: "initialized", _isNew: false },
-        { noEmit: true, undoable: false }
+        { noEmit: true, undoable: false },
       );
     });
 
@@ -139,7 +139,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     scn.geo.updateMapLayer(
       data.id,
       { _status: "loading" },
-      { noEmit: true, undoable: false }
+      { noEmit: true, undoable: false },
     );
 
     let key = source.on("change", function () {
@@ -149,7 +149,11 @@ export function useScenarioMapLayers(olMap: OLMap) {
         const dataUpdate: ScenarioTileJSONLayerUpdate = {};
         if (tileJson?.bounds) {
           const extent = fixExtent(
-            transformExtent(tileJson.bounds, "EPSG:4326", olMap.getView().getProjection())
+            transformExtent(
+              tileJson.bounds,
+              "EPSG:4326",
+              olMap.getView().getProjection(),
+            ),
           );
           if (extent && !isEmpty(extent)) {
             newLayer.setExtent(extent);
@@ -162,7 +166,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
           scn.geo.updateMapLayer(
             data.id,
             { _status: "initialized", _isNew: false },
-            { noEmit: true, undoable: false }
+            { noEmit: true, undoable: false },
           );
         }
         newLayer.setVisible(!(data.isHidden ?? false));
@@ -171,7 +175,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
         scn.geo.updateMapLayer(
           data.id,
           { _status: "error" },
-          { noEmit: true, undoable: false }
+          { noEmit: true, undoable: false },
         );
         mapLayersGroup.getLayers().remove(newLayer);
       }
@@ -201,7 +205,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     scn.geo.updateMapLayer(
       data.id,
       { _status: "initialized" },
-      { noEmit: true, undoable: false }
+      { noEmit: true, undoable: false },
     );
 
     mapLayersGroup.getLayers().push(newLayer);
@@ -315,7 +319,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     scn.geo.updateMapLayer(
       id,
       { imageRotate: rotation, imageCenter: toLonLat(center), imageScale: scale },
-      { emitOnly: active, undoable: !active }
+      { emitOnly: active, undoable: !active },
     );
   }
 
@@ -323,7 +327,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     if (
       !meta ||
       !["addMapLayer", "updateMapLayer", "deleteMapLayer", "moveMapLayer"].includes(
-        meta.label
+        meta.label,
       )
     )
       return;
@@ -377,7 +381,7 @@ export function getMapLayerIcon(mapLayer: ScenarioMapLayer) {
 
 export function addMapLayer(
   layerType: ScenarioMapLayerType,
-  geo: TGeo
+  geo: TGeo,
 ): ScenarioMapLayer {
   // const newLayer = geo.addMapLayer({
   //   id: nanoid(),

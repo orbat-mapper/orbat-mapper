@@ -108,7 +108,7 @@ const editedLayerId = ref<FeatureId | null>(null);
 function onFeatureClick(
   feature: NScenarioFeature,
   layer: NScenarioLayer,
-  event?: MouseEvent
+  event?: MouseEvent,
 ) {
   const isMultiSelect = event?.ctrlKey || event?.shiftKey;
 
@@ -130,7 +130,7 @@ function onFeatureClick(
 function onFeatureDoubleClick(
   feature: NScenarioFeature,
   layer: NScenarioLayer,
-  event?: MouseEvent
+  event?: MouseEvent,
 ) {
   zoomToFeature(feature.id);
 }
@@ -184,7 +184,7 @@ function onMapLayerAction(layer: ScenarioMapLayer, action: ScenarioMapLayerActio
 
 function onLayerAction(
   layer: ScenarioLayer | NScenarioLayer,
-  action: ScenarioLayerAction
+  action: ScenarioLayerAction,
 ) {
   if (action === ScenarioLayerActions.SetActive) activeLayerId.value = layer.id;
   if (action === ScenarioLayerActions.Zoom) zoomToLayer(layer.id);
@@ -210,7 +210,7 @@ function onLayerAction(
 
 function onFeatureAction(
   featureOrFeaturesId: FeatureId | FeatureId[],
-  action: ScenarioFeatureActions
+  action: ScenarioFeatureActions,
 ) {
   const isArray = Array.isArray(featureOrFeaturesId);
 
@@ -236,7 +236,7 @@ function onFeatureAction(
           moveFeature(feature, direction);
         }
       }),
-    { label: "batchLayer", value: "dummy" }
+    { label: "batchLayer", value: "dummy" },
   );
 }
 

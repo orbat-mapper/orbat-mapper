@@ -51,7 +51,7 @@ export function useGeo(store: NewScenarioStore) {
   function addUnitPosition(
     unitId: EntityId,
     coordinates: Position | null,
-    atTime?: number
+    atTime?: number,
   ) {
     let newState: CurrentState | null = null;
     update(
@@ -72,7 +72,7 @@ export function useGeo(store: NewScenarioStore) {
         }
         u.state.push({ id: nanoid(), ...newState });
       },
-      { label: "addUnitPosition", value: unitId }
+      { label: "addUnitPosition", value: unitId },
     );
   }
 
@@ -86,7 +86,7 @@ export function useGeo(store: NewScenarioStore) {
         s.layers.push(newLayer.id);
         s.layerMap[newLayer.id] = newLayer;
       },
-      { label: "addLayer", value: newLayer.id }
+      { label: "addLayer", value: newLayer.id },
     );
     return state.layerMap[newLayer.id];
   }
@@ -99,7 +99,7 @@ export function useGeo(store: NewScenarioStore) {
         s.mapLayers.push(newLayer.id);
         s.mapLayerMap[newLayer.id] = newLayer;
       },
-      { label: "addMapLayer", value: newLayer.id }
+      { label: "addMapLayer", value: newLayer.id },
     );
     mapLayerEvent.trigger({ type: "add", id: newLayer.id, data: newLayer });
     return state.mapLayerMap[newLayer.id];
@@ -111,7 +111,7 @@ export function useGeo(store: NewScenarioStore) {
       (s) => {
         moveItemMutable(s.layers, fromIndex, toIndex);
       },
-      { label: "moveLayer", value: layerId }
+      { label: "moveLayer", value: layerId },
     );
   }
 
@@ -123,7 +123,7 @@ export function useGeo(store: NewScenarioStore) {
       (s) => {
         moveItemMutable(s.mapLayers, fromIndex, toIndex);
       },
-      { label: "moveMapLayer", value: layerId }
+      { label: "moveMapLayer", value: layerId },
     );
     mapLayerEvent.trigger({ type: "move", id: layerId, index: toIndex });
   }
@@ -141,7 +141,7 @@ export function useGeo(store: NewScenarioStore) {
           if (feature.properties._zIndex !== i) feature.properties._zIndex = i;
         });
       },
-      { label: "moveFeature", value: featureId }
+      { label: "moveFeature", value: featureId },
     );
   }
 
@@ -180,7 +180,7 @@ export function useGeo(store: NewScenarioStore) {
           const layer = s.layerMap[layerId];
           Object.assign(layer, data);
         },
-        { label: "updateLayer", value: layerId }
+        { label: "updateLayer", value: layerId },
       );
     } else {
       const layer = state.layerMap[layerId];
@@ -191,7 +191,7 @@ export function useGeo(store: NewScenarioStore) {
   function updateMapLayer(
     layerId: FeatureId,
     data: ScenarioMapLayerUpdate,
-    options: UpdateOptions = {}
+    options: UpdateOptions = {},
   ) {
     const undoable = options.undoable ?? true;
     const noEmit = options.noEmit ?? false;
@@ -202,7 +202,7 @@ export function useGeo(store: NewScenarioStore) {
           const layer = s.mapLayerMap[layerId];
           Object.assign(layer, data);
         },
-        { label: "updateMapLayer", value: layerId }
+        { label: "updateMapLayer", value: layerId },
       );
     } else if (!emitOnly) {
       const layer = state.mapLayerMap[layerId];
@@ -221,7 +221,7 @@ export function useGeo(store: NewScenarioStore) {
         delete s.layerMap[layerId];
         removeElement(layerId, s.layers);
       },
-      { label: "deleteLayer", value: layerId }
+      { label: "deleteLayer", value: layerId },
     );
   }
 
@@ -234,7 +234,7 @@ export function useGeo(store: NewScenarioStore) {
         delete s.mapLayerMap[layerId];
         removeElement(layerId, s.mapLayers);
       },
-      { label: "deleteMapLayer", value: layerId }
+      { label: "deleteMapLayer", value: layerId },
     );
     if (noEmit) return;
     mapLayerEvent.trigger({ type: "remove", id: layerId, data: {} });
@@ -251,7 +251,7 @@ export function useGeo(store: NewScenarioStore) {
         s.featureMap[newFeature.id!] = newFeature;
         layer.features.push(newFeature.id!);
       },
-      { label: "addFeature", value: newFeature.id }
+      { label: "addFeature", value: newFeature.id },
     );
   }
 
@@ -264,7 +264,7 @@ export function useGeo(store: NewScenarioStore) {
         delete s.featureMap[featureId];
         removeElement(featureId, layer.features);
       },
-      { label: "deleteFeature", value: featureId }
+      { label: "deleteFeature", value: featureId },
     );
   }
 
@@ -272,7 +272,7 @@ export function useGeo(store: NewScenarioStore) {
     featureId: FeatureId,
     data: ScenarioFeatureUpdate,
     undoable = true,
-    isGeometry = false
+    isGeometry = false,
   ) {
     if (undoable) {
       update(
@@ -285,7 +285,7 @@ export function useGeo(store: NewScenarioStore) {
         {
           label: isGeometry ? "updateFeatureGeometry" : "updateFeature",
           value: featureId,
-        }
+        },
       );
     } else {
       const layer = state.featureMap[featureId];

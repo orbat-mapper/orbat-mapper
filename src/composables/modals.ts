@@ -16,7 +16,7 @@ export function useDateModal() {
 
   const getModalTimestamp = async (
     initialValue: number,
-    options: Partial<ModalTimestampOptions> = {}
+    options: Partial<ModalTimestampOptions> = {},
   ): Promise<number | undefined> => {
     initialDateModalValue.value = initialValue;
     dateModalTimeZone.value = options.timeZone || "UTC";
@@ -67,7 +67,7 @@ export function useSidcModal() {
 
   const getModalSidc = async (
     initialValue: string,
-    options: Partial<ModalSidcOptions> = {}
+    options: Partial<ModalSidcOptions> = {},
   ): Promise<ModalSidcReturn | undefined> => {
     NProgress.start();
     initialSidcModalValue.value = initialValue;

@@ -37,7 +37,7 @@ export function createHistoryLayer(): VectorLayer<VectorSource<Point | LineStrin
 export function createUnitFeatureAt(
   position: Coordinate,
   unit: Unit | NUnit,
-  symbolOptions: UnitSymbolOptions
+  symbolOptions: UnitSymbolOptions,
 ): Feature<Point> {
   const geometry = new Point(fromLonLat(position));
   const { sidc, name, id, shortName } = unit;
@@ -62,7 +62,7 @@ export function flyTo(
     location,
     zoom,
     duration = 2000,
-  }: { location: number[]; zoom?: number; duration?: number }
+  }: { location: number[]; zoom?: number; duration?: number },
 ): Promise<boolean> {
   const zoom_ = zoom || view.getZoom();
   let parts = 2;
@@ -85,7 +85,7 @@ export function flyTo(
         center: location,
         duration: duration,
       },
-      callback
+      callback,
     );
 
     if (zoom_)
@@ -98,7 +98,7 @@ export function flyTo(
           zoom: zoom_,
           duration: duration / 2,
         },
-        callback
+        callback,
       );
   });
 }

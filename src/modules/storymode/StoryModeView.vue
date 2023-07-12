@@ -115,7 +115,7 @@ function onMapReady(olMap: OLMap) {
 
   watch(
     () => state.currentTime,
-    () => loadScenarioLayers(false)
+    () => loadScenarioLayers(false),
   );
 
   view.animate({

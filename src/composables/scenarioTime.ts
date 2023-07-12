@@ -27,7 +27,7 @@ export function useDateElements({
       hour.value = v.hour();
       minute.value = v.minute();
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   const resDateTime = computed(() => {
@@ -71,7 +71,7 @@ export function useYMDElements({
       hour.value = v.hour();
       minute.value = v.minute();
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   const resDateTime = computed(() => {
@@ -79,7 +79,7 @@ export function useYMDElements({
       if (unref(isLocal))
         return dayjs.tz(
           `${year.value}-${month.value}-${day.value} ${hour.value}:${minute.value}`,
-          unref(timeZone)
+          unref(timeZone),
         );
       return dayjs.utc(`${year.value}-${month.value}-${day.value}`);
     } catch (e) {

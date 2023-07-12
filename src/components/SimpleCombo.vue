@@ -104,7 +104,7 @@ export default defineComponent({
         ? computedValues.value
         : computedValues.value.filter((item) => {
             return String(item.label).toLowerCase().includes(query.value.toLowerCase());
-          })
+          }),
     );
 
     return {

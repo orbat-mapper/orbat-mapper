@@ -28,7 +28,7 @@ export type NWalkSideCallback = (
   level: number,
   parent: NUnit | NSideGroup,
   sideGroup: NSideGroup,
-  side: NSide
+  side: NSide,
 ) => void | false | true;
 
 export type NWalkSideGroupCallback = (
@@ -36,7 +36,7 @@ export type NWalkSideGroupCallback = (
   level: number,
   parent: NUnit | NSideGroup,
   sideGroup: NSideGroup,
-  side?: NSide
+  side?: NSide,
 ) => void | false | true;
 
 export interface WalkSubUnitsOptions {
@@ -56,7 +56,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
   function addSide(
     sideData: Partial<SideUpdate> = {},
-    { markAsNew } = { markAsNew: true }
+    { markAsNew } = { markAsNew: true },
   ): EntityId {
     const newSide: NSide = {
       id: nanoid(),
@@ -74,7 +74,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         });
         addSideGroup(newSide.id, { name: "Units", _isNew: false });
       },
-      { label: "addSide", value: newSide.id }
+      { label: "addSide", value: newSide.id },
     );
     return newSide.id;
   }
@@ -111,7 +111,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
               unit.sidc = setCharAt(unit.sidc, SID_INDEX, sid);
             }
           },
-          s
+          s,
         );
       }
     });
@@ -201,7 +201,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
   function changeUnitParent(
     unitId: EntityId,
     targetId: EntityId,
-    target: DropTarget = "on"
+    target: DropTarget = "on",
   ) {
     update((s) => {
       const unit = s.unitMap[unitId];
@@ -244,7 +244,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
               u.sidc = setCharAt(u.sidc, SID_INDEX, side.standardIdentity);
             }
           },
-          { state: s, includeParent: true }
+          { state: s, includeParent: true },
         );
       }
     });
@@ -253,7 +253,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
   function walkSubUnits(
     parentUnitId: EntityId,
     callback: NWalkSubUnitCallback,
-    options: Partial<WalkSubUnitsOptions>
+    options: Partial<WalkSubUnitsOptions>,
   ) {
     const { state: s = state, includeParent = false } = options;
 
@@ -276,7 +276,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     function helper(
       currentUnitId: EntityId,
       parent: NUnit | NSideGroup,
-      sideGroup: NSideGroup
+      sideGroup: NSideGroup,
     ) {
       const currentUnit = s.unitMap[currentUnitId]!;
       const r = callback(currentUnit, level, parent, sideGroup, side);
@@ -385,7 +385,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
   function cloneUnit(
     unitId: EntityId,
-    { target = "below", includeSubordinates = false }: Partial<CloneUnitOptions> = {}
+    { target = "below", includeSubordinates = false }: Partial<CloneUnitOptions> = {},
   ) {
     const unit = state.unitMap[unitId];
     if (!unit) return;
@@ -469,7 +469,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         }
         u.state.push(newState as State);
       },
-      { label: "addUnitPosition", value: unitId }
+      { label: "addUnitPosition", value: unitId },
     );
     updateUnitState(unitId);
   }
@@ -495,7 +495,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         deleteUnitStateEntry(unitId, index);
         updateUnit(unitId, { location });
       },
-      { label: "addUnitPosition", value: unitId }
+      { label: "addUnitPosition", value: unitId },
     );
   }
 
@@ -522,7 +522,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     action: HistoryAction,
     stateIndex: number,
     elementIndex: number,
-    data: Position
+    data: Position,
   ) {
     update(
       (s) => {
@@ -539,7 +539,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
           stateElement.via.splice(elementIndex, 1);
         }
       },
-      { label: "addUnitPosition", value: unitId }
+      { label: "addUnitPosition", value: unitId },
     );
   }
 
@@ -555,14 +555,14 @@ export function useUnitManipulations(store: NewScenarioStore) {
       ...unit,
       symbolOptions: getCombinedSymbolOptions(unit),
       subUnits: unit.subUnits.map((subUnitId) =>
-        expandUnitWithSymbolOptions(state.unitMap[subUnitId])
+        expandUnitWithSymbolOptions(state.unitMap[subUnitId]),
       ),
     };
   }
 
   function getCombinedSymbolOptions(
     unitOrSideGroup: NUnit | NSideGroup,
-    ignoreUnit = false
+    ignoreUnit = false,
   ): UnitSymbolOptions {
     let _sid, _gid;
     if ("sidc" in unitOrSideGroup) {

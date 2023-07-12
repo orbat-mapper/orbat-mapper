@@ -10,7 +10,7 @@ export type WalkSideCallback = (
   level: number,
   parent: Unit | SideGroup,
   sideGroup: SideGroup,
-  side: Side
+  side: Side,
 ) => void;
 
 export type WalkSubUnitCallback = (unit: Unit) => void;
@@ -47,7 +47,7 @@ export function walkSide(side: Side, callback: WalkSideCallback) {
 export function walkSubUnits(
   parentUnit: Unit,
   callback: WalkSubUnitCallback,
-  includeParent = false
+  includeParent = false,
 ) {
   function helper(currentUnit: Unit) {
     callback(currentUnit);

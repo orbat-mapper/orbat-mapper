@@ -54,7 +54,7 @@ watch(
       letterSidc.value = v;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(numberSidcInput, (v) => {

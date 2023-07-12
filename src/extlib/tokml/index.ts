@@ -30,10 +30,10 @@ export function foldersToKML(root: Root, styles: any[] = []): string {
         x(
           "Document",
           styles.flatMap((style) => convertStyle(style)),
-          root.children.flatMap((child) => convertChild(child))
-        )
+          root.children.flatMap((child) => convertChild(child)),
+        ),
       ),
-    ])
+    ]),
   );
 }
 
@@ -58,10 +58,10 @@ export function toKML(featureCollection: FeatureCollection<Geometry | null>): st
         { xmlns: "http://www.opengis.net/kml/2.2" },
         x(
           "Document",
-          featureCollection.features.flatMap((feature) => convertFeature(feature))
-        )
+          featureCollection.features.flatMap((feature) => convertFeature(feature)),
+        ),
       ),
-    ])
+    ]),
   );
 }
 
@@ -192,7 +192,7 @@ function propertiesToTags(properties: Feature["properties"]): Element[] {
             u("text", typeof value === "string" ? value : JSON.stringify(value)),
           ]),
         ]),
-      ])
+      ]),
     ),
   ].filter(Boolean);
 }
@@ -208,7 +208,7 @@ function convertMultiPoint(geometry: GeoJSON.MultiPoint): Element {
         type: "Point",
         coordinates,
       }),
-    ])
+    ]),
   );
 }
 function convertMultiLineString(geometry: GeoJSON.MultiLineString): Element {
@@ -220,7 +220,7 @@ function convertMultiLineString(geometry: GeoJSON.MultiLineString): Element {
         type: "LineString",
         coordinates,
       }),
-    ])
+    ]),
   );
 }
 
@@ -233,7 +233,7 @@ function convertMultiPolygon(geometry: GeoJSON.MultiPolygon): Element {
         type: "Polygon",
         coordinates,
       }),
-    ])
+    ]),
   );
 }
 
@@ -266,7 +266,7 @@ function convertGeometry(geometry: Geometry): Element {
     case "GeometryCollection":
       return x(
         "MultiGeometry",
-        geometry.geometries.flatMap((geometry) => [BR, convertGeometry(geometry)])
+        geometry.geometries.flatMap((geometry) => [BR, convertGeometry(geometry)]),
       );
   }
 }

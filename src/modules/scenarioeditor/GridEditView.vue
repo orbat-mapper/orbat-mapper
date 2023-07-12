@@ -130,11 +130,11 @@ const availableColumns: TableColumn[] = [
 
 const selectedColumns = useStorage(
   "grid-columns-1",
-  availableColumns.filter((e) => !(e.hidden === true)).map((e) => e.value)
+  availableColumns.filter((e) => !(e.hidden === true)).map((e) => e.value),
 );
 
 const columns = computed(() =>
-  availableColumns.filter((c) => selectedColumns.value.includes(c.value))
+  availableColumns.filter((c) => selectedColumns.value.includes(c.value)),
 );
 
 const sgOpen = ref(new Map<NSideGroup, boolean>());
@@ -176,7 +176,7 @@ const filteredOrbat = computed(() => {
             state.unitMap,
             debouncedFilterQuery.value,
             false,
-            resetOpen
+            resetOpen,
           );
           if (filteredUnits.length) {
             sideGroupList.push({ sideGroup, children: filteredUnits });
@@ -215,7 +215,7 @@ const items = computed(() => {
 function walkSideGroupItem(
   sideGroupItem: SideGroupItem,
   callback: NWalkSideGroupCallback,
-  s = state
+  s = state,
 ) {
   let level = 0;
 
@@ -305,7 +305,7 @@ function toggleSides() {
 
 function doArrows(
   direction: "up" | "down" | "left" | "right",
-  e: KeyboardEvent | { target: HTMLElement }
+  e: KeyboardEvent | { target: HTMLElement },
 ) {
   const target = e.target as HTMLElement;
   if (!target.id.startsWith("cell-")) return;

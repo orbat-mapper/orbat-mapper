@@ -13,7 +13,7 @@ export interface GeoShowLocationOptions {
 }
 export function useShowLocationControl(
   olMap: OLMap,
-  options: Partial<GeoShowLocationOptions> = {}
+  options: Partial<GeoShowLocationOptions> = {},
 ) {
   const projectionRef = ref(options.projection ?? "EPSG:4326");
   const coordinateFormatRef = ref(options.coordinateFormat ?? "DecimalDegrees");
@@ -28,7 +28,7 @@ export function useShowLocationControl(
     (enabled) => {
       mousePositionControl.setMap(enabled ? olMap : null);
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   watch(
@@ -38,7 +38,7 @@ export function useShowLocationControl(
       // @ts-ignore
       if (enableRef.value) mousePositionControl?.updateHTML_([0, 0]);
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   tryOnBeforeUnmount(() => {

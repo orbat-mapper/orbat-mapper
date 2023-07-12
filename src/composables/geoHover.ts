@@ -32,10 +32,10 @@ export function useMapHover(olMap: OLMap, options: MapHoverOptions = {}) {
           const pixel = olMap.getEventPixel(e.originalEvent);
           const hit = olMap.hasFeatureAtPixel(pixel);
           olMap.getTargetElement().style.cursor = hit ? "pointer" : "";
-        })
+        }),
       );
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   return { enable: enableRef };

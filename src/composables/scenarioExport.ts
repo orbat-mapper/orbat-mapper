@@ -66,7 +66,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
           description,
           ...symbolOptions,
         },
-        { id: options.includeId ? id : undefined }
+        { id: options.includeId ? id : undefined },
       );
     });
     return featureCollection(features) as OrbatMapperGeoJsonCollection;
@@ -89,7 +89,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       new Blob([JSON.stringify(featureCollection(combined), undefined, 2)], {
         type: "application/json",
       }),
-      opts.fileName
+      opts.fileName,
     );
   }
 
@@ -152,7 +152,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       new Blob([kmlString], {
         type: "application/vnd.google-earth.kml+xml",
       }),
-      "scenario.kml"
+      "scenario.kml",
     );
   }
 
@@ -172,7 +172,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
           });
           usedSidcs.add(cacheKey);
           const blob: Blob | null = await new Promise((resolve) =>
-            symb.asCanvas().toBlob(resolve)
+            symb.asCanvas().toBlob(resolve),
           );
           if (blob) {
             data[`icons/${cacheKey}.png`] = new Uint8Array(await blob.arrayBuffer());
@@ -189,7 +189,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       new Blob([zipData], {
         type: "application/octet-stream",
       }),
-      "scenario.kmz"
+      "scenario.kmz",
     );
   }
 
@@ -224,7 +224,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       new Blob([milxString], {
         type: "application/xml",
       }),
-      "scenario.milxly"
+      "scenario.milxly",
     );
   }
 
@@ -246,7 +246,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       Object.keys(sideMap).forEach((sideId) =>
         unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
           unitData.push({ ...unit, sideId: side.id, sideName: side?.name });
-        })
+        }),
       );
       const ws = utils.json_to_sheet(columnMapper(unitData, opts.columns));
       utils.book_append_sheet(workbook, ws, "Units");
@@ -258,7 +258,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   function downloadAsSpatialIllusions(opts: UnitGeneratorSettings) {
     const { rootUnit } = opts;
     const hierarchy = unitActions.expandUnitWithSymbolOptions(
-      store.state.getUnitById(rootUnit)
+      store.state.getUnitById(rootUnit),
     );
 
     const d = convertUnit(hierarchy, 0);
@@ -279,7 +279,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       new Blob([JSON.stringify(d, undefined, 2)], {
         type: "application/json",
       }),
-      "spatialillusions-orbat.json"
+      "spatialillusions-orbat.json",
     );
   }
 

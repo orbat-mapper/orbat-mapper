@@ -77,7 +77,7 @@ class OrbatChart {
   constructor(
     private rootNode: ChartUnit,
     options: Partial<OrbChartOptions> = {},
-    private specificOptions: SpecificOptions = {}
+    private specificOptions: SpecificOptions = {},
   ) {
     this.options = { ...DEFAULT_OPTIONS, ...options };
     if (rootNode) this._computeOrbatInfo(rootNode);
@@ -105,7 +105,7 @@ class OrbatChart {
       height = DEFAULT_CHART_HEIGHT,
       elementId,
       enablePanZoom = false,
-    }: ToSvgOptions = {}
+    }: ToSvgOptions = {},
   ): SVGElement {
     this.width = width;
     this.height = height;
@@ -123,7 +123,7 @@ class OrbatChart {
       chartGroup,
       this.groupedLevels,
       this.options,
-      this.specificOptions
+      this.specificOptions,
     );
     this._doNodeLayout(renderedChart);
     this._drawConnectors(renderedChart);
@@ -190,7 +190,7 @@ class OrbatChart {
       tmp.on("click", (e) => {
         this.options.onBranchClick(
           renderedBranch.units[0]?.parent?.unit.id || 0,
-          renderedBranch.level
+          renderedBranch.level,
         );
       });
     }
@@ -198,7 +198,7 @@ class OrbatChart {
 
   private _createSvgRootElement(
     parentElement: HTMLElement,
-    elementId?: string
+    elementId?: string,
   ): RenderedChart {
     parentElement.innerHTML = "";
     const svg = select(parentElement)
@@ -263,7 +263,7 @@ class OrbatChart {
             accumulator.push([currentValue]);
             return accumulator;
           },
-          []
+          [],
         );
       });
       return groupedLevels;
@@ -294,7 +294,7 @@ class OrbatChart {
   private _renderLevel(
     renderedLevel: RenderedLevel,
     y: number,
-    levelLayout: LevelLayout = LevelLayouts.Horizontal
+    levelLayout: LevelLayout = LevelLayouts.Horizontal,
   ) {
     const levelOptions = { ...this.options, ...renderedLevel.options };
     const chartWidth = this.width;
@@ -302,7 +302,7 @@ class OrbatChart {
 
     const renderGroups = renderedLevel.branches;
     const unitsOnLevel = flattenArray<RenderedUnitNode>(
-      renderGroups.map((unitGroup) => unitGroup.units)
+      renderGroups.map((unitGroup) => unitGroup.units),
     );
     const numberOfUnitsOnLevel = unitsOnLevel.length;
     const totalWidth = arrSum(unitsOnLevel.map((u) => u.boundingBox.width));
@@ -439,7 +439,7 @@ class OrbatChart {
         const currentBranchElement = createGroupElement(
           currentLevelGElement,
           "",
-          branchId
+          branchId,
         );
         addConnectorAttributes(currentBranchElement, branchOptions);
         branch.units.forEach((unitNode, idx) => {
@@ -457,7 +457,7 @@ class OrbatChart {
               currentBranchElement,
               branch.units,
               currentLevelLayout,
-              branchOptions
+              branchOptions,
             );
             break;
           default:

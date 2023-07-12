@@ -267,7 +267,7 @@ function create() {
             _sid: "nn",
             _gid: "nn",
           },
-          parentId
+          parentId,
         );
       });
     });
@@ -303,7 +303,7 @@ function iconItems(sid: SidValue) {
 
 function unitSidc(
   { rootUnitEchelon, rootUnitIcon }: RootUnit,
-  { standardIdentity }: SideData
+  { standardIdentity }: SideData,
 ) {
   return "100" + standardIdentity + "10" + "00" + rootUnitEchelon + rootUnitIcon + "0000";
 }

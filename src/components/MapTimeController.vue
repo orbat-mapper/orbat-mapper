@@ -52,7 +52,7 @@ const props = withDefaults(
     showControls?: boolean;
     hideTime?: boolean;
   }>(),
-  { showControls: true, hideTime: false }
+  { showControls: true, hideTime: false },
 );
 
 const emit = defineEmits([

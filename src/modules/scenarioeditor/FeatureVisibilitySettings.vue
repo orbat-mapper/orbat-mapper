@@ -29,7 +29,7 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
     {
       timeZone: timeZone.value,
       title: field === "visibleFromT" ? "Visible from" : "Visible until",
-    }
+    },
   );
   if (newTimestamp !== undefined) {
     emit("update", { [field]: newTimestamp });

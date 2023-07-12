@@ -118,7 +118,7 @@ watch(
       layer.value = getOlLayerById(scenarioLayers.value[0].id);
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing } =
@@ -151,7 +151,7 @@ watch(isDrawing, (isDrawing) => {
 function onFeatureDelete() {
   groupUpdate(() => {
     [...selectedFeatureIds.value.values()].forEach((featureId) =>
-      deleteFeature(featureId)
+      deleteFeature(featureId),
     );
   });
 }

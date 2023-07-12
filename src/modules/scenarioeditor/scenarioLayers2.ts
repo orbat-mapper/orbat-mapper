@@ -108,7 +108,7 @@ function convertRadius(center: GeoJsonFeature<Point>, radiusInMeters: number): n
 
 function createScenarioLayerFeatures(
   features: NScenarioFeature[] | ScenarioFeature[],
-  featureProjection: ProjectionLike
+  featureProjection: ProjectionLike,
 ) {
   const gjson = new GeoJSON({
     dataProjection: "EPSG:4326",
@@ -120,11 +120,11 @@ function createScenarioLayerFeatures(
     if (feature.properties?.radius) {
       const newRadius = convertRadius(
         feature as GeoJsonFeature<Point>,
-        feature.properties.radius
+        feature.properties.radius,
       );
       const circle = new Circle(
         fromLonLat(feature.geometry.coordinates as number[]),
-        newRadius
+        newRadius,
       );
       let f = new Feature({
         geometry: circle,
@@ -147,7 +147,7 @@ export function useScenarioFeatureSelect(
   olMap: OLMap,
   options: Partial<{
     enable: MaybeRef<boolean>;
-  }> = {}
+  }> = {},
 ) {
   const { scenarioFeatureStyle } = injectStrict(activeFeaturesKey);
   const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
@@ -183,7 +183,7 @@ export function useScenarioFeatureSelect(
       isInternal = true;
       event.selected.forEach((f) => selectedIds.value.add(f.getId()!));
       event.deselected.forEach((f) => selectedIds.value.delete(f.getId()!));
-    })
+    }),
   );
 
   watch(
@@ -198,7 +198,7 @@ export function useScenarioFeatureSelect(
       }
       isInternal = false;
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   olMap.addInteraction(selectInteraction);
@@ -209,7 +209,7 @@ export function useScenarioFeatureSelect(
       selectInteraction.getFeatures().clear();
       selectInteraction.setActive(enabled);
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   onUnmounted(() => {
@@ -228,7 +228,7 @@ export function useScenarioLayers(
   {
     activeScenario,
     activeScenarioFeatures,
-  }: { activeScenario?: TScenario; activeScenarioFeatures?: UseFeatureStyles } = {}
+  }: { activeScenario?: TScenario; activeScenarioFeatures?: UseFeatureStyles } = {},
 ) {
   const {
     geo,
@@ -244,13 +244,13 @@ export function useScenarioLayers(
   function createScenarioVectorLayer(
     layer: ScenarioLayer,
     projection: ProjectionLike = "EPSG:3837",
-    filterVisible = true
+    filterVisible = true,
   ) {
     const vectorLayer = new VectorLayer({
       source: new VectorSource({
         features: createScenarioLayerFeatures(
           layer.features.filter((f) => !filterVisible || !f._hidden),
-          projection
+          projection,
         ),
       }),
       style: scenarioFeatureStyle,
@@ -342,12 +342,12 @@ export function useScenarioLayers(
     const scenarioLayer = geo.getLayerById(olLayer.get("id"))!;
 
     const { feature: lastFeatureInLayer } = geo.getFeatureById(
-      scenarioLayer.features[scenarioLayer.features.length - 1]
+      scenarioLayer.features[scenarioLayer.features.length - 1],
     );
 
     const _zIndex = Math.max(
       scenarioLayer.features.length,
-      (lastFeatureInLayer?.properties._zIndex || 0) + 1
+      (lastFeatureInLayer?.properties._zIndex || 0) + 1,
     );
     scenarioFeature.properties.name = `${scenarioFeature.properties.type} ${_zIndex + 1}`;
     scenarioFeature.properties._zIndex = _zIndex;
@@ -360,7 +360,7 @@ export function useScenarioLayers(
   function moveFeature(
     feature: NScenarioFeature,
     direction: "up" | "down",
-    isUndoRedo = false
+    isUndoRedo = false,
   ) {
     const layer = geo.getLayerById(feature._pid);
     let toIndex = layer.features.indexOf(feature.id);
@@ -404,7 +404,7 @@ export function useScenarioLayers(
   function updateLayer(
     layerId: FeatureId,
     data: ScenarioLayerUpdate,
-    isUndoRedo = false
+    isUndoRedo = false,
   ) {
     if (!isUndoRedo) geo.updateLayer(layerId, data);
     const olLayer = getOlLayerById(layerId);
@@ -418,7 +418,7 @@ export function useScenarioLayers(
   function updateFeature(
     featureId: FeatureId,
     data: Partial<ScenarioFeatureProperties>,
-    isUndoRedo = false
+    isUndoRedo = false,
   ) {
     const { feature, layer } = geo.getFeatureById(featureId) || {};
     if (!(feature && layer)) return;
@@ -519,7 +519,7 @@ function convertOlFeatureToScenarioFeature(olFeature: Feature): NScenarioFeature
   }
 
   const gj = new GeoJSON({ featureProjection: "EPSG:3857" }).writeFeatureObject(
-    olFeature
+    olFeature,
   );
 
   gj.properties = { ...gj.properties, type: gj.geometry.type };
@@ -539,7 +539,7 @@ export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
       l.on("change:visible", (event) => {
         const isVisible = l.getVisible();
         geo.updateLayer(l.get("id"), { isHidden: !isVisible }, false);
-      })
+      }),
     );
   }
 
@@ -550,7 +550,7 @@ export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
     olLayers.on("add", (event) => {
       const addedLayer = event.element as VectorLayer<any>;
       addListener(addedLayer);
-    })
+    }),
   );
 
   onUnmounted(() => {

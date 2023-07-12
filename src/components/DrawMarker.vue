@@ -25,7 +25,7 @@ watchEffect(
   () => {
     drawSymbol(canvasRef.value, props.color);
   },
-  { flush: "post" }
+  { flush: "post" },
 );
 
 function drawSymbol(el: HTMLCanvasElement, color: string) {

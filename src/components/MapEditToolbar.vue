@@ -46,7 +46,7 @@ watch(
   ([drawing, modifying]) => {
     uiStore.editToolbarActive = drawing || modifying;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 onKeyStroke("Escape", (event) => {

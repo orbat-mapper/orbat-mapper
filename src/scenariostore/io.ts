@@ -123,7 +123,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
         }
         return val;
       },
-      "  "
+      "  ",
     );
   }
   function saveToLocalStorage(key = LOCALSTORAGE_KEY) {
@@ -180,7 +180,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       new Blob([stringifyScenario()], {
         type: "application/json",
       }),
-      fileName
+      fileName,
     );
   }
   return {

@@ -42,7 +42,7 @@ const { getModalSidc } = injectStrict(sidcModalKey);
 const { activeUnitId } = useSelectedItems();
 
 const activeUnit = computed(
-  () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null
+  () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null,
 );
 
 const geoStore = useGeoStore();
@@ -75,7 +75,7 @@ const echelons = computed(() => echelonItems(currentSid.value as SidValue));
 
 const activeSidc = ref<string | null>(null);
 const echelonSidc = computed(
-  () => "100" + currentSid.value + "10" + "00" + currentEchelon.value + "0000000000"
+  () => "100" + currentSid.value + "10" + "00" + currentEchelon.value + "0000000000",
 );
 
 watch(activeUnit, (unit) => {
@@ -92,7 +92,7 @@ const customSidc = computed(() => {
 });
 
 const symbolOptions = computed(() =>
-  activeUnit.value ? unitActions.getCombinedSymbolOptions(activeUnit.value, true) : {}
+  activeUnit.value ? unitActions.getCombinedSymbolOptions(activeUnit.value, true) : {},
 );
 
 const {

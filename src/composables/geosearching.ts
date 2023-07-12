@@ -21,7 +21,7 @@ export function useGeoSearch() {
 
   async function photonSearch(
     q: string,
-    options: GeoSearchOptions = {}
+    options: GeoSearchOptions = {},
   ): Promise<PhotonSearchResult[]> {
     const { mapCenter, limit = 10, lang = "en" } = options;
     searchUrl.value = `https://photon.komoot.io/api/?q=${q}&limit=${limit}&lang=${lang}`;

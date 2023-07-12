@@ -34,8 +34,8 @@ const usedOptions = computed(
     new Set(
       Object.entries(fill.value || {})
         .filter(([k, v]) => v !== undefined)
-        .map(([k, v]) => k)
-    )
+        .map(([k, v]) => k),
+    ),
 );
 
 const hasFill = computed(() => fill.value.fill !== null);

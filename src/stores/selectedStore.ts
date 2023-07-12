@@ -21,7 +21,7 @@ watch(
       activeUnitIdRef.value = [...selectedUnitIds.value.values()].pop();
     if (v.size === 0) activeUnitIdRef.value = null;
   },
-  { deep: true }
+  { deep: true },
 );
 
 watch(
@@ -33,7 +33,7 @@ watch(
       if (v.size === 0) activeFeatureIdRef.value = null;
     }
   },
-  { deep: true, flush: "sync" }
+  { deep: true, flush: "sync" },
 );
 
 watch(
@@ -46,7 +46,7 @@ watch(
       activeScenarioEventId.value = [...selectedScenarioEventIds.value.values()].pop();
     if (v.size === 0) activeScenarioEventId.value = null;
   },
-  { deep: true }
+  { deep: true },
 );
 
 watch(
@@ -56,7 +56,7 @@ watch(
       activeMapLayerId.value = [...selectedMapLayerIds.value.values()].pop();
     if (v.size === 0) activeMapLayerId.value = null;
   },
-  { deep: true }
+  { deep: true },
 );
 
 const activeUnitId = computed({

@@ -99,7 +99,7 @@ const mapView = computed(() => {
 watch(
   () => geoStore.olMap,
   (v) => v && updateLayers(),
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(activeBaseLayer, (layerInfo) => {
@@ -144,18 +144,18 @@ function updateLayers() {
     .map(transformLayer);
 
   tileLayers.value = mappedLayers.filter(
-    ({ layer }) => layer instanceof TileLayer
+    ({ layer }) => layer instanceof TileLayer,
   ) as LayerInfo<AnyTileLayer>[];
 
   activeBaseLayer.value = baseLayers.value.filter(
-    (l) => l.visible
+    (l) => l.visible,
   )[0] as LayerInfo<AnyTileLayer>;
 
   vectorLayers.value = mappedLayers.filter(
     ({ layer }) =>
       layer instanceof VectorLayer ||
       layer instanceof LayerGroup ||
-      layer instanceof ImageLayer
+      layer instanceof ImageLayer,
   ) as LayerInfo<AnyVectorLayer>[];
 }
 

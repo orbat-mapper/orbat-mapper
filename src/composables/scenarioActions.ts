@@ -19,7 +19,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 export function useUnitActions(
   options: Partial<{
     activeScenario: TScenario;
-  }> = {}
+  }> = {},
 ) {
   const {
     unitActions,
@@ -45,7 +45,7 @@ export function useUnitActions(
           (unit1) => {
             subUnits.push(unit1);
           },
-          {}
+          {},
         );
         const locations = subUnits
           .filter((u) => u._state?.location)
@@ -77,7 +77,7 @@ export function useUnitActions(
         (unit1) => {
           unit1._isOpen = true;
         },
-        { includeParent: true }
+        { includeParent: true },
       );
     }
 
@@ -153,7 +153,7 @@ export function useScenarioFeatureActions() {
 
   function onFeatureAction(
     featureOrFeaturesId: FeatureId | FeatureId[],
-    action: "zoom" | "pan" | "delete"
+    action: "zoom" | "pan" | "delete",
   ) {
     const isArray = Array.isArray(featureOrFeaturesId);
     if (isArray && (action === "zoom" || action === "pan")) {
@@ -168,7 +168,7 @@ export function useScenarioFeatureActions() {
           if (action === "delete") deleteFeature(featureId);
         });
       },
-      { label: "batchLayer", value: "dummy" }
+      { label: "batchLayer", value: "dummy" },
     );
   }
 

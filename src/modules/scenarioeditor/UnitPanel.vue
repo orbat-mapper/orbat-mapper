@@ -134,7 +134,7 @@ import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 
 const SimpleMarkdownInput = defineAsyncComponent(
-  () => import("@/components/SimpleMarkdownInput.vue")
+  () => import("@/components/SimpleMarkdownInput.vue"),
 );
 
 const props = defineProps<{ unitId: EntityId }>();
@@ -173,7 +173,7 @@ const uiStore = useUiStore();
 const { selectedUnitIds, clear: clearSelection } = useSelectedItems();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 const selectedUnits = computed(() =>
-  [...selectedUnitIds.value].map((id) => store.state.getUnitById(id))
+  [...selectedUnitIds.value].map((id) => store.state.getUnitById(id)),
 );
 onGetLocation((location) => addUnitPosition(props.unitId, location));
 const isEditMode = ref(false);
@@ -209,12 +209,12 @@ watch(
     updateForm();
     if (v) nextTick(() => doFormFocus());
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
   () => props.unitId,
-  () => updateForm()
+  () => updateForm(),
 );
 
 watch(
@@ -222,7 +222,7 @@ watch(
   (isActive) => {
     uiStore.getLocationActive = isActive;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const { onUnitAction } = useUnitActions();
@@ -284,7 +284,7 @@ async function handleChangeSymbol() {
           const { side } = getUnitHierarchy(unitId);
           const nsidc = setCharAt(sidc, SID_INDEX, side.standardIdentity);
           updateUnit(unitId, { sidc: nsidc });
-        })
+        }),
       );
     } else updateUnit(props.unitId, { sidc, symbolOptions });
   }

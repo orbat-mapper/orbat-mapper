@@ -44,7 +44,7 @@ const emit = defineEmits<{
       olMap: OLMap;
       featureSelectInteraction: Select;
       unitSelectInteraction: Select;
-    }
+    },
   ): void;
 }>();
 

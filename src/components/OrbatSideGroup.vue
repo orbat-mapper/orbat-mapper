@@ -85,7 +85,7 @@ interface Emits {
     e: "unit-drop",
     unit: NUnit,
     destinationUnit: NUnit | NSideGroup,
-    target: DropTarget
+    target: DropTarget,
   ): void;
   (e: "sidegroup-action", unit: NSideGroup, action: SideAction): void;
 }

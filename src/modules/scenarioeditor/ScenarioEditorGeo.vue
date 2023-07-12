@@ -254,7 +254,7 @@ watchOnce(
   () => activeScenarioTab.value === TAB_LAYERS,
   () => {
     NProgress.start();
-  }
+  },
 );
 
 const panelWidthA = ref(382);

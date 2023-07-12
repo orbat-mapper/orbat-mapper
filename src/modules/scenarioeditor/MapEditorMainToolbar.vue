@@ -300,7 +300,9 @@ function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => 
 }
 
 const symbolOptions = computed(() =>
-  activeParent.value ? unitActions.getCombinedSymbolOptions(activeParent.value, true) : {}
+  activeParent.value
+    ? unitActions.getCombinedSymbolOptions(activeParent.value, true)
+    : {},
 );
 
 const {

@@ -121,7 +121,7 @@ function setActiveLayer(layer: NScenarioLayer | ScenarioLayer, toggle = true) {
 
 function onFeatureAction(
   featureOrFeaturesId: FeatureId | FeatureId[],
-  action: ScenarioFeatureActions
+  action: ScenarioFeatureActions,
 ) {
   const isArray = Array.isArray(featureOrFeaturesId);
 
@@ -149,7 +149,7 @@ function onFeatureAction(
           moveFeature(feature, direction);
         }
       }),
-    { label: "batchLayer", value: "dummy" }
+    { label: "batchLayer", value: "dummy" },
   );
 }
 
@@ -178,7 +178,7 @@ function onLayerUpdate(layer: ScenarioLayer, data: ScenarioLayerUpdate) {
 function onFeatureClick(
   feature: NScenarioFeature,
   layer: NScenarioLayer,
-  event?: MouseEvent
+  event?: MouseEvent,
 ) {
   const isMultiSelect = event?.ctrlKey || event?.shiftKey;
   activeFeature.value = activeFeature.value === feature ? null : feature;
@@ -227,7 +227,7 @@ watch(
     activeFeature.value = null;
     feature && layer && onFeatureClick(feature, layer);
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
@@ -239,7 +239,7 @@ watch(
     setActiveLayer(layer, false);
     layer._isOpen = true;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(selectedIds.value, (v) => {
@@ -261,7 +261,7 @@ const debouncedResetMap = useDebounceFn(() => selectInteraction.setMap(mapRef), 
 
 function doUpdateFeature(
   featureOrFeatures: FeatureId | FeatureId[],
-  data: Partial<ScenarioFeatureProperties>
+  data: Partial<ScenarioFeatureProperties>,
 ) {
   selectInteraction.setMap(null);
   if (Array.isArray(featureOrFeatures)) {

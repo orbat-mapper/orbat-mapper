@@ -22,7 +22,7 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
     const dropPosition = toLonLat(mapRef.value.getEventCoordinate(e));
     const settings = useMapSettingsStore();
     const formattedPosition = computed(() =>
-      getCoordinateFormatFunction(settings.coordinateFormat)(dropPosition)
+      getCoordinateFormatFunction(settings.coordinateFormat)(dropPosition),
     );
 
     const measurementSettings = useMeasurementsStore();
@@ -33,7 +33,7 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
             h(
               "div",
               { class: "text-sm text-gray-600 font-medium" },
-              formattedPosition.value
+              formattedPosition.value,
             ),
           icon: h(IconMapMarker, { class: "text-gray-500" }),
           onClick: async () => {
@@ -69,7 +69,7 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
                 {
                   label: "Metric",
                   checked: computed(
-                    () => measurementSettings.measurementUnit === "metric"
+                    () => measurementSettings.measurementUnit === "metric",
                   ) as unknown as boolean,
                   clickClose: false,
                   onClick: () => {
@@ -79,7 +79,7 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
                 {
                   label: "US/Imperial",
                   checked: computed(
-                    () => measurementSettings.measurementUnit === "imperial"
+                    () => measurementSettings.measurementUnit === "imperial",
                   ) as unknown as boolean,
                   clickClose: false,
                   onClick: () => {
@@ -89,7 +89,7 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
                 {
                   label: "Nautical",
                   checked: computed(
-                    () => measurementSettings.measurementUnit === "nautical"
+                    () => measurementSettings.measurementUnit === "nautical",
                   ) as unknown as boolean,
                   clickClose: false,
                   onClick: () => {
@@ -104,7 +104,7 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
                 {
                   label: "Decimal degrees",
                   checked: computed(
-                    () => settings.coordinateFormat === "DecimalDegrees"
+                    () => settings.coordinateFormat === "DecimalDegrees",
                   ) as unknown as boolean,
                   clickClose: false,
                   onClick: () => {
@@ -114,7 +114,7 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
                 {
                   label: "Degree Minutes Seconds",
                   checked: computed(
-                    () => settings.coordinateFormat === "DegreeMinuteSeconds"
+                    () => settings.coordinateFormat === "DegreeMinuteSeconds",
                   ) as unknown as boolean,
                   clickClose: false,
                   onClick: () => {
@@ -124,7 +124,7 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
                 {
                   label: "MGRS",
                   checked: computed(
-                    () => settings.coordinateFormat === "MGRS"
+                    () => settings.coordinateFormat === "MGRS",
                   ) as unknown as boolean,
                   clickClose: false,
                   onClick: () => {

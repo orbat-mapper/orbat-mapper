@@ -211,7 +211,7 @@ async function handleChangeSymbol() {
   const newSidcValue = await getModalSidc(props.unit.sidc, {
     title: `Change symbol at ${formatDateString(
       store.state.currentTime,
-      store.state.info.timeZone
+      store.state.info.timeZone,
     )}`,
     symbolOptions: unitActions.getCombinedSymbolOptions(props.unit),
   });

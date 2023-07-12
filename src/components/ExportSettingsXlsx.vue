@@ -27,10 +27,10 @@ const attributes: (string | { field: string; label: string })[] = [
 ];
 
 function mapFieldLabel(
-  items: ({ field: string; label: string } | string)[]
+  items: ({ field: string; label: string } | string)[],
 ): { label: string; field: string }[] {
   return items.map((i) =>
-    typeof i === "string" ? { label: i, field: i } : { label: i.label, field: i.field }
+    typeof i === "string" ? { label: i, field: i } : { label: i.label, field: i.field },
   );
 }
 

@@ -20,13 +20,13 @@ export function useActiveUnitStore() {
   const activeParentId = injectStrict(activeParentKey);
 
   const activeUnit = computed(
-    () => (activeUnitId.value && store.state.getUnitById(activeUnitId.value)) || null
+    () => (activeUnitId.value && store.state.getUnitById(activeUnitId.value)) || null,
   );
 
   const activeParent = computed(
     () =>
       (activeParentId.value && unitActions.getUnitOrSideGroup(activeParentId.value)) ||
-      null
+      null,
   );
 
   const activeUnitParentIds = computed(() => {

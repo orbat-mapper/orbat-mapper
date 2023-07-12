@@ -59,7 +59,7 @@ watch(
   (v) => {
     layerName.value = v ?? "";
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
@@ -67,11 +67,11 @@ watch(
   (v) => {
     if (v && v._isNew) selectedTab.value = 1;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const tabList = computed(() =>
-  uiStore.debugMode ? ["Details", "Settings", "Debug"] : ["Details", "Settings"]
+  uiStore.debugMode ? ["Details", "Settings", "Debug"] : ["Details", "Settings"],
 );
 
 function updateValue(name: string, value: string) {

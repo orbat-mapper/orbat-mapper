@@ -171,7 +171,7 @@ function downloadElementAsSVG(elementId: string) {
     new Blob([new XMLSerializer().serializeToString(svgElement)], {
       type: "image/svg+xml",
     }),
-    "orbat-chart.svg"
+    "orbat-chart.svg",
   );
 }
 </script>

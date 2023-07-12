@@ -18,7 +18,7 @@ export function getElements(element: Element | Document, tagName: string): Eleme
 
 export function getOneElement(
   element: Element | Document,
-  tagName: string
+  tagName: string,
 ): Element | null {
   const elements = getElements(element, tagName);
   return elements.length ? elements[0] : null;

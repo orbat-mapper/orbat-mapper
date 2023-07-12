@@ -66,7 +66,7 @@ watch(
   () => props.currentTab,
   (v) => {
     state.selectedIndex = v ?? 0;
-  }
+  },
 );
 
 const tabsInfo = computed(() => {

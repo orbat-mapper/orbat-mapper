@@ -47,7 +47,7 @@ function onPointerMove(evt: PointerEvent) {
       "update",
       props.left
         ? initialWidth - (evt.clientX - startX)
-        : initialWidth + (evt.clientX - startX)
+        : initialWidth + (evt.clientX - startX),
     );
   }
 }

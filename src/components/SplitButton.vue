@@ -68,7 +68,7 @@ const activeItemRef = computed({
   },
 });
 const menuItems = computed(() =>
-  props.items.filter((e) => e.label !== activeItemRef.value?.label)
+  props.items.filter((e) => e.label !== activeItemRef.value?.label),
 );
 
 const onClick = (item: ButtonGroupItem) => {

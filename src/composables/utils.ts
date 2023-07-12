@@ -15,7 +15,7 @@ export function biSyncDelayedRef<R extends Ref<any>>(a: R, b: R, delay = 200) {
     {
       flush,
       immediate: true,
-    }
+    },
   );
 
   const stop2 = watch(
@@ -28,7 +28,7 @@ export function biSyncDelayedRef<R extends Ref<any>>(a: R, b: R, delay = 200) {
     {
       flush,
       immediate: true,
-    }
+    },
   );
   return () => {
     stop1();

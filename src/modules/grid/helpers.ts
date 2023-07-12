@@ -24,7 +24,7 @@
 export function getValue(
   object: any,
   path: string | string[],
-  defaultValue: any = null
+  defaultValue: any = null,
 ): any {
   const parts = Array.isArray(path) ? path : path.split(".");
   let value = object;

@@ -30,7 +30,7 @@ watch(
   () => {
     title.value = scenarioEvent.value?.title ?? "";
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 function updateTitle(value: string) {

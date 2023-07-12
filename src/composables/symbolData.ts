@@ -37,7 +37,7 @@ const searchSymbolRef = computed(() => {
       })
       .flat()
       .filter((e) =>
-        e.symbolSet === CONTROL_MEASURE_SYMBOLSET_VALUE ? e.geometry === "Point" : true
+        e.symbolSet === CONTROL_MEASURE_SYMBOLSET_VALUE ? e.geometry === "Point" : true,
       )
       .map((e) => {
         const { entity, entityType, entitySubtype } = e;
@@ -179,7 +179,7 @@ export function useSymbolItems(sidc: Ref<string>) {
           sidc:
             "100" + sidValue.value + symbolSetValue.value + "0000000000" + code + "00",
         };
-      }
+      },
     );
   });
 
@@ -193,7 +193,7 @@ export function useSymbolItems(sidc: Ref<string>) {
           sidc:
             "100" + sidValue.value + symbolSetValue.value + "0000000000" + "00" + code,
         };
-      }
+      },
     );
   });
 

@@ -7,7 +7,7 @@ export function enum2Items(enumType: { [key: number]: string }) {
 
 export function getChangedValues<T extends Record<string, any>>(
   obj1: Partial<T>,
-  obj2: T
+  obj2: T,
 ): Partial<T> {
   const diff: any = {};
   Object.keys(obj1).forEach((key) => {

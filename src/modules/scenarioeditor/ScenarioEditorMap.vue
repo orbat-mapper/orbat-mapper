@@ -153,7 +153,7 @@ const featureSelectInteractionRef = shallowRef<Select>();
 provide(activeMapKey, mapRef as ShallowRef<OLMap>);
 provide(
   activeFeatureSelectInteractionKey,
-  featureSelectInteractionRef as ShallowRef<Select>
+  featureSelectInteractionRef as ShallowRef<Select>,
 );
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
@@ -187,7 +187,7 @@ const showDetailsPanel = computed(() => {
     selectedFeatureIds.value.size ||
       selectedUnitIds.value.size ||
       activeScenarioEventId.value ||
-      activeMapLayerId.value
+      activeMapLayerId.value,
   );
 });
 

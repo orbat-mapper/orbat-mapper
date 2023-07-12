@@ -25,7 +25,7 @@ export interface GeoImageLayerInteractionOptions {
 
 export function useImageLayerTransformInteraction(
   olMap: OLMap,
-  options: GeoImageLayerInteractionOptions = {}
+  options: GeoImageLayerInteractionOptions = {},
 ) {
   const isActive = ref(false);
 
@@ -71,7 +71,7 @@ export function useImageLayerTransformInteraction(
       const extent = geom.getExtent();
       iWidth = getWidth(extent);
       iHeight = getHeight(extent);
-    })
+    }),
   );
 
   useOlEvent(
@@ -104,7 +104,7 @@ export function useImageLayerTransformInteraction(
           active: true,
           id: currentLayerId,
         });
-    })
+    }),
   );
 
   useOlEvent(
@@ -117,7 +117,7 @@ export function useImageLayerTransformInteraction(
           active: false,
           id: currentLayerId,
         });
-    })
+    }),
   );
 
   function startTransform(newLayer: any, layerId: FeatureId) {

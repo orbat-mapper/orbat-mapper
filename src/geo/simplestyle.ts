@@ -54,7 +54,7 @@ const scaleMap: Record<MarkerSize, number> = { medium: 1, large: 1.5, small: 0.7
 export function createMarkerSymbol(
   markerSymbol: MarkerSymbol,
   size: MarkerSize,
-  markerColor: string = "#7e7e7e"
+  markerColor: string = "#7e7e7e",
 ) {
   const sizeScale = scaleMap[size] || 1;
   const fill = new Fill({ color: markerColor });
@@ -165,7 +165,7 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
     image: createMarkerSymbol(
       opts["marker-symbol"] || "circle",
       markerSize,
-      opts["marker-color"] || "#7e7e7e"
+      opts["marker-color"] || "#7e7e7e",
     ),
   });
 }

@@ -39,7 +39,7 @@ import FeatureVisibilitySettings from "@/modules/scenarioeditor/FeatureVisibilit
 import { SelectedScenarioFeatures } from "@/stores/selectedStore";
 
 const SimpleMarkdownInput = defineAsyncComponent(
-  () => import("@/components/SimpleMarkdownInput.vue")
+  () => import("@/components/SimpleMarkdownInput.vue"),
 );
 
 interface Props {
@@ -66,11 +66,11 @@ watch(
     const { name, description } = props.feature.properties;
     formMeta.value = { name, description };
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const hDescription = computed(() =>
-  renderMarkdown(props.feature.properties.description || "")
+  renderMarkdown(props.feature.properties.description || ""),
 );
 
 const geometryType = computed(() => props.feature.properties.type);
@@ -85,7 +85,7 @@ function updateVisibility(data: Partial<VisibilityInfo>) {
   emit(
     "feature-meta-update",
     isMultipleFeatures.value ? [...props.selectedIds.values()] : props.feature.id,
-    { ...data }
+    { ...data },
   );
 }
 
@@ -100,7 +100,7 @@ function updateStroke(data: Partial<StrokeStyleSpec>) {
   emit(
     "feature-style-update",
     isMultipleFeatures.value ? [...props.selectedIds.values()] : props.feature.id,
-    { ...data }
+    { ...data },
   );
 }
 
@@ -108,7 +108,7 @@ function updateFill(data: Partial<FillStyleSpec>) {
   emit(
     "feature-style-update",
     isMultipleFeatures.value ? [...props.selectedIds.values()] : props.feature.id,
-    { ...data }
+    { ...data },
   );
 }
 
@@ -116,7 +116,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
   emit(
     "feature-style-update",
     isMultipleFeatures.value ? [...props.selectedIds.values()] : props.feature.id,
-    { ...data }
+    { ...data },
   );
 }
 </script>
@@ -138,7 +138,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
                   emit(
                     'feature-action',
                     isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
-                    'zoom'
+                    'zoom',
                   )
                 "
                 start
@@ -151,7 +151,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
                   emit(
                     'feature-action',
                     isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
-                    'pan'
+                    'pan',
                   )
                 "
                 title="Pan to"
@@ -173,7 +173,7 @@ function updateMarker(data: Partial<MarkerStyleSpec>) {
                   emit(
                     'feature-action',
                     isMultipleFeatures ? [...props.selectedIds.values()] : feature.id,
-                    $event
+                    $event,
                   )
                 "
                 class="flex-shrink-0"

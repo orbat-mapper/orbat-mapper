@@ -12,7 +12,7 @@ export interface GeoShowLocationOptions {
 }
 export function useShowScaleLine(
   olMap: OLMap,
-  options: Partial<GeoShowLocationOptions> = {}
+  options: Partial<GeoShowLocationOptions> = {},
 ) {
   const enableRef = ref(options.enabled ?? true);
   const measurementUnitsRef = ref(options.measurementUnits ?? "metric");
@@ -23,7 +23,7 @@ export function useShowScaleLine(
     (enabled) => {
       scaleLineControl.setMap(enabled ? olMap : null);
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   watch(measurementUnitsRef, (units) => {

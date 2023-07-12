@@ -272,14 +272,14 @@ import { PhotonSearchResult } from "@/composables/geosearching";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(
-  () => import("@/components/SymbolPickerModal.vue")
+  () => import("@/components/SymbolPickerModal.vue"),
 );
 const InputDateModal = defineAsyncComponent(
-  () => import("@/components/InputDateModal.vue")
+  () => import("@/components/InputDateModal.vue"),
 );
 
 const ExportScenarioModal = defineAsyncComponent(
-  () => import("@/components/ExportScenarioModal.vue")
+  () => import("@/components/ExportScenarioModal.vue"),
 );
 
 const ImportModal = defineAsyncComponent(() => import("@/components/ImportModal.vue"));
@@ -441,7 +441,7 @@ watchOnce(
   () => activeScenarioTab.value === TAB_LAYERS,
   () => {
     NProgress.start();
-  }
+  },
 );
 
 function loadScenario(v: Scenario) {

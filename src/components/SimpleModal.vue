@@ -95,7 +95,7 @@ watch(
     await promiseTimeout(100);
     open.value = v;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 uiStore.modalOpen = open.value;

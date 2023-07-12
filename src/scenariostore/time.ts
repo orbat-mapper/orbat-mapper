@@ -38,7 +38,7 @@ export function useScenarioTime(store: NewScenarioStore) {
             const n = lineString(
               s.via
                 ? [currentState.location, ...s.via, s.location]
-                : [currentState.location, s.location]
+                : [currentState.location, s.location],
             );
             const timeDiff = s.t - currentState.t;
             const pathLength = turfLength(n);
@@ -120,7 +120,7 @@ export function useScenarioTime(store: NewScenarioStore) {
 
   function goToNextScenarioEvent() {
     const nextEventId = state.events.find(
-      (event) => state.eventMap[event].startTime > state.currentTime
+      (event) => state.eventMap[event].startTime > state.currentTime,
     );
     const nextEvent = nextEventId && state.eventMap[nextEventId];
     const newTime = nextEvent ? nextEvent.startTime : Number.MAX_SAFE_INTEGER;
