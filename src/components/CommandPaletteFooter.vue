@@ -19,12 +19,21 @@
       <button class="flex" @click="emit('click-actions')">
         <kbd
           :class="[
-            'mx-1 flex h-5 w-5 items-center justify-center rounded border bg-white  font-semibold sm:mx-2',
-            rawQuery.startsWith('#')
+            'mx-1 flex h-5 w-5 items-center justify-center rounded border bg-white  font-semibold sm:ml-2',
+            rawQuery.startsWith('#') || rawQuery.startsWith('>')
               ? 'border-indigo-600 text-indigo-600'
               : 'border-gray-400 text-gray-900',
           ]"
           >#</kbd
+        >
+        <kbd
+          :class="[
+            'mx-0.5 flex h-5 w-5 items-center justify-center rounded border bg-white  font-semibold sm:mr-2',
+            rawQuery.startsWith('>')
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-gray-400 text-gray-900',
+          ]"
+          >&gt;</kbd
         >
         <span class="">for actions</span>
       </button>

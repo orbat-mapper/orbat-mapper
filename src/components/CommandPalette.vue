@@ -173,13 +173,15 @@ const { searchActions, actionItems } = useActionSearch();
 const open = useVModel(props, "modelValue", emit);
 
 const rawQuery = ref("");
-const query = computed(() => rawQuery.value.replace(/^[#@]/, ""));
+const query = computed(() => rawQuery.value.replace(/^[#@>]/, ""));
 const showHelp = computed(() => rawQuery.value === "?");
 const isGeoSearch = computed(
   () => uiStore.searchGeoMode || rawQuery.value.startsWith("@"),
 );
 
-const isActionSearch = computed(() => rawQuery.value.startsWith("#"));
+const isActionSearch = computed(
+  () => rawQuery.value.startsWith("#") || rawQuery.value.startsWith(">"),
+);
 
 const debouncedQuery = useDebounce(query, 200);
 const geoDebouncedQuery = useDebounce(query, 500);
