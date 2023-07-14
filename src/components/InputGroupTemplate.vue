@@ -12,21 +12,10 @@
   </div>
 </template>
 
-<script>
-import { defineComponent } from "vue";
+<script setup lang="ts">
 import { nanoid } from "nanoid";
 
-export default defineComponent({
-  name: "InputGroupTemplate",
-  props: {
-    label: String,
-    description: String,
-  },
-  setup(props) {
-    const id = nanoid();
-    return {
-      id,
-    };
-  },
-});
+const props = defineProps<{ label?: string; description?: string }>();
+
+const id = nanoid();
 </script>
