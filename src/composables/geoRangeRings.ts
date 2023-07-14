@@ -6,6 +6,7 @@ import { circle, union } from "@turf/turf";
 import { featureCollection } from "@turf/helpers";
 import { GeoJSON } from "ol/format";
 import { NUnit } from "@/types/internalModels";
+import { convertToMetric } from "@/utils/convert";
 
 export function useRangeRingsLayer() {
   const scn = injectStrict(activeScenarioKey);
@@ -43,7 +44,9 @@ function createRangeRings(unit: NUnit) {
   return (
     unit.rangeRings
       ?.filter((r) => !(r.hidden ?? false))
-      .map((r) => circle(unit._state!.location!, r.range / 1000)) || []
+      .map((r) =>
+        circle(unit._state!.location!, convertToMetric(r.range, r.uom || "km") / 1000),
+      ) || []
   );
 }
 

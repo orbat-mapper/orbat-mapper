@@ -117,5 +117,6 @@ export interface LayerFeatureItem {
 export interface RangeRing {
   name: string;
   range: number;
+  uom: "m" | "km" | "ft" | "mi" | "nmi";
   hidden?: boolean;
 }
