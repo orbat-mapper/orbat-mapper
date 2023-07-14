@@ -29,6 +29,7 @@ export default defineComponent({
     label: String,
     description: String,
     modelValue: [String, Number],
+    autofocus: Boolean,
   },
   emits: ["update:modelValue"],
   inheritAttrs: false,
@@ -42,6 +43,11 @@ export default defineComponent({
       localValue,
       computedId,
     };
+  },
+  mounted() {
+    if (this.autofocus) {
+      this.$el.querySelector("input").focus();
+    }
   },
 });
 </script>
