@@ -18,7 +18,7 @@ import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
 import type { State, StateAdd, Unit, UnitSymbolOptions } from "@/types/scenarioModels";
-import { Position } from "@/types/scenarioGeoModels";
+import { Position, RangeRing } from "@/types/scenarioGeoModels";
 import { getNextEchelonBelow } from "@/symbology/helpers";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
@@ -580,6 +580,33 @@ export function useUnitManipulations(store: NewScenarioStore) {
     };
   }
 
+  function addRangeRing(unitId: EntityId, rangeRing: RangeRing) {
+    update((s) => {
+      const unit = s.getUnitById(unitId);
+      if (!unit) return;
+      if (!unit.rangeRings) unit.rangeRings = [];
+      unit.rangeRings.push(rangeRing);
+    });
+  }
+
+  function deleteRangeRing(unitId: EntityId, index: number) {
+    update((s) => {
+      const unit = s.getUnitById(unitId);
+      if (!unit) return;
+      if (!unit.rangeRings) return;
+      unit.rangeRings.splice(index, 1);
+    });
+  }
+
+  function updateRangeRing(unitId: EntityId, index: number, data: Partial<RangeRing>) {
+    update((s) => {
+      const unit = s.getUnitById(unitId);
+      if (!unit) return;
+      if (!unit.rangeRings) return;
+      Object.assign(unit.rangeRings[index], data);
+    });
+  }
+
   return {
     addUnit,
     deleteUnit,
@@ -616,5 +643,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     reorderSideGroup,
     getCombinedSymbolOptions,
     expandUnitWithSymbolOptions,
+    addRangeRing,
+    deleteRangeRing,
+    updateRangeRing,
   };
 }

@@ -113,3 +113,9 @@ export interface LayerFeatureItem {
   description?: string;
   _pid?: FeatureId;
 }
+
+export interface RangeRing {
+  name: string;
+  range: number;
+  hidden?: boolean;
+}

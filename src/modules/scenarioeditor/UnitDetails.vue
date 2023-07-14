@@ -143,6 +143,9 @@
         <TabPanel
           ><UnitPanelState v-if="!isMultiMode && unit?.state?.length" :unit="unit"
         /></TabPanel>
+        <TabPanel>
+          <UnitDetailsMap :unit="unit" />
+        </TabPanel>
         <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
           <pre>{{ unit }}</pre>
         </TabPanel>
@@ -187,6 +190,7 @@ import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import EditableLabel from "@/components/EditableLabel.vue";
+import UnitDetailsMap from "@/modules/scenarioeditor/UnitDetailsMap.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue"),
@@ -206,7 +210,9 @@ function changeTab(index: number) {
   selectedTab.value = index;
 }
 const tabList = computed(() =>
-  uiStore.debugMode ? ["Details", "Unit state", "Debug"] : ["Details", "Unit state"],
+  uiStore.debugMode
+    ? ["Details", "Unit state", "Map", "Debug"]
+    : ["Details", "Unit state", "Map"],
 );
 
 const unit = computed(() => {

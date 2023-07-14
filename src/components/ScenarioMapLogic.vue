@@ -34,6 +34,7 @@ import { useShowLocationControl } from "@/composables/geoShowLocation";
 import { useShowScaleLine } from "@/composables/geoScaleLine";
 import { ObjectEvent } from "ol/Object";
 import { clearStyleCache } from "@/geo/unitStyles";
+import { useRangeRingsLayer } from "@/composables/geoRangeRings";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -83,12 +84,16 @@ const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } = storeToRefs(
 );
 
 const { initializeFromStore: loadMapLayers } = useScenarioMapLayers(olMap);
+const { rangeLayer, drawRangeRings } = useRangeRingsLayer();
+
+olMap.addLayer(rangeLayer);
 const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
 useGeoLayersUndoRedo(olMap);
 const { historyLayer, drawHistory, historyModify } = useUnitHistory({
   showHistory,
   editHistory,
 });
+
 const r = useMapHover(olMap, { enable: hoverEnabled });
 
 olMap.addLayer(historyLayer);
@@ -132,6 +137,7 @@ useShowScaleLine(olMap, {
   measurementUnits: measurementUnit,
 });
 
+drawRangeRings();
 drawUnits();
 drawHistory();
 
@@ -149,11 +155,16 @@ function toggleMoveUnitInteraction(event: ObjectEvent) {
 
 emit("map-ready", { olMap, featureSelectInteraction, unitSelectInteraction });
 
-watch(geo.everyVisibleUnit, () => {
-  drawUnits();
-  drawHistory();
-  redrawSelectedUnits();
-});
+watch(
+  geo.everyVisibleUnit,
+  () => {
+    drawUnits();
+    drawHistory();
+    redrawSelectedUnits();
+    drawRangeRings();
+  },
+  { deep: true },
+);
 
 watch([settingsStore, symbolSettings], () => {
   clearStyleCache();

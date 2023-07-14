@@ -36,7 +36,7 @@ export function createEmptyScenario(): Scenario {
   } catch (e) {}
   return {
     type: "ORBAT-mapper",
-    version: "0.8.0",
+    version: "0.9.0",
     name: "New scenario",
     description: "Empty scenario description",
     startTime: new Date().getTime(),
@@ -101,7 +101,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     const { state } = store.value;
     return {
       type: "ORBAT-mapper",
-      version: "0.8.0",
+      version: "0.9.0",
       ...getScenarioInfo(state),
       sides: getSides(state),
       layers: getLayers(state),

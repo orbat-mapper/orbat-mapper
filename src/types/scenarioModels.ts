@@ -1,4 +1,9 @@
-import type { Position, ScenarioLayer, ScenarioMapLayer } from "./scenarioGeoModels";
+import type {
+  Position,
+  RangeRing,
+  ScenarioLayer,
+  ScenarioMapLayer,
+} from "./scenarioGeoModels";
 import type { EntityId, ScenarioTime } from "./base";
 import type { SidValue } from "@/symbology/values";
 import { type SymbolOptions } from "milsymbol";
@@ -41,6 +46,7 @@ export interface Unit {
   location?: Position;
   state?: State[];
   symbolOptions?: UnitSymbolOptions;
+  rangeRings?: RangeRing[];
   // internal runtime only state
   _state?: CurrentState | null;
   _pid?: EntityId; // parent
@@ -120,7 +126,7 @@ export interface ScenarioInfo {
 }
 
 export type SymbologyStandard = "2525" | "app6";
-export type ScenarioVersion = "0.8.0" | "0.7.0" | "0.6.0";
+export type ScenarioVersion = "0.9.0" | "0.8.0" | "0.7.0" | "0.6.0";
 
 export interface Scenario extends ScenarioInfo {
   type: "ORBAT-mapper";
