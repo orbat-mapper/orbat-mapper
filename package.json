@@ -12,7 +12,7 @@
     "v-build": "vite build",
     "v-tsc": "vue-tsc --noEmit --skipLibCheck",
     "serve": "vite preview",
-    "lint-fix": "prettier --write .",
+    "lint-fix": "prettier --write . ",
     "test": "vitest",
     "test-ui": "vitest --ui",
     "coverage": "vitest run --coverage",
@@ -96,9 +96,5 @@
   "engines": {
     "node": ">= 16.13.0",
     "npm": ">= 8.1.0"
-  },
-  "prettier": {
-    "printWidth": 90,
-    "quoteProps": "as-needed"
   }
 }
