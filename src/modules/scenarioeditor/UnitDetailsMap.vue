@@ -67,7 +67,7 @@ function updateRing() {
   <div class="mt-2 flex items-center">
     <div class="flex-auto">
       <h1 class="text-sm font-semibold leading-5 text-gray-900">Range rings</h1>
-      <p class="mt-1.5 text-sm text-red-700">Work in progress!</p>
+      <!--      <p class="mt-1.5 text-sm text-red-700">Work in progress!</p>-->
     </div>
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button

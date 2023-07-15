@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 July 2023
 
+- Add unit range rings.
 - Add support for image layers.
 - Add support for TileJSON layers.
 - Add support for XYZ layers.
