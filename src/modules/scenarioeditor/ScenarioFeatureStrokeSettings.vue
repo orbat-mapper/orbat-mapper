@@ -59,7 +59,7 @@ function onChange(e: any) {}
         class="w-28"
         @change="onChange($event)"
       />
-      <span class="">{{ marker["stroke-width"] }}</span>
+      <span class="ml-2">{{ marker["stroke-width"] }}</span>
       <label for="stroke-opacity">Opacity</label>
       <input
         id="stroke-opacity"
@@ -71,7 +71,7 @@ function onChange(e: any) {}
         class="w-28"
         @change="onChange($event)"
       />
-      <span class="">{{ opacityAsPercent }}%</span>
+      <span class="ml-2">{{ opacityAsPercent }}%</span>
     </section>
   </div>
 </template>

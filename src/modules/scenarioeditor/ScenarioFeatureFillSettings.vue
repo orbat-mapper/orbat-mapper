@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { FillStyleSpec, SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
+import { FillStyleSpec, SimpleStyleSpec } from "@/geo/simplestyle";
 import { ScenarioFeature } from "@/types/scenarioGeoModels";
 import ColorPicker from "@/components/ColorPicker.vue";
 
@@ -53,7 +53,7 @@ function onChange(e: any) {}
         class="w-28"
         @change="onChange($event)"
       />
-      <span class="">{{ opacityAsPercent }}%</span>
+      <span class="ml-2">{{ opacityAsPercent }}%</span>
     </section>
   </div>
 </template>
