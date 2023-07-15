@@ -191,6 +191,8 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import UnitDetailsMap from "@/modules/scenarioeditor/UnitDetailsMap.vue";
+import { useTabStore } from "@/stores/tabStore";
+import { storeToRefs } from "pinia";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue"),
@@ -203,8 +205,8 @@ const {
   geo: { addUnitPosition },
   unitActions: { updateUnit, getUnitHierarchy, getCombinedSymbolOptions },
 } = activeScenario;
+const { unitDetailsTab: selectedTab } = storeToRefs(useTabStore());
 
-const selectedTab = ref(0);
 const unitName = ref("");
 function changeTab(index: number) {
   selectedTab.value = index;
