@@ -426,9 +426,6 @@ async function onScenarioAction(action: ScenarioActions) {
     showExportModal.value = true;
   } else if (action === "import") {
     showImportModal.value = true;
-  } else if (action === "addTileJSONLayer") {
-  } else {
-    send({ message: "Not implemented yet" });
   }
   await onScenarioActionHook.trigger({ action });
 }

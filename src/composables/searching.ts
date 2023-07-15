@@ -183,6 +183,7 @@ const actionItems: ActionItem[] = [
   { action: "addSide", label: "Add side", icon: "add" },
   { action: "addTileJSONLayer", label: "Add TileJSON map layer", icon: "add" },
   { action: "addXYZLayer", label: "Add XYZ map layer", icon: "add" },
+  { action: "addImageLayer", label: "Add image layer", icon: "add" },
 ];
 
 export function useActionSearch() {
