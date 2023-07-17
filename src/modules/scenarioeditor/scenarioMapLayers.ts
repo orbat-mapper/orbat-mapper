@@ -383,18 +383,12 @@ export function addMapLayer(
   layerType: ScenarioMapLayerType,
   geo: TGeo,
 ): ScenarioMapLayer {
-  // const newLayer = geo.addMapLayer({
-  //   id: nanoid(),
-  //   type: "TileJSONLayer",
-  //   name: "Town plans of Sicily, Messina",
-  //   url: "https://maps.georeferencer.com/georeferences/c589e97e-4ee3-572f-9c17-ec267dc1e41d/2019-10-01T08:40:08.006175Z/map.json?key=TT2V1y0PsmpHjZjDoUgL",
-  // });
   let newLayer: ScenarioMapLayer;
   if (layerType === "TileJSONLayer") {
     newLayer = geo.addMapLayer({
       id: nanoid(),
       type: "TileJSONLayer",
-      name: "New map layer",
+      name: "New TileJSON map layer",
       url: "",
       _status: "uninitialized",
       _isNew: true,
