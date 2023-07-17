@@ -8,6 +8,9 @@ import { klona } from "klona";
 import InputGroup from "@/components/InputGroup.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import BaseButton from "@/components/BaseButton.vue";
+import { MenuItemData } from "@/components/types";
+import { RangeRingAction, RangeRingActions } from "@/types/constants";
+import DotsMenu from "@/components/DotsMenu.vue";
 
 interface Props {
   unit: NUnit;
@@ -24,6 +27,14 @@ const editedIndex = ref(-1);
 const rangeRings = computed(() => {
   return props.unit.rangeRings ?? [];
 });
+
+const ringMenuItems: MenuItemData<RangeRingAction>[] = [
+  {
+    label: "Edit",
+    action: RangeRingActions.Edit,
+  },
+  { label: "Delete", action: RangeRingActions.Delete },
+];
 
 function addRangeRing() {
   unitActions.addRangeRing(props.unit.id, {
@@ -61,6 +72,17 @@ function updateRing() {
   });
   editedIndex.value = -1;
   editedRangeRing.value = { name: "", range: 0, uom: "km" };
+}
+
+function onRangeRingAction(action: RangeRingAction, index: number) {
+  switch (action) {
+    case RangeRingActions.Edit:
+      editRing(index);
+      break;
+    case RangeRingActions.Delete:
+      deleteRing(index);
+      break;
+  }
 }
 </script>
 <template>
@@ -108,6 +130,7 @@ function updateRing() {
         v-for="(ring, index) in rangeRings"
         :key="ring.name"
         @dblclick="editRing(index)"
+        class="group"
       >
         <template v-if="index === editedIndex">
           <td colspan="4">
@@ -166,12 +189,12 @@ function updateRing() {
               @change="toggleRingVisibility(ring, index)"
             />
           </td>
-          <td class="flex py-2">
-            <button type="button" class="btn-link" @click="editRing(index)">Edit</button>
-            <span class="mx-1.5 text-gray-200" aria-hidden="true">|</span>
-            <button @click="deleteRing(index)" type="button" class="btn-link">
-              Delete
-            </button>
+          <td class="py-1">
+            <DotsMenu
+              class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+              :items="ringMenuItems"
+              @action="onRangeRingAction($event, index)"
+            />
           </td>
         </template>
       </tr>

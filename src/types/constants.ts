@@ -64,6 +64,15 @@ export type ScenarioMapLayerAction = "zoom" | "delete" | "moveUp" | "moveDown";
 export type ScenarioLayerAction =
   (typeof ScenarioLayerActions)[keyof typeof ScenarioLayerActions];
 
+export const RangeRingActions = {
+  Delete: "Delete",
+  Edit: "Edit",
+  MoveUp: "MoveUp",
+  MoveDown: "MoveDown",
+} as const;
+
+export type RangeRingAction = (typeof RangeRingActions)[keyof typeof RangeRingActions];
+
 export interface SymbolValue {
   code: string;
   text: string;
