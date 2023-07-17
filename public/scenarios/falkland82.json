@@ -286,7 +286,21 @@
                   ],
                   "id": "bW9e77jLCT",
                   "shortName": "HER",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Hermes_(R12)"
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Hermes_(R12)",
+                  "rangeRings": [
+                    {
+                      "name": "FRS1 combat",
+                      "range": 400,
+                      "uom": "nmi",
+                      "hidden": true
+                    },
+                    {
+                      "name": "FRS1 ground attack",
+                      "range": 250,
+                      "uom": "nmi",
+                      "hidden": true
+                    }
+                  ]
                 },
                 {
                   "name": "HMS Invincible",
@@ -295,7 +309,21 @@
                   "id": "EYRRLrKOXc",
                   "shortName": "INV",
                   "externalUrl": "https://en.wikipedia.org/wiki/HMS_Invincible_(R05)",
-                  "subUnits": []
+                  "subUnits": [],
+                  "rangeRings": [
+                    {
+                      "name": "FRS1 combat",
+                      "range": 400,
+                      "uom": "nmi",
+                      "hidden": true
+                    },
+                    {
+                      "name": "FRS1 ground attack",
+                      "range": 250,
+                      "uom": "nmi",
+                      "hidden": true
+                    }
+                  ]
                 },
                 {
                   "name": "HMS Glamorgan",
