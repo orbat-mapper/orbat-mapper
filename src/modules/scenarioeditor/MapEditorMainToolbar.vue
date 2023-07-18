@@ -39,7 +39,7 @@
       <div class="h-7 border-l-2 border-gray-300 sm:mx-1" />
       <div class="ml-2 flex items-center">
         <Popover as="template">
-          <Float placement="top" :offset="12" flip shift portal>
+          <Float placement="top" :offset="12" flip shift strategy="fixed">
             <PopoverButton as="template">
               <PanelSymbolButton
                 :size="20"
@@ -75,14 +75,16 @@
             class="absolute -right-2 bottom-0 h-4 w-4 rounded-full bg-white bg-opacity-70 text-gray-600 group-hover:text-gray-900"
           />
         </PanelSymbolButton>
-        <Popover as="template" v-slot="{ open }">
-          <Float placement="top" :offset="12" flip shift portal>
-            <PopoverButton as="template">
-              <PanelButton title="Select icons" class="ml-1" @click="store.clearToolbar()"
-                ><IconChevronUp
-                  class="h-6 w-6"
-                  :class="{ ' scale-150 text-red-800 ': open }"
-              /></PanelButton>
+        <Popover as="template" v-slot="{ open, close }">
+          <Float placement="top" :offset="12" flip shift strategy="fixed">
+            <PopoverButton
+              title="Select icons"
+              class="ml-1 rounded p-2 text-sm text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+              @click="store.clearToolbar()"
+              ><IconChevronUp
+                class="h-6 w-6"
+                :class="{ ' scale-150 text-red-800 ': open }"
+              />
             </PopoverButton>
             <PopoverPanel focus v-slot="{ close }">
               <FloatingPanel class="overflow-hidden p-2">
