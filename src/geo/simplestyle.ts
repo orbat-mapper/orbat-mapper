@@ -13,16 +13,16 @@ import Style from "ol/style/Style";
 import { RegularShape } from "ol/style";
 
 export interface StrokeStyleSpec {
-  stroke: string | null;
+  stroke: string | null | undefined;
   "stroke-opacity": number;
   "stroke-width": number;
-  _stroke: string | null;
+  _stroke?: string | null;
 }
 
 export interface FillStyleSpec {
-  fill: string | null;
+  fill: string | null | undefined;
   "fill-opacity": number;
-  _fill: string | null;
+  _fill?: string | null;
 }
 
 export type MarkerSymbol =

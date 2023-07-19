@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { NUnit } from "@/types/internalModels";
 import { computed, ref } from "vue";
-import { RangeRing } from "@/types/scenarioGeoModels";
+
+import { NUnit } from "@/types/internalModels";
+import { RangeRing, RangeRingStyle } from "@/types/scenarioGeoModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { klona } from "klona";
@@ -11,6 +12,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import { MenuItemData } from "@/components/types";
 import { RangeRingAction, RangeRingActions } from "@/types/constants";
 import DotsMenu from "@/components/DotsMenu.vue";
+import RingStylePopover from "@/modules/scenarioeditor/RingStylePopover.vue";
 
 interface Props {
   unit: NUnit;
@@ -72,6 +74,10 @@ function updateRing() {
   });
   editedIndex.value = -1;
   editedRangeRing.value = { name: "", range: 0, uom: "km" };
+}
+
+function updateRingStyle(ring: RangeRing, index: number, style: Partial<RangeRingStyle>) {
+  unitActions.updateRangeRing(props.unit.id, index, { style });
 }
 
 function onRangeRingAction(action: RangeRingAction, index: number) {
@@ -189,7 +195,11 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
               @change="toggleRingVisibility(ring, index)"
             />
           </td>
-          <td class="py-1">
+          <td class="flex items-center">
+            <RingStylePopover
+              :ring-style="ring.style || {}"
+              @update="updateRingStyle(ring, index, $event)"
+            />
             <DotsMenu
               class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
               :items="ringMenuItems"

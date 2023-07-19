@@ -8,7 +8,7 @@
     <div class="mt-4 flex flex-wrap items-center gap-2">
       <RadioGroupOption
         as="template"
-        v-for="color in colors"
+        v-for="color in $colors"
         :key="color.name"
         :value="color.value"
         v-slot="{ active, checked }"
@@ -22,13 +22,15 @@
           ]"
         >
           <RadioGroupLabel as="span" class="sr-only">{{ color.name }}</RadioGroupLabel>
-          <span
+          <div
             aria-hidden="true"
             :class="[
               color.bgColor,
-              'h-7 w-7 rounded-full border border-black border-opacity-10',
+              'flex h-7 w-7 items-center justify-center rounded-full border border-black border-opacity-10',
             ]"
-          />
+          >
+            <span v-if="!color.value">x</span>
+          </div>
         </div>
       </RadioGroupOption>
     </div>
@@ -85,13 +87,31 @@ export const colors = [
 <script setup lang="ts">
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
 import { useVModel } from "@vueuse/core";
+import { computed } from "vue";
 
 interface Props {
-  modelValue: string;
+  modelValue?: string;
   label?: string;
+  showNone?: boolean;
 }
-const props = withDefaults(defineProps<Props>(), { modelValue: colors[1].selectedColor });
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: colors[1].selectedColor,
+  showNone: false,
+});
 const emit = defineEmits(["update:modelValue"]);
 
 const selectedColor = useVModel(props, "modelValue", emit);
+const $colors = computed(() =>
+  props.showNone
+    ? [
+        {
+          name: "None",
+          value: null as unknown as undefined,
+          bgColor: "bg-white",
+          selectedColor: "ring-black",
+        },
+        ...colors,
+      ]
+    : colors,
+);
 </script>

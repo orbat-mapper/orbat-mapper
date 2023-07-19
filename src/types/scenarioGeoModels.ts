@@ -1,5 +1,5 @@
 import type { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
-import { SimpleStyleSpec } from "@/geo/simplestyle";
+import { FillStyleSpec, SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
 import { ScenarioTime } from "@/types/base";
 import { CurrentStateType, ScenarioEventDescription } from "@/types/scenarioModels";
 
@@ -119,4 +119,7 @@ export interface RangeRing {
   range: number;
   uom: "m" | "km" | "ft" | "mi" | "nmi";
   hidden?: boolean;
+  style?: Partial<RangeRingStyle>;
 }
+
+export interface RangeRingStyle extends StrokeStyleSpec, FillStyleSpec {}

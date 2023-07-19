@@ -603,7 +603,16 @@ export function useUnitManipulations(store: NewScenarioStore) {
       const unit = s.getUnitById(unitId);
       if (!unit) return;
       if (!unit.rangeRings) return;
-      Object.assign(unit.rangeRings[index], data);
+      const { style, ...rest } = data;
+      Object.assign(unit.rangeRings[index], rest);
+
+      if (style) {
+        if (unit.rangeRings[index].style) {
+          Object.assign(unit.rangeRings[index].style!, style);
+        } else {
+          unit.rangeRings[index].style = style;
+        }
+      }
     });
   }
 
