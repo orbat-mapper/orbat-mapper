@@ -42,7 +42,7 @@ import {
 import { ScenarioFeatureActions } from "@/types/constants";
 import Select, { SelectEvent } from "ol/interaction/Select";
 import { MaybeRef } from "@vueuse/core";
-import { activeFeaturesKey, activeScenarioKey } from "@/components/injects";
+import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
 import {
   NScenarioFeature,
   NScenarioLayer,
@@ -149,7 +149,7 @@ export function useScenarioFeatureSelect(
     enable: MaybeRef<boolean>;
   }> = {},
 ) {
-  const { scenarioFeatureStyle } = injectStrict(activeFeaturesKey);
+  const { scenarioFeatureStyle } = injectStrict(activeFeatureStylesKey);
   const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
   const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
     VectorLayer<any>
@@ -235,7 +235,7 @@ export function useScenarioLayers(
     store: { state },
   } = activeScenario || injectStrict(activeScenarioKey);
   const { scenarioFeatureStyle, clearCache, invalidateStyle } =
-    activeScenarioFeatures || injectStrict(activeFeaturesKey);
+    activeScenarioFeatures || injectStrict(activeFeatureStylesKey);
   const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
   const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
     VectorLayer<any>

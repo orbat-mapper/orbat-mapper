@@ -8,16 +8,6 @@ import { FeatureLike } from "ol/Feature";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import { TGeo } from "@/scenariostore";
 
-const styleCache = new Map<any, Style>();
-
-export function clearStyleCache() {
-  styleCache.clear();
-}
-
-export function invalidateFeatureStyle(featureId: FeatureId) {
-  styleCache.delete(featureId);
-}
-
 const defaultStyle = new Style({
   stroke: defaultSimplestyleStroke,
   fill: defaultSimplestyleFill,

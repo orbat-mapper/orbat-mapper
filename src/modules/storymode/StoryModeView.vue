@@ -60,7 +60,7 @@ import NumberInputGroup from "../../components/NumberInputGroup.vue";
 import MeasurementToolbar from "../../components/MeasurementToolbar.vue";
 import type { TScenario } from "@/scenariostore";
 import { useUnitLayer } from "@/composables/geomap";
-import { activeFeaturesKey, activeScenarioKey } from "@/components/injects";
+import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useFeatureStyles } from "@/geo/featureStyles";
 
@@ -68,7 +68,7 @@ const props = defineProps<{ activeScenario: TScenario }>();
 provide(activeScenarioKey, props.activeScenario);
 
 const scnFeatures = useFeatureStyles(props.activeScenario.geo);
-provide(activeFeaturesKey, scnFeatures);
+provide(activeFeatureStylesKey, scnFeatures);
 
 const { state } = props.activeScenario.store;
 

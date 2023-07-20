@@ -242,7 +242,7 @@ import NProgress from "nprogress";
 import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
 import {
-  activeFeaturesKey,
+  activeFeatureStylesKey,
   activeLayerKey,
   activeParentKey,
   activeScenarioKey,
@@ -290,7 +290,7 @@ const dropZoneRef = ref<HTMLDivElement>();
 const activeParentId = ref<EntityId | undefined | null>(null);
 const activeLayerId = ref<FeatureId | undefined | null>(null);
 const activeScenarioEventId = ref<EntityId | undefined | null>(null);
-const scnFeatures = useFeatureStyles(props.activeScenario.geo);
+const scnFeatureStyles = useFeatureStyles(props.activeScenario.geo);
 
 const uiTabs = useTabStore();
 const { activeScenarioTab } = storeToRefs(uiTabs);
@@ -298,7 +298,7 @@ const { activeScenarioTab } = storeToRefs(uiTabs);
 provide(activeParentKey, activeParentId);
 provide(activeLayerKey, activeLayerId);
 provide(activeScenarioKey, props.activeScenario);
-provide(activeFeaturesKey, scnFeatures);
+provide(activeFeatureStylesKey, scnFeatureStyles);
 provide(currentScenarioTabKey, activeScenarioTab);
 
 const onUnitSelectHook = createEventHook<{ unitId: EntityId }>();

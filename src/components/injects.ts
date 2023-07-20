@@ -20,8 +20,8 @@ export const activeLayerKey = Symbol("Active layer") as InjectionKey<
 >;
 
 export const activeScenarioKey = Symbol("Active scenario") as InjectionKey<TScenario>;
-export const activeFeaturesKey = Symbol(
-  "Active features",
+export const activeFeatureStylesKey = Symbol(
+  "Active feature styles",
 ) as InjectionKey<UseFeatureStyles>;
 
 export const currentScenarioTabKey = Symbol("Current scenario tab") as InjectionKey<
