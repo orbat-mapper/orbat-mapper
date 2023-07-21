@@ -125,7 +125,7 @@ import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import OLMap from "ol/Map";
-import NewScenarioMap from "@/components/NewScenarioMap.vue";
+import NewScenarioMap from "@/components/ScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
 import { breakpointsTailwind, useBreakpoints, useToggle } from "@vueuse/core";

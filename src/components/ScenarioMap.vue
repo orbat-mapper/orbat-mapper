@@ -32,11 +32,6 @@ import type Select from "ol/interaction/Select";
 import { useUiStore } from "@/stores/uiStore";
 import ScenarioMapLogic from "@/components/ScenarioMapLogic.vue";
 
-const mapSettings = useMapSettingsStore();
-
-interface Props {}
-
-// const props = defineProps<Props>();
 const emit = defineEmits<{
   (
     e: "map-ready",
@@ -53,9 +48,9 @@ const {
   store: { state },
   unitActions,
 } = injectStrict(activeScenarioKey);
+const mapSettings = useMapSettingsStore();
 
 const mapRef = shallowRef<OLMap>();
-
 const uiStore = useUiStore();
 const geoStore = useGeoStore();
 const settingsStore = useSettingsStore();
