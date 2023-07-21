@@ -1,7 +1,11 @@
 <template>
-  <div>
-    <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="space-y-4 p-6">
-      <InputGroup label="Name" v-model="form.name" id="name-input" />
+  <div class="px-2">
+    <EditableLabel
+      v-model="scenarioName"
+      @update-value="updateScenarioInfo({ name: $event })"
+    />
+
+    <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="space-y-4">
       <SimpleMarkdownInput
         label="Description"
         v-model="form.description"
@@ -19,9 +23,6 @@
       </div>
     </form>
     <div v-else class="space-y-4 p-0">
-      <DescriptionItem label="Title"
-        ><span class="font-medium">{{ state.info.name }}</span></DescriptionItem
-      >
       <DescriptionItem label="Description">
         <div class="prose-esm prose dark:prose-invert" v-html="hDescription"></div>
       </DescriptionItem>
@@ -53,13 +54,13 @@ import { renderMarkdown } from "@/composables/formatting";
 import { useToggle } from "@vueuse/core";
 import PlainButton from "@/components/PlainButton.vue";
 import { type ScenarioInfo } from "@/types/scenarioModels";
-import InputGroup from "@/components/InputGroup.vue";
 import dayjs from "dayjs";
 import RadioGroupList from "@/components/RadioGroupList.vue";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import { useNotifications } from "@/composables/notifications";
+import EditableLabel from "@/components/EditableLabel.vue";
 
 const { send } = useNotifications();
 
@@ -94,6 +95,14 @@ const isEditMode = ref(false);
 const toggleEditMode = useToggle(isEditMode);
 
 const hDescription = computed(() => renderMarkdown(state.info.description || ""));
+
+const scenarioName = ref("");
+
+watch(
+  () => state.info.name,
+  (v) => (scenarioName.value = v),
+  { immediate: true },
+);
 
 let form = ref<ScenarioInfo>({
   name: "",
@@ -145,12 +154,16 @@ function onFormSubmit() {
   const {
     state: { info },
   } = store;
-  store.update((s) => {
-    Object.assign(s.info, { ...form.value });
-  });
+  updateScenarioInfo(form.value);
 
   if (info.symbologyStandard) settingsStore.symbologyStandard = info.symbologyStandard;
   isEditMode.value = false;
+}
+
+function updateScenarioInfo(data: Partial<ScenarioInfo>) {
+  store.update((s) => {
+    Object.assign(s.info, { ...data });
+  });
 }
 
 async function openTimeModal() {
