@@ -9,7 +9,6 @@ import {
   MAP_EDIT_MODE_ROUTE,
   NEW_SCENARIO_ROUTE,
   ORBAT_CHART_ROUTE,
-  OLD_MAP_ROUTE,
   STORY_MODE_ROUTE,
 } from "@/router/names";
 
@@ -30,7 +29,6 @@ const GeoTestView = () => import("../views/GeoTestView.vue");
 const GridTestView = () => import("@/modules/grid/GridTestView.vue");
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
-const ScenarioEditorGeo = () => import("@/modules/scenarioeditor/ScenarioEditorGeo.vue");
 const ScenarioEditorMap = () => import("@/modules/scenarioeditor/ScenarioEditorMap.vue");
 const routes = [
   {
@@ -44,12 +42,6 @@ const routes = [
         path: "",
         name: MAP_EDIT_MODE_ROUTE,
         component: ScenarioEditorMap,
-        meta: { helpUrl: "https://docs.orbat-mapper.app/guide/map-edit-mode" },
-      },
-      {
-        path: "map-old",
-        name: OLD_MAP_ROUTE,
-        component: ScenarioEditorGeo,
         meta: { helpUrl: "https://docs.orbat-mapper.app/guide/map-edit-mode" },
       },
       {
