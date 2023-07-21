@@ -12,6 +12,7 @@ import { toLonLat } from "ol/proj";
 import type { EventsKey } from "ol/events";
 import { ref } from "vue";
 import type { Position } from "geojson";
+import { useMapSelectStore } from "@/stores/mapSelectStore";
 
 export interface UseGetMapLocationOptions {
   cancelOnClickOutside?: boolean;
@@ -22,6 +23,7 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
   const { cancelOnClickOutside = true, stopPropagationOnClickOutside = true } = options;
 
   const isActive = ref(false);
+  const mapSelectStore = useMapSelectStore();
 
   const prevCursor = olMap.getTargetElement().style.cursor;
   let clickEventKey: EventsKey;
@@ -31,10 +33,13 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
   const onGetLocationHook = createEventHook<Position>();
   const onCancelHook = createEventHook();
   const onStartHook = createEventHook();
+  let prevHoverValue = true;
 
   function start() {
     isActive.value = true;
     onStartHook.trigger(null);
+    prevHoverValue = mapSelectStore.hoverEnabled;
+    mapSelectStore.hoverEnabled = false;
     olMap.getTargetElement().style.cursor = "crosshair";
     if (cancelOnClickOutside) {
       stopClickOutside = onClickOutside(olMap.getTargetElement(), (e) => {
@@ -63,6 +68,7 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
     if (clickEventKey) unByKey(clickEventKey);
     if (stopEscListener) stopEscListener();
     if (stopClickOutside) stopClickOutside();
+    mapSelectStore.hoverEnabled = prevHoverValue;
   }
 
   function cancel() {
