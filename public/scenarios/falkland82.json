@@ -1,10 +1,10 @@
 {
   "type": "ORBAT-mapper",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
   "timeZone": "Atlantic/Stanley",
-  "description": "The Falklands War was a military conflict that took place in 1982 between Argentina and the United Kingdom. The dispute was over the Falkland Islands, South Georgia, and South Sandwich Islands in the South Atlantic. Argentina invaded the Falkland Islands on April 2, 1982, and the UK responded by sending a task force to retake the islands. The conflict lasted for 74 days and resulted in the deaths of 649 Argentine military personnel, 255 British military personnel, and three Falkland Islanders. The war ended on June 14, 1982, when Argentine forces surrendered, and the islands were returned to British control. The war had significant political and military implications for both countries, and it is regarded as a significant event in the history of the region.",
+  "description": "The Falklands War (1982) was a 74-day military conflict between Argentina and the UK over the Falkland Islands, South Georgia, and South Sandwich Islands in the South Atlantic. \n\nArgentina invaded the Falkland Islands on April 2, 1982, and the UK responded by sending a task force to retake the islands. The war ended on June 14, 1982, with Argentina's surrender and the islands' return to British control, resulting in the deaths of 649 Argentine, 255 British military personnel, and three Falkland Islanders. ",
   "symbologyStandard": "app6",
   "sides": [
     {
