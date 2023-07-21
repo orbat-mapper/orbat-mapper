@@ -3,16 +3,20 @@ import ScenarioEditor from "@/modules/scenarioeditor/ScenarioEditor.vue";
 import { useScenario } from "@/scenariostore";
 import { useRoute, useRouter } from "vue-router";
 import { watch } from "vue";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const { scenario, isLoading, isReady } = useScenario();
 const route = useRoute();
 const router = useRouter();
 let demoLoaded = false;
 let currentDemo = "";
+const selectedItems = useSelectedItems();
 
 if (route.query.load) {
   if (currentDemo !== route.query.load) {
     scenario.value.io.loadDemoScenario(route.query.load as string);
+    selectedItems.clear();
+    selectedItems.showScenarioInfo.value = true;
   }
   demoLoaded = true;
   currentDemo = route.query.load as string;

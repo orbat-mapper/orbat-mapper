@@ -45,7 +45,8 @@ export type ScenarioActions =
   | "import"
   | "addTileJSONLayer"
   | "addXYZLayer"
-  | "addImageLayer";
+  | "addImageLayer"
+  | "showInfo";
 
 export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
 

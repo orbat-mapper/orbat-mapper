@@ -30,9 +30,13 @@
             >
           </div>
 
-          <span class="hidden truncate pl-3 text-gray-400 sm:block">
+          <button
+            type="button"
+            class="hidden truncate pl-3 text-gray-400 sm:block"
+            @click="showInfo()"
+          >
             {{ activeScenario.store.state.info.name }}
-          </span>
+          </button>
         </div>
       </div>
       <div class="flex shrink-0 items-center space-x-1 sm:space-x-2">
@@ -269,6 +273,7 @@ import { useFileDropZone } from "@/composables/filedragdrop";
 import { useTabStore } from "@/stores/tabStore";
 import CommandPalette from "@/components/CommandPalette.vue";
 import { PhotonSearchResult } from "@/composables/geosearching";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(
@@ -294,7 +299,7 @@ const scnFeatureStyles = useFeatureStyles(props.activeScenario.geo);
 
 const uiTabs = useTabStore();
 const { activeScenarioTab } = storeToRefs(uiTabs);
-
+const selectedItems = useSelectedItems();
 provide(activeParentKey, activeParentId);
 provide(activeLayerKey, activeLayerId);
 provide(activeScenarioKey, props.activeScenario);
@@ -404,6 +409,7 @@ const fileMenuItems: MenuItemData<ScenarioActions>[] = [
   { label: "Copy to clipboard", action: "exportToClipboard" },
   { label: "Export scenario", action: "export" },
   { label: "Import", action: "import" },
+  { label: "Show scenario info", action: "showInfo" },
 ];
 
 async function onScenarioAction(action: ScenarioActions) {
@@ -414,6 +420,7 @@ async function onScenarioAction(action: ScenarioActions) {
     send({ message: "Scenario saved to local storage" });
   } else if (action === "load") {
     io.loadFromLocalStorage();
+    showInfo();
     send({ message: "Scenario loaded from local storage" });
   } else if (action === "exportJson") {
     await io.downloadAsJson();
@@ -426,6 +433,8 @@ async function onScenarioAction(action: ScenarioActions) {
     showExportModal.value = true;
   } else if (action === "import") {
     showImportModal.value = true;
+  } else if (action === "showInfo") {
+    showInfo();
   }
   await onScenarioActionHook.trigger({ action });
 }
@@ -443,6 +452,7 @@ watchOnce(
 
 function loadScenario(v: Scenario) {
   loadFromObject(v);
+  showInfo();
 }
 
 function onDrop(files: File[] | null) {
@@ -450,6 +460,11 @@ function onDrop(files: File[] | null) {
   const dragState = useDragStore();
   dragState.draggedFiles = files;
   showImportModal.value = true;
+}
+
+function showInfo() {
+  selectedItems.clear();
+  selectedItems.showScenarioInfo.value = true;
 }
 
 const { isOverDropZone } = useFileDropZone(dropZoneRef, onDrop);

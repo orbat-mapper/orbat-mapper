@@ -13,7 +13,7 @@ const selectedMapLayerIds = ref<SelectedScenarioFeatures>(new Set());
 
 const selectedScenarioEventIds = ref<Set<EntityId>>(new Set());
 const activeScenarioEventIdRef = ref<EntityId | undefined | null>(null);
-
+const showScenarioInfo = ref(false);
 watch(
   selectedUnitIds.value,
   (v) => {
@@ -100,6 +100,7 @@ function clear() {
   if (selectedFeatureIds.value.size > 0) selectedFeatureIds.value.clear();
   if (selectedScenarioEventIds.value.size > 0) selectedScenarioEventIds.value.clear();
   if (selectedMapLayerIds.value.size > 0) selectedMapLayerIds.value.clear();
+  showScenarioInfo.value = false;
 }
 
 export function useSelectedItems() {
@@ -112,6 +113,7 @@ export function useSelectedItems() {
     selectedScenarioEventIds,
     selectedMapLayerIds,
     activeMapLayerId,
+    showScenarioInfo,
     clear,
   };
 }

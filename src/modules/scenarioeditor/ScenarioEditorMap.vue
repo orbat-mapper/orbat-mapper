@@ -54,6 +54,7 @@
               v-else-if="activeDetailsPanel === 'mapLayer'"
               :layer-id="activeMapLayerId!"
             />
+            <ScenarioInfoPanel v-else-if="activeDetailsPanel === 'scenario'" />
           </MapEditorDetailsPanel>
           <div v-else></div>
         </section>
@@ -100,7 +101,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onActivated, onUnmounted, provide, ShallowRef, shallowRef } from "vue";
+import {
+  computed,
+  onActivated,
+  onUnmounted,
+  provide,
+  ref,
+  ShallowRef,
+  shallowRef,
+} from "vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useNotifications } from "@/composables/notifications";
 import {
@@ -135,6 +144,7 @@ import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.
 import { useSelectedItems } from "@/stores/selectedStore";
 import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
+import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -182,6 +192,7 @@ const {
   activeUnitId,
   activeScenarioEventId,
   activeMapLayerId,
+  showScenarioInfo,
   clear: clearSelected,
 } = useSelectedItems();
 
@@ -192,7 +203,8 @@ const showDetailsPanel = computed(() => {
     selectedFeatureIds.value.size ||
       selectedUnitIds.value.size ||
       activeScenarioEventId.value ||
-      activeMapLayerId.value,
+      activeMapLayerId.value ||
+      showScenarioInfo.value,
   );
 });
 
@@ -209,6 +221,9 @@ const activeDetailsPanel = computed((): DetailsPanel | null | undefined => {
   }
   if (activeMapLayerId.value) {
     return "mapLayer";
+  }
+  if (showScenarioInfo.value) {
+    return "scenario";
   }
   return;
 });
