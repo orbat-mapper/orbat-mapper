@@ -1,6 +1,7 @@
 import { FeatureId } from "@/types/scenarioGeoModels";
 import { EntityId } from "@/types/base";
 import { computed, ref, watch } from "vue";
+import { DetailsPanel } from "@/modules/scenarioeditor/types";
 
 export type SelectedScenarioFeatures = Set<FeatureId>;
 
@@ -103,6 +104,26 @@ function clear() {
   showScenarioInfo.value = false;
 }
 
+const activeDetailsPanel = computed((): DetailsPanel | null | undefined => {
+  if (selectedFeatureIds.value.size) {
+    return "feature";
+  }
+  if (activeUnitId.value) {
+    return "unit";
+  }
+
+  if (activeScenarioEventId.value) {
+    return "event";
+  }
+  if (activeMapLayerId.value) {
+    return "mapLayer";
+  }
+  if (showScenarioInfo.value) {
+    return "scenario";
+  }
+  return;
+});
+
 export function useSelectedItems() {
   return {
     selectedUnitIds,
@@ -114,6 +135,7 @@ export function useSelectedItems() {
     selectedMapLayerIds,
     activeMapLayerId,
     showScenarioInfo,
+    activeDetailsPanel,
     clear,
   };
 }

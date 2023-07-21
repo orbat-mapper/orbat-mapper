@@ -58,23 +58,27 @@
         </TabPanel>
         <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
         <TabPanel class="pb-10">
-          <UnitDetails v-if="activeUnitId" :unit-id="activeUnitId" class="p-4" />
+          <UnitDetails
+            v-if="activeDetailsPanel === 'unit'"
+            :unit-id="activeUnitId!"
+            class="p-4"
+          />
           <ScenarioFeatureDetails
+            v-else-if="activeDetailsPanel === 'feature'"
             :selected-ids="selectedFeatureIds"
-            v-else-if="selectedFeatureIds.size > 0"
             class="p-4"
           />
           <ScenarioEventDetails
-            v-else-if="activeScenarioEventId"
-            :event-id="activeScenarioEventId"
+            v-else-if="activeDetailsPanel === 'event'"
+            :event-id="activeScenarioEventId!"
             class="p-4"
           />
           <ScenarioMapLayerDetails
-            v-else-if="activeMapLayerId"
-            :layer-id="activeMapLayerId"
+            v-else-if="activeDetailsPanel === 'mapLayer'"
+            :layer-id="activeMapLayerId!"
             class="p-4"
           />
-          <ScenarioInfoPanel v-else />
+          <ScenarioInfoPanel v-else-if="activeDetailsPanel === 'scenario'" class="p-4" />
         </TabPanel>
       </TabPanels>
     </TabGroup>
@@ -109,11 +113,11 @@ const emit = defineEmits([
 ]);
 
 const {
-  selectedUnitIds,
   selectedFeatureIds,
   activeUnitId,
   activeScenarioEventId,
   activeMapLayerId,
+  activeDetailsPanel,
 } = useSelectedItems();
 const { mobilePanelOpen: showBottomPanel } = storeToRefs(useUiStore());
 

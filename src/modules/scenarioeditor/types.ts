@@ -36,3 +36,5 @@ export interface TableColumn extends SelectItem<ColumnField> {
   type: CellType;
   hidden?: boolean;
 }
+
+export type DetailsPanel = "unit" | "event" | "mapLayer" | "feature" | "scenario";

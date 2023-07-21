@@ -101,15 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  onActivated,
-  onUnmounted,
-  provide,
-  ref,
-  ShallowRef,
-  shallowRef,
-} from "vue";
+import { computed, onActivated, onUnmounted, provide, ShallowRef, shallowRef } from "vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useNotifications } from "@/composables/notifications";
 import {
@@ -161,8 +153,6 @@ const toolbarStore = useMainToolbarStore();
 const activeUnitStore = useActiveUnitStore();
 const ui = useUiStore();
 
-type DetailsPanel = "unit" | "event" | "mapLayer" | "feature" | "scenario";
-
 const mapRef = shallowRef<OLMap>();
 const featureSelectInteractionRef = shallowRef<Select>();
 provide(activeMapKey, mapRef as ShallowRef<OLMap>);
@@ -193,6 +183,7 @@ const {
   activeScenarioEventId,
   activeMapLayerId,
   showScenarioInfo,
+  activeDetailsPanel,
   clear: clearSelected,
 } = useSelectedItems();
 
@@ -206,26 +197,6 @@ const showDetailsPanel = computed(() => {
       activeMapLayerId.value ||
       showScenarioInfo.value,
   );
-});
-
-const activeDetailsPanel = computed((): DetailsPanel | null | undefined => {
-  if (selectedFeatureIds.value.size) {
-    return "feature";
-  }
-  if (activeUnitId.value) {
-    return "unit";
-  }
-
-  if (activeScenarioEventId.value) {
-    return "event";
-  }
-  if (activeMapLayerId.value) {
-    return "mapLayer";
-  }
-  if (showScenarioInfo.value) {
-    return "scenario";
-  }
-  return;
 });
 
 const { send } = useNotifications();

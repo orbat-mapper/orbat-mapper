@@ -18,7 +18,7 @@
         <PlainButton type="button" @click="toggleEditMode()">Cancel</PlainButton>
       </div>
     </form>
-    <div v-else class="space-y-4 p-6">
+    <div v-else class="space-y-4 p-0">
       <DescriptionItem label="Title"
         ><span class="font-medium">{{ state.info.name }}</span></DescriptionItem
       >
