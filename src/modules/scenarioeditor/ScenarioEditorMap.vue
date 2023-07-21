@@ -38,18 +38,21 @@
           </div>
           <MapEditorDetailsPanel v-if="showDetailsPanel" @close="onCloseDetailsPanel()">
             <ScenarioFeatureDetails
-              v-if="selectedFeatureIds.size"
+              v-if="activeDetailsPanel === 'feature'"
               :selected-ids="selectedFeatureIds"
               class="p-2"
             />
-            <UnitDetails v-else-if="activeUnitId" :unit-id="activeUnitId" />
+            <UnitDetails
+              v-else-if="activeDetailsPanel === 'unit'"
+              :unit-id="activeUnitId!"
+            />
             <ScenarioEventDetails
-              v-else-if="activeScenarioEventId"
-              :event-id="activeScenarioEventId"
+              v-else-if="activeDetailsPanel === 'event'"
+              :event-id="activeScenarioEventId!"
             />
             <ScenarioMapLayerDetails
-              v-else-if="activeMapLayerId"
-              :layer-id="activeMapLayerId"
+              v-else-if="activeDetailsPanel === 'mapLayer'"
+              :layer-id="activeMapLayerId!"
             />
           </MapEditorDetailsPanel>
           <div v-else></div>
@@ -148,6 +151,8 @@ const toolbarStore = useMainToolbarStore();
 const activeUnitStore = useActiveUnitStore();
 const ui = useUiStore();
 
+type DetailsPanel = "unit" | "event" | "mapLayer" | "feature" | "scenario";
+
 const mapRef = shallowRef<OLMap>();
 const featureSelectInteractionRef = shallowRef<Select>();
 provide(activeMapKey, mapRef as ShallowRef<OLMap>);
@@ -189,6 +194,23 @@ const showDetailsPanel = computed(() => {
       activeScenarioEventId.value ||
       activeMapLayerId.value,
   );
+});
+
+const activeDetailsPanel = computed((): DetailsPanel | null | undefined => {
+  if (selectedFeatureIds.value.size) {
+    return "feature";
+  }
+  if (activeUnitId.value) {
+    return "unit";
+  }
+
+  if (activeScenarioEventId.value) {
+    return "event";
+  }
+  if (activeMapLayerId.value) {
+    return "mapLayer";
+  }
+  return;
 });
 
 const { send } = useNotifications();
