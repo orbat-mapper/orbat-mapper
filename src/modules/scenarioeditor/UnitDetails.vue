@@ -146,6 +146,7 @@
         <TabPanel>
           <UnitDetailsMap :unit="unit" />
         </TabPanel>
+        <TabPanel><UnitDetailsToe :unit="unit" /></TabPanel>
         <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
           <pre>{{ unit }}</pre>
         </TabPanel>
@@ -193,6 +194,7 @@ import EditableLabel from "@/components/EditableLabel.vue";
 import UnitDetailsMap from "@/modules/scenarioeditor/UnitDetailsMap.vue";
 import { useTabStore } from "@/stores/tabStore";
 import { storeToRefs } from "pinia";
+import UnitDetailsToe from "@/modules/scenarioeditor/UnitDetailsToe.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue"),
@@ -213,8 +215,8 @@ function changeTab(index: number) {
 }
 const tabList = computed(() =>
   uiStore.debugMode
-    ? ["Details", "Unit state", "Map", "Debug"]
-    : ["Details", "Unit state", "Map"],
+    ? ["Details", "Unit state", "Map", "TO&E", "Debug"]
+    : ["Details", "Unit state", "Map", "TO&E"],
 );
 
 const unit = computed(() => {
