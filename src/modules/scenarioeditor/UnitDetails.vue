@@ -362,8 +362,8 @@ async function handleChangeSymbol() {
       store.groupUpdate(() =>
         selectedUnitIds.value.forEach((unitId) => {
           const { side } = getUnitHierarchy(unitId);
-          const nsidc = setCharAt(sidc, SID_INDEX, side.standardIdentity);
-          updateUnit(unitId, { sidc: nsidc });
+          const newSidc = setCharAt(sidc, SID_INDEX, side.standardIdentity);
+          updateUnit(unitId, { sidc: newSidc, symbolOptions });
         }),
       );
     } else updateUnit(props.unitId, { sidc, symbolOptions });
