@@ -41,7 +41,7 @@
               </li>
             </ul>
           </div>
-          <form class="space-y-4 px-0.5" @submit.prevent="onSubmit" v-if="isLoaded">
+          <form class="space-y-4 p-0.5" @submit.prevent="onSubmit" v-if="isLoaded">
             <SymbolCodeSelect
               v-model="symbolSetValue"
               label="Symbol set"
