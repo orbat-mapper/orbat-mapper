@@ -378,6 +378,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
       _sid: "",
       subUnits: [],
     };
+    if (parent.symbolOptions) {
+      newUnit.symbolOptions = klona(parent.symbolOptions);
+    }
     const newUnitId = addUnit(newUnit, parentId);
     parent._isOpen = true;
     return newUnitId;
