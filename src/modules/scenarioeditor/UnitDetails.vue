@@ -222,9 +222,9 @@ const unit = computed(() => {
 });
 
 watch(
-  () => unit.value.name,
+  () => unit.value?.name,
   () => {
-    unitName.value = unit.value.name;
+    unitName.value = unit.value?.name;
   },
   { immediate: true },
 );
