@@ -4,7 +4,7 @@
     ref="dropZoneRef"
   >
     <nav
-      class="flex flex-shrink-0 items-center justify-between bg-gray-900 py-2 pl-6 pr-4 text-gray-200"
+      class="flex flex-shrink-0 items-center justify-between bg-gray-900 py-2 pl-6 pr-4 text-gray-200 print:hidden"
     >
       <div class="flex min-w-0 flex-auto items-center">
         <router-link :to="{ name: LANDING_PAGE_ROUTE }" class="flex-shrink-0">
@@ -187,7 +187,7 @@
     </div>
     <div
       v-if="uiStore.debugMode"
-      class="fixed bottom-2 left-2 z-50 rounded bg-gray-50 bg-opacity-70 text-gray-900"
+      class="fixed bottom-2 left-2 z-50 rounded bg-gray-50 bg-opacity-70 text-gray-900 print:hidden"
     >
       <p class="p-2 text-xs font-bold">
         <span class="sm:hidden">mo</span>

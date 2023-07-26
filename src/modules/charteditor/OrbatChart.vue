@@ -115,7 +115,10 @@ function resetZoom() {
       class="animate h-full w-full"
       :class="visible ? 'opacity-100' : 'opacity-0'"
     />
-    <nav v-if="enablePanZoom && !hideToolbar" class="absolute bottom-4 left-4">
+    <nav
+      v-if="enablePanZoom && !hideToolbar"
+      class="absolute bottom-4 left-4 print:hidden"
+    >
       <BaseToolbar class="">
         <ToolbarButton start @click="orbatChart.zoomIn()">
           <MagnifyingGlassPlusIcon class="h-5 w-5" />

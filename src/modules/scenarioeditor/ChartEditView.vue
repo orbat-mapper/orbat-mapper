@@ -2,7 +2,7 @@
   <div class="relative flex min-h-0 flex-auto">
     <ResizablePanel
       v-model:width="panelWidth"
-      class="relative z-10 flex h-full flex-col justify-between overflow-auto overflow-visible border-r-2 bg-gray-100 dark:bg-gray-900"
+      class="relative z-10 flex h-full flex-col justify-between overflow-auto overflow-visible border-r-2 bg-gray-100 dark:bg-gray-900 print:hidden"
     >
       <TabGroup :selected-index="selectedTab" @change="changeTab">
         <TabList class="-mb-px flex border-b border-gray-200">
@@ -38,14 +38,14 @@
     </ResizablePanel>
     <main class="relative h-full flex-auto bg-gray-50">
       <SimpleBreadcrumbs
-        class="absolute left-2 top-2 z-10 bg-gray-50 bg-opacity-80"
+        class="absolute left-2 top-2 z-10 bg-gray-50 bg-opacity-80 print:hidden"
         :items="breadcrumbItems"
       />
-      <nav class="absolute right-4 top-2 z-10 rounded-full bg-white">
+      <nav class="absolute right-4 top-2 z-10 rounded-full bg-white print:hidden">
         <DotsMenu :items="menuItems" />
       </nav>
 
-      <ToggleField class="absolute bottom-2 right-2 z-10" v-model="debug"
+      <ToggleField class="absolute bottom-2 right-2 z-10 print:hidden" v-model="debug"
         >Debug mode</ToggleField
       >
       <p v-if="!activeUnit" class="p-8 text-center">Select a root unit in the sidebar</p>
