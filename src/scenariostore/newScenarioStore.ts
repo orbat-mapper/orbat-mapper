@@ -1,7 +1,8 @@
 import { useImmerStore } from "@/composables/immerStore";
 import type {
+  EquipmentData,
+  PersonnelData,
   Scenario,
-  ScenarioEvent,
   ScenarioInfo,
   Side,
   SideGroup,
@@ -13,17 +14,20 @@ import { walkSide } from "@/stores/scenarioStore";
 import { klona } from "klona";
 import type { EntityId } from "@/types/base";
 import type {
+  NEquipmentData,
+  NPersonnelData,
   NScenarioEvent,
   NScenarioFeature,
   NScenarioLayer,
   NSide,
   NSideGroup,
   NUnit,
+  NUnitEquipment,
+  NUnitPersonnel,
 } from "@/types/internalModels";
 import { useScenarioTime } from "./time";
 import type {
   FeatureId,
-  ScenarioImageLayer,
   ScenarioMapLayer,
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
@@ -42,6 +46,8 @@ export interface ScenarioState {
   mapLayerMap: Record<FeatureId, ScenarioMapLayer>;
   info: ScenarioInfo;
   events: EntityId[];
+  equipmentMap: Record<string, NEquipmentData>;
+  personnelMap: Record<string, NPersonnelData>;
   currentTime: number;
   getUnitById: (id: EntityId) => NUnit;
   getSideById: (id: EntityId) => NSide;
@@ -61,6 +67,11 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const layerMap: Record<FeatureId, NScenarioLayer> = {};
   const featureMap: Record<FeatureId, NScenarioFeature> = {};
   const mapLayerMap: Record<FeatureId, ScenarioMapLayer> = {};
+  const equipmentMap: Record<string, NEquipmentData> = {};
+  const personnelMap: Record<string, NPersonnelData> = {};
+
+  const tempEquipmentIdMap: Record<string, string> = {};
+  const tempPersonnelIdMap: Record<string, string> = {};
 
   scenario.events.forEach((e) => {
     const nEvent: NScenarioEvent = {
@@ -117,11 +128,47 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     unit._isOpen = false;
     unit._gid = sideGroup.id;
     unit._sid = side.id;
+    const equipment: NUnitEquipment[] = [];
+    const personnel: NUnitPersonnel[] = [];
+
+    unit.equipment?.forEach(({ name, count }) => {
+      const id = tempEquipmentIdMap[name] || addEquipment({ name });
+      equipment.push({ id, count });
+    });
+
+    unit.personnel?.forEach(({ name, count }) => {
+      const id = tempPersonnelIdMap[name] || addPersonnel({ name });
+      personnel.push({ id, count });
+    });
 
     unitMap[unit1.id] = {
       ...unit,
       subUnits: unit.subUnits?.map((u) => u.id) || [],
+      equipment,
+      personnel,
     } as NUnit;
+  }
+
+  scenario.equipment?.forEach((e) => {
+    addEquipment(e);
+  });
+
+  scenario.personnel?.forEach((e) => {
+    addPersonnel(e);
+  });
+
+  function addPersonnel(p: PersonnelData) {
+    const id = nanoid();
+    tempPersonnelIdMap[p.name] = id;
+    personnelMap[id] = { ...p, id };
+    return id;
+  }
+
+  function addEquipment(e: EquipmentData) {
+    const id = nanoid();
+    tempEquipmentIdMap[e.name] = id;
+    equipmentMap[id] = { ...e, id };
+    return id;
   }
 
   scenario.sides.forEach((side) => {
@@ -200,6 +247,8 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     sideMap,
     sideGroupMap,
     events,
+    equipmentMap,
+    personnelMap,
     getUnitById(id: EntityId) {
       return this.unitMap[id];
     },

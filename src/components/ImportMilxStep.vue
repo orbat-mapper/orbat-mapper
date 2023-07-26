@@ -31,7 +31,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
-import type { ImportFormat, ImportSettings } from "@/types/convert";
 import { useNotifications } from "@/composables/notifications";
 import { useImportStore } from "@/stores/importExportStore";
 import { MilxImportedLayer } from "@/composables/scenarioImport";
@@ -92,6 +91,8 @@ async function onLoad(e: Event) {
         symbolOptions: f.properties.fillColor
           ? { fillColor: f.properties.fillColor }
           : {},
+        equipment: [],
+        personnel: [],
       };
     });
   scnStore.groupUpdate(() => {

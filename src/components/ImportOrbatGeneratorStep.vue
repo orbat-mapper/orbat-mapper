@@ -26,16 +26,14 @@ import { computed, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { useNotifications } from "@/composables/notifications";
 import { useImportStore } from "@/stores/importExportStore";
-import { injectStrict, nanoid, sortBy } from "@/utils";
+import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NUnit, NUnitAdd } from "@/types/internalModels";
-import type { Point } from "geojson";
 import { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
-import { OrbatMapperGeoJsonFeature } from "@/lib/milx/types";
-import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
+import type { OrbatGeneratorOrbat } from "@/types/externalModels";
 import { EntityId } from "@/types/base";
 
 interface Props {
@@ -98,6 +96,8 @@ async function onLoad(e: Event) {
         sidc: setCharAt(sidc, SID_INDEX, side.standardIdentity),
         symbolOptions: { fillColor: color },
         subUnits: [],
+        equipment: [],
+        personnel: [],
       };
       const parentSortKey = `1${xPosition}`;
       const newUnitId = unitActions.addUnit(

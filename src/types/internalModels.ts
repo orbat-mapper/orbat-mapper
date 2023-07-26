@@ -1,4 +1,14 @@
-import { CurrentStateType, ScenarioEvent, Side, SideGroup, Unit } from "./scenarioModels";
+import {
+  CurrentStateType,
+  EquipmentData,
+  PersonnelData,
+  ScenarioEvent,
+  Side,
+  SideGroup,
+  Unit,
+  UnitEquipment,
+  UnitPersonnel,
+} from "./scenarioModels";
 import { EntityId } from "./base";
 import {
   FeatureId,
@@ -10,11 +20,22 @@ import {
 } from "@/types/scenarioGeoModels";
 import { Optional } from "@/types/helpers";
 
-export interface NUnit extends Omit<Unit, "subUnits" | "_pid" | "_gid" | "_sid"> {
+export interface NUnit
+  extends Omit<Unit, "subUnits" | "_pid" | "_gid" | "_sid" | "personnel" | "equipment"> {
   subUnits: EntityId[];
+  equipment?: NUnitEquipment[];
+  personnel?: NUnitPersonnel[];
   _pid: EntityId;
   _gid: EntityId;
   _sid: EntityId;
+}
+
+export interface NUnitEquipment extends Omit<UnitEquipment, "name"> {
+  id: string;
+}
+
+export interface NUnitPersonnel extends Omit<UnitPersonnel, "name"> {
+  id: string;
 }
 
 export interface NUnitAdd extends Optional<NUnit, "id" | "_pid" | "_gid" | "_sid"> {}
@@ -66,6 +87,14 @@ export interface ScenarioEventUpdate extends Partial<Omit<NScenarioEvent, "id">>
 export interface NOrbatItemData {
   unit: NUnit;
   children: NOrbatItemData[];
+}
+
+export interface NEquipmentData extends EquipmentData {
+  id: string;
+}
+
+export interface NPersonnelData extends PersonnelData {
+  id: string;
 }
 
 export const INTERNAL_NAMES = [

@@ -12,6 +12,9 @@ interface Props {
 const props = defineProps<Props>();
 
 const {
+  store: {
+    state: { equipmentMap, personnelMap },
+  },
   unitActions: { walkSubUnits },
 } = injectStrict(activeScenarioKey);
 
@@ -38,20 +41,22 @@ watch(
       props.unit.id,
       (unit) => {
         unit.equipment?.forEach((e) => {
-          aggEquipment[e.name] = (aggEquipment[e.name] ?? 0) + e.count;
+          aggEquipment[e.id] = (aggEquipment[e.id] ?? 0) + e.count;
         });
         unit.personnel?.forEach((p) => {
-          aggPersonnel[p.name] = (aggPersonnel[p.name] ?? 0) + p.count;
+          aggPersonnel[p.id] = (aggPersonnel[p.id] ?? 0) + p.count;
         });
       },
       { includeParent: true },
     );
-    aggregatedEquipment.value = Object.entries(aggEquipment).map(([name, count]) => ({
-      name,
+    aggregatedEquipment.value = Object.entries(aggEquipment).map(([id, count]) => ({
+      name: equipmentMap[id]?.name ?? id,
+      description: equipmentMap[id]?.description ?? "",
       count,
     }));
-    aggregatedPersonnel.value = Object.entries(aggPersonnel).map(([name, count]) => ({
-      name,
+    aggregatedPersonnel.value = Object.entries(aggPersonnel).map(([id, count]) => ({
+      name: personnelMap[id]?.name ?? id,
+      description: personnelMap[id]?.description ?? "",
       count,
     }));
   },
@@ -86,7 +91,7 @@ function togglePersonnelSort(column: "name" | "count") {
       </thead>
       <tbody>
         <tr v-for="equipment in sortedEquipment" :key="equipment.name">
-          <td class="pl-2">{{ equipment.name }}</td>
+          <td class="pl-2" :title="equipment.description">{{ equipment.name }}</td>
           <td class="pr-6 text-right tabular-nums">{{ equipment.count }}</td>
         </tr>
       </tbody>
@@ -108,7 +113,7 @@ function togglePersonnelSort(column: "name" | "count") {
       </thead>
       <tbody>
         <tr v-for="personnel in sortedPersonnel" :key="personnel.name">
-          <td class="pl-2">{{ personnel.name }}</td>
+          <td class="pl-2" :title="personnel.description">{{ personnel.name }}</td>
           <td class="pr-6 text-right tabular-nums">{{ personnel.count }}</td>
         </tr>
       </tbody>

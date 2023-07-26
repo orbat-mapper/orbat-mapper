@@ -60,11 +60,13 @@ export interface Unit {
 export interface UnitEquipment {
   count: number;
   name: string;
+  description?: string;
 }
 
 export interface UnitPersonnel {
   count: number;
   name: string;
+  description?: string;
 }
 
 export interface SideData {
@@ -140,6 +142,17 @@ export interface ScenarioInfo {
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion = "0.9.0" | "0.8.0" | "0.7.0" | "0.6.0";
 
+export interface EquipmentData {
+  name: string;
+  description?: string;
+  sidc?: string;
+}
+
+export interface PersonnelData {
+  name: string;
+  description?: string;
+}
+
 export interface Scenario extends ScenarioInfo {
   type: "ORBAT-mapper";
   version: ScenarioVersion;
@@ -147,6 +160,8 @@ export interface Scenario extends ScenarioInfo {
   events: ScenarioEvent[];
   layers: ScenarioLayer[];
   mapLayers: ScenarioMapLayer[];
+  equipment?: EquipmentData[];
+  personnel?: PersonnelData[];
 }
 
 export type UnitOrSide = Unit | Side;

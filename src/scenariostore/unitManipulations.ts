@@ -550,6 +550,14 @@ export function useUnitManipulations(store: NewScenarioStore) {
     return {
       ...unit,
       subUnits: unit.subUnits.map((subUnitId) => expandUnit(state.unitMap[subUnitId])),
+      equipment: unit.equipment?.map(({ id, count }) => ({
+        name: state.equipmentMap[id].name || "",
+        count,
+      })),
+      personnel: unit.personnel?.map(({ id, count }) => ({
+        name: state.personnelMap[id].name || "",
+        count,
+      })),
     };
   }
 
@@ -560,6 +568,14 @@ export function useUnitManipulations(store: NewScenarioStore) {
       subUnits: unit.subUnits.map((subUnitId) =>
         expandUnitWithSymbolOptions(state.unitMap[subUnitId]),
       ),
+      equipment: unit.equipment?.map(({ id, count }) => ({
+        name: state.equipmentMap[id].name || "",
+        count,
+      })),
+      personnel: unit.personnel?.map(({ id, count }) => ({
+        name: state.personnelMap[id].name || "",
+        count,
+      })),
     };
   }
 

@@ -266,6 +266,8 @@ function create() {
             _pid: "nn",
             _sid: "nn",
             _gid: "nn",
+            equipment: [],
+            personnel: [],
           },
           parentId,
         );

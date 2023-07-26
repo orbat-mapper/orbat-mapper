@@ -1,5 +1,7 @@
 import { until, useFetch, useLocalStorage } from "@vueuse/core";
 import {
+  EquipmentData,
+  PersonnelData,
   Scenario,
   ScenarioEvent,
   ScenarioInfo,
@@ -18,11 +20,7 @@ import { ShallowRef } from "vue";
 import { isLoading } from "@/scenariostore/index";
 import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
 import dayjs from "dayjs";
-import {
-  ScenarioImageLayer,
-  type ScenarioLayer,
-  ScenarioMapLayer,
-} from "@/types/scenarioGeoModels";
+import { type ScenarioLayer, ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import { type EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
 
@@ -62,9 +60,22 @@ function getScenarioEvents(state: ScenarioState): ScenarioEvent[] {
 function getSides(state: ScenarioState): Side[] {
   function getUnit(unitId: EntityId): Unit {
     const nUnit = state.unitMap[unitId];
+    let equipment = nUnit.equipment?.map(({ id, count }) => {
+      const { name } = state.equipmentMap[id];
+      return { name, count };
+    });
+    if (equipment?.length === 0) equipment = undefined;
+    let personnel = nUnit.personnel?.map(({ id, count }) => {
+      const { name } = state.personnelMap[id];
+      return { name, count };
+    });
+    if (personnel?.length === 0) personnel = undefined;
+
     return {
       ...nUnit,
       subUnits: nUnit.subUnits.map((subUnitId) => getUnit(subUnitId)),
+      equipment,
+      personnel,
     };
   }
 
@@ -94,6 +105,21 @@ function getMapLayers(state: ScenarioState): ScenarioMapLayer[] {
   return state.mapLayers.map((id) => state.mapLayerMap[id]);
 }
 
+function getEquipment(state: ScenarioState): EquipmentData[] {
+  return Object.values(state.equipmentMap).map(({ name, description, sidc }) => ({
+    name,
+    description,
+    sidc,
+  }));
+}
+
+function getPersonnel(state: ScenarioState): PersonnelData[] {
+  return Object.values(state.personnelMap).map(({ name, description }) => ({
+    name,
+    description,
+  }));
+}
+
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   const settingsStore = useSymbolSettingsStore();
 
@@ -107,6 +133,8 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       layers: getLayers(state),
       events: getScenarioEvents(state),
       mapLayers: getMapLayers(state),
+      equipment: getEquipment(state),
+      personnel: getPersonnel(state),
     };
   }
 

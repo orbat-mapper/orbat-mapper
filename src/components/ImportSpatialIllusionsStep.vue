@@ -26,15 +26,13 @@ import { computed, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { useNotifications } from "@/composables/notifications";
 import { useImportStore } from "@/stores/importExportStore";
-import { injectStrict, nanoid } from "@/utils";
+import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NUnit, NUnitAdd } from "@/types/internalModels";
-import type { Point } from "geojson";
 import { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
-import { OrbatMapperGeoJsonFeature } from "@/lib/milx/types";
 import type { SpatialIllusionsOrbat } from "@/types/externalModels";
 import { EntityId } from "@/types/base";
 
@@ -82,6 +80,8 @@ async function onLoad(e: Event) {
         sidc: setCharAt(sidc, SID_INDEX, side.standardIdentity),
         symbolOptions: { fillColor },
         subUnits: [],
+        equipment: [],
+        personnel: [],
       };
       for (let i = 0; i < stack; i++) {
         const newUnitId = unitActions.addUnit(newUnit as NUnit, parentId);

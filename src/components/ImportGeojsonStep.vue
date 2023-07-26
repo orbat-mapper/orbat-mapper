@@ -32,7 +32,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
-import type { ImportFormat, ImportSettings } from "@/types/convert";
 import { useNotifications } from "@/composables/notifications";
 import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, nanoid } from "@/utils";
@@ -105,6 +104,8 @@ async function onLoad(e: Event) {
         _gid: "",
         _sid: "",
         location: (f.geometry as Point).coordinates,
+        equipment: [],
+        personnel: [],
       };
     });
   scnStore.groupUpdate(() => {
