@@ -135,7 +135,20 @@ export interface LabelOptions {
   labelPlacement: LabelPlacement;
 }
 
-export interface OrbChartOptions extends FontOptions, ConnectorOptions, LabelOptions {
+export interface EquipmentOptions {
+  showEquipment: boolean;
+}
+
+export interface PersonnelOptions {
+  showPersonnel: boolean;
+}
+
+export interface OrbChartOptions
+  extends FontOptions,
+    ConnectorOptions,
+    LabelOptions,
+    EquipmentOptions,
+    PersonnelOptions {
   symbolSize: number;
   maxLevels: number;
   debug: boolean;
@@ -171,6 +184,16 @@ export type UnitNodeVisitorCallback = (
   parent: ChartUnit | null,
 ) => void;
 
+export interface Equipment {
+  name: string;
+  count: number;
+}
+
+export interface Personnel {
+  name: string;
+  count: number;
+}
+
 export interface ChartUnit {
   name: string;
   sidc: string;
@@ -178,6 +201,8 @@ export interface ChartUnit {
   subUnits?: ChartUnit[];
   id: string;
   symbolOptions?: SymbolOptions;
+  equipment?: Equipment[];
+  personnel?: Personnel[];
 }
 
 export interface RenderedElement {

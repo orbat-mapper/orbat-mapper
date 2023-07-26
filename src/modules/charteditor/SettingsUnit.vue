@@ -61,6 +61,18 @@
       :class="!usedOptions.has('hideLabel') && 'sepia-[50%]'"
       >Hide label
     </ToggleField>
+    <ToggleField
+      :model-value="mergedOptions.showPersonnel"
+      @update:model-value="setValue('showPersonnel', $event)"
+      :class="!usedOptions.has('showPersonnel') && 'sepia-[50%]'"
+      >Show personnel
+    </ToggleField>
+    <ToggleField
+      :model-value="mergedOptions.showEquipment"
+      @update:model-value="setValue('showEquipment', $event)"
+      :class="!usedOptions.has('showEquipment') && 'sepia-[50%]'"
+      >Show equipment
+    </ToggleField>
   </div>
 </template>
 

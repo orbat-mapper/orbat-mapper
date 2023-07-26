@@ -34,4 +34,6 @@ export const DEFAULT_OPTIONS = {
   lineColor: "#1F2937",
   fontColor: "#0F172A",
   hideLabel: false,
+  showEquipment: false,
+  showPersonnel: false,
 } as OrbChartOptions;

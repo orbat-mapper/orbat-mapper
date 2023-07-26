@@ -81,6 +81,8 @@
       <InputGroup label="Font color" type="color" v-model="options.fontColor" />
       <ToggleField v-model="options.useShortName">Use short unit names</ToggleField>
       <ToggleField v-model="options.hideLabel">Hide label</ToggleField>
+      <ToggleField v-model="options.showPersonnel">Show personnel </ToggleField>
+      <ToggleField v-model="options.showEquipment">Show equipment </ToggleField>
     </AccordionPanel>
     <AccordionPanel label="Connectors">
       <NumberInputGroup label="Connector offset" v-model="options.connectorOffset" />

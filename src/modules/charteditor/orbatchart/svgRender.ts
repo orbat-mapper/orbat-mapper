@@ -1,6 +1,7 @@
 // language=CSS format=false
 import {
   BasicUnitNode,
+  ChartUnit,
   ConnectorOptions,
   FontOptions,
   GElementSelection,
@@ -15,6 +16,8 @@ import {
   UnitNodeInfo,
 } from "./types";
 import ms from "milsymbol";
+import { sortBy } from "@/utils";
+import { walkTree } from "@/modules/charteditor/orbatchart/utils";
 
 const HIGHLIGT_STYLE = `
   .o-unit:hover {
@@ -213,13 +216,15 @@ export function createUnitGroup(
   const unitLabel = options.useShortName
     ? unitNode.unit.shortName || unitNode.unit.name
     : unitNode.unit.name;
+  const isLastLevel = level === options.maxLevels - 1;
+
   g.append("g").html(unitNode.symb.asSVG());
+  let x = unitNode.octagonAnchor.x;
+  let y = unitNode.symbolBoxSize.height;
+  let dy = `${options.labelOffset}pt`;
+  let dx = "0";
+  let classes = "o-label";
   if (!options.hideLabel) {
-    let x = unitNode.octagonAnchor.x;
-    let y = unitNode.symbolBoxSize.height;
-    let dy = `${options.labelOffset}pt`;
-    let dx = "0";
-    let classes = "o-label";
     if (options.labelPlacement === "right") {
       y = unitNode.octagonAnchor.y;
       x = x + unitNode.symbolBoxSize.width / 2;
@@ -242,6 +247,32 @@ export function createUnitGroup(
     if (specificOptions.fontColor) text.attr("fill", options.fontColor);
   }
 
+  if (options.showPersonnel || options.showEquipment) {
+    const { aggregatedPersonnel, aggregatedEquipment } = aggregateData(unitNode.unit);
+    const sum = aggregatedPersonnel.reduce((acc, p) => acc + p.count, 0);
+    const label = aggregatedPersonnel.map((p) => `${p.count}`).join("-");
+    const text = g
+      .append("text")
+      .attr("x", x)
+      .attr("dy", dy)
+      .attr("y", y + 25)
+      .attr("class", classes)
+      .text(`${label}  (${sum})`);
+
+    if (options.showEquipment && (isLastLevel || !unitNode.unit.subUnits?.length)) {
+      aggregatedEquipment.forEach((e, idx) => {
+        const text = g
+          .append("text")
+          .attr("x", x)
+          .attr("dy", dy)
+          .attr("y", y + 50 + idx * 20)
+          .attr("class", classes)
+          .text(`${e.count} x ${e.name}`);
+        text.attr("font-size", `${options.fontSize * 0.9}pt`);
+      });
+    }
+  }
+
   if (options.onClick) {
     g.on("click", (e) => {
       // @ts-ignore
@@ -259,6 +290,35 @@ export function createUnitGroup(
   renderedUnitNode.level = level;
 
   return renderedUnitNode;
+}
+
+function aggregateData(unit: ChartUnit) {
+  const aggEquipment: Record<string, number> = {};
+  const aggPersonnel: Record<string, number> = {};
+  walkTree(unit, (unit) => {
+    unit.equipment?.forEach((e) => {
+      aggEquipment[e.name] = (aggEquipment[e.name] ?? 0) + e.count;
+    });
+    unit.personnel?.forEach((p) => {
+      aggPersonnel[p.name] = (aggPersonnel[p.name] ?? 0) + p.count;
+    });
+  });
+  const aggregatedEquipment = sortBy(
+    Object.entries(aggEquipment).map(([name, count]) => ({
+      name,
+      count,
+    })),
+    "name",
+  );
+  const aggregatedPersonnel = sortBy(
+    Object.entries(aggPersonnel).map(([name, count]) => ({
+      name,
+      count,
+    })),
+    "name",
+  );
+
+  return { aggregatedEquipment, aggregatedPersonnel };
 }
 
 export function calculateAnchorPoints(unitNode: RenderedUnitNode) {
