@@ -68,6 +68,9 @@
         <li class="col-span-1 flex">
           <LoadScenarioFromUrlPanel @loaded="loadScenario" />
         </li>
+        <li class="col-span-1 flex">
+          <LoadScenarioFromLocalstoragePanel @loaded="loadFromLocalStorage()" />
+        </li>
       </ul>
     </section>
   </div>
@@ -82,6 +85,7 @@ import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
 import { useScenario } from "@/scenariostore";
 import { Scenario } from "@/types/scenarioModels";
 import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromUrlPanel.vue";
+import LoadScenarioFromLocalstoragePanel from "@/modules/scenarioeditor/LoadScenarioFromLocalstoragePanel.vue";
 
 const scenarios = [
   {
@@ -120,6 +124,11 @@ const { scenario } = useScenario();
 
 function loadScenario(v: Scenario) {
   scenario.value.io.loadFromObject(v);
+  router.push({ name: MAP_EDIT_MODE_ROUTE });
+}
+
+function loadFromLocalStorage() {
+  scenario.value.io.loadFromLocalStorage();
   router.push({ name: MAP_EDIT_MODE_ROUTE });
 }
 </script>
