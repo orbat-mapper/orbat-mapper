@@ -4,7 +4,11 @@
     <div v-if="currentUnit" class="s">
       <header class="flex items-start">
         <div class="h-20 w-16 flex-shrink-0">
-          <MilSymbol :sidc="currentUnit.sidc" :size="34" />
+          <MilitarySymbol
+            :sidc="currentUnit.sidc"
+            :size="34"
+            :options="currentUnit.symbolOptions"
+          />
         </div>
         <div>
           <p class="pt-2 font-medium text-gray-700">{{ currentUnit.name }}</p>
@@ -22,12 +26,12 @@
 <script setup lang="ts">
 import { useSelectedChartElementStore } from "./chartSettingsStore";
 import { computed } from "vue";
-import MilSymbol from "../../components/MilSymbol.vue";
 import PlainButton from "../../components/PlainButton.vue";
 import { ChartItemTypes } from "./orbatchart";
 import { useChartSettings } from "./composables";
 import SettingsUnit from "./SettingsUnit.vue";
 import AccordionPanel from "../../components/AccordionPanel.vue";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 const currentUnitNode = useSelectedChartElementStore();
 const { clearSpecificOptions } = useChartSettings(ChartItemTypes.Unit);
