@@ -48,14 +48,16 @@ export function moveItemMutable<T>(array: T[], fromIndex: number, toIndex: numbe
 }
 
 // sort array by object property
-export function sortBy<T extends object, K extends keyof T>(arr: T[], key: K) {
+export function sortBy<T extends object, K extends keyof T>(
+  arr: T[],
+  key: K,
+  ascending = true,
+) {
   return arr.sort((a, b) => {
-    if (a[key] < b[key]) {
-      return -1;
+    if (ascending) {
+      return (a[key] || "") > (b[key] || "") ? 1 : -1;
+    } else {
+      return (a[key] || "") < (b[key] || "") ? 1 : -1;
     }
-    if (a[key] > b[key]) {
-      return 1;
-    }
-    return 0;
   });
 }
