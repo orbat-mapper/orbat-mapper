@@ -249,15 +249,17 @@ export function createUnitGroup(
 
   if (options.showPersonnel || options.showEquipment) {
     const { aggregatedPersonnel, aggregatedEquipment } = aggregateData(unitNode.unit);
-    const sum = aggregatedPersonnel.reduce((acc, p) => acc + p.count, 0);
-    const label = aggregatedPersonnel.map((p) => `${p.count}`).join("-");
-    const text = g
-      .append("text")
-      .attr("x", x)
-      .attr("dy", dy)
-      .attr("y", y + 25)
-      .attr("class", classes)
-      .text(`${label}  (${sum})`);
+    if (options.showPersonnel) {
+      const sum = aggregatedPersonnel.reduce((acc, p) => acc + p.count, 0);
+      const label = aggregatedPersonnel.map((p) => `${p.count}`).join("/");
+      const text = g
+        .append("text")
+        .attr("x", x)
+        .attr("dy", dy)
+        .attr("y", y + 25)
+        .attr("class", classes)
+        .text(`${label}  (${sum})`);
+    }
 
     if (options.showEquipment && (isLastLevel || !unitNode.unit.subUnits?.length)) {
       aggregatedEquipment.forEach((e, idx) => {
