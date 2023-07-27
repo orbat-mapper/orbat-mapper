@@ -97,6 +97,8 @@ export interface NPersonnelData extends PersonnelData {
   id: string;
 }
 
+export interface EquipmentDataUpdate extends Partial<Omit<NEquipmentData, "id">> {}
+export interface PersonnelDataUpdate extends Partial<Omit<NPersonnelData, "id">> {}
 export const INTERNAL_NAMES = [
   "_state",
   "_pid",

@@ -2,10 +2,13 @@ import { EntityId, HistoryAction } from "@/types/base";
 import { NewScenarioStore, ScenarioState } from "./newScenarioStore";
 import { moveElement, nanoid, removeElement } from "@/utils";
 import {
+  EquipmentDataUpdate,
+  NEquipmentData,
   NSide,
   NSideGroup,
   NUnit,
   NUnitAdd,
+  PersonnelDataUpdate,
   SideGroupUpdate,
   SideUpdate,
   UnitUpdate,
@@ -17,7 +20,13 @@ import { SID } from "@/symbology/values";
 import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
-import type { State, StateAdd, Unit, UnitSymbolOptions } from "@/types/scenarioModels";
+import type {
+  EquipmentData,
+  State,
+  StateAdd,
+  Unit,
+  UnitSymbolOptions,
+} from "@/types/scenarioModels";
 import { Position, RangeRing } from "@/types/scenarioGeoModels";
 import { getNextEchelonBelow } from "@/symbology/helpers";
 
@@ -635,6 +644,33 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function updateEquipment(id: string, data: EquipmentDataUpdate) {
+    update((s) => {
+      const equipment = s.equipmentMap[id];
+      if (!equipment) return;
+      Object.assign(equipment, data);
+    });
+  }
+
+  function addEquipment(data: Partial<NEquipmentData>) {
+    const newEquipment = { id: nanoid(), name: "Equipment", ...klona(data) };
+    if (newEquipment.id === undefined) {
+      newEquipment.id = nanoid();
+    }
+    const newId = newEquipment.id;
+    update((s) => {
+      s.equipmentMap[newId] = newEquipment;
+    });
+  }
+
+  function updatePersonnel(id: string, data: PersonnelDataUpdate) {
+    update((s) => {
+      const personnel = s.personnelMap[id];
+      if (!personnel) return;
+      Object.assign(personnel, data);
+    });
+  }
+
   return {
     addUnit,
     deleteUnit,
@@ -674,5 +710,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     addRangeRing,
     deleteRangeRing,
     updateRangeRing,
+    updateEquipment,
+    addEquipment,
+    updatePersonnel,
   };
 }
