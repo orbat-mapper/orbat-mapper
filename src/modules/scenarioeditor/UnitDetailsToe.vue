@@ -5,6 +5,8 @@ import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { UnitEquipment, UnitPersonnel } from "@/types/scenarioModels";
 import { useToggle } from "@vueuse/core";
+import { useSelectedItems } from "@/stores/selectedStore";
+import { EntityId } from "@/types/base";
 
 interface Props {
   unit: NUnit;
@@ -13,10 +15,14 @@ const props = defineProps<Props>();
 
 const {
   store: {
-    state: { equipmentMap, personnelMap },
+    state: { equipmentMap, personnelMap, unitMap },
   },
   unitActions: { walkSubUnits },
 } = injectStrict(activeScenarioKey);
+
+const { selectedUnitIds } = useSelectedItems();
+
+const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 
 const aggregatedEquipment = shallowRef<UnitEquipment[]>([]);
 const aggregatedPersonnel = shallowRef<UnitPersonnel[]>([]);
@@ -33,22 +39,30 @@ const sortedPersonnel = computed(() =>
 );
 
 watch(
-  () => props.unit?.id,
+  () => selectedUnitIds,
   () => {
     const aggEquipment: Record<string, number> = {};
     const aggPersonnel: Record<string, number> = {};
-    walkSubUnits(
-      props.unit.id,
-      (unit) => {
-        unit.equipment?.forEach((e) => {
-          aggEquipment[e.id] = (aggEquipment[e.id] ?? 0) + e.count;
-        });
-        unit.personnel?.forEach((p) => {
-          aggPersonnel[p.id] = (aggPersonnel[p.id] ?? 0) + p.count;
-        });
-      },
-      { includeParent: true },
-    );
+    const allUnitIds = new Set<EntityId>();
+    selectedUnitIds.value.forEach((unitId) => {
+      walkSubUnits(
+        unitId,
+        (unit) => {
+          allUnitIds.add(unit.id);
+        },
+        { includeParent: true },
+      );
+    });
+    allUnitIds.forEach((unitId) => {
+      const unit = unitMap[unitId];
+      unit.equipment?.forEach((e) => {
+        aggEquipment[e.id] = (aggEquipment[e.id] ?? 0) + e.count;
+      });
+      unit.personnel?.forEach((p) => {
+        aggPersonnel[p.id] = (aggPersonnel[p.id] ?? 0) + p.count;
+      });
+    });
+
     aggregatedEquipment.value = Object.entries(aggEquipment).map(([id, count]) => ({
       name: equipmentMap[id]?.name ?? id,
       description: equipmentMap[id]?.description ?? "",
@@ -60,7 +74,7 @@ watch(
       count,
     }));
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 );
 
 function toggleEquipmentSort(column: "name" | "count") {
