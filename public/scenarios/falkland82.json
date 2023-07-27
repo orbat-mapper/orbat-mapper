@@ -1,6 +1,6 @@
 {
   "type": "ORBAT-mapper",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
   "timeZone": "Atlantic/Stanley",
@@ -1884,5 +1884,7 @@
       "imageScale": [19.703891001458558, 19.703891001458558],
       "opacity": 0.8
     }
-  ]
+  ],
+  "equipment": [],
+  "personnel": []
 }

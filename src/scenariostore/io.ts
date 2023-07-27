@@ -23,8 +23,7 @@ import dayjs from "dayjs";
 import { type ScenarioLayer, ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import { type EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
-
-const LOCALSTORAGE_KEY = "orbat-scenario4";
+import { LOCALSTORAGE_KEY, SCENARIO_FILE_VERSION } from "@/config/constants";
 
 export function createEmptyScenario(): Scenario {
   const symbolSettings = useSymbolSettingsStore();
@@ -34,7 +33,7 @@ export function createEmptyScenario(): Scenario {
   } catch (e) {}
   return {
     type: "ORBAT-mapper",
-    version: "0.9.0",
+    version: SCENARIO_FILE_VERSION,
     name: "New scenario",
     description: "Empty scenario description",
     startTime: new Date().getTime(),
@@ -127,7 +126,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     const { state } = store.value;
     return {
       type: "ORBAT-mapper",
-      version: "0.9.0",
+      version: SCENARIO_FILE_VERSION,
       ...getScenarioInfo(state),
       sides: getSides(state),
       layers: getLayers(state),
