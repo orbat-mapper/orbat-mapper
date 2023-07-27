@@ -1,10 +1,14 @@
 <template>
-  <div class="px-2">
+  <div class="">
     <EditableLabel
       v-model="scenarioName"
       @update-value="updateScenarioInfo({ name: $event })"
     />
-    <ScenarioInfoDetails />
+    <TabWrapper :tab-list="['Details', 'Equipment', 'Personnel']">
+      <TabPanel><ScenarioInfoDetails /></TabPanel>
+      <TabPanel><ScenarioInfoEquipment /></TabPanel>
+      <TabPanel><ScenarioInfoPersonnel /></TabPanel>
+    </TabWrapper>
   </div>
 </template>
 
@@ -15,6 +19,10 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import EditableLabel from "@/components/EditableLabel.vue";
 import ScenarioInfoDetails from "@/modules/scenarioeditor/ScenarioInfoDetails.vue";
+import TabWrapper from "@/components/TabWrapper.vue";
+import { TabPanel } from "@headlessui/vue";
+import ScenarioInfoEquipment from "@/modules/scenarioeditor/ScenarioInfoEquipment.vue";
+import ScenarioInfoPersonnel from "@/modules/scenarioeditor/ScenarioInfoPersonnel.vue";
 
 const { store } = injectStrict(activeScenarioKey);
 const { state } = store;
