@@ -3,7 +3,8 @@
 ORBAT Mapper is a web-based application for building order of battles (ORBATs) and plotting unit locations on a map.
 With ORBAT Mapper you can recreate historic battles and military scenarios right in your browser.
 
-ORBAT Mapper is created by a hobbyist. Check out the [tools section](../resources/tools.md) if you need something
+Please note that ORBAT Mapper is not intended to be a C2IS, simulation or military planning tool. ORBAT Mapper is
+created by a hobbyist. Check out the [tools section](../resources/tools.md) if you need something
 more professional.
 
 ::: warning

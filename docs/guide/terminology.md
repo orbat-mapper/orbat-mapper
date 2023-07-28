@@ -52,9 +52,9 @@ location, etc.
 
 ### Table of Organization and Equipment (TO&E)
 
-A military unit is composed of personnel and equipment. This composition is often referred to as Table of Organization
-and Equipment (TO&E).The TO&E outlines the structure, roles, and responsibilities of personnel within the unit and
-specifies the types and quantities of its equipment.
+A military unit is composed of personnel and equipment. This composition is often referred to as [Table of Organization
+and Equipment (TO&E)](https://en.wikipedia.org/wiki/Table_of_organization_and_equipment). The TO&E outlines the
+structure, roles, and responsibilities of personnel within the unit and specifies the types and quantities of its equipment.
 
 ORBAT mapper has basic support for representing TO&E-data.
 
