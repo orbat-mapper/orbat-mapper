@@ -39,7 +39,7 @@ represent branches (army, navy, air-force, etc.), a task force, a battlefront, e
 
 A group consists of one or more unit hierarchies. The topmost unit in a hierarchy is called a _root unit_.
 
-## Units and equipment
+## Units
 
 A unit is the basic building block of a scenario. It has properties like military symbol, name, description, echelon,
 location, etc.
@@ -50,6 +50,14 @@ location, etc.
     <DocMilSymbol sidc="10061000151301020000" />
 </div>
 
+### Table of Organization and Equipment (TO&E)
+
+A military unit is composed of personnel and equipment. This composition is often referred to as Table of Organization
+and Equipment (TO&E).The TO&E outlines the structure, roles, and responsibilities of personnel within the unit and
+specifies the types and quantities of its equipment.
+
+ORBAT mapper has basic support for representing TO&E-data.
+
 ## Map layers and features
 
 The map is an important part of a scenario. A scenario map consists of multiple layers. The _base layer_ is drawn first
@@ -59,8 +67,13 @@ A raster map layer consists of one or more raster images. Typical raster map sou
 Feature layers consists of one or more _features_. A feature is a styled point, line or polygon on the map.
 
 [//]: # "## Events"
+
 [//]: #
+
 [//]: # "How you organize a scenario is up to you. One example is the Falklands demo scenario. It consists of two sides, Great"
+
 [//]: # "Britain and Argentina."
+
 [//]: #
+
 [//]: # "![](images/sides-and-groups.png)"
