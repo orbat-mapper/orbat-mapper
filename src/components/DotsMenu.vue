@@ -1,6 +1,6 @@
 <template>
   <Menu as="div">
-    <Float placement="left-start" portal flip shift>
+    <Float placement="left-start" strategy="fixed" flip shift>
       <MenuButton
         @click.stop=""
         class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-army2 focus:ring-offset-2"
