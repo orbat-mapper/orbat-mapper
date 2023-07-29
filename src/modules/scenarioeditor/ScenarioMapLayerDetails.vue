@@ -18,12 +18,13 @@ import { MenuItemData } from "@/components/types";
 import { ScenarioMapLayerAction } from "@/types/constants";
 import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
+import { TabPanel } from "@headlessui/vue";
 import ImageMapLayerSettings from "@/modules/scenarioeditor/ImageMapLayerSettings.vue";
 import TileJSONMapLayerSettings from "@/modules/scenarioeditor/TileMapLayerSettings.vue";
 import { LayerUpdateOptions } from "@/composables/geoMapLayers";
 import { useUiStore } from "@/stores/uiStore";
 import MapLayerMetaSettings from "@/modules/scenarioeditor/MapLayerMetaSettings.vue";
+import TabWrapper from "@/components/TabWrapper.vue";
 
 interface Props {
   layerId: FeatureId;
@@ -44,10 +45,6 @@ const mapLayer = computed(() => geo.getMapLayerById(props.layerId) as ScenarioMa
 const isVisible = computed(() => !(mapLayer.value?.isHidden ?? false));
 const layerName = ref("DD");
 const selectedTab = ref(0);
-
-function changeTab(index: number) {
-  selectedTab.value = index;
-}
 
 const opacity = computed({
   get: () => mapLayer.value?.opacity,
@@ -140,44 +137,27 @@ function toggleLayerVisibility() {
         </div>
       </div>
     </header>
-    <TabGroup
-      :selected-index="selectedTab"
-      @change="changeTab"
-      class="-mx-4 mt-2"
-      as="div"
-    >
-      <TabList class="mb-2 flex space-x-4 border-b-2 px-4" v-slot="{ selectedIndex }">
-        <Tab
-          v-for="(tab, i) in tabList"
-          :class="[
-            selectedIndex === i ? 'border-army  text-army' : 'border-transparent',
-            'border-b-2 px-1 py-2 ',
-          ]"
-          >{{ tab }}</Tab
-        >
-      </TabList>
-      <TabPanels class="w-full overflow-auto px-4">
-        <TabPanel
-          ><MapLayerMetaSettings :layer="mapLayer" @update="updateLayer"
-        /></TabPanel>
-        <TabPanel>
-          <ImageMapLayerSettings
-            v-if="mapLayer.type === 'ImageLayer'"
-            :layer="mapLayer"
-            :key="mapLayer.id"
-            @update="updateLayer"
-          />
-          <TileJSONMapLayerSettings
-            v-else-if="mapLayer.type === 'TileJSONLayer' || mapLayer.type === 'XYZLayer'"
-            :layer="mapLayer"
-            @update="updateLayer"
-            @action="onImageLayerAction"
-          />
-        </TabPanel>
-        <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
-          <pre>{{ mapLayer }}</pre>
-        </TabPanel>
-      </TabPanels>
-    </TabGroup>
+    <TabWrapper :tab-list="tabList" v-model="selectedTab">
+      <TabPanel
+        ><MapLayerMetaSettings :layer="mapLayer" @update="updateLayer"
+      /></TabPanel>
+      <TabPanel>
+        <ImageMapLayerSettings
+          v-if="mapLayer.type === 'ImageLayer'"
+          :layer="mapLayer"
+          :key="mapLayer.id"
+          @update="updateLayer"
+        />
+        <TileJSONMapLayerSettings
+          v-else-if="mapLayer.type === 'TileJSONLayer' || mapLayer.type === 'XYZLayer'"
+          :layer="mapLayer"
+          @update="updateLayer"
+          @action="onImageLayerAction"
+        />
+      </TabPanel>
+      <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
+        <pre>{{ mapLayer }}</pre>
+      </TabPanel>
+    </TabWrapper>
   </div>
 </template>

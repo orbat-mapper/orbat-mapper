@@ -46,113 +46,91 @@
         />
       </nav>
     </header>
-    <TabGroup
-      :selected-index="selectedTab"
-      @change="changeTab"
-      class="-mx-4 mt-2"
-      as="div"
-    >
-      <TabList class="mb-2 flex space-x-4 border-b-2 px-4" v-slot="{ selectedIndex }">
-        <Tab
-          v-for="(tab, i) in tabList"
-          :class="[
-            selectedIndex === i ? 'border-army  text-army' : 'border-transparent',
-            'border-b-2 px-1 py-2 ',
-          ]"
-          >{{ tab }}</Tab
-        >
-      </TabList>
-      <TabPanels class="w-full overflow-auto px-4">
-        <TabPanel>
-          <section class="relative">
-            <BaseButton
-              v-if="!isMultiMode && !isEditMode"
-              small
-              class="absolute right-1"
-              :class="isEditMode && 'bg-gray-100 text-black'"
-              @click="toggleEditMode()"
-              >Edit
-            </BaseButton>
-            <form
-              v-if="isEditMode"
-              @submit.prevent="onFormSubmit"
-              class="mb-6 mt-0 space-y-4"
+    <TabWrapper :tab-list="tabList" v-model="selectedTab">
+      <TabPanel>
+        <section class="relative">
+          <BaseButton
+            v-if="!isMultiMode && !isEditMode"
+            small
+            class="absolute right-1"
+            :class="isEditMode && 'bg-gray-100 text-black'"
+            @click="toggleEditMode()"
+            >Edit
+          </BaseButton>
+          <form
+            v-if="isEditMode"
+            @submit.prevent="onFormSubmit"
+            class="mb-6 mt-0 space-y-4"
+          >
+            <InputGroup label="Name" v-model="form.name" id="name-input" />
+            <InputGroup
+              label="Short name"
+              description="Alternative name"
+              v-model="form.shortName"
+            />
+            <InputGroup label="External URL" description="" v-model="form.externalUrl" />
+            <SimpleMarkdownInput
+              label="Description"
+              v-model="form.description"
+              description="Use markdown syntax for formatting"
+            />
+
+            <div class="flex items-center justify-end space-x-2">
+              <BaseButton type="submit" small primary>Save</BaseButton>
+              <BaseButton small @click="toggleEditMode()">Cancel</BaseButton>
+            </div>
+          </form>
+          <div v-else-if="!isMultiMode" class="mb-4 space-y-4">
+            <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
+            <DescriptionItem v-if="unit.shortName" label="Short name"
+              >{{ unit.shortName }}
+            </DescriptionItem>
+            <DescriptionItem
+              v-if="unit.externalUrl"
+              label="External URL"
+              dd-class="truncate"
+              ><a target="_blank" class="underline" :href="unit.externalUrl">{{
+                unit.externalUrl
+              }}</a></DescriptionItem
             >
-              <InputGroup label="Name" v-model="form.name" id="name-input" />
-              <InputGroup
-                label="Short name"
-                description="Alternative name"
-                v-model="form.shortName"
-              />
-              <InputGroup
-                label="External URL"
-                description=""
-                v-model="form.externalUrl"
-              />
-              <SimpleMarkdownInput
-                label="Description"
-                v-model="form.description"
-                description="Use markdown syntax for formatting"
-              />
+            <DescriptionItem v-if="unit.description" label="Description">
+              <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
+            </DescriptionItem>
 
-              <div class="flex items-center justify-end space-x-2">
-                <BaseButton type="submit" small primary>Save</BaseButton>
-                <BaseButton small @click="toggleEditMode()">Cancel</BaseButton>
+            <DescriptionItem v-if="unit.location" label="Initial location">
+              <div class="flex items-center justify-between">
+                <p>{{ formatPosition(unit.location) }}</p>
+                <IconButton @click="geoStore.panToLocation(unit.location)">
+                  <IconCrosshairsGps class="h-5 w-5" />
+                </IconButton>
               </div>
-            </form>
-            <div v-else-if="!isMultiMode" class="mb-4 space-y-4">
-              <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
-              <DescriptionItem v-if="unit.shortName" label="Short name"
-                >{{ unit.shortName }}
-              </DescriptionItem>
-              <DescriptionItem
-                v-if="unit.externalUrl"
-                label="External URL"
-                dd-class="truncate"
-                ><a target="_blank" class="underline" :href="unit.externalUrl">{{
-                  unit.externalUrl
-                }}</a></DescriptionItem
-              >
-              <DescriptionItem v-if="unit.description" label="Description">
-                <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
-              </DescriptionItem>
-
-              <DescriptionItem v-if="unit.location" label="Initial location">
-                <div class="flex items-center justify-between">
-                  <p>{{ formatPosition(unit.location) }}</p>
-                  <IconButton @click="geoStore.panToLocation(unit.location)">
-                    <IconCrosshairsGps class="h-5 w-5" />
-                  </IconButton>
-                </div>
-              </DescriptionItem>
-            </div>
-            <BaseButton @click="startGetLocation()" :disabled="isMultiMode">
-              <IconCrosshairsGps class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-              {{ isGetLocationActive ? "Select on map" : "Set location" }}
-            </BaseButton>
-            <div class="mt-4 space-y-2">
-              <ToggleField v-model="unitSettings.showHistory"
-                >Show unit track on map</ToggleField
-              >
-              <ToggleField v-model="unitSettings.editHistory"
-                >Edit unit track on map</ToggleField
-              >
-            </div>
-          </section>
-        </TabPanel>
-        <TabPanel
-          ><UnitPanelState v-if="!isMultiMode && unit?.state?.length" :unit="unit"
-        /></TabPanel>
-        <TabPanel>
-          <UnitDetailsMap :unit="unit" />
-        </TabPanel>
-        <TabPanel><UnitDetailsToe :unit="unit" /></TabPanel>
-        <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
-          <pre>{{ unit }}</pre>
-        </TabPanel>
-      </TabPanels>
-    </TabGroup>
-
+            </DescriptionItem>
+          </div>
+          <BaseButton @click="startGetLocation()" :disabled="isMultiMode">
+            <IconCrosshairsGps class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+            {{ isGetLocationActive ? "Select on map" : "Set location" }}
+          </BaseButton>
+          <div class="mt-4 space-y-2">
+            <ToggleField v-model="unitSettings.showHistory"
+              >Show unit track on map</ToggleField
+            >
+            <ToggleField v-model="unitSettings.editHistory"
+              >Edit unit track on map</ToggleField
+            >
+          </div>
+        </section>
+      </TabPanel>
+      <TabPanel
+        ><UnitPanelState v-if="!isMultiMode && unit?.state?.length" :unit="unit"
+      /></TabPanel>
+      <TabPanel>
+        <UnitDetailsMap :unit="unit" />
+      </TabPanel>
+      <TabPanel><UnitDetailsToe :unit="unit" /></TabPanel>
+      <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
+        <pre>{{ unit }}</pre>
+      </TabPanel>
+    </TabWrapper>
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"
       :filter="inputEventFilter"
@@ -189,12 +167,13 @@ import ToggleField from "@/components/ToggleField.vue";
 import { SID_INDEX } from "@/symbology/sidc";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
+import { TabPanel } from "@headlessui/vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import UnitDetailsMap from "@/modules/scenarioeditor/UnitDetailsMap.vue";
 import { useTabStore } from "@/stores/tabStore";
 import { storeToRefs } from "pinia";
 import UnitDetailsToe from "@/modules/scenarioeditor/UnitDetailsToe.vue";
+import TabWrapper from "@/components/TabWrapper.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue"),
@@ -210,9 +189,7 @@ const {
 const { unitDetailsTab: selectedTab } = storeToRefs(useTabStore());
 
 const unitName = ref("");
-function changeTab(index: number) {
-  selectedTab.value = index;
-}
+
 const tabList = computed(() =>
   uiStore.debugMode
     ? ["Details", "Unit state", "Map", "TO&E", "Debug"]
