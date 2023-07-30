@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { NUnit } from "@/types/internalModels";
-import { computed, ref, shallowRef, watch } from "vue";
+import {
+  EUnitEquipment,
+  EUnitPersonnel,
+  NUnit,
+  NUnitEquipment,
+  NUnitPersonnel,
+} from "@/types/internalModels";
+import { computed, ref, shallowRef, triggerRef, watch } from "vue";
 import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { UnitEquipment, UnitPersonnel } from "@/types/scenarioModels";
@@ -10,6 +16,7 @@ import { EntityId } from "@/types/base";
 import BaseButton from "@/components/BaseButton.vue";
 import TableHeader from "@/components/TableHeader.vue";
 import UnitToeItemTable from "@/modules/scenarioeditor/UnitToeItemTable.vue";
+import { createOrUpdateEmpty } from "ol/extent";
 
 interface Props {
   unit: NUnit;
@@ -20,15 +27,21 @@ const {
   store: {
     state: { equipmentMap, personnelMap, unitMap },
   },
-  unitActions: { walkSubUnits },
+  unitActions: { walkSubUnits, updateUnitEquipment, updateUnitPersonnel },
 } = injectStrict(activeScenarioKey);
 
 const { selectedUnitIds } = useSelectedItems();
 
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 
-const aggregatedEquipment = shallowRef<UnitEquipment[]>([]);
-const aggregatedPersonnel = shallowRef<UnitPersonnel[]>([]);
+const aggregatedEquipment = shallowRef<EUnitEquipment[]>([]);
+const aggregatedPersonnel = shallowRef<EUnitPersonnel[]>([]);
+const equipmentValues = computed(() => {
+  return sortBy(Object.values(equipmentMap), "name");
+});
+const personnelValues = computed(() => {
+  return sortBy(Object.values(personnelMap), "name");
+});
 
 watch(
   () => selectedUnitIds,
@@ -56,11 +69,13 @@ watch(
     });
 
     aggregatedEquipment.value = Object.entries(aggEquipment).map(([id, count]) => ({
+      id,
       name: equipmentMap[id]?.name ?? id,
       description: equipmentMap[id]?.description ?? "",
       count,
     }));
     aggregatedPersonnel.value = Object.entries(aggPersonnel).map(([id, count]) => ({
+      id,
       name: personnelMap[id]?.name ?? id,
       description: personnelMap[id]?.description ?? "",
       count,
@@ -68,19 +83,51 @@ watch(
   },
   { immediate: true, deep: true },
 );
+
+function updateEquipment(equipmentId: string, count: number) {
+  updateUnitEquipment(props.unit.id, equipmentId, { count });
+  triggerRef(selectedUnitIds);
+}
+
+function updatePersonnel(personnelId: string, count: number) {
+  updateUnitPersonnel(props.unit.id, personnelId, { count });
+  triggerRef(selectedUnitIds);
+}
+
+function deleteEquipment(equipmentId: string) {
+  updateUnitEquipment(props.unit.id, equipmentId, { count: -1 });
+  triggerRef(selectedUnitIds);
+}
+
+function deletePersonnel(personnelId: string) {
+  updateUnitPersonnel(props.unit.id, personnelId, { count: -1 });
+  triggerRef(selectedUnitIds);
+}
 </script>
 
 <template>
   <div class="prose p-1">
     <TableHeader v-if="aggregatedEquipment.length" title="Equipment">
-      <BaseButton small secondary>Add</BaseButton>
+      <BaseButton small secondary :disabled="isMultiMode">Add</BaseButton>
     </TableHeader>
-    <UnitToeItemTable :items="aggregatedEquipment" />
+    <UnitToeItemTable
+      :items="aggregatedEquipment"
+      :is-multi-mode="isMultiMode"
+      :values="equipmentValues"
+      @update="updateEquipment"
+      @delete="deleteEquipment"
+    />
 
     <TableHeader v-if="aggregatedPersonnel.length" title="Personnel">
-      <BaseButton small secondary>Add</BaseButton>
+      <BaseButton small secondary :disabled="isMultiMode">Add</BaseButton>
     </TableHeader>
-    <UnitToeItemTable :items="aggregatedPersonnel" />
+    <UnitToeItemTable
+      :items="aggregatedPersonnel"
+      :is-multi-mode="isMultiMode"
+      :values="personnelValues"
+      @update="updatePersonnel"
+      @delete="deletePersonnel"
+    />
 
     <p v-if="!aggregatedEquipment.length && !aggregatedPersonnel.length">
       No data about equipment or personnel available.
