@@ -34,7 +34,15 @@ export interface NUnitEquipment extends Omit<UnitEquipment, "name"> {
   id: string;
 }
 
+export interface EUnitEquipment extends UnitEquipment {
+  id: string;
+}
+
 export interface NUnitPersonnel extends Omit<UnitPersonnel, "name"> {
+  id: string;
+}
+
+export interface EUnitPersonnel extends UnitPersonnel {
   id: string;
 }
 

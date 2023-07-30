@@ -9,6 +9,7 @@ import {
   NSideGroup,
   NUnit,
   NUnitAdd,
+  NUnitEquipment,
   PersonnelDataUpdate,
   SideGroupUpdate,
   SideUpdate,
@@ -707,6 +708,50 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function updateUnitEquipment(
+    unitId: EntityId,
+    equipmentId: string,
+    { count }: { count: number },
+  ) {
+    update((s) => {
+      const unit = s.unitMap[unitId];
+      if (!unit) return;
+      if (count === -1) {
+        unit.equipment = unit.equipment?.filter((e) => e.id !== equipmentId);
+      } else {
+        const equipment = unit.equipment?.find((e) => e.id === equipmentId);
+        if (!equipment) {
+          if (unit.equipment === undefined) unit.equipment = [];
+          unit.equipment.push({ id: equipmentId, count });
+        } else {
+          Object.assign(equipment, { count });
+        }
+      }
+    });
+  }
+
+  function updateUnitPersonnel(
+    unitId: EntityId,
+    personnelId: string,
+    { count }: { count: number },
+  ) {
+    update((s) => {
+      const unit = s.unitMap[unitId];
+      if (!unit) return;
+      if (count === -1) {
+        unit.personnel = unit.personnel?.filter((e) => e.id !== personnelId);
+      } else {
+        const personnel = unit.personnel?.find((e) => e.id === personnelId);
+        if (!personnel) {
+          if (unit.personnel === undefined) unit.personnel = [];
+          unit.personnel.push({ id: personnelId, count });
+        } else {
+          Object.assign(personnel, { count });
+        }
+      }
+    });
+  }
+
   return {
     addUnit,
     deleteUnit,
@@ -752,5 +797,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     addPersonnel,
     deletePersonnel,
     deleteEquipment,
+    updateUnitEquipment,
+    updateUnitPersonnel,
   };
 }
