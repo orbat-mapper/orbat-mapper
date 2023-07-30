@@ -7,6 +7,9 @@ import { UnitEquipment, UnitPersonnel } from "@/types/scenarioModels";
 import { useToggle } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
+import BaseButton from "@/components/BaseButton.vue";
+import TableHeader from "@/components/TableHeader.vue";
+import UnitToeItemTable from "@/modules/scenarioeditor/UnitToeItemTable.vue";
 
 interface Props {
   unit: NUnit;
@@ -26,17 +29,6 @@ const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 
 const aggregatedEquipment = shallowRef<UnitEquipment[]>([]);
 const aggregatedPersonnel = shallowRef<UnitPersonnel[]>([]);
-const equipmentSortKey = ref<"name" | "count">("count");
-const [sortEquipmentAscending, toggleEquipmentAscending] = useToggle(true);
-const [sortPersonnelAscending, togglePersonnelAscending] = useToggle(true);
-const personnelSortKey = ref<"name" | "count">("name");
-
-const sortedEquipment = computed(() =>
-  sortBy(aggregatedEquipment.value, equipmentSortKey.value, sortEquipmentAscending.value),
-);
-const sortedPersonnel = computed(() =>
-  sortBy(aggregatedPersonnel.value, personnelSortKey.value, sortPersonnelAscending.value),
-);
 
 watch(
   () => selectedUnitIds,
@@ -76,64 +68,30 @@ watch(
   },
   { immediate: true, deep: true },
 );
-
-function toggleEquipmentSort(column: "name" | "count") {
-  if (equipmentSortKey.value === column) {
-    toggleEquipmentAscending();
-  } else {
-    equipmentSortKey.value = column;
-  }
-}
-
-function togglePersonnelSort(column: "name" | "count") {
-  if (personnelSortKey.value === column) {
-    togglePersonnelAscending();
-  } else {
-    personnelSortKey.value = column;
-  }
-}
 </script>
 
 <template>
   <div class="prose p-1">
-    <table class="mt-2" v-if="aggregatedEquipment.length">
-      <thead>
-        <tr class="cursor-pointer">
-          <th class="pl-2" @click="toggleEquipmentSort('name')">Equipment</th>
-          <th class="pr-8 text-right" @click="toggleEquipmentSort('count')">Qty.</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="equipment in sortedEquipment" :key="equipment.name">
-          <td class="pl-2" :title="equipment.description">{{ equipment.name }}</td>
-          <td class="pr-6 text-right tabular-nums">{{ equipment.count }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <TableHeader v-if="aggregatedEquipment.length" title="Equipment">
+      <BaseButton small secondary>Add</BaseButton>
+    </TableHeader>
+    <UnitToeItemTable :items="aggregatedEquipment" />
 
-    <table v-if="aggregatedPersonnel.length">
-      <thead>
-        <tr class="">
-          <th class="cursor-pointer pl-2" @click="togglePersonnelSort('name')">
-            Personnel
-          </th>
-          <th
-            class="cursor-pointer pr-8 text-right"
-            @click="togglePersonnelSort('count')"
-          >
-            Qty.
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="personnel in sortedPersonnel" :key="personnel.name">
-          <td class="pl-2" :title="personnel.description">{{ personnel.name }}</td>
-          <td class="pr-6 text-right tabular-nums">{{ personnel.count }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <TableHeader v-if="aggregatedPersonnel.length" title="Personnel">
+      <BaseButton small secondary>Add</BaseButton>
+    </TableHeader>
+    <UnitToeItemTable :items="aggregatedPersonnel" />
+
     <p v-if="!aggregatedEquipment.length && !aggregatedPersonnel.length">
       No data about equipment or personnel available.
     </p>
+    <div class="mt-4 flex justify-end gap-2">
+      <BaseButton v-if="!aggregatedEquipment.length" small secondary
+        >Add equipment</BaseButton
+      >
+      <BaseButton v-if="!aggregatedPersonnel.length" small secondary
+        >Add personnel</BaseButton
+      >
+    </div>
   </div>
 </template>
