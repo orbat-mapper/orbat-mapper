@@ -192,8 +192,19 @@ const unitName = ref("");
 
 const tabList = computed(() =>
   uiStore.debugMode
-    ? ["Details", "Unit state", "Map", "TO&E", "Debug"]
-    : ["Details", "Unit state", "Map", "TO&E"],
+    ? [
+        "Details",
+        "Unit state",
+        "Map",
+        { label: "TO&E", title: "Table of organization and equipment" },
+        "Debug",
+      ]
+    : [
+        "Details",
+        "Unit state",
+        "Map",
+        { label: "TO&E", title: "Table of organization and equipment" },
+      ],
 );
 
 const unit = computed(() => {
