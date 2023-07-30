@@ -5,12 +5,20 @@ import { computed, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import TableHeader from "@/components/TableHeader.vue";
 import { NEquipmentData } from "@/types/internalModels";
+import DotsMenu from "@/components/DotsMenu.vue";
+import { useNotifications } from "@/composables/notifications";
 
 const scn = injectStrict(activeScenarioKey);
+const { send } = useNotifications();
 
 const equipment = computed(() => {
   return Object.values(scn.store.state.equipmentMap);
 });
+
+const itemActions = [
+  { label: "Edit", action: "edit" },
+  { label: "Delete", action: "delete" },
+];
 
 const editedId = ref();
 const form = ref<Omit<NEquipmentData, "id">>({ name: "", description: "" });
@@ -37,6 +45,23 @@ function add() {
   });
   startEdit(equipment.value[equipment.value.length - 1]);
 }
+
+function onItemAction(item: NEquipmentData, action: string) {
+  switch (action) {
+    case "edit":
+      startEdit(item);
+      break;
+    case "delete":
+      const success = scn.unitActions.deleteEquipment(item.id);
+      if (!success) {
+        send({
+          type: "error",
+          message: "Cannot delete equipment that is in use.",
+        });
+      }
+      break;
+  }
+}
 </script>
 
 <template>
@@ -52,6 +77,7 @@ function add() {
           <tr>
             <th>Name</th>
             <th>Description</th>
+            <td></td>
           </tr>
         </thead>
         <tbody>
@@ -71,20 +97,25 @@ function add() {
                   placeholder="Name"
                 />
               </td>
-              <td class="flex">
-                <input
-                  type="text"
-                  v-model="form.description"
-                  class="w-full text-sm"
-                  placeholder="Description"
-                />
-                <BaseButton small type="submit" secondary class="ml-2">Save</BaseButton>
-                <BaseButton small class="ml-2" @click="cancelEdit()">Cancel</BaseButton>
+              <td class="" colspan="3">
+                <div class="flex">
+                  <input
+                    type="text"
+                    v-model="form.description"
+                    class="flex-auto text-sm"
+                    placeholder="Description"
+                  />
+                  <BaseButton small type="submit" secondary class="ml-2">Save</BaseButton>
+                  <BaseButton small class="ml-2" @click="cancelEdit()">Cancel</BaseButton>
+                </div>
               </td>
             </template>
             <template v-else>
               <td>{{ eq.name }}</td>
               <td>{{ eq.description }}</td>
+              <td class="not-prose w-6">
+                <DotsMenu :items="itemActions" @action="onItemAction(eq, $event)" />
+              </td>
             </template>
           </tr>
         </tbody>

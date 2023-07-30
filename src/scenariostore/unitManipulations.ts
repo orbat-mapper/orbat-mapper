@@ -4,6 +4,7 @@ import { moveElement, nanoid, removeElement } from "@/utils";
 import {
   EquipmentDataUpdate,
   NEquipmentData,
+  NPersonnelData,
   NSide,
   NSideGroup,
   NUnit,
@@ -20,13 +21,7 @@ import { SID } from "@/symbology/values";
 import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
-import type {
-  EquipmentData,
-  State,
-  StateAdd,
-  Unit,
-  UnitSymbolOptions,
-} from "@/types/scenarioModels";
+import type { State, StateAdd, Unit, UnitSymbolOptions } from "@/types/scenarioModels";
 import { Position, RangeRing } from "@/types/scenarioGeoModels";
 import { getNextEchelonBelow } from "@/symbology/helpers";
 
@@ -663,11 +658,52 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function deleteEquipment(id: string): boolean {
+    // check if equipment is used
+    const isUsed = Object.values(state.unitMap).some((unit) => {
+      if (unit.equipment) {
+        return unit.equipment.some((e) => e.id === id);
+      }
+      return false;
+    });
+    if (isUsed) return false;
+    update((s) => {
+      delete s.equipmentMap[id];
+    });
+    return true;
+  }
+
+  function deletePersonnel(id: string): boolean {
+    // check if personnel is used
+    const isUsed = Object.values(state.unitMap).some((unit) => {
+      if (unit.personnel) {
+        return unit.personnel.some((e) => e.id === id);
+      }
+      return false;
+    });
+    if (isUsed) return false;
+    update((s) => {
+      delete s.personnelMap[id];
+    });
+    return true;
+  }
+
   function updatePersonnel(id: string, data: PersonnelDataUpdate) {
     update((s) => {
       const personnel = s.personnelMap[id];
       if (!personnel) return;
       Object.assign(personnel, data);
+    });
+  }
+
+  function addPersonnel(data: Partial<NPersonnelData>) {
+    const newPersonnel = { id: nanoid(), name: "Personnel", ...klona(data) };
+    if (newPersonnel.id === undefined) {
+      newPersonnel.id = nanoid();
+    }
+    const newId = newPersonnel.id;
+    update((s) => {
+      s.personnelMap[newId] = newPersonnel;
     });
   }
 
@@ -713,5 +749,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateEquipment,
     addEquipment,
     updatePersonnel,
+    addPersonnel,
+    deletePersonnel,
+    deleteEquipment,
   };
 }
