@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import { sortBy } from "@/utils";
-import { useToggle } from "@vueuse/core";
+import { useToggle, useVModel } from "@vueuse/core";
 import DotsMenu from "@/components/DotsMenu.vue";
 import {
   EUnitEquipment,
@@ -11,22 +11,30 @@ import {
 } from "@/types/internalModels";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import BaseButton from "@/components/BaseButton.vue";
+import InputGroup from "@/components/InputGroup.vue";
 
 interface Props {
   items: EUnitEquipment[] | EUnitPersonnel[];
   values: NEquipmentData[] | NPersonnelData[];
   isMultiMode?: boolean;
+  showAdd?: boolean;
 }
 const props = defineProps<Props>();
-const emit = defineEmits(["delete", "update"]);
+const emit = defineEmits(["delete", "update", "update:showAdd"]);
 
-const sortKey = ref<"name" | "count">("count");
+const doShowAdd = useVModel(props, "showAdd", emit);
+const sortKey = ref<"name" | "count">("name");
 const [sortAscending, toggleAscending] = useToggle(true);
 
 const editedId = ref();
 const form = ref({
   id: "",
   count: -1,
+});
+
+const addForm = ref({
+  id: "",
+  count: 1,
 });
 
 const itemActions = computed(() => [
@@ -38,11 +46,15 @@ const sortedItems = computed(() =>
   sortBy(props.items, sortKey.value, sortAscending.value),
 );
 
+const usedItems = computed(() => props.items.map((i) => i.id));
+
 const valueItems = computed(() =>
-  props.values.map((v) => ({
-    label: v.name,
-    value: v.id,
-  })),
+  props.values
+    .filter((v) => !usedItems.value.includes(v.id))
+    .map((v) => ({
+      label: v.name,
+      value: v.id,
+    })),
 );
 
 function toggleSort(column: "name" | "count") {
@@ -78,9 +90,37 @@ function onItemAction(item: EUnitEquipment | EUnitPersonnel, action: string) {
       break;
   }
 }
+
+function resetAddForm() {
+  addForm.value = {
+    id: valueItems.value[0]?.value,
+    count: 1,
+  };
+}
+
+function onAddItemSubmit() {
+  emit("update", addForm.value.id, addForm.value.count);
+  nextTick(() => resetAddForm());
+}
+
+resetAddForm();
 </script>
 
 <template>
+  <form
+    v-if="doShowAdd && valueItems.length"
+    @submit.prevent="onAddItemSubmit"
+    class="flex w-full items-center gap-x-2 pb-4"
+  >
+    <div class="flex-auto">
+      <SimpleSelect :items="valueItems" v-model="addForm.id" />
+    </div>
+    <div class="w-24">
+      <InputGroup type="number" min="0" v-model.number="addForm.count" class="" />
+    </div>
+    <BaseButton small type="submit" primary class="ml-2 flex-shrink-0">Add</BaseButton>
+  </form>
+  <p v-else-if="doShowAdd">No new item available</p>
   <form @submit.prevent="onSubmit">
     <table class="-mx-2 mt-2" v-if="items.length">
       <thead>
@@ -118,7 +158,6 @@ function onItemAction(item: EUnitEquipment | EUnitPersonnel, action: string) {
               </div>
             </td>
           </template>
-
           <template v-else>
             <td class="pl-2" :title="item.description">{{ item.name }}</td>
             <td class="pr-6 text-right tabular-nums">{{ item.count }}</td>

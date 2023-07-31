@@ -1,26 +1,19 @@
 <script setup lang="ts">
-import {
-  EUnitEquipment,
-  EUnitPersonnel,
-  NUnit,
-  NUnitEquipment,
-  NUnitPersonnel,
-} from "@/types/internalModels";
-import { computed, ref, shallowRef, triggerRef, watch } from "vue";
+import { EUnitEquipment, EUnitPersonnel, NUnit } from "@/types/internalModels";
+import { computed, shallowRef, triggerRef, watch } from "vue";
 import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { UnitEquipment, UnitPersonnel } from "@/types/scenarioModels";
 import { useToggle } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
 import BaseButton from "@/components/BaseButton.vue";
 import TableHeader from "@/components/TableHeader.vue";
 import UnitToeItemTable from "@/modules/scenarioeditor/UnitToeItemTable.vue";
-import { createOrUpdateEmpty } from "ol/extent";
 
 interface Props {
   unit: NUnit;
 }
+
 const props = defineProps<Props>();
 
 const {
@@ -42,6 +35,9 @@ const equipmentValues = computed(() => {
 const personnelValues = computed(() => {
   return sortBy(Object.values(personnelMap), "name");
 });
+
+const [showAddEquipment, toggleAddEquipment] = useToggle(false);
+const [showAddPersonnel, toggleAddPersonnel] = useToggle(false);
 
 watch(
   () => selectedUnitIds,
@@ -107,8 +103,10 @@ function deletePersonnel(personnelId: string) {
 
 <template>
   <div class="prose p-1">
-    <TableHeader v-if="aggregatedEquipment.length" title="Equipment">
-      <BaseButton small secondary :disabled="isMultiMode">Add</BaseButton>
+    <TableHeader v-if="aggregatedEquipment.length || showAddEquipment" title="Equipment">
+      <BaseButton small :disabled="isMultiMode" @click="toggleAddEquipment()"
+        >{{ showAddEquipment ? "Hide form" : "+ Add" }}
+      </BaseButton>
     </TableHeader>
     <UnitToeItemTable
       :items="aggregatedEquipment"
@@ -116,10 +114,13 @@ function deletePersonnel(personnelId: string) {
       :values="equipmentValues"
       @update="updateEquipment"
       @delete="deleteEquipment"
+      v-model:show-add="showAddEquipment"
     />
 
-    <TableHeader v-if="aggregatedPersonnel.length" title="Personnel">
-      <BaseButton small secondary :disabled="isMultiMode">Add</BaseButton>
+    <TableHeader v-if="aggregatedPersonnel.length || showAddPersonnel" title="Personnel">
+      <BaseButton small :disabled="isMultiMode" @click="toggleAddPersonnel()">{{
+        showAddPersonnel ? "Hide form" : "+ Add"
+      }}</BaseButton>
     </TableHeader>
     <UnitToeItemTable
       :items="aggregatedPersonnel"
@@ -127,18 +128,27 @@ function deletePersonnel(personnelId: string) {
       :values="personnelValues"
       @update="updatePersonnel"
       @delete="deletePersonnel"
+      v-model:show-add="showAddPersonnel"
     />
 
     <p v-if="!aggregatedEquipment.length && !aggregatedPersonnel.length">
       No data about equipment or personnel available.
     </p>
     <div class="mt-4 flex justify-end gap-2">
-      <BaseButton v-if="!aggregatedEquipment.length" small secondary
-        >Add equipment</BaseButton
-      >
-      <BaseButton v-if="!aggregatedPersonnel.length" small secondary
-        >Add personnel</BaseButton
-      >
+      <BaseButton
+        v-if="!aggregatedEquipment.length"
+        small
+        secondary
+        @click="toggleAddEquipment()"
+        >Add equipment
+      </BaseButton>
+      <BaseButton
+        v-if="!aggregatedPersonnel.length"
+        small
+        secondary
+        @click="toggleAddPersonnel()"
+        >Add personnel
+      </BaseButton>
     </div>
   </div>
 </template>

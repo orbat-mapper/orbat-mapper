@@ -7,6 +7,8 @@ import TableHeader from "@/components/TableHeader.vue";
 import { NEquipmentData } from "@/types/internalModels";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useNotifications } from "@/composables/notifications";
+import InputGroup from "@/components/InputGroup.vue";
+import { useToggle } from "@vueuse/core";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
@@ -15,6 +17,8 @@ const equipment = computed(() => {
   return Object.values(scn.store.state.equipmentMap);
 });
 
+const [showAddEquipment, toggleAddEquipment] = useToggle(false);
+
 const itemActions = [
   { label: "Edit", action: "edit" },
   { label: "Delete", action: "delete" },
@@ -22,6 +26,7 @@ const itemActions = [
 
 const editedId = ref();
 const form = ref<Omit<NEquipmentData, "id">>({ name: "", description: "" });
+const addForm = ref<Omit<NEquipmentData, "id">>({ name: "", description: "" });
 
 function startEdit(data: NEquipmentData) {
   editedId.value = data.id;
@@ -38,12 +43,17 @@ function cancelEdit() {
   editedId.value = null;
 }
 
-function add() {
-  scn.unitActions.addEquipment({
-    name: "New Equipment",
-    description: "",
-  });
-  startEdit(equipment.value[equipment.value.length - 1]);
+function onAddSubmit() {
+  // check if name exists
+  if (equipment.value.find((e) => e.name === addForm.value.name)) {
+    send({
+      type: "error",
+      message: "Equipment with this name already exists.",
+    });
+    return;
+  }
+  scn.unitActions.addEquipment({ ...addForm.value });
+  addForm.value = { name: "", description: "" };
 }
 
 function onItemAction(item: NEquipmentData, action: string) {
@@ -69,8 +79,21 @@ function onItemAction(item: NEquipmentData, action: string) {
     <TableHeader
       title="Equipment"
       description="A list of equipment that is available in this scenario."
-      ><BaseButton @click="add()" primary>Add</BaseButton></TableHeader
+      ><BaseButton @click="toggleAddEquipment()">{{
+        showAddEquipment ? "Hide form" : "Add"
+      }}</BaseButton></TableHeader
     >
+    <form
+      v-if="showAddEquipment"
+      @submit.prevent="onAddSubmit"
+      class="not-prose grid grid-cols-3 gap-2"
+    >
+      <InputGroup label="Name" required v-model="addForm.name" />
+      <div class="col-span-2 flex items-start gap-3">
+        <InputGroup class="" label="Description" v-model="addForm.description" />
+        <BaseButton type="submit" small primary class="self-center">+Add</BaseButton>
+      </div>
+    </form>
     <form @submit.prevent="onSubmit">
       <table>
         <thead>
@@ -81,12 +104,7 @@ function onItemAction(item: NEquipmentData, action: string) {
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-for="eq in equipment"
-            :key="eq.id"
-            @dblclick="startEdit(eq)"
-            class="cursor-pointer"
-          >
+          <tr v-for="eq in equipment" :key="eq.id" @dblclick="startEdit(eq)">
             <template v-if="eq.id === editedId">
               <td>
                 <input
@@ -120,7 +138,6 @@ function onItemAction(item: NEquipmentData, action: string) {
           </tr>
         </tbody>
       </table>
-      <input type="submit" class="hidden" />
     </form>
   </div>
 </template>
