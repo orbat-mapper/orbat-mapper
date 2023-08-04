@@ -81,13 +81,14 @@
       <InputGroup label="Font color" type="color" v-model="options.fontColor" />
       <ToggleField v-model="options.useShortName">Use short unit names</ToggleField>
       <ToggleField v-model="options.hideLabel">Hide label</ToggleField>
-      <ToggleField v-model="options.showPersonnel">Show personnel </ToggleField>
-      <ToggleField v-model="options.showEquipment">Show equipment </ToggleField>
     </AccordionPanel>
     <AccordionPanel label="Connectors">
       <NumberInputGroup label="Connector offset" v-model="options.connectorOffset" />
       <InputGroup label="Line width" type="number" v-model="options.lineWidth" />
       <InputGroup label="Line color" type="color" v-model="options.lineColor" />
+    </AccordionPanel>
+    <AccordionPanel label="Equipment and personnel">
+      <SettingsToe item-type="chart" />
     </AccordionPanel>
 
     <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
@@ -117,6 +118,7 @@ import { canvasSizeItems } from "./orbatchart/sizes";
 import AccordionPanel from "@/components/AccordionPanel.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { activeScenarioKey } from "@/components/injects";
+import SettingsToe from "@/modules/charteditor/SettingsToe.vue";
 
 const props = defineProps({ chartMode: { type: Boolean, default: false } });
 

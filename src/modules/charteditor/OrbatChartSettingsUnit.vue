@@ -19,6 +19,9 @@
       <AccordionPanel label="Unit settings" default-open>
         <SettingsUnit :item-type="ChartItemTypes.Unit" />
       </AccordionPanel>
+      <AccordionPanel label="Equipment and personnel">
+        <SettingsToe :item-type="ChartItemTypes.Unit" />
+      </AccordionPanel>
     </div>
   </div>
 </template>
@@ -32,6 +35,7 @@ import { useChartSettings } from "./composables";
 import SettingsUnit from "./SettingsUnit.vue";
 import AccordionPanel from "../../components/AccordionPanel.vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import SettingsToe from "@/modules/charteditor/SettingsToe.vue";
 
 const currentUnitNode = useSelectedChartElementStore();
 const { clearSpecificOptions } = useChartSettings(ChartItemTypes.Unit);

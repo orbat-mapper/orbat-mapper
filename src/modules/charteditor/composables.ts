@@ -1,5 +1,6 @@
 import { type ChartItemType, ChartItemTypes, type ChartUnit } from "./orbatchart";
 import {
+  useChartSettingsStore,
   useMergedChartOptionsStore,
   useSelectedChartElementStore,
   useSpecificChartOptionsStore,
@@ -7,6 +8,7 @@ import {
 import { computed } from "vue";
 
 export function useChartSettings(chartElementType: ChartItemType) {
+  const options = useChartSettingsStore();
   const selectedElementStore = useSelectedChartElementStore();
   const specificOptionsStore = useSpecificChartOptionsStore();
 
@@ -19,6 +21,8 @@ export function useChartSettings(chartElementType: ChartItemType) {
         return mOptions.branch;
       case ChartItemTypes.Unit:
         return mOptions.unit;
+      case ChartItemTypes.Chart:
+        return options;
       default:
         return {};
     }
@@ -38,7 +42,8 @@ export function useChartSettings(chartElementType: ChartItemType) {
   });
 
   const elementOptions = computed(() => {
-    if (currentElement.value == null) return null;
+    if (currentElement.value == null && chartElementType !== ChartItemTypes.Chart)
+      return null;
     switch (chartElementType) {
       case ChartItemTypes.Level:
         return specificOptionsStore.level[currentElement.value as number];
@@ -46,13 +51,17 @@ export function useChartSettings(chartElementType: ChartItemType) {
         return specificOptionsStore.branch[currentElement.value as string | number];
       case ChartItemTypes.Unit:
         return specificOptionsStore.unit[(currentElement.value as ChartUnit).id] || null;
+      case ChartItemTypes.Chart:
+        return options.$state;
       default:
         return null;
     }
   });
 
   function setValue(name: string, value: any) {
-    if (currentElement.value == null) return;
+    if (currentElement.value == null) {
+      if (chartElementType !== ChartItemTypes.Chart) return;
+    }
     const opts = { ...(elementOptions.value || {}), [name]: value };
     switch (chartElementType) {
       case ChartItemTypes.Level:
@@ -63,6 +72,10 @@ export function useChartSettings(chartElementType: ChartItemType) {
         break;
       case ChartItemTypes.Unit:
         specificOptionsStore.unit[(currentElement.value as ChartUnit).id] = opts;
+        break;
+      case ChartItemTypes.Chart:
+        //@ts-ignore
+        options.$state[name] = value;
         break;
     }
   }
