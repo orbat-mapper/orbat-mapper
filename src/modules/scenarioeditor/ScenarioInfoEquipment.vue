@@ -78,16 +78,17 @@ function onItemAction(item: NEquipmentData, action: string) {
     <TableHeader
       title="Equipment"
       description="A list of equipment that is available in this scenario."
-      ><BaseButton @click="store.toggleAddEquipment()">{{
-        store.showAddEquipment ? "Hide form" : "Add"
-      }}</BaseButton></TableHeader
     >
+      <BaseButton @click="store.toggleAddEquipment()">
+        {{ store.showAddEquipment ? "Hide form" : "Add" }}
+      </BaseButton>
+    </TableHeader>
     <form
       v-if="store.showAddEquipment"
       @submit.prevent="onAddSubmit"
       class="not-prose grid grid-cols-3 gap-2"
     >
-      <InputGroup label="Name" required v-model="addForm.name" />
+      <InputGroup autofocus label="Name" required v-model="addForm.name" />
       <div class="col-span-2 flex items-start gap-3">
         <InputGroup class="" label="Description" v-model="addForm.description" />
         <BaseButton type="submit" small primary class="self-center">+Add</BaseButton>

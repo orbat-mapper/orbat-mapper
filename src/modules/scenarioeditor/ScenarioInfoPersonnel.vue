@@ -7,8 +7,11 @@ import TableHeader from "@/components/TableHeader.vue";
 import { NPersonnelData } from "@/types/internalModels";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useNotifications } from "@/composables/notifications";
+import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
+import InputGroup from "@/components/InputGroup.vue";
 
 const scn = injectStrict(activeScenarioKey);
+const store = useScenarioInfoPanelStore();
 const { send } = useNotifications();
 
 const personnel = computed(() => {
@@ -22,6 +25,7 @@ const itemActions = [
 
 const editedId = ref();
 const form = ref<Omit<NPersonnelData, "id">>({ name: "", description: "" });
+const addForm = ref<Omit<NPersonnelData, "id">>({ name: "", description: "" });
 
 function startEdit(data: NPersonnelData) {
   editedId.value = data.id;
@@ -36,14 +40,6 @@ function onSubmit() {
 
 function cancelEdit() {
   editedId.value = null;
-}
-
-function add() {
-  scn.unitActions.addPersonnel({
-    name: "New category",
-    description: "",
-  });
-  startEdit(personnel.value[personnel.value.length - 1]);
 }
 
 function onItemAction(item: NPersonnelData, action: string) {
@@ -62,6 +58,19 @@ function onItemAction(item: NPersonnelData, action: string) {
       break;
   }
 }
+
+function onAddSubmit() {
+  // check if name exists
+  if (personnel.value.find((e) => e.name === addForm.value.name)) {
+    send({
+      type: "error",
+      message: "Personnel category with this name already exists.",
+    });
+    return;
+  }
+  scn.unitActions.addPersonnel({ ...addForm.value });
+  addForm.value = { name: "", description: "" };
+}
 </script>
 
 <template>
@@ -69,8 +78,22 @@ function onItemAction(item: NPersonnelData, action: string) {
     <TableHeader
       title="Personnel"
       description="A list of personnel categories available in this scenario."
-      ><BaseButton @click="add()" primary>Add</BaseButton></TableHeader
     >
+      <BaseButton @click="store.toggleAddPersonnel()">
+        {{ store.showAddPersonnel ? "Hide form" : "Add" }}
+      </BaseButton>
+    </TableHeader>
+    <form
+      v-if="store.showAddPersonnel"
+      @submit.prevent="onAddSubmit"
+      class="not-prose grid grid-cols-3 gap-2"
+    >
+      <InputGroup autofocus label="Name" required v-model="addForm.name" />
+      <div class="col-span-2 flex items-start gap-3">
+        <InputGroup class="" label="Description" v-model="addForm.description" />
+        <BaseButton type="submit" small primary class="self-center">+Add</BaseButton>
+      </div>
+    </form>
     <form @submit.prevent="onSubmit">
       <table>
         <thead>
