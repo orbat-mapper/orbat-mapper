@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+August 2023
+
+- Add basic support for adding equipment and personnel to units.
+
 July 2023
 
 - Add basic range ring styling.
