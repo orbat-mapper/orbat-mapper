@@ -179,6 +179,8 @@ const actionItems: ActionItem[] = [
     label: "Export data",
     icon: "download",
   },
+  { action: "addEquipment", label: "Add new equipment", icon: "add" },
+  { action: "addPersonnel", label: "Add new personnel category", icon: "add" },
   { action: "exportToClipboard", label: "Copy scenario to clipboard" },
   { action: "addSide", label: "Add side", icon: "add" },
   { action: "addTileJSONLayer", label: "Add TileJSON map layer", icon: "add" },

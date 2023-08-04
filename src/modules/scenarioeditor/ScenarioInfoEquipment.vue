@@ -8,16 +8,15 @@ import { NEquipmentData } from "@/types/internalModels";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useNotifications } from "@/composables/notifications";
 import InputGroup from "@/components/InputGroup.vue";
-import { useToggle } from "@vueuse/core";
+import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
+const store = useScenarioInfoPanelStore();
 
 const equipment = computed(() => {
   return Object.values(scn.store.state.equipmentMap);
 });
-
-const [showAddEquipment, toggleAddEquipment] = useToggle(false);
 
 const itemActions = [
   { label: "Edit", action: "edit" },
@@ -79,12 +78,12 @@ function onItemAction(item: NEquipmentData, action: string) {
     <TableHeader
       title="Equipment"
       description="A list of equipment that is available in this scenario."
-      ><BaseButton @click="toggleAddEquipment()">{{
-        showAddEquipment ? "Hide form" : "Add"
+      ><BaseButton @click="store.toggleAddEquipment()">{{
+        store.showAddEquipment ? "Hide form" : "Add"
       }}</BaseButton></TableHeader
     >
     <form
-      v-if="showAddEquipment"
+      v-if="store.showAddEquipment"
       @submit.prevent="onAddSubmit"
       class="not-prose grid grid-cols-3 gap-2"
     >
