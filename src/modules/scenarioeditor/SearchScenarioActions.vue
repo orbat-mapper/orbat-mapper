@@ -6,7 +6,7 @@ import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
 import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
 import { useUiStore } from "@/stores/uiStore";
-import { useUnitActions } from "@/composables/scenarioActions";
+import { useToeActions, useUnitActions } from "@/composables/scenarioActions";
 import { getTransform } from "ol/proj";
 import { applyTransform } from "ol/extent";
 import { fromExtent as polygonFromExtent } from "ol/geom/Polygon";
@@ -19,7 +19,6 @@ import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import { fixExtent } from "@/utils/geoConvert";
 import { addMapLayer } from "@/modules/scenarioeditor/scenarioMapLayers";
-import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 
 const mapRef = injectStrict(activeMapKey);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -37,7 +36,6 @@ const {
   onScenarioAction,
 } = useSearchActions();
 const ui = useUiStore();
-const scenarioInfoPanelStore = useScenarioInfoPanelStore();
 
 const {
   selectedUnitIds,
@@ -45,10 +43,9 @@ const {
   activeUnitId,
   activeScenarioEventId,
   activeMapLayerId,
-  showScenarioInfo,
-  clear: clearSelected,
 } = useSelectedItems();
 const { onUnitAction } = useUnitActions();
+const toeActions = useToeActions();
 
 onUnitSelect(({ unitId }) => {
   ui.activeTabIndex = TAB_ORBAT;
@@ -108,16 +105,10 @@ onScenarioAction(({ action }) => {
     nextTick(() => {
       activeMapLayerId.value = newLayer.id;
     });
-  } else if (action === "addEquipment" || action === "addPersonnel") {
-    clearSelected();
-    showScenarioInfo.value = true;
-    if (action === "addEquipment") {
-      scenarioInfoPanelStore.tabIndex = 1;
-      scenarioInfoPanelStore.showAddEquipment = true;
-    } else {
-      scenarioInfoPanelStore.tabIndex = 2;
-      scenarioInfoPanelStore.showAddPersonnel = true;
-    }
+  } else if (action === "addEquipment") {
+    toeActions.goToAddEquipment();
+  } else if (action === "addPersonnel") {
+    toeActions.goToAddPersonnel();
   }
 });
 

@@ -15,6 +15,7 @@ import { FeatureId } from "@/types/scenarioGeoModels";
 import OLMap from "ol/Map";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 
 export function useUnitActions(
   options: Partial<{
@@ -173,4 +174,25 @@ export function useScenarioFeatureActions() {
   }
 
   return { onFeatureAction };
+}
+
+export function useToeActions() {
+  const { showScenarioInfo, clear: clearSelected } = useSelectedItems();
+  const scenarioInfoPanelStore = useScenarioInfoPanelStore();
+
+  function goToAddEquipment() {
+    clearSelected();
+    showScenarioInfo.value = true;
+    scenarioInfoPanelStore.tabIndex = 1;
+    scenarioInfoPanelStore.showAddEquipment = true;
+  }
+
+  function goToAddPersonnel() {
+    clearSelected();
+    showScenarioInfo.value = true;
+    scenarioInfoPanelStore.tabIndex = 2;
+    scenarioInfoPanelStore.showAddPersonnel = true;
+  }
+
+  return { goToAddEquipment, goToAddPersonnel };
 }

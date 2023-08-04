@@ -9,6 +9,7 @@ import { EntityId } from "@/types/base";
 import BaseButton from "@/components/BaseButton.vue";
 import TableHeader from "@/components/TableHeader.vue";
 import UnitToeItemTable from "@/modules/scenarioeditor/UnitToeItemTable.vue";
+import { useToeActions } from "@/composables/scenarioActions";
 
 interface Props {
   unit: NUnit;
@@ -24,7 +25,7 @@ const {
 } = injectStrict(activeScenarioKey);
 
 const { selectedUnitIds } = useSelectedItems();
-
+const toeActions = useToeActions();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 
 const aggregatedEquipment = shallowRef<EUnitEquipment[]>([]);
@@ -108,6 +109,11 @@ function deletePersonnel(personnelId: string) {
         >{{ showAddEquipment ? "Hide form" : "+ Add" }}
       </BaseButton>
     </TableHeader>
+    <p v-if="showAddEquipment" class="mt-2 text-right">
+      <button type="button" class="btn-link" @click="toeActions.goToAddEquipment()">
+        + Add new equipment type
+      </button>
+    </p>
     <UnitToeItemTable
       :items="aggregatedEquipment"
       :is-multi-mode="isMultiMode"
@@ -122,6 +128,11 @@ function deletePersonnel(personnelId: string) {
         showAddPersonnel ? "Hide form" : "+ Add"
       }}</BaseButton>
     </TableHeader>
+    <p v-if="showAddPersonnel" class="mt-2 text-right">
+      <button type="button" class="btn-link" @click="toeActions.goToAddPersonnel()">
+        + Add new personnel category
+      </button>
+    </p>
     <UnitToeItemTable
       :items="aggregatedPersonnel"
       :is-multi-mode="isMultiMode"
