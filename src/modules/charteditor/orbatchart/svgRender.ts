@@ -249,25 +249,27 @@ export function createUnitGroup(
 
   if (options.showPersonnel || options.showEquipment) {
     const { aggregatedPersonnel, aggregatedEquipment } = aggregateData(unitNode.unit);
-    if (options.showPersonnel) {
+    if (options.showPersonnel && aggregatedPersonnel.length) {
       const sum = aggregatedPersonnel.reduce((acc, p) => acc + p.count, 0);
       const label = aggregatedPersonnel.map((p) => `${p.count}`).join("/");
+      y += 25;
       const text = g
         .append("text")
         .attr("x", x)
         .attr("dy", dy)
-        .attr("y", y + 25)
+        .attr("y", y)
         .attr("class", classes)
         .text(`${label}  (${sum})`);
     }
 
     if (options.showEquipment && (isLastLevel || !unitNode.unit.subUnits?.length)) {
+      y += 25;
       aggregatedEquipment.forEach((e, idx) => {
         const text = g
           .append("text")
           .attr("x", x)
           .attr("dy", dy)
-          .attr("y", y + 50 + idx * 20)
+          .attr("y", y + idx * 20)
           .attr("class", classes)
           .text(`${e.count} x ${e.name}`);
         text.attr("font-size", `${options.fontSize * 0.9}pt`);
