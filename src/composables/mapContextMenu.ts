@@ -12,7 +12,7 @@ import { useUiStore } from "@/stores/uiStore";
 
 export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
   const { send } = useNotifications();
-  const { copy: copyToClipboard, copied } = useClipboard();
+  const { copy: copyToClipboard } = useClipboard();
 
   function onContextMenu(e: MouseEvent) {
     e.preventDefault();
@@ -144,6 +144,14 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
               ],
             },
           ],
+        },
+        {
+          label: "Show toolbar",
+          checked: computed(() => uiSettings.showToolbar) as unknown as boolean,
+          clickClose: false,
+          onClick: () => {
+            uiSettings.showToolbar = !uiSettings.showToolbar;
+          },
         },
       ],
       zIndex: 3,
