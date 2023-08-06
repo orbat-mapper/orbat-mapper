@@ -60,7 +60,7 @@
         </section>
       </main>
       <footer
-        v-if="mapRef"
+        v-if="mapRef && ui.showToolbar"
         class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
       >
         <MapEditorMainToolbar

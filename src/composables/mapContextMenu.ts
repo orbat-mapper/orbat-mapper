@@ -8,6 +8,7 @@ import { IconCogOutline, IconMapMarker } from "@iconify-prerendered/vue-mdi";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import { useNotifications } from "@/composables/notifications";
 import { useClipboard } from "@vueuse/core";
+import { useUiStore } from "@/stores/uiStore";
 
 export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
   const { send } = useNotifications();
@@ -21,6 +22,7 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
     }
     const dropPosition = toLonLat(mapRef.value.getEventCoordinate(e));
     const settings = useMapSettingsStore();
+    const uiSettings = useUiStore();
     const formattedPosition = computed(() =>
       getCoordinateFormatFunction(settings.coordinateFormat)(dropPosition),
     );
@@ -47,6 +49,14 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
           label: "Map settings",
           icon: h(IconCogOutline, { class: "text-gray-500" }),
           children: [
+            {
+              label: "Show toolbar",
+              checked: computed(() => uiSettings.showToolbar) as unknown as boolean,
+              clickClose: false,
+              onClick: () => {
+                uiSettings.showToolbar = !uiSettings.showToolbar;
+              },
+            },
             {
               label: "Show cursor location",
               checked: computed(() => settings.showLocation) as unknown as boolean,
