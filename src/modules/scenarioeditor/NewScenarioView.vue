@@ -243,6 +243,7 @@ function create() {
   newScenario.value.name = form.name;
   newScenario.value.description = form.description;
   newScenario.value.layers = [{ name: "Features", id: nanoid(), features: [] }];
+  newScenario.value.timeZone = timeZone.value;
 
   scenario.value.io.loadFromObject(newScenario.value);
   scenario.value.time.setCurrentTime(startTime);
