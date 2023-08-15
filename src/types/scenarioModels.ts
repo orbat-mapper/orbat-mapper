@@ -1,6 +1,7 @@
 import type {
   Position,
   RangeRing,
+  RangeRingGroup,
   ScenarioLayer,
   ScenarioMapLayer,
 } from "./scenarioGeoModels";
@@ -140,7 +141,7 @@ export interface ScenarioInfo {
 }
 
 export type SymbologyStandard = "2525" | "app6";
-export type ScenarioVersion = "0.10.0" | "0.9.0" | "0.8.0" | "0.7.0" | "0.6.0";
+export type ScenarioVersion = "0.11.0" | "0.10.0" | "0.9.0" | "0.8.0" | "0.7.0" | "0.6.0";
 
 export interface EquipmentData {
   name: string;
@@ -153,6 +154,10 @@ export interface PersonnelData {
   description?: string;
 }
 
+export interface ScenarioSettings {
+  rangeRingGroups: RangeRingGroup[];
+}
+
 export interface Scenario extends ScenarioInfo {
   type: "ORBAT-mapper";
   version: ScenarioVersion;
@@ -162,6 +167,7 @@ export interface Scenario extends ScenarioInfo {
   mapLayers: ScenarioMapLayer[];
   equipment?: EquipmentData[];
   personnel?: PersonnelData[];
+  settings?: ScenarioSettings;
 }
 
 export type UnitOrSide = Unit | Side;

@@ -120,6 +120,12 @@ export interface RangeRing {
   uom: "m" | "km" | "ft" | "mi" | "nmi";
   hidden?: boolean;
   style?: Partial<RangeRingStyle>;
+  group?: string;
+}
+
+export interface RangeRingGroup {
+  name: string;
+  style?: Partial<RangeRingStyle>;
 }
 
 export interface RangeRingStyle extends StrokeStyleSpec, FillStyleSpec {}

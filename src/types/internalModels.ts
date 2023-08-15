@@ -12,6 +12,7 @@ import {
 import { EntityId } from "./base";
 import {
   FeatureId,
+  RangeRingGroup,
   ScenarioFeature,
   ScenarioImageLayer,
   ScenarioLayer,
@@ -95,6 +96,9 @@ export interface ScenarioEventUpdate extends Partial<Omit<NScenarioEvent, "id">>
 export interface NOrbatItemData {
   unit: NUnit;
   children: NOrbatItemData[];
+}
+export interface NRangeRingGroup extends RangeRingGroup {
+  id: string;
 }
 
 export interface NEquipmentData extends EquipmentData {

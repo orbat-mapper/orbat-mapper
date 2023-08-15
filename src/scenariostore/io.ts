@@ -20,7 +20,11 @@ import { ShallowRef } from "vue";
 import { isLoading } from "@/scenariostore/index";
 import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
 import dayjs from "dayjs";
-import { type ScenarioLayer, ScenarioMapLayer } from "@/types/scenarioGeoModels";
+import {
+  RangeRingGroup,
+  type ScenarioLayer,
+  ScenarioMapLayer,
+} from "@/types/scenarioGeoModels";
 import { type EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
 import { LOCALSTORAGE_KEY, SCENARIO_FILE_VERSION } from "@/config/constants";
@@ -43,6 +47,7 @@ export function createEmptyScenario(): Scenario {
     events: [],
     layers: [{ id: nanoid(), name: "Features", features: [] }],
     mapLayers: [],
+    settings: { rangeRingGroups: [] },
   };
 }
 
@@ -69,12 +74,17 @@ function getSides(state: ScenarioState): Side[] {
       return { name, count };
     });
     if (personnel?.length === 0) personnel = undefined;
+    let rangeRings = nUnit.rangeRings?.map(({ group, ...rest }) => {
+      return group ? { group: state.rangeRingGroupMap[group].name, ...rest } : rest;
+    });
+    if (rangeRings?.length === 0) rangeRings = undefined;
 
     return {
       ...nUnit,
       subUnits: nUnit.subUnits.map((subUnitId) => getUnit(subUnitId)),
       equipment,
       personnel,
+      rangeRings,
     };
   }
 
@@ -119,6 +129,10 @@ function getPersonnel(state: ScenarioState): PersonnelData[] {
   }));
 }
 
+function getRangeRingGroups(state: ScenarioState): RangeRingGroup[] {
+  return Object.values(state.rangeRingGroupMap).map(({ id, ...rest }) => rest);
+}
+
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   const settingsStore = useSymbolSettingsStore();
 
@@ -134,6 +148,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       mapLayers: getMapLayers(state),
       equipment: getEquipment(state),
       personnel: getPersonnel(state),
+      settings: { rangeRingGroups: getRangeRingGroups(state) },
     };
   }
 

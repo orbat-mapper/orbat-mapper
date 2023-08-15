@@ -67,13 +67,8 @@ A raster map layer consists of one or more raster images. Typical raster map sou
 Feature layers consists of one or more _features_. A feature is a styled point, line or polygon on the map.
 
 [//]: # "## Events"
-
 [//]: #
-
 [//]: # "How you organize a scenario is up to you. One example is the Falklands demo scenario. It consists of two sides, Great"
-
 [//]: # "Britain and Argentina."
-
 [//]: #
-
 [//]: # "![](images/sides-and-groups.png)"

@@ -16,6 +16,7 @@ import type { EntityId } from "@/types/base";
 import type {
   NEquipmentData,
   NPersonnelData,
+  NRangeRingGroup,
   NScenarioEvent,
   NScenarioFeature,
   NScenarioLayer,
@@ -28,6 +29,8 @@ import type {
 import { useScenarioTime } from "./time";
 import type {
   FeatureId,
+  RangeRing,
+  RangeRingGroup,
   ScenarioMapLayer,
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
@@ -52,6 +55,7 @@ export interface ScenarioState {
   getUnitById: (id: EntityId) => NUnit;
   getSideById: (id: EntityId) => NSide;
   getSideGroupById: (id: EntityId) => NSideGroup;
+  rangeRingGroupMap: Record<string, NRangeRingGroup>;
 }
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
@@ -69,9 +73,11 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const mapLayerMap: Record<FeatureId, ScenarioMapLayer> = {};
   const equipmentMap: Record<string, NEquipmentData> = {};
   const personnelMap: Record<string, NPersonnelData> = {};
+  const rangeRingGroupMap: Record<string, NRangeRingGroup> = {};
 
   const tempEquipmentIdMap: Record<string, string> = {};
   const tempPersonnelIdMap: Record<string, string> = {};
+  const tempRangeRingGroupIdMap: Record<string, string> = {};
 
   scenario.events.forEach((e) => {
     const nEvent: NScenarioEvent = {
@@ -130,6 +136,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     unit._sid = side.id;
     const equipment: NUnitEquipment[] = [];
     const personnel: NUnitPersonnel[] = [];
+    const rangeRings: RangeRing[] = [];
 
     unit.equipment?.forEach(({ name, count }) => {
       const id = tempEquipmentIdMap[name] || addEquipment({ name });
@@ -141,11 +148,23 @@ function prepareScenario(scenario: Scenario): ScenarioState {
       personnel.push({ id, count });
     });
 
+    unit.rangeRings?.forEach((rr) => {
+      const { group, style, ...rest } = rr;
+      if (group) {
+        const groupId =
+          tempRangeRingGroupIdMap[group] || addRangeRingGroup({ name: group });
+        rangeRings.push({ ...rest, group: groupId });
+      } else {
+        rangeRings.push(rr);
+      }
+    });
+
     unitMap[unit1.id] = {
       ...unit,
       subUnits: unit.subUnits?.map((u) => u.id) || [],
       equipment,
       personnel,
+      rangeRings,
     } as NUnit;
   }
 
@@ -155,6 +174,10 @@ function prepareScenario(scenario: Scenario): ScenarioState {
 
   scenario.personnel?.forEach((e) => {
     addPersonnel(e);
+  });
+
+  scenario.settings?.rangeRingGroups?.forEach((g) => {
+    addRangeRingGroup(g);
   });
 
   function addPersonnel(p: PersonnelData) {
@@ -168,6 +191,13 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     const id = nanoid();
     tempEquipmentIdMap[e.name] = id;
     equipmentMap[id] = { ...e, id };
+    return id;
+  }
+
+  function addRangeRingGroup(g: RangeRingGroup) {
+    const id = nanoid();
+    tempRangeRingGroupIdMap[g.name] = id;
+    rangeRingGroupMap[id] = { ...g, id };
     return id;
   }
 
@@ -249,6 +279,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     events,
     equipmentMap,
     personnelMap,
+    rangeRingGroupMap,
     getUnitById(id: EntityId) {
       return this.unitMap[id];
     },
