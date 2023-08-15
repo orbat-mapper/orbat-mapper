@@ -40,7 +40,7 @@ export function createEmptyScenario(): Scenario {
     version: SCENARIO_FILE_VERSION,
     name: "New scenario",
     description: "Empty scenario description",
-    startTime: new Date().getTime(),
+    startTime: new Date().setHours(12, 0, 0, 0),
     timeZone,
     symbologyStandard: symbolSettings.symbologyStandard,
     sides: [],
