@@ -18,14 +18,14 @@
       label="Font weight"
       :model-value="mergedOptions.fontWeight"
       @update:model-value="setValue('fontWeight', $event)"
-      :extra-class="!usedOptions.has('fontWeight') && 'sepia-[50%]'"
+      :class="!usedOptions.has('fontWeight') && 'sepia-[50%]'"
       :items="fontWeightItems"
     />
     <SimpleSelect
       label="Font style"
       :model-value="mergedOptions.fontStyle"
       @update:model-value="setValue('fontStyle', $event)"
-      :extra-class="!usedOptions.has('fontStyle') && 'sepia-[50%]'"
+      :class="!usedOptions.has('fontStyle') && 'sepia-[50%]'"
       :items="fontStyleItems"
     />
     <InputGroup
@@ -46,7 +46,7 @@
       label="Label placement"
       :model-value="mergedOptions.labelPlacement"
       @update:model-value="setValue('labelPlacement', $event)"
-      :extra-class="!usedOptions.has('labelPlacement') && 'sepia-[50%]'"
+      :class="!usedOptions.has('labelPlacement') && 'sepia-[50%]'"
       :items="labelPlacementItems"
     />
     <ToggleField
