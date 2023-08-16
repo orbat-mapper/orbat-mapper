@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="class">
     <label :for="id || computedId" class="block text-sm font-medium text-gray-700">
       <slot name="label">{{ label }}</slot>
     </label>
@@ -30,6 +30,7 @@ export default defineComponent({
     description: String,
     modelValue: [String, Number],
     autofocus: Boolean,
+    class: String,
   },
   emits: ["update:modelValue"],
   inheritAttrs: false,
