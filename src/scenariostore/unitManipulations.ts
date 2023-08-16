@@ -23,7 +23,7 @@ import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
 import type { State, StateAdd, Unit, UnitSymbolOptions } from "@/types/scenarioModels";
-import { Position, RangeRing } from "@/types/scenarioGeoModels";
+import { Position, RangeRing, RangeRingGroup } from "@/types/scenarioGeoModels";
 import { getNextEchelonBelow } from "@/symbology/helpers";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
@@ -640,6 +640,25 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function updateRangeRingGroup(groupId: string, data: Partial<RangeRingGroup>) {
+    update((s) => {
+      const group = s.rangeRingGroupMap[groupId];
+      if (!group) return;
+      Object.assign(group, data);
+    });
+  }
+
+  function addRangeRingGroup(data: Partial<RangeRingGroup>) {
+    const newGroup = { id: nanoid(), name: "Group", ...klona(data) };
+    if (newGroup.id === undefined) {
+      newGroup.id = nanoid();
+    }
+    const newId = newGroup.id;
+    update((s) => {
+      s.rangeRingGroupMap[newId] = newGroup;
+    });
+  }
+
   function updateEquipment(id: string, data: EquipmentDataUpdate) {
     update((s) => {
       const equipment = s.equipmentMap[id];
@@ -685,6 +704,21 @@ export function useUnitManipulations(store: NewScenarioStore) {
     if (isUsed) return false;
     update((s) => {
       delete s.personnelMap[id];
+    });
+    return true;
+  }
+
+  function deleteRangeRingGroup(id: string): boolean {
+    // check if range ring group is used
+    const isUsed = Object.values(state.unitMap).some((unit) => {
+      if (unit.rangeRings) {
+        return unit.rangeRings.some((e) => e.group === id);
+      }
+      return false;
+    });
+    if (isUsed) return false;
+    update((s) => {
+      delete s.rangeRingGroupMap[id];
     });
     return true;
   }
@@ -791,6 +825,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
     addRangeRing,
     deleteRangeRing,
     updateRangeRing,
+    updateRangeRingGroup,
+    addRangeRingGroup,
+    deleteRangeRingGroup,
     updateEquipment,
     addEquipment,
     updatePersonnel,

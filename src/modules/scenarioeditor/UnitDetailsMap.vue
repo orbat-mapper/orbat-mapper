@@ -13,6 +13,8 @@ import { MenuItemData } from "@/components/types";
 import { RangeRingAction, RangeRingActions } from "@/types/constants";
 import DotsMenu from "@/components/DotsMenu.vue";
 import RingStylePopover from "@/modules/scenarioeditor/RingStylePopover.vue";
+import SimpleSelect from "@/components/SimpleSelect.vue";
+import { useToeActions } from "@/composables/scenarioActions";
 
 interface Props {
   unit: NUnit;
@@ -21,13 +23,26 @@ interface Props {
 const props = defineProps<Props>();
 
 const activeScenario = injectStrict(activeScenarioKey);
-const { unitActions } = activeScenario;
+const { unitActions, store } = activeScenario;
+const toeActions = useToeActions();
 
-const editedRangeRing = ref<RangeRing>({ name: "", range: 0, uom: "km" });
+const editedRangeRing = ref<RangeRing>({
+  name: "",
+  range: 0,
+  uom: "km",
+  group: undefined,
+});
 const editedIndex = ref(-1);
 
 const rangeRings = computed(() => {
   return props.unit.rangeRings ?? [];
+});
+
+const groupItems = computed(() => {
+  return Object.values(store.state.rangeRingGroupMap).map((g) => ({
+    label: g.name,
+    value: g.id,
+  }));
 });
 
 const ringMenuItems: MenuItemData<RangeRingAction>[] = [
@@ -43,8 +58,24 @@ function addRangeRing() {
     name: "New range ring",
     range: 2,
     uom: "km",
+    group: null,
   });
   editRing(props.unit.rangeRings!.length - 1);
+}
+
+function getGroupName(ring: RangeRing) {
+  if (!ring.group) return "None";
+  return store.state.rangeRingGroupMap[ring.group]?.name || "None";
+}
+
+function getRingStyle(ring: RangeRing) {
+  if (ring.group) {
+    const group = store.state.rangeRingGroupMap[ring.group];
+    if (group) {
+      return group.style || {};
+    }
+  }
+  return ring.style || {};
 }
 
 function deleteRing(index: number) {
@@ -65,19 +96,27 @@ function toggleRingVisibility(ring: RangeRing, index: number) {
 
 function updateRing() {
   if (editedIndex.value < 0 || !editedRangeRing.value) return;
-  const { name, range, uom } = editedRangeRing.value;
+  const { name, range, uom, group } = editedRangeRing.value;
 
   unitActions.updateRangeRing(props.unit.id, editedIndex.value, {
     name,
     range: +range,
     uom,
+    group,
   });
   editedIndex.value = -1;
-  editedRangeRing.value = { name: "", range: 0, uom: "km" };
+  editedRangeRing.value = { name: "", range: 0, uom: "km", group: null };
 }
 
 function updateRingStyle(ring: RangeRing, index: number, style: Partial<RangeRingStyle>) {
-  unitActions.updateRangeRing(props.unit.id, index, { style });
+  if (ring.group) {
+    const group = store.state.rangeRingGroupMap[ring.group];
+    if (group) {
+      unitActions.updateRangeRingGroup(ring.group, { style });
+    }
+  } else {
+    unitActions.updateRangeRing(props.unit.id, index, { style });
+  }
 }
 
 function onRangeRingAction(action: RangeRingAction, index: number) {
@@ -128,6 +167,12 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
         >
           Visible
         </th>
+        <th
+          scope="col"
+          class="w-20 whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+        >
+          Group
+        </th>
         <th class="w-0"></th>
       </tr>
     </thead>
@@ -139,13 +184,18 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
         class="group"
       >
         <template v-if="index === editedIndex">
-          <td colspan="4">
+          <td colspan="5">
             <form
-              @submit.prevent="updateRing()"
-              class="mt-2 flex flex-col gap-4 rounded border border-gray-300 bg-gray-50 p-2 py-4"
+              @submit.prevent.stop="updateRing()"
+              class="mt-2 grid grid-cols-2 gap-4 rounded border border-gray-300 bg-gray-50 p-2 py-4"
             >
-              <InputGroup autofocus label="Name" v-model="editedRangeRing.name" />
-              <InputGroupTemplate label="Range" v-slot="{ id }" class="">
+              <InputGroup
+                class="col-span-2"
+                autofocus
+                label="Name"
+                v-model="editedRangeRing.name"
+              />
+              <InputGroupTemplate label="Range" v-slot="{ id }" class="col-span-1">
                 <div class="relative rounded-md shadow-sm">
                   <input
                     type="text"
@@ -169,13 +219,24 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
                   </div>
                 </div>
               </InputGroupTemplate>
+              <SimpleSelect
+                add-none
+                class="col-span-1"
+                label="Group"
+                v-model="editedRangeRing.group"
+                :items="groupItems"
+              />
 
-              <div class="flex items-center justify-end">
-                <BaseButton type="submit" secondary small>Update</BaseButton>
-
-                <BaseButton small type="button" class="ml-2" @click="editedIndex = -1">
-                  Cancel
-                </BaseButton>
+              <div class="col-span-2 flex items-center justify-between">
+                <button type="button" class="btn-link" @click="toeActions.goToAddGroup()">
+                  + Add new group
+                </button>
+                <div>
+                  <BaseButton type="submit" secondary small>Update</BaseButton>
+                  <BaseButton small type="button" class="ml-2" @click="editedIndex = -1">
+                    Cancel
+                  </BaseButton>
+                </div>
               </div>
             </form>
           </td>
@@ -195,9 +256,10 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
               @change="toggleRingVisibility(ring, index)"
             />
           </td>
+          <td class="px-2 text-sm">{{ getGroupName(ring) }}</td>
           <td class="flex items-center">
             <RingStylePopover
-              :ring-style="ring.style || {}"
+              :ring-style="getRingStyle(ring)"
               @update="updateRingStyle(ring, index, $event)"
             />
             <DotsMenu

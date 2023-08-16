@@ -194,5 +194,12 @@ export function useToeActions() {
     scenarioInfoPanelStore.showAddPersonnel = true;
   }
 
-  return { goToAddEquipment, goToAddPersonnel };
+  function goToAddGroup() {
+    clearSelected();
+    showScenarioInfo.value = true;
+    scenarioInfoPanelStore.tabIndex = 3;
+    scenarioInfoPanelStore.showAddGroup = true;
+  }
+
+  return { goToAddEquipment, goToAddPersonnel, goToAddGroup };
 }

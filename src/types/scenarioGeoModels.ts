@@ -120,7 +120,7 @@ export interface RangeRing {
   uom: "m" | "km" | "ft" | "mi" | "nmi";
   hidden?: boolean;
   style?: Partial<RangeRingStyle>;
-  group?: string;
+  group?: string | null;
 }
 
 export interface RangeRingGroup {

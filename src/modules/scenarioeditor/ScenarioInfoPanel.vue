@@ -5,12 +5,13 @@
       @update-value="updateScenarioInfo({ name: $event })"
     />
     <TabWrapper
-      :tab-list="['Details', 'Equipment', 'Personnel']"
+      :tab-list="['Details', 'Equipment', 'Personnel', 'Groups']"
       v-model="panelStore.tabIndex"
     >
       <TabPanel><ScenarioInfoDetails /></TabPanel>
       <TabPanel><ScenarioInfoEquipment /></TabPanel>
       <TabPanel><ScenarioInfoPersonnel /></TabPanel>
+      <TabPanel><ScenarioInfoGroups /></TabPanel>
     </TabWrapper>
   </div>
 </template>
@@ -27,6 +28,7 @@ import { TabPanel } from "@headlessui/vue";
 import ScenarioInfoEquipment from "@/modules/scenarioeditor/ScenarioInfoEquipment.vue";
 import ScenarioInfoPersonnel from "@/modules/scenarioeditor/ScenarioInfoPersonnel.vue";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
+import ScenarioInfoGroups from "@/modules/scenarioeditor/ScenarioInfoGroups.vue";
 
 const { store } = injectStrict(activeScenarioKey);
 const { state } = store;
