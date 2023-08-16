@@ -2,7 +2,7 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { circle, union } from "@turf/turf";
+import { circle, clusterEach, union } from "@turf/turf";
 import { featureCollection } from "@turf/helpers";
 import { GeoJSON } from "ol/format";
 import { NUnit } from "@/types/internalModels";
@@ -36,17 +36,24 @@ export function useRangeRingsLayer() {
         .flat(),
     );
 
-    if (rangeRings.features.length === 0) return;
-
-    /*
-    const mergedRangeRings = gjf.readFeature(
-      rangeRings.features.length > 1 ? union(rangeRings) : rangeRings.features[0],
+    const unGrouped = featureCollection(
+      rangeRings.features.filter((r) => !r.properties.isGroup),
+    );
+    const grouped = featureCollection(
+      rangeRings.features.filter((r) => r.properties.isGroup),
     );
 
-    layer.getSource()?.addFeature(mergedRangeRings);
-    */
+    clusterEach(grouped, "id", (cluster) => {
+      const merged =
+        cluster.features.length > 1
+          ? union(cluster, {
+              properties: { id: cluster.features[0].properties.id, isGroup: true },
+            })
+          : cluster.features[0];
+      layer.getSource()?.addFeature(gjf.readFeature(merged));
+    });
 
-    layer.getSource()?.addFeatures(gjf.readFeatures(rangeRings));
+    layer.getSource()?.addFeatures(gjf.readFeatures(unGrouped));
   }
 
   return { rangeLayer: layer, drawRangeRings };
@@ -58,7 +65,7 @@ function createRangeRings(unit: NUnit) {
       ?.filter((r) => !(r.hidden ?? false))
       .map((r, i) =>
         circle(unit._state!.location!, convertToMetric(r.range, r.uom || "km") / 1000, {
-          properties: { id: `${unit.id}-${i}` },
+          properties: { id: r.group ? r.group : `${unit.id}-${i}`, isGroup: !!r.group },
         }),
       ) || []
   );
@@ -90,14 +97,22 @@ function useRangeRingStyles(scn: TScenario) {
     const id = feature.get("id");
     let style = styleCache.get(id);
     if (!style) {
-      const parts = id.split("-");
-      const index = parts.pop();
-      const unitId = parts.join("-");
-      const unit = scn.store.state.getUnitById(unitId);
-      const ring = unit.rangeRings?.[index];
-      style = ring?.style
-        ? createSimpleStyle({ fill: null, stroke: "red", ...ring.style })
-        : defaultStyle;
+      const isGroup = feature.get("isGroup");
+      if (isGroup) {
+        const groupStyle = scn.store.state.rangeRingGroupMap[id]?.style;
+        style = groupStyle
+          ? createSimpleStyle({ fill: null, stroke: "red", ...groupStyle })
+          : defaultStyle;
+      } else {
+        const parts = id.split("-");
+        const index = parts.pop();
+        const unitId = parts.join("-");
+        const unit = scn.store.state.getUnitById(unitId);
+        const ring = unit.rangeRings?.[index];
+        style = ring?.style
+          ? createSimpleStyle({ fill: null, stroke: "red", ...ring.style })
+          : defaultStyle;
+      }
       styleCache.set(id, style);
     }
     return style;

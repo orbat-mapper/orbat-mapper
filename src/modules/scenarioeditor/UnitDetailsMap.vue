@@ -113,6 +113,7 @@ function updateRingStyle(ring: RangeRing, index: number, style: Partial<RangeRin
     const group = store.state.rangeRingGroupMap[ring.group];
     if (group) {
       unitActions.updateRangeRingGroup(ring.group, { style });
+      unitActions.updateRangeRing(props.unit.id, index, { style });
     }
   } else {
     unitActions.updateRangeRing(props.unit.id, index, { style });
