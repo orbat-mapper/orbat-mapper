@@ -644,7 +644,15 @@ export function useUnitManipulations(store: NewScenarioStore) {
     update((s) => {
       const group = s.rangeRingGroupMap[groupId];
       if (!group) return;
-      Object.assign(group, data);
+      const { style, ...rest } = data;
+      Object.assign(group, rest);
+      if (style) {
+        if (group.style) {
+          Object.assign(group.style!, style);
+        } else {
+          group.style = style;
+        }
+      }
     });
   }
 
