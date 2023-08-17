@@ -1,6 +1,6 @@
 {
   "type": "ORBAT-mapper",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
   "timeZone": "Atlantic/Stanley",
@@ -1886,5 +1886,15 @@
     }
   ],
   "equipment": [],
-  "personnel": []
+  "personnel": [],
+  "settings": {
+    "rangeRingGroups": [
+      {
+        "name": "GR1"
+      },
+      {
+        "name": "GR2"
+      }
+    ]
+  }
 }

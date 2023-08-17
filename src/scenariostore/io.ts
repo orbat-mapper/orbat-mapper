@@ -29,12 +29,21 @@ import { type EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
 import { LOCALSTORAGE_KEY, SCENARIO_FILE_VERSION } from "@/config/constants";
 
-export function createEmptyScenario(): Scenario {
+export interface CreateEmptyScenarioOptions {
+  addGroups?: boolean;
+}
+
+export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): Scenario {
+  const addGroups = options.addGroups ?? false;
   const symbolSettings = useSymbolSettingsStore();
   let timeZone;
   try {
     timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   } catch (e) {}
+  const rangeRingGroups: RangeRingGroup[] = addGroups
+    ? [{ name: "GR1" }, { name: "GR2" }]
+    : [];
+
   return {
     type: "ORBAT-mapper",
     version: SCENARIO_FILE_VERSION,
@@ -47,7 +56,7 @@ export function createEmptyScenario(): Scenario {
     events: [],
     layers: [{ id: nanoid(), name: "Features", features: [] }],
     mapLayers: [],
-    settings: { rangeRingGroups: [] },
+    settings: { rangeRingGroups },
   };
 }
 

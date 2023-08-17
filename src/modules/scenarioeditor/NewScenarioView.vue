@@ -210,7 +210,7 @@ interface NewScenarioForm extends ScenarioInfo {
 
 const noInitialOrbat = ref(false);
 
-const newScenario = ref(createEmptyScenario());
+const newScenario = ref(createEmptyScenario({ addGroups: true }));
 const timeZone = ref(newScenario.value.timeZone || "UTC");
 const { year, month, day, hour, minute, resDateTime } = useYMDElements({
   timestamp: newScenario.value.startTime!,
