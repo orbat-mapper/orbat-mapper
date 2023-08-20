@@ -97,13 +97,13 @@
       @keyup.t="openTimeDialog"
       @keyup.s="ui.showSearch = true"
     />
+    <ScenarioTimeline v-if="ui.showTimeline" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onActivated, onUnmounted, provide, ShallowRef, shallowRef } from "vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
-import { useNotifications } from "@/composables/notifications";
 import {
   activeFeatureSelectInteractionKey,
   activeMapKey,
@@ -137,6 +137,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
+import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
 
 const emit = defineEmits(["showExport", "showLoad"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -145,8 +146,6 @@ const { getModalTimestamp } = injectStrict(timeModalKey);
 const { state, update } = activeScenario.store;
 
 const {
-  unitActions,
-  io,
   time: { setCurrentTime, add, subtract, goToNextScenarioEvent, goToPrevScenarioEvent },
 } = activeScenario;
 const toolbarStore = useMainToolbarStore();
@@ -198,8 +197,6 @@ const showDetailsPanel = computed(() => {
       showScenarioInfo.value,
   );
 });
-
-const { send } = useNotifications();
 
 onUnmounted(() => {
   activeUnitStore.clearActiveUnit();

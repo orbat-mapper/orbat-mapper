@@ -153,6 +153,14 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
             uiSettings.showToolbar = !uiSettings.showToolbar;
           },
         },
+        {
+          label: "Show timeline",
+          checked: computed(() => uiSettings.showTimeline) as unknown as boolean,
+          clickClose: false,
+          onClick: () => {
+            uiSettings.showTimeline = !uiSettings.showTimeline;
+          },
+        },
       ],
       zIndex: 3,
       minWidth: 230,
