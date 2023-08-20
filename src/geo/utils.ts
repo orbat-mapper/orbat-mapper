@@ -6,11 +6,11 @@ import type { MeasurementUnit } from "@/composables/geoMeasurement";
 
 const s = useMapSettingsStore();
 
-export function formatDateString(value?: number, timeZone?: string) {
+export function formatDateString(value?: number, timeZone?: string, template?: string) {
   if (value === undefined || value === null) return "";
-  if (timeZone) return dayjs(value).tz(timeZone).format();
+  if (timeZone) return dayjs(value).tz(timeZone).format(template);
 
-  return dayjs.utc(value).format();
+  return dayjs.utc(value).format(template);
 }
 
 export function formatPosition(value?: number[]) {

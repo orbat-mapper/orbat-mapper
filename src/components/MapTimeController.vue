@@ -5,7 +5,7 @@
       class="pointer-events-none font-mono text-xl font-bold sm:text-2xl"
       style="text-shadow: white 0 0 5px"
     >
-      {{ formatDateString(state.currentTime, state.info.timeZone) }}
+      {{ formatDateString(state.currentTime, state.info.timeZone, "YYYY-MM-DDTHH:MM") }}
     </p>
     <BaseToolbar v-if="showControls">
       <ToolbarButton @click="emit('open-time-modal')" start>
