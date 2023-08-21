@@ -6,12 +6,13 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { utcDay, utcHour } from "d3-time";
 import { utcFormat } from "d3-time-format";
+import dayjs from "dayjs";
 
 const MS_PER_HOUR = 3600 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
 
 const {
-  time: { scenarioTime, setCurrentTime, utcTime },
+  time: { scenarioTime, setCurrentTime, utcTime, timeZone },
   store,
 } = injectStrict(activeScenarioKey);
 
@@ -39,6 +40,8 @@ const majorWidth = ref(100);
 const minorWidth = computed(() => majorWidth.value / 4);
 const currentTimestamp = ref(0);
 const animate = ref(false);
+const hoveredX = ref(0);
+const showHoverMarker = ref(false);
 
 const totalXOffset = computed(() => {
   return xOffset.value + draggedDiff.value;
@@ -119,9 +122,14 @@ function onPointerMove(evt: PointerEvent) {
 
 const throttledTimeUpdate = useThrottleFn(setCurrentTime, 0);
 function onHover(e: MouseEvent) {
-  // const [d, diff] = calculateDate(e.clientX);
-  // hoveredDate.value = d;
+  const { date } = calculateDate(e.clientX);
+  hoveredX.value = e.clientX;
+  hoveredDate.value = date;
 }
+
+const formattedHoveredDate = computed(() => {
+  return dayjs.utc(hoveredDate.value).tz(timeZone.value).format("YYYY-MM-DDTHH:mm:ss");
+});
 
 function onWheel(e: WheelEvent) {
   if (e.deltaY > 0) {
@@ -160,12 +168,14 @@ watchEffect(() => {
 <template>
   <div
     ref="el"
-    class="mb-2 w-full transform overflow-x-hidden border-t border-gray-500 bg-white text-sm transition-all"
+    class="mb-2 w-full transform select-none overflow-x-hidden border-t border-gray-500 bg-white text-sm transition-all"
     @pointerdown="onPointerDown"
     @pointerup="onPointerUp"
     @pointermove="onPointerMove"
     @wheel="onWheel"
     @mousemove="onHover"
+    @mouseenter="showHoverMarker = true"
+    @mouseleave="showHoverMarker = false"
   >
     <div class="flex h-3.5 items-center justify-center overflow-clip bg-gray-100">
       <IconTriangleDown class="h-4 w-4 scale-x-150 transform text-red-900" />
@@ -197,8 +207,16 @@ watchEffect(() => {
       </div>
     </div>
 
-    <!--    <p class="absolute bottom-0 right-0 hidden bg-white p-1 sm:block">-->
-    <!--      {{ xOffset }}, {{ totalXOffset }} {{ scenarioTime.toISOString() }}-->
-    <!--    </p>-->
+    <p
+      v-if="showHoverMarker && !isDragging"
+      class="absolute right-1 top-0 hidden select-none p-0 text-xs text-red-900 sm:block"
+    >
+      {{ formattedHoveredDate }}
+    </p>
+    <div
+      v-if="showHoverMarker"
+      class="absolute bottom-0 top-0 w-0.5 bg-red-500 bg-opacity-50"
+      :style="`left: ${hoveredX}px`"
+    ></div>
   </div>
 </template>
