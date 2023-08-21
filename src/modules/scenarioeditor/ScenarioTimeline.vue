@@ -67,12 +67,14 @@ function updateTicks(centerTime: Date, containerWidth: number, majorWidth: numbe
   }));
 }
 
-function calculateDate(x: number) {
+function calculatePixelDate(x: number) {
   const center = width.value / 2;
   const msPerPixel = (MS_PER_HOUR * 24) / majorWidth.value;
   const diff = x - center;
   const newDate = centerTimeStamp.value + diff * msPerPixel;
-  return { date: new Date(newDate), diff };
+  const date = new Date(newDate);
+  date.setUTCSeconds(0, 0);
+  return { date, diff };
 }
 
 let startX = 0;
@@ -90,7 +92,7 @@ function onPointerDown(evt: PointerEvent) {
 
 function onPointerUp(evt: PointerEvent) {
   if (!isDragging.value) {
-    const { date, diff } = calculateDate(evt.clientX);
+    const { date, diff } = calculatePixelDate(evt.clientX);
     animate.value = true;
     draggedDiff.value = -diff;
     setCurrentTime(date.valueOf());
@@ -122,7 +124,7 @@ function onPointerMove(evt: PointerEvent) {
 
 const throttledTimeUpdate = useThrottleFn(setCurrentTime, 0);
 function onHover(e: MouseEvent) {
-  const { date } = calculateDate(e.clientX);
+  const { date } = calculatePixelDate(e.clientX);
   hoveredX.value = e.clientX;
   hoveredDate.value = date;
 }
