@@ -7,6 +7,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { utcDay, utcHour } from "d3-time";
 import { utcFormat } from "d3-time-format";
 import dayjs from "dayjs";
+import { ScenarioEvent } from "@/types/scenarioModels";
 
 const MS_PER_HOUR = 3600 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
@@ -30,9 +31,15 @@ interface Tick {
   timestamp: number;
 }
 
+interface EventWithX {
+  x: number;
+  event: ScenarioEvent;
+}
+
 const hoveredDate = ref<Date | null>(null);
 const majorTicks = ref<Tick[]>([]);
 const minorTicks = ref<Tick[]>([]);
+const eventsWithX = ref<EventWithX[]>([]);
 const centerTimeStamp = ref(0);
 const xOffset = ref(0);
 const draggedDiff = ref(0);
@@ -43,12 +50,17 @@ const animate = ref(false);
 const hoveredX = ref(0);
 const showHoverMarker = ref(false);
 
+const timelineWidth = computed(() => {
+  return majorTicks.value.length * majorWidth.value;
+});
+
 const totalXOffset = computed(() => {
   return xOffset.value + draggedDiff.value;
 });
 
 function updateTicks(centerTime: Date, containerWidth: number, majorWidth: number) {
   const dayPadding = Math.ceil((containerWidth * 2) / majorWidth);
+  // const dayPadding = 4;
   const currentUtcDay = utcDay.floor(centerTime);
   const start = utcDay.offset(currentUtcDay, -dayPadding);
   const end = utcDay.offset(currentUtcDay, dayPadding);
@@ -65,6 +77,7 @@ function updateTicks(centerTime: Date, containerWidth: number, majorWidth: numbe
     label: hourFormatter(d),
     timestamp: +d,
   }));
+  return { minDate: start, maxDate: end };
 }
 
 function calculatePixelDate(x: number) {
@@ -141,6 +154,21 @@ function onWheel(e: WheelEvent) {
   }
 }
 
+const events = computed(() => store.state.events.map((id) => store.state.eventMap[id]));
+
+function updateEvents(minDate: Date, maxDate: Date) {
+  const minTs = +minDate;
+  const maxTs = +maxDate;
+  const msPerPixel = majorWidth.value / (MS_PER_HOUR * 24);
+  eventsWithX.value = events.value
+    .filter((e) => {
+      return e.startTime >= minTs && e.startTime <= maxTs;
+    })
+    .map((event) => {
+      return { x: (event.startTime - minTs + tzOffset * 60 * 1000) * msPerPixel, event };
+    });
+}
+
 watchEffect(() => {
   if (!width.value) return;
   const currentScenarioTimestamp = store.state.currentTime;
@@ -163,9 +191,15 @@ watchEffect(() => {
       (tt.getUTCHours() * 60 + tt.getUTCMinutes() + tzOffset + tt.getUTCSeconds() / 60) *
       (majorWidth.value / (24 * 60)) *
       -1;
-    updateTicks(tt, width.value, majorWidth.value);
+    const { minDate, maxDate } = updateTicks(tt, width.value, majorWidth.value);
+    updateEvents(minDate, maxDate);
   }
 });
+
+function onEventClick(event: ScenarioEvent) {
+  setCurrentTime(event.startTime);
+  // emit("event-click", event);
+}
 </script>
 <template>
   <div
@@ -187,6 +221,23 @@ watchEffect(() => {
       :class="animate ? 'transition-all' : 'transition-none'"
       :style="`transform:translate(${totalXOffset}px)`"
     >
+      <div class="flex justify-center">
+        <div
+          class="relative h-4 flex-none text-center"
+          :style="`width: ${timelineWidth}px`"
+        >
+          <button
+            v-for="{ x, event } in eventsWithX"
+            type="button"
+            :key="event.id"
+            class="absolute h-4 w-4 -translate-x-2 rounded-full border border-gray-500 bg-amber-500 hover:bg-red-900"
+            :style="`left: ${x}px;`"
+            @mousemove.stop
+            :title="event.title"
+            @click.stop="onEventClick(event)"
+          ></button>
+        </div>
+      </div>
       <div class="flex justify-center border-gray-300">
         <div
           v-for="tick in majorTicks"
@@ -217,7 +268,7 @@ watchEffect(() => {
     </p>
     <div
       v-if="showHoverMarker"
-      class="absolute bottom-0 top-0 w-0.5 bg-red-500 bg-opacity-50"
+      class="absolute bottom-0 top-0 hidden w-0.5 bg-red-500 bg-opacity-50 hover-hover:block"
       :style="`left: ${hoveredX}px`"
     ></div>
   </div>
