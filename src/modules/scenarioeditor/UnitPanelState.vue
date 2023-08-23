@@ -49,7 +49,11 @@
       </div>
 
       <div class="flex-0 relative flex items-center space-x-0">
-        <IconButton @click="changeToState(s)" class="bg-gray-50">
+        <IconButton
+          title="Goto Time and Place"
+          @click="changeToState(s)"
+          class="bg-gray-50"
+        >
           <IconCrosshairsGps class="h-5 w-5" aria-hidden="true" />
         </IconButton>
         <!--        <IconButton @click="deleteState(index)" class="bg-gray-50">-->

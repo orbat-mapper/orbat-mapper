@@ -161,24 +161,44 @@
         <RedoIcon class="h-6 w-6" />
       </MainToolbarButton>
       <div class="mx-1 hidden h-7 border-l-2 border-gray-300 sm:block" />
-      <MainToolbarButton class="hidden sm:block" @click="emit('open-time-modal')">
-        <span class="sr-only">Select time and date</span>
+      <MainToolbarButton
+        title="Select Time and Date"
+        class="hidden sm:block"
+        @click="emit('open-time-modal')"
+      >
+        <span class="sr-only">Select Time and Date</span>
         <CalendarIcon class="h-5 w-5" aria-hidden="true" />
       </MainToolbarButton>
-      <MainToolbarButton class="hidden sm:block" @click="emit('dec-day')">
-        <span class="sr-only">Previous</span>
+      <MainToolbarButton
+        title="Previous Day"
+        class="hidden sm:block"
+        @click="emit('dec-day')"
+      >
+        <span class="sr-only">Previous Day</span>
         <IconChevronLeft class="h-5 w-5" aria-hidden="true" />
       </MainToolbarButton>
-      <MainToolbarButton class="hidden sm:block" @click="emit('inc-day')">
-        <span class="sr-only">Next</span>
+      <MainToolbarButton
+        title="Next Day"
+        class="hidden sm:block"
+        @click="emit('inc-day')"
+      >
+        <span class="sr-only">Next Day</span>
         <IconChevronRight class="h-5 w-5" aria-hidden="true" />
       </MainToolbarButton>
-      <MainToolbarButton class="hidden sm:block" @click="emit('prev-event')">
-        <span class="sr-only">Previous event</span>
+      <MainToolbarButton
+        title="Previous Event"
+        class="hidden sm:block"
+        @click="emit('prev-event')"
+      >
+        <span class="sr-only">Previous Event</span>
         <IconSkipPrevious class="h-5 w-5" aria-hidden="true" />
       </MainToolbarButton>
-      <MainToolbarButton class="hidden sm:block" @click="emit('next-event')">
-        <span class="sr-only">Next event</span>
+      <MainToolbarButton
+        title="Next Event"
+        class="hidden sm:block"
+        @click="emit('next-event')"
+      >
+        <span class="sr-only">Next Event</span>
         <IconSkipNext class="h-5 w-5" aria-hidden="true" />
       </MainToolbarButton>
     </section>
