@@ -13,7 +13,7 @@ const MS_PER_HOUR = 3600 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
 
 const {
-  time: { scenarioTime, setCurrentTime, utcTime, timeZone },
+  time: { scenarioTime, setCurrentTime, timeZone },
   store,
 } = injectStrict(activeScenarioKey);
 
@@ -44,7 +44,19 @@ const centerTimeStamp = ref(0);
 const xOffset = ref(0);
 const draggedDiff = ref(0);
 const majorWidth = ref(100);
-const minorWidth = computed(() => majorWidth.value / 4);
+const minorStep = computed(() => {
+  if (majorWidth.value < 180) {
+    return 6;
+  }
+  if (majorWidth.value < 300) {
+    return 4;
+  }
+  if (majorWidth.value < 500) {
+    return 2;
+  }
+  return 1;
+});
+const minorWidth = computed(() => majorWidth.value / (24 / minorStep.value));
 const currentTimestamp = ref(0);
 const animate = ref(false);
 const hoveredX = ref(0);
@@ -58,7 +70,12 @@ const totalXOffset = computed(() => {
   return xOffset.value + draggedDiff.value;
 });
 
-function updateTicks(centerTime: Date, containerWidth: number, majorWidth: number) {
+function updateTicks(
+  centerTime: Date,
+  containerWidth: number,
+  majorWidth: number,
+  minorStep: number,
+) {
   const dayPadding = Math.ceil((containerWidth * 2) / majorWidth);
   // const dayPadding = 4;
   const currentUtcDay = utcDay.floor(centerTime);
@@ -72,7 +89,7 @@ function updateTicks(centerTime: Date, containerWidth: number, majorWidth: numbe
     timestamp: +d,
   }));
 
-  const hourRange = utcHour.range(start, end, 6);
+  const hourRange = utcHour.range(start, end, minorStep);
   minorTicks.value = hourRange.map((d) => ({
     label: hourFormatter(d),
     timestamp: +d,
@@ -191,7 +208,12 @@ watchEffect(() => {
       (tt.getUTCHours() * 60 + tt.getUTCMinutes() + tzOffset + tt.getUTCSeconds() / 60) *
       (majorWidth.value / (24 * 60)) *
       -1;
-    const { minDate, maxDate } = updateTicks(tt, width.value, majorWidth.value);
+    const { minDate, maxDate } = updateTicks(
+      tt,
+      width.value,
+      majorWidth.value,
+      minorStep.value,
+    );
     updateEvents(minDate, maxDate);
   }
 });
@@ -242,7 +264,7 @@ function onEventClick(event: ScenarioEvent) {
         <div
           v-for="tick in majorTicks"
           :key="tick.timestamp"
-          class="flex-none border-b border-r border-gray-300"
+          class="flex-none border-b border-r border-gray-300 border-r-gray-500 pl-0.5"
           :style="`width: ${majorWidth}px`"
         >
           {{ tick.label }}
@@ -270,6 +292,7 @@ function onEventClick(event: ScenarioEvent) {
       v-if="showHoverMarker"
       class="absolute bottom-0 top-0 hidden w-0.5 bg-red-500 bg-opacity-50 hover-hover:block"
       :style="`left: ${hoveredX}px`"
-    ></div>
+    />
+    <p class="absolute bottom-0 right-0 bg-white p-1">{{ majorWidth }}</p>
   </div>
 </template>
