@@ -121,7 +121,7 @@ function onPointerDown(evt: PointerEvent) {
 }
 
 function onPointerUp(evt: PointerEvent) {
-  if (!isDragging.value) {
+  if (!isDragging.value && evt.button !== 2) {
     const { date, diff } = calculatePixelDate(evt.clientX);
     animate.value = true;
     draggedDiff.value = -diff;
@@ -193,7 +193,6 @@ watchEffect(() => {
   let redrawTimeline = false;
   if (isDragging.value) {
   } else if (animate.value === true) {
-    xOffset.value;
     setTimeout(() => {
       animate.value = false;
       draggedDiff.value = 0;
