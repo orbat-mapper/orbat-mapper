@@ -489,6 +489,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       Object.assign(unit.state[index], data);
       unit.state.sort(({ t: a }, { t: b }) => (a < b ? -1 : a > b ? 1 : 0));
     });
+    state.unitStateCounter++;
 
     updateUnitState(unitId);
   }

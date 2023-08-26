@@ -34,6 +34,7 @@ import type {
   ScenarioMapLayer,
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
+import { ref } from "vue";
 
 export interface ScenarioState {
   id: EntityId;
@@ -56,6 +57,7 @@ export interface ScenarioState {
   getSideById: (id: EntityId) => NSide;
   getSideGroupById: (id: EntityId) => NSideGroup;
   rangeRingGroupMap: Record<string, NRangeRingGroup>;
+  unitStateCounter: number;
 }
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
@@ -78,6 +80,8 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const tempEquipmentIdMap: Record<string, string> = {};
   const tempPersonnelIdMap: Record<string, string> = {};
   const tempRangeRingGroupIdMap: Record<string, string> = {};
+
+  let unitStateCounter = 0;
 
   scenario.events.forEach((e) => {
     const nEvent: NScenarioEvent = {
@@ -280,6 +284,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     equipmentMap,
     personnelMap,
     rangeRingGroupMap,
+    unitStateCounter,
     getUnitById(id: EntityId) {
       return this.unitMap[id];
     },

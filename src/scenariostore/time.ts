@@ -118,6 +118,30 @@ export function useScenarioTime(store: NewScenarioStore) {
     if (newTime > Number.MIN_SAFE_INTEGER) setCurrentTime(newTime);
   }
 
+  function computeTimeHistogram() {
+    const histogram: Record<number, number> = {};
+    let max = 1;
+    Object.values(state.unitMap).forEach((unit) => {
+      if (!unit?.state?.length) {
+        return;
+      }
+      for (const s of unit.state) {
+        // round to nearest hour
+        const t = Math.round(s.t / 3600000) * 3600000;
+        if (histogram[t]) {
+          histogram[t] += 1;
+        } else {
+          histogram[t] = 1;
+        }
+        max = Math.max(max, histogram[t]);
+      }
+    });
+    return {
+      histogram: Object.entries(histogram).map(([k, v]) => ({ t: +k, count: v })),
+      max,
+    };
+  }
+
   function goToNextScenarioEvent() {
     const nextEventId = state.events.find(
       (event) => state.eventMap[event].startTime > state.currentTime,
@@ -182,5 +206,6 @@ export function useScenarioTime(store: NewScenarioStore) {
     goToPrevScenarioEvent,
     getEventById,
     updateScenarioEvent,
+    computeTimeHistogram,
   };
 }

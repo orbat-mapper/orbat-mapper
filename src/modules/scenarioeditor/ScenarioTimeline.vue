@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { IconTriangleDown } from "@iconify-prerendered/vue-mdi";
-import { computed, ref, unref, watchEffect } from "vue";
-import { useElementSize, useThrottleFn } from "@vueuse/core";
+import { computed, ref, unref, watch, watchEffect } from "vue";
+import { useElementSize, useThrottleFn, useWebWorkerFn } from "@vueuse/core";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { utcDay, utcHour } from "d3-time";
 import { utcFormat } from "d3-time-format";
+import { interpolateOranges, interpolateTurbo } from "d3-scale-chromatic";
+import { scaleSequential } from "d3-scale";
 import dayjs from "dayjs";
 import { ScenarioEvent } from "@/types/scenarioModels";
 
@@ -13,13 +15,14 @@ const MS_PER_HOUR = 3600 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
 
 const {
-  time: { scenarioTime, setCurrentTime, timeZone },
+  time: { scenarioTime, setCurrentTime, timeZone, computeTimeHistogram },
   store,
 } = injectStrict(activeScenarioKey);
 
 const el = ref<HTMLDivElement | null>(null);
 const isPointerInteraction = ref(false);
 const isDragging = ref(false);
+const dummy = ref(0);
 const { width } = useElementSize(el);
 const tzOffset = scenarioTime.value.utcOffset();
 
@@ -36,10 +39,16 @@ interface EventWithX {
   event: ScenarioEvent;
 }
 
+interface BinWithX {
+  x: number;
+  count: number;
+}
+
 const hoveredDate = ref<Date | null>(null);
 const majorTicks = ref<Tick[]>([]);
 const minorTicks = ref<Tick[]>([]);
 const eventsWithX = ref<EventWithX[]>([]);
+const binsWithX = ref<BinWithX[]>([]);
 const centerTimeStamp = ref(0);
 const xOffset = ref(0);
 const draggedDiff = ref(0);
@@ -56,11 +65,17 @@ const minorStep = computed(() => {
   }
   return 1;
 });
+
+let maxCount = 1;
+let histogram: { t: number; count: number }[] = [];
+
 const minorWidth = computed(() => majorWidth.value / (24 / minorStep.value));
 const currentTimestamp = ref(0);
 const animate = ref(false);
 const hoveredX = ref(0);
 const showHoverMarker = ref(false);
+
+const countColor = scaleSequential(interpolateOranges).domain([1, maxCount]);
 
 const timelineWidth = computed(() => {
   return majorTicks.value.length * majorWidth.value;
@@ -77,7 +92,6 @@ function updateTicks(
   minorStep: number,
 ) {
   const dayPadding = Math.ceil((containerWidth * 2) / majorWidth);
-  // const dayPadding = 4;
   const currentUtcDay = utcDay.floor(centerTime);
   const start = utcDay.offset(currentUtcDay, -dayPadding);
   const end = utcDay.offset(currentUtcDay, dayPadding);
@@ -184,11 +198,31 @@ function updateEvents(minDate: Date, maxDate: Date) {
     .map((event) => {
       return { x: (event.startTime - minTs + tzOffset * 60 * 1000) * msPerPixel, event };
     });
+  binsWithX.value = histogram
+    .filter((bin) => {
+      return bin.t >= minTs && bin.t <= maxTs;
+    })
+    .map((event) => ({
+      x: (event.t - minTs + tzOffset * 60 * 1000) * msPerPixel,
+      count: event.count,
+    }));
 }
+
+watch(
+  () => store.state.unitStateCounter,
+  () => {
+    const { histogram: hg, max: mc } = computeTimeHistogram();
+    histogram = hg;
+    maxCount = mc;
+    dummy.value += 1;
+  },
+  { immediate: true },
+);
 
 watchEffect(() => {
   if (!width.value) return;
   const currentScenarioTimestamp = store.state.currentTime;
+  dummy.value;
   const tt = new Date(currentScenarioTimestamp);
   let redrawTimeline = false;
   if (isDragging.value) {
@@ -247,6 +281,17 @@ function onEventClick(event: ScenarioEvent) {
           class="relative h-4 flex-none text-center"
           :style="`width: ${timelineWidth}px`"
         >
+          <div
+            v-for="{ x, count } in binsWithX"
+            :key="x"
+            class="absolute top-1 h-2 w-4 rounded border border-gray-500"
+            :style="`left: ${x}px; width: ${Math.max(
+              majorWidth / 24,
+              8,
+            )}px;background-color: ${countColor(count)}`"
+            @mousemove.stop
+            :title="`${count} unit events`"
+          ></div>
           <button
             v-for="{ x, event } in eventsWithX"
             type="button"
@@ -258,6 +303,12 @@ function onEventClick(event: ScenarioEvent) {
             @click.stop="onEventClick(event)"
           ></button>
         </div>
+      </div>
+      <div class="flex justify-center">
+        <div
+          class="relative flex-none text-center"
+          :style="`width: ${timelineWidth}px`"
+        ></div>
       </div>
       <div class="flex justify-center border-gray-300">
         <div

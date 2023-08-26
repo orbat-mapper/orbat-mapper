@@ -74,6 +74,7 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "addUnitPosition", value: unitId },
     );
+    store.state.unitStateCounter++;
   }
 
   function addLayer(data: NScenarioLayer) {
