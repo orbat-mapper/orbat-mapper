@@ -85,6 +85,12 @@ export interface ScenarioImageLayer extends ScenarioMapLayerBase {
   imageRotate?: number;
 }
 
+export interface ScenarioKMLLayer extends ScenarioMapLayerBase {
+  type: "KMLLayer";
+  url: string;
+  extractStyles?: boolean;
+}
+
 export interface ScenarioXYZLayer extends ScenarioMapLayerBase {
   type: "XYZLayer";
   url: string;
@@ -98,7 +104,8 @@ export interface ScenarioTileJSONLayer extends ScenarioMapLayerBase {
 export type ScenarioMapLayer =
   | ScenarioImageLayer
   | ScenarioTileJSONLayer
-  | ScenarioXYZLayer;
+  | ScenarioXYZLayer
+  | ScenarioKMLLayer;
 
 export type ScenarioMapLayerType = ScenarioMapLayer["type"];
 

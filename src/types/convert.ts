@@ -15,7 +15,8 @@ export type ImportFormat =
   | "msdl"
   | "unitgenerator"
   | "orbatgenerator"
-  | "image";
+  | "image"
+  | "kml";
 export type GuessedImportFormat = "unknown" | ImportFormat;
 
 export interface ColumnMapping<TData = Record<string, any>> {

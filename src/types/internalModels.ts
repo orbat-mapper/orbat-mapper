@@ -15,6 +15,7 @@ import {
   RangeRingGroup,
   ScenarioFeature,
   ScenarioImageLayer,
+  ScenarioKMLLayer,
   ScenarioLayer,
   ScenarioTileJSONLayer,
   ScenarioXYZLayer,
@@ -84,11 +85,14 @@ export interface ScenarioImageLayerUpdate
 export interface ScenarioTileJSONLayerUpdate
   extends Partial<Omit<ScenarioTileJSONLayer, "id">> {}
 export interface ScenarioXYZLayerUpdate extends Partial<Omit<ScenarioXYZLayer, "id">> {}
+export interface ScenarioKMLLayerUpdate extends Partial<Omit<ScenarioKMLLayer, "id">> {}
 
 export type ScenarioMapLayerUpdate =
   | ScenarioImageLayerUpdate
   | ScenarioTileJSONLayerUpdate
-  | ScenarioXYZLayerUpdate;
+  | ScenarioXYZLayerUpdate
+  | ScenarioKMLLayerUpdate;
+
 export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id">> {}
 export interface UnitUpdate extends Partial<Omit<NUnit, "id">> {}
 export interface ScenarioEventUpdate extends Partial<Omit<NScenarioEvent, "id">> {}

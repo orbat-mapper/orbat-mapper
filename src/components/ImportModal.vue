@@ -36,6 +36,13 @@
       @cancel="onCancel"
       @loaded="onImport"
     />
+    <ImportKMLStep
+      v-else-if="importState === 'kml' && fileInfo"
+      :object-url="loadedData"
+      :file-info="fileInfo"
+      @cancel="onCancel"
+      @loaded="onImport"
+    />
   </SimpleModal>
 </template>
 
@@ -55,6 +62,7 @@ import { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportOrbatGeneratorStep from "@/components/ImportOrbatGeneratorStep.vue";
 import ImportImageStep from "@/components/ImportImageStep.vue";
 import { ImportedFileInfo } from "@/lib/fileHandling";
+import ImportKMLStep from "@/components/ImportKMLStep.vue";
 
 const router = useRouter();
 
@@ -64,7 +72,8 @@ type ImportState =
   | "geojson"
   | "unitgenerator"
   | "orbatgenerator"
-  | "image";
+  | "image"
+  | "kml";
 const importState = ref<ImportState>("select");
 const loadedData = shallowRef<any>([]);
 const fileInfo = shallowRef<ImportedFileInfo>();
@@ -82,12 +91,12 @@ function onLoaded(nextState: ImportState, data: any, info: ImportedFileInfo) {
 
 function onImport() {
   open.value = false;
-  // send({ message: "Imported units" });
 }
 
 function onCancel() {
   open.value = false;
-  if (importState.value === "image" && loadedData.value !== undefined) {
+  const objectUrlStates = ["image", "kml"];
+  if (objectUrlStates.includes(importState.value) && loadedData.value !== undefined) {
     URL.revokeObjectURL(loadedData.value);
   }
   emit("cancel");

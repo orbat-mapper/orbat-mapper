@@ -68,7 +68,7 @@
         <a href="https://www.map.army/">map.army</a>
       </p>
       <p v-else-if="isGeojson">Import units and features.</p>
-      <p v-else-if="isUnitgenerator">
+      <p v-else-if="isUnitGenerator">
         Import ORBAT generated with
         <a href="https://spatialillusions.com/unitgenerator2/" target="_blank"
           >Spatial Illusions Orbat builder</a
@@ -122,6 +122,7 @@ const formatItems: SelectItem<ImportFormat>[] = [
   { label: "GeoJSON", value: "geojson" },
   { label: "Spatial Illusions ORBAT builder", value: "unitgenerator" },
   { label: "Order of Battle Generator", value: "orbatgenerator" },
+  { label: "KML/KMZ", value: "kml" },
   // { label: "MSDL", value: "msdl" },
 ];
 
@@ -155,7 +156,7 @@ const { send } = useNotifications();
 
 const isMilx = computed(() => form.value.format === "milx");
 const isGeojson = computed(() => form.value.format === "geojson");
-const isUnitgenerator = computed(() => form.value.format === "unitgenerator");
+const isUnitGenerator = computed(() => form.value.format === "unitgenerator");
 const isOrbatGenerator = computed(() => form.value.format === "orbatgenerator");
 const { importMilxString, importGeojsonString, importJsonString } = useScenarioImport();
 
@@ -169,6 +170,12 @@ async function onLoad(e?: Event) {
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
     emit("loaded", "milx", data, fileInfo.value);
+  }
+
+  if (format === "kml" && stringSource.value) {
+    send({ message: `Loaded data as ${format}` });
+    NProgress.done();
+    emit("loaded", "kml", objectUrl.value, fileInfo.value);
   }
 
   if (format === "image" && objectUrl.value) {

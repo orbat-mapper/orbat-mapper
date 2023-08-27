@@ -10,6 +10,7 @@ const layerTypeLabelMap: Record<ScenarioMapLayerType, string> = {
   XYZLayer: "XYZ layer",
   ImageLayer: "Image layer",
   TileJSONLayer: "TileJSON layer",
+  KMLLayer: "KML layer",
 };
 
 export function useMapLayerInfo(layer: ScenarioMapLayer) {

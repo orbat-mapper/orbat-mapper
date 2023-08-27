@@ -46,6 +46,16 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
       guess.dataAsString = arrayBufferToString(f[1]);
       return guess;
     }
+    // is it a kmz file?
+    const kmz = Object.entries(unzipped).find(([filename]) => filename.endsWith(".kml"));
+    if (kmz) {
+      guess.format = "kml";
+      guess.dataAsString = arrayBufferToString(kmz[1]);
+      guess.objectUrl = URL.createObjectURL(
+        new Blob([kmz[1]], { type: "application/vnd.google-earth.kml+xml" }),
+      );
+      return guess;
+    }
 
     // TODO: odin, kmz
   } else if (hasImageFileType(file)) {
@@ -63,6 +73,13 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     guess.isInvalid = true;
     guess.errors.push("Could not read file as text");
     console.error(e);
+    return guess;
+  }
+
+  if (isKMFileType(file)) {
+    guess.format = "kml";
+    guess.dataAsString = text;
+    guess.objectUrl = URL.createObjectURL(file);
     return guess;
   }
 
@@ -89,6 +106,12 @@ function hasZippedFileType(file: File): boolean {
   if (file.name.endsWith(".kmz")) return true;
   if (file.name.endsWith(".odin")) return true;
   return file.name.endsWith(".milxlyz");
+}
+
+function isKMFileType(file: File): boolean {
+  const kmlTypes = ["application/vnd.google-earth.kml+xml"];
+  if (kmlTypes.includes(file.type)) return true;
+  return file.name.endsWith(".kml");
 }
 
 function hasImageFileType(file: File): boolean {

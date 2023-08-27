@@ -5,6 +5,7 @@ import LayerGroup from "ol/layer/Group";
 import {
   FeatureId,
   ScenarioImageLayer,
+  ScenarioKMLLayer,
   ScenarioMapLayer,
   ScenarioMapLayerType,
   ScenarioTileJSONLayer,
@@ -31,6 +32,9 @@ import {
   TransformUpdate,
   useImageLayerTransformInteraction,
 } from "@/composables/geoImageLayerInteraction";
+import VectorSource from "ol/source/Vector";
+import { KML } from "ol/format";
+import VectorLayer from "ol/layer/Vector";
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
@@ -53,6 +57,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     scn.geo.mapLayers.value.forEach((mapLayer) => {
       if (mapLayer.type === "ImageLayer") addImageLayer(mapLayer);
       if (mapLayer.type === "TileJSONLayer") addTileJSONLayer(mapLayer);
+      if (mapLayer.type === "KMLLayer") addKMLLayer(mapLayer);
     });
   }
 
@@ -114,6 +119,35 @@ export function useScenarioMapLayers(olMap: OLMap) {
       );
     });
 
+    mapLayersGroup.getLayers().push(newLayer);
+  }
+
+  function addKMLLayer(data: ScenarioKMLLayer) {
+    if (!data.url) {
+      console.warn("Missing url for tile layer");
+      return;
+    }
+    const source = new VectorSource({
+      url: data.url,
+      format: new KML({ extractStyles: data.extractStyles ?? false }),
+    });
+
+    const newLayer = new VectorLayer({
+      opacity: data.opacity ?? 0.7,
+      visible: !(data.isHidden ?? false),
+      source,
+      properties: {
+        id: data.id,
+        title: data.name,
+        name: data.name,
+      },
+    });
+
+    scn.geo.updateMapLayer(
+      data.id,
+      { _status: "initialized" },
+      { noEmit: true, undoable: false },
+    );
     mapLayersGroup.getLayers().push(newLayer);
   }
 
@@ -225,6 +259,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     if (mapLayer.type === "ImageLayer") addImageLayer(mapLayer);
     if (mapLayer.type === "TileJSONLayer") addTileJSONLayer(mapLayer);
     if (mapLayer.type === "XYZLayer") addXYZLayer(mapLayer);
+    if (mapLayer.type === "KMLLayer") addKMLLayer(mapLayer);
   }
 
   function updateLayer(layerId: FeatureId, data: ScenarioMapLayerUpdate) {
