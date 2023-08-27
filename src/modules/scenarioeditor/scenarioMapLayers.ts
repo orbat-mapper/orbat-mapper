@@ -21,7 +21,11 @@ import TileLayer from "ol/layer/Tile";
 import { TileJSON } from "ol/source";
 import { unByKey } from "ol/Observable";
 import { fixExtent } from "@/utils/geoConvert";
-import { IconImage as ImageIcon, IconWebBox } from "@iconify-prerendered/vue-mdi";
+import {
+  IconImage as ImageIcon,
+  IconWebBox,
+  IconVectorSquare as VectorIcon,
+} from "@iconify-prerendered/vue-mdi";
 import {
   ScenarioMapLayerUpdate,
   ScenarioTileJSONLayerUpdate,
@@ -409,6 +413,7 @@ function getOrCreateLayerGroup(olMap: OLMap) {
 
 export function getMapLayerIcon(mapLayer: ScenarioMapLayer) {
   if (mapLayer.type === "ImageLayer") return ImageIcon;
+  if (mapLayer.type === "KMLLayer") return VectorIcon;
   if (mapLayer.type === "TileJSONLayer" || mapLayer.type === "XYZLayer")
     return IconWebBox;
   return ImageIcon;
