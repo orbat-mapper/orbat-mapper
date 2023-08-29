@@ -39,6 +39,8 @@ import {
 import VectorSource from "ol/source/Vector";
 import { KML } from "ol/format";
 import VectorLayer from "ol/layer/Vector";
+import { KMLZ } from "@/geo/kmlz";
+import { imageCache } from "@/lib/fileHandling";
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
@@ -126,14 +128,26 @@ export function useScenarioMapLayers(olMap: OLMap) {
     mapLayersGroup.getLayers().push(newLayer);
   }
 
-  function addKMLLayer(data: ScenarioKMLLayer) {
+  async function addKMLLayer(data: ScenarioKMLLayer) {
     if (!data.url) {
       console.warn("Missing url for tile layer");
       return;
     }
+
+    const format = new KMLZ({
+      extractStyles: data.extractStyles ?? false,
+      iconUrlFunction: (href: string) => {
+        const index = window.location.href.lastIndexOf("/");
+        if (index !== -1) {
+          return imageCache.get(href.slice(index + 1)) || href;
+        }
+        return href;
+      },
+    });
+
     const source = new VectorSource({
       url: data.url,
-      format: new KML({ extractStyles: data.extractStyles ?? false }),
+      format,
     });
 
     const newLayer = new VectorLayer({
@@ -153,6 +167,12 @@ export function useScenarioMapLayers(olMap: OLMap) {
       { noEmit: true, undoable: false },
     );
     mapLayersGroup.getLayers().push(newLayer);
+    newLayer.getSource()?.once("featuresloadend", () => {
+      console.log("Loaded KML layer");
+      const layerExtent = fixExtent(source.getExtent());
+      console.log("layerExtent", layerExtent);
+      layerExtent && !isEmpty(layerExtent) && olMap.getView().fit(layerExtent);
+    });
   }
 
   function addTileJSONLayer(data: ScenarioTileJSONLayer) {

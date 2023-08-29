@@ -14,6 +14,15 @@ export interface ImportedFileInfo {
   fileName: string;
 }
 
+export const imageCache = new Map<string, string>();
+
+export function clearCache() {
+  imageCache.forEach((value, key) => {
+    URL.revokeObjectURL(value);
+  });
+  imageCache.clear();
+}
+
 export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
   const guess: ImportedFileInfo = {
     format: "unknown",
@@ -54,6 +63,11 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
       guess.objectUrl = URL.createObjectURL(
         new Blob([kmz[1]], { type: "application/vnd.google-earth.kml+xml" }),
       );
+      Object.entries(unzipped).forEach(([filename, data]) => {
+        if (!filename.endsWith(".kml")) {
+          imageCache.set(filename, URL.createObjectURL(new Blob([data])));
+        }
+      });
       return guess;
     }
 
@@ -118,7 +132,7 @@ function hasImageFileType(file: File): boolean {
   return file.type.startsWith("image/");
 }
 
-function arrayBufferToString(arrayBuffer: ArrayBuffer, decoderType = "utf-8") {
+export function arrayBufferToString(arrayBuffer: ArrayBuffer, decoderType = "utf-8") {
   let decoder = new TextDecoder(decoderType);
   return decoder.decode(arrayBuffer);
 }
