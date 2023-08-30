@@ -7,6 +7,7 @@ import { ScenarioFeature } from "@/types/scenarioGeoModels";
 import { SelectItem } from "@/components/types";
 import DrawMarker from "@/components/DrawMarker.vue";
 import ColorPicker from "@/components/ColorPicker.vue";
+import ToggleField from "@/components/ToggleField.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits<{ (e: "update", value: Partial<SimpleStyleSpec>): void }>();
@@ -36,6 +37,7 @@ const marker = computed((): Partial<MarkerStyleSpec> => {
     "marker-color": properties["marker-color"] || "black",
     "marker-symbol": properties["marker-symbol"] || "circle",
     "marker-size": properties["marker-size"] || "medium",
+    showLabel: properties["showLabel"] || false,
   };
 });
 
@@ -131,6 +133,12 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number) {
         @update:model-value="updateValue('marker-color', $event)"
         label="Color"
       />
+      <ToggleField
+        class="mt-4"
+        :model-value="marker['showLabel']"
+        @update:model-value="updateValue('showLabel', $event)"
+        >Show label on map</ToggleField
+      >
     </section>
   </div>
 </template>

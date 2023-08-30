@@ -28,14 +28,18 @@ export function useFeatureStyles(geo: TGeo) {
   function scenarioFeatureStyle(feature: FeatureLike, resolution: number) {
     const featureId = feature.getId() as FeatureId;
     let style = styleCache.get(featureId);
+    const { feature: scenarioFeature } = geo.getFeatureById(featureId);
+    const {
+      properties: { showLabel = false, name: label },
+    } = scenarioFeature;
     if (!style) {
-      const { feature: scenarioFeature } = geo.getFeatureById(featureId);
       style = createSimpleStyle(scenarioFeature.properties || {}) || defaultStyle;
       // @ts-ignore
       feature.set("_zIndex", scenarioFeature.properties._zIndex, true);
       styleCache.set(featureId, style);
     }
     style.setZIndex(feature.get("_zIndex"));
+    style.getText().setText(showLabel && resolution < 1200 ? label : undefined);
     return style;
   }
 

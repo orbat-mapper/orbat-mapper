@@ -10,7 +10,7 @@ import Fill from "ol/style/Fill";
 import * as olColor from "ol/color";
 import CircleStyle from "ol/style/Circle";
 import Style from "ol/style/Style";
-import { RegularShape } from "ol/style";
+import { RegularShape, Text } from "ol/style";
 
 export interface StrokeStyleSpec {
   stroke: string | null | undefined;
@@ -41,6 +41,7 @@ export interface MarkerStyleSpec {
   "marker-size": MarkerSize;
   "marker-color": string;
   "marker-symbol": MarkerSymbol;
+  showLabel: boolean;
 }
 
 export interface SimpleStyleSpec extends StrokeStyleSpec, FillStyleSpec, MarkerStyleSpec {
@@ -134,6 +135,21 @@ export function createMarkerSymbol(
 
 export const defaultSimplestyleStroke = new Stroke({ color: "#555555", width: 2 });
 export const defaultSimplestyleFill = new Fill({ color: [0x55, 0x55, 0x55, 0.25] });
+export const defaultSimpleStyleText = new Text({
+  font: "bold 13px Inter",
+  textAlign: "left",
+  textBaseline: "middle",
+  fill: new Fill({
+    color: "#333333",
+  }),
+  stroke: new Stroke({
+    color: "#FBFCFB",
+    width: 4,
+  }),
+  // padding: [3, 3, 3, 3],
+  offsetX: 15,
+  // offsetY: -15,
+});
 
 export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
   let stroke: Stroke | undefined = defaultSimplestyleStroke;
@@ -162,6 +178,7 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
   return new Style({
     stroke,
     fill,
+    text: defaultSimpleStyleText,
     image: createMarkerSymbol(
       opts["marker-symbol"] || "circle",
       markerSize,
