@@ -343,6 +343,5 @@ function onEventClick(event: ScenarioEvent) {
       class="absolute bottom-0 top-0 hidden w-0.5 bg-red-500 bg-opacity-50 hover-hover:block"
       :style="`left: ${hoveredX}px`"
     />
-    <p class="absolute bottom-0 right-0 bg-white p-1">{{ majorWidth }}</p>
   </div>
 </template>
