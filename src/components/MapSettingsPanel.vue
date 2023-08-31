@@ -8,7 +8,18 @@
     </ToggleField>
     <section>
       <p class="text-base font-medium leading-loose text-gray-900">Coordinate format</p>
-      <RadioGroupList v-model="settings.coordinateFormat" :settings="items" />
+      <RadioGroupList
+        v-model="settings.coordinateFormat"
+        :settings="coordinateFormatItems"
+      />
+    </section>
+
+    <section>
+      <p class="text-base font-medium leading-loose text-gray-900">Measurement unit</p>
+      <RadioGroupList
+        v-model="measurementStore.measurementUnit"
+        :settings="measurementItems"
+      />
     </section>
   </div>
 </template>
@@ -19,12 +30,22 @@ import { RadioGroupItem } from "@/components/types";
 import { CoordinateFormatType } from "@/composables/geoShowLocation";
 import RadioGroupList from "@/components/RadioGroupList.vue";
 import { useUiStore } from "@/stores/uiStore";
+import { useMeasurementsStore } from "@/stores/geoStore";
+import { MeasurementUnit } from "@/composables/geoMeasurement";
 
 const settings = useMapSettingsStore();
+const measurementStore = useMeasurementsStore();
 const uiSettings = useUiStore();
-const items: RadioGroupItem<CoordinateFormatType>[] = [
+
+const coordinateFormatItems: RadioGroupItem<CoordinateFormatType>[] = [
   { name: "DG", description: "Decimal degrees", value: "DecimalDegrees" },
   { name: "DMS", description: "Degree Minutes Seconds", value: "DegreeMinuteSeconds" },
   { name: "MGRS", description: "Military grid reference system", value: "MGRS" },
+];
+
+const measurementItems: RadioGroupItem<MeasurementUnit>[] = [
+  { name: "Metric", value: "metric" },
+  { name: "Imperial", value: "imperial" },
+  { name: "Nautical", value: "nautical" },
 ];
 </script>
