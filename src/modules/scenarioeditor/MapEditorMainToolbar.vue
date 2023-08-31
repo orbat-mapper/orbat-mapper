@@ -21,6 +21,13 @@
       >
         <MoveIcon class="h-6 w-6" />
       </MainToolbarButton>
+      <MainToolbarButton
+        @click="emit('show-settings')"
+        title="Show settings"
+        class="hidden md:block"
+      >
+        <SettingsIcon class="h-6 w-6" />
+      </MainToolbarButton>
       <div class="h-7 border-l-2 border-gray-300 sm:mx-1" />
       <MainToolbarButton
         :active="store.currentToolbar === 'measurements'"
@@ -222,6 +229,7 @@ import {
   IconChevronLeft,
   IconChevronRight,
   IconChevronUp,
+  IconCogOutline as SettingsIcon,
   IconCursorDefaultOutline as SelectIcon,
   IconCursorMove as MoveIcon,
   IconLockOpenVariantOutline,
@@ -230,9 +238,9 @@ import {
   IconPlus as AddSymbolIcon,
   IconRedoVariant as RedoIcon,
   IconRulerSquareCompass as MeasurementIcon,
-  IconUndoVariant as UndoIcon,
-  IconSkipPrevious,
   IconSkipNext,
+  IconSkipPrevious,
+  IconUndoVariant as UndoIcon,
 } from "@iconify-prerendered/vue-mdi";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
@@ -260,7 +268,6 @@ import { useToolbarUnitSymbolData } from "@/composables/mainToolbarData";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { orbatUnitClick } from "@/components/eventKeys";
-import ToolbarButton from "@/components/ToolbarButton.vue";
 import { CalendarIcon } from "@heroicons/vue/24/solid";
 
 const emit = defineEmits([
@@ -269,6 +276,7 @@ const emit = defineEmits([
   "dec-day",
   "next-event",
   "prev-event",
+  "show-settings",
 ]);
 
 const {

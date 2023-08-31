@@ -70,6 +70,7 @@
           @dec-day="onDecDay()"
           @next-event="goToNextScenarioEvent()"
           @prev-event="goToPrevScenarioEvent()"
+          @show-settings="emit('show-settings')"
         />
         <MapEditorMeasurementToolbar
           class="absolute bottom-14 sm:bottom-16"
