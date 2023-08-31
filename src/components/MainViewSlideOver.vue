@@ -1,10 +1,11 @@
 <template>
   <SlideOver v-model="open" title="Settings">
     <TabView>
-      <TabItem label="Layers">
+      <TabItem label="Map view"><MapSettingsPanel /></TabItem>
+      <TabItem label="Map layers">
         <LayersPanel />
       </TabItem>
-      <TabItem label="Rendering">
+      <TabItem label="ORBAT">
         <div class="space-y-4 p-1">
           <NumberInputGroup
             InputGroup
@@ -26,7 +27,6 @@
           <ToggleField v-model="uiSettings.debugMode">Debug mode</ToggleField>
         </div>
       </TabItem>
-      <TabItem label="Map settings"><MapSettingsPanel /></TabItem>
     </TabView>
   </SlideOver>
 </template>
