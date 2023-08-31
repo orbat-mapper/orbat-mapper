@@ -8,7 +8,11 @@
       {{ formatDateString(state.currentTime, state.info.timeZone, "YYYY-MM-DDTHH:mm") }}
     </p>
     <BaseToolbar v-if="showControls">
-      <ToolbarButton @click="emit('open-time-modal')" start>
+      <ToolbarButton @click="emit('show-settings')" start>
+        <span class="sr-only">Show settings</span>
+        <SettingsIcon class="h-5 w-5" aria-hidden=""
+      /></ToolbarButton>
+      <ToolbarButton @click="emit('open-time-modal')">
         <span class="sr-only">Select time and date</span>
         <CalendarIcon class="h-5 w-5" aria-hidden="true" />
       </ToolbarButton>
@@ -40,6 +44,7 @@ import {
   IconChevronRight,
   IconSkipNext,
   IconSkipPrevious,
+  IconCogOutline as SettingsIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { useUiStore } from "@/stores/uiStore";
 import BaseToolbar from "./BaseToolbar.vue";
@@ -62,6 +67,7 @@ const emit = defineEmits([
   "dec-day",
   "next-event",
   "prev-event",
+  "show-settings",
 ]);
 const {
   store: { state },

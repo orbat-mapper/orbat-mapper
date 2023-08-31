@@ -14,6 +14,7 @@
         class="flex-none"
         hide-time
         @open-time-modal="emit('open-time-modal')"
+        @show-settings="emit('show-settings')"
         @dec-day="emit('dec-day')"
         @inc-day="emit('inc-day')"
         @next-event="emit('next-event')"
@@ -110,6 +111,7 @@ const emit = defineEmits([
   "dec-day",
   "next-event",
   "prev-event",
+  "show-settings",
 ]);
 
 const {

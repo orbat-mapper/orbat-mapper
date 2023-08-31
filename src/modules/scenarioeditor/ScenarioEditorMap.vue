@@ -11,6 +11,7 @@
             class="pointer-events-auto"
             :show-controls="isMobile ? ui.mobilePanelOpen : false"
             @open-time-modal="openTimeDialog()"
+            @show-settings="emit('show-settings')"
             @inc-day="onIncDay()"
             @dec-day="onDecDay()"
             @next-event="goToNextScenarioEvent()"
@@ -87,6 +88,7 @@
         @dec-day="onDecDay()"
         @next-event="goToNextScenarioEvent()"
         @prev-event="goToPrevScenarioEvent()"
+        @show-settings="emit('show-settings')"
       />
     </template>
     <KeyboardScenarioActions v-if="mapRef" />
@@ -139,7 +141,7 @@ import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
 
-const emit = defineEmits(["showExport", "showLoad"]);
+const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
 const activeScenario = injectStrict(activeScenarioKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
 

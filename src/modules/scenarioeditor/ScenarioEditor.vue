@@ -124,6 +124,7 @@
         :is="Component"
         @show-export="showExportModal = true"
         @show-load="showLoadModal = true"
+        @show-settings="isOpen = true"
       />
       <!--      </keep-alive>-->
     </router-view>
