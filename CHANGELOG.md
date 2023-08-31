@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 August 2023
 
+- Add drag and drop support for temporary KML and KMZ files.
+- Add timeline control to scenario editor.
 - Add range ring groups. Range rings in the same group will be merged if they overlap.
 - Add toggle option for toolbar visibility.
 - Add basic support for adding equipment and personnel to units.
