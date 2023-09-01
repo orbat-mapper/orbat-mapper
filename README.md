@@ -8,9 +8,9 @@ yet.**
 You can try the work in progress version at https://orbat-mapper.app/ and browse the documentation
 at https://docs.orbat-mapper.app/.
 
-_Screenshot of an early prototype:_
+_Screenshot:_
 
-![Work in progress sample screenshot](images/screenshot-2021-08-04.png "Work in progress sample screenshot")
+![Work in progress sample screenshot](images/screenshot-2023-09-01.png "Work in progress sample screenshot")
 
 ## Getting started
 
