@@ -1,11 +1,12 @@
 import { Fill, RegularShape, Stroke, Style, Text } from "ol/style";
 import Feature, { FeatureLike } from "ol/Feature";
-import { LineString, Point } from "ol/geom";
+import { LineString, MultiLineString, Point } from "ol/geom";
 import { formatDateString } from "@/geo/utils";
 import CircleStyle from "ol/style/Circle";
 import { LocationState, Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
 import { nanoid } from "@/utils";
+import { greatCircle } from "@turf/turf";
 
 const styleCache = new Map();
 
@@ -21,6 +22,43 @@ const lineStyle = new Style({
     width: 3,
     // Dashed lines are slow! https://github.com/openlayers/openlayers/issues/10139
     // lineDash: [20, 20],
+  }),
+});
+
+const arcLineStyle = new Style({
+  geometry: function (feature: any) {
+    if (feature.getGeometry().getType() !== "LineString") {
+      return feature.getGeometry();
+    }
+    const coordinates = feature
+      .getGeometry()
+      .clone()
+      .transform("EPSG:3857", "EPSG:4326")
+      .getCoordinates();
+
+    if (coordinates.length == 2 && !Array.isArray(coordinates[0])) {
+      return feature.getGeometry();
+    }
+
+    const coords = [];
+    for (let i = 0; i < coordinates.length - 1; i++) {
+      let from = coordinates[i];
+      let to = coordinates[i + 1];
+      const arcLine = greatCircle(from, to);
+      if (arcLine.geometry.type === "MultiLineString") {
+        console.log("Is multilinestring");
+        arcLine.geometry.coordinates.forEach((c) => coords.push(c));
+      } else {
+        coords.push(arcLine.geometry.coordinates);
+      }
+    }
+    const line = new MultiLineString(coords as any);
+    line.transform("EPSG:4326", "EPSG:3857");
+    return line;
+  },
+  stroke: new Stroke({
+    width: 2,
+    color: "rgba(255,0,0,0.65)",
   }),
 });
 
@@ -52,7 +90,7 @@ export function createHistoryStylesFromFeature(
 ): Style[] {
   const geometry = (feature as Feature<LineString>).getGeometry();
   const coordinates = geometry!.getCoordinates();
-  let styles = [lineStyle];
+  let styles = [arcLineStyle];
 
   let i = 0;
   const t = coordinates[0][2];

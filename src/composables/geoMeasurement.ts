@@ -3,7 +3,14 @@ import OLMap from "ol/Map";
 import { Circle as CircleStyle, Fill, RegularShape, Stroke, Style, Text } from "ol/style";
 import Draw from "ol/interaction/Draw";
 import Modify from "ol/interaction/Modify";
-import { Geometry, LineString, Point, Polygon, SimpleGeometry } from "ol/geom";
+import {
+  Geometry,
+  LineString,
+  MultiLineString,
+  Point,
+  Polygon,
+  SimpleGeometry,
+} from "ol/geom";
 import { Vector as VectorSource } from "ol/source";
 import { Vector as VectorLayer } from "ol/layer";
 import { getArea, getLength } from "ol/sphere";
@@ -15,9 +22,56 @@ import Snap from "ol/interaction/Snap";
 import { Collection } from "ol";
 import { getSnappableFeatures } from "@/composables/openlayersHelpers";
 import { formatArea, formatLength } from "@/geo/utils";
+import { greatCircle } from "@turf/turf";
 
 export type MeasurementTypes = "LineString" | "Polygon";
 export type MeasurementUnit = "metric" | "imperial" | "nautical";
+
+const arcLineStyle = new Style({
+  fill: new Fill({
+    color: "rgba(255, 255, 255, 0.2)",
+  }),
+  image: new CircleStyle({
+    radius: 5,
+    stroke: new Stroke({
+      color: "rgba(0, 0, 0, 0.7)",
+    }),
+    fill: new Fill({
+      color: "rgba(255, 255, 255, 0.2)",
+    }),
+  }),
+  geometry: function (feature: any) {
+    const coordinates = feature
+      .getGeometry()
+      .clone()
+      .transform("EPSG:3857", "EPSG:4326")
+      .getCoordinates();
+    const geom = feature.getGeometry().getType();
+    if (geom !== "LineString") {
+      return feature.getGeometry();
+    }
+
+    const coords = [];
+    for (let i = 0; i < coordinates.length - 1; i++) {
+      let from = coordinates[i];
+      let to = coordinates[i + 1];
+      const arcLine = greatCircle(from, to, { offset: 100 });
+      if (arcLine.geometry.type === "MultiLineString") {
+        arcLine.geometry.coordinates.forEach((c) => coords.push(c));
+      } else {
+        coords.push(arcLine.geometry.coordinates);
+      }
+    }
+    const line = new MultiLineString(coords as any);
+    line.transform("EPSG:4326", "EPSG:3857");
+    return line;
+  },
+  stroke: new Stroke({
+    color: "rgb(0, 0, 0)",
+    lineDash: [10, 10],
+    width: 2,
+  }),
+});
 
 const style = new Style({
   fill: new Fill({
@@ -44,6 +98,7 @@ const lineBackgroundStyle = new Style({
     color: "rgba(255, 255, 255, 0.7)",
     width: 5,
   }),
+  geometry: arcLineStyle.getGeometryFunction(),
 });
 
 const labelStyle = new Style({
@@ -172,7 +227,7 @@ function measurementInteractionWrapper(
     drawType?: "Polygon" | "LineString",
     tip?: string,
   ) {
-    const styles = [lineBackgroundStyle, style];
+    const styles = [lineBackgroundStyle, arcLineStyle];
     const geometry = feature.getGeometry();
     if (!geometry) return styles;
     const type = geometry.getType();
@@ -198,7 +253,11 @@ function measurementInteractionWrapper(
         if (segmentStyles.length - 1 < count) {
           segmentStyles.push(segmentStyle.clone());
         }
-        const segmentPoint = new Point(segment.getCoordinateAt(0.5));
+        const geo = arcLineStyle.getGeometryFunction()(feature) as any;
+
+        const segmentPoint = new Point(
+          new LineString(geo.getCoordinates()[count]).getCoordinateAt(0.5),
+        );
         segmentStyles[count].setGeometry(segmentPoint);
         segmentStyles[count].getText().setText(label);
         styles.push(segmentStyles[count]);
