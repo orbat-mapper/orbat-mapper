@@ -123,7 +123,7 @@ function updateLayers() {
       name: layer.get("name"),
       layerType: layer.get("layerType"),
       visible: layer.getVisible(),
-      zIndex: layer.getZIndex(),
+      zIndex: layer.getZIndex() || 0,
       opacity: layer.getOpacity(),
       layer: markRaw(layer),
       subLayers: [],

@@ -7,11 +7,10 @@ import { featureCollection } from "@turf/helpers";
 import { GeoJSON } from "ol/format";
 import { NUnit } from "@/types/internalModels";
 import { convertToMetric } from "@/utils/convert";
-import { Style } from "ol/style";
+import { Stroke, Style } from "ol/style";
 import { FeatureLike } from "ol/Feature";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import { createSimpleStyle } from "@/geo/simplestyle";
-import { toStyle } from "ol/style/flat";
 import { TScenario } from "@/scenariostore";
 
 export function useRangeRingsLayer() {
@@ -71,10 +70,8 @@ function createRangeRings(unit: NUnit) {
   );
 }
 
-const defaultStyle = toStyle({
-  "stroke-width": 2,
-  "stroke-color": "red",
-  // "fill-color": "rgba(255, 0, 0, 0.1)",
+const defaultStyle = new Style({
+  stroke: new Stroke({ width: 2, color: "red" }),
 });
 
 function createLayer() {

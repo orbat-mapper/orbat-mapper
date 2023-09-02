@@ -16,13 +16,11 @@ export function clearStyleCache() {
 
 function createMilSymbolStyle(milSymbol: MilSymbol) {
   const { x, y } = milSymbol.getAnchor();
-  const { width, height } = milSymbol.getSize();
   const image = new Icon({
     scale: 1 / (window.devicePixelRatio || 1),
     anchor: [x, y],
     anchorXUnits: "pixels",
     anchorYUnits: "pixels",
-    imgSize: [Math.floor(width), Math.floor(height)],
     img: milSymbol.asCanvas(),
   });
   return new Style({
