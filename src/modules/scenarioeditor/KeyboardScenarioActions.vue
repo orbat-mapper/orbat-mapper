@@ -94,12 +94,12 @@ function handleDelete(e: KeyboardEvent) {
   <GlobalEvents
     v-if="shortcutsEnabled"
     :filter="inputEventFilter"
-    @keyup.c.exact="createNewUnit"
-    @keyup.d.exact="duplicateUnit"
+    @keydown.c.exact="createNewUnit"
+    @keydown.d.exact="duplicateUnit"
     @keydown.esc="handleEscape"
-    @keyup.z.exact="handleZoomShortcut"
-    @keyup.p.exact="handlePanShortcut"
-    @keyup.m.exact="handleMoveShortcut"
-    @keyup.delete.exact="handleDelete"
+    @keydown.z.exact="handleZoomShortcut"
+    @keydown.p.exact="handlePanShortcut"
+    @keydown.m.exact="handleMoveShortcut"
+    @keydown.delete.exact="handleDelete"
   />
 </template>
