@@ -3,6 +3,7 @@ import type { NUnit, ScenarioEventType } from "@/types/internalModels";
 import type { ScenarioActions, UnitAction } from "@/types/constants";
 import type { InjectionKey } from "vue";
 import { CurrentState, UnitSymbolOptions } from "@/types/scenarioModels";
+import { EntityId } from "@/types/base";
 
 export interface ButtonGroupItem {
   label: string;
@@ -53,6 +54,7 @@ export interface MapLayerSearchResult extends SearchResult {
 
 export interface EventSearchResult extends SearchResult {
   category: "Events";
+  id: EntityId;
   _type: ScenarioEventType;
   startTime: number;
 }

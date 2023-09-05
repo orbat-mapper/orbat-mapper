@@ -1,6 +1,6 @@
 import { NewScenarioStore } from "./newScenarioStore";
-import { CurrentState } from "@/types/scenarioModels";
-import { NUnit, ScenarioEventUpdate } from "@/types/internalModels";
+import { CurrentState, ScenarioEvent } from "@/types/scenarioModels";
+import { NScenarioEvent, NUnit, ScenarioEventUpdate } from "@/types/internalModels";
 import dayjs, { ManipulateType } from "dayjs";
 import { computed } from "vue";
 import turfLength from "@turf/length";
@@ -8,6 +8,15 @@ import turfAlong from "@turf/along";
 import { lineString } from "@turf/helpers";
 import { EntityId } from "@/types/base";
 import { klona } from "klona";
+import { createEventHook } from "@vueuse/core";
+
+export type GoToScenarioEventOptions = {
+  silent?: boolean;
+};
+
+export type GoToScenarioEventEvent = {
+  event: NScenarioEvent;
+};
 
 export function createInitialState(unit: NUnit): CurrentState | null {
   if (unit.location)
@@ -22,6 +31,8 @@ export function createInitialState(unit: NUnit): CurrentState | null {
 
 export function useScenarioTime(store: NewScenarioStore) {
   const { state, update } = store;
+
+  const goToScenarioEventHook = createEventHook<GoToScenarioEventEvent>();
 
   function setCurrentTime(timestamp: number) {
     Object.values(state.unitMap).forEach((unit) => {
@@ -142,23 +153,37 @@ export function useScenarioTime(store: NewScenarioStore) {
     };
   }
 
-  function goToNextScenarioEvent() {
+  function goToNextScenarioEvent(options: GoToScenarioEventOptions = {}) {
     const nextEventId = state.events.find(
       (event) => state.eventMap[event].startTime > state.currentTime,
     );
     const nextEvent = nextEventId && state.eventMap[nextEventId];
     const newTime = nextEvent ? nextEvent.startTime : Number.MAX_SAFE_INTEGER;
-    if (newTime < Number.MAX_SAFE_INTEGER) setCurrentTime(newTime);
+    if (newTime < Number.MAX_SAFE_INTEGER) goToScenarioEvent(nextEvent!, options);
   }
 
-  function goToPrevScenarioEvent() {
+  function goToPrevScenarioEvent(options: GoToScenarioEventOptions = {}) {
     const prevEventId = state.events
       .slice()
       .reverse()
       .find((event) => state.eventMap[event].startTime < state.currentTime);
     const prevEvent = prevEventId && state.eventMap[prevEventId];
     const newTime = prevEvent ? prevEvent.startTime : Number.MIN_SAFE_INTEGER;
-    if (newTime > Number.MIN_SAFE_INTEGER) setCurrentTime(newTime);
+    if (newTime > Number.MIN_SAFE_INTEGER) goToScenarioEvent(prevEvent!, options);
+  }
+
+  function goToScenarioEvent(
+    eventOrEventId: EntityId | NScenarioEvent,
+    options: GoToScenarioEventOptions = {},
+  ) {
+    const isSilent = options.silent ?? false;
+    const event =
+      typeof eventOrEventId === "string"
+        ? state.eventMap[eventOrEventId]
+        : eventOrEventId;
+    if (!event) return;
+    setCurrentTime(event.startTime);
+    if (!isSilent) goToScenarioEventHook.trigger({ event }).then();
   }
 
   const utcTime = computed(() => {
@@ -202,10 +227,12 @@ export function useScenarioTime(store: NewScenarioStore) {
     timeZone,
     jumpToNextEvent,
     jumpToPrevEvent,
+    goToScenarioEvent,
     goToNextScenarioEvent,
     goToPrevScenarioEvent,
     getEventById,
     updateScenarioEvent,
     computeTimeHistogram,
+    onGoToScenarioEventEvent: goToScenarioEventHook.on,
   };
 }

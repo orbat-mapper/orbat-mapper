@@ -130,7 +130,7 @@ export const INTERNAL_NAMES = [
 export const TIMESTAMP_NAMES = ["t", "visibleFromT", "visibleUntilT", "startTime"];
 export type ScenarioEventType = "unit" | "scenario";
 export interface NScenarioEvent extends ScenarioEvent {
-  id: string;
+  id: EntityId;
   _type: ScenarioEventType;
   _pid?: EntityId;
 }

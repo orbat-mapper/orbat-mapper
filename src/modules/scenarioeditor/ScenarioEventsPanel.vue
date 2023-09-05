@@ -3,7 +3,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed } from "vue";
 import { formatDateString } from "@/geo/utils";
-import { ScenarioEvent } from "@/types/scenarioModels";
+import { NScenarioEvent } from "@/types/internalModels";
 
 interface Props {
   selectOnly?: boolean;
@@ -14,14 +14,14 @@ const emit = defineEmits(["event-click"]);
 
 const {
   store,
-  time: { timeZone, setCurrentTime },
+  time: { timeZone, goToScenarioEvent },
 } = injectStrict(activeScenarioKey);
 
 const events = computed(() => store.state.events.map((id) => store.state.eventMap[id]));
 const t = computed(() => store.state.currentTime);
 
-function onEventClick(event: ScenarioEvent) {
-  if (!props.selectOnly) setCurrentTime(event.startTime);
+function onEventClick(event: NScenarioEvent) {
+  if (!props.selectOnly) goToScenarioEvent(event);
   emit("event-click", event);
 }
 </script>

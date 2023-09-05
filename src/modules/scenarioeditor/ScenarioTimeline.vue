@@ -1,23 +1,28 @@
 <script setup lang="ts">
 import { IconTriangleDown } from "@iconify-prerendered/vue-mdi";
 import { computed, ref, unref, watch, watchEffect } from "vue";
-import { useElementSize, useThrottleFn, useWebWorkerFn } from "@vueuse/core";
-import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { useElementSize, useThrottleFn } from "@vueuse/core";
 import { utcDay, utcHour } from "d3-time";
 import { utcFormat } from "d3-time-format";
-import { interpolateOranges, interpolateTurbo } from "d3-scale-chromatic";
+import { interpolateOranges } from "d3-scale-chromatic";
 import { scaleSequential } from "d3-scale";
 import dayjs from "dayjs";
-import { ScenarioEvent } from "@/types/scenarioModels";
+import { useActiveScenario } from "@/composables/scenarioUtils";
+import { NScenarioEvent } from "@/types/internalModels";
 
 const MS_PER_HOUR = 3600 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
 
 const {
-  time: { scenarioTime, setCurrentTime, timeZone, computeTimeHistogram },
+  time: {
+    scenarioTime,
+    setCurrentTime,
+    timeZone,
+    computeTimeHistogram,
+    goToScenarioEvent,
+  },
   store,
-} = injectStrict(activeScenarioKey);
+} = useActiveScenario();
 
 const el = ref<HTMLDivElement | null>(null);
 const isPointerInteraction = ref(false);
@@ -36,7 +41,7 @@ interface Tick {
 
 interface EventWithX {
   x: number;
-  event: ScenarioEvent;
+  event: NScenarioEvent;
 }
 
 interface BinWithX {
@@ -251,9 +256,8 @@ watchEffect(() => {
   }
 });
 
-function onEventClick(event: ScenarioEvent) {
-  setCurrentTime(event.startTime);
-  // emit("event-click", event);
+function onEventClick(event: NScenarioEvent) {
+  goToScenarioEvent(event);
 }
 </script>
 <template>

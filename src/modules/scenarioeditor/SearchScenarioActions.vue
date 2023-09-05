@@ -130,8 +130,8 @@ onFeatureSelect(({ featureId }) => {
 });
 
 onEventSelect((e) => {
-  activeScenario.time.setCurrentTime(e.startTime);
-  activeScenarioEventId.value = e.id as string;
+  activeScenario.time.goToScenarioEvent(e.id);
+  activeScenarioEventId.value = e.id;
   ui.activeTabIndex = TAB_EVENTS;
 });
 
