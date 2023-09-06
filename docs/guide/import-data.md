@@ -7,6 +7,9 @@ ORBAT Mapper can import units and features from the following sources and format
 - [Spatial Illusions ORBAT Builder](#spatial-illusions-orbat-builder)
 - [Order of Battle Generator](#order-of-battle-generator)
 
+Additionally, you can import KML/KMZ files as temporary map layers.
+See [Working with map background layers](map-layers.md)
+
 ## Start the import process
 
 To start the import process select _Import_ from the _File_ menu.
