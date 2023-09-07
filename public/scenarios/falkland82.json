@@ -1384,7 +1384,11 @@
                       "t": "1982-05-02T15:00:00-04:00",
                       "location": [-61.53, -55.4],
                       "sidc": "10033040001202020000",
-                      "title": "Belgrano torpedoed"
+                      "title": "Belgrano torpedoed",
+                      "where": {
+                        "type": "units",
+                        "units": ["mhQX0REztU"]
+                      }
                     }
                   ],
                   "subUnits": [],
@@ -1920,7 +1924,11 @@
     {
       "title": "Argentine scrap workers raise Argentine flag on South Georgia",
       "startTime": "1982-03-19T12:00:00-04:00",
-      "id": "ev123"
+      "id": "ev123",
+      "where": {
+        "type": "units",
+        "units": ["ks0mMcty6I", "L3qn46k1P9"]
+      }
     },
     {
       "title": "Argentine invasion force departs Argentina",
@@ -1946,7 +1954,11 @@
     {
       "title": "Sinking of \"General Belgrano\"",
       "startTime": "1982-05-01T20:00:00-04:00",
-      "id": "CAm5DrJOFQ8FUQw_7TMfc"
+      "id": "CAm5DrJOFQ8FUQw_7TMfc",
+      "where": {
+        "type": "units",
+        "units": ["mhQX0REztU"]
+      }
     },
     {
       "title": "San Carlos landings",

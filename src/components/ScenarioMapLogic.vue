@@ -35,6 +35,7 @@ import { useShowScaleLine } from "@/composables/geoScaleLine";
 import { ObjectEvent } from "ol/Object";
 import { clearStyleCache } from "@/geo/unitStyles";
 import { useRangeRingsLayer } from "@/composables/geoRangeRings";
+import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -85,6 +86,8 @@ const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } = storeToRefs(
 
 const { initializeFromStore: loadMapLayers } = useScenarioMapLayers(olMap);
 const { rangeLayer, drawRangeRings } = useRangeRingsLayer();
+// Disable temporarily
+//const {} = useScenarioEvents(olMap);
 
 olMap.addLayer(rangeLayer);
 const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);

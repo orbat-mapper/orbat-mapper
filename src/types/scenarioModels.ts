@@ -130,6 +130,16 @@ export interface ScenarioEvent extends ScenarioEventDescription {
   uiActions?: UIAction[];
   id?: string;
   _type?: "unit" | "scenario";
+  where?: UnitsWhere;
+}
+
+export interface WhereOptions {
+  mapAnimation?: "flyTo" | "easeTo" | "jumpTo";
+}
+
+export interface UnitsWhere extends WhereOptions {
+  type: "units";
+  units: EntityId[];
 }
 
 export interface ScenarioInfo {
