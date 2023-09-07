@@ -154,6 +154,14 @@
             {
               "name": "HMS Endurance",
               "sidc": "10033000001205001900",
+              "media": [
+                {
+                  "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/HMS_Endurance_%28A171%29_at_Nassau_in_1982.JPEG/800px-HMS_Endurance_%28A171%29_at_Nassau_in_1982.JPEG",
+                  "credit": "USN, Public domain, via Wikimedia Commons",
+                  "caption": "HMS Endurance (A171) at Nassau in 1982",
+                  "creditUrl": "https://commons.wikimedia.org/wiki/File:HMS_Endurance_(A171)_at_Nassau_in_1982.JPEG"
+                }
+              ],
               "state": [
                 {
                   "t": "1982-03-10T12:00:00-04:00",
@@ -239,6 +247,13 @@
               "sidc": "10031102001100000000",
               "id": "1lNcQCawMZ",
               "location": [-36.49445470967382, -54.283293554297046],
+              "media": [
+                {
+                  "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/King_Edward_Point_on_South_Georgia_1.jpg/800px-King_Edward_Point_on_South_Georgia_1.jpg",
+                  "credit": "Liam Quinn, CC BY-SA 2.0, via Wikimedia Commons",
+                  "creditUrl": "https://commons.wikimedia.org/wiki/File:King_Edward_Point_on_South_Georgia_1.jpg"
+                }
+              ],
               "subUnits": [
                 {
                   "name": "BAS Team",
@@ -302,6 +317,14 @@
                   "id": "bW9e77jLCT",
                   "shortName": "HER",
                   "externalUrl": "https://en.wikipedia.org/wiki/HMS_Hermes_(R12)",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/HMS_Hermes_%28R12%29_underway_at_sea_on_16_March_1982_%286350755%29.jpg/759px-HMS_Hermes_%28R12%29_underway_at_sea_on_16_March_1982_%286350755%29.jpg",
+                      "caption": "HMS Hermes (R12) underway at sea on 16 March 1982",
+                      "credit": "U.S. Navy, Public domain, via Wikimedia Commons",
+                      "creditUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hermes_(R12)_underway_at_sea_on_16_March_1982_(6350755).jpg"
+                    }
+                  ],
                   "rangeRings": [
                     {
                       "name": "FRS1 combat",
@@ -320,6 +343,14 @@
                 {
                   "name": "HMS Invincible",
                   "sidc": "10033000001201000000",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/6/6f/HMS_Invincible_Returns_From_Falklands_War.jpg",
+                      "caption": "HMS Invincible returns to massive celebrations following the Falklands Conflict in 1982. Lined up on deck are Sea King helicopters from 820 Naval Air Squadron and Sea Harrier FRS1 aircraft from 800 Naval Air Squadron. 2009 is the Centenary anniversary of the Royal Navy's Fleet Air Arm.",
+                      "credit": "Royal Navy, OGL v1.0OGL v1.0, via Wikimedia Commons",
+                      "creditUrl": "https://commons.wikimedia.org/wiki/File:HMS_Invincible_Returns_From_Falklands_War.jpg"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "S0UwT8x20G",

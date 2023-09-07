@@ -50,12 +50,20 @@ export interface Unit {
   rangeRings?: RangeRing[];
   equipment?: UnitEquipment[];
   personnel?: UnitPersonnel[];
+  media?: Media[];
   // internal runtime only state
   _state?: CurrentState | null;
   _pid?: EntityId; // parent
   _gid?: EntityId; // group
   _sid?: EntityId; // side
   _isOpen?: boolean;
+}
+
+export interface Media {
+  url: string;
+  caption?: string;
+  credit?: string;
+  creditUrl?: string;
 }
 
 export interface UnitEquipment {

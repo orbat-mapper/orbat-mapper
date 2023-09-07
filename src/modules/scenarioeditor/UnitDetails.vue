@@ -1,5 +1,8 @@
 <template>
   <div v-if="unit" class="">
+    <div v-if="mediaUrl" class="-mx-4 -mt-4 mb-4 aspect-[16/9]">
+      <img class="h-full w-full object-cover" :src="mediaUrl" />
+    </div>
     <header class="-mx-4 -mt-4 px-4 pt-4">
       <div v-if="!isMultiMode" class="flex">
         <button
@@ -262,8 +265,12 @@ const doFormFocus = async () => {
 };
 
 const hDescription = computed(() => renderMarkdown(unit.value.description || ""));
-
 const hasPosition = computed(() => Boolean(unit.value._state?.location));
+const mediaUrl = computed(() => {
+  const { media } = unit.value;
+  if (!media) return;
+  return media[0].url;
+});
 
 function updateForm() {
   const { name, shortName, description, externalUrl } = unit.value;
