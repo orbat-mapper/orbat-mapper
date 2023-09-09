@@ -6,7 +6,7 @@
       </header>
 
       <TabView class="flex-auto">
-        <TabItem label="Select" v-slot="{ isActive }">
+        <TabItem label="Select" v-slot="{ isActive }" class="max-h-[60vh] overflow-auto">
           <SearchModalInput
             class="pb-3"
             placeholder="Search for symbol"
