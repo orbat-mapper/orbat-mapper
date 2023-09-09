@@ -1,9 +1,21 @@
 <template>
   <div v-if="unit" class="">
-    <div v-if="mediaUrl" class="-mx-4 -mt-4 mb-4 aspect-[16/9]">
-      <img class="h-full w-full object-cover" :src="mediaUrl" />
+    <div v-if="media" class="group relative -mx-4 -mt-4 aspect-[16/9]">
+      <img
+        draggable="false"
+        class="h-full w-full object-cover"
+        :src="mediaUrl"
+        :alt="altText"
+      />
+      <p
+        class="prose prose-sm absolute bottom-0 left-0 right-0 hidden bg-white bg-opacity-75 p-2 text-sm group-hover:block"
+      >
+        <a :href="media.creditsUrl" target="_blank">
+          {{ media.credits }}
+        </a>
+      </p>
     </div>
-    <header class="-mx-4 -mt-4 px-4 pt-4">
+    <header class="-mx-4 px-4 pt-4">
       <div v-if="!isMultiMode" class="flex">
         <button
           type="button"
@@ -19,6 +31,7 @@
           />
           <p class="-mt-1 text-sm leading-none text-gray-500">{{ unit.shortName }}</p>
         </div>
+        <DotsMenu :items="unitMenuItems" />
       </div>
       <div v-else>
         <div class="flex items-center justify-between">
@@ -40,8 +53,6 @@
         </ul>
       </div>
       <nav class="mb-4 flex">
-        <BaseButton end @click="handleChangeSymbol()">Edit symbol</BaseButton>
-
         <SplitButton
           class="ml-1"
           :items="buttonItems"
@@ -92,9 +103,13 @@
               v-if="unit.externalUrl"
               label="External URL"
               dd-class="truncate"
-              ><a target="_blank" class="underline" :href="unit.externalUrl">{{
-                unit.externalUrl
-              }}</a></DescriptionItem
+              ><a
+                target="_blank"
+                draggable="false"
+                class="underline"
+                :href="unit.externalUrl"
+                >{{ unit.externalUrl }}</a
+              ></DescriptionItem
             >
             <DescriptionItem v-if="unit.description" label="Description">
               <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
@@ -177,6 +192,8 @@ import { useTabStore } from "@/stores/tabStore";
 import { storeToRefs } from "pinia";
 import UnitDetailsToe from "@/modules/scenarioeditor/UnitDetailsToe.vue";
 import TabWrapper from "@/components/TabWrapper.vue";
+import DotsMenu from "@/components/DotsMenu.vue";
+import { MenuItemData } from "@/components/types";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue"),
@@ -213,6 +230,12 @@ const tabList = computed(() =>
 const unit = computed(() => {
   return store.state.getUnitById(props.unitId);
 });
+
+const unitMenuItems: MenuItemData[] = [
+  { label: "Change symbol", action: () => handleChangeSymbol() },
+  { label: "Edit unit data", action: () => toggleEditMode() },
+  { label: "Add or change image", action: () => handleChangeMedia() },
+];
 
 watch(
   () => unit.value?.name,
@@ -283,6 +306,10 @@ const altText = computed(() => {
   return media[0].caption;
 });
 
+function handleChangeMedia() {
+  console.warn("Not implemented yet");
+}
+
 function updateForm() {
   const { name, shortName, description, externalUrl } = unit.value;
   form.value = { name, shortName, description, externalUrl };
@@ -294,6 +321,7 @@ watch(
   isEditMode,
   (v) => {
     if (!v) return;
+    selectedTab.value = 0;
     updateForm();
     if (v) nextTick(() => doFormFocus());
   },
