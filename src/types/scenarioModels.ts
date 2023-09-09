@@ -62,8 +62,8 @@ export interface Unit {
 export interface Media {
   url: string;
   caption?: string;
-  credit?: string;
-  creditUrl?: string;
+  credits?: string;
+  creditsUrl?: string;
 }
 
 export interface UnitEquipment {

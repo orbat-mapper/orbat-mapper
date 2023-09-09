@@ -266,10 +266,21 @@ const doFormFocus = async () => {
 
 const hDescription = computed(() => renderMarkdown(unit.value.description || ""));
 const hasPosition = computed(() => Boolean(unit.value._state?.location));
+const media = computed(() => {
+  const { media } = unit.value;
+  if (!media || isMultiMode.value) return;
+  return media[0];
+});
 const mediaUrl = computed(() => {
   const { media } = unit.value;
-  if (!media) return;
+  if (!media || isMultiMode.value) return;
   return media[0].url;
+});
+
+const altText = computed(() => {
+  const { media } = unit.value;
+  if (!media || isMultiMode.value) return;
+  return media[0].caption;
 });
 
 function updateForm() {

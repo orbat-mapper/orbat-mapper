@@ -4,7 +4,7 @@
       class="pointer-events-auto relative mt-4 flex max-h-[70vh] flex-col overflow-clip rounded-md border border-gray-300 bg-white shadow"
       :style="{ width: widthStore.detailsWidth + 'px' }"
     >
-      <CloseButton class="absolute right-4 top-2" @click="emit('close')" />
+      <CloseButton class="absolute right-4 top-2 z-10" @click="emit('close')" />
       <div class="flex-auto overflow-auto p-4">
         <slot />
       </div>
