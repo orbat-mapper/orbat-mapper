@@ -10,9 +10,9 @@
       <p
         class="prose prose-sm absolute bottom-0 left-0 right-0 hidden bg-white bg-opacity-75 p-2 text-sm group-hover:block"
       >
-        <a :href="media.creditsUrl" target="_blank">
-          {{ media.credits }}
-        </a>
+        <a v-if="media.creditsUrl" :href="media.creditsUrl" target="_blank">
+          {{ media.credits }} </a
+        ><span v-else>{{ media.credits }}</span>
       </p>
     </div>
     <header class="-mx-4 px-4 pt-4">
@@ -64,7 +64,7 @@
       <TabPanel>
         <section class="relative">
           <BaseButton
-            v-if="!isMultiMode && !isEditMode"
+            v-if="!isMultiMode && !isEditMode && !isEditMediaMode"
             small
             class="absolute right-1"
             :class="isEditMode && 'bg-gray-100 text-black'"
@@ -94,6 +94,12 @@
               <BaseButton small @click="toggleEditMode()">Cancel</BaseButton>
             </div>
           </form>
+          <EditMediaForm
+            v-else-if="isEditMediaMode"
+            :media="media"
+            @cancel="toggleEditMediaMode()"
+            @update="updateMedia"
+          />
           <div v-else-if="!isMultiMode" class="mb-4 space-y-4">
             <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
             <DescriptionItem v-if="unit.shortName" label="Short name"
@@ -175,7 +181,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import { EntityId } from "@/types/base";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, sidcModalKey } from "@/components/injects";
-import { UnitUpdate } from "@/types/internalModels";
+import { MediaUpdate, UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
@@ -194,6 +200,7 @@ import UnitDetailsToe from "@/modules/scenarioeditor/UnitDetailsToe.vue";
 import TabWrapper from "@/components/TabWrapper.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { MenuItemData } from "@/components/types";
+import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue"),
@@ -234,7 +241,7 @@ const unit = computed(() => {
 const unitMenuItems: MenuItemData[] = [
   { label: "Change symbol", action: () => handleChangeSymbol() },
   { label: "Edit unit data", action: () => toggleEditMode() },
-  { label: "Add or change image", action: () => handleChangeMedia() },
+  { label: "Add or change image", action: () => toggleEditMediaMode() },
 ];
 
 watch(
@@ -275,6 +282,9 @@ onGetLocation((location) => addUnitPosition(props.unitId, location));
 const isEditMode = ref(false);
 const toggleEditMode = useToggle(isEditMode);
 
+const isEditMediaMode = ref(false);
+const toggleEditMediaMode = useToggle(isEditMediaMode);
+
 const onFormSubmit = () => {
   updateUnit(props.unitId, form.value);
   toggleEditMode();
@@ -306,10 +316,6 @@ const altText = computed(() => {
   return media[0].caption;
 });
 
-function handleChangeMedia() {
-  console.warn("Not implemented yet");
-}
-
 function updateForm() {
   const { name, shortName, description, externalUrl } = unit.value;
   form.value = { name, shortName, description, externalUrl };
@@ -321,12 +327,18 @@ watch(
   isEditMode,
   (v) => {
     if (!v) return;
+    isEditMediaMode.value = false;
     selectedTab.value = 0;
     updateForm();
     if (v) nextTick(() => doFormFocus());
   },
   { immediate: true },
 );
+
+watch(isEditMediaMode, (v) => {
+  if (!v) return;
+  isEditMode.value = false;
+});
 
 watch(
   () => props.unitId,
@@ -349,6 +361,14 @@ function actionWrapper(action: UnitAction) {
     return;
   }
   onUnitAction(unit.value, action);
+}
+
+function updateMedia(mediaUpdate: MediaUpdate) {
+  if (!mediaUpdate) return;
+  const { media = [] } = unit.value;
+  const newMedia = { ...media[0], ...mediaUpdate };
+  updateUnit(props.unitId, { media: [newMedia] });
+  isEditMediaMode.value = false;
 }
 
 const buttonItems = computed(() => [

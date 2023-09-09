@@ -1,6 +1,6 @@
 {
   "type": "ORBAT-mapper",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "name": "Battles of Narvik",
   "startTime": "1940-04-09T01:00:00+02:00",
   "timeZone": "Europe/Oslo",
@@ -34,7 +34,15 @@
                     }
                   ],
                   "subUnits": [],
-                  "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold"
+                  "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Eidsvold_%281900%29_a.jpg",
+                      "caption": "",
+                      "credits": "B. Weyer (1857-1936), Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:Eidsvold_(1900)_a.jpg"
+                    }
+                  ]
                 },
                 {
                   "name": "Norge",
@@ -48,7 +56,15 @@
                     }
                   ],
                   "subUnits": [],
-                  "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold"
+                  "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/4/45/KNMS_Norge_1933.JPG",
+                      "caption": "",
+                      "credits": "Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:KNMS_Norge_1933.JPG"
+                    }
+                  ]
                 }
               ]
             }
@@ -287,5 +303,8 @@
   "events": [],
   "mapLayers": [],
   "equipment": [],
-  "personnel": []
+  "personnel": [],
+  "settings": {
+    "rangeRingGroups": []
+  }
 }

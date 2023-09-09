@@ -1,6 +1,7 @@
 import {
   CurrentStateType,
   EquipmentData,
+  Media,
   PersonnelData,
   ScenarioEvent,
   Side,
@@ -96,6 +97,7 @@ export type ScenarioMapLayerUpdate =
 export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id">> {}
 export interface UnitUpdate extends Partial<Omit<NUnit, "id">> {}
 export interface ScenarioEventUpdate extends Partial<Omit<NScenarioEvent, "id">> {}
+export interface MediaUpdate extends Partial<Media> {}
 
 export interface NOrbatItemData {
   unit: NUnit;

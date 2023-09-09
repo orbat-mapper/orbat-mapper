@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+September 2023
+
+- Add support for adding an image to a unit.
+
 August 2023
 
 - Add drag and drop support for temporary KML and KMZ files.
