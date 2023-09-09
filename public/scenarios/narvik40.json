@@ -86,7 +86,15 @@
                   "id": "RjhMI5jVDqdnozd9CWF2c",
                   "state": [],
                   "subUnits": [],
-                  "shortName": "Hardy"
+                  "shortName": "Hardy",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/0/05/HMS_Hardy_1943_IWM_FL_9572.jpg",
+                      "caption": "",
+                      "credits": "Royal Navy official photographer, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hardy_1943_IWM_FL_9572.jpg"
+                    }
+                  ]
                 },
                 {
                   "name": "HMS Hotspur",
@@ -94,7 +102,15 @@
                   "id": "fAK5DNvzkEee-Bprww6Nn",
                   "state": [],
                   "subUnits": [],
-                  "shortName": "Hotspur"
+                  "shortName": "Hotspur",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/2/2b/HMS_Hotspur_AWM_302405.jpeg",
+                      "caption": "",
+                      "credits": "Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hotspur_AWM_302405.jpeg"
+                    }
+                  ]
                 },
                 {
                   "name": "HMS Hostile",
@@ -102,7 +118,15 @@
                   "id": "WrV9f5KQLDt3dbBJIWNWX",
                   "state": [],
                   "subUnits": [],
-                  "shortName": "Hostile"
+                  "shortName": "Hostile",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/7/7b/HMS_Hostile_%28H55%29_IWM_FL_013957.jpg",
+                      "caption": "",
+                      "credits": "Royal Navy official photographer, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hostile_(H55)_IWM_FL_013957.jpg"
+                    }
+                  ]
                 },
                 {
                   "name": "HMS Hunter",
@@ -110,7 +134,15 @@
                   "id": "2jGbCsiwmZ-xau6MJuMuI",
                   "state": [],
                   "subUnits": [],
-                  "shortName": "Hunter"
+                  "shortName": "Hunter",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/9/97/HMS_Hunter_FL10190.jpg",
+                      "caption": "",
+                      "credits": "Royal Navy official photographer, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hunter_FL10190.jpg"
+                    }
+                  ]
                 },
                 {
                   "name": "HMS Havock",
@@ -118,7 +150,15 @@
                   "id": "ERVsIaBmNfyTvW-Df5XaL",
                   "state": [],
                   "subUnits": [],
-                  "shortName": "Havock"
+                  "shortName": "Havock",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/HMS_Hasty.jpg",
+                      "caption": "",
+                      "credits": "Royal Navy official photographer, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hasty.jpg"
+                    }
+                  ]
                 }
               ]
             },
