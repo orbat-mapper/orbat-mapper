@@ -39,13 +39,13 @@ function changeTab(index: number) {
 
 <template>
   <TabGroup :selected-index="tabIndex" @change="changeTab" class="-mx-4 mt-2" as="div">
-    <TabList class="mb-2 flex space-x-4 border-b-2 px-4" v-slot="{ selectedIndex }">
+    <TabList class="mb-2 flex space-x-3 border-b-2 px-4" v-slot="{ selectedIndex }">
       <Tab
         v-for="({ label, title }, i) in tabListItems"
         :title="title"
         :class="[
           selectedIndex === i ? 'border-army  text-army' : 'border-transparent',
-          'border-b-2 px-1 py-2 ',
+          'border-b-2 px-1 py-2 text-sm font-medium ',
         ]"
         >{{ label }}</Tab
       >
