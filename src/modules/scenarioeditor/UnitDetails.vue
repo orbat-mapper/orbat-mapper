@@ -31,7 +31,6 @@
           />
           <p class="-mt-1 text-sm leading-none text-gray-500">{{ unit.shortName }}</p>
         </div>
-        <DotsMenu :items="unitMenuItems" />
       </div>
       <div v-else>
         <div class="flex items-center justify-between">
@@ -52,25 +51,41 @@
           </li>
         </ul>
       </div>
-      <nav class="mb-4 flex">
-        <SplitButton
-          class="ml-1"
-          :items="buttonItems"
-          v-model:active-item="uiStore.activeItem"
-        />
+      <nav class="-mt-4 mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-x-1">
+          <IconButton title="Zoom to" @click="actionWrapper(UnitActions.Zoom)">
+            <ZoomIcon class="h-6 w-6" />
+          </IconButton>
+          <IconButton title="Edit unit" @click="toggleEditMode()" :disabled="isMultiMode">
+            <EditIcon class="h-6 w-6" />
+          </IconButton>
+          <IconButton
+            title="Add/modify unit image"
+            @click="toggleEditMediaMode()"
+            :disabled="isMultiMode"
+          >
+            <ImageIcon class="h-6 w-6" />
+          </IconButton>
+
+          <IconButton
+            @click="startGetLocation()"
+            title="Set unit location"
+            :disabled="isMultiMode"
+          >
+            <IconCrosshairsGps class="h-6 w-6" aria-hidden="true" />
+          </IconButton>
+          <SplitButton
+            class="ml-1"
+            :items="buttonItems"
+            v-model:active-item="uiStore.activeItem"
+          />
+        </div>
+        <div><DotsMenu :items="unitMenuItems" /></div>
       </nav>
     </header>
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
       <TabPanel>
         <section class="relative">
-          <BaseButton
-            v-if="!isMultiMode && !isEditMode && !isEditMediaMode"
-            small
-            class="absolute right-1"
-            :class="isEditMode && 'bg-gray-100 text-black'"
-            @click="toggleEditMode()"
-            >Edit
-          </BaseButton>
           <form
             v-if="isEditMode"
             @submit.prevent="onFormSubmit"
@@ -130,10 +145,6 @@
               </div>
             </DescriptionItem>
           </div>
-          <BaseButton @click="startGetLocation()" :disabled="isMultiMode">
-            <IconCrosshairsGps class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-            {{ isGetLocationActive ? "Select on map" : "Set location" }}
-          </BaseButton>
           <div class="mt-4 space-y-2">
             <ToggleField v-model="unitSettings.showHistory"
               >Show unit track on map</ToggleField
@@ -165,7 +176,12 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
-import { IconCrosshairsGps } from "@iconify-prerendered/vue-mdi";
+import {
+  IconCrosshairsGps,
+  IconPencil as EditIcon,
+  IconImage as ImageIcon,
+  IconMagnifyExpand as ZoomIcon,
+} from "@iconify-prerendered/vue-mdi";
 import InputGroup from "@/components/InputGroup.vue";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { GlobalEvents } from "vue-global-events";
@@ -242,6 +258,7 @@ const unitMenuItems: MenuItemData[] = [
   { label: "Change symbol", action: () => handleChangeSymbol() },
   { label: "Edit unit data", action: () => toggleEditMode() },
   { label: "Add or change image", action: () => toggleEditMediaMode() },
+  { label: "Remove unit image", action: () => removeMedia() },
 ];
 
 watch(
@@ -289,6 +306,10 @@ const onFormSubmit = () => {
   updateUnit(props.unitId, form.value);
   toggleEditMode();
 };
+
+function removeMedia() {
+  updateUnit(props.unitId, { media: [] });
+}
 
 const doFormFocus = async () => {
   isEditMode.value = true;
@@ -338,6 +359,7 @@ watch(
 watch(isEditMediaMode, (v) => {
   if (!v) return;
   isEditMode.value = false;
+  selectedTab.value = 0;
 });
 
 watch(
