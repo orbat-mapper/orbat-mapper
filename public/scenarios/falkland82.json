@@ -417,7 +417,15 @@
                   "id": "XFfDYeXpqD",
                   "shortName": "ANT",
                   "externalUrl": "",
-                  "subUnits": []
+                  "subUnits": [],
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/6/60/HMS_Antrim_D18_1976.jpeg",
+                      "caption": " The British destroyer HMS Antrim (D18) underway during NATO exercise \"Display Determination\" on 29 October 1976 in the Mediterranean Sea. ",
+                      "credits": "U.S. Navy, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Antrim_D18_1976.jpeg"
+                    }
+                  ]
                 },
                 {
                   "name": "HMS Cardiff",
@@ -426,7 +434,15 @@
                   "id": "QAygyetc2O",
                   "shortName": "CAR",
                   "externalUrl": "",
-                  "subUnits": []
+                  "subUnits": [],
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/b/b5/HMS_Cardiff_%28D108%29_1.jpg",
+                      "caption": "",
+                      "credits": "The original uploader was Ryan4314 at English Wikipedia.(Original text: Mr. Mike Pocock, David Page), CC BY-SA 3.0, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Cardiff_(D108)_1.jpg"
+                    }
+                  ]
                 },
                 {
                   "name": "HMS Exeter",
@@ -435,7 +451,15 @@
                   "id": "qfk052La3b",
                   "shortName": "EXE",
                   "externalUrl": "",
-                  "subUnits": []
+                  "subUnits": [],
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/1/1a/HMSExeterSailingDownTheThamesInLondon.jpg",
+                      "caption": "",
+                      "credits": "Psychofox at English Wikipedia, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMSExeterSailingDownTheThamesInLondon.jpg"
+                    }
+                  ]
                 },
                 {
                   "name": "HMS Sheffield",
@@ -462,7 +486,15 @@
                   "id": "Vvg9xmBKiG",
                   "shortName": "SHE",
                   "externalUrl": "",
-                  "subUnits": []
+                  "subUnits": [],
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/HMS_Sheffield_%28D80%29.jpg/1024px-HMS_Sheffield_%28D80%29.jpg",
+                      "caption": "",
+                      "credits": "Nathalmad, CC BY 3.0, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Sheffield_(D80).jpg"
+                    }
+                  ]
                 }
               ],
               "state": [],
@@ -484,7 +516,15 @@
                     }
                   ],
                   "subUnits": [],
-                  "shortName": "FEA"
+                  "shortName": "FEA",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/5/55/HMS_Fearless%2C_San_Carlos%2C_1982.JPG",
+                      "caption": "HMS Fearless in San Carlos 13 June 1982",
+                      "credits": "Ken Griffiths, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Fearless,_San_Carlos,_1982.JPG"
+                    }
+                  ]
                 },
                 {
                   "name": "HMS Intrepid",
@@ -498,7 +538,15 @@
                     }
                   ],
                   "subUnits": [],
-                  "shortName": "INT"
+                  "shortName": "INT",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/7/72/Fearless_%26_Intrepid_p1%2C_Portsmouth%2C_UK.JPG",
+                      "caption": "https://commons.wikimedia.org/wiki/File:Fearless_%26_Intrepid_p1,_Portsmouth,_UK.JPG",
+                      "credits": "Alf van Beem, CC0, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:Fearless_%26_Intrepid_p1,_Portsmouth,_UK.JPG"
+                    }
+                  ]
                 },
                 {
                   "name": "RFA Sir Tristram",
@@ -1222,7 +1270,15 @@
                     }
                   ],
                   "id": "W2ZO6vxg0q",
-                  "subUnits": []
+                  "subUnits": [],
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/De_Soto_County_LST-1171.jpg",
+                      "caption": "",
+                      "credits": "See page for author, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:De_Soto_County_LST-1171.jpg"
+                    }
+                  ]
                 },
                 {
                   "name": "ARA Comodoro Py",
@@ -1237,7 +1293,15 @@
                   "subUnits": [],
                   "id": "AC8ZMWwYvR",
                   "shortName": "D-27",
-                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)"
+                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/2/28/Argentine_destroyer_ARA_Py_%28D-27%29_underway_at_sea_in_1978.jpg",
+                      "caption": "",
+                      "credits": "Col. Martín Otero, CC BY 2.5, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Veinticinco_de_Mayo.jpg"
+                    }
+                  ]
                 },
                 {
                   "name": "ARA Comodoro Segui",
@@ -1308,7 +1372,15 @@
                     }
                   ],
                   "subUnits": [],
-                  "id": "5G3UQJUa9e"
+                  "id": "5G3UQJUa9e",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/3/32/ARA_Santa_Fe_%28S-11%29.jpg",
+                      "caption": "",
+                      "credits": "From wikimedia commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Santa_Fe_(S-11).jpg#file"
+                    }
+                  ]
                 },
                 {
                   "name": "ARA Santisima Trinidad",
@@ -1357,7 +1429,15 @@
                   ],
                   "subUnits": [],
                   "shortName": "V-2",
-                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Veinticinco_de_Mayo_(V-2)"
+                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Veinticinco_de_Mayo_(V-2)",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/c/c8/ARA_Veinticinco_de_Mayo.jpg",
+                      "caption": "",
+                      "credits": "ValtTeck, CC BY-SA 4.0, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Veinticinco_de_Mayo.jpg"
+                    }
+                  ]
                 },
                 {
                   "name": "ARA Drummond",
@@ -2021,7 +2101,10 @@
       "imageCenter": [-58.96816549275583, -51.79901410430646],
       "imageRotate": 0.028235478069220242,
       "imageScale": [19.703891001458558, 19.703891001458558],
-      "opacity": 0.8
+      "opacity": 0.8,
+      "extent": [
+        -6569354.1947099, -6771880.594125692, -6559258.116624231, -6755851.18973469
+      ]
     }
   ],
   "equipment": [],
