@@ -1,9 +1,11 @@
 <template>
   <div class="">
-    <EditableLabel
-      v-model="scenarioName"
-      @update-value="updateScenarioInfo({ name: $event })"
-    />
+    <header class="pr-4">
+      <EditableLabel
+        v-model="scenarioName"
+        @update-value="updateScenarioInfo({ name: $event })"
+      />
+    </header>
     <TabWrapper
       :tab-list="['Details', 'Equipment', 'Personnel', 'Groups']"
       v-model="panelStore.tabIndex"
