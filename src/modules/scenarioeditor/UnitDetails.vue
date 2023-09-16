@@ -86,29 +86,12 @@
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
       <TabPanel>
         <section class="relative">
-          <form
+          <EditMetaForm
             v-if="isEditMode"
-            @submit.prevent="onFormSubmit"
-            class="mb-6 mt-0 space-y-4"
-          >
-            <InputGroup label="Name" v-model="form.name" id="name-input" />
-            <InputGroup
-              label="Short name"
-              description="Alternative name"
-              v-model="form.shortName"
-            />
-            <InputGroup label="External URL" description="" v-model="form.externalUrl" />
-            <SimpleMarkdownInput
-              label="Description"
-              v-model="form.description"
-              description="Use markdown syntax for formatting"
-            />
-
-            <div class="flex items-center justify-end space-x-2">
-              <BaseButton type="submit" small primary>Save</BaseButton>
-              <BaseButton small @click="toggleEditMode()">Cancel</BaseButton>
-            </div>
-          </form>
+            :item="unit"
+            @update="onFormSubmit"
+            @cancel="toggleEditMode()"
+          />
           <EditMediaForm
             v-else-if="isEditMediaMode"
             :media="media"
@@ -169,20 +152,19 @@
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"
       :filter="inputEventFilter"
-      @keyup.e="doFormFocus"
+      @keyup.e="toggleEditMode()"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import {
   IconCrosshairsGps,
-  IconPencil as EditIcon,
   IconImage as ImageIcon,
   IconMagnifyExpand as ZoomIcon,
+  IconPencil as EditIcon,
 } from "@iconify-prerendered/vue-mdi";
-import InputGroup from "@/components/InputGroup.vue";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { GlobalEvents } from "vue-global-events";
 import { inputEventFilter, setCharAt } from "@/components/helpers";
@@ -193,7 +175,6 @@ import UnitPanelState from "./UnitPanelState.vue";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { UnitAction, UnitActions } from "@/types/constants";
 import SplitButton from "@/components/SplitButton.vue";
-import BaseButton from "@/components/BaseButton.vue";
 import { EntityId } from "@/types/base";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, sidcModalKey } from "@/components/injects";
@@ -217,10 +198,7 @@ import TabWrapper from "@/components/TabWrapper.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { MenuItemData } from "@/components/types";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
-
-const SimpleMarkdownInput = defineAsyncComponent(
-  () => import("@/components/SimpleMarkdownInput.vue"),
-);
+import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 
 const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
@@ -273,13 +251,6 @@ const combinedSymbolOptions = computed(() => {
   return getCombinedSymbolOptions(unit.value);
 });
 
-let form = ref<UnitUpdate>({
-  name: "",
-  shortName: "",
-  sidc: "",
-  description: "",
-  externalUrl: "",
-});
 const geoStore = useGeoStore();
 const unitSettings = useUnitSettingsStore();
 const { getModalSidc } = injectStrict(sidcModalKey);
@@ -302,21 +273,14 @@ const toggleEditMode = useToggle(isEditMode);
 const isEditMediaMode = ref(false);
 const toggleEditMediaMode = useToggle(isEditMediaMode);
 
-const onFormSubmit = () => {
-  updateUnit(props.unitId, form.value);
+const onFormSubmit = (unitUpdate: UnitUpdate) => {
+  updateUnit(props.unitId, unitUpdate);
   toggleEditMode();
 };
 
 function removeMedia() {
   updateUnit(props.unitId, { media: [] });
 }
-
-const doFormFocus = async () => {
-  isEditMode.value = true;
-  await nextTick();
-  const inputElement = document.getElementById("name-input");
-  inputElement && inputElement.focus();
-};
 
 const hDescription = computed(() => renderMarkdown(unit.value.description || ""));
 const hasPosition = computed(() => Boolean(unit.value._state?.location));
@@ -337,21 +301,12 @@ const altText = computed(() => {
   return media[0].caption;
 });
 
-function updateForm() {
-  const { name, shortName, description, externalUrl } = unit.value;
-  form.value = { name, shortName, description, externalUrl };
-}
-
-updateForm();
-
 watch(
   isEditMode,
   (v) => {
     if (!v) return;
     isEditMediaMode.value = false;
     selectedTab.value = 0;
-    updateForm();
-    if (v) nextTick(() => doFormFocus());
   },
   { immediate: true },
 );
@@ -361,11 +316,6 @@ watch(isEditMediaMode, (v) => {
   isEditMode.value = false;
   selectedTab.value = 0;
 });
-
-watch(
-  () => props.unitId,
-  () => updateForm(),
-);
 
 watch(
   isGetLocationActive,
