@@ -70,12 +70,12 @@ const onFormSubmit = () => {
       description="Alternative name"
       v-model="form.shortName"
     />
-    <InputGroup label="External URL" description="" v-model="form.externalUrl" />
     <SimpleMarkdownInput
       label="Description"
       v-model="form.description"
       description="Use markdown syntax for formatting"
     />
+    <InputGroup label="External URL" description="" v-model="form.externalUrl" />
 
     <div class="flex items-center justify-end space-x-2">
       <BaseButton type="submit" small primary>Save</BaseButton>

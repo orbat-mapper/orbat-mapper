@@ -5,6 +5,7 @@ import {
   IconImage as ImageIcon,
   IconPalette as StyleIcon,
 } from "@iconify-prerendered/vue-mdi";
+import { GlobalEvents } from "vue-global-events";
 
 import { injectStrict } from "@/utils";
 import {
@@ -38,6 +39,7 @@ import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import { MediaUpdate } from "@/types/internalModels";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import { MenuItemData } from "@/components/types";
+import { inputEventFilter } from "@/components/helpers";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -239,5 +241,10 @@ function doZoom() {
         <pre>{{ feature }}</pre>
       </TabPanel>
     </TabWrapper>
+    <GlobalEvents
+      v-if="uiStore.shortcutsEnabled"
+      :filter="inputEventFilter"
+      @keyup.e="toggleEditMode()"
+    />
   </div>
 </template>
