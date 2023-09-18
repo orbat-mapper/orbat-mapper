@@ -1,6 +1,6 @@
 {
   "type": "ORBAT-mapper",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
   "timeZone": "Atlantic/Stanley",
@@ -1846,13 +1846,14 @@
           "properties": {
             "type": "Circle",
             "name": "Maritime Exclusion Zone",
-            "description": "The Maritime Exclusion Zone (MEZ) declared on 12 April 1982 covered a circle of radius 200 nautical miles (370 km; 230 mi) from the centre of the Falkland Islands. Any Argentine warship or naval auxiliary entering the MEZ could have been attacked by British nuclear-powered submarines (SSN).",
+            "description": "A [Maritime Exclusion Zone](https://en.wikipedia.org/wiki/Maritime_Exclusion_Zone \"Maritime Exclusion Zone\") (MEZ) was declared on 12 April 1982 covered a circle of radius 200 nautical miles (370 km; 230 mi) from the centre of the Falkland Islands. Any *Argentine warship* or *naval auxiliary* entering the MEZ could have been attacked by [British nuclear-powered submarines](https://en.wikipedia.org/wiki/Royal_Navy_Submarine_Service \"Royal Navy Submarine Service\") (SSN).\n\nFrom [Wikipedia](https://en.wikipedia.org/wiki/Total_Exclusion_Zone)",
             "radius": 370000,
             "stroke": "#7F1D1D",
             "stroke-width": 4,
             "stroke-opacity": 0.4,
             "fill": null,
-            "visibleFromT": "1982-04-11T20:00:00-04:00"
+            "visibleFromT": "1982-04-11T20:00:00-04:00",
+            "externalUrl": "https://en.wikipedia.org/wiki/Total_Exclusion_Zone"
           },
           "geometry": {
             "type": "Point",
@@ -1965,10 +1966,20 @@
             "name": "Corbeta Uruguay base",
             "marker-symbol": "triangle",
             "marker-color": "#a40000",
-            "description": "An Argentinian military outpost established in 1976",
-            "marker-size": "small"
+            "description": "**Corbeta Uruguay base** was an [Argentine military](https://en.wikipedia.org/wiki/Military_of_Argentina \"Military of Argentina\") outpost established in November 1976 on [Thule Island](https://en.wikipedia.org/wiki/Thule_Island \"Thule Island\"), [Southern Thule](https://en.wikipedia.org/wiki/Southern_Thule \"Southern Thule\"), in the [South Sandwich Islands](https://en.wikipedia.org/wiki/South_Sandwich_Islands \"South Sandwich Islands\"). It was vacated and mostly demolished in 1982 following Britain's victory against Argentina in the Falklands War.\n\nFrom [Wikipedia](https://en.wikipedia.org/wiki/Corbeta_Uruguay_base)",
+            "marker-size": "medium",
+            "externalUrl": "https://en.wikipedia.org/wiki/Corbeta_Uruguay_base",
+            "showLabel": true
           },
-          "id": "uGTaeM6ZUd"
+          "id": "uGTaeM6ZUd",
+          "media": [
+            {
+              "url": "https://upload.wikimedia.org/wikipedia/commons/5/58/Thule1981.jpg",
+              "caption": "The Corbeta Uruguay station on Southern Thule, 1981",
+              "credits": "Ricardo A. R. Hermelo, Public domain, via Wikimedia Commons",
+              "creditsUrl": "https://commons.wikimedia.org/wiki/File:Thule1981.jpg"
+            }
+          ]
         },
         {
           "type": "Feature",
@@ -1981,9 +1992,20 @@
             "name": "Orcadas",
             "marker-symbol": "triangle",
             "marker-color": "#a40000",
-            "marker-size": "small"
+            "marker-size": "medium",
+            "description": "**Base Orcadas** is an [Argentine](https://en.wikipedia.org/wiki/Argentina \"Argentina\") scientific station in [Antarctica](https://en.wikipedia.org/wiki/Antarctica \"Antarctica\"), and the oldest of the stations in Antarctica still in operation. It is located on [Laurie Island](https://en.wikipedia.org/wiki/Laurie_Island \"Laurie Island\"), one of the [South Orkney Islands](https://en.wikipedia.org/wiki/South_Orkney_Islands \"South Orkney Islands\") ([Spanish](https://en.wikipedia.org/wiki/Spanish_language \"Spanish language\"): *Islas Orcadas del Sur*), at 4 meters (13 ft) above sea level and 170 meters (558 ft) from the coastline.\n\nFrom [Wikipedia](https://en.wikipedia.org/wiki/Orcadas_Base)\n",
+            "externalUrl": "https://en.wikipedia.org/wiki/Orcadas_Base",
+            "showLabel": true
           },
-          "id": "Jl2579NHvw"
+          "id": "Jl2579NHvw",
+          "media": [
+            {
+              "url": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Orcadas_Base.jpg",
+              "caption": "",
+              "credits": "Antarctic96, CC BY-SA 3.0, via Wikimedia Commons",
+              "creditsUrl": "https://commons.wikimedia.org/wiki/File:Orcadas_Base.jpg"
+            }
+          ]
         }
       ]
     },
