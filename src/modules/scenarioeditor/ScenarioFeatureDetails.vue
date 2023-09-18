@@ -37,6 +37,7 @@ import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import { MediaUpdate } from "@/types/internalModels";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
+import { MenuItemData } from "@/components/types";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -69,6 +70,13 @@ const hDescription = computed(() =>
 );
 
 const isEditMode = ref(false);
+const menuItems: MenuItemData[] = [
+  { label: "Remove feature image", action: () => removeMedia() },
+];
+
+function removeMedia() {
+  feature.value && geo.updateFeature(feature.value.id, { media: [] });
+}
 
 function toggleEditMode() {
   isEditMode.value = !isEditMode.value;
@@ -186,7 +194,7 @@ function doZoom() {
           </IconButton>
         </div>
         <div>
-          <DotsMenu :items="[]" />
+          <DotsMenu :items="menuItems" />
         </div>
       </nav>
     </header>

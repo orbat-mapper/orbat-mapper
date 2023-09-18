@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 September 2023
 
+- Add support for adding an image to a feature.
+- Add markdown support to scenario feature descriptions.
 - Add support for adding an image to a unit.
 
 August 2023
