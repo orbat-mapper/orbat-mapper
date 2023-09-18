@@ -5,7 +5,7 @@ import { ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { klona } from "klona";
 
-const props = defineProps<{ media?: Media }>();
+const props = defineProps<{ media?: Media | null }>();
 const emit = defineEmits(["cancel", "update"]);
 const form = ref<Media>({
   url: "",

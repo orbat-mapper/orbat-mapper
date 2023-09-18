@@ -17,7 +17,7 @@ export function useGeoLayersUndoRedo(olMap: OLMap) {
     addFeature,
     updateLayer,
     moveLayer,
-    updateFeature,
+    updateFeatureProperties,
     moveFeature,
     initializeFromStore,
   } = useScenarioLayers(olMap);
@@ -54,7 +54,7 @@ export function useGeoLayersUndoRedo(olMap: OLMap) {
     } else if (label === "moveLayer") {
       moveLayer(value, "down", true);
     } else if (label === "updateFeature") {
-      updateFeature(value, {}, true);
+      updateFeatureProperties(value, {}, true);
     } else if (label === "moveFeature") {
       const { feature } = geo.getFeatureById(value);
       moveFeature(feature, "down", true);

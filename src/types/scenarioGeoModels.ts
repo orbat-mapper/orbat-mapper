@@ -1,7 +1,7 @@
 import type { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
 import { FillStyleSpec, SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
 import { ScenarioTime } from "@/types/base";
-import { CurrentStateType, ScenarioEventDescription } from "@/types/scenarioModels";
+import { CurrentStateType, Media, ScenarioEventDescription } from "@/types/scenarioModels";
 
 export interface VisibilityInfo {
   visibleFromT: ScenarioTime;
@@ -48,6 +48,7 @@ export interface ScenarioFeature
   extends GeoJsonFeature<Point | LineString | Polygon, ScenarioFeatureProperties> {
   id: FeatureId;
   state?: ScenarioFeatureState[];
+  media?: Media[]
   // internal runtime only state
   _hidden?: boolean;
   _state?: CurrentScenarioFeatureState | null;

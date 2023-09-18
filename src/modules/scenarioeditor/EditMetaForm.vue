@@ -3,14 +3,14 @@ import InputGroup from "@/components/InputGroup.vue";
 import { defineAsyncComponent, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { klona } from "klona";
-import { NUnit } from "@/types/internalModels";
+import { NScenarioFeature, NUnit } from "@/types/internalModels";
 import { ScenarioFeature } from "@/types/scenarioGeoModels";
 
 const SimpleMarkdownInput = defineAsyncComponent(
   () => import("@/components/SimpleMarkdownInput.vue"),
 );
 
-const props = defineProps<{ item?: NUnit | ScenarioFeature }>();
+const props = defineProps<{ item?: NUnit | NScenarioFeature | null }>();
 const emit = defineEmits(["cancel", "update"]);
 
 type ItemMediaForm = {

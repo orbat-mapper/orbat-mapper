@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import {
+  IconMagnifyExpand as ZoomIcon,
+  IconPencil as EditIcon,
+  IconImage as ImageIcon,
+  IconPalette as StyleIcon,
+} from "@iconify-prerendered/vue-mdi";
+
 import { injectStrict } from "@/utils";
 import {
   activeFeatureSelectInteractionKey,
@@ -6,14 +13,30 @@ import {
   activeScenarioKey,
 } from "@/components/injects";
 import { computed, ref, watch } from "vue";
-import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
+import {
+  getGeometryIcon,
+  useScenarioLayers,
+} from "@/modules/scenarioeditor/scenarioLayers2";
 import { ScenarioFeatureProperties } from "@/types/scenarioGeoModels";
-import { useDebounceFn } from "@vueuse/core";
+import { useDebounceFn, useToggle } from "@vueuse/core";
 import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeatureMarkerSettings.vue";
 import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeatureStrokeSettings.vue";
 import ScenarioFeatureFillSettings from "@/modules/scenarioeditor/ScenarioFeatureFillSettings.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import { SelectedScenarioFeatures } from "@/stores/selectedStore";
+import DotsMenu from "@/components/DotsMenu.vue";
+import IconButton from "@/components/IconButton.vue";
+import { TabPanel } from "@headlessui/vue";
+import TabWrapper from "@/components/TabWrapper.vue";
+import { useUiStore } from "@/stores/uiStore";
+import { useTabStore } from "@/stores/tabStore";
+import { storeToRefs } from "pinia";
+import { useScenarioFeatureActions } from "@/composables/scenarioActions";
+import { renderMarkdown } from "@/composables/formatting";
+import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
+import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
+import { MediaUpdate } from "@/types/internalModels";
+import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -27,7 +50,10 @@ const {
 } = injectStrict(activeScenarioKey);
 const olMapRef = injectStrict(activeMapKey);
 const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
-const { updateFeature } = useScenarioLayers(olMapRef.value);
+const { updateFeatureProperties } = useScenarioLayers(olMapRef.value);
+const featureActions = useScenarioFeatureActions();
+const uiStore = useUiStore();
+const { featureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 
 const feature = computed(() => {
   if (props.selectedIds.size === 1) {
@@ -37,11 +63,39 @@ const feature = computed(() => {
 });
 
 const featureName = ref("DD");
+const featureDescription = ref();
+const hDescription = computed(() =>
+  renderMarkdown(feature.value?.properties.description || ""),
+);
+
+const isEditMode = ref(false);
+
+function toggleEditMode() {
+  isEditMode.value = !isEditMode.value;
+  isEditMediaMode.value = false;
+  if (isEditMode.value) {
+    selectedTab.value = 0;
+  }
+}
+
+const isEditMediaMode = ref(false);
+function toggleEditMediaMode() {
+  isEditMediaMode.value = !isEditMediaMode.value;
+  isEditMode.value = false;
+  if (isEditMediaMode.value) {
+    selectedTab.value = 0;
+  }
+}
+
+function showStylePanel() {
+  selectedTab.value = 1;
+}
 
 watch(
   () => feature.value?.properties.name,
   (v) => {
     featureName.value = v ?? "";
+    featureDescription.value = feature.value?.properties.description ?? "";
   },
   { immediate: true },
 );
@@ -53,9 +107,18 @@ const hasFill = computed(
 );
 
 const isMultipleFeatures = computed(() => props.selectedIds.size > 1);
+const tabList = computed(() =>
+  uiStore.debugMode ? ["Details", "Styling", "Debug"] : ["Details", "Styling"],
+);
+
+const isEditing = computed(() => isEditMode.value || isEditMediaMode.value);
+const media = computed(() => {
+  const { media = [] } = feature.value || {};
+  return media.length ? media[0] : null;
+});
 
 function updateValue(value: string) {
-  feature.value && updateFeature(feature.value?.id, { name: value });
+  feature.value && updateFeatureProperties(feature.value?.id, { name: value });
 }
 
 const debouncedResetMap = useDebounceFn(
@@ -69,38 +132,104 @@ function doUpdateFeature(data: Partial<ScenarioFeatureProperties>) {
     : feature.value?.id;
   featureSelectInteractionRef.value.setMap(null);
   if (Array.isArray(featureOrFeatures)) {
-    groupUpdate(() => featureOrFeatures.forEach((f) => updateFeature(f, data)), {
-      label: "batchLayer",
-      value: "nil",
-    });
+    groupUpdate(
+      () => featureOrFeatures.forEach((f) => updateFeatureProperties(f, data)),
+      {
+        label: "batchLayer",
+        value: "nil",
+      },
+    );
   } else {
-    featureOrFeatures && updateFeature(featureOrFeatures, data);
+    featureOrFeatures && updateFeatureProperties(featureOrFeatures, data);
   }
   debouncedResetMap();
+}
+
+function doMetaUpdate(data: Partial<ScenarioFeatureProperties>) {
+  if (data) doUpdateFeature(data);
+  isEditMode.value = false;
+}
+
+function updateMedia(mediaUpdate: MediaUpdate) {
+  if (!mediaUpdate || !feature.value) return;
+  const { media = [] } = feature.value;
+  const newMedia = { ...media[0], ...mediaUpdate };
+  geo.updateFeature(feature.value.id, { media: [newMedia] });
+  isEditMediaMode.value = false;
+}
+
+function doZoom() {
+  featureActions.onFeatureAction([...props.selectedIds], "zoom");
 }
 </script>
 <template>
   <div>
+    <ItemMedia v-if="media" :media="media" />
     <header class="">
       <div v-if="feature" class="">
         <EditableLabel v-model="featureName" @update-value="updateValue" />
-        <p class="whitespace-pre-wrap">{{ feature.properties.description }}</p>
       </div>
+      <nav class="flex items-center justify-between">
+        <div class="flex items-center">
+          <component :is="getGeometryIcon(feature!)" class="mr-2 h-6 w-6 text-red-900" />
+          <IconButton @click="doZoom()" title="Zoom to feature"
+            ><ZoomIcon class="h-6 w-6" />
+          </IconButton>
+          <IconButton @click="showStylePanel()" title="Change feature style">
+            <StyleIcon class="h-6 w-6" />
+          </IconButton>
+          <IconButton title="Edit feature data" @click="toggleEditMode()">
+            <EditIcon class="h-6 w-6" />
+          </IconButton>
+          <IconButton title="Add/modify image" @click="toggleEditMediaMode()">
+            <ImageIcon class="h-6 w-6" />
+          </IconButton>
+        </div>
+        <div>
+          <DotsMenu :items="[]" />
+        </div>
+      </nav>
     </header>
-    <ScenarioFeatureMarkerSettings
-      v-if="feature && geometryType === 'Point'"
-      :feature="feature"
-      @update="doUpdateFeature"
-    />
-    <ScenarioFeatureStrokeSettings
-      v-if="feature && hasStroke"
-      :feature="feature"
-      @update="doUpdateFeature"
-    />
-    <ScenarioFeatureFillSettings
-      v-if="feature && hasFill"
-      :feature="feature"
-      @update="doUpdateFeature"
-    />
+    <TabWrapper :tab-list="tabList" v-model="selectedTab">
+      <TabPanel>
+        <div v-if="!isEditing" class="prose mt-4">
+          <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
+        </div>
+        <div v-else-if="isEditMode">
+          <EditMetaForm
+            :item="feature"
+            @update="doMetaUpdate"
+            @cancel="toggleEditMode()"
+          />
+        </div>
+        <div v-else-if="isEditMediaMode">
+          <EditMediaForm
+            :media="media"
+            @cancel="toggleEditMediaMode()"
+            @update="updateMedia"
+          />
+        </div>
+      </TabPanel>
+      <TabPanel>
+        <ScenarioFeatureMarkerSettings
+          v-if="feature && geometryType === 'Point'"
+          :feature="feature"
+          @update="doUpdateFeature"
+        />
+        <ScenarioFeatureStrokeSettings
+          v-if="feature && hasStroke"
+          :feature="feature"
+          @update="doUpdateFeature"
+        />
+        <ScenarioFeatureFillSettings
+          v-if="feature && hasFill"
+          :feature="feature"
+          @update="doUpdateFeature"
+        />
+      </TabPanel>
+      <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
+        <pre>{{ feature }}</pre>
+      </TabPanel>
+    </TabWrapper>
   </div>
 </template>

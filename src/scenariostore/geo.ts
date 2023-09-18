@@ -279,9 +279,11 @@ export function useGeo(store: NewScenarioStore) {
       update(
         (s) => {
           const layer = s.featureMap[featureId];
-          const { properties = {}, geometry } = data;
+          const { properties = {}, geometry, media } = data;
           Object.assign(layer.properties, properties);
           Object.assign(layer.geometry, geometry);
+
+          if (media) layer.media = media;
         },
         {
           label: isGeometry ? "updateFeatureGeometry" : "updateFeature",

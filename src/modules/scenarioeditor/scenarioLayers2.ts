@@ -81,8 +81,8 @@ const geometryIconMap: any = {
   layer: IconLayersOutline,
 };
 
-export function getGeometryIcon(feature: ScenarioFeature) {
-  return geometryIconMap[feature.properties.type];
+export function getGeometryIcon(feature?: ScenarioFeature | NScenarioFeature) {
+  return (feature && geometryIconMap[feature.properties.type]) || geometryIconMap.Point;
 }
 
 export function getItemsIcon(type: string) {
@@ -415,7 +415,7 @@ export function useScenarioLayers(
     }
   }
 
-  function updateFeature(
+  function updateFeatureProperties(
     featureId: FeatureId,
     data: Partial<ScenarioFeatureProperties>,
     isUndoRedo = false,
@@ -483,7 +483,7 @@ export function useScenarioLayers(
     updateFeatureGeometryFromOlFeature,
     getFeatureLayer,
     addFeature,
-    updateFeature,
+    updateFeatureProperties,
     panToFeature,
     getOlFeatureById: (id: FeatureId) => {
       const { feature, layer } = getFeatureAndLayerById(id, scenarioLayersOl) || {};

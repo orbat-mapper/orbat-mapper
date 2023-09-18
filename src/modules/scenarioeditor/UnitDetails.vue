@@ -1,20 +1,6 @@
 <template>
   <div v-if="unit" class="">
-    <div v-if="media" class="group relative -mx-4 -mt-4 aspect-[16/9]">
-      <img
-        draggable="false"
-        class="h-full w-full object-cover"
-        :src="mediaUrl"
-        :alt="altText"
-      />
-      <p
-        class="prose prose-sm absolute bottom-0 left-0 right-0 hidden bg-white bg-opacity-75 p-2 text-sm group-hover:block"
-      >
-        <a v-if="media.creditsUrl" :href="media.creditsUrl" target="_blank">
-          {{ media.credits }} </a
-        ><span v-else>{{ media.credits }}</span>
-      </p>
-    </div>
+    <ItemMedia v-if="media" :media="media" />
     <header class="-mx-4 px-4 pt-4">
       <div v-if="!isMultiMode" class="flex">
         <button
@@ -199,6 +185,7 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { MenuItemData } from "@/components/types";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
+import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 
 const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
@@ -288,17 +275,6 @@ const media = computed(() => {
   const { media } = unit.value;
   if (!media || isMultiMode.value) return;
   return media[0];
-});
-const mediaUrl = computed(() => {
-  const { media } = unit.value;
-  if (!media || isMultiMode.value) return;
-  return media[0].url;
-});
-
-const altText = computed(() => {
-  const { media } = unit.value;
-  if (!media || isMultiMode.value) return;
-  return media[0].caption;
 });
 
 watch(

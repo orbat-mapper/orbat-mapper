@@ -41,7 +41,6 @@
             <ScenarioFeatureDetails
               v-if="activeDetailsPanel === 'feature'"
               :selected-ids="selectedFeatureIds"
-              class="p-2"
             />
             <UnitDetails
               v-else-if="activeDetailsPanel === 'unit'"
