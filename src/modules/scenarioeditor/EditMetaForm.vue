@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import InputGroup from "@/components/InputGroup.vue";
-import { defineAsyncComponent, ref, watch } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { klona } from "klona";
 import { NScenarioFeature, NUnit } from "@/types/internalModels";
@@ -13,9 +13,9 @@ const SimpleMarkdownInput = defineAsyncComponent(
 const props = defineProps<{ item?: NUnit | NScenarioFeature | null }>();
 const emit = defineEmits(["cancel", "update"]);
 
-type ItemMediaForm = {
+type ItemMetaForm = {
   name: string;
-  shortName: string;
+  shortName?: string;
   description: string;
   externalUrl: string;
 };
@@ -24,7 +24,11 @@ const isScenarioFeature = (item: NUnit | ScenarioFeature): item is ScenarioFeatu
   return "type" in item && item.type == "Feature";
 };
 
-const form = ref<ItemMediaForm>({
+const isUnit = computed(() => {
+  return props.item && !isScenarioFeature(props.item);
+});
+
+const form = ref<ItemMetaForm>({
   name: "",
   shortName: "",
   description: "",
@@ -38,7 +42,6 @@ watch(
     if (isScenarioFeature(item)) {
       form.value = {
         name: item?.properties?.name ?? "",
-        shortName: item?.properties?.shortName ?? "",
         description: item?.properties?.description ?? "",
         externalUrl: item?.properties?.externalUrl ?? "",
       };
@@ -62,6 +65,7 @@ const onFormSubmit = () => {
   <form @submit.prevent="onFormSubmit" class="mb-6 mt-0 space-y-4">
     <InputGroup label="Name" v-model="form.name" id="name-input" autofocus />
     <InputGroup
+      v-if="isUnit"
       label="Short name"
       description="Alternative name"
       v-model="form.shortName"
