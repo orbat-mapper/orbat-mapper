@@ -159,7 +159,14 @@ export interface ScenarioInfo {
 }
 
 export type SymbologyStandard = "2525" | "app6";
-export type ScenarioVersion = "0.11.0" | "0.10.0" | "0.9.0" | "0.8.0" | "0.7.0" | "0.6.0";
+export type ScenarioVersion =
+  | "0.12.0"
+  | "0.11.0"
+  | "0.10.0"
+  | "0.9.0"
+  | "0.8.0"
+  | "0.7.0"
+  | "0.6.0";
 
 export interface EquipmentData {
   name: string;
