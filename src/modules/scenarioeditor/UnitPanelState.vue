@@ -127,11 +127,7 @@ const stateItems = computed<ButtonGroupItem[]>(() => {
     {
       label: "Remove from map",
       onClick: () => {
-        const newState: StateAdd = {
-          location: null,
-          t: store.state.currentTime,
-        };
-        unitActions.addUnitStateEntry(props.unit.id, newState, true);
+        handleRemoveFromMap();
       },
     },
   ];
@@ -227,5 +223,13 @@ async function handleChangeSymbol() {
     };
     unitActions.addUnitStateEntry(props.unit.id, newState, true);
   }
+}
+
+function handleRemoveFromMap() {
+  const newState: StateAdd = {
+    location: null,
+    t: store.state.currentTime,
+  };
+  unitActions.addUnitStateEntry(props.unit.id, newState, true);
 }
 </script>
