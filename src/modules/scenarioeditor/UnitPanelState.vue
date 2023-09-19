@@ -56,10 +56,6 @@
         >
           <IconCrosshairsGps class="h-5 w-5" aria-hidden="true" />
         </IconButton>
-        <!--        <IconButton @click="deleteState(index)" class="bg-gray-50">-->
-        <!--          <XIcon class="h-5 w-5" aria-hidden="true" />-->
-        <!--          <span class="sr-only">Delete entry</span>-->
-        <!--        </IconButton>-->
         <DotsMenu :items="menuItems" @action="onStateAction(index, $event)" />
       </div>
       <div v-if="s.via" class="absolute -top-3 left-1/2">
@@ -116,22 +112,20 @@ const menuItems: MenuItemData<StateAction>[] = [
   { label: "Convert to initial position", action: "convertToInitialPosition" },
 ];
 
-const stateItems = computed<ButtonGroupItem[]>(() => {
-  return [
-    {
-      label: "Change symbol",
-      onClick: () => {
-        handleChangeSymbol();
-      },
+const stateItems: ButtonGroupItem[] = [
+  {
+    label: "Change symbol",
+    onClick: () => {
+      handleChangeSymbol();
     },
-    {
-      label: "Remove from map",
-      onClick: () => {
-        handleRemoveFromMap();
-      },
+  },
+  {
+    label: "Remove from map",
+    onClick: () => {
+      handleRemoveFromMap();
     },
-  ];
-});
+  },
+];
 
 const editedTitle = ref<State | null>();
 
