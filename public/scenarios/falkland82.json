@@ -121,6 +121,11 @@
                       "t": "1982-03-24T13:00:00-04:00",
                       "location": [-36.49508667798066, -54.283319740386965],
                       "id": "uLMSMHKB2T"
+                    },
+                    {
+                      "location": null,
+                      "t": "1982-04-14T10:00:00-04:00",
+                      "id": "s8ujf0Y3IM"
                     }
                   ],
                   "subUnits": []
@@ -144,8 +149,8 @@
                 },
                 {
                   "location": null,
-                  "t": "1982-05-26T20:00:00-04:00",
-                  "id": "PPTh8iQTS8"
+                  "t": "1982-04-14T10:00:00-04:00",
+                  "id": "OkMNdY9UW4"
                 }
               ],
               "id": "06Nc9BTRjs",
@@ -231,6 +236,11 @@
                       "t": "1982-04-02T20:00:00-04:00",
                       "location": [-36.493835, -54.282815],
                       "id": "6mqtcwchS0"
+                    },
+                    {
+                      "location": null,
+                      "t": "1982-04-14T10:00:00-04:00",
+                      "id": "0Od1lO322x"
                     }
                   ],
                   "subUnits": [],
@@ -264,6 +274,11 @@
                       "t": "1982-03-19T10:00:00-04:00",
                       "location": [-36.68852253064409, -54.14715926640066],
                       "id": "CZ0cQJ6dF3"
+                    },
+                    {
+                      "location": null,
+                      "t": "1982-04-14T10:00:00-04:00",
+                      "id": "dgbr0J8ZTS"
                     }
                   ],
                   "subUnits": [],
@@ -272,7 +287,13 @@
               ],
               "shortName": "BAS",
               "externalUrl": "https://en.wikipedia.org/wiki/British_Antarctic_Survey",
-              "state": [],
+              "state": [
+                {
+                  "location": null,
+                  "t": "1982-04-14T10:00:00-04:00",
+                  "id": "dgbr0J8ZTssfS"
+                }
+              ],
               "description": "The British Antarctic Survey (BAS) is the United Kingdom's national polar research institute. It has a dual purpose, to conduct polar science, enabling better understanding of global issues, and to provide an active presence in the Antarctic on behalf of the UK. "
             }
           ]
@@ -1672,6 +1693,11 @@
                   "t": "1982-03-19T10:00:00-04:00",
                   "location": [-36.68911416889803, -54.14095696852837],
                   "id": "sU7S8PB4QP"
+                },
+                {
+                  "location": null,
+                  "t": "1982-04-14T10:00:00-04:00",
+                  "id": "eE3oEfoxYt"
                 }
               ],
               "subUnits": []
