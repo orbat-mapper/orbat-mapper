@@ -1,4 +1,3 @@
-<!-- This example requires Tailwind CSS v2.0+ -->
 <template>
   <TransitionRoot as="template" :show="open" :appear="true">
     <Dialog
@@ -35,7 +34,8 @@
           leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         >
           <div
-            class="inline-block w-full transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all sm:my-8 sm:max-w-xl sm:p-6 sm:align-middle md:my-16"
+            class="inline-block w-full transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all sm:my-8 sm:p-6 sm:align-middle md:my-16"
+            :class="maxWidth"
           >
             <div class="">
               <div class="mt-3 sm:ml-2 sm:mt-0">
@@ -82,9 +82,13 @@ interface Props {
   modelValue?: boolean;
   dialogTitle?: string;
   initialFocus?: HTMLElement;
+  maxWidth?: string;
 }
 
-const props = withDefaults(defineProps<Props>(), { modelValue: false });
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: false,
+  maxWidth: "sm:max-w-xl",
+});
 const emit = defineEmits(["update:modelValue", "cancel"]);
 
 const uiStore = useUiStore();
