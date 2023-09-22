@@ -1,5 +1,10 @@
 <template>
-  <SimpleModal v-model="open" :dialog-title="dialogTitle" @cancel="emit('cancel')">
+  <SimpleModal
+    v-model="open"
+    :dialog-title="dialogTitle"
+    @cancel="emit('cancel')"
+    max-width="md:max-w-screen-md max-w-screen-lg"
+  >
     <div class="flex h-full flex-col">
       <header class="mt-4 h-20 w-16">
         <MilitarySymbol :sidc="csidc" :size="34" :options="combinedSymbolOptions" />
