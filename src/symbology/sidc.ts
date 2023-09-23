@@ -40,19 +40,19 @@ export class Sidc implements SicElements {
   modifierTwo: string;
 
   constructor(private sic: string = "10000000000000000000") {
-    this.version = sic.substring(0, 2);
-    this.context = sic.substring(2, 3);
-    this.standardIdentity = sic.substring(3, 4);
-    this.symbolSet = sic.substring(4, 6);
-    this.status = sic.substring(6, 7);
-    this.hqtfd = sic.substring(7, 8);
-    this.amplifier = sic.substring(8, 9);
-    this.amplifierDescriptor = sic.substring(9, 10);
-    this.entity = sic.substring(10, 12);
-    this.entityType = sic.substring(12, 14);
-    this.entitySubType = sic.substring(14, 16);
-    this.modifierOne = sic.substring(16, 18);
-    this.modifierTwo = sic.substring(18, 20);
+    this.version = sic.substring(0, 2) || "10";
+    this.context = sic.substring(2, 3) || "0";
+    this.standardIdentity = sic.substring(3, 4) || "0";
+    this.symbolSet = sic.substring(4, 6) || "10";
+    this.status = sic.substring(6, 7) || "0";
+    this.hqtfd = sic.substring(7, 8) || "0";
+    this.amplifier = sic.substring(8, 9) || "0";
+    this.amplifierDescriptor = sic.substring(9, 10) || "0";
+    this.entity = sic.substring(10, 12) || "00";
+    this.entityType = sic.substring(12, 14) || "00";
+    this.entitySubType = sic.substring(14, 16) || "00";
+    this.modifierOne = sic.substring(16, 18) || "00";
+    this.modifierTwo = sic.substring(18, 20) || "00";
   }
 
   get emt() {

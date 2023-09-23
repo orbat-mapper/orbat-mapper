@@ -122,7 +122,7 @@ export function useSymbolItems(sidc: Ref<string>) {
   const icons = computed(() => {
     if (!isLoaded.value) return [];
     const symbolSetCode = symbolSetValue.value || "01";
-    let mis = (symbology.value || {})[symbolSetCode].mainIcon;
+    let mis = (symbology.value || {})[symbolSetCode]?.mainIcon || [];
     if (symbolSetCode === CONTROL_MEASURE_SYMBOLSET_VALUE)
       mis = mis.filter((v) => v.geometry === "Point");
     return mis.map((mi) => {
@@ -170,29 +170,33 @@ export function useSymbolItems(sidc: Ref<string>) {
 
   const mod1Items = computed(() => {
     if (!symbology.value) return [];
-    return symbology.value[symbolSetValue.value].modifierOne.map(
-      ({ code, modifier }): SymbolItem => {
-        return {
-          code,
-          text: modifier,
-          sidc:
-            "100" + sidValue.value + symbolSetValue.value + "0000000000" + code + "00",
-        };
-      },
+    return (
+      symbology.value[symbolSetValue.value]?.modifierOne.map(
+        ({ code, modifier }): SymbolItem => {
+          return {
+            code,
+            text: modifier,
+            sidc:
+              "100" + sidValue.value + symbolSetValue.value + "0000000000" + code + "00",
+          };
+        },
+      ) || []
     );
   });
 
   const mod2Items = computed(() => {
     if (!symbology.value) return [];
-    return symbology.value[symbolSetValue.value].modifierTwo.map(
-      ({ code, modifier }): SymbolItem => {
-        return {
-          code,
-          text: modifier,
-          sidc:
-            "100" + sidValue.value + symbolSetValue.value + "0000000000" + "00" + code,
-        };
-      },
+    return (
+      symbology.value[symbolSetValue.value]?.modifierTwo.map(
+        ({ code, modifier }): SymbolItem => {
+          return {
+            code,
+            text: modifier,
+            sidc:
+              "100" + sidValue.value + symbolSetValue.value + "0000000000" + "00" + code,
+          };
+        },
+      ) || []
     );
   });
 
