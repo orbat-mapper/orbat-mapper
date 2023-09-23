@@ -8,7 +8,7 @@
     <div class="flex h-full flex-col">
       <header class="mt-4 flex h-20 w-full items-center justify-between">
         <MilitarySymbol :sidc="csidc" :size="34" :options="combinedSymbolOptions" />
-        <SymbolCodeViewer :sidc="csidc" />
+        <SymbolCodeViewer :sidc="csidc" @update="updateFromSidcInput" />
       </header>
 
       <TabView class="flex-auto">
@@ -163,6 +163,7 @@ import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { UnitSymbolOptions } from "@/types/scenarioModels";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 import SymbolCodeViewer from "@/components/SymbolCodeViewer.vue";
+import { Sidc } from "@/symbology/sidc";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
@@ -333,5 +334,16 @@ function clearModifiers() {
 
 function updateFromBrowseTab(sidc: string) {
   csidc.value = sidc;
+}
+
+function updateFromSidcInput(sidc: string) {
+  if (!/^\d+$/.test(sidc)) {
+    return;
+  }
+  const oldSidc = new Sidc(csidc.value);
+  const ns = new Sidc(sidc);
+  ns.standardIdentity = oldSidc.standardIdentity;
+
+  csidc.value = ns.toString();
 }
 </script>
