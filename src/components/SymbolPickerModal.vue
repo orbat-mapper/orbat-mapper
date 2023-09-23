@@ -6,8 +6,9 @@
     max-width="md:max-w-screen-md max-w-screen-lg"
   >
     <div class="flex h-full flex-col">
-      <header class="mt-4 h-20 w-16">
+      <header class="mt-4 flex h-20 w-full items-center justify-between">
         <MilitarySymbol :sidc="csidc" :size="34" :options="combinedSymbolOptions" />
+        <SymbolCodeViewer :sidc="csidc" />
       </header>
 
       <TabView class="flex-auto">
@@ -161,6 +162,7 @@ import { htmlTagEscape } from "@/utils";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { UnitSymbolOptions } from "@/types/scenarioModels";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
+import SymbolCodeViewer from "@/components/SymbolCodeViewer.vue";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
