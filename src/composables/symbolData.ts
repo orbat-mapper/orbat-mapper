@@ -1,4 +1,3 @@
-import { app6d } from "@/symbology/standards/app6d";
 import { computed, ref, Ref, shallowRef, watch } from "vue";
 import { SymbolItem, SymbolValue } from "@/types/constants";
 import {

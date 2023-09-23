@@ -11,7 +11,11 @@
       </header>
 
       <TabView class="flex-auto">
-        <TabItem label="Select" v-slot="{ isActive }" class="max-h-[60vh] overflow-auto">
+        <TabItem
+          label="Select"
+          v-slot="{ isActive }"
+          class="max-h-[50vh] overflow-auto sm:max-h-[60vh]"
+        >
           <SearchModalInput
             class="pb-3"
             placeholder="Search for symbol"

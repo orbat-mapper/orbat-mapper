@@ -23,7 +23,7 @@
         :items="symbolSets"
         :symbol-options="symbolOptions"
       />
-      <div class="mt-4 max-h-[50vh] overflow-auto">
+      <div class="mt-4 max-h-[40vh] overflow-auto sm:max-h-[50vh]">
         <div v-for="[entity, entityIcons] in iconsByEntity" class="relative">
           <h3
             class="sticky top-0 border-b border-t border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
