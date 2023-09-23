@@ -154,7 +154,7 @@ export function useUnitSelectInteraction(
   const enableRef = ref(options.enable ?? true);
   const enableBoxSelectRef = ref(options.enableBoxSelect ?? true);
 
-  const { selectedUnitIds: selectedIds } = useSelectedItems();
+  const { selectedUnitIds: selectedIds, clear: clearSelectedItems } = useSelectedItems();
   const { geo } = injectStrict(activeScenarioKey);
 
   const unitSelectInteraction = new Select({
@@ -190,13 +190,13 @@ export function useUnitSelectInteraction(
     unitSelectInteraction.on("select", (event: SelectEvent) => {
       isInternal = true;
       if (selectedIds.value.size && !event.mapBrowserEvent.originalEvent.shiftKey) {
-        selectedIds.value.clear();
+        clearSelectedItems();
       }
       if (
         selectedUnitFeatures.getLength() === 0 &&
         !event.mapBrowserEvent.originalEvent.shiftKey
       ) {
-        selectedIds.value.clear();
+        clearSelectedItems();
         return;
       }
       event.selected.forEach((f) => selectedIds.value.add(f.getId() as string));
