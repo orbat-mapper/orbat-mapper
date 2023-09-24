@@ -49,7 +49,49 @@ const searchSymbolRef = computed(() => {
   );
 });
 
-function useSymbologyData() {
+const searchModifierOneRef = computed(() => {
+  return (
+    symbology.value &&
+    Object.values(symbology.value)
+      .map((ss) => {
+        return ss.modifierOne.map((e) => ({
+          symbolSet: ss.symbolSet,
+          name: ss.name,
+          ...e,
+        }));
+      })
+      .flat()
+      .map((e) => {
+        return {
+          ...e,
+          text: e.modifier,
+        };
+      })
+  );
+});
+
+const searchModifierTwoRef = computed(() => {
+  return (
+    symbology.value &&
+    Object.values(symbology.value)
+      .map((ss) => {
+        return ss.modifierTwo.map((e) => ({
+          symbolSet: ss.symbolSet,
+          name: ss.name,
+          ...e,
+        }));
+      })
+      .flat()
+      .map((e) => {
+        return {
+          ...e,
+          text: e.modifier,
+        };
+      })
+  );
+});
+
+export function useSymbologyData() {
   async function loadData() {
     const settingsStore = useSymbolSettingsStore();
     if (
@@ -71,7 +113,14 @@ function useSymbologyData() {
     isLoaded.value = true;
   }
 
-  return { isLoaded, symbology, loadData, searchSymbolRef };
+  return {
+    isLoaded,
+    symbology,
+    loadData,
+    searchSymbolRef,
+    searchModifierOneRef,
+    searchModifierTwoRef,
+  };
 }
 
 export function useSymbolItems(sidc: Ref<string>) {
@@ -87,7 +136,14 @@ export function useSymbolItems(sidc: Ref<string>) {
     mod2Value,
   } = useSymbolValues(sidc);
 
-  const { symbology, isLoaded, loadData, searchSymbolRef } = useSymbologyData();
+  const {
+    symbology,
+    isLoaded,
+    loadData,
+    searchSymbolRef,
+    searchModifierOneRef,
+    searchModifierTwoRef,
+  } = useSymbologyData();
 
   const symbolSets = computed(() => {
     const symbSets = Object.entries(symbology.value || {}).map(([k, v]) => {
@@ -220,6 +276,8 @@ export function useSymbolItems(sidc: Ref<string>) {
     isLoaded,
     loadData,
     searchSymbolRef,
+    searchModifierOneRef,
+    searchModifierTwoRef,
   };
 }
 

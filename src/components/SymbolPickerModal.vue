@@ -17,40 +17,63 @@
           v-slot="{ isActive }"
           class="max-h-[50vh] overflow-auto sm:max-h-[60vh]"
         >
-          <SearchModalInput
-            class="pb-3"
-            placeholder="Search for symbol"
-            v-model="searchQuery"
-            @keydown.tab="onTab"
-            @keydown.esc="onEsc"
-            @keydown.enter.prevent="!hitsIsOpen && onSubmit()"
-            focus
-          />
-
-          <div class="relative" v-if="hits?.length && hitsIsOpen" ref="hitsRef">
-            <ul
-              class="absolute z-10 mt-1 max-h-56 w-full divide-y divide-gray-100 overflow-auto rounded-md border border-gray-400 bg-white py-1 text-base shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-            >
-              <li
-                v-for="(item, index) in hits"
-                class="flex cursor-default items-center p-2 py-3 text-sm hover:bg-gray-200"
-                tabindex="-1"
-                :class="{ 'bg-gray-200': index === currentIndex }"
-                :key="item.sidc"
-                :id="item.sidc"
-                @click="onSelect(index)"
+          <Combobox @update:modelValue="onSelect">
+            <div class="relative">
+              <div class="relative">
+                <MagnifyingGlassIcon
+                  class="pointer-events-none absolute left-4 top-3.5 h-5 w-5 text-gray-400"
+                  aria-hidden="true"
+                />
+                <ComboboxInput
+                  class="h-12 w-full border-0 bg-transparent pl-11 pr-4 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+                  placeholder="Search..."
+                  @change="searchQuery = $event.target.value"
+                  @vue:mounted="doFocus"
+                />
+              </div>
+              <ComboboxOptions
+                v-if="groupedHits && hitCount > 0"
+                class="absolute z-50 max-h-80 w-full scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto rounded border border-gray-400 bg-white p-4 pb-2 shadow-lg"
               >
-                <p class="flex h-7 w-9 flex-shrink-0 justify-center">
-                  <MilitarySymbol
-                    :size="25"
-                    :sidc="item.sidc"
-                    :options="combinedSymbolOptions"
-                  />
-                </p>
-                <span class="ml-3 text-sm" v-html="item.highlight"></span>
-              </li>
-            </ul>
-          </div>
+                <li v-for="[source, hits] in groupedHits">
+                  <h2 class="text-xs font-semibold text-gray-900">{{ source }}</h2>
+                  <ul class="-mx-4 mt-2 text-sm font-medium text-gray-700">
+                    <ComboboxOption
+                      v-for="item in hits"
+                      :key="item.sidc"
+                      :value="item"
+                      as="template"
+                      v-slot="{ active }"
+                    >
+                      <li
+                        :class="[
+                          'flex cursor-default select-none items-center px-4 py-2',
+                          active ? 'bg-army text-white' : 'even:bg-gray-100',
+                        ]"
+                      >
+                        <div class="relative flex w-12 justify-center">
+                          <MilitarySymbol
+                            :sidc="item.sidc"
+                            :size="30"
+                            aria-hidden="true"
+                            :options="{
+                              ...combinedSymbolOptions,
+                              outlineColor: 'white',
+                              outlineWidth: 4,
+                            }"
+                          />
+                        </div>
+                        <p
+                          class="ml-3 flex-auto truncate"
+                          v-html="item.highlight ? item.highlight : item.text"
+                        />
+                      </li>
+                    </ComboboxOption>
+                  </ul>
+                </li>
+              </ComboboxOptions></div
+          ></Combobox>
+
           <form class="space-y-4 p-0.5" @submit.prevent="onSubmit" v-if="isLoaded">
             <SymbolCodeSelect
               v-model="symbolSetValue"
@@ -104,15 +127,6 @@
               :default-fill-color="inheritedSymbolOptions?.fillColor"
             />
           </form>
-          <GlobalEvents
-            v-if="isActive && hits?.length && hitsIsOpen"
-            @keydown.arrow-down="doKbd('down')"
-            @keydown.page-down="doKbd('pagedown')"
-            @keydown.arrow-up="doKbd('up')"
-            @keydown.page-up="doKbd('pageup')"
-            @keydown.enter.prevent="onSelect()"
-          >
-          </GlobalEvents>
         </TabItem>
         <TabItem label="Browse" v-slot="{ isActive }">
           <keep-alive>
@@ -143,27 +157,38 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, ref, watch, watchEffect } from "vue";
+import { computed, defineAsyncComponent, ref, watchEffect } from "vue";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from "@headlessui/vue";
+
 import PrimaryButton from "./PrimaryButton.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
-import { onClickOutside, useDebounce, useVModel, whenever } from "@vueuse/core";
+import { useDebounce, useVModel, whenever } from "@vueuse/core";
 import SimpleModal from "./SimpleModal.vue";
 import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
 import { useSymbolItems } from "@/composables/symbolData";
 import NProgress from "nprogress";
-import SearchModalInput from "./SearchModalInput.vue";
-import { GlobalEvents } from "vue-global-events";
 import TabView from "./TabView.vue";
 import TabItem from "./TabItem.vue";
 import SymbolBrowseTab from "./SymbolBrowseTab.vue";
 import SecondaryButton from "./SecondaryButton.vue";
-import * as fuzzysort from "fuzzysort";
-import { htmlTagEscape } from "@/utils";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { UnitSymbolOptions } from "@/types/scenarioModels";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 import SymbolCodeViewer from "@/components/SymbolCodeViewer.vue";
 import { Sidc } from "@/symbology/sidc";
+import {
+  MainIconSearchResult,
+  ModifierOneSearchResult,
+  ModifierTwoSearchResult,
+  useSymbologySearch,
+} from "@/composables/symbolSearching";
+import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
+import { doFocus } from "@/composables/utils";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
@@ -188,9 +213,10 @@ const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
 const open = useVModel(props, "isVisible");
 const searchQuery = ref("");
 const debouncedQuery = useDebounce(searchQuery, 100);
-const currentIndex = ref(-1);
-const hitsIsOpen = ref(false);
-const hitsRef = ref(null);
+
+const groupedHits = ref<ReturnType<typeof search>["groups"]>();
+
+const hitCount = ref(0);
 
 const internalSymbolOptions = ref<UnitSymbolOptions>({
   ...(props.symbolOptions || {}),
@@ -211,14 +237,10 @@ const cleanObject = (obj: any) => {
   return obj;
 };
 
-onClickOutside(hitsRef, (event) => (hitsIsOpen.value = false));
-
 const {
   csidc,
   loadData,
   isLoaded,
-  searchSymbolRef,
-
   sidValue,
   symbolSetValue,
   iconValue,
@@ -239,33 +261,13 @@ loadData();
 
 whenever(isLoaded, () => NProgress.done(), { immediate: true });
 
-const hits = computed(() => {
-  const h = fuzzysort.go(debouncedQuery.value, searchSymbolRef.value || [], {
-    key: "text",
-    limit: 20,
-  });
-  return h.map((e) => {
-    const { obj, ...rest } = e;
-    return {
-      ...obj,
-      highlight: fuzzysort.highlight({ ...rest, target: htmlTagEscape(rest.target) }),
-      sidc: "100" + sidValue.value + e.obj.symbolSet + "0000" + e.obj.code + "0000",
-    };
-  });
-});
+const { search } = useSymbologySearch(sidValue);
 
-watch(hits, (v) => {
-  if (!v?.length) return;
-  hitsIsOpen.value = true;
-  currentIndex.value = 0;
+watchEffect(() => {
+  const { numberOfHits, groups } = search(debouncedQuery.value);
+  hitCount.value = numberOfHits;
+  groupedHits.value = groups;
 });
-
-const onTab = (event: KeyboardEvent) => {
-  if (hitsIsOpen.value) {
-    event.stopPropagation();
-    event.preventDefault();
-  }
-};
 
 const onSubmit = () => {
   emit("update:sidc", {
@@ -277,53 +279,19 @@ const onSubmit = () => {
   open.value = false;
 };
 
-function onEsc(e: KeyboardEvent) {
-  if (hitsIsOpen.value) {
-    hitsIsOpen.value = false;
-    e.stopPropagation();
+function onSelect(
+  hit: MainIconSearchResult | ModifierOneSearchResult | ModifierTwoSearchResult,
+) {
+  const newSidc = new Sidc(hit.sidc);
+  symbolSetValue.value = newSidc.symbolSet;
+  if (hit.category === "Main icon") {
+    iconValue.value = newSidc.mainIcon;
+  } else if (hit.category === "Modifier 1") {
+    mod1Value.value = newSidc.modifierOne;
+  } else if (hit.category === "Modifier 2") {
+    mod2Value.value = newSidc.modifierTwo;
   }
 }
-
-function doKbd(direction: "up" | "down" | "pagedown" | "pageup") {
-  const nHits = hits?.value?.length || 0;
-  if (direction === "up") {
-    if (currentIndex.value === 0) {
-      currentIndex.value = nHits - 1;
-    } else currentIndex.value = currentIndex.value - 1;
-  } else if (direction === "down") {
-    currentIndex.value++;
-    if (currentIndex.value >= nHits) {
-      currentIndex.value = 0;
-    }
-  } else if (direction === "pagedown") {
-    currentIndex.value += 3;
-    if (currentIndex.value >= nHits) {
-      currentIndex.value = nHits - 1;
-    }
-  } else if (direction === "pageup") {
-    currentIndex.value -= 3;
-    if (currentIndex.value < 0) currentIndex.value = 0;
-  }
-}
-
-function onSelect(index?: number) {
-  const i = index === undefined ? currentIndex.value : index;
-  if (!hits?.value?.length) return;
-  const symbol = hits.value[i];
-  symbolSetValue.value = symbol.symbolSet;
-  iconValue.value = symbol.code;
-  hitsIsOpen.value = false;
-}
-
-watchEffect(() => {
-  if (!hits?.value?.length || currentIndex.value < 0) return;
-  nextTick(
-    () =>
-      document
-        .getElementById(hits.value![currentIndex.value].sidc)
-        ?.scrollIntoView?.({ block: "nearest" }),
-  );
-});
 
 function clearModifiers() {
   mod1Value.value = "00";
