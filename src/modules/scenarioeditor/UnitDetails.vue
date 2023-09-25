@@ -1,5 +1,5 @@
 <template>
-  <div v-if="unit" class="">
+  <div v-if="unit" class="@container">
     <ItemMedia v-if="media" :media="media" />
     <header class="-mx-4 px-4 pt-4">
       <div v-if="!isMultiMode" class="flex">
