@@ -14,8 +14,14 @@
           <EditableLabel
             v-model="unitName"
             @update-value="updateUnit(unitId, { name: $event })"
+            class="relative z-10 bg-transparent"
           />
-          <p class="-mt-1 text-sm leading-none text-gray-500">{{ unit.shortName }}</p>
+          <EditableLabel
+            class="relative -top-4"
+            v-model="shortName"
+            @update-value="updateUnit(unitId, { shortName: $event })"
+            text-class="text-sm text-gray-500"
+          />
         </div>
       </div>
       <div v-else>
@@ -197,6 +203,7 @@ const {
 const { unitDetailsTab: selectedTab } = storeToRefs(useTabStore());
 
 const unitName = ref("");
+const shortName = ref("");
 
 const tabList = computed(() =>
   uiStore.debugMode
@@ -230,6 +237,14 @@ watch(
   () => unit.value?.name,
   () => {
     unitName.value = unit.value?.name;
+  },
+  { immediate: true },
+);
+
+watch(
+  () => unit.value?.shortName,
+  () => {
+    shortName.value = unit.value?.shortName || "";
   },
   { immediate: true },
 );
