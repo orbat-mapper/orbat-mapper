@@ -120,6 +120,7 @@ onMounted(() => {
     zoom: props.zoom,
     center: fromLonLat(props.center),
     constrainResolution: true,
+    showFullExtent: true,
   });
   olMap = new OLMap({
     target: mapRoot.value,
