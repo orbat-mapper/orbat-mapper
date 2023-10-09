@@ -1,5 +1,5 @@
 <template>
-  <div v-if="media" class="@lg:aspect-[16/5] group relative -mx-4 -mt-4 aspect-[16/9]">
+  <div v-if="media" class="group relative -mx-4 -mt-4 aspect-[16/9] @lg:aspect-[16/5]">
     <img
       draggable="false"
       class="h-full w-full object-cover"
