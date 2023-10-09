@@ -3,12 +3,14 @@ import { activeScenarioKey } from "@/components/injects";
 import { EntityId, HistoryAction } from "@/types/base";
 import { Coordinate } from "ol/coordinate";
 import { toLonLat } from "ol/proj";
-import { createHistoryFeature, VIA_TIME } from "@/geo/history";
+import {
+  createUnitHistoryLayers,
+  createUnitPathFeatures,
+  VIA_TIME,
+} from "@/geo/history2";
 import Modify, { ModifyEvent } from "ol/interaction/Modify";
 import { LineString } from "ol/geom";
 import { Feature } from "ol";
-
-import { createHistoryLayer } from "@/geo/layers";
 import { MaybeRef } from "@vueuse/core";
 import { ref, watch } from "vue";
 
@@ -17,8 +19,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 /**
  * Code for displaying and manipulating unit history on the map
  */
-
-export function useUnitHistory(
+export function useUnitHistory2(
   options: Partial<{
     showHistory: MaybeRef<boolean>;
     editHistory: MaybeRef<boolean>;
@@ -33,15 +34,23 @@ export function useUnitHistory(
     store: { onUndoRedo, state },
   } = injectStrict(activeScenarioKey);
   const { selectedUnitIds } = useSelectedItems();
-  const historyLayer = createHistoryLayer();
+  const { waypointLayer, historyLayer, legLayer, viaLayer, arcLayer } =
+    createUnitHistoryLayers();
   historyLayer.set("title", "History");
 
   onUndoRedo(({ meta }) => {
     if (meta?.value && selectedUnitIds.value.has(meta.value as string)) drawHistory();
   });
 
-  const historyModify = new Modify({ source: historyLayer.getSource()! });
-  watch(editHistoryRef, (v) => historyModify.setActive(v), { immediate: true });
+  const historyModify = new Modify({ source: legLayer.getSource()! });
+  watch(
+    editHistoryRef,
+    (v) => {
+      historyModify.setActive(v);
+      drawHistory();
+    },
+    { immediate: true },
+  );
 
   let preGeometry: LineString | undefined;
   historyModify.on(["modifystart", "modifyend"], (evt) => {
@@ -86,6 +95,11 @@ export function useUnitHistory(
         });
       }
 
+      if (elementIndex === -1) {
+        console.warn("Cannot modify geometry");
+        return;
+      }
+
       handleHistoryFeatureChange(
         f.get("unitId"),
         action,
@@ -112,11 +126,13 @@ export function useUnitHistory(
   ) {
     const unit = unitActions.getUnitById(unitId);
     const changedCoords = postCoordinates[elementIndex];
-    const llChangedCoords = toLonLat([changedCoords[0], changedCoords[1]]);
+    const llChangedCoords =
+      changedCoords && toLonLat([changedCoords[0], changedCoords[1]]);
     if (!unit) return;
     if (isVia) {
       let stateElementIndex = -1;
       let viaElementIndex = -1;
+      let newIndex = -1;
       if (action === "remove") {
         const a = [...preCoordinates.entries()].filter(
           ([i, c]) => !(c[2] === VIA_TIME || c[2] === 0),
@@ -124,6 +140,9 @@ export function useUnitHistory(
         stateElementIndex = a.findIndex(([i]) => {
           return i > elementIndex;
         });
+        viaElementIndex = elementIndex - a[stateElementIndex - 1][0] - 1;
+        // @ts-ignore
+        newIndex = unit?.state?.findIndex((s) => s.t === a[stateElementIndex][1][2]);
       } else {
         const a = [...postCoordinates.entries()].filter(
           ([i, c]) => !(c[2] === VIA_TIME || c[2] === 0),
@@ -132,35 +151,50 @@ export function useUnitHistory(
           return i > elementIndex;
         });
         viaElementIndex = elementIndex - a[stateElementIndex - 1][0] - 1;
+        // @ts-ignore
+        newIndex = unit?.state?.findIndex((s) => s.t === a[stateElementIndex][1][2]);
       }
       unitActions.updateUnitStateVia(
         unitId,
         action,
-        stateElementIndex,
+        newIndex,
         viaElementIndex,
         llChangedCoords,
       );
     } else {
       if (action === "remove") {
-        unitActions.deleteUnitStateEntry(unitId, elementIndex);
+        const index = unit?.state?.findIndex(
+          (s) => s.t === preCoordinates[elementIndex][2],
+        );
+        if (index !== undefined) unitActions.deleteUnitStateEntry(unitId, index);
       } else if (action === "modify") {
         geo.addUnitPosition(unitId, llChangedCoords, changedCoords[2]);
       }
     }
   }
 
-  const drawHistory = () => {
-    const historyLayerSource = historyLayer.getSource()!;
+  function drawHistory() {
+    const historyLayerSource = legLayer.getSource()!;
+    const waypointLayerSource = waypointLayer.getSource()!;
+    const viaLayerSource = viaLayer.getSource()!;
+    const arcLayerSource = arcLayer.getSource()!;
+    arcLayer.setOpacity(editHistoryRef.value ? 0.4 : 1);
     historyLayerSource.clear();
+    waypointLayerSource.clear();
+    arcLayerSource.clear();
     if (!showHistoryRef.value) return;
     selectedUnitIds.value.forEach((unitId) => {
       const unit = state.getUnitById(unitId);
       if (!unit) return;
 
-      const historyFeature = createHistoryFeature(unit);
-      historyLayerSource.addFeature(historyFeature);
+      const { legFeatures, waypointFeatures, viaPointFeatures, arcFeatures } =
+        createUnitPathFeatures(unit, editHistoryRef.value);
+      arcLayerSource.addFeatures(arcFeatures);
+      historyLayerSource.addFeatures(editHistoryRef.value ? legFeatures : []);
+      waypointLayerSource.addFeatures(waypointFeatures);
+      viaLayerSource.addFeatures(viaPointFeatures);
     });
-  };
+  }
 
   watch(
     () => showHistoryRef.value && [...selectedUnitIds.value.values()],

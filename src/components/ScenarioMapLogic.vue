@@ -26,7 +26,6 @@ import {
 } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useGeoLayersUndoRedo } from "@/composables/geoUndoRedo";
-import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { useMapHover } from "@/composables/geoHover";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
@@ -36,6 +35,7 @@ import { ObjectEvent } from "ol/Object";
 import { clearStyleCache } from "@/geo/unitStyles";
 import { useRangeRingsLayer } from "@/composables/geoRangeRings";
 import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
+import { useUnitHistory2 } from "@/composables/geoUnitHistory2";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -92,7 +92,7 @@ const { rangeLayer, drawRangeRings } = useRangeRingsLayer();
 olMap.addLayer(rangeLayer);
 const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
 useGeoLayersUndoRedo(olMap);
-const { historyLayer, drawHistory, historyModify } = useUnitHistory({
+const { historyLayer, drawHistory, historyModify } = useUnitHistory2({
   showHistory,
   editHistory,
 });

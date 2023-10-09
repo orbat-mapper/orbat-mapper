@@ -11,7 +11,6 @@ import View from "ol/View";
 import { nanoid } from "@/utils";
 import { NUnit } from "@/types/internalModels";
 import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
-import { createHistoryStylesFromFeature } from "@/geo/history";
 
 export function createUnitLayer(): PointVectorLayer {
   return new VectorLayer({
@@ -24,13 +23,6 @@ export function createUnitLayer(): PointVectorLayer {
       title: "Unit layer",
       layerType: LayerType.units,
     },
-  });
-}
-
-export function createHistoryLayer(): VectorLayer<VectorSource<Point | LineString>> {
-  return new VectorLayer({
-    source: new VectorSource(),
-    style: createHistoryStylesFromFeature,
   });
 }
 
