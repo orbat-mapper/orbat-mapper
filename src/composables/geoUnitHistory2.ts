@@ -113,6 +113,7 @@ export function useUnitHistory2(
         ?.getCoordinates()
         .map((e) => [e[0], e[1], e[2] === 0 ? VIA_TIME : e[2]]);
       if (updatedGeometry) f.getGeometry()?.setCoordinates(updatedGeometry, "XYM");
+      drawHistory();
     }
   });
 
