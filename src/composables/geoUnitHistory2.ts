@@ -9,17 +9,22 @@ import {
   VIA_TIME,
 } from "@/geo/history2";
 import Modify, { ModifyEvent } from "ol/interaction/Modify";
-import { LineString } from "ol/geom";
-import { Feature } from "ol";
+import { LineString, Point } from "ol/geom";
+import { Feature, MapBrowserEvent } from "ol";
 import { MaybeRef } from "@vueuse/core";
 import { ref, watch } from "vue";
 
 import { useSelectedItems } from "@/stores/selectedStore";
+import { altKeyOnly, singleClick } from "ol/events/condition";
 
 function squaredDistance(a: number[], b: number[]) {
   const dx = a[0] - b[0];
   const dy = a[1] - b[1];
   return dx * dx + dy * dy;
+}
+
+function deleteCondition(mapBrowserEvent: any) {
+  return altKeyOnly(mapBrowserEvent) && singleClick(mapBrowserEvent);
 }
 
 /**
@@ -48,7 +53,7 @@ export function useUnitHistory2(
     if (meta?.value && selectedUnitIds.value.has(meta.value as string)) drawHistory();
   });
 
-  const historyModify = new Modify({ source: legLayer.getSource()! });
+  const historyModify = new Modify({ source: legLayer.getSource()!, deleteCondition });
   watch(
     editHistoryRef,
     (v) => {
@@ -59,80 +64,112 @@ export function useUnitHistory2(
   );
 
   let preGeometry: LineString | undefined;
-  historyModify.on(["modifystart", "modifyend"], (evt) => {
-    const f = (evt as ModifyEvent).features.item(0) as Feature<LineString>;
-    if (evt.type === "modifystart") {
-      preGeometry = f.getGeometry()?.clone();
-    } else if (evt.type === "modifyend") {
-      const postGeometry = f.getGeometry();
-      let action: HistoryAction;
-      const preLength = preGeometry?.getCoordinates().length || 0;
-      const postLength = postGeometry?.getCoordinates().length || 0;
-      const preCoords = preGeometry?.getCoordinates() || [];
-      const postCoords = postGeometry?.getCoordinates() || [];
-      let elementIndex = -1;
-      let isVia = false;
-      if (preLength === postLength) {
-        action = "modify";
+  let prePointGeometry: Point | undefined;
 
-        postCoords.every((v, i, a) => {
-          const b = preCoords[i];
-          const isEq = v[0] === b[0] && v[1] === b[1] && v[2] === b[2];
-          if (!isEq) {
-            elementIndex = i;
-            if (v[2] === VIA_TIME) isVia = true;
-          }
-          return isEq;
-        });
-      } else if (preLength < postLength) {
-        action = "add";
-        elementIndex = postCoords.findIndex((e) => e[2] === 0);
-        isVia = true;
-      } else {
+  function handleLineString(f: Feature<LineString>, evt: ModifyEvent) {
+    const postGeometry = f.getGeometry();
+    let action: HistoryAction;
+    const preLength = preGeometry?.getCoordinates().length || 0;
+    const postLength = postGeometry?.getCoordinates().length || 0;
+    const preCoords = preGeometry?.getCoordinates() || [];
+    const postCoords = postGeometry?.getCoordinates() || [];
+    let elementIndex = -1;
+    let isVia = false;
+    if (preLength === postLength) {
+      action = "modify";
+
+      postCoords.every((v, i, a) => {
+        const b = preCoords[i];
+        const isEq = v[0] === b[0] && v[1] === b[1] && v[2] === b[2];
+        if (!isEq) {
+          elementIndex = i;
+          if (v[2] === VIA_TIME) isVia = true;
+        }
+        return isEq;
+      });
+    } else if (preLength < postLength) {
+      action = "add";
+      elementIndex = postCoords.findIndex((e) => e[2] === 0);
+      isVia = true;
+    } else {
+      action = "remove";
+      preCoords.every((v, i, a) => {
+        const b = postCoords[i];
+        const isEq = b && v[0] === b[0] && v[1] === b[1] && v[2] === b[2];
+        if (!isEq) {
+          elementIndex = i;
+          if (v[2] === VIA_TIME) isVia = true;
+        }
+        return isEq;
+      });
+    }
+
+    if (elementIndex === -1) {
+      if (postLength === 2) {
         action = "remove";
-        preCoords.every((v, i, a) => {
-          const b = postCoords[i];
-          const isEq = b && v[0] === b[0] && v[1] === b[1] && v[2] === b[2];
-          if (!isEq) {
-            elementIndex = i;
-            if (v[2] === VIA_TIME) isVia = true;
-          }
-          return isEq;
-        });
-      }
-
-      if (elementIndex === -1) {
-        if (postLength === 2) {
-          action = "remove";
-          const coordinate = (<ModifyEvent>evt).mapBrowserEvent.coordinate;
-          const dista = squaredDistance(coordinate, postCoords[0]);
-          const distb = squaredDistance(coordinate, postCoords[1]);
-          if (dista < distb) {
-            elementIndex = 0;
-          } else {
-            elementIndex = 1;
-          }
+        const coordinate = (<ModifyEvent>evt).mapBrowserEvent.coordinate;
+        const dista = squaredDistance(coordinate, postCoords[0]);
+        const distb = squaredDistance(coordinate, postCoords[1]);
+        if (dista < distb) {
+          elementIndex = 0;
+        } else {
+          elementIndex = 1;
         }
       }
+    }
+    return { postGeometry, action, preCoords, postCoords, elementIndex, isVia };
+  }
 
-      if (elementIndex === -1) {
-        console.warn("Cannot modify geometry");
-        return;
+  historyModify.on(["modifystart", "modifyend"], (evt) => {
+    const f = (evt as ModifyEvent).features.item(0) as Feature<LineString | Point>;
+    const geometryType = f.getGeometry()?.getType();
+    if (geometryType === "Point") {
+    } else {
+    }
+    if (evt.type === "modifystart") {
+      preGeometry =
+        geometryType === "LineString" ? <LineString>f.getGeometry()?.clone() : undefined;
+    } else if (evt.type === "modifyend") {
+      if (geometryType === "LineString") {
+        let { postGeometry, action, preCoords, postCoords, elementIndex, isVia } =
+          handleLineString(f as Feature<LineString>, evt as ModifyEvent);
+
+        if (elementIndex === -1) {
+          console.warn("Cannot modify geometry");
+          return;
+        }
+
+        handleHistoryFeatureChange(
+          f.get("unitId"),
+          action,
+          elementIndex,
+          isVia,
+          postCoords,
+          preCoords,
+        );
+
+        const updatedGeometry = postGeometry
+          ?.getCoordinates()
+          .map((e) => [e[0], e[1], e[2] === 0 ? VIA_TIME : e[2]]);
+        if (updatedGeometry) f.getGeometry()?.setCoordinates(updatedGeometry, "XYM");
+      } else if (geometryType === "Point") {
+        const unitId = f.get("unitId");
+        const unit = unitActions.getUnitById(unitId);
+        if (!unit) return;
+        const action = deleteCondition((<ModifyEvent>evt).mapBrowserEvent)
+          ? "remove"
+          : "modify";
+        const postCoords = [(<Feature<Point>>f).getGeometry()?.getCoordinates()!];
+        const elementIndex = 0;
+        handleHistoryFeatureChange(
+          unitId,
+          action,
+          elementIndex,
+          false,
+          postCoords,
+          postCoords,
+        );
       }
-
-      handleHistoryFeatureChange(
-        f.get("unitId"),
-        action,
-        elementIndex,
-        isVia,
-        postCoords,
-        preCoords,
-      );
-
-      const updatedGeometry = postGeometry
-        ?.getCoordinates()
-        .map((e) => [e[0], e[1], e[2] === 0 ? VIA_TIME : e[2]]);
-      if (updatedGeometry) f.getGeometry()?.setCoordinates(updatedGeometry, "XYM");
       drawHistory();
     }
   });

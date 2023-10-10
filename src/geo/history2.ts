@@ -146,10 +146,16 @@ export function createUnitPathFeatures(unit: Unit | NUnit, isEditMode = false) {
   const parts = splitLocationStateIntoParts(state);
 
   const waypointFeatures = parts.flat().map((part) => createWaypointFeature(part));
-  const legFeatures: Feature<LineString>[] = [];
-  const arcFeatures: Feature<LineString>[] = [];
+  const legFeatures: Feature<LineString | Point>[] = [];
+  const arcFeatures: Feature<LineString | Point>[] = [];
   parts.forEach((part) => {
-    if (part.length < 2) return;
+    if (part.length < 2) {
+      if (isEditMode) {
+        legFeatures.push(createSegmentFeature([[...part[0].location, part[0].t]]));
+      }
+      // arcFeatures.push(createSegmentFeature[[...part[0].location, part[0].t]]);return;
+      return;
+    }
     const segment = [];
     for (let i = 0; i < part.length - 1; i++) {
       const from = part[i];
@@ -171,8 +177,11 @@ export function createUnitPathFeatures(unit: Unit | NUnit, isEditMode = false) {
   function createSegmentFeature(
     segment: Position[],
     geometryLayout: GeometryLayout = "XYM",
-  ): Feature<LineString> {
-    const geometry = new LineString(unwindCoordinates(segment), geometryLayout);
+  ): Feature<LineString | Point> {
+    const geometry =
+      segment.length > 1
+        ? new LineString(unwindCoordinates(segment), geometryLayout)
+        : new Point(segment[0], geometryLayout);
     geometry.transform("EPSG:4326", "EPSG:3857");
 
     return new Feature({
