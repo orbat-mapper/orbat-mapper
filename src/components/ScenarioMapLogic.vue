@@ -34,8 +34,7 @@ import { useShowScaleLine } from "@/composables/geoScaleLine";
 import { ObjectEvent } from "ol/Object";
 import { clearStyleCache } from "@/geo/unitStyles";
 import { useRangeRingsLayer } from "@/composables/geoRangeRings";
-import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
-import { useUnitHistory2 } from "@/composables/geoUnitHistory2";
+import { useUnitHistory2 } from "@/composables/geoUnitHistory";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{

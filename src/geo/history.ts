@@ -3,7 +3,6 @@ import { LineString, MultiPoint, Point } from "ol/geom";
 import { formatDateString } from "@/geo/utils";
 import { LocationState, Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
-import { nanoid } from "@/utils";
 import { greatCircle } from "@turf/turf";
 import { getDistance } from "ol/sphere";
 import { Position } from "geojson";

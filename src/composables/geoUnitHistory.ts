@@ -3,14 +3,10 @@ import { activeScenarioKey } from "@/components/injects";
 import { EntityId, HistoryAction } from "@/types/base";
 import { Coordinate } from "ol/coordinate";
 import { toLonLat } from "ol/proj";
-import {
-  createUnitHistoryLayers,
-  createUnitPathFeatures,
-  VIA_TIME,
-} from "@/geo/history2";
+import { createUnitHistoryLayers, createUnitPathFeatures, VIA_TIME } from "@/geo/history";
 import Modify, { ModifyEvent } from "ol/interaction/Modify";
 import { LineString, Point } from "ol/geom";
-import { Feature, MapBrowserEvent } from "ol";
+import { Feature } from "ol";
 import { MaybeRef } from "@vueuse/core";
 import { ref, watch } from "vue";
 
