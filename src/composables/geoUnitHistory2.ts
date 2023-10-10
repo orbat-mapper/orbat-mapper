@@ -16,6 +16,12 @@ import { ref, watch } from "vue";
 
 import { useSelectedItems } from "@/stores/selectedStore";
 
+function squaredDistance(a: number[], b: number[]) {
+  const dx = a[0] - b[0];
+  const dy = a[1] - b[1];
+  return dx * dx + dy * dy;
+}
+
 /**
  * Code for displaying and manipulating unit history on the map
  */
@@ -93,6 +99,20 @@ export function useUnitHistory2(
           }
           return isEq;
         });
+      }
+
+      if (elementIndex === -1) {
+        if (postLength === 2) {
+          action = "remove";
+          const coordinate = (<ModifyEvent>evt).mapBrowserEvent.coordinate;
+          const dista = squaredDistance(coordinate, postCoords[0]);
+          const distb = squaredDistance(coordinate, postCoords[1]);
+          if (dista < distb) {
+            elementIndex = 0;
+          } else {
+            elementIndex = 1;
+          }
+        }
       }
 
       if (elementIndex === -1) {
