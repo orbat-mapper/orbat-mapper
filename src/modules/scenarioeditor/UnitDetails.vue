@@ -120,7 +120,7 @@
               </div>
             </DescriptionItem>
           </div>
-          <div class="mt-4 space-y-2">
+          <div class="my-4 space-y-2">
             <ToggleField v-model="unitSettings.showHistory"
               >Show unit track on map</ToggleField
             >
@@ -226,6 +226,10 @@ const unit = computed(() => {
   return store.state.getUnitById(props.unitId);
 });
 
+const geoStore = useGeoStore();
+const unitSettings = useUnitSettingsStore();
+const { getModalSidc } = injectStrict(sidcModalKey);
+
 const unitMenuItems: MenuItemData[] = [
   { label: "Change symbol", action: () => handleChangeSymbol() },
   { label: "Edit unit data", action: () => toggleEditMode() },
@@ -249,13 +253,18 @@ watch(
   { immediate: true },
 );
 
+watch(
+  () => unitSettings.editHistory,
+  (v) => {
+    if (v && !unitSettings.showHistory) {
+      unitSettings.showHistory = true;
+    }
+  },
+);
+
 const combinedSymbolOptions = computed(() => {
   return getCombinedSymbolOptions(unit.value);
 });
-
-const geoStore = useGeoStore();
-const unitSettings = useUnitSettingsStore();
-const { getModalSidc } = injectStrict(sidcModalKey);
 
 const {
   start: startGetLocation,
