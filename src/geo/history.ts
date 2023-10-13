@@ -228,7 +228,7 @@ function splitLocationStateIntoParts(state: LocationState[]): LocationState[][] 
   const parts: LocationState[][] = [];
   let currentPart: LocationState[] = [];
   state.forEach((s) => {
-    if (s.location === null) {
+    if (s.location === null || s.interpolate === false) {
       if (currentPart.length) parts.push(currentPart);
       currentPart = [];
     } else {

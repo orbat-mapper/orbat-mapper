@@ -58,11 +58,21 @@
         </IconButton>
         <DotsMenu :items="menuItems" @action="onStateAction(index, $event)" />
       </div>
-      <div v-if="s.via" class="absolute -top-3 left-1/2">
+      <div
+        v-if="s.via?.length || s.viaStartTime !== undefined || s.interpolate === false"
+        class="absolute -top-3 left-1/2"
+      >
         <div
           class="relative -left-1/2 flex items-center rounded-full border bg-white px-4 py-0.5"
         >
-          <IconMapMarkerPath class="h-5 w-5 text-gray-500" />
+          <IconMapMarkerPath v-if="s.via?.length" class="h-5 w-5 text-gray-500" />
+          <IconMapMarkerAlert
+            v-else-if="s.interpolate === false"
+            class="h-5 w-5 text-gray-500"
+          />
+          <span v-if="s.viaStartTime" class="ml-2 text-xs text-gray-600">{{
+            formatDateString(s.viaStartTime, store.state.info.timeZone)
+          }}</span>
         </div>
       </div>
     </li>
@@ -75,6 +85,7 @@ import {
   IconCrosshairsGps,
   IconMapMarkerOffOutline,
   IconMapMarkerPath,
+  IconMapMarkerAlert,
 } from "@iconify-prerendered/vue-mdi";
 import type { State, StateAdd } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";

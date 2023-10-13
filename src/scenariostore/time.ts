@@ -45,16 +45,27 @@ export function useScenarioTime(store: NewScenarioStore) {
         if (s.t <= timestamp) {
           currentState = { ...currentState, ...s };
         } else {
-          if (currentState?.location && s.location) {
+          if (
+            currentState?.location &&
+            s.location &&
+            !(s.interpolate === false) &&
+            (s.viaStartTime ?? -Infinity) <= timestamp
+          ) {
+            if (s.viaStartTime) {
+              console.log("yo");
+            }
             const n = lineString(
               s.via
                 ? [currentState.location, ...s.via, s.location]
                 : [currentState.location, s.location],
             );
-            const timeDiff = s.t - currentState.t;
+            const timeDiff = s.t - (s.viaStartTime ?? currentState.t);
             const pathLength = turfLength(n);
             const averageSpeed = pathLength / timeDiff;
-            const p = turfAlong(n, averageSpeed * (timestamp - currentState.t));
+            const p = turfAlong(
+              n,
+              averageSpeed * (timestamp - (s.viaStartTime ?? currentState.t)),
+            );
             currentState = {
               ...currentState,
               t: timestamp,

@@ -111,11 +111,12 @@ function prepareScenario(scenario: Scenario): ScenarioState {
       unit.state = unit.state.map((e) => ({
         ...e,
         t: +dayjs(e.t),
+        viaStartTime: e.viaStartTime !== undefined ? +dayjs(e.viaStartTime) : undefined,
         id: e.id || nanoid(),
       }));
     }
-    unit.state
-      .filter((s) => s.title)
+    unit
+      .state!.filter((s) => s.title)
       .forEach((s) => {
         const { t: startTime, subTitle, description } = s;
         const nEvent: NScenarioEvent = {
