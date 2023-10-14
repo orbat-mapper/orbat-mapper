@@ -1168,11 +1168,45 @@
                 {
                   "name": "HMS Conqueror",
                   "sidc": "10033500001101000006",
-                  "state": [],
+                  "state": [
+                    {
+                      "id": "bSPeiXY2Zv",
+                      "t": "1982-05-01T10:00:00-04:00",
+                      "location": [-64.50621897762558, -53.85933830454558]
+                    },
+                    {
+                      "id": "uR1WEa5YK1",
+                      "t": "1982-05-01T19:00:00-04:00",
+                      "location": [-63.01619803087814, -55.04410696011474]
+                    },
+                    {
+                      "id": "fv3RZw87wO",
+                      "t": "1982-05-02T04:00:00-04:00",
+                      "location": [-53.29979689579837, -55.659455265185045]
+                    },
+                    {
+                      "id": "sngNTXFtmx",
+                      "t": "1982-05-02T13:00:00-04:00",
+                      "location": [-60.739499685526546, -55.708551034130316]
+                    },
+                    {
+                      "id": "AUfysT1Bvr",
+                      "t": "1982-05-02T14:40:48-04:00",
+                      "location": [-61.39035446861821, -55.54945374841025]
+                    }
+                  ],
                   "id": "ksCBbvo0PD",
                   "subUnits": [],
                   "shortName": "Conqueror",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Conqueror_(S48)"
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Conqueror_(S48)",
+                  "media": [
+                    {
+                      "url": "https://media.iwm.org.uk/ciim5/169/790/mid_000000.jpg?action=e&cat=Photographs",
+                      "caption": "",
+                      "credits": "© Crown copyright. IWM (FKD 27)",
+                      "creditsUrl": "https://www.iwm.org.uk/collections/item/object/205045373"
+                    }
+                  ]
                 },
                 {
                   "name": "HMS Courageous",
@@ -1581,9 +1615,22 @@
                   "id": "mhQX0REztU",
                   "state": [
                     {
+                      "id": "0DQ91sSfBb",
+                      "t": "1982-04-16T10:00:00-04:00",
+                      "location": [-62.10334149267671, -38.91020535789416]
+                    },
+                    {
                       "t": "1982-04-26T10:00:00-04:00",
                       "location": [-68.29113980631531, -54.81416370017099],
-                      "id": "nYXxt1kyse"
+                      "id": "nYXxt1kyse",
+                      "via": [
+                        [-61.49226992988301, -39.627638018657144],
+                        [-65.67250157742718, -49.78690267294657],
+                        [-65.1085926639276, -55.04552890511212],
+                        [-66.64446996258982, -55.08913867916945],
+                        [-67.26555866990267, -54.92511420548745],
+                        [-67.88186578856305, -54.88981854891848]
+                      ]
                     },
                     {
                       "id": "SM7a2OLgv3",
