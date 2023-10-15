@@ -10,15 +10,22 @@
   </div>
 
   <ul class="mt-2 divide-y divide-gray-200 border-b border-t border-gray-200">
-    <li v-for="(s, index) in state" class="relative flex items-center py-4" :key="s.id">
+    <li
+      v-for="(s, index) in state"
+      class="relative flex items-center py-4"
+      :key="s.id"
+      :class="selectedWaypointIds.has(s.id) ? 'bg-yellow-200' : ''"
+    >
       <div class="flex min-w-0 flex-auto flex-col text-sm">
-        <p
+        <button
+          class="flex"
           :class="
             isActive(s, index) ? 'font-bold text-gray-900' : 'font-medium text-gray-500'
           "
+          @click="onStateClick(s)"
         >
           {{ formatDateString(s.t, store.state.info.timeZone) }}
-        </p>
+        </button>
         <input
           v-if="s === editedTitle"
           type="text"
@@ -100,6 +107,7 @@ import { ButtonGroupItem, MenuItemData } from "@/components/types";
 import SplitButton from "@/components/SplitButton.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useNotifications } from "@/composables/notifications";
+import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 
 interface Props {
   unit: NUnit;
@@ -113,6 +121,7 @@ const { onUnitAction } = useUnitActions();
 const { send } = useNotifications();
 const state = computed(() => props.unit.state || []);
 const uiState = useUiStore();
+const { selectedWaypointIds } = useSelectedWaypoints();
 
 const menuItems: MenuItemData<StateAction>[] = [
   { label: "Delete", action: "delete" },
@@ -185,6 +194,17 @@ async function onStateAction(index: number, action: StateAction) {
     unitActions.updateUnitStateEntry(props.unit.id, index, {
       location: null,
     });
+  }
+}
+
+function onStateClick(s: State) {
+  if (s.location) {
+    if (selectedWaypointIds.value.has(s.id)) {
+      selectedWaypointIds.value.delete(s.id);
+    } else {
+      selectedWaypointIds.value.clear();
+      selectedWaypointIds.value.add(s.id);
+    }
   }
 }
 

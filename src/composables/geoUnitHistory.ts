@@ -3,7 +3,13 @@ import { activeScenarioKey } from "@/components/injects";
 import { EntityId, HistoryAction } from "@/types/base";
 import { Coordinate } from "ol/coordinate";
 import { toLonLat } from "ol/proj";
-import { createUnitHistoryLayers, createUnitPathFeatures, VIA_TIME } from "@/geo/history";
+import {
+  createUnitHistoryLayers,
+  createUnitPathFeatures,
+  labelStyle,
+  selectedWaypointStyle,
+  VIA_TIME,
+} from "@/geo/history";
 import Modify, { ModifyEvent } from "ol/interaction/Modify";
 import { LineString, Point } from "ol/geom";
 import { Feature } from "ol";
@@ -11,7 +17,11 @@ import { MaybeRef } from "@vueuse/core";
 import { ref, watch } from "vue";
 
 import { useSelectedItems } from "@/stores/selectedStore";
-import { altKeyOnly, singleClick } from "ol/events/condition";
+import { altKeyOnly, click, singleClick } from "ol/events/condition";
+import Select, { SelectEvent } from "ol/interaction/Select";
+import { useOlEvent } from "@/composables/openlayersHelpers";
+import { FeatureLike } from "ol/Feature";
+import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 
 function squaredDistance(a: number[], b: number[]) {
   const dx = a[0] - b[0];
@@ -26,7 +36,7 @@ function deleteCondition(mapBrowserEvent: any) {
 /**
  * Code for displaying and manipulating unit history on the map
  */
-export function useUnitHistory2(
+export function useUnitHistory(
   options: Partial<{
     showHistory: MaybeRef<boolean>;
     editHistory: MaybeRef<boolean>;
@@ -34,15 +44,49 @@ export function useUnitHistory2(
 ) {
   const showHistoryRef = ref(options.showHistory || true);
   const editHistoryRef = ref(options.editHistory || true);
-
+  let isInternal = false;
+  const { selectedWaypointIds } = useSelectedWaypoints();
+  selectedWaypointIds.value.clear();
   const {
     geo,
     unitActions,
     store: { onUndoRedo, state },
   } = injectStrict(activeScenarioKey);
   const { selectedUnitIds } = useSelectedItems();
-  const { waypointLayer, historyLayer, legLayer, viaLayer, arcLayer } =
+  const { waypointLayer, historyLayer, legLayer, viaLayer, arcLayer, labelsLayer } =
     createUnitHistoryLayers();
+
+  const waypointSelect = new Select({
+    layers: [waypointLayer, labelsLayer],
+    condition: click,
+    style: (feature: FeatureLike) => {
+      labelStyle.getText()!.setText(feature.get("label") || "");
+      return [selectedWaypointStyle, labelStyle];
+    },
+  });
+
+  useOlEvent(
+    waypointSelect.on("select", (evt: SelectEvent) => {
+      evt.mapBrowserEvent.stopPropagation();
+      isInternal = true;
+      evt.selected.forEach((f) => selectedWaypointIds.value.add(f.getId() as string));
+      evt.deselected.forEach((f) =>
+        selectedWaypointIds.value.delete(f.getId() as string),
+      );
+    }),
+  );
+
+  function redrawSelectedLayer(v: EntityId[]) {
+    if (!isInternal) {
+      waypointSelect.getFeatures().clear();
+      v.forEach((fid) => {
+        const feature = waypointLayer.getSource()?.getFeatureById(fid);
+        if (feature) waypointSelect.getFeatures().push(feature);
+      });
+    }
+    isInternal = false;
+  }
+
   historyLayer.set("title", "History");
 
   onUndoRedo(({ meta }) => {
@@ -50,6 +94,12 @@ export function useUnitHistory2(
   });
 
   const historyModify = new Modify({ source: legLayer.getSource()!, deleteCondition });
+  watch(
+    () => [...selectedWaypointIds.value],
+    (v) => redrawSelectedLayer(v),
+    { immediate: true },
+  );
+
   watch(
     editHistoryRef,
     (v) => {
@@ -247,12 +297,16 @@ export function useUnitHistory2(
       historyLayerSource.addFeatures(editHistoryRef.value ? legFeatures : []);
       waypointLayerSource.addFeatures(waypointFeatures);
       viaLayerSource.addFeatures(viaPointFeatures);
+      redrawSelectedLayer([...selectedWaypointIds.value]);
     });
   }
 
   watch(
     () => showHistoryRef.value && [...selectedUnitIds.value.values()],
-    () => drawHistory(),
+    (selectedUnitIds) => {
+      drawHistory();
+      waypointSelect.setActive(selectedUnitIds && selectedUnitIds.length > 0);
+    },
   );
 
   return {
@@ -261,5 +315,6 @@ export function useUnitHistory2(
     historyModify,
     showHistory: showHistoryRef,
     editHistory: editHistoryRef,
+    waypointSelect,
   };
 }

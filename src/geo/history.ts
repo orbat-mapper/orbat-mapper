@@ -45,7 +45,7 @@ const legStyle = new Style({
   }),
 });
 
-const waypointStyle = new Style({
+export const waypointStyle = new Style({
   image: new CircleStyle({
     radius: 5,
     fill: new Fill({
@@ -58,7 +58,20 @@ const waypointStyle = new Style({
   }),
 });
 
-const labelStyle = new Style({
+export const selectedWaypointStyle = new Style({
+  image: new CircleStyle({
+    radius: 5,
+    fill: new Fill({
+      color: "red",
+    }),
+    stroke: new Stroke({
+      color: "yellow",
+      width: 3,
+    }),
+  }),
+});
+
+export const labelStyle = new Style({
   text: new Text({
     text: "HH",
     textAlign: "left",
@@ -105,6 +118,7 @@ export function createUnitHistoryLayers() {
     waypointLayer,
     viaLayer,
     arcLayer,
+    labelsLayer,
   };
 }
 
@@ -144,7 +158,9 @@ export function createUnitPathFeatures(unit: Unit | NUnit, isEditMode = false) {
   // split state entries into groups in case the path is split
   const parts = splitLocationStateIntoParts(state);
 
-  const waypointFeatures = parts.flat().map((part) => createWaypointFeature(part));
+  const waypointFeatures = parts
+    .flat()
+    .map((part, index) => createWaypointFeature(part, index + 1));
   const legFeatures: Feature<LineString | Point>[] = [];
   const arcFeatures: Feature<LineString | Point>[] = [];
   parts.forEach((part) => {
@@ -189,16 +205,21 @@ export function createUnitPathFeatures(unit: Unit | NUnit, isEditMode = false) {
     });
   }
 
-  function createWaypointFeature(state: LocationState) {
+  function createWaypointFeature(state: LocationState, index: number) {
     const geometry = new Point(state.location);
     geometry.transform("EPSG:4326", "EPSG:3857");
 
-    return new Feature({
+    const f = new Feature({
       geometry,
       id: state.id,
       unitId: unit.id,
-      label: state.t > Number.MIN_SAFE_INTEGER ? formatDateString(state.t) : "",
+      label:
+        state.t > Number.MIN_SAFE_INTEGER
+          ? `#${index} ${formatDateString(state.t)}`
+          : `#${index}`,
     });
+    f.setId(state.id);
+    return f;
   }
 
   return { legFeatures, waypointFeatures, viaPointFeatures: [], arcFeatures };

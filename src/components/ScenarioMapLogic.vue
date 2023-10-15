@@ -34,7 +34,7 @@ import { useShowScaleLine } from "@/composables/geoScaleLine";
 import { ObjectEvent } from "ol/Object";
 import { clearStyleCache } from "@/geo/unitStyles";
 import { useRangeRingsLayer } from "@/composables/geoRangeRings";
-import { useUnitHistory2 } from "@/composables/geoUnitHistory";
+import { useUnitHistory } from "@/composables/geoUnitHistory";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -91,7 +91,7 @@ const { rangeLayer, drawRangeRings } = useRangeRingsLayer();
 olMap.addLayer(rangeLayer);
 const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
 useGeoLayersUndoRedo(olMap);
-const { historyLayer, drawHistory, historyModify } = useUnitHistory2({
+const { historyLayer, drawHistory, historyModify, waypointSelect } = useUnitHistory({
   showHistory,
   editHistory,
 });
@@ -100,7 +100,6 @@ const r = useMapHover(olMap, { enable: hoverEnabled });
 
 olMap.addLayer(historyLayer);
 olMap.addLayer(unitLayerGroup);
-olMap.addInteraction(historyModify);
 
 const {
   unitSelectInteraction,
@@ -109,9 +108,14 @@ const {
 } = useUnitSelectInteraction([unitLayer], olMap, {
   enable: unitSelectEnabled,
 });
+
+// Order of select interactions is important. The interaction that is added last
+// will be the one that receives the select event first and can stop the propagation.
 olMap.addInteraction(unitSelectInteraction);
 olMap.addInteraction(boxSelectInteraction);
+olMap.addInteraction(waypointSelect);
 
+olMap.addInteraction(historyModify);
 const { selectInteraction: featureSelectInteraction } = useScenarioFeatureSelect(olMap, {
   enable: featureSelectEnabled,
 });
