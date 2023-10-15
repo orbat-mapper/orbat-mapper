@@ -292,7 +292,10 @@ export function useUnitHistory(
       if (!unit) return;
 
       const { legFeatures, waypointFeatures, viaPointFeatures, arcFeatures } =
-        createUnitPathFeatures(unit, editHistoryRef.value);
+        createUnitPathFeatures(unit, {
+          isEditMode: editHistoryRef.value,
+          timeZone: state.info.timeZone,
+        });
       arcLayerSource.addFeatures(arcFeatures);
       historyLayerSource.addFeatures(editHistoryRef.value ? legFeatures : []);
       waypointLayerSource.addFeatures(waypointFeatures);

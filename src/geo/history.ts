@@ -147,7 +147,16 @@ function unwindCoordinates(coordinates: number[][]): number[][] {
   return result;
 }
 
-export function createUnitPathFeatures(unit: Unit | NUnit, isEditMode = false) {
+interface CreateUnitPathFeaturesOptions {
+  isEditMode?: boolean;
+  timeZone?: string;
+}
+export function createUnitPathFeatures(
+  unit: Unit | NUnit,
+  options: CreateUnitPathFeaturesOptions = {},
+) {
+  const isEditMode = options.isEditMode ?? false;
+  const timeZone = options.timeZone ?? "";
   // extract the location states from the unit, and add the initial location
   // we then remove any states that don't have a location
   const state = [
@@ -215,7 +224,7 @@ export function createUnitPathFeatures(unit: Unit | NUnit, isEditMode = false) {
       unitId: unit.id,
       label:
         state.t > Number.MIN_SAFE_INTEGER
-          ? `#${index} ${formatDateString(state.t)}`
+          ? `#${index} ${formatDateString(state.t, timeZone, "YYYY-MM-DDTHH:mm")}`
           : `#${index}`,
     });
     f.setId(state.id);
