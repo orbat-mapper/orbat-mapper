@@ -1362,7 +1362,8 @@
                       "credits": "See page for author, Public domain, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:De_Soto_County_LST-1171.jpg"
                     }
-                  ]
+                  ],
+                  "shortName": "CSA"
                 },
                 {
                   "name": "ARA Comodoro Py",
@@ -1376,7 +1377,7 @@
                   ],
                   "subUnits": [],
                   "id": "AC8ZMWwYvR",
-                  "shortName": "D-27",
+                  "shortName": "CPY",
                   "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
                   "media": [
                     {
@@ -1399,7 +1400,7 @@
                   ],
                   "subUnits": [],
                   "id": "KLFoTRFuAB",
-                  "shortName": "D-25",
+                  "shortName": "CSG",
                   "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)"
                 },
                 {
@@ -1413,7 +1414,8 @@
                     }
                   ],
                   "subUnits": [],
-                  "id": "VDqHwIOuso"
+                  "id": "VDqHwIOuso",
+                  "shortName": "GUE"
                 },
                 {
                   "name": "ARA Hipólito Bouchard",
@@ -1457,7 +1459,7 @@
                   ],
                   "subUnits": [],
                   "id": "n4cQBRLpod",
-                  "shortName": "D-26",
+                  "shortName": "HBO",
                   "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)"
                 },
                 {
@@ -1502,7 +1504,7 @@
                   ],
                   "subUnits": [],
                   "id": "57C8QDlA48",
-                  "shortName": "D-29",
+                  "shortName": "PBU",
                   "externalUrl": "https://en.wikipedia.org/wiki/USS_Collett#Argentine_service"
                 },
                 {
@@ -1524,7 +1526,8 @@
                       "credits": "From wikimedia commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Santa_Fe_(S-11).jpg#file"
                     }
-                  ]
+                  ],
+                  "shortName": "SFE"
                 },
                 {
                   "name": "ARA Santisima Trinidad",
@@ -1558,7 +1561,8 @@
                     }
                   ],
                   "subUnits": [],
-                  "id": "oRsy5ZvKZO"
+                  "id": "oRsy5ZvKZO",
+                  "shortName": "STR"
                 },
                 {
                   "name": "ARA Veinticinco de Mayo",
@@ -1572,7 +1576,7 @@
                     }
                   ],
                   "subUnits": [],
-                  "shortName": "V-2",
+                  "shortName": "VDM",
                   "externalUrl": "https://en.wikipedia.org/wiki/ARA_Veinticinco_de_Mayo_(V-2)",
                   "media": [
                     {
@@ -1594,7 +1598,8 @@
                     }
                   ],
                   "subUnits": [],
-                  "id": "StgaVQO18b"
+                  "id": "StgaVQO18b",
+                  "shortName": "DRU"
                 },
                 {
                   "name": "ARA Granville",
@@ -1607,7 +1612,8 @@
                     }
                   ],
                   "subUnits": [],
-                  "id": "brruuJVSKS"
+                  "id": "brruuJVSKS",
+                  "shortName": "GRV"
                 },
                 {
                   "name": "ARA General Belgrano",
@@ -1673,7 +1679,7 @@
                     }
                   ],
                   "subUnits": [],
-                  "shortName": "Belgrano",
+                  "shortName": "GBE",
                   "externalUrl": "https://en.wikipedia.org/wiki/ARA_General_Belgrano",
                   "media": [
                     {
@@ -1718,7 +1724,8 @@
                       "id": "MsrVuaZMBE"
                     }
                   ],
-                  "id": "FfAifXXyRE"
+                  "id": "FfAifXXyRE",
+                  "shortName": "AIR"
                 },
                 {
                   "name": "ARA Bahía Buen Suceso",
@@ -1760,7 +1767,7 @@
                   "id": "rQVoXIJpJw",
                   "subUnits": [],
                   "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Buen_Suceso",
-                  "shortName": "B-6"
+                  "shortName": "BBS"
                 },
                 {
                   "name": "ARA Bahía Paraíso",
@@ -1785,7 +1792,7 @@
                   "id": "V8ElpGSpvK",
                   "subUnits": [],
                   "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Para%C3%ADso",
-                  "shortName": "",
+                  "shortName": "BPA",
                   "description": "The ship operated as a naval auxiliary vessel from 1981 to 1986 and served in the Falklands War as a troop transport as well as hospital ship. It was involved in transporting troops to Leith Harbour prior to the Invasion of South Georgia. "
                 },
                 {
@@ -1801,7 +1808,7 @@
                   "id": "gAJzCZKNNd",
                   "subUnits": [],
                   "externalUrl": "",
-                  "shortName": "",
+                  "shortName": "PME",
                   "description": ""
                 }
               ]
