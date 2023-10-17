@@ -1,4 +1,4 @@
-import { injectStrict } from "@/utils";
+import { injectStrict, MS_PER_DAY, MS_PER_HOUR } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { EntityId, HistoryAction } from "@/types/base";
 import { Coordinate } from "ol/coordinate";
@@ -12,7 +12,7 @@ import {
 } from "@/geo/history";
 import Modify, { ModifyEvent } from "ol/interaction/Modify";
 import { LineString, Point } from "ol/geom";
-import { Feature } from "ol";
+import { Feature, MapBrowserEvent } from "ol";
 import { MaybeRef } from "@vueuse/core";
 import { ref, watch } from "vue";
 
@@ -22,6 +22,8 @@ import Select, { SelectEvent } from "ol/interaction/Select";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { FeatureLike } from "ol/Feature";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
+import OLMap from "ol/Map";
+import { MapCtrlClick } from "@/geo/olInteractions";
 
 function squaredDistance(a: number[], b: number[]) {
   const dx = a[0] - b[0];
@@ -33,10 +35,21 @@ function deleteCondition(mapBrowserEvent: any) {
   return altKeyOnly(mapBrowserEvent) && singleClick(mapBrowserEvent);
 }
 
+const ctrlKeyOnly = function (mapBrowserEvent: any) {
+  const originalEvent =
+    /** @type {KeyboardEvent|MouseEvent|TouchEvent} */ mapBrowserEvent.originalEvent;
+  return (
+    (originalEvent.metaKey || originalEvent.ctrlKey) &&
+    !originalEvent.shiftKey &&
+    !originalEvent.altKey
+  );
+};
+
 /**
  * Code for displaying and manipulating unit history on the map
  */
 export function useUnitHistory(
+  olMap: OLMap,
   options: Partial<{
     showHistory: MaybeRef<boolean>;
     editHistory: MaybeRef<boolean>;
@@ -56,6 +69,9 @@ export function useUnitHistory(
   const { waypointLayer, historyLayer, legLayer, viaLayer, arcLayer, labelsLayer } =
     createUnitHistoryLayers();
 
+  const ctrlClickInteraction = new MapCtrlClick({ handleCtrlClickEvent });
+  ctrlClickInteraction.setActive(false);
+
   const waypointSelect = new Select({
     layers: [waypointLayer, labelsLayer],
     condition: click,
@@ -64,6 +80,18 @@ export function useUnitHistory(
       return [selectedWaypointStyle, labelStyle];
     },
   });
+
+  function handleCtrlClickEvent(event: MapBrowserEvent<MouseEvent>) {
+    const clickPosition = toLonLat(olMap.getEventCoordinate(event.originalEvent));
+    selectedUnitIds.value.forEach((unitId) => {
+      const unit = state.getUnitById(unitId);
+      if (!unit) return;
+      const lastTime = unit.state?.filter((s) => s.location).pop()?.t;
+      const newTime = lastTime !== undefined ? lastTime + MS_PER_HOUR * 6 : undefined;
+
+      geo.addUnitPosition(unitId, clickPosition, newTime);
+    });
+  }
 
   useOlEvent(
     waypointSelect.on("select", (evt: SelectEvent) => {
@@ -309,6 +337,7 @@ export function useUnitHistory(
     (selectedUnitIds) => {
       drawHistory();
       waypointSelect.setActive(selectedUnitIds && selectedUnitIds.length > 0);
+      ctrlClickInteraction.setActive(selectedUnitIds && selectedUnitIds.length > 0);
     },
   );
 
@@ -319,5 +348,6 @@ export function useUnitHistory(
     showHistory: showHistoryRef,
     editHistory: editHistoryRef,
     waypointSelect,
+    ctrlClickInteraction,
   };
 }

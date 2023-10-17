@@ -35,6 +35,7 @@ import { ObjectEvent } from "ol/Object";
 import { clearStyleCache } from "@/geo/unitStyles";
 import { useRangeRingsLayer } from "@/composables/geoRangeRings";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
+import { MapCtrlClick } from "@/geo/olInteractions";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -91,10 +92,11 @@ const { rangeLayer, drawRangeRings } = useRangeRingsLayer();
 olMap.addLayer(rangeLayer);
 const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
 useGeoLayersUndoRedo(olMap);
-const { historyLayer, drawHistory, historyModify, waypointSelect } = useUnitHistory({
-  showHistory,
-  editHistory,
-});
+const { historyLayer, drawHistory, historyModify, waypointSelect, ctrlClickInteraction } =
+  useUnitHistory(olMap, {
+    showHistory,
+    editHistory,
+  });
 
 const r = useMapHover(olMap, { enable: hoverEnabled });
 
@@ -116,6 +118,7 @@ olMap.addInteraction(boxSelectInteraction);
 olMap.addInteraction(waypointSelect);
 
 olMap.addInteraction(historyModify);
+olMap.addInteraction(ctrlClickInteraction);
 const { selectInteraction: featureSelectInteraction } = useScenarioFeatureSelect(olMap, {
   enable: featureSelectEnabled,
 });
@@ -164,6 +167,7 @@ emit("map-ready", { olMap, featureSelectInteraction, unitSelectInteraction });
 watch(
   geo.everyVisibleUnit,
   () => {
+    console.log("everyVisibleUnit changed");
     drawUnits();
     drawHistory();
     redrawSelectedUnits();
