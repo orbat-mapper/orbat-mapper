@@ -28,6 +28,10 @@
               <BaseButton secondary large>Secondary large</BaseButton>
               <BaseButton secondary huge>Secondary huge</BaseButton>
             </p>
+            <p class="flex items-start space-x-2">
+              <LinkButton>Link button<span aria-hidden="true"> &rarr;</span></LinkButton>
+              <LinkButton>Link button<span aria-hidden="true"> &rarr;</span></LinkButton>
+            </p>
           </section>
           <section class="space-y-4">
             <h3 class="border-b text-lg">Input groups</h3>
@@ -131,6 +135,7 @@ import CheckboxDropdown from "@/components/CheckboxDropdown.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { MenuItemData } from "@/components/types";
 import { ScenarioActions } from "@/types/constants";
+import LinkButton from "@/components/LinkButton.vue";
 
 const num = ref(1);
 const v = ref("Test");

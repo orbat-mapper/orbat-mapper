@@ -75,10 +75,7 @@ function onAddSubmit() {
 
 <template>
   <div class="prose max-w-none">
-    <TableHeader
-      title="Personnel"
-      description="A list of personnel categories available in this scenario."
-    >
+    <TableHeader description="A list of personnel categories available in this scenario.">
       <BaseButton @click="store.toggleAddPersonnel()">
         {{ store.showAddPersonnel ? "Hide form" : "Add" }}
       </BaseButton>

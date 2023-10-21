@@ -1,5 +1,5 @@
 import { OrbatItemData, Unit } from "@/types/scenarioModels";
-import { UnitAction, UnitActions } from "@/types/constants";
+import { TAB_SCENARIO_SETTINGS, UnitAction, UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
 import { computed } from "vue";
 import { NOrbatItemData, NUnit } from "@/types/internalModels";
@@ -16,6 +16,7 @@ import OLMap from "ol/Map";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
+import { useUiStore } from "@/stores/uiStore";
 
 export function useUnitActions(
   options: Partial<{
@@ -178,25 +179,23 @@ export function useScenarioFeatureActions() {
 
 export function useToeActions() {
   const { showScenarioInfo, clear: clearSelected } = useSelectedItems();
+  const uiStore = useUiStore();
   const scenarioInfoPanelStore = useScenarioInfoPanelStore();
 
   function goToAddEquipment() {
-    clearSelected();
-    showScenarioInfo.value = true;
-    scenarioInfoPanelStore.tabIndex = 1;
+    uiStore.activeTabIndex = TAB_SCENARIO_SETTINGS;
     scenarioInfoPanelStore.showAddEquipment = true;
+    scenarioInfoPanelStore.tabIndex = 1;
   }
 
   function goToAddPersonnel() {
-    clearSelected();
-    showScenarioInfo.value = true;
-    scenarioInfoPanelStore.tabIndex = 2;
+    uiStore.activeTabIndex = TAB_SCENARIO_SETTINGS;
     scenarioInfoPanelStore.showAddPersonnel = true;
+    scenarioInfoPanelStore.tabIndex = 2;
   }
 
   function goToAddGroup() {
-    clearSelected();
-    showScenarioInfo.value = true;
+    uiStore.activeTabIndex = TAB_SCENARIO_SETTINGS;
     scenarioInfoPanelStore.tabIndex = 3;
     scenarioInfoPanelStore.showAddGroup = true;
   }

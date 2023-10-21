@@ -75,10 +75,7 @@ function onItemAction(item: NEquipmentData, action: string) {
 
 <template>
   <div class="prose max-w-none">
-    <TableHeader
-      title="Equipment"
-      description="A list of equipment that is available in this scenario."
-    >
+    <TableHeader description="A list of equipment that is available in this scenario.">
       <BaseButton @click="store.toggleAddEquipment()">
         {{ store.showAddEquipment ? "Hide form" : "Add" }}
       </BaseButton>

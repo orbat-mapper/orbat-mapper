@@ -32,7 +32,7 @@
         <div ref="swipeDownEl" class="flex flex-auto items-center justify-evenly">
           <Tab
             as="template"
-            v-for="tab in ['ORBAT', 'Events', 'Layers', 'Details']"
+            v-for="tab in ['ORBAT', 'Events', 'Layers', 'Settings', 'Details']"
             :key="tab"
             v-slot="{ selected }"
           >
@@ -58,6 +58,7 @@
           <ScenarioEventsPanel />
         </TabPanel>
         <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
+        <TabPanel class="p-4 pb-10"><ScenarioSettingsPanel /></TabPanel>
         <TabPanel class="pb-10">
           <UnitDetails
             v-if="activeDetailsPanel === 'unit'"
@@ -104,6 +105,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
 import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
+import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
 
 const emit = defineEmits([
   "open-time-modal",

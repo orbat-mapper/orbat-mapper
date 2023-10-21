@@ -14,7 +14,7 @@
         <div class="flex flex-auto items-center justify-evenly">
           <Tab
             as="template"
-            v-for="tab in ['ORBAT', 'Events', 'Layers']"
+            v-for="tab in ['ORBAT', 'Events', 'Layers', 'Settings']"
             :key="tab"
             v-slot="{ selected }"
           >
@@ -40,6 +40,7 @@
           <ScenarioEventsPanel @event-click="onEventClick" />
         </TabPanel>
         <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
+        <TabPanel class="p-4 pb-10" :unmount="false"> <ScenarioSettingsPanel /></TabPanel>
       </TabPanels>
     </TabGroup>
     <PanelResizeHandle
@@ -64,11 +65,12 @@ import { onMounted, onUnmounted } from "vue";
 import { ScenarioEvent } from "@/types/scenarioModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
+import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
 
 const emit = defineEmits(["close"]);
 
 const mapRef = injectStrict(activeMapKey);
-const { selectedUnitIds, activeUnitId, activeScenarioEventId } = useSelectedItems();
+const { activeScenarioEventId } = useSelectedItems();
 
 const [showBottomPanel, toggleBottomPanel] = useToggle(true);
 
@@ -96,9 +98,5 @@ onUnmounted(() => {
 
 function onEventClick(scenarioEvent: ScenarioEvent) {
   activeScenarioEventId.value = scenarioEvent.id;
-}
-
-function resetWidth() {
-  orbatPanelWidth.value = 400;
 }
 </script>
