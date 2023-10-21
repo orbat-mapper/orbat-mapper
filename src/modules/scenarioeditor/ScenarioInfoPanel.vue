@@ -10,7 +10,7 @@
       :tab-list="['Details', 'Equipment', 'Personnel', 'Groups']"
       v-model="panelStore.tabIndex"
     >
-      <TabPanel><ScenarioInfoDetails /></TabPanel>
+      <TabPanel><ScenarioInfoDetails class="pt-4" /></TabPanel>
       <TabPanel><ScenarioInfoEquipment /></TabPanel>
       <TabPanel><ScenarioInfoPersonnel /></TabPanel>
       <TabPanel><ScenarioInfoGroups /></TabPanel>

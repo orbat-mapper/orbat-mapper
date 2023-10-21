@@ -76,7 +76,7 @@
       </nav>
     </header>
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
-      <TabPanel>
+      <TabPanel class="pt-4">
         <section class="relative">
           <EditMetaForm
             v-if="isEditMode"
