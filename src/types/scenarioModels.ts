@@ -18,6 +18,7 @@ export interface State extends Partial<ScenarioEventDescription> {
   symbolOptions?: UnitSymbolOptions;
   interpolate?: boolean;
   viaStartTime?: ScenarioTime;
+  status?: string;
 }
 
 export interface StateAdd extends Omit<State, "id"> {
@@ -53,6 +54,8 @@ export interface Unit {
   equipment?: UnitEquipment[];
   personnel?: UnitPersonnel[];
   media?: Media[];
+  status?: string;
+  template?: EntityId;
   // internal runtime only state
   _state?: CurrentState | null;
   _pid?: EntityId; // parent
@@ -162,6 +165,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "0.14.0"
   | "0.13.0"
   | "0.12.0"
   | "0.11.0"
@@ -182,8 +186,15 @@ export interface PersonnelData {
   description?: string;
 }
 
+export interface UnitStatus {
+  name: string;
+  description?: string;
+  color?: string;
+}
+
 export interface ScenarioSettings {
   rangeRingGroups: RangeRingGroup[];
+  statuses: UnitStatus[];
 }
 
 export interface Scenario extends ScenarioInfo {
@@ -195,6 +206,7 @@ export interface Scenario extends ScenarioInfo {
   mapLayers: ScenarioMapLayer[];
   equipment?: EquipmentData[];
   personnel?: PersonnelData[];
+  unitTemplates?: Unit[];
   settings?: ScenarioSettings;
 }
 

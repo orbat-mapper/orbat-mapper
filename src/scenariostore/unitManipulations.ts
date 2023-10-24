@@ -13,6 +13,7 @@ import {
   PersonnelDataUpdate,
   SideGroupUpdate,
   SideUpdate,
+  UnitStatusUpdate,
   UnitUpdate,
 } from "@/types/internalModels";
 import { CloneTarget, DropTarget } from "@/components/types";
@@ -679,6 +680,42 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function updateUnitStatus(id: string, data: UnitStatusUpdate) {
+    update((s) => {
+      const status = s.unitStatusMap[id];
+      if (!status) return;
+      Object.assign(status, data);
+    });
+  }
+
+  function addUnitStatus(data: Partial<UnitStatusUpdate>) {
+    const newStatus = { id: nanoid(), name: "Status", ...klona(data) };
+    if (newStatus.id === undefined) {
+      newStatus.id = nanoid();
+    }
+    const newId = newStatus.id;
+    update((s) => {
+      s.unitStatusMap[newId] = newStatus;
+    });
+  }
+
+  function deleteUnitStatus(id: string): boolean {
+    // check if status is used
+    const isUsed = Object.values(state.unitMap).some((unit) => {
+      if (unit.status && unit.status === id) {
+        return true;
+      }
+
+      return unit.state?.some((state) => state.status === id);
+    });
+
+    if (isUsed) return false;
+    update((s) => {
+      delete s.unitStatusMap[id];
+    });
+    return true;
+  }
+
   function updateEquipment(id: string, data: EquipmentDataUpdate) {
     update((s) => {
       const equipment = s.equipmentMap[id];
@@ -857,5 +894,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     deleteEquipment,
     updateUnitEquipment,
     updateUnitPersonnel,
+    addUnitStatus,
+    updateUnitStatus,
+    deleteUnitStatus,
   };
 }

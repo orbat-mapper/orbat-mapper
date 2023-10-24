@@ -7,6 +7,7 @@ import ScenarioInfoPersonnel from "@/modules/scenarioeditor/ScenarioInfoPersonne
 import ScenarioInfoEquipment from "@/modules/scenarioeditor/ScenarioInfoEquipment.vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
+import ScenarioInfoUnitStatuses from "@/modules/scenarioeditor/ScenarioInfoUnitStatuses.vue";
 
 const selectedItems = useSelectedItems();
 const scenarioInfoPanelStore = useScenarioInfoPanelStore();
@@ -25,6 +26,51 @@ function showScenarioInfo() {
         >View scenario description <span aria-hidden="true"> &rarr;</span></LinkButton
       >
     </header>
+    <!--    <AccordionPanel label="Unit templates"
+      ><div class="prose">
+        <p>Reusable unit templates (work in progress)</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Template name</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="flex items-center">
+                <MilitarySymbol sidc="10033500001101000006" :size="15" />
+                <span class="ml-2">Churchill-class</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="flex items-center">
+                <MilitarySymbol sidc="10033000001202030000" :size="15" />
+                <span class="ml-2">County-class</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="flex items-center">
+                <MilitarySymbol sidc="10033000001202030000" :size="15" />
+                <span class="ml-2">Type 42</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="flex items-center">
+                <MilitarySymbol sidc="10031000151211004600" :size="15" />
+                <span class="ml-2">Cdo COY</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="flex items-center">
+                <MilitarySymbol sidc="10031000151211000001" :size="15" />
+                <span class="ml-2">Para COY</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div></AccordionPanel
+    >-->
     <AccordionPanel
       label="Equipment categories"
       :key="scenarioInfoPanelStore.tabIndex + 20"
@@ -45,6 +91,9 @@ function showScenarioInfo() {
       :defaultOpen="scenarioInfoPanelStore.tabIndex === 3"
     >
       <ScenarioInfoGroups />
+    </AccordionPanel>
+    <AccordionPanel label="Unit statuses">
+      <ScenarioInfoUnitStatuses />
     </AccordionPanel>
   </div>
 </template>

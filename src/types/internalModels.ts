@@ -9,6 +9,7 @@ import {
   Unit,
   UnitEquipment,
   UnitPersonnel,
+  UnitStatus,
 } from "./scenarioModels";
 import { EntityId } from "./base";
 import {
@@ -115,6 +116,11 @@ export interface NPersonnelData extends PersonnelData {
   id: string;
 }
 
+export interface NUnitStatus extends UnitStatus {
+  id: string;
+}
+
+export interface UnitStatusUpdate extends Partial<Omit<NUnitStatus, "id">> {}
 export interface EquipmentDataUpdate extends Partial<Omit<NEquipmentData, "id">> {}
 export interface PersonnelDataUpdate extends Partial<Omit<NPersonnelData, "id">> {}
 export const INTERNAL_NAMES = [

@@ -8,6 +8,7 @@ import {
   Side,
   SideGroup,
   Unit,
+  UnitStatus,
 } from "@/types/scenarioModels";
 import * as FileSaver from "file-saver";
 import {
@@ -56,7 +57,7 @@ export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): S
     events: [],
     layers: [{ id: nanoid(), name: "Features", features: [] }],
     mapLayers: [],
-    settings: { rangeRingGroups },
+    settings: { rangeRingGroups, statuses: [] },
   };
 }
 
@@ -90,6 +91,7 @@ function getSides(state: ScenarioState): Side[] {
 
     return {
       ...nUnit,
+      status: nUnit.status ? state.unitStatusMap[nUnit.status]?.name : undefined,
       subUnits: nUnit.subUnits.map((subUnitId) => getUnit(subUnitId)),
       equipment,
       personnel,
@@ -142,6 +144,10 @@ function getRangeRingGroups(state: ScenarioState): RangeRingGroup[] {
   return Object.values(state.rangeRingGroupMap).map(({ id, ...rest }) => rest);
 }
 
+function getUnitStatuses(state: ScenarioState): UnitStatus[] {
+  return Object.values(state.unitStatusMap).map(({ id, ...rest }) => rest);
+}
+
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   const settingsStore = useSymbolSettingsStore();
 
@@ -157,7 +163,10 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       mapLayers: getMapLayers(state),
       equipment: getEquipment(state),
       personnel: getPersonnel(state),
-      settings: { rangeRingGroups: getRangeRingGroups(state) },
+      settings: {
+        rangeRingGroups: getRangeRingGroups(state),
+        statuses: getUnitStatuses(state),
+      },
     };
   }
 

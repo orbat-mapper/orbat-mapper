@@ -7,6 +7,7 @@ import type {
   Side,
   SideGroup,
   Unit,
+  UnitStatus,
 } from "@/types/scenarioModels";
 import dayjs from "dayjs";
 import { nanoid } from "@/utils";
@@ -25,6 +26,7 @@ import type {
   NUnit,
   NUnitEquipment,
   NUnitPersonnel,
+  NUnitStatus,
 } from "@/types/internalModels";
 import { useScenarioTime } from "./time";
 import type {
@@ -57,6 +59,7 @@ export interface ScenarioState {
   getSideById: (id: EntityId) => NSide;
   getSideGroupById: (id: EntityId) => NSideGroup;
   rangeRingGroupMap: Record<string, NRangeRingGroup>;
+  unitStatusMap: Record<string, NUnitStatus>;
   unitStateCounter: number;
 }
 
@@ -76,10 +79,12 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const equipmentMap: Record<string, NEquipmentData> = {};
   const personnelMap: Record<string, NPersonnelData> = {};
   const rangeRingGroupMap: Record<string, NRangeRingGroup> = {};
+  const unitStatusMap: Record<string, NUnitStatus> = {};
 
   const tempEquipmentIdMap: Record<string, string> = {};
   const tempPersonnelIdMap: Record<string, string> = {};
   const tempRangeRingGroupIdMap: Record<string, string> = {};
+  const tempUnitStatusIdMap: Record<string, string> = {};
 
   let unitStateCounter = 0;
 
@@ -91,6 +96,12 @@ function prepareScenario(scenario: Scenario): ScenarioState {
       _type: "scenario",
     };
     eventMap[nEvent.id] = nEvent;
+  });
+
+  scenario.settings?.statuses?.forEach((s) => {
+    const id = nanoid();
+    tempUnitStatusIdMap[s.name] = id;
+    unitStatusMap[id] = { ...s, id };
   });
 
   if (scenario.startTime !== undefined) {
@@ -115,8 +126,8 @@ function prepareScenario(scenario: Scenario): ScenarioState {
         id: e.id || nanoid(),
       }));
     }
-    unit
-      .state!.filter((s) => s.title)
+    unit.state
+      ?.filter((s) => s.title)
       .forEach((s) => {
         const { t: startTime, subTitle, description } = s;
         const nEvent: NScenarioEvent = {
@@ -130,6 +141,11 @@ function prepareScenario(scenario: Scenario): ScenarioState {
           //where: s.where,
         };
         eventMap[nEvent.id] = nEvent;
+      });
+    unit.state
+      ?.filter((s) => s.status)
+      .forEach((s) => {
+        if (s.status && !unitStatusMap[s.status]) addUnitStatus({ name: s.status });
       });
     unit._state = null;
     if (!unit.id) {
@@ -164,6 +180,11 @@ function prepareScenario(scenario: Scenario): ScenarioState {
         rangeRings.push(rr);
       }
     });
+
+    if (unit.status) {
+      unit.status =
+        tempUnitStatusIdMap[unit.status] || addUnitStatus({ name: unit.status });
+    }
 
     unitMap[unit1.id] = {
       ...unit,
@@ -204,6 +225,13 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     const id = nanoid();
     tempRangeRingGroupIdMap[g.name] = id;
     rangeRingGroupMap[id] = { ...g, id };
+    return id;
+  }
+
+  function addUnitStatus(s: UnitStatus) {
+    const id = nanoid();
+    tempUnitStatusIdMap[s.name] = id;
+    unitStatusMap[id] = { ...s, id };
     return id;
   }
 
@@ -287,6 +315,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     personnelMap,
     rangeRingGroupMap,
     unitStateCounter,
+    unitStatusMap,
     getUnitById(id: EntityId) {
       return this.unitMap[id];
     },
