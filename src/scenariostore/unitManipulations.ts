@@ -454,6 +454,17 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitState(unitId);
   }
 
+  function deleteUnitStateEntryByStateId(unitId: EntityId, stateId: EntityId) {
+    update((s) => {
+      const _unit = s.getUnitById(unitId);
+      if (!_unit) return;
+      const index = _unit.state?.findIndex((s) => s.id === stateId) ?? -1;
+      if (index >= 0) _unit.state?.splice(index, 1);
+    });
+
+    updateUnitState(unitId);
+  }
+
   function addUnitStateEntry(unitId: EntityId, state: StateAdd, merge = false) {
     update(
       (s) => {
@@ -813,6 +824,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     createSubordinateUnit,
     updateUnit,
     deleteUnitStateEntry,
+    deleteUnitStateEntryByStateId,
     units: computed(() => Object.values(state.unitMap)),
     getUnitOrSideGroup,
     getUnitById: (id: EntityId) => state.unitMap[id],

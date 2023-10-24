@@ -167,7 +167,6 @@ emit("map-ready", { olMap, featureSelectInteraction, unitSelectInteraction });
 watch(
   geo.everyVisibleUnit,
   () => {
-    console.log("everyVisibleUnit changed");
     drawUnits();
     drawHistory();
     redrawSelectedUnits();

@@ -11,6 +11,7 @@ import { UnitActions } from "@/types/constants";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { useTabStore } from "@/stores/tabStore";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 
 const {
   unitActions,
@@ -31,6 +32,7 @@ const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 const tabStore = useTabStore();
 const geo = useGeoStore();
 const unitSettings = useUnitSettingsStore();
+const { selectedWaypointIds } = useSelectedWaypoints();
 
 const selectedUnits = computed(() =>
   [...selectedUnitIds.value].map((id) => state.getUnitById(id)),
@@ -85,6 +87,11 @@ function handleMoveShortcut(e: KeyboardEvent) {
 }
 
 function handleDelete(e: KeyboardEvent) {
+  if (selectedWaypointIds.value.size) {
+    const wIds = [...selectedWaypointIds.value];
+    onUnitAction(selectedUnits.value, UnitActions.DeleteWaypoints, wIds);
+    return;
+  }
   onUnitAction(selectedUnits.value, UnitActions.Delete);
   onFeatureAction([...selectedFeatureIds.value], "delete");
 }

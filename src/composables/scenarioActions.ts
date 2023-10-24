@@ -17,6 +17,7 @@ import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import { useUiStore } from "@/stores/uiStore";
+import { EntityId } from "@/types/base";
 
 export function useUnitActions(
   options: Partial<{
@@ -30,7 +31,11 @@ export function useUnitActions(
   const { selectedUnitIds, activeUnitId } = useSelectedItems();
   const geoStore = useGeoStore();
 
-  const _onUnitAction = (unit: NUnit | undefined | null, action: UnitAction) => {
+  const _onUnitAction = (
+    unit: NUnit | undefined | null,
+    action: UnitAction,
+    waypointIds?: EntityId[],
+  ) => {
     if (!unit) return;
     if (action === UnitActions.AddSubordinate) {
       unit._isOpen = true;
@@ -90,17 +95,27 @@ export function useUnitActions(
       unitActions.deleteUnit(unit.id);
       selectedUnitIds.value.delete(unit.id);
     }
+
+    if (action === UnitActions.DeleteWaypoints && waypointIds && waypointIds.length) {
+      waypointIds.forEach((wid) =>
+        unitActions.deleteUnitStateEntryByStateId(unit.id, wid),
+      );
+    }
   };
 
-  function onUnitAction(unitOrUnits: NUnit | NUnit[] | null, action: UnitAction) {
+  function onUnitAction(
+    unitOrUnits: NUnit | NUnit[] | null,
+    action: UnitAction,
+    waypointIds?: EntityId[],
+  ) {
     if (!unitOrUnits) return;
     if (Array.isArray(unitOrUnits)) {
       groupUpdate(() => {
         if (action === UnitActions.Zoom || action === UnitActions.Pan) {
           geoStore.zoomToUnits(unitOrUnits, 500);
-        } else unitOrUnits.forEach((unit) => _onUnitAction(unit, action));
+        } else unitOrUnits.forEach((unit) => _onUnitAction(unit, action, waypointIds));
       });
-    } else _onUnitAction(unitOrUnits, action);
+    } else _onUnitAction(unitOrUnits, action, waypointIds);
   }
   return { onUnitAction };
 }
