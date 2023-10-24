@@ -22,7 +22,7 @@
           :class="
             isActive(s, index) ? 'font-bold text-gray-900' : 'font-medium text-gray-500'
           "
-          @click="onStateClick(s)"
+          @click="onStateClick($event, s)"
         >
           {{ formatDateString(s.t, store.state.info.timeZone) }}
         </button>
@@ -197,12 +197,14 @@ async function onStateAction(index: number, action: StateAction) {
   }
 }
 
-function onStateClick(s: State) {
+function onStateClick(e: MouseEvent, s: State) {
   if (s.location) {
     if (selectedWaypointIds.value.has(s.id)) {
       selectedWaypointIds.value.delete(s.id);
     } else {
-      selectedWaypointIds.value.clear();
+      if (!e.shiftKey) {
+        selectedWaypointIds.value.clear();
+      }
       selectedWaypointIds.value.add(s.id);
     }
   }
