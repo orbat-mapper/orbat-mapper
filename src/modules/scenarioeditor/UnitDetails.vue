@@ -8,7 +8,7 @@
           class="mr-1 inline-flex h-20 w-16 flex-shrink-0"
           @click="handleChangeSymbol()"
         >
-          <MilitarySymbol :sidc="unit.sidc" :size="34" :options="combinedSymbolOptions" />
+          <MilitarySymbol :sidc="unitSidc" :size="34" :options="combinedSymbolOptions" />
         </button>
         <div class="-mt-1.5 w-full">
           <EditableLabel
@@ -265,6 +265,8 @@ watch(
 const combinedSymbolOptions = computed(() => {
   return getCombinedSymbolOptions(unit.value);
 });
+
+const unitSidc = computed(() => unit.value._state?.sidc || unit.value.sidc);
 
 const {
   start: startGetLocation,
