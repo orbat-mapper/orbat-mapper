@@ -44,7 +44,7 @@
             />
             <UnitDetails
               v-else-if="activeDetailsPanel === 'unit'"
-              :unit-id="activeUnitId!"
+              :unit-id="activeUnitId || [...selectedUnitIds][0]"
             />
             <ScenarioEventDetails
               v-else-if="activeDetailsPanel === 'event'"

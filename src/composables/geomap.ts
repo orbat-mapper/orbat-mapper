@@ -154,7 +154,11 @@ export function useUnitSelectInteraction(
   const enableRef = ref(options.enable ?? true);
   const enableBoxSelectRef = ref(options.enableBoxSelect ?? true);
 
-  const { selectedUnitIds: selectedIds, clear: clearSelectedItems } = useSelectedItems();
+  const {
+    selectedUnitIds: selectedIds,
+    clear: clearSelectedItems,
+    activeUnitId,
+  } = useSelectedItems();
   const { geo } = injectStrict(activeScenarioKey);
 
   const unitSelectInteraction = new Select({
@@ -254,7 +258,7 @@ export function useUnitSelectInteraction(
 
   useOlEvent(
     boxSelectInteraction.on("boxstart", function () {
-      selectedIds.value.clear();
+      clearSelectedItems();
     }),
   );
 

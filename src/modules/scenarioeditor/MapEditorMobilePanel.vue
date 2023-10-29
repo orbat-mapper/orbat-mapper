@@ -62,7 +62,7 @@
         <TabPanel class="pb-10">
           <UnitDetails
             v-if="activeDetailsPanel === 'unit'"
-            :unit-id="activeUnitId!"
+            :unit-id="activeUnitId || [...selectedUnitIds][0]"
             class="p-4"
           />
           <ScenarioFeatureDetails
@@ -118,6 +118,7 @@ const emit = defineEmits([
 
 const {
   selectedFeatureIds,
+  selectedUnitIds,
   activeUnitId,
   activeScenarioEventId,
   activeMapLayerId,

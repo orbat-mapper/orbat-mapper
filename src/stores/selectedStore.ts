@@ -108,7 +108,7 @@ const activeDetailsPanel = computed((): DetailsPanel | null | undefined => {
   if (selectedFeatureIds.value.size) {
     return "feature";
   }
-  if (activeUnitId.value) {
+  if (activeUnitId.value || selectedUnitIds.value.size) {
     return "unit";
   }
 
