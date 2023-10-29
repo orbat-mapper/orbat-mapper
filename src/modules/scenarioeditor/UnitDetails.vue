@@ -130,9 +130,7 @@
           </div>
         </section>
       </TabPanel>
-      <TabPanel
-        ><UnitPanelState v-if="!isMultiMode && unit?.state?.length" :unit="unit"
-      /></TabPanel>
+      <TabPanel><UnitPanelState v-if="!isMultiMode" :unit="unit" /></TabPanel>
       <TabPanel>
         <UnitDetailsMap :unit="unit" />
       </TabPanel>

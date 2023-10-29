@@ -1,12 +1,12 @@
 <template>
   <h3 class="mt-6 font-medium text-gray-900">Unit state</h3>
-  <div class="flex items-center">
+  <div class="flex items-center justify-between">
     <span class="text-sm">Change state</span>
     <SplitButton
       class="ml-2"
       :items="stateItems"
       v-model:active-item="uiState.activeStateItem"
-    ></SplitButton>
+    />
   </div>
 
   <ul class="mt-2 divide-y divide-gray-200 border-b border-t border-gray-200">
@@ -50,7 +50,7 @@
         />
         <span
           v-if="s.sidc"
-          class="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"
+          class="w-12 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"
           >sidc</span
         >
       </div>
