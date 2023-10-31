@@ -8,8 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+October 2023
+
+- Delete selected waypoints with the delete key.
+- Select multiple waypoints on map with shift+click.
+- Show great circle lines between waypoints in a unit path.
+
 September 2023
 
+- Add symbol modifier search in symbol picker.
+- Add navigation sidebar to symbol set browser.
 - Make unit name and short name inline editable in the unit panel.
 - Add support for adding an image to a feature.
 - Add markdown support to scenario feature descriptions.
