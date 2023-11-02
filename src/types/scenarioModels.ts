@@ -18,7 +18,7 @@ export interface State extends Partial<ScenarioEventDescription> {
   symbolOptions?: UnitSymbolOptions;
   interpolate?: boolean;
   viaStartTime?: ScenarioTime;
-  status?: string;
+  status?: string | null;
 }
 
 export interface StateAdd extends Omit<State, "id"> {

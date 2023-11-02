@@ -10,7 +10,7 @@
         >
           <MilitarySymbol :sidc="unitSidc" :size="34" :options="combinedSymbolOptions" />
         </button>
-        <div class="-mt-1.5 w-full">
+        <div class="-mt-1.5 flex-auto">
           <EditableLabel
             v-model="unitName"
             @update-value="updateUnit(unitId, { name: $event })"
@@ -22,6 +22,12 @@
             @update-value="updateUnit(unitId, { shortName: $event })"
             text-class="text-sm text-gray-500"
           />
+        </div>
+        <div v-if="unitStatus">
+          <span
+            class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
+            >{{ unitStatus }}</span
+          >
         </div>
       </div>
       <div v-else>
@@ -190,6 +196,7 @@ import { MenuItemData } from "@/components/types";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
+import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 
 const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
@@ -198,6 +205,10 @@ const {
   geo: { addUnitPosition },
   unitActions: { updateUnit, getUnitHierarchy, getCombinedSymbolOptions },
 } = activeScenario;
+
+const {
+  state: { unitStatusMap },
+} = store;
 const { unitDetailsTab: selectedTab } = storeToRefs(useTabStore());
 
 const unitName = ref("");
@@ -222,6 +233,11 @@ const tabList = computed(() =>
 
 const unit = computed(() => {
   return store.state.getUnitById(props.unitId);
+});
+
+const unitStatus = computed(() => {
+  const status = unit.value._state?.status || unit.value.status;
+  return status ? unitStatusMap[status]?.name : undefined;
 });
 
 const geoStore = useGeoStore();

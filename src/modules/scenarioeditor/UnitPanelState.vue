@@ -2,6 +2,7 @@
   <h3 class="mt-6 font-medium text-gray-900">Unit state</h3>
   <div class="flex items-center justify-between">
     <span class="text-sm">Change state</span>
+    <UnitStatusPopover @update="setUnitStatus" />
     <SplitButton
       class="ml-2"
       :items="stateItems"
@@ -48,11 +49,18 @@
           v-if="s.location === null"
           class="h-5 w-5 text-gray-600"
         />
-        <span
-          v-if="s.sidc"
-          class="w-12 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"
-          >sidc</span
-        >
+        <div class="flex">
+          <span
+            v-if="s.sidc"
+            class="w-12 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"
+            >sidc</span
+          >
+          <span
+            v-if="s.status"
+            class="w-auto rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800"
+            >{{ unitStatusMap[s.status]?.name }}</span
+          >
+        </div>
       </div>
 
       <div class="flex-0 relative flex items-center space-x-0">
@@ -90,9 +98,9 @@
 import { computed, nextTick, ref, VNode } from "vue";
 import {
   IconCrosshairsGps,
+  IconMapMarkerAlert,
   IconMapMarkerOffOutline,
   IconMapMarkerPath,
-  IconMapMarkerAlert,
 } from "@iconify-prerendered/vue-mdi";
 import type { State, StateAdd } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
@@ -108,6 +116,7 @@ import SplitButton from "@/components/SplitButton.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useNotifications } from "@/composables/notifications";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
+import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 
 interface Props {
   unit: NUnit;
@@ -115,8 +124,11 @@ interface Props {
 const props = defineProps<Props>();
 const { store, time, unitActions } = injectStrict(activeScenarioKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
-
 const { getModalSidc } = injectStrict(sidcModalKey);
+
+const {
+  state: { unitStatusMap },
+} = store;
 const { onUnitAction } = useUnitActions();
 const { send } = useNotifications();
 const state = computed(() => props.unit.state || []);
@@ -130,6 +142,7 @@ const menuItems: MenuItemData<StateAction>[] = [
   { label: "Edit title", action: "editTitle" },
   { label: "Clear location", action: "clearLocation" },
   { label: "Convert to initial position", action: "convertToInitialPosition" },
+  // { label: "Change status", action: "changeStatus" },
 ];
 
 const stateItems: ButtonGroupItem[] = [
@@ -145,6 +158,7 @@ const stateItems: ButtonGroupItem[] = [
       handleRemoveFromMap();
     },
   },
+  { label: "Change status", onClick: () => {} },
 ];
 
 const editedTitle = ref<State | null>();
@@ -255,6 +269,14 @@ async function handleChangeSymbol() {
 function handleRemoveFromMap() {
   const newState: StateAdd = {
     location: null,
+    t: store.state.currentTime,
+  };
+  unitActions.addUnitStateEntry(props.unit.id, newState, true);
+}
+
+function setUnitStatus(newStatus?: string | null) {
+  const newState: StateAdd = {
+    status: newStatus,
     t: store.state.currentTime,
   };
   unitActions.addUnitStateEntry(props.unit.id, newState, true);
