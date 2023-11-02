@@ -97,6 +97,7 @@ const stateActions = [
   "convertToInitialPosition",
   "editTitle",
   "clearLocation",
+  "changeStatus",
 ] as const;
 export type StateAction = (typeof stateActions)[number];
 

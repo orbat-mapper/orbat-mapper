@@ -2,6 +2,7 @@
   <h3 class="mt-6 font-medium text-gray-900">Unit state</h3>
   <div class="flex items-center justify-between">
     <span class="text-sm">Change state</span>
+    <UnitStatusPopover status="OK" />
     <SplitButton
       class="ml-2"
       :items="stateItems"
@@ -108,6 +109,7 @@ import SplitButton from "@/components/SplitButton.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useNotifications } from "@/composables/notifications";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
+import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 
 interface Props {
   unit: NUnit;
@@ -130,6 +132,7 @@ const menuItems: MenuItemData<StateAction>[] = [
   { label: "Edit title", action: "editTitle" },
   { label: "Clear location", action: "clearLocation" },
   { label: "Convert to initial position", action: "convertToInitialPosition" },
+  { label: "Change status", action: "changeStatus" },
 ];
 
 const stateItems: ButtonGroupItem[] = [
@@ -145,6 +148,7 @@ const stateItems: ButtonGroupItem[] = [
       handleRemoveFromMap();
     },
   },
+  { label: "Change status", onClick: () => {} },
 ];
 
 const editedTitle = ref<State | null>();
