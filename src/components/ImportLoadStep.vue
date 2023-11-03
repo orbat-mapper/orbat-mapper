@@ -57,11 +57,11 @@
     <p v-if="guessedFormat" class="text-sm">
       The format seems to be <span class="text-red-900">{{ guessedFormat }}.</span>
     </p>
-    <SimpleSelect
-      label="Select import format"
-      :items="formatItems"
-      v-model="form.format"
-    />
+    <SimpleSelect label="Select import format" :items="formatItems" v-model="form.format">
+      <template #hint>
+        <DocLink href="https://docs.orbat-mapper.app/guide/import-data" />
+      </template>
+    </SimpleSelect>
     <div class="prose prose-sm">
       <p v-if="isMilx">
         Basic support for importing MilX layers from
@@ -112,6 +112,7 @@ import { useScenarioImport } from "@/composables/scenarioImport";
 import { guessImportFormat, ImportedFileInfo } from "@/lib/fileHandling";
 import { useDragStore } from "@/stores/dragStore";
 import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
+import DocLink from "@/components/DocLink.vue";
 
 const router = useRouter();
 

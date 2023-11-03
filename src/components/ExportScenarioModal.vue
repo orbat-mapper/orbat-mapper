@@ -1,11 +1,18 @@
 <template>
   <SimpleModal v-model="open" dialog-title="Export scenario" @cancel="onCancel">
+    <p class="mt-1 text-sm text-gray-500">
+      Export scenario data for use with other software applications and tools
+    </p>
     <form @submit.prevent="onExport" class="mt-4 space-y-6">
       <SimpleSelect
         label="Select export format"
         :items="formatItems"
         v-model="form.format"
-      />
+      >
+        <template #hint>
+          <DocLink href="https://docs.orbat-mapper.app/guide/export-data" />
+        </template>
+      </SimpleSelect>
       <div class="text-sm text-gray-700">
         <p v-if="isKml">
           KML is a file format used to display data in an Earth browser such as Google
@@ -95,6 +102,7 @@ import { useVModel } from "@vueuse/core";
 import ExportSettingsXlsx from "@/components/ExportSettingsXlsx.vue";
 import ExportSettingsSpatialIllusions from "@/components/ExportSettingsSpatialIllusions.vue";
 import ExportSettingsGeoJson from "@/components/ExportSettingsGeoJson.vue";
+import DocLink from "@/components/DocLink.vue";
 
 const router = useRouter();
 
