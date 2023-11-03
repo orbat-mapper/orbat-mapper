@@ -1,15 +1,18 @@
 <template>
-  <InputGroupTemplate :label="label" :description="description" v-slot="{ id }">
-    <select
-      v-model="selectedValue"
-      :id="id"
-      class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-    >
-      <option v-if="addNone" :value="null">None</option>
-      <option v-for="val in computedValues" :value="val.value" :key="val.value">
-        {{ val.label }}
-      </option>
-    </select>
+  <InputGroupTemplate :label="label" :description="description">
+    <template v-slot:default="{ id }">
+      <select
+        v-model="selectedValue"
+        :id="id"
+        class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+      >
+        <option v-if="addNone" :value="null">None</option>
+        <option v-for="val in computedValues" :value="val.value" :key="val.value">
+          {{ val.label }}
+        </option>
+      </select>
+    </template>
+    <template #hint><slot name="hint" /></template>
   </InputGroupTemplate>
 </template>
 
