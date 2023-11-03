@@ -1,5 +1,6 @@
 <template>
   <SimpleModal v-model="open" dialog-title="Import data" @cancel="onCancel">
+    <p class="text-sm leading-6 text-gray-500">Import data for use in your scenario</p>
     <ImportLoadStep
       v-if="importState === 'select'"
       @cancel="onCancel"
