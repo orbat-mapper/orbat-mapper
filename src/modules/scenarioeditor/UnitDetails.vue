@@ -219,14 +219,14 @@ const tabList = computed(() =>
     ? [
         "Details",
         "Unit state",
-        "Map",
+        "Map overlay",
         { label: "TO&E", title: "Table of organization and equipment" },
         "Debug",
       ]
     : [
         "Details",
         "Unit state",
-        "Map",
+        "Map overlay",
         { label: "TO&E", title: "Table of organization and equipment" },
       ],
 );
