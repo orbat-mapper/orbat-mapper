@@ -24,6 +24,8 @@ import { FeatureLike } from "ol/Feature";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import OLMap from "ol/Map";
 import { MapCtrlClick } from "@/geo/olInteractions";
+import { getDistance } from "ol/sphere";
+import { convertSpeedToMetric } from "@/utils/convert";
 
 function squaredDistance(a: number[], b: number[]) {
   const dx = a[0] - b[0];
@@ -86,8 +88,18 @@ export function useUnitHistory(
     selectedUnitIds.value.forEach((unitId) => {
       const unit = state.getUnitById(unitId);
       if (!unit) return;
-      const lastTime = unit.state?.filter((s) => s.location).pop()?.t;
-      const newTime = lastTime !== undefined ? lastTime + MS_PER_HOUR * 6 : undefined;
+      const lastLocationEntry = unit.state?.filter((s) => s.location).pop();
+      let newTime = undefined;
+      if (lastLocationEntry) {
+        const { location, t } = lastLocationEntry;
+        const distance = getDistance(location!, clickPosition);
+        const speedValue = unit.properties?.averageSpeed || unit.properties?.maxSpeed;
+        const speed = speedValue
+          ? convertSpeedToMetric(speedValue.value, speedValue.uom)
+          : convertSpeedToMetric(30, "km/h");
+        const time = distance / speed;
+        newTime = Math.round(t + time * 1000);
+      }
 
       geo.addUnitPosition(unitId, clickPosition, newTime);
     });

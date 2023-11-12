@@ -118,7 +118,15 @@
                       "credits": "Royal Navy official photographer, Public domain, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hardy_1943_IWM_FL_9572.jpg"
                     }
-                  ]
+                  ],
+                  "description": "",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Hardy_(H87)",
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 36,
+                      "uom": "knots"
+                    }
+                  }
                 },
                 {
                   "name": "HMS Hotspur",
@@ -134,7 +142,13 @@
                       "credits": "Public domain, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hotspur_AWM_302405.jpeg"
                     }
-                  ]
+                  ],
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 36,
+                      "uom": "knots"
+                    }
+                  }
                 },
                 {
                   "name": "HMS Hostile",
@@ -150,7 +164,15 @@
                       "credits": "Royal Navy official photographer, Public domain, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hostile_(H55)_IWM_FL_013957.jpg"
                     }
-                  ]
+                  ],
+                  "description": "",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Hostile_(H55)",
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 36,
+                      "uom": "knots"
+                    }
+                  }
                 },
                 {
                   "name": "HMS Hunter",

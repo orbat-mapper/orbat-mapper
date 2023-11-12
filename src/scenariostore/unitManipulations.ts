@@ -889,6 +889,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       }
       return null;
     },
+
     expandUnit,
     updateUnitStateVia,
     updateUnitStateEntry,
