@@ -56,12 +56,20 @@ export interface Unit {
   media?: Media[];
   status?: string;
   template?: EntityId;
+  properties?: UnitProperties;
   // internal runtime only state
   _state?: CurrentState | null;
   _pid?: EntityId; // parent
   _gid?: EntityId; // group
   _sid?: EntityId; // side
   _isOpen?: boolean;
+}
+
+export type SpeedUnitOfMeasure = "km/h" | "mph" | "knots" | "m/s" | "ft/s";
+export type UnitProperty = { value: number; uom: SpeedUnitOfMeasure };
+export interface UnitProperties {
+  averageSpeed?: UnitProperty;
+  maxSpeed?: UnitProperty;
 }
 
 export interface Media {
@@ -165,6 +173,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "0.15.0"
   | "0.14.0"
   | "0.13.0"
   | "0.12.0"

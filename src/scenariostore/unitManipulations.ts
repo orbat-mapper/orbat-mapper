@@ -23,7 +23,13 @@ import { SID } from "@/symbology/values";
 import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
-import type { State, StateAdd, Unit, UnitSymbolOptions } from "@/types/scenarioModels";
+import type {
+  State,
+  StateAdd,
+  Unit,
+  UnitProperties,
+  UnitSymbolOptions,
+} from "@/types/scenarioModels";
 import { Position, RangeRing, RangeRingGroup } from "@/types/scenarioGeoModels";
 import { getNextEchelonBelow } from "@/symbology/helpers";
 
@@ -181,6 +187,18 @@ export function useUnitManipulations(store: NewScenarioStore) {
       if (!unit) return;
       Object.assign(unit, { ...data });
       s.unitMap[unitId] = klona(unit);
+    });
+  }
+
+  function updateUnitProperties(
+    unitId: EntityId,
+    propertyUpdate: Partial<UnitProperties>,
+  ) {
+    update((s) => {
+      let unit = s.unitMap[unitId];
+      if (!unit) return;
+      const properties = klona(unit.properties || {});
+      unit.properties = { ...properties, ...propertyUpdate };
     });
   }
 
@@ -897,5 +915,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     addUnitStatus,
     updateUnitStatus,
     deleteUnitStatus,
+    updateUnitProperties,
   };
 }

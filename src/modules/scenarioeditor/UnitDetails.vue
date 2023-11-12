@@ -141,6 +141,7 @@
         <UnitDetailsMap :unit="unit" />
       </TabPanel>
       <TabPanel><UnitDetailsToe :unit="unit" /></TabPanel>
+      <TabPanel><UnitDetailsProperties :unit="unit" /></TabPanel>
       <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
         <pre>{{ unit }}</pre>
       </TabPanel>
@@ -197,6 +198,7 @@ import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
+import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsProperties.vue";
 
 const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
@@ -221,6 +223,7 @@ const tabList = computed(() =>
         "Unit state",
         "Map overlay",
         { label: "TO&E", title: "Table of organization and equipment" },
+        "Properties",
         "Debug",
       ]
     : [
@@ -228,6 +231,7 @@ const tabList = computed(() =>
         "Unit state",
         "Map overlay",
         { label: "TO&E", title: "Table of organization and equipment" },
+        "Properties",
       ],
 );
 

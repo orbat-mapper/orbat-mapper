@@ -6,6 +6,7 @@ import {
   ScenarioEvent,
   Side,
   SideGroup,
+  SpeedUnitOfMeasure,
   Unit,
   UnitEquipment,
   UnitPersonnel,
@@ -142,3 +143,8 @@ export interface NScenarioEvent extends ScenarioEvent {
   _type: ScenarioEventType;
   _pid?: EntityId;
 }
+
+export type UnitPropertyUpdate = {
+  value?: number | string | null;
+  uom: SpeedUnitOfMeasure;
+};
