@@ -160,7 +160,10 @@
               "name": "HMS Endurance",
               "sidc": "10033000001205001900",
               "properties": {
-                "averageSpeed": { "value": 14.5, "uom": "knots" }
+                "averageSpeed": {
+                  "value": 14.5,
+                  "uom": "knots"
+                }
               },
               "media": [
                 {
@@ -371,7 +374,13 @@
                       "uom": "nmi",
                       "hidden": true
                     }
-                  ]
+                  ],
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 28,
+                      "uom": "knots"
+                    }
+                  }
                 },
                 {
                   "name": "HMS Invincible",
@@ -433,7 +442,13 @@
                       "uom": "nmi",
                       "hidden": true
                     }
-                  ]
+                  ],
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 28,
+                      "uom": "knots"
+                    }
+                  }
                 },
                 {
                   "name": "HMS Glamorgan",
@@ -455,7 +470,13 @@
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Glamorgan_(11271422264).jpg"
                     }
                   ],
-                  "subUnits": []
+                  "subUnits": [],
+                  "properties": {
+                    "maxSpeed": {
+                      "value": 30,
+                      "uom": "knots"
+                    }
+                  }
                 },
                 {
                   "name": "HMS Antrim",
@@ -469,7 +490,7 @@
                   ],
                   "id": "XFfDYeXpqD",
                   "shortName": "ANT",
-                  "externalUrl": "",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Antrim_(D18)",
                   "subUnits": [],
                   "media": [
                     {
@@ -478,7 +499,14 @@
                       "credits": "U.S. Navy, Public domain, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Antrim_D18_1976.jpeg"
                     }
-                  ]
+                  ],
+                  "description": "",
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 30,
+                      "uom": "knots"
+                    }
+                  }
                 },
                 {
                   "name": "HMS Cardiff",
@@ -486,7 +514,7 @@
                   "state": [],
                   "id": "QAygyetc2O",
                   "shortName": "CAR",
-                  "externalUrl": "",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Cardiff_(D108)",
                   "subUnits": [],
                   "media": [
                     {
@@ -495,7 +523,14 @@
                       "credits": "The original uploader was Ryan4314 at English Wikipedia.(Original text: Mr. Mike Pocock, David Page), CC BY-SA 3.0, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Cardiff_(D108)_1.jpg"
                     }
-                  ]
+                  ],
+                  "description": "",
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 30,
+                      "uom": "knots"
+                    }
+                  }
                 },
                 {
                   "name": "HMS Exeter",
@@ -503,7 +538,7 @@
                   "state": [],
                   "id": "qfk052La3b",
                   "shortName": "EXE",
-                  "externalUrl": "",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Exeter_(D89)",
                   "subUnits": [],
                   "media": [
                     {
@@ -512,7 +547,14 @@
                       "credits": "Psychofox at English Wikipedia, Public domain, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMSExeterSailingDownTheThamesInLondon.jpg"
                     }
-                  ]
+                  ],
+                  "description": "",
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 28.7,
+                      "uom": "knots"
+                    }
+                  }
                 },
                 {
                   "name": "HMS Sheffield",
@@ -538,7 +580,7 @@
                   ],
                   "id": "Vvg9xmBKiG",
                   "shortName": "SHE",
-                  "externalUrl": "",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Sheffield_(D80)",
                   "subUnits": [],
                   "media": [
                     {
@@ -547,7 +589,14 @@
                       "credits": "Nathalmad, CC BY 3.0, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Sheffield_(D80).jpg"
                     }
-                  ]
+                  ],
+                  "description": "",
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 30,
+                      "uom": "knots"
+                    }
+                  }
                 }
               ],
               "state": [],
@@ -577,7 +626,15 @@
                       "credits": "Ken Griffiths, Public domain, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Fearless,_San_Carlos,_1982.JPG"
                     }
-                  ]
+                  ],
+                  "description": "",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Fearless_(L10)",
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 21,
+                      "uom": "knots"
+                    }
+                  }
                 },
                 {
                   "name": "HMS Intrepid",
@@ -599,7 +656,15 @@
                       "credits": "Alf van Beem, CC0, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:Fearless_%26_Intrepid_p1,_Portsmouth,_UK.JPG"
                     }
-                  ]
+                  ],
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 21,
+                      "uom": "knots"
+                    }
+                  },
+                  "description": "",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Intrepid_(L11)"
                 },
                 {
                   "name": "RFA Sir Tristram",
@@ -2325,6 +2390,7 @@
       {
         "name": "GR2"
       }
-    ]
+    ],
+    "statuses": []
   }
 }
