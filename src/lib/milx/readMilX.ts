@@ -78,7 +78,7 @@ function convertGeojsonProperties(f: GeoJsonSymbolProperties): MilSymbolProperti
     sidc: isNumeric.test(f.sidc!) ? f.sidc! : convertLetterSidc2NumberSidc(f.sidc!).sidc,
   };
   if (f.m) props.higherFormation = f.m;
-  props.name = f.name || f.t || "";
+  props.name = f.name || f.uniqueDesignation || f.t || "";
   return props;
 }
 

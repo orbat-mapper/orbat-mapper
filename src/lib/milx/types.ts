@@ -14,6 +14,8 @@ export interface GeoJsonSymbolProperties {
   name?: string;
   m?: string;
   t?: string;
+  uniqueDesignation?: string;
+  additionalInformation?: string;
 }
 
 export type MilXGeoJsonCollection = FeatureCollection<
