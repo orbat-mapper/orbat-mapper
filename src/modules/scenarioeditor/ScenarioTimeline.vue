@@ -32,7 +32,19 @@ const { width } = useElementSize(el);
 const tzOffset = scenarioTime.value.utcOffset();
 
 const hourFormatter = utcFormat("%H");
-const dayFormatter = utcFormat("%a %d %b");
+function getMinorFormatter(majorWidth: number) {
+  if (majorWidth < 50) {
+    return (d: Date) => "";
+  }
+  return hourFormatter;
+}
+
+function getMajorFormatter(majorWidth: number) {
+  if (majorWidth < 100) {
+    return utcFormat("%d %b");
+  }
+  return utcFormat("%a %d %b");
+}
 
 interface Tick {
   label: string;
@@ -59,6 +71,9 @@ const xOffset = ref(0);
 const draggedDiff = ref(0);
 const majorWidth = ref(100);
 const minorStep = computed(() => {
+  if (majorWidth.value < 100) {
+    return 12;
+  }
   if (majorWidth.value < 180) {
     return 6;
   }
@@ -102,15 +117,16 @@ function updateTicks(
   const end = utcDay.offset(currentUtcDay, dayPadding);
 
   const dayRange = utcDay.range(start, end);
-
+  const majorFormatter = getMajorFormatter(majorWidth);
   majorTicks.value = dayRange.map((d) => ({
-    label: dayFormatter(d),
+    label: majorFormatter(d),
     timestamp: +d,
   }));
 
   const hourRange = utcHour.range(start, end, minorStep);
+  const minorFormatter = getMinorFormatter(majorWidth);
   minorTicks.value = hourRange.map((d) => ({
-    label: hourFormatter(d),
+    label: minorFormatter(d),
     timestamp: +d,
   }));
   return { minDate: start, maxDate: end };
@@ -328,7 +344,7 @@ function onEventClick(event: NScenarioEvent) {
         <div
           v-for="tick in minorTicks"
           :key="tick.timestamp"
-          class="flex-none border-r border-gray-300"
+          class="min-h-[1rem] flex-none border-r border-gray-300"
           :style="`width: ${minorWidth}px`"
         >
           {{ tick.label }}
