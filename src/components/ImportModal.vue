@@ -62,7 +62,7 @@ import type { FeatureCollection } from "geojson";
 import { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportOrbatGeneratorStep from "@/components/ImportOrbatGeneratorStep.vue";
 import ImportImageStep from "@/components/ImportImageStep.vue";
-import { ImportedFileInfo } from "@/lib/fileHandling";
+import { ImportedFileInfo } from "@/importexport/fileHandling";
 import ImportKMLStep from "@/components/ImportKMLStep.vue";
 
 const router = useRouter();

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { toDom } from "./domutils";
-import { convertMilXLayer, getMilXLayers } from "@/lib/milx/readMilX";
-import { toMilx } from "@/lib/milx/writeMilX";
+import { convertMilXLayer, getMilXLayers } from "@/importexport/milx/readMilX";
+import { toMilx } from "@/importexport/milx/writeMilX";
 
 const TEST_DOCUMENT = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <MilXDocument_Layer xmlns="http://gs-soft.com/MilX/V3.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">

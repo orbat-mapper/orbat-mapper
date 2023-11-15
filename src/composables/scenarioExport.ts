@@ -17,7 +17,7 @@ import {
   MilSymbolProperties,
   OrbatMapperGeoJsonCollection,
   OrbatMapperGeoJsonLayer,
-} from "@/lib/milx/types";
+} from "@/importexport/milx/types";
 import type { Unit } from "@/types/scenarioModels";
 import type { SpatialIllusionsOrbat } from "@/types/externalModels";
 
@@ -194,7 +194,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   }
 
   async function downloadAsMilx(opts: ExportSettings) {
-    const { toMilx } = await import("@/lib/milx");
+    const { toMilx } = await import("@/importexport/milx");
 
     const layers: OrbatMapperGeoJsonLayer[] = [];
 

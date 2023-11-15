@@ -8,9 +8,9 @@ import type {
   OrbatMapperGeoJsonCollection,
   OrbatMapperGeoJsonFeature,
   OrbatMapperGeoJsonLayer,
-} from "@/lib/milx/types";
+} from "@/importexport/milx/types";
 
-import { BR, BRTAB, tagIdValue, tagValue } from "@/lib/milx/domutils";
+import { BR, BRTAB, tagIdValue, tagValue } from "@/importexport/milx/domutils";
 
 export function toMilx(layers: OrbatMapperGeoJsonLayer[]): string {
   return toXml(

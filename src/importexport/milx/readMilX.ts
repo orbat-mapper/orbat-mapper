@@ -3,7 +3,7 @@ import {
   getElements,
   getOneElement,
   nodeValue,
-} from "@/lib/milx/domutils";
+} from "@/importexport/milx/domutils";
 import type { FeatureCollection, LineString, Point } from "geojson";
 import type {
   GeoJsonSymbolProperties,
@@ -13,7 +13,7 @@ import type {
   MilXLayer,
   MilXSymbolProperties,
   OrbatMapperGeoJsonCollection,
-} from "@/lib/milx/types";
+} from "@/importexport/milx/types";
 import { convertLetterSidc2NumberSidc } from "@orbat-mapper/convert-symbology";
 import { nanoid } from "@/utils";
 

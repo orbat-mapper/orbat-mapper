@@ -40,7 +40,7 @@ import VectorSource from "ol/source/Vector";
 import { KML } from "ol/format";
 import VectorLayer from "ol/layer/Vector";
 import { KMLZ } from "@/geo/kmlz";
-import { imageCache } from "@/lib/fileHandling";
+import { imageCache } from "@/importexport/fileHandling";
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 

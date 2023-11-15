@@ -2,11 +2,11 @@ import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { toDom } from "@/lib/milx/domutils";
+import { toDom } from "@/importexport/milx/domutils";
 import type { Unzipped } from "fflate";
-import type { OrbatMapperGeoJsonFeature } from "@/lib/milx/types";
+import type { OrbatMapperGeoJsonFeature } from "@/importexport/milx/types";
 import type { FeatureCollection } from "geojson";
-import { convertGeojsonLayer } from "@/lib/milx";
+import { convertGeojsonLayer } from "@/importexport/milx";
 
 export interface MilxImportedLayer {
   id: string;
@@ -34,7 +34,7 @@ export function useScenarioImport(options: Partial<UseScenarioExportOptions> = {
   const { geo } = options.activeScenario || injectStrict(activeScenarioKey);
 
   async function importMilxString(source: string): Promise<MilxImportedLayer[]> {
-    const { getMilXLayers, convertMilXLayer } = await import("@/lib/milx");
+    const { getMilXLayers, convertMilXLayer } = await import("@/importexport/milx");
     const dom = await toDom(source);
     const milxLayers = getMilXLayers(dom);
     return milxLayers

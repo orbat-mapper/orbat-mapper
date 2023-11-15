@@ -25,7 +25,7 @@ import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { ref } from "vue";
-import { ImportedFileInfo } from "@/lib/fileHandling";
+import { ImportedFileInfo } from "@/importexport/fileHandling";
 import InputGroup from "@/components/InputGroup.vue";
 import { stripFileExtension } from "@/utils/files";
 import InputCheckbox from "@/components/InputCheckbox.vue";

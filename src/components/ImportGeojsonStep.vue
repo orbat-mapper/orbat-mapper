@@ -44,7 +44,7 @@ import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
 import OrbatGrid from "@/modules/grid/OrbatGrid.vue";
 import { ColumnProperties } from "@/modules/grid/gridTypes";
-import { OrbatMapperGeoJsonFeature } from "@/lib/milx/types";
+import { OrbatMapperGeoJsonFeature } from "@/importexport/milx/types";
 
 interface Props {
   data: FeatureCollection;

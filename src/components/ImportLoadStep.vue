@@ -109,7 +109,7 @@ import { useDropZone } from "@vueuse/core";
 import TextAreaGroup from "@/components/TextAreaGroup.vue";
 import { useImportStore } from "@/stores/importExportStore";
 import { useScenarioImport } from "@/composables/scenarioImport";
-import { guessImportFormat, ImportedFileInfo } from "@/lib/fileHandling";
+import { guessImportFormat, ImportedFileInfo } from "@/importexport/fileHandling";
 import { useDragStore } from "@/stores/dragStore";
 import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
 import DocLink from "@/components/DocLink.vue";

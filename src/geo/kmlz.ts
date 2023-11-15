@@ -1,7 +1,7 @@
 import { KML } from "ol/format";
 import type { Options as KMLFormatOptions } from "ol/format/KML";
 import type { ReadOptions } from "ol/format/Feature";
-import { arrayBufferToString } from "@/lib/fileHandling";
+import { arrayBufferToString } from "@/importexport/fileHandling";
 
 async function getKMLData(objectUrl: string) {
   return fetch(objectUrl).then((response) => response.text());
