@@ -19,6 +19,8 @@ export type ImportFormat =
   | "kml";
 export type GuessedImportFormat = "unknown" | ImportFormat;
 
+export type FormatDialect = "geojson-plain" | "geojson-unitgenerator";
+export type GuessedFormatDialect = "unknown" | FormatDialect;
 export interface ColumnMapping<TData = Record<string, any>> {
   label: string;
   field: keyof TData | string;

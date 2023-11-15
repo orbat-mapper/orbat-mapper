@@ -1,9 +1,7 @@
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
-import { useSettingsStore } from "@/stores/settingsStore";
 import { toDom } from "@/importexport/milx/domutils";
-import type { Unzipped } from "fflate";
 import type { OrbatMapperGeoJsonFeature } from "@/importexport/milx/types";
 import type { FeatureCollection } from "geojson";
 import { convertGeojsonLayer } from "@/importexport/milx";
@@ -14,20 +12,8 @@ export interface MilxImportedLayer {
   features: OrbatMapperGeoJsonFeature[];
 }
 
-const settingsStore = useSettingsStore();
-
 export interface UseScenarioExportOptions {
   activeScenario: TScenario;
-}
-
-export async function unzip(file: ArrayBuffer) {
-  const fflate = await import("fflate");
-  return await new Promise<Unzipped>((resolve, reject) => {
-    fflate.unzip(new Uint8Array(file), (err, res) => {
-      if (err) return reject(err);
-      resolve(res);
-    });
-  });
 }
 
 export function useScenarioImport(options: Partial<UseScenarioExportOptions> = {}) {

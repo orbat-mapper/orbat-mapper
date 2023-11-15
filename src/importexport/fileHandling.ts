@@ -1,11 +1,12 @@
-import { Unzipped } from "fflate";
-import { GuessedImportFormat } from "@/types/convert";
-import { unzip } from "@/composables/scenarioImport";
+import type { Unzipped } from "fflate";
+import { GuessedFormatDialect, GuessedImportFormat } from "@/types/convert";
+import { FeatureCollection } from "geojson";
 
 export interface ImportedFileInfo {
   dataAsString: string;
   errors: string[];
   format: GuessedImportFormat;
+  dialect: GuessedFormatDialect;
   hasMultipleFiles: boolean;
   isInvalid: boolean;
   isJson: boolean;
@@ -26,6 +27,7 @@ export function clearCache() {
 export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
   const guess: ImportedFileInfo = {
     format: "unknown",
+    dialect: "unknown",
     isZipped: false,
     isJson: false,
     hasMultipleFiles: false,
@@ -102,8 +104,11 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     const json = JSON.parse(text);
     guess.isJson = true;
     guess.dataAsString = text;
-    if (json.type && json.type === "FeatureCollection") {
+    if (isFeatureCollection(json)) {
       guess.format = "geojson";
+      if ("uniqueDesignation" in (json.features[0]?.properties ?? {})) {
+        guess.dialect = "geojson-unitgenerator";
+      }
     } else if (json.options && json.subOrganizations) {
       guess.format = "unitgenerator";
     } else if (Array.isArray(json) && Array.isArray(json[0]) && json[0].length >= 6) {
@@ -112,6 +117,10 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
   } catch (e) {}
 
   return guess;
+}
+
+function isFeatureCollection(json: any): json is FeatureCollection {
+  return json.type && json.type === "FeatureCollection";
 }
 
 function hasZippedFileType(file: File): boolean {
@@ -135,6 +144,16 @@ function hasImageFileType(file: File): boolean {
 export function arrayBufferToString(arrayBuffer: ArrayBuffer, decoderType = "utf-8") {
   let decoder = new TextDecoder(decoderType);
   return decoder.decode(arrayBuffer);
+}
+
+export async function unzip(file: ArrayBuffer) {
+  const fflate = await import("fflate");
+  return await new Promise<Unzipped>((resolve, reject) => {
+    fflate.unzip(new Uint8Array(file), (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
 }
 
 async function readZippedFile(file: File): Promise<Unzipped> {
