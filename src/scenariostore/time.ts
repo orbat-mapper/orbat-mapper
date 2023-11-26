@@ -1,5 +1,5 @@
 import { NewScenarioStore } from "./newScenarioStore";
-import { CurrentState, ScenarioEvent } from "@/types/scenarioModels";
+import { CurrentState } from "@/types/scenarioModels";
 import { NScenarioEvent, NUnit, ScenarioEventUpdate } from "@/types/internalModels";
 import dayjs, { ManipulateType } from "dayjs";
 import { computed } from "vue";
@@ -143,21 +143,16 @@ export function useScenarioTime(store: NewScenarioStore) {
   function computeTimeHistogram() {
     const histogram: Record<number, number> = {};
     let max = 1;
+
     Object.values(state.unitMap).forEach((unit) => {
-      if (!unit?.state?.length) {
-        return;
-      }
-      for (const s of unit.state) {
+      (unit?.state || []).forEach((s) => {
         // round to nearest hour
         const t = Math.round(s.t / 3600000) * 3600000;
-        if (histogram[t]) {
-          histogram[t] += 1;
-        } else {
-          histogram[t] = 1;
-        }
+        histogram[t] = (histogram[t] || 0) + 1;
         max = Math.max(max, histogram[t]);
-      }
+      });
     });
+
     return {
       histogram: Object.entries(histogram).map(([k, v]) => ({ t: +k, count: v })),
       max,
@@ -187,28 +182,27 @@ export function useScenarioTime(store: NewScenarioStore) {
     eventOrEventId: EntityId | NScenarioEvent,
     options: GoToScenarioEventOptions = {},
   ) {
-    const isSilent = options.silent ?? false;
     const event =
       typeof eventOrEventId === "string"
         ? state.eventMap[eventOrEventId]
         : eventOrEventId;
-    if (!event) return;
-    setCurrentTime(event.startTime);
-    if (!isSilent) goToScenarioEventHook.trigger({ event }).then();
+    if (event) {
+      setCurrentTime(event.startTime);
+      if (!options.silent) {
+        goToScenarioEventHook.trigger({ event }).then();
+      }
+    }
   }
-
   const utcTime = computed(() => {
     return dayjs.utc(state.currentTime);
   });
 
   const scenarioTime = computed(() => {
-    const zone = state.info.timeZone || "UTC";
-    return dayjs(state.currentTime).tz(zone);
+    return dayjs(state.currentTime).tz(state.info.timeZone || "UTC");
   });
 
   const timeZone = computed(() => {
-    const zone = state.info.timeZone;
-    return zone;
+    return state.info.timeZone;
   });
 
   function getEventById(id: EntityId) {

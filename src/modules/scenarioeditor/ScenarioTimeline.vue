@@ -27,7 +27,7 @@ const {
 const el = ref<HTMLDivElement | null>(null);
 const isPointerInteraction = ref(false);
 const isDragging = ref(false);
-const dummy = ref(0);
+const redrawCounter = ref(0);
 const { width } = useElementSize(el);
 const tzOffset = scenarioTime.value.utcOffset();
 
@@ -235,7 +235,7 @@ watch(
     const { histogram: hg, max: mc } = computeTimeHistogram();
     histogram = hg;
     maxCount = mc;
-    dummy.value += 1;
+    redrawCounter.value += 1;
   },
   { immediate: true },
 );
@@ -243,7 +243,7 @@ watch(
 watchEffect(() => {
   if (!width.value) return;
   const currentScenarioTimestamp = store.state.currentTime;
-  dummy.value;
+  redrawCounter.value;
   const tt = new Date(currentScenarioTimestamp);
   let redrawTimeline = false;
   if (isDragging.value) {
