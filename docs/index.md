@@ -9,7 +9,7 @@ hero:
   text: Recreate historic battles and military scenarios in your browser
   tagline: ORBAT mapper is currently under development. You can follow the development on GitHub and try a work in progress preview.
   image:
-    src: /images/screenshot-2021-08-04.png
+    src: /images/screenshot.png
     alt: VitePress
   actions:
     - theme: brand
