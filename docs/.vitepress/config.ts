@@ -18,6 +18,7 @@ export default defineConfig({
     ],
     nav: [
       { text: "Guide", link: "/guide/about-orbat-mapper", activeMatch: "/guide/" },
+      { text: "Tutorial", link: "/tutorial/introduction", activeMatch: "/tutorial/" },
       { text: "Resources", link: "/resources/tools", activeMatch: "/resources/" },
       { text: "Support", link: "/support", activeMatch: "/support" },
       { text: "Open App", link: "https://orbat-mapper.app" },
@@ -29,6 +30,7 @@ export default defineConfig({
     sidebar: {
       "/guide/": { base: "/guide/", items: sidebarGuide() },
       "/resources/": { base: "/resources/", items: sidebarResources() },
+      "/tutorial/": { base: "/tutorial/", items: sidebarTutorial() },
     },
     search: {
       provider: "local",
@@ -74,6 +76,18 @@ function sidebarResources(): DefaultTheme.SidebarItem[] {
       items: [
         { text: "Tools", link: "tools" },
         { text: "Military history", link: "military-history" },
+      ],
+    },
+  ];
+}
+
+function sidebarTutorial(): DefaultTheme.SidebarItem[] {
+  return [
+    {
+      text: "Tutorial",
+      items: [
+        { text: "Introduction", link: "introduction" },
+        { text: "Research", link: "research" },
       ],
     },
   ];
