@@ -8,7 +8,16 @@
     <p v-if="isError" class="text-sm text-red-600">
       {{ errorMessage }}
     </p>
-    <p class="flex justify-end">
+    <p v-if="sharableUrl" class="prose prose-sm">
+      <a :href="sharableUrl" target="_blank">{{ sharableUrl }}</a>
+      <BaseButton class="ml-2" small @click="copy(sharableUrl)"
+        >Copy to clipboard</BaseButton
+      >
+    </p>
+    <p class="flex justify-end space-x-2">
+      <BaseButton type="button" small @click="createSharableUrl()"
+        >Create sharable URL</BaseButton
+      >
       <BaseButton type="submit" primary small>Load from URL</BaseButton>
     </p>
   </form>
@@ -20,6 +29,7 @@ import InputGroup from "@/components/InputGroup.vue";
 import { computed, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { isUrl } from "@/utils";
+import { useClipboard } from "@vueuse/core";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -32,6 +42,9 @@ const scenarioUrl = ref(props.url);
 const isError = ref(false);
 const errorMessage = ref("");
 const isValidUrl = computed(() => isUrl(scenarioUrl.value));
+const sharableUrl = ref("");
+
+const { copy } = useClipboard();
 
 async function fetchScenario() {
   const url = scenarioUrl.value;
@@ -54,5 +67,13 @@ async function fetchScenario() {
     isError.value = true;
     errorMessage.value = `Failed to load ${url}: ${e?.message}`;
   }
+}
+
+function createSharableUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.set("loadScenarioURL", scenarioUrl.value);
+  sharableUrl.value = url.toString();
+
+  navigator.clipboard.writeText(url.toString());
 }
 </script>
