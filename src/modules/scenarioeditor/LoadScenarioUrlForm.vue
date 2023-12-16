@@ -9,16 +9,13 @@
       {{ errorMessage }}
     </p>
     <p class="flex justify-end">
-      <BaseButton type="submit" primary small :disabled="!isValidUrl"
-        >Load from URL</BaseButton
-      >
+      <BaseButton type="submit" primary small>Load from URL</BaseButton>
     </p>
   </form>
 </template>
 
 <script setup lang="ts">
 import { Scenario } from "@/types/scenarioModels";
-import { useVModel } from "@vueuse/core";
 import InputGroup from "@/components/InputGroup.vue";
 import { computed, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
@@ -26,16 +23,23 @@ import { isUrl } from "@/utils";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
+  url: { type: String, default: "" },
 });
 
 const emit = defineEmits(["loaded"]);
 
-const scenarioUrl = ref();
+const scenarioUrl = ref(props.url);
 const isError = ref(false);
 const errorMessage = ref("");
+const isValidUrl = computed(() => isUrl(scenarioUrl.value));
 
 async function fetchScenario() {
   const url = scenarioUrl.value;
+  if (!isValidUrl.value) {
+    isError.value = true;
+    errorMessage.value = `The url ${url} is not a valid url.`;
+    return;
+  }
   try {
     const response = await fetch(url);
     const jsonData = (await response.json()) as Scenario;
@@ -51,6 +55,4 @@ async function fetchScenario() {
     errorMessage.value = `Failed to load ${url}: ${e?.message}`;
   }
 }
-
-const isValidUrl = computed(() => isUrl(scenarioUrl.value));
 </script>

@@ -19,23 +19,40 @@
     >
       Please select a valid scenario file.
     </p>
-    <SimpleModal v-model="showModal" dialog-title="Load scenario">
-      <LoadScenarioUrlForm class="mt-4" @loaded="emit('loaded', $event)" />
+    <SimpleModal v-model="showModal" dialog-title="Load scenario from URL">
+      <LoadScenarioUrlForm
+        class="mt-4"
+        @loaded="emit('loaded', $event)"
+        :url="initialUrl"
+      />
     </SimpleModal>
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
-import { useDropZone, useToggle } from "@vueuse/core";
+import { onMounted, ref } from "vue";
+import { useToggle } from "@vueuse/core";
 import { type Scenario } from "@/types/scenarioModels";
 import { isUrl } from "@/utils";
 import { IconWebPlus } from "@iconify-prerendered/vue-mdi";
 import SimpleModal from "@/components/SimpleModal.vue";
 import LoadScenarioUrlForm from "@/modules/scenarioeditor/LoadScenarioUrlForm.vue";
+import { useRoute } from "vue-router";
+
 const emit = defineEmits(["update:modelValue", "loaded"]);
 
 const [showModal, toggleModal] = useToggle(false);
 const isError = ref(false);
+const route = useRoute();
+
+const initialUrl = ref("");
+
+onMounted(() => {
+  const loadScenarioURL = (route.query.loadScenarioURL as string) ?? "";
+  if (loadScenarioURL) {
+    initialUrl.value = loadScenarioURL;
+    showModal.value = true;
+  }
+});
 
 async function fetchScenario(url: string) {
   try {
