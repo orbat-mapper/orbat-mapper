@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+December 2023
+
+- Add `loadScenarioURL` URL query parameter for loading a scenario from a URL.
+
+November 2023
+
+- Add average speed and maximum speed unit properties.
+- Add unit status property.
+
 October 2023
 
 - Delete selected waypoints with the delete key.
