@@ -39,7 +39,7 @@ export function useFeatureStyles(geo: TGeo) {
       styleCache.set(featureId, style);
     }
     style.setZIndex(feature.get("_zIndex"));
-    style.getText().setText(showLabel && resolution < 1200 ? label : undefined);
+    style.getText()?.setText(showLabel && resolution < 1200 ? label : undefined);
     return style;
   }
 

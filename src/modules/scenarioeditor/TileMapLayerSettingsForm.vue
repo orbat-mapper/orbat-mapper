@@ -77,8 +77,8 @@ function loadAdvanced() {
     const rawData = isValidJSONString(s)
       ? JSON.parse(s)
       : isValidJSONString(`{${s}}`)
-      ? JSON.parse(`{${s}}`)
-      : null;
+        ? JSON.parse(`{${s}}`)
+        : null;
     if (rawData) {
       const { imageCenter, imageScale, imageRotate, url = "" } = rawData;
       const data = {

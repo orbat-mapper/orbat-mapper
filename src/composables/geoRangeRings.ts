@@ -10,7 +10,7 @@ import { GeoJSON } from "ol/format";
 import { NUnit } from "@/types/internalModels";
 import { convertToMetric } from "@/utils/convert";
 import { Stroke, Style } from "ol/style";
-import { FeatureLike } from "ol/Feature";
+import Feature, { FeatureLike } from "ol/Feature";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import { createSimpleStyle } from "@/geo/simplestyle";
 import { TScenario } from "@/scenariostore";
@@ -51,10 +51,10 @@ export function useRangeRingsLayer() {
               properties: { id: cluster.features[0].properties.id, isGroup: true },
             })
           : cluster.features[0];
-      layer.getSource()?.addFeature(gjf.readFeature(merged));
+      layer.getSource()?.addFeature(gjf.readFeature(merged) as Feature);
     });
 
-    layer.getSource()?.addFeatures(gjf.readFeatures(unGrouped));
+    layer.getSource()?.addFeatures(gjf.readFeatures(unGrouped) as Feature[]);
   }
 
   return { rangeLayer: layer, drawRangeRings };

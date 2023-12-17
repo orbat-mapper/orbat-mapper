@@ -136,7 +136,7 @@ function createScenarioLayerFeatures(
       const f = gjson.readFeature(feature, {
         featureProjection: "EPSG:3857",
         dataProjection: "EPSG:4326",
-      });
+      }) as Feature;
       olFeatures.push(f);
     }
   });
@@ -169,7 +169,7 @@ export function useScenarioFeatureSelect(
       if (feature.getGeometry()?.getType() === "Point") {
         activeSelectStyle = selectMarkerStyle;
       } else {
-        selectStyle.getStroke().setWidth((s.getStroke().getWidth() || 0) + 8);
+        selectStyle.getStroke()?.setWidth((s.getStroke()?.getWidth() || 0) + 8);
         activeSelectStyle = selectStyle;
       }
       return [activeSelectStyle, s];

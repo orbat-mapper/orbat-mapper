@@ -65,9 +65,8 @@ import { useMeasurementsStore } from "@/stores/geoStore";
 import { useUiStore } from "@/stores/uiStore";
 
 const props = defineProps<{ olMap: OLMap }>();
-const { showSegments, clearPrevious, measurementType, measurementUnit } = storeToRefs(
-  useMeasurementsStore(),
-);
+const { showSegments, clearPrevious, measurementType, measurementUnit } =
+  storeToRefs(useMeasurementsStore());
 
 const uiStore = useUiStore();
 uiStore.measurementActive = false;

@@ -200,7 +200,7 @@ function measurementInteractionWrapper(
         }
         const segmentPoint = new Point(segment.getCoordinateAt(0.5));
         segmentStyles[count].setGeometry(segmentPoint);
-        segmentStyles[count].getText().setText(label);
+        segmentStyles[count].getText()?.setText(label);
         styles.push(segmentStyles[count]);
         count++;
       });
@@ -208,7 +208,7 @@ function measurementInteractionWrapper(
 
     if (label && point) {
       labelStyle.setGeometry(point);
-      labelStyle.getText().setText(label);
+      labelStyle.getText()?.setText(label);
       styles.push(labelStyle);
     }
     if (
@@ -217,7 +217,7 @@ function measurementInteractionWrapper(
       !modifyInteraction.getOverlay().getSource().getFeatures().length
     ) {
       tipPoint = geometry as Point;
-      tipStyle.getText().setText(tip);
+      tipStyle.getText()?.setText(tip);
       styles.push(tipStyle);
     }
     return styles;

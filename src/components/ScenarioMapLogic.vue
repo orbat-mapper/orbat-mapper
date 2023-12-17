@@ -80,9 +80,8 @@ const unitLayerGroup = new LayerGroup({
 unitLayerGroup.set("title", "Units");
 
 const { showHistory, editHistory } = storeToRefs(unitSettingsStore);
-const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } = storeToRefs(
-  useMapSelectStore(),
-);
+const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
+  storeToRefs(useMapSelectStore());
 
 const { initializeFromStore: loadMapLayers } = useScenarioMapLayers(olMap);
 const { rangeLayer, drawRangeRings } = useRangeRingsLayer();
@@ -132,9 +131,8 @@ const { moveInteraction: moveUnitInteraction } = useMoveInteraction(
 useOlEvent(unitLayerGroup.on("change:visible", toggleMoveUnitInteraction));
 olMap.addInteraction(moveUnitInteraction);
 
-const { showLocation, coordinateFormat, showScaleLine } = storeToRefs(
-  useMapSettingsStore(),
-);
+const { showLocation, coordinateFormat, showScaleLine } =
+  storeToRefs(useMapSettingsStore());
 
 const lc = useShowLocationControl(olMap, {
   coordinateFormat,

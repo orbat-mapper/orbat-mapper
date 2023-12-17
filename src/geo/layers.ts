@@ -6,13 +6,13 @@ import { Feature } from "ol";
 import { LineString, Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import { createUnitStyleFromFeature } from "./unitStyles";
-import { PointVectorLayer } from "./types";
+import { AnyVectorLayer, PointVectorLayer } from "./types";
 import View from "ol/View";
 import { nanoid } from "@/utils";
 import { NUnit } from "@/types/internalModels";
 import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
 
-export function createUnitLayer(): PointVectorLayer {
+export function createUnitLayer(): AnyVectorLayer {
   return new VectorLayer({
     source: new VectorSource(),
     style: createUnitStyleFromFeature,

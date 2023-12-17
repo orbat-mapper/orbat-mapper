@@ -108,7 +108,7 @@ export function useDrop(
 
 export function useMoveInteraction(
   mapRef: OLMap,
-  unitLayer: VectorLayer<VectorSource<Point>>,
+  unitLayer: VectorLayer<VectorSource>,
   enabled: Ref<boolean>,
 ) {
   const {

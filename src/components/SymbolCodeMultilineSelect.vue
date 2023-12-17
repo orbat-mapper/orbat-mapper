@@ -135,8 +135,8 @@ function mapSymbolItem(item: SymbolItem) {
     subLabel: item.entitySubtype
       ? `${item.entity} / ${item.entityType}`
       : item.entityType
-      ? item.entity
-      : "",
+        ? item.entity
+        : "",
   };
 }
 

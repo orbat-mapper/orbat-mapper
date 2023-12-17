@@ -120,7 +120,7 @@ export function useUnitHistory(
     if (!isInternal) {
       waypointSelect.getFeatures().clear();
       v.forEach((fid) => {
-        const feature = waypointLayer.getSource()?.getFeatureById(fid);
+        const feature = waypointLayer.getSource()?.getFeatureById(fid) as Feature;
         if (feature) waypointSelect.getFeatures().push(feature);
       });
     }
