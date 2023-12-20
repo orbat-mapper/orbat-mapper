@@ -15,6 +15,9 @@ hero:
     - theme: brand
       text: User guide
       link: /guide/about-orbat-mapper
+    - theme: brand
+      text: Tutorial
+      link: /tutorial/introduction
     - theme: alt
       text: Try preview
       link: https://orbat-mapper.app/
