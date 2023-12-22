@@ -6,6 +6,9 @@ because you have to map the movement of units over time. If you are aiming for a
 be surprisingly hard to find detailed enough information. Usually you have to consult a wide range of books, documents
 and websites.
 
+![An image](./images/coffeeandorbats.jpg)
+_Coffee and ORBATs_ :heart_eyes:
+
 The Falklands War is extensively documented and much of the information is available online. Wikipedia has an
 extensive entry on the [Battle of Goose Green](https://en.wikipedia.org/wiki/Battle_of_Goose_Green), but to get enough details
 you may have to consult some of the books in the [sources section](https://en.wikipedia.org/wiki/Battle_of_Goose_Green#Sources).
