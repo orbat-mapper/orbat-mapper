@@ -31,6 +31,7 @@ import { nanoid } from "@/utils";
 import { LOCALSTORAGE_KEY, SCENARIO_FILE_VERSION } from "@/config/constants";
 
 export interface CreateEmptyScenarioOptions {
+  id?: string;
   addGroups?: boolean;
 }
 
@@ -46,6 +47,7 @@ export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): S
     : [];
 
   return {
+    id: options.id ?? nanoid(),
     type: "ORBAT-mapper",
     version: SCENARIO_FILE_VERSION,
     name: "New scenario",
@@ -154,6 +156,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   function toObject(): Scenario {
     const { state } = store.value;
     return {
+      id: state.id,
       type: "ORBAT-mapper",
       version: SCENARIO_FILE_VERSION,
       ...getScenarioInfo(state),

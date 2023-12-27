@@ -5,6 +5,8 @@ import { useRoute, useRouter } from "vue-router";
 import { watch } from "vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 
+const props = defineProps<{ scenarioId: string }>();
+
 const { scenario, isLoading, isReady } = useScenario();
 const route = useRoute();
 const router = useRouter();
@@ -12,6 +14,27 @@ let demoLoaded = false;
 let currentDemo = "";
 const selectedItems = useSelectedItems();
 
+watch(
+  () => props.scenarioId,
+  async (v) => {
+    if (isDemoScenario(v)) {
+      const demoId = v.replace("demo-", "");
+      if (demoId !== currentDemo) {
+        await scenario.value.io.loadDemoScenario(demoId);
+        demoLoaded = true;
+        selectedItems.clear();
+        selectedItems.showScenarioInfo.value = true;
+      }
+    }
+  },
+  { immediate: true },
+);
+
+function isDemoScenario(scenarioId: string) {
+  return scenarioId.startsWith("demo-");
+}
+
+/**
 if (route.query.load) {
   if (currentDemo !== route.query.load) {
     scenario.value.io.loadDemoScenario(route.query.load as string);
@@ -45,6 +68,7 @@ watch(scenario, (v) => {
     demoLoaded = false;
   }
 });
+ **/
 </script>
 <template>
   <ScenarioEditor

@@ -86,6 +86,8 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const tempRangeRingGroupIdMap: Record<string, string> = {};
   const tempUnitStatusIdMap: Record<string, string> = {};
 
+  const scenarioId = scenario.id ?? nanoid();
+
   let unitStateCounter = 0;
 
   scenario.events.forEach((e) => {
@@ -297,13 +299,13 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   });
 
   return {
+    id: scenarioId,
     layers,
     mapLayers: mapLayers,
     mapLayerMap: mapLayerMap,
     layerMap,
     featureMap,
     eventMap,
-    id: nanoid(),
     currentTime: scenario.startTime || 0,
     info,
     sides,

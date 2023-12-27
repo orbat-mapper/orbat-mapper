@@ -1,5 +1,6 @@
 {
   "type": "ORBAT-mapper",
+  "id": "demo-falkland82",
   "version": "0.15.0",
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
@@ -2366,7 +2367,7 @@
     {
       "id": "xj1kv8wno4",
       "type": "ImageLayer",
-      "url": "scenarios/images/Battle_of_Goose_Green.png",
+      "url": "/scenarios/images/Battle_of_Goose_Green.png",
       "name": "Battle of Goose Green map",
       "description": "Positions and company movements during the battle of Goose Green, May 28, 1982.\n\nBased on a map from The Falklands War, 1982, Martin Middlebrook, 1985, ISBN 0141390557 ",
       "externalUrl": "https://commons.wikimedia.org/wiki/File:Battle_of_Goose_Green.png",
