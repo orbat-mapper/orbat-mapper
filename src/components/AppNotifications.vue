@@ -17,11 +17,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onUnmounted } from "vue";
 import NotificationItem from "./NotificationItem.vue";
 import { useNotifications } from "@/composables/notifications";
 
-const { notifications, deleteNotification } = useNotifications();
+const { notifications, deleteNotification, clear } = useNotifications();
 
 const notificationsReversed = computed(() => [...notifications.value].reverse());
+onUnmounted(() => {
+  clear();
+});
 </script>
