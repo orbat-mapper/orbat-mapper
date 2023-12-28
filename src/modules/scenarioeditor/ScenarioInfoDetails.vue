@@ -127,8 +127,8 @@ function onDownload() {
 }
 
 function onSave() {
-  io.saveToLocalStorage();
-  send({ message: "Scenario saved to local storage" });
+  io.saveToIndexedDb();
+  send({ message: "Scenario saved to IndexedDB" });
 }
 
 function onLoad() {

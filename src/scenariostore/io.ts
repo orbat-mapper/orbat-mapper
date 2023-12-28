@@ -29,6 +29,7 @@ import {
 import { type EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
 import { LOCALSTORAGE_KEY, SCENARIO_FILE_VERSION } from "@/config/constants";
+import { useIndexedDb } from "@/scenariostore/localdb";
 
 export interface CreateEmptyScenarioOptions {
   id?: string;
@@ -189,9 +190,23 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       "  ",
     );
   }
+
+  function serializeToObject() {
+    return JSON.parse(stringifyScenario());
+  }
+
   function saveToLocalStorage(key = LOCALSTORAGE_KEY) {
     const scn = useLocalStorage(key, "");
     scn.value = stringifyScenario();
+  }
+
+  async function saveToIndexedDb() {
+    const { putScenario } = await useIndexedDb();
+    const scn = serializeToObject();
+    if (scn.id.startsWith("demo-")) {
+      scn.id = nanoid();
+    }
+    await putScenario(scn);
   }
 
   function loadFromLocalStorage(key = LOCALSTORAGE_KEY) {
@@ -254,5 +269,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     saveToLocalStorage,
     loadFromLocalStorage,
     stringifyScenario,
+    serializeToObject,
+    saveToIndexedDb,
   };
 }

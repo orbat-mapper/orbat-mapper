@@ -175,6 +175,7 @@ import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import type { SymbolItem, SymbolValue } from "@/types/constants";
 import { echelonItems } from "@/symbology/helpers";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import { useIndexedDb } from "@/scenariostore/localdb";
 
 const router = useRouter();
 const { scenario } = useScenario();
@@ -237,7 +238,7 @@ const form = reactive<NewScenarioForm>({
   ],
 });
 
-function create() {
+async function create() {
   const startTime = resDateTime.value.valueOf();
   newScenario.value.startTime = startTime;
   newScenario.value.name = form.name;
@@ -276,7 +277,11 @@ function create() {
     });
   }
   clearUndoRedoStack();
-  router.push({ name: MAP_EDIT_MODE_ROUTE });
+
+  const { addScenario } = await useIndexedDb();
+  const scenarioId = await addScenario(scenario.value.io.serializeToObject());
+
+  await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
 }
 
 function cancel() {

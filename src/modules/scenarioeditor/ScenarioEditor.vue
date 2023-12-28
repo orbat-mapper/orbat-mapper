@@ -407,8 +407,8 @@ async function onScenarioAction(action: ScenarioActions) {
   if (action === "addSide") {
     unitActions.addSide();
   } else if (action === "save") {
-    io.saveToLocalStorage();
-    send({ message: "Scenario saved to local storage" });
+    await io.saveToIndexedDb();
+    send({ message: "Scenario saved to IndexedDb" });
   } else if (action === "load") {
     io.loadFromLocalStorage();
     showInfo();

@@ -20,7 +20,9 @@
               class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl"
             >
               <span class="text-red-900">ORBAT</span>
-              Mapper
+              Mapper<span class="absolute text-sm uppercase tracking-normal text-gray-500"
+                >beta</span
+              >
             </h1>
             <p
               class="mx-auto mt-3 max-w-md text-base text-gray-700 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl"
@@ -37,18 +39,6 @@
             </p>
           </div>
         </div>
-      </section>
-
-      <section v-if="info" class="mt-16 bg-yellow-800 text-yellow-200">
-        <p class="mx-auto max-w-7xl p-4 text-center sm:px-6">
-          Currently loaded scenario is <span class="font-bold">{{ info.name }}</span
-          >.
-          <router-link
-            to="/scenario"
-            class="font-semibold text-lime-300 hover:text-lime-600"
-            >Go to scenario editor →</router-link
-          >
-        </p>
       </section>
 
       <section id="scenarios">
@@ -171,12 +161,7 @@ import LandingPageScenarios from "./LandingPageScenarios.vue";
 import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
 import { ORBAT_CHART_ROUTE } from "@/router/names";
 import { CheckIcon } from "@heroicons/vue/24/outline";
-import { useScenario } from "@/scenariostore";
-import { computed } from "vue";
 
-const { scenario, isReady } = useScenario();
-
-const info = computed(() => isReady.value && scenario.value.store.state.info);
 const features = [
   {
     name: "Create ORBATs",

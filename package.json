@@ -21,7 +21,7 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
-    "@headlessui-float/vue": "^0.11.4",
+    "@headlessui-float/vue": "^0.13.0",
     "@headlessui/vue": "^1.7.16",
     "@heroicons/vue": "^2.0.18",
     "@iconify-prerendered/vue-mdi": "^0.23.1702456985",
@@ -46,9 +46,11 @@
     "dayjs": "^1.11.10",
     "fflate": "^0.8.1",
     "file-saver": "^2.0.5",
+    "filenamify": "^6.0.0",
     "focus-trap": "^7.5.4",
     "formatcoords": "^1.1.3",
     "fuzzysort": "^2.0.4",
+    "idb": "^8.0.0",
     "immer": "^10.0.3",
     "klona": "^2.0.6",
     "markdown-it": "^13.0.2",

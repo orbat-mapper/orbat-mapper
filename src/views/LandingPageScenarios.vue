@@ -73,6 +73,19 @@
         </li>
       </ul>
     </section>
+    <section class="mx-auto max-w-7xl p-6">
+      <h2 class="text-base font-semibold leading-6 text-gray-900">Recent scenarios</h2>
+      <ul
+        class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+      >
+        <ScenarioLinkCard
+          v-for="info in storedScenarios"
+          :key="info.id"
+          :data="info"
+          @action="onAction($event, info)"
+        />
+      </ul>
+    </section>
   </div>
 </template>
 
@@ -86,6 +99,12 @@ import { useScenario } from "@/scenariostore";
 import { Scenario } from "@/types/scenarioModels";
 import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromUrlPanel.vue";
 import LoadScenarioFromLocalstoragePanel from "@/modules/scenarioeditor/LoadScenarioFromLocalstoragePanel.vue";
+import { ScenarioMetadata, useIndexedDb } from "@/scenariostore/localdb";
+import { onMounted, ref } from "vue";
+import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
+import { StoredScenarioAction } from "@/types/constants";
+
+const storedScenarios = ref<ScenarioMetadata[]>([]);
 
 const scenarios = [
   {
@@ -93,27 +112,25 @@ const scenarios = [
     id: "falkland82",
     summary:
       "The Falklands War was a military conflict that took place in 1982 between Argentina and the United Kingdom. Argentina invaded the Falkland Islands on April 2, 1982, and the UK responded by sending a task force to retake the islands.",
-    role: "Admin",
-
     imageUrl:
       "https://upload.wikimedia.org/wikipedia/commons/8/8b/HMS_Broadsword_and_Hermes%2C_1982_%28IWM%29.jpg",
   },
-
   {
     name: "Battles of Narvik 1940",
     id: "narvik40",
     summary:
       "A series of naval and land engagements fought between German and Allied forces from April to June 1940. The battles marked the first Allied victory against Germany in the war.",
-    role: "Admin",
     imageUrl:
       "https://upload.wikimedia.org/wikipedia/commons/5/5f/Norwegian_Army_Colt_heavy_machine_gun_at_the_Narvik_front.jpg",
   },
-  // More scenarios...
 ];
 
 const router = useRouter();
 const getScenarioTo = (scenarioId: string) => {
-  return { name: MAP_EDIT_MODE_ROUTE, query: { load: scenarioId } };
+  return {
+    name: MAP_EDIT_MODE_ROUTE,
+    params: { scenarioId: `demo-${scenarioId}` },
+  };
 };
 
 const newScenario = () => {
@@ -122,13 +139,58 @@ const newScenario = () => {
 
 const { scenario } = useScenario();
 
-function loadScenario(v: Scenario) {
+async function loadScenario(v: Scenario) {
+  const { addScenario, listScenarios } = await useIndexedDb();
+
   scenario.value.io.loadFromObject(v);
-  router.push({ name: MAP_EDIT_MODE_ROUTE });
+  await addScenario(v);
+  console.log("Added scenario to indexeddb");
+  await router.push({ name: MAP_EDIT_MODE_ROUTE });
 }
 
 function loadFromLocalStorage() {
   scenario.value.io.loadFromLocalStorage();
   router.push({ name: MAP_EDIT_MODE_ROUTE });
+}
+
+onMounted(async () => {
+  const { listScenarios } = await useIndexedDb();
+  storedScenarios.value = await listScenarios();
+  storedScenarios.value.reverse();
+});
+
+async function onAction(action: StoredScenarioAction, scenario: ScenarioMetadata) {
+  const { deleteScenario, listScenarios, duplicateScenario, downloadAsJson } =
+    await useIndexedDb();
+  switch (action) {
+    case "open":
+      await router.push({
+        name: MAP_EDIT_MODE_ROUTE,
+        params: { scenarioId: scenario.id },
+      });
+      break;
+    case "delete":
+      if (
+        window.confirm(
+          `Are you sure you want to permanently delete the scenario "${scenario.name}"?`,
+        )
+      ) {
+        await deleteScenario(scenario.id);
+      }
+      break;
+    case "download":
+      await downloadAsJson(scenario.id);
+      break;
+    case "duplicate":
+      await duplicateScenario(scenario.id);
+      break;
+  }
+
+  await reloadScenarios();
+
+  async function reloadScenarios() {
+    storedScenarios.value = await listScenarios();
+    storedScenarios.value.reverse();
+  }
 }
 </script>

@@ -76,6 +76,7 @@ export const RangeRingActions = {
 } as const;
 
 export type RangeRingAction = (typeof RangeRingActions)[keyof typeof RangeRingActions];
+export type StoredScenarioAction = "delete" | "duplicate" | "download" | "open";
 
 export interface SymbolValue {
   code: string;

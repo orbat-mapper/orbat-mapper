@@ -32,7 +32,8 @@ const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue")
 const ScenarioEditorMap = () => import("@/modules/scenarioeditor/ScenarioEditorMap.vue");
 const routes = [
   {
-    path: "/scenario",
+    path: "/scenario/:scenarioId",
+    props: true,
     component: ScenarioEditorWrapper,
     beforeEnter: (to, from) => {
       NProgress.start();

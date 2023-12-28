@@ -2,12 +2,14 @@
 import ScenarioEditor from "@/modules/scenarioeditor/ScenarioEditor.vue";
 import { useScenario } from "@/scenariostore";
 import { useRoute, useRouter } from "vue-router";
-import { watch } from "vue";
+import { ref, watch } from "vue";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useIndexedDb } from "@/scenariostore/localdb";
 
 const props = defineProps<{ scenarioId: string }>();
 
 const { scenario, isLoading, isReady } = useScenario();
+const localReady = ref(false);
 const route = useRoute();
 const router = useRouter();
 let demoLoaded = false;
@@ -16,15 +18,26 @@ const selectedItems = useSelectedItems();
 
 watch(
   () => props.scenarioId,
-  async (v) => {
-    if (isDemoScenario(v)) {
-      const demoId = v.replace("demo-", "");
+  async (newScenarioId) => {
+    if (isDemoScenario(newScenarioId)) {
+      const demoId = newScenarioId.replace("demo-", "");
       if (demoId !== currentDemo) {
         await scenario.value.io.loadDemoScenario(demoId);
         demoLoaded = true;
         selectedItems.clear();
         selectedItems.showScenarioInfo.value = true;
       }
+      localReady.value = true;
+    } else {
+      const { loadScenario } = await useIndexedDb();
+      const idbscenario = await loadScenario(newScenarioId);
+      if (idbscenario) {
+        scenario.value.io.loadFromObject(idbscenario);
+        selectedItems.clear();
+        selectedItems.showScenarioInfo.value = true;
+      }
+      localReady.value = true;
+      // load from indexeddb
     }
   },
   { immediate: true },
@@ -33,46 +46,10 @@ watch(
 function isDemoScenario(scenarioId: string) {
   return scenarioId.startsWith("demo-");
 }
-
-/**
-if (route.query.load) {
-  if (currentDemo !== route.query.load) {
-    scenario.value.io.loadDemoScenario(route.query.load as string);
-    selectedItems.clear();
-    selectedItems.showScenarioInfo.value = true;
-  }
-  demoLoaded = true;
-  currentDemo = route.query.load as string;
-} else {
-  if (!isReady.value) scenario.value.io.loadEmptyScenario();
-}
-
-watch(
-  () => route.query.load,
-  async (v) => {
-    if (v) {
-      if (currentDemo !== route.query.load) {
-        await scenario.value.io.loadDemoScenario(v as string);
-      }
-
-      demoLoaded = true;
-      currentDemo = route.query.load as string;
-    }
-  },
-);
-
-watch(scenario, (v) => {
-  if (!demoLoaded && route.query.load) {
-    router.replace({ query: {} });
-  } else {
-    demoLoaded = false;
-  }
-});
- **/
 </script>
 <template>
   <ScenarioEditor
-    v-if="isReady"
+    v-if="localReady && isReady"
     :key="scenario.store.state.id"
     :active-scenario="scenario"
   />
