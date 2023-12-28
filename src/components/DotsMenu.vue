@@ -19,17 +19,18 @@
             :disabled="item.disabled"
             @click="onItemClick(item)"
           >
-            <a
-              href="#"
+            <button
+              type="button"
               :class="[
                 active
                   ? 'border-r-2 border-army2 bg-gray-100 text-gray-900'
                   : 'text-gray-700 dark:text-gray-300',
-                'block px-4 py-2 text-sm',
+                'inline-flex w-full px-4 py-2 text-sm',
                 disabled ? 'opacity-50 hover:cursor-default' : '',
               ]"
-              >{{ item.label }}</a
             >
+              {{ item.label }}
+            </button>
           </MenuItem>
         </div>
       </MenuItems>
