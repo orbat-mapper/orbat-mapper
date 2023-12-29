@@ -205,6 +205,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     const scn = serializeToObject();
     if (scn.id.startsWith("demo-")) {
       scn.id = nanoid();
+      store.value.state.id = scn.id;
     }
     await putScenario(scn);
   }

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import ScenarioEditor from "@/modules/scenarioeditor/ScenarioEditor.vue";
 import { useScenario } from "@/scenariostore";
-import { useRoute, useRouter } from "vue-router";
+import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import { ref, watch } from "vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useIndexedDb } from "@/scenariostore/localdb";
+import { useEventListener } from "@vueuse/core";
 
 const props = defineProps<{ scenarioId: string }>();
 
@@ -45,6 +46,24 @@ watch(
 
 function isDemoScenario(scenarioId: string) {
   return scenarioId.startsWith("demo-");
+}
+
+onBeforeRouteLeave(async (to, from) => {
+  await saveScenarioIfNecessary();
+});
+
+useEventListener(document, "visibilitychange", async () => {
+  await saveScenarioIfNecessary();
+});
+
+useEventListener(window, "beforeunload", async () => {
+  await saveScenarioIfNecessary();
+});
+
+async function saveScenarioIfNecessary() {
+  if (scenario.value.store.canUndo.value) {
+    await scenario.value.io.saveToIndexedDb();
+  }
 }
 </script>
 <template>
