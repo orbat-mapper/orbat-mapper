@@ -6,6 +6,7 @@
       <router-link
         :to="{ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId: data.id } }"
         class="focus:outline-none"
+        draggable="false"
       >
         <span class="absolute inset-0" aria-hidden="true" />
         <p class="text-sm font-medium text-gray-900">{{ data.name }}</p>
