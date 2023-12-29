@@ -253,12 +253,18 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     isLoading.value = false;
   }
 
-  async function downloadAsJson(fileName = "scenario.json") {
+  async function downloadAsJson(fileName?: string) {
+    let name = fileName;
+    if (!name) {
+      //@ts-ignore
+      const { default: filenamify } = await import("filenamify/browser");
+      name = filenamify(store.value.state.info.name || "scenario.json");
+    }
     FileSaver.saveAs(
       new Blob([stringifyScenario()], {
         type: "application/json",
       }),
-      fileName,
+      name,
     );
   }
   return {
