@@ -116,7 +116,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
           imageScale: newLayer.getSource().getScale(),
           extent: layerExtent,
         },
-        { noEmit: true },
+        { noEmit: true, undoable: false },
       );
       scn.geo.updateMapLayer(
         data.id,
