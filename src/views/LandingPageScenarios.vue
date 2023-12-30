@@ -2,13 +2,41 @@
   <div class="relative bg-gray-50 py-5">
     <div class="mx-auto max-w-3xl p-4 text-center">
       <h2 class="text-3xl font-bold tracking-tight text-gray-900">Scenarios</h2>
-      <p class="mt-4 text-lg text-gray-500">
-        Try one of the bundled demo scenarios or create your own
-      </p>
     </div>
     <p class="absolute right-6 top-2 z-10">
       <WipBadge />
     </p>
+    <section v-if="storedScenarios.length > 0" class="mx-auto max-w-7xl p-6">
+      <header
+        class="border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between"
+      >
+        <h2 class="text-base font-semibold leading-6 text-gray-900">Recent scenarios</h2>
+        <div class="mt-3 flex items-center sm:ml-4 sm:mt-0">
+          <SortDropdown class="mr-4" :options="sortOptions" />
+          <router-link
+            :to="{ name: NEW_SCENARIO_ROUTE }"
+            class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            Create new scenario
+          </router-link>
+        </div>
+      </header>
+      <ul
+        class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+      >
+        <ScenarioLinkCard
+          v-for="info in storedScenarios"
+          :key="info.id"
+          :data="info"
+          @action="onAction($event, info)"
+        />
+      </ul>
+    </section>
+    <div class="mx-auto max-w-3xl px-4 text-center">
+      <p class="text-lg text-gray-500">
+        Try one of the bundled demo scenarios or create your own
+      </p>
+    </div>
     <section class="mx-auto max-w-7xl p-6">
       <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         <li
@@ -70,32 +98,6 @@
         <li class="col-span-1 flex">
           <LoadScenarioFromUrlPanel @loaded="loadScenario" />
         </li>
-      </ul>
-    </section>
-    <section class="mx-auto max-w-7xl p-6">
-      <header
-        class="border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between"
-      >
-        <h2 class="text-base font-semibold leading-6 text-gray-900">Recent scenarios</h2>
-        <div class="mt-3 flex items-center sm:ml-4 sm:mt-0">
-          <SortDropdown class="mr-4" :options="sortOptions" />
-          <router-link
-            :to="{ name: NEW_SCENARIO_ROUTE }"
-            class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Create new scenario
-          </router-link>
-        </div>
-      </header>
-      <ul
-        class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-      >
-        <ScenarioLinkCard
-          v-for="info in storedScenarios"
-          :key="info.id"
-          :data="info"
-          @action="onAction($event, info)"
-        />
       </ul>
     </section>
   </div>
