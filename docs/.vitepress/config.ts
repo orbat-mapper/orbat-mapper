@@ -52,6 +52,7 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
     {
       text: "Scenario editor",
       items: [
+        { text: "Loading and saving", link: "storage" },
         { text: "Editing modes", link: "editing-modes" },
         { text: "Map edit mode", link: "map-edit-mode" },
         { text: "Grid edit mode", link: "grid-edit-mode" },
