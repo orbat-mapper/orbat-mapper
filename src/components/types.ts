@@ -78,6 +78,7 @@ export interface MenuItemData<T = string | Function> {
   label: string;
   action: T;
   disabled?: boolean;
+  active?: boolean;
 }
 
 export interface BreadcrumbItem {

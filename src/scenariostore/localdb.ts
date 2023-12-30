@@ -58,6 +58,9 @@ export async function useIndexedDb() {
 
   async function addScenario(scenario: Scenario, id?: string) {
     const scenarioId = id ?? scenario.id ?? nanoid();
+    if (scenario.id !== scenarioId) {
+      scenario = { ...scenario, id: scenarioId };
+    }
     await db.add("scenario-blobs", scenario, scenarioId);
     const metadata = {
       id: scenarioId,
@@ -133,6 +136,10 @@ export async function useIndexedDb() {
       name,
     );
   }
+
+  async function getScenarioInfo(id: string) {
+    return db.get("scenario-metadata", id);
+  }
   return {
     db,
     addScenario,
@@ -142,5 +149,6 @@ export async function useIndexedDb() {
     deleteScenario,
     duplicateScenario,
     downloadAsJson,
+    getScenarioInfo,
   };
 }

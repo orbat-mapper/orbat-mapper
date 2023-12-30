@@ -393,14 +393,14 @@ const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
 };
 
 const fileMenuItems: MenuItemData<ScenarioActions>[] = [
-  { label: "Save scenario to local storage", action: "save" },
-  { label: "Load scenario from local storage", action: "load" },
   { label: "Download scenario", action: "exportJson" },
   { label: "Load scenario from file", action: "loadNew" },
+  { label: "Save scenario", action: "save" },
+  { label: "Load scenario from local storage", action: "load" },
   { label: "Export scenario data", action: "export" },
   { label: "Import data", action: "import" },
   { label: "Show scenario info", action: "showInfo" },
-  { label: "Copy to clipboard", action: "exportToClipboard" },
+  { label: "Copy scenario to clipboard", action: "exportToClipboard" },
 ];
 
 async function onScenarioAction(action: ScenarioActions) {

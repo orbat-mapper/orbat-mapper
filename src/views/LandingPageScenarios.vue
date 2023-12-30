@@ -64,17 +64,29 @@
             </span>
           </button>
         </li>
-        <li class="col-span-1 flex"><LoadScenarioPanel @loaded="loadScenario" /></li>
         <li class="col-span-1 flex">
-          <LoadScenarioFromUrlPanel @loaded="loadScenario" />
+          <LoadScenarioPanel @loaded="loadScenario" />
         </li>
         <li class="col-span-1 flex">
-          <LoadScenarioFromLocalstoragePanel @loaded="loadFromLocalStorage()" />
+          <LoadScenarioFromUrlPanel @loaded="loadScenario" />
         </li>
       </ul>
     </section>
     <section class="mx-auto max-w-7xl p-6">
-      <h2 class="text-base font-semibold leading-6 text-gray-900">Recent scenarios</h2>
+      <header
+        class="border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between"
+      >
+        <h2 class="text-base font-semibold leading-6 text-gray-900">Recent scenarios</h2>
+        <div class="mt-3 flex items-center sm:ml-4 sm:mt-0">
+          <SortDropdown class="mr-4" :options="sortOptions" />
+          <router-link
+            :to="{ name: NEW_SCENARIO_ROUTE }"
+            class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            Create new scenario
+          </router-link>
+        </div>
+      </header>
       <ul
         class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
       >
@@ -93,19 +105,48 @@
 import { useRouter } from "vue-router";
 
 import WipBadge from "../components/WipBadge.vue";
-import { MAP_EDIT_MODE_ROUTE, NEW_SCENARIO_ROUTE, OLD_MAP_ROUTE } from "@/router/names";
+import { MAP_EDIT_MODE_ROUTE, NEW_SCENARIO_ROUTE } from "@/router/names";
 import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
 import { useScenario } from "@/scenariostore";
 import { Scenario } from "@/types/scenarioModels";
 import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromUrlPanel.vue";
-import LoadScenarioFromLocalstoragePanel from "@/modules/scenarioeditor/LoadScenarioFromLocalstoragePanel.vue";
 import { ScenarioMetadata, useIndexedDb } from "@/scenariostore/localdb";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
 import { StoredScenarioAction } from "@/types/constants";
+import { nanoid } from "@/utils";
+import SortDropdown from "@/components/SortDropdown.vue";
+import { MenuItemData } from "@/components/types";
 
 const storedScenarios = ref<ScenarioMetadata[]>([]);
+const activeSort = ref("lastModified");
 
+const sortOptions = computed<MenuItemData[]>(() => [
+  {
+    label: "Name",
+    action: () => {
+      storedScenarios.value.sort((a, b) => a.name.localeCompare(b.name));
+      activeSort.value = "name";
+    },
+    active: activeSort.value === "name",
+  },
+  {
+    label: "Last modified",
+    action: () => {
+      activeSort.value = "lastModified";
+      storedScenarios.value.sort((a, b) => +b.modified - +a.modified);
+    },
+    active: activeSort.value === "lastModified",
+  },
+  {
+    label: "Created",
+    action: () => {
+      activeSort.value = "created";
+      storedScenarios.value.sort((a, b) => +b.created - +a.created);
+    },
+    active: activeSort.value === "created",
+  },
+]);
 const scenarios = [
   {
     name: "The Falklands War 1982",
@@ -140,12 +181,15 @@ const newScenario = () => {
 const { scenario } = useScenario();
 
 async function loadScenario(v: Scenario) {
-  const { addScenario, listScenarios } = await useIndexedDb();
+  const { addScenario, getScenarioInfo } = await useIndexedDb();
 
-  scenario.value.io.loadFromObject(v);
-  await addScenario(v);
-  console.log("Added scenario to indexeddb");
-  await router.push({ name: MAP_EDIT_MODE_ROUTE });
+  const existingScenarioInfo = await getScenarioInfo(v.id ?? nanoid());
+  if (existingScenarioInfo) {
+    console.log("This scenario already exists", existingScenarioInfo);
+  } else {
+    const scenarioId = await addScenario(v);
+    await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
+  }
 }
 
 function loadFromLocalStorage() {

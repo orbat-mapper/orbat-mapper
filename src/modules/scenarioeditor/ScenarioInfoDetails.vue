@@ -32,9 +32,6 @@
 
       <div class="flex items-center space-x-2">
         <PlainButton @click="toggleEditMode()">Edit</PlainButton>
-        <SecondaryButton @click="onDownload">Download</SecondaryButton>
-        <PrimaryButton @click="onSave">Save</PrimaryButton>
-        <!--        <PrimaryButton @click="onLoad">Load</PrimaryButton>-->
       </div>
     </div>
   </div>
