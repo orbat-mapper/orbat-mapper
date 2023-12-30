@@ -191,7 +191,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     );
   }
 
-  function serializeToObject() {
+  function serializeToObject(): Scenario {
     return JSON.parse(stringifyScenario());
   }
 
@@ -207,7 +207,16 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       scn.id = nanoid();
       store.value.state.id = scn.id;
     }
+    return await putScenario(scn);
+  }
+
+  async function duplicateScenario() {
+    const { putScenario } = await useIndexedDb();
+    const scn = serializeToObject();
+    scn.id = nanoid();
+    scn.name = `${scn.name} (copy)`;
     await putScenario(scn);
+    return scn.id;
   }
 
   function loadFromLocalStorage(key = LOCALSTORAGE_KEY) {
@@ -278,5 +287,6 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     stringifyScenario,
     serializeToObject,
     saveToIndexedDb,
+    duplicateScenario,
   };
 }

@@ -49,7 +49,8 @@ export type ScenarioActions =
   | "addImageLayer"
   | "showInfo"
   | "addEquipment"
-  | "addPersonnel";
+  | "addPersonnel"
+  | "duplicate";
 
 export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
 

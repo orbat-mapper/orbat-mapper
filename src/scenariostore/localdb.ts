@@ -89,6 +89,7 @@ export async function useIndexedDb() {
     };
 
     await db.put("scenario-metadata", metadata);
+    return scenario.id;
   }
 
   async function loadScenario(id: string) {

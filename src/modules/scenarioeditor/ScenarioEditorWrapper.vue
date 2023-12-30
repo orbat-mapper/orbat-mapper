@@ -36,9 +36,10 @@ watch(
         scenario.value.io.loadFromObject(idbscenario);
         selectedItems.clear();
         selectedItems.showScenarioInfo.value = true;
+      } else {
+        console.error("Scenario not found in indexeddb");
       }
       localReady.value = true;
-      // load from indexeddb
     }
   },
   { immediate: true },
@@ -61,7 +62,7 @@ useEventListener(window, "beforeunload", async () => {
 });
 
 async function saveScenarioIfNecessary() {
-  if (scenario.value.store.canUndo.value) {
+  if (scenario.value?.store?.canUndo?.value) {
     await scenario.value.io.saveToIndexedDb();
   }
 }

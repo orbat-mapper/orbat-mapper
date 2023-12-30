@@ -232,7 +232,6 @@ import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import { ScenarioActions, TAB_LAYERS } from "@/types/constants";
 import AppNotifications from "@/components/AppNotifications.vue";
 import { useNotifications } from "@/composables/notifications";
-import { useGeoStore } from "@/stores/geoStore";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import NProgress from "nprogress";
 import { TScenario } from "@/scenariostore";
@@ -337,7 +336,6 @@ const { showSearch } = storeToRefs(uiStore);
 const originalTitle = useTitle().value;
 const windowTitle = computed(() => state.info.name);
 const { send } = useNotifications();
-const geoStore = useGeoStore();
 
 useTitle(windowTitle);
 
@@ -399,6 +397,7 @@ const fileMenuItems: MenuItemData<ScenarioActions>[] = [
   { label: "Load scenario from local storage", action: "load" },
   { label: "Export scenario data", action: "export" },
   { label: "Import data", action: "import" },
+  { label: "Duplicate scenario", action: "duplicate" },
   { label: "Show scenario info", action: "showInfo" },
   { label: "Copy scenario to clipboard", action: "exportToClipboard" },
 ];
@@ -407,8 +406,12 @@ async function onScenarioAction(action: ScenarioActions) {
   if (action === "addSide") {
     unitActions.addSide();
   } else if (action === "save") {
-    await io.saveToIndexedDb();
+    const preId = state.id;
+    const newId = await io.saveToIndexedDb();
     send({ message: "Scenario saved to IndexedDb" });
+    if (preId !== newId) {
+      await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId: newId } });
+    }
   } else if (action === "load") {
     io.loadFromLocalStorage();
     showInfo();
@@ -426,6 +429,9 @@ async function onScenarioAction(action: ScenarioActions) {
     showImportModal.value = true;
   } else if (action === "showInfo") {
     showInfo();
+  } else if (action === "duplicate") {
+    const scenarioId = await io.duplicateScenario();
+    await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
   }
   await onScenarioActionHook.trigger({ action });
 }
