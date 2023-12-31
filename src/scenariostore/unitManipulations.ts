@@ -203,6 +203,18 @@ export function useUnitManipulations(store: NewScenarioStore) {
   }
 
   function deleteUnit(id: string) {
+    groupUpdate(() => {
+      walkSubUnits(
+        id,
+        (unit1) => {
+          deleteSingleUnit(unit1.id);
+        },
+        { includeParent: true },
+      );
+    });
+  }
+
+  function deleteSingleUnit(id: string) {
     const u = state.unitMap[id];
     if (!u) {
       console.warn("Unit does not exists", id);
