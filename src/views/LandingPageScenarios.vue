@@ -98,6 +98,9 @@
         <li class="col-span-1 flex">
           <LoadScenarioFromUrlPanel @loaded="loadScenario" />
         </li>
+        <li class="col-span-1 flex">
+          <LoadScenarioFromLocalstoragePanel @loaded="loadFromLocalStorage" />
+        </li>
       </ul>
     </section>
   </div>
@@ -119,6 +122,7 @@ import { StoredScenarioAction } from "@/types/constants";
 import { nanoid } from "@/utils";
 import SortDropdown from "@/components/SortDropdown.vue";
 import { MenuItemData } from "@/components/types";
+import LoadScenarioFromLocalstoragePanel from "@/modules/scenarioeditor/LoadScenarioFromLocalstoragePanel.vue";
 
 const storedScenarios = ref<ScenarioMetadata[]>([]);
 const activeSort = ref("lastModified");
@@ -183,20 +187,30 @@ const newScenario = () => {
 const { scenario } = useScenario();
 
 async function loadScenario(v: Scenario) {
-  const { addScenario, getScenarioInfo } = await useIndexedDb();
+  const { addScenario, getScenarioInfo, putScenario } = await useIndexedDb();
 
   const existingScenarioInfo = await getScenarioInfo(v.id ?? nanoid());
   if (existingScenarioInfo) {
-    console.log("This scenario already exists", existingScenarioInfo);
+    let scenarioId = v.id;
+    if (
+      window.confirm(
+        "A scenario with the same ID is stored in the browser. Do you want to replace it with this scenario?",
+      )
+    ) {
+      scenarioId = await putScenario(v);
+    } else {
+      scenarioId = await addScenario(v, nanoid());
+    }
+    await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
   } else {
     const scenarioId = await addScenario(v);
     await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
   }
 }
 
-function loadFromLocalStorage() {
+async function loadFromLocalStorage() {
   scenario.value.io.loadFromLocalStorage();
-  router.push({ name: MAP_EDIT_MODE_ROUTE });
+  await loadScenario(scenario.value.io.serializeToObject());
 }
 
 onMounted(async () => {
