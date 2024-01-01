@@ -8,7 +8,7 @@
     >
       <IconFolderUploadOutline class="h-10 w-10 text-gray-500" />
 
-      <p class="mt-2 text-center">Load from local storage</p>
+      <p class="mt-2 text-center">Load from local storage (legacy)</p>
     </button>
 
     <p

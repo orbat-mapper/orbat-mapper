@@ -392,9 +392,8 @@ const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
 
 const fileMenuItems: MenuItemData<ScenarioActions>[] = [
   { label: "Download scenario", action: "exportJson" },
-  { label: "Load scenario from file", action: "loadNew" },
+  // { label: "Load scenario from file", action: "loadNew" },
   { label: "Save scenario", action: "save" },
-  { label: "Load scenario from local storage", action: "load" },
   { label: "Export scenario data", action: "export" },
   { label: "Import data", action: "import" },
   { label: "Duplicate scenario", action: "duplicate" },

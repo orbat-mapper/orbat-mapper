@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ScenarioEditor from "@/modules/scenarioeditor/ScenarioEditor.vue";
 import { useScenario } from "@/scenariostore";
-import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
+import { onBeforeRouteLeave } from "vue-router";
 import { ref, watch } from "vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useIndexedDb } from "@/scenariostore/localdb";
@@ -9,11 +9,9 @@ import { useEventListener } from "@vueuse/core";
 
 const props = defineProps<{ scenarioId: string }>();
 
-const { scenario, isLoading, isReady } = useScenario();
+const { scenario, isReady } = useScenario();
 const localReady = ref(false);
-const route = useRoute();
-const router = useRouter();
-let demoLoaded = false;
+
 let currentDemo = "";
 const selectedItems = useSelectedItems();
 
@@ -24,7 +22,6 @@ watch(
       const demoId = newScenarioId.replace("demo-", "");
       if (demoId !== currentDemo) {
         await scenario.value.io.loadDemoScenario(demoId);
-        demoLoaded = true;
         selectedItems.clear();
         selectedItems.showScenarioInfo.value = true;
       }
