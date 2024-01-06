@@ -29,7 +29,7 @@
           label="Basic scenario info"
           description="Provide a name and description for your scenario."
         >
-          <InputGroup label="Name" v-model="form.name" id="name-input" />
+          <InputGroup label="Name" v-model="form.name" id="name-input" autofocus />
 
           <SimpleMarkdownInput
             label="Description"
