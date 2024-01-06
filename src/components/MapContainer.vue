@@ -37,6 +37,19 @@ function createBaseLayers(view: View) {
       layerType: "baselayer",
     },
   });
+
+  const openStreetmapLayerDE = new TileLayer({
+    source: new OSM({
+      url: "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
+    }),
+    visible: props.baseLayerName === "osm-de",
+    preload: Infinity,
+    properties: {
+      title: "OSM (DE)",
+      name: "osm-de",
+      layerType: "baselayer",
+    },
+  });
   const lightGrayLayer = new TileLayer({
     preload: Infinity,
     visible: props.baseLayerName === "grayBasemap",
@@ -102,6 +115,7 @@ function createBaseLayers(view: View) {
 
   return [
     openStreetmapLayer,
+    openStreetmapLayerDE,
     lightGrayLayer,
     openTopoMap,
     esriWorldImagery,
