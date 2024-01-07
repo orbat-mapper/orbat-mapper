@@ -8,8 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+January 2024
+
+- Add new base map: OpenStreetMap DE. Includes translations of place names.
+
 December 2023
 
+- Add automatic scenario save.
+- Add support for storing multiple scenarios in the browser's local storage.
 - Add `loadScenarioURL` URL query parameter for loading a scenario from a URL.
 
 November 2023
