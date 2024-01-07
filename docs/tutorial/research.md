@@ -7,20 +7,18 @@ be surprisingly hard to find detailed enough information. Usually you have to co
 and websites.
 
 ![An image](./images/coffeeandorbats.jpg)
-_Coffee and ORBATs_ :heart_eyes:
+_Research :heart:_
+
+## Sources
 
 The Falklands War is extensively documented and much of the information is available online. Wikipedia has an
 extensive entry on the [Battle of Goose Green](https://en.wikipedia.org/wiki/Battle_of_Goose_Green), but to get enough details
 you may have to consult some of the books in the [sources section](https://en.wikipedia.org/wiki/Battle_of_Goose_Green#Sources).
+Two highly recommended books are:
 
-## Sources
-
-The following sources were used to create the scenario:
-
-- [Battle of Goose Green](https://en.wikipedia.org/wiki/Battle_of_Goose_Green) on Wikipedia.
 - Adkin, Mark (1992). _Goose Green – A battle is Fought to be Won_. London: Pen & Sword Books Ltd. ISBN
   978-0-85052-207-5.
-- Fitz-Gibbon, Spencer (2002). _Not Mentioned in Dispatches: The History and Mythology of the Battle of Goose Green_.
+- Fitz-Gibbon, Spencer (2002). _Not Mentioned in Despatches: The History and Mythology of the Battle of Goose Green_.
   Lutterworth Press. ISBN 0-7188-3016-4.
 
 ::: tip
