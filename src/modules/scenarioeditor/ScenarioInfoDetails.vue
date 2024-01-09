@@ -30,6 +30,10 @@
         >{{ state.info.symbologyStandard }}
       </DescriptionItem>
 
+      <DescriptionItem label="Number of units"
+        >{{ Object.keys(state.unitMap).length }}
+      </DescriptionItem>
+
       <div class="flex items-center space-x-2">
         <PlainButton @click="toggleEditMode()">Edit</PlainButton>
       </div>
