@@ -240,6 +240,7 @@ export function useScenarioLayers(
   const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
     VectorLayer<any>
   >;
+  const selectedItems = useSelectedItems();
 
   function createScenarioVectorLayer(
     layer: ScenarioLayer,
@@ -333,6 +334,7 @@ export function useScenarioLayers(
     if (!(olFeature && layer)) return;
     layer.getSource()?.removeFeature(olFeature);
     if (!isUndoRedo) geo.deleteFeature(featureId);
+    selectedItems.clear();
   }
 
   function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
