@@ -6,7 +6,7 @@ import DocMilSymbol from "../components/DocMilSymbol.vue";
 
 ORBAT Mapper uses military map symbols defined
 in [MIL-STD 2525D](https://www.jcs.mil/Portals/36/Documents/Doctrine/Other_Pubs/ms_2525d.pdf) and [NATO
-APP-6D](https://nso.nato.int/nso/nsdd/main/standards/ap-details/1912/EN).
+APP-6D](https://nso.nato.int/nso/nsdd/main/standards/ap-details/1912/EN)
 when displaying units, equipment and installations. All symbols are rendered using
 the excellent [Milsymbol](https://spatialillusions.com/milsymbol/index.html) library.
 
@@ -29,7 +29,8 @@ the basics. Here are a few starting points if you want to learn more:
 
 - [Military Symbols Study Guide](https://mgrs-mapper.com/blog/military_symbols_fundamentals/)
 - [NATO Joint Military Symbology wikipedia page](https://en.wikipedia.org/wiki/NATO_Joint_Military_Symbology)
-- The standard documents [MIL-STD 2525D](https://www.jcs.mil/Portals/36/Documents/Doctrine/Other_Pubs/ms_2525d.pdf) and [NATO
+- The standard documents [MIL-STD 2525D](https://www.jcs.mil/Portals/36/Documents/Doctrine/Other_Pubs/ms_2525d.pdf)
+  and [NATO
   APP-6D](https://nso.nato.int/nso/nsdd/main/standards/ap-details/1912/EN)
 
 ## Symbol identification codes
@@ -48,7 +49,8 @@ are available in 2525D/APP-6D, but they may look different.
 
 ## Differences between MILSTD 2525D and APP-6D
 
-ORBAT Mapper allows you to choose between MILSTD 2525 and APP-6. There are some differences between the versions. The most
+ORBAT Mapper allows you to choose between MILSTD 2525 and APP-6. There are some differences between the versions. The
+most
 notable is that APP-6D has the dismounted individual symbol set:
 
 <div class="flex gap-4 items-center justify-center">

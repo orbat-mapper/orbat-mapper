@@ -91,5 +91,10 @@ function sidebarTutorial(): DefaultTheme.SidebarItem[] {
         { text: "Research", link: "research" },
       ],
     },
+    {
+      text: "Part 1",
+      items: [{ text: "Getting started", link: "getting-started" }],
+    },
+    ,
   ];
 }
