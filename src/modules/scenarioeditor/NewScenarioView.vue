@@ -83,6 +83,9 @@
                       :symbol-options="sideData.symbolOptions"
                     />
                   </div>
+                  <p class="text-base text-sm text-gray-900">
+                    Don't worry if you can't find the right icon. You can change it later.
+                  </p>
                   <SimpleDivider v-if="i < sideData.units.length - 1" />
                 </template>
               </div>
@@ -227,13 +230,13 @@ const form = reactive<NewScenarioForm>({
       name: "Side 1",
       standardIdentity: SID.Friend,
       symbolOptions: {},
-      units: [{ rootUnitName: "HQ", rootUnitEchelon: "18", rootUnitIcon: "121000" }],
+      units: [{ rootUnitName: "HQ", rootUnitEchelon: "18", rootUnitIcon: "121100" }],
     },
     {
       name: "Side 2",
       standardIdentity: SID.Hostile,
       symbolOptions: {},
-      units: [{ rootUnitName: "HQ", rootUnitEchelon: "18", rootUnitIcon: "110000" }],
+      units: [{ rootUnitName: "HQ", rootUnitEchelon: "18", rootUnitIcon: "121100" }],
     },
   ],
 });
