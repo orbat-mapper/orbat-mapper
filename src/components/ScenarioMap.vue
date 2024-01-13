@@ -23,13 +23,9 @@ import OLMap from "ol/Map";
 import { useGeoStore } from "@/stores/geoStore";
 
 import { useDrop, useUnitLayer } from "@/composables/geomap";
-import { useSettingsStore } from "@/stores/settingsStore";
-import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useMapContextMenu } from "@/composables/mapContextMenu";
 import type Select from "ol/interaction/Select";
-import { useUiStore } from "@/stores/uiStore";
 import ScenarioMapLogic from "@/components/ScenarioMapLogic.vue";
 
 const emit = defineEmits<{
@@ -43,17 +39,10 @@ const emit = defineEmits<{
   ): void;
 }>();
 
-const {
-  geo,
-  store: { state },
-  unitActions,
-} = injectStrict(activeScenarioKey);
 const mapSettings = useMapSettingsStore();
 
 const mapRef = shallowRef<OLMap>();
-const uiStore = useUiStore();
 const geoStore = useGeoStore();
-const settingsStore = useSettingsStore();
 
 const { unitLayer } = useUnitLayer();
 const { onDrop } = useDrop(mapRef, unitLayer);

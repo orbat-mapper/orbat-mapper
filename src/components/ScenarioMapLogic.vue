@@ -13,7 +13,6 @@ import {
 import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import { storeToRefs } from "pinia";
 import {
-  useDrop,
   useMoveInteraction,
   useUnitLayer,
   useUnitSelectInteraction,
@@ -35,7 +34,6 @@ import { ObjectEvent } from "ol/Object";
 import { clearStyleCache } from "@/geo/unitStyles";
 import { useRangeRingsLayer } from "@/composables/geoRangeRings";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
-import { MapCtrlClick } from "@/geo/olInteractions";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -67,7 +65,6 @@ const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
 
 const { unitLayer, drawUnits } = useUnitLayer();
-const { onDrop } = useDrop(mapRef, unitLayer);
 
 const olMap = props.olMap;
 mapRef.value = olMap;

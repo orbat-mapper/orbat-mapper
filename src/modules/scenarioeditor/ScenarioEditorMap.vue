@@ -140,8 +140,6 @@ import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDe
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
-// import * as turf from "@turf/turf";
-// window.turf = turf;
 
 const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
 const activeScenario = injectStrict(activeScenarioKey);
