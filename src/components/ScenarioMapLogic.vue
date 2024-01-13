@@ -153,7 +153,7 @@ loadScenarioLayers();
 
 const extent = unitLayer.getSource()?.getExtent();
 if (extent && !unitLayer.getSource()?.isEmpty())
-  olMap.getView().fit(extent, { padding: [10, 10, 10, 10] });
+  olMap.getView().fit(extent, { padding: [100, 100, 150, 100] });
 
 function toggleMoveUnitInteraction(event: ObjectEvent) {
   const isUnitLayerVisible = !event.oldValue;
