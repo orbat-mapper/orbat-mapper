@@ -16,17 +16,13 @@
       />
     </Switch>
     <SwitchLabel as="span" class="ml-3" v-if="$slots.default">
-      <span class="text-sm font-medium text-gray-700"><slot></slot></span>
+      <span class="cursor-pointer text-sm font-medium text-gray-700"><slot></slot></span>
     </SwitchLabel>
   </SwitchGroup>
 </template>
 
 <script setup lang="ts">
 import { Switch, SwitchGroup, SwitchLabel } from "@headlessui/vue";
-import { useVModel } from "@vueuse/core";
 
-const props = withDefaults(defineProps<{ modelValue?: boolean }>(), { modelValue: true });
-const emit = defineEmits(["update:modelValue"]);
-
-const enabled = useVModel(props, "modelValue", emit);
+const enabled = defineModel({ default: true });
 </script>
