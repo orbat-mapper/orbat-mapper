@@ -173,6 +173,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "0.17.0"
   | "0.16.0"
   | "0.15.0"
   | "0.14.0"
@@ -207,10 +208,16 @@ export interface ScenarioSettings {
   statuses: UnitStatus[];
 }
 
+export interface ScenarioMetadata {
+  createdDate: string;
+  lastModifiedDate: string;
+}
+
 export interface Scenario extends ScenarioInfo {
-  id: string;
   type: "ORBAT-mapper";
+  id: string;
   version: ScenarioVersion;
+  meta?: ScenarioMetadata;
   sides: Side[];
   events: ScenarioEvent[];
   layers: ScenarioLayer[];

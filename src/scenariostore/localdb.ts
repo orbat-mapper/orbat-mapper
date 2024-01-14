@@ -66,8 +66,12 @@ export async function useIndexedDb() {
       id: scenarioId,
       name: scenario.name,
       description: scenario.description ?? "",
-      created: new Date(),
-      modified: new Date(),
+      created: scenario.meta?.createdDate
+        ? new Date(scenario.meta.createdDate)
+        : new Date(),
+      modified: scenario.meta?.lastModifiedDate
+        ? new Date(scenario.meta.lastModifiedDate)
+        : new Date(),
       image: "",
     };
 
@@ -83,8 +87,13 @@ export async function useIndexedDb() {
       id: scenario.id,
       name: scenario.name,
       description: scenario.description ?? "",
-      created: existing?.created ?? new Date(),
-      modified: new Date(),
+      created: scenario.meta?.createdDate
+        ? new Date(scenario.meta.createdDate)
+        : existing?.created ?? new Date(),
+      modified: scenario.meta?.lastModifiedDate
+        ? new Date(scenario.meta.lastModifiedDate)
+        : new Date(),
+
       image: "",
     };
 
@@ -93,7 +102,18 @@ export async function useIndexedDb() {
   }
 
   async function loadScenario(id: string) {
-    return db.get("scenario-blobs", id);
+    const scenarioBLob = await db.get("scenario-blobs", id);
+    if (!scenarioBLob?.meta) {
+      const metadata = await db.get("scenario-metadata", id);
+      if (metadata && scenarioBLob) {
+        scenarioBLob.meta = {
+          createdDate: metadata.created.toISOString(),
+          lastModifiedDate: metadata.modified.toISOString(),
+        };
+      }
+    }
+
+    return scenarioBLob;
   }
 
   async function listScenarios() {
@@ -113,7 +133,12 @@ export async function useIndexedDb() {
       return;
     }
     const newId = nanoid();
-    const newScenario = { ...scenario, name: `${scenario.name} (copy)`, id: newId };
+    const newScenario = {
+      ...scenario,
+      name: `${scenario.name} (copy)`,
+      id: newId,
+      meta: undefined,
+    };
     await addScenario(newScenario);
     return newId;
   }

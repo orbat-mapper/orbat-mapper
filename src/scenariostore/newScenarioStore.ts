@@ -4,6 +4,7 @@ import type {
   PersonnelData,
   Scenario,
   ScenarioInfo,
+  ScenarioMetadata,
   Side,
   SideGroup,
   Unit,
@@ -40,6 +41,7 @@ import { ref } from "vue";
 
 export interface ScenarioState {
   id: EntityId;
+  meta: ScenarioMetadata;
   unitMap: Record<EntityId, NUnit>;
   sideMap: Record<EntityId, NSide>;
   sideGroupMap: Record<EntityId, NSideGroup>;
@@ -298,8 +300,20 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     return a < b ? -1 : a > b ? 1 : 0;
   });
 
+  const meta: ScenarioMetadata = {
+    createdDate: scenario.meta?.createdDate ?? new Date().toISOString(),
+    lastModifiedDate: scenario.meta?.lastModifiedDate ?? new Date().toISOString(),
+  };
+
+  // scenario.meta ?? {
+  //     createdDate: new Date().toISOString(),
+  //     lastModifiedDate: new Date().toISOString()
+  //   }
+  // };
+
   return {
     id: scenarioId,
+    meta,
     layers,
     mapLayers: mapLayers,
     mapLayerMap: mapLayerMap,

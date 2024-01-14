@@ -51,6 +51,10 @@ export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): S
     id: options.id ?? nanoid(),
     type: "ORBAT-mapper",
     version: SCENARIO_FILE_VERSION,
+    meta: {
+      createdDate: new Date().toISOString(),
+      lastModifiedDate: new Date().toISOString(),
+    },
     name: "New scenario",
     description: "Empty scenario description",
     startTime: new Date().setHours(12, 0, 0, 0),
@@ -160,6 +164,10 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       id: state.id,
       type: "ORBAT-mapper",
       version: SCENARIO_FILE_VERSION,
+      meta: {
+        createdDate: state?.meta?.createdDate,
+        lastModifiedDate: new Date().toISOString(),
+      },
       ...getScenarioInfo(state),
       sides: getSides(state),
       layers: getLayers(state),

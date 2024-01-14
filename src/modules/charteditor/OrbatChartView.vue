@@ -1,7 +1,7 @@
 <template>
   <div class="relative flex h-full w-screen overflow-hidden">
     <aside
-      class="hidden bg-gray-50 print:hidden lg:flex lg:w-[20rem] lg:flex-shrink-0 lg:border-r lg:border-gray-200"
+      class="hidden bg-gray-50 lg:flex lg:w-[20rem] lg:flex-shrink-0 lg:border-r lg:border-gray-200 print:hidden"
     >
       <OrbatChartSettings v-model:tab="currentTab" class="print:hidden" />
     </aside>
