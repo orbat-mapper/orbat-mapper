@@ -8,6 +8,7 @@
       </header>
       <main class="mt-4">
         <div class="mx-auto max-w-7xl space-y-4 sm:px-6 lg:px-8">
+          <MainMenu />
           <section class="space-y-4" @click="onClick">
             <h3 class="border-b text-lg">Basic button</h3>
             <p class="flex items-start space-x-2">
@@ -136,6 +137,7 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { MenuItemData } from "@/components/types";
 import { ScenarioActions } from "@/types/constants";
 import LinkButton from "@/components/LinkButton.vue";
+import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
 
 const num = ref(1);
 const v = ref("Test");

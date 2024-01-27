@@ -7,29 +7,8 @@
       class="flex flex-shrink-0 items-center justify-between bg-gray-900 py-2 pl-6 pr-4 text-gray-200 print:hidden"
     >
       <div class="flex min-w-0 flex-auto items-center">
-        <router-link :to="{ name: LANDING_PAGE_ROUTE }" class="flex-shrink-0">
-          <svg
-            class="block h-7 w-auto fill-gray-700 stroke-gray-300"
-            stroke="currentColor"
-            viewBox="41 41 118 118"
-          >
-            <path d="m100 45 55 25v60l-55 25-55-25V70z" stroke-width="6" />
-            <path d="m45 70 110 60m-110 0 110-60" stroke-width="6" />
-            <circle cx="100" cy="70" r="10" class="fill-gray-300" />
-          </svg>
-        </router-link>
-        <div class="ml-3 flex min-w-0 flex-auto items-center divide-gray-400 lg:divide-x">
-          <div class="flex items-center">
-            <span
-              class="pr hidden text-sm font-medium tracking-tight text-gray-300 lg:block"
-              >ORBAT-Mapper</span
-            >
-            <span
-              class="ml-1.5 mr-2 inline-flex hidden items-center rounded-full bg-gray-300 px-2.5 py-0.5 text-xs font-medium text-gray-900 lg:block"
-              >dev</span
-            >
-          </div>
-
+        <div class="flex min-w-0 flex-auto items-center">
+          <MainMenu class="shrink-0" @action="onScenarioAction" @ui-action="onUiAction" />
           <button
             type="button"
             class="hidden truncate pl-3 text-gray-400 sm:block"
@@ -49,9 +28,6 @@
         >
           Help
         </a>
-        <DropdownMenu :items="fileMenuItems" @action="onScenarioAction"
-          >File
-        </DropdownMenu>
         <button
           @click="showSearch = true"
           class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -229,7 +205,7 @@ import {
 } from "@iconify-prerendered/vue-mdi";
 import { createEventHook, useClipboard, useTitle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
-import { ScenarioActions, TAB_LAYERS } from "@/types/constants";
+import { ScenarioActions, TAB_LAYERS, UiAction } from "@/types/constants";
 import AppNotifications from "@/components/AppNotifications.vue";
 import { useNotifications } from "@/composables/notifications";
 import { FeatureId } from "@/types/scenarioGeoModels";
@@ -249,14 +225,12 @@ import {
 
 import type { Scenario } from "@/types/scenarioModels";
 import { useFeatureStyles } from "@/geo/featureStyles";
-import { EventSearchResult, MenuItemData } from "@/components/types";
+import { EventSearchResult } from "@/components/types";
 import { useDateModal, useSidcModal } from "@/composables/modals";
 import { storeToRefs } from "pinia";
-import DropdownMenu from "@/components/DropdownMenu.vue";
 import {
   CHART_EDIT_MODE_ROUTE,
   GRID_EDIT_ROUTE,
-  LANDING_PAGE_ROUTE,
   MAP_EDIT_MODE_ROUTE,
 } from "@/router/names";
 import { useFileDropZone } from "@/composables/filedragdrop";
@@ -264,6 +238,7 @@ import { useTabStore } from "@/stores/tabStore";
 import CommandPalette from "@/components/CommandPalette.vue";
 import { PhotonSearchResult } from "@/composables/geosearching";
 import { useSelectedItems } from "@/stores/selectedStore";
+import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(
@@ -390,17 +365,6 @@ const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
   onFeatureSelectHook.trigger({ featureId, layerId });
 };
 
-const fileMenuItems: MenuItemData<ScenarioActions>[] = [
-  { label: "Download scenario", action: "exportJson" },
-  // { label: "Load scenario from file", action: "loadNew" },
-  { label: "Save scenario", action: "save" },
-  { label: "Export scenario data", action: "export" },
-  { label: "Import data", action: "import" },
-  { label: "Duplicate scenario", action: "duplicate" },
-  { label: "Show scenario info", action: "showInfo" },
-  { label: "Copy scenario to clipboard", action: "exportToClipboard" },
-];
-
 async function onScenarioAction(action: ScenarioActions) {
   if (action === "addSide") {
     unitActions.addSide();
@@ -433,6 +397,15 @@ async function onScenarioAction(action: ScenarioActions) {
     await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
   }
   await onScenarioActionHook.trigger({ action });
+}
+
+function onUiAction(action: UiAction) {
+  if (action === "showKeyboardShortcuts") {
+    showKeyboardShortcuts();
+  }
+  if (action === "showSearch") {
+    showSearch.value = true;
+  }
 }
 
 function showKeyboardShortcuts() {

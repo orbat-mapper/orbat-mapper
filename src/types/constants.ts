@@ -54,6 +54,8 @@ export type ScenarioActions =
 
 export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
 
+export type UiAction = "showKeyboardShortcuts" | "showSearch";
+
 export const ScenarioLayerActions = {
   Delete: "Delete",
   Rename: "Rename",
