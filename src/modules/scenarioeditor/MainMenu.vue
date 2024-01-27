@@ -4,6 +4,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
@@ -17,6 +19,8 @@ import { LANDING_PAGE_ROUTE } from "@/router/names";
 
 import { ScenarioActions, UiAction } from "@/types/constants";
 import { useRoute } from "vue-router";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { storeToRefs } from "pinia";
 
 const emit = defineEmits<{
   action: [value: ScenarioActions];
@@ -25,6 +29,7 @@ const emit = defineEmits<{
 
 const route = useRoute();
 const uiSettings = useUiStore();
+const { coordinateFormat } = storeToRefs(useMapSettingsStore());
 </script>
 
 <template>
@@ -100,6 +105,18 @@ const uiSettings = useUiStore();
             @select.prevent
             >Show timeline
           </DropdownMenuCheckboxItem>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>Coordinate format</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuRadioGroup v-model="coordinateFormat">
+                <DropdownMenuRadioItem value="dms"
+                  >Degrees, minutes, seconds
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="dd">Decimal degrees</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="MGRS">MGRS</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
         </DropdownMenuSubContent>
       </DropdownMenuSub>
       <DropdownMenuSeparator />
