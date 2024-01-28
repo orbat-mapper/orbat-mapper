@@ -79,36 +79,12 @@ function getScenarioEvents(state: ScenarioState): ScenarioEvent[] {
 }
 
 function getSides(state: ScenarioState): Side[] {
-  function getUnit(unitId: EntityId): Unit {
-    const nUnit = state.unitMap[unitId];
-    let equipment = nUnit.equipment?.map(({ id, count }) => {
-      const { name } = state.equipmentMap[id];
-      return { name, count };
-    });
-    if (equipment?.length === 0) equipment = undefined;
-    let personnel = nUnit.personnel?.map(({ id, count }) => {
-      const { name } = state.personnelMap[id];
-      return { name, count };
-    });
-    if (personnel?.length === 0) personnel = undefined;
-    let rangeRings = nUnit.rangeRings?.map(({ group, ...rest }) => {
-      return group ? { group: state.rangeRingGroupMap[group].name, ...rest } : rest;
-    });
-    if (rangeRings?.length === 0) rangeRings = undefined;
-
-    return {
-      ...nUnit,
-      status: nUnit.status ? state.unitStatusMap[nUnit.status]?.name : undefined,
-      subUnits: nUnit.subUnits.map((subUnitId) => getUnit(subUnitId)),
-      equipment,
-      personnel,
-      rangeRings,
-    };
-  }
-
   function getSideGroup(groupId: EntityId): SideGroup {
     const group = state.sideGroupMap[groupId];
-    return { ...group, subUnits: group.subUnits.map((unitId) => getUnit(unitId)) };
+    return {
+      ...group,
+      subUnits: group.subUnits.map((unitId) => serializeUnit(unitId, state)),
+    };
   }
 
   return state.sides
@@ -117,6 +93,39 @@ function getSides(state: ScenarioState): Side[] {
       ...nSide,
       groups: nSide.groups.map((groupId) => getSideGroup(groupId)),
     }));
+}
+
+export function serializeUnit(
+  unitId: EntityId,
+  state: ScenarioState,
+  newId = false,
+): Unit {
+  const nUnit = state.unitMap[unitId];
+  let equipment = nUnit.equipment?.map(({ id, count }) => {
+    const { name } = state.equipmentMap[id];
+    return { name, count };
+  });
+  if (equipment?.length === 0) equipment = undefined;
+  let personnel = nUnit.personnel?.map(({ id, count }) => {
+    const { name } = state.personnelMap[id];
+    return { name, count };
+  });
+  if (personnel?.length === 0) personnel = undefined;
+  let rangeRings = nUnit.rangeRings?.map(({ group, ...rest }) => {
+    return group ? { group: state.rangeRingGroupMap[group].name, ...rest } : rest;
+  });
+  if (rangeRings?.length === 0) rangeRings = undefined;
+  const { id, ...rest } = nUnit;
+
+  return {
+    id: newId ? nanoid() : id,
+    ...rest,
+    status: nUnit.status ? state.unitStatusMap[nUnit.status]?.name : undefined,
+    subUnits: nUnit.subUnits.map((subUnitId) => serializeUnit(subUnitId, state)),
+    equipment,
+    personnel,
+    rangeRings,
+  };
 }
 
 function getLayers(state: ScenarioState): ScenarioLayer[] {
@@ -183,20 +192,22 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   }
 
   function stringifyScenario() {
-    return JSON.stringify(
-      toObject(),
-      (name, val) => {
-        if (val === undefined) return undefined;
-        if (INTERNAL_NAMES.includes(name)) return undefined;
-        if (TIMESTAMP_NAMES.includes(name)) {
-          return dayjs(val)
-            .tz(store.value.state.info.timeZone || "UTC")
-            .format();
-        }
-        return val;
-      },
-      "  ",
-    );
+    return JSON.stringify(toObject(), stringifyReplacer, "  ");
+  }
+
+  function stringifyObject(obj: any) {
+    return JSON.stringify(obj, stringifyReplacer, "  ");
+  }
+
+  function stringifyReplacer(name: string, val: any) {
+    if (val === undefined) return undefined;
+    if (INTERNAL_NAMES.includes(name)) return undefined;
+    if (TIMESTAMP_NAMES.includes(name)) {
+      return dayjs(val)
+        .tz(store.value.state.info.timeZone || "UTC")
+        .format();
+    }
+    return val;
   }
 
   function serializeToObject(): Scenario {
@@ -296,5 +307,6 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     serializeToObject,
     saveToIndexedDb,
     duplicateScenario,
+    stringifyObject,
   };
 }
