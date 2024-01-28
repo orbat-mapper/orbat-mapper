@@ -8,7 +8,7 @@
     >
       <div class="flex min-w-0 flex-auto items-center">
         <div class="flex min-w-0 flex-auto items-center">
-          <MainMenu class="shrink-0" @action="onScenarioAction" @ui-action="onUiAction" />
+          <MainMenu @action="onScenarioAction" @ui-action="onUiAction" />
           <button
             type="button"
             class="hidden truncate pl-3 text-gray-400 sm:block"
