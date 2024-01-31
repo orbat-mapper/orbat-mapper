@@ -95,11 +95,17 @@ function getSides(state: ScenarioState): Side[] {
     }));
 }
 
+export type SerializeUnitOptions = {
+  newId?: boolean;
+  includeSubUnits?: boolean;
+};
+
 export function serializeUnit(
   unitId: EntityId,
   state: ScenarioState,
-  newId = false,
+  options: SerializeUnitOptions = {},
 ): Unit {
+  const { newId = false, includeSubUnits = true } = options;
   const nUnit = state.unitMap[unitId];
   let equipment = nUnit.equipment?.map(({ id, count }) => {
     const { name } = state.equipmentMap[id];
@@ -121,7 +127,9 @@ export function serializeUnit(
     id: newId ? nanoid() : id,
     ...rest,
     status: nUnit.status ? state.unitStatusMap[nUnit.status]?.name : undefined,
-    subUnits: nUnit.subUnits.map((subUnitId) => serializeUnit(subUnitId, state)),
+    subUnits: includeSubUnits
+      ? nUnit.subUnits.map((subUnitId) => serializeUnit(subUnitId, state, options))
+      : [],
     equipment,
     personnel,
     rangeRings,
