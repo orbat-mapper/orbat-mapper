@@ -1,5 +1,5 @@
 <template>
-  <li :id="'o-' + unit.id" class="relative text-gray-900 dark:text-gray-400">
+  <li :id="'ou-' + unit.id" class="relative text-gray-900 dark:text-gray-400">
     <div
       class="absolute left-8 right-0 top-0 z-10 h-3"
       :class="{ 'border-t-4 border-gray-500': isDragOverAbove }"
