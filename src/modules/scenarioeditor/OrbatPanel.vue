@@ -35,7 +35,7 @@ import { orbatUnitClick } from "@/components/eventKeys";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { inputEventFilter } from "@/components/helpers";
 import { serializeUnit } from "@/scenariostore/io";
-import { Unit } from "@/types/scenarioModels";
+import { orbatToText } from "@/importexport/convertUtils";
 
 interface Props {
   hideFilter?: boolean;
@@ -109,7 +109,7 @@ function onCopy(c: ClipboardEvent) {
   );
   c.clipboardData?.setData("application/orbat", io.stringifyObject(serializedUnits));
 
-  const txt = serializedUnits.map((unit) => treeToArray(unit).join("")).join("");
+  const txt = serializedUnits.map((unit) => orbatToText(unit).join("")).join("");
   c.clipboardData?.setData("text/plain", txt);
 
   c.preventDefault();
@@ -131,17 +131,5 @@ function onPaste(e: ClipboardEvent) {
   // console.log("txt", txt);
   // txt && updateActiveItemValue(txt);
   console.log("Not implemented yet");
-}
-
-function treeToArray(root: Unit): string[] {
-  const result: string[] = [];
-
-  function helper(node: Unit, depth: number = 0) {
-    result.push("\t".repeat(depth) + node.name + "\n");
-    node.subUnits?.forEach((child: any) => helper(child, depth + 1));
-  }
-
-  helper(root);
-  return result;
 }
 </script>
