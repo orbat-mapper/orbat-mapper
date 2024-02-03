@@ -92,9 +92,7 @@ function onSideAction(side: NSide, action: SideAction) {
   }
 }
 
-function getUnitIdFromElement(
-  element: HTMLElement | null | undefined,
-): string | undefined {
+function getUnitIdFromElement(element: Element | null | undefined): string | undefined {
   if (element?.tagName == "LI" && element?.id.startsWith("ou-")) {
     return element.id.slice(3);
   }
@@ -102,27 +100,16 @@ function getUnitIdFromElement(
 
 function onCopy(c: ClipboardEvent) {
   if (!inputEventFilter(c)) return;
-  // Use document.activeElement instead of c.target because Chrome will not
-  // emit copy/paste events for programmatically focused div elements.
-  const target = document.activeElement as HTMLElement;
-  // find the closest li element with an id that starts with "unit-"
-  const unitId =
-    getUnitIdFromElement(target) ||
-    getUnitIdFromElement(target.parentElement) ||
-    getUnitIdFromElement(target.parentElement?.parentElement) ||
-    getUnitIdFromElement(target.parentElement?.parentElement?.parentElement);
 
-  c.clipboardData?.setData(
-    "application/orbat",
-    io.stringifyObject(
-      [...selectedUnitIds.value].map((id) => serializeUnit(id, state, { newId: true })),
-    ),
+  /*const target = document.activeElement as HTMLElement;
+  const unitId = getUnitIdFromElement(target.closest('li[id^="ou-"]'));*/
+
+  const serializedUnits = [...selectedUnitIds.value].map((id) =>
+    serializeUnit(id, state, { newId: true }),
   );
+  c.clipboardData?.setData("application/orbat", io.stringifyObject(serializedUnits));
 
-  // convert to indented text recursively
-  const txt = [...selectedUnitIds.value]
-    .map((id) => treeToArray(serializeUnit(id, state, { newId: true })).join(""))
-    .join("");
+  const txt = serializedUnits.map((unit) => treeToArray(unit).join("")).join("");
   c.clipboardData?.setData("text/plain", txt);
 
   c.preventDefault();
@@ -149,16 +136,9 @@ function onPaste(e: ClipboardEvent) {
 function treeToArray(root: Unit): string[] {
   const result: string[] = [];
 
-  function helper(node: Unit, path: any[] = []) {
-    // Include additional properties from the node
-    path.forEach((p) => result.push("\t"));
-    result.push(node.name + "\n");
-    path.push(node.name);
-    if (node.subUnits && node.subUnits.length > 0) {
-      node.subUnits.forEach((child: any) => helper(child, path.slice()));
-    } else {
-      // result.push("\t");
-    }
+  function helper(node: Unit, depth: number = 0) {
+    result.push("\t".repeat(depth) + node.name + "\n");
+    node.subUnits?.forEach((child: any) => helper(child, depth + 1));
   }
 
   helper(root);
