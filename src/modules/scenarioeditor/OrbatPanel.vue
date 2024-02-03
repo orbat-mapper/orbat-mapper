@@ -35,7 +35,12 @@ import { orbatUnitClick } from "@/components/eventKeys";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { inputEventFilter } from "@/components/helpers";
 import { serializeUnit } from "@/scenariostore/io";
-import { orbatToText } from "@/importexport/convertUtils";
+import {
+  addUnitHierarchy,
+  orbatToText,
+  parseApplicationOrbat,
+} from "@/importexport/convertUtils";
+import { Unit } from "@/types/scenarioModels";
 
 interface Props {
   hideFilter?: boolean;
@@ -101,8 +106,11 @@ function getUnitIdFromElement(element: Element | null | undefined): string | und
 function onCopy(c: ClipboardEvent) {
   if (!inputEventFilter(c)) return;
 
-  /*const target = document.activeElement as HTMLElement;
-  const unitId = getUnitIdFromElement(target.closest('li[id^="ou-"]'));*/
+  const target = document.activeElement as HTMLElement;
+  const unitId = getUnitIdFromElement(target.closest('li[id^="ou-"]'));
+
+  // only copy if an ORBAT item has focus
+  if (!unitId) return;
 
   const serializedUnits = [...selectedUnitIds.value].map((id) =>
     serializeUnit(id, state, { newId: true }),
@@ -117,19 +125,17 @@ function onCopy(c: ClipboardEvent) {
 
 function onPaste(e: ClipboardEvent) {
   if (!inputEventFilter(e)) return;
-  // const target = document.activeElement as HTMLDivElement;
-  // /*if (
-  //   !(
-  //     target?.classList.contains("editable-cell") ||
-  //     target?.parentElement?.classList.contains("editable-cell")
-  //   )
-  // )
-  //   return;*/
-  // e.preventDefault();
-  // console.log(e.clipboardData?.types);
-  // const txt = e.clipboardData?.getData("application/orbat");
-  // console.log("txt", txt);
-  // txt && updateActiveItemValue(txt);
-  console.log("Not implemented yet");
+  const target = document.activeElement as HTMLElement;
+
+  const parentId = getUnitIdFromElement(target.closest('li[id^="ou-"]'));
+  // only paste if an ORBAT item has focus
+  if (!parentId || !e.clipboardData?.types.includes("application/orbat")) return;
+  const pastedOrbat = parseApplicationOrbat(
+    e.clipboardData?.getData("application/orbat"),
+  );
+  pastedOrbat?.forEach((unit) => addUnitHierarchy(unit, parentId, activeScenario));
+  unitActions.getUnitById(parentId)._isOpen = true;
+
+  e.preventDefault();
 }
 </script>

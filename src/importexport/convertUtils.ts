@@ -1,4 +1,10 @@
 import { Unit } from "@/types/scenarioModels";
+import { TScenario } from "@/scenariostore";
+import { EntityId } from "@/types/base";
+import { NUnitAdd } from "@/types/internalModels";
+import { nanoid } from "@/utils";
+import { setCharAt } from "@/components/helpers";
+import { SID_INDEX } from "@/symbology/sidc";
 
 export type OrbatToTextOptions = {
   indent?: string;
@@ -14,4 +20,46 @@ export function orbatToText(root: Unit, options: OrbatToTextOptions = {}): strin
 
   helper(root);
   return result;
+}
+
+export function parseApplicationOrbat(text: string): Unit[] | null {
+  const obj = JSON.parse(text);
+  if (Array.isArray(obj)) {
+    return obj;
+  }
+  return null;
+}
+
+type AddUnitHierarchyOptions = {
+  newIds?: boolean;
+};
+
+export function addUnitHierarchy(
+  rootUnit: Unit,
+  parentId: EntityId,
+  scenario: TScenario,
+  options: AddUnitHierarchyOptions = {},
+) {
+  const newIds = options.newIds ?? true;
+  const { store, unitActions } = scenario;
+  const { side } = unitActions.getUnitHierarchy(parentId);
+
+  store.groupUpdate(() => {
+    function helper(unit: Unit, parentId: EntityId, depth: number = 0) {
+      const newUnit: NUnitAdd = {
+        ...unit,
+        id: newIds ? nanoid() : unit.id ?? nanoid(),
+        sidc: setCharAt(unit.sidc, SID_INDEX, side.standardIdentity),
+        subUnits: [],
+        equipment: [],
+        personnel: [],
+        state: [],
+        rangeRings: [],
+      };
+      unitActions.addUnit(newUnit, parentId);
+      unit.subUnits?.forEach((child) => helper(child, newUnit.id!));
+    }
+
+    helper(rootUnit, parentId);
+  });
 }
