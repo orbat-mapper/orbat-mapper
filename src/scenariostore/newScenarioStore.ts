@@ -1,6 +1,7 @@
 import { useImmerStore } from "@/composables/immerStore";
 import type {
   EquipmentData,
+  MapSettings,
   PersonnelData,
   Scenario,
   ScenarioInfo,
@@ -38,6 +39,7 @@ import type {
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
 import { ref } from "vue";
+import { DEFAULT_BASEMAP_ID } from "@/config/constants";
 
 export interface ScenarioState {
   id: EntityId;
@@ -63,6 +65,7 @@ export interface ScenarioState {
   rangeRingGroupMap: Record<string, NRangeRingGroup>;
   unitStatusMap: Record<string, NUnitStatus>;
   unitStateCounter: number;
+  mapSettings: MapSettings;
 }
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
@@ -89,6 +92,9 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const tempUnitStatusIdMap: Record<string, string> = {};
 
   const scenarioId = scenario.id ?? nanoid();
+  const mapSettings: MapSettings = scenario.settings?.map ?? {
+    baseMapId: DEFAULT_BASEMAP_ID,
+  };
 
   let unitStateCounter = 0;
 
@@ -332,6 +338,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     rangeRingGroupMap,
     unitStateCounter,
     unitStatusMap,
+    mapSettings,
     getUnitById(id: EntityId) {
       return this.unitMap[id];
     },

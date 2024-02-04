@@ -239,6 +239,9 @@ import CommandPalette from "@/components/CommandPalette.vue";
 import { PhotonSearchResult } from "@/composables/geosearching";
 import { useSelectedItems } from "@/stores/selectedStore";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+
+const props = defineProps<{ activeScenario: TScenario }>();
 
 const LoadScenarioDialog = defineAsyncComponent(() => import("./LoadScenarioDialog.vue"));
 const SymbolPickerModal = defineAsyncComponent(
@@ -253,8 +256,6 @@ const ExportScenarioModal = defineAsyncComponent(
 );
 
 const ImportModal = defineAsyncComponent(() => import("@/components/ImportModal.vue"));
-
-const props = defineProps<{ activeScenario: TScenario }>();
 
 const dropZoneRef = ref<HTMLDivElement>();
 const activeParentId = ref<EntityId | undefined | null>(null);
@@ -307,6 +308,9 @@ const showImportModal = ref(false);
 
 const uiStore = useUiStore();
 const { showSearch } = storeToRefs(uiStore);
+
+const mapStore = useMapSettingsStore();
+mapStore.baseLayerName = state.mapSettings.baseMapId;
 
 const originalTitle = useTitle().value;
 const windowTitle = computed(() => state.info.name);

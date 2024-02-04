@@ -28,7 +28,11 @@ import {
 } from "@/types/scenarioGeoModels";
 import { type EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
-import { LOCALSTORAGE_KEY, SCENARIO_FILE_VERSION } from "@/config/constants";
+import {
+  DEFAULT_BASEMAP_ID,
+  LOCALSTORAGE_KEY,
+  SCENARIO_FILE_VERSION,
+} from "@/config/constants";
 import { useIndexedDb } from "@/scenariostore/localdb";
 
 export interface CreateEmptyScenarioOptions {
@@ -64,7 +68,7 @@ export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): S
     events: [],
     layers: [{ id: nanoid(), name: "Features", features: [] }],
     mapLayers: [],
-    settings: { rangeRingGroups, statuses: [] },
+    settings: { rangeRingGroups, statuses: [], map: { baseMapId: DEFAULT_BASEMAP_ID } },
   };
 }
 
@@ -195,6 +199,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       settings: {
         rangeRingGroups: getRangeRingGroups(state),
         statuses: getUnitStatuses(state),
+        map: state.mapSettings,
       },
     };
   }

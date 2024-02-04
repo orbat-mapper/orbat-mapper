@@ -173,6 +173,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "0.18.0"
   | "0.17.0"
   | "0.16.0"
   | "0.15.0"
@@ -206,6 +207,11 @@ export interface UnitStatus {
 export interface ScenarioSettings {
   rangeRingGroups: RangeRingGroup[];
   statuses: UnitStatus[];
+  map?: MapSettings;
+}
+
+export interface MapSettings {
+  baseMapId: string;
 }
 
 export interface ScenarioMetadata {
