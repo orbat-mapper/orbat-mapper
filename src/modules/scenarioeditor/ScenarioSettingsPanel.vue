@@ -8,6 +8,7 @@ import ScenarioInfoEquipment from "@/modules/scenarioeditor/ScenarioInfoEquipmen
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import ScenarioInfoUnitStatuses from "@/modules/scenarioeditor/ScenarioInfoUnitStatuses.vue";
+import ScenarioMapSettings from "@/modules/scenarioeditor/ScenarioMapSettings.vue";
 
 const selectedItems = useSelectedItems();
 const scenarioInfoPanelStore = useScenarioInfoPanelStore();
@@ -94,6 +95,9 @@ function showScenarioInfo() {
     </AccordionPanel>
     <AccordionPanel label="Unit statuses">
       <ScenarioInfoUnitStatuses />
+    </AccordionPanel>
+    <AccordionPanel label="Map settings">
+      <ScenarioMapSettings />
     </AccordionPanel>
   </div>
 </template>
