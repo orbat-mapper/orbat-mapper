@@ -50,7 +50,7 @@
           </p>
         </label>
       </div>
-      <div v-else class="min-h-[6rem]">
+      <div v-else-if="store.inputSource === 'string'" class="min-h-[6rem]">
         <TextAreaGroup rows="3" v-model="stringSource" />
       </div>
     </fieldset>
@@ -87,9 +87,7 @@
     <img v-if="objectUrl" :src="objectUrl" />
 
     <footer class="flex items-center justify-end space-x-2 pt-4">
-      <BaseButton type="submit" primary small :disabled="!currentFilename"
-        >Load</BaseButton
-      >
+      <BaseButton type="submit" primary small>Load</BaseButton>
       <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
     </footer>
   </form>
