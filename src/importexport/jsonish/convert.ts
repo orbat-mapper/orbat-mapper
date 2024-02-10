@@ -25,8 +25,9 @@ export function convertGeojsonLayer(
 }
 
 function convertGeojsonProperties(f: GeoJsonSymbolProperties): MilSymbolProperties {
+  const sidc = f.sidc || "10031000000000000000";
   const props: MilSymbolProperties = {
-    sidc: isNumeric.test(f.sidc!) ? f.sidc! : convertLetterSidc2NumberSidc(f.sidc!).sidc,
+    sidc: isNumeric.test(sidc) ? sidc : convertLetterSidc2NumberSidc(sidc).sidc,
   };
   if (f.m) props.higherFormation = f.m;
   props.name = f.name || f.uniqueDesignation || f.t || "";
