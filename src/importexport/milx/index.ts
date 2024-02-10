@@ -1,2 +1,2 @@
-export { convertMilXLayer, getMilXLayers, convertGeojsonLayer } from "./readMilX";
+export { convertMilXLayer, getMilXLayers } from "./readMilX";
 export { toMilx } from "./writeMilX";

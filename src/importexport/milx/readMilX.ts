@@ -4,20 +4,19 @@ import {
   getOneElement,
   nodeValue,
 } from "@/importexport/milx/domutils";
-import type { FeatureCollection, LineString, Point } from "geojson";
+import type { LineString, Point } from "geojson";
 import type {
-  GeoJsonSymbolProperties,
-  MilSymbolProperties,
   MilXFeature,
   MilXGeoJsonCollection,
   MilXLayer,
   MilXSymbolProperties,
-  OrbatMapperGeoJsonCollection,
 } from "@/importexport/milx/types";
 import { convertLetterSidc2NumberSidc } from "@orbat-mapper/convert-symbology";
 import { nanoid } from "@/utils";
-
-const isNumeric = /^\d+$/;
+import {
+  MilSymbolProperties,
+  OrbatMapperGeoJsonCollection,
+} from "@/importexport/jsonish/types";
 
 export function getMilXLayers(node: Document | Element): MilXLayer[] {
   const layers = getElements(node, "MilXLayer");
@@ -42,21 +41,6 @@ export function convertMilXLayer(layer: MilXLayer): OrbatMapperGeoJsonCollection
   return { ...fc, features };
 }
 
-export function convertGeojsonLayer(
-  layer: FeatureCollection,
-): OrbatMapperGeoJsonCollection {
-  const fc = layer;
-  const { features: nFeatures, ...rest } = fc;
-  const features = nFeatures
-    .filter((f) => f.geometry.type === "Point")
-    .map((f) => ({
-      ...f,
-      id: nanoid(),
-      properties: convertGeojsonProperties(f.properties || {}),
-    }));
-  return { ...fc, features } as OrbatMapperGeoJsonCollection;
-}
-
 function convertProperties(f: MilXSymbolProperties): MilSymbolProperties {
   const props: MilSymbolProperties = { sidc: convertLetterSidc2NumberSidc(f.ID).sidc };
   if (f.M) props.higherFormation = f.M;
@@ -71,15 +55,6 @@ function convertColor(milxColor: string): string {
   const g = milxColor.substring(5, 7);
   const r = milxColor.substring(7, 9);
   return "#" + r + g + b;
-}
-
-function convertGeojsonProperties(f: GeoJsonSymbolProperties): MilSymbolProperties {
-  const props: MilSymbolProperties = {
-    sidc: isNumeric.test(f.sidc!) ? f.sidc! : convertLetterSidc2NumberSidc(f.sidc!).sidc,
-  };
-  if (f.m) props.higherFormation = f.m;
-  props.name = f.name || f.uniqueDesignation || f.t || "";
-  return props;
 }
 
 function getLayerName(node: Element): string | null {

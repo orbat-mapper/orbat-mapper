@@ -13,13 +13,13 @@ import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { NUnit } from "@/types/internalModels";
+import type { Unit } from "@/types/scenarioModels";
+import type { SpatialIllusionsOrbat } from "@/types/externalModels";
 import {
   MilSymbolProperties,
   OrbatMapperGeoJsonCollection,
   OrbatMapperGeoJsonLayer,
-} from "@/importexport/milx/types";
-import type { Unit } from "@/types/scenarioModels";
-import type { SpatialIllusionsOrbat } from "@/types/externalModels";
+} from "@/importexport/jsonish/types";
 
 const symbolSettings = useSymbolSettingsStore();
 export interface UseScenarioExportOptions {

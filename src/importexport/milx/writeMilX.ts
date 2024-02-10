@@ -3,14 +3,14 @@ import { toXml } from "xast-util-to-xml";
 import { u } from "unist-builder";
 import { x } from "xastscript";
 import { convertNumberSidc2LetterSidc } from "@orbat-mapper/convert-symbology";
-import type {
+
+import { BR, BRTAB, tagIdValue, tagValue } from "@/importexport/milx/domutils";
+import {
   MilSymbolProperties,
   OrbatMapperGeoJsonCollection,
   OrbatMapperGeoJsonFeature,
   OrbatMapperGeoJsonLayer,
-} from "@/importexport/milx/types";
-
-import { BR, BRTAB, tagIdValue, tagValue } from "@/importexport/milx/domutils";
+} from "@/importexport/jsonish/types";
 
 export function toMilx(layers: OrbatMapperGeoJsonLayer[]): string {
   return toXml(

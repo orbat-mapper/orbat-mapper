@@ -2,9 +2,9 @@ import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
 import { toDom } from "@/importexport/milx/domutils";
-import type { OrbatMapperGeoJsonFeature } from "@/importexport/milx/types";
 import type { FeatureCollection } from "geojson";
-import { convertGeojsonLayer } from "@/importexport/milx";
+import { convertGeojsonLayer } from "@/importexport/jsonish/convert";
+import { OrbatMapperGeoJsonFeature } from "@/importexport/jsonish/types";
 
 export interface MilxImportedLayer {
   id: string;
