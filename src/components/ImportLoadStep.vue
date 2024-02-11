@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, shallowRef } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref, shallowRef } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { SelectItem } from "@/components/types";
@@ -102,7 +102,6 @@ import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
 import type { GuessedImportFormat, ImportFormat, ImportSettings } from "@/types/convert";
 import { useNotifications } from "@/composables/notifications";
 import NProgress from "nprogress";
-import { useRouter } from "vue-router";
 import { useDropZone } from "@vueuse/core";
 import TextAreaGroup from "@/components/TextAreaGroup.vue";
 import { useImportStore } from "@/stores/importExportStore";
@@ -112,8 +111,6 @@ import { useDragStore } from "@/stores/dragStore";
 import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
 import DocLink from "@/components/DocLink.vue";
 
-const router = useRouter();
-
 const emit = defineEmits(["cancel", "loaded"]);
 
 const formatItems: SelectItem<ImportFormat>[] = [
@@ -122,7 +119,7 @@ const formatItems: SelectItem<ImportFormat>[] = [
   { label: "Spatial Illusions ORBAT builder", value: "unitgenerator" },
   { label: "Order of Battle Generator", value: "orbatgenerator" },
   { label: "KML/KMZ", value: "kml" },
-  // { label: "MSDL", value: "msdl" },
+  { label: "XLSX", value: "xlsx" },
 ];
 
 const stringSource = ref("");
@@ -204,6 +201,13 @@ async function onLoad(e?: Event) {
     NProgress.done();
     emit("loaded", "orbatgenerator", data, fileInfo.value);
   }
+
+  if (format === "xlsx" && stringSource.value) {
+    send({ message: `Loaded data as ${format}` });
+
+    emit("loaded", "xlsx", stringSource.value, fileInfo.value);
+  }
+
   NProgress.done();
 }
 

@@ -16,7 +16,9 @@ export type ImportFormat =
   | "unitgenerator"
   | "orbatgenerator"
   | "image"
-  | "kml";
+  | "kml"
+  | "xlsx";
+
 export type GuessedImportFormat = "unknown" | ImportFormat;
 
 export type FormatDialect = "geojson-plain" | "geojson-unitgenerator";

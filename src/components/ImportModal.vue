@@ -44,6 +44,12 @@
       @cancel="onCancel"
       @loaded="onImport"
     />
+    <ImportSpreadsheetStep
+      v-else-if="importState === 'xlsx' && fileInfo"
+      :file-info="fileInfo"
+      @cancel="onCancel"
+      @loaded="onImport"
+    />
   </SimpleModal>
 </template>
 
@@ -53,8 +59,7 @@ import { useNotifications } from "@/composables/notifications";
 import { useRouter } from "vue-router";
 import { useVModel } from "@vueuse/core";
 import ImportLoadStep from "@/components/ImportLoadStep.vue";
-import { ref, shallowRef } from "vue";
-import ImportMilxStep from "@/components/ImportMilxStep.vue";
+import { defineAsyncComponent, ref, shallowRef } from "vue";
 import ImportGeojsonStep from "@/components/ImportGeojsonStep.vue";
 import ImportSpatialIllusionsStep from "@/components/ImportSpatialIllusionsStep.vue";
 import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
@@ -63,9 +68,16 @@ import { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportOrbatGeneratorStep from "@/components/ImportOrbatGeneratorStep.vue";
 import ImportImageStep from "@/components/ImportImageStep.vue";
 import { ImportedFileInfo } from "@/importexport/fileHandling";
-import ImportKMLStep from "@/components/ImportKMLStep.vue";
 
-const router = useRouter();
+const ImportMilxStep = defineAsyncComponent(
+  () => import("@/components/ImportMilxStep.vue"),
+);
+const ImportKMLStep = defineAsyncComponent(
+  () => import("@/components/ImportKMLStep.vue"),
+);
+const ImportSpreadsheetStep = defineAsyncComponent(
+  () => import("@/components/ImportSpreadsheetStep.vue"),
+);
 
 type ImportState =
   | "select"
@@ -74,7 +86,8 @@ type ImportState =
   | "unitgenerator"
   | "orbatgenerator"
   | "image"
-  | "kml";
+  | "kml"
+  | "xlsx";
 const importState = ref<ImportState>("select");
 const loadedData = shallowRef<any>([]);
 const fileInfo = shallowRef<ImportedFileInfo>();

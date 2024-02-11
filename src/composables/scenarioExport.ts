@@ -229,8 +229,8 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   }
 
   async function downloadAsXlsx(opts: ExportSettings) {
-    const { writeFileXLSX, utils } = await import("@/extlib/xlsx-lazy");
-    const workbook = utils.book_new();
+    const { writeFileXLSX, xlsxUtils } = await import("@/extlib/xlsx-lazy");
+    const workbook = xlsxUtils.book_new();
     let unitData: any[] = [];
     if (opts.oneSheetPerSide) {
       Object.keys(sideMap).forEach((sideId) => {
@@ -239,8 +239,8 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
           unitData.push({ ...unit, sideId: side.id, sideName: side?.name });
         });
-        const ws = utils.json_to_sheet(columnMapper(unitData, opts.columns));
-        utils.book_append_sheet(workbook, ws, sideName);
+        const ws = xlsxUtils.json_to_sheet(columnMapper(unitData, opts.columns));
+        xlsxUtils.book_append_sheet(workbook, ws, sideName);
       });
     } else {
       Object.keys(sideMap).forEach((sideId) =>
@@ -248,8 +248,8 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
           unitData.push({ ...unit, sideId: side.id, sideName: side?.name });
         }),
       );
-      const ws = utils.json_to_sheet(columnMapper(unitData, opts.columns));
-      utils.book_append_sheet(workbook, ws, "Units");
+      const ws = xlsxUtils.json_to_sheet(columnMapper(unitData, opts.columns));
+      xlsxUtils.book_append_sheet(workbook, ws, "Units");
     }
 
     writeFileXLSX(workbook, "scenario.xlsx");

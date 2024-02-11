@@ -13,6 +13,7 @@ export interface ImportedFileInfo {
   isZipped: boolean;
   objectUrl: string;
   fileName: string;
+  dataAsArrayBuffer?: ArrayBuffer;
 }
 
 export const imageCache = new Map<string, string>();
@@ -72,12 +73,14 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
       });
       return guess;
     }
-
-    // TODO: odin, kmz
   } else if (hasImageFileType(file)) {
     guess.format = "image";
     guess.dataAsString = file.name;
     guess.objectUrl = URL.createObjectURL(file);
+    return guess;
+  } else if (isSpreadsheetFileType(file)) {
+    guess.format = "xlsx";
+    guess.dataAsArrayBuffer = await file.arrayBuffer();
     return guess;
   }
 
@@ -139,6 +142,12 @@ function isKMFileType(file: File): boolean {
 
 function hasImageFileType(file: File): boolean {
   return file.type.startsWith("image/");
+}
+
+function isSpreadsheetFileType(file: File): boolean {
+  const xlsxTypes = ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
+  if (xlsxTypes.includes(file.type)) return true;
+  return file.name.endsWith(".xlsx");
 }
 
 export function arrayBufferToString(arrayBuffer: ArrayBuffer, decoderType = "utf-8") {
