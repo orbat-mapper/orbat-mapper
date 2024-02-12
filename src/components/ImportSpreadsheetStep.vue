@@ -9,10 +9,18 @@
               >https://odin.tradoc.army.mil/DATEWORLD</a
             >
           </p>
-          <p>Work in progress</p>
+          <p>
+            Warning: A large ORBAT will create a lot of units. Use with caution. Only the
+            DRAGON Excel export format is currently supported.
+          </p>
         </div>
 
-        <section class="px-0.5 py-2">
+        <section class="space-y-1 px-1 py-2">
+          <!--          <InputCheckbox-->
+          <!--            label="Expand templates"-->
+          <!--            description="Warning: This will create a lot of units! Use with caution."-->
+          <!--            v-model="expandTemplates"-->
+          <!--          />-->
           <SymbolCodeSelect
             label="Select parent unit"
             :items="rootUnitItems"
@@ -51,6 +59,7 @@ import OrbatGrid from "@/modules/grid/OrbatGrid.vue";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { SymbolItem } from "@/types/constants";
 import { addUnitHierarchy } from "@/importexport/convertUtils";
+import InputCheckbox from "@/components/InputCheckbox.vue";
 
 interface Props {
   fileInfo: ImportedFileInfo;
@@ -62,6 +71,8 @@ const scenario = injectStrict(activeScenarioKey);
 const {
   store: { state },
 } = scenario;
+
+const expandTemplates = ref(true);
 
 const rootUnitItems = computed((): SymbolItem[] => {
   return Object.values(state.sideGroupMap)
@@ -93,11 +104,13 @@ const units = ref<TestUnit[]>([]);
 const rootUnitHierarchies = ref<Unit[]>([]);
 
 if (dialect === "ODIN_DRAGON") {
-  const { unitRows, rootUnits } = parseOdinDragon(workbook);
+  const { unitRows, rootUnits } = parseOdinDragon(workbook, {
+    expandTemplates: expandTemplates.value,
+  });
   units.value = unitRows;
-
   rootUnitHierarchies.value = rootUnits;
 }
+
 async function onLoad(e: Event) {
   rootUnitHierarchies.value.forEach((unit) => {
     addUnitHierarchy(unit, parentUnitId.value, scenario);
