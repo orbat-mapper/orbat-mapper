@@ -41,10 +41,12 @@ interface OdinUnitTemplateRow {
 
 type ParseOdinDragonOptions = {
   expandTemplates?: boolean;
+  rowsOnly?: boolean;
 };
 
 export function parseOdinDragon(wb: WorkBook, options: ParseOdinDragonOptions = {}) {
   const expandTemplates = options.expandTemplates ?? true;
+  const rowsOnly = options.rowsOnly ?? false;
   const sheetNames = wb.SheetNames;
   const sheetSet = new Set(sheetNames);
   if (sheetNames[0] !== "UNIT INFO") {
@@ -53,6 +55,9 @@ export function parseOdinDragon(wb: WorkBook, options: ParseOdinDragonOptions = 
   const templateCache = new Map<string, Unit>();
   const unitInfoSheet = wb.Sheets["UNIT INFO"];
   const unitRows = xlsxUtils.sheet_to_json(unitInfoSheet) as OdinUnitInfoRow[];
+  if (rowsOnly) {
+    return { unitRows: unitRows.map(convertUnitInfoRowToUnit), rootUnits: [] };
+  }
   const rowMap = new Map<number, OdinUnitInfoRow>(unitRows.map((row) => [row.UID, row]));
 
   const rootUnits: Unit[] = unitRows

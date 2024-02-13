@@ -15,19 +15,19 @@
           </p>
         </div>
 
-        <section class="space-y-1 px-1 py-2">
-          <!--          <InputCheckbox-->
-          <!--            label="Expand templates"-->
-          <!--            description="Warning: This will create a lot of units! Use with caution."-->
-          <!--            v-model="expandTemplates"-->
-          <!--          />-->
+        <section class="space-y-2 px-1 py-2">
+          <InputCheckbox
+            label="Expand unit templates"
+            description="This will create a lot of units!"
+            v-model="expandTemplates"
+          />
           <SymbolCodeSelect
             label="Select parent unit"
             :items="rootUnitItems"
             v-model="parentUnitId"
           />
         </section>
-        <section class="h-[50vh]">
+        <section class="h-[45vh]">
           <OrbatGrid :data="units" :columns="columns" />
         </section>
       </div>
@@ -101,18 +101,26 @@ const { send } = useNotifications();
 const workbook = readSpreadsheet(props.fileInfo.dataAsArrayBuffer);
 const dialect = detectSpreadsheetDialect(workbook);
 const units = ref<TestUnit[]>([]);
-const rootUnitHierarchies = ref<Unit[]>([]);
 
 if (dialect === "ODIN_DRAGON") {
   const { unitRows, rootUnits } = parseOdinDragon(workbook, {
-    expandTemplates: expandTemplates.value,
+    rowsOnly: true,
   });
   units.value = unitRows;
-  rootUnitHierarchies.value = rootUnits;
 }
 
 async function onLoad(e: Event) {
-  rootUnitHierarchies.value.forEach((unit) => {
+  if (!(dialect === "ODIN_DRAGON")) {
+    send({
+      message: "Invalid file format",
+      type: "error",
+    });
+    return;
+  }
+  const { rootUnits } = parseOdinDragon(workbook, {
+    expandTemplates: expandTemplates.value,
+  });
+  rootUnits.forEach((unit) => {
     addUnitHierarchy(unit, parentUnitId.value, scenario);
   });
   emit("loaded");
