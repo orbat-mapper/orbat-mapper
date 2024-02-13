@@ -7,7 +7,7 @@
 
 import { type WorkBook } from "xlsx";
 import { xlsxUtils } from "@/extlib/xlsx-lazy";
-import { Unit } from "@/types/scenarioModels";
+import { Unit, UnitEquipment } from "@/types/scenarioModels";
 import { convertLetterSidc2NumberSidc } from "@orbat-mapper/convert-symbology";
 
 interface OdinUnitInfoRow {
@@ -42,11 +42,16 @@ interface OdinUnitTemplateRow {
 type ParseOdinDragonOptions = {
   expandTemplates?: boolean;
   rowsOnly?: boolean;
+  includeEquipment?: boolean;
+  includePersonnel?: boolean;
 };
 
 export function parseOdinDragon(wb: WorkBook, options: ParseOdinDragonOptions = {}) {
   const expandTemplates = options.expandTemplates ?? true;
   const rowsOnly = options.rowsOnly ?? false;
+  const includeEquipment = options.includeEquipment ?? true;
+  const includePersonnel = options.includePersonnel ?? true;
+
   const sheetNames = wb.SheetNames;
   const sheetSet = new Set(sheetNames);
   if (sheetNames[0] !== "UNIT INFO") {
@@ -85,7 +90,11 @@ export function parseOdinDragon(wb: WorkBook, options: ParseOdinDragonOptions = 
         const templateName = row["TEMPLATE NAME"];
         if (expandTemplates && sheetSet.has(templateName)) {
           const template =
-            templateCache.get(templateName) || parseOdinDragonTemplate(wb, templateName);
+            templateCache.get(templateName) ||
+            parseOdinDragonTemplate(wb, templateName, {
+              includeEquipment,
+              includePersonnel,
+            });
 
           if (template) {
             templateCache.set(templateName, template);
@@ -100,7 +109,13 @@ export function parseOdinDragon(wb: WorkBook, options: ParseOdinDragonOptions = 
   }
 }
 
-export function parseOdinDragonTemplate(wb: WorkBook, templateName: string): Unit | null {
+export function parseOdinDragonTemplate(
+  wb: WorkBook,
+  templateName: string,
+  options: ParseOdinDragonOptions = {},
+): Unit | null {
+  const includeEquipment = options.includeEquipment ?? true;
+  const includePersonnel = options.includePersonnel ?? true;
   const unitTemplateSheet = wb.Sheets[templateName];
   if (!unitTemplateSheet) {
     return null;
@@ -113,7 +128,9 @@ export function parseOdinDragonTemplate(wb: WorkBook, templateName: string): Uni
 
   const rootUnit: Unit = unitRows
     .filter((unit) => unit.TYPE === "U" && !rowMap.has(unit["PARENT UID"]))
-    .map(convertUnitTemplateRowToUnit)[0];
+    .map((row) =>
+      convertUnitTemplateRowToUnit(row, unitRows, includeEquipment, includePersonnel),
+    )[0];
 
   const rootUnitHierarchies = helper([rootUnit]);
 
@@ -123,7 +140,14 @@ export function parseOdinDragonTemplate(wb: WorkBook, templateName: string): Uni
     units.forEach((unit) => {
       unit.subUnits = unitRows
         .filter((row) => row.TYPE === "U" && row["PARENT UID"] === unit.id)
-        .map((row) => convertUnitTemplateRowToUnit(rowMap.get(row.UID)!));
+        .map((row) =>
+          convertUnitTemplateRowToUnit(
+            rowMap.get(row.UID)!,
+            unitRows,
+            includeEquipment,
+            includePersonnel,
+          ),
+        );
 
       if (unit.subUnits.length) helper(unit.subUnits);
     });
@@ -138,29 +162,48 @@ export interface TestUnit extends OdinUnitInfoRow, Unit {
 }
 
 function convertUnitInfoRowToUnit(row: OdinUnitInfoRow): TestUnit {
-  const unit = {
+  return {
     ...row,
     id: row.UID.toString(),
     name: row.NAME,
     sidc: convertLetterSidc2NumberSidc(row["2525C"]).sidc,
   };
-  return unit;
 }
 
 function convertUnitInfoRowToUnit2(row: OdinUnitInfoRow): Unit {
-  const unit = {
+  return {
     id: row.UID.toString(),
     name: row.NAME,
     sidc: convertLetterSidc2NumberSidc(row["2525C"]).sidc,
   };
-  return unit;
 }
 
-function convertUnitTemplateRowToUnit(row: OdinUnitTemplateRow): Unit {
-  const unit = {
+function convertUnitTemplateRowToUnit(
+  row: OdinUnitTemplateRow,
+  rows: OdinUnitTemplateRow[],
+  includeEquipment: boolean,
+  includePersonnel: boolean,
+): Unit {
+  let equipment: UnitEquipment[] | undefined = undefined;
+  if (includeEquipment) {
+    const equipmentCounts = rows
+      .filter((r) => r.TYPE === "E" && r["PARENT UID"] === row.UID)
+      .reduce(
+        (acc, r) => {
+          acc[r.NAME] = (acc[r.NAME] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+    equipment = Object.entries(equipmentCounts).map(([name, count]) => ({
+      name,
+      count,
+    }));
+  }
+  return {
     id: row.UID,
     name: row.NAME,
     sidc: convertLetterSidc2NumberSidc(row["2525C"]).sidc,
+    equipment,
   };
-  return unit;
 }

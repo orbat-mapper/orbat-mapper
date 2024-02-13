@@ -16,11 +16,23 @@
         </div>
 
         <section class="space-y-2 px-1 py-2">
-          <InputCheckbox
-            label="Expand unit templates"
-            description="This will create a lot of units!"
-            v-model="expandTemplates"
-          />
+          <div class="grid grid-cols-2 gap-4">
+            <InputCheckbox
+              label="Expand unit templates"
+              description="This will create a lot of units!"
+              v-model="expandTemplates"
+            />
+            <InputCheckbox
+              label="Include equipment"
+              v-model="includeEquipment"
+              :disabled="!expandTemplates"
+            />
+            <!--            <InputCheckbox-->
+            <!--              label="Include personnel"-->
+            <!--              v-model="includePersonnel"-->
+            <!--              :disabled="!expandTemplates"-->
+            <!--            />-->
+          </div>
           <SymbolCodeSelect
             label="Select parent unit"
             :items="rootUnitItems"
@@ -73,6 +85,8 @@ const {
 } = scenario;
 
 const expandTemplates = ref(true);
+const includeEquipment = ref(true);
+const includePersonnel = ref(true);
 
 const rootUnitItems = computed((): SymbolItem[] => {
   return Object.values(state.sideGroupMap)

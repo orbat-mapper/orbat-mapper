@@ -763,6 +763,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     update((s) => {
       s.equipmentMap[newId] = newEquipment;
     });
+    return newEquipment;
   }
 
   function deleteEquipment(id: string): boolean {
