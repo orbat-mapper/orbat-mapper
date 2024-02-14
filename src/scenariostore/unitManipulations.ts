@@ -821,6 +821,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
   function addPersonnel(data: Partial<NPersonnelData>) {
     const newPersonnel = { id: nanoid(), name: "Personnel", ...klona(data) };
+
     if (newPersonnel.id === undefined) {
       newPersonnel.id = nanoid();
     }
@@ -828,6 +829,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     update((s) => {
       s.personnelMap[newId] = newPersonnel;
     });
+    return newId;
   }
 
   function updateUnitEquipment(

@@ -27,11 +27,11 @@
               v-model="includeEquipment"
               :disabled="!expandTemplates"
             />
-            <!--            <InputCheckbox-->
-            <!--              label="Include personnel"-->
-            <!--              v-model="includePersonnel"-->
-            <!--              :disabled="!expandTemplates"-->
-            <!--            />-->
+            <InputCheckbox
+              label="Include personnel"
+              v-model="includePersonnel"
+              :disabled="!expandTemplates"
+            />
           </div>
           <SymbolCodeSelect
             label="Select parent unit"
@@ -133,6 +133,8 @@ async function onLoad(e: Event) {
   }
   const { rootUnits } = parseOdinDragon(workbook, {
     expandTemplates: expandTemplates.value,
+    includeEquipment: includeEquipment.value,
+    includePersonnel: includePersonnel.value,
   });
   rootUnits.forEach((unit) => {
     addUnitHierarchy(unit, parentUnitId.value, scenario);

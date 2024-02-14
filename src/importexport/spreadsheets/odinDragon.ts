@@ -7,7 +7,7 @@
 
 import { type WorkBook } from "xlsx";
 import { xlsxUtils } from "@/extlib/xlsx-lazy";
-import { Unit, UnitEquipment } from "@/types/scenarioModels";
+import { Unit, UnitEquipment, UnitPersonnel } from "@/types/scenarioModels";
 import { convertLetterSidc2NumberSidc } from "@orbat-mapper/convert-symbology";
 
 interface OdinUnitInfoRow {
@@ -101,8 +101,6 @@ export function parseOdinDragon(wb: WorkBook, options: ParseOdinDragonOptions = 
             unit.subUnits = template.subUnits;
           }
         }
-
-        // console.log("Template", row?.NAME, "has no subunits", row?.["TEMPLATE NAME"]);
       }
     });
     return units;
@@ -185,9 +183,31 @@ function convertUnitTemplateRowToUnit(
   includePersonnel: boolean,
 ): Unit {
   let equipment: UnitEquipment[] | undefined = undefined;
-  if (includeEquipment) {
-    const equipmentCounts = rows
-      .filter((r) => r.TYPE === "E" && r["PARENT UID"] === row.UID)
+  let personnel: UnitPersonnel[] | undefined = undefined;
+  let parentUIds = new Set();
+  if (includeEquipment || includePersonnel) {
+    const equipmentCounts = rows.filter(
+      (r) => r["TYPE GROUP"] === "EQUIPMENT" && r["PARENT UID"] === row.UID,
+    );
+    parentUIds = new Set(equipmentCounts.map((r) => r["UID"]));
+    parentUIds.add(row.UID);
+    if (includeEquipment) {
+      const tmp2 = equipmentCounts.reduce(
+        (acc, r) => {
+          acc[r.NAME] = (acc[r.NAME] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+      equipment = Object.entries(tmp2).map(([name, count]) => ({
+        name,
+        count,
+      }));
+    }
+  }
+  if (includePersonnel) {
+    const personnelCounts = rows
+      .filter((r) => r["TYPE GROUP"] === "PERSONNEL" && parentUIds.has(r["PARENT UID"]))
       .reduce(
         (acc, r) => {
           acc[r.NAME] = (acc[r.NAME] || 0) + 1;
@@ -195,15 +215,13 @@ function convertUnitTemplateRowToUnit(
         },
         {} as Record<string, number>,
       );
-    equipment = Object.entries(equipmentCounts).map(([name, count]) => ({
-      name,
-      count,
-    }));
+    personnel = Object.entries(personnelCounts).map(([name, count]) => ({ name, count }));
   }
   return {
     id: row.UID,
     name: row.NAME,
     sidc: convertLetterSidc2NumberSidc(row["2525C"]).sidc,
     equipment,
+    personnel,
   };
 }

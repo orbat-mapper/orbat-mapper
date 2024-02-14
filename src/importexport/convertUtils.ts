@@ -1,7 +1,12 @@
 import { Unit, UnitEquipment } from "@/types/scenarioModels";
 import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
-import { EUnitEquipment, NUnitAdd, NUnitEquipment } from "@/types/internalModels";
+import {
+  EUnitEquipment,
+  NUnitAdd,
+  NUnitEquipment,
+  NUnitPersonnel,
+} from "@/types/internalModels";
 import { nanoid } from "@/utils";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
@@ -47,10 +52,16 @@ export function addUnitHierarchy(
   store.groupUpdate(() => {
     function helper(unit: Unit, parentId: EntityId, depth: number = 0) {
       const equipment: NUnitEquipment[] = [];
+      const personnel: NUnitPersonnel[] = [];
       unit.equipment?.forEach(({ name, count }) => {
         const { id } =
           store.state.equipmentMap[name] || unitActions.addEquipment({ id: name, name });
         equipment.push({ id, count });
+      });
+      unit.personnel?.forEach(({ name, count }) => {
+        const { id } =
+          store.state.personnelMap[name] || unitActions.addPersonnel({ id: name, name });
+        personnel.push({ id: name, count });
       });
 
       const newUnit: NUnitAdd = {
@@ -59,7 +70,7 @@ export function addUnitHierarchy(
         sidc: setCharAt(unit.sidc, SID_INDEX, side.standardIdentity),
         subUnits: [],
         equipment,
-        personnel: [],
+        personnel,
         state: [],
         rangeRings: [],
       };
