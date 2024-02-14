@@ -30,6 +30,9 @@ const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 
 const aggregatedEquipment = shallowRef<EUnitEquipment[]>([]);
 const aggregatedPersonnel = shallowRef<EUnitPersonnel[]>([]);
+const aggregatedPersonnelCount = computed(() =>
+  aggregatedPersonnel.value.reduce((acc, p) => acc + p.count, 0),
+);
 const equipmentValues = computed(() => {
   return sortBy(Object.values(equipmentMap), "name");
 });
@@ -123,7 +126,10 @@ function deletePersonnel(personnelId: string) {
       v-model:show-add="showAddEquipment"
     />
 
-    <TableHeader v-if="aggregatedPersonnel.length || showAddPersonnel" title="Personnel">
+    <TableHeader
+      v-if="aggregatedPersonnel.length || showAddPersonnel"
+      :title="`Personnel (${aggregatedPersonnelCount})`"
+    >
       <BaseButton small :disabled="isMultiMode" @click="toggleAddPersonnel()">{{
         showAddPersonnel ? "Hide form" : "+ Add"
       }}</BaseButton>
