@@ -33,6 +33,10 @@ const aggregatedPersonnel = shallowRef<EUnitPersonnel[]>([]);
 const aggregatedPersonnelCount = computed(() =>
   aggregatedPersonnel.value.reduce((acc, p) => acc + p.count, 0),
 );
+
+const aggregatedEquipmentCount = computed(() =>
+  aggregatedEquipment.value.reduce((acc, e) => acc + e.count, 0),
+);
 const equipmentValues = computed(() => {
   return sortBy(Object.values(equipmentMap), "name");
 });
@@ -107,7 +111,10 @@ function deletePersonnel(personnelId: string) {
 
 <template>
   <div class="prose p-1">
-    <TableHeader v-if="aggregatedEquipment.length || showAddEquipment" title="Equipment">
+    <TableHeader
+      v-if="aggregatedEquipment.length || showAddEquipment"
+      :title="`Equipment (${aggregatedEquipmentCount})`"
+    >
       <BaseButton small :disabled="isMultiMode" @click="toggleAddEquipment()"
         >{{ showAddEquipment ? "Hide form" : "+ Add" }}
       </BaseButton>

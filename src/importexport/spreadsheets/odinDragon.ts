@@ -184,13 +184,20 @@ function convertUnitTemplateRowToUnit(
 ): Unit {
   let equipment: UnitEquipment[] | undefined = undefined;
   let personnel: UnitPersonnel[] | undefined = undefined;
-  let parentUIds = new Set();
+  let parentUIDs = new Set();
   if (includeEquipment || includePersonnel) {
-    const equipmentCounts = rows.filter(
+    const rootEquipment = rows.filter(
       (r) => r["TYPE GROUP"] === "EQUIPMENT" && r["PARENT UID"] === row.UID,
     );
-    parentUIds = new Set(equipmentCounts.map((r) => r["UID"]));
-    parentUIds.add(row.UID);
+    parentUIDs = new Set(rootEquipment.map((r) => r["UID"]));
+    parentUIDs.add(row.UID);
+    const equipmentCounts = rows.filter(
+      (r) => r["TYPE GROUP"] === "EQUIPMENT" && parentUIDs.has(r["PARENT UID"]),
+    );
+    // equipmentCounts.push(...towedEquipmentCounts);
+    parentUIDs = new Set(equipmentCounts.map((r) => r["UID"]));
+    parentUIDs.add(row.UID);
+
     if (includeEquipment) {
       const tmp2 = equipmentCounts.reduce(
         (acc, r) => {
@@ -207,7 +214,7 @@ function convertUnitTemplateRowToUnit(
   }
   if (includePersonnel) {
     const personnelCounts = rows
-      .filter((r) => r["TYPE GROUP"] === "PERSONNEL" && parentUIds.has(r["PARENT UID"]))
+      .filter((r) => r["TYPE GROUP"] === "PERSONNEL" && parentUIDs.has(r["PARENT UID"]))
       .reduce(
         (acc, r) => {
           acc[r.NAME] = (acc[r.NAME] || 0) + 1;
