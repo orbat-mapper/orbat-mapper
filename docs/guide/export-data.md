@@ -14,7 +14,7 @@ To start the export process
 select _Export scenario_ from the _File_
 menu.
 
-![Import menu](images/export.png)
+![Export menu](images/export.png)
 
 ## GeoJSON
 

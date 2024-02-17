@@ -6,13 +6,14 @@ ORBAT Mapper can import units and features from the following sources and format
 - [MilX](#milx)
 - [Spatial Illusions ORBAT Builder](#spatial-illusions-orbat-builder)
 - [Order of Battle Generator](#order-of-battle-generator)
+- [Decisive Action Training Environment (DATE) force structures](#decisive-action-training-environment-date-force-structures)
 
 Additionally, you can import KML/KMZ files as temporary map layers.
 See [Working with map background layers](map-layers.md)
 
 ## Start the import process
 
-To start the import process select _Import_ from the _File_ menu.
+To start the import process select _Import data_ from the _File_ menu.
 
 ![Import menu](images/import-menu.png)
 
@@ -46,3 +47,34 @@ symbols and ORBATs. The tool supports exporting of ORBATs in a simple JSON forma
 ## Order of Battle Generator
 
 Import from [Order of Battle Generator](https://www.orbatgenerator.com/).
+
+## Decisive Action Training Environment (DATE) force structures
+
+The [Decisive Action Training Environment World](https://odin.tradoc.army.mil/DATEWORLD) is a training environment
+provided by the U.S. Army. To import a DATE World force structure, first download the force structure from the DATE
+World website as shown in the screenshot below. Each unit in the force structure viewer has a small export button in
+the upper right corner. Click on the export button and select the _DRAGON (Agnostic)_ format. This will download a
+`.xlsx` file to your computer containing every unit, equipment and personnel in the force structure.
+
+![DATE World](images/date-world-export.png)
+
+::: warning
+The DATE World force structures are massive and may contain thousands of units. Importing a huge force structure is
+slow and may crash your browser. It is recommended to only export smaller subsets of the force structures.
+:::
+
+After you have downloaded the `.xlsx` file, you can import it into ORBAT Mapper by opening the _Import data_ dialog or
+by dragging and dropping the `.xlsx` file onto the map. ORBAT Mapper will automatically detect it as a DATE World force
+structure.
+
+**Import options**
+
+- **Parent unit**. Shows a list of existing root units in the scenario. Remember that you can always move units around
+  after the import is complete.
+- **Expand templates**. DATE World force structures use templates to define the structure of units. If this option is
+  enabled, ORBAT Mapper will expand the templates and import all units in the force structure. If it is disabled, only
+  the top level units will be imported.
+- **Include equipment**. If this option is enabled, ORBAT Mapper will import equipment from the unit templates and
+  include it in the unit's TO&E.
+- **Include personnel**. If this option is enabled, ORBAT Mapper will import personnel from the unit templates and
+  include it in the unit's TO&E.
