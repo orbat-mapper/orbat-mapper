@@ -2,9 +2,7 @@
 
 This tutorial will guide you through the process of recreating the first major land battle of the
 1982 [Falklands War](https://en.wikipedia.org/wiki/Falklands_War):
-_The [Battle of Goose Green](https://en.wikipedia.org/wiki/Battle_of_Goose_Green)_.
-
-The 1982 Battle of Goose Green was a pivotal conflict in the Falklands War between British and Argentine forces. Lasting
+_The [Battle of Goose Green](https://en.wikipedia.org/wiki/Battle_of_Goose_Green)_. Lasting
 from May 28-29, it saw intense combat as British troops from the 2nd Battalion, Parachute Regiment, clashed with
 well-defended Argentine positions.
 
