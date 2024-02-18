@@ -1,3 +1,26 @@
+<script setup lang="ts">
+import {
+  RadioGroup,
+  RadioGroupDescription,
+  RadioGroupLabel,
+  RadioGroupOption,
+} from "@headlessui/vue";
+import { LayerInfo } from "./LayersPanel.vue";
+import OpacityInput from "./OpacityInput.vue";
+import { computed } from "vue";
+
+interface Props {
+  settings: LayerInfo<any>[];
+  defaultLayerName?: string;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits(["update:layerOpacity"]);
+
+const selected = defineModel<LayerInfo<any>>();
+const nsettings = computed(() => [...props.settings]);
+</script>
+
 <template>
   <RadioGroup v-model="selected">
     <RadioGroupLabel class="sr-only">Select base map layer</RadioGroupLabel>
@@ -36,7 +59,14 @@
                 'flex items-center justify-between text-sm font-medium',
               ]"
             >
-              <span class="flex-auto truncate">{{ setting.title }}</span>
+              <div class="">
+                <span class="flex-auto truncate">{{ setting.title }}</span>
+                <span
+                  v-if="defaultLayerName && setting.id === defaultLayerName"
+                  class="ml-1 inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600"
+                  >Default</span
+                >
+              </div>
               <span v-if="setting.title === 'None'" />
               <OpacityInput
                 v-else
@@ -57,27 +87,3 @@
     </div>
   </RadioGroup>
 </template>
-
-<script setup lang="ts">
-import {
-  RadioGroup,
-  RadioGroupDescription,
-  RadioGroupLabel,
-  RadioGroupOption,
-} from "@headlessui/vue";
-import { LayerInfo } from "./LayersPanel.vue";
-import OpacityInput from "./OpacityInput.vue";
-import { useVModel } from "@vueuse/core";
-import { computed } from "vue";
-
-interface Props {
-  settings: LayerInfo<any>[];
-  modelValue?: LayerInfo<any>;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits(["update:modelValue", "update:layerOpacity"]);
-
-const selected = useVModel(props, "modelValue", emit);
-const nsettings = computed(() => [...props.settings]);
-</script>
