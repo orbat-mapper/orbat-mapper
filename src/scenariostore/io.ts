@@ -7,6 +7,7 @@ import {
   ScenarioInfo,
   Side,
   SideGroup,
+  SymbologyStandard,
   Unit,
   UnitStatus,
 } from "@/types/scenarioModels";
@@ -38,11 +39,13 @@ import { useIndexedDb } from "@/scenariostore/localdb";
 export interface CreateEmptyScenarioOptions {
   id?: string;
   addGroups?: boolean;
+  symbologyStandard?: SymbologyStandard;
 }
 
 export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): Scenario {
   const addGroups = options.addGroups ?? false;
   const symbolSettings = useSymbolSettingsStore();
+  const symbologyStandard = options.symbologyStandard ?? symbolSettings.symbologyStandard;
   let timeZone;
   try {
     timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -63,7 +66,7 @@ export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): S
     description: "Empty scenario description",
     startTime: new Date().setHours(12, 0, 0, 0),
     timeZone,
-    symbologyStandard: symbolSettings.symbologyStandard,
+    symbologyStandard,
     sides: [],
     events: [],
     layers: [{ id: nanoid(), name: "Features", features: [] }],
