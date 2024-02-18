@@ -185,14 +185,14 @@ const { scenario } = useScenario();
 
 const standardSettings = [
   {
-    value: "2525",
-    name: "MIL-STD-2525D",
-    description: "US version",
-  },
-  {
     value: "app6",
     name: "APP-6",
     description: "NATO version",
+  },
+  {
+    value: "2525",
+    name: "MIL-STD-2525D",
+    description: "US version",
   },
 ];
 
@@ -214,7 +214,9 @@ interface NewScenarioForm extends ScenarioInfo {
 
 const noInitialOrbat = ref(false);
 
-const newScenario = ref(createEmptyScenario({ addGroups: true }));
+const newScenario = ref(
+  createEmptyScenario({ addGroups: true, symbologyStandard: "app6" }),
+);
 const timeZone = ref(newScenario.value.timeZone || "UTC");
 const { year, month, day, hour, minute, resDateTime } = useYMDElements({
   timestamp: newScenario.value.startTime!,
