@@ -151,6 +151,7 @@
       @cancel="cancelSidcModal"
       :dialog-title="sidcModalTitle"
       :hide-modifiers="hideModifiers"
+      :hide-symbol-color="hideSymbolColor"
       :inherited-symbol-options="inheritedSymbolOptions"
       :symbol-options="symbolOptions"
     />
@@ -338,6 +339,7 @@ const {
   initialSidcModalValue,
   sidcModalTitle,
   hideModifiers,
+  hideSymbolColor,
   symbolOptions,
   inheritedSymbolOptions,
 } = useSidcModal();

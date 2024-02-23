@@ -48,6 +48,7 @@ export function useDateModal() {
 export interface ModalSidcOptions {
   title: string;
   hideModifiers: boolean;
+  hideSymbolColor: boolean;
   symbolOptions: UnitSymbolOptions;
   inheritedSymbolOptions: UnitSymbolOptions;
 }
@@ -62,6 +63,7 @@ export function useSidcModal() {
   const initialSidcModalValue = ref("10031000001211000000");
   const sidcModalTitle = ref("Select symbol");
   const hideModifiers = ref(false);
+  const hideSymbolColor = ref(false);
   const symbolOptions = ref<UnitSymbolOptions>({});
   const inheritedSymbolOptions = ref<UnitSymbolOptions>({});
 
@@ -73,6 +75,7 @@ export function useSidcModal() {
     initialSidcModalValue.value = initialValue;
     sidcModalTitle.value = options.title || "Symbol picker";
     hideModifiers.value = options.hideModifiers || false;
+    hideSymbolColor.value = options.hideSymbolColor || false;
     inheritedSymbolOptions.value = options.inheritedSymbolOptions || {};
     symbolOptions.value = options.symbolOptions || {};
     const { data, isCanceled } = await reveal();
@@ -96,6 +99,7 @@ export function useSidcModal() {
     initialSidcModalValue,
     sidcModalTitle,
     hideModifiers,
+    hideSymbolColor,
     symbolOptions,
     inheritedSymbolOptions,
   };

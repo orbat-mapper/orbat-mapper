@@ -18,6 +18,8 @@ import { injectStrict } from "@/utils";
 import { sidcModalKey } from "@/components/injects";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import PanelButton from "@/components/PanelButton.vue";
+import DotsMenu from "@/components/DotsMenu.vue";
+import { MenuItemData } from "@/components/types";
 
 interface Props {
   symbolOptions: UnitSymbolOptions;
@@ -37,10 +39,15 @@ const symbolTabs = ref([
   { title: "Air", sidc: "30030100001101000000", id: "air" },
 ]);
 
-async function handleChangeSymbol(close: (ref?: Ref | HTMLElement) => void) {
+const panelItems: MenuItemData[] = [
+  { label: "Add symbol to panel", action: () => handleChangeSymbol() },
+];
+
+async function handleChangeSymbol(close?: (ref?: Ref | HTMLElement) => void) {
   const newSidcValue = await getModalSidc(customSidc.value, {
     title: "Select symbol",
     hideModifiers: true,
+    hideSymbolColor: true,
     symbolOptions: props.symbolOptions,
   });
   if (newSidcValue !== undefined) {
@@ -49,6 +56,7 @@ async function handleChangeSymbol(close: (ref?: Ref | HTMLElement) => void) {
   }
 }
 </script>
+
 <template>
   <Popover as="template" v-slot="{ open, close }">
     <Float placement="top" :offset="12" flip shift strategy="fixed">
@@ -61,42 +69,45 @@ async function handleChangeSymbol(close: (ref?: Ref | HTMLElement) => void) {
       </PopoverButton>
       <PopoverPanel focus v-slot="{ close }">
         <FloatingPanel class="overflow-hidden p-2">
-          <RadioGroup
-            v-model="symbolPage"
-            class="isolate -mx-2 -mt-2 flex divide-x divide-gray-200 shadow focus:outline-none"
-          >
-            <RadioGroupOption
-              as="template"
-              v-for="{ id, sidc, title } in symbolTabs"
-              :key="id"
-              v-slot="{ checked, active }"
-              :value="id"
+          <header class="-mx-2 -mt-2 flex items-center justify-between border border-b">
+            <RadioGroup
+              v-model="symbolPage"
+              class="isolate flex divide-x divide-gray-200 shadow focus:outline-none"
             >
-              <div
-                :class="[
-                  checked ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700',
-                  'group relative min-w-0  justify-self-center  overflow-hidden bg-white px-4 py-2 hover:bg-gray-50  focus:z-10 focus:outline-none',
-                ]"
+              <RadioGroupOption
+                as="template"
+                v-for="{ id, sidc, title } in symbolTabs"
+                :key="id"
+                v-slot="{ checked, active }"
+                :value="id"
               >
-                <MilitarySymbol
-                  :sidc="sidc"
-                  :title="title"
-                  :size="15"
-                  :options="{
-                    monoColor: checked ? 'black' : 'black',
-                    strokeWidth: 8,
-                  }"
-                />
-                <span
-                  aria-hidden="true"
+                <div
                   :class="[
-                    checked ? 'bg-army' : 'bg-transparent',
-                    'absolute inset-x-0 bottom-0 h-0.5',
+                    checked ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700',
+                    'group relative min-w-0  justify-self-center  overflow-hidden bg-white px-4 py-2 hover:bg-gray-50  focus:z-10 focus:outline-none',
                   ]"
-                />
-              </div>
-            </RadioGroupOption>
-          </RadioGroup>
+                >
+                  <MilitarySymbol
+                    :sidc="sidc"
+                    :title="title"
+                    :size="15"
+                    :options="{
+                      monoColor: checked ? 'black' : 'black',
+                      strokeWidth: 8,
+                    }"
+                  />
+                  <span
+                    aria-hidden="true"
+                    :class="[
+                      checked ? 'bg-army' : 'bg-transparent',
+                      'absolute inset-x-0 bottom-0 h-0.5',
+                    ]"
+                  />
+                </div>
+              </RadioGroupOption>
+            </RadioGroup>
+            <DotsMenu :items="panelItems" class="" />
+          </header>
           <div class="mt-3 grid h-20 grid-cols-5 place-items-center items-center gap-2">
             <PanelSymbolButton
               class=""

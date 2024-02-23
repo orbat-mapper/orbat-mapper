@@ -123,6 +123,7 @@
               :symbol-options="combinedSymbolOptions"
             />
             <SymbolFillColorSelect
+              v-if="!hideSymbolColor"
               v-model="internalSymbolOptions.fillColor"
               :default-fill-color="inheritedSymbolOptions?.fillColor"
             />
@@ -199,6 +200,7 @@ interface Props {
   sidc?: string;
   dialogTitle?: string;
   hideModifiers?: boolean;
+  hideSymbolColor?: boolean;
   inheritedSymbolOptions?: UnitSymbolOptions;
   symbolOptions?: UnitSymbolOptions;
 }
@@ -207,6 +209,7 @@ const props = withDefaults(defineProps<Props>(), {
   isVisible: true,
   dialogTitle: "Symbol picker",
   hideModifiers: false,
+  hideSymbolColor: false,
 });
 const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
 
