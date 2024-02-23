@@ -45,31 +45,10 @@
       </MainToolbarButton>
       <div class="h-7 border-l-2 border-gray-300 sm:mx-1" />
       <div class="ml-2 flex items-center">
-        <Popover as="template">
-          <Float placement="top" :offset="12" flip shift strategy="fixed">
-            <PopoverButton as="template">
-              <PanelSymbolButton
-                :size="20"
-                :sidc="echelonSidc || ''"
-                :symbol-options="symbolOptions"
-                title="Select echelon"
-              />
-            </PopoverButton>
-            <PopoverPanel focus v-slot="{ close }">
-              <FloatingPanel class="grid grid-cols-5 justify-items-center gap-2 p-2">
-                <PanelSymbolButton
-                  class="self-end"
-                  v-for="{ sidc, text } in emtItems"
-                  :key="sidc"
-                  :sidc="sidc"
-                  :title="text"
-                  :symbol-options="symbolOptions"
-                  @click="selectEchelon(sidc, close)"
-                />
-              </FloatingPanel>
-            </PopoverPanel>
-          </Float>
-        </Popover>
+        <EchelonPickerPopover
+          :symbol-options="symbolOptions"
+          :select-echelon="selectEchelon"
+        />
         <PanelSymbolButton
           :size="22"
           :sidc="computedSidc"
@@ -175,10 +154,8 @@ import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useEventBus, useToggle } from "@vueuse/core";
 import PanelSymbolButton from "@/components/PanelSymbolButton.vue";
-import { Float } from "@headlessui-float/vue";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/vue";
 import FloatingPanel from "@/components/FloatingPanel.vue";
-import { computed, onMounted, Ref, ref, watch } from "vue";
+import { computed, onMounted, Ref, watch } from "vue";
 import { SID_INDEX, Sidc } from "@/symbology/sidc";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
@@ -187,6 +164,7 @@ import { useActiveUnitStore } from "@/stores/dragStore";
 import { orbatUnitClick } from "@/components/eventKeys";
 import { CalendarIcon } from "@heroicons/vue/24/solid";
 import SymbolPickerPopover from "@/modules/scenarioeditor/SymbolPickerPopover.vue";
+import EchelonPickerPopover from "@/modules/scenarioeditor/EchelonPickerPopover.vue";
 
 const emit = defineEmits([
   "open-time-modal",
@@ -213,8 +191,7 @@ const bus = useEventBus(orbatUnitClick);
 const { activeUnitId, resetActiveParent, activeParent, activeParentId } =
   useActiveUnitStore();
 
-const { currentSid, currentEchelon, emtItems, echelonSidc, activeSidc } =
-  useToolbarUnitSymbolData({});
+const { currentSid, currentEchelon, activeSidc } = useToolbarUnitSymbolData({});
 
 const computedSidc = computed(() => {
   const parsedSidc = new Sidc(activeSidc.value);
@@ -225,11 +202,6 @@ const computedSidc = computed(() => {
 });
 
 const toggleMoveUnit = useToggle(moveUnitEnabled);
-
-function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => void) {
-  currentEchelon.value = new Sidc(sidc).emt;
-  closePopover();
-}
 
 const symbolOptions = computed(() =>
   activeParent.value
@@ -311,4 +283,9 @@ watch(activeParent, (unitOrSideGroup) => {
     currentSid.value = state.getSideById(unitOrSideGroup._pid).standardIdentity;
   }
 });
+
+function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => void) {
+  currentEchelon.value = new Sidc(sidc).emt;
+  closePopover();
+}
 </script>
