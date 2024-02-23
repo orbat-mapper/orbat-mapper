@@ -28,7 +28,7 @@ const props = defineProps<Props>();
 
 const { getModalSidc } = injectStrict(sidcModalKey);
 
-const { iconItems, customIcon, customSidc, symbolPage } = useToolbarUnitSymbolData({});
+const { iconItems, customIcon, customSidc, symbolPage } = useToolbarUnitSymbolData();
 const store = useMainToolbarStore();
 
 const symbolTabs = ref([

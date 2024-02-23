@@ -191,7 +191,7 @@ const bus = useEventBus(orbatUnitClick);
 const { activeUnitId, resetActiveParent, activeParent, activeParentId } =
   useActiveUnitStore();
 
-const { currentSid, currentEchelon, activeSidc } = useToolbarUnitSymbolData({});
+const { currentSid, currentEchelon, activeSidc } = useToolbarUnitSymbolData();
 
 const computedSidc = computed(() => {
   const parsedSidc = new Sidc(activeSidc.value);

@@ -14,7 +14,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { echelonSidc, emtItems } = useToolbarUnitSymbolData({});
+const { echelonSidc, emtItems } = useToolbarUnitSymbolData();
 </script>
 <template>
   <Popover as="template">

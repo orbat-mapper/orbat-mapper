@@ -1,4 +1,3 @@
-import { MaybeRef } from "@vueuse/core";
 import { computed, ref, watch } from "vue";
 import {
   DISMOUNTED_SYMBOLSET_VALUE,
@@ -7,6 +6,7 @@ import {
   leadershipValues,
   mobilityValues,
   SID,
+  SidValue,
   SUBSURFACE_SYMBOLSET_VALUE,
   SURFACE_SYMBOLSET_VALUE,
   towedArrayValues,
@@ -16,13 +16,6 @@ import { SymbolItem, SymbolValue } from "@/types/constants";
 import { Sidc } from "@/symbology/sidc";
 
 export type SymbolPage = "land" | "sea" | "air" | "space" | "equipment";
-
-export interface UseToolbarUnitSymbolDataOptions {
-  currentSid?: MaybeRef<string>;
-  currentEchelon?: MaybeRef<string>;
-  activeSidc?: MaybeRef<string>;
-  symbolPage?: MaybeRef<SymbolPage>;
-}
 
 interface ExtendedSymbolValue extends SymbolValue {
   symbolSet: string;
@@ -57,13 +50,13 @@ const airIcons: ExtendedSymbolValue[] = [
   { symbolSet: "02", code: "110000", text: "Missile" },
 ];
 
-export function useToolbarUnitSymbolData(options: UseToolbarUnitSymbolDataOptions = {}) {
-  const symbolPage = ref(options.symbolPage ?? "land");
-  const currentSid = ref(options.currentSid ?? SID.Friend);
-  const currentEchelon = ref(options.currentEchelon ?? "16");
-  const customIcon = ref<SymbolValue>({ code: "10031000141211000000", text: "Infantry" });
-  const activeSidc = ref(options.activeSidc ?? "10031000141211000000");
+const symbolPage = ref<SymbolPage>("land");
+const currentSid = ref<SidValue | string>(SID.Friend);
+const currentEchelon = ref("16");
+const customIcon = ref<SymbolValue>({ code: "10031000141211000000", text: "Infantry" });
+const activeSidc = ref("10031000141211000000");
 
+export function useToolbarUnitSymbolData() {
   const emtStore: Record<string, string> = { [UNIT_SYMBOLSET_VALUE]: "16" };
 
   const symbolSetValue = computed(() => new Sidc(activeSidc.value).symbolSet);
