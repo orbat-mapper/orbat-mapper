@@ -66,7 +66,7 @@
     "ol": "^8.2.0",
     "ol-ext": "^4.0.14",
     "pinia": "^2.1.7",
-    "radix-vue": "^1.4.8",
+    "radix-vue": "^1.4.9",
     "rfc6902": "^5.1.1",
     "scrollama": "^3.2.0",
     "tailwind-merge": "^2.2.1",
