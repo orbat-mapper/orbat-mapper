@@ -63,7 +63,7 @@
     "mobile-drag-drop": "^3.0.0-rc.0",
     "nanoid": "^5.0.6",
     "nprogress": "^0.2.0",
-    "ol": "^8.2.0",
+    "ol": "^9.0.0",
     "ol-ext": "^4.0.14",
     "pinia": "^2.1.7",
     "radix-vue": "^1.4.9",
