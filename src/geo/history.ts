@@ -102,7 +102,7 @@ export function createUnitHistoryLayers() {
     style: viaStyle,
   });
   const labelsLayer = new VectorLayer({
-    declutter: true,
+    // declutter: true,
     source: waypointLayer.getSource()!,
     style: (feature) => {
       labelStyle.getText()!.setText(feature.get("label") || "");
