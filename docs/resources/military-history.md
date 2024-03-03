@@ -17,6 +17,14 @@ is a gold mine of information.
 collection of documents, maps, photographs, and other materials related to the war. Users can browse the resources by
 country, theater of war, or service branch.
 
+[U-boat Archive](https://www.uboatarchive.net/) is a fantastic resource for those interested in submarine warfare during
+WW2.
+The site contains a wealth of information, including U-boat war diaries with accompanying KMZ files, charts and
+photographs.
+
+Do you want to know more about the battleship Bismarck and the Kriegsmarine? Then check
+out [KBismarck.com](https://www.kbismarck.com/).
+
 For those who are interested in Cold War history, Hans Boersma's
 site [Netherlands Armed Forces ORDER OF BATTLE 1985](https://www.orbat85.nl/) is a
 real treat. The site provides information on the orders of battle, equipment, and organization of NATO and Warsaw Pact
