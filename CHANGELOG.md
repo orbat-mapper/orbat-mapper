@@ -8,8 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+February 2024
+
+- Add [Decisive Action Training Environment (DATE)](https://odin.tradoc.army.mil/DATEWORLD) force structures import .
+- Add support for copying and pasting unit hierarchies to and from the clipboard.
+
 January 2024
 
+- Replace the file menu with a nested main application dropdown menu.
+- Show the total number of units in the scenario information panel.
 - Add new base map: OpenStreetMap DE. Includes translations of place names.
 
 December 2023
