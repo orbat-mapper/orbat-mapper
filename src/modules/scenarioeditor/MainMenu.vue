@@ -21,6 +21,7 @@ import { ScenarioActions, UiAction } from "@/types/constants";
 import { useRoute } from "vue-router";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { storeToRefs } from "pinia";
+import { useMeasurementsStore } from "@/stores/geoStore";
 
 const emit = defineEmits<{
   action: [value: ScenarioActions];
@@ -29,7 +30,11 @@ const emit = defineEmits<{
 
 const route = useRoute();
 const uiSettings = useUiStore();
-const { coordinateFormat } = storeToRefs(useMapSettingsStore());
+
+const { coordinateFormat, showLocation, showScaleLine } =
+  storeToRefs(useMapSettingsStore());
+
+const { measurementUnit } = storeToRefs(useMeasurementsStore());
 </script>
 
 <template>
@@ -91,22 +96,39 @@ const { coordinateFormat } = storeToRefs(useMapSettingsStore());
         </DropdownMenuSubContent>
       </DropdownMenuSub>
       <DropdownMenuSub>
-        <DropdownMenuSubTrigger
-          ><span class="mr-4">Preferences</span></DropdownMenuSubTrigger
-        >
+        <DropdownMenuSubTrigger><span class="mr-4">View</span></DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
           <DropdownMenuCheckboxItem
             v-model:checked="uiSettings.showToolbar"
             @select.prevent
-            >Show toolbar
+            >Map toolbar
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
             v-model:checked="uiSettings.showTimeline"
             @select.prevent
-            >Show timeline
+            >Timeline
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuCheckboxItem v-model:checked="showScaleLine" @select.prevent>
+            Scale line
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem v-model:checked="showLocation" @select.prevent>
+            Pointer location
           </DropdownMenuCheckboxItem>
           <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Coordinate format</DropdownMenuSubTrigger>
+            <DropdownMenuSubTrigger inset
+              ><span class="pr-4">Measurement units</span></DropdownMenuSubTrigger
+            >
+            <DropdownMenuSubContent>
+              <DropdownMenuRadioGroup v-model="measurementUnit">
+                <DropdownMenuRadioItem value="metric">Metric</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="imperial">Imperial</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="nautical">Nautical</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger inset>Coordinate format</DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               <DropdownMenuRadioGroup v-model="coordinateFormat">
                 <DropdownMenuRadioItem value="dms"
