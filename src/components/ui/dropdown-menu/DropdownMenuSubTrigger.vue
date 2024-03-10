@@ -3,7 +3,9 @@ import { DropdownMenuSubTrigger, type DropdownMenuSubTriggerProps } from "radix-
 import { ChevronRight } from "lucide-vue-next";
 import { cn } from "@/lib/utils";
 
-const props = defineProps<DropdownMenuSubTriggerProps & { class?: string }>();
+const props = defineProps<
+  DropdownMenuSubTriggerProps & { inset?: boolean; class?: string }
+>();
 </script>
 
 <template>
@@ -12,6 +14,7 @@ const props = defineProps<DropdownMenuSubTriggerProps & { class?: string }>();
     :class="[
       cn(
         'flex cursor-default select-none items-center rounded-sm px-2 py-2 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent',
+        inset && 'pl-8',
         props.class,
       ),
     ]"
