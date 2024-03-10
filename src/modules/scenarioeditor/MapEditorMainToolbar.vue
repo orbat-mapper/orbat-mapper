@@ -43,6 +43,13 @@
       >
         <DrawIcon class="h-6 w-6" />
       </MainToolbarButton>
+      <MainToolbarButton
+        title="Unit path"
+        :active="store.currentToolbar === 'path'"
+        @click="store.toggleToolbar('path')"
+      >
+        <IconMapMarkerPath class="h-6 w-6" />
+      </MainToolbarButton>
       <div class="h-7 border-l-2 border-gray-300 sm:mx-1" />
       <div class="ml-2 flex items-center">
         <EchelonPickerPopover
@@ -52,7 +59,7 @@
         <PanelSymbolButton
           :size="22"
           :sidc="computedSidc"
-          class="group relative ml-5"
+          class="group relative ml-2 sm:ml-5"
           :symbol-options="symbolOptions"
           @click="addUnit(activeSidc)"
           title="Add unit"
@@ -65,7 +72,7 @@
       </div>
     </section>
     <section class="flex items-center">
-      <div class="h-7 border-l-2 border-gray-300 sm:mx-1" />
+      <div class="-mx-1 h-7 border-l-2 border-gray-300 sm:mx-1" />
       <MainToolbarButton title="Undo" @click="undo()" :disabled="!canUndo">
         <UndoIcon class="h-6 w-6" />
       </MainToolbarButton>
@@ -145,6 +152,7 @@ import {
   IconSkipNext,
   IconSkipPrevious,
   IconUndoVariant as UndoIcon,
+  IconMapMarkerPath,
 } from "@iconify-prerendered/vue-mdi";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";

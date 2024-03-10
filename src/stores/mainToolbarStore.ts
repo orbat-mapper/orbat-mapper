@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-export type ToolbarType = "measurements" | "draw";
+export type ToolbarType = "measurements" | "draw" | "path";
 
 export const useMainToolbarStore = defineStore("mainToolbar", {
   state: () => ({

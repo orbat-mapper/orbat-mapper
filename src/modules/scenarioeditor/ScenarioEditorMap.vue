@@ -79,6 +79,10 @@
           class="absolute bottom-14 sm:bottom-16"
           v-if="toolbarStore.currentToolbar === 'draw'"
         />
+        <MapEditorPathToolbar
+          class="absolute bottom-14 sm:bottom-16"
+          v-if="toolbarStore.currentToolbar === 'path'"
+        />
       </footer>
     </div>
     <template v-if="isMobile">
@@ -140,6 +144,7 @@ import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDe
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
+import MapEditorPathToolbar from "@/modules/scenarioeditor/MapEditorPathToolbar.vue";
 
 const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
 const activeScenario = injectStrict(activeScenarioKey);

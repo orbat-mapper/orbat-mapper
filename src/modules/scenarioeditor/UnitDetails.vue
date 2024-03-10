@@ -126,14 +126,6 @@
               </div>
             </DescriptionItem>
           </div>
-          <div class="my-4 space-y-2">
-            <ToggleField v-model="unitSettings.showHistory"
-              >Show unit track on map</ToggleField
-            >
-            <ToggleField v-model="unitSettings.editHistory"
-              >Edit unit track on map</ToggleField
-            >
-          </div>
         </section>
       </TabPanel>
       <TabPanel><UnitPanelState v-if="!isMultiMode" :unit="unit" /></TabPanel>
