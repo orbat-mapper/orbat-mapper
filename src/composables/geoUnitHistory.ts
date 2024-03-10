@@ -55,10 +55,12 @@ export function useUnitHistory(
   options: Partial<{
     showHistory: MaybeRef<boolean>;
     editHistory: MaybeRef<boolean>;
+    showWaypointTimestamps: MaybeRef<boolean>;
   }> = {},
 ) {
   const showHistoryRef = ref(options.showHistory || true);
   const editHistoryRef = ref(options.editHistory || true);
+  const showWaypointTimestampsRef = ref(options.showWaypointTimestamps || true);
   let isInternal = false;
   const { selectedWaypointIds } = useSelectedWaypoints();
   selectedWaypointIds.value.clear();
@@ -145,6 +147,14 @@ export function useUnitHistory(
     (v) => {
       historyModify.setActive(v);
       drawHistory();
+    },
+    { immediate: true },
+  );
+
+  watch(
+    showWaypointTimestampsRef,
+    (showTimestamps) => {
+      labelsLayer.setVisible(showTimestamps);
     },
     { immediate: true },
   );

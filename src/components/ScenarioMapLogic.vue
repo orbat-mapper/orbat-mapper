@@ -76,7 +76,8 @@ const unitLayerGroup = new LayerGroup({
 
 unitLayerGroup.set("title", "Units");
 
-const { showHistory, editHistory } = storeToRefs(unitSettingsStore);
+const { showHistory, editHistory, showWaypointTimestamps } =
+  storeToRefs(unitSettingsStore);
 const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
   storeToRefs(useMapSelectStore());
 
@@ -92,6 +93,7 @@ const { historyLayer, drawHistory, historyModify, waypointSelect, ctrlClickInter
   useUnitHistory(olMap, {
     showHistory,
     editHistory,
+    showWaypointTimestamps,
   });
 
 const r = useMapHover(olMap, { enable: hoverEnabled });

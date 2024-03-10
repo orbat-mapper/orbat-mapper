@@ -100,6 +100,7 @@ export const useUnitSettingsStore = defineStore("unitSettings", {
       showHistory: true,
       editHistory: false,
       moveUnitEnabled: false,
+      showWaypointTimestamps: true,
     };
   },
 });

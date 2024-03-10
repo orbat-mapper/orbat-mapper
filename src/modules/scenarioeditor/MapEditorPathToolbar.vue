@@ -3,6 +3,7 @@ import {
   IconClose as CloseIcon,
   IconSquareEditOutline as EditIcon,
   IconMapMarkerDistance as ShowPathIcon,
+  IconTimelineClockOutline,
 } from "@iconify-prerendered/vue-mdi";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 
@@ -34,6 +35,14 @@ const store = useMainToolbarStore();
       :active="unitSettings.editHistory"
     >
       <EditIcon class="h-5 w-5" />
+    </MainToolbarButton>
+
+    <MainToolbarButton
+      title="Show timestamps"
+      @click="unitSettings.showWaypointTimestamps = !unitSettings.showWaypointTimestamps"
+      :active="unitSettings.showWaypointTimestamps"
+    >
+      <IconTimelineClockOutline class="h-5 w-5" />
     </MainToolbarButton>
 
     <MainToolbarButton title="Toggle toolbar" @click="store.clearToolbar()">
