@@ -1,23 +1,36 @@
 <script setup lang="ts">
-import { DropdownMenuSubTrigger, type DropdownMenuSubTriggerProps } from "radix-vue";
+import { type HTMLAttributes, computed } from "vue";
+import {
+  DropdownMenuSubTrigger,
+  type DropdownMenuSubTriggerProps,
+  useForwardProps,
+} from "radix-vue";
 import { ChevronRight } from "lucide-vue-next";
 import { cn } from "@/lib/utils";
 
 const props = defineProps<
-  DropdownMenuSubTriggerProps & { inset?: boolean; class?: string }
+  DropdownMenuSubTriggerProps & { inset?: boolean; class?: HTMLAttributes["class"] }
 >();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
 <template>
   <DropdownMenuSubTrigger
-    v-bind="props"
-    :class="[
+    v-bind="forwardedProps"
+    :class="
       cn(
-        'flex cursor-default select-none items-center rounded-sm px-2 py-2 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent',
+        'flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent',
         inset && 'pl-8',
         props.class,
-      ),
-    ]"
+      )
+    "
   >
     <slot />
     <ChevronRight class="ml-auto h-4 w-4" />
