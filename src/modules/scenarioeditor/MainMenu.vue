@@ -22,6 +22,11 @@ import { useRoute } from "vue-router";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { storeToRefs } from "pinia";
 import { useMeasurementsStore } from "@/stores/geoStore";
+import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
+
+const breakpoints = useBreakpoints(breakpointsTailwind);
+
+const isMobile = breakpoints.smallerOrEqual("md");
 
 const emit = defineEmits<{
   action: [value: ScenarioActions];
@@ -114,6 +119,12 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
             v-model:checked="uiSettings.showTimeline"
             @select.prevent
             >Timeline
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem
+            v-if="!isMobile"
+            v-model:checked="uiSettings.showLeftPanel"
+            @select.prevent
+            >ORBAT panel
           </DropdownMenuCheckboxItem>
           <DropdownMenuSeparator />
           <DropdownMenuCheckboxItem v-model:checked="showScaleLine" @select.prevent>

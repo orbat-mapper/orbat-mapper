@@ -145,6 +145,7 @@ import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
 import MapEditorPathToolbar from "@/modules/scenarioeditor/MapEditorPathToolbar.vue";
+import { storeToRefs } from "pinia";
 
 const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -192,7 +193,8 @@ const {
   clear: clearSelected,
 } = useSelectedItems();
 
-const [showLeftPanel, toggleLeftPanel] = useToggle(true);
+const { showLeftPanel } = storeToRefs(ui);
+const toggleLeftPanel = useToggle(showLeftPanel);
 
 const showDetailsPanel = computed(() => {
   return Boolean(

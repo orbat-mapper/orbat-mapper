@@ -19,6 +19,7 @@ export const useUiStore = defineStore("ui", {
     mapLayersPanelOpen: true,
     showToolbar: true,
     showTimeline: useLocalStorage("showTimeline", false),
+    showLeftPanel: true,
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,
