@@ -79,20 +79,26 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           <DropdownMenuItem @select="emit('action', 'save')">
             Save scenario
           </DropdownMenuItem>
+          <DropdownMenuItem @select="emit('action', 'loadNew')">
+            Load scenario...
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
           <DropdownMenuItem @select="emit('action', 'export')">
-            Export scenario data
+            Export scenario data...
           </DropdownMenuItem>
           <DropdownMenuItem @select="emit('action', 'import')">
-            Import data
+            Import data...
           </DropdownMenuItem>
+          <DropdownMenuItem @select="emit('action', 'exportToClipboard')">
+            Copy scenario to clipboard
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem @select="emit('action', 'duplicate')">
             Duplicate scenario
           </DropdownMenuItem>
           <DropdownMenuItem @select="emit('action', 'showInfo')">
             Show scenario info
-          </DropdownMenuItem>
-          <DropdownMenuItem @select="emit('action', 'exportToClipboard')">
-            Copy scenario to clipboard
           </DropdownMenuItem>
         </DropdownMenuSubContent>
       </DropdownMenuSub>
