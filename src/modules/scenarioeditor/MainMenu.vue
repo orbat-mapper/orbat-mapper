@@ -66,15 +66,16 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
 
       <DropdownMenuSeparator />
       <DropdownMenuItem @select="emit('uiAction', 'showSearch')"
-        >Search <DropdownMenuShortcut>Ctrl K</DropdownMenuShortcut></DropdownMenuItem
-      >
+        >Search
+        <DropdownMenuShortcut>Ctrl K</DropdownMenuShortcut>
+      </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuSub>
         <DropdownMenuSubTrigger>File</DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
           <DropdownMenuItem @select="emit('action', 'exportJson')"
-            >Download scenario</DropdownMenuItem
-          >
+            >Download scenario
+          </DropdownMenuItem>
           <DropdownMenuItem @select="emit('action', 'save')">
             Save scenario
           </DropdownMenuItem>
@@ -121,9 +122,15 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
             >
             <DropdownMenuSubContent>
               <DropdownMenuRadioGroup v-model="measurementUnit">
-                <DropdownMenuRadioItem value="metric">Metric</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="imperial">Imperial</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="nautical">Nautical</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="metric" @select.prevent
+                  >Metric
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="imperial" @select.prevent
+                  >Imperial
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="nautical" @select.prevent
+                  >Nautical
+                </DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
@@ -131,11 +138,15 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
             <DropdownMenuSubTrigger inset>Coordinate format</DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               <DropdownMenuRadioGroup v-model="coordinateFormat">
-                <DropdownMenuRadioItem value="dms"
+                <DropdownMenuRadioItem value="dms" @select.prevent
                   >Degrees, minutes, seconds
                 </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="dd">Decimal degrees</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="MGRS">MGRS</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="dd" @select.prevent
+                  >Decimal degrees
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="MGRS" @select.prevent
+                  >MGRS
+                </DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
@@ -158,8 +169,8 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           >
           <DropdownMenuItem @select="emit('uiAction', 'showKeyboardShortcuts')"
             >Keyboard shortcuts
-            <DropdownMenuShortcut class="ml-4">?</DropdownMenuShortcut></DropdownMenuItem
-          >
+            <DropdownMenuShortcut class="ml-4">?</DropdownMenuShortcut>
+          </DropdownMenuItem>
         </DropdownMenuSubContent>
       </DropdownMenuSub>
     </DropdownMenuContent>
