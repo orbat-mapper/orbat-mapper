@@ -36,7 +36,7 @@ const emit = defineEmits<{
 const route = useRoute();
 const uiSettings = useUiStore();
 
-const { coordinateFormat, showLocation, showScaleLine } =
+const { coordinateFormat, showLocation, showScaleLine, showDayNightTerminator } =
   storeToRefs(useMapSettingsStore());
 
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
@@ -132,6 +132,12 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem v-model:checked="showLocation" @select.prevent>
             Pointer location
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem
+            v-model:checked="showDayNightTerminator"
+            @select.prevent
+          >
+            Day/nigth terminator
           </DropdownMenuCheckboxItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger inset

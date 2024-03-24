@@ -74,6 +74,16 @@ export function useMapContextMenu(mapRef: ShallowRef<OLMap | undefined>) {
               },
             },
             {
+              label: "Show day/night terminator",
+              checked: computed(
+                () => settings.showDayNightTerminator,
+              ) as unknown as boolean,
+              clickClose: false,
+              onClick: () => {
+                settings.showDayNightTerminator = !settings.showDayNightTerminator;
+              },
+            },
+            {
               label: "Measurement unit",
               children: [
                 {

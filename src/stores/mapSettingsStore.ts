@@ -8,6 +8,7 @@ export interface MapSettingsState {
   coordinateFormat: CoordinateFormatType;
   baseLayerName: string;
   showScaleLine: boolean;
+  showDayNightTerminator: boolean;
 }
 export const useMapSettingsStore = defineStore("mapSettings", {
   state: () => ({
@@ -18,5 +19,6 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     ),
     showScaleLine: useLocalStorage("showScaleLine", true),
     baseLayerName: DEFAULT_BASEMAP_ID,
+    showDayNightTerminator: false,
   }),
 });

@@ -34,6 +34,7 @@ import { ObjectEvent } from "ol/Object";
 import { clearStyleCache } from "@/geo/unitStyles";
 import { useRangeRingsLayer } from "@/composables/geoRangeRings";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
+import { useDayNightLayer } from "@/composables/geoDayNight";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -81,6 +82,8 @@ const { showHistory, editHistory, showWaypointTimestamps } =
 const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
   storeToRefs(useMapSelectStore());
 
+const dayNightLayer = useDayNightLayer();
+olMap.addLayer(dayNightLayer);
 const { initializeFromStore: loadMapLayers } = useScenarioMapLayers(olMap);
 const { rangeLayer, drawRangeRings } = useRangeRingsLayer();
 // Disable temporarily
