@@ -5,7 +5,13 @@ import { type MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
 import { ref, watch } from "vue";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 
-export type CoordinateFormatType = "MGRS" | "DecimalDegrees" | "DegreeMinuteSeconds";
+export type CoordinateFormatType =
+  | "MGRS"
+  | "DecimalDegrees"
+  | "DegreeMinuteSeconds"
+  | "dms"
+  | "dd";
+
 export interface GeoShowLocationOptions {
   projection?: MaybeRef<string>;
   coordinateFormat: MaybeRef<CoordinateFormatType>;

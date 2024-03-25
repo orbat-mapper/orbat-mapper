@@ -24,7 +24,8 @@ export function formatMGRS(p: Position | undefined, precision: 1 | 2 | 3 | 4 | 5
 export function getCoordinateFormatFunction(
   format: CoordinateFormatType,
 ): CoordinateFormat {
-  if (format === "DegreeMinuteSeconds") return (v: any) => toStringHDMS(v, 0);
+  if (format === "DegreeMinuteSeconds" || format === "dms")
+    return (v: any) => toStringHDMS(v, 0);
   if (format === "MGRS") return (v: any) => formatMGRS(v, 4);
   return (v: any) => formatDecimalDegrees(v, 3);
 }
