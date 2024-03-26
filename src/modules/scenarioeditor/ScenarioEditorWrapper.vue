@@ -6,11 +6,13 @@ import { ref, watch } from "vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useIndexedDb } from "@/scenariostore/localdb";
 import { useEventListener } from "@vueuse/core";
+import ScenarioNotFoundPage from "@/modules/scenarioeditor/ScenarioNotFoundPage.vue";
 
 const props = defineProps<{ scenarioId: string }>();
 
 const { scenario, isReady } = useScenario();
 const localReady = ref(false);
+const scenarioNotFound = ref(false);
 
 let currentDemo = "";
 const selectedItems = useSelectedItems();
@@ -34,6 +36,7 @@ watch(
         selectedItems.clear();
         selectedItems.showScenarioInfo.value = true;
       } else {
+        scenarioNotFound.value = true;
         console.error("Scenario not found in indexeddb");
       }
       localReady.value = true;
@@ -83,4 +86,5 @@ async function saveScenarioIfNecessary({ saveDemo = false } = {}) {
     :key="scenario.store.state.id"
     :active-scenario="scenario"
   />
+  <ScenarioNotFoundPage v-else-if="scenarioNotFound" />
 </template>
