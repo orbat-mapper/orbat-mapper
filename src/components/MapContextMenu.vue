@@ -13,7 +13,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 
-import { IconContentCopy } from "@iconify-prerendered/vue-mdi";
+import { IconContentCopy, IconTarget } from "@iconify-prerendered/vue-mdi";
 import { computed, ref } from "vue";
 import type OLMap from "ol/Map";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
@@ -41,6 +41,7 @@ const { send } = useNotifications();
 const { copy: copyToClipboard } = useClipboard();
 
 const dropPosition = ref([0, 0]);
+const pixelPosition = ref<number[] | null>(null);
 
 const formattedPosition = computed(() =>
   getCoordinateFormatFunction(coordinateFormat.value)(dropPosition.value),
@@ -51,6 +52,8 @@ function onContextMenu(e: MouseEvent) {
     console.warn("No map ref");
     return;
   }
+
+  pixelPosition.value = props.mapRef.getEventPixel(e);
   dropPosition.value = toLonLat(props.mapRef.getEventCoordinate(e));
 }
 
@@ -60,11 +63,24 @@ async function onCopy() {
     message: `Copied ${formattedPosition.value} to the clipboard`,
   });
 }
+
+function onContextMenuUpdate(open: boolean) {
+  if (!open) {
+    pixelPosition.value = null;
+  }
+}
 </script>
 <template>
-  <ContextMenu>
+  <ContextMenu @update:open="onContextMenuUpdate">
     <ContextMenuTrigger as-child>
       <slot :onContextMenu="onContextMenu" />
+      <div
+        v-if="pixelPosition"
+        class="absolute flex items-center justify-center"
+        :style="{ left: pixelPosition[0] + 'px', top: pixelPosition[1] + 'px' }"
+      >
+        <IconTarget class="-mx-1/2 -my-1/2 absolute h-8 w-8 text-yellow-500" />
+      </div>
     </ContextMenuTrigger>
     <ContextMenuContent>
       <ContextMenuItem @select="onCopy()">
