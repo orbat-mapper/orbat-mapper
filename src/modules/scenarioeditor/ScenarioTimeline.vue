@@ -205,7 +205,7 @@ const formattedHoveredDate = computed(() => {
 
 function onWheel(e: WheelEvent) {
   if (e.deltaY > 0) {
-    majorWidth.value -= 40;
+    majorWidth.value = Math.max(majorWidth.value - 40, 55);
   } else {
     majorWidth.value += 40;
   }
