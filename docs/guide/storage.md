@@ -6,8 +6,9 @@ but you can also download them as files to your computer.
 
 ::: warning
 Please note that your browser's storage is not a backup solution. If you clear your browser's storage, all your
-scenarios will be lost. The browser may also clear the storage automatically if it runs out of space. You should therefore
-regularly download your scenarios to your computer for backup.
+scenarios will be lost. The browser may also clear the storage automatically if it runs out of space.
+
+**You should regularly download your scenarios to your computer for backup**.
 
 :::
 

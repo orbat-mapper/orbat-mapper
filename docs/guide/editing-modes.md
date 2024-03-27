@@ -15,3 +15,8 @@ The grid edit mode is heavily inspired by spreadsheets and offers a quick and ef
 ### Chart mode
 
 The chart edit mode if for those who prefer to visualize their ORBATs graphically.
+
+::: info
+Grid and chart editing modes currently have limited functionality. They are still in development
+and will be improved in future releases.
+:::
