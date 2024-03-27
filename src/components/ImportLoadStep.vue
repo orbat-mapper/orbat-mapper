@@ -5,7 +5,15 @@
         <RadioGroupLabel class="text-sm font-medium text-gray-700"
           >Input source</RadioGroupLabel
         >
-        <RadioGroupOption v-slot="{ checked }" value="file">
+        <RadioGroupOption
+          v-for="{ label, value } in [
+            { label: 'Local file', value: 'file' },
+            { label: 'Paste text', value: 'string' },
+          ]"
+          v-slot="{ checked }"
+          :key="value"
+          :value="value"
+        >
           <span
             :class="[
               checked
@@ -13,18 +21,7 @@
                 : 'text-gray-500 hover:text-gray-700',
               'cursor-pointer rounded-md px-3 py-2 text-sm font-medium',
             ]"
-            >Local file</span
-          >
-        </RadioGroupOption>
-        <RadioGroupOption v-slot="{ checked }" value="string">
-          <span
-            :class="[
-              checked
-                ? 'bg-indigo-100 text-indigo-700'
-                : 'text-gray-500 hover:text-gray-700',
-              'cursor-pointer rounded-md px-3 py-2 text-sm font-medium',
-            ]"
-            >Paste text</span
+            >{{ label }}</span
           >
         </RadioGroupOption>
       </RadioGroup>
