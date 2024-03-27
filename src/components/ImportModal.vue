@@ -93,7 +93,6 @@ const loadedData = shallowRef<any>([]);
 const fileInfo = shallowRef<ImportedFileInfo>();
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue", "cancel"]);
-const { send } = useNotifications();
 
 const open = useVModel(props, "modelValue", emit);
 

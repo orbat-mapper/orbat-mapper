@@ -9,6 +9,7 @@
           v-for="{ label, value } in [
             { label: 'Local file', value: 'file' },
             { label: 'Paste text', value: 'string' },
+            { label: 'URL', value: 'url' },
           ]"
           v-slot="{ checked }"
           :key="value"
@@ -50,7 +51,22 @@
       <div v-else-if="store.inputSource === 'string'" class="min-h-[6rem]">
         <TextAreaGroup rows="3" v-model="stringSource" />
       </div>
+      <div v-else-if="store.inputSource === 'url'">
+        <div class="flex items-end justify-between gap-2">
+          <InputGroup v-model="urlSource" label="URL" class="flex-auto" />
+
+          <div class="flex-shrink-0">
+            <BaseButton @click="onUrlLoad">Load from URL</BaseButton>
+          </div>
+        </div>
+      </div>
+      <p class="mt-2 text-sm">
+        Please note that the scenario host must be configured to allow CORS requests.
+      </p>
     </fieldset>
+    <AlertWarning v-if="isError && errorMessage" title="Error">{{
+      errorMessage
+    }}</AlertWarning>
     <p v-if="guessedFormat" class="text-sm">
       The format seems to be <span class="text-red-900">{{ guessedFormat }}.</span>
     </p>
@@ -91,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, ref, shallowRef } from "vue";
+import { computed, onMounted, ref, shallowRef } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { SelectItem } from "@/components/types";
@@ -107,6 +123,9 @@ import { guessImportFormat, ImportedFileInfo } from "@/importexport/fileHandling
 import { useDragStore } from "@/stores/dragStore";
 import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
 import DocLink from "@/components/DocLink.vue";
+import InputGroup from "@/components/InputGroup.vue";
+import AlertWarning from "@/components/AlertWarning.vue";
+import { isUrl } from "@/utils";
 
 const emit = defineEmits(["cancel", "loaded"]);
 
@@ -120,9 +139,12 @@ const formatItems: SelectItem<ImportFormat>[] = [
 ];
 
 const stringSource = ref("");
+const urlSource = ref("");
 const currentFilename = ref("");
 const objectUrl = ref("");
 const fileInfo = shallowRef<ImportedFileInfo>();
+const isError = ref(false);
+const errorMessage = ref("");
 
 const store = useImportStore();
 const dragStore = useDragStore();
@@ -220,6 +242,30 @@ const onFileLoad = (e: Event) => {
   if (!target?.files?.length) return;
   const files = Array.from(target.files);
   handleFiles(files);
+};
+
+const onUrlLoad = async () => {
+  const url = urlSource.value;
+  console.log("url", url);
+  if (!url) return;
+  if (!isUrl(url)) {
+    isError.value = true;
+    errorMessage.value = `The url ${url} is not a valid url.`;
+    return;
+  }
+
+  try {
+    const response = await fetch(url);
+    const buffer = await response.arrayBuffer();
+    const file = new File([buffer], url.split("/").pop() || "", {
+      type: response.headers.get("Content-Type") || "",
+    });
+    handleFiles([file]);
+  } catch (e: any) {
+    send({ message: `Failed to load ${url}: ${e?.message}` });
+    isError.value = true;
+    errorMessage.value = `Failed to load ${url}: ${e?.message}`;
+  }
 };
 
 async function handleFiles(files: File[]) {
