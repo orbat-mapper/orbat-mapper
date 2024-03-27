@@ -160,6 +160,8 @@ function onPointerUp(evt: PointerEvent) {
     const { date, diff } = calculatePixelDate(evt.clientX);
     animate.value = true;
     draggedDiff.value = -diff;
+    // round to the nearest 15 minutes
+    date.setUTCMinutes(Math.round(date.getUTCMinutes() / 15) * 15);
     setCurrentTime(date.valueOf());
   } else {
     animate.value = false;
@@ -188,8 +190,11 @@ function onPointerMove(evt: PointerEvent) {
 }
 
 const throttledTimeUpdate = useThrottleFn(setCurrentTime, 0);
+
 function onHover(e: MouseEvent) {
   const { date } = calculatePixelDate(e.clientX);
+  // round to the nearest 15 minutes
+  date.setUTCMinutes(Math.round(date.getUTCMinutes() / 15) * 15);
   hoveredX.value = e.clientX;
   hoveredDate.value = date;
 }
