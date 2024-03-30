@@ -17,7 +17,7 @@ import {
   useMoveInteraction,
   useUnitLayer,
   useUnitSelectInteraction,
-} from "@/composables/geomap";
+} from "@/composables/geoUnitLayers";
 import LayerGroup from "ol/layer/Group";
 import { useScenarioMapLayers } from "@/modules/scenarioeditor/scenarioMapLayers";
 import {

@@ -59,7 +59,7 @@ import { Bars3Icon as MenuIcon, XMarkIcon as XIcon } from "@heroicons/vue/24/out
 import NumberInputGroup from "../../components/NumberInputGroup.vue";
 import MeasurementToolbar from "../../components/MeasurementToolbar.vue";
 import type { TScenario } from "@/scenariostore";
-import { useUnitLayer } from "@/composables/geomap";
+import { useUnitLayer } from "@/composables/geoUnitLayers";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
 import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useFeatureStyles } from "@/geo/featureStyles";
