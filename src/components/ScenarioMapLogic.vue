@@ -13,6 +13,7 @@ import {
 import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import { storeToRefs } from "pinia";
 import {
+  useDrop,
   useMoveInteraction,
   useUnitLayer,
   useUnitSelectInteraction,
@@ -64,8 +65,9 @@ const settingsStore = useSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
 const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
-
 const { unitLayer, drawUnits } = useUnitLayer();
+
+const { onDrop } = useDrop(mapRef, unitLayer);
 
 const olMap = props.olMap;
 mapRef.value = olMap;
@@ -187,6 +189,12 @@ watch([() => state.currentTime, doNotFilterLayers], (v) => {
 onUnmounted(() => {
   geoStore.olMap = undefined;
 });
+
+function handleDrop(e: DragEvent) {
+  onDrop(e);
+}
+
+defineExpose({ handleDrop });
 </script>
 
 <template></template>

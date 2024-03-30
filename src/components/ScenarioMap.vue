@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { shallowRef } from "vue";
+import { ref, shallowRef } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { useGeoStore } from "@/stores/geoStore";
-
-import { useDrop, useUnitLayer } from "@/composables/geomap";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import type Select from "ol/interaction/Select";
 import ScenarioMapLogic from "@/components/ScenarioMapLogic.vue";
@@ -21,25 +19,26 @@ const emit = defineEmits<{
   ): void;
 }>();
 
+const mapLogicComponent = ref<InstanceType<typeof ScenarioMapLogic> | null>(null);
 const mapSettings = useMapSettingsStore();
-
 const mapRef = shallowRef<OLMap>();
 const geoStore = useGeoStore();
-
-const { unitLayer } = useUnitLayer();
-const { onDrop } = useDrop(mapRef, unitLayer);
 
 const onMapReady = (olMap: OLMap) => {
   mapRef.value = olMap;
   geoStore.olMap = olMap;
 };
+
+function handleDrop(e: DragEvent) {
+  mapLogicComponent.value?.handleDrop(e);
+}
 </script>
 <template>
   <div class="relative bg-white dark:bg-gray-900">
     <MapContextMenu :map-ref="mapRef" v-slot="{ onContextMenu }">
       <MapContainer
         @ready="onMapReady"
-        @drop="onDrop"
+        @drop="handleDrop"
         @dragover.prevent
         :base-layer-name="mapSettings.baseLayerName"
         @contextmenu="onContextMenu"
@@ -47,6 +46,7 @@ const onMapReady = (olMap: OLMap) => {
     </MapContextMenu>
 
     <ScenarioMapLogic
+      ref="mapLogicComponent"
       v-if="mapRef"
       :ol-map="mapRef"
       @map-ready="emit('map-ready', $event)"
