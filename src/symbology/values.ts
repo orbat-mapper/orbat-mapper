@@ -2,6 +2,8 @@
 
 import { SymbolValue } from "@/types/constants";
 
+export const AIR_SYMBOLSET_VALUE = "01";
+export const SPACE_SYMBOLSET_VALUE = "05";
 export const UNIT_SYMBOLSET_VALUE = "10";
 export const DISMOUNTED_SYMBOLSET_VALUE = "27";
 export const SURFACE_SYMBOLSET_VALUE = "30";
@@ -128,3 +130,29 @@ export const SID = {
 } as const;
 
 export type SidValue = (typeof SID)[keyof typeof SID];
+
+export const Dimension = {
+  Unknown: "Unknown",
+  Space: "Space",
+  Air: "Air",
+  LandUnit: "LandUnit",
+  LandEquipment: "LandEquipment",
+  LandInstallation: "LandInstallation",
+  SeaSurface: "SeaSurface",
+  SeaSubsurface: "SeaSubsurface",
+  Activity: "Activity",
+  DismountedIndividual: "DismountedIndividual",
+} as const;
+
+export type DimensionValue = (typeof Dimension)[keyof typeof Dimension];
+
+export const symbolSetToDimension: Record<string, DimensionValue> = {
+  [AIR_SYMBOLSET_VALUE]: Dimension.Air,
+  [SPACE_SYMBOLSET_VALUE]: Dimension.Space,
+  [UNIT_SYMBOLSET_VALUE]: Dimension.LandUnit,
+  [DISMOUNTED_SYMBOLSET_VALUE]: Dimension.DismountedIndividual,
+  [SURFACE_SYMBOLSET_VALUE]: Dimension.SeaSurface,
+  [SUBSURFACE_SYMBOLSET_VALUE]: Dimension.SeaSubsurface,
+  [CONTROL_MEASURE_SYMBOLSET_VALUE]: Dimension.Activity,
+  [EQUIPMENT_SYMBOLSET_VALUE]: Dimension.LandEquipment,
+};

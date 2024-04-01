@@ -194,6 +194,8 @@ export function useUnitSelectInteraction(
         const symbolOptions = getCombinedSymbolOptions(unit);
         unitStyle = createUnitStyle(unit, {
           ...symbolOptions,
+          infoOutlineColor: "yellow",
+          infoOutlineWidth: 8,
           outlineColor: "yellow",
           outlineWidth: 21,
         });

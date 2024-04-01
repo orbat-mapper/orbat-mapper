@@ -38,11 +38,15 @@ export function createUnitStyle(unit: NUnit, symbolOptions: UnitSymbolOptions): 
 
   const settingsStore = useSettingsStore();
   const symbolSettings = useSymbolSettingsStore();
+
+  const { uniqueDesignation = shortName || name, ...textAmplifiers } =
+    unit.textAmplifiers || {};
   const milSymbol = symbolGenerator(sidc, {
     size: settingsStore.mapIconSize * (window.devicePixelRatio || 1),
-    uniqueDesignation: shortName || name,
+    uniqueDesignation,
     outlineColor: "white",
     outlineWidth: 8,
+    ...textAmplifiers,
     ...symbolSettings.symbolOptions,
     ...symbolOptions,
   });

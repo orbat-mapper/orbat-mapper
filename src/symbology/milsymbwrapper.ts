@@ -34,3 +34,37 @@ export function symbolGenerator(sidc: string, options: SymbolOptions = {}): MilS
   }
   return new ms.Symbol(sidc, opts);
 }
+
+export const textAmpMap = {
+  C: "quantity",
+  F: "reinforcedReduced",
+  G: "staffComments",
+  H: "additionalInformation",
+  J: "evaluationRating",
+  K: "combatEffectiveness",
+  L: "signatureEquipment",
+  M: "higherFormation",
+  N: "hostile",
+  P: "iffSif",
+  Q: "direction",
+  R: "quantity",
+  T: "uniqueDesignation",
+  V: "type",
+  W: "dtg",
+  X: "altitudeDepth",
+  Y: "location",
+  Z: "speed",
+  AA: "specialHeadquarters",
+  AC: "country",
+  AD: "platformType",
+  AE: "equipmentTeardownTime",
+  AF: "commonIdentifier",
+  AH: "headquartersElement",
+  AP: "targetNumber",
+  AQ: "guardedUnit",
+  AR: "specialDesignator",
+  R2: "sigint",
+} as const;
+
+export type TextAmpKey = keyof typeof textAmpMap;
+export type TextAmpValue = (typeof textAmpMap)[keyof typeof textAmpMap];

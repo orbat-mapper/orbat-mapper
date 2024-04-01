@@ -128,12 +128,14 @@
           </div>
         </section>
       </TabPanel>
+      <TabPanel><UnitDetailsSymbol :unit="unit" :key="unit.id" /></TabPanel>
       <TabPanel><UnitPanelState v-if="!isMultiMode" :unit="unit" /></TabPanel>
       <TabPanel>
         <UnitDetailsMap :unit="unit" />
       </TabPanel>
       <TabPanel><UnitDetailsToe :unit="unit" /></TabPanel>
       <TabPanel><UnitDetailsProperties :unit="unit" /></TabPanel>
+
       <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
         <pre>{{ unit }}</pre>
       </TabPanel>
@@ -191,6 +193,7 @@ import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsProperties.vue";
+import UnitDetailsSymbol from "@/modules/scenarioeditor/UnitDetailsSymbol.vue";
 
 const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
@@ -212,6 +215,7 @@ const tabList = computed(() =>
   uiStore.debugMode
     ? [
         "Details",
+        "Map symbol",
         "Unit state",
         "Map overlay",
         { label: "TO&E", title: "Table of organization and equipment" },
@@ -220,6 +224,7 @@ const tabList = computed(() =>
       ]
     : [
         "Details",
+        "Map symbol",
         "Unit state",
         "Map overlay",
         { label: "TO&E", title: "Table of organization and equipment" },

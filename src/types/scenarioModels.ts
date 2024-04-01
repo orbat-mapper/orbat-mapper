@@ -8,6 +8,7 @@ import type {
 import type { EntityId, ScenarioTime } from "./base";
 import type { SidValue } from "@/symbology/values";
 import { type SymbolOptions } from "milsymbol";
+import { TextAmpValue } from "@/symbology/milsymbwrapper";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;
@@ -39,6 +40,8 @@ export interface UnitSymbolOptions extends SymbolOptions {
   fillColor?: string;
 }
 
+export type TextAmplifiers = Partial<Record<TextAmpValue, string>>;
+
 export interface Unit {
   id: EntityId;
   name: string;
@@ -50,6 +53,7 @@ export interface Unit {
   location?: Position;
   state?: State[];
   symbolOptions?: UnitSymbolOptions;
+  textAmplifiers?: TextAmplifiers;
   rangeRings?: RangeRing[];
   equipment?: UnitEquipment[];
   personnel?: UnitPersonnel[];
@@ -173,6 +177,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "0.19.0"
   | "0.18.0"
   | "0.17.0"
   | "0.16.0"
