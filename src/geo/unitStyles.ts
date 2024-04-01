@@ -1,17 +1,21 @@
-import type { FeatureLike } from "ol/Feature";
 import { Icon, Style } from "ol/style";
-import type { Unit } from "@/types/scenarioModels";
+import type { UnitSymbolOptions } from "@/types/scenarioModels";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Symbol as MilSymbol } from "milsymbol";
 import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
-import type { OlUnitProps } from "@/types/internalModels";
+import type { NUnit } from "@/types/internalModels";
 
-const unitStyleCache = new Map();
-const selectedUnitStyleCache = new Map();
+export const unitStyleCache = new Map<string, Style>();
+export const selectedUnitStyleCache = new Map<string, Style>();
 
-export function clearStyleCache() {
+export function clearUnitStyleCache() {
   unitStyleCache.clear();
   selectedUnitStyleCache.clear();
+}
+
+export function invalidateUnitStyle(cacheKey: string) {
+  unitStyleCache.delete(cacheKey);
+  selectedUnitStyleCache.delete(cacheKey);
 }
 
 function createMilSymbolStyle(milSymbol: MilSymbol) {
@@ -28,56 +32,19 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
   });
 }
 
-export function createUnitStyleFromFeature(feature: FeatureLike): Style[] {
-  const {
-    sidc,
-    name = "",
-    shortName = "",
-    stateType,
-    symbolOptions = {},
-  } = feature.getProperties() as OlUnitProps;
-  const isInterpolated = stateType === "interpolated";
-  const key = sidc + shortName + name + symbolOptions.fillColor || "";
-  if (!unitStyleCache.has(key)) {
-    const settingsStore = useSettingsStore();
-    const symbolSettings = useSymbolSettingsStore();
-    const milSymbol = symbolGenerator(sidc, {
-      size: settingsStore.mapIconSize * (window.devicePixelRatio || 1),
-      uniqueDesignation: shortName || name,
-      outlineColor: "white",
-      outlineWidth: 8,
-      ...symbolSettings.symbolOptions,
-      ...symbolOptions,
-    });
-    const style = createMilSymbolStyle(milSymbol);
-    unitStyleCache.set(key, style);
-    return [style];
-  } else return [unitStyleCache.get(key)];
-}
+export function createUnitStyle(unit: NUnit, symbolOptions: UnitSymbolOptions): Style {
+  const { name = "", shortName = "" } = unit;
+  const sidc = unit._state?.sidc || unit.sidc;
 
-export function createSelectedUnitStyleFromFeature(feature: FeatureLike): Style {
-  const {
-    sidc,
-    name = "",
-    shortName = "",
-    symbolOptions = {},
-  } = feature.getProperties() as Unit;
-  const key = sidc + shortName + name + symbolOptions.fillColor || "";
-  if (!selectedUnitStyleCache.has(key)) {
-    const settingsStore = useSettingsStore();
-    const symbolSettings = useSymbolSettingsStore();
-    const milSymbol = symbolGenerator(sidc, {
-      size: settingsStore.mapIconSize * (window.devicePixelRatio || 1),
-      outlineColor: "Yellow",
-      outlineWidth: 21,
-      uniqueDesignation: name || shortName,
-      ...symbolSettings.symbolOptions,
-      ...symbolOptions,
-    });
-    const style = createMilSymbolStyle(milSymbol);
-    style.setZIndex(10);
-
-    selectedUnitStyleCache.set(key, style);
-    return style;
-  } else return selectedUnitStyleCache.get(key);
+  const settingsStore = useSettingsStore();
+  const symbolSettings = useSymbolSettingsStore();
+  const milSymbol = symbolGenerator(sidc, {
+    size: settingsStore.mapIconSize * (window.devicePixelRatio || 1),
+    uniqueDesignation: shortName || name,
+    outlineColor: "white",
+    outlineWidth: 8,
+    ...symbolSettings.symbolOptions,
+    ...symbolOptions,
+  });
+  return createMilSymbolStyle(milSymbol);
 }

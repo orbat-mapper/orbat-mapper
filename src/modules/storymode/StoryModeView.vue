@@ -53,7 +53,7 @@ import { fromLonLat } from "ol/proj";
 import dayjs from "dayjs";
 import { flyTo } from "@/geo/layers";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { clearStyleCache } from "@/geo/unitStyles";
+import { clearUnitStyleCache } from "@/geo/unitStyles";
 import SlideOver from "../../components/SlideOver.vue";
 import { Bars3Icon as MenuIcon, XMarkIcon as XIcon } from "@heroicons/vue/24/outline";
 import NumberInputGroup from "../../components/NumberInputGroup.vue";
@@ -160,7 +160,7 @@ function onUpdateState(state: StoryStateChange) {
 }
 
 watch(settingsStore, () => {
-  clearStyleCache();
+  clearUnitStyleCache();
   drawUnits();
 });
 </script>

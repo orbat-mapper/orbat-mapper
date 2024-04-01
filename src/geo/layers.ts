@@ -1,12 +1,12 @@
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { Coordinate } from "ol/coordinate";
-import type { Unit, UnitSymbolOptions } from "@/types/scenarioModels";
+import type { Unit } from "@/types/scenarioModels";
 import { Feature } from "ol";
-import { LineString, Point } from "ol/geom";
+import { Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";
-import { createUnitStyleFromFeature } from "./unitStyles";
-import { AnyVectorLayer, PointVectorLayer } from "./types";
+
+import { AnyVectorLayer } from "./types";
 import View from "ol/View";
 import { nanoid } from "@/utils";
 import { NUnit } from "@/types/internalModels";
@@ -15,7 +15,6 @@ import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
 export function createUnitLayer(): AnyVectorLayer {
   return new VectorLayer({
     source: new VectorSource(),
-    style: createUnitStyleFromFeature,
     updateWhileInteracting: true,
     updateWhileAnimating: true,
     properties: {
@@ -29,21 +28,12 @@ export function createUnitLayer(): AnyVectorLayer {
 export function createUnitFeatureAt(
   position: Coordinate,
   unit: Unit | NUnit,
-  symbolOptions: UnitSymbolOptions,
 ): Feature<Point> {
   const geometry = new Point(fromLonLat(position));
-  const { sidc, name, id, shortName } = unit;
-  const stateType = unit._state?.type;
   const feature = new Feature<Point>({
     geometry,
-    sidc: unit._state?.sidc || sidc,
-    name,
-    id,
-    shortName,
-    stateType,
-    symbolOptions,
   });
-  feature.setId(id);
+  feature.setId(unit.id);
   return feature;
 }
 

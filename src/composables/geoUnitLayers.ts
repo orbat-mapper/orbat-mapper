@@ -12,7 +12,12 @@ import { DragBox, Modify, Select } from "ol/interaction";
 import { ModifyEvent } from "ol/interaction/Modify";
 import { Feature } from "ol";
 import { MaybeRef } from "@vueuse/core";
-import { createSelectedUnitStyleFromFeature } from "@/geo/unitStyles";
+import {
+  clearUnitStyleCache,
+  createUnitStyle,
+  selectedUnitStyleCache,
+  unitStyleCache,
+} from "@/geo/unitStyles";
 import {
   altKeyOnly,
   click as clickCondition,
@@ -24,23 +29,43 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
-import { NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { FeatureLike } from "ol/Feature";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const {
+    store: { state, onUndoRedo },
     geo,
     unitActions: { getCombinedSymbolOptions },
   } = activeScenario || injectStrict(activeScenarioKey);
+
   const unitLayer = createUnitLayer();
+  unitLayer.setStyle(unitStyleFunction);
+
+  function unitStyleFunction(feature: FeatureLike, resolution: number) {
+    const unitId = feature?.getId() as string;
+    let unitStyle = unitStyleCache.get(unitId);
+
+    if (!unitStyle) {
+      const unit = state.getUnitById(unitId);
+      if (unit) {
+        const symbolOptions = getCombinedSymbolOptions(unit);
+        unitStyle = createUnitStyle(unit, symbolOptions);
+        unitStyleCache.set(unitId, unitStyle);
+      }
+    }
+
+    return unitStyle;
+  }
+
+  onUndoRedo(() => {
+    clearUnitStyleCache();
+  });
+
   const drawUnits = () => {
     unitLayer.getSource()?.clear();
     const units = geo.everyVisibleUnit.value.map((unit) => {
-      return createUnitFeatureAt(
-        unit._state!.location!,
-        unit,
-        getCombinedSymbolOptions(unit),
-      );
+      return createUnitFeatureAt(unit._state!.location!, unit);
     });
     unitLayer.getSource()?.addFeatures(units);
   };
@@ -48,11 +73,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
   const animateUnits = () => {
     unitLayer.getSource()?.clear();
     const units = geo.everyVisibleUnit.value.map((unit) => {
-      return createUnitFeatureAt(
-        unit._state!.location!,
-        unit,
-        getCombinedSymbolOptions(unit),
-      );
+      return createUnitFeatureAt(unit._state!.location!, unit);
     });
     unitLayer.getSource()?.addFeatures(units);
     // units.forEach((f) =>
@@ -68,10 +89,7 @@ export function useDrop(
   unitLayer: MaybeRef<VectorLayer<any>>,
 ) {
   const dragStore = useDragStore();
-  const {
-    geo,
-    unitActions: { getCombinedSymbolOptions },
-  } = injectStrict(activeScenarioKey);
+  const { geo } = injectStrict(activeScenarioKey);
 
   const onDrop = (ev: DragEvent) => {
     const olMap = unref(mapRef);
@@ -92,13 +110,7 @@ export function useDrop(
       if (existingUnitFeature) {
         existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
       } else {
-        unitSource.addFeature(
-          createUnitFeatureAt(
-            dropPosition,
-            dragStore.draggedUnit,
-            getCombinedSymbolOptions(dragStore.draggedUnit as unknown as NUnit),
-          ),
-        );
+        unitSource.addFeature(createUnitFeatureAt(dropPosition, dragStore.draggedUnit));
       }
     }
   };
@@ -159,14 +171,38 @@ export function useUnitSelectInteraction(
     clear: clearSelectedItems,
     activeUnitId,
   } = useSelectedItems();
-  const { geo } = injectStrict(activeScenarioKey);
+  const {
+    geo,
+    store: { state },
+    unitActions: { getCombinedSymbolOptions },
+  } = injectStrict(activeScenarioKey);
 
   const unitSelectInteraction = new Select({
     layers,
-    style: createSelectedUnitStyleFromFeature,
+    style: selectedUnitStyleFunction,
     condition: clickCondition,
     removeCondition: altKeyOnly,
   });
+
+  function selectedUnitStyleFunction(feature: FeatureLike, resolution: number) {
+    const unitId = feature?.getId() as string;
+    let unitStyle = selectedUnitStyleCache.get(unitId);
+
+    if (!unitStyle) {
+      const unit = state.getUnitById(unitId);
+      if (unit) {
+        const symbolOptions = getCombinedSymbolOptions(unit);
+        unitStyle = createUnitStyle(unit, {
+          ...symbolOptions,
+          outlineColor: "yellow",
+          outlineWidth: 21,
+        });
+        selectedUnitStyleCache.set(unitId, unitStyle);
+      }
+    }
+
+    return unitStyle;
+  }
 
   const boxSelectInteraction = new DragBox({ condition: platformModifierKeyOnly });
 

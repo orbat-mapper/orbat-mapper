@@ -32,7 +32,7 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useShowLocationControl } from "@/composables/geoShowLocation";
 import { useShowScaleLine } from "@/composables/geoScaleLine";
 import { ObjectEvent } from "ol/Object";
-import { clearStyleCache } from "@/geo/unitStyles";
+import { clearUnitStyleCache } from "@/geo/unitStyles";
 import { useRangeRingsLayer } from "@/composables/geoRangeRings";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { useDayNightLayer } from "@/composables/geoDayNight";
@@ -52,7 +52,6 @@ const emit = defineEmits<{
 const {
   geo,
   store: { state },
-  unitActions,
 } = injectStrict(activeScenarioKey);
 
 const mapRef = shallowRef<OLMap>();
@@ -178,7 +177,7 @@ watch(
 );
 
 watch([settingsStore, symbolSettings], () => {
-  clearStyleCache();
+  clearUnitStyleCache();
   drawUnits();
 });
 
@@ -188,6 +187,7 @@ watch([() => state.currentTime, doNotFilterLayers], (v) => {
 
 onUnmounted(() => {
   geoStore.olMap = undefined;
+  clearUnitStyleCache();
 });
 
 function handleDrop(e: DragEvent) {

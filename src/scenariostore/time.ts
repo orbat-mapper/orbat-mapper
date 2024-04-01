@@ -9,6 +9,7 @@ import { lineString } from "@turf/helpers";
 import { EntityId } from "@/types/base";
 import { klona } from "klona";
 import { createEventHook } from "@vueuse/core";
+import { invalidateUnitStyle } from "@/geo/unitStyles";
 
 export type GoToScenarioEventOptions = {
   silent?: boolean;
@@ -75,6 +76,9 @@ export function useScenarioTime(store: NewScenarioStore) {
           }
           break;
         }
+      }
+      if (currentState?.sidc !== unit._state?.sidc) {
+        invalidateUnitStyle(unit.id);
       }
       unit._state = currentState;
     });
