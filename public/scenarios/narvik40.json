@@ -1,7 +1,11 @@
 {
-  "type": "ORBAT-mapper",
   "id": "demo-narvik40",
-  "version": "0.16.0",
+  "type": "ORBAT-mapper",
+  "version": "0.19.0",
+  "meta": {
+    "createdDate": "2024-04-01T17:14:51.567Z",
+    "lastModifiedDate": "2024-04-01T17:18:07.780Z"
+  },
   "name": "Battles of Narvik",
   "startTime": "1940-04-09T01:00:00+02:00",
   "timeZone": "Europe/Oslo",
@@ -18,15 +22,15 @@
           "name": "Norwegian units",
           "subUnits": [
             {
+              "id": "elmfZkws7F",
               "name": "Naval units",
               "sidc": "10033000001210040000",
-              "id": "elmfZkws7F",
               "state": [],
               "subUnits": [
                 {
+                  "id": "EaPcn0Sv5yfULEaLgVpgN",
                   "name": "Eidsvold",
                   "sidc": "10033000001205000000",
-                  "id": "EaPcn0Sv5yfULEaLgVpgN",
                   "properties": {
                     "averageSpeed": {
                       "value": 17.2,
@@ -58,9 +62,9 @@
                   ]
                 },
                 {
+                  "id": "gIm8WMiQbrOSM-8qe_iC5",
                   "name": "Norge",
                   "sidc": "10033000001205000000",
-                  "id": "gIm8WMiQbrOSM-8qe_iC5",
                   "properties": {
                     "averageSpeed": {
                       "value": 17.2,
@@ -100,15 +104,15 @@
           "name": "British forces",
           "subUnits": [
             {
+              "id": "84T0TIJw3uzI4owhauV57",
               "name": "Naval units",
               "sidc": "10033004001200000000",
-              "id": "84T0TIJw3uzI4owhauV57",
               "state": [],
               "subUnits": [
                 {
+                  "id": "RjhMI5jVDqdnozd9CWF2c",
                   "name": "HMS Hardy",
                   "sidc": "10033000001202030000",
-                  "id": "RjhMI5jVDqdnozd9CWF2c",
                   "state": [],
                   "subUnits": [],
                   "shortName": "Hardy",
@@ -130,9 +134,9 @@
                   }
                 },
                 {
+                  "id": "fAK5DNvzkEee-Bprww6Nn",
                   "name": "HMS Hotspur",
                   "sidc": "10033000001202030000",
-                  "id": "fAK5DNvzkEee-Bprww6Nn",
                   "state": [],
                   "subUnits": [],
                   "shortName": "Hotspur",
@@ -152,9 +156,9 @@
                   }
                 },
                 {
+                  "id": "WrV9f5KQLDt3dbBJIWNWX",
                   "name": "HMS Hostile",
                   "sidc": "10033000001202030000",
-                  "id": "WrV9f5KQLDt3dbBJIWNWX",
                   "state": [],
                   "subUnits": [],
                   "shortName": "Hostile",
@@ -176,9 +180,9 @@
                   }
                 },
                 {
+                  "id": "2jGbCsiwmZ-xau6MJuMuI",
                   "name": "HMS Hunter",
                   "sidc": "10033000001202030000",
-                  "id": "2jGbCsiwmZ-xau6MJuMuI",
                   "state": [],
                   "subUnits": [],
                   "shortName": "Hunter",
@@ -192,9 +196,9 @@
                   ]
                 },
                 {
+                  "id": "ERVsIaBmNfyTvW-Df5XaL",
                   "name": "HMS Havock",
                   "sidc": "10033000001202030000",
-                  "id": "ERVsIaBmNfyTvW-Df5XaL",
                   "state": [],
                   "subUnits": [],
                   "shortName": "Havock",
@@ -210,59 +214,74 @@
               ]
             },
             {
+              "id": "82kVsYph7f",
               "name": "North West Expeditionary Force",
               "sidc": "10031004000000000000",
-              "id": "82kVsYph7f",
               "state": [],
               "subUnits": [
                 {
+                  "id": "OHAwyNiM39",
                   "name": "24th Infantry Brigade",
                   "sidc": "10031000181211000000",
-                  "id": "OHAwyNiM39",
                   "state": [],
                   "subUnits": [
                     {
+                      "id": "2az3bUhvA2",
                       "name": "1 SG",
                       "sidc": "10031000161211000000",
-                      "id": "2az3bUhvA2",
                       "state": [],
                       "subUnits": [],
-                      "shortName": "1 SG"
+                      "shortName": "1 SG",
+                      "textAmplifiers": {
+                        "higherFormation": "24"
+                      }
                     },
                     {
+                      "id": "65tzFbGUCe",
                       "name": "1 IG",
                       "sidc": "10031000161211000000",
-                      "id": "65tzFbGUCe",
                       "state": [],
                       "subUnits": [],
-                      "shortName": ""
+                      "shortName": "",
+                      "textAmplifiers": {
+                        "higherFormation": "24"
+                      }
                     },
                     {
+                      "id": "gULg9WePVH",
                       "name": "2 SWB",
                       "sidc": "10031000161211000000",
-                      "id": "gULg9WePVH",
                       "state": [],
                       "subUnits": [],
                       "shortName": "",
-                      "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War"
+                      "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War",
+                      "textAmplifiers": {
+                        "higherFormation": "24"
+                      }
                     },
                     {
+                      "id": "weZFBcd0vw",
                       "name": "229 Field RE",
                       "sidc": "10031000151407000000",
-                      "id": "weZFBcd0vw",
                       "state": [],
                       "subUnits": [],
                       "shortName": "",
-                      "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War"
+                      "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War",
+                      "textAmplifiers": {
+                        "higherFormation": "24"
+                      }
                     },
                     {
+                      "id": "ypDWYk7VSY",
                       "name": "230 Field RE",
                       "sidc": "10031000151407000000",
-                      "id": "ypDWYk7VSY",
                       "state": [],
                       "subUnits": [],
                       "shortName": "",
-                      "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War"
+                      "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War",
+                      "textAmplifiers": {
+                        "higherFormation": "24"
+                      }
                     }
                   ],
                   "shortName": "24 Guards"
@@ -284,21 +303,21 @@
           "name": "Units",
           "subUnits": [
             {
+              "id": "4jUDHDPiJn",
               "name": "Naval units",
               "sidc": "10063000001210040000",
-              "id": "4jUDHDPiJn",
               "state": [],
               "subUnits": [
                 {
+                  "id": "Umq7QwBgfH",
                   "name": "Group I",
                   "sidc": "10063000001210030000",
-                  "id": "Umq7QwBgfH",
                   "state": [],
                   "subUnits": [
                     {
+                      "id": "bpM1qg1xEY",
                       "name": "Z19 Herman Künne",
                       "sidc": "10063000001202030000",
-                      "id": "bpM1qg1xEY",
                       "state": [
                         {
                           "id": "gb1QF9lQOR",
@@ -325,9 +344,9 @@
                       "shortName": "Künne"
                     },
                     {
+                      "id": "afkHbgvnGM",
                       "name": "Z17 Dieter von Roeder",
                       "sidc": "10063000001202030000",
-                      "id": "afkHbgvnGM",
                       "state": [
                         {
                           "id": "vFpYyALC9D",
@@ -348,9 +367,9 @@
                       "shortName": "Roeder"
                     },
                     {
+                      "id": "YogCVYqEEF",
                       "name": "Z18 Hans Lüdemann",
                       "sidc": "10063000001202030000",
-                      "id": "YogCVYqEEF",
                       "state": [
                         {
                           "id": "vyueHjfsHh",
@@ -373,9 +392,9 @@
                       "shortName": "Lüdemann"
                     },
                     {
+                      "id": "KVM1ZdVb0i",
                       "name": "Z21 Wilhelm Heidkamp",
                       "sidc": "10063000001202030000",
-                      "id": "KVM1ZdVb0i",
                       "state": [
                         {
                           "id": "1Tgdnl8mFY",
@@ -409,9 +428,9 @@
                       ]
                     },
                     {
+                      "id": "FZ4oawwQsu",
                       "name": "Z22 Anton Schmitt",
                       "sidc": "10063000001202030000",
-                      "id": "FZ4oawwQsu",
                       "state": [
                         {
                           "id": "IsCBeJnQA2",
@@ -432,9 +451,9 @@
                       "shortName": "Schmitt"
                     },
                     {
+                      "id": "IOhludOpmT",
                       "name": "Z13 Erich Koellner",
                       "sidc": "10063000001202030000",
-                      "id": "IOhludOpmT",
                       "state": [
                         {
                           "id": "FevGs6riTL",
@@ -464,9 +483,9 @@
                       "shortName": "Koellner"
                     },
                     {
+                      "id": "k6q1mmbloJ",
                       "name": "Z2 Georg Thiele",
                       "sidc": "10063000001202030000",
-                      "id": "k6q1mmbloJ",
                       "state": [
                         {
                           "id": "kMokDwo1jU",
@@ -488,9 +507,9 @@
                       "shortName": "Thiele"
                     },
                     {
+                      "id": "hPIRsiduCe",
                       "name": "Z11 Bernd von Arnim",
                       "sidc": "10063000001202030000",
-                      "id": "hPIRsiduCe",
                       "state": [
                         {
                           "id": "TojT1nXWbz",
@@ -516,16 +535,16 @@
                       "shortName": "Arnim"
                     },
                     {
+                      "id": "R1Lr1X6O3h",
                       "name": "Rauenfels",
                       "sidc": "10063000001301010000",
-                      "id": "R1Lr1X6O3h",
                       "state": [],
                       "subUnits": []
                     },
                     {
+                      "id": "OCyOmjWKBp",
                       "name": "FLK Jan Wellem",
                       "sidc": "10063000001301100000",
-                      "id": "OCyOmjWKBp",
                       "state": [],
                       "subUnits": [],
                       "shortName": "Wellem"
@@ -534,16 +553,16 @@
                   "symbolOptions": {}
                 },
                 {
+                  "id": "E9iEDHE3Xi",
                   "name": "U-25",
                   "sidc": "10063500001101000000",
-                  "id": "E9iEDHE3Xi",
                   "state": [],
                   "subUnits": []
                 },
                 {
+                  "id": "ukjG2w1sNn",
                   "name": "U-51",
                   "sidc": "10063500001101000000",
-                  "id": "ukjG2w1sNn",
                   "state": [],
                   "subUnits": []
                 }
@@ -604,6 +623,9 @@
         "name": "Destroyed",
         "description": ""
       }
-    ]
+    ],
+    "map": {
+      "baseMapId": "osm"
+    }
   }
 }
