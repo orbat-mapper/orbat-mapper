@@ -75,9 +75,23 @@ const surfaceFields: TextFieldMeta[] = [
   { x: 3, y: 4, field: "G" },
 ];
 
+const subSurfaceFields: TextFieldMeta[] = [
+  { x: 3, y: 1, field: "T" },
+  { x: 3, y: 4, field: "G" },
+];
+
+const airFields: TextFieldMeta[] = [
+  { x: 3, y: 1, field: "T" },
+  { x: 3, y: 4, field: "G" },
+];
+
 const textFields = computed(() => {
   if (dimension.value === Dimension.SeaSurface) {
     return surfaceFields;
+  } else if (dimension.value === Dimension.SeaSubsurface) {
+    return subSurfaceFields;
+  } else if (dimension.value === Dimension.Air) {
+    return airFields;
   }
   return landUnitFields;
 });
