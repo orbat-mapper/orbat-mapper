@@ -37,7 +37,7 @@
             Clear
           </button>
         </div>
-        <ul class="my-4 flex w-full flex-wrap gap-1">
+        <ul class="my-4 flex w-full flex-wrap gap-1 pb-4">
           <li v-for="sUnit in selectedUnits" class="relative flex">
             <MilitarySymbol
               :sidc="sUnit.sidc"
@@ -83,7 +83,7 @@
     </header>
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
       <TabPanel class="pt-4">
-        <section class="relative">
+        <section class="relative" v-if="!isMultiMode">
           <EditMetaForm
             v-if="isEditMode"
             :item="unit"
@@ -127,14 +127,27 @@
             </DescriptionItem>
           </div>
         </section>
+        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
-      <TabPanel><UnitDetailsSymbol :unit="unit" :key="unit.id" /></TabPanel>
-      <TabPanel><UnitPanelState v-if="!isMultiMode" :unit="unit" /></TabPanel>
       <TabPanel>
-        <UnitDetailsMap :unit="unit" />
+        <UnitDetailsSymbol :unit="unit" :key="unit.id" :is-multi-mode="isMultiMode" />
       </TabPanel>
-      <TabPanel><UnitDetailsToe :unit="unit" /></TabPanel>
-      <TabPanel><UnitDetailsProperties :unit="unit" /></TabPanel>
+      <TabPanel>
+        <UnitPanelState v-if="!isMultiMode" :unit="unit" />
+        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
+      </TabPanel>
+      <TabPanel>
+        <UnitDetailsMap v-if="!isMultiMode" :unit="unit" :is-multi-mode="isMultiMode" />
+        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
+      </TabPanel>
+      <TabPanel>
+        <UnitDetailsToe v-if="!isMultiMode" :unit="unit" />
+        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
+      </TabPanel>
+      <TabPanel>
+        <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" />
+        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
+      </TabPanel>
 
       <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
         <pre>{{ unit }}</pre>
@@ -194,6 +207,7 @@ import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsProperties.vue";
 import UnitDetailsSymbol from "@/modules/scenarioeditor/UnitDetailsSymbol.vue";
+import AlertWarning from "@/components/AlertWarning.vue";
 
 const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
