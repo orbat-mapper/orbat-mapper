@@ -40,7 +40,7 @@ import {
   orbatToText,
   parseApplicationOrbat,
 } from "@/importexport/convertUtils";
-import { Unit } from "@/types/scenarioModels";
+import { EntityId } from "@/types/base";
 
 interface Props {
   hideFilter?: boolean;
@@ -75,6 +75,11 @@ function onUnitDrop(
 function onUnitClick(unit: NUnit, event: MouseEvent) {
   const ids = selectedUnitIds.value;
   if (event.shiftKey) {
+    const selectedIds = calculateSelectedUnitIds(unit.id);
+    selectedIds.forEach((id) => {
+      ids.add(id);
+    });
+  } else if (event.ctrlKey || event.metaKey) {
     if (ids.has(unit.id)) {
       ids.delete(unit.id);
     } else {
@@ -85,6 +90,25 @@ function onUnitClick(unit: NUnit, event: MouseEvent) {
     activeParentId.value = unit.id;
   }
   bus.emit(unit);
+}
+
+function calculateSelectedUnitIds(newUnitId: EntityId): EntityId[] {
+  const lastSelectedId = [...selectedUnitIds.value].pop();
+  if (lastSelectedId === undefined) return [newUnitId];
+  const allOpenUnits: EntityId[] = [];
+  for (const side of state.sides) {
+    unitActions.walkSide(side, (unit) => {
+      allOpenUnits.push(unit.id);
+      if (!unit._isOpen) return false;
+    });
+  }
+  const lastSelectedIndex = allOpenUnits.indexOf(lastSelectedId);
+  const newUnitIndex = allOpenUnits.indexOf(newUnitId);
+  if (lastSelectedIndex === -1 || newUnitIndex === -1) return [newUnitId];
+  return allOpenUnits.slice(
+    Math.min(lastSelectedIndex, newUnitIndex),
+    Math.max(lastSelectedIndex, newUnitIndex) + 1,
+  );
 }
 
 function onSideAction(side: NSide, action: SideAction) {
