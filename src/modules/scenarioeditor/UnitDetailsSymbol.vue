@@ -11,16 +11,21 @@ import ToggleField from "@/components/ToggleField.vue";
 import { TextAmpKey, textAmpMap, TextAmpValue } from "@/symbology/milsymbwrapper";
 import BaseButton from "@/components/BaseButton.vue";
 import { TextAmplifiers } from "@/types/scenarioModels";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 interface Props {
   unit: NUnit;
+  isMultiMode: boolean;
 }
 
 const props = defineProps<Props>();
 const activeScenario = injectStrict(activeScenarioKey);
 const {
   unitActions: { updateUnit, getCombinedSymbolOptions },
+  store: { groupUpdate },
 } = activeScenario;
+
+const { selectedUnitIds } = useSelectedItems();
 
 const overrideName = ref<boolean>(
   props.unit.textAmplifiers?.uniqueDesignation !== undefined,
@@ -41,7 +46,7 @@ const dimension = computed(() => {
   return symbolSetToDimension[sidc.symbolSet] || Dimension.Unknown;
 });
 
-const testSymbol = computed(() => {
+const displaySymbol = computed(() => {
   const sidc = new Sidc(props.unit.sidc);
   sidc.emt = "000";
   sidc.hqtfd = "0";
@@ -97,7 +102,15 @@ const textFields = computed(() => {
 });
 
 function onSubmit() {
-  updateUnit(props.unit.id, { textAmplifiers: { ...textAmplifiers.value } });
+  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
+    groupUpdate(() => {
+      selectedUnitIds.value.forEach((id) => {
+        updateUnit(id, { textAmplifiers: { ...textAmplifiers.value } });
+      });
+    });
+  } else {
+    updateUnit(props.unit.id, { textAmplifiers: { ...textAmplifiers.value } });
+  }
 }
 
 function handleReset() {
@@ -111,7 +124,6 @@ function handleReset() {
     <div>
       <header class="my-4 flex items-center justify-between">
         <p />
-        <!--        <p class="text-sm font-medium leading-7">Map symbol</p>-->
         <ToggleField v-model="overrideName">Override name</ToggleField>
       </header>
       <form @submit.prevent="onSubmit">
@@ -127,7 +139,9 @@ function handleReset() {
               :placeholder="field || placeholder"
               :model-value="
                 !overrideName
-                  ? unit.shortName || unit.name
+                  ? isMultiMode
+                    ? '...'
+                    : unit.shortName || unit.name
                   : textAmplifiers.uniqueDesignation
               "
               @update:model-value="textAmplifiers[textAmpMap[field]] = $event"
@@ -145,7 +159,7 @@ function handleReset() {
             class="col-start-2 row-span-3 row-start-2 items-center justify-self-center pt-2"
           >
             <MilitarySymbol
-              :sidc="testSymbol"
+              :sidc="displaySymbol"
               :size="75"
               :modifiers="{ frame: true, monoColor: '#7a7575' }"
             />
