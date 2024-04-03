@@ -50,6 +50,11 @@ const displaySymbol = computed(() => {
   const sidc = new Sidc(props.unit.sidc);
   sidc.emt = "000";
   sidc.hqtfd = "0";
+  if (props.isMultiMode) {
+    sidc.mainIcon = "000000";
+    sidc.modifierOne = "00";
+    sidc.modifierTwo = "00";
+  }
   return sidc.toString();
 });
 
