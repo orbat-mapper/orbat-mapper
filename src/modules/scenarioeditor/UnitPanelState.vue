@@ -1,13 +1,11 @@
 <template>
   <h3 class="mt-6 font-medium text-gray-900">Unit state</h3>
   <div class="flex items-center justify-between">
-    <span class="text-sm">Change state</span>
-    <UnitStatusPopover @update="setUnitStatus" />
-    <SplitButton
-      class="ml-2"
-      :items="stateItems"
-      v-model:active-item="uiState.activeStateItem"
-    />
+    <span class="text-sm">Change</span>
+    <div class="flex items-center">
+      <UnitStatusPopover @update="setUnitStatus" />
+      <SplitButton :items="stateItems" v-model:active-item="uiState.activeStateItem" />
+    </div>
   </div>
 
   <ul class="mt-2 divide-y divide-gray-200 border-b border-t border-gray-200">
@@ -34,7 +32,7 @@
           @vue:mounted="onVMounted"
           @blur="doneEdit(s)"
           @keyup.enter="doneEdit(s)"
-          @keyup.escape="cancelEdit(s)"
+          @keyup.esc="cancelEdit()"
         />
         <p
           v-else-if="s.title"
@@ -114,7 +112,6 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { ButtonGroupItem, MenuItemData } from "@/components/types";
 import SplitButton from "@/components/SplitButton.vue";
 import { useUiStore } from "@/stores/uiStore";
-import { useNotifications } from "@/composables/notifications";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 
@@ -130,7 +127,6 @@ const {
   state: { unitStatusMap },
 } = store;
 const { onUnitAction } = useUnitActions();
-const { send } = useNotifications();
 const state = computed(() => props.unit.state || []);
 const uiState = useUiStore();
 const { selectedWaypointIds } = useSelectedWaypoints();
@@ -158,7 +154,6 @@ const stateItems: ButtonGroupItem[] = [
       handleRemoveFromMap();
     },
   },
-  { label: "Change status", onClick: () => {} },
 ];
 
 const editedTitle = ref<State | null>();
@@ -241,7 +236,7 @@ function doneEdit(s: State) {
   newTitle.value = "";
 }
 
-function cancelEdit(s: State) {
+function cancelEdit() {
   editedTitle.value = null;
   newTitle.value = "";
 }
