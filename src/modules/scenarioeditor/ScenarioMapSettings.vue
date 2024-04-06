@@ -24,6 +24,7 @@ const baseMapItems: SelectItem[] = [
   { label: "Open Topo Map", value: "openTopoMap" },
   { label: "ESRI World Imagery", value: "esriWorldImagery" },
   { label: "Topographic Map Norway", value: "kartverketTopo4" },
+  { label: "No base map", value: "None" },
 ];
 
 const baseMap = computed({
