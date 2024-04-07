@@ -28,7 +28,7 @@
 import BaseButton from "@/components/BaseButton.vue";
 import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, nanoid } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { computed, ref } from "vue";
 import { ImportedFileInfo } from "@/importexport/fileHandling";
 import InputGroup from "@/components/InputGroup.vue";
@@ -43,6 +43,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 const { geo } = injectStrict(activeScenarioKey);
+const { onImageLayerSelectHook } = injectStrict(searchActionsKey);
 
 const form = ref({
   layerName: stripFileExtension(props.fileInfo.fileName),
@@ -56,12 +57,13 @@ const isBlob = computed(() => {
 });
 
 async function onLoad(e: Event) {
-  geo.addMapLayer({
+  const newLayer = geo.addMapLayer({
     url: props.objectUrl,
     name: form.value.layerName,
     id: nanoid(),
     type: "ImageLayer",
   });
+  await onImageLayerSelectHook.trigger({ layerId: newLayer.id });
   emit("loaded");
 }
 

@@ -1,3 +1,46 @@
+<script setup lang="ts">
+import BaseButton from "@/components/BaseButton.vue";
+import { injectStrict, nanoid } from "@/utils";
+import { activeScenarioKey, searchActionsKey } from "@/components/injects";
+import { ref } from "vue";
+import { ImportedFileInfo } from "@/importexport/fileHandling";
+import InputGroup from "@/components/InputGroup.vue";
+import { stripFileExtension } from "@/utils/files";
+import InputCheckbox from "@/components/InputCheckbox.vue";
+import AlertWarning from "@/components/AlertWarning.vue";
+
+interface Props {
+  objectUrl: string;
+  fileInfo: ImportedFileInfo;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits(["cancel", "loaded"]);
+const { geo } = injectStrict(activeScenarioKey);
+const { onImageLayerSelectHook } = injectStrict(searchActionsKey);
+
+const form = ref({
+  layerName: stripFileExtension(props.fileInfo.fileName),
+  extractStyles: true,
+});
+
+async function onLoad(e: Event) {
+  const newLayer = geo.addMapLayer({
+    url: props.objectUrl,
+    name: form.value.layerName,
+    extractStyles: form.value.extractStyles,
+    id: nanoid(),
+    type: "KMLLayer",
+  });
+  await onImageLayerSelectHook.trigger({ layerId: newLayer.id });
+  emit("loaded");
+}
+
+function onCancel() {
+  emit("cancel");
+}
+</script>
+
 <template>
   <div class="">
     <p>Import KML file as vector layer.</p>
@@ -22,49 +65,3 @@
     </form>
   </div>
 </template>
-
-<script setup lang="ts">
-import BaseButton from "@/components/BaseButton.vue";
-import { useNotifications } from "@/composables/notifications";
-import { useImportStore } from "@/stores/importExportStore";
-import { injectStrict, nanoid } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
-import { ref } from "vue";
-import { ImportedFileInfo } from "@/importexport/fileHandling";
-import InputGroup from "@/components/InputGroup.vue";
-import { stripFileExtension } from "@/utils/files";
-import InputCheckbox from "@/components/InputCheckbox.vue";
-import AlertWarning from "@/components/AlertWarning.vue";
-
-interface Props {
-  objectUrl: string;
-  fileInfo: ImportedFileInfo;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits(["cancel", "loaded"]);
-const { geo } = injectStrict(activeScenarioKey);
-const store = useImportStore();
-
-const form = ref({
-  layerName: stripFileExtension(props.fileInfo.fileName),
-  extractStyles: true,
-});
-
-const { send } = useNotifications();
-
-async function onLoad(e: Event) {
-  geo.addMapLayer({
-    url: props.objectUrl,
-    name: form.value.layerName,
-    extractStyles: form.value.extractStyles,
-    id: nanoid(),
-    type: "KMLLayer",
-  });
-  emit("loaded");
-}
-
-function onCancel() {
-  emit("cancel");
-}
-</script>

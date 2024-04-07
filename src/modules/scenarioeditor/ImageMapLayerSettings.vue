@@ -19,7 +19,7 @@ const emit = defineEmits<{
 }>();
 
 const bus = useEventBus(imageLayerAction);
-const editMode = ref(props.layer._isNew ?? false);
+const editMode = ref((props.layer._isNew && !props.layer._isTemporary) ?? false);
 
 const { layerTypeLabel, status, isInitialized } = useMapLayerInfo(props.layer);
 
