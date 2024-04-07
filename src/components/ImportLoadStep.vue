@@ -41,11 +41,11 @@
           for="file"
           class="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 hover:text-gray-700"
         >
-          <p class="text-base">Drag a file here or click to select local file</p>
-          <p v-if="currentFilename" class="text-sm">
+          <span class="text-base">Drag a file here or click to select local file</span>
+          <span v-if="currentFilename" class="text-sm">
             Current file
             <span class="font-mono text-blue-800">{{ currentFilename }}</span>
-          </p>
+          </span>
         </label>
       </div>
       <div v-else-if="store.inputSource === 'string'" class="min-h-[6rem]">
@@ -97,7 +97,7 @@
     <p v-if="isMilx" class="prose prose-sm">
       Please note that the import functionality is experimental.
     </p>
-    <img v-if="objectUrl" :src="objectUrl" />
+    <img v-if="objectUrl" :src="objectUrl" alt="Loaded image" />
 
     <footer class="flex items-center justify-end space-x-2 pt-4">
       <BaseButton type="submit" primary small>Load</BaseButton>
@@ -175,7 +175,7 @@ const isUnitGenerator = computed(() => form.value.format === "unitgenerator");
 const isOrbatGenerator = computed(() => form.value.format === "orbatgenerator");
 const { importMilxString, importGeojsonString, importJsonString } = useScenarioImport();
 
-async function onLoad(e?: Event) {
+async function onLoad() {
   const { format } = form.value;
 
   NProgress.start();
@@ -260,7 +260,7 @@ const onUrlLoad = async () => {
     const file = new File([buffer], url.split("/").pop() || "", {
       type: response.headers.get("Content-Type") || "",
     });
-    handleFiles([file]);
+    await handleFiles([file]);
   } catch (e: any) {
     send({ message: `Failed to load ${url}: ${e?.message}` });
     isError.value = true;
