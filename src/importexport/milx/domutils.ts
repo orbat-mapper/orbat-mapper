@@ -1,12 +1,6 @@
 import { u } from "unist-builder";
 import { x } from "xastscript";
 
-export async function toDom(xmlString: string) {
-  // https://github.com/placemark/togeojson#protips
-  const xmldom = await import("@xmldom/xmldom");
-  return new xmldom.DOMParser().parseFromString(xmlString, "text/xml");
-}
-
 export function createFromString(xmlString: string): Document {
   let parser = new DOMParser();
   return parser.parseFromString(xmlString, "text/xml");

@@ -5,3 +5,9 @@ export function sanitizeHTML(str: string) {
   temp.textContent = str;
   return temp.innerHTML;
 }
+
+export async function toDom(xmlString: string) {
+  // https://github.com/placemark/togeojson#protips
+  const xmldom = await import("@xmldom/xmldom");
+  return new xmldom.DOMParser().parseFromString(xmlString, "text/xml");
+}

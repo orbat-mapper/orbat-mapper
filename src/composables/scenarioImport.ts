@@ -1,7 +1,6 @@
-import { injectStrict, nanoid } from "@/utils";
+import { injectStrict, nanoid, toDom } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
-import { toDom } from "@/importexport/milx/domutils";
 import type { FeatureCollection } from "geojson";
 import { convertGeojsonLayer } from "@/importexport/jsonish/convert";
 import { OrbatMapperGeoJsonFeature } from "@/importexport/jsonish/types";
