@@ -11,6 +11,7 @@ import turfEnvelope from "@turf/envelope";
 
 import Feature from "ol/Feature";
 import { shallowRef } from "vue";
+import { useLocalStorage } from "@vueuse/core";
 
 export const useGeoStore = defineStore("geo", {
   state: () => ({
@@ -97,10 +98,10 @@ export const useMeasurementsStore = defineStore("measurements", {
 export const useUnitSettingsStore = defineStore("unitSettings", {
   state() {
     return {
-      showHistory: true,
+      showHistory: useLocalStorage("showHistory", true),
       editHistory: false,
       moveUnitEnabled: false,
-      showWaypointTimestamps: false,
+      showWaypointTimestamps: useLocalStorage("showWaypointTimestamps", false),
     };
   },
 });
