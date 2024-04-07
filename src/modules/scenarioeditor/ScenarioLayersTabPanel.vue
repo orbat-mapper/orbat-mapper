@@ -314,6 +314,12 @@ function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
             </span>
           </button>
           <div class="relative flex items-center">
+            <span
+              v-if="layer._isTemporary"
+              class="badge"
+              title="Temporary layer. Not saved"
+              >TEMP</span
+            >
             <button
               type="button"
               @click="toggleMapLayerVisibility(layer)"

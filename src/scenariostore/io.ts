@@ -153,7 +153,9 @@ function getLayers(state: ScenarioState): ScenarioLayer[] {
 }
 
 function getMapLayers(state: ScenarioState): ScenarioMapLayer[] {
-  return state.mapLayers.map((id) => state.mapLayerMap[id]);
+  return state.mapLayers
+    .map((id) => state.mapLayerMap[id])
+    .filter((l) => !l._isTemporary);
 }
 
 function getEquipment(state: ScenarioState): EquipmentData[] {

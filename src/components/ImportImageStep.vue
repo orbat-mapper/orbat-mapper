@@ -11,6 +11,10 @@
           <InputGroup label="Image layer name" v-model="form.layerName" />
         </section>
       </div>
+      <AlertWarning v-if="isBlob" title="Warning"
+        >This image is a local file and will not be saved with the scenario. It will only
+        be visible while the scenario is open.
+      </AlertWarning>
 
       <footer class="flex flex-shrink-0 items-center justify-end space-x-2 pt-4">
         <BaseButton type="submit" primary small>Import</BaseButton>
@@ -22,14 +26,14 @@
 
 <script setup lang="ts">
 import BaseButton from "@/components/BaseButton.vue";
-import { useNotifications } from "@/composables/notifications";
 import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { ImportedFileInfo } from "@/importexport/fileHandling";
 import InputGroup from "@/components/InputGroup.vue";
 import { stripFileExtension } from "@/utils/files";
+import AlertWarning from "@/components/AlertWarning.vue";
 
 interface Props {
   objectUrl: string;
@@ -39,7 +43,6 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 const { geo } = injectStrict(activeScenarioKey);
-const store = useImportStore();
 
 const form = ref({
   layerName: stripFileExtension(props.fileInfo.fileName),
@@ -48,7 +51,9 @@ const form = ref({
 const imageWidth = ref(0);
 const imageHeight = ref(0);
 
-const { send } = useNotifications();
+const isBlob = computed(() => {
+  return props.objectUrl.startsWith("blob:");
+});
 
 async function onLoad(e: Event) {
   geo.addMapLayer({

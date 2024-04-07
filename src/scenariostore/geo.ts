@@ -93,7 +93,12 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function addMapLayer(data: ScenarioMapLayer) {
-    const newLayer = klona({ opacity: 0.7, ...data, _isNew: true });
+    const newLayer = klona({
+      opacity: 0.7,
+      ...data,
+      _isNew: true,
+      _isTemporary: data.url.startsWith("blob:"),
+    });
     if (!newLayer.id) newLayer.id = nanoid();
     update(
       (s) => {

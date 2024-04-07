@@ -134,6 +134,10 @@ export function useScenarioMapLayers(olMap: OLMap) {
       return;
     }
 
+    if (data.url.startsWith("blob:")) {
+      data._isTemporary = true;
+    }
+
     const format = new KMLZ({
       extractStyles: data.extractStyles ?? false,
       iconUrlFunction: (href: string) => {

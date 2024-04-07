@@ -80,6 +80,7 @@ interface ScenarioMapLayerBase extends Partial<VisibilityInfo> {
   extent?: number[];
   _isNew?: boolean;
   _status?: "uninitialized" | "loading" | "initialized" | "error";
+  _isTemporary?: boolean;
 }
 
 export interface ScenarioImageLayer extends ScenarioMapLayerBase {

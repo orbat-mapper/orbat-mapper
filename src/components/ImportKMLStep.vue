@@ -10,6 +10,11 @@
         <a :href="objectUrl">{{ fileInfo.objectUrl }}</a>
       </div>
 
+      <AlertWarning title="Warning"
+        >KML layers are currently only visible while the scenario is open. They are not
+        saved as part of the scenario.
+      </AlertWarning>
+
       <footer class="flex flex-shrink-0 items-center justify-end space-x-2 pt-4">
         <BaseButton type="submit" primary small>Import</BaseButton>
         <BaseButton small @click="onCancel()">Cancel</BaseButton>
@@ -29,6 +34,7 @@ import { ImportedFileInfo } from "@/importexport/fileHandling";
 import InputGroup from "@/components/InputGroup.vue";
 import { stripFileExtension } from "@/utils/files";
 import InputCheckbox from "@/components/InputCheckbox.vue";
+import AlertWarning from "@/components/AlertWarning.vue";
 
 interface Props {
   objectUrl: string;
