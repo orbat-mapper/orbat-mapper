@@ -136,7 +136,7 @@ export function createMarkerSymbol(
 export const defaultSimplestyleStroke = new Stroke({ color: "#555555", width: 2 });
 export const defaultSimplestyleFill = new Fill({ color: [0x55, 0x55, 0x55, 0.25] });
 export const defaultSimpleStyleText = new Text({
-  font: "bold 13px Inter",
+  font: 'bold 13px "InterVariable"',
   textAlign: "left",
   textBaseline: "middle",
   fill: new Fill({
