@@ -59,10 +59,10 @@
             <BaseButton @click="onUrlLoad">Load from URL</BaseButton>
           </div>
         </div>
+        <p class="mt-2 text-sm">
+          Please note that the scenario host must be configured to allow CORS requests.
+        </p>
       </div>
-      <p class="mt-2 text-sm">
-        Please note that the scenario host must be configured to allow CORS requests.
-      </p>
     </fieldset>
     <AlertWarning v-if="isError && errorMessage" title="Error">{{
       errorMessage
