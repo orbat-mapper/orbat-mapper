@@ -100,7 +100,7 @@ const { historyLayer, drawHistory, historyModify, waypointSelect, ctrlClickInter
     showWaypointTimestamps,
   });
 
-const r = useMapHover(olMap, { enable: hoverEnabled });
+useMapHover(olMap, { enable: hoverEnabled });
 
 olMap.addLayer(historyLayer);
 olMap.addLayer(unitLayerGroup);
@@ -137,7 +137,7 @@ olMap.addInteraction(moveUnitInteraction);
 const { showLocation, coordinateFormat, showScaleLine } =
   storeToRefs(useMapSettingsStore());
 
-const lc = useShowLocationControl(olMap, {
+useShowLocationControl(olMap, {
   coordinateFormat,
   enable: showLocation,
 });
@@ -156,7 +156,7 @@ loadScenarioLayers();
 
 const extent = unitLayer.getSource()?.getExtent();
 if (extent && !unitLayer.getSource()?.isEmpty())
-  olMap.getView().fit(extent, { padding: [100, 100, 150, 100] });
+  olMap.getView().fit(extent, { padding: [100, 100, 150, 100], maxZoom: 16 });
 
 function toggleMoveUnitInteraction(event: ObjectEvent) {
   const isUnitLayerVisible = !event.oldValue;
@@ -181,7 +181,7 @@ watch([settingsStore, symbolSettings], () => {
   drawUnits();
 });
 
-watch([() => state.currentTime, doNotFilterLayers], (v) => {
+watch([() => state.currentTime, doNotFilterLayers], () => {
   loadScenarioLayers(false, !doNotFilterLayers.value);
 });
 
