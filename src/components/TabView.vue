@@ -3,7 +3,7 @@
     <header class="flex-shrink-0">
       <div class="border-b border-gray-300 dark:border-gray-400" :class="extraClass">
         <div class="flex justify-between">
-          <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+          <nav class="-mb-px flex" :class="gap" aria-label="Tabs">
             <button
               v-for="(tab, index) in tabsInfo"
               :key="index"
@@ -39,9 +39,10 @@ interface Props {
   currentTab?: number;
   extraClass?: string;
   tabClass?: string;
+  gap?: string;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), { gap: "gap-x-8" });
 const slots = useSlots();
 const emit = defineEmits(["update:current-tab"]);
 
