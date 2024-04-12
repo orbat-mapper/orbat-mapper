@@ -9,6 +9,8 @@ import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import ScenarioInfoUnitStatuses from "@/modules/scenarioeditor/ScenarioInfoUnitStatuses.vue";
 import ScenarioMapSettings from "@/modules/scenarioeditor/ScenarioMapSettings.vue";
+import PanelHeading from "@/components/PanelHeading.vue";
+import HeadingDescription from "@/components/HeadingDescription.vue";
 
 const selectedItems = useSelectedItems();
 const scenarioInfoPanelStore = useScenarioInfoPanelStore();
@@ -27,6 +29,10 @@ function showScenarioInfo() {
         >View scenario description <span aria-hidden="true"> &rarr;</span></LinkButton
       >
     </header>
+    <PanelHeading>Scenario settings</PanelHeading>
+    <HeadingDescription>
+      Scenario settings are saved as part of the scenario.
+    </HeadingDescription>
     <!--    <AccordionPanel label="Unit templates"
       ><div class="prose">
         <p>Reusable unit templates (work in progress)</p>
