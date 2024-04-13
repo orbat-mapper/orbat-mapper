@@ -4,6 +4,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { computed } from "vue";
 import { formatDateString } from "@/geo/utils";
 import { NScenarioEvent } from "@/types/internalModels";
+import PanelHeading from "@/components/PanelHeading.vue";
 
 interface Props {
   selectOnly?: boolean;
@@ -27,7 +28,7 @@ function onEventClick(event: NScenarioEvent) {
 </script>
 <template>
   <div class="">
-    <h2 class="font-medium text-gray-900">Scenario events</h2>
+    <PanelHeading>Scenario events</PanelHeading>
 
     <div class="flow-root">
       <ul class="mt-4">

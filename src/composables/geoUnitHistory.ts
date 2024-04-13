@@ -26,6 +26,7 @@ import OLMap from "ol/Map";
 import { MapCtrlClick } from "@/geo/olInteractions";
 import { getDistance } from "ol/sphere";
 import { convertSpeedToMetric } from "@/utils/convert";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
 
 function squaredDistance(a: number[], b: number[]) {
   const dx = a[0] - b[0];
@@ -69,6 +70,8 @@ export function useUnitHistory(
     unitActions,
     store: { onUndoRedo, state },
   } = injectStrict(activeScenarioKey);
+
+  const fmt = useTimeFormatStore();
   const { selectedUnitIds } = useSelectedItems();
   const { waypointLayer, historyLayer, legLayer, viaLayer, arcLayer, labelsLayer } =
     createUnitHistoryLayers();
@@ -361,6 +364,11 @@ export function useUnitHistory(
       waypointSelect.setActive(selectedUnitIds && selectedUnitIds.length > 0);
       ctrlClickInteraction.setActive(selectedUnitIds && selectedUnitIds.length > 0);
     },
+  );
+
+  watch(
+    () => fmt.pathFormatter,
+    () => drawHistory(),
   );
 
   return {

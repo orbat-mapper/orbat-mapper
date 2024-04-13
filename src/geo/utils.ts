@@ -6,11 +6,47 @@ import type { MeasurementUnit } from "@/composables/geoMeasurement";
 
 const s = useMapSettingsStore();
 
+export const UTC2MILITARY: Record<string, string> = {
+  "-12": "Y",
+  "-11": "X",
+  "-10": "W",
+  "-9": "V",
+  "-8": "U",
+  "-7": "T",
+  "-6": "S",
+  "-5": "R",
+  "-4": "Q",
+  "-3": "P",
+  "-2": "O",
+  "-1": "N",
+  "0": "Z",
+  "1": "A",
+  "2": "B",
+  "3": "C",
+  "4": "D",
+  "5": "E",
+  "6": "F",
+  "7": "G",
+  "8": "H",
+  "9": "I",
+  "10": "K",
+  "11": "L",
+  "12": "M",
+};
+
 export function formatDateString(value?: number, timeZone?: string, template?: string) {
   if (value === undefined || value === null) return "";
   if (timeZone) return dayjs(value).tz(timeZone).format(template);
 
   return dayjs.utc(value).format(template);
+}
+
+export function formatDTG(value: number, timeZone: string) {
+  if (value === undefined || value === null) return "";
+  const date = dayjs(value).tz(timeZone);
+  const offset = Math.round(date.utcOffset() / 60).toString();
+  const letter = UTC2MILITARY[offset] ?? "Z";
+  return date.format(`DDHHmm[${letter}]MMMYY`).toUpperCase();
 }
 
 export function formatPosition(value?: number[]) {

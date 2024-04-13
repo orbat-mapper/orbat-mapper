@@ -5,7 +5,7 @@
       class="pointer-events-none font-mono text-xl font-bold sm:text-2xl"
       style="text-shadow: white 0 0 5px"
     >
-      {{ formatDateString(state.currentTime, state.info.timeZone, "YYYY-MM-DDTHH:mm") }}
+      {{ fmt.pathFormatter.format(state.currentTime) }}
     </p>
     <BaseToolbar v-if="showControls">
       <ToolbarButton @click="emit('show-settings')" start>
@@ -52,6 +52,7 @@ import ToolbarButton from "./ToolbarButton.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { formatDateString } from "@/geo/utils";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
 
 const props = withDefaults(
   defineProps<{
@@ -60,6 +61,8 @@ const props = withDefaults(
   }>(),
   { showControls: true, hideTime: false },
 );
+
+const fmt = useTimeFormatStore();
 
 const emit = defineEmits([
   "open-time-modal",

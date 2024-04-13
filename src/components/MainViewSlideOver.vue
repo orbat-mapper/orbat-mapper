@@ -1,6 +1,6 @@
 <template>
   <SlideOver v-model="open" title="Settings">
-    <TabView>
+    <TabView gap="gap-x-6">
       <TabItem label="Map view"><MapSettingsPanel /></TabItem>
       <TabItem label="Map layers">
         <LayersPanel />
@@ -27,6 +27,9 @@
           <ToggleField v-model="uiSettings.debugMode">Debug mode</ToggleField>
         </div>
       </TabItem>
+      <TabItem label="Time and date">
+        <TimeDateSettingsPanel />
+      </TabItem>
     </TabView>
   </SlideOver>
 </template>
@@ -42,6 +45,7 @@ import NumberInputGroup from "./NumberInputGroup.vue";
 import MapSettingsPanel from "@/components/MapSettingsPanel.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { useUiStore } from "@/stores/uiStore";
+import TimeDateSettingsPanel from "@/components/TimeDateSettingsPanel.vue";
 
 const props = defineProps({ modelValue: Boolean });
 

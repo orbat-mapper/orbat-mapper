@@ -241,6 +241,7 @@ import { PhotonSearchResult } from "@/composables/geosearching";
 import { useSelectedItems } from "@/stores/selectedStore";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 
@@ -306,6 +307,8 @@ const showLoadModal = ref(false);
 const shortcutsModalVisible = ref(false);
 const showExportModal = ref(false);
 const showImportModal = ref(false);
+
+useTimeFormatterProvider({ activeScenario: props.activeScenario });
 
 const uiStore = useUiStore();
 const { showSearch } = storeToRefs(uiStore);

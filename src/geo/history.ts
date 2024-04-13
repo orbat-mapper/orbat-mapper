@@ -1,6 +1,5 @@
 import Feature from "ol/Feature";
 import { LineString, MultiPoint, Point } from "ol/geom";
-import { formatDateString } from "@/geo/utils";
 import { LocationState, Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
 import { greatCircle } from "@turf/turf";
@@ -12,6 +11,7 @@ import CircleStyle from "ol/style/Circle";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
 
 export const VIA_TIME = -1337;
 
@@ -156,7 +156,7 @@ export function createUnitPathFeatures(
   options: CreateUnitPathFeaturesOptions = {},
 ) {
   const isEditMode = options.isEditMode ?? false;
-  const timeZone = options.timeZone ?? "";
+  const fmt = useTimeFormatStore();
   // extract the location states from the unit, and add the initial location
   // we then remove any states that don't have a location
   const state = [
@@ -224,7 +224,7 @@ export function createUnitPathFeatures(
       unitId: unit.id,
       label:
         state.t > Number.MIN_SAFE_INTEGER
-          ? `#${index} ${formatDateString(state.t, timeZone, "YYYY-MM-DDTHH:mm")}`
+          ? `#${index} ${fmt.pathFormatter.format(state.t)}`
           : `#${index}`,
     });
     f.setId(state.id);
