@@ -4,15 +4,15 @@
     <div class="-space-y-px rounded-md bg-white">
       <RadioGroupOption
         as="template"
-        v-for="(setting, settingIdx) in settings"
-        :key="setting.value"
-        :value="setting.value"
+        v-for="(item, settingIdx) in items"
+        :key="item.value"
+        :value="item.value"
         v-slot="{ checked, active }"
       >
         <div
           :class="[
             settingIdx === 0 ? 'rounded-tl-md rounded-tr-md' : '',
-            settingIdx === settings.length - 1 ? 'rounded-bl-md rounded-br-md' : '',
+            settingIdx === items.length - 1 ? 'rounded-bl-md rounded-br-md' : '',
             checked ? 'z-10 border-indigo-200 bg-indigo-50' : 'border-gray-200',
             'relative flex cursor-pointer border p-4 focus:outline-none',
           ]"
@@ -36,13 +36,13 @@
                 'block text-sm font-medium',
               ]"
             >
-              {{ setting.name }}
+              {{ item.name }}
             </RadioGroupLabel>
             <RadioGroupDescription
               as="span"
               :class="[checked ? 'text-indigo-700' : 'text-gray-500', 'block text-sm']"
             >
-              {{ setting.description || "" }}
+              {{ item.description || "" }}
             </RadioGroupDescription>
           </div>
         </div>
@@ -58,16 +58,12 @@ import {
   RadioGroupLabel,
   RadioGroupOption,
 } from "@headlessui/vue";
-import { useVModel } from "@vueuse/core";
 import { RadioGroupItem } from "@/components/types";
 
-interface Props {
-  settings: RadioGroupItem[];
-  modelValue?: string;
+defineProps<{
+  items: RadioGroupItem[];
   label?: string;
-}
-const props = defineProps<Props>();
-const emit = defineEmits(["update:modelValue"]);
+}>();
 
-const selected = useVModel(props, "modelValue", emit);
+const selected = defineModel<string>();
 </script>

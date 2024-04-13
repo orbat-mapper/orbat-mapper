@@ -11,7 +11,7 @@
         <PlainButton @click="openTimeModal()" class="ml-2">Change</PlainButton>
       </DescriptionItem>
       <TimezoneSelect label="Time zone" v-model="form.timeZone" />
-      <RadioGroupList :settings="standardSettings" v-model="form.symbologyStandard" />
+      <RadioGroupList :items="standardSettings" v-model="form.symbologyStandard" />
       <div class="flex justify-end space-x-2">
         <PrimaryButton type="submit">Update</PrimaryButton>
         <PlainButton type="button" @click="toggleEditMode()">Cancel</PlainButton>

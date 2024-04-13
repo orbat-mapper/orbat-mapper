@@ -141,7 +141,7 @@
           description="Select the symbology standard you prefer to use."
         >
           <RadioGroupList
-            :settings="standardSettings"
+            :items="standardSettings"
             v-model="newScenario.symbologyStandard"
           />
         </FormCard>

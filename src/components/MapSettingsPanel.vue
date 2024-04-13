@@ -10,7 +10,7 @@
       <p class="text-base font-medium leading-loose text-gray-900">Coordinate format</p>
       <RadioGroupList
         v-model="settings.coordinateFormat"
-        :settings="coordinateFormatItems"
+        :items="coordinateFormatItems"
       />
     </section>
 
@@ -18,7 +18,7 @@
       <p class="text-base font-medium leading-loose text-gray-900">Measurement unit</p>
       <RadioGroupList
         v-model="measurementStore.measurementUnit"
-        :settings="measurementItems"
+        :items="measurementItems"
       />
     </section>
   </div>
