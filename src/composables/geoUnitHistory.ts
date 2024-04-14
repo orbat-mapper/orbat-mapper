@@ -367,7 +367,7 @@ export function useUnitHistory(
   );
 
   watch(
-    () => fmt.pathFormatter,
+    () => fmt.trackFormatter,
     () => drawHistory(),
   );
 

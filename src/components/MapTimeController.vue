@@ -5,7 +5,7 @@
       class="pointer-events-none font-mono text-xl font-bold sm:text-2xl"
       style="text-shadow: white 0 0 5px"
     >
-      {{ fmt.pathFormatter.format(state.currentTime) }}
+      {{ fmt.scenarioFormatter.format(state.currentTime) }}
     </p>
     <BaseToolbar v-if="showControls">
       <ToolbarButton @click="emit('show-settings')" start>

@@ -224,7 +224,7 @@ export function createUnitPathFeatures(
       unitId: unit.id,
       label:
         state.t > Number.MIN_SAFE_INTEGER
-          ? `#${index} ${fmt.pathFormatter.format(state.t)}`
+          ? `#${index} ${fmt.trackFormatter.format(state.t)}`
           : `#${index}`,
     });
     f.setId(state.id);

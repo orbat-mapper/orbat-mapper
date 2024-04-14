@@ -9,6 +9,7 @@ import { scaleSequential } from "d3-scale";
 import dayjs from "dayjs";
 import { useActiveScenario } from "@/composables/scenarioUtils";
 import { NScenarioEvent } from "@/types/internalModels";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
 
 const MS_PER_HOUR = 3600 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
@@ -23,6 +24,7 @@ const {
   },
   store,
 } = useActiveScenario();
+const fmt = useTimeFormatStore();
 
 const el = ref<HTMLDivElement | null>(null);
 const isPointerInteraction = ref(false);
@@ -200,7 +202,7 @@ function onHover(e: MouseEvent) {
 }
 
 const formattedHoveredDate = computed(() => {
-  return dayjs.utc(hoveredDate.value).tz(timeZone.value).format("YYYY-MM-DDTHH:mm:ss");
+  return fmt.scenarioFormatter.format(+hoveredDate.value!);
 });
 
 function onWheel(e: WheelEvent) {
