@@ -28,13 +28,23 @@ const fmt = useTimeFormatStore();
   <HeadingDesciption
     >Choose how you want to format the scenario's time and date.</HeadingDesciption
   >
-  <AccordionPanel label="Scenario time">
+  <AccordionPanel label="Scenario datetime format">
+    <template #closedContent>
+      <span class="text-sm leading-7 text-gray-600">
+        {{ fmt.scenarioFormatter.format(currentTime) }}
+      </span>
+    </template>
     <TimeDateSettingsDetails
       :sample-time="fmt.scenarioFormatter.format(currentTime)"
       v-model="scenario"
     />
   </AccordionPanel>
-  <AccordionPanel label="Map time">
+  <AccordionPanel label="Map format">
+    <template #closedContent>
+      <span class="text-sm leading-7 text-gray-600">
+        {{ fmt.trackFormatter.format(currentTime) }}
+      </span>
+    </template>
     <TimeDateSettingsDetails
       :sample-time="fmt.trackFormatter.format(currentTime)"
       v-model="track"

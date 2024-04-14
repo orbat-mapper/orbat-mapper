@@ -31,6 +31,7 @@ const emit = defineEmits(["opened", "closed"]);
         </span>
       </DisclosureButton>
     </h3>
+    <slot v-if="!open" name="closedContent" />
     <DisclosurePanel class="space-y-4 pt-6">
       <slot></slot>
     </DisclosurePanel>
