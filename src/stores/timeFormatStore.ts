@@ -1,10 +1,10 @@
+import { computed, ref, watchEffect } from "vue";
+import { useLocalStorage } from "@vueuse/core";
 import { defineStore } from "pinia";
-import { computed, ref, watch, watchEffect } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { formatDateString, formatDTG } from "@/geo/utils";
 import { TScenario } from "@/scenariostore";
-import { useLocalStorage } from "@vueuse/core";
 import { RadioGroupItem } from "@/components/types";
 
 export type TimeFormat = "iso" | "local" | "military" | "custom";
@@ -59,11 +59,24 @@ export const useTimeFormatStore = defineStore("timeFormat", () => {
   const scenarioFormatter = computed(() => {
     return createFormatter(timeZone.value, s.scenario);
   });
-  return { timeZone, trackFormatter, scenarioFormatter };
+
+  const scenarioDateFormatter = computed(() => {
+    return createFormatter(timeZone.value, s.scenario, { dateOnly: true });
+  });
+  return { timeZone, trackFormatter, scenarioFormatter, scenarioDateFormatter };
 });
 
-function createFormatter(timeZone: string, settings: TimeFormatSettings) {
+function createFormatter(
+  timeZone: string,
+  settings: TimeFormatSettings,
+  { dateOnly = false } = {},
+) {
   if (settings.timeFormat === "iso") {
+    if (dateOnly) {
+      return {
+        format: (value: number) => formatDateString(value, timeZone).split("T")[0],
+      };
+    }
     return {
       format: (value: number) => formatDateString(value, timeZone),
     };
@@ -72,6 +85,12 @@ function createFormatter(timeZone: string, settings: TimeFormatSettings) {
     return {
       format: (value: number) => formatDTG(value, timeZone),
     };
+  }
+  if (dateOnly) {
+    return new Intl.DateTimeFormat(settings.locale || undefined, {
+      timeZone,
+      dateStyle: settings.dateStyle,
+    });
   }
   return new Intl.DateTimeFormat(settings.locale || undefined, {
     timeZone,

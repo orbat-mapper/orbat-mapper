@@ -2,9 +2,9 @@
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed } from "vue";
-import { formatDateString } from "@/geo/utils";
 import { NScenarioEvent } from "@/types/internalModels";
 import PanelHeading from "@/components/PanelHeading.vue";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
 
 interface Props {
   selectOnly?: boolean;
@@ -15,9 +15,10 @@ const emit = defineEmits(["event-click"]);
 
 const {
   store,
-  time: { timeZone, goToScenarioEvent },
+  time: { goToScenarioEvent },
 } = injectStrict(activeScenarioKey);
 
+const fmt = useTimeFormatStore();
 const events = computed(() => store.state.events.map((id) => store.state.eventMap[id]));
 const t = computed(() => store.state.currentTime);
 
@@ -54,7 +55,7 @@ function onEventClick(event: NScenarioEvent) {
                 @click="onEventClick(event)"
               >
                 <p class="text-xs font-medium text-red-900">
-                  {{ formatDateString(event.startTime, timeZone).split("T")[0] }}
+                  {{ fmt.scenarioDateFormatter.format(event.startTime) }}
                 </p>
                 <p class="font-medium">{{ event.title }}</p>
                 <p v-if="event.subTitle" class="text-gray-700">

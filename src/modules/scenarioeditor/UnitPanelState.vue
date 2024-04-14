@@ -23,7 +23,7 @@
           "
           @click="onStateClick($event, s)"
         >
-          {{ formatDateString(s.t, store.state.info.timeZone) }}
+          {{ fmt.scenarioFormatter.format(s.t) }}
         </button>
         <input
           v-if="s === editedTitle"
@@ -114,6 +114,7 @@ import SplitButton from "@/components/SplitButton.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
 
 interface Props {
   unit: NUnit;
@@ -127,6 +128,7 @@ const {
   state: { unitStatusMap },
 } = store;
 const { onUnitAction } = useUnitActions();
+const fmt = useTimeFormatStore();
 const state = computed(() => props.unit.state || []);
 const uiState = useUiStore();
 const { selectedWaypointIds } = useSelectedWaypoints();
