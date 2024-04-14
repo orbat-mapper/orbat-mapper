@@ -79,9 +79,9 @@
           class="absolute bottom-14 sm:bottom-16"
           v-if="toolbarStore.currentToolbar === 'draw'"
         />
-        <MapEditorPathToolbar
+        <MapEditorUnitTrackToolbar
           class="absolute bottom-14 sm:bottom-16"
-          v-if="toolbarStore.currentToolbar === 'path'"
+          v-if="toolbarStore.currentToolbar === 'track'"
         />
       </footer>
     </div>
@@ -144,7 +144,7 @@ import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDe
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
-import MapEditorPathToolbar from "@/modules/scenarioeditor/MapEditorPathToolbar.vue";
+import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
 import { storeToRefs } from "pinia";
 
 const emit = defineEmits(["showExport", "showLoad", "show-settings"]);

@@ -44,9 +44,9 @@
         <DrawIcon class="h-6 w-6" />
       </MainToolbarButton>
       <MainToolbarButton
-        title="Unit path"
-        :active="store.currentToolbar === 'path'"
-        @click="store.toggleToolbar('path')"
+        title="Unit track"
+        :active="store.currentToolbar === 'track'"
+        @click="store.toggleToolbar('track')"
       >
         <IconMapMarkerPath class="h-6 w-6" />
       </MainToolbarButton>

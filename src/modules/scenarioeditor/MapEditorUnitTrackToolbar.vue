@@ -18,11 +18,11 @@ const store = useMainToolbarStore();
   <FloatingPanel
     class="pointer-events-auto flex items-center space-x-1 rounded-md bg-white p-1"
   >
-    <p class="px-2 text-sm font-medium text-gray-500">Path</p>
+    <p class="px-2 text-sm font-medium text-gray-500">Track</p>
     <div class="h-5 border-l border-gray-300" />
 
     <MainToolbarButton
-      title="Show unit path"
+      title="Show unit track"
       @click="unitSettings.showHistory = !unitSettings.showHistory"
       :active="unitSettings.showHistory"
     >
@@ -30,7 +30,7 @@ const store = useMainToolbarStore();
     </MainToolbarButton>
 
     <MainToolbarButton
-      title="Edit path"
+      title="Edit track"
       @click="unitSettings.editHistory = !unitSettings.editHistory"
       :active="unitSettings.editHistory"
     >
