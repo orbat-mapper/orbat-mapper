@@ -86,11 +86,17 @@ export function createUnitHistoryLayers() {
   const legLayer = new VectorLayer({
     source: new VectorSource({}),
     style: legStyle,
+    properties: {
+      layerType: "leg",
+    },
   });
 
   const waypointLayer = new VectorLayer({
     source: new VectorSource(),
     style: waypointStyle,
+    properties: {
+      layerType: "waypoint",
+    },
   });
 
   const arcLayer = new VectorLayer({
@@ -100,6 +106,9 @@ export function createUnitHistoryLayers() {
   const viaLayer = new VectorLayer({
     source: legLayer.getSource()!,
     style: viaStyle,
+    properties: {
+      layerType: "via",
+    },
   });
   const labelsLayer = new VectorLayer({
     declutter: true,

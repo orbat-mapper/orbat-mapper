@@ -25,8 +25,15 @@ import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core"
 
 import { useUiStore } from "@/stores/uiStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
+import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey } from "@/components/injects";
+import { NUnit } from "@/types/internalModels";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const props = defineProps<{ mapRef?: OLMap }>();
+
+const { store } = injectStrict(activeScenarioKey);
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
@@ -39,22 +46,34 @@ const uiSettings = useUiStore();
 
 const { send } = useNotifications();
 const { copy: copyToClipboard } = useClipboard();
+const { activeUnitId } = useSelectedItems();
 
 const dropPosition = ref([0, 0]);
 const pixelPosition = ref<number[] | null>(null);
+const clickedUnits = ref<NUnit[]>([]);
 
 const formattedPosition = computed(() =>
   getCoordinateFormatFunction(coordinateFormat.value)(dropPosition.value),
 );
 
 function onContextMenu(e: MouseEvent) {
-  if (!props.mapRef) {
+  const { mapRef } = props;
+  if (!mapRef) {
     console.warn("No map ref");
     return;
   }
+  clickedUnits.value = [];
+  pixelPosition.value = mapRef.getEventPixel(e);
+  dropPosition.value = toLonLat(mapRef.getEventCoordinate(e));
+  mapRef.forEachFeatureAtPixel(pixelPosition.value, (feature, layer) => {
+    const layerType = layer?.get("layerType") as LayerType;
 
-  pixelPosition.value = props.mapRef.getEventPixel(e);
-  dropPosition.value = toLonLat(props.mapRef.getEventCoordinate(e));
+    if (layerType === "UNITS") {
+      const unitId = feature.getId() as string;
+      const unit = store.state.getUnitById(unitId);
+      unit && clickedUnits.value.push(unit);
+    }
+  });
 }
 
 async function onCopy() {
@@ -62,6 +81,10 @@ async function onCopy() {
   send({
     message: `Copied ${formattedPosition.value} to the clipboard`,
   });
+}
+
+function onUnitSelect(unit: NUnit) {
+  activeUnitId.value = unit.id;
 }
 
 function onContextMenuUpdate(open: boolean) {
@@ -88,6 +111,25 @@ function onContextMenuUpdate(open: boolean) {
         <span>{{ formattedPosition }}</span></ContextMenuItem
       >
       <ContextMenuSeparator />
+      <ContextMenuSub v-if="clickedUnits.length > 0">
+        <ContextMenuSubTrigger inset
+          ><span>Units</span>&nbsp;
+          <span class="font-medium text-gray-500"
+            >({{ clickedUnits.length }})</span
+          ></ContextMenuSubTrigger
+        >
+        <ContextMenuSubContent>
+          <ContextMenuItem
+            v-for="unit in clickedUnits"
+            :key="unit.id"
+            @select.prevent="onUnitSelect(unit)"
+          >
+            <span :class="[activeUnitId === unit.id ? 'font-semibold' : '']">{{
+              unit.name
+            }}</span>
+          </ContextMenuItem>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
       <ContextMenuSub>
         <ContextMenuSubTrigger inset><span>Map settings</span></ContextMenuSubTrigger>
         <ContextMenuSubContent>
