@@ -48,7 +48,6 @@ import {
   NScenarioLayer,
   ScenarioLayerUpdate,
 } from "@/types/internalModels";
-import { useNotifications } from "@/composables/notifications";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
 import { MenuItemData } from "@/components/types";
@@ -57,7 +56,6 @@ import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
 import { useSelectedItems } from "@/stores/selectedStore";
 
-const { send } = useNotifications();
 const selectStyle = new Style({ stroke: new Stroke({ color: "#ffff00", width: 9 }) });
 const selectMarkerStyle = new Style({
   image: new CircleStyle({
@@ -68,10 +66,12 @@ const selectMarkerStyle = new Style({
   }),
 });
 
-export enum LayerType {
-  overlay = "OVERLAY",
-  units = "UNITS",
-}
+export const LayerTypes = {
+  overlay: "OVERLAY",
+  units: "UNITS",
+} as const;
+
+export type LayerType = (typeof LayerTypes)[keyof typeof LayerTypes];
 
 const geometryIconMap: any = {
   Point: IconMapMarker,
@@ -255,7 +255,7 @@ export function useScenarioLayers(
         ),
       }),
       style: scenarioFeatureStyle,
-      properties: { id: layer.id, title: layer.name, layerType: LayerType.overlay },
+      properties: { id: layer.id, title: layer.name, layerType: LayerTypes.overlay },
       updateWhileAnimating: true,
     });
     if (layer.isHidden) vectorLayer.setVisible(false);
