@@ -4,7 +4,7 @@
   "version": "0.19.0",
   "meta": {
     "createdDate": "2024-02-04T14:33:50.335Z",
-    "lastModifiedDate": "2024-04-01T17:14:11.228Z"
+    "lastModifiedDate": "2024-04-18T16:19:32.632Z"
   },
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
@@ -740,7 +740,15 @@
                     }
                   ],
                   "subUnits": [],
-                  "shortName": "BRO"
+                  "shortName": "BRO",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/5/57/HMS_Broadsword%2C_1982_%28IWM%29.jpg",
+                      "caption": "",
+                      "credits": "Royal Navy official photographer, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Broadsword,_1982_(IWM).jpg"
+                    }
+                  ]
                 },
                 {
                   "id": "x5YDPVA2NF",
@@ -759,7 +767,15 @@
                     }
                   ],
                   "subUnits": [],
-                  "shortName": "BRI"
+                  "shortName": "BRI",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/f/f1/HMS_Brilliant_%28F90%29_enters_a_port_in_September_1985_%286421615%29.jpg",
+                      "caption": "",
+                      "credits": "Lt. Dave Parsons, U.S. Navy, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Brilliant_(F90)_enters_a_port_in_September_1985_(6421615).jpg"
+                    }
+                  ]
                 },
                 {
                   "id": "12ztMBWVbZ",
@@ -797,7 +813,15 @@
                     }
                   ],
                   "subUnits": [],
-                  "shortName": "ARG"
+                  "shortName": "ARG",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/1/1b/HMS_Argonaut_%28F56%29_underway_on_the_Potomac_River_on_26_August_1985_%286409918%29.jpg",
+                      "caption": "",
+                      "credits": "Don S. Montgomery, USN, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Argonaut_(F56)_underway_on_the_Potomac_River_on_26_August_1985_(6409918).jpg"
+                    }
+                  ]
                 },
                 {
                   "id": "PyG1gvVYZt",
