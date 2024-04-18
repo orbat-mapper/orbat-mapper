@@ -4,6 +4,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { EntityId } from "@/types/base";
 import { computed, ref, watch } from "vue";
 import EditableLabel from "@/components/EditableLabel.vue";
+import { useUiStore } from "@/stores/uiStore";
 
 interface Props {
   eventId: EntityId;
@@ -17,12 +18,9 @@ const {
 
 const title = ref("");
 
-const {
-  geo,
-  store: { groupUpdate },
-  time,
-} = injectStrict(activeScenarioKey);
+const { time } = injectStrict(activeScenarioKey);
 
+const ui = useUiStore();
 const scenarioEvent = computed(() => time.getEventById(props.eventId));
 
 watch(
@@ -42,6 +40,6 @@ function updateTitle(value: string) {
     <header class="">
       <EditableLabel v-model="title" @updateValue="updateTitle" />
     </header>
-    <pre>{{ scenarioEvent }}</pre>
+    <pre v-if="ui.debugMode">{{ scenarioEvent }}</pre>
   </div>
 </template>
