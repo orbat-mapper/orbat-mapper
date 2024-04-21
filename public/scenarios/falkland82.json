@@ -4,7 +4,7 @@
   "version": "0.19.0",
   "meta": {
     "createdDate": "2024-02-04T14:33:50.335Z",
-    "lastModifiedDate": "2024-04-18T16:19:32.632Z"
+    "lastModifiedDate": "2024-04-18T16:24:06.771Z"
   },
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
@@ -685,7 +685,15 @@
                   ],
                   "subUnits": [],
                   "shortName": "TRI",
-                  "symbolOptions": {}
+                  "symbolOptions": {},
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/6/65/War_damaged_RFA_Sir_Tristram_1983.jpg",
+                      "caption": "",
+                      "credits": "Ken Griffiths, CC BY-SA 4.0, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:War_damaged_RFA_Sir_Tristram_1983.jpg"
+                    }
+                  ]
                 },
                 {
                   "id": "yYeXx4Eykk",
