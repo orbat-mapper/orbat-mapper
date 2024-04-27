@@ -2360,6 +2360,7 @@
       "id": "ev123",
       "where": {
         "type": "units",
+        "maxZoom": 15,
         "units": ["ks0mMcty6I", "L3qn46k1P9"]
       }
     },

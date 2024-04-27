@@ -9,6 +9,7 @@ import type { EntityId, ScenarioTime } from "./base";
 import type { SidValue } from "@/symbology/values";
 import { type SymbolOptions } from "milsymbol";
 import { TextAmpValue } from "@/symbology/milsymbwrapper";
+import { Geometry } from "geojson";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;
@@ -155,16 +156,22 @@ export interface ScenarioEvent extends ScenarioEventDescription {
   uiActions?: UIAction[];
   id?: string;
   _type?: "unit" | "scenario";
-  where?: UnitsWhere;
+  where?: UnitsWhere | GeometryWhere;
 }
 
 export interface WhereOptions {
   mapAnimation?: "flyTo" | "easeTo" | "jumpTo";
+  maxZoom?: number;
 }
 
 export interface UnitsWhere extends WhereOptions {
   type: "units";
   units: EntityId[];
+}
+
+export interface GeometryWhere extends WhereOptions {
+  type: "geometry";
+  geometry: Geometry;
 }
 
 export interface ScenarioInfo {

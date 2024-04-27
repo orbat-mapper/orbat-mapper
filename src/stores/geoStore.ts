@@ -13,6 +13,11 @@ import Feature from "ol/Feature";
 import { shallowRef } from "vue";
 import { useLocalStorage } from "@vueuse/core";
 
+export interface ZoomOptions {
+  maxZoom?: number;
+  duration?: number;
+}
+
 export const useGeoStore = defineStore("geo", {
   state: () => ({
     olMap: shallowRef<OLMap | null | undefined>(null),
@@ -30,8 +35,9 @@ export const useGeoStore = defineStore("geo", {
       });
     },
 
-    zoomToUnits(units: NUnit[], duration = 900) {
+    zoomToUnits(units: NUnit[], options: ZoomOptions = {}) {
       if (!this.olMap) return;
+      const { duration = 900, maxZoom = 15 } = options;
       const points = units
         .filter((u) => u._state?.location)
         .map((u) => turfPoint(u._state?.location!));
@@ -42,7 +48,7 @@ export const useGeoStore = defineStore("geo", {
         dataProjection: "EPSG:4326",
       }) as Feature<any>;
       if (!bb) return;
-      this.olMap.getView().fit(bb.getGeometry(), { maxZoom: 17, duration });
+      this.olMap.getView().fit(bb.getGeometry(), { maxZoom, duration });
     },
 
     zoomToLocation(location?: Position, duration = 900) {

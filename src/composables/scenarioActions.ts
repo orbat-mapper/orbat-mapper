@@ -112,7 +112,7 @@ export function useUnitActions(
     if (Array.isArray(unitOrUnits)) {
       groupUpdate(() => {
         if (action === UnitActions.Zoom || action === UnitActions.Pan) {
-          geoStore.zoomToUnits(unitOrUnits, 500);
+          geoStore.zoomToUnits(unitOrUnits, { duration: 500 });
         } else unitOrUnits.forEach((unit) => _onUnitAction(unit, action, waypointIds));
       });
     } else _onUnitAction(unitOrUnits, action, waypointIds);

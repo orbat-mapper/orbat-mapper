@@ -14,8 +14,9 @@ export function useScenarioEvents(olMap: OLMap) {
     if (!where) return;
     if (where.type === "units") {
       const units = where.units.map((u) => state.getUnitById(u));
+      const { maxZoom } = where;
       if (units) {
-        geoStore.zoomToUnits(units, 900);
+        geoStore.zoomToUnits(units, { duration: 900, maxZoom });
       }
     }
   });
