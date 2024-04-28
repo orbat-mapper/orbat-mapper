@@ -4,7 +4,7 @@
   "version": "0.19.0",
   "meta": {
     "createdDate": "2024-02-04T14:33:50.335Z",
-    "lastModifiedDate": "2024-04-18T16:24:06.771Z"
+    "lastModifiedDate": "2024-04-28T17:48:15.300Z"
   },
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
@@ -895,6 +895,23 @@
                   "state": [],
                   "subUnits": [],
                   "shortName": "ALO"
+                },
+                {
+                  "id": "z1VBMSDi8W",
+                  "name": "SS Uganda",
+                  "sidc": "10033000001301070000",
+                  "state": [
+                    {
+                      "id": "HweBYCeNkM",
+                      "t": "1982-04-28T11:45:00-04:00",
+                      "location": [-14.438863565524574, -7.9822286135872815]
+                    }
+                  ],
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "shortName": "",
+                  "description": "",
+                  "externalUrl": "https://en.wikipedia.org/wiki/SS_Uganda_(1952)"
                 }
               ],
               "state": [],
@@ -2360,7 +2377,6 @@
       "id": "ev123",
       "where": {
         "type": "units",
-        "maxZoom": 15,
         "units": ["ks0mMcty6I", "L3qn46k1P9"]
       }
     },
