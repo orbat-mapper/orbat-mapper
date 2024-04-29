@@ -2383,7 +2383,22 @@
     {
       "title": "Argentine invasion force departs Argentina",
       "startTime": "1982-03-28T12:00:00-04:00",
-      "id": "ev1234"
+      "id": "ev1234",
+      "where": {
+        "type": "geometry",
+        "geometry": {
+          "coordinates": [
+            [
+              [-65.42749468856316, -36.96194715605162],
+              [-65.42749468856316, -55.551412937228434],
+              [-34.598439146324296, -55.551412937228434],
+              [-34.598439146324296, -36.96194715605162],
+              [-65.42749468856316, -36.96194715605162]
+            ]
+          ],
+          "type": "Polygon"
+        }
+      }
     },
     {
       "title": "Operation \"Rosario\"",
@@ -2407,13 +2422,28 @@
       "id": "CAm5DrJOFQ8FUQw_7TMfc",
       "where": {
         "type": "units",
-        "units": ["mhQX0REztU"]
+        "units": ["mhQX0REztU", "ksCBbvo0PD"]
       }
     },
     {
       "title": "San Carlos landings",
       "startTime": "1982-05-21T12:00:00-04:00",
-      "id": "evsdf234234"
+      "id": "evsdf234234",
+      "where": {
+        "type": "geometry",
+        "geometry": {
+          "coordinates": [
+            [
+              [-59.44637200850724, -51.34754622842036],
+              [-59.44637200850724, -51.794136980494315],
+              [-58.869806443343634, -51.794136980494315],
+              [-58.869806443343634, -51.34754622842036],
+              [-59.44637200850724, -51.34754622842036]
+            ]
+          ],
+          "type": "Polygon"
+        }
+      }
     },
     {
       "title": "Battle of Goose Green",

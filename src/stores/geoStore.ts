@@ -4,7 +4,7 @@ import { Unit } from "@/types/scenarioModels";
 import { fromLonLat } from "ol/proj";
 import { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement";
 import { NUnit } from "@/types/internalModels";
-import type { Position } from "geojson";
+import type { Geometry, Position } from "geojson";
 import { featureCollection, point as turfPoint } from "@turf/helpers";
 import { GeoJSON } from "ol/format";
 import turfEnvelope from "@turf/envelope";
@@ -12,6 +12,7 @@ import turfEnvelope from "@turf/envelope";
 import Feature from "ol/Feature";
 import { shallowRef } from "vue";
 import { useLocalStorage } from "@vueuse/core";
+import { AllGeoJSON } from "@turf/turf";
 
 export interface ZoomOptions {
   maxZoom?: number;
@@ -36,14 +37,19 @@ export const useGeoStore = defineStore("geo", {
     },
 
     zoomToUnits(units: NUnit[], options: ZoomOptions = {}) {
-      if (!this.olMap) return;
       const { duration = 900, maxZoom = 15 } = options;
       const points = units
         .filter((u) => u._state?.location)
         .map((u) => turfPoint(u._state?.location!));
       if (!points.length) return;
       const c = featureCollection(points);
-      const bb = new GeoJSON().readFeature(turfEnvelope(c), {
+      this.zoomToGeometry(c, { duration, maxZoom });
+    },
+
+    zoomToGeometry(geometry: AllGeoJSON, options: ZoomOptions = {}) {
+      if (!this.olMap) return;
+      const { duration = 900, maxZoom = 15 } = options;
+      const bb = new GeoJSON().readFeature(turfEnvelope(geometry), {
         featureProjection: "EPSG:3857",
         dataProjection: "EPSG:4326",
       }) as Feature<any>;

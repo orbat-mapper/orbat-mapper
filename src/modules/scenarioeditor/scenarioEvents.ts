@@ -12,12 +12,14 @@ export function useScenarioEvents(olMap: OLMap) {
   onGoToScenarioEventEvent(({ event }) => {
     const where = event.where;
     if (!where) return;
+    const { maxZoom } = where;
     if (where.type === "units") {
       const units = where.units.map((u) => state.getUnitById(u));
-      const { maxZoom } = where;
       if (units) {
         geoStore.zoomToUnits(units, { duration: 900, maxZoom });
       }
+    } else if (where.type === "geometry") {
+      geoStore.zoomToGeometry(where.geometry, { duration: 900, maxZoom });
     }
   });
   return {};

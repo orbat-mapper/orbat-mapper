@@ -36,6 +36,7 @@ import { clearUnitStyleCache } from "@/geo/unitStyles";
 import { useRangeRingsLayer } from "@/composables/geoRangeRings";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { useDayNightLayer } from "@/composables/geoDayNight";
+import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -88,7 +89,7 @@ olMap.addLayer(dayNightLayer);
 const { initializeFromStore: loadMapLayers } = useScenarioMapLayers(olMap);
 const { rangeLayer, drawRangeRings } = useRangeRingsLayer();
 // Disable temporarily
-//const {} = useScenarioEvents(olMap);
+const {} = useScenarioEvents(olMap);
 
 olMap.addLayer(rangeLayer);
 const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
