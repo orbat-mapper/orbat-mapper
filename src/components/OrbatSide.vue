@@ -120,6 +120,7 @@ const sideMenuItems: MenuItemData<SideAction>[] = [
   { label: "Delete side", action: SideActions.Delete },
   { label: "Move up", action: SideActions.MoveUp },
   { label: "Move down", action: SideActions.MoveDown },
+  { label: "Add side", action: SideActions.Add },
 ];
 
 const onSideAction = (action: SideAction) => {

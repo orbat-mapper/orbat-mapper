@@ -118,6 +118,8 @@ function onSideAction(side: NSide, action: SideAction) {
     unitActions.reorderSide(side.id, "down");
   } else if (action === SideActions.MoveUp) {
     unitActions.reorderSide(side.id, "up");
+  } else if (action === SideActions.Add) {
+    addSide();
   }
 }
 
