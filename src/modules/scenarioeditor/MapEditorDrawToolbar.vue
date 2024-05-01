@@ -4,7 +4,7 @@
   >
     <p class="px-2 text-sm font-medium text-gray-500">Draw</p>
     <div class="h-5 border-l border-gray-300" />
-    <MainToolbarButton title="Point" :active="!currentDrawType" @click="cancel()">
+    <MainToolbarButton title="Select" :active="!currentDrawType" @click="cancel()">
       <SelectIcon class="h-5 w-5" />
     </MainToolbarButton>
     <MainToolbarButton
@@ -44,6 +44,9 @@
       <MainToolbarButton title="Edit" @click="startModify()" :active="isModifying">
         <EditIcon class="h-5 w-5" />
       </MainToolbarButton>
+      <MainToolbarButton title="translate" @click="toggleTranslate()" :active="translate">
+        <MoveIcon class="h-5 w-5" />
+      </MainToolbarButton>
       <MainToolbarButton
         title="Delete"
         :disabled="selectedFeatureIds.size === 0"
@@ -61,6 +64,7 @@
 import {
   IconClose as CloseIcon,
   IconCursorDefaultOutline as SelectIcon,
+  IconCursorMove as MoveIcon,
   IconMagnet as SnapIcon,
   IconMapMarker as PointIcon,
   IconSquareEditOutline as EditIcon,
@@ -107,6 +111,7 @@ const { selectedFeatureIds, activeFeatureId } = useSelectedItems();
 
 const { addMultiple } = storeToRefs(useMainToolbarStore());
 const [snap, toggleSnap] = useToggle(true);
+const [translate, toggleTranslate] = useToggle(false);
 let layer = ref<any>();
 
 watch(
@@ -133,6 +138,7 @@ const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawi
       olFeatures.forEach((f) => updateFeatureGeometryFromOlFeature(f));
     },
     snap,
+    translate,
   });
 
 const store = useMainToolbarStore();
@@ -140,11 +146,24 @@ const selectStore = useMapSelectStore();
 
 watch(isDrawing, (isDrawing) => {
   if (isDrawing) {
+    translate.value = false;
     selectStore.unitSelectEnabled = false;
     selectStore.featureSelectEnabled = false;
   } else {
     selectStore.unitSelectEnabled = true;
     selectStore.featureSelectEnabled = true;
+  }
+});
+
+watch(isModifying, (isModifying) => {
+  if (isModifying) {
+    translate.value = false;
+  }
+});
+
+watch(translate, (translate) => {
+  if (translate) {
+    cancel();
   }
 });
 

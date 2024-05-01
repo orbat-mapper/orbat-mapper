@@ -4,12 +4,17 @@ import type VectorLayer from "ol/layer/Vector";
 import type VectorSource from "ol/source/Vector";
 import { onUnmounted, ref, unref, watch } from "vue";
 import Draw, { DrawEvent } from "ol/interaction/Draw";
+import Translate from "ol/interaction/Translate";
 import Snap from "ol/interaction/Snap";
 import Select from "ol/interaction/Select";
 import Layer from "ol/layer/Layer";
 import { Modify } from "ol/interaction";
 import { getSnappableFeatures, useOlEvent } from "./openlayersHelpers";
-import { click as clickCondition } from "ol/events/condition";
+import {
+  click as clickCondition,
+  platformModifierKeyOnly,
+  primaryAction,
+} from "ol/events/condition";
 import type Feature from "ol/Feature";
 import { Collection } from "ol";
 import { Geometry } from "ol/geom";
@@ -23,6 +28,7 @@ export interface GeoEditingOptions {
   addHandler?: (feature: Feature, layer: VectorLayer<any>) => void;
   modifyHandler?: (features: Feature[]) => void;
   snap?: MaybeRef<boolean>;
+  translate?: MaybeRef<boolean>;
 }
 
 export function useEditingInteraction(
@@ -35,6 +41,7 @@ export function useEditingInteraction(
 
   const layerRef = ref(vectorLayer);
   const snapRef = ref(options.snap ?? true);
+  const translateRef = ref(options.translate ?? false);
   let currentDrawInteraction: Draw | null | undefined;
   const source = layerRef.value.getSource()!;
   const { lineDraw, polygonDraw, pointDraw, circleDraw } =
@@ -43,6 +50,7 @@ export function useEditingInteraction(
   const currentDrawType = ref<DrawType | null>(null);
   const isModifying = ref(false);
   const isDrawing = ref(false);
+
   const emit = options.emit;
   const addMultiple = ref<MaybeRef<boolean>>(options.addMultiple ?? false);
 
@@ -77,6 +85,23 @@ export function useEditingInteraction(
   );
   olMap.addInteraction(modify);
   modify.setActive(false);
+
+  const translateInteraction = new Translate({
+    condition: function (event) {
+      if (translateRef.value) return true;
+      return primaryAction(event) && platformModifierKeyOnly(event);
+    },
+    features: select.getFeatures(),
+  });
+  translateInteraction.setActive(true);
+  useOlEvent(
+    translateInteraction.on("translateend", (event) => {
+      emit && emit("modify", event.features.getArray());
+      options.modifyHandler && options.modifyHandler(event.features.getArray());
+    }),
+  );
+
+  olMap.addInteraction(translateInteraction);
 
   watch(
     snapRef,
@@ -158,6 +183,7 @@ export function useEditingInteraction(
     olMap.removeInteraction(circleDraw);
     if (!options.select) olMap.removeInteraction(select);
     olMap.removeInteraction(modify);
+    olMap.removeInteraction(translateInteraction);
   });
 
   watch(
