@@ -92,6 +92,9 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           <DropdownMenuItem @select="emit('action', 'export')">
             Export scenario data...
           </DropdownMenuItem>
+          <DropdownMenuItem @select="emit('action', 'exportToImage')">
+            Export as image
+          </DropdownMenuItem>
           <DropdownMenuItem @select="emit('action', 'import')">
             Import data...
           </DropdownMenuItem>

@@ -36,21 +36,22 @@ export const SideActions = {
 export type SideAction = (typeof SideActions)[keyof typeof SideActions];
 
 export type ScenarioActions =
+  | "addEquipment"
+  | "addPersonnel"
   | "addSide"
-  | "save"
-  | "load"
-  | "exportJson"
-  | "loadNew"
-  | "exportToClipboard"
-  | "export"
-  | "import"
   | "addTileJSONLayer"
   | "addXYZLayer"
   | "addImageLayer"
-  | "showInfo"
-  | "addEquipment"
-  | "addPersonnel"
-  | "duplicate";
+  | "duplicate"
+  | "export"
+  | "exportJson"
+  | "exportToClipboard"
+  | "exportToImage"
+  | "import"
+  | "load"
+  | "loadNew"
+  | "save"
+  | "showInfo";
 
 export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
 

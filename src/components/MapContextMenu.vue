@@ -27,14 +27,14 @@ import { useUiStore } from "@/stores/uiStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 
 const props = defineProps<{ mapRef?: OLMap }>();
 
 const { store } = injectStrict(activeScenarioKey);
-
+const { onScenarioActionHook } = injectStrict(searchActionsKey);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 
@@ -55,6 +55,10 @@ const clickedUnits = ref<NUnit[]>([]);
 const formattedPosition = computed(() =>
   getCoordinateFormatFunction(coordinateFormat.value)(dropPosition.value),
 );
+
+async function onExport() {
+  await onScenarioActionHook.trigger({ action: "exportToImage" });
+}
 
 function onContextMenu(e: MouseEvent) {
   const { mapRef } = props;
@@ -179,6 +183,12 @@ function onContextMenuUpdate(open: boolean) {
               </ContextMenuRadioGroup>
             </ContextMenuSubContent>
           </ContextMenuSub>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+      <ContextMenuSub>
+        <ContextMenuSubTrigger inset><span>Export</span></ContextMenuSubTrigger>
+        <ContextMenuSubContent>
+          <ContextMenuItem @select="onExport()">Map as image</ContextMenuItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
       <ContextMenuSeparator />

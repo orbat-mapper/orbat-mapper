@@ -27,7 +27,7 @@ import {
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useGeoLayersUndoRedo } from "@/composables/geoUndoRedo";
 import { useMapHover } from "@/composables/geoHover";
-import { useOlEvent } from "@/composables/openlayersHelpers";
+import { saveMapAsPng, useOlEvent } from "@/composables/openlayersHelpers";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useShowLocationControl } from "@/composables/geoShowLocation";
 import { useShowScaleLine } from "@/composables/geoScaleLine";
@@ -37,6 +37,7 @@ import { useRangeRingsLayer } from "@/composables/geoRangeRings";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { useDayNightLayer } from "@/composables/geoDayNight";
 import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
+import { useSearchActions } from "@/composables/searchActions";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -66,6 +67,8 @@ const symbolSettings = useSymbolSettingsStore();
 const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
 const { unitLayer, drawUnits } = useUnitLayer();
+
+const { onScenarioAction } = useSearchActions();
 
 const { onDrop } = useDrop(mapRef, unitLayer);
 
@@ -194,6 +197,12 @@ onUnmounted(() => {
 function handleDrop(e: DragEvent) {
   onDrop(e);
 }
+
+onScenarioAction(async (e) => {
+  if (e.action === "exportToImage") {
+    await saveMapAsPng(olMap);
+  }
+});
 
 defineExpose({ handleDrop });
 </script>
