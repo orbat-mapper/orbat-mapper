@@ -8,8 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+May 2024
+
+- Add translate feature mode to the drawing toolbar.
+
 April 2024
 
+- Show list of units under the pointer in the map context menu.
 - Add custom date and time formatting.
 - Select multiple units in the ORBAT panel with shift+click.
 - Add basic support for unit text amplifiers.
