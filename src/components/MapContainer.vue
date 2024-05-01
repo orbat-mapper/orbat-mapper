@@ -28,7 +28,9 @@ const emit = defineEmits(["ready", "moveend"]);
 
 function createBaseLayers(view: View) {
   const openStreetmapLayer = new TileLayer({
-    source: new OSM(),
+    source: new OSM({
+      crossOrigin: "anonymous",
+    }),
     visible: props.baseLayerName === "osm",
     preload: Infinity,
     properties: {
@@ -41,6 +43,7 @@ function createBaseLayers(view: View) {
   const openStreetmapLayerDE = new TileLayer({
     source: new OSM({
       url: "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
+      crossOrigin: "anonymous",
     }),
     visible: props.baseLayerName === "osm-de",
     preload: Infinity,
@@ -60,6 +63,7 @@ function createBaseLayers(view: View) {
       url:
         "https://server.arcgisonline.com/ArcGIS/rest/services/" +
         "Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+      crossOrigin: "anonymous",
     }),
     properties: {
       title: "Gray Basemap",
@@ -72,6 +76,7 @@ function createBaseLayers(view: View) {
     source: new XYZ({
       url: "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
       maxZoom: 14,
+      crossOrigin: "anonymous",
       attributions:
         'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
     }),
@@ -87,6 +92,7 @@ function createBaseLayers(view: View) {
     preload: Infinity,
     visible: props.baseLayerName === "esriWorldImagery",
     source: new XYZ({
+      crossOrigin: "anonymous",
       transition: 0, // should be set to 0 when opacity is < 1
       attributions:
         "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
@@ -102,6 +108,7 @@ function createBaseLayers(view: View) {
   const kartverketTopo4 = new TileLayer({
     visible: props.baseLayerName === "kartverketTopo4",
     source: new XYZ({
+      crossOrigin: "anonymous",
       url: "https://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo4&zoom={z}&x={x}&y={y}",
       attributions: '<a href="http://www.kartverket.no/">Kartverket</a>',
     }),
