@@ -12,7 +12,7 @@ import * as FileSaver from "file-saver";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
-import { NUnit } from "@/types/internalModels";
+import { INTERNAL_NAMES, NUnit } from "@/types/internalModels";
 import type { Unit } from "@/types/scenarioModels";
 import type { SpatialIllusionsOrbat } from "@/types/externalModels";
 import {
@@ -24,6 +24,13 @@ import {
 const symbolSettings = useSymbolSettingsStore();
 export interface UseScenarioExportOptions {
   activeScenario: TScenario;
+}
+
+function stringifyReplacer(name: string, val: any) {
+  if (val === undefined) return undefined;
+  if (INTERNAL_NAMES.includes(name)) return undefined;
+
+  return val;
 }
 
 function columnMapper(data: any[], columnMap: ColumnMapping[]): Record<string, any>[] {
@@ -86,7 +93,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     const combined = [...units, ...(features as any)];
 
     FileSaver.saveAs(
-      new Blob([JSON.stringify(featureCollection(combined), undefined, 2)], {
+      new Blob([JSON.stringify(featureCollection(combined), stringifyReplacer, 2)], {
         type: "application/json",
       }),
       opts.fileName,
