@@ -11,3 +11,4 @@ declare module "ol-ext/source/GeoImage";
 declare module "ol-ext/interaction/Transform";
 declare module "ol-ext/source/DayNight";
 declare module "ol-ext/layer/AnimatedCluster";
+declare module "ol-ext/style/Chart";
