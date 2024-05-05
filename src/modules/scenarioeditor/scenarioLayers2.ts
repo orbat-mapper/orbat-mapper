@@ -73,6 +73,7 @@ const selectMarkerStyle = new Style({
 export const LayerTypes = {
   scenarioFeature: "SCENARIO_FEATURE",
   units: "UNITS",
+  cluster: "CLUSTER",
 } as const;
 
 export type LayerType = (typeof LayerTypes)[keyof typeof LayerTypes];

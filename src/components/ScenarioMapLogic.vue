@@ -66,7 +66,7 @@ const settingsStore = useSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
 const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
-const { unitLayer, drawUnits } = useUnitLayer();
+const { unitLayer, drawUnits, clusterLayer } = useUnitLayer();
 
 const { onScenarioAction } = useSearchActions();
 
@@ -77,7 +77,7 @@ mapRef.value = olMap;
 geoStore.olMap = olMap;
 
 const unitLayerGroup = new LayerGroup({
-  layers: [unitLayer],
+  layers: [unitLayer, clusterLayer],
 });
 
 unitLayerGroup.set("title", "Units");

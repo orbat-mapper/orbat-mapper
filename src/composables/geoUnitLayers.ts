@@ -31,16 +31,19 @@ import { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { FeatureLike } from "ol/Feature";
+import { createClusterLayer } from "@/geo/cluster";
 import BaseEvent from "ol/events/Event";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
+  const scenario = activeScenario || injectStrict(activeScenarioKey);
   const {
     store: { state, onUndoRedo },
     geo,
     unitActions: { getCombinedSymbolOptions },
-  } = activeScenario || injectStrict(activeScenarioKey);
+  } = scenario;
 
   const unitLayer = createUnitLayer();
+  const clusterLayer = createClusterLayer(unitLayer.getSource()!, scenario);
   unitLayer.setStyle(unitStyleFunction);
 
   function unitStyleFunction(feature: FeatureLike, resolution: number) {
@@ -83,7 +86,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     //   unitLayer.animateFeature(f, new Fade({ duration: 1000 }))
     // );
   };
-  return { unitLayer, drawUnits, animateUnits };
+  return { unitLayer, drawUnits, animateUnits, clusterLayer };
 }
 
 export function useDrop(
