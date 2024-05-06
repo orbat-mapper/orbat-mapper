@@ -30,12 +30,15 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
+import Feature from "ol/Feature";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 const props = defineProps<{ mapRef?: OLMap }>();
 
-const { store } = injectStrict(activeScenarioKey);
+const { store, unitActions } = injectStrict(activeScenarioKey);
 const { onScenarioActionHook } = injectStrict(searchActionsKey);
 const breakpoints = useBreakpoints(breakpointsTailwind);
+
 const isMobile = breakpoints.smallerOrEqual("md");
 
 const { coordinateFormat, showLocation, showScaleLine, showDayNightTerminator } =
@@ -71,7 +74,6 @@ function onContextMenu(e: MouseEvent) {
   dropPosition.value = toLonLat(mapRef.getEventCoordinate(e));
   mapRef.forEachFeatureAtPixel(pixelPosition.value, (feature, layer) => {
     const layerType = layer?.get("layerType") as LayerType;
-
     if (layerType === "UNITS") {
       const unitId = feature.getId() as string;
       const unit = store.state.getUnitById(unitId);
@@ -128,9 +130,16 @@ function onContextMenuUpdate(open: boolean) {
             :key="unit.id"
             @select.prevent="onUnitSelect(unit)"
           >
-            <span :class="[activeUnitId === unit.id ? 'font-semibold' : '']">{{
-              unit.name
-            }}</span>
+            <div class="flex items-center">
+              <span class="flex w-7 items-center">
+                <MilitarySymbol
+                  :sidc="unit.sidc"
+                  :options="unitActions.getCombinedSymbolOptions(unit)"
+              /></span>
+              <span :class="[activeUnitId === unit.id ? 'font-semibold' : '']">{{
+                unit.name
+              }}</span>
+            </div>
           </ContextMenuItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
