@@ -3,8 +3,9 @@
     <RadioGroupLabel
       v-if="label || $slots.label"
       class="mb-4 block text-sm font-medium leading-6 text-gray-900"
-      ><slot name="label">{{ label }}</slot></RadioGroupLabel
     >
+      <slot name="label">{{ label }}</slot>
+    </RadioGroupLabel>
     <div class="flex flex-wrap items-center gap-2">
       <RadioGroupOption
         as="template"
@@ -40,12 +41,17 @@
 <script lang="ts">
 export const colors = [
   {
+    name: "Black",
+    value: "Black",
+    bgColor: "bg-black",
+    selectedColor: "ring-black",
+  },
+  {
     name: "Slate",
     value: "#64748b",
     bgColor: "bg-slate-500",
     selectedColor: "ring-slate-500",
   },
-
   {
     name: "Purple",
     value: "#a855f7",
@@ -94,6 +100,7 @@ interface Props {
   label?: string;
   showNone?: boolean;
 }
+
 const props = withDefaults(defineProps<Props>(), {
   modelValue: colors[1].selectedColor,
   showNone: false,

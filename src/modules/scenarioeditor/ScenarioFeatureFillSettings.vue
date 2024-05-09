@@ -10,8 +10,8 @@ const emit = defineEmits<{ (e: "update", value: Partial<SimpleStyleSpec>): void 
 const marker = computed(() => {
   const { properties } = props.feature;
   return {
-    fill: properties["fill"] || "black",
-    "fill-opacity": properties["fill-opacity"] ?? 0.5,
+    fill: properties["fill"] ?? "black",
+    "fill-opacity": properties["fill-opacity"] ?? 0,
   };
 });
 
