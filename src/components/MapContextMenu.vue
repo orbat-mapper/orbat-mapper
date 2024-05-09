@@ -124,7 +124,7 @@ function onContextMenuUpdate(open: boolean) {
             >({{ clickedUnits.length }})</span
           ></ContextMenuSubTrigger
         >
-        <ContextMenuSubContent>
+        <ContextMenuSubContent class="max-h-[95vh] overflow-auto">
           <ContextMenuItem
             v-for="unit in clickedUnits"
             :key="unit.id"
