@@ -31,8 +31,9 @@ import { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { FeatureLike } from "ol/Feature";
-import { createClusterLayer } from "@/geo/cluster";
+
 import BaseEvent from "ol/events/Event";
+import { useClusterLayer } from "@/geo/cluster";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const scenario = activeScenario || injectStrict(activeScenarioKey);
@@ -43,7 +44,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
   } = scenario;
 
   const unitLayer = createUnitLayer();
-  const clusterLayer = createClusterLayer(unitLayer.getSource()!, scenario);
+  const clusterLayer = useClusterLayer(unitLayer.getSource()!, scenario);
   unitLayer.setStyle(unitStyleFunction);
 
   function unitStyleFunction(feature: FeatureLike, resolution: number) {

@@ -100,6 +100,13 @@ function onContextMenu(e: MouseEvent) {
       const featureId = feature.getId() as string;
       const { feature: scenarioFeature } = geo.getFeatureById(featureId);
       scenarioFeature && clickedFeatures.value.push(scenarioFeature);
+    } else if (layerType === "CLUSTER") {
+      const features = feature.get("features") as Feature[];
+      features.forEach((f) => {
+        const unitId = f.getId() as string;
+        const unit = store.state.getUnitById(unitId);
+        unit && clickedUnits.value.push(unit);
+      });
     }
   });
 }

@@ -13,9 +13,11 @@ import { createUnitStyle, unitStyleCache } from "@/geo/unitStyles";
 import { TScenario } from "@/scenariostore";
 import AnimatedCluster from "ol-ext/layer/AnimatedCluster";
 import Chart from "ol-ext/style/Chart";
+import { useClusterSettingsStore } from "@/stores/clusterStore";
+import { watch, watchEffect } from "vue";
 const styleCache: Record<string, any> = {};
 
-export function createClusterLayer(
+export function useClusterLayer(
   source: VectorSource,
   activeScenario: TScenario,
 ): AnyVectorLayer {
@@ -24,16 +26,17 @@ export function createClusterLayer(
     geo,
     unitActions: { getCombinedSymbolOptions },
   } = activeScenario;
+  const settings = useClusterSettingsStore();
 
   const clusterSource = new Cluster({
-    distance: 50,
-    // minDistance: 40,
+    distance: settings.distance,
+    minDistance: 20,
     source: source,
   });
 
-  return new AnimatedCluster({
+  const animatedCluster = new AnimatedCluster({
     source: clusterSource,
-    animationDuration: 500,
+    animationDuration: settings.animationDuration,
     style: getClusterStyle,
     // style: function (feature, resolution) {
     //   const size = feature.get("features").length;
@@ -71,6 +74,14 @@ export function createClusterLayer(
       layerType: LayerTypes.cluster,
     },
   });
+
+  watchEffect(() => {
+    console.log("watch effect", settings.distance, settings.animationDuration);
+    clusterSource.setDistance(settings.distance);
+    animatedCluster.set("animationDuration", settings.animationDuration);
+  });
+
+  return animatedCluster;
 
   function getClusterStyle(feature, resolution) {
     var features = feature.get("features");
