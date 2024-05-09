@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
 import { MarkerStyleSpec, MarkerSymbol, SimpleStyleSpec } from "@/geo/simplestyle";
@@ -11,8 +11,6 @@ import ToggleField from "@/components/ToggleField.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits<{ (e: "update", value: Partial<SimpleStyleSpec>): void }>();
-
-const color = ref("#eab308");
 
 const sizeOptions = [
   { name: "S", value: "small" },
@@ -54,91 +52,79 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number) {
 }
 </script>
 <template>
-  <div>
-    <section class="mt-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-sm font-medium leading-6 text-gray-900">Symbol size</h2>
-      </div>
-
-      <RadioGroup
-        :model-value="marker['marker-size']"
-        @update:model-value="updateValue('marker-size', $event)"
-        class="mt-2"
+  <div class="col-span-2 -mb-2 font-semibold">Symbol</div>
+  <div class="self-center">Color</div>
+  <ColorPicker
+    :model-value="marker['marker-color']"
+    @update:model-value="updateValue('marker-color', $event)"
+  />
+  <div class="self-center">Size</div>
+  <RadioGroup
+    :model-value="marker['marker-size']"
+    @update:model-value="updateValue('marker-size', $event)"
+    class=""
+  >
+    <RadioGroupLabel class="sr-only">Select marker size</RadioGroupLabel>
+    <div class="flex flex-wrap items-center gap-2">
+      <RadioGroupOption
+        as="template"
+        v-for="option in sizeOptions"
+        :key="option.name"
+        :value="option.value"
+        v-slot="{ active, checked }"
       >
-        <RadioGroupLabel class="sr-only">Select marker size</RadioGroupLabel>
-        <div class="grid grid-cols-6 gap-3">
-          <RadioGroupOption
-            as="template"
-            v-for="option in sizeOptions"
-            :key="option.name"
-            :value="option.value"
-            v-slot="{ active, checked }"
-          >
-            <div
-              :class="[
-                active ? 'ring-2 ring-indigo-600 ring-offset-2' : '',
-                checked
-                  ? 'bg-indigo-600 text-white hover:bg-indigo-500'
-                  : 'bg-white text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
-                'flex cursor-pointer items-center justify-center rounded-md px-3 py-3 text-sm font-semibold uppercase sm:flex-1',
-              ]"
-            >
-              <RadioGroupLabel as="span">{{ option.name }}</RadioGroupLabel>
-            </div>
-          </RadioGroupOption>
+        <div
+          :class="[
+            active ? 'ring-2 ring-indigo-600 ring-offset-2' : '',
+            checked
+              ? 'bg-indigo-600 text-white hover:bg-indigo-500'
+              : 'bg-white text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
+            'flex cursor-pointer items-center justify-center rounded-md px-5 py-3 text-sm font-semibold uppercase ',
+          ]"
+        >
+          <RadioGroupLabel as="span">{{ option.name }}</RadioGroupLabel>
         </div>
-      </RadioGroup>
-    </section>
-    <section class="mt-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-sm font-medium leading-6 text-gray-900">Shape</h2>
-      </div>
+      </RadioGroupOption>
+    </div>
+  </RadioGroup>
 
-      <RadioGroup
-        :model-value="marker['marker-symbol']"
-        @update:model-value="updateValue('marker-symbol', $event)"
-        class="mt-2"
+  <div class="self-center">Shape</div>
+
+  <RadioGroup
+    :model-value="marker['marker-symbol']"
+    @update:model-value="updateValue('marker-symbol', $event)"
+    class="mt-2"
+  >
+    <RadioGroupLabel class="sr-only">Select marker size</RadioGroupLabel>
+    <div class="flex flex-wrap items-center gap-1">
+      <RadioGroupOption
+        as="template"
+        v-for="option in markerItems"
+        :key="option.value"
+        :value="option.value"
+        v-slot="{ active, checked }"
       >
-        <RadioGroupLabel class="sr-only">Select marker size</RadioGroupLabel>
-        <div class="grid grid-cols-8 gap-1">
-          <RadioGroupOption
-            as="template"
-            v-for="option in markerItems"
-            :key="option.value"
-            :value="option.value"
-            v-slot="{ active, checked }"
-          >
-            <div
-              :class="[
-                active ? 'ring-2 ring-indigo-600 ring-offset-2' : '',
-                checked
-                  ? 'bg-indigo-300 text-white hover:bg-indigo-500'
-                  : 'bg-white text-gray-900 ring-0 ring-inset hover:bg-gray-50',
-                'flex cursor-pointer items-center justify-center rounded-md px-3 py-3 text-sm font-semibold uppercase sm:flex-1',
-              ]"
-            >
-              <RadioGroupLabel as="span" class="sr-only">{{
-                option.label
-              }}</RadioGroupLabel>
-              <span aria-hidden="true"
-                ><DrawMarker :marker="option.value" :color="marker['marker-color']"
-              /></span>
-            </div>
-          </RadioGroupOption>
+        <div
+          :class="[
+            active ? 'ring-2 ring-indigo-600 ring-offset-2' : '',
+            checked
+              ? 'bg-indigo-300 text-white hover:bg-indigo-500'
+              : 'bg-white text-gray-900 ring-0 ring-inset hover:bg-gray-50',
+            'flex cursor-pointer items-center justify-center rounded-md px-2 py-2 text-sm font-semibold uppercase ',
+          ]"
+        >
+          <RadioGroupLabel as="span" class="sr-only">{{ option.label }}</RadioGroupLabel>
+          <span aria-hidden="true"
+            ><DrawMarker :marker="option.value" :color="marker['marker-color']"
+          /></span>
         </div>
-      </RadioGroup>
-      <ColorPicker
-        class="mt-4"
-        :model-value="marker['marker-color']"
-        @update:model-value="updateValue('marker-color', $event)"
-        label="Color"
-      />
-      <ToggleField
-        class="mt-4"
-        :model-value="marker['showLabel']"
-        @update:model-value="updateValue('showLabel', $event)"
-        >Show label on map</ToggleField
-      >
-    </section>
-  </div>
+      </RadioGroupOption>
+    </div>
+  </RadioGroup>
+  <div class="self-end">Label</div>
+  <ToggleField
+    class="mt-4"
+    :model-value="marker['showLabel']"
+    @update:model-value="updateValue('showLabel', $event)"
+  ></ToggleField>
 </template>

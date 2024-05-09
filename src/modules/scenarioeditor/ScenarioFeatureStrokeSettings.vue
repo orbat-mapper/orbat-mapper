@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
 import { ScenarioFeature } from "@/types/scenarioGeoModels";
 import ColorPicker from "@/components/ColorPicker.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits<{ (e: "update", value: Partial<SimpleStyleSpec>): void }>();
-
-const color = ref("#eab308");
 
 const marker = computed(() => {
   const { properties } = props.feature;
@@ -38,40 +36,39 @@ function onChange(e: any) {}
 </script>
 
 <template>
-  <div>
-    <section class="mt-4">
-      <ColorPicker
-        class="mt-4"
-        :model-value="marker['stroke']"
-        @update:model-value="updateValue('stroke', $event)"
-        label="Stroke"
-      />
-    </section>
-    <section class="mt-4 grid w-full grid-cols-3 gap-x-6 gap-y-2 text-sm">
-      <label for="stroke-width">Width</label>
-      <input
-        id="stroke-width"
-        v-model.number="width"
-        type="range"
-        min="1"
-        max="10"
-        step="1"
-        class="w-28"
-        @change="onChange($event)"
-      />
-      <span class="ml-2">{{ marker["stroke-width"] }}</span>
-      <label for="stroke-opacity">Opacity</label>
-      <input
-        id="stroke-opacity"
-        v-model.number="opacity"
-        type="range"
-        min="0"
-        max="1"
-        step="0.01"
-        class="w-28"
-        @change="onChange($event)"
-      />
-      <span class="ml-2">{{ opacityAsPercent }}%</span>
-    </section>
+  <div class="col-span-2 -mb-2 font-semibold">Stroke</div>
+  <div class="self-center">Color</div>
+  <ColorPicker
+    class=""
+    :model-value="marker['stroke']"
+    @update:model-value="updateValue('stroke', $event)"
+  />
+  <label for="stroke-width" class="">Width</label>
+  <div class="grid grid-cols-[1fr_5ch] gap-4">
+    <input
+      id="stroke-width"
+      v-model.number="width"
+      type="range"
+      min="1"
+      max="10"
+      step="1"
+      @change="onChange($event)"
+      class="min-w-20"
+    />
+    <span class="">{{ marker["stroke-width"] }} px</span>
+  </div>
+  <label for="stroke-opacity">Opacity</label>
+  <div class="grid grid-cols-[1fr_5ch] gap-4">
+    <input
+      id="stroke-opacity"
+      v-model.number="opacity"
+      type="range"
+      min="0"
+      max="1"
+      step="0.01"
+      @change="onChange($event)"
+      class="min-w-20"
+    />
+    <span class="">{{ opacityAsPercent }}%</span>
   </div>
 </template>

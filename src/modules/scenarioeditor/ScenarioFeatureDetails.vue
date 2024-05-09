@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {
-  IconMagnifyExpand as ZoomIcon,
-  IconPencil as EditIcon,
   IconImage as ImageIcon,
+  IconMagnifyExpand as ZoomIcon,
   IconPalette as StyleIcon,
+  IconPencil as EditIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { GlobalEvents } from "vue-global-events";
 
@@ -19,7 +19,7 @@ import {
   useScenarioLayers,
 } from "@/modules/scenarioeditor/scenarioLayers2";
 import { ScenarioFeatureProperties } from "@/types/scenarioGeoModels";
-import { useDebounceFn, useToggle } from "@vueuse/core";
+import { useDebounceFn } from "@vueuse/core";
 import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeatureMarkerSettings.vue";
 import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeatureStrokeSettings.vue";
 import ScenarioFeatureFillSettings from "@/modules/scenarioeditor/ScenarioFeatureFillSettings.vue";
@@ -221,21 +221,23 @@ function doZoom() {
         </div>
       </TabPanel>
       <TabPanel>
-        <ScenarioFeatureMarkerSettings
-          v-if="feature && geometryType === 'Point'"
-          :feature="feature"
-          @update="doUpdateFeature"
-        />
-        <ScenarioFeatureStrokeSettings
-          v-if="feature && hasStroke"
-          :feature="feature"
-          @update="doUpdateFeature"
-        />
-        <ScenarioFeatureFillSettings
-          v-if="feature && hasFill"
-          :feature="feature"
-          @update="doUpdateFeature"
-        />
+        <section class="mt-4 grid w-full grid-cols-[max-content_1fr] gap-4 text-sm">
+          <ScenarioFeatureMarkerSettings
+            v-if="feature && geometryType === 'Point'"
+            :feature="feature"
+            @update="doUpdateFeature"
+          />
+          <ScenarioFeatureStrokeSettings
+            v-if="feature && hasStroke"
+            :feature="feature"
+            @update="doUpdateFeature"
+          />
+          <ScenarioFeatureFillSettings
+            v-if="feature && hasFill"
+            :feature="feature"
+            @update="doUpdateFeature"
+          />
+        </section>
       </TabPanel>
       <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
         <pre>{{ feature }}</pre>

@@ -2,10 +2,10 @@
   <RadioGroup v-model="selectedColor">
     <RadioGroupLabel
       v-if="label || $slots.label"
-      class="block text-sm font-medium leading-6 text-gray-900"
+      class="mb-4 block text-sm font-medium leading-6 text-gray-900"
       ><slot name="label">{{ label }}</slot></RadioGroupLabel
     >
-    <div class="mt-4 flex flex-wrap items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
       <RadioGroupOption
         as="template"
         v-for="color in $colors"
