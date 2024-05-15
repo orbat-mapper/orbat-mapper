@@ -11,7 +11,7 @@
         <SymbolCodeViewer :sidc="csidc" @update="updateFromSidcInput" />
       </header>
 
-      <TabView class="flex-auto">
+      <TabView class="flex-auto" v-model:current-tab="currentTab">
         <TabItem
           label="Select"
           v-slot="{ isActive }"
@@ -75,12 +75,18 @@
           ></Combobox>
 
           <form class="space-y-4 p-0.5" @submit.prevent="onSubmit" v-if="isLoaded">
-            <SymbolCodeSelect
-              v-model="symbolSetValue"
-              label="Symbol set"
-              :items="symbolSets"
-              :symbol-options="combinedSymbolOptions"
-            />
+            <div class="flex w-full items-end gap-1">
+              <SymbolCodeSelect
+                class="flex-auto"
+                v-model="symbolSetValue"
+                label="Symbol set"
+                :items="symbolSets"
+                :symbol-options="combinedSymbolOptions"
+              />
+              <div class="mr-1 hidden flex-none sm:block">
+                <BaseButton class="py-4" @click="currentTab = 1">Browse</BaseButton>
+              </div>
+            </div>
 
             <template v-if="!hideModifiers">
               <SymbolCodeSelect
@@ -190,6 +196,7 @@ import {
 } from "@/composables/symbolSearching";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import { doFocus } from "@/composables/utils";
+import BaseButton from "@/components/BaseButton.vue";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
@@ -216,6 +223,7 @@ const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
 const open = useVModel(props, "isVisible");
 const searchQuery = ref("");
 const debouncedQuery = useDebounce(searchQuery, 100);
+const currentTab = ref(0);
 
 const groupedHits = ref<ReturnType<typeof search>["groups"]>();
 
