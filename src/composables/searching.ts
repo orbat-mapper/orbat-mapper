@@ -166,6 +166,7 @@ const actionItems: ActionItem[] = [
     icon: "save",
   },
   { action: "loadNew", label: "Load scenario", icon: "upload" },
+  { action: "createNew", label: "Create new scenario", icon: "add" },
   {
     action: "exportJson",
     label: "Download scenario",

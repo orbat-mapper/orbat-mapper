@@ -87,6 +87,9 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           <DropdownMenuItem @select="emit('action', 'loadNew')">
             Load scenario...
           </DropdownMenuItem>
+          <DropdownMenuItem @select="emit('action', 'createNew')">
+            New scenario...
+          </DropdownMenuItem>
 
           <DropdownMenuSeparator />
           <DropdownMenuItem @select="emit('action', 'export')">

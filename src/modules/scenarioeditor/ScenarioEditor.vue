@@ -227,6 +227,7 @@ import {
   CHART_EDIT_MODE_ROUTE,
   GRID_EDIT_ROUTE,
   MAP_EDIT_MODE_ROUTE,
+  NEW_SCENARIO_ROUTE,
 } from "@/router/names";
 import { useFileDropZone } from "@/composables/filedragdrop";
 import { useTabStore } from "@/stores/tabStore";
@@ -398,6 +399,8 @@ async function onScenarioAction(action: ScenarioActions) {
   } else if (action === "duplicate") {
     const scenarioId = await io.duplicateScenario();
     await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
+  } else if (action === "createNew") {
+    await router.push({ name: NEW_SCENARIO_ROUTE });
   }
   await onScenarioActionHook.trigger({ action });
 }

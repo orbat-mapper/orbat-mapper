@@ -51,7 +51,8 @@ export type ScenarioActions =
   | "load"
   | "loadNew"
   | "save"
-  | "showInfo";
+  | "showInfo"
+  | "createNew";
 
 export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
 
