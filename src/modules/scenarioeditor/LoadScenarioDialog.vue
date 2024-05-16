@@ -13,18 +13,14 @@
 import SimpleModal from "@/components/SimpleModal.vue";
 import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
 import { Scenario } from "@/types/scenarioModels";
-import { useVModel } from "@vueuse/core";
 import LoadScenarioUrlForm from "@/modules/scenarioeditor/LoadScenarioUrlForm.vue";
+import { useBrowserScenarios } from "@/composables/browserScenarios";
 
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
-});
+const open = defineModel({ default: false });
 
-const emit = defineEmits(["update:modelValue", "loaded"]);
-const open = useVModel(props, "modelValue", emit);
-
+const { loadScenario } = useBrowserScenarios();
 function onLoaded(scenario: Scenario) {
-  emit("loaded", scenario);
+  loadScenario(scenario);
   open.value = false;
 }
 </script>

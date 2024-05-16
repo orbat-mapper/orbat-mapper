@@ -130,11 +130,7 @@
       @select-action="onScenarioAction"
     />
     <AppNotifications />
-    <LoadScenarioDialog
-      v-if="showLoadModal"
-      v-model="showLoadModal"
-      @loaded="loadScenario"
-    />
+    <LoadScenarioDialog v-if="showLoadModal" v-model="showLoadModal" />
     <InputDateModal
       v-if="showDateModal"
       v-model="showDateModal"
@@ -223,8 +219,6 @@ import {
   sidcModalKey,
   timeModalKey,
 } from "@/components/injects";
-
-import type { Scenario } from "@/types/scenarioModels";
 import { useFeatureStyles } from "@/geo/featureStyles";
 import { EventSearchResult } from "@/components/types";
 import { useDateModal, useSidcModal } from "@/composables/modals";
@@ -427,11 +421,6 @@ watchOnce(
     NProgress.start();
   },
 );
-
-function loadScenario(v: Scenario) {
-  loadFromObject(v);
-  showInfo();
-}
 
 function onDrop(files: File[] | null) {
   if (!files || !files.length) return;
