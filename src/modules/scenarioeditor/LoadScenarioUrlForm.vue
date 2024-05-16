@@ -11,13 +11,13 @@
     <p v-if="sharableUrl" class="prose prose-sm">
       <a :href="sharableUrl" target="_blank">{{ sharableUrl }}</a>
       <BaseButton class="ml-2" small @click="copy(sharableUrl)"
-        >Copy to clipboard</BaseButton
-      >
+        >Copy to clipboard
+      </BaseButton>
     </p>
-    <p class="flex justify-end space-x-2">
+    <p class="flex justify-end gap-2 pt-4">
       <BaseButton type="button" small @click="createSharableUrl()"
-        >Create sharable URL</BaseButton
-      >
+        >Create sharable URL
+      </BaseButton>
       <BaseButton type="submit" primary small>Load from URL</BaseButton>
     </p>
   </form>
