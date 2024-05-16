@@ -32,7 +32,7 @@
           placeholder="Search symbol set..."
           @keydown.esc="onEsc"
           v-model="searchQuery"
-          @vue:mounted="doFocus"
+          ref="inputRef"
         />
       </div>
       <SymbolCodeSelect
@@ -134,9 +134,8 @@ import { computed, nextTick, onActivated, ref, watch } from "vue";
 import { groupBy } from "@/utils";
 import { useSymbolItems } from "@/composables/symbolData";
 import { UnitSymbolOptions } from "@/types/scenarioModels";
-import { doFocus } from "@/composables/utils";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
-import { useDebounce } from "@vueuse/core";
+import { breakpointsTailwind, useBreakpoints, useDebounce } from "@vueuse/core";
 
 interface Props {
   initialSidc: string;
@@ -147,6 +146,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), { symbolSize: 32 });
 const searchQuery = ref("");
 const debouncedQuery = useDebounce(searchQuery, 100);
+const inputRef = ref();
 
 const {
   mod1Items,
@@ -165,6 +165,9 @@ const {
 if (!isLoaded.value) loadData();
 
 const emit = defineEmits(["update-sidc"]);
+
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smallerOrEqual("md");
 
 const filteredIconsByEntity = computed(() => {
   if (!debouncedQuery.value.trim()) return groupBy(icons.value, "entity");
@@ -204,6 +207,9 @@ function goTo(sidc: string) {
 onActivated(() => {
   searchQuery.value = "";
   nextTick(() => {
+    if (!isMobile.value) {
+      inputRef.value.focus();
+    }
     const el = document.getElementById(`scode-${iconValue.value}`);
     if (el) {
       el.scrollIntoView({ block: "center" });

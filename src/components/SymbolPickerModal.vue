@@ -28,6 +28,7 @@
                   class="h-12 w-full border-0 bg-transparent pl-11 pr-4 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
                   placeholder="Search..."
                   @change="searchQuery = $event.target.value"
+                  ref="searchInputRef"
                   @vue:mounted="doFocus"
                 />
               </div>
@@ -164,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, watchEffect } from "vue";
+import { computed, defineAsyncComponent, nextTick, ref, watch, watchEffect } from "vue";
 import {
   Combobox,
   ComboboxInput,
@@ -174,7 +175,13 @@ import {
 
 import PrimaryButton from "./PrimaryButton.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
-import { useDebounce, useVModel, whenever } from "@vueuse/core";
+import {
+  breakpointsTailwind,
+  useBreakpoints,
+  useDebounce,
+  useVModel,
+  whenever,
+} from "@vueuse/core";
 import SimpleModal from "./SimpleModal.vue";
 import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
 import { useSymbolItems } from "@/composables/symbolData";
@@ -220,6 +227,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
 
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smallerOrEqual("md");
+
+const searchInputRef = ref();
 const open = useVModel(props, "isVisible");
 const searchQuery = ref("");
 const debouncedQuery = useDebounce(searchQuery, 100);
@@ -325,4 +336,11 @@ function updateFromSidcInput(sidc: string) {
 
   csidc.value = ns.toString();
 }
+
+watch(currentTab, async (v) => {
+  if (v === 0 && !isMobile.value) {
+    await nextTick();
+    searchInputRef.value?.el.focus();
+  }
+});
 </script>
