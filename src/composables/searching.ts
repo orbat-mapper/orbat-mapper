@@ -158,12 +158,14 @@ interface ActionItem {
   label: string;
   icon?: string;
 }
+
 const actionItems: ActionItem[] = [
   {
     action: "save",
     label: "Save scenario to local storage",
     icon: "save",
   },
+  { action: "loadNew", label: "Load scenario", icon: "upload" },
   {
     action: "exportJson",
     label: "Download scenario",
