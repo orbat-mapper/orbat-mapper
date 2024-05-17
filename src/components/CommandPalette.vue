@@ -43,7 +43,7 @@
               <ComboboxOptions
                 v-if="groupedHits && hitCount > 0"
                 static
-                class="max-h-80 scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto p-4 pb-2"
+                class="max-h-80 scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto p-4 pb-2 sm:max-h-[60vh]"
               >
                 <li v-for="[source, hits] in groupedHits">
                   <h2 class="text-xs font-semibold text-gray-900">{{ source }}</h2>
