@@ -6,7 +6,7 @@ import VectorLayer from "ol/layer/Vector";
 import { useDragStore } from "@/stores/dragStore";
 import { DragOperations } from "@/types/constants";
 import { fromLonLat, toLonLat } from "ol/proj";
-import { Point } from "ol/geom";
+import { Geometry, Point } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { DragBox, Modify, Select } from "ol/interaction";
 import { ModifyEvent } from "ol/interaction/Modify";
@@ -31,6 +31,7 @@ import { EntityId } from "@/types/base";
 import { TScenario } from "@/scenariostore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { FeatureLike } from "ol/Feature";
+import BaseEvent from "ol/events/Event";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const {
@@ -103,14 +104,14 @@ export function useDrop(
     ) {
       const dropPosition = toLonLat(olMap.getEventCoordinate(ev));
       const unitSource = unref(unitLayer).getSource();
-      const existingUnitFeature = unitSource.getFeatureById(dragStore.draggedUnit.id);
+      const existingUnitFeature = unitSource?.getFeatureById(dragStore.draggedUnit.id);
 
       geo.addUnitPosition(dragStore.draggedUnit.id, dropPosition);
 
       if (existingUnitFeature) {
         existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
       } else {
-        unitSource.addFeature(createUnitFeatureAt(dropPosition, dragStore.draggedUnit));
+        unitSource?.addFeature(createUnitFeatureAt(dropPosition, dragStore.draggedUnit));
       }
     }
   };
@@ -120,7 +121,7 @@ export function useDrop(
 
 export function useMoveInteraction(
   mapRef: OLMap,
-  unitLayer: VectorLayer<VectorSource>,
+  unitLayer: VectorLayer<Feature<Geometry>>,
   enabled: Ref<boolean>,
 ) {
   const {
@@ -146,7 +147,7 @@ export function useMoveInteraction(
     }
   });
   const overlaySource = modifyInteraction.getOverlay().getSource();
-  overlaySource.on(["addfeature", "removefeature"], function (evt: ModifyEvent) {
+  overlaySource?.on(["addfeature", "removefeature"], function (evt: Event | BaseEvent) {
     mapRef.getTargetElement().style.cursor = evt.type === "addfeature" ? "pointer" : "";
   });
 
@@ -254,7 +255,7 @@ export function useUnitSelectInteraction(
         .map((layer) =>
           layer
             .getSource()
-            .getFeaturesInExtent(extent)
+            ?.getFeaturesInExtent(extent)
             .filter((feature: Feature) =>
               feature.getGeometry()!.intersectsExtent(extent),
             ),
@@ -315,7 +316,7 @@ export function useUnitSelectInteraction(
     if (!isInternal) {
       selectedUnitFeatures.clear();
       v.forEach((fid) => {
-        const feature = layers[0].getSource().getFeatureById(fid);
+        const feature = layers[0]?.getSource()?.getFeatureById(fid);
         if (feature) selectedUnitFeatures.push(feature);
       });
     }

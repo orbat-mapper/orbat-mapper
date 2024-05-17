@@ -74,7 +74,7 @@ export interface LayerInfo<T extends BaseLayer = BaseLayer> {
 const geoStore = useGeoStore();
 const mapSettings = useMapSettingsStore();
 let tileLayers = ref<LayerInfo<TileLayer<TileSource>>[]>([]);
-let vectorLayers = ref<LayerInfo<PointVectorLayer>[]>([]);
+let vectorLayers = ref<LayerInfo<AnyVectorLayer>[]>([]);
 let activeBaseLayer = shallowRef<LayerInfo<TileLayer<TileSource>>>();
 
 const noneLayer = { title: "None", id: null, description: "", opacity: -1, name: "None" };

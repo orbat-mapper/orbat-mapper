@@ -43,7 +43,7 @@ export function getFeatureAndLayerById(
 }
 
 export function getFeatureIndex(feature: Feature, layer: VectorLayer<any>) {
-  const features = layer.getSource().getFeaturesCollection();
+  const features = layer.getSource()?.getFeaturesCollection();
   if (!features) return;
   for (let index = 0, ii = features.getLength(); index < ii; ++index) {
     const currentFeature = features.item(index);

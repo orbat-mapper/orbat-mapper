@@ -214,7 +214,7 @@ function measurementInteractionWrapper(
     if (
       tip &&
       type === "Point" &&
-      !modifyInteraction.getOverlay().getSource().getFeatures().length
+      !modifyInteraction.getOverlay().getSource()?.getFeatures().length
     ) {
       tipPoint = geometry as Point;
       tipStyle.getText()?.setText(tip);

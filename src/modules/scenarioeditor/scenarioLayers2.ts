@@ -3,7 +3,7 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
 import { click as clickCondition } from "ol/events/condition";
-import { getCenter, isEmpty } from "ol/extent";
+import { Extent, getCenter, isEmpty } from "ol/extent";
 import { featureCollection, point } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
 import { injectStrict, moveItemMutable, nanoid } from "@/utils";
@@ -55,6 +55,7 @@ import { Fill, Style } from "ol/style";
 import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { SimpleGeometry } from "ol/geom";
 
 const selectStyle = new Style({ stroke: new Stroke({ color: "#ffff00", width: 9 }) });
 const selectMarkerStyle = new Style({
@@ -289,8 +290,8 @@ export function useScenarioLayers(
   function zoomToFeature(featureId: FeatureId) {
     const { feature: olFeature } =
       getFeatureAndLayerById(featureId, scenarioLayersOl) || {};
-    if (!olFeature) return;
-    olMap.getView().fit(olFeature.getGeometry(), { maxZoom: 15 });
+    if (!olFeature?.getGeometry()) return;
+    olMap.getView().fit(olFeature.getGeometry() as SimpleGeometry, { maxZoom: 15 });
   }
 
   function zoomToFeatures(featureIds: FeatureId[]) {
@@ -308,24 +309,26 @@ export function useScenarioLayers(
       getFeatureAndLayerById(featureId, scenarioLayersOl) || {};
     if (!olFeature) return;
     const view = olMap.getView();
-    view.animate({
-      center: getCenter(olFeature.getGeometry().getExtent()),
-    });
+    const extent = olFeature?.getGeometry()?.getExtent();
+    extent &&
+      view.animate({
+        center: getCenter(extent),
+      });
   }
 
   function zoomToLayer(layerId: FeatureId) {
     const olLayer = getOlLayerById(layerId);
     if (!olLayer) return;
-    const layerExtent = olLayer.getSource().getExtent();
+    const layerExtent = olLayer.getSource()?.getExtent();
 
-    !isEmpty(layerExtent) && layerExtent && olMap.getView().fit(layerExtent);
+    layerExtent && !isEmpty(layerExtent) && olMap.getView().fit(layerExtent);
   }
 
   function addFeature(feature: NScenarioFeature, isUndoRedo = false) {
     if (!isUndoRedo) geo.addFeature(feature, feature._pid);
     const olLayer = getOlLayerById(feature._pid);
     const olFeature = createScenarioLayerFeatures([feature], "EPSG:3837");
-    olLayer.getSource().addFeatures(olFeature);
+    olLayer.getSource()?.addFeatures(olFeature);
   }
 
   function deleteFeature(featureId: FeatureId, isUndoRedo = false) {
@@ -399,7 +402,7 @@ export function useScenarioLayers(
     const olLayer = getOlLayerById(layerId);
     if (!olLayer) return;
     scenarioLayersGroup.getLayers().remove(olLayer);
-    olLayer.getSource().clear();
+    olLayer.getSource()?.clear();
     if (!isUndoRedo) geo.deleteLayer(layerId);
   }
 
