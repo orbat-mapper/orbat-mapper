@@ -185,7 +185,7 @@ const isActionSearch = computed(
 
 const debouncedQuery = useDebounce(query, 200);
 const geoDebouncedQuery = useDebounce(query, 500);
-const { search } = useScenarioSearch();
+const { search } = useScenarioSearch(searchActions);
 
 interface ExtendedPhotonSearchResult extends PhotonSearchResult {
   category: "Places";

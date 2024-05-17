@@ -11,7 +11,9 @@ import {
 } from "@/components/types";
 import { ScenarioActions } from "@/types/constants";
 
-export function useScenarioSearch() {
+export function useScenarioSearch(
+  searchActions?: (query: string) => ActionSearchResult[],
+) {
   const {
     unitActions,
     store: { state },
@@ -126,6 +128,7 @@ export function useScenarioSearch() {
       | LayerFeatureSearchResult[]
       | EventSearchResult[]
       | MapLayerSearchResult[]
+      | ActionSearchResult[]
     )[],
   ) {
     const combinedHits = hits.sort((a, b) => {
@@ -144,7 +147,14 @@ export function useScenarioSearch() {
     const featureHits = searchLayerFeatures(query);
     const imageLayerHits = searchImageLayers(query);
     const eventHits = searchEvents(query);
-    const allHits = combineHits([unitHits, featureHits, eventHits, imageLayerHits]);
+    const actionHits = searchActions ? searchActions(query) : [];
+    const allHits = combineHits([
+      unitHits,
+      featureHits,
+      eventHits,
+      imageLayerHits,
+      actionHits,
+    ]);
     const numberOfHits =
       unitHits.length + featureHits.length + eventHits.length + imageLayerHits.length;
     return { numberOfHits, groups: groupBy(allHits, "category") };
