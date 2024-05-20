@@ -108,7 +108,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onActivated, onUnmounted, provide, ShallowRef, shallowRef } from "vue";
+import {
+  computed,
+  onActivated,
+  onUnmounted,
+  provide,
+  ShallowRef,
+  shallowRef,
+  watch,
+} from "vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import {
   activeFeatureSelectInteractionKey,
@@ -126,7 +134,7 @@ import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/ScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
-import { breakpointsTailwind, useBreakpoints, useToggle } from "@vueuse/core";
+import { breakpointsTailwind, useBreakpoints, useRafFn, useToggle } from "@vueuse/core";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
@@ -146,6 +154,7 @@ import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
 import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
 import { storeToRefs } from "pinia";
+import { usePlaybackStore } from "@/stores/playbackStore";
 
 const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
 const activeScenario = injectStrict(activeScenarioKey);
@@ -158,6 +167,7 @@ const {
 const toolbarStore = useMainToolbarStore();
 const activeUnitStore = useActiveUnitStore();
 const ui = useUiStore();
+const playback = usePlaybackStore();
 
 const mapRef = shallowRef<OLMap>();
 const featureSelectInteractionRef = shallowRef<Select>();
@@ -208,10 +218,12 @@ const showDetailsPanel = computed(() => {
 
 onUnmounted(() => {
   activeUnitStore.clearActiveUnit();
+  playback.playbackRunning = false;
 });
 
 onActivated(() => {
   mapRef.value?.updateSize();
+  playback.playbackRunning = false;
 });
 
 function onCloseDetailsPanel() {
@@ -239,4 +251,35 @@ function onShowPlaceSearch() {
   ui.searchGeoMode = true;
   ui.showSearch = true;
 }
+
+const { pause, resume, isActive } = useRafFn(
+  ({ delta }) => {
+    if (
+      playback.playbackLooping &&
+      playback.endMarker !== undefined &&
+      playback.startMarker !== undefined
+    ) {
+      if (state.currentTime >= playback.endMarker) {
+        setCurrentTime(playback.startMarker);
+        return;
+      }
+    }
+
+    const newTime = state.currentTime + playback.playbackSpeed;
+    setCurrentTime(newTime);
+  },
+  { immediate: false, fpsLimit: 60 },
+);
+
+watch(
+  () => playback.playbackRunning,
+  (running) => {
+    if (running) {
+      resume();
+    } else {
+      pause();
+    }
+  },
+  { immediate: true },
+);
 </script>

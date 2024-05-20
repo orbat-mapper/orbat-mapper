@@ -145,6 +145,7 @@ import {
   IconCursorMove as MoveIcon,
   IconLockOpenVariantOutline,
   IconLockOutline,
+  IconMapMarkerPath,
   IconPencil as DrawIcon,
   IconPlus as AddSymbolIcon,
   IconRedoVariant as RedoIcon,
@@ -152,7 +153,6 @@ import {
   IconSkipNext,
   IconSkipPrevious,
   IconUndoVariant as UndoIcon,
-  IconMapMarkerPath,
 } from "@iconify-prerendered/vue-mdi";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";

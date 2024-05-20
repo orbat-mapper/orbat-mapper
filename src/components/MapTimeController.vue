@@ -42,16 +42,15 @@ import { CalendarIcon } from "@heroicons/vue/24/solid";
 import {
   IconChevronLeft,
   IconChevronRight,
+  IconCogOutline as SettingsIcon,
   IconSkipNext,
   IconSkipPrevious,
-  IconCogOutline as SettingsIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { useUiStore } from "@/stores/uiStore";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { formatDateString } from "@/geo/utils";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 
 const props = withDefaults(

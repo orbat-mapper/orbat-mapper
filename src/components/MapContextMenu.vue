@@ -13,7 +13,16 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 
-import { IconContentCopy, IconTarget } from "@iconify-prerendered/vue-mdi";
+import {
+  IconContentCopy,
+  IconPause,
+  IconPlay,
+  IconSpeedometer,
+  IconSpeedometerSlow,
+  IconTarget,
+  IconClockStart,
+  IconClockEnd,
+} from "@iconify-prerendered/vue-mdi";
 import { computed, ref } from "vue";
 import type OLMap from "ol/Map";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
@@ -30,8 +39,10 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
-import Feature from "ol/Feature";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import { usePlaybackStore } from "@/stores/playbackStore";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
+const tm = useTimeFormatStore();
 
 const props = defineProps<{ mapRef?: OLMap }>();
 
@@ -50,6 +61,7 @@ const uiSettings = useUiStore();
 const { send } = useNotifications();
 const { copy: copyToClipboard } = useClipboard();
 const { activeUnitId } = useSelectedItems();
+const playback = usePlaybackStore();
 
 const dropPosition = ref([0, 0]);
 const pixelPosition = ref<number[] | null>(null);
@@ -198,6 +210,67 @@ function onContextMenuUpdate(open: boolean) {
         <ContextMenuSubTrigger inset><span>Export</span></ContextMenuSubTrigger>
         <ContextMenuSubContent>
           <ContextMenuItem @select="onExport()">Map as image</ContextMenuItem>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+      <ContextMenuSub>
+        <ContextMenuSubTrigger inset><span>Playback</span></ContextMenuSubTrigger>
+        <ContextMenuSubContent>
+          <ContextMenuItem @select.prevent="playback.togglePlayback()">
+            <IconPause v-if="playback.playbackRunning" class="mr-2 h-4 w-4" />
+            <IconPlay v-else class="mr-2 h-4 w-4" />
+            <span>{{ playback.playbackRunning ? "Pause" : "Play" }}</span>
+          </ContextMenuItem>
+          <ContextMenuItem @select.prevent="playback.increaseSpeed()">
+            <IconSpeedometer class="mr-2 h-4 w-4" />
+            <span>Speed up</span>
+          </ContextMenuItem>
+          <ContextMenuItem @select.prevent="playback.decreaseSpeed()">
+            <IconSpeedometerSlow class="mr-2 h-4 w-4" />
+            <span>Slow down</span>
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuCheckboxItem
+            v-model:checked="playback.playbackLooping"
+            @select.prevent
+          >
+            Loop playback
+          </ContextMenuCheckboxItem>
+
+          <ContextMenuItem
+            inset
+            @select.prevent="playback.addMarker(store.state.currentTime)"
+          >
+            Add marker
+            <span class="ml-1"
+              >({{
+                playback.startMarker && playback.endMarker
+                  ? 2
+                  : playback.startMarker || playback.endMarker
+                    ? 1
+                    : 0
+              }}
+              / 2)</span
+            >
+          </ContextMenuItem>
+          <ContextMenuItem
+            inset
+            @select.prevent="playback.clearMarkers()"
+            :disabled="!playback.startMarker && !playback.endMarker"
+          >
+            Clear markers
+          </ContextMenuItem>
+          <ContextMenuItem v-if="playback.startMarker !== undefined" disabled
+            ><IconClockStart class="mr-2 h-4 w-4" />
+            <span>{{
+              tm.scenarioFormatter.format(playback.startMarker)
+            }}</span></ContextMenuItem
+          >
+          <ContextMenuItem v-if="playback.endMarker !== undefined" disabled
+            ><IconClockEnd class="mr-2 h-4 w-4" />
+            <span>{{
+              tm.scenarioFormatter.format(playback.endMarker)
+            }}</span></ContextMenuItem
+          >
         </ContextMenuSubContent>
       </ContextMenuSub>
       <ContextMenuSeparator />
