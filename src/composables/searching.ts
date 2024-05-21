@@ -156,7 +156,11 @@ export function useScenarioSearch(
       actionHits,
     ]);
     const numberOfHits =
-      unitHits.length + featureHits.length + eventHits.length + imageLayerHits.length;
+      unitHits.length +
+      featureHits.length +
+      eventHits.length +
+      imageLayerHits.length +
+      actionHits.length;
     return { numberOfHits, groups: groupBy(allHits, "category") };
   }
 
