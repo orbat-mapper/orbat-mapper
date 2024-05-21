@@ -19,12 +19,14 @@ import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import { fixExtent } from "@/utils/geoConvert";
 import { addMapLayer } from "@/modules/scenarioeditor/scenarioMapLayers";
+import { usePlaybackStore } from "@/stores/playbackStore";
 
 const mapRef = injectStrict(activeMapKey);
 const activeScenario = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
 const imageLayerBus = useEventBus(imageLayerAction);
 const l = useScenarioLayers(mapRef.value);
+const playback = usePlaybackStore();
 
 const {
   onUnitSelect,
@@ -109,6 +111,14 @@ onScenarioAction(({ action }) => {
     toeActions.goToAddEquipment();
   } else if (action === "addPersonnel") {
     toeActions.goToAddPersonnel();
+  } else if (action === "startPlayback") {
+    playback.playbackRunning = true;
+  } else if (action === "stopPlayback") {
+    playback.playbackRunning = false;
+  } else if (action === "increaseSpeed") {
+    playback.increaseSpeed();
+  } else if (action === "decreaseSpeed") {
+    playback.decreaseSpeed();
   }
 });
 

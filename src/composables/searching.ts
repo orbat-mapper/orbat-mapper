@@ -203,6 +203,10 @@ const actionItems: ActionItem[] = [
   { action: "addTileJSONLayer", label: "Add TileJSON map layer", icon: "add" },
   { action: "addXYZLayer", label: "Add XYZ map layer", icon: "add" },
   { action: "addImageLayer", label: "Add image layer", icon: "add" },
+  { action: "startPlayback", label: "Start playback", icon: "play" },
+  { action: "stopPlayback", label: "Pause playback", icon: "pause" },
+  { action: "increaseSpeed", label: "Speed up playback", icon: "increaseSpeed" },
+  { action: "decreaseSpeed", label: "slow down playback", icon: "decreaseSpeed" },
 ];
 
 export function useActionSearch() {

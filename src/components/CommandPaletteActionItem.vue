@@ -22,6 +22,13 @@ import {
   IconFileUploadOutline,
   IconFileDownloadOutline,
   IconContentSaveOutline,
+  IconPause,
+  IconPlay,
+  IconSpeedometer,
+  IconSpeedometerSlow,
+  IconTarget,
+  IconClockStart,
+  IconClockEnd,
 } from "@iconify-prerendered/vue-mdi";
 
 const iconMap: Record<string, any> = {
@@ -30,6 +37,10 @@ const iconMap: Record<string, any> = {
   download: IconFileDownloadOutline,
   save: IconContentSaveOutline,
   default: IconHexagonOutline,
+  play: IconPlay,
+  pause: IconPause,
+  increaseSpeed: IconSpeedometer,
+  decreaseSpeed: IconSpeedometerSlow,
 };
 
 const props = defineProps<{ item: ActionSearchResult; active?: boolean }>();

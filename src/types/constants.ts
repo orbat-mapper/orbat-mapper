@@ -52,7 +52,11 @@ export type ScenarioActions =
   | "loadNew"
   | "save"
   | "showInfo"
-  | "createNew";
+  | "createNew"
+  | "startPlayback"
+  | "stopPlayback"
+  | "increaseSpeed"
+  | "decreaseSpeed";
 
 export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
 
