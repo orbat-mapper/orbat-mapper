@@ -257,6 +257,7 @@ export function useScenarioLayers(
       }),
       style: scenarioFeatureStyle,
       properties: { id: layer.id, title: layer.name, layerType: LayerTypes.overlay },
+      updateWhileInteracting: true,
       updateWhileAnimating: true,
     });
     if (layer.isHidden) vectorLayer.setVisible(false);
