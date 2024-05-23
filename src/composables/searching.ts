@@ -193,7 +193,7 @@ const actionItems: ActionItem[] = [
   },
   {
     action: "export",
-    label: "Export data",
+    label: "Export scenario data",
     icon: "download",
   },
   { action: "addEquipment", label: "Add new equipment", icon: "add" },
