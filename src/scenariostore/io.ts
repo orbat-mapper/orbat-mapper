@@ -326,5 +326,6 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     saveToIndexedDb,
     duplicateScenario,
     stringifyObject,
+    toObject,
   };
 }

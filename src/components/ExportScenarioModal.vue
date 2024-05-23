@@ -29,6 +29,7 @@
         :format="format"
         v-model="form"
       />
+      <ExportSettingsOrbatMapper v-else-if="format === 'orbatmapper'" v-model="form" />
       <ExportSettingsGeoJson
         v-else-if="format === 'geojson'"
         :format="format"
@@ -105,6 +106,7 @@ import ExportSettingsXlsx from "@/components/ExportSettingsXlsx.vue";
 import ExportSettingsSpatialIllusions from "@/components/ExportSettingsSpatialIllusions.vue";
 import ExportSettingsGeoJson from "@/components/ExportSettingsGeoJson.vue";
 import DocLink from "@/components/DocLink.vue";
+import ExportSettingsOrbatMapper from "@/components/ExportSettingsOrbatMapper.vue";
 
 import ToggleField from "@/components/ToggleField.vue";
 import { useExportStore } from "@/stores/importExportStore";
@@ -118,6 +120,7 @@ const {
   downloadAsXlsx,
   downloadAsMilx,
   downloadAsSpatialIllusions,
+  downloadAsOrbatMapper,
 } = useScenarioExport();
 const open = useVModel(props, "modelValue", emit);
 const store = useExportStore();
@@ -139,6 +142,7 @@ const form = ref<Form>({
   format: store.currentFormat ?? "orbatmapper",
   includeFeatures: false,
   includeUnits: true,
+  sides: [],
   fileName: "scenario.geojson",
   embedIcons: true,
   useShortName: true,
@@ -176,6 +180,8 @@ async function onExport(e: Event) {
     await downloadAsMilx(form.value);
   } else if (format === "unitgenerator") {
     await downloadAsSpatialIllusions(form.value);
+  } else if (format === "orbatmapper") {
+    downloadAsOrbatMapper(form.value);
   }
   NProgress.done();
   if (!store.keepOpen) open.value = false;

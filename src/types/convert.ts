@@ -1,6 +1,7 @@
 import { EntityId } from "@/types/base";
 
 export type ExportFormat =
+  | "orbatmapper"
   | "geojson"
   | "kml"
   | "kmz"
@@ -50,10 +51,15 @@ export interface GeoJsonSettings extends BaseExportSettings {
   includeId: boolean;
 }
 
+export interface OrbatMapperExportSettings extends BaseExportSettings {
+  sides: EntityId[];
+}
+
 export interface ExportSettings
   extends XlsxSettings,
     UnitGeneratorSettings,
-    GeoJsonSettings {
+    GeoJsonSettings,
+    OrbatMapperExportSettings {
   fileName: string;
   includeUnits: boolean;
   includeFeatures: boolean;

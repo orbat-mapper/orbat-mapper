@@ -6,6 +6,7 @@ import {
   ColumnMapping,
   ExportSettings,
   GeoJsonSettings,
+  OrbatMapperExportSettings,
   UnitGeneratorSettings,
 } from "@/types/convert";
 import * as FileSaver from "file-saver";
@@ -52,7 +53,7 @@ function mapField(field: any): string | number | Date {
 }
 
 export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {}) {
-  const { geo, store, unitActions } =
+  const { geo, store, unitActions, io } =
     options.activeScenario || injectStrict(activeScenarioKey);
   const { sideMap } = store.state;
 
@@ -262,7 +263,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     writeFileXLSX(workbook, "scenario.xlsx");
   }
 
-  function downloadAsSpatialIllusions(opts: UnitGeneratorSettings) {
+  async function downloadAsSpatialIllusions(opts: UnitGeneratorSettings) {
     const { rootUnit } = opts;
     const hierarchy = unitActions.expandUnitWithSymbolOptions(
       store.state.getUnitById(rootUnit),
@@ -290,6 +291,17 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
+  function downloadAsOrbatMapper({ sides, fileName }: OrbatMapperExportSettings) {
+    const scn = io.toObject();
+    const newScenario = { ...scn, sides: scn.sides.filter((e) => sides.includes(e.id)) };
+    FileSaver.saveAs(
+      new Blob([JSON.stringify(newScenario, undefined, 2)], {
+        type: "application/json",
+      }),
+      "scenario-export-orbatmapper.json",
+    );
+  }
+
   return {
     downloadAsGeoJSON,
     downloadAsKML,
@@ -297,5 +309,6 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     downloadAsXlsx,
     downloadAsMilx,
     downloadAsSpatialIllusions,
+    downloadAsOrbatMapper,
   };
 }
