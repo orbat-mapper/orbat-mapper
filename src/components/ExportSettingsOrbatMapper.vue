@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { OrbatMapperExportSettings, UnitGeneratorSettings } from "@/types/convert";
-import { computed, ref } from "vue";
-import { SelectItem } from "@/components/types";
-import { EntityId } from "@/types/base";
+import { OrbatMapperExportSettings } from "@/types/convert";
+import { computed } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
+import InputGroup from "@/components/InputGroup.vue";
 
-const settings = defineModel<OrbatMapperExportSettings>({ required: true });
+const form = defineModel<OrbatMapperExportSettings>({ required: true });
 const {
   unitActions,
   store: { state },
@@ -23,17 +22,18 @@ const sides = computed(() => {
   <section class="prose prose-sm">
     <p>Export partial scenario</p>
   </section>
-  <fieldset class="space-y-4">
+  <fieldset class="flex flex-col gap-4">
     <InputGroupTemplate label="Select the sides you want to export">
-      <div class="mt-4 grid grid-cols-4 gap-4">
+      <div class="mt-2 grid grid-cols-4 gap-4">
         <InputCheckbox
           v-for="v in sides"
           :label="v.name"
           :value="v.id"
           :key="v.id"
-          v-model="settings.sides"
+          v-model="form.sides"
         />
       </div>
     </InputGroupTemplate>
+    <InputGroup label="Name of downloaded file" v-model="form.fileName" />
   </fieldset>
 </template>

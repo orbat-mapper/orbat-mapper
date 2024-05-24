@@ -143,7 +143,7 @@ const form = ref<Form>({
   includeFeatures: false,
   includeUnits: true,
   sides: [],
-  fileName: "scenario.geojson",
+  fileName: "scenario.json",
   embedIcons: true,
   useShortName: true,
   oneSheetPerSide: true,

@@ -1,5 +1,5 @@
 import { featureCollection, point } from "@turf/helpers";
-import { injectStrict } from "@/utils";
+import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { TScenario } from "@/scenariostore";
 import {
@@ -294,11 +294,17 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   function downloadAsOrbatMapper({ sides, fileName }: OrbatMapperExportSettings) {
     const scn = io.toObject();
     const newScenario = { ...scn, sides: scn.sides.filter((e) => sides.includes(e.id)) };
+    newScenario.id = nanoid();
+    newScenario.meta = {
+      ...scn.meta!,
+      exportedFrom: scn.id,
+      exportedDate: new Date().toISOString(),
+    };
     FileSaver.saveAs(
       new Blob([JSON.stringify(newScenario, undefined, 2)], {
         type: "application/json",
       }),
-      "scenario-export-orbatmapper.json",
+      fileName || "scenario-export-orbatmapper.json",
     );
   }
 

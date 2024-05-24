@@ -184,6 +184,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "0.20.0"
   | "0.19.0"
   | "0.18.0"
   | "0.17.0"
@@ -229,6 +230,8 @@ export interface MapSettings {
 export interface ScenarioMetadata {
   createdDate: string;
   lastModifiedDate: string;
+  exportedFrom?: EntityId;
+  exportedDate?: string;
 }
 
 export interface Scenario extends ScenarioInfo {
