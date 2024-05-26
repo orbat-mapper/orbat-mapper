@@ -291,7 +291,11 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
-  function downloadAsOrbatMapper({ sides, fileName }: OrbatMapperExportSettings) {
+  function downloadAsOrbatMapper({
+    sides,
+    fileName,
+    scenarioName,
+  }: OrbatMapperExportSettings) {
     const scn = io.toObject();
     const newScenario = { ...scn, sides: scn.sides.filter((e) => sides.includes(e.id)) };
     newScenario.id = nanoid();
@@ -300,6 +304,8 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       exportedFrom: scn.id,
       exportedDate: new Date().toISOString(),
     };
+    if (scenarioName) newScenario.name = scenarioName;
+
     FileSaver.saveAs(
       new Blob([JSON.stringify(newScenario, undefined, 2)], {
         type: "application/json",

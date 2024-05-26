@@ -8,10 +8,13 @@ import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import InputGroup from "@/components/InputGroup.vue";
 
 const form = defineModel<OrbatMapperExportSettings>({ required: true });
+
 const {
   unitActions,
   store: { state },
 } = injectStrict(activeScenarioKey);
+
+form.value.scenarioName = state.info.name;
 
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
@@ -34,6 +37,7 @@ const sides = computed(() => {
         />
       </div>
     </InputGroupTemplate>
+    <InputGroup label="Scenario name" v-model="form.scenarioName" />
     <InputGroup label="Name of downloaded file" v-model="form.fileName" />
   </fieldset>
 </template>
