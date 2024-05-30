@@ -8,7 +8,7 @@
       {{ activeItemRef.label }}
     </button>
     <Menu as="div" class="relative -ml-px block">
-      <Float placement="bottom-end" :offset="4" strategy="fixed" flip shift>
+      <Float placement="bottom-end" :offset="4" strategy="fixed" portal flip shift>
         <MenuButton
           class="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
