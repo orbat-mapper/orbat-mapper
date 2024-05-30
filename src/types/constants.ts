@@ -18,6 +18,7 @@ export const UnitActions = {
   MoveDown: "MoveDown",
   Pan: "Pan",
   DeleteWaypoints: "DeleteWaypoint",
+  ClearState: "ClearState",
 } as const;
 
 export type UnitAction = (typeof UnitActions)[keyof typeof UnitActions];

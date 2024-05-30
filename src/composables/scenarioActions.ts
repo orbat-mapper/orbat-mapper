@@ -101,6 +101,10 @@ export function useUnitActions(
         unitActions.deleteUnitStateEntryByStateId(unit.id, wid),
       );
     }
+
+    if (action === UnitActions.ClearState) {
+      unitActions.clearUnitState(unit.id);
+    }
   };
 
   function onUnitAction(

@@ -486,6 +486,19 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitState(unitId);
   }
 
+  function clearUnitState(unitId: EntityId) {
+    update(
+      (s) => {
+        const _unit = s.getUnitById(unitId);
+        if (!_unit) return;
+        _unit.state = [];
+        _unit._state = createInitialState(_unit);
+      },
+      { label: "clearUnitState", value: unitId },
+    );
+    updateUnitState(unitId);
+  }
+
   function deleteUnitStateEntryByStateId(unitId: EntityId, stateId: EntityId) {
     update((s) => {
       const _unit = s.getUnitById(unitId);
@@ -896,6 +909,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnit,
     deleteUnitStateEntry,
     deleteUnitStateEntryByStateId,
+    clearUnitState,
     units: computed(() => Object.values(state.unitMap)),
     getUnitOrSideGroup,
     getUnitById: (id: EntityId) => state.unitMap[id],

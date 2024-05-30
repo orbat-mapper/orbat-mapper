@@ -1,5 +1,5 @@
 <template>
-  <div v-if="unit" class="@container">
+  <div v-if="unit" class="@container" :key="unit.id">
     <ItemMedia v-if="media" :media="media" />
     <header class="-mx-4 px-4 pt-4">
       <div v-if="!isMultiMode" class="flex">
@@ -188,7 +188,6 @@ import IconButton from "@/components/IconButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 import OLMap from "ol/Map";
 import { useUiStore } from "@/stores/uiStore";
-import ToggleField from "@/components/ToggleField.vue";
 import { SID_INDEX } from "@/symbology/sidc";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
@@ -204,10 +203,8 @@ import { MenuItemData } from "@/components/types";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
-import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsProperties.vue";
 import UnitDetailsSymbol from "@/modules/scenarioeditor/UnitDetailsSymbol.vue";
-import AlertWarning from "@/components/AlertWarning.vue";
 
 const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
@@ -408,6 +405,7 @@ const buttonItems = computed(() => [
     label: "Delete",
     onClick: () => actionWrapper(UnitActions.Delete),
   },
+  { label: "Clear state", onClick: () => actionWrapper(UnitActions.ClearState) },
 ]);
 
 async function handleChangeSymbol() {

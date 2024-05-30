@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 May 2024
 
+- Add a clear unit state action.
 - Add search/filter to symbol picker browser tab.
 - Show unit icons in map context menu.
 - Add export map as image feature.

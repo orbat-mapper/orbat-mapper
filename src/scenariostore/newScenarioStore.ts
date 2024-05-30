@@ -367,7 +367,8 @@ export type ActionLabel =
   | "addMapLayer"
   | "deleteMapLayer"
   | "updateMapLayer"
-  | "moveMapLayer";
+  | "moveMapLayer"
+  | "clearUnitState";
 
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);
