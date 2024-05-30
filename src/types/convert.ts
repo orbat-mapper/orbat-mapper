@@ -11,6 +11,7 @@ export type ExportFormat =
   | "unitgenerator";
 
 export type ImportFormat =
+  | "orbatmapper"
   | "geojson"
   | "milx"
   | "msdl"
@@ -53,6 +54,7 @@ export interface GeoJsonSettings extends BaseExportSettings {
 
 export interface OrbatMapperExportSettings extends BaseExportSettings {
   sides: EntityId[];
+  scenarioName?: string;
 }
 
 export interface ExportSettings
