@@ -181,7 +181,11 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
-  function updateUnit(unitId: EntityId, data: UnitUpdate) {
+  function updateUnit(
+    unitId: EntityId,
+    data: UnitUpdate,
+    { doUpdateUnitState = false } = {},
+  ) {
     invalidateUnitStyle(unitId);
     update((s) => {
       let unit = s.unitMap[unitId];
@@ -189,6 +193,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       Object.assign(unit, { ...data });
       s.unitMap[unitId] = klona(unit);
     });
+    if (doUpdateUnitState) updateUnitState(unitId);
   }
 
   function updateUnitProperties(
@@ -562,6 +567,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       },
       { label: "addUnitPosition", value: unitId },
     );
+    updateUnitState(unitId);
   }
 
   function updateUnitState(unitId: EntityId, undoable = false) {

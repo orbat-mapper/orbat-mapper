@@ -9,6 +9,15 @@
   </div>
 
   <ul class="mt-2 divide-y divide-gray-200 border-b border-t border-gray-200">
+    <li v-if="unit.location" class="relative flex items-center py-4">
+      <div class="flex min-w-0 flex-auto flex-col text-sm">
+        <span class="font-medium text-gray-500">Initial position</span>
+        <p class="text-gray-700">{{ formatPosition(unit.location) }}</p>
+      </div>
+      <div class="flex-0 relative flex items-center space-x-0">
+        <DotsMenu :items="initialMenuItems" @action="onStateAction(-1, $event)" />
+      </div>
+    </li>
     <li
       v-for="(s, index) in state"
       class="relative flex items-center py-4"
@@ -143,6 +152,10 @@ const menuItems: MenuItemData<StateAction>[] = [
   // { label: "Change status", action: "changeStatus" },
 ];
 
+const initialMenuItems: MenuItemData<StateAction>[] = [
+  { label: "Delete", action: "delete" },
+];
+
 const stateItems: ButtonGroupItem[] = [
   {
     label: "Change symbol",
@@ -181,7 +194,15 @@ const changeToState = (stateEntry: State) => {
 
 async function onStateAction(index: number, action: StateAction) {
   if (action === "delete") {
-    deleteState(index);
+    if (index < 0) {
+      unitActions.updateUnit(
+        props.unit.id,
+        { location: undefined },
+        { doUpdateUnitState: true },
+      );
+    } else {
+      deleteState(index);
+    }
   } else if (action === "convertToInitialPosition") {
     unitActions.convertStateEntryToInitialLocation(props.unit.id, index);
   } else if (action === "changeTime") {
