@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+June 2024
+
+- Add an "Open in" item to the map context menu to open the current location in a selection of online map providers.
+
 May 2024
 
 - Add a clear unit state action.

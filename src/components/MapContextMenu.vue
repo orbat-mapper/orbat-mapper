@@ -42,6 +42,8 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
+import { Position } from "geojson";
+
 const tm = useTimeFormatStore();
 
 const props = defineProps<{ mapRef?: OLMap }>();
@@ -63,9 +65,10 @@ const { copy: copyToClipboard } = useClipboard();
 const { activeUnitId } = useSelectedItems();
 const playback = usePlaybackStore();
 
-const dropPosition = ref([0, 0]);
+const dropPosition = ref<Position>([0, 0]);
 const pixelPosition = ref<number[] | null>(null);
 const clickedUnits = ref<NUnit[]>([]);
+const mapZoomLevel = ref(0);
 
 const formattedPosition = computed(() =>
   getCoordinateFormatFunction(coordinateFormat.value)(dropPosition.value),
@@ -81,6 +84,7 @@ function onContextMenu(e: MouseEvent) {
     console.warn("No map ref");
     return;
   }
+  mapZoomLevel.value = mapRef.getView()?.getZoom() ?? 0;
   clickedUnits.value = [];
   pixelPosition.value = mapRef.getEventPixel(e);
   dropPosition.value = toLonLat(mapRef.getEventCoordinate(e));
@@ -92,6 +96,35 @@ function onContextMenu(e: MouseEvent) {
       unit && clickedUnits.value.push(unit);
     }
   });
+}
+
+function returnMapProviders(lonLat: Position, zoomLevel: number) {
+  return [
+    {
+      name: "Google Maps",
+      url: `https://www.google.com/maps/@${lonLat[1]},${lonLat[0]},${zoomLevel}z`,
+    },
+    {
+      name: "Google Street View",
+      url:
+        "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=" +
+        lonLat[1] +
+        "," +
+        lonLat[0],
+    },
+    {
+      name: "Bing Maps",
+      url: `https://www.bing.com/maps?cp=${lonLat[1]}~${lonLat[0]}&lvl=${zoomLevel}`,
+    },
+    {
+      name: "OpenStreetMap",
+      url: `https://www.openstreetmap.org/#map=15/${lonLat[1]}/${lonLat[0]}`,
+    },
+    {
+      name: "Geohack",
+      url: `https://geohack.toolforge.org/geohack.php?params=${lonLat[1]}_N_${lonLat[0]}_E`,
+    },
+  ];
 }
 
 async function onCopy() {
@@ -259,17 +292,29 @@ function onContextMenuUpdate(open: boolean) {
           >
             Clear markers
           </ContextMenuItem>
-          <ContextMenuItem v-if="playback.startMarker !== undefined" disabled
-            ><IconClockStart class="mr-2 h-4 w-4" />
+          <ContextMenuItem v-if="playback.startMarker !== undefined" disabled>
+            <IconClockStart class="mr-2 h-4 w-4" />
             <span>{{
               tm.scenarioFormatter.format(playback.startMarker)
             }}</span></ContextMenuItem
           >
-          <ContextMenuItem v-if="playback.endMarker !== undefined" disabled
-            ><IconClockEnd class="mr-2 h-4 w-4" />
+          <ContextMenuItem v-if="playback.endMarker !== undefined" disabled>
+            <IconClockEnd class="mr-2 h-4 w-4" />
             <span>{{
               tm.scenarioFormatter.format(playback.endMarker)
             }}</span></ContextMenuItem
+          >
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+      <ContextMenuSub>
+        <ContextMenuSubTrigger inset><span>Open in</span></ContextMenuSubTrigger>
+        <ContextMenuSubContent>
+          <ContextMenuItem
+            v-for="{ name, url } in returnMapProviders(dropPosition, mapZoomLevel)"
+            :key="url"
+            inset
+            as-child
+            ><a :href="url" target="_blank">{{ name }}</a></ContextMenuItem
           >
         </ContextMenuSubContent>
       </ContextMenuSub>
