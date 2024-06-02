@@ -6,7 +6,7 @@
     <nav
       class="flex flex-shrink-0 items-center justify-between bg-gray-900 py-2 pl-6 pr-4 text-gray-200 print:hidden"
     >
-      <div class="flex min-w-0 flex-auto items-center">
+      <div class="z-20 flex min-w-0 flex-auto items-center">
         <div class="flex min-w-0 flex-auto items-center">
           <MainMenu @action="onScenarioAction" @ui-action="onUiAction" />
           <button
@@ -18,7 +18,8 @@
           </button>
         </div>
       </div>
-      <div class="flex shrink-0 items-center space-x-1 sm:space-x-2">
+      <div class="flex shrink-0 items-center space-x-1 overflow-clip sm:space-x-2">
+        <PlaybackMenu v-if="route.name === MAP_EDIT_MODE_ROUTE" />
         <a
           :href="
             route.meta.helpUrl || 'https://docs.orbat-mapper.app/guide/about-orbat-mapper'
@@ -200,6 +201,7 @@ import {
   IconSitemap,
   IconUndoVariant as IconUndo,
 } from "@iconify-prerendered/vue-mdi";
+
 import { createEventHook, useClipboard, useTitle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import { ScenarioActions, TAB_LAYERS, UiAction } from "@/types/constants";
@@ -237,6 +239,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
+import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 
