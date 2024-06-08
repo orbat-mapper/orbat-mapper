@@ -6,7 +6,6 @@ import { utcDay, utcHour } from "d3-time";
 import { utcFormat } from "d3-time-format";
 import { interpolateOranges } from "d3-scale-chromatic";
 import { scaleSequential } from "d3-scale";
-import dayjs from "dayjs";
 import { useActiveScenario } from "@/composables/scenarioUtils";
 import { NScenarioEvent } from "@/types/internalModels";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
@@ -213,7 +212,17 @@ function onWheel(e: WheelEvent) {
   }
 }
 
-const events = computed(() => store.state.events.map((id) => store.state.eventMap[id]));
+const events = computed(() => {
+  const scenarioEvents = store.state.events.map((id) => store.state.eventMap[id]);
+  if (store.state.info.startTime)
+    scenarioEvents.push({
+      id: "xx",
+      title: "Scenario start time",
+      _type: "scenario",
+      startTime: store.state.info.startTime,
+    });
+  return scenarioEvents;
+});
 
 function updateEvents(minDate: Date, maxDate: Date) {
   const minTs = +minDate;
@@ -323,12 +332,12 @@ function onEventClick(event: NScenarioEvent) {
             v-for="{ x, event } in eventsWithX"
             type="button"
             :key="event.id"
-            class="absolute h-4 w-4 -translate-x-2 rounded-full border border-gray-500 bg-amber-500 hover:bg-red-900"
+            class="absolute h-4 w-4 -translate-x-1/2 rounded-full border border-gray-500 bg-amber-500 hover:bg-red-900"
             :style="`left: ${x}px;`"
             @mousemove.stop
             :title="event.title"
             @click.stop="onEventClick(event)"
-          ></button>
+          />
         </div>
       </div>
       <div class="flex justify-center">
