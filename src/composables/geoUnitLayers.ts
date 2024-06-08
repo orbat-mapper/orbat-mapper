@@ -61,6 +61,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
 
   onUndoRedo(() => {
     clearUnitStyleCache();
+    state.unitStateCounter++;
   });
 
   const drawUnits = () => {
