@@ -6,7 +6,7 @@
     <nav
       class="flex flex-shrink-0 items-center justify-between bg-gray-900 py-2 pl-6 pr-4 text-gray-200 print:hidden"
     >
-      <div class="z-20 flex min-w-0 flex-auto items-center">
+      <div class="flex min-w-0 flex-auto items-center">
         <div class="flex min-w-0 flex-auto items-center">
           <MainMenu @action="onScenarioAction" @ui-action="onUiAction" />
           <button
