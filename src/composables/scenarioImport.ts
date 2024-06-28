@@ -33,8 +33,9 @@ export function useScenarioImport(options: Partial<UseScenarioExportOptions> = {
 
   function importGeojsonString(source: string): FeatureCollection {
     const json = JSON.parse(source);
+    return json;
 
-    return convertGeojsonLayer(json) as FeatureCollection;
+    //return convertGeojsonLayer(json) as FeatureCollection;
   }
 
   function importJsonString<T>(source: string) {

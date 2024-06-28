@@ -185,9 +185,12 @@ watch([settingsStore, symbolSettings], () => {
   drawUnits();
 });
 
-watch([() => state.currentTime, doNotFilterLayers], () => {
-  loadScenarioLayers(false, !doNotFilterLayers.value);
-});
+watch(
+  [() => state.currentTime, doNotFilterLayers, () => state.featureStateCounter],
+  () => {
+    loadScenarioLayers(false, !doNotFilterLayers.value);
+  },
+);
 
 onUnmounted(() => {
   geoStore.olMap = undefined;

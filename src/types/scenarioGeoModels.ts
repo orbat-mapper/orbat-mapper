@@ -1,4 +1,10 @@
-import type { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
+import type {
+  Feature as GeoJsonFeature,
+  Geometry,
+  LineString,
+  Point,
+  Polygon,
+} from "geojson";
 import { FillStyleSpec, SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
 import { ScenarioTime } from "@/types/base";
 import {
@@ -49,7 +55,7 @@ export interface CurrentScenarioFeatureState extends Omit<ScenarioFeatureState, 
 
 // A scenario feature is basically just a GeoJSON Feature with a required id field.
 export interface ScenarioFeature
-  extends GeoJsonFeature<Point | LineString | Polygon, ScenarioFeatureProperties> {
+  extends GeoJsonFeature<Geometry, ScenarioFeatureProperties> {
   id: FeatureId;
   state?: ScenarioFeatureState[];
   media?: Media[];

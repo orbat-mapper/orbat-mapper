@@ -38,7 +38,6 @@ import type {
   ScenarioMapLayer,
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
-import { ref } from "vue";
 import { DEFAULT_BASEMAP_ID } from "@/config/constants";
 
 export interface ScenarioState {
@@ -65,6 +64,7 @@ export interface ScenarioState {
   rangeRingGroupMap: Record<string, NRangeRingGroup>;
   unitStatusMap: Record<string, NUnitStatus>;
   unitStateCounter: number;
+  featureStateCounter: number;
   mapSettings: MapSettings;
 }
 
@@ -97,6 +97,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   };
 
   let unitStateCounter = 0;
+  let featureStateCounter = 0;
 
   scenario.events.forEach((e) => {
     const nEvent: NScenarioEvent = {
@@ -337,6 +338,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     personnelMap,
     rangeRingGroupMap,
     unitStateCounter,
+    featureStateCounter,
     unitStatusMap,
     mapSettings,
     getUnitById(id: EntityId) {

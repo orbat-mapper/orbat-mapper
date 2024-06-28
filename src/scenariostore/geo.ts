@@ -89,6 +89,7 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "addLayer", value: newLayer.id },
     );
+
     return state.layerMap[newLayer.id];
   }
 
@@ -259,6 +260,7 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "addFeature", value: newFeature.id },
     );
+    store.state.featureStateCounter++;
   }
 
   function deleteFeature(featureId: FeatureId) {

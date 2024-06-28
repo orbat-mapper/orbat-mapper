@@ -3,7 +3,7 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
 import { click as clickCondition } from "ol/events/condition";
-import { Extent, getCenter, isEmpty } from "ol/extent";
+import { getCenter, isEmpty } from "ol/extent";
 import { featureCollection, point } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
 import { injectStrict, moveItemMutable, nanoid } from "@/utils";
@@ -83,7 +83,7 @@ const geometryIconMap: any = {
 };
 
 export function getGeometryIcon(feature?: ScenarioFeature | NScenarioFeature) {
-  return (feature && geometryIconMap[feature.properties.type]) || geometryIconMap.Point;
+  return (feature && geometryIconMap[feature.properties.type]) || geometryIconMap.Polygon;
 }
 
 export function getItemsIcon(type: string) {
@@ -118,7 +118,7 @@ function createScenarioLayerFeatures(
   const olFeatures: Feature[] = [];
   features.forEach((feature, index) => {
     feature.properties._zIndex = index;
-    if (feature.properties?.radius) {
+    if (feature.properties?.radius && feature.geometry.type === "Point") {
       const newRadius = convertRadius(
         feature as GeoJsonFeature<Point>,
         feature.properties.radius,

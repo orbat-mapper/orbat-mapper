@@ -126,6 +126,7 @@ import DocLink from "@/components/DocLink.vue";
 import InputGroup from "@/components/InputGroup.vue";
 import AlertWarning from "@/components/AlertWarning.vue";
 import { isUrl } from "@/utils";
+import { type FeatureCollection } from "geojson";
 
 const emit = defineEmits(["cancel", "loaded"]);
 
@@ -200,7 +201,7 @@ async function onLoad() {
   }
 
   if (format === "geojson" && stringSource.value) {
-    const data = importGeojsonString(stringSource.value);
+    const data = importJsonString<FeatureCollection>(stringSource.value);
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
     emit("loaded", "geojson", data, fileInfo.value);
