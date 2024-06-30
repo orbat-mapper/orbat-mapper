@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 June 2024
 
+- Show list of scenario features under the pointer in the map context menu.
 - Add GeoJSON feature import.
 - Add a playback dropdown menu to the main navbar.
 - Add an "Open in" item to the map context menu to open the current location in a selection of online map providers.

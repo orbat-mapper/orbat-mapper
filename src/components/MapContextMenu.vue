@@ -14,14 +14,14 @@ import {
 } from "@/components/ui/context-menu";
 
 import {
+  IconClockEnd,
+  IconClockStart,
   IconContentCopy,
   IconPause,
   IconPlay,
   IconSpeedometer,
   IconSpeedometerSlow,
   IconTarget,
-  IconClockStart,
-  IconClockEnd,
 } from "@iconify-prerendered/vue-mdi";
 import { computed, ref } from "vue";
 import type OLMap from "ol/Map";
@@ -34,10 +34,10 @@ import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core"
 
 import { useUiStore } from "@/stores/uiStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
-import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
+import { getGeometryIcon, LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, searchActionsKey } from "@/components/injects";
-import { NUnit } from "@/types/internalModels";
+import { NScenarioFeature, NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { usePlaybackStore } from "@/stores/playbackStore";
@@ -48,7 +48,7 @@ const tm = useTimeFormatStore();
 
 const props = defineProps<{ mapRef?: OLMap }>();
 
-const { store, unitActions } = injectStrict(activeScenarioKey);
+const { store, unitActions, geo } = injectStrict(activeScenarioKey);
 const { onScenarioActionHook } = injectStrict(searchActionsKey);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 
@@ -62,12 +62,13 @@ const uiSettings = useUiStore();
 
 const { send } = useNotifications();
 const { copy: copyToClipboard } = useClipboard();
-const { activeUnitId } = useSelectedItems();
+const { activeUnitId, activeFeatureId } = useSelectedItems();
 const playback = usePlaybackStore();
 
 const dropPosition = ref<Position>([0, 0]);
 const pixelPosition = ref<number[] | null>(null);
 const clickedUnits = ref<NUnit[]>([]);
+const clickedFeatures = ref<NScenarioFeature[]>([]);
 const mapZoomLevel = ref(0);
 
 const formattedPosition = computed(() =>
@@ -86,6 +87,7 @@ function onContextMenu(e: MouseEvent) {
   }
   mapZoomLevel.value = mapRef.getView()?.getZoom() ?? 0;
   clickedUnits.value = [];
+  clickedFeatures.value = [];
   pixelPosition.value = mapRef.getEventPixel(e);
   dropPosition.value = toLonLat(mapRef.getEventCoordinate(e));
   mapRef.forEachFeatureAtPixel(pixelPosition.value, (feature, layer) => {
@@ -94,6 +96,10 @@ function onContextMenu(e: MouseEvent) {
       const unitId = feature.getId() as string;
       const unit = store.state.getUnitById(unitId);
       unit && clickedUnits.value.push(unit);
+    } else if (layerType === "SCENARIO_FEATURE") {
+      const featureId = feature.getId() as string;
+      const { feature: scenarioFeature } = geo.getFeatureById(featureId);
+      scenarioFeature && clickedFeatures.value.push(scenarioFeature);
     }
   });
 }
@@ -136,6 +142,10 @@ async function onCopy() {
 
 function onUnitSelect(unit: NUnit) {
   activeUnitId.value = unit.id;
+}
+
+function onFeatureSelect(feature: NScenarioFeature) {
+  activeFeatureId.value = feature.id;
 }
 
 function onContextMenuUpdate(open: boolean) {
@@ -188,6 +198,32 @@ function onContextMenuUpdate(open: boolean) {
           </ContextMenuItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
+      <ContextMenuSub v-if="clickedFeatures.length > 0">
+        <ContextMenuSubTrigger inset
+          ><span>Features</span>&nbsp;
+          <span class="font-medium text-gray-500"
+            >({{ clickedFeatures.length }})</span
+          ></ContextMenuSubTrigger
+        >
+        <ContextMenuSubContent class="max-h-[95vh] overflow-auto">
+          <ContextMenuItem
+            v-for="feature in clickedFeatures"
+            :key="feature.id"
+            @select.prevent="onFeatureSelect(feature)"
+          >
+            <div class="flex items-center">
+              <component
+                :is="getGeometryIcon(feature)"
+                class="mr-1 h-5 w-5 text-gray-400"
+              />
+              <span :class="[activeFeatureId === feature.id ? 'font-semibold' : '']">{{
+                feature.properties.name
+              }}</span>
+            </div>
+          </ContextMenuItem>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+      <ContextMenuSeparator v-if="clickedFeatures.length || clickedUnits.length" />
       <ContextMenuSub>
         <ContextMenuSubTrigger inset><span>Map settings</span></ContextMenuSubTrigger>
         <ContextMenuSubContent>
