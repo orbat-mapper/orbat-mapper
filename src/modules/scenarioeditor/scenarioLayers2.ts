@@ -68,7 +68,7 @@ const selectMarkerStyle = new Style({
 });
 
 export const LayerTypes = {
-  overlay: "OVERLAY",
+  scenarioFeature: "SCENARIO_FEATURE",
   units: "UNITS",
 } as const;
 
@@ -256,7 +256,11 @@ export function useScenarioLayers(
         ),
       }),
       style: scenarioFeatureStyle,
-      properties: { id: layer.id, title: layer.name, layerType: LayerTypes.overlay },
+      properties: {
+        id: layer.id,
+        title: layer.name,
+        layerType: LayerTypes.scenarioFeature,
+      },
       updateWhileInteracting: true,
       updateWhileAnimating: true,
     });
