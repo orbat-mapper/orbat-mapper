@@ -1,6 +1,6 @@
 import type { Unzipped } from "fflate";
 import { GuessedFormatDialect, GuessedImportFormat } from "@/types/convert";
-import { FeatureCollection } from "geojson";
+import type { FeatureCollection, Feature } from "geojson";
 
 export interface ImportedFileInfo {
   dataAsString: string;
@@ -112,6 +112,8 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
       if ("uniqueDesignation" in (json.features[0]?.properties ?? {})) {
         guess.dialect = "geojson-unitgenerator";
       }
+    } else if (isGeoJsonFeature(json)) {
+      guess.format = "geojson";
     } else if (json.options && json.subOrganizations) {
       guess.format = "unitgenerator";
     } else if (Array.isArray(json) && Array.isArray(json[0]) && json[0].length >= 6) {
@@ -120,6 +122,10 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
   } catch (e) {}
 
   return guess;
+}
+
+function isGeoJsonFeature(json: any): json is Feature {
+  return json.type && json.type === "Feature";
 }
 
 function isFeatureCollection(json: any): json is FeatureCollection {
