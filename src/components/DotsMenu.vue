@@ -1,6 +1,6 @@
 <template>
   <Menu as="div">
-    <Float placement="left-start" strategy="fixed" flip shift>
+    <Float placement="left-start" strategy="fixed" flip shift :portal="portal">
       <MenuButton
         @click.stop=""
         class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-army2 focus:ring-offset-2"
@@ -44,7 +44,7 @@ import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
 import { MenuItemData } from "@/components/types";
 import { Float } from "@headlessui-float/vue";
 
-const props = defineProps<{ items: MenuItemData[] }>();
+const props = defineProps<{ items: MenuItemData[]; portal?: boolean }>();
 const emit = defineEmits(["action"]);
 
 const onItemClick = (item: MenuItemData<string | Function>) => {

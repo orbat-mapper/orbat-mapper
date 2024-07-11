@@ -28,6 +28,8 @@
     "@orbat-mapper/convert-symbology": "^1.0.0",
     "@panzoom/panzoom": "^4.5.1",
     "@popperjs/core": "^2.11.8",
+    "@tanstack/vue-table": "^8.19.2",
+    "@tanstack/vue-virtual": "^3.8.2",
     "@tmcw/togeojson": "^5.8.1",
     "@turf/turf": "^7.0.0-alpha.0",
     "@types/d3-time": "^3.0.3",
