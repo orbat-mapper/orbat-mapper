@@ -109,22 +109,20 @@ async function onLoad(e: Event) {
 function loadAsUnits() {
   const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
 
-  const units: NUnit[] = features.value
-    .filter((e) => selectedUnits.value.includes(e as any))
-    .map((f) => {
-      return {
-        id: nanoid(),
-        name: f.properties?.name || "",
-        sidc: setCharAt(f.properties?.sidc, SID_INDEX, side.standardIdentity),
-        subUnits: [],
-        _pid: "",
-        _gid: "",
-        _sid: "",
-        location: (f.geometry as Point).coordinates,
-        equipment: [],
-        personnel: [],
-      };
-    });
+  const units: NUnit[] = selectedUnits.value.map((f) => {
+    return {
+      id: nanoid(),
+      name: f.properties?.name || "",
+      sidc: setCharAt(f.properties?.sidc, SID_INDEX, side.standardIdentity),
+      subUnits: [],
+      _pid: "",
+      _gid: "",
+      _sid: "",
+      location: (f.geometry as Point).coordinates,
+      equipment: [],
+      personnel: [],
+    };
+  });
   scnStore.groupUpdate(() => {
     units.forEach((unit) => unitActions.addUnit(unit, parentUnitId.value));
   });
