@@ -49,10 +49,6 @@ const columns: ColumnProperties[] = [
   { type: "text", field: "properties.name", label: "Name" },
 ];
 
-const newColumns: ColumnDef<GeoJSONFeature, any>[] = [
-  { accessorKey: "geometry.type", id: "geometryType", header: "Geometry" },
-];
-
 const computedColumns = computed((): ColumnDef<GeoJSONFeature, any>[] => {
   const propertyNames = propReduce(
     props.data,
@@ -201,6 +197,7 @@ function loadAsFeatures() {
               :row-height="40"
               select
               select-all
+              show-global-filter
               v-model:selected="selectedFeatures"
             />
           </section>

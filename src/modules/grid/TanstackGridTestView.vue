@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, onMounted, ref } from "vue";
+import { computed, h, onMounted, ref, watch } from "vue";
 import { NUnit } from "@/types/internalModels";
 import { useScenario } from "@/scenariostore";
 import { MenuItemData } from "@/components/types";
@@ -215,6 +215,13 @@ function mutateData() {
   data.value = copy;
   // data.value = data.value.slice().reverse();
 }
+
+watch(rowSelection, () => {
+  console.log(table.getState().rowSelection); //get the row selection state - { 1: true, 2: false, etc... }
+  console.log(table.getSelectedRowModel().rows); //get full client-side selected rows
+  console.log(table.getFilteredSelectedRowModel().rows); //get filtered client-side selected rows
+  console.log(table.getGroupedSelectedRowModel().rows); //g
+});
 </script>
 <template>
   <main class="flex h-full flex-col">

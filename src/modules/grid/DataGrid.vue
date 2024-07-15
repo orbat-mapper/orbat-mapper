@@ -18,6 +18,8 @@ import {
 } from "@tanstack/vue-table";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { valueUpdater } from "@/modules/grid/helpers";
+import { useDebounce } from "@vueuse/core";
+import InputGroup from "@/components/InputGroup.vue";
 
 interface Props {
   columns: ColumnDef<any, any>[];
@@ -26,6 +28,7 @@ interface Props {
   select?: boolean;
   selected?: any[];
   selectAll?: boolean;
+  showGlobalFilter?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -33,21 +36,16 @@ const props = withDefaults(defineProps<Props>(), {
   select: false,
   selected: () => [],
   selectAll: false,
+  showGlobalFilter: false,
 });
 
 const emit = defineEmits(["action", "update:selected"]);
 
 const parentRef = ref<HTMLElement | null>(null);
+const query = ref("");
+const debouncedQuery = useDebounce(query, 200);
 
 const rowSelection = ref<RowSelectionState>({});
-watch(rowSelection, (value) => {
-  const sel: any[] = [];
-  Object.entries(value).forEach(([key, v]) => {
-    const row = props.data[+key];
-    if (row) sel.push(row);
-  });
-  emit("update:selected", sel);
-});
 
 const selectColumn: ColumnDef<any, any> = {
   id: "select",
@@ -94,6 +92,9 @@ const table = useVueTable({
     get rowSelection() {
       return rowSelection.value;
     },
+    get globalFilter() {
+      return debouncedQuery.value;
+    },
   },
   enableRowSelection: true,
   columnResizeMode: "onChange",
@@ -105,11 +106,10 @@ const table = useVueTable({
   getGroupedRowModel: getGroupedRowModel(),
   getExpandedRowModel: getExpandedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
-  autoResetAll: false,
   autoResetExpanded: false,
   onRowSelectionChange: (updateOrValue) => valueUpdater(updateOrValue, rowSelection),
   // onGroupingChange: (updateOrValue) => valueUpdater(updateOrValue, grouping),
-  // onGlobalFilterChange: (updateOrValue) => valueUpdater(updateOrValue, query),
+  onGlobalFilterChange: (updateOrValue) => valueUpdater(updateOrValue, query),
 });
 
 const rowVirtualizerOptions = computed(() => {
@@ -127,10 +127,38 @@ const rows = computed(() => {
 const rowVirtualizer = useVirtualizer(rowVirtualizerOptions);
 
 const virtualRows = computed(() => rowVirtualizer.value.getVirtualItems());
+
+watch([rowSelection, debouncedQuery], () => {
+  const sel: any[] = [];
+  table.getFilteredSelectedRowModel().rows.forEach((row) => {
+    sel.push(row.original);
+  });
+  // Object.entries(value).forEach(([key, v]) => {
+  //   const row = props.data[+key];
+  //   if (row) sel.push(row);
+  // });
+
+  console.log(sel);
+
+  emit("update:selected", sel);
+});
+function onEsc(e: KeyboardEvent) {
+  if (query.value.length) {
+    e.stopPropagation();
+    query.value = "";
+  }
+}
 </script>
 
 <template>
-  <div class="flex max-h-[30em] flex-col">
+  <div class="flex max-h-[50vh] flex-col">
+    <header
+      v-if="showGlobalFilter"
+      class="flex flex-none items-center justify-between pb-2"
+    >
+      <InputGroup v-model="query" placeholder="Filter rows" @keydown.esc="onEsc" />
+      <span class="text-sm">({{ table.getRowCount() }} / {{ data.length }} )</span>
+    </header>
     <section class="relative overflow-auto rounded-lg border shadow" ref="parentRef">
       <table class="grid">
         <thead class="sticky top-0 z-10">
