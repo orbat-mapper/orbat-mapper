@@ -22,7 +22,7 @@ import { useDebounce } from "@vueuse/core";
 import InputGroup from "@/components/InputGroup.vue";
 
 interface Props {
-  columns: ColumnDef<any, any>[];
+  columns: (ColumnDef<any, any> | false | undefined)[];
   data: any[];
   rowHeight?: number;
   select?: boolean;
@@ -133,13 +133,6 @@ watch([rowSelection, debouncedQuery], () => {
   table.getFilteredSelectedRowModel().rows.forEach((row) => {
     sel.push(row.original);
   });
-  // Object.entries(value).forEach(([key, v]) => {
-  //   const row = props.data[+key];
-  //   if (row) sel.push(row);
-  // });
-
-  console.log(sel);
-
   emit("update:selected", sel);
 });
 function onEsc(e: KeyboardEvent) {

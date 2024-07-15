@@ -70,7 +70,12 @@ function onCancel() {
 </script>
 
 <template>
-  <SimpleModal v-model="open" dialog-title="Import data" @cancel="onCancel">
+  <SimpleModal
+    v-model="open"
+    dialog-title="Import data"
+    @cancel="onCancel"
+    maxWidth="sm:max-w-xl md:max-w-4xl"
+  >
     <p class="text-sm leading-6 text-gray-500">Import data for use in your scenario</p>
     <ImportLoadStep
       v-if="importState === 'select'"

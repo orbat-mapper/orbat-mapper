@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, h, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, nanoid } from "@/utils";
@@ -10,8 +10,6 @@ import { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
-import OrbatGrid from "@/modules/grid/OrbatGrid.vue";
-import { ColumnProperties } from "@/modules/grid/gridTypes";
 
 import { OrbatMapperGeoJsonFeature } from "@/importexport/jsonish/types";
 import { featureEach, propReduce } from "@turf/turf";
@@ -21,6 +19,7 @@ import InputRadio from "@/components/InputRadio.vue";
 import MRadioGroup from "@/components/MRadioGroup.vue";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import { ColumnDef } from "@tanstack/vue-table";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 
 interface Props {
   data: GeoJSONFeature | FeatureCollection;
@@ -38,37 +37,49 @@ const importMode = ref<GeoJsonImportMode>("features");
 const selectedUnits = ref<OrbatMapperGeoJsonFeature[]>([]);
 const selectedFeatures = ref<GeoJSONFeature[]>([]);
 
-const columns: ColumnProperties[] = [
-  { type: "text", field: "geometry.type", label: "Geometry" },
-  {
-    type: "sidc",
-    width: 65,
-    field: "properties.sidc",
-    label: "Icon",
-  },
-  { type: "text", field: "properties.name", label: "Name" },
-];
-
-const computedColumns = computed((): ColumnDef<GeoJSONFeature, any>[] => {
-  const propertyNames = propReduce(
+const propertyNames = computed(() =>
+  propReduce(
     props.data,
     (acc, properties) => {
       properties && Object.keys(properties).forEach((key) => acc.add(key));
       return acc;
     },
     new Set<string>(),
+  ),
+);
+
+const propertyNameItems = computed(() =>
+  Array.from(propertyNames.value).map((key) => ({ label: key, value: key })),
+);
+
+const computedColumns = computed((): (ColumnDef<GeoJSONFeature, any> | false)[] => {
+  const items = Array.from(propertyNames.value).map(
+    (key): ColumnDef<GeoJSONFeature, any> => ({
+      accessorFn: (f) => f.properties?.[key] ?? "",
+      header: key,
+    }),
   );
-  const items = Array.from(propertyNames)
-    .filter((key) => key !== "name" && key !== "sidc")
-    .map(
-      (key): ColumnDef<GeoJSONFeature, any> => ({
-        accessorFn: (f) => f.properties?.[key] ?? "",
-        header: key,
-      }),
-    );
   return [
     { accessorKey: "geometry.type", id: "geometryType", header: "Geometry" },
-    { header: "Properties", columns: [...items] },
+    importMode.value === "units" && {
+      size: 80,
+      header: "Icon",
+      enableSorting: false,
+      id: symbolColumn.value,
+      accessorFn: (f) => f.properties?.[symbolColumn.value] ?? "10031000000000000000",
+      cell: ({ row, getValue, cell }) => {
+        return h(MilitarySymbol, {
+          sidc: getValue(),
+          size: 20,
+        });
+      },
+    },
+    {
+      accessorFn: (f) => f.properties?.[nameColumn.value] ?? "Feature",
+      id: nameColumn.value,
+      header: "Name",
+    },
+    { header: "Feature properties", columns: [...items] },
   ];
 });
 
@@ -97,8 +108,51 @@ const existingLayers = computed((): SelectItem[] => {
   return geo.layers.value.map((l) => ({ label: l.name, value: l.id }));
 });
 
-const activeLayer = ref(existingLayers.value[0].value);
+function findLikelyNameColumn(columnNames: string[]) {
+  // List of common name field variations
+  const nameVariations = ["name", "title"];
 
+  // Find and return the first column name that matches any of the name variations
+  for (const columnName of columnNames) {
+    if (nameVariations.includes(columnName.trim().toLowerCase())) {
+      return columnName;
+    }
+  }
+
+  for (const columnName of columnNames) {
+    if (columnName.toLowerCase().includes("name")) {
+      return columnName;
+    }
+  }
+
+  // Fallback: return the first column name if no common name field is found
+  return columnNames[0];
+}
+
+function findLikelySymbolColumn(columnNames: string[]) {
+  // List of common symbol field variations
+  const symbolVariations = ["symbol", "sidc"];
+
+  // Find and return the first column name that matches any of the symbol variations
+  for (const columnName of columnNames) {
+    if (symbolVariations.includes(columnName.trim().toLowerCase())) {
+      return columnName;
+    }
+  }
+
+  for (const columnName of columnNames) {
+    if (columnName.toLowerCase().includes("symbol")) {
+      return columnName;
+    }
+  }
+
+  // Fallback: return the first column name if no common symbol field is found
+  return columnNames[0];
+}
+
+const activeLayer = ref(existingLayers.value[0].value);
+const nameColumn = ref(findLikelyNameColumn([...propertyNames.value]));
+const symbolColumn = ref(findLikelySymbolColumn([...propertyNames.value]));
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
 async function onLoad(e: Event) {
@@ -113,11 +167,12 @@ async function onLoad(e: Event) {
 function loadAsUnits() {
   const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
 
-  const units: NUnit[] = selectedUnits.value.map((f) => {
+  const units: NUnit[] = selectedFeatures.value.map((f) => {
+    const sidc = f.properties?.[symbolColumn.value]?.trim() || "10031000000000000000";
     return {
       id: nanoid(),
-      name: f.properties?.name || "",
-      sidc: setCharAt(f.properties?.sidc, SID_INDEX, side.standardIdentity),
+      name: f.properties?.[nameColumn.value] || "New unit",
+      sidc: setCharAt(sidc, SID_INDEX, side.standardIdentity),
       subUnits: [],
       _pid: "",
       _gid: "",
@@ -142,7 +197,7 @@ function loadAsFeatures() {
       properties: {
         ...(f.properties ?? {}),
         type: f.geometry.type,
-        name: f.properties?.name || "New feature",
+        name: f.properties?.[nameColumn.value] || "New feature",
       },
     };
   });
@@ -163,54 +218,54 @@ function loadAsFeatures() {
           <InputRadio v-model="importMode" value="units">Units</InputRadio>
         </MRadioGroup>
       </fieldset>
-
-      <template v-if="importMode === 'units'">
-        <div class="flex-auto overflow-auto">
-          <div class="prose prose-sm"></div>
-          <section class="p-1.5">
-            <SymbolCodeSelect
-              label="Parent unit"
-              :items="rootUnitItems"
-              v-model="parentUnitId"
-            />
-          </section>
-          <section class="mt-4">
-            <OrbatGrid
-              :data="geoJSONFeatures"
-              :columns="columns"
-              select
-              select-all
-              v-model:selected="selectedUnits"
-            />
-          </section>
-        </div>
-      </template>
-      <template v-else-if="importMode === 'features'">
-        <div class="">
-          <p class="mt-4 text-sm leading-6 text-gray-600">
-            Select which features you want to import
-          </p>
-          <section class="mt-4">
-            <DataGrid
-              :data="geoJSONFeatures"
-              :columns="computedColumns"
-              :row-height="40"
-              select
-              select-all
-              show-global-filter
-              v-model:selected="selectedFeatures"
-            />
-          </section>
-
-          <SimpleSelect
-            class="mt-4"
-            label="Layer"
-            description="Which layer should the features be added to?"
-            :items="existingLayers"
-            v-model="activeLayer"
+      <div class="">
+        <p class="mt-4 text-sm leading-6 text-gray-600">
+          Select which features you want to import
+        </p>
+        <section class="mt-4">
+          <DataGrid
+            :data="
+              importMode === 'features'
+                ? geoJSONFeatures
+                : geoJSONFeatures.filter((f) => f.geometry.type === 'Point')
+            "
+            :columns="computedColumns"
+            :row-height="40"
+            select
+            select-all
+            show-global-filter
+            v-model:selected="selectedFeatures"
           />
-        </div>
-      </template>
+        </section>
+        <section class="mt-4 grid grid-cols-2 gap-4">
+          <SimpleSelect
+            label="Name column"
+            :items="propertyNameItems"
+            v-model="nameColumn"
+          />
+          <SimpleSelect
+            v-if="importMode === 'units'"
+            label="Symbol column"
+            :items="propertyNameItems"
+            v-model="symbolColumn"
+          />
+        </section>
+
+        <SimpleSelect
+          v-if="importMode === 'features'"
+          class="mt-4 max-w-sm"
+          label="Layer"
+          description="Which layer should the features be added to?"
+          :items="existingLayers"
+          v-model="activeLayer"
+        />
+        <SymbolCodeSelect
+          v-else
+          label="Parent unit"
+          :items="rootUnitItems"
+          v-model="parentUnitId"
+        />
+      </div>
 
       <footer class="flex flex-shrink-0 items-center justify-end space-x-2 pt-4">
         <BaseButton type="submit" primary small>Import</BaseButton>
