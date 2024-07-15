@@ -65,18 +65,20 @@ const computedColumns = computed((): (ColumnDef<GeoJSONFeature, any> | false)[] 
       size: 80,
       header: "Icon",
       enableSorting: false,
-      id: symbolColumn.value,
-      accessorFn: (f) => f.properties?.[symbolColumn.value] ?? "10031000000000000000",
+      accessorFn: (f) =>
+        f.properties?.[symbolColumn.value]?.trim() || "10031000000000000000",
+      id: "sidc",
       cell: ({ row, getValue, cell }) => {
         return h(MilitarySymbol, {
           sidc: getValue(),
           size: 20,
+          "data-sidc": getValue(),
         });
       },
     },
     {
       accessorFn: (f) => f.properties?.[nameColumn.value] ?? "Feature",
-      id: nameColumn.value,
+      id: "name",
       header: "Name",
     },
     { header: "Feature properties", columns: [...items] },
@@ -101,6 +103,10 @@ const geoJSONFeatures = computed((): GeoJSONFeature[] => {
   featureEach(props.data, (f) => {
     extractedFeatures.push(f);
   });
+  // This is a hack to force the computed to re-run when we change column assignments
+  // See https://github.com/TanStack/table/issues/5363
+  nameColumn.value;
+  symbolColumn.value;
   return extractedFeatures;
 });
 
