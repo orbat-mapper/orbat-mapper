@@ -19,6 +19,8 @@ import { SelectItem } from "@/components/types";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import InputRadio from "@/components/InputRadio.vue";
 import MRadioGroup from "@/components/MRadioGroup.vue";
+import DataGrid from "@/modules/grid/DataGrid.vue";
+import { ColumnDef } from "@tanstack/vue-table";
 
 interface Props {
   data: GeoJSONFeature | FeatureCollection;
@@ -47,7 +49,11 @@ const columns: ColumnProperties[] = [
   { type: "text", field: "properties.name", label: "Name" },
 ];
 
-const computedColumns = computed((): ColumnProperties[] => {
+const newColumns: ColumnDef<GeoJSONFeature, any>[] = [
+  { accessorKey: "geometry.type", id: "geometryType", header: "Geometry" },
+];
+
+const computedColumns = computed((): ColumnDef<GeoJSONFeature, any>[] => {
   const propertyNames = propReduce(
     props.data,
     (acc, properties) => {
@@ -59,13 +65,15 @@ const computedColumns = computed((): ColumnProperties[] => {
   const items = Array.from(propertyNames)
     .filter((key) => key !== "name" && key !== "sidc")
     .map(
-      (key): ColumnProperties => ({
-        type: "text",
-        field: `properties.${key}`,
-        label: key,
+      (key): ColumnDef<GeoJSONFeature, any> => ({
+        accessorFn: (f) => f.properties?.[key] ?? "",
+        header: key,
       }),
     );
-  return [{ type: "text", field: "geometry.type", label: "Geometry" }, ...items];
+  return [
+    { accessorKey: "geometry.type", id: "geometryType", header: "Geometry" },
+    { header: "Properties", columns: [...items] },
+  ];
 });
 
 const rootUnitItems = computed((): SymbolItem[] => {
@@ -81,7 +89,7 @@ const rootUnitItems = computed((): SymbolItem[] => {
     }));
 });
 
-const features = computed((): GeoJSONFeature[] => {
+const geoJSONFeatures = computed((): GeoJSONFeature[] => {
   const extractedFeatures: GeoJSONFeature[] = [];
   featureEach(props.data, (f) => {
     extractedFeatures.push(f);
@@ -172,7 +180,7 @@ function loadAsFeatures() {
           </section>
           <section class="mt-4">
             <OrbatGrid
-              :data="features"
+              :data="geoJSONFeatures"
               :columns="columns"
               select
               select-all
@@ -181,15 +189,16 @@ function loadAsFeatures() {
           </section>
         </div>
       </template>
-      <template v-else-if="importMode === 'features'"
-        ><div class="">
+      <template v-else-if="importMode === 'features'">
+        <div class="">
           <p class="mt-4 text-sm leading-6 text-gray-600">
             Select which features you want to import
           </p>
           <section class="mt-4">
-            <OrbatGrid
-              :data="features"
+            <DataGrid
+              :data="geoJSONFeatures"
               :columns="computedColumns"
+              :row-height="40"
               select
               select-all
               v-model:selected="selectedFeatures"
@@ -202,8 +211,9 @@ function loadAsFeatures() {
             description="Which layer should the features be added to?"
             :items="existingLayers"
             v-model="activeLayer"
-          /></div
-      ></template>
+          />
+        </div>
+      </template>
 
       <footer class="flex flex-shrink-0 items-center justify-end space-x-2 pt-4">
         <BaseButton type="submit" primary small>Import</BaseButton>
