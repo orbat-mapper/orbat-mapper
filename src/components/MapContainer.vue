@@ -109,7 +109,7 @@ function createBaseLayers(view: View) {
     visible: props.baseLayerName === "kartverketTopo4",
     source: new XYZ({
       crossOrigin: "anonymous",
-      url: "https://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo4&zoom={z}&x={x}&y={y}",
+      url: "https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png",
       attributions: '<a href="http://www.kartverket.no/">Kartverket</a>',
     }),
     properties: {
