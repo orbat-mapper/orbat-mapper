@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, h, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NScenarioFeature, NUnit } from "@/types/internalModels";
@@ -10,8 +9,6 @@ import { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
-
-import { OrbatMapperGeoJsonFeature } from "@/importexport/jsonish/types";
 import { featureEach, propReduce } from "@turf/turf";
 import { SelectItem } from "@/components/types";
 import SimpleSelect from "@/components/SimpleSelect.vue";
@@ -28,13 +25,12 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 const { unitActions, store: scnStore, geo } = injectStrict(activeScenarioKey);
-const store = useImportStore();
 const { state } = scnStore;
 type GeoJsonImportMode = "units" | "features";
 
 const importMode = ref<GeoJsonImportMode>("features");
+const isFeatureMode = computed(() => importMode.value === "features");
 
-const selectedUnits = ref<OrbatMapperGeoJsonFeature[]>([]);
 const selectedFeatures = ref<GeoJSONFeature[]>([]);
 
 const propertyNames = computed(() =>
@@ -231,7 +227,7 @@ function loadAsFeatures() {
         <section class="mt-4">
           <DataGrid
             :data="
-              importMode === 'features'
+              isFeatureMode
                 ? geoJSONFeatures
                 : geoJSONFeatures.filter((f) => f.geometry.type === 'Point')
             "
@@ -243,34 +239,35 @@ function loadAsFeatures() {
             v-model:selected="selectedFeatures"
           />
         </section>
-        <section class="mt-4 grid grid-cols-2 gap-4">
+        <section class="mt-4 grid gap-4 sm:grid-cols-2">
           <SimpleSelect
             label="Name column"
             :items="propertyNameItems"
             v-model="nameColumn"
           />
           <SimpleSelect
-            v-if="importMode === 'units'"
+            v-if="!isFeatureMode"
             label="Symbol column"
             :items="propertyNameItems"
             v-model="symbolColumn"
           />
         </section>
 
-        <SimpleSelect
-          v-if="importMode === 'features'"
-          class="mt-4 max-w-sm"
-          label="Layer"
-          description="Which layer should the features be added to?"
-          :items="existingLayers"
-          v-model="activeLayer"
-        />
-        <SymbolCodeSelect
-          v-else
-          label="Parent unit"
-          :items="rootUnitItems"
-          v-model="parentUnitId"
-        />
+        <section class="mt-4 grid gap-4 sm:grid-cols-2">
+          <SimpleSelect
+            v-if="isFeatureMode"
+            label="Layer"
+            description="Which layer should the features be added to?"
+            :items="existingLayers"
+            v-model="activeLayer"
+          />
+          <SymbolCodeSelect
+            v-else
+            label="Parent unit"
+            :items="rootUnitItems"
+            v-model="parentUnitId"
+          />
+        </section>
       </div>
 
       <footer class="flex flex-shrink-0 items-center justify-end space-x-2 pt-4">
