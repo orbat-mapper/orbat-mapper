@@ -17,6 +17,7 @@ import MRadioGroup from "@/components/MRadioGroup.vue";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import { ColumnDef } from "@tanstack/vue-table";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import AlertWarning from "@/components/AlertWarning.vue";
 
 interface Props {
   data: GeoJSONFeature | FeatureCollection;
@@ -104,6 +105,10 @@ const geoJSONFeatures = computed((): GeoJSONFeature[] => {
   nameColumn.value;
   symbolColumn.value;
   return extractedFeatures;
+});
+
+const geoJSONPointFeatures = computed(() => {
+  return geoJSONFeatures.value.filter((f) => f.geometry.type === "Point");
 });
 
 const existingLayers = computed((): SelectItem[] => {
@@ -226,11 +231,7 @@ function loadAsFeatures() {
         </p>
         <section class="mt-4">
           <DataGrid
-            :data="
-              isFeatureMode
-                ? geoJSONFeatures
-                : geoJSONFeatures.filter((f) => f.geometry.type === 'Point')
-            "
+            :data="isFeatureMode ? geoJSONFeatures : geoJSONPointFeatures"
             :columns="computedColumns"
             :row-height="40"
             select
@@ -238,6 +239,13 @@ function loadAsFeatures() {
             show-global-filter
             v-model:selected="selectedFeatures"
           />
+          <AlertWarning
+            v-if="!isFeatureMode && geoJSONPointFeatures.length === 0"
+            title="No point geometries found"
+            class="mt-4"
+          >
+            A unit must have a point geometry to be imported.
+          </AlertWarning>
         </section>
         <section class="mt-4 grid gap-4 sm:grid-cols-2">
           <SimpleSelect
