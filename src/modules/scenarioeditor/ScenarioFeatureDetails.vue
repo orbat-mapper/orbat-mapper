@@ -24,7 +24,7 @@ import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeat
 import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeatureStrokeSettings.vue";
 import ScenarioFeatureFillSettings from "@/modules/scenarioeditor/ScenarioFeatureFillSettings.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
-import { SelectedScenarioFeatures } from "@/stores/selectedStore";
+import { SelectedScenarioFeatures, useSelectedItems } from "@/stores/selectedStore";
 import IconButton from "@/components/IconButton.vue";
 import { TabPanel } from "@headlessui/vue";
 import TabWrapper from "@/components/TabWrapper.vue";
@@ -55,6 +55,7 @@ const olMapRef = injectStrict(activeMapKey);
 const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
 const { updateFeatureProperties } = useScenarioLayers(olMapRef.value);
 const featureActions = useScenarioFeatureActions();
+const { selectedFeatureIds, clear: clearSelection } = useSelectedItems();
 const uiStore = useUiStore();
 const { featureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 
@@ -86,6 +87,7 @@ function toggleEditMode() {
 }
 
 const isEditMediaMode = ref(false);
+
 function toggleEditMediaMode() {
   isEditMediaMode.value = !isEditMediaMode.value;
   isEditMode.value = false;
@@ -113,7 +115,8 @@ const hasFill = computed(
   () => !["Point", "LineString"].includes(geometryType.value || ""),
 );
 
-const isMultipleFeatures = computed(() => props.selectedIds.size > 1);
+const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
+
 const tabList = computed(() =>
   uiStore.debugMode ? ["Details", "Styling", "Debug"] : ["Details", "Styling"],
 );
@@ -134,7 +137,7 @@ const debouncedResetMap = useDebounceFn(
 );
 
 function doUpdateFeature(data: Partial<ScenarioFeatureProperties>) {
-  const featureOrFeatures = isMultipleFeatures.value
+  const featureOrFeatures = isMultiMode.value
     ? [...props.selectedIds.values()]
     : feature.value?.id;
   featureSelectInteractionRef.value.setMap(null);
@@ -181,14 +184,21 @@ function onAction(action: ScenarioFeatureActions) {
   <div>
     <ItemMedia v-if="media" :media="media" />
     <header class="">
+      <div v-if="isMultiMode" class="mb-2 mt-6 flex items-center justify-between">
+        <p class="font-medium">{{ selectedFeatureIds.size }} features selected</p>
+        <button @click="clearSelection()" class="text-indigo-600 hover:text-indigo-900">
+          Clear
+        </button>
+      </div>
       <div v-if="feature" class="">
         <EditableLabel v-model="featureName" @update-value="updateValue" />
       </div>
+
       <nav class="flex items-center justify-between">
         <div class="flex items-center">
           <component :is="getGeometryIcon(feature!)" class="mr-2 h-6 w-6 text-red-900" />
-          <IconButton @click="doZoom()" title="Zoom to feature"
-            ><ZoomIcon class="h-6 w-6" />
+          <IconButton @click="doZoom()" title="Zoom to feature">
+            <ZoomIcon class="h-6 w-6" />
           </IconButton>
           <IconButton @click="showStylePanel()" title="Change feature style">
             <StyleIcon class="h-6 w-6" />
