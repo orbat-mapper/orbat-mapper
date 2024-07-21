@@ -93,6 +93,7 @@ const {
   zoomToFeature,
   zoomToFeatures,
   deleteFeature,
+  duplicateFeature,
   panToFeature,
   moveFeature,
   addLayer,
@@ -234,6 +235,10 @@ function onFeatureAction(
         if (action === "moveUp" || action === "moveDown") {
           const direction = action === "moveUp" ? "up" : "down";
           moveFeature(feature, direction);
+        }
+
+        if (action === "duplicate") {
+          duplicateFeature(feature.id);
         }
       }),
     { label: "batchLayer", value: "dummy" },

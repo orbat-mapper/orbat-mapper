@@ -261,6 +261,7 @@ export function useGeo(store: NewScenarioStore) {
       { label: "addFeature", value: newFeature.id },
     );
     store.state.featureStateCounter++;
+    return newFeature.id;
   }
 
   function deleteFeature(featureId: FeatureId) {
@@ -274,6 +275,14 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "deleteFeature", value: featureId },
     );
+  }
+
+  function duplicateFeature(featureId: FeatureId) {
+    const feature = state.featureMap[featureId];
+    if (!feature) return;
+    const shallowCopy = { ...feature };
+    shallowCopy.id = nanoid();
+    return addFeature(shallowCopy, feature._pid);
   }
 
   function updateFeature(
@@ -339,6 +348,7 @@ export function useGeo(store: NewScenarioStore) {
     getLayerIndex: (id: FeatureId) => state.layers.indexOf(id),
     moveLayer,
     addFeature,
+    duplicateFeature,
     deleteFeature,
     updateFeature,
     itemsInfo,

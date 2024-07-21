@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+July 2024
+
+- Add a duplicate scenario feature action.
+
 June 2024
 
 - Show list of scenario features under the pointer in the map context menu.

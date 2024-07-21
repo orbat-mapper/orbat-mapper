@@ -96,6 +96,7 @@ export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
   { label: "Move up", action: "moveUp" },
   { label: "Move down", action: "moveDown" },
   { label: "Delete", action: "delete" },
+  { label: "Duplicate", action: "duplicate" },
 ];
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
@@ -336,6 +337,13 @@ export function useScenarioLayers(
     olLayer.getSource()?.addFeatures(olFeature);
   }
 
+  function duplicateFeature(featureId: FeatureId) {
+    const newId = geo.duplicateFeature(featureId);
+    if (selectedItems.selectedFeatureIds.value.size === 1) {
+      selectedItems.activeFeatureId.value = newId;
+    }
+  }
+
   function deleteFeature(featureId: FeatureId, isUndoRedo = false) {
     const { feature: olFeature, layer } =
       getFeatureAndLayerById(featureId, scenarioLayersOl) || {};
@@ -488,6 +496,7 @@ export function useScenarioLayers(
     zoomToLayer,
     deleteLayer,
     moveFeature,
+    duplicateFeature,
     addOlFeature,
     moveLayer,
     updateFeatureGeometryFromOlFeature,

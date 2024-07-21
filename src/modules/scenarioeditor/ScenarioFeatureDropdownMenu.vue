@@ -28,9 +28,9 @@ const emit = defineEmits<{
       <DropdownMenuItem inset @select="emit('action', 'zoom')">
         <span>Zoom to</span>
       </DropdownMenuItem>
-      <!--      <DropdownMenuItem inset @select="emit('action', 'duplicate')">-->
-      <!--        <span>Duplicate</span>-->
-      <!--      </DropdownMenuItem>-->
+      <DropdownMenuItem inset @select="emit('action', 'duplicate')">
+        <span>Duplicate</span>
+      </DropdownMenuItem>
       <DropdownMenuItem inset @select="emit('action', 'delete')">
         <span>Delete</span>
         <DropdownMenuShortcut>Del</DropdownMenuShortcut>

@@ -169,7 +169,7 @@ export function useScenarioFeatureActions() {
     store: { groupUpdate },
   } = injectStrict(activeScenarioKey);
 
-  const { zoomToFeature, panToFeature, zoomToFeatures, deleteFeature } =
+  const { zoomToFeature, panToFeature, zoomToFeatures, deleteFeature, duplicateFeature } =
     useScenarioLayers(mapRef);
 
   function onFeatureAction(
@@ -187,6 +187,9 @@ export function useScenarioFeatureActions() {
           if (action === "zoom") zoomToFeature(featureId);
           if (action === "pan") panToFeature(featureId);
           if (action === "delete") deleteFeature(featureId);
+          if (action === "duplicate") {
+            duplicateFeature(featureId);
+          }
         });
       },
       { label: "batchLayer", value: "dummy" },
