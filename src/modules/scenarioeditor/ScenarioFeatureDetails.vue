@@ -25,7 +25,6 @@ import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeat
 import ScenarioFeatureFillSettings from "@/modules/scenarioeditor/ScenarioFeatureFillSettings.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import { SelectedScenarioFeatures } from "@/stores/selectedStore";
-import DotsMenu from "@/components/DotsMenu.vue";
 import IconButton from "@/components/IconButton.vue";
 import { TabPanel } from "@headlessui/vue";
 import TabWrapper from "@/components/TabWrapper.vue";
@@ -38,8 +37,9 @@ import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import { MediaUpdate } from "@/types/internalModels";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
-import { MenuItemData } from "@/components/types";
 import { inputEventFilter } from "@/components/helpers";
+import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatureDropdownMenu.vue";
+import { ScenarioFeatureActions } from "@/types/constants";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -72,9 +72,6 @@ const hDescription = computed(() =>
 );
 
 const isEditMode = ref(false);
-const menuItems: MenuItemData[] = [
-  { label: "Remove feature image", action: () => removeMedia() },
-];
 
 function removeMedia() {
   feature.value && geo.updateFeature(feature.value.id, { media: [] });
@@ -171,6 +168,14 @@ function updateMedia(mediaUpdate: MediaUpdate) {
 function doZoom() {
   featureActions.onFeatureAction([...props.selectedIds], "zoom");
 }
+
+function onAction(action: ScenarioFeatureActions) {
+  if (action === "removeMedia") {
+    removeMedia();
+    return;
+  }
+  featureActions.onFeatureAction([...props.selectedIds], action);
+}
 </script>
 <template>
   <div>
@@ -196,7 +201,7 @@ function doZoom() {
           </IconButton>
         </div>
         <div>
-          <DotsMenu :items="menuItems" />
+          <ScenarioFeatureDropdownMenu @action="onAction" />
         </div>
       </nav>
     </header>

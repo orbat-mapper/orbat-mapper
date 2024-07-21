@@ -174,7 +174,7 @@ export function useScenarioFeatureActions() {
 
   function onFeatureAction(
     featureOrFeaturesId: FeatureId | FeatureId[],
-    action: "zoom" | "pan" | "delete",
+    action: "zoom" | "pan" | "delete" | string,
   ) {
     const isArray = Array.isArray(featureOrFeaturesId);
     if (isArray && (action === "zoom" || action === "pan")) {

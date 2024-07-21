@@ -59,7 +59,14 @@ export type ScenarioActions =
   | "increaseSpeed"
   | "decreaseSpeed";
 
-export type ScenarioFeatureActions = "delete" | "zoom" | "moveUp" | "moveDown" | "pan";
+export type ScenarioFeatureActions =
+  | "delete"
+  | "zoom"
+  | "moveUp"
+  | "moveDown"
+  | "pan"
+  | "duplicate"
+  | "removeMedia";
 
 export type UiAction = "showKeyboardShortcuts" | "showSearch";
 
