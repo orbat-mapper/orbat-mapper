@@ -32,8 +32,6 @@ import {
   ScenarioLayerActions,
   ScenarioMapLayerAction,
 } from "@/types/constants";
-import BaseButton from "@/components/BaseButton.vue";
-import { PlusIcon } from "@heroicons/vue/24/solid";
 import EditLayerInlineForm from "@/modules/scenarioeditor/EditLayerInlineForm.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useEventBus } from "@vueuse/core";
@@ -106,24 +104,45 @@ const { selectedFeatureIds, selectedMapLayerIds, activeMapLayerId, activeFeature
 
 const editedLayerId = ref<FeatureId | null>(null);
 
+function calculateSelectedFeatureIds(newFeatureId: FeatureId): FeatureId[] {
+  const lastSelectedId = [...selectedFeatureIds.value].pop();
+  if (lastSelectedId === undefined) return [newFeatureId];
+  const allOpenFeatures: FeatureId[] = [];
+  for (const { features, layer } of scenarioLayersFeatures.value) {
+    if (!(layer._isOpen === false)) {
+      features.forEach((feature) => {
+        allOpenFeatures.push(feature.id);
+      });
+    }
+  }
+  const lastSelectedIndex = allOpenFeatures.indexOf(lastSelectedId);
+  const newFeatureIndex = allOpenFeatures.indexOf(newFeatureId);
+  if (lastSelectedIndex === -1 || newFeatureIndex === -1) return [newFeatureId];
+  return allOpenFeatures.slice(
+    Math.min(lastSelectedIndex, newFeatureIndex),
+    Math.max(lastSelectedIndex, newFeatureIndex) + 1,
+  );
+}
+
 function onFeatureClick(
   feature: NScenarioFeature,
   layer: NScenarioLayer,
   event?: MouseEvent,
 ) {
-  const isMultiSelect = event?.ctrlKey || event?.shiftKey;
-
-  const alreadySelected = selectedFeatureIds.value.has(feature.id);
-  if (!isMultiSelect) {
-    selectedFeatureIds.value.clear();
-    selectedMapLayerIds.value.clear();
-    nextTick(() => selectedFeatureIds.value.add(feature.id));
-  } else {
-    if (alreadySelected && event?.ctrlKey) {
-      selectedFeatureIds.value.delete(feature.id);
+  const ids = selectedFeatureIds.value;
+  if (event && event.shiftKey) {
+    const selectedIds = calculateSelectedFeatureIds(feature.id);
+    selectedIds.forEach((id) => {
+      ids.add(id);
+    });
+  } else if (event && (event.ctrlKey || event.metaKey)) {
+    if (ids.has(feature.id)) {
+      ids.delete(feature.id);
     } else {
-      selectedFeatureIds.value.add(feature.id);
+      ids.add(feature.id);
     }
+  } else {
+    activeFeatureId.value = feature.id;
   }
   emit("feature-click", feature, layer, event);
 }
@@ -150,6 +169,7 @@ function onImageLayerClick(layer: ScenarioMapLayer, event?: MouseEvent) {
     selectedMapLayerIds.value.add(layer.id);
   }
 }
+
 function onImageLayerDoubleClick(layer: ScenarioMapLayer) {
   bus.emit({ action: "zoom", id: layer.id });
 }

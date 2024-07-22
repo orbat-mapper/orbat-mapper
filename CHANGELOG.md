@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 July 2024
 
+- Select multiple features in the layers panel with shift+click.
 - Add a duplicate scenario feature action.
 
 June 2024
