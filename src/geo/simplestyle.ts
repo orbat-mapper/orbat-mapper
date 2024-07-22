@@ -46,7 +46,6 @@ export interface MarkerStyleSpec {
 
 export interface SimpleStyleSpec extends StrokeStyleSpec, FillStyleSpec, MarkerStyleSpec {
   title: string;
-  description: string;
 }
 
 const scaleMap: Record<MarkerSize, number> = { medium: 1, large: 1.5, small: 0.75 };

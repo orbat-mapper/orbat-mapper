@@ -1,10 +1,10 @@
 {
   "id": "demo-falklands82",
   "type": "ORBAT-mapper",
-  "version": "0.20.0",
+  "version": "0.30.0",
   "meta": {
     "createdDate": "2024-02-04T14:33:50.335Z",
-    "lastModifiedDate": "2024-05-16T17:18:01.289Z"
+    "lastModifiedDate": "2024-07-22T14:09:42.240Z"
   },
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
@@ -2215,21 +2215,24 @@
         {
           "type": "Feature",
           "id": "feature1",
-          "properties": {
-            "type": "Circle",
-            "name": "Maritime Exclusion Zone",
-            "description": "A [Maritime Exclusion Zone](https://en.wikipedia.org/wiki/Maritime_Exclusion_Zone \"Maritime Exclusion Zone\") (MEZ) was declared on 12 April 1982 covered a circle of radius 200 nautical miles (370 km; 230 mi) from the centre of the Falkland Islands. Any *Argentine warship* or *naval auxiliary* entering the MEZ could have been attacked by [British nuclear-powered submarines](https://en.wikipedia.org/wiki/Royal_Navy_Submarine_Service \"Royal Navy Submarine Service\") (SSN).\n\nFrom [Wikipedia](https://en.wikipedia.org/wiki/Total_Exclusion_Zone)",
-            "radius": 370000,
-            "stroke": "#7F1D1D",
-            "stroke-width": 4,
-            "stroke-opacity": 0.4,
-            "fill": null,
-            "visibleFromT": "1982-04-11T20:00:00-04:00",
-            "externalUrl": "https://en.wikipedia.org/wiki/Total_Exclusion_Zone"
-          },
+          "properties": {},
           "geometry": {
             "type": "Point",
             "coordinates": [-59.436550429034575, -51.73994920324739]
+          },
+          "meta": {
+            "type": "Circle",
+            "visibleFromT": "1982-04-11T20:00:00-04:00",
+            "name": "Maritime Exclusion Zone",
+            "description": "A [Maritime Exclusion Zone](https://en.wikipedia.org/wiki/Maritime_Exclusion_Zone \"Maritime Exclusion Zone\") (MEZ) was declared on 12 April 1982 covered a circle of radius 200 nautical miles (370 km; 230 mi) from the centre of the Falkland Islands. Any *Argentine warship* or *naval auxiliary* entering the MEZ could have been attacked by [British nuclear-powered submarines](https://en.wikipedia.org/wiki/Royal_Navy_Submarine_Service \"Royal Navy Submarine Service\") (SSN).\n\nFrom [Wikipedia](https://en.wikipedia.org/wiki/Total_Exclusion_Zone)",
+            "externalUrl": "https://en.wikipedia.org/wiki/Total_Exclusion_Zone",
+            "radius": 370000
+          },
+          "style": {
+            "fill": null,
+            "stroke-opacity": 0.4,
+            "stroke": "#7F1D1D",
+            "stroke-width": 4
           }
         }
       ]
@@ -2245,12 +2248,14 @@
             "type": "Point",
             "coordinates": [-59.08007935472968, -51.564090346897814]
           },
-          "properties": {
+          "properties": {},
+          "id": "Zn3Qm3COkjrR-11cL98fB",
+          "meta": {
             "type": "Point",
             "name": "Red Beach",
             "description": "21 May: 45 Cdo"
           },
-          "id": "Zn3Qm3COkjrR-11cL98fB"
+          "style": {}
         },
         {
           "type": "Feature",
@@ -2258,12 +2263,14 @@
             "type": "Point",
             "coordinates": [-59.032873825288405, -51.574678888182405]
           },
-          "properties": {
+          "properties": {},
+          "id": "3nXZXzD74ZoLNsrm3arDE",
+          "meta": {
             "type": "Point",
             "name": "Blue Beach",
             "description": "21 May: \n - 2 Para\n - 40 Cdo\n\n1-2 Jun: \n- 1/GR\n- 1WG\n- 2SG"
           },
-          "id": "3nXZXzD74ZoLNsrm3arDE"
+          "style": {}
         },
         {
           "type": "Feature",
@@ -2271,12 +2278,14 @@
             "type": "Point",
             "coordinates": [-58.99651105330039, -51.50288926105369]
           },
-          "properties": {
+          "properties": {},
+          "id": "Zi5qS3x-JmHsb_M23xL3F",
+          "meta": {
             "type": "Point",
             "name": "Green Beach",
             "description": "21 May: 3 Para, 42 Cdo"
           },
-          "id": "Zi5qS3x-JmHsb_M23xL3F"
+          "style": {}
         }
       ]
     },
@@ -2290,13 +2299,16 @@
             "type": "Point",
             "coordinates": [-67.7557523798225, -53.77759602366957]
           },
-          "properties": {
+          "properties": {},
+          "id": "dm1UDXs2xW",
+          "meta": {
             "type": "Point",
-            "name": "Rio Grande AB",
+            "name": "Rio Grande AB"
+          },
+          "style": {
             "marker-color": "#a40000",
             "marker-symbol": "star"
-          },
-          "id": "dm1UDXs2xW"
+          }
         },
         {
           "type": "Feature",
@@ -2304,13 +2316,16 @@
             "type": "Point",
             "coordinates": [-69.30725832955693, -51.60882330522812]
           },
-          "properties": {
+          "properties": {},
+          "id": "dm1UssDXs2xW",
+          "meta": {
             "type": "Point",
-            "name": "Rio Gallegos AB",
+            "name": "Rio Gallegos AB"
+          },
+          "style": {
             "marker-color": "#a40000",
             "marker-symbol": "star"
-          },
-          "id": "dm1UssDXs2xW"
+          }
         },
         {
           "type": "Feature",
@@ -2318,14 +2333,17 @@
             "type": "Point",
             "coordinates": [-62.10384759484108, -38.891831102546085]
           },
-          "properties": {
+          "properties": {},
+          "id": "EYeIuLNE9V",
+          "meta": {
             "type": "Point",
-            "name": "Puerto Belgrano",
-            "marker-color": "#a40000",
-            "marker-symbol": "pentagon",
-            "marker-size": "small"
+            "name": "Puerto Belgrano"
           },
-          "id": "EYeIuLNE9V"
+          "style": {
+            "marker-color": "#a40000",
+            "marker-size": "small",
+            "marker-symbol": "pentagon"
+          }
         },
         {
           "type": "Feature",
@@ -2333,16 +2351,7 @@
             "type": "Point",
             "coordinates": [-27.30841913424884, -59.4572127866505]
           },
-          "properties": {
-            "type": "Point",
-            "name": "Corbeta Uruguay base",
-            "marker-symbol": "triangle",
-            "marker-color": "#a40000",
-            "description": "**Corbeta Uruguay base** was an [Argentine military](https://en.wikipedia.org/wiki/Military_of_Argentina \"Military of Argentina\") outpost established in November 1976 on [Thule Island](https://en.wikipedia.org/wiki/Thule_Island \"Thule Island\"), [Southern Thule](https://en.wikipedia.org/wiki/Southern_Thule \"Southern Thule\"), in the [South Sandwich Islands](https://en.wikipedia.org/wiki/South_Sandwich_Islands \"South Sandwich Islands\"). It was vacated and mostly demolished in 1982 following Britain's victory against Argentina in the Falklands War.\n\nFrom [Wikipedia](https://en.wikipedia.org/wiki/Corbeta_Uruguay_base)",
-            "marker-size": "medium",
-            "externalUrl": "https://en.wikipedia.org/wiki/Corbeta_Uruguay_base",
-            "showLabel": true
-          },
+          "properties": {},
           "id": "uGTaeM6ZUd",
           "media": [
             {
@@ -2351,7 +2360,19 @@
               "credits": "Ricardo A. R. Hermelo, Public domain, via Wikimedia Commons",
               "creditsUrl": "https://commons.wikimedia.org/wiki/File:Thule1981.jpg"
             }
-          ]
+          ],
+          "meta": {
+            "type": "Point",
+            "name": "Corbeta Uruguay base",
+            "description": "**Corbeta Uruguay base** was an [Argentine military](https://en.wikipedia.org/wiki/Military_of_Argentina \"Military of Argentina\") outpost established in November 1976 on [Thule Island](https://en.wikipedia.org/wiki/Thule_Island \"Thule Island\"), [Southern Thule](https://en.wikipedia.org/wiki/Southern_Thule \"Southern Thule\"), in the [South Sandwich Islands](https://en.wikipedia.org/wiki/South_Sandwich_Islands \"South Sandwich Islands\"). It was vacated and mostly demolished in 1982 following Britain's victory against Argentina in the Falklands War.\n\nFrom [Wikipedia](https://en.wikipedia.org/wiki/Corbeta_Uruguay_base)",
+            "externalUrl": "https://en.wikipedia.org/wiki/Corbeta_Uruguay_base"
+          },
+          "style": {
+            "showLabel": true,
+            "marker-color": "#a40000",
+            "marker-size": "medium",
+            "marker-symbol": "triangle"
+          }
         },
         {
           "type": "Feature",
@@ -2359,16 +2380,7 @@
             "type": "Point",
             "coordinates": [-44.73800717700976, -60.738236763164295]
           },
-          "properties": {
-            "type": "Point",
-            "name": "Orcadas",
-            "marker-symbol": "triangle",
-            "marker-color": "#a40000",
-            "marker-size": "medium",
-            "description": "**Base Orcadas** is an [Argentine](https://en.wikipedia.org/wiki/Argentina \"Argentina\") scientific station in [Antarctica](https://en.wikipedia.org/wiki/Antarctica \"Antarctica\"), and the oldest of the stations in Antarctica still in operation. It is located on [Laurie Island](https://en.wikipedia.org/wiki/Laurie_Island \"Laurie Island\"), one of the [South Orkney Islands](https://en.wikipedia.org/wiki/South_Orkney_Islands \"South Orkney Islands\") ([Spanish](https://en.wikipedia.org/wiki/Spanish_language \"Spanish language\"): *Islas Orcadas del Sur*), at 4 meters (13 ft) above sea level and 170 meters (558 ft) from the coastline.\n\nFrom [Wikipedia](https://en.wikipedia.org/wiki/Orcadas_Base)\n",
-            "externalUrl": "https://en.wikipedia.org/wiki/Orcadas_Base",
-            "showLabel": true
-          },
+          "properties": {},
           "id": "Jl2579NHvw",
           "media": [
             {
@@ -2377,7 +2389,19 @@
               "credits": "Antarctic96, CC BY-SA 3.0, via Wikimedia Commons",
               "creditsUrl": "https://commons.wikimedia.org/wiki/File:Orcadas_Base.jpg"
             }
-          ]
+          ],
+          "meta": {
+            "type": "Point",
+            "name": "Orcadas",
+            "description": "**Base Orcadas** is an [Argentine](https://en.wikipedia.org/wiki/Argentina \"Argentina\") scientific station in [Antarctica](https://en.wikipedia.org/wiki/Antarctica \"Antarctica\"), and the oldest of the stations in Antarctica still in operation. It is located on [Laurie Island](https://en.wikipedia.org/wiki/Laurie_Island \"Laurie Island\"), one of the [South Orkney Islands](https://en.wikipedia.org/wiki/South_Orkney_Islands \"South Orkney Islands\") ([Spanish](https://en.wikipedia.org/wiki/Spanish_language \"Spanish language\"): *Islas Orcadas del Sur*), at 4 meters (13 ft) above sea level and 170 meters (558 ft) from the coastline.\n\nFrom [Wikipedia](https://en.wikipedia.org/wiki/Orcadas_Base)\n",
+            "externalUrl": "https://en.wikipedia.org/wiki/Orcadas_Base"
+          },
+          "style": {
+            "showLabel": true,
+            "marker-color": "#a40000",
+            "marker-size": "medium",
+            "marker-symbol": "triangle"
+          }
         }
       ]
     },
@@ -2391,13 +2415,16 @@
             "type": "Point",
             "coordinates": [-14.40257026225315, -7.968535001150471]
           },
-          "properties": {
+          "properties": {},
+          "id": "VIyMHgWoWS",
+          "meta": {
             "type": "Point",
-            "name": "RAF Ascension Island",
+            "name": "RAF Ascension Island"
+          },
+          "style": {
             "marker-color": "#3465a4",
             "marker-symbol": "star"
-          },
-          "id": "VIyMHgWoWS"
+          }
         },
         {
           "type": "Feature",
@@ -2405,14 +2432,17 @@
             "type": "Point",
             "coordinates": [-1.104852842922037, 50.8046643899244]
           },
-          "properties": {
+          "properties": {},
+          "id": "ibuQYToiiN",
+          "meta": {
             "type": "Point",
-            "name": "HMNB Portsmouth",
-            "marker-color": "#3465a4",
-            "marker-symbol": "pentagon",
-            "marker-size": "small"
+            "name": "HMNB Portsmouth"
           },
-          "id": "ibuQYToiiN"
+          "style": {
+            "marker-color": "#3465a4",
+            "marker-size": "small",
+            "marker-symbol": "pentagon"
+          }
         },
         {
           "type": "Feature",
@@ -2420,14 +2450,17 @@
             "type": "Point",
             "coordinates": [-36.4948515401756, -54.28327179945222]
           },
-          "properties": {
+          "properties": {},
+          "id": "9GEGHFNoIK",
+          "meta": {
             "type": "Point",
-            "name": "British Antarctic Survey",
-            "marker-symbol": "triangle",
-            "marker-color": "#4e9a06",
-            "marker-size": "small"
+            "name": "British Antarctic Survey"
           },
-          "id": "9GEGHFNoIK"
+          "style": {
+            "marker-color": "#4e9a06",
+            "marker-size": "small",
+            "marker-symbol": "triangle"
+          }
         }
       ]
     }

@@ -1,10 +1,10 @@
 {
   "id": "demo-narvik40",
   "type": "ORBAT-mapper",
-  "version": "0.20.0",
+  "version": "0.30.0",
   "meta": {
     "createdDate": "2024-04-01T17:14:51.567Z",
-    "lastModifiedDate": "2024-04-01T17:18:07.780Z"
+    "lastModifiedDate": "2024-07-22T14:15:07.572Z"
   },
   "name": "Battles of Narvik",
   "startTime": "1940-04-09T01:00:00+02:00",

@@ -39,6 +39,7 @@ import type {
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
 import { DEFAULT_BASEMAP_ID } from "@/config/constants";
+import { upgradeScenarioIfNecessary } from "@/scenariostore/upgrade";
 
 export interface ScenarioState {
   id: EntityId;
@@ -70,7 +71,7 @@ export interface ScenarioState {
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
 
-function prepareScenario(scenario: Scenario): ScenarioState {
+function prepareScenario(newScenario: Scenario): ScenarioState {
   const unitMap: Record<EntityId, NUnit> = {};
   const sideMap: Record<EntityId, NSide> = {};
   const sideGroupMap: Record<EntityId, NSideGroup> = {};
@@ -90,6 +91,8 @@ function prepareScenario(scenario: Scenario): ScenarioState {
   const tempPersonnelIdMap: Record<string, string> = {};
   const tempRangeRingGroupIdMap: Record<string, string> = {};
   const tempUnitStatusIdMap: Record<string, string> = {};
+
+  const scenario = upgradeScenarioIfNecessary(newScenario);
 
   const scenarioId = scenario.id ?? nanoid();
   const mapSettings: MapSettings = scenario.settings?.map ?? {

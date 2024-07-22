@@ -40,6 +40,7 @@
     "@xmldom/xmldom": "^0.8.10",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "compare-versions": "^6.1.1",
     "d3-dsv": "^3.0.1",
     "d3-scale": "^4.0.2",
     "d3-scale-chromatic": "^3.1.0",
