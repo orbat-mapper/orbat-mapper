@@ -201,10 +201,13 @@ function loadAsFeatures() {
       ...f,
       _pid: activeLayer.value,
       id: nanoid(),
-      properties: {
-        // ...(f.properties ?? {}),
+      meta: {
         type: f.geometry.type,
         name: f.properties?.[nameColumn.value] || "New feature",
+      },
+      style: {},
+      properties: {
+        // ...(f.properties ?? {}),
       },
     };
   });

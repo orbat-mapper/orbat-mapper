@@ -41,9 +41,9 @@ watch(
     if (!item) return;
     if (isScenarioFeature(item)) {
       form.value = {
-        name: item?.properties?.name ?? "",
-        description: item?.properties?.description ?? "",
-        externalUrl: item?.properties?.externalUrl ?? "",
+        name: item?.meta?.name ?? "",
+        description: item?.meta?.description ?? "",
+        externalUrl: item?.meta?.externalUrl ?? "",
       };
     } else {
       form.value = {

@@ -30,12 +30,13 @@ export function useFeatureStyles(geo: TGeo) {
     let style = styleCache.get(featureId);
     const { feature: scenarioFeature } = geo.getFeatureById(featureId);
     const {
-      properties: { showLabel = false, name: label },
+      meta: { name: label },
+      style: { showLabel = false },
     } = scenarioFeature;
     if (!style) {
-      style = createSimpleStyle(scenarioFeature.properties || {}) || defaultStyle;
+      style = createSimpleStyle(scenarioFeature.style || {}) || defaultStyle;
       // @ts-ignore
-      feature.set("_zIndex", scenarioFeature.properties._zIndex, true);
+      feature.set("_zIndex", scenarioFeature.meta._zIndex, true);
       styleCache.set(featureId, style);
     }
     style.setZIndex(feature.get("_zIndex"));

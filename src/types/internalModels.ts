@@ -17,6 +17,7 @@ import {
   FeatureId,
   RangeRingGroup,
   ScenarioFeature,
+  ScenarioFeatureMeta,
   ScenarioImageLayer,
   ScenarioKMLLayer,
   ScenarioLayer,
@@ -79,7 +80,10 @@ export interface NScenarioFeature extends ScenarioFeature {
   _pid: FeatureId;
 }
 
-export interface ScenarioFeatureUpdate extends Partial<Omit<NScenarioFeature, "id">> {}
+export interface ScenarioFeatureUpdate
+  extends Partial<Omit<NScenarioFeature, "id" | "meta">> {
+  meta?: Partial<ScenarioFeatureMeta>;
+}
 export interface ScenarioLayerUpdate
   extends Partial<Omit<NScenarioLayer, "id" | "features">> {}
 

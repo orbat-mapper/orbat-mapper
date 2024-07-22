@@ -1,10 +1,4 @@
-import type {
-  Feature as GeoJsonFeature,
-  Geometry,
-  LineString,
-  Point,
-  Polygon,
-} from "geojson";
+import type { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
 import { FillStyleSpec, SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
 import { ScenarioTime } from "@/types/base";
 import {
@@ -37,9 +31,18 @@ export interface ScenarioFeatureProperties
   type: ScenarioFeatureType;
   name?: string;
   description?: string;
-  _zIndex?: number;
 
   [attribute: string]: any;
+}
+
+export interface ScenarioFeatureMeta extends Partial<VisibilityInfo> {
+  type: ScenarioFeatureType;
+  name?: string;
+  description?: string;
+  externalUrl?: string;
+  radius?: number;
+  // internal runtime only state
+  _zIndex?: number;
 }
 
 export interface ScenarioFeatureState extends Partial<ScenarioEventDescription> {
@@ -54,9 +57,10 @@ export interface CurrentScenarioFeatureState extends Omit<ScenarioFeatureState, 
 }
 
 // A scenario feature is basically just a GeoJSON Feature with a required id field.
-export interface ScenarioFeature
-  extends GeoJsonFeature<Geometry, ScenarioFeatureProperties> {
+export interface ScenarioFeature extends GeoJsonFeature {
   id: FeatureId;
+  meta: ScenarioFeatureMeta;
+  style: Partial<SimpleStyleSpec>;
   state?: ScenarioFeatureState[];
   media?: Media[];
   // internal runtime only state

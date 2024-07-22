@@ -88,8 +88,8 @@ export function useScenarioTime(store: NewScenarioStore) {
       layer._hidden = timestamp <= visibleFromT || timestamp >= visibleUntilT;
       layer.features.forEach((featureId) => {
         const feature = state.featureMap[featureId];
-        const visibleFromT = feature.properties.visibleFromT || Number.MIN_SAFE_INTEGER;
-        const visibleUntilT = feature.properties.visibleUntilT || Number.MAX_SAFE_INTEGER;
+        const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
+        const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
 
         if (feature)
           feature._hidden = timestamp <= visibleFromT || timestamp >= visibleUntilT;

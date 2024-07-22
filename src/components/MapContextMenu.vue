@@ -217,7 +217,7 @@ function onContextMenuUpdate(open: boolean) {
                 class="mr-1 h-5 w-5 text-gray-400"
               />
               <span :class="[activeFeatureId === feature.id ? 'font-semibold' : '']">{{
-                feature.properties.name
+                feature.meta.name
               }}</span>
             </div>
           </ContextMenuItem>

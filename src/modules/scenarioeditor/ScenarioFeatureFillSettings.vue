@@ -3,25 +3,28 @@ import { computed } from "vue";
 import { FillStyleSpec, SimpleStyleSpec } from "@/geo/simplestyle";
 import { ScenarioFeature } from "@/types/scenarioGeoModels";
 import ColorPicker from "@/components/ColorPicker.vue";
+import { ScenarioFeatureUpdate } from "@/types/internalModels";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
-const emit = defineEmits<{ (e: "update", value: Partial<SimpleStyleSpec>): void }>();
+const emit = defineEmits<{
+  (e: "update", value: { style: Partial<SimpleStyleSpec> }): void;
+}>();
 
 const marker = computed(() => {
-  const { properties } = props.feature;
+  const { style } = props.feature;
   return {
-    fill: properties["fill"] ?? "black",
-    "fill-opacity": properties["fill-opacity"] ?? 0,
+    fill: style["fill"] ?? "black",
+    "fill-opacity": style["fill-opacity"] ?? 0,
   };
 });
 
 function updateValue(name: keyof FillStyleSpec, value: string | number) {
-  emit("update", { [name]: value });
+  emit("update", { style: { [name]: value } });
 }
 
 const opacity = computed({
   get: () => marker.value["fill-opacity"],
-  set: (v) => emit("update", { "fill-opacity": v }),
+  set: (v) => emit("update", { style: { "fill-opacity": v } }),
 });
 
 const opacityAsPercent = computed(() => (opacity.value! * 100).toFixed(0));

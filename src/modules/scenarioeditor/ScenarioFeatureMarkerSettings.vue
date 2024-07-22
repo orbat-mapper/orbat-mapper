@@ -10,7 +10,9 @@ import ColorPicker from "@/components/ColorPicker.vue";
 import ToggleField from "@/components/ToggleField.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
-const emit = defineEmits<{ (e: "update", value: Partial<SimpleStyleSpec>): void }>();
+const emit = defineEmits<{
+  (e: "update", value: { style: Partial<SimpleStyleSpec> }): void;
+}>();
 
 const sizeOptions = [
   { name: "S", value: "small" },
@@ -30,24 +32,26 @@ const markerItems: SelectItem<MarkerSymbol>[] = [
 ];
 
 const marker = computed((): Partial<MarkerStyleSpec> => {
-  const { properties } = props.feature;
+  const { style } = props.feature;
   return {
-    "marker-color": properties["marker-color"] || "black",
-    "marker-symbol": properties["marker-symbol"] || "circle",
-    "marker-size": properties["marker-size"] || "medium",
-    showLabel: properties["showLabel"] || false,
+    "marker-color": style["marker-color"] || "black",
+    "marker-symbol": style["marker-symbol"] || "circle",
+    "marker-size": style["marker-size"] || "medium",
+    showLabel: style["showLabel"] || false,
   };
 });
 
 function updateValue(name: keyof MarkerStyleSpec, value: string | number) {
   if (name === "marker-color") {
     emit("update", {
-      fill: value as string,
-      stroke: value as string,
-      "marker-color": value as string,
+      style: {
+        fill: value as string,
+        stroke: value as string,
+        "marker-color": value as string,
+      },
     });
   } else {
-    emit("update", { [name]: value });
+    emit("update", { style: { [name]: value } });
   }
 }
 </script>

@@ -18,7 +18,11 @@ import {
   getGeometryIcon,
   useScenarioLayers,
 } from "@/modules/scenarioeditor/scenarioLayers2";
-import { ScenarioFeatureProperties } from "@/types/scenarioGeoModels";
+import {
+  ScenarioFeature,
+  ScenarioFeatureMeta,
+  ScenarioFeatureProperties,
+} from "@/types/scenarioGeoModels";
 import { useDebounceFn } from "@vueuse/core";
 import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeatureMarkerSettings.vue";
 import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeatureStrokeSettings.vue";
@@ -35,7 +39,7 @@ import { useScenarioFeatureActions } from "@/composables/scenarioActions";
 import { renderMarkdown } from "@/composables/formatting";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
-import { MediaUpdate } from "@/types/internalModels";
+import { MediaUpdate, ScenarioFeatureUpdate } from "@/types/internalModels";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import { inputEventFilter } from "@/components/helpers";
 import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatureDropdownMenu.vue";
@@ -69,7 +73,7 @@ const feature = computed(() => {
 const featureName = ref("DD");
 const featureDescription = ref();
 const hDescription = computed(() =>
-  renderMarkdown(feature.value?.properties.description || ""),
+  renderMarkdown(feature.value?.meta.description || ""),
 );
 
 const isEditMode = ref(false);
@@ -101,15 +105,15 @@ function showStylePanel() {
 }
 
 watch(
-  () => feature.value?.properties.name,
+  () => feature.value?.meta.name,
   (v) => {
     featureName.value = v ?? "";
-    featureDescription.value = feature.value?.properties.description ?? "";
+    featureDescription.value = feature.value?.meta.description ?? "";
   },
   { immediate: true },
 );
 
-const geometryType = computed(() => feature.value?.properties.type);
+const geometryType = computed(() => feature.value?.meta.type);
 const hasStroke = computed(() => geometryType.value !== "Point");
 const hasFill = computed(
   () => !["Point", "LineString"].includes(geometryType.value || ""),
@@ -128,7 +132,7 @@ const media = computed(() => {
 });
 
 function updateValue(value: string) {
-  feature.value && updateFeatureProperties(feature.value?.id, { name: value });
+  feature.value && updateFeatureProperties(feature.value?.id, { meta: { name: value } });
 }
 
 const debouncedResetMap = useDebounceFn(
@@ -136,7 +140,7 @@ const debouncedResetMap = useDebounceFn(
   3000,
 );
 
-function doUpdateFeature(data: Partial<ScenarioFeatureProperties>) {
+function doUpdateFeature(data: ScenarioFeatureUpdate) {
   const featureOrFeatures = isMultiMode.value
     ? [...props.selectedIds.values()]
     : feature.value?.id;
@@ -155,8 +159,8 @@ function doUpdateFeature(data: Partial<ScenarioFeatureProperties>) {
   debouncedResetMap();
 }
 
-function doMetaUpdate(data: Partial<ScenarioFeatureProperties>) {
-  if (data) doUpdateFeature(data);
+function doMetaUpdate(data: Partial<ScenarioFeatureMeta>) {
+  if (data) doUpdateFeature({ meta: data });
   isEditMode.value = false;
 }
 

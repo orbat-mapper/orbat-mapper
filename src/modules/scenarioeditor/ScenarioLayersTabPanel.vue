@@ -445,16 +445,12 @@ function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
                 'opacity-50': layer.isHidden,
               }"
             >
-              {{
-                feature.properties.name ||
-                feature.properties.type ||
-                feature.geometry.type
-              }}
+              {{ feature.meta.name || feature.type || feature.geometry.type }}
             </span>
           </button>
           <div class="relative flex items-center">
             <IconClockOutline
-              v-if="feature.properties.visibleFromT || feature.properties.visibleUntilT"
+              v-if="feature.meta.visibleFromT || feature.meta.visibleUntilT"
               class="h-5 w-5 text-gray-400"
             />
             <DotsMenu

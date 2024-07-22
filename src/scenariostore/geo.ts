@@ -145,7 +145,7 @@ export function useGeo(store: NewScenarioStore) {
         moveItemMutable(layer.features, fromIndex, toIndex);
         layer.features.forEach((fid, i) => {
           const feature = s.featureMap[fid];
-          if (feature.properties._zIndex !== i) feature.properties._zIndex = i;
+          if (feature.meta._zIndex !== i) feature.meta._zIndex = i;
         });
       },
       { label: "moveFeature", value: featureId },
@@ -295,8 +295,12 @@ export function useGeo(store: NewScenarioStore) {
       update(
         (s) => {
           const layer = s.featureMap[featureId];
-          const { properties = {}, geometry, media } = data;
-          Object.assign(layer.properties, properties);
+          const { properties = {}, geometry, media, style = {}, meta = {} } = data;
+          Object.assign(layer.style, style);
+          Object.assign(layer.meta, meta);
+          layer.properties
+            ? Object.assign(layer.properties, properties)
+            : (layer.properties = properties);
           Object.assign(layer.geometry, geometry);
 
           if (media) layer.media = media;
@@ -317,12 +321,12 @@ export function useGeo(store: NewScenarioStore) {
     layers.value.forEach((layer) => {
       items.push({ id: layer.id, type: "layer", name: layer.name });
       const mappedFeatures: LayerFeatureItem[] = layer.features.map((feature) => {
-        const { properties, id } = feature;
+        const { meta, id } = feature;
         return {
           id,
-          type: properties.type,
-          name: properties.name || "",
-          description: properties.description,
+          type: meta.type,
+          name: meta.name || "",
+          description: meta.description,
           _pid: layer.id,
         };
       });

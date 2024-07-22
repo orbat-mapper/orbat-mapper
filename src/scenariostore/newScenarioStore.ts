@@ -286,7 +286,7 @@ function prepareScenario(scenario: Scenario): ScenarioState {
     };
     layer.features.forEach((feature) => {
       const tmp = { ...feature };
-      tmp.properties = mapVisibility(tmp.properties);
+      tmp.meta = mapVisibility(tmp.meta);
       featureMap[feature.id] = { ...tmp, _pid: layer.id };
     });
   });

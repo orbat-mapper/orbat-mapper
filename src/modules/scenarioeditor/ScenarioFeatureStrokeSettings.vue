@@ -5,29 +5,31 @@ import { ScenarioFeature } from "@/types/scenarioGeoModels";
 import ColorPicker from "@/components/ColorPicker.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
-const emit = defineEmits<{ (e: "update", value: Partial<SimpleStyleSpec>): void }>();
+const emit = defineEmits<{
+  (e: "update", value: { style: Partial<SimpleStyleSpec> }): void;
+}>();
 
 const marker = computed(() => {
-  const { properties } = props.feature;
+  const { style } = props.feature;
   return {
-    stroke: properties["stroke"] || "black",
-    "stroke-width": properties["stroke-width"] || 2,
-    "stroke-opacity": properties["stroke-opacity"] ?? 1,
+    stroke: style["stroke"] || "black",
+    "stroke-width": style["stroke-width"] || 2,
+    "stroke-opacity": style["stroke-opacity"] ?? 1,
   };
 });
 
 function updateValue(name: keyof StrokeStyleSpec, value: string | number) {
-  emit("update", { [name]: value });
+  emit("update", { style: { [name]: value } });
 }
 
 const width = computed({
   get: () => marker.value["stroke-width"],
-  set: (v) => emit("update", { "stroke-width": v }),
+  set: (v) => emit("update", { style: { "stroke-width": v } }),
 });
 
 const opacity = computed({
   get: () => marker.value["stroke-opacity"],
-  set: (v) => emit("update", { "stroke-opacity": v }),
+  set: (v) => emit("update", { style: { "stroke-opacity": v } }),
 });
 
 const opacityAsPercent = computed(() => (opacity.value! * 100).toFixed(0));

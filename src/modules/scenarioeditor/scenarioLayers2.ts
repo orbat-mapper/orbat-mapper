@@ -18,6 +18,7 @@ import Feature, { FeatureLike } from "ol/Feature";
 import type {
   FeatureId,
   ScenarioFeature,
+  ScenarioFeatureMeta,
   ScenarioFeatureProperties,
   ScenarioLayer,
 } from "@/types/scenarioGeoModels";
@@ -46,6 +47,7 @@ import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects"
 import {
   NScenarioFeature,
   NScenarioLayer,
+  ScenarioFeatureUpdate,
   ScenarioLayerUpdate,
 } from "@/types/internalModels";
 import { TScenario } from "@/scenariostore";
@@ -56,6 +58,7 @@ import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { SimpleGeometry } from "ol/geom";
+import { SimpleStyleSpec } from "@/geo/simplestyle";
 
 const selectStyle = new Style({ stroke: new Stroke({ color: "#ffff00", width: 9 }) });
 const selectMarkerStyle = new Style({
@@ -83,7 +86,7 @@ const geometryIconMap: any = {
 };
 
 export function getGeometryIcon(feature?: ScenarioFeature | NScenarioFeature) {
-  return (feature && geometryIconMap[feature.properties.type]) || geometryIconMap.Polygon;
+  return (feature && geometryIconMap[feature.meta.type]) || geometryIconMap.Polygon;
 }
 
 export function getItemsIcon(type: string) {
@@ -118,11 +121,11 @@ function createScenarioLayerFeatures(
   });
   const olFeatures: Feature[] = [];
   features.forEach((feature, index) => {
-    feature.properties._zIndex = index;
-    if (feature.properties?.radius && feature.geometry.type === "Point") {
+    feature.meta._zIndex = index;
+    if (feature.meta?.radius && feature.geometry.type === "Point") {
       const newRadius = convertRadius(
         feature as GeoJsonFeature<Point>,
-        feature.properties.radius,
+        feature.meta.radius,
       );
       const circle = new Circle(
         fromLonLat(feature.geometry.coordinates as number[]),
@@ -365,10 +368,10 @@ export function useScenarioLayers(
 
     const _zIndex = Math.max(
       scenarioLayer.features.length,
-      (lastFeatureInLayer?.properties._zIndex || 0) + 1,
+      (lastFeatureInLayer?.meta._zIndex || 0) + 1,
     );
-    scenarioFeature.properties.name = `${scenarioFeature.properties.type} ${_zIndex + 1}`;
-    scenarioFeature.properties._zIndex = _zIndex;
+    scenarioFeature.meta.name = `${scenarioFeature.meta.type} ${_zIndex + 1}`;
+    scenarioFeature.meta._zIndex = _zIndex;
     scenarioFeature._pid = scenarioLayer.id;
     olFeature.set("_zIndex", _zIndex);
     scenarioLayer && geo.addFeature(scenarioFeature, scenarioLayer.id);
@@ -435,17 +438,14 @@ export function useScenarioLayers(
 
   function updateFeatureProperties(
     featureId: FeatureId,
-    data: Partial<ScenarioFeatureProperties>,
+    data: ScenarioFeatureUpdate,
     isUndoRedo = false,
   ) {
     const { feature, layer } = geo.getFeatureById(featureId) || {};
     if (!(feature && layer)) return;
 
     if (!isUndoRedo) {
-      const dataUpdate = {
-        properties: { ...feature.properties, ...data },
-      };
-      geo.updateFeature(featureId, dataUpdate);
+      geo.updateFeature(featureId, data);
     }
     invalidateStyle(featureId);
     scenarioLayersOl.forEach((l) => l.changed());
@@ -458,6 +458,7 @@ export function useScenarioLayers(
     const { feature, layer } = geo.getFeatureById(id) || {};
     if (!(feature && layer)) return;
     const dataUpdate = {
+      meta: { ...feature.meta, ...t.meta },
       properties: { ...feature.properties, ...t.properties },
       geometry: t.geometry,
     };
@@ -530,22 +531,25 @@ function convertOlFeatureToScenarioFeature(olFeature: Feature): NScenarioFeature
     const { geometry, properties = {} } = olFeature.getProperties();
     const center = circle.getCenter();
     const r = addCoordinate([...center], [0, circle.getRadius()]);
-    properties.type = "Circle";
-    properties.radius = getLength(new LineString([center, r]));
-    return point<ScenarioFeatureProperties>(toLonLat(circle.getCenter()), properties, {
-      id: olFeature.getId() || nanoid(),
-    }) as NScenarioFeature;
+    const meta: ScenarioFeatureMeta = {
+      type: "Circle",
+      radius: getLength(new LineString([center, r])),
+    };
+
+    return {
+      ...point(toLonLat(circle.getCenter()), properties, {
+        id: olFeature.getId() || nanoid(),
+      }),
+      meta,
+      style: {},
+    } as NScenarioFeature;
   }
 
   const gj = new GeoJSON({ featureProjection: "EPSG:3857" }).writeFeatureObject(
     olFeature,
   );
 
-  gj.properties = { ...gj.properties, type: gj.geometry.type };
-
-  const properties = { ...gj.properties, type: gj.geometry.type };
-  //@ts-ignore
-  return gj;
+  return { ...gj, style: {}, meta: { type: gj.geometry.type } } as NScenarioFeature;
 }
 
 export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
