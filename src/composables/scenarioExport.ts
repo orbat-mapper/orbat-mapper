@@ -80,8 +80,27 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     return featureCollection(features) as OrbatMapperGeoJsonCollection;
   }
 
-  function convertScenarioFeaturesToGeoJson() {
-    return featureCollection(geo.layers.value.map((layer) => layer.features).flat(1));
+  function convertScenarioFeaturesToGeoJson(options: Partial<GeoJsonSettings> = {}) {
+    const includeIdInProperties = options.includeIdInProperties ?? false;
+    return featureCollection(
+      geo.layers.value
+        .map((layer) => layer.features)
+        .flat(1)
+        .map((f) => {
+          const { id, geometry, properties, meta, style } = f;
+          return {
+            type: "Feature",
+            id: options.includeId ? id : undefined,
+            properties: {
+              id: includeIdInProperties ? id : undefined,
+              name: meta.name,
+              description: meta.description,
+              ...properties,
+            },
+            geometry,
+          };
+        }),
+    );
   }
 
   async function downloadAsGeoJSON(opts: GeoJsonSettings) {
@@ -89,7 +108,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       ? convertUnitsToGeoJson(geo.everyVisibleUnit.value, opts).features
       : [];
     const features = opts.includeFeatures
-      ? convertScenarioFeaturesToGeoJson().features
+      ? convertScenarioFeaturesToGeoJson(opts).features
       : [];
     const combined = [...units, ...(features as any)];
 
