@@ -37,7 +37,12 @@
           <section class="space-y-4">
             <h3 class="border-b text-lg">Input groups</h3>
             <div class="grid grid-cols-3 gap-4">
-              <InputGroup type="number" label="Label" description="Description" />
+              <InputGroup
+                type="number"
+                label="Label"
+                description="Description"
+                autofocus
+              />
               <NumberInputGroup
                 v-model="num"
                 :max="10"
@@ -45,6 +50,11 @@
                 label="Label"
                 description="Description"
               />
+              <InputGroup
+                ><template #label
+                  ><span class="text-red-500">Label slot</span></template
+                ></InputGroup
+              >
             </div>
           </section>
 
