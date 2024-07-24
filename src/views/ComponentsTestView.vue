@@ -60,7 +60,7 @@
 
           <section>
             <FormCard label="Label" description="A description">
-              <InputGroup label="Label"></InputGroup>
+              <InputGroup label="Label" disabled></InputGroup>
               <InputGroup label="Label"></InputGroup>
             </FormCard>
           </section>
