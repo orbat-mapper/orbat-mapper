@@ -1,8 +1,8 @@
 import type { Position } from "geojson";
 import { forward } from "mgrs";
 import { CoordinateFormat, toStringHDMS } from "ol/coordinate";
-import { CoordinateFormatType } from "@/composables/geoShowLocation";
-
+import { type CoordinateFormatType } from "@/composables/geoShowLocation";
+export type MGRSPrecision = 1 | 2 | 3 | 4 | 5;
 export function formatDecimalDegrees(p: Position, precision: number) {
   const [lon, lat] = p;
   return `${Math.abs(lat).toFixed(precision)}° ${lat >= 0 ? "N" : "S"} ${Math.abs(
@@ -10,7 +10,7 @@ export function formatDecimalDegrees(p: Position, precision: number) {
   ).toFixed(precision)}° ${lon >= 0 ? "E" : "W"}`;
 }
 
-export function formatMGRS(p: Position | undefined, precision: 1 | 2 | 3 | 4 | 5 = 5) {
+export function formatMGRS(p: Position | undefined, precision: MGRSPrecision = 5) {
   if (!p) return "";
   const mgrs: string = p && forward(p as [number, number], precision);
   const n = mgrs.length;

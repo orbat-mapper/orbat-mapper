@@ -1,8 +1,9 @@
 import dayjs from "dayjs";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { toStringHDMS } from "ol/coordinate";
-import { formatDecimalDegrees, formatMGRS } from "@/utils/geoConvert";
+import { formatDecimalDegrees, formatMGRS, MGRSPrecision } from "@/utils/geoConvert";
 import type { MeasurementUnit } from "@/composables/geoMeasurement";
+import { CoordinateFormatType } from "@/composables/geoShowLocation";
 
 const s = useMapSettingsStore();
 
@@ -49,11 +50,15 @@ export function formatDTG(value: number, timeZone: string) {
   return date.format(`DDHHmm[${letter}]MMMYY`).toUpperCase();
 }
 
-export function formatPosition(value?: number[]) {
+export function formatPosition(
+  value?: number[],
+  options: { format?: CoordinateFormatType; mgrsPrecision?: MGRSPrecision } = {},
+) {
   if (value) {
-    const format = s.coordinateFormat;
+    const format = options.format ?? s.coordinateFormat;
+    const mgrsPrecision = options.mgrsPrecision ?? 4;
     if (format === "DegreeMinuteSeconds") return toStringHDMS(value, 0);
-    if (format === "MGRS") return formatMGRS(value, 4);
+    if (format === "MGRS") return formatMGRS(value, mgrsPrecision);
     return formatDecimalDegrees(value, 3);
   }
   return "";
