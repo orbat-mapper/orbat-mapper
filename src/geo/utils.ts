@@ -115,3 +115,21 @@ export function formatArea(area: number, unit: MeasurementUnit = "metric"): stri
   }
   return output;
 }
+
+export function parseCoordinates(coordinateString: string): [number, number] {
+  const parts = coordinateString.split(",").map((s) => s.trim());
+
+  if (parts.length !== 2) {
+    throw new Error("Invalid coordinate format. Expected format: 'latitude,longitude'");
+  }
+
+  const [latStr, lonStr] = parts;
+  const latitude = parseFloat(latStr);
+  const longitude = parseFloat(lonStr);
+
+  if (isNaN(latitude) || isNaN(longitude)) {
+    throw new Error("Invalid coordinate values. Coordinates must be numbers.");
+  }
+
+  return [latitude, longitude];
+}

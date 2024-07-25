@@ -1,12 +1,12 @@
 <template>
   <div>
     <div class="flex justify-between">
-      <label :for="id" class="block text-sm font-medium leading-6 text-gray-700">
+      <label :for="id" class="block text-sm font-medium leading-6 text-gray-800">
         <slot name="label">{{ label }}</slot>
       </label>
       <div v-if="hint || $slots.hint">
         <slot name="hint">
-          <span class="text-sm leading-6 text-gray-500" id="email-optional">
+          <span class="text-sm leading-6 text-gray-500">
             {{ hint }}
           </span>
         </slot>

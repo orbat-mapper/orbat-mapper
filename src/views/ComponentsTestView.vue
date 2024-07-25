@@ -8,6 +8,11 @@
       </header>
       <main class="mt-4">
         <div class="mx-auto max-w-7xl space-y-4 sm:px-6 lg:px-8">
+          <section>
+            <h3 class="border-b text-lg">Coordinate input widgets</h3>
+            <TestCoordinateInput />
+          </section>
+
           <MainMenu />
           <section class="space-y-4" @click="onClick">
             <h3 class="border-b text-lg">Basic button</h3>
@@ -148,6 +153,8 @@ import { MenuItemData } from "@/components/types";
 import { ScenarioActions } from "@/types/constants";
 import LinkButton from "@/components/LinkButton.vue";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
+import CoordinateInput from "@/components/CoordinateInput.vue";
+import TestCoordinateInput from "@/views/TestCoordinateInput.vue";
 
 const num = ref(1);
 const v = ref("Test");
