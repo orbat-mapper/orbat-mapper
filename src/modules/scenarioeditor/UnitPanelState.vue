@@ -50,8 +50,19 @@
         >
           {{ s.title }}
         </p>
-
-        <p class="text-gray-700" v-if="s.location">{{ formatPosition(s.location) }}</p>
+        <CoordinateInput
+          v-if="s === editedPosition"
+          v-model="newPosition"
+          :format="coordinateInputFormat"
+          @update:format="coordinateInputFormat = $event"
+          @blur="doneEdit(s)"
+          @keyup.enter="doneEditPosition(s)"
+          @keyup.esc="cancelEditPosition()"
+          autofocus
+        />
+        <p class="mt-1 text-gray-700" v-else-if="s.location" @dblclick="editPosition(s)">
+          {{ formatPosition(s.location) }}
+        </p>
         <IconMapMarkerOffOutline
           v-if="s.location === null"
           class="h-5 w-5 text-gray-600"
@@ -118,12 +129,14 @@ import type { NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, sidcModalKey, timeModalKey } from "@/components/injects";
 import DotsMenu from "@/components/DotsMenu.vue";
+import CoordinateInput, { CoordinateInputFormat } from "@/components/CoordinateInput.vue";
 import { ButtonGroupItem, MenuItemData } from "@/components/types";
 import SplitButton from "@/components/SplitButton.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
+import { useLocalStorage } from "@vueuse/core";
 
 interface Props {
   unit: NUnit;
@@ -147,6 +160,7 @@ const menuItems: MenuItemData<StateAction>[] = [
   { label: "Duplicate", action: "duplicate" },
   { label: "Change time", action: "changeTime" },
   { label: "Edit title", action: "editTitle" },
+  { label: "Edit location", action: "editLocation" },
   { label: "Clear location", action: "clearLocation" },
   { label: "Convert to initial position", action: "convertToInitialPosition" },
   // { label: "Change status", action: "changeStatus" },
@@ -171,7 +185,13 @@ const stateItems: ButtonGroupItem[] = [
   },
 ];
 
+const coordinateInputFormat = useLocalStorage<CoordinateInputFormat>(
+  "coordinateInputFormat",
+  "LonLat",
+);
+
 const editedTitle = ref<State | null>();
+const editedPosition = ref<State | null>();
 
 const deleteState = (index: number) => {
   unitActions.deleteUnitStateEntry(props.unit.id, index);
@@ -217,6 +237,8 @@ async function onStateAction(index: number, action: StateAction) {
     }
   } else if (action === "editTitle") {
     editTitle(state.value[index]);
+  } else if (action === "editLocation") {
+    editPosition(state.value[index]);
   } else if (action === "duplicate") {
     unitActions.addUnitStateEntry(props.unit.id, {
       ...state.value[index],
@@ -262,6 +284,28 @@ function doneEdit(s: State) {
 function cancelEdit() {
   editedTitle.value = null;
   newTitle.value = "";
+}
+
+const newPosition = ref();
+function editPosition(s: State) {
+  nextTick(() => (editedPosition.value = s));
+  newPosition.value = s.location;
+}
+
+function doneEditPosition(s: State) {
+  if (!editedPosition.value) return;
+  const index = state.value.indexOf(s);
+  editedPosition.value = null;
+  if (index < 0) return;
+  unitActions.updateUnitStateEntry(props.unit.id, index, {
+    location: newPosition.value,
+  });
+  newPosition.value = null;
+}
+
+function cancelEditPosition() {
+  editedPosition.value = null;
+  newPosition.value = null;
 }
 
 const onVMounted = ({ el }: VNode) => el?.focus();
