@@ -72,7 +72,7 @@ function changeTab(index: number) {
             v-for="({ label, title }, i) in tabListItems"
             :title="title"
             :class="[
-              selectedIndex === i ? 'border-army  text-army' : 'border-transparent',
+              selectedIndex === i ? 'border-army text-army' : 'border-transparent',
               'flex-none border-b-2 px-1 py-2 text-sm font-medium',
             ]"
             >{{ label }}

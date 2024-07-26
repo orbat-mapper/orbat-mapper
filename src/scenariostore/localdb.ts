@@ -89,7 +89,7 @@ export async function useIndexedDb() {
       description: scenario.description ?? "",
       created: scenario.meta?.createdDate
         ? new Date(scenario.meta.createdDate)
-        : existing?.created ?? new Date(),
+        : (existing?.created ?? new Date()),
       modified: scenario.meta?.lastModifiedDate
         ? new Date(scenario.meta.lastModifiedDate)
         : new Date(),

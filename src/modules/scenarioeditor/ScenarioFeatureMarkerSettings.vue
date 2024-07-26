@@ -83,7 +83,7 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number) {
             checked
               ? 'bg-indigo-600 text-white hover:bg-indigo-500'
               : 'bg-white text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
-            'flex cursor-pointer items-center justify-center rounded-md px-5 py-3 text-sm font-semibold uppercase ',
+            'flex cursor-pointer items-center justify-center rounded-md px-5 py-3 text-sm font-semibold uppercase',
           ]"
         >
           <RadioGroupLabel as="span">{{ option.name }}</RadioGroupLabel>
@@ -114,7 +114,7 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number) {
             checked
               ? 'bg-indigo-300 text-white hover:bg-indigo-500'
               : 'bg-white text-gray-900 ring-0 ring-inset hover:bg-gray-50',
-            'flex cursor-pointer items-center justify-center rounded-md px-2 py-2 text-sm font-semibold uppercase ',
+            'flex cursor-pointer items-center justify-center rounded-md px-2 py-2 text-sm font-semibold uppercase',
           ]"
         >
           <RadioGroupLabel as="span" class="sr-only">{{ option.label }}</RadioGroupLabel>

@@ -15,7 +15,7 @@
             <p class="truncate pt-2 text-sm font-medium text-gray-700">
               {{ rootUnitStore.unit.name }}
             </p>
-            <p class="truncate text-sm text-sm text-gray-500">
+            <p class="truncate text-sm text-gray-500">
               {{ rootUnitStore.unit.shortName }}
             </p>
           </div>

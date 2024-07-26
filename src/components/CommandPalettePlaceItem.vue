@@ -16,7 +16,7 @@
       <p :class="['text-sm font-medium']">
         {{ item.properties.name }}
       </p>
-      <div :class="[' flex justify-between text-sm']">
+      <div :class="['flex justify-between text-sm']">
         <div class="space-x-1">
           <span class="text-xs uppercase text-gray-400">{{
             item.properties.category

@@ -66,7 +66,7 @@ export function addUnitHierarchy(
 
       const newUnit: NUnitAdd = {
         ...unit,
-        id: newIds ? nanoid() : unit.id ?? nanoid(),
+        id: newIds ? nanoid() : (unit.id ?? nanoid()),
         sidc: setCharAt(unit.sidc, SID_INDEX, side.standardIdentity),
         subUnits: [],
         equipment,

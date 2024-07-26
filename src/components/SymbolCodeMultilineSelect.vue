@@ -63,7 +63,7 @@
               <p class="flex h-7 w-8 flex-shrink-0 justify-center pt-1">
                 <MilitarySymbol :size="20" :sidc="item.sidc" :options="symbolOptions" />
               </p>
-              <div :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 ']">
+              <div :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3']">
                 <p
                   v-if="item.subLabel"
                   class="text-xs text-gray-600"

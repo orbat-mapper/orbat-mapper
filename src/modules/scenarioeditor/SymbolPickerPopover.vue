@@ -65,7 +65,7 @@ async function handleChangeSymbol(close?: (ref?: Ref | HTMLElement) => void) {
         class="ml-1 rounded p-2 text-sm text-gray-700 hover:bg-gray-200 disabled:opacity-50"
         @click="store.clearToolbar()"
       >
-        <IconChevronUp class="h-6 w-6" :class="{ ' scale-150 text-red-800 ': open }" />
+        <IconChevronUp class="h-6 w-6" :class="{ 'scale-150 text-red-800': open }" />
       </PopoverButton>
       <PopoverPanel focus v-slot="{ close }">
         <FloatingPanel class="overflow-hidden p-2">
@@ -84,7 +84,7 @@ async function handleChangeSymbol(close?: (ref?: Ref | HTMLElement) => void) {
                 <div
                   :class="[
                     checked ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700',
-                    'group relative min-w-0  justify-self-center  overflow-hidden bg-white px-4 py-2 hover:bg-gray-50  focus:z-10 focus:outline-none',
+                    'group relative min-w-0 justify-self-center overflow-hidden bg-white px-4 py-2 hover:bg-gray-50 focus:z-10 focus:outline-none',
                   ]"
                 >
                   <MilitarySymbol
