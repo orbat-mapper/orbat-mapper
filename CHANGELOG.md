@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 July 2024
 
+- Modify unit coordinates manually in the unit state panel. Activate the edit mode by double-clicking on the coordinates.
 - Select multiple features in the layers panel with shift+click.
 - Add a duplicate scenario feature action.
 

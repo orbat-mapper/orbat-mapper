@@ -12,7 +12,19 @@
     <li v-if="unit.location" class="relative flex items-center py-4">
       <div class="flex min-w-0 flex-auto flex-col text-sm">
         <span class="font-medium text-gray-500">Initial position</span>
-        <p class="text-gray-700">{{ formatPosition(unit.location) }}</p>
+        <CoordinateInput
+          v-if="editInitialPosition"
+          v-model="newPosition"
+          :format="coordinateInputFormat"
+          @update:format="coordinateInputFormat = $event"
+          @outBlur="doneEditInitialPosition()"
+          @keyup.enter="doneEditInitialPosition()"
+          @keyup.esc="cancelEdit()"
+          autofocus
+        />
+        <p v-else class="text-gray-700" @dblclick="startEditInitialPosition()">
+          {{ formatPosition(unit.location) }}
+        </p>
       </div>
       <div class="flex-0 relative flex items-center space-x-0">
         <DotsMenu :items="initialMenuItems" @action="onStateAction(-1, $event)" />
@@ -55,9 +67,9 @@
           v-model="newPosition"
           :format="coordinateInputFormat"
           @update:format="coordinateInputFormat = $event"
-          @blur="doneEdit(s)"
+          @outBlur="doneEditPosition(s)"
           @keyup.enter="doneEditPosition(s)"
-          @keyup.esc="cancelEditPosition()"
+          @keyup.esc="cancelEdit()"
           autofocus
         />
         <p class="mt-1 text-gray-700" v-else-if="s.location" @dblclick="editPosition(s)">
@@ -137,6 +149,7 @@ import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import { useLocalStorage } from "@vueuse/core";
+import { Position } from "geojson";
 
 interface Props {
   unit: NUnit;
@@ -168,6 +181,7 @@ const menuItems: MenuItemData<StateAction>[] = [
 
 const initialMenuItems: MenuItemData<StateAction>[] = [
   { label: "Delete", action: "delete" },
+  { label: "Edit initial position", action: "editLocation" },
 ];
 
 const stateItems: ButtonGroupItem[] = [
@@ -192,6 +206,7 @@ const coordinateInputFormat = useLocalStorage<CoordinateInputFormat>(
 
 const editedTitle = ref<State | null>();
 const editedPosition = ref<State | null>();
+const editInitialPosition = ref(false);
 
 const deleteState = (index: number) => {
   unitActions.deleteUnitStateEntry(props.unit.id, index);
@@ -238,7 +253,11 @@ async function onStateAction(index: number, action: StateAction) {
   } else if (action === "editTitle") {
     editTitle(state.value[index]);
   } else if (action === "editLocation") {
-    editPosition(state.value[index]);
+    if (index < 0) {
+      startEditInitialPosition();
+    } else {
+      editPosition(state.value[index]);
+    }
   } else if (action === "duplicate") {
     unitActions.addUnitStateEntry(props.unit.id, {
       ...state.value[index],
@@ -274,7 +293,7 @@ function doneEdit(s: State) {
   if (!editedTitle.value) return;
   const index = state.value.indexOf(s);
   editedTitle.value = null;
-  if (index < 0) return;
+  if (index < 0 || newTitle.value === s.title) return;
   unitActions.updateUnitStateEntry(props.unit.id, index, {
     title: newTitle.value,
   });
@@ -284,9 +303,13 @@ function doneEdit(s: State) {
 function cancelEdit() {
   editedTitle.value = null;
   newTitle.value = "";
+  editedPosition.value = null;
+  newPosition.value = null;
+  editInitialPosition.value = false;
 }
 
 const newPosition = ref();
+
 function editPosition(s: State) {
   nextTick(() => (editedPosition.value = s));
   newPosition.value = s.location;
@@ -303,8 +326,18 @@ function doneEditPosition(s: State) {
   newPosition.value = null;
 }
 
-function cancelEditPosition() {
-  editedPosition.value = null;
+function startEditInitialPosition() {
+  nextTick(() => (editInitialPosition.value = true));
+  newPosition.value = props.unit.location ?? [0, 0];
+}
+
+function doneEditInitialPosition() {
+  editInitialPosition.value = false;
+  unitActions.updateUnit(
+    props.unit.id,
+    { location: newPosition.value },
+    { doUpdateUnitState: true },
+  );
   newPosition.value = null;
 }
 

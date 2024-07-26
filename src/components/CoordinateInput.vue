@@ -25,10 +25,14 @@ defineOptions({
   inheritAttrs: false,
 });
 const props = defineProps<CoordinateInputProps>();
-const emit = defineEmits<{ (e: "update:format", data: CoordinateInputFormat): void }>();
+const emit = defineEmits<{
+  (e: "update:format", data: CoordinateInputFormat): void;
+  (e: "outBlur", data: FocusEvent): void;
+}>();
 const modelValue = defineModel<Position>({ required: true });
 const inputFormat = ref<CoordinateInputFormat>(props.format ?? "LonLat");
 const inputRef = ref<HTMLInputElement | null>(null);
+const selectRef = ref<HTMLSelectElement | null>(null);
 
 const isInvalid = ref();
 const localValue = ref<string>(convertToLocalValue(modelValue.value));
@@ -99,6 +103,12 @@ function convertToLocalValue(v: Position) {
   }
 }
 
+function onOuterBlur(e: FocusEvent) {
+  if (e.relatedTarget !== inputRef.value && e.relatedTarget !== selectRef.value) {
+    emit("outBlur", e);
+  }
+}
+
 onMounted(() => {
   if (props.autofocus) {
     inputRef.value?.focus();
@@ -107,7 +117,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :class="outerClass">
+  <div :class="outerClass" @blur.capture="onOuterBlur">
     <div class="relative rounded-sm shadow-sm">
       <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
         <MapPinIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -131,6 +141,7 @@ onMounted(() => {
           id="coordinate-format"
           class="h-full rounded-md border-0 bg-transparent py-0 pl-2 pr-7 text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
           v-model="inputFormat"
+          ref="selectRef"
         >
           <option value="LatLon">LAT,LON</option>
           <option value="LonLat">LON, LAT</option>
