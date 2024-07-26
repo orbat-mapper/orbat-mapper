@@ -3,13 +3,23 @@ import CoordinateInput, { CoordinateInputFormat } from "@/components/CoordinateI
 import { ref } from "vue";
 import type { Position } from "geojson";
 import { formatPosition } from "@/geo/utils";
+import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 
 const position = ref<Position>([13.369, 37.598]);
 const format = ref<CoordinateInputFormat>("LonLat");
 </script>
 <template>
   <div class="mt-4 space-y-4">
-    <CoordinateInput v-model="position" :format="format" class="max-w-sm" />
+    <div class="flex gap-8">
+      <CoordinateInput v-model="position" :format="format" class="max-w-sm" />
+      <InputGroupTemplate label="Label">
+        <CoordinateInput
+          v-model="position"
+          :format="format"
+          @update:format="console.log('update format to', $event)"
+        />
+      </InputGroupTemplate>
+    </div>
     <div class="grid grid-cols-4">
       <div>{{ position }}</div>
       <div>{{ formatPosition(position, { format: "DecimalDegrees" }) }}</div>

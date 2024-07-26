@@ -4,6 +4,9 @@ import { toStringHDMS } from "ol/coordinate";
 import { formatDecimalDegrees, formatMGRS, MGRSPrecision } from "@/utils/geoConvert";
 import type { MeasurementUnit } from "@/composables/geoMeasurement";
 import { CoordinateFormatType } from "@/composables/geoShowLocation";
+import { truncate } from "@turf/truncate";
+import { point } from "@turf/helpers";
+import { Position } from "geojson";
 
 const s = useMapSettingsStore();
 
@@ -132,4 +135,11 @@ export function parseCoordinates(coordinateString: string): [number, number] {
   }
 
   return [latitude, longitude];
+}
+
+export function truncatePosition(
+  p: Position,
+  options?: { precision?: number },
+): Position {
+  return truncate(point(p), options).geometry.coordinates;
 }
