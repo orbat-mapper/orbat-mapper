@@ -115,23 +115,19 @@ interface Props {
   symbolOptions?: SymbolOptions;
 }
 
+interface Emits {
+  (e: "unit-action", unit: NUnit, action: UnitAction): void;
+  (e: "unit-click", unit: NUnit, event: MouseEvent): void;
+  (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
+}
+
 const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
 
 const combinedOptions = computed(() => ({
   ...(props.symbolOptions || {}),
   ...(props.item.unit.symbolOptions || {}),
 }));
-
-// for some reason this throws a vue-tsc error
-interface Emits {
-  (e: "unit-action", unit: NUnit, action: UnitAction): void;
-
-  (e: "unit-click", unit: NUnit, event: MouseEvent): void;
-
-  (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
-}
-
-const emit = defineEmits(["unit-action", "unit-click", "unit-drop"]);
 
 const activeParentId = injectStrict(activeParentKey);
 
