@@ -2,8 +2,6 @@
 import { injectStrict, nanoid } from "@/utils";
 import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
 import {
-  featureMenuItems,
-  getGeometryIcon,
   useScenarioLayers,
   useScenarioLayerSync,
 } from "@/modules/scenarioeditor/scenarioLayers2";
@@ -38,6 +36,7 @@ import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import { addMapLayer, getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 import SplitButton from "@/components/SplitButton.vue";
+import ScenarioFeatureListItem from "@/modules/scenarioeditor/ScenarioFeatureListItem.vue";
 
 const emit = defineEmits(["feature-click"]);
 
@@ -422,44 +421,17 @@ function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
         @update="updateLayer(layer.id, $event)"
       />
       <ul class="-mt-6">
-        <li
+        <ScenarioFeatureListItem
           v-for="feature in features"
-          class="group flex items-center justify-between border-l pl-1 hover:bg-amber-50"
           :key="feature.id"
-          :class="
-            selectedFeatureIds.has(feature.id)
-              ? 'border-yellow-500 bg-yellow-100'
-              : 'border-transparent'
-          "
-        >
-          <button
-            @click="onFeatureClick(feature, layer, $event)"
-            @dblclick="onFeatureDoubleClick(feature, layer, $event)"
-            class="flex flex-auto items-center py-2.5 sm:py-2"
-          >
-            <component :is="getGeometryIcon(feature)" class="h-5 w-5 text-gray-400" />
-            <span
-              class="ml-2 text-left text-sm text-gray-700 group-hover:text-gray-900"
-              :class="{
-                'font-bold': activeFeatureId === feature.id,
-                'opacity-50': layer.isHidden,
-              }"
-            >
-              {{ feature.meta.name || feature.type || feature.geometry.type }}
-            </span>
-          </button>
-          <div class="relative flex items-center">
-            <IconClockOutline
-              v-if="feature.meta.visibleFromT || feature.meta.visibleUntilT"
-              class="h-5 w-5 text-gray-400"
-            />
-            <DotsMenu
-              :items="featureMenuItems"
-              @action="onFeatureAction(feature.id, $event)"
-              class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-            />
-          </div>
-        </li>
+          :feature="feature"
+          :layer="layer"
+          :selected="selectedFeatureIds.has(feature.id)"
+          :active="activeFeatureId === feature.id"
+          @feature-click="onFeatureClick(feature, layer, $event)"
+          @feature-double-click="onFeatureDoubleClick(feature, layer, $event)"
+          @feature-action="onFeatureAction(feature.id, $event)"
+        />
       </ul>
     </ChevronPanel>
     <footer class="my-8 text-right">
