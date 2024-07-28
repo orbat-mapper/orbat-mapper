@@ -30,7 +30,7 @@ export function useFeatureStyles(geo: TGeo) {
     let style = styleCache.get(featureId);
     const { feature: scenarioFeature } = geo.getFeatureById(featureId);
     const {
-      meta: { name: label },
+      meta: { name: label, _zIndex },
       style: { showLabel = false },
     } = scenarioFeature;
     if (!style) {
@@ -39,7 +39,7 @@ export function useFeatureStyles(geo: TGeo) {
       feature.set("_zIndex", scenarioFeature.meta._zIndex, true);
       styleCache.set(featureId, style);
     }
-    style.setZIndex(feature.get("_zIndex"));
+    style.setZIndex(_zIndex ?? 0);
     style.getText()?.setText(showLabel && resolution < 1200 ? label : undefined);
     return style;
   }
