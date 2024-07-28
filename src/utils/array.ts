@@ -39,7 +39,7 @@ export function moveElement<T>(array: T[], element: T, delta: number) {
 
 export function moveItemMutable<T>(array: T[], fromIndex: number, toIndex: number): T[] {
   if (!(fromIndex >= 0 && fromIndex < array.length)) return array;
-  if (!(toIndex >= 0 && toIndex < array.length)) return array;
+  if (!(toIndex >= 0 && toIndex <= array.length)) return array;
 
   const item = array[fromIndex];
   array.splice(fromIndex, 1);

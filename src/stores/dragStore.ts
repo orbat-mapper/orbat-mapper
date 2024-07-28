@@ -1,16 +1,18 @@
 import { defineStore } from "pinia";
 
 import { Unit } from "@/types/scenarioModels";
-import { NUnit } from "@/types/internalModels";
+import { NScenarioFeature, NUnit } from "@/types/internalModels";
 import { computed } from "vue";
 import { injectStrict } from "@/utils";
 import { activeParentKey, activeScenarioKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { ScenarioFeature } from "@/types/scenarioGeoModels";
 
 export const useDragStore = defineStore("drag", {
   state: () => ({
     draggedUnit: null as Unit | null,
     draggedFiles: null as File[] | null,
+    draggedFeature: null as NScenarioFeature | null,
   }),
 });
 

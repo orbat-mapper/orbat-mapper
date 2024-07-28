@@ -19,6 +19,7 @@ import {
 import { klona } from "klona";
 import { moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
+import { DropTarget } from "@/components/types";
 
 export type ScenarioMapLayerEvent =
   | {
@@ -150,6 +151,41 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "moveFeature", value: featureId },
     );
+  }
+
+  function reorderFeature(
+    featureId: FeatureId,
+    destinationFeatureId: FeatureId,
+    target: DropTarget,
+  ) {
+    const feature = state.featureMap[featureId];
+    const destinationFeature = state.featureMap[destinationFeatureId];
+    if (!feature || !destinationFeature) return;
+    const layer = state.layerMap[feature._pid];
+    const destinationLayer = state.layerMap[destinationFeature._pid];
+    if (!layer || !destinationLayer) return;
+
+    const fromIndex = layer.features.indexOf(featureId);
+    const toIndex = destinationLayer.features.indexOf(destinationFeatureId);
+    if (layer.id === destinationLayer.id) {
+      let newIndex = toIndex;
+      if (target === "above") newIndex = toIndex;
+      else if (target === "below") newIndex = toIndex + 1;
+      moveFeature(featureId, newIndex);
+    } else {
+      update(
+        (s) => {
+          const fromLayer = s.layerMap[feature._pid];
+          const toLayer = s.layerMap[destinationFeature._pid];
+          const f = s.featureMap[featureId];
+
+          removeElement(featureId, fromLayer.features);
+          toLayer.features.splice(toIndex, 0, featureId);
+          f._pid = toLayer.id;
+        },
+        { label: "moveFeature", value: featureId },
+      );
+    }
   }
 
   function getFullLayer(layerId: FeatureId): ScenarioLayer | undefined {
@@ -366,5 +402,6 @@ export function useGeo(store: NewScenarioStore) {
     getMapLayerIndex: (id: FeatureId) => state.mapLayers.indexOf(id),
     onMapLayerEvent: mapLayerEvent.on,
     moveMapLayer,
+    reorderFeature,
   };
 }

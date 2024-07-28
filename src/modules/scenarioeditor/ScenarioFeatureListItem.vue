@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { IconClockOutline } from "@iconify-prerendered/vue-mdi";
+import { computed, ref } from "vue";
+import { IconClockOutline, IconDrag } from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
-import { ScenarioFeature } from "@/types/scenarioGeoModels";
+import type { ScenarioFeature } from "@/types/scenarioGeoModels";
 import {
   featureMenuItems,
   getGeometryIcon,
 } from "@/modules/scenarioeditor/scenarioLayers2";
-import { ScenarioFeatureActions } from "@/types/constants";
+import { DragOperations, ScenarioFeatureActions } from "@/types/constants";
+import type { DropTarget } from "@/components/types";
+import { useDragStore } from "@/stores/dragStore";
+import { NScenarioFeature } from "@/types/internalModels";
 
 interface Props {
-  feature: ScenarioFeature;
+  feature: NScenarioFeature;
   layer: any;
   selected?: boolean;
   active?: boolean;
@@ -21,16 +24,91 @@ const emit = defineEmits<{
   (e: "feature-click", data: MouseEvent): void;
   (e: "feature-double-click", data: MouseEvent): void;
   (e: "feature-action", data: ScenarioFeatureActions): void;
+  (
+    e: "feature-drop",
+    data: {
+      feature: NScenarioFeature;
+      destinationFeature: NScenarioFeature;
+      target: DropTarget;
+    },
+  ): void;
 }>();
+
+const dragStore = useDragStore();
+
+const isDragged = ref(false);
+const isDragOver = ref(false);
+const isDragOverAbove = ref(false);
+
 const hidden = computed(() => props.layer.isHidden);
+
+function dragStart(event: DragEvent) {
+  const { dataTransfer } = event;
+  if (dataTransfer) {
+    dataTransfer.setData("text/plain", DragOperations.FeatureDrag);
+    dataTransfer.dropEffect = "move";
+    dragStore.draggedFeature = props.feature;
+    setTimeout(() => (isDragged.value = true), 10);
+  }
+}
+
+function dragEnd(ev: DragEvent) {
+  isDragged.value = false;
+  dragStore.draggedFeature = null;
+}
+
+function onDragOver(event: DragEvent) {
+  event.preventDefault();
+  isDragOver.value = true;
+  // check if the dragged item is above or below the current item
+  const rect = (event.target as HTMLElement).getBoundingClientRect();
+  const y = event.clientY - rect.top;
+  isDragOverAbove.value = y < rect.height / 2;
+}
+
+function onDrop(event: DragEvent) {
+  if (
+    event.dataTransfer?.getData("text") === DragOperations.FeatureDrag &&
+    dragStore.draggedFeature
+  ) {
+    const target = isDragOverAbove.value ? "above" : "below";
+    emit("feature-drop", {
+      feature: dragStore.draggedFeature,
+      destinationFeature: props.feature,
+      target,
+    });
+  }
+  isDragOver.value = false;
+  isDragOverAbove.value = false;
+  isDragged.value = false;
+}
 </script>
 
 <template>
   <li
-    class="group flex items-center justify-between border-l pl-1 hover:bg-amber-50"
-    :key="feature.id"
-    :class="selected ? 'border-yellow-500 bg-yellow-100' : 'border-transparent'"
+    class="group relative flex select-none items-center justify-between border-l pl-1 hover:bg-amber-50"
+    :class="[
+      isDragOver
+        ? 'bg-gray-100'
+        : selected
+          ? 'border-yellow-500 bg-yellow-100'
+          : 'border-transparent',
+      isDragged ? 'opacity-20' : '',
+      isDragOver
+        ? isDragOverAbove
+          ? 'border-t-2 border-t-red-600'
+          : 'border-b-2 border-b-red-600'
+        : '',
+    ]"
+    @dragover.prevent="onDragOver"
+    @dragleave="isDragOver = false"
+    @drop.prevent="onDrop"
   >
+    <span draggable="true" @dragstart="dragStart" @dragend="dragEnd">
+      <IconDrag
+        class="h-5 w-5 cursor-move text-gray-400 group-focus-within:opacity-100 group-hover:opacity-100 sm:opacity-0"
+      />
+    </span>
     <button
       @click="emit('feature-click', $event)"
       @dblclick="emit('feature-double-click', $event)"

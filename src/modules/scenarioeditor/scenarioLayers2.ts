@@ -52,7 +52,7 @@ import {
 } from "@/types/internalModels";
 import { TScenario } from "@/scenariostore";
 import { UseFeatureStyles } from "@/geo/featureStyles";
-import { MenuItemData } from "@/components/types";
+import { DropTarget, MenuItemData } from "@/components/types";
 import { Fill, Style } from "ol/style";
 import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
@@ -396,6 +396,21 @@ export function useScenarioLayers(
     scenarioLayersOl.forEach((l) => l.changed());
   }
 
+  function reorderFeature({
+    feature,
+    destinationFeature,
+    target,
+  }: {
+    feature: NScenarioFeature;
+    destinationFeature: NScenarioFeature;
+    target: DropTarget;
+  }) {
+    const layer = geo.getLayerById(feature._pid);
+    geo.reorderFeature(feature.id, destinationFeature.id, target);
+    layer.features.forEach((id) => invalidateStyle(id));
+    scenarioLayersOl.forEach((l) => l.changed());
+  }
+
   function moveLayer(layerId: FeatureId, direction: "up" | "down", isUndoRedo = false) {
     let toIndex = geo.getLayerIndex(layerId);
 
@@ -497,6 +512,7 @@ export function useScenarioLayers(
     zoomToLayer,
     deleteLayer,
     moveFeature,
+    reorderFeature,
     duplicateFeature,
     addOlFeature,
     moveLayer,

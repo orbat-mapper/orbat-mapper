@@ -6,7 +6,7 @@ import {
   useScenarioLayerSync,
 } from "@/modules/scenarioeditor/scenarioLayers2";
 import ChevronPanel from "@/components/ChevronPanel.vue";
-import { nextTick, onUnmounted, ref } from "vue";
+import { nextTick, onUnmounted, ref, toRaw, unref } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import {
   FeatureId,
@@ -23,7 +23,7 @@ import {
 } from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
-import { ButtonGroupItem, MenuItemData } from "@/components/types";
+import { ButtonGroupItem, DropTarget, MenuItemData } from "@/components/types";
 import {
   ScenarioFeatureActions,
   ScenarioLayerAction,
@@ -95,6 +95,7 @@ const {
   moveFeature,
   addLayer,
   updateLayer,
+  initializeFromStore,
 } = useScenarioLayers(mapRef.value);
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 
@@ -264,6 +265,17 @@ function onFeatureAction(
   );
 }
 
+function onFeatureDrop(data: {
+  feature: NScenarioFeature;
+  destinationFeature: NScenarioFeature;
+  target: DropTarget;
+}) {
+  const { feature, destinationFeature, target } = data;
+  geo.reorderFeature(feature.id, destinationFeature.id, target);
+  initializeFromStore(false, false);
+  //moveFeature(feature, target, destinationFeature);
+}
+
 function addNewLayer() {
   const addedLayer = addLayer({
     id: nanoid(),
@@ -431,6 +443,7 @@ function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
           @feature-click="onFeatureClick(feature, layer, $event)"
           @feature-double-click="onFeatureDoubleClick(feature, layer, $event)"
           @feature-action="onFeatureAction(feature.id, $event)"
+          @feature-drop="onFeatureDrop"
         />
       </ul>
     </ChevronPanel>

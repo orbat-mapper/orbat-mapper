@@ -2,6 +2,7 @@ import { UnitSymbolOptions } from "@/types/scenarioModels";
 
 export const DragOperations = {
   OrbatDrag: "OrbatDrag",
+  FeatureDrag: "FeatureDrag",
 } as const;
 
 export const UnitActions = {
