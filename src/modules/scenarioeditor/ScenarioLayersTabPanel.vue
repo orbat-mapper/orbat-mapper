@@ -6,7 +6,7 @@ import {
   useScenarioLayerSync,
 } from "@/modules/scenarioeditor/scenarioLayers2";
 import ChevronPanel from "@/components/ChevronPanel.vue";
-import { nextTick, onUnmounted, ref, toRaw, unref } from "vue";
+import { nextTick, onUnmounted, ref } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import {
   FeatureId,
@@ -25,6 +25,7 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { ButtonGroupItem, DropTarget, MenuItemData } from "@/components/types";
 import {
+  DragOperations,
   ScenarioFeatureActions,
   ScenarioLayerAction,
   ScenarioLayerActions,
@@ -37,6 +38,7 @@ import { imageLayerAction } from "@/components/eventKeys";
 import { addMapLayer, getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 import SplitButton from "@/components/SplitButton.vue";
 import ScenarioFeatureListItem from "@/modules/scenarioeditor/ScenarioFeatureListItem.vue";
+import { useDragStore } from "@/stores/dragStore";
 
 const emit = defineEmits(["feature-click"]);
 
@@ -50,6 +52,7 @@ const {
 
 const { mapLayers } = geo;
 uiStore.layersPanelActive = true;
+const dragStore = useDragStore();
 onUnmounted(() => (uiStore.layersPanelActive = false));
 
 const mapLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
@@ -267,13 +270,12 @@ function onFeatureAction(
 
 function onFeatureDrop(data: {
   feature: NScenarioFeature;
-  destinationFeature: NScenarioFeature;
+  destinationFeature: NScenarioFeature | NScenarioLayer;
   target: DropTarget;
 }) {
   const { feature, destinationFeature, target } = data;
   geo.reorderFeature(feature.id, destinationFeature.id, target);
   initializeFromStore(false, false);
-  //moveFeature(feature, target, destinationFeature);
 }
 
 function addNewLayer() {
@@ -306,6 +308,19 @@ function addNewMapLayer(layerType: ScenarioMapLayerType): ScenarioMapLayer {
 
 function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
   geo.updateMapLayer(layer.id, { isHidden: !layer.isHidden });
+}
+
+function onLayerDrop(layer: NScenarioLayer, event: DragEvent) {
+  if (
+    event.dataTransfer?.getData("text") === DragOperations.FeatureDrag &&
+    dragStore.draggedFeature
+  ) {
+    onFeatureDrop({
+      feature: dragStore.draggedFeature,
+      destinationFeature: layer,
+      target: "on",
+    });
+  }
 }
 </script>
 
@@ -384,6 +399,8 @@ function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
       <template #label
         ><span
           @dblclick="activeLayerId = layer.id"
+          @dragenter.prevent="layer._isOpen = true"
+          @drop.prevent="onLayerDrop(layer, $event)"
           :class="[
             layer.isHidden ? 'opacity-50' : '',
             layer.id === activeLayerId ? 'text-red-900' : '',

@@ -155,18 +155,18 @@ export function useGeo(store: NewScenarioStore) {
 
   function reorderFeature(
     featureId: FeatureId,
-    destinationFeatureId: FeatureId,
+    destinationFeatureOrLayerId: FeatureId,
     target: DropTarget,
   ) {
     const feature = state.featureMap[featureId];
-    const destinationFeature = state.featureMap[destinationFeatureId];
-    if (!feature || !destinationFeature) return;
+    const destinationFeature = state.featureMap[destinationFeatureOrLayerId];
+    const destinationLayerId = destinationFeature?._pid ?? destinationFeatureOrLayerId;
+    if (!feature) return;
     const layer = state.layerMap[feature._pid];
-    const destinationLayer = state.layerMap[destinationFeature._pid];
+    const destinationLayer = state.layerMap[destinationLayerId];
     if (!layer || !destinationLayer) return;
 
-    const fromIndex = layer.features.indexOf(featureId);
-    const toIndex = destinationLayer.features.indexOf(destinationFeatureId);
+    const toIndex = destinationLayer.features.indexOf(destinationFeatureOrLayerId);
     if (layer.id === destinationLayer.id) {
       let newIndex = toIndex;
       if (target === "above") newIndex = toIndex;
@@ -176,11 +176,15 @@ export function useGeo(store: NewScenarioStore) {
       update(
         (s) => {
           const fromLayer = s.layerMap[feature._pid];
-          const toLayer = s.layerMap[destinationFeature._pid];
+          const toLayer = s.layerMap[destinationLayerId];
           const f = s.featureMap[featureId];
 
           removeElement(featureId, fromLayer.features);
-          toLayer.features.splice(toIndex, 0, featureId);
+          if (toIndex >= 0) {
+            toLayer.features.splice(toIndex, 0, featureId);
+          } else {
+            toLayer.features.push(featureId);
+          }
           f._pid = toLayer.id;
         },
         { label: "moveFeature", value: featureId },
