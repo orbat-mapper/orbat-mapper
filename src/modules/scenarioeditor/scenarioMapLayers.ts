@@ -58,13 +58,10 @@ export function useScenarioMapLayers(olMap: OLMap) {
   } = useImageLayerTransformInteraction(olMap, {
     updateHandler: handleTransformUpdate,
   });
+
   function initializeFromStore() {
     mapLayersGroup.getLayers().clear();
-    scn.geo.mapLayers.value.forEach((mapLayer) => {
-      if (mapLayer.type === "ImageLayer") addImageLayer(mapLayer);
-      if (mapLayer.type === "TileJSONLayer") addTileJSONLayer(mapLayer);
-      if (mapLayer.type === "KMLLayer") addKMLLayer(mapLayer);
-    });
+    scn.geo.mapLayers.value.forEach((mapLayer) => addLayer(mapLayer.id));
   }
 
   function getOlLayerById(layerId: FeatureId) {
