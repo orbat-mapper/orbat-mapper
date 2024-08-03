@@ -82,31 +82,31 @@ import {
   activeMapKey,
   activeScenarioKey,
 } from "@/components/injects";
-import { injectStrict } from "@/utils";
+import { injectStrict, nanoid } from "@/utils";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { onKeyStroke, useToggle } from "@vueuse/core";
-import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
+import {
+  convertOlFeatureToScenarioFeature,
+  useScenarioLayers,
+} from "@/modules/scenarioeditor/scenarioLayers2";
 import { useEditingInteraction } from "@/composables/geoEditing";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useSelectedItems } from "@/stores/selectedStore";
+import Feature from "ol/Feature";
+import { AnyVectorLayer } from "@/geo/types";
 
 const {
   store: { groupUpdate },
+  geo,
 } = injectStrict(activeScenarioKey);
 
 const mapRef = injectStrict(activeMapKey);
 const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
 const activeLayerIdRef = injectStrict(activeLayerKey);
 
-const {
-  scenarioLayers,
-  getOlLayerById,
-  addOlFeature,
-  updateFeatureGeometryFromOlFeature,
-  deleteFeature,
-} = useScenarioLayers(mapRef.value);
+const { getOlLayerById } = useScenarioLayers(mapRef.value);
 const { selectedFeatureIds, activeFeatureId } = useSelectedItems();
 
 const { addMultiple } = storeToRefs(useMainToolbarStore());
@@ -119,12 +119,48 @@ watch(
   (layerId) => {
     if (layerId) {
       layer.value = getOlLayerById(layerId);
-    } else if (scenarioLayers.value?.length > 0) {
-      layer.value = getOlLayerById(scenarioLayers.value[0].id);
+    } else if (geo.layers.value?.length > 0) {
+      layer.value = getOlLayerById(geo.layers.value[0].id);
     }
   },
   { immediate: true },
 );
+
+function updateFeatureGeometryFromOlFeature(olFeature: Feature) {
+  const t = convertOlFeatureToScenarioFeature(olFeature);
+  const id = olFeature.getId();
+  if (!id) return;
+  const { feature, layer } = geo.getFeatureById(id) || {};
+  if (!(feature && layer)) return;
+  const dataUpdate = {
+    meta: { ...feature.meta, ...t.meta },
+    properties: { ...feature.properties, ...t.properties },
+    geometry: t.geometry,
+  };
+  geo.updateFeature(id, dataUpdate);
+}
+
+function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
+  if (!olFeature.getId()) olFeature.setId(nanoid());
+
+  const scenarioFeature = convertOlFeatureToScenarioFeature(olFeature);
+  const scenarioLayer = geo.getLayerById(olLayer.get("id"))!;
+
+  const { feature: lastFeatureInLayer } = geo.getFeatureById(
+    scenarioLayer.features[scenarioLayer.features.length - 1],
+  );
+
+  const _zIndex = Math.max(
+    scenarioLayer.features.length,
+    (lastFeatureInLayer?.meta._zIndex || 0) + 1,
+  );
+  scenarioFeature.meta.name = `${scenarioFeature.meta.type} ${_zIndex + 1}`;
+  scenarioFeature.meta._zIndex = _zIndex;
+  scenarioFeature._pid = scenarioLayer.id;
+  olFeature.set("_zIndex", _zIndex);
+  scenarioLayer && geo.addFeature(scenarioFeature, scenarioLayer.id);
+  return scenarioFeature;
+}
 
 const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing } =
   useEditingInteraction(mapRef.value, layer.value, {
@@ -168,11 +204,14 @@ watch(translate, (translate) => {
 });
 
 function onFeatureDelete() {
-  groupUpdate(() => {
-    [...selectedFeatureIds.value.values()].forEach((featureId) =>
-      deleteFeature(featureId),
-    );
-  });
+  groupUpdate(
+    () => {
+      [...selectedFeatureIds.value.values()].forEach((featureId) =>
+        geo.deleteFeature(featureId),
+      );
+    },
+    { label: "batchLayer", value: "dummy" },
+  );
 }
 
 onKeyStroke("Escape", (event) => {

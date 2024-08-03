@@ -20,12 +20,8 @@ import {
 } from "@/composables/geoUnitLayers";
 import LayerGroup from "ol/layer/Group";
 import { useScenarioMapLayers } from "@/modules/scenarioeditor/scenarioMapLayers";
-import {
-  useScenarioFeatureSelect,
-  useScenarioLayers,
-} from "@/modules/scenarioeditor/scenarioLayers2";
+import { useScenarioFeatureSelect } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
-import { useGeoLayersUndoRedo } from "@/composables/geoUndoRedo";
 import { useMapHover } from "@/composables/geoHover";
 import { saveMapAsPng, useOlEvent } from "@/composables/openlayersHelpers";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
@@ -38,6 +34,7 @@ import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { useDayNightLayer } from "@/composables/geoDayNight";
 import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
 import { useSearchActions } from "@/composables/searchActions";
+import { useScenarioFeatureLayers } from "@/modules/scenarioeditor/scenarioFeatureLayers";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -90,13 +87,12 @@ const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
 const dayNightLayer = useDayNightLayer();
 olMap.addLayer(dayNightLayer);
 const { initializeFromStore: loadMapLayers } = useScenarioMapLayers(olMap);
+const { initializeFeatureLayersFromStore } = useScenarioFeatureLayers(olMap);
 const { rangeLayer, drawRangeRings } = useRangeRingsLayer();
 // Disable temporarily
 const {} = useScenarioEvents(olMap);
 
 olMap.addLayer(rangeLayer);
-const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(olMap);
-useGeoLayersUndoRedo(olMap);
 const { historyLayer, drawHistory, historyModify, waypointSelect, ctrlClickInteraction } =
   useUnitHistory(olMap, {
     showHistory,
@@ -156,7 +152,8 @@ drawUnits();
 drawHistory();
 
 loadMapLayers();
-loadScenarioLayers();
+initializeFeatureLayersFromStore();
+//loadScenarioLayers();
 
 const extent = unitLayer.getSource()?.getExtent();
 if (extent && !unitLayer.getSource()?.isEmpty())
@@ -188,7 +185,10 @@ watch([settingsStore, symbolSettings], () => {
 watch(
   [() => state.currentTime, doNotFilterLayers, () => state.featureStateCounter],
   () => {
-    loadScenarioLayers(false, !doNotFilterLayers.value);
+    initializeFeatureLayersFromStore({
+      doClearCache: false,
+      filterVisible: !doNotFilterLayers.value,
+    });
   },
 );
 

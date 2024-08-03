@@ -29,6 +29,19 @@ export type ScenarioMapLayerEvent =
     }
   | { type: "move"; id: FeatureId; index: number };
 
+export type ScenarioFeatureLayerEvent =
+  | {
+      type: "addLayer";
+      id: FeatureId;
+      data: NScenarioLayer;
+    }
+  | { type: "removeLayer" | "moveLayer"; id: FeatureId }
+  | { type: "updateLayer"; id: FeatureId; data: ScenarioLayerUpdate }
+  | { type: "deleteFeature"; id: FeatureId }
+  | { type: "updateFeature"; id: FeatureId; data: ScenarioFeatureUpdate }
+  | { type: "addFeature"; id: FeatureId; data: NScenarioFeature }
+  | { type: "moveFeature"; id: FeatureId; fromLayer?: FeatureId; toLayer?: FeatureId };
+
 export type UpdateOptions = {
   undoable?: boolean;
   noEmit?: boolean;
@@ -44,6 +57,7 @@ export interface MoveLayerOptions {
 export function useGeo(store: NewScenarioStore) {
   const { state, update } = store;
   const mapLayerEvent = createEventHook<ScenarioMapLayerEvent>();
+  const featureLayerEvent = createEventHook<ScenarioFeatureLayerEvent>();
 
   const everyVisibleUnit = computed(() => {
     return Object.values(state.unitMap).filter((unit) => unit._state?.location);
@@ -90,6 +104,9 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "addLayer", value: newLayer.id },
     );
+    featureLayerEvent
+      .trigger({ type: "addLayer", id: newLayer.id, data: newLayer })
+      .then();
 
     return state.layerMap[newLayer.id];
   }
@@ -109,7 +126,7 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "addMapLayer", value: newLayer.id },
     );
-    mapLayerEvent.trigger({ type: "add", id: newLayer.id, data: newLayer });
+    mapLayerEvent.trigger({ type: "add", id: newLayer.id, data: newLayer }).then();
     return state.mapLayerMap[newLayer.id];
   }
 
@@ -121,6 +138,7 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "moveLayer", value: layerId },
     );
+    featureLayerEvent.trigger({ type: "moveLayer", id: layerId }).then();
   }
 
   function moveMapLayer(layerId: FeatureId, options: MoveLayerOptions) {
@@ -133,7 +151,7 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "moveMapLayer", value: layerId },
     );
-    mapLayerEvent.trigger({ type: "move", id: layerId, index: toIndex });
+    mapLayerEvent.trigger({ type: "move", id: layerId, index: toIndex }).then();
   }
 
   function moveFeature(featureId: FeatureId, toIndex: number) {
@@ -151,6 +169,7 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "moveFeature", value: featureId },
     );
+    featureLayerEvent.trigger({ type: "moveFeature", id: featureId }).then();
   }
 
   function reorderFeature(
@@ -189,6 +208,14 @@ export function useGeo(store: NewScenarioStore) {
         },
         { label: "moveFeature", value: featureId },
       );
+      featureLayerEvent
+        .trigger({
+          type: "moveFeature",
+          id: featureId,
+          fromLayer: layer.id,
+          toLayer: destinationLayerId,
+        })
+        .then();
     }
   }
 
@@ -220,7 +247,15 @@ export function useGeo(store: NewScenarioStore) {
       }));
   });
 
-  function updateLayer(layerId: FeatureId, data: ScenarioLayerUpdate, undoable = true) {
+  function updateLayer(
+    layerId: FeatureId,
+    data: ScenarioLayerUpdate,
+    options: UpdateOptions = {},
+  ) {
+    const undoable = options.undoable ?? true;
+    const noEmit = options.noEmit ?? false;
+    const emitOnly = options.emitOnly ?? false;
+
     if (undoable) {
       update(
         (s) => {
@@ -233,6 +268,8 @@ export function useGeo(store: NewScenarioStore) {
       const layer = state.layerMap[layerId];
       Object.assign(layer, data);
     }
+    if (noEmit) return;
+    featureLayerEvent.trigger({ type: "updateLayer", id: layerId, data }).then();
   }
 
   function updateMapLayer(
@@ -259,7 +296,8 @@ export function useGeo(store: NewScenarioStore) {
     mapLayerEvent.trigger({ type: "update", id: layerId, data });
   }
 
-  function deleteLayer(layerId: FeatureId) {
+  function deleteLayer(layerId: FeatureId, options: UpdateOptions = {}) {
+    const noEmit = options.noEmit ?? false;
     update(
       (s) => {
         const layer = s.layerMap[layerId];
@@ -270,6 +308,8 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "deleteLayer", value: layerId },
     );
+    if (noEmit) return;
+    featureLayerEvent.trigger({ type: "removeLayer", id: layerId });
   }
 
   function deleteMapLayer(layerId: FeatureId, options: UpdateOptions = {}) {
@@ -287,7 +327,12 @@ export function useGeo(store: NewScenarioStore) {
     mapLayerEvent.trigger({ type: "remove", id: layerId, data: {} });
   }
 
-  function addFeature(data: NScenarioFeature, layerId: FeatureId) {
+  function addFeature(
+    data: NScenarioFeature,
+    layerId: FeatureId,
+    options: UpdateOptions = {},
+  ) {
+    const noEmit = options.noEmit ?? false;
     const newFeature = klona(data);
     if (!newFeature.id) newFeature.id = nanoid();
     newFeature._pid = layerId;
@@ -301,10 +346,16 @@ export function useGeo(store: NewScenarioStore) {
       { label: "addFeature", value: newFeature.id },
     );
     store.state.featureStateCounter++;
+    if (!noEmit) {
+      featureLayerEvent
+        .trigger({ type: "addFeature", id: newFeature.id, data: newFeature })
+        .then();
+    }
     return newFeature.id;
   }
 
-  function deleteFeature(featureId: FeatureId) {
+  function deleteFeature(featureId: FeatureId, options: UpdateOptions = {}) {
+    const noEmit = options.noEmit ?? false;
     const feature = state.featureMap[featureId];
     if (!feature) return;
     update(
@@ -315,6 +366,8 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "deleteFeature", value: featureId },
     );
+    if (noEmit) return;
+    featureLayerEvent.trigger({ type: "deleteFeature", id: featureId }).then();
   }
 
   function duplicateFeature(featureId: FeatureId) {
@@ -328,22 +381,25 @@ export function useGeo(store: NewScenarioStore) {
   function updateFeature(
     featureId: FeatureId,
     data: ScenarioFeatureUpdate,
-    undoable = true,
-    isGeometry = false,
+    options: UpdateOptions = {},
   ) {
+    const undoable = options.undoable ?? true;
+    const noEmit = options.noEmit ?? false;
+    const isGeometry = data.geometry !== undefined;
     if (undoable) {
       update(
         (s) => {
-          const layer = s.featureMap[featureId];
+          const feature = s.featureMap[featureId];
+          if (!feature) return;
           const { properties = {}, geometry, media, style = {}, meta = {} } = data;
-          Object.assign(layer.style, style);
-          Object.assign(layer.meta, meta);
-          layer.properties
-            ? Object.assign(layer.properties, properties)
-            : (layer.properties = properties);
-          Object.assign(layer.geometry, geometry);
+          Object.assign(feature.style, style);
+          Object.assign(feature.meta, meta);
+          feature.properties
+            ? Object.assign(feature.properties, properties)
+            : (feature.properties = properties);
+          Object.assign(feature.geometry, geometry);
 
-          if (media) layer.media = media;
+          if (media) feature.media = media;
         },
         {
           label: isGeometry ? "updateFeatureGeometry" : "updateFeature",
@@ -354,6 +410,8 @@ export function useGeo(store: NewScenarioStore) {
       const layer = state.featureMap[featureId];
       Object.assign(layer, data);
     }
+    if (noEmit) return;
+    featureLayerEvent.trigger({ type: "updateFeature", id: featureId, data }).then();
   }
 
   const itemsInfo = computed<LayerFeatureItem[]>(() => {
@@ -405,6 +463,7 @@ export function useGeo(store: NewScenarioStore) {
     getMapLayerById: (id: FeatureId) => state.mapLayerMap[id],
     getMapLayerIndex: (id: FeatureId) => state.mapLayers.indexOf(id),
     onMapLayerEvent: mapLayerEvent.on,
+    onFeatureLayerEvent: featureLayerEvent.on,
     moveMapLayer,
     reorderFeature,
   };

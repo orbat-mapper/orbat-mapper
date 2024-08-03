@@ -167,10 +167,10 @@ export function useScenarioFeatureActions() {
   const mapRef = useGeoStore().olMap! as OLMap;
   const {
     store: { groupUpdate },
+    geo,
   } = injectStrict(activeScenarioKey);
 
-  const { zoomToFeature, panToFeature, zoomToFeatures, deleteFeature, duplicateFeature } =
-    useScenarioLayers(mapRef);
+  const { zoomToFeature, panToFeature, zoomToFeatures } = useScenarioLayers(mapRef);
 
   function onFeatureAction(
     featureOrFeaturesId: FeatureId | FeatureId[],
@@ -186,9 +186,9 @@ export function useScenarioFeatureActions() {
         (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {
           if (action === "zoom") zoomToFeature(featureId);
           if (action === "pan") panToFeature(featureId);
-          if (action === "delete") deleteFeature(featureId);
+          if (action === "delete") geo.deleteFeature(featureId);
           if (action === "duplicate") {
-            duplicateFeature(featureId);
+            geo.duplicateFeature(featureId);
           }
         });
       },

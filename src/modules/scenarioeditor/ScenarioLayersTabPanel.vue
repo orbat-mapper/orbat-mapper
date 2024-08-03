@@ -86,19 +86,10 @@ const mapLayerButtonItems: ButtonGroupItem[] = [
 const {
   scenarioLayersFeatures,
   scenarioLayersGroup,
-  toggleLayerVisibility,
-  moveLayer,
-  deleteLayer,
   zoomToLayer,
   zoomToFeature,
   zoomToFeatures,
-  deleteFeature,
-  duplicateFeature,
   panToFeature,
-  moveFeature,
-  addLayer,
-  updateLayer,
-  initializeFromStore,
 } = useScenarioLayers(mapRef.value);
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 
@@ -221,14 +212,17 @@ function onLayerAction(
       activeLayer.value = null;
       olCurrentLayer.value = null;
     }*/
-    deleteLayer(layer.id);
+    geo.deleteLayer(layer.id);
   }
   if (
     action === ScenarioLayerActions.MoveUp ||
     action === ScenarioLayerActions.MoveDown
   ) {
     const direction = action === ScenarioLayerActions.MoveUp ? "up" : "down";
-    moveLayer(layer.id, direction);
+    let toIndex = geo.getLayerIndex(layer.id);
+    if (direction === "up") toIndex--;
+    if (direction === "down") toIndex++;
+    geo.moveLayer(layer.id, toIndex);
   }
 }
 
@@ -253,15 +247,24 @@ function onFeatureAction(
         if (!layer || !layer) return;
 
         if (action === "delete") {
-          deleteFeature(feature.id);
+          geo.deleteFeature(feature.id);
+          selectedFeatureIds.value.delete(feature.id);
         }
         if (action === "moveUp" || action === "moveDown") {
           const direction = action === "moveUp" ? "up" : "down";
-          moveFeature(feature, direction);
+          const layer = geo.getLayerById(feature._pid);
+          let toIndex = layer.features.indexOf(feature.id);
+
+          if (direction === "up") toIndex--;
+          if (direction === "down") toIndex++;
+          geo.moveFeature(feature.id, toIndex);
         }
 
         if (action === "duplicate") {
-          duplicateFeature(feature.id);
+          const newId = geo.duplicateFeature(featureId);
+          if (selectedFeatureIds.value.size === 1) {
+            activeFeatureId.value = newId;
+          }
         }
       }),
     { label: "batchLayer", value: "dummy" },
@@ -275,11 +278,10 @@ function onFeatureDrop(data: {
 }) {
   const { feature, destinationFeature, target } = data;
   geo.reorderFeature(feature.id, destinationFeature.id, target);
-  initializeFromStore(false, false);
 }
 
 function addNewLayer() {
-  const addedLayer = addLayer({
+  const addedLayer = geo.addLayer({
     id: nanoid(),
     name: `New layer`,
     features: [],
@@ -291,13 +293,6 @@ function addNewLayer() {
 }
 
 function addNewMapLayer(layerType: ScenarioMapLayerType): ScenarioMapLayer {
-  // const newLayer = geo.addMapLayer({
-  //   id: nanoid(),
-  //   type: "TileJSONLayer",
-  //   name: "Town plans of Sicily, Messina",
-  //   url: "https://maps.georeferencer.com/georeferences/c589e97e-4ee3-572f-9c17-ec267dc1e41d/2019-10-01T08:40:08.006175Z/map.json?key=TT2V1y0PsmpHjZjDoUgL",
-  // });
-
   const newLayer = addMapLayer(layerType, geo);
   uiStore.mapLayersPanelOpen = true;
   nextTick(() => {
@@ -308,6 +303,10 @@ function addNewMapLayer(layerType: ScenarioMapLayerType): ScenarioMapLayer {
 
 function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
   geo.updateMapLayer(layer.id, { isHidden: !layer.isHidden });
+}
+
+function toggleFeatureLayerVisibility(layer: NScenarioLayer) {
+  geo.updateLayer(layer.id, { isHidden: !layer.isHidden });
 }
 
 function onLayerDrop(layer: NScenarioLayer, event: DragEvent) {
@@ -422,7 +421,7 @@ function onLayerDrop(layer: NScenarioLayer, event: DragEvent) {
           </button>
           <button
             type="button"
-            @click="toggleLayerVisibility(layer)"
+            @click="toggleFeatureLayerVisibility(layer)"
             @keydown.stop
             class="ml-1 text-gray-500 opacity-0 hover:text-gray-700 group-focus-within:opacity-100 group-hover:opacity-100"
             title="Toggle layer visibility"
@@ -447,7 +446,7 @@ function onLayerDrop(layer: NScenarioLayer, event: DragEvent) {
         :layer="layer"
         class="-ml-5 -mt-6 border"
         @close="editedLayerId = null"
-        @update="updateLayer(layer.id, $event)"
+        @update="geo.updateLayer(layer.id, $event)"
       />
       <ul class="-mt-6">
         <ScenarioFeatureListItem

@@ -14,15 +14,8 @@ import {
   activeScenarioKey,
 } from "@/components/injects";
 import { computed, ref, watch } from "vue";
-import {
-  getGeometryIcon,
-  useScenarioLayers,
-} from "@/modules/scenarioeditor/scenarioLayers2";
-import {
-  ScenarioFeature,
-  ScenarioFeatureMeta,
-  ScenarioFeatureProperties,
-} from "@/types/scenarioGeoModels";
+import { getGeometryIcon } from "@/modules/scenarioeditor/scenarioLayers2";
+import { ScenarioFeatureMeta } from "@/types/scenarioGeoModels";
 import { useDebounceFn } from "@vueuse/core";
 import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeatureMarkerSettings.vue";
 import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeatureStrokeSettings.vue";
@@ -57,7 +50,7 @@ const {
 } = injectStrict(activeScenarioKey);
 const olMapRef = injectStrict(activeMapKey);
 const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
-const { updateFeatureProperties } = useScenarioLayers(olMapRef.value);
+
 const featureActions = useScenarioFeatureActions();
 const { selectedFeatureIds, clear: clearSelection } = useSelectedItems();
 const uiStore = useUiStore();
@@ -132,7 +125,7 @@ const media = computed(() => {
 });
 
 function updateValue(value: string) {
-  feature.value && updateFeatureProperties(feature.value?.id, { meta: { name: value } });
+  feature.value && geo.updateFeature(feature.value?.id, { meta: { name: value } });
 }
 
 const debouncedResetMap = useDebounceFn(
@@ -146,15 +139,12 @@ function doUpdateFeature(data: ScenarioFeatureUpdate) {
     : feature.value?.id;
   featureSelectInteractionRef.value.setMap(null);
   if (Array.isArray(featureOrFeatures)) {
-    groupUpdate(
-      () => featureOrFeatures.forEach((f) => updateFeatureProperties(f, data)),
-      {
-        label: "batchLayer",
-        value: "nil",
-      },
-    );
+    groupUpdate(() => featureOrFeatures.forEach((f) => geo.updateFeature(f, data)), {
+      label: "batchLayer",
+      value: "nil",
+    });
   } else {
-    featureOrFeatures && updateFeatureProperties(featureOrFeatures, data);
+    featureOrFeatures && geo.updateFeature(featureOrFeatures, data);
   }
   debouncedResetMap();
 }

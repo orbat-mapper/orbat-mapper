@@ -61,8 +61,8 @@ import MeasurementToolbar from "../../components/MeasurementToolbar.vue";
 import type { TScenario } from "@/scenariostore";
 import { useUnitLayer } from "@/composables/geoUnitLayers";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
-import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
 import { useFeatureStyles } from "@/geo/featureStyles";
+import { useScenarioFeatureLayers } from "@/modules/scenarioeditor/scenarioFeatureLayers";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 provide(activeScenarioKey, props.activeScenario);
@@ -104,18 +104,15 @@ function onMapReady(olMap: OLMap) {
   const { center, ...rest } = chapter.view;
   const time = dayjs.utc(chapter.startTime);
   props.activeScenario.time.setCurrentTime(time.valueOf());
-  const { initializeFromStore: loadScenarioLayers } = useScenarioLayers(mapRef.value!, {
-    activeScenario: props.activeScenario,
-    activeScenarioFeatures: scnFeatures,
-  });
-
+  const { initializeFeatureLayersFromStore: loadScenarioLayers } =
+    useScenarioFeatureLayers(mapRef.value!);
   loadScenarioLayers();
   olMap.addLayer(unitLayer);
   drawUnits();
 
   watch(
     () => state.currentTime,
-    () => loadScenarioLayers(false),
+    () => loadScenarioLayers(),
   );
 
   view.animate({

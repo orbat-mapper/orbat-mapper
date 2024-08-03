@@ -72,9 +72,12 @@ export interface ScenarioLayer extends Partial<VisibilityInfo> {
   id: FeatureId;
   name: string;
   description?: string;
+  attributions?: string;
+  externalUrl?: string;
   features: ScenarioFeature[];
-  _isNew?: boolean;
   isHidden?: boolean;
+  opacity?: number;
+  _isNew?: boolean;
   _isOpen?: boolean;
   _hidden?: boolean;
 }
