@@ -3,27 +3,17 @@ import VectorLayer from "ol/layer/Vector";
 import LayerGroup from "ol/layer/Group";
 import { click as clickCondition } from "ol/events/condition";
 import { getCenter, isEmpty } from "ol/extent";
-import { featureCollection, point } from "@turf/helpers";
+import { featureCollection } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
 import { injectStrict, nanoid } from "@/utils";
 import { Collection } from "ol";
-import {
-  getFeatureAndLayerById,
-  isCircle,
-  useOlEvent,
-} from "@/composables/openlayersHelpers";
+import { getFeatureAndLayerById, useOlEvent } from "@/composables/openlayersHelpers";
 import { GeoJSON } from "ol/format";
 import Feature, { FeatureLike } from "ol/Feature";
-import type {
-  FeatureId,
-  ScenarioFeature,
-  ScenarioFeatureMeta,
-} from "@/types/scenarioGeoModels";
+import type { FeatureId, ScenarioFeature } from "@/types/scenarioGeoModels";
 import Circle from "ol/geom/Circle";
-import { fromLonLat, ProjectionLike, toLonLat } from "ol/proj";
-import { getLength } from "ol/sphere";
+import { fromLonLat, ProjectionLike } from "ol/proj";
 import LineString from "ol/geom/LineString";
-import { add as addCoordinate } from "ol/coordinate";
 import type { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
 import { onUnmounted, ref, watch } from "vue";
@@ -214,7 +204,7 @@ export function useScenarioFeatureSelect(
   return { selectedIds, selectedFeatures, selectInteraction };
 }
 
-export function useScenarioLayers(
+export function useFeatureLayerUtils(
   olMap: OLMap,
   {
     activeScenario,
@@ -299,34 +289,6 @@ export function getOrCreateLayerGroup(olMap: OLMap) {
   layersMap.set(olMap, layerGroup);
   olMap.addLayer(layerGroup);
   return layerGroup;
-}
-
-// Fixme: Should only return properties needed to represent the geometry
-export function convertOlFeatureToScenarioFeature(olFeature: Feature): NScenarioFeature {
-  if (isCircle(olFeature)) {
-    const circle = olFeature.getGeometry() as Circle;
-    const { geometry, properties = {} } = olFeature.getProperties();
-    const center = circle.getCenter();
-    const r = addCoordinate([...center], [0, circle.getRadius()]);
-    const meta: ScenarioFeatureMeta = {
-      type: "Circle",
-      radius: getLength(new LineString([center, r])),
-    };
-
-    return {
-      ...point(toLonLat(circle.getCenter()), properties, {
-        id: olFeature.getId() || nanoid(),
-      }),
-      meta,
-      style: {},
-    } as NScenarioFeature;
-  }
-
-  const gj = new GeoJSON({ featureProjection: "EPSG:3857" }).writeFeatureObject(
-    olFeature,
-  );
-
-  return { ...gj, style: {}, meta: { type: gj.geometry.type } } as NScenarioFeature;
 }
 
 export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {

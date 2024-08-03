@@ -2,7 +2,7 @@
 import { nextTick } from "vue";
 import { useSearchActions } from "@/composables/searchActions";
 import { TAB_EVENTS, TAB_LAYERS, TAB_ORBAT, UnitActions } from "@/types/constants";
-import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
+import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
 import { injectStrict } from "@/utils";
 import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
 import { useUiStore } from "@/stores/uiStore";
@@ -25,7 +25,7 @@ const mapRef = injectStrict(activeMapKey);
 const activeScenario = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
 const imageLayerBus = useEventBus(imageLayerAction);
-const l = useScenarioLayers(mapRef.value);
+const l = useFeatureLayerUtils(mapRef.value);
 const playback = usePlaybackStore();
 
 const {

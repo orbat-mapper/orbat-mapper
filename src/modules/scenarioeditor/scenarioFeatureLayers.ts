@@ -1,22 +1,26 @@
 import OLMap from "ol/Map";
 import { injectStrict, nanoid } from "@/utils";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
-import LayerGroup from "ol/layer/Group";
 import { ScenarioFeatureLayerEvent } from "@/scenariostore/geo";
-import { FeatureId, ScenarioImageLayer, ScenarioLayer } from "@/types/scenarioGeoModels";
-import { ScenarioLayerUpdate } from "@/types/internalModels";
-import { fromLonLat, ProjectionLike } from "ol/proj";
+import { FeatureId, ScenarioFeatureMeta, ScenarioLayer } from "@/types/scenarioGeoModels";
+import { NScenarioFeature, ScenarioLayerUpdate } from "@/types/internalModels";
+import { ProjectionLike, toLonLat } from "ol/proj";
 import VectorLayer from "ol/layer/Vector";
 import {
   createScenarioLayerFeatures,
   getOrCreateLayerGroup,
   LayerTypes,
-} from "@/modules/scenarioeditor/scenarioLayers2";
+} from "@/modules/scenarioeditor/featureLayerUtils";
 import { ActionLabel } from "@/scenariostore/newScenarioStore";
 import VectorSource from "ol/source/Vector";
-import { getFeatureAndLayerById } from "@/composables/openlayersHelpers";
-
-const layersMap = new WeakMap<OLMap, LayerGroup>();
+import { getFeatureAndLayerById, isCircle } from "@/composables/openlayersHelpers";
+import Feature from "ol/Feature";
+import Circle from "ol/geom/Circle";
+import { add as addCoordinate } from "ol/coordinate";
+import { getLength } from "ol/sphere";
+import LineString from "ol/geom/LineString";
+import { point } from "@turf/helpers";
+import { GeoJSON } from "ol/format";
 
 const undoActionLabels: ActionLabel[] = [
   "deleteLayer",
@@ -27,6 +31,7 @@ const undoActionLabels: ActionLabel[] = [
   "deleteFeature",
   "addFeature",
   "updateFeatureGeometry",
+  "updateFeature",
 ];
 
 // A composable responsible for keeping scenario feature layers in sync with the OpenLayers map.
@@ -40,7 +45,6 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
   scn.geo.onFeatureLayerEvent(featureLayerEventHandler);
 
   function featureLayerEventHandler(event: ScenarioFeatureLayerEvent) {
-    console.log("FeatureEvent", event);
     switch (event.type) {
       case "removeLayer":
         olDeleteLayer(event.id);
@@ -64,10 +68,9 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
       case "deleteFeature":
         olDeleteFeature(event.id);
         break;
-
       case "addFeature":
         olAddFeature(event.id);
-
+        break;
       default:
         console.warn("Unhandled feature layer event", event);
     }
@@ -235,15 +238,30 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
   };
 }
 
-/*
-function getOrCreateLayerGroup(olMap: OLMap) {
-  if (layersMap.has(olMap)) return layersMap.get(olMap)!;
+// Fixme: Should only return properties needed to represent the geometry
+export function convertOlFeatureToScenarioFeature(olFeature: Feature): NScenarioFeature {
+  if (isCircle(olFeature)) {
+    const circle = olFeature.getGeometry() as Circle;
+    const { geometry, properties = {} } = olFeature.getProperties();
+    const center = circle.getCenter();
+    const r = addCoordinate([...center], [0, circle.getRadius()]);
+    const meta: ScenarioFeatureMeta = {
+      type: "Circle",
+      radius: getLength(new LineString([center, r])),
+    };
 
-  const layerGroup = new LayerGroup({
-    properties: { id: nanoid(), title: "Scenario feature layers" },
-  });
-  layersMap.set(olMap, layerGroup);
-  olMap.addLayer(layerGroup);
-  return layerGroup;
+    return {
+      ...point(toLonLat(circle.getCenter()), properties, {
+        id: olFeature.getId() || nanoid(),
+      }),
+      meta,
+      style: {},
+    } as NScenarioFeature;
+  }
+
+  const gj = new GeoJSON({ featureProjection: "EPSG:3857" }).writeFeatureObject(
+    olFeature,
+  );
+
+  return { ...gj, style: {}, meta: { type: gj.geometry.type } } as NScenarioFeature;
 }
-*/

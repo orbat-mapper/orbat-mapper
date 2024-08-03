@@ -6,7 +6,7 @@ import type { ScenarioFeature } from "@/types/scenarioGeoModels";
 import {
   featureMenuItems,
   getGeometryIcon,
-} from "@/modules/scenarioeditor/scenarioLayers2";
+} from "@/modules/scenarioeditor/featureLayerUtils";
 import { DragOperations, ScenarioFeatureActions } from "@/types/constants";
 import type { DropTarget } from "@/components/types";
 import { useDragStore } from "@/stores/dragStore";

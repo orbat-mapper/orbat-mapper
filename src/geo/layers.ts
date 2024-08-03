@@ -10,7 +10,7 @@ import { AnyVectorLayer } from "./types";
 import View from "ol/View";
 import { nanoid } from "@/utils";
 import { NUnit } from "@/types/internalModels";
-import { LayerTypes } from "@/modules/scenarioeditor/scenarioLayers2";
+import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils";
 
 export function createUnitLayer(): AnyVectorLayer {
   return new VectorLayer({

@@ -54,7 +54,7 @@ import TileSource from "ol/source/Tile";
 import { toLonLat } from "ol/proj";
 import OpacityInput from "./OpacityInput.vue";
 import { getUid } from "ol";
-import { LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
+import { LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import ImageLayer from "ol/layer/Image";
 

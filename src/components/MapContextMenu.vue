@@ -34,7 +34,7 @@ import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core"
 
 import { useUiStore } from "@/stores/uiStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
-import { getGeometryIcon, LayerType } from "@/modules/scenarioeditor/scenarioLayers2";
+import { getGeometryIcon, LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { NScenarioFeature, NUnit } from "@/types/internalModels";

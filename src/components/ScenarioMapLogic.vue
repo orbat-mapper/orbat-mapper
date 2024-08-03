@@ -20,7 +20,7 @@ import {
 } from "@/composables/geoUnitLayers";
 import LayerGroup from "ol/layer/Group";
 import { useScenarioMapLayers } from "@/modules/scenarioeditor/scenarioMapLayers";
-import { useScenarioFeatureSelect } from "@/modules/scenarioeditor/scenarioLayers2";
+import { useScenarioFeatureSelect } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useMapHover } from "@/composables/geoHover";
 import { saveMapAsPng, useOlEvent } from "@/composables/openlayersHelpers";

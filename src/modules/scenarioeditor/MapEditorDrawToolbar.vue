@@ -85,10 +85,7 @@ import {
 import { injectStrict, nanoid } from "@/utils";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { onKeyStroke, useToggle } from "@vueuse/core";
-import {
-  convertOlFeatureToScenarioFeature,
-  useScenarioLayers,
-} from "@/modules/scenarioeditor/scenarioLayers2";
+import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useEditingInteraction } from "@/composables/geoEditing";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { ref, watch } from "vue";
@@ -96,6 +93,7 @@ import { storeToRefs } from "pinia";
 import { useSelectedItems } from "@/stores/selectedStore";
 import Feature from "ol/Feature";
 import { AnyVectorLayer } from "@/geo/types";
+import { convertOlFeatureToScenarioFeature } from "@/modules/scenarioeditor/scenarioFeatureLayers";
 
 const {
   store: { groupUpdate },
@@ -106,7 +104,7 @@ const mapRef = injectStrict(activeMapKey);
 const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
 const activeLayerIdRef = injectStrict(activeLayerKey);
 
-const { getOlLayerById } = useScenarioLayers(mapRef.value);
+const { getOlLayerById } = useFeatureLayerUtils(mapRef.value);
 const { selectedFeatureIds, activeFeatureId } = useSelectedItems();
 
 const { addMultiple } = storeToRefs(useMainToolbarStore());

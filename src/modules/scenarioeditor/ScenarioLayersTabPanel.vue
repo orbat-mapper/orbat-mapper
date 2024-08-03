@@ -2,9 +2,9 @@
 import { injectStrict, nanoid } from "@/utils";
 import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
 import {
-  useScenarioLayers,
+  useFeatureLayerUtils,
   useScenarioLayerSync,
-} from "@/modules/scenarioeditor/scenarioLayers2";
+} from "@/modules/scenarioeditor/featureLayerUtils";
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import { nextTick, onUnmounted, ref } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
@@ -90,7 +90,7 @@ const {
   zoomToFeature,
   zoomToFeatures,
   panToFeature,
-} = useScenarioLayers(mapRef.value);
+} = useFeatureLayerUtils(mapRef.value);
 useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
 
 const { selectedFeatureIds, selectedMapLayerIds, activeMapLayerId, activeFeatureId } =

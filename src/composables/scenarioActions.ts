@@ -13,7 +13,7 @@ import Feature from "ol/Feature";
 import { TScenario } from "@/scenariostore";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import OLMap from "ol/Map";
-import { useScenarioLayers } from "@/modules/scenarioeditor/scenarioLayers2";
+import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -170,7 +170,7 @@ export function useScenarioFeatureActions() {
     geo,
   } = injectStrict(activeScenarioKey);
 
-  const { zoomToFeature, panToFeature, zoomToFeatures } = useScenarioLayers(mapRef);
+  const { zoomToFeature, panToFeature, zoomToFeatures } = useFeatureLayerUtils(mapRef);
 
   function onFeatureAction(
     featureOrFeaturesId: FeatureId | FeatureId[],

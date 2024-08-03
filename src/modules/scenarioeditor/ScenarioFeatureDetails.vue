@@ -14,7 +14,7 @@ import {
   activeScenarioKey,
 } from "@/components/injects";
 import { computed, ref, watch } from "vue";
-import { getGeometryIcon } from "@/modules/scenarioeditor/scenarioLayers2";
+import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import { ScenarioFeatureMeta } from "@/types/scenarioGeoModels";
 import { useDebounceFn } from "@vueuse/core";
 import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeatureMarkerSettings.vue";
