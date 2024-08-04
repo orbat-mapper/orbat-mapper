@@ -8,8 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+August 2024
+
+- Add basic scenario feature transformations (buffer, convex hull, and bounding box).
+
 July 2024
 
+- Reorder and move scenario features between layers using drag and drop.
 - Modify unit coordinates manually in the unit state panel. Activate the edit mode by double-clicking on the coordinates.
 - Select multiple features in the layers panel with shift+click.
 - Add a duplicate scenario feature action.
