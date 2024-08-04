@@ -9,7 +9,8 @@ import { FeatureId } from "@/types/scenarioGeoModels";
 import { tryOnBeforeUnmount } from "@vueuse/core";
 import { Vector as VectorSource } from "ol/source";
 import * as FileSaver from "file-saver";
-
+import { GeoJSON as GeoJSONFormat } from "ol/format";
+import type { GeoJSON } from "geojson";
 /**
  * Unregister open layers event automatically on unmount
  * @param eventKey
@@ -115,4 +116,17 @@ export async function saveMapAsPng(map: OLMap, options: { fileName?: string } = 
     blob && FileSaver.saveAs(blob, fileName);
   });
   map.renderSync();
+}
+
+const gjs = new GeoJSONFormat({
+  featureProjection: "EPSG:3857",
+  dataProjection: "EPSG:4326",
+});
+
+export function drawGeoJsonLayer<T extends GeoJSON>(
+  layer: VectorLayer<any>,
+  geoJson?: T | null,
+) {
+  layer.getSource()?.clear();
+  geoJson && layer.getSource()?.addFeatures(gjs.readFeatures(geoJson));
 }

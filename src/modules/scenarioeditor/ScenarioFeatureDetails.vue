@@ -37,6 +37,7 @@ import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import { inputEventFilter } from "@/components/helpers";
 import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatureDropdownMenu.vue";
 import { ScenarioFeatureActions } from "@/types/constants";
+import FeatureTransformations from "@/modules/scenarioeditor/FeatureTransformations.vue";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -115,7 +116,9 @@ const hasFill = computed(
 const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
 const tabList = computed(() =>
-  uiStore.debugMode ? ["Details", "Styling", "Debug"] : ["Details", "Styling"],
+  uiStore.debugMode
+    ? ["Details", "Styling", "Transform", "Debug"]
+    : ["Details", "Styling", "Transform"],
 );
 
 const isEditing = computed(() => isEditMode.value || isEditMediaMode.value);
@@ -247,6 +250,9 @@ function onAction(action: ScenarioFeatureActions) {
             @update="doUpdateFeature"
           />
         </section>
+      </TabPanel>
+      <TabPanel>
+        <FeatureTransformations :feature="feature!" class="mt-4" />
       </TabPanel>
       <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
         <pre>{{ feature }}</pre>

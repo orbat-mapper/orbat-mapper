@@ -5,6 +5,7 @@ import {
   FeatureId,
   LayerFeatureItem,
   Position,
+  ScenarioFeature,
   ScenarioLayer,
   ScenarioMapLayer,
 } from "@/types/scenarioGeoModels";

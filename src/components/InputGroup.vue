@@ -3,7 +3,7 @@
     <label
       v-if="label || $slots.label"
       :for="inputId"
-      class="block text-sm font-medium text-gray-700"
+      class="block text-sm font-medium text-gray-800"
     >
       <slot name="label">{{ label }}</slot>
     </label>
