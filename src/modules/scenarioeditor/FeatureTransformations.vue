@@ -3,7 +3,7 @@ import { feature as turfFeature } from "@turf/helpers";
 import { buffer as turfBuffer } from "@turf/buffer";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
-import { onUnmounted, ref, watchEffect } from "vue";
+import { onUnmounted, ref, watch, watchEffect } from "vue";
 import { SelectItem } from "@/components/types";
 import InputGroup from "@/components/InputGroup.vue";
 import BaseButton from "@/components/BaseButton.vue";
@@ -24,7 +24,7 @@ import {
 import { storeToRefs } from "pinia";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 
-const props = defineProps<{ feature: NScenarioFeature }>();
+const props = defineProps<{ feature?: NScenarioFeature }>();
 
 const scn = injectStrict(activeScenarioKey);
 
@@ -49,6 +49,7 @@ const { showPreview, transformation, bufferOptions } = storeToRefs(
 );
 
 const currentOp = ref<TransformationOperation | null>(null);
+const toggleRedraw = ref(true);
 const previewLayer = new VectorLayer({
   source: new VectorSource({}),
   style: {
@@ -103,7 +104,17 @@ function doTransformation(
   return null;
 }
 
+watch(
+  () => props.feature?.geometry,
+  () => {
+    toggleRedraw.value = !toggleRedraw.value;
+  },
+  { deep: true },
+);
+
 watchEffect(() => {
+  toggleRedraw.value;
+  if (!props.feature) return;
   if (transformation.value === "buffer") {
     const { radius, units, steps } = bufferOptions.value;
     currentOp.value = {
@@ -126,7 +137,7 @@ watchEffect(() => {
 });
 
 function onSubmit() {
-  if (!currentOp.value) return;
+  if (!currentOp.value || !props.feature) return;
   const t = doTransformation(props.feature, currentOp.value);
   if (t) {
     const scenarioFeature = createScenarioFeatureFromGeoJSON(t, props.feature._pid);
@@ -142,7 +153,7 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <div class="pb-2">
+  <div v-if="feature" class="pb-2">
     <form @submit.prevent="onSubmit" class="space-y-4">
       <SimpleSelect
         label="Transformation"
@@ -168,5 +179,8 @@ onUnmounted(() => {
         <BaseButton type="submit" primary small>Apply</BaseButton>
       </footer>
     </form>
+  </div>
+  <div v-else class="text-center text-sm text-gray-500">
+    Please select a feature to transform
   </div>
 </template>
