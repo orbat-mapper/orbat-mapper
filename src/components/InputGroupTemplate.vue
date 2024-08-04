@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="flex justify-between">
-      <label :for="id" class="block text-sm font-medium leading-6 text-gray-800">
+      <label :for="id" class="block text-sm font-medium text-gray-800">
         <slot name="label">{{ label }}</slot>
       </label>
       <div v-if="hint || $slots.hint">
