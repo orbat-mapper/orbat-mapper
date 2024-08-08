@@ -367,7 +367,12 @@ export function useUnitManipulations(store: NewScenarioStore) {
     return s.sideGroupMap[id] || undefined;
   }
 
-  function addUnit(newUnit: NUnitAdd, parentId: EntityId, index?: number): EntityId {
+  function addUnit(
+    newUnit: NUnitAdd,
+    parentId: EntityId,
+    index?: number,
+    { noUndo = false } = {},
+  ): EntityId {
     const unit = { ...newUnit } as NUnit;
     if (!unit.id) {
       unit.id = nanoid();
@@ -380,16 +385,27 @@ export function useUnitManipulations(store: NewScenarioStore) {
     if (!unit.state || !unit.state.length) {
       unit._state = createInitialState(unit);
     }
-    update((s) => {
-      s.unitMap[unit.id] = unit;
-      let parent = getUnitOrSideGroup(unit._pid!, s);
-      if (!parent) return;
+    if (noUndo) {
+      state.unitMap[unit.id] = unit;
+      let parent = getUnitOrSideGroup(unit._pid!);
+      if (!parent) return unit.id;
       if (index === undefined) {
         parent.subUnits.push(unit.id);
       } else {
         parent.subUnits.splice(index, 0, unit.id);
       }
-    });
+    } else {
+      update((s) => {
+        s.unitMap[unit.id] = unit;
+        let parent = getUnitOrSideGroup(unit._pid!, s);
+        if (!parent) return;
+        if (index === undefined) {
+          parent.subUnits.push(unit.id);
+        } else {
+          parent.subUnits.splice(index, 0, unit.id);
+        }
+      });
+    }
 
     return unit.id;
   }
@@ -774,15 +790,19 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
-  function addEquipment(data: Partial<NEquipmentData>) {
+  function addEquipment(data: Partial<NEquipmentData>, { noUndo = false } = {}) {
     const newEquipment = { id: nanoid(), name: "Equipment", ...klona(data) };
     if (newEquipment.id === undefined) {
       newEquipment.id = nanoid();
     }
     const newId = newEquipment.id;
-    update((s) => {
-      s.equipmentMap[newId] = newEquipment;
-    });
+    if (noUndo) {
+      state.equipmentMap[newId] = newEquipment;
+    } else {
+      update((s) => {
+        s.equipmentMap[newId] = newEquipment;
+      });
+    }
     return newEquipment;
   }
 
@@ -839,16 +859,20 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
-  function addPersonnel(data: Partial<NPersonnelData>) {
+  function addPersonnel(data: Partial<NPersonnelData>, { noUndo = false } = {}) {
     const newPersonnel = { id: nanoid(), name: "Personnel", ...klona(data) };
 
     if (newPersonnel.id === undefined) {
       newPersonnel.id = nanoid();
     }
     const newId = newPersonnel.id;
-    update((s) => {
-      s.personnelMap[newId] = newPersonnel;
-    });
+    if (noUndo) {
+      state.personnelMap[newId] = newPersonnel;
+    } else {
+      update((s) => {
+        s.personnelMap[newId] = newPersonnel;
+      });
+    }
     return newId;
   }
 

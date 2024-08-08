@@ -7,11 +7,10 @@
             Import units exported from
             <a href="https://odin.tradoc.army.mil/DATEWORLD"
               >https://odin.tradoc.army.mil/DATEWORLD</a
-            >
+            >. Only the DRAGON Excel export format is currently supported.
           </p>
           <p>
-            Warning: A large ORBAT will create a lot of units. Use with caution. Only the
-            DRAGON Excel export format is currently supported.
+            Warning: A large ORBAT will create a lot of units and may crash your browser.
           </p>
         </div>
 

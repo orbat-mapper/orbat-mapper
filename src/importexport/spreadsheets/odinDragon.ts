@@ -171,7 +171,7 @@ function convertUnitInfoRowToUnit(row: OdinUnitInfoRow): TestUnit {
 function convertUnitInfoRowToUnit2(row: OdinUnitInfoRow): Unit {
   return {
     id: row.UID.toString(),
-    name: row.NAME,
+    name: `${row.NAME}` || "No name",
     sidc: convertLetterSidc2NumberSidc(row["2525C"]).sidc,
   };
 }
@@ -226,7 +226,7 @@ function convertUnitTemplateRowToUnit(
   }
   return {
     id: row.UID,
-    name: row.NAME,
+    name: `${row.NAME}` || "No name",
     sidc: convertLetterSidc2NumberSidc(row["2525C"]).sidc,
     equipment,
     personnel,

@@ -37,6 +37,7 @@ export function parseApplicationOrbat(text: string): Unit[] | null {
 
 type AddUnitHierarchyOptions = {
   newIds?: boolean;
+  noUndo?: boolean;
 };
 
 export function addUnitHierarchy(
@@ -46,6 +47,7 @@ export function addUnitHierarchy(
   options: AddUnitHierarchyOptions = {},
 ) {
   const newIds = options.newIds ?? true;
+  const noUndo = options.noUndo ?? true;
   const { store, unitActions } = scenario;
   const { side } = unitActions.getUnitHierarchy(parentId);
 
@@ -55,12 +57,14 @@ export function addUnitHierarchy(
       const personnel: NUnitPersonnel[] = [];
       unit.equipment?.forEach(({ name, count }) => {
         const { id } =
-          store.state.equipmentMap[name] || unitActions.addEquipment({ id: name, name });
+          store.state.equipmentMap[name] ||
+          unitActions.addEquipment({ id: name, name }, { noUndo });
         equipment.push({ id, count });
       });
       unit.personnel?.forEach(({ name, count }) => {
         const { id } =
-          store.state.personnelMap[name] || unitActions.addPersonnel({ id: name, name });
+          store.state.personnelMap[name] ||
+          unitActions.addPersonnel({ id: name, name }, { noUndo });
         personnel.push({ id: name, count });
       });
 
@@ -74,7 +78,7 @@ export function addUnitHierarchy(
         state: [],
         rangeRings: [],
       };
-      unitActions.addUnit(newUnit, parentId);
+      unitActions.addUnit(newUnit, parentId, undefined, { noUndo });
       unit.subUnits?.forEach((child) => helper(child, newUnit.id!));
     }
 
