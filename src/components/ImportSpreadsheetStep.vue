@@ -1,76 +1,23 @@
-<template>
-  <div class="">
-    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
-      <div class="flex-auto overflow-auto">
-        <div class="prose prose-sm">
-          <p>
-            Import units exported from
-            <a href="https://odin.tradoc.army.mil/DATEWORLD"
-              >https://odin.tradoc.army.mil/DATEWORLD</a
-            >. Only the DRAGON Excel export format is currently supported.
-          </p>
-          <p>
-            Warning: A large ORBAT will create a lot of units and may crash your browser.
-          </p>
-        </div>
-
-        <section class="space-y-2 px-1 py-2">
-          <div class="grid grid-cols-2 gap-4">
-            <InputCheckbox
-              label="Expand unit templates"
-              description="This will create a lot of units!"
-              v-model="expandTemplates"
-            />
-            <InputCheckbox
-              label="Include equipment"
-              v-model="includeEquipment"
-              :disabled="!expandTemplates"
-            />
-            <InputCheckbox
-              label="Include personnel"
-              v-model="includePersonnel"
-              :disabled="!expandTemplates"
-            />
-          </div>
-          <SymbolCodeSelect
-            label="Select parent unit"
-            :items="rootUnitItems"
-            v-model="parentUnitId"
-          />
-        </section>
-        <section class="h-[45vh]">
-          <OrbatGrid :data="units" :columns="columns" />
-        </section>
-      </div>
-
-      <footer class="flex flex-shrink-0 items-center justify-end space-x-2 pt-4">
-        <BaseButton type="submit" primary small>Import</BaseButton>
-        <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
-      </footer>
-    </form>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { readSpreadsheet } from "@/extlib/xlsx-read-lazy";
 import BaseButton from "@/components/BaseButton.vue";
 import { useNotifications } from "@/composables/notifications";
-import { useImportStore } from "@/stores/importExportStore";
 
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { ImportedFileInfo } from "@/importexport/fileHandling";
 import { detectSpreadsheetDialect } from "@/importexport/spreadsheets/utils";
 import { parseOdinDragon, TestUnit } from "@/importexport/spreadsheets/odinDragon";
-import { computed, ref } from "vue";
+import { computed, h, ref } from "vue";
 import { Unit } from "@/types/scenarioModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { ColumnProperties } from "@/modules/grid/gridTypes";
-import OrbatGrid from "@/modules/grid/OrbatGrid.vue";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { SymbolItem } from "@/types/constants";
 import { addUnitHierarchy } from "@/importexport/convertUtils";
 import InputCheckbox from "@/components/InputCheckbox.vue";
+import { ColumnDef } from "@tanstack/vue-table";
+import DataGrid from "@/modules/grid/DataGrid.vue";
 
 interface Props {
   fileInfo: ImportedFileInfo;
@@ -97,16 +44,23 @@ const rootUnitItems = computed((): SymbolItem[] => {
 
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
-const columns: ColumnProperties[] = [
+const newColumns: ColumnDef<Unit, any>[] = [
   {
-    type: "sidc",
-    width: 65,
-    field: "sidc",
-    label: "Icon",
+    accessorFn: (u) => u.sidc,
+    header: "Icon",
+    id: "sidc",
+    size: 70,
+    cell: ({ row, getValue, cell }) => {
+      return h(MilitarySymbol, {
+        sidc: getValue(),
+        size: 20,
+        "data-sidc": getValue(),
+      });
+    },
   },
-  { type: "text", field: "name", label: "Name" },
-  { type: "text", field: "PARENT NAME", label: "Parent" },
-  { type: "text", field: "TEMPLATE NAME", label: "Template" },
+  { accessorKey: "name", header: "Name", size: 200 },
+  { accessorKey: "PARENT NAME", header: "Parent name", size: 200 },
+  { accessorKey: "TEMPLATE NAME", header: "Template", size: 300 },
 ];
 
 const { send } = useNotifications();
@@ -141,3 +95,52 @@ async function onLoad(e: Event) {
   emit("loaded");
 }
 </script>
+<template>
+  <div class="">
+    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
+      <div class="flex-auto overflow-auto">
+        <div class="prose prose-sm">
+          <p>
+            Import units exported from
+            <a href="https://odin.tradoc.army.mil/DATEWORLD"
+              >https://odin.tradoc.army.mil/DATEWORLD</a
+            >. Only the DRAGON Excel export format is currently supported.
+          </p>
+        </div>
+
+        <section class="space-y-2 px-1 py-2">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <InputCheckbox
+              label="Expand unit templates"
+              description="This will create a lot of units!"
+              v-model="expandTemplates"
+            />
+            <InputCheckbox
+              label="Include equipment"
+              v-model="includeEquipment"
+              :disabled="!expandTemplates"
+            />
+            <InputCheckbox
+              label="Include personnel"
+              v-model="includePersonnel"
+              :disabled="!expandTemplates"
+            />
+          </div>
+          <SymbolCodeSelect
+            label="Select parent unit"
+            :items="rootUnitItems"
+            v-model="parentUnitId"
+          />
+        </section>
+      </div>
+      <section class="h-full">
+        <DataGrid :data="units" :columns="newColumns" :row-height="40" />
+      </section>
+
+      <footer class="flex flex-shrink-0 items-center justify-end space-x-2 pt-4">
+        <BaseButton type="submit" primary small>Import</BaseButton>
+        <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
+      </footer>
+    </form>
+  </div>
+</template>
