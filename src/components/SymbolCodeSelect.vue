@@ -4,6 +4,8 @@
       {{ label }}
     </ListboxLabel>
     <Float
+      portal
+      adaptive-width
       as="div"
       floating-as="template"
       class="relative mt-1"
