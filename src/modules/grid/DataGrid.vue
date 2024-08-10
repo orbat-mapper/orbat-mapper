@@ -144,7 +144,7 @@ function onEsc(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="flex max-h-[50vh] flex-col">
+  <div class="flex flex-col">
     <header
       v-if="showGlobalFilter"
       class="flex flex-none items-center justify-between pb-2"

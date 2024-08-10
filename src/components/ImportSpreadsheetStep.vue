@@ -11,7 +11,6 @@ import { parseOdinDragon, TestUnit } from "@/importexport/spreadsheets/odinDrago
 import { computed, h, ref } from "vue";
 import { Unit } from "@/types/scenarioModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import { ColumnProperties } from "@/modules/grid/gridTypes";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { SymbolItem } from "@/types/constants";
 import { addUnitHierarchy } from "@/importexport/convertUtils";
@@ -98,33 +97,38 @@ async function onLoad(e: Event) {
 <template>
   <div class="">
     <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
-      <div class="flex-auto overflow-auto">
-        <div class="prose prose-sm">
+      <div class="flex-shrink-0 overflow-auto">
+        <div class="prose prose-sm max-w-none">
           <p>
             Import units exported from
-            <a href="https://odin.tradoc.army.mil/DATEWORLD"
+            <a
+              href="https://odin.tradoc.army.mil/DATEWORLD"
+              target="_blank"
+              rel="noopener noreferrer"
               >https://odin.tradoc.army.mil/DATEWORLD</a
             >. Only the DRAGON Excel export format is currently supported.
           </p>
         </div>
 
-        <section class="space-y-2 px-1 py-2">
-          <div class="grid gap-4 sm:grid-cols-2">
+        <section class="mt-4 space-y-4 px-1">
+          <div class="grid gap-4 sm:grid-cols-3">
             <InputCheckbox
               label="Expand unit templates"
               description="This will create a lot of units!"
               v-model="expandTemplates"
             />
-            <InputCheckbox
-              label="Include equipment"
-              v-model="includeEquipment"
-              :disabled="!expandTemplates"
-            />
-            <InputCheckbox
-              label="Include personnel"
-              v-model="includePersonnel"
-              :disabled="!expandTemplates"
-            />
+            <template v-if="expandTemplates">
+              <InputCheckbox
+                label="Include equipment"
+                v-model="includeEquipment"
+                :disabled="!expandTemplates"
+              />
+              <InputCheckbox
+                label="Include personnel"
+                v-model="includePersonnel"
+                :disabled="!expandTemplates"
+              />
+            </template>
           </div>
           <SymbolCodeSelect
             label="Select parent unit"
@@ -133,8 +137,14 @@ async function onLoad(e: Event) {
           />
         </section>
       </div>
-      <section class="h-full">
-        <DataGrid :data="units" :columns="newColumns" :row-height="40" />
+      <section class="mt-2 flex-auto">
+        <DataGrid
+          :data="units"
+          :columns="newColumns"
+          :row-height="40"
+          class="max-h-[40vh]"
+          show-global-filter
+        />
       </section>
 
       <footer class="flex flex-shrink-0 items-center justify-end space-x-2 pt-4">

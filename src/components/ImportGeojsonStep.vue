@@ -241,6 +241,7 @@ function loadAsFeatures() {
             select-all
             show-global-filter
             v-model:selected="selectedFeatures"
+            class="max-h-[40vh]"
           />
           <AlertWarning
             v-if="!isFeatureMode && geoJSONPointFeatures.length === 0"
