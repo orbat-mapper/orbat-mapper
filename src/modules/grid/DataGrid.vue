@@ -13,6 +13,7 @@ import {
   getFilteredRowModel,
   getGroupedRowModel,
   getSortedRowModel,
+  InitialTableState,
   RowSelectionState,
   useVueTable,
 } from "@tanstack/vue-table";
@@ -29,6 +30,7 @@ interface Props {
   selected?: any[];
   selectAll?: boolean;
   showGlobalFilter?: boolean;
+  initialState?: InitialTableState;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -88,6 +90,7 @@ const table = useVueTable({
   get data() {
     return props.data;
   },
+  initialState: props.initialState,
   state: {
     get rowSelection() {
       return rowSelection.value;
@@ -141,6 +144,14 @@ function onEsc(e: KeyboardEvent) {
     query.value = "";
   }
 }
+
+const filteredRowCount = computed(() => {
+  const isGrouped = table.getState().grouping.length > 0;
+  if (isGrouped) {
+    return table.getRowCount() - table.getGroupedRowModel().rows.length;
+  }
+  return table.getRowCount();
+});
 </script>
 
 <template>
@@ -150,7 +161,7 @@ function onEsc(e: KeyboardEvent) {
       class="flex flex-none items-center justify-between pb-2"
     >
       <InputGroup v-model="query" placeholder="Filter rows" @keydown.esc="onEsc" />
-      <span class="text-sm">({{ table.getRowCount() }} / {{ data.length }} )</span>
+      <span class="text-sm">({{ filteredRowCount }} / {{ data.length }})</span>
     </header>
     <section class="relative overflow-auto rounded-lg border shadow" ref="parentRef">
       <table class="grid">

@@ -15,7 +15,7 @@ import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { SymbolItem } from "@/types/constants";
 import { addUnitHierarchy } from "@/importexport/convertUtils";
 import InputCheckbox from "@/components/InputCheckbox.vue";
-import { ColumnDef } from "@tanstack/vue-table";
+import { ColumnDef, InitialTableState } from "@tanstack/vue-table";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 
 interface Props {
@@ -58,9 +58,14 @@ const newColumns: ColumnDef<Unit, any>[] = [
     },
   },
   { accessorKey: "name", header: "Name", size: 200 },
-  { accessorKey: "PARENT NAME", header: "Parent name", size: 200 },
+  { accessorKey: "PARENT NAME", header: "Parent name", size: 260 },
   { accessorKey: "TEMPLATE NAME", header: "Template", size: 300 },
 ];
+
+const initialTableState: InitialTableState = {
+  grouping: ["PARENT NAME"],
+  expanded: true,
+};
 
 const { send } = useNotifications();
 
@@ -144,6 +149,7 @@ async function onLoad(e: Event) {
           :row-height="40"
           class="max-h-[40vh]"
           show-global-filter
+          :initial-state="initialTableState"
         />
       </section>
 
