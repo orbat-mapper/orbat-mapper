@@ -59,8 +59,8 @@ the upper right corner. Click on the export button and select the _DRAGON (Agnos
 ![DATE World](images/date-world-export.png)
 
 ::: warning
-The DATE World force structures are massive and may contain thousands of units. Importing a huge force structure is
-slow and may crash your browser. It is recommended to only export smaller subsets of the force structures.
+The DATE World force structures are massive and may contain thousands of units. Importing huge force structures will affect
+the performance of ORBAT Mapper. It is recommended to import smaller subsets of the force structures.
 :::
 
 After you have downloaded the `.xlsx` file, you can import it into ORBAT Mapper by opening the _Import data_ dialog or
