@@ -14,31 +14,23 @@ import {
   ScenarioMapLayer,
   ScenarioMapLayerType,
 } from "@/types/scenarioGeoModels";
-import {
-  IconClockOutline,
-  IconEye,
-  IconEyeOff,
-  IconStar,
-  IconStarOutline,
-} from "@iconify-prerendered/vue-mdi";
+import { IconEye, IconEyeOff } from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { ButtonGroupItem, DropTarget, MenuItemData } from "@/components/types";
 import {
-  DragOperations,
   ScenarioFeatureActions,
   ScenarioLayerAction,
   ScenarioLayerActions,
   ScenarioMapLayerAction,
 } from "@/types/constants";
-import EditLayerInlineForm from "@/modules/scenarioeditor/EditLayerInlineForm.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import { addMapLayer, getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 import SplitButton from "@/components/SplitButton.vue";
-import ScenarioFeatureListItem from "@/modules/scenarioeditor/ScenarioFeatureListItem.vue";
 import { useDragStore } from "@/stores/dragStore";
+import ScenarioFeatureLayer from "@/modules/scenarioeditor/ScenarioFeatureLayer.vue";
 
 const emit = defineEmits(["feature-click"]);
 
@@ -168,15 +160,6 @@ function onImageLayerDoubleClick(layer: ScenarioMapLayer) {
   bus.emit({ action: "zoom", id: layer.id });
 }
 
-const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
-  { label: "Zoom to", action: ScenarioLayerActions.Zoom },
-  { label: "Set as active", action: ScenarioLayerActions.SetActive },
-  { label: "Edit", action: ScenarioLayerActions.Edit },
-  { label: "Move up", action: ScenarioLayerActions.MoveUp },
-  { label: "Move down", action: ScenarioLayerActions.MoveDown },
-  { label: "Delete", action: ScenarioLayerActions.Delete },
-];
-
 const mapLayersMenuItems: MenuItemData[] = [
   { label: "Add image layer", action: () => addNewMapLayer("ImageLayer") },
   { label: "Add TileJSON layer", action: () => addNewMapLayer("TileJSONLayer") },
@@ -305,21 +288,12 @@ function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
   geo.updateMapLayer(layer.id, { isHidden: !layer.isHidden });
 }
 
-function toggleFeatureLayerVisibility(layer: NScenarioLayer) {
-  geo.updateLayer(layer.id, { isHidden: !layer.isHidden });
-}
-
-function onLayerDrop(layer: NScenarioLayer, event: DragEvent) {
-  if (
-    event.dataTransfer?.getData("text") === DragOperations.FeatureDrag &&
-    dragStore.draggedFeature
-  ) {
-    onFeatureDrop({
-      feature: dragStore.draggedFeature,
-      destinationFeature: layer,
-      target: "on",
-    });
-  }
+function onLayerDrop(layer: NScenarioLayer, feature: NScenarioFeature) {
+  onFeatureDrop({
+    feature,
+    destinationFeature: layer,
+    target: "on",
+  });
 }
 </script>
 
@@ -389,80 +363,21 @@ function onLayerDrop(layer: NScenarioLayer, event: DragEvent) {
         </li>
       </ul>
     </ChevronPanel>
-    <ChevronPanel
+    <ScenarioFeatureLayer
       v-for="{ layer, features } in scenarioLayersFeatures"
       :key="layer.id"
-      :label="layer.name"
-      v-model:open="layer._isOpen"
-    >
-      <template #label
-        ><span
-          @dblclick="activeLayerId = layer.id"
-          @dragenter.prevent="layer._isOpen = true"
-          @drop.prevent="onLayerDrop(layer, $event)"
-          :class="[
-            layer.isHidden ? 'opacity-50' : '',
-            layer.id === activeLayerId ? 'text-red-900' : '',
-          ]"
-          >{{ layer.name }}</span
-        ></template
-      >
-      <template #right>
-        <div class="flex items-center">
-          <button
-            type="button"
-            @click="activeLayerId = layer.id"
-            @keydown.stop
-            class="text-gray-500 opacity-0 hover:text-gray-700 group-focus-within:opacity-100 group-hover:opacity-100"
-            title="Set as active layer"
-          >
-            <IconStar v-if="activeLayerId === layer.id" class="h-5 w-5" />
-            <IconStarOutline class="h-5 w-5" v-else />
-          </button>
-          <button
-            type="button"
-            @click="toggleFeatureLayerVisibility(layer)"
-            @keydown.stop
-            class="ml-1 text-gray-500 opacity-0 hover:text-gray-700 group-focus-within:opacity-100 group-hover:opacity-100"
-            title="Toggle layer visibility"
-          >
-            <IconEyeOff v-if="layer.isHidden" class="h-5 w-5" />
-            <IconEye class="h-5 w-5" v-else />
-          </button>
+      :features="features"
+      :layer="layer"
+      v-model:activeLayerId="activeLayerId"
+      v-model:editedLayerId="editedLayerId"
+      @feature-click="onFeatureClick"
+      @feature-double-click="onFeatureDoubleClick"
+      @feature-action="onFeatureAction"
+      @feature-drop="onFeatureDrop"
+      @layer-action="onLayerAction"
+      @layer-drop="onLayerDrop"
+    />
 
-          <IconClockOutline
-            v-if="layer.visibleFromT || layer.visibleUntilT"
-            class="h-5 w-5 text-gray-400"
-          />
-          <DotsMenu
-            class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-            :items="layerMenuItems"
-            @action="onLayerAction(layer, $event)"
-          />
-        </div>
-      </template>
-      <EditLayerInlineForm
-        v-if="editedLayerId === layer.id"
-        :layer="layer"
-        class="-ml-5 -mt-6 border"
-        @close="editedLayerId = null"
-        @update="geo.updateLayer(layer.id, $event)"
-      />
-      <ul class="-mt-6">
-        <ScenarioFeatureListItem
-          v-for="feature in features"
-          :key="feature.id"
-          :feature="feature"
-          :layer="layer"
-          :selected="selectedFeatureIds.has(feature.id)"
-          :active="activeFeatureId === feature.id"
-          @feature-click="onFeatureClick(feature, layer, $event)"
-          @feature-double-click="onFeatureDoubleClick(feature, layer, $event)"
-          @feature-action="onFeatureAction(feature.id, $event)"
-          @feature-drop="onFeatureDrop"
-        />
-      </ul>
-    </ChevronPanel>
     <footer class="my-8 text-right">
       <SplitButton :items="mapLayerButtonItems" />
     </footer>

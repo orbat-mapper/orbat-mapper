@@ -1,16 +1,26 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { IconClockOutline, IconDrag } from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
-import type { ScenarioFeature } from "@/types/scenarioGeoModels";
 import {
   featureMenuItems,
   getGeometryIcon,
 } from "@/modules/scenarioeditor/featureLayerUtils";
-import { DragOperations, ScenarioFeatureActions } from "@/types/constants";
+import { ScenarioFeatureActions } from "@/types/constants";
 import type { DropTarget } from "@/components/types";
-import { useDragStore } from "@/stores/dragStore";
 import { NScenarioFeature } from "@/types/internalModels";
+import {
+  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import {
+  attachClosestEdge,
+  Edge,
+  extractClosestEdge,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import DropIndicator from "@/components/DropIndicator.vue";
 
 interface Props {
   feature: NScenarioFeature;
@@ -34,77 +44,86 @@ const emit = defineEmits<{
   ): void;
 }>();
 
-const dragStore = useDragStore();
+type ItemState =
+  | { type: "idle" }
+  | { type: "dragging" }
+  | { type: "drag-over"; closestEdge: Edge | null };
 
-const isDragged = ref(false);
-const isDragOver = ref(false);
-const isDragOverAbove = ref(false);
+const idle = { type: "idle" } as const;
 
+const elRef = ref<HTMLElement | null>(null);
+const handleRef = ref<HTMLElement | null>(null);
+const itemState = ref<ItemState>(idle);
 const hidden = computed(() => props.layer.isHidden);
 
-function dragStart(event: DragEvent) {
-  const { dataTransfer } = event;
-  if (dataTransfer) {
-    dataTransfer.setData("text/plain", DragOperations.FeatureDrag);
-    dataTransfer.dropEffect = "move";
-    dragStore.draggedFeature = props.feature;
-    setTimeout(() => (isDragged.value = true), 10);
-  }
-}
+let dndCleanup: CleanupFn = () => {};
 
-function dragEnd(ev: DragEvent) {
-  isDragged.value = false;
-  dragStore.draggedFeature = null;
-}
+onMounted(() => {
+  if (!elRef.value) return;
+  dndCleanup = combine(
+    draggable({
+      element: elRef.value,
+      dragHandle: handleRef.value!,
+      getInitialData: () => ({
+        type: "scenarioFeature",
+        feature: props.feature,
+      }),
+      onDragStart: () => (itemState.value = { type: "dragging" }),
+      onDrop: () => (itemState.value = idle),
+    }),
+    dropTargetForElements({
+      element: elRef.value,
+      onDragEnter: ({ self }) => {
+        const closestEdge = extractClosestEdge(self.data);
+        itemState.value = { type: "drag-over", closestEdge };
+      },
+      onDragLeave: () => (itemState.value = idle),
+      canDrop: ({ source }) => source.data.type === "scenarioFeature",
+      getData: ({ input, element }) => {
+        const data = { id: props.feature.id, type: "scenarioFeature" };
+        return attachClosestEdge(data, {
+          input,
+          element,
+          allowedEdges: ["top", "bottom"],
+        });
+      },
+      onDrag({ self }) {
+        const closestEdge = extractClosestEdge(self.data);
+        itemState.value = { type: "drag-over", closestEdge: closestEdge };
+      },
+      onDrop: (args) => {
+        const closestEdgeOfTarget: Edge | null = extractClosestEdge(args.self.data);
+        const target = closestEdgeOfTarget === "top" ? "above" : "below";
+        itemState.value = idle;
+        emit("feature-drop", {
+          feature: args.source.data.feature as any,
+          destinationFeature: props.feature,
+          target,
+        });
+      },
+    }),
+  );
+});
 
-function onDragOver(event: DragEvent) {
-  event.preventDefault();
-  isDragOver.value = true;
-  // check if the dragged item is above or below the current item
-  const rect = (event.target as HTMLElement).getBoundingClientRect();
-  const y = event.clientY - rect.top;
-  isDragOverAbove.value = y < rect.height / 2;
-}
-
-function onDrop(event: DragEvent) {
-  if (
-    event.dataTransfer?.getData("text") === DragOperations.FeatureDrag &&
-    dragStore.draggedFeature
-  ) {
-    const target = isDragOverAbove.value ? "above" : "below";
-    emit("feature-drop", {
-      feature: dragStore.draggedFeature,
-      destinationFeature: props.feature,
-      target,
-    });
-  }
-  isDragOver.value = false;
-  isDragOverAbove.value = false;
-  isDragged.value = false;
-}
+onUnmounted(() => {
+  dndCleanup();
+});
 </script>
 
 <template>
   <li
+    ref="elRef"
     class="group relative flex select-none items-center justify-between border-l pl-1 hover:bg-amber-50"
     :class="[
-      isDragOver
+      itemState.type === 'drag-over'
         ? 'bg-gray-100'
         : selected
           ? 'border-yellow-500 bg-yellow-100'
           : 'border-transparent',
-      isDragged ? 'opacity-20' : '',
-      isDragOver
-        ? isDragOverAbove
-          ? 'border-t-2 border-t-red-600'
-          : 'border-b-2 border-b-red-600'
-        : '',
+      itemState.type === 'dragging' ? 'opacity-20' : '',
     ]"
-    @dragover.prevent="onDragOver"
-    @dragleave="isDragOver = false"
-    @drop.prevent="onDrop"
   >
-    <span draggable="true" @dragstart="dragStart" @dragend="dragEnd">
+    <span ref="handleRef">
       <IconDrag
         class="h-5 w-5 cursor-move text-gray-400 group-focus-within:opacity-100 group-hover:opacity-100 sm:opacity-0"
       />
@@ -133,5 +152,10 @@ function onDrop(event: DragEvent) {
         class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
       />
     </div>
+    <DropIndicator
+      v-if="itemState.type === 'drag-over' && itemState.closestEdge"
+      :edge="itemState.closestEdge"
+      gap="0px"
+    />
   </li>
 </template>
