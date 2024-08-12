@@ -151,7 +151,7 @@ onUnmounted(() => {
       @close="editedLayerId = null"
       @update="geo.updateLayer(layer.id, $event)"
     />
-    <ul class="-mt-6">
+    <ul class="-ml-5 -mt-6">
       <ScenarioFeatureListItem
         v-for="feature in features"
         :key="feature.id"

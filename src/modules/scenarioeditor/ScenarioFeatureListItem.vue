@@ -78,7 +78,8 @@ onMounted(() => {
         itemState.value = { type: "drag-over", closestEdge };
       },
       onDragLeave: () => (itemState.value = idle),
-      canDrop: ({ source }) => source.data.type === "scenarioFeature",
+      canDrop: ({ source }) =>
+        source.data.type === "scenarioFeature" && source.data.feature !== props.feature,
       getData: ({ input, element }) => {
         const data = { id: props.feature.id, type: "scenarioFeature" };
         return attachClosestEdge(data, {
@@ -113,7 +114,7 @@ onUnmounted(() => {
 <template>
   <li
     ref="elRef"
-    class="group relative flex select-none items-center justify-between border-l pl-1 hover:bg-amber-50"
+    class="group relative flex select-none items-center justify-between border-l hover:bg-amber-50"
     :class="[
       itemState.type === 'drag-over'
         ? 'bg-gray-100'
@@ -125,7 +126,7 @@ onUnmounted(() => {
   >
     <span ref="handleRef">
       <IconDrag
-        class="h-5 w-5 cursor-move text-gray-400 group-focus-within:opacity-100 group-hover:opacity-100 sm:opacity-0"
+        class="h-6 w-6 cursor-move text-gray-400 group-focus-within:opacity-100 group-hover:opacity-100 sm:opacity-0"
       />
     </span>
     <button
