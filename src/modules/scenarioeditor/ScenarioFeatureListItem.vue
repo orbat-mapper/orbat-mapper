@@ -21,6 +21,10 @@ import {
   extractClosestEdge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import DropIndicator from "@/components/DropIndicator.vue";
+import {
+  getScenarioFeatureDragItem,
+  isScenarioFeatureDragItem,
+} from "@/types/draggables";
 
 interface Props {
   feature: NScenarioFeature;
@@ -64,10 +68,7 @@ onMounted(() => {
     draggable({
       element: elRef.value,
       dragHandle: handleRef.value!,
-      getInitialData: () => ({
-        type: "scenarioFeature",
-        feature: props.feature,
-      }),
+      getInitialData: () => getScenarioFeatureDragItem({ feature: props.feature }),
       onDragStart: () => (itemState.value = { type: "dragging" }),
       onDrop: () => (itemState.value = idle),
     }),
@@ -78,8 +79,11 @@ onMounted(() => {
         itemState.value = { type: "drag-over", closestEdge };
       },
       onDragLeave: () => (itemState.value = idle),
-      canDrop: ({ source }) =>
-        source.data.type === "scenarioFeature" && source.data.feature !== props.feature,
+      canDrop: ({ source }) => {
+        const data = source.data;
+        if (!isScenarioFeatureDragItem(data)) return false;
+        return data.feature !== props.feature;
+      },
       getData: ({ input, element }) => {
         const data = { id: props.feature.id, type: "scenarioFeature" };
         return attachClosestEdge(data, {

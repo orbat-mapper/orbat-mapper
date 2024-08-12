@@ -23,6 +23,7 @@ import { FeatureId } from "@/types/scenarioGeoModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { onMounted, onUnmounted, ref } from "vue";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { isScenarioFeatureDragItem } from "@/types/draggables";
 
 const props = defineProps<{ layer: NScenarioLayer; features: NScenarioFeature[] }>();
 const emit = defineEmits<{
@@ -77,7 +78,7 @@ let dndCleanup: () => void = () => {};
 onMounted(() => {
   dndCleanup = dropTargetForElements({
     element: layerRef.value!,
-    canDrop: ({ source }) => source.data.type === "scenarioFeature",
+    canDrop: ({ source }) => isScenarioFeatureDragItem(source.data),
     onDragEnter: () => {
       isDragOver.value = true;
       props.layer._isOpen = true;
@@ -87,7 +88,9 @@ onMounted(() => {
     },
     onDrop: (target) => {
       isDragOver.value = false;
-      emit("layer-drop", props.layer, target.source.data.feature as NScenarioFeature);
+      const data = target.source.data;
+      if (!isScenarioFeatureDragItem(data)) return;
+      emit("layer-drop", props.layer, data.feature);
     },
   });
 });
