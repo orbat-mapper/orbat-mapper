@@ -103,6 +103,7 @@ onUnmounted(() => {
   <li
     ref="elRef"
     class="group relative flex select-none items-center justify-between border-l hover:bg-amber-50"
+    :data-feature-id="feature.id"
     :class="[
       itemState.type === 'drag-over'
         ? 'bg-gray-100'

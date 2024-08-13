@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { injectStrict, nanoid } from "@/utils";
+import { injectStrict, nanoid, triggerPostMoveFlash } from "@/utils";
 import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
 import {
   useFeatureLayerUtils,
@@ -327,11 +327,26 @@ onMounted(() => {
           destinationFeature: destination.data.feature,
           target,
         });
+        // get element by data id
+        const featureId = source.data.feature.id;
+        nextTick(() => {
+          const el = document.querySelector(`[data-feature-id="${featureId}"]`);
+          if (el) {
+            triggerPostMoveFlash(el);
+          }
+        });
       } else if (
         isScenarioFeatureLayerDragItem(destination.data) &&
         isScenarioFeatureDragItem(source.data)
       ) {
         onLayerDrop(destination.data.layer, source.data.feature);
+        const featureId = source.data.feature.id;
+        nextTick(() => {
+          const el = document.querySelector(`[data-feature-id="${featureId}"]`);
+          if (el) {
+            triggerPostMoveFlash(el);
+          }
+        });
       }
     },
   });

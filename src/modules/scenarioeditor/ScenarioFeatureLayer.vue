@@ -161,7 +161,6 @@ onUnmounted(() => {
         @feature-click="emit('feature-click', feature, layer, $event)"
         @feature-double-click="emit('feature-double-click', feature, layer, $event)"
         @feature-action="emit('feature-action', feature.id, $event)"
-        @feature-drop="emit('feature-drop', $event)"
       />
     </ul>
   </ChevronPanel>
