@@ -72,7 +72,9 @@ let dndCleanup: () => void = () => {};
 onMounted(() => {
   dndCleanup = dropTargetForElements({
     element: layerRef.value!,
-    canDrop: ({ source }) => isScenarioFeatureDragItem(source.data),
+    canDrop: ({ source }) =>
+      isScenarioFeatureDragItem(source.data) &&
+      source.data.feature._pid !== props.layer.id,
     onDragEnter: () => {
       isDragOver.value = true;
       props.layer._isOpen = true;
