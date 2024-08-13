@@ -7,7 +7,6 @@ import {
   getGeometryIcon,
 } from "@/modules/scenarioeditor/featureLayerUtils";
 import { ScenarioFeatureActions } from "@/types/constants";
-import type { DropTarget } from "@/components/types";
 import { NScenarioFeature } from "@/types/internalModels";
 import {
   draggable,
@@ -38,14 +37,6 @@ const emit = defineEmits<{
   (e: "feature-click", data: MouseEvent): void;
   (e: "feature-double-click", data: MouseEvent): void;
   (e: "feature-action", data: ScenarioFeatureActions): void;
-  (
-    e: "feature-drop",
-    data: {
-      feature: NScenarioFeature;
-      destinationFeature: NScenarioFeature;
-      target: DropTarget;
-    },
-  ): void;
 }>();
 
 type ItemState =
@@ -85,7 +76,7 @@ onMounted(() => {
         return data.feature !== props.feature;
       },
       getData: ({ input, element }) => {
-        const data = { id: props.feature.id, type: "scenarioFeature" };
+        const data = getScenarioFeatureDragItem({ feature: props.feature });
         return attachClosestEdge(data, {
           input,
           element,
@@ -96,15 +87,8 @@ onMounted(() => {
         const closestEdge = extractClosestEdge(self.data);
         itemState.value = { type: "drag-over", closestEdge: closestEdge };
       },
-      onDrop: (args) => {
-        const closestEdgeOfTarget: Edge | null = extractClosestEdge(args.self.data);
-        const target = closestEdgeOfTarget === "top" ? "above" : "below";
+      onDrop: () => {
         itemState.value = idle;
-        emit("feature-drop", {
-          feature: args.source.data.feature as any,
-          destinationFeature: props.feature,
-          target,
-        });
       },
     }),
   );

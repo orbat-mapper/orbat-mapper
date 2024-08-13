@@ -6,7 +6,7 @@ import {
   useScenarioLayerSync,
 } from "@/modules/scenarioeditor/featureLayerUtils";
 import ChevronPanel from "@/components/ChevronPanel.vue";
-import { nextTick, onUnmounted, ref } from "vue";
+import { nextTick, onMounted, onUnmounted, ref } from "vue";
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import {
   FeatureId,
@@ -31,6 +31,15 @@ import { addMapLayer, getMapLayerIcon } from "@/modules/scenarioeditor/scenarioM
 import SplitButton from "@/components/SplitButton.vue";
 import { useDragStore } from "@/stores/dragStore";
 import ScenarioFeatureLayer from "@/modules/scenarioeditor/ScenarioFeatureLayer.vue";
+import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import {
+  isScenarioFeatureDragItem,
+  isScenarioFeatureLayerDragItem,
+} from "@/types/draggables";
+import {
+  Edge,
+  extractClosestEdge,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 
 const emit = defineEmits(["feature-click"]);
 
@@ -295,6 +304,42 @@ function onLayerDrop(layer: NScenarioLayer, feature: NScenarioFeature) {
     target: "on",
   });
 }
+
+let dndCleanup: () => void = () => {};
+onMounted(() => {
+  dndCleanup = monitorForElements({
+    canMonitor: ({ source }) => isScenarioFeatureDragItem(source.data),
+    onDrop: ({ source, location }) => {
+      const destination = location.current.dropTargets[0];
+      if (!destination) {
+        // if dropped outside any drop targets
+        return;
+      }
+      const closestEdgeOfTarget: Edge | null = extractClosestEdge(destination.data);
+
+      if (
+        isScenarioFeatureDragItem(source.data) &&
+        isScenarioFeatureDragItem(destination.data)
+      ) {
+        const target = closestEdgeOfTarget === "top" ? "above" : "below";
+        onFeatureDrop({
+          feature: source.data.feature,
+          destinationFeature: destination.data.feature,
+          target,
+        });
+      } else if (
+        isScenarioFeatureLayerDragItem(destination.data) &&
+        isScenarioFeatureDragItem(source.data)
+      ) {
+        onLayerDrop(destination.data.layer, source.data.feature);
+      }
+    },
+  });
+});
+
+onUnmounted(() => {
+  dndCleanup();
+});
 </script>
 
 <template>
@@ -373,9 +418,7 @@ function onLayerDrop(layer: NScenarioLayer, feature: NScenarioFeature) {
       @feature-click="onFeatureClick"
       @feature-double-click="onFeatureDoubleClick"
       @feature-action="onFeatureAction"
-      @feature-drop="onFeatureDrop"
       @layer-action="onLayerAction"
-      @layer-drop="onLayerDrop"
     />
 
     <footer class="my-8 text-right">

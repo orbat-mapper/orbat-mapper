@@ -13,7 +13,7 @@ import ScenarioFeatureListItem from "@/modules/scenarioeditor/ScenarioFeatureLis
 import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { type DropTarget, MenuItemData } from "@/components/types";
+import { MenuItemData } from "@/components/types";
 import {
   ScenarioFeatureActions,
   ScenarioLayerAction,
@@ -23,7 +23,10 @@ import { FeatureId } from "@/types/scenarioGeoModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { onMounted, onUnmounted, ref } from "vue";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { isScenarioFeatureDragItem } from "@/types/draggables";
+import {
+  getScenarioFeatureLayerDragItem,
+  isScenarioFeatureDragItem,
+} from "@/types/draggables";
 
 const props = defineProps<{ layer: NScenarioLayer; features: NScenarioFeature[] }>();
 const emit = defineEmits<{
@@ -41,15 +44,6 @@ const emit = defineEmits<{
   ): void;
   (e: "feature-action", featureId: FeatureId, action: ScenarioFeatureActions): void;
   (e: "layer-action", layer: NScenarioLayer, action: ScenarioLayerAction): void;
-  (e: "layer-drop", layer: NScenarioLayer, feature: NScenarioFeature): void;
-  (
-    e: "feature-drop",
-    data: {
-      feature: NScenarioFeature;
-      destinationFeature: NScenarioFeature;
-      target: DropTarget;
-    },
-  ): void;
 }>();
 const { geo } = injectStrict(activeScenarioKey);
 
@@ -86,11 +80,11 @@ onMounted(() => {
     onDragLeave: () => {
       isDragOver.value = false;
     },
-    onDrop: (target) => {
+    getData() {
+      return getScenarioFeatureLayerDragItem({ layer: props.layer });
+    },
+    onDrop: () => {
       isDragOver.value = false;
-      const data = target.source.data;
-      if (!isScenarioFeatureDragItem(data)) return;
-      emit("layer-drop", props.layer, data.feature);
     },
   });
 });
