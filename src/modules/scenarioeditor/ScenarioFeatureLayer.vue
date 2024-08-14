@@ -27,6 +27,7 @@ import {
   getScenarioFeatureLayerDragItem,
   isScenarioFeatureDragItem,
 } from "@/types/draggables";
+import { useTimeoutFn } from "@vueuse/core";
 
 const props = defineProps<{ layer: NScenarioLayer; features: NScenarioFeature[] }>();
 const emit = defineEmits<{
@@ -55,6 +56,18 @@ const editedLayerId = defineModel<FeatureId | null>("editedLayerId");
 const layerRef = ref<HTMLElement | null>(null);
 const isDragOver = ref(false);
 
+const {
+  isPending,
+  start: startOpenTimeout,
+  stop: stopOpenTimeout,
+} = useTimeoutFn(
+  () => {
+    props.layer._isOpen = true;
+  },
+  500,
+  { immediate: false },
+);
+
 const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Zoom to", action: ScenarioLayerActions.Zoom },
   { label: "Set as active", action: ScenarioLayerActions.SetActive },
@@ -77,16 +90,25 @@ onMounted(() => {
       source.data.feature._pid !== props.layer.id,
     onDragEnter: () => {
       isDragOver.value = true;
-      props.layer._isOpen = true;
+    },
+    onDrag: () => {
+      if (!props.layer._isOpen && !isPending.value) {
+        startOpenTimeout();
+      }
     },
     onDragLeave: () => {
       isDragOver.value = false;
+      stopOpenTimeout();
     },
     getData() {
       return getScenarioFeatureLayerDragItem({ layer: props.layer });
     },
     onDrop: () => {
       isDragOver.value = false;
+      stopOpenTimeout();
+      if (!props.layer._isOpen) {
+        props.layer._isOpen = true;
+      }
     },
   });
 });
