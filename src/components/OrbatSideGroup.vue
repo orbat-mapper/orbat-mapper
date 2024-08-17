@@ -1,13 +1,9 @@
 <template>
   <Disclosure v-slot="{ open }" default-open>
-    <div class="group relative mt-4 flex items-center justify-between py-0">
+    <div class="group relative mt-4 flex items-center justify-between py-0" ref="dropRef">
       <DisclosureButton class="flex w-full items-center justify-between text-left">
         <p
           class="text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300"
-          :class="{ 'font-bold underline': isDragOver }"
-          @dragover.prevent="isDragOver = true"
-          @drop.prevent="onDrop"
-          @dragleave="isDragOver = false"
         >
           {{ group.name || "Units" }}
         </p>
@@ -20,6 +16,11 @@
         :items="sideGroupMenuItems"
         @action="onSideGroupAction(group, $event)"
         class="flex-shrink-0 pr-2"
+      />
+      <TreeDropIndicator
+        v-if="instruction"
+        :instruction="instruction"
+        class="z-10 -my-2 -ml-2"
       />
     </div>
     <EditSideGroupForm
@@ -37,7 +38,6 @@
         :location-filter="hasLocationFilter"
         @unit-action="onUnitAction"
         @unit-click="(unit, event) => emit('unit-click', unit, event)"
-        @unit-drop="onUnitDrop"
         :symbol-options="combinedSymbolOptions"
       />
       <div
@@ -51,25 +51,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import DotsMenu from "./DotsMenu.vue";
 import OrbatTree from "./OrbatTree.vue";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
-import {
-  DragOperations,
-  SideAction,
-  SideActions,
-  UnitAction,
-  UnitActions,
-} from "@/types/constants";
-import { useDragStore } from "@/stores/dragStore";
+import { SideAction, SideActions, UnitAction, UnitActions } from "@/types/constants";
 import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./EditSideGroupForm.vue";
 import { NSideGroup, NUnit } from "@/types/internalModels";
 import { DropTarget, MenuItemData } from "./types";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
+
+import { getSideGroupDragItem, isUnitDragItem } from "@/types/draggables";
+import {
+  attachInstruction,
+  extractInstruction,
+  Instruction,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
+import { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
+import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 
 interface Props {
   group: NSideGroup;
@@ -81,15 +84,13 @@ const props = defineProps<Props>();
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitAction): void;
   (e: "unit-click", unit: NUnit, event: MouseEvent): void;
-  (
-    e: "unit-drop",
-    unit: NUnit,
-    destinationUnit: NUnit | NSideGroup,
-    target: DropTarget,
-  ): void;
+
   (e: "sidegroup-action", unit: NSideGroup, action: SideAction): void;
 }
+
 const emit = defineEmits<Emits>();
+const dropRef = ref<HTMLElement | null>(null);
+const instruction = ref<Instruction | null>(null);
 
 const {
   unitActions,
@@ -103,13 +104,56 @@ const combinedSymbolOptions = computed(() => {
   };
 });
 
-const dragStore = useDragStore();
 const isDragOver = ref(false);
 
 const showEditForm = ref(false);
 if (props.group._isNew) {
   showEditForm.value = true;
 }
+
+let dndCleanup: CleanupFn = () => {};
+
+onMounted(() => {
+  if (!dropRef.value) {
+    return;
+  }
+  dndCleanup = dropTargetForElements({
+    element: dropRef.value,
+    getData: ({ input, element }) => {
+      const data = getSideGroupDragItem({ sideGroup: props.group });
+      return attachInstruction(data, {
+        input,
+        element,
+        currentLevel: 0,
+        indentPerLevel: 0,
+        block: ["reparent", "instruction-blocked", "reorder-above", "reorder-below"],
+        mode: "standard",
+      });
+    },
+    canDrop: ({ source }) => {
+      return isUnitDragItem(source.data);
+    },
+    onDragEnter: ({ self }) => {
+      isDragOver.value = true;
+    },
+    onDrag: (args) => {
+      instruction.value = extractInstruction(args.self.data);
+    },
+
+    onDragLeave: () => {
+      isDragOver.value = false;
+      instruction.value = null;
+    },
+    onDrop: (args) => {
+      isDragOver.value = false;
+      instruction.value = null;
+    },
+  });
+});
+
+onUnmounted(() => {
+  dndCleanup();
+});
 
 const sideGroupMenuItems: MenuItemData<SideAction>[] = [
   { label: "Expand", action: SideActions.Expand },
@@ -137,20 +181,5 @@ const addGroupUnit = (group: NSideGroup) => {
 
 const onUnitAction = (unit: NUnit, action: UnitAction) => {
   emit("unit-action", unit, action);
-};
-
-const onUnitDrop = (unit: NUnit, destinationUnit: NUnit, target: DropTarget) =>
-  emit("unit-drop", unit, destinationUnit, target);
-
-const onDrop = (ev: DragEvent) => {
-  if (
-    !(
-      ev.dataTransfer?.getData("text") === DragOperations.OrbatDrag &&
-      dragStore.draggedUnit
-    )
-  )
-    return;
-  isDragOver.value = false;
-  emit("unit-drop", dragStore.draggedUnit as unknown as NUnit, props.group, "on");
 };
 </script>

@@ -50,7 +50,6 @@
             :has-location-filter="hasLocationFilter"
             @unit-action="onUnitAction"
             @unit-click="(unit, event) => emit('unit-click', unit, event)"
-            @unit-drop="onUnitDrop"
             @sidegroup-action="onSideGroupAction"
           >
           </OrbatSideGroup>
@@ -149,10 +148,4 @@ function onSideGroupAction(sideGroup: NSideGroup, action: SideAction) {
 const onUnitAction = (unit: NUnit, action: UnitAction) => {
   emit("unit-action", unit, action);
 };
-
-const onUnitDrop = (
-  unit: NUnit,
-  destinationUnit: NUnit | NSideGroup,
-  target: DropTarget,
-) => emit("unit-drop", unit, destinationUnit, target);
 </script>

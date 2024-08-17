@@ -7,7 +7,6 @@
       :side="side"
       @unit-action="onUnitAction"
       @unit-click="onUnitClick"
-      @unit-drop="onUnitDrop"
       @side-action="onSideAction"
       :hide-filter="hideFilter"
     />
@@ -21,9 +20,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, nextTick, onMounted, onUnmounted } from "vue";
 import OrbatPanelAddSide from "@/components/OrbatPanelAddSide.vue";
-import { injectStrict } from "@/utils";
+import { injectStrict, triggerPostMoveFlash } from "@/utils";
 import { activeParentKey, activeScenarioKey } from "@/components/injects";
 import OrbatSide from "@/components/OrbatSide.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
@@ -41,6 +40,13 @@ import {
   parseApplicationOrbat,
 } from "@/importexport/convertUtils";
 import { EntityId } from "@/types/base";
+import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { isSideGroupDragItem, isUnitDragItem } from "@/types/draggables";
+
+import {
+  extractInstruction,
+  Instruction,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 
 interface Props {
   hideFilter?: boolean;
@@ -63,6 +69,52 @@ const sides = computed(() => {
 
 const { onUnitAction } = useUnitActions();
 const { selectedUnitIds, activeUnitId } = useSelectedItems();
+
+let dndCleanup: () => void = () => {};
+onMounted(() => {
+  dndCleanup = monitorForElements({
+    canMonitor: ({ source }) => isUnitDragItem(source.data),
+    onDrop: ({ source, location }) => {
+      const destination = location.current.dropTargets[0];
+      if (!destination) {
+        return;
+      }
+      const instruction = extractInstruction(destination.data);
+      const sourceData = source.data;
+      const destinationData = destination.data;
+      if (instruction && isUnitDragItem(sourceData)) {
+        const target = mapInstructionToTarget(instruction);
+        if (isUnitDragItem(destinationData)) {
+          onUnitDrop(sourceData.unit, destinationData.unit, target);
+          destinationData.unit._isOpen = true;
+        } else if (isSideGroupDragItem(destinationData)) {
+          onUnitDrop(sourceData.unit, destinationData.sideGroup, target);
+        }
+        const unitId = sourceData.unit.id;
+        nextTick(() => {
+          const el = document.getElementById(`ou-${unitId}`);
+          if (el) {
+            triggerPostMoveFlash(el);
+          }
+        });
+      }
+    },
+  });
+});
+
+onUnmounted(() => {
+  dndCleanup();
+});
+
+function mapInstructionToTarget(instruction: Instruction): DropTarget {
+  if (instruction.type === "make-child") {
+    return "on";
+  } else if (instruction.type === "reorder-above") {
+    return "above";
+  } else {
+    return "below";
+  }
+}
 
 function onUnitDrop(
   unit: NUnit,

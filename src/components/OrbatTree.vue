@@ -3,7 +3,6 @@ import { computed, ref, watch } from "vue";
 import OrbatTreeItem from "./OrbatTreeItem.vue";
 import { type UnitAction } from "@/types/constants";
 import { EntityId } from "@/types/base";
-import type { DropTarget } from "./types";
 import type { NUnit } from "@/types/internalModels";
 import { filterUnits } from "@/composables/filtering";
 import { UnitSymbolOptions } from "@/types/scenarioModels";
@@ -23,9 +22,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitAction): void;
+
   (e: "unit-click", unit: NUnit, event: MouseEvent): void;
-  (e: "unit-drop", unit: NUnit, destinationUnit: NUnit, target: DropTarget): void;
 }
+
 const emit = defineEmits<Emits>();
 
 const queryHasChanged = ref(true);
@@ -38,9 +38,6 @@ watch(
 const onUnitAction = (unit: NUnit, action: UnitAction) => {
   emit("unit-action", unit, action);
 };
-
-const onUnitDrop = (unit: NUnit, destinationUnit: NUnit, target: DropTarget) =>
-  emit("unit-drop", unit, destinationUnit, target);
 
 const filteredUnits = computed(() => {
   const resetOpen = queryHasChanged.value;
@@ -59,12 +56,12 @@ const filteredUnits = computed(() => {
   <ul class="">
     <OrbatTreeItem
       :item="orbatItem"
-      v-for="orbatItem in filteredUnits"
+      v-for="(orbatItem, index) in filteredUnits"
       :key="orbatItem.unit.id"
       @unit-action="onUnitAction"
       @unit-click="(unit, event) => emit('unit-click', unit, event)"
-      @unit-drop="onUnitDrop"
       :symbolOptions="symbolOptions"
+      :last-in-group="index === filteredUnits.length - 1"
     />
   </ul>
 </template>

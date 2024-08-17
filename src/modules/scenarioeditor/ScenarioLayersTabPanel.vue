@@ -29,7 +29,6 @@ import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import { addMapLayer, getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 import SplitButton from "@/components/SplitButton.vue";
-import { useDragStore } from "@/stores/dragStore";
 import ScenarioFeatureLayer from "@/modules/scenarioeditor/ScenarioFeatureLayer.vue";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import {
@@ -53,7 +52,6 @@ const {
 
 const { mapLayers } = geo;
 uiStore.layersPanelActive = true;
-const dragStore = useDragStore();
 onUnmounted(() => (uiStore.layersPanelActive = false));
 
 const mapLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
