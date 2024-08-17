@@ -28,17 +28,12 @@ const onMapReady = (olMap: OLMap) => {
   mapRef.value = olMap;
   geoStore.olMap = olMap;
 };
-
-function handleDrop(e: DragEvent) {
-  mapLogicComponent.value?.handleDrop(e);
-}
 </script>
 <template>
   <div class="relative bg-white dark:bg-gray-900">
     <MapContextMenu :map-ref="mapRef" v-slot="{ onContextMenu }">
       <MapContainer
         @ready="onMapReady"
-        @drop="handleDrop"
         @dragover.prevent
         :base-layer-name="mapSettings.baseLayerName"
         @contextmenu="onContextMenu"

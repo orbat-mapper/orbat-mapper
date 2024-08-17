@@ -67,7 +67,7 @@ const { unitLayer, drawUnits } = useUnitLayer();
 
 const { onScenarioAction } = useSearchActions();
 
-const { onDrop } = useDrop(mapRef, unitLayer);
+useDrop(mapRef, unitLayer);
 
 const olMap = props.olMap;
 mapRef.value = olMap;
@@ -198,7 +198,7 @@ onUnmounted(() => {
 });
 
 function handleDrop(e: DragEvent) {
-  onDrop(e);
+  // onDrop(e);
 }
 
 onScenarioAction(async (e) => {

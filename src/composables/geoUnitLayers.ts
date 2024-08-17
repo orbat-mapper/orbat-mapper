@@ -1,13 +1,10 @@
 import { createUnitFeatureAt, createUnitLayer } from "@/geo/layers";
 // import Fade from "ol-ext/featureanimation/Fade";
-import { ref, Ref, unref, watch } from "vue";
+import { onMounted, onUnmounted, ref, Ref, unref, watch } from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
-import { useDragStore } from "@/stores/dragStore";
-import { DragOperations } from "@/types/constants";
 import { fromLonLat, toLonLat } from "ol/proj";
 import { Geometry, Point } from "ol/geom";
-import VectorSource from "ol/source/Vector";
 import { DragBox, Modify, Select } from "ol/interaction";
 import { ModifyEvent } from "ol/interaction/Modify";
 import { Feature } from "ol";
@@ -32,6 +29,9 @@ import { TScenario } from "@/scenariostore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { FeatureLike } from "ol/Feature";
 import BaseEvent from "ol/events/Event";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { isUnitDragItem } from "@/types/draggables";
+import { Coordinate } from "ol/coordinate";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const {
@@ -90,34 +90,42 @@ export function useDrop(
   mapRef: MaybeRef<OLMap | null | undefined>,
   unitLayer: MaybeRef<VectorLayer<any>>,
 ) {
-  const dragStore = useDragStore();
   const { geo } = injectStrict(activeScenarioKey);
+  let dndCleanup = () => {};
 
-  const onDrop = (ev: DragEvent) => {
-    const olMap = unref(mapRef);
+  onMounted(() => {
+    const olMap = unref(mapRef)!;
+    dndCleanup = dropTargetForElements({
+      element: olMap.getTargetElement(),
+      canDrop: ({ source }) => isUnitDragItem(source.data),
+      getData: ({ input }) => {
+        return { position: toLonLat(olMap.getEventCoordinate(input as MouseEvent)) };
+      },
+      onDragEnter: () => {
+        console.log("drag enter");
+      },
+      onDragLeave: () => {
+        console.log("drag leave");
+      },
+      onDrop: ({ source, self }) => {
+        const dragData = source.data;
+        if (!isUnitDragItem(dragData)) return;
+        const dropPosition = self.data.position as Coordinate;
+        const unitSource = unref(unitLayer).getSource();
+        const existingUnitFeature = unitSource?.getFeatureById(dragData.unit.id);
 
-    ev.preventDefault();
-    if (
-      olMap &&
-      ev.dataTransfer &&
-      ev.dataTransfer.getData("text") === DragOperations.OrbatDrag &&
-      dragStore.draggedUnit
-    ) {
-      const dropPosition = toLonLat(olMap.getEventCoordinate(ev));
-      const unitSource = unref(unitLayer).getSource();
-      const existingUnitFeature = unitSource?.getFeatureById(dragStore.draggedUnit.id);
+        geo.addUnitPosition(dragData.unit.id, dropPosition);
 
-      geo.addUnitPosition(dragStore.draggedUnit.id, dropPosition);
+        if (existingUnitFeature) {
+          existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
+        } else {
+          unitSource?.addFeature(createUnitFeatureAt(dropPosition, dragData.unit));
+        }
+      },
+    });
+  });
 
-      if (existingUnitFeature) {
-        existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
-      } else {
-        unitSource?.addFeature(createUnitFeatureAt(dropPosition, dragStore.draggedUnit));
-      }
-    }
-  };
-
-  return { onDrop };
+  onUnmounted(() => dndCleanup());
 }
 
 export function useMoveInteraction(
