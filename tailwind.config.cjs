@@ -8,7 +8,7 @@ module.exports = {
     "src/**/*.html",
     "src/**/*.vue",
     "src/**/*.{js, ts}",
-    "**/*.html",
+    "*.html",
     "./docs/**/*.{md,html,js,vue}",
   ],
   theme: {

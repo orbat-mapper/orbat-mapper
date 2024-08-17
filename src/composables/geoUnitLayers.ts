@@ -101,12 +101,6 @@ export function useDrop(
       getData: ({ input }) => {
         return { position: toLonLat(olMap.getEventCoordinate(input as MouseEvent)) };
       },
-      onDragEnter: () => {
-        console.log("drag enter");
-      },
-      onDragLeave: () => {
-        console.log("drag leave");
-      },
       onDrop: ({ source, self }) => {
         const dragData = source.data;
         if (!isUnitDragItem(dragData)) return;
