@@ -13,7 +13,7 @@ import {
 import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import { storeToRefs } from "pinia";
 import {
-  useDrop,
+  useMapDrop,
   useMoveInteraction,
   useUnitLayer,
   useUnitSelectInteraction,
@@ -67,7 +67,7 @@ const { unitLayer, drawUnits } = useUnitLayer();
 
 const { onScenarioAction } = useSearchActions();
 
-useDrop(mapRef, unitLayer);
+const { isDragging, formattedPosition } = useMapDrop(mapRef, unitLayer);
 
 const olMap = props.olMap;
 mapRef.value = olMap;
@@ -197,17 +197,22 @@ onUnmounted(() => {
   clearUnitStyleCache();
 });
 
-function handleDrop(e: DragEvent) {
-  // onDrop(e);
-}
-
 onScenarioAction(async (e) => {
   if (e.action === "exportToImage") {
     await saveMapAsPng(olMap);
   }
 });
-
-defineExpose({ handleDrop });
 </script>
 
-<template></template>
+<template>
+  <div
+    v-if="isDragging"
+    class="pointer-events-none absolute inset-0 border-4 border-dashed border-blue-700"
+  >
+    <p
+      class="absolute bottom-1 left-2 rounded bg-white px-1 text-base tabular-nums tracking-tighter text-gray-800"
+    >
+      {{ formattedPosition }}
+    </p>
+  </div>
+</template>

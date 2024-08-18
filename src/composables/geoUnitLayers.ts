@@ -1,6 +1,6 @@
 import { createUnitFeatureAt, createUnitLayer } from "@/geo/layers";
 // import Fade from "ol-ext/featureanimation/Fade";
-import { onMounted, onUnmounted, ref, Ref, unref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, Ref, unref, watch } from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import { fromLonLat, toLonLat } from "ol/proj";
@@ -32,6 +32,10 @@ import BaseEvent from "ol/events/Event";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { isUnitDragItem } from "@/types/draggables";
 import { Coordinate } from "ol/coordinate";
+import type { Position } from "geojson";
+import { getCoordinateFormatFunction } from "@/utils/geoConvert";
+import { useMeasurementsStore } from "@/stores/geoStore";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const {
@@ -86,12 +90,21 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
   return { unitLayer, drawUnits, animateUnits };
 }
 
-export function useDrop(
+export function useMapDrop(
   mapRef: MaybeRef<OLMap | null | undefined>,
   unitLayer: MaybeRef<VectorLayer<any>>,
 ) {
   const { geo } = injectStrict(activeScenarioKey);
+  const mStore = useMapSettingsStore();
   let dndCleanup = () => {};
+  const isDragging = ref(false);
+  const dropPosition = ref<Position>([0, 0]);
+
+  const formattedPosition = computed(() =>
+    isDragging.value
+      ? getCoordinateFormatFunction(mStore.coordinateFormat)(dropPosition.value)
+      : "",
+  );
 
   onMounted(() => {
     const olMap = unref(mapRef)!;
@@ -101,8 +114,18 @@ export function useDrop(
       getData: ({ input }) => {
         return { position: toLonLat(olMap.getEventCoordinate(input as MouseEvent)) };
       },
+      onDragEnter: () => {
+        isDragging.value = true;
+      },
+      onDragLeave: () => {
+        isDragging.value = false;
+      },
+      onDrag: ({ self }) => {
+        dropPosition.value = self.data.position as Coordinate;
+      },
       onDrop: ({ source, self }) => {
         const dragData = source.data;
+        isDragging.value = false;
         if (!isUnitDragItem(dragData)) return;
         const dropPosition = self.data.position as Coordinate;
         const unitSource = unref(unitLayer).getSource();
@@ -120,6 +143,8 @@ export function useDrop(
   });
 
   onUnmounted(() => dndCleanup());
+
+  return { isDragging, dropPosition, formattedPosition };
 }
 
 export function useMoveInteraction(
