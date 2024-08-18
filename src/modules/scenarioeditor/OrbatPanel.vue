@@ -86,7 +86,9 @@ onMounted(() => {
         const target = mapInstructionToTarget(instruction);
         if (isUnitDragItem(destinationData)) {
           onUnitDrop(sourceData.unit, destinationData.unit, target);
-          destinationData.unit._isOpen = true;
+          if (instruction.type === "make-child") {
+            destinationData.unit._isOpen = true;
+          }
         } else if (isSideGroupDragItem(destinationData)) {
           onUnitDrop(sourceData.unit, destinationData.sideGroup, target);
         }
