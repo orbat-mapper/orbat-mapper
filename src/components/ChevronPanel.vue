@@ -36,7 +36,7 @@ const panelId = nanoid(5);
     <h3 class="group -my-3 flex w-full items-center justify-between py-3">
       <button
         type="button"
-        class="group flex min-w-0 flex-auto items-center text-sm text-gray-400"
+        class="group relative flex min-w-0 flex-auto items-center text-sm text-gray-400"
         @click="toggleOpen()"
         :aria-expanded="isOpen"
         :aria-controls="panelId"

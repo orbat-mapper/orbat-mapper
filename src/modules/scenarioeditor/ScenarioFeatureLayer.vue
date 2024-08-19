@@ -28,6 +28,7 @@ import {
   isScenarioFeatureDragItem,
 } from "@/types/draggables";
 import { useTimeoutFn } from "@vueuse/core";
+import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 
 const props = defineProps<{ layer: NScenarioLayer; features: NScenarioFeature[] }>();
 const emit = defineEmits<{
@@ -120,16 +121,21 @@ onUnmounted(() => {
 <template>
   <ChevronPanel :label="layer.name" v-model:open="layer._isOpen">
     <template #label
-      ><span
+      ><div
         ref="layerRef"
         @dblclick="activeLayerId = layer.id"
         :class="[
           layer.isHidden ? 'opacity-50' : '',
           layer.id === activeLayerId ? 'text-red-900' : '',
-          isDragOver ? 'bg-yellow-400' : '',
         ]"
-        >{{ layer.name }}</span
       >
+        {{ layer.name }}
+      </div>
+      <TreeDropIndicator
+        v-if="isDragOver"
+        class="-m-2"
+        :instruction="{ type: 'make-child', currentLevel: 0, indentPerLevel: 0 }"
+      />
     </template>
     <template #right>
       <div class="flex items-center">
