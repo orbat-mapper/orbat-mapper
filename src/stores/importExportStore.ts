@@ -5,11 +5,13 @@ import { useLocalStorage } from "@vueuse/core";
 export interface ImportState {
   inputSource: "file" | "string";
   format: ImportFormat;
+  keepOpen: boolean;
 }
 export const useImportStore = defineStore("import", {
-  state: (): ImportState => ({
+  state: () => ({
     inputSource: "file",
     format: "milx",
+    keepOpen: useLocalStorage("importKeepOpen", false),
   }),
 });
 
