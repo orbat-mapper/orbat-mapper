@@ -188,9 +188,11 @@ export function useGeo(store: NewScenarioStore) {
 
     const toIndex = destinationLayer.features.indexOf(destinationFeatureOrLayerId);
     if (layer.id === destinationLayer.id) {
+      const fromIndex = layer.features.indexOf(featureId);
       let newIndex = toIndex;
       if (target === "above") newIndex = toIndex;
       else if (target === "below") newIndex = toIndex + 1;
+      if (fromIndex < toIndex) newIndex--;
       moveFeature(featureId, newIndex);
     } else {
       update(
@@ -200,8 +202,11 @@ export function useGeo(store: NewScenarioStore) {
           const f = s.featureMap[featureId];
 
           removeElement(featureId, fromLayer.features);
+          let newIndex = toIndex;
+          if (target === "above") newIndex = toIndex;
+          else if (target === "below") newIndex = toIndex + 1;
           if (toIndex >= 0) {
-            toLayer.features.splice(toIndex, 0, featureId);
+            toLayer.features.splice(newIndex, 0, featureId);
           } else {
             toLayer.features.push(featureId);
           }

@@ -306,7 +306,9 @@ function onLayerDrop(layer: NScenarioLayer, feature: NScenarioFeature) {
 let dndCleanup: () => void = () => {};
 onMounted(() => {
   dndCleanup = monitorForElements({
-    canMonitor: ({ source }) => isScenarioFeatureDragItem(source.data),
+    canMonitor: ({ source }) =>
+      isScenarioFeatureDragItem(source.data) ||
+      isScenarioFeatureLayerDragItem(source.data),
     onDrop: ({ source, location }) => {
       const destination = location.current.dropTargets[0];
       if (!destination) {
@@ -345,6 +347,22 @@ onMounted(() => {
             triggerPostMoveFlash(el);
           }
         });
+      } else if (
+        isScenarioFeatureLayerDragItem(source.data) &&
+        isScenarioFeatureLayerDragItem(destination.data)
+      ) {
+        let fromIndex = geo.getLayerIndex(source.data.layer.id);
+        let toIndex = geo.getLayerIndex(destination.data.layer.id);
+        if (closestEdgeOfTarget === "bottom") toIndex++;
+        if (fromIndex < toIndex) toIndex--;
+        geo.moveLayer(source.data.layer.id, toIndex);
+        const layerId = source.data.layer.id;
+        nextTick(() => {
+          const el = document.querySelector(`[data-layer-id="${layerId}"]`);
+          if (el) {
+            triggerPostMoveFlash(el);
+          }
+        });
       }
     },
   });
@@ -360,6 +378,7 @@ onUnmounted(() => {
     <ChevronPanel
       label="Map layers"
       class="mb-4"
+      header-class="ml-4"
       v-model:open="uiStore.mapLayersPanelOpen"
     >
       <template #right>

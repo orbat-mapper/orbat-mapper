@@ -3,6 +3,7 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import {
   IconClockOutline,
+  IconDrag,
   IconEye,
   IconEyeOff,
   IconStar,
@@ -22,13 +23,25 @@ import {
 import { FeatureId } from "@/types/scenarioGeoModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { onMounted, onUnmounted, ref } from "vue";
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import {
+  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import {
   getScenarioFeatureLayerDragItem,
+  idle,
   isScenarioFeatureDragItem,
+  isScenarioFeatureLayerDragItem,
+  ItemState,
 } from "@/types/draggables";
 import { useTimeoutFn } from "@vueuse/core";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import {
+  attachClosestEdge,
+  extractClosestEdge,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import DropIndicator from "@/components/DropIndicator.vue";
 
 const props = defineProps<{ layer: NScenarioLayer; features: NScenarioFeature[] }>();
 const emit = defineEmits<{
@@ -56,6 +69,11 @@ const editedLayerId = defineModel<FeatureId | null>("editedLayerId");
 
 const layerRef = ref<HTMLElement | null>(null);
 const isDragOver = ref(false);
+const isDragging = ref(false);
+
+const elRef = ref<HTMLElement | null>(null);
+const handleRef = ref<HTMLElement | null>(null);
+const itemState = ref<ItemState>(idle);
 
 const {
   isPending,
@@ -84,34 +102,70 @@ function toggleFeatureLayerVisibility(layer: NScenarioLayer) {
 
 let dndCleanup: () => void = () => {};
 onMounted(() => {
-  dndCleanup = dropTargetForElements({
-    element: layerRef.value!,
-    canDrop: ({ source }) =>
-      isScenarioFeatureDragItem(source.data) &&
-      source.data.feature._pid !== props.layer.id,
-    onDragEnter: () => {
-      isDragOver.value = true;
-    },
-    onDrag: () => {
-      if (!props.layer._isOpen && !isPending.value) {
-        startOpenTimeout();
-      }
-    },
-    onDragLeave: () => {
-      isDragOver.value = false;
-      stopOpenTimeout();
-    },
-    getData() {
-      return getScenarioFeatureLayerDragItem({ layer: props.layer });
-    },
-    onDrop: () => {
-      isDragOver.value = false;
-      stopOpenTimeout();
-      if (!props.layer._isOpen) {
-        props.layer._isOpen = true;
-      }
-    },
-  });
+  dndCleanup = combine(
+    draggable({
+      element: elRef.value!,
+      dragHandle: handleRef.value!,
+      getInitialData: () => getScenarioFeatureLayerDragItem({ layer: props.layer }),
+
+      onDragStart: () => {
+        isDragging.value = true;
+      },
+      onDrop: () => {
+        isDragging.value = false;
+      },
+    }),
+    dropTargetForElements({
+      element: elRef.value!,
+      canDrop: ({ source }) =>
+        (isScenarioFeatureDragItem(source.data) &&
+          source.data.feature._pid !== props.layer.id) ||
+        (isScenarioFeatureLayerDragItem(source.data) &&
+          source.data.layer.id !== props.layer.id),
+      onDragEnter: ({ self }) => {
+        isDragOver.value = true;
+        const closestEdge = extractClosestEdge(self.data);
+        itemState.value = { type: "drag-over", closestEdge };
+      },
+      onDrag: ({ self }) => {
+        if (
+          isScenarioFeatureDragItem(self.data) &&
+          !props.layer._isOpen &&
+          !isPending.value
+        ) {
+          startOpenTimeout();
+        }
+        if (isScenarioFeatureLayerDragItem(self.data)) {
+          const closestEdge = extractClosestEdge(self.data);
+          itemState.value = { type: "drag-over", closestEdge: closestEdge };
+        }
+      },
+      onDragLeave: () => {
+        isDragOver.value = false;
+        stopOpenTimeout();
+        itemState.value = idle;
+      },
+      getData({ input, element, source }) {
+        const data = getScenarioFeatureLayerDragItem({ layer: props.layer });
+        if (isScenarioFeatureLayerDragItem(source.data)) {
+          return attachClosestEdge(data, {
+            input,
+            element,
+            allowedEdges: ["top", "bottom"],
+          });
+        }
+        return data;
+      },
+      onDrop: ({ source }) => {
+        itemState.value = idle;
+        isDragOver.value = false;
+        stopOpenTimeout();
+        if (isScenarioFeatureDragItem(source.data) && !props.layer._isOpen) {
+          props.layer._isOpen = true;
+        }
+      },
+    }),
+  );
 });
 
 onUnmounted(() => {
@@ -119,7 +173,19 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <ChevronPanel :label="layer.name" v-model:open="layer._isOpen">
+  <ChevronPanel
+    :label="layer.name"
+    v-model:open="layer._isOpen"
+    :header-class="['-ml-2', isDragging ? 'opacity-20' : '']"
+    v-model:header-ref="elRef"
+    :data-layer-id="layer.id"
+  >
+    <template #left
+      ><span ref="handleRef">
+        <IconDrag
+          class="h-6 w-6 cursor-move text-gray-400 group-focus-within:opacity-100 group-hover:opacity-100 sm:opacity-0"
+        /> </span
+    ></template>
     <template #label
       ><div
         ref="layerRef"
@@ -131,8 +197,14 @@ onUnmounted(() => {
       >
         {{ layer.name }}
       </div>
+      <DropIndicator
+        v-if="itemState.type === 'drag-over' && itemState.closestEdge"
+        :edge="itemState.closestEdge"
+        gap="0px"
+        class="-m-2"
+      />
       <TreeDropIndicator
-        v-if="isDragOver"
+        v-else-if="isDragOver"
         class="-m-2"
         :instruction="{ type: 'make-child', currentLevel: 0, indentPerLevel: 0 }"
       />

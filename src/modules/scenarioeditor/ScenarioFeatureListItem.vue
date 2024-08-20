@@ -22,7 +22,9 @@ import {
 import DropIndicator from "@/components/DropIndicator.vue";
 import {
   getScenarioFeatureDragItem,
+  idle,
   isScenarioFeatureDragItem,
+  ItemState,
 } from "@/types/draggables";
 
 interface Props {
@@ -38,13 +40,6 @@ const emit = defineEmits<{
   (e: "feature-double-click", data: MouseEvent): void;
   (e: "feature-action", data: ScenarioFeatureActions): void;
 }>();
-
-type ItemState =
-  | { type: "idle" }
-  | { type: "dragging" }
-  | { type: "drag-over"; closestEdge: Edge | null };
-
-const idle = { type: "idle" } as const;
 
 const elRef = ref<HTMLElement | null>(null);
 const handleRef = ref<HTMLElement | null>(null);

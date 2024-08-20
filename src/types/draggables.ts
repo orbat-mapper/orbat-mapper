@@ -4,6 +4,14 @@ import {
   NSideGroup,
   NUnit,
 } from "@/types/internalModels";
+import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+
+export type ItemState =
+  | { type: "idle" }
+  | { type: "dragging" }
+  | { type: "drag-over"; closestEdge: Edge | null };
+
+export const idle = { type: "idle" } as const;
 
 const privateKey = Symbol("scenarioFeature");
 const _scnFeatureLayerKey = Symbol("scenarioFeatureLayer");
