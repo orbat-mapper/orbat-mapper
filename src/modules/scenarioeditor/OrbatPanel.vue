@@ -73,7 +73,8 @@ const { selectedUnitIds, activeUnitId } = useSelectedItems();
 let dndCleanup: () => void = () => {};
 onMounted(() => {
   dndCleanup = monitorForElements({
-    canMonitor: ({ source }) => isUnitDragItem(source.data),
+    canMonitor: ({ source }) =>
+      isUnitDragItem(source.data) || isSideGroupDragItem(source.data),
     onDrop: ({ source, location }) => {
       const destination = location.current.dropTargets[0];
       if (!destination) {
@@ -82,7 +83,8 @@ onMounted(() => {
       const instruction = extractInstruction(destination.data);
       const sourceData = source.data;
       const destinationData = destination.data;
-      if (instruction && isUnitDragItem(sourceData)) {
+      if (!instruction) return;
+      if (isUnitDragItem(sourceData)) {
         const target = mapInstructionToTarget(instruction);
         if (isUnitDragItem(destinationData)) {
           onUnitDrop(sourceData.unit, destinationData.unit, target);
@@ -99,6 +101,21 @@ onMounted(() => {
             triggerPostMoveFlash(el);
           }
         });
+      } else if (isSideGroupDragItem(sourceData)) {
+        const target = mapInstructionToTarget(instruction);
+        if (isSideGroupDragItem(destinationData)) {
+          unitActions.changeSideGroupParent(
+            sourceData.sideGroup.id,
+            destinationData.sideGroup.id,
+            target,
+          );
+          nextTick(() => {
+            const el = document.getElementById(`osg-${sourceData.sideGroup.id}`);
+            if (el) {
+              triggerPostMoveFlash(el);
+            }
+          });
+        }
       }
     },
   });

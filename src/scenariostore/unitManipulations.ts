@@ -175,6 +175,44 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function changeSideGroupParent(
+    sideGroupId: EntityId,
+    targetSideGroupId: EntityId,
+    target: DropTarget,
+  ) {
+    update((s) => {
+      const sideGroup = s.sideGroupMap[sideGroupId];
+      const targetSideGroup = s.sideGroupMap[targetSideGroupId];
+      if (!sideGroup || !targetSideGroup) return;
+      const originalParent = s.sideMap[sideGroup._pid];
+      const targetParent = s.sideMap[targetSideGroup._pid];
+      if (!originalParent || !targetParent) return;
+      removeElement(sideGroupId, originalParent.groups);
+      // insert item
+      if (target === "on") {
+        targetParent.groups.push(sideGroupId);
+      } else {
+        const idx = targetParent.groups.findIndex((id) => id === targetSideGroupId);
+        if (idx < 0) return;
+        if (target === "below") targetParent.groups.splice(idx + 1, 0, sideGroupId);
+        if (target === "above") targetParent.groups.splice(idx, 0, sideGroupId);
+      }
+      sideGroup._pid = targetParent.id;
+      // update SID if necessary
+      const side = s.sideMap[targetParent.id];
+      if (!side) return;
+      walkSide(
+        side.id,
+        (unit) => {
+          if (unit.sidc[SID_INDEX] !== side.standardIdentity) {
+            unit.sidc = setCharAt(unit.sidc, SID_INDEX, side.standardIdentity);
+          }
+        },
+        s,
+      );
+    });
+  }
+
   function reorderSide(sideIdId: EntityId, direction: "up" | "down") {
     update((s) => {
       moveElement(s.sides, sideIdId, direction === "up" ? -1 : 1);
@@ -957,6 +995,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     convertStateEntryToInitialLocation,
     reorderSide,
     reorderSideGroup,
+    changeSideGroupParent,
     getCombinedSymbolOptions,
     expandUnitWithSymbolOptions,
     addRangeRing,
