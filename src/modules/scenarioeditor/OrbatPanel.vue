@@ -1,6 +1,6 @@
 <template>
-  <div class="space-y-4">
-    <slot name="header"></slot>
+  <div class="space-y-4 pt-2">
+    <slot name="header" />
     <OrbatSide
       v-for="side in sides"
       :key="side.id"
@@ -41,7 +41,7 @@ import {
 } from "@/importexport/convertUtils";
 import { EntityId } from "@/types/base";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { isSideGroupDragItem, isUnitDragItem } from "@/types/draggables";
+import { isSideDragItem, isSideGroupDragItem, isUnitDragItem } from "@/types/draggables";
 
 import {
   extractInstruction,
@@ -74,7 +74,9 @@ let dndCleanup: () => void = () => {};
 onMounted(() => {
   dndCleanup = monitorForElements({
     canMonitor: ({ source }) =>
-      isUnitDragItem(source.data) || isSideGroupDragItem(source.data),
+      isUnitDragItem(source.data) ||
+      isSideGroupDragItem(source.data) ||
+      isSideDragItem(source.data),
     onDrop: ({ source, location }) => {
       const destination = location.current.dropTargets[0];
       if (!destination) {
@@ -84,7 +86,7 @@ onMounted(() => {
       const sourceData = source.data;
       const destinationData = destination.data;
       if (!instruction) return;
-      if (isUnitDragItem(sourceData)) {
+      if (isUnitDragItem(sourceData) && !isSideDragItem(destinationData)) {
         const target = mapInstructionToTarget(instruction);
         if (isUnitDragItem(destinationData)) {
           onUnitDrop(sourceData.unit, destinationData.unit, target);
@@ -111,6 +113,30 @@ onMounted(() => {
           );
           nextTick(() => {
             const el = document.getElementById(`osg-${sourceData.sideGroup.id}`);
+            if (el) {
+              triggerPostMoveFlash(el);
+            }
+          });
+        } else if (isSideDragItem(destinationData)) {
+          unitActions.changeSideGroupParent(
+            sourceData.sideGroup.id,
+            destinationData.side.id,
+            "on",
+          );
+          nextTick(() => {
+            const el = document.getElementById(`os-${sourceData.sideGroup.id}`);
+            if (el) {
+              triggerPostMoveFlash(el);
+            }
+          });
+        }
+      } else if (isSideDragItem(sourceData)) {
+        const target = mapInstructionToTarget(instruction);
+        if (isSideDragItem(destinationData)) {
+          console.log("reorder side");
+          unitActions.moveSide(sourceData.side.id, destinationData.side.id, target);
+          nextTick(() => {
+            const el = document.getElementById(`os-${sourceData.side.id}`);
             if (el) {
               triggerPostMoveFlash(el);
             }

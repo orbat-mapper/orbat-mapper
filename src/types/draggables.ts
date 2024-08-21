@@ -1,6 +1,7 @@
 import {
   NScenarioFeature,
   NScenarioLayer,
+  NSide,
   NSideGroup,
   NUnit,
 } from "@/types/internalModels";
@@ -16,6 +17,7 @@ export const idle = { type: "idle" } as const;
 const privateKey = Symbol("scenarioFeature");
 const _scnFeatureLayerKey = Symbol("scenarioFeatureLayer");
 const privateUnitDragKey = Symbol("unit");
+const privateSideKey = Symbol("side");
 const privateSideGroupKey = Symbol("sideGroup");
 
 export type ScenarioFeatureDragItem = {
@@ -37,6 +39,26 @@ export type SideGroupDragItem = {
   [privateSideGroupKey]: boolean;
   sideGroup: NSideGroup;
 };
+
+export type SideDragItem = {
+  [privateSideKey]: boolean;
+  side: NSide;
+};
+
+export function getSideDragItem(
+  data: Omit<SideDragItem, typeof privateSideKey>,
+): SideDragItem {
+  return {
+    [privateSideKey]: true,
+    ...data,
+  };
+}
+
+export function isSideDragItem(
+  data: Record<string | symbol, unknown>,
+): data is SideDragItem {
+  return Boolean(data[privateSideKey]);
+}
 
 export function getSideGroupDragItem(
   data: Omit<SideGroupDragItem, typeof privateSideGroupKey>,

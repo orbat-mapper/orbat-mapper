@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 August 2024
 
-- Reorder and move side groups in the ORBAT panel using drag and drop.
+- Reorder and move side and groups in the ORBAT panel using drag and drop.
 - Add basic scenario feature transformations (buffer, convex hull, and bounding box).
 
 July 2024
