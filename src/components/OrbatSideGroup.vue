@@ -1,17 +1,23 @@
 <template>
-  <Disclosure v-slot="{ open }" default-open>
-    <div class="group relative mt-4 flex items-center justify-between py-0" ref="dropRef">
-      <DisclosureButton class="flex w-full items-center justify-between text-left">
-        <p
+  <div>
+    <header
+      class="group relative mt-4 flex items-center justify-between py-0"
+      ref="dropRef"
+    >
+      <button
+        @click="toggleOpen"
+        class="flex w-full items-center justify-between text-left"
+      >
+        <span
           class="text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300"
         >
           {{ group.name || "Units" }}
-        </p>
+        </span>
         <ChevronUpIcon
-          :class="open ? 'rotate-180 transform' : ''"
+          :class="isOpen ? 'rotate-180 transform' : ''"
           class="h-6 w-6 text-gray-400 group-hover:text-gray-900"
         />
-      </DisclosureButton>
+      </button>
       <DotsMenu
         :items="sideGroupMenuItems"
         @action="onSideGroupAction(group, $event)"
@@ -22,14 +28,14 @@
         :instruction="instruction"
         class="z-10 -my-2 -ml-2"
       />
-    </div>
+    </header>
     <EditSideGroupForm
       v-if="showEditForm"
       @close="showEditForm = false"
       :side-group-id="group.id"
       class="-ml-6"
     />
-    <DisclosurePanel>
+    <section v-if="isOpen">
       <OrbatTree
         :units="group.subUnits"
         :unit-map="state.unitMap"
@@ -46,16 +52,14 @@
       >
         <SecondaryButton @click="addGroupUnit(group)">Add root unit </SecondaryButton>
       </div>
-    </DisclosurePanel>
-  </Disclosure>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import DotsMenu from "./DotsMenu.vue";
 import OrbatTree from "./OrbatTree.vue";
-import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
 import { SideAction, SideActions, UnitAction, UnitActions } from "@/types/constants";
 import SecondaryButton from "./SecondaryButton.vue";
@@ -73,6 +77,8 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
+import { IconDrag } from "@iconify-prerendered/vue-mdi";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 interface Props {
   group: NSideGroup;
@@ -105,6 +111,7 @@ const combinedSymbolOptions = computed(() => {
 });
 
 const isDragOver = ref(false);
+const isOpen = ref(true);
 
 const showEditForm = ref(false);
 if (props.group._isNew) {
@@ -154,6 +161,10 @@ onMounted(() => {
 onUnmounted(() => {
   dndCleanup();
 });
+
+const toggleOpen = () => {
+  isOpen.value = !isOpen.value;
+};
 
 const sideGroupMenuItems: MenuItemData<SideAction>[] = [
   { label: "Expand", action: SideActions.Expand },
