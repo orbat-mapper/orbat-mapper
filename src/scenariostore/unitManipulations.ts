@@ -31,7 +31,7 @@ import type {
 } from "@/types/scenarioModels";
 import { Position, RangeRing, RangeRingGroup } from "@/types/scenarioGeoModels";
 import { getNextEchelonBelow } from "@/symbology/helpers";
-import { invalidateUnitStyle } from "@/geo/unitStyles";
+import { clearUnitStyleCache, invalidateUnitStyle } from "@/geo/unitStyles";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -122,6 +122,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
             if (unit.sidc[SID_INDEX] !== sid) {
               unit.sidc = setCharAt(unit.sidc, SID_INDEX, sid);
             }
+            invalidateUnitStyle(unit.id);
           },
           s,
         );
@@ -162,6 +163,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       let sideGroup = s.sideGroupMap[sideGroupId];
       if (sideGroup) Object.assign(sideGroup, { ...sideGroupData, _isNew: false });
     });
+    clearUnitStyleCache();
   }
 
   function reorderSideGroup(sideGroupId: EntityId, direction: "up" | "down") {
@@ -209,6 +211,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
           if (unit.sidc[SID_INDEX] !== side.standardIdentity) {
             unit.sidc = setCharAt(unit.sidc, SID_INDEX, side.standardIdentity);
           }
+          unit._sid = side.id;
+          invalidateUnitStyle(unit.id);
         },
         s,
       );
@@ -341,6 +345,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
             if (u.sidc[SID_INDEX] !== side.standardIdentity) {
               u.sidc = setCharAt(u.sidc, SID_INDEX, side.standardIdentity);
             }
+            u._sid = side.id;
+            u._gid = sideGroup.id;
+            invalidateUnitStyle(u.id);
           },
           { state: s, includeParent: true },
         );
