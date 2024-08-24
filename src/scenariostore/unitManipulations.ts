@@ -549,6 +549,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
         unit.subUnits.forEach((e) => helper(e, newUnit.id));
       }
     });
+
+    return newUnit.id;
   }
 
   function reorderUnit(unitId: EntityId, direction: "up" | "down") {

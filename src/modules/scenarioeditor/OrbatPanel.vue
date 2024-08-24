@@ -57,7 +57,7 @@ const activeScenario = injectStrict(activeScenarioKey);
 const { store, unitActions, io } = activeScenario;
 const activeParentId = injectStrict(activeParentKey);
 
-const { state } = store;
+const { state, groupUpdate } = store;
 const { changeUnitParent, addSide } = unitActions;
 const bus = useEventBus(orbatUnitClick);
 
@@ -86,15 +86,22 @@ onMounted(() => {
       const sourceData = source.data;
       const destinationData = destination.data;
       if (!instruction) return;
+      const isDuplicateAction =
+        location.initial.input.ctrlKey || location.initial.input.metaKey;
       if (isUnitDragItem(sourceData) && !isSideDragItem(destinationData)) {
         const target = mapInstructionToTarget(instruction);
         if (isUnitDragItem(destinationData)) {
-          onUnitDrop(sourceData.unit, destinationData.unit, target);
+          onUnitDrop(sourceData.unit, destinationData.unit, target, isDuplicateAction);
           if (instruction.type === "make-child") {
             destinationData.unit._isOpen = true;
           }
         } else if (isSideGroupDragItem(destinationData)) {
-          onUnitDrop(sourceData.unit, destinationData.sideGroup, target);
+          onUnitDrop(
+            sourceData.unit,
+            destinationData.sideGroup,
+            target,
+            isDuplicateAction,
+          );
         }
         const unitId = sourceData.unit.id;
         nextTick(() => {
@@ -164,8 +171,15 @@ function onUnitDrop(
   unit: NUnit,
   destinationUnit: NUnit | NSideGroup,
   target: DropTarget,
+  isDuplicateAction = false,
 ) {
-  changeUnitParent(unit.id, destinationUnit.id, target);
+  groupUpdate(() => {
+    let unitId = unit.id;
+    if (isDuplicateAction) {
+      unitId = unitActions.cloneUnit(unit.id, { includeSubordinates: true })!;
+    }
+    changeUnitParent(unitId, destinationUnit.id, target);
+  });
 }
 
 function onUnitClick(unit: NUnit, event: MouseEvent) {
