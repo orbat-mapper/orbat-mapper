@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 August 2024
 
+- Move a feature by dragging it from the layers panel to the desired location.
 - Reorder and move side and groups in the ORBAT panel using drag and drop.
 - Add basic scenario feature transformations (buffer, convex hull, and bounding box).
 

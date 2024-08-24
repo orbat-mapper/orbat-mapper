@@ -30,12 +30,13 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { FeatureLike } from "ol/Feature";
 import BaseEvent from "ol/events/Event";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { isUnitDragItem } from "@/types/draggables";
+import { isScenarioFeatureDragItem, isUnitDragItem } from "@/types/draggables";
 import { Coordinate } from "ol/coordinate";
 import type { Position } from "geojson";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
-import { useMeasurementsStore } from "@/stores/geoStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { centroid, coordEach } from "@turf/turf";
+import { klona } from "klona";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const {
@@ -110,7 +111,8 @@ export function useMapDrop(
     const olMap = unref(mapRef)!;
     dndCleanup = dropTargetForElements({
       element: olMap.getTargetElement(),
-      canDrop: ({ source }) => isUnitDragItem(source.data),
+      canDrop: ({ source }) =>
+        isUnitDragItem(source.data) || isScenarioFeatureDragItem(source.data),
       getData: ({ input }) => {
         return { position: toLonLat(olMap.getEventCoordinate(input as MouseEvent)) };
       },
@@ -126,17 +128,30 @@ export function useMapDrop(
       onDrop: ({ source, self }) => {
         const dragData = source.data;
         isDragging.value = false;
-        if (!isUnitDragItem(dragData)) return;
+
         const dropPosition = self.data.position as Coordinate;
-        const unitSource = unref(unitLayer).getSource();
-        const existingUnitFeature = unitSource?.getFeatureById(dragData.unit.id);
+        if (isUnitDragItem(dragData)) {
+          const unitSource = unref(unitLayer).getSource();
+          const existingUnitFeature = unitSource?.getFeatureById(dragData.unit.id);
 
-        geo.addUnitPosition(dragData.unit.id, dropPosition);
+          geo.addUnitPosition(dragData.unit.id, dropPosition);
 
-        if (existingUnitFeature) {
-          existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
-        } else {
-          unitSource?.addFeature(createUnitFeatureAt(dropPosition, dragData.unit));
+          if (existingUnitFeature) {
+            existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
+          } else {
+            unitSource?.addFeature(createUnitFeatureAt(dropPosition, dragData.unit));
+          }
+        } else if (isScenarioFeatureDragItem(dragData)) {
+          const geometryCenter = centroid(dragData.feature).geometry.coordinates;
+          const to = dropPosition;
+          const diff = [to[0] - geometryCenter[0], to[1] - geometryCenter[1]];
+          const geometryCopy = klona(dragData.feature.geometry);
+          coordEach(geometryCopy, (coord) => {
+            coord[0] += diff[0];
+            coord[1] += diff[1];
+          });
+
+          geo.updateFeature(dragData.feature.id, { geometry: geometryCopy });
         }
       },
     });

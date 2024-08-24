@@ -418,6 +418,9 @@ export function useGeo(store: NewScenarioStore) {
     }
     if (noEmit) return;
     featureLayerEvent.trigger({ type: "updateFeature", id: featureId, data }).then();
+    if (isGeometry) {
+      featureLayerEvent.trigger({ type: "moveFeature", id: featureId }).then();
+    }
   }
 
   const itemsInfo = computed<LayerFeatureItem[]>(() => {
