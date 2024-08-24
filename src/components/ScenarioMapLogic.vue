@@ -185,7 +185,6 @@ watch([settingsStore, symbolSettings], () => {
 watch(
   [() => state.currentTime, doNotFilterLayers, () => state.featureStateCounter],
   () => {
-    console.log("here");
     initializeFeatureLayersFromStore({
       doClearCache: false,
       filterVisible: !doNotFilterLayers.value,

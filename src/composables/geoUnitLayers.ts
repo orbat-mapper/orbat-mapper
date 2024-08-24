@@ -210,11 +210,7 @@ export function useUnitSelectInteraction(
   const enableRef = ref(options.enable ?? true);
   const enableBoxSelectRef = ref(options.enableBoxSelect ?? true);
 
-  const {
-    selectedUnitIds: selectedIds,
-    clear: clearSelectedItems,
-    activeUnitId,
-  } = useSelectedItems();
+  const { selectedUnitIds: selectedIds, clear: clearSelectedItems } = useSelectedItems();
   const {
     geo,
     store: { state },

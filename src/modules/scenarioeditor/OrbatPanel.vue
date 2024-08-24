@@ -133,7 +133,6 @@ onMounted(() => {
       } else if (isSideDragItem(sourceData)) {
         const target = mapInstructionToTarget(instruction);
         if (isSideDragItem(destinationData)) {
-          console.log("reorder side");
           unitActions.moveSide(sourceData.side.id, destinationData.side.id, target);
           nextTick(() => {
             const el = document.getElementById(`os-${sourceData.side.id}`);

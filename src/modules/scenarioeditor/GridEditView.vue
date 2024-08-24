@@ -270,7 +270,6 @@ function toggleExpandItem(e?: KeyboardEvent) {
     const open = !(item.unit._isOpen ?? true);
     expandUnit(item.unit.id, open);
   } else if (type === "side") {
-    console.log("here");
     const open = !(sideOpen.value.get(item.side) ?? true);
     if (open) item.side.groups.forEach((g) => expandSideGroup(state.sideGroupMap[g]));
   }
