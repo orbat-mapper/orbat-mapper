@@ -117,8 +117,8 @@ const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
 const tabList = computed(() =>
   uiStore.debugMode
-    ? ["Details", "Styling", "Transform", "Debug"]
-    : ["Details", "Styling", "Transform"],
+    ? ["Style", "Details", "Transform", "Debug"]
+    : ["Style", "Details", "Transform"],
 );
 
 const isEditing = computed(() => isEditMode.value || isEditMediaMode.value);
@@ -214,25 +214,6 @@ function onAction(action: ScenarioFeatureActions) {
     </header>
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
       <TabPanel>
-        <div v-if="!isEditing" class="prose mt-4">
-          <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
-        </div>
-        <div v-else-if="isEditMode">
-          <EditMetaForm
-            :item="feature"
-            @update="doMetaUpdate"
-            @cancel="toggleEditMode()"
-          />
-        </div>
-        <div v-else-if="isEditMediaMode">
-          <EditMediaForm
-            :media="media"
-            @cancel="toggleEditMediaMode()"
-            @update="updateMedia"
-          />
-        </div>
-      </TabPanel>
-      <TabPanel>
         <section class="mt-4 grid w-full grid-cols-[max-content_1fr] gap-4 text-sm">
           <ScenarioFeatureMarkerSettings
             v-if="feature && geometryType === 'Point'"
@@ -250,6 +231,25 @@ function onAction(action: ScenarioFeatureActions) {
             @update="doUpdateFeature"
           />
         </section>
+      </TabPanel>
+      <TabPanel>
+        <div v-if="!isEditing" class="prose mt-4">
+          <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
+        </div>
+        <div v-else-if="isEditMode">
+          <EditMetaForm
+            :item="feature"
+            @update="doMetaUpdate"
+            @cancel="toggleEditMode()"
+          />
+        </div>
+        <div v-else-if="isEditMediaMode">
+          <EditMediaForm
+            :media="media"
+            @cancel="toggleEditMediaMode()"
+            @update="updateMedia"
+          />
+        </div>
       </TabPanel>
       <TabPanel>
         <FeatureTransformations :feature="feature!" class="mt-4" />
