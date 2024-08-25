@@ -151,6 +151,7 @@
       :hide-symbol-color="hideSymbolColor"
       :inherited-symbol-options="inheritedSymbolOptions"
       :symbol-options="symbolOptions"
+      :initial-tab="sidcModalInitialTab"
     />
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
     <ImportModal v-if="showImportModal" v-model="showImportModal" />
@@ -343,6 +344,7 @@ const {
   hideSymbolColor,
   symbolOptions,
   inheritedSymbolOptions,
+  initialTab: sidcModalInitialTab,
 } = useSidcModal();
 provide(sidcModalKey, { getModalSidc });
 
@@ -404,6 +406,13 @@ async function onScenarioAction(action: ScenarioActions) {
     await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
   } else if (action === "createNew") {
     await router.push({ name: NEW_SCENARIO_ROUTE });
+  } else if (action === "browseSymbols") {
+    const activeUnitId = selectedItems.activeUnitId.value;
+    let initialSidc = "10031000001211000000";
+    if (activeUnitId) {
+      initialSidc = state.getUnitById(activeUnitId).sidc;
+    }
+    await getModalSidc(initialSidc, { title: "Symbol browser", initialTab: 1 });
   }
   await onScenarioActionHook.trigger({ action });
 }

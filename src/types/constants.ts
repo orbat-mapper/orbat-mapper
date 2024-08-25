@@ -58,7 +58,8 @@ export type ScenarioActions =
   | "startPlayback"
   | "stopPlayback"
   | "increaseSpeed"
-  | "decreaseSpeed";
+  | "decreaseSpeed"
+  | "browseSymbols";
 
 export type ScenarioFeatureActions =
   | "delete"

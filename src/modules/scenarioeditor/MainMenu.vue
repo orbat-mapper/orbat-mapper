@@ -183,6 +183,14 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
       </DropdownMenuSub>
       <DropdownMenuSeparator />
       <DropdownMenuSub>
+        <DropdownMenuSubTrigger>Tools</DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          <DropdownMenuItem @select="emit('action', 'browseSymbols')"
+            >Browse symbols
+          </DropdownMenuItem>
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+      <DropdownMenuSub>
         <DropdownMenuSubTrigger>Help</DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
           <DropdownMenuItem as-child

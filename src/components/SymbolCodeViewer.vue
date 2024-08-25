@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { Sidc } from "@/symbology/sidc";
-import { useToggle } from "@vueuse/core";
+import { useClipboard, useToggle } from "@vueuse/core";
 import IconButton from "@/components/IconButton.vue";
 import {
   IconPencil as EditIcon,
   IconCheck,
   IconClose,
+  IconClipboardTextMultiple as CopyIcon,
 } from "@iconify-prerendered/vue-mdi";
 import InputGroup from "@/components/InputGroup.vue";
+import { useNotifications } from "@/composables/notifications";
 
 const props = defineProps<{ sidc: string; activePart?: string }>();
 const emit = defineEmits(["update"]);
+
+const { send } = useNotifications();
+const { copy: copyToClipboard } = useClipboard();
 
 const [isEditMode, toggleEditMode] = useToggle(false);
 const newSidc = ref("");
@@ -43,6 +48,13 @@ function onSubmit() {
   newSidc.value = props.sidc;
   toggleEditMode();
 }
+
+async function onCopy() {
+  await copyToClipboard(props.sidc);
+  send({
+    message: `Copied ${props.sidc} to the clipboard`,
+  });
+}
 </script>
 <template>
   <div class="flex items-center">
@@ -59,6 +71,9 @@ function onSubmit() {
       </div>
       <IconButton @click="toggleEditMode()">
         <EditIcon class="h-5 w-5" />
+      </IconButton>
+      <IconButton @click="onCopy()">
+        <CopyIcon class="h-5 w-5" />
       </IconButton>
     </template>
     <template v-else>

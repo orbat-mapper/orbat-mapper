@@ -174,6 +174,7 @@ interface ActionItem {
 }
 
 const actionItems: ActionItem[] = [
+  { action: "browseSymbols", label: "Browse symbols" },
   {
     action: "save",
     label: "Save scenario to local storage",

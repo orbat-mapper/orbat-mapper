@@ -217,6 +217,7 @@ interface Props {
   hideSymbolColor?: boolean;
   inheritedSymbolOptions?: UnitSymbolOptions;
   symbolOptions?: UnitSymbolOptions;
+  initialTab?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -234,7 +235,7 @@ const searchInputRef = ref();
 const open = useVModel(props, "isVisible");
 const searchQuery = ref("");
 const debouncedQuery = useDebounce(searchQuery, 100);
-const currentTab = ref(0);
+const currentTab = ref(props.initialTab ?? 0);
 
 const groupedHits = ref<ReturnType<typeof search>["groups"]>();
 

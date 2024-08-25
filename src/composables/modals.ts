@@ -51,6 +51,7 @@ export interface ModalSidcOptions {
   hideSymbolColor: boolean;
   symbolOptions: UnitSymbolOptions;
   inheritedSymbolOptions: UnitSymbolOptions;
+  initialTab: number;
 }
 
 export interface ModalSidcReturn {
@@ -66,6 +67,7 @@ export function useSidcModal() {
   const hideSymbolColor = ref(false);
   const symbolOptions = ref<UnitSymbolOptions>({});
   const inheritedSymbolOptions = ref<UnitSymbolOptions>({});
+  const initialTab = ref(0);
 
   const getModalSidc = async (
     initialValue: string,
@@ -78,6 +80,7 @@ export function useSidcModal() {
     hideSymbolColor.value = options.hideSymbolColor || false;
     inheritedSymbolOptions.value = options.inheritedSymbolOptions || {};
     symbolOptions.value = options.symbolOptions || {};
+    initialTab.value = options.initialTab ?? 0;
     const { data, isCanceled } = await reveal();
     if (!isCanceled) {
       return data;
@@ -102,6 +105,7 @@ export function useSidcModal() {
     hideSymbolColor,
     symbolOptions,
     inheritedSymbolOptions,
+    initialTab,
   };
 }
 
