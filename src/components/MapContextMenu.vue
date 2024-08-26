@@ -367,6 +367,12 @@ function onContextMenuUpdate(open: boolean) {
         @select.prevent
         >ORBAT panel
       </ContextMenuCheckboxItem>
+      <ContextMenuCheckboxItem
+        v-model:checked="uiSettings.showOrbatBreadcrumbs"
+        @select.prevent
+      >
+        Unit breadcrumbs
+      </ContextMenuCheckboxItem>
     </ContextMenuContent>
   </ContextMenu>
 </template>

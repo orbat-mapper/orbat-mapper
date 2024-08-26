@@ -86,6 +86,7 @@
       </footer>
     </div>
     <template v-if="isMobile">
+      <UnitBreadcrumbs v-if="ui.showOrbatBreadcrumbs" />
       <MapEditorMobilePanel
         @open-time-modal="openTimeDialog()"
         @inc-day="onIncDay()"
@@ -103,6 +104,7 @@
       @keyup.t="openTimeDialog"
       @keyup.s="ui.showSearch = true"
     />
+    <UnitBreadcrumbs v-if="ui.showOrbatBreadcrumbs && !isMobile" />
     <ScenarioTimeline v-if="ui.showTimeline" />
   </div>
 </template>
@@ -155,6 +157,7 @@ import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
 import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
 import { storeToRefs } from "pinia";
 import { usePlaybackStore } from "@/stores/playbackStore";
+import UnitBreadcrumbs from "@/modules/scenarioeditor/UnitBreadcrumbs.vue";
 
 const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
 const activeScenario = injectStrict(activeScenarioKey);

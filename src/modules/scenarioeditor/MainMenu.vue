@@ -25,7 +25,6 @@ import { useMeasurementsStore } from "@/stores/geoStore";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
-
 const isMobile = breakpoints.smallerOrEqual("md");
 
 const emit = defineEmits<{
@@ -132,6 +131,11 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
             @select.prevent
             >ORBAT panel
           </DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem
+            v-model:checked="uiSettings.showOrbatBreadcrumbs"
+            @select.prevent
+            >Unit breadcrumbs</DropdownMenuCheckboxItem
+          >
           <DropdownMenuSeparator />
           <DropdownMenuCheckboxItem v-model:checked="showScaleLine" @select.prevent>
             Scale line

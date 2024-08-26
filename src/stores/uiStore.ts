@@ -20,6 +20,7 @@ export const useUiStore = defineStore("ui", {
     showToolbar: true,
     showTimeline: useLocalStorage("showTimeline", false),
     showLeftPanel: true,
+    showOrbatBreadcrumbs: useLocalStorage("showOrbatBreadcrumbs", true),
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,

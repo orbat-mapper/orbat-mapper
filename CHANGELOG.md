@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 August 2024
 
+- Unit breadcrumb navigation toolbar.
 - Open symbol browser from command palette or main menu.
 - Copy unit hierarchy using Ctrl/Meta+drag-and-drop.
 - Move a feature by dragging it from the layers panel to the desired location.
