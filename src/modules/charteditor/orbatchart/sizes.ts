@@ -31,6 +31,7 @@ export const canvasSizeItems = [
   { label: "16:9", value: "16:9" },
   { label: "16:10", value: "16:10" },
   { label: "4:3", value: "4:3" },
+  { label: "Huuuge", value: "huuuge" },
 ];
 
 const MM2PX = 3.779527559055118;
@@ -50,5 +51,6 @@ export function sizeToWidthHeight(size: string) {
   if (size === "A1") return { width: mm2px(594), height: mm2px(841) };
   if (size === "A0") return { width: mm2px(841), height: mm2px(1189) };
   if (size === "A0landscape") return { width: mm2px(1189), height: mm2px(841) };
+  if (size === "huuuge") return { width: mm2px(3000), height: mm2px(3000) };
   return { width: 600, height: 600 };
 }
