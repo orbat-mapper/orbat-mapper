@@ -24,6 +24,10 @@ export const canvasSizeItems = [
   { label: "A4", value: "A4" },
   { label: "A4 Landscape", value: "A4landscape" },
   { label: "A3", value: "A3" },
+  { label: "A2", value: "A2" },
+  { label: "A1", value: "A1" },
+  { label: "A0", value: "A0" },
+  { label: "A0 Landscape", value: "A0landscape" },
   { label: "16:9", value: "16:9" },
   { label: "16:10", value: "16:10" },
   { label: "4:3", value: "4:3" },
@@ -42,5 +46,9 @@ export function sizeToWidthHeight(size: string) {
   if (size === "16:9") return { width: 1600, height: 900 };
   if (size === "16:10") return { width: 1920, height: 1200 };
   if (size === "4:3") return { width: 1600, height: 1200 };
+  if (size === "A2") return { width: mm2px(420), height: mm2px(594) };
+  if (size === "A1") return { width: mm2px(594), height: mm2px(841) };
+  if (size === "A0") return { width: mm2px(841), height: mm2px(1189) };
+  if (size === "A0landscape") return { width: mm2px(1189), height: mm2px(841) };
   return { width: 600, height: 600 };
 }
