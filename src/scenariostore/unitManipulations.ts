@@ -732,6 +732,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     unitOrSideGroup: NUnit | NSideGroup,
     ignoreUnit = false,
   ): UnitSymbolOptions {
+    if (!unitOrSideGroup) return {};
     let _sid, _gid;
     if ("sidc" in unitOrSideGroup) {
       _sid = unitOrSideGroup._sid;

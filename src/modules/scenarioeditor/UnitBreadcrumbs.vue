@@ -27,7 +27,7 @@ const {
   store: { state },
 } = injectStrict(activeScenarioKey);
 
-const { activeParentId, activeUnitId } = useActiveUnitStore();
+const { activeParentId, activeUnitId, resetActiveParent } = useActiveUnitStore();
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
@@ -39,15 +39,22 @@ const sides = computed(() => {
 const activeParent = computed(
   () =>
     (activeParentId.value &&
+      state.getUnitById(activeParentId.value) &&
       unitActions.expandUnitWithSymbolOptions(state.getUnitById(activeParentId.value))) ||
     null,
 );
 
-watch(activeUnitId, (value, oldValue) => {
-  if (value) {
-    activeParentId.value = value;
-  }
-});
+watch(
+  activeUnitId,
+  (value, oldValue) => {
+    if (value) {
+      activeParentId.value = value;
+    } else {
+      activeParentId.value = activeParent.value?._pid;
+    }
+  },
+  { flush: "sync" },
+);
 
 type BreadcrumbItem = {
   name: string;
@@ -68,46 +75,56 @@ const breadcrumbItems = computed((): BreadcrumbItem[] => {
 
   parents.push(activeParent.value! as unknown as NUnit);
 
-  const parentsWithItems = parents.map((uunit) => {
-    const parent = state.getUnitById(uunit._pid) ?? state.getSideGroupById(uunit._pid);
-    if (!parent) return { name: uunit.name, items: [] };
-    return {
-      name: uunit.shortName || uunit.name,
-      sidc: uunit.sidc || "",
-      id: uunit.id,
-      symbolOptions: unitActions.getCombinedSymbolOptions(uunit),
-      items: parent.subUnits.map((unitId) => ({
-        ...state.getUnitById(unitId),
-        symbolOptions: unitActions.getCombinedSymbolOptions(state.getUnitById(unitId)),
-      })),
-    };
-  });
-
-  const sideGroups = side.groups.map((group) => state.getSideGroupById(group));
-  const res = [
-    { name: isMobile.value ? "S" : side.name, items: sides.value, id: side.id, sidc: "" },
-    {
-      name: isMobile.value ? "G" : sideGroup.name,
-      items: sideGroups,
-      id: sideGroup.id,
-      sidc: "",
-    },
-    ...parentsWithItems,
-  ];
-  if (activeParent.value?.subUnits?.length) {
-    res.push({
-      sidc: "",
-      id: activeUnitId.value!,
-      name: "...",
-      items: activeParent.value?.subUnits?.map((unit) => {
-        return {
-          ...state.getUnitById(unit.id),
-          symbolOptions: unitActions.getCombinedSymbolOptions(unit as any),
-        };
-      }),
+  try {
+    const parentsWithItems = parents.map((uunit) => {
+      const parent = state.getUnitById(uunit._pid) ?? state.getSideGroupById(uunit._pid);
+      if (!parent) return { name: uunit.name, items: [] };
+      return {
+        name: uunit.shortName || uunit.name,
+        sidc: uunit.sidc || "",
+        id: uunit.id,
+        symbolOptions: unitActions.getCombinedSymbolOptions(uunit),
+        items: parent.subUnits.map((unitId) => ({
+          ...state.getUnitById(unitId),
+          symbolOptions: unitActions.getCombinedSymbolOptions(state.getUnitById(unitId)),
+        })),
+      };
     });
+
+    const sideGroups = side.groups.map((group) => state.getSideGroupById(group));
+    const res = [
+      {
+        name: isMobile.value ? "S" : side.name,
+        items: sides.value,
+        id: side.id,
+        sidc: "",
+      },
+      {
+        name: isMobile.value ? "G" : sideGroup.name,
+        items: sideGroups,
+        id: sideGroup.id,
+        sidc: "",
+      },
+      ...parentsWithItems,
+    ];
+    if (activeParent.value?.subUnits?.length) {
+      res.push({
+        sidc: "",
+        id: activeUnitId.value!,
+        name: "...",
+        items: activeParent.value?.subUnits?.map((unit) => {
+          return {
+            ...state.getUnitById(unit.id),
+            symbolOptions: unitActions.getCombinedSymbolOptions(unit as any),
+          };
+        }),
+      });
+    }
+    return res as BreadcrumbItem[];
+  } catch (e) {
+    resetActiveParent();
+    return [];
   }
-  return res as BreadcrumbItem[];
 });
 
 function onItemClick(entityId: EntityId) {
