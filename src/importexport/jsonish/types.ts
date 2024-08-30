@@ -1,4 +1,5 @@
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
+import { TextAmpKey, TextAmpValue } from "@/symbology/milsymbwrapper";
 
 export interface GeoJsonSymbolProperties {
   sidc?: string;
@@ -9,10 +10,8 @@ export interface GeoJsonSymbolProperties {
   additionalInformation?: string;
 }
 
-export interface TacticalJsonProperties {
+export interface TacticalJsonProperties extends Partial<Record<TextAmpValue, string>> {
   sidc: string;
-  higherFormation?: string; // M
-  additionalInformation?: string; // H
 }
 
 export interface MilSymbolProperties extends TacticalJsonProperties {

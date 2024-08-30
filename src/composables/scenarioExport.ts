@@ -72,6 +72,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
           shortName,
           sidc: unit._state?.sidc || sidc,
           description,
+          ...(unit.textAmplifiers ?? {}),
           ...symbolOptions,
         },
         { id: options.includeId ? id : undefined },

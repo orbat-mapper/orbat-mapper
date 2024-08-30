@@ -11,6 +11,14 @@ import {
   OrbatMapperGeoJsonFeature,
   OrbatMapperGeoJsonLayer,
 } from "@/importexport/jsonish/types";
+import { textAmpMapInv, TextAmpValue } from "@/symbology/milsymbwrapper";
+
+const supportedAttributes: TextAmpValue[] = [
+  "higherFormation",
+  "staffComments",
+  "additionalInformation",
+  "uniqueDesignation",
+];
 
 export function toMilx(layers: OrbatMapperGeoJsonLayer[]): string {
   return toXml(
@@ -84,6 +92,17 @@ function convertSymbol(properties: MilSymbolProperties) {
   }
   if (shortName || name) {
     attributes["T"] = (shortName || name)!;
+  }
+
+  for (const key of supportedAttributes) {
+    if (key in properties) {
+      const value = properties[key];
+      const mappedKey = textAmpMapInv[key];
+      if (!mappedKey || !value) {
+        continue;
+      }
+      attributes[mappedKey] = value;
+    }
   }
 
   return tagValue(

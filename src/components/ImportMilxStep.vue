@@ -35,7 +35,7 @@ import { useNotifications } from "@/composables/notifications";
 import { useImportStore } from "@/stores/importExportStore";
 import { MilxImportedLayer } from "@/composables/scenarioImport";
 
-import { injectStrict, nanoid } from "@/utils";
+import { injectStrict, nanoid, removeUndefined } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { NUnit } from "@/types/internalModels";
 import type { Point } from "geojson";
@@ -44,6 +44,7 @@ import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import ImportSelectItems from "@/components/ImportSelectItems.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
+import { pick } from "es-toolkit";
 
 interface Props {
   data: MilxImportedLayer[];
@@ -79,6 +80,9 @@ async function onLoad(e: Event) {
   const units: NUnit[] = features
     .filter((e) => selectedUnits.value.includes(e.id!))
     .map((f) => {
+      const textAmplifiers = removeUndefined(
+        pick(f.properties, ["higherFormation", "staffComments", "additionalInformation"]),
+      );
       return {
         id: nanoid(),
         name: f.properties.name || "",
@@ -91,10 +95,12 @@ async function onLoad(e: Event) {
         symbolOptions: f.properties.fillColor
           ? { fillColor: f.properties.fillColor }
           : {},
+        textAmplifiers,
         equipment: [],
         personnel: [],
       };
     });
+
   scnStore.groupUpdate(() => {
     units.forEach((unit) => unitActions.addUnit(unit, parentUnitId.value));
   });

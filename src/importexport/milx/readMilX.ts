@@ -17,6 +17,9 @@ import {
   MilSymbolProperties,
   OrbatMapperGeoJsonCollection,
 } from "@/importexport/jsonish/types";
+import { TextAmpKey, textAmpMap } from "@/symbology/milsymbwrapper";
+
+const supportedAttributes: TextAmpKey[] = ["M", "G", "H"];
 
 export function getMilXLayers(node: Document | Element): MilXLayer[] {
   const layers = getElements(node, "MilXLayer");
@@ -46,6 +49,12 @@ function convertProperties(f: MilXSymbolProperties): MilSymbolProperties {
   if (f.M) props.higherFormation = f.M;
   if (f.T) props.name = f.T;
   if (f.XO) props.fillColor = convertColor(f.XO);
+  for (const key of supportedAttributes) {
+    if (key in f) {
+      //@ts-ignore
+      props[textAmpMap[key]] = f[key];
+    }
+  }
   return props;
 }
 

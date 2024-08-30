@@ -68,3 +68,7 @@ export const textAmpMap = {
 
 export type TextAmpKey = keyof typeof textAmpMap;
 export type TextAmpValue = (typeof textAmpMap)[keyof typeof textAmpMap];
+
+export const textAmpMapInv = Object.fromEntries(
+  Object.entries(textAmpMap).map(([k, v]) => [v, k]),
+);
