@@ -33,7 +33,10 @@ import { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
-import type { SpatialIllusionsOrbat } from "@/types/externalModels";
+import {
+  mapSpatialIllusionsReinforced,
+  SpatialIllusionsOrbat,
+} from "@/types/externalModels";
 import { EntityId } from "@/types/base";
 
 interface Props {
@@ -43,14 +46,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 const { unitActions, store: scnStore, time } = injectStrict(activeScenarioKey);
-const store = useImportStore();
 const { state } = scnStore;
-
-const { send } = useNotifications();
-
-const sides = computed(() => {
-  return state.sides.map((id) => state.sideMap[id]);
-});
 
 const rootUnitItems = computed((): SymbolItem[] => {
   return Object.values(state.sideGroupMap)
@@ -79,10 +75,17 @@ async function onLoad(e: Event) {
         name,
         sidc: setCharAt(sidc, SID_INDEX, side.standardIdentity),
         symbolOptions: { fillColor },
+        textAmplifiers: {},
         subUnits: [],
         equipment: [],
         personnel: [],
       };
+      if (u.options.reinforced) {
+        newUnit.reinforcedStatus = mapSpatialIllusionsReinforced(u.options.reinforced);
+      }
+      if (u.options.additionalInformation) {
+        newUnit.textAmplifiers!.additionalInformation = u.options.additionalInformation;
+      }
       for (let i = 0; i < stack; i++) {
         const newUnitId = unitActions.addUnit(newUnit as NUnit, parentId);
         u.subOrganizations?.forEach((subUnit) => helper(subUnit, newUnitId));

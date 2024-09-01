@@ -15,7 +15,10 @@ import type { Root } from "@tmcw/togeojson";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { INTERNAL_NAMES, NUnit } from "@/types/internalModels";
 import type { Unit } from "@/types/scenarioModels";
-import type { SpatialIllusionsOrbat } from "@/types/externalModels";
+import {
+  reinforcedStatus2SpatialIllusions,
+  SpatialIllusionsOrbat,
+} from "@/types/externalModels";
 import {
   MilSymbolProperties,
   OrbatMapperGeoJsonCollection,
@@ -296,6 +299,8 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
           uniqueDesignation: unit.name,
           sidc: unit.sidc,
           fillColor: unit.symbolOptions?.fillColor,
+          reinforced: reinforcedStatus2SpatialIllusions[unit.reinforcedStatus ?? "None"],
+          additionalInformation: unit.textAmplifiers?.additionalInformation,
         },
         subOrganizations:
           level < opts.maxLevels
