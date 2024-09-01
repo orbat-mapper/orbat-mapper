@@ -223,7 +223,6 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
                 :sidc="unit._state?.sidc || unit.sidc"
                 :size="settingsStore.orbatIconSize"
                 :options="combinedOptions"
-                @click.stop.prevent=""
               />
               <span
                 v-if="unit.reinforcedStatus"
