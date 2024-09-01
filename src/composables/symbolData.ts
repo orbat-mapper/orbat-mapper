@@ -16,8 +16,12 @@ import {
 } from "@/symbology/values";
 import { Sidc } from "@/symbology/sidc";
 import { SymbolSetMap } from "@/symbology/types";
-import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
-import { SymbologyStandard } from "@/types/scenarioModels";
+import { useSymbolSettingsStore } from "@/stores/settingsStore";
+import {
+  mapReinforcedStatus2Field,
+  ReinforcedStatus,
+  SymbologyStandard,
+} from "@/types/scenarioModels";
 
 const symbology = shallowRef<SymbolSetMap | undefined>();
 const isLoaded = ref(false);
@@ -123,7 +127,7 @@ export function useSymbologyData() {
   };
 }
 
-export function useSymbolItems(sidc: Ref<string>) {
+export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: ReinforcedStatus) {
   const {
     symbolSetValue,
     sidValue,
@@ -134,7 +138,8 @@ export function useSymbolItems(sidc: Ref<string>) {
     emtValue,
     mod1Value,
     mod2Value,
-  } = useSymbolValues(sidc);
+    reinforcedReducedValue,
+  } = useSymbolValues(sidc, reinforcedReduced);
 
   const {
     symbology,
@@ -164,6 +169,38 @@ export function useSymbolItems(sidc: Ref<string>) {
       code,
       text,
       sidc: "100" + sidValue.value + symbolSetValue.value + code + "0000000000000",
+    }));
+  });
+
+  const reinforcedReducedItems = computed((): SymbolItem[] => {
+    return [
+      {
+        code: "None",
+        text: "Not Applicable",
+        symbolOptions: {},
+      },
+      {
+        code: "Reinforced",
+        text: "Reinforced",
+        symbolOptions: { reinforcedReduced: mapReinforcedStatus2Field("Reinforced") },
+      },
+      {
+        code: "Reduced",
+        text: "Reduced",
+        symbolOptions: { reinforcedReduced: mapReinforcedStatus2Field("Reduced") },
+      },
+      {
+        code: "ReinforcedReduced",
+        text: "Reinforced and reduced",
+        symbolOptions: {
+          reinforcedReduced: mapReinforcedStatus2Field("ReinforcedReduced"),
+        },
+      },
+    ].map(({ code, text, symbolOptions }) => ({
+      code,
+      text,
+      symbolOptions,
+      sidc: "100" + sidValue.value + symbolSetValue.value + "000000000000000",
     }));
   });
 
@@ -278,10 +315,12 @@ export function useSymbolItems(sidc: Ref<string>) {
     searchSymbolRef,
     searchModifierOneRef,
     searchModifierTwoRef,
+    reinforcedReducedItems,
+    reinforcedReducedValue,
   };
 }
 
-function useSymbolValues(sidc: Ref<string>) {
+function useSymbolValues(sidc: Ref<string>, reinforcedReduced?: ReinforcedStatus) {
   const sidcObj = new Sidc(sidc.value);
   const sidValue = ref(sidcObj.standardIdentity);
   const symbolSetValue = ref(sidcObj.symbolSet);
@@ -291,6 +330,7 @@ function useSymbolValues(sidc: Ref<string>) {
   const emtValue = ref(sidcObj.emt);
   const mod1Value = ref(sidcObj.modifierOne);
   const mod2Value = ref(sidcObj.modifierTwo);
+  const reinforcedReducedValue = ref<ReinforcedStatus>(reinforcedReduced ?? "None");
 
   function setValues(value: string) {
     const sidcObj = new Sidc(value);
@@ -337,5 +377,6 @@ function useSymbolValues(sidc: Ref<string>) {
     mod1Value,
     mod2Value,
     csidc,
+    reinforcedReducedValue,
   };
 }

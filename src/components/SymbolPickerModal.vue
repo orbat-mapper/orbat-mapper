@@ -7,7 +7,7 @@
   >
     <div class="flex h-full flex-col">
       <header class="mt-4 flex h-20 w-full items-center justify-between">
-        <MilitarySymbol :sidc="csidc" :size="34" :options="combinedSymbolOptions" />
+        <MilitarySymbol :sidc="csidc" :size="34" :options="finalSymbolOptions" />
         <SymbolCodeViewer :sidc="csidc" @update="updateFromSidcInput" />
       </header>
 
@@ -90,7 +90,22 @@
             </div>
 
             <template v-if="!hideModifiers">
+              <div class="grid gap-4 sm:grid-cols-2" v-if="showReinforcedStatus">
+                <SymbolCodeSelect
+                  v-model="statusValue"
+                  label="Status"
+                  :items="statusItems"
+                  :symbol-options="combinedSymbolOptions"
+                />
+                <SymbolCodeSelect
+                  v-model="reinforcedReducedValue"
+                  label="Reinforced / Reduced"
+                  :items="reinforcedReducedItems"
+                  :symbol-options="combinedSymbolOptions"
+                />
+              </div>
               <SymbolCodeSelect
+                v-else
                 v-model="statusValue"
                 label="Status"
                 :items="statusItems"
@@ -191,7 +206,11 @@ import TabItem from "./TabItem.vue";
 import SymbolBrowseTab from "./SymbolBrowseTab.vue";
 import SecondaryButton from "./SecondaryButton.vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import { UnitSymbolOptions } from "@/types/scenarioModels";
+import {
+  mapReinforcedStatus2Field,
+  ReinforcedStatus,
+  UnitSymbolOptions,
+} from "@/types/scenarioModels";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 import SymbolCodeViewer from "@/components/SymbolCodeViewer.vue";
 import { Sidc } from "@/symbology/sidc";
@@ -218,6 +237,7 @@ interface Props {
   inheritedSymbolOptions?: UnitSymbolOptions;
   symbolOptions?: UnitSymbolOptions;
   initialTab?: number;
+  reinforcedStatus?: ReinforcedStatus;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -250,6 +270,13 @@ const combinedSymbolOptions = computed(() => ({
   ...cleanObject(internalSymbolOptions.value || {}),
 }));
 
+const finalSymbolOptions = computed(() => ({
+  ...combinedSymbolOptions.value,
+  ...cleanObject(
+    { reinforcedReduced: mapReinforcedStatus2Field(reinforcedReducedValue.value) } || {},
+  ),
+}));
+
 // remove empty values in object
 const cleanObject = (obj: any) => {
   Object.keys(obj).forEach((key) => {
@@ -279,12 +306,21 @@ const {
   mod2Items,
   icons,
   symbolSets,
-} = useSymbolItems(computed(() => props.sidc || ""));
+  reinforcedReducedItems,
+  reinforcedReducedValue,
+} = useSymbolItems(
+  computed(() => props.sidc || ""),
+  props.reinforcedStatus,
+);
 loadData();
 
 whenever(isLoaded, () => NProgress.done(), { immediate: true });
 
 const { search } = useSymbologySearch(sidValue);
+
+const showReinforcedStatus = computed(() => {
+  return symbolSetValue.value === "10" || symbolSetValue.value === "11";
+});
 
 watchEffect(() => {
   const { numberOfHits, groups } = search(debouncedQuery.value);
@@ -295,6 +331,7 @@ watchEffect(() => {
 const onSubmit = () => {
   emit("update:sidc", {
     sidc: csidc.value,
+    reinforcedStatus: reinforcedReducedValue.value,
     symbolOptions: internalSymbolOptions.value.fillColor
       ? { fillColor: internalSymbolOptions.value.fillColor }
       : {},

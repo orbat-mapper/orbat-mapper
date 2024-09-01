@@ -18,8 +18,10 @@ export interface State extends Partial<ScenarioEventDescription> {
   sidc?: string;
   via?: Position[];
   symbolOptions?: UnitSymbolOptions;
+  textAmplifiers?: TextAmplifiers;
   interpolate?: boolean;
   viaStartTime?: ScenarioTime;
+  reinforcedStatus?: ReinforcedStatus;
   status?: string | null;
 }
 
@@ -42,6 +44,24 @@ export interface UnitSymbolOptions extends SymbolOptions {
 }
 
 export type TextAmplifiers = Partial<Record<TextAmpValue, string>>;
+export type ReinforcedStatus = "Reinforced" | "Reduced" | "ReinforcedReduced" | "None";
+
+export function mapReinforcedStatus2Field(
+  value?: ReinforcedStatus,
+  options: { compact?: boolean } = {},
+): string | undefined {
+  const compact = options.compact ?? false;
+  switch (value) {
+    case "Reinforced":
+      return compact ? "+" : "(+)";
+    case "Reduced":
+      return compact ? "-" : "(-)";
+    case "ReinforcedReduced":
+      return compact ? "±" : "(±)";
+    default:
+      return "";
+  }
+}
 
 export interface Unit {
   id: EntityId;
@@ -55,6 +75,7 @@ export interface Unit {
   state?: State[];
   symbolOptions?: UnitSymbolOptions;
   textAmplifiers?: TextAmplifiers;
+  reinforcedStatus?: ReinforcedStatus;
   rangeRings?: RangeRing[];
   equipment?: UnitEquipment[];
   personnel?: UnitPersonnel[];
@@ -72,6 +93,7 @@ export interface Unit {
 
 export type SpeedUnitOfMeasure = "km/h" | "mph" | "knots" | "m/s" | "ft/s";
 export type UnitProperty = { value: number; uom: SpeedUnitOfMeasure };
+
 export interface UnitProperties {
   averageSpeed?: UnitProperty;
   maxSpeed?: UnitProperty;

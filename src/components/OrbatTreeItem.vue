@@ -26,6 +26,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useTimeoutFn } from "@vueuse/core";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import { getUnitDragItem, isUnitDragItem } from "@/types/draggables";
+import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
 
 interface Props {
   item: NOrbatItemData;
@@ -214,7 +215,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
         <button class="flex items-center space-x-1">
           <div class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
             <div
-              class="flex flex-shrink-0 cursor-move justify-center"
+              class="relative flex flex-shrink-0 cursor-move justify-center"
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
               ref="dragItemRef"
             >
@@ -224,6 +225,13 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
                 :options="combinedOptions"
                 @click.stop.prevent=""
               />
+              <span
+                v-if="unit.reinforcedStatus"
+                class="absolute -right-2.5 -top-2 text-xs font-medium"
+                >{{
+                  mapReinforcedStatus2Field(unit.reinforcedStatus, { compact: true })
+                }}</span
+              >
             </div>
             <span
               class="flex-auto pl-1.5 text-left text-gray-900 dark:text-gray-300"

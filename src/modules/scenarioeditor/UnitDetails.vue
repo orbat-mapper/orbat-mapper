@@ -5,7 +5,7 @@
       <div v-if="!isMultiMode" class="flex">
         <button
           type="button"
-          class="mr-1 inline-flex h-20 w-16 flex-shrink-0"
+          class="mr-2 inline-flex h-20 w-16 flex-shrink-0 justify-center"
           @click="handleChangeSymbol()"
         >
           <MilitarySymbol :sidc="unitSidc" :size="34" :options="combinedSymbolOptions" />
@@ -412,18 +412,21 @@ async function handleChangeSymbol() {
   const newSidcValue = await getModalSidc(unit.value.sidc, {
     symbolOptions: unit.value.symbolOptions,
     inheritedSymbolOptions: getCombinedSymbolOptions(unit.value, true),
+    reinforcedStatus: unit.value.reinforcedStatus,
   });
   if (newSidcValue !== undefined) {
-    const { sidc, symbolOptions = {} } = newSidcValue;
+    const { sidc, symbolOptions = {}, reinforcedStatus } = newSidcValue;
+    const dataUpdate: UnitUpdate = { sidc, symbolOptions };
+    if (reinforcedStatus) dataUpdate.reinforcedStatus = reinforcedStatus;
     if (isMultiMode.value) {
       store.groupUpdate(() =>
         selectedUnitIds.value.forEach((unitId) => {
           const { side } = getUnitHierarchy(unitId);
-          const newSidc = setCharAt(sidc, SID_INDEX, side.standardIdentity);
-          updateUnit(unitId, { sidc: newSidc, symbolOptions });
+          dataUpdate.sidc = setCharAt(sidc, SID_INDEX, side.standardIdentity);
+          updateUnit(unitId, dataUpdate);
         }),
       );
-    } else updateUnit(props.unitId, { sidc, symbolOptions });
+    } else updateUnit(props.unitId, dataUpdate);
   }
 }
 </script>

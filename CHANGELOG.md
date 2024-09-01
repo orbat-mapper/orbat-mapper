@@ -8,8 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+September 2024
+
+- Add reinforced / reduced symbol modifier.
+
 August 2024
 
+- Added more paper sizes
 - Unit breadcrumb navigation toolbar.
 - Open symbol browser from command palette or main menu.
 - Copy unit hierarchy using Ctrl/Meta+drag-and-drop.

@@ -152,6 +152,7 @@
       :inherited-symbol-options="inheritedSymbolOptions"
       :symbol-options="symbolOptions"
       :initial-tab="sidcModalInitialTab"
+      :reinforced-status="initialReinforcedReduced"
     />
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
     <ImportModal v-if="showImportModal" v-model="showImportModal" />
@@ -345,6 +346,7 @@ const {
   symbolOptions,
   inheritedSymbolOptions,
   initialTab: sidcModalInitialTab,
+  initialReinforcedReduced,
 } = useSidcModal();
 provide(sidcModalKey, { getModalSidc });
 

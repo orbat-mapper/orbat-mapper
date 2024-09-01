@@ -22,7 +22,8 @@ import { SID } from "@/symbology/values";
 import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
-import type {
+import {
+  mapReinforcedStatus2Field,
   State,
   StateAdd,
   Unit,
@@ -733,10 +734,11 @@ export function useUnitManipulations(store: NewScenarioStore) {
     ignoreUnit = false,
   ): UnitSymbolOptions {
     if (!unitOrSideGroup) return {};
-    let _sid, _gid;
+    let _sid, _gid, reinforcedReduced;
     if ("sidc" in unitOrSideGroup) {
       _sid = unitOrSideGroup._sid;
       _gid = unitOrSideGroup._gid;
+      reinforcedReduced = mapReinforcedStatus2Field(unitOrSideGroup.reinforcedStatus);
     } else {
       _sid = unitOrSideGroup._pid;
       _gid = unitOrSideGroup.id;
@@ -746,6 +748,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       ...(state.sideMap[_sid!]?.symbolOptions || {}),
       ...(state.sideGroupMap[_gid!]?.symbolOptions || {}),
       ...(ignoreUnit ? {} : unitOrSideGroup.symbolOptions || {}),
+      ...(ignoreUnit ? {} : { reinforcedReduced: reinforcedReduced ?? "" }),
     };
   }
 

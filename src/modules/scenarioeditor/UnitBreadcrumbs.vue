@@ -172,7 +172,9 @@ function onItemClick(entityId: EntityId) {
                       :size="15"
                       class="w-7"
                     />
-                    <span class="">{{ item.name }}</span>
+                    <span :class="item.symbolOptions?.reinforcedReduced ? 'ml-2' : ''">{{
+                      item.name
+                    }}</span>
                   </div>
                   <ChevronDown class="h-4 w-4" />
                 </DropdownMenuTrigger>
@@ -183,7 +185,7 @@ function onItemClick(entityId: EntityId) {
                     @select="onItemClick(subItem.id)"
                   >
                     <div class="flex items-center">
-                      <span v-if="subItem.sidc" class="flex w-7 items-center">
+                      <span v-if="subItem.sidc" class="mr-1.5 flex w-7 items-center">
                         <MilitarySymbol
                           :sidc="subItem.sidc"
                           :options="subItem.symbolOptions" /></span

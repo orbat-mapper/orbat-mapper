@@ -1,7 +1,7 @@
 import { useConfirmDialog } from "@vueuse/core";
 import { computed, ref } from "vue";
 import NProgress from "nprogress";
-import { UnitSymbolOptions } from "@/types/scenarioModels";
+import { ReinforcedStatus, UnitSymbolOptions } from "@/types/scenarioModels";
 
 export interface ModalTimestampOptions {
   timeZone: string;
@@ -52,11 +52,13 @@ export interface ModalSidcOptions {
   symbolOptions: UnitSymbolOptions;
   inheritedSymbolOptions: UnitSymbolOptions;
   initialTab: number;
+  reinforcedStatus: ReinforcedStatus;
 }
 
 export interface ModalSidcReturn {
   sidc: string;
   symbolOptions: UnitSymbolOptions;
+  reinforcedStatus?: ReinforcedStatus;
 }
 
 export function useSidcModal() {
@@ -68,6 +70,7 @@ export function useSidcModal() {
   const symbolOptions = ref<UnitSymbolOptions>({});
   const inheritedSymbolOptions = ref<UnitSymbolOptions>({});
   const initialTab = ref(0);
+  const initialReinforcedReduced = ref<ReinforcedStatus>();
 
   const getModalSidc = async (
     initialValue: string,
@@ -81,6 +84,7 @@ export function useSidcModal() {
     inheritedSymbolOptions.value = options.inheritedSymbolOptions || {};
     symbolOptions.value = options.symbolOptions || {};
     initialTab.value = options.initialTab ?? 0;
+    initialReinforcedReduced.value = options.reinforcedStatus;
     const { data, isCanceled } = await reveal();
     if (!isCanceled) {
       return data;
@@ -106,6 +110,7 @@ export function useSidcModal() {
     symbolOptions,
     inheritedSymbolOptions,
     initialTab,
+    initialReinforcedReduced,
   };
 }
 
