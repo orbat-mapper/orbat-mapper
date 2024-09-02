@@ -4,7 +4,7 @@ import { LocationState, Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
 import { greatCircle } from "@turf/turf";
 import { getDistance } from "ol/sphere";
-import { Position } from "geojson";
+import type { Position } from "geojson";
 import { GeometryLayout } from "ol/geom/Geometry";
 import { Fill, Stroke, Style, Text } from "ol/style";
 import CircleStyle from "ol/style/Circle";

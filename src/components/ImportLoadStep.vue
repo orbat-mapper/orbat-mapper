@@ -126,7 +126,7 @@ import DocLink from "@/components/DocLink.vue";
 import InputGroup from "@/components/InputGroup.vue";
 import AlertWarning from "@/components/AlertWarning.vue";
 import { isUrl } from "@/utils";
-import { type FeatureCollection } from "geojson";
+import type { FeatureCollection } from "geojson";
 
 const emit = defineEmits(["cancel", "loaded"]);
 

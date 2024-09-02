@@ -11,7 +11,7 @@ import { injectStrict, nanoid } from "@/utils";
 import { activeMapKey, activeScenarioKey } from "@/components/injects";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import type { NScenarioFeature } from "@/types/internalModels";
-import { Feature } from "geojson";
+import type { Feature } from "geojson";
 import { useDebounceFn } from "@vueuse/core";
 import { bbox, bboxPolygon, convex, Units } from "@turf/turf";
 import VectorLayer from "ol/layer/Vector";

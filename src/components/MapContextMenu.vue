@@ -42,7 +42,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
-import { type Position } from "geojson";
+import type { Position } from "geojson";
 
 const tm = useTimeFormatStore();
 

@@ -6,7 +6,7 @@ import type { MeasurementUnit } from "@/composables/geoMeasurement";
 import { CoordinateFormatType } from "@/composables/geoShowLocation";
 import { truncate } from "@turf/truncate";
 import { point } from "@turf/helpers";
-import { Position } from "geojson";
+import type { Position } from "geojson";
 
 const s = useMapSettingsStore();
 

@@ -149,7 +149,6 @@ import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import { useLocalStorage } from "@vueuse/core";
-import { Position } from "geojson";
 
 interface Props {
   unit: NUnit;
