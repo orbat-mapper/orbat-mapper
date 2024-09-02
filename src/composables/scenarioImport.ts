@@ -1,22 +1,19 @@
-import { injectStrict, nanoid, toDom } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { nanoid, toDom } from "@/utils";
 import { TScenario } from "@/scenariostore";
 import type { FeatureCollection } from "geojson";
-import { OrbatMapperGeoJsonFeature } from "@/importexport/jsonish/types";
+import { ImportGeoJsonFeature } from "@/importexport/jsonish/types";
 
 export interface MilxImportedLayer {
   id: string;
   name?: string;
-  features: OrbatMapperGeoJsonFeature[];
+  features: ImportGeoJsonFeature[];
 }
 
 export interface UseScenarioExportOptions {
   activeScenario: TScenario;
 }
 
-export function useScenarioImport(options: Partial<UseScenarioExportOptions> = {}) {
-  const { geo } = options.activeScenario || injectStrict(activeScenarioKey);
-
+export function useScenarioImport() {
   async function importMilxString(source: string): Promise<MilxImportedLayer[]> {
     const { getMilXLayers, convertMilXLayer } = await import("@/importexport/milx");
     const dom = await toDom(source);
@@ -31,15 +28,11 @@ export function useScenarioImport(options: Partial<UseScenarioExportOptions> = {
   }
 
   function importGeojsonString(source: string): FeatureCollection {
-    const json = JSON.parse(source);
-    return json;
-
-    //return convertGeojsonLayer(json) as FeatureCollection;
+    return JSON.parse(source);
   }
 
   function importJsonString<T>(source: string) {
-    const json = JSON.parse(source) as T;
-    return json;
+    return JSON.parse(source) as T;
   }
 
   return { importMilxString, importGeojsonString, importJsonString };

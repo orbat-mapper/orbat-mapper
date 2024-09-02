@@ -9,6 +9,7 @@ export interface MilXSymbolProperties {
   XO?: string;
   G?: string;
   H?: string;
+  F?: string;
 }
 
 export type MilXGeoJsonCollection = FeatureCollection<

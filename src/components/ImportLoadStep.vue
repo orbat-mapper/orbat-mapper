@@ -174,7 +174,7 @@ const isMilx = computed(() => form.value.format === "milx");
 const isGeojson = computed(() => form.value.format === "geojson");
 const isUnitGenerator = computed(() => form.value.format === "unitgenerator");
 const isOrbatGenerator = computed(() => form.value.format === "orbatgenerator");
-const { importMilxString, importGeojsonString, importJsonString } = useScenarioImport();
+const { importMilxString, importJsonString } = useScenarioImport();
 
 async function onLoad() {
   const { format } = form.value;

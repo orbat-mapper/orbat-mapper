@@ -8,11 +8,12 @@ export interface ImportState {
   keepOpen: boolean;
 }
 export const useImportStore = defineStore("import", {
-  state: () => ({
-    inputSource: "file",
-    format: "milx",
-    keepOpen: useLocalStorage("importKeepOpen", false),
-  }),
+  state: (): ImportState =>
+    ({
+      inputSource: "file",
+      format: "milx",
+      keepOpen: useLocalStorage("importKeepOpen", false),
+    }) as unknown as ImportState,
 });
 
 export interface ExportSettings {

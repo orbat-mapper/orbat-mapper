@@ -14,6 +14,9 @@ import type {
 import { convertLetterSidc2NumberSidc } from "@orbat-mapper/convert-symbology";
 import { nanoid } from "@/utils";
 import {
+  ConvertedProperties,
+  ImportGeoJsonCollection,
+  ImportGeoJsonProperties,
   MilSymbolProperties,
   OrbatMapperGeoJsonCollection,
 } from "@/importexport/jsonish/types";
@@ -31,7 +34,7 @@ export function getMilXLayers(node: Document | Element): MilXLayer[] {
   }));
 }
 
-export function convertMilXLayer(layer: MilXLayer): OrbatMapperGeoJsonCollection {
+export function convertMilXLayer(layer: MilXLayer): ImportGeoJsonCollection {
   const fc = layer.featureCollection;
   const { features: nFeatures, ...rest } = fc;
   const features = nFeatures
@@ -44,18 +47,30 @@ export function convertMilXLayer(layer: MilXLayer): OrbatMapperGeoJsonCollection
   return { ...fc, features };
 }
 
-function convertProperties(f: MilXSymbolProperties): MilSymbolProperties {
-  const props: MilSymbolProperties = { sidc: convertLetterSidc2NumberSidc(f.ID).sidc };
-  if (f.M) props.higherFormation = f.M;
+function convertProperties(f: MilXSymbolProperties): ImportGeoJsonProperties {
+  const props: ConvertedProperties = {
+    sidc: convertLetterSidc2NumberSidc(f.ID).sidc,
+    name: "",
+  };
   if (f.T) props.name = f.T;
+  if (f.M) props.higherFormation = f.M;
   if (f.XO) props.fillColor = convertColor(f.XO);
+  if (f.F) {
+    if (f.F === "RD") {
+      props.reinforcedStatus = "ReinforcedReduced";
+    } else if (f.F === "R") {
+      props.reinforcedStatus = "Reinforced";
+    } else if (f.F === "D") {
+      props.reinforcedStatus = "Reduced";
+    }
+  }
   for (const key of supportedAttributes) {
     if (key in f) {
       //@ts-ignore
       props[textAmpMap[key]] = f[key];
     }
   }
-  return props;
+  return { convertedProperties: props, originalProperties: f };
 }
 
 function convertColor(milxColor: string): string {

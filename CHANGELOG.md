@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 September 2024
 
+- Improved MilX/map.army import.
 - Add reinforced / reduced symbol modifier.
 
 August 2024

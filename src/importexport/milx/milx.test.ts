@@ -144,9 +144,11 @@ describe("Convert from MilX", async function () {
     const a = convertMilXLayer(layers[0]);
     const convertedFeature = a.features[0];
     const convertedFeature2 = a.features[1];
-    expect(convertedFeature.properties.sidc).toBe("10031000161211000001");
-    expect(convertedFeature2.properties.higherFormation).toBe("3");
-    expect(convertedFeature2.properties.fillColor).toBe("#FF8000");
+    expect(convertedFeature.properties.convertedProperties.sidc).toBe(
+      "10031000161211000001",
+    );
+    expect(convertedFeature2.properties.convertedProperties.higherFormation).toBe("3");
+    expect(convertedFeature2.properties.convertedProperties.fillColor).toBe("#FF8000");
   });
 });
 
