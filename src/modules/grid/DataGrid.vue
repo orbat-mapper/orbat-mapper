@@ -226,7 +226,7 @@ const filteredRowCount = computed(() => {
         <tbody class="relative" :style="{ height: `${rowVirtualizer.getTotalSize()}px` }">
           <tr
             v-for="row in virtualRows"
-            :key="row.key"
+            :key="row.key as string"
             :style="{ transform: `translateY(${row.start}px)` }"
             class="group absolute flex h-10 w-full divide-x divide-gray-200 text-sm hover:bg-gray-50"
             :data-index="row.index"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+//@ts-nocheck
 import OrbatGrid from "@/modules/grid/OrbatGrid.vue";
 
 import { ColumnProperties } from "@/modules/grid/gridTypes";

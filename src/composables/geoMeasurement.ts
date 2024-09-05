@@ -345,10 +345,10 @@ export function useMeasurementInteraction(
     setUnit,
     cleanup,
     clear,
-  } = measurementInteractionWrapper(olMap, unref(measurementTypeRef), {
-    clearPrevious: unref(clearPreviousRef),
-    showSegments: unref(showSegmentsRef),
-    measurementUnit: unref(measurementUnitRef),
+  } = measurementInteractionWrapper(olMap, measurementTypeRef.value, {
+    clearPrevious: clearPreviousRef.value,
+    showSegments: showSegmentsRef.value,
+    measurementUnit: measurementUnitRef.value,
   });
 
   watch(measurementTypeRef, (type) => changeMeasurementType(type));
