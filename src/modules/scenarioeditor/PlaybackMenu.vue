@@ -14,6 +14,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { usePlaybackStore } from "@/stores/playbackStore";
@@ -43,13 +44,21 @@ const playback = usePlaybackStore();
         ><IconChevronDown class="block h-6 w-6"
       /></DropdownMenuTrigger>
       <DropdownMenuContent :side-offset="10">
+        <DropdownMenuItem @select.prevent="playback.togglePlayback()">
+          <IconPause v-if="playback.playbackRunning" class="mr-2 h-4 w-4" />
+          <IconPlay v-else class="mr-2 h-4 w-4" />
+          <span>{{ playback.playbackRunning ? "Pause" : "Play" }}</span>
+          <DropdownMenuShortcut>k, alt+p</DropdownMenuShortcut>
+        </DropdownMenuItem>
         <DropdownMenuItem @select.prevent="playback.increaseSpeed()">
           <IconSpeedometer class="mr-2 h-4 w-4" />
           <span>Speed up</span>
+          <DropdownMenuShortcut>&gt;</DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuItem @select.prevent="playback.decreaseSpeed()">
           <IconSpeedometerSlow class="mr-2 h-4 w-4" />
           <span>Slow down</span>
+          <DropdownMenuShortcut>&lt;</DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem

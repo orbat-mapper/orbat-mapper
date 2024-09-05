@@ -12,6 +12,7 @@ import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { useTabStore } from "@/stores/tabStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
+import { usePlaybackStore } from "@/stores/playbackStore";
 
 const {
   unitActions,
@@ -29,9 +30,8 @@ const {
 const { onUnitAction } = useUnitActions();
 const { onFeatureAction } = useScenarioFeatureActions();
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
-const tabStore = useTabStore();
-const geo = useGeoStore();
 const unitSettings = useUnitSettingsStore();
+const playback = usePlaybackStore();
 const { selectedWaypointIds } = useSelectedWaypoints();
 
 const selectedUnits = computed(() =>
@@ -95,6 +95,18 @@ function handleDelete(e: KeyboardEvent) {
   onUnitAction(selectedUnits.value, UnitActions.Delete);
   onFeatureAction([...selectedFeatureIds.value], "delete");
 }
+
+function handlePlaybackShortcut(e: KeyboardEvent) {
+  playback.togglePlayback();
+}
+
+function handleSpecialKeys(e: KeyboardEvent) {
+  if (e.key === "<") {
+    playback.decreaseSpeed();
+  } else if (e.key === ">") {
+    playback.increaseSpeed();
+  }
+}
 </script>
 
 <template>
@@ -106,7 +118,10 @@ function handleDelete(e: KeyboardEvent) {
     @keydown.esc="handleEscape"
     @keydown.z.exact="handleZoomShortcut"
     @keydown.p.exact="handlePanShortcut"
+    @keydown.alt.p.exact="handlePlaybackShortcut"
+    @keydown.k.exact="handlePlaybackShortcut"
     @keydown.m.exact="handleMoveShortcut"
     @keydown.delete.exact="handleDelete"
+    @keydown="handleSpecialKeys"
   />
 </template>

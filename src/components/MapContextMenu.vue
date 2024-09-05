@@ -7,6 +7,7 @@ import {
   ContextMenuRadioGroup,
   ContextMenuRadioItem,
   ContextMenuSeparator,
+  ContextMenuShortcut,
   ContextMenuSub,
   ContextMenuSubContent,
   ContextMenuSubTrigger,
@@ -288,14 +289,17 @@ function onContextMenuUpdate(open: boolean) {
             <IconPause v-if="playback.playbackRunning" class="mr-2 h-4 w-4" />
             <IconPlay v-else class="mr-2 h-4 w-4" />
             <span>{{ playback.playbackRunning ? "Pause" : "Play" }}</span>
+            <ContextMenuShortcut>k, alt+p</ContextMenuShortcut>
           </ContextMenuItem>
           <ContextMenuItem @select.prevent="playback.increaseSpeed()">
             <IconSpeedometer class="mr-2 h-4 w-4" />
             <span>Speed up</span>
+            <ContextMenuShortcut>&gt;</ContextMenuShortcut>
           </ContextMenuItem>
           <ContextMenuItem @select.prevent="playback.decreaseSpeed()">
             <IconSpeedometerSlow class="mr-2 h-4 w-4" />
             <span>Slow down</span>
+            <ContextMenuShortcut>&lt;</ContextMenuShortcut>
           </ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuCheckboxItem

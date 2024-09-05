@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 September 2024
 
+- Add playback keyboard shortcuts: alt+p or k to play/pause, < and > to increase and decrease playback speed.
 - Improved MilX/map.army import.
 - Add reinforced / reduced symbol modifier.
 
@@ -26,7 +27,8 @@ August 2024
 July 2024
 
 - Reorder and move scenario features between layers using drag and drop.
-- Modify unit coordinates manually in the unit state panel. Activate the edit mode by double-clicking on the coordinates.
+- Modify unit coordinates manually in the unit state panel. Activate the edit mode by double-clicking on the
+  coordinates.
 - Select multiple features in the layers panel with shift+click.
 - Add a duplicate scenario feature action.
 

@@ -42,7 +42,12 @@ export const mapEditModeShortcuts: KeyboardCategory[] = [
   },
   {
     label: "Time manipulation",
-    shortcuts: [{ shortcut: [["t"]], description: "Set scenario time" }],
+    shortcuts: [
+      { shortcut: [["t"]], description: "Set scenario time" },
+      { shortcut: [["alt", "p"], ["k"]], description: "Play/pause" },
+      { description: "Increase playback speed", shortcut: [[">"]] },
+      { description: "Decrease playback speed", shortcut: [["<"]] },
+    ],
   },
 ];
 
