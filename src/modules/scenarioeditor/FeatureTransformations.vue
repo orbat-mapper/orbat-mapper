@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { feature as turfFeature } from "@turf/helpers";
 import { buffer as turfBuffer } from "@turf/buffer";
+import { simplify as turfSimplify } from "@turf/simplify";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { onUnmounted, ref, watch, watchEffect } from "vue";
@@ -23,6 +24,7 @@ import {
 } from "@/stores/transformStore";
 import { storeToRefs } from "pinia";
 import InputCheckbox from "@/components/InputCheckbox.vue";
+import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 
 const props = defineProps<{ feature?: NScenarioFeature }>();
 
@@ -34,6 +36,7 @@ const transformationOptions: SelectItem[] = [
   { label: "Buffer", value: "buffer" },
   { label: "Bounding box", value: "boundingBox" },
   { label: "Convex hull", value: "convexHull" },
+  { label: "Simplify", value: "simplify" },
 ];
 
 const unitItems: SelectItem<Units>[] = [
@@ -44,7 +47,7 @@ const unitItems: SelectItem<Units>[] = [
   { label: "Nautical miles", value: "nauticalmiles" },
 ];
 
-const { showPreview, transformation, bufferOptions } = storeToRefs(
+const { showPreview, transformation, bufferOptions, simplifyOptions } = storeToRefs(
   useTransformSettingsStore(),
 );
 
@@ -91,7 +94,6 @@ function doTransformation(
   const geoJSONFeature = turfFeature(feature.geometry);
   if (transform === "buffer") {
     const { radius, steps = 64, units = "kilometers" } = options;
-    console.log("Buffering", radius, units, steps);
     return turfBuffer(geoJSONFeature, radius, { units, steps });
   }
   if (transform === "boundingBox") {
@@ -100,6 +102,11 @@ function doTransformation(
 
   if (transform === "convexHull") {
     return convex(geoJSONFeature);
+  }
+
+  if (transform === "simplify") {
+    const { tolerance = 0.5 } = options;
+    return turfSimplify(geoJSONFeature, { tolerance, highQuality: true });
   }
   return null;
 }
@@ -125,6 +132,9 @@ watchEffect(() => {
     currentOp.value = { transform: "boundingBox", options: {} };
   } else if (transformation.value === "convexHull") {
     currentOp.value = { transform: "convexHull", options: {} };
+  } else if (transformation.value === "simplify") {
+    const { tolerance } = simplifyOptions.value;
+    currentOp.value = { transform: "simplify", options: { tolerance } };
   } else {
     currentOp.value = null;
   }
@@ -172,6 +182,20 @@ onUnmounted(() => {
           />
           <SimpleSelect label="Units" :items="unitItems" v-model="bufferOptions.units" />
           <InputGroup label="Steps" v-model="bufferOptions.steps" type="number" />
+        </div>
+      </div>
+      <div v-else-if="transformation === 'simplify'">
+        <PanelSubHeading>Simplify</PanelSubHeading>
+        <div class="grid grid-cols-1 gap-4">
+          <InputGroupTemplate label="Tolerance"
+            ><input
+              type="range"
+              v-model.number="simplifyOptions.tolerance"
+              min="0"
+              max=".15"
+              step="0.00001"
+              class="w-full"
+          /></InputGroupTemplate>
         </div>
       </div>
       <footer class="flex items-center justify-between">

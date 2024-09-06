@@ -7,13 +7,18 @@ export type BufferOptions = {
   steps?: number;
 };
 
+export type SimplifyOptions = {
+  tolerance?: number;
+};
+
 export type TransformationOperation =
   | {
       transform: "buffer";
       options: BufferOptions;
     }
   | { transform: "boundingBox"; options: {} }
-  | { transform: "convexHull"; options: {} };
+  | { transform: "convexHull"; options: {} }
+  | { transform: "simplify"; options: SimplifyOptions };
 
 export const useTransformSettingsStore = defineStore("transformSettings", {
   state: () => ({
@@ -24,5 +29,8 @@ export const useTransformSettingsStore = defineStore("transformSettings", {
       units: "kilometers",
       steps: 8,
     } as BufferOptions,
+    simplifyOptions: {
+      tolerance: 0.01,
+    } as SimplifyOptions,
   }),
 });
