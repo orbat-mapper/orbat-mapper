@@ -1,7 +1,7 @@
 import { fileURLToPath, URL } from "url";
 import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
-// import analyze from "rollup-plugin-visualizer";
+// import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -17,7 +17,7 @@ export default defineConfig({
   },
   // build: {
   //   rollupOptions: {
-  //     plugins: [analyze({ template: "treemap" })],
+  //     plugins: [visualizer()],
   //   },
   // },
 });

@@ -13,7 +13,7 @@ import {
   activeMapKey,
   activeScenarioKey,
 } from "@/components/injects";
-import { computed, ref, watch } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import { ScenarioFeatureMeta } from "@/types/scenarioGeoModels";
 import { useDebounceFn } from "@vueuse/core";
@@ -37,13 +37,16 @@ import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import { inputEventFilter } from "@/components/helpers";
 import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatureDropdownMenu.vue";
 import { ScenarioFeatureActions } from "@/types/constants";
-import FeatureTransformations from "@/modules/scenarioeditor/FeatureTransformations.vue";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
 }
 
 const props = defineProps<Props>();
+
+const FeatureTransformations = defineAsyncComponent(
+  () => import("@/modules/scenarioeditor/FeatureTransformations.vue"),
+);
 
 const {
   geo,
