@@ -21,6 +21,8 @@ import { EntityId } from "@/types/base";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { useActiveUnitStore } from "@/stores/dragStore";
+import CloseButton from "@/components/CloseButton.vue";
+import { useUiStore } from "@/stores/uiStore";
 
 const {
   unitActions,
@@ -31,6 +33,7 @@ const { activeParentId, activeUnitId, resetActiveParent } = useActiveUnitStore()
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
+const uiSettings = useUiStore();
 
 const sides = computed(() => {
   return state.sides.map((side) => state.getSideById(side));
@@ -94,13 +97,13 @@ const breadcrumbItems = computed((): BreadcrumbItem[] => {
     const sideGroups = side.groups.map((group) => state.getSideGroupById(group));
     const res = [
       {
-        name: isMobile.value ? "S" : side.name,
+        name: isMobile.value ? side.name.slice(0, 2) : side.name,
         items: sides.value,
         id: side.id,
         sidc: "",
       },
       {
-        name: isMobile.value ? "G" : sideGroup.name,
+        name: isMobile.value ? sideGroup.name.slice(0, 2) : sideGroup.name,
         items: sideGroups,
         id: sideGroup.id,
         sidc: "",
@@ -156,7 +159,11 @@ function onItemClick(entityId: EntityId) {
 </script>
 
 <template>
-  <ScrollArea class="flex border-b bg-gray-50 p-4 sm:p-3">
+  <ScrollArea class="relative flex border-b bg-gray-50 p-4 sm:p-3">
+    <CloseButton
+      @click="uiSettings.showOrbatBreadcrumbs = false"
+      class="absolute right-2 top-3 hidden sm:block"
+    />
     <div class="sm:flex sm:items-center sm:justify-center">
       <Breadcrumb class="w-max">
         <BreadcrumbList>

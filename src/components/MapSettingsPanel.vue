@@ -2,6 +2,9 @@
   <div class="space-y-4 p-1">
     <ToggleField v-model="uiSettings.showToolbar">Show toolbar</ToggleField>
     <ToggleField v-model="uiSettings.showTimeline">Show timeline</ToggleField>
+    <ToggleField v-model="uiSettings.showOrbatBreadcrumbs"
+      >Show ORBAT breadcrumbs</ToggleField
+    >
     <ToggleField v-model="settings.showScaleLine">Show scale line</ToggleField>
     <ToggleField v-model="settings.showLocation"
       >Show location of mouse cursor
