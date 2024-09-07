@@ -25,6 +25,7 @@ import {
 import { storeToRefs } from "pinia";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
 
 const props = defineProps<{ feature?: NScenarioFeature }>();
 
@@ -172,16 +173,17 @@ onUnmounted(() => {
       />
 
       <div v-if="transformation === 'buffer'">
-        <PanelSubHeading>Buffer</PanelSubHeading>
-        <div class="grid grid-cols-2 gap-4">
-          <InputGroup
-            label="Radius"
-            v-model.number="bufferOptions.radius"
-            type="text"
-            inputmode="numeric"
-          />
+        <PanelSubHeading>Buffer options</PanelSubHeading>
+        <div class="mt-2 grid grid-cols-1 gap-4">
+          <div class="col-span-1">
+            <NumberInputGroup label="Radius" v-model.number="bufferOptions.radius" />
+          </div>
           <SimpleSelect label="Units" :items="unitItems" v-model="bufferOptions.units" />
-          <InputGroup label="Steps" v-model="bufferOptions.steps" type="number" />
+          <NumberInputGroup
+            label="Steps"
+            v-model.number="bufferOptions.steps"
+            type="number"
+          />
         </div>
       </div>
       <div v-else-if="transformation === 'simplify'">
