@@ -131,6 +131,7 @@ export interface SideGroup {
   description?: string;
   subUnits: Unit[];
   symbolOptions?: UnitSymbolOptions;
+  isHidden?: boolean;
   _pid?: EntityId;
   _isNew?: boolean;
 }
@@ -138,6 +139,7 @@ export interface SideGroup {
 export interface Side extends SideData {
   id: EntityId;
   groups: SideGroup[];
+  isHidden?: boolean;
   _isNew?: boolean;
 }
 
