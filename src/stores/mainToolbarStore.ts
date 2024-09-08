@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { SimpleStyleSpec } from "@/geo/simplestyle";
 
 export type ToolbarType = "measurements" | "draw" | "track";
 
@@ -6,6 +7,7 @@ export const useMainToolbarStore = defineStore("mainToolbar", {
   state: () => ({
     currentToolbar: null as ToolbarType | null,
     addMultiple: false,
+    currentDrawStyle: {} as Partial<SimpleStyleSpec>,
   }),
   actions: {
     toggleToolbar(toolbar: ToolbarType | null) {

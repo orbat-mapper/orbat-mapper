@@ -107,7 +107,7 @@ const activeLayerIdRef = injectStrict(activeLayerKey);
 const { getOlLayerById } = useFeatureLayerUtils(mapRef.value);
 const { selectedFeatureIds, activeFeatureId } = useSelectedItems();
 
-const { addMultiple } = storeToRefs(useMainToolbarStore());
+const { addMultiple, currentDrawStyle } = storeToRefs(useMainToolbarStore());
 const [snap, toggleSnap] = useToggle(true);
 const [translate, toggleTranslate] = useToggle(false);
 let layer = ref<any>();
@@ -155,6 +155,8 @@ function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
   scenarioFeature.meta.name = `${scenarioFeature.meta.type} ${_zIndex + 1}`;
   scenarioFeature.meta._zIndex = _zIndex;
   scenarioFeature._pid = scenarioLayer.id;
+  scenarioFeature.style = currentDrawStyle.value ?? {};
+
   olFeature.set("_zIndex", _zIndex);
   scenarioLayer && geo.addFeature(scenarioFeature, scenarioLayer.id);
   return scenarioFeature;

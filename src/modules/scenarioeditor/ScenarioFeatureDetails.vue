@@ -27,6 +27,7 @@ import { TabPanel } from "@headlessui/vue";
 import TabWrapper from "@/components/TabWrapper.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useTabStore } from "@/stores/tabStore";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { storeToRefs } from "pinia";
 import { useScenarioFeatureActions } from "@/composables/scenarioActions";
 import { renderMarkdown } from "@/composables/formatting";
@@ -59,6 +60,7 @@ const featureActions = useScenarioFeatureActions();
 const { selectedFeatureIds, clear: clearSelection } = useSelectedItems();
 const uiStore = useUiStore();
 const { featureDetailsTab: selectedTab } = storeToRefs(useTabStore());
+const toolbarStore = useMainToolbarStore();
 
 const feature = computed(() => {
   if (props.selectedIds.size === 1) {
@@ -151,6 +153,9 @@ function doUpdateFeature(data: ScenarioFeatureUpdate) {
     });
   } else {
     featureOrFeatures && geo.updateFeature(featureOrFeatures, data);
+  }
+  if (feature.value) {
+    toolbarStore.currentDrawStyle = { ...feature.value.style };
   }
   debouncedResetMap();
 }
