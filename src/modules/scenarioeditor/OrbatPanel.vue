@@ -88,7 +88,7 @@ onMounted(() => {
       if (!instruction) return;
       const isDuplicateAction =
         location.initial.input.ctrlKey || location.initial.input.metaKey;
-      const isDuplicateState = isDuplicateAction && location.initial.input.shiftKey;
+      const isDuplicateState = isDuplicateAction && location.initial.input.altKey;
       if (isUnitDragItem(sourceData) && !isSideDragItem(destinationData)) {
         const target = mapInstructionToTarget(instruction);
         if (isUnitDragItem(destinationData)) {
