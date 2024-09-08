@@ -54,7 +54,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), { hideFilter: false });
 const activeScenario = injectStrict(activeScenarioKey);
-const { store, unitActions, io } = activeScenario;
+const { store, unitActions, io, time } = activeScenario;
 const activeParentId = injectStrict(activeParentKey);
 
 const { state, groupUpdate } = store;
@@ -88,20 +88,22 @@ onMounted(() => {
       if (!instruction) return;
       const isDuplicateAction =
         location.initial.input.ctrlKey || location.initial.input.metaKey;
+      const isDuplicateState = isDuplicateAction && location.initial.input.shiftKey;
       if (isUnitDragItem(sourceData) && !isSideDragItem(destinationData)) {
         const target = mapInstructionToTarget(instruction);
         if (isUnitDragItem(destinationData)) {
-          onUnitDrop(sourceData.unit, destinationData.unit, target, isDuplicateAction);
+          onUnitDrop(sourceData.unit, destinationData.unit, target, {
+            isDuplicateAction,
+            isDuplicateState,
+          });
           if (instruction.type === "make-child") {
             destinationData.unit._isOpen = true;
           }
         } else if (isSideGroupDragItem(destinationData)) {
-          onUnitDrop(
-            sourceData.unit,
-            destinationData.sideGroup,
-            target,
+          onUnitDrop(sourceData.unit, destinationData.sideGroup, target, {
             isDuplicateAction,
-          );
+            isDuplicateState,
+          });
         }
         const unitId = sourceData.unit.id;
         nextTick(() => {
@@ -171,15 +173,24 @@ function onUnitDrop(
   unit: NUnit,
   destinationUnit: NUnit | NSideGroup,
   target: DropTarget,
-  isDuplicateAction = false,
+
+  options: { isDuplicateAction?: boolean; isDuplicateState?: boolean } = {},
 ) {
+  const isDuplicateAction = options.isDuplicateAction ?? false;
+  const isDuplicateState = options.isDuplicateState ?? false;
   groupUpdate(() => {
     let unitId = unit.id;
     if (isDuplicateAction) {
-      unitId = unitActions.cloneUnit(unit.id, { includeSubordinates: true })!;
+      unitId = unitActions.cloneUnit(unit.id, {
+        includeSubordinates: true,
+        includeState: isDuplicateState,
+      })!;
     }
     changeUnitParent(unitId, destinationUnit.id, target);
   });
+  if (isDuplicateState) {
+    time.setCurrentTime(state.currentTime);
+  }
 }
 
 function onUnitClick(unit: NUnit, event: MouseEvent) {

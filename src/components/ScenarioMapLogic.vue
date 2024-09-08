@@ -166,16 +166,14 @@ function toggleMoveUnitInteraction(event: ObjectEvent) {
 
 emit("map-ready", { olMap, featureSelectInteraction, unitSelectInteraction });
 
-watch(
-  geo.everyVisibleUnit,
-  () => {
-    drawUnits();
-    drawHistory();
-    redrawSelectedUnits();
-    drawRangeRings();
-  },
-  { deep: true },
-);
+function redrawUnits() {
+  drawUnits();
+  drawHistory();
+  redrawSelectedUnits();
+  drawRangeRings();
+}
+
+watch(geo.everyVisibleUnit, () => redrawUnits(), { deep: true });
 
 watch([settingsStore, symbolSettings], () => {
   clearUnitStyleCache();

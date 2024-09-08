@@ -377,8 +377,16 @@ const buttonItems = computed(() => [
     onClick: () => actionWrapper(UnitActions.Clone),
   },
   {
+    label: "Duplicate (with state)",
+    onClick: () => actionWrapper(UnitActions.CloneWithState),
+  },
+  {
     label: "Duplicate hierarchy",
     onClick: () => actionWrapper(UnitActions.CloneWithSubordinates),
+  },
+  {
+    label: "Duplicate hierarchy (with state)",
+    onClick: () => actionWrapper(UnitActions.CloneWithSubordinatesAndState),
   },
   {
     label: "Move up",

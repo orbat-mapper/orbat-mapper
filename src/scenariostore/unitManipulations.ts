@@ -60,9 +60,15 @@ export interface WalkSubUnitsOptions {
 export interface CloneUnitOptions {
   target: CloneTarget;
   includeSubordinates: boolean;
+  includeState: boolean;
 }
 
 let counter = 1;
+
+function cloneUnitState(state: State[]) {
+  const stateCopy = klona(state);
+  return stateCopy.map((s) => ({ ...s, id: nanoid() }));
+}
 
 export function useUnitManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
@@ -435,7 +441,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     newUnit: NUnitAdd,
     parentId: EntityId,
     index?: number,
-    { noUndo = false } = {},
+    { noUndo = false, updateState = false } = {},
   ): EntityId {
     const unit = { ...newUnit } as NUnit;
     if (!unit.id) {
@@ -470,6 +476,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         }
       });
     }
+    if (updateState) updateUnitState(unit.id);
 
     return unit.id;
   }
@@ -510,7 +517,11 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
   function cloneUnit(
     unitId: EntityId,
-    { target = "below", includeSubordinates = false }: Partial<CloneUnitOptions> = {},
+    {
+      target = "below",
+      includeSubordinates = false,
+      includeState = false,
+    }: Partial<CloneUnitOptions> = {},
   ) {
     const unit = state.unitMap[unitId];
     if (!unit) return;
@@ -518,7 +529,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       ...unit,
       name: unit.name + counter++,
       id: nanoid(),
-      state: [],
+      state: includeState ? cloneUnitState(unit.state ?? []) : [],
       _state: null,
       subUnits: [],
     };
@@ -532,7 +543,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       if (idx < 0) idx = undefined;
     }
     groupUpdate(() => {
-      addUnit(newUnit, unit._pid, idx);
+      addUnit(newUnit, unit._pid, idx, { updateState: includeState });
       if (includeSubordinates) {
         function helper(currentUnitId: EntityId, parentId: EntityId) {
           const currentUnit = state.unitMap[currentUnitId]!;
@@ -540,11 +551,11 @@ export function useUnitManipulations(store: NewScenarioStore) {
             ...currentUnit,
             name: currentUnit.name,
             id: nanoid(),
-            state: [],
+            state: includeState ? cloneUnitState(currentUnit.state ?? []) : [],
             _state: null,
             subUnits: [],
           };
-          addUnit(newUnit, parentId);
+          addUnit(newUnit, parentId, undefined, { updateState: includeState });
           currentUnit.subUnits.forEach((id) => helper(id, newUnit.id));
         }
         unit.subUnits.forEach((e) => helper(e, newUnit.id));

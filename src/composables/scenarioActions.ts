@@ -74,8 +74,12 @@ export function useUnitActions(
     }
 
     action === UnitActions.Clone && unitActions.cloneUnit(unit.id);
+    action === UnitActions.CloneWithState &&
+      unitActions.cloneUnit(unit.id, { includeState: true });
     action === UnitActions.CloneWithSubordinates &&
       unitActions.cloneUnit(unit.id, { includeSubordinates: true });
+    action === UnitActions.CloneWithSubordinatesAndState &&
+      unitActions.cloneUnit(unit.id, { includeSubordinates: true, includeState: true });
     action === UnitActions.MoveUp && unitActions.reorderUnit(unit.id, "up");
     action === UnitActions.MoveDown && unitActions.reorderUnit(unit.id, "down");
     if (action === UnitActions.Expand) {
@@ -151,9 +155,14 @@ export function useUnitMenu(item: OrbatItemData | NOrbatItemData | Unit) {
       // { label: "Copy", action: UnitActions.Copy },
       // { label: "Paste", action: UnitActions.Paste },
       { label: "Duplicate", action: UnitActions.Clone },
+      { label: "Duplicate (with state)", action: UnitActions.CloneWithState },
       {
         label: "Duplicate hierarchy",
         action: UnitActions.CloneWithSubordinates,
+      },
+      {
+        label: "Duplicate hierarchy (with state)",
+        action: UnitActions.CloneWithSubordinatesAndState,
       },
       { label: "Move up", action: UnitActions.MoveUp },
       { label: "Move down", action: UnitActions.MoveDown },
@@ -200,7 +209,6 @@ export function useScenarioFeatureActions() {
 }
 
 export function useToeActions() {
-  const { showScenarioInfo, clear: clearSelected } = useSelectedItems();
   const uiStore = useUiStore();
   const scenarioInfoPanelStore = useScenarioInfoPanelStore();
 
