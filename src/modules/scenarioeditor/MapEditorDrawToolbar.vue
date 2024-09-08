@@ -135,7 +135,7 @@ function updateFeatureGeometryFromOlFeature(olFeature: Feature) {
     properties: { ...feature.properties, ...t.properties },
     geometry: t.geometry,
   };
-  geo.updateFeature(id, dataUpdate);
+  geo.updateFeature(id, dataUpdate, { noEmit: true });
 }
 
 function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
