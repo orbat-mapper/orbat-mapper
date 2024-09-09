@@ -2,6 +2,7 @@ import { NewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { computed } from "vue";
 import { CurrentState } from "@/types/scenarioModels";
 import {
+  CurrentScenarioFeatureState,
   FeatureId,
   LayerFeatureItem,
   Position,
@@ -21,6 +22,8 @@ import { klona } from "klona";
 import { moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
 import { DropTarget } from "@/components/types";
+import { createInitialState } from "@/scenariostore/time";
+import { Geometry } from "geojson";
 
 export type ScenarioMapLayerEvent =
   | {
@@ -53,6 +56,15 @@ export type UpdateOptions = {
 export interface MoveLayerOptions {
   toIndex?: number;
   direction?: "up" | "down";
+}
+
+function createInitialFeatureState(
+  feature: NScenarioFeature,
+): CurrentScenarioFeatureState | null {
+  return {
+    t: Number.MIN_SAFE_INTEGER,
+    geometry: feature.geometry,
+  };
 }
 
 export function useGeo(store: NewScenarioStore) {
@@ -91,6 +103,36 @@ export function useGeo(store: NewScenarioStore) {
       { label: "addUnitPosition", value: unitId },
     );
     store.state.unitStateCounter++;
+  }
+
+  function addFeatureStateGeometry(
+    featureId: FeatureId,
+    geometry: Geometry,
+    atTime?: number,
+  ) {
+    let newState: CurrentScenarioFeatureState | null = null;
+    update(
+      (s) => {
+        const u = s.featureMap[featureId];
+        const t = atTime ?? s.currentTime;
+        newState = { t, geometry };
+        if (t === s.currentTime) u._state = newState;
+        if (!u.state) u.state = [];
+        for (let i = 0, len = u.state.length; i < len; i++) {
+          if (t < u.state[i].t) {
+            u.state.splice(i, 0, { id: nanoid(), ...newState });
+            return;
+          } else if (t === u.state[i].t) {
+            u.state[i] = { ...u.state[i], ...newState };
+            return;
+          }
+        }
+        u.state.push({ id: nanoid(), ...newState });
+      },
+      { label: "updateFeatureState", value: featureId },
+    );
+
+    updateFeatureState(featureId);
   }
 
   function addLayer(data: NScenarioLayer) {
@@ -397,7 +439,7 @@ export function useGeo(store: NewScenarioStore) {
         (s) => {
           const feature = s.featureMap[featureId];
           if (!feature) return;
-          const { properties = {}, geometry, media, style = {}, meta = {} } = data;
+          const { properties = {}, geometry, media, style = {}, meta = {}, state } = data;
           Object.assign(feature.style, style);
           Object.assign(feature.meta, meta);
           feature.properties
@@ -405,6 +447,7 @@ export function useGeo(store: NewScenarioStore) {
             : (feature.properties = properties);
           Object.assign(feature.geometry, geometry);
 
+          if (state) feature.state = state;
           if (media) feature.media = media;
         },
         {
@@ -416,11 +459,45 @@ export function useGeo(store: NewScenarioStore) {
       const layer = state.featureMap[featureId];
       Object.assign(layer, data);
     }
+    if (data.state) {
+      updateFeatureState(featureId);
+    }
     if (noEmit) return;
     featureLayerEvent.trigger({ type: "updateFeature", id: featureId, data }).then();
     if (isGeometry) {
       featureLayerEvent.trigger({ type: "moveFeature", id: featureId }).then();
     }
+  }
+
+  function deleteFeatureStateEntry(featureId: FeatureId, index: number) {
+    update((s) => {
+      const _feature = s.featureMap[featureId];
+      if (!_feature) return;
+      _feature.state?.splice(index, 1);
+    });
+
+    updateFeatureState(featureId);
+  }
+
+  function updateFeatureState(featureId: FeatureId, undoable = false) {
+    const feature = state.featureMap[featureId];
+    if (!feature) return;
+    const timestamp = state.currentTime;
+    if (!feature.state || !feature.state.length) {
+      store.state.featureStateCounter++;
+      feature._state = undefined;
+      return;
+    }
+    let currentState = createInitialFeatureState(feature);
+    for (const s of feature.state) {
+      if (s.t <= timestamp) {
+        currentState = { ...currentState, ...s };
+      } else {
+        break;
+      }
+    }
+    feature._state = currentState;
+    store.state.featureStateCounter++;
   }
 
   const itemsInfo = computed<LayerFeatureItem[]>(() => {
@@ -462,6 +539,7 @@ export function useGeo(store: NewScenarioStore) {
     duplicateFeature,
     deleteFeature,
     updateFeature,
+    deleteFeatureStateEntry,
     itemsInfo,
     layers,
     layersFeatures,
@@ -475,5 +553,6 @@ export function useGeo(store: NewScenarioStore) {
     onFeatureLayerEvent: featureLayerEvent.on,
     moveMapLayer,
     reorderFeature,
+    addFeatureStateGeometry,
   };
 }

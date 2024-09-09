@@ -246,8 +246,8 @@ function updateEvents(minDate: Date, maxDate: Date) {
 }
 
 watch(
-  () => store.state.unitStateCounter,
-  () => {
+  [() => store.state.unitStateCounter, () => store.state.featureStateCounter],
+  (a, b) => {
     const { histogram: hg, max: mc } = computeTimeHistogram();
     histogram = hg;
     maxCount = mc;

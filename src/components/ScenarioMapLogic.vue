@@ -35,6 +35,7 @@ import { useDayNightLayer } from "@/composables/geoDayNight";
 import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
 import { useSearchActions } from "@/composables/searchActions";
 import { useScenarioFeatureLayers } from "@/modules/scenarioeditor/scenarioFeatureLayers";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -113,6 +114,8 @@ const {
   enable: unitSelectEnabled,
 });
 
+const { selectedFeatureIds } = useSelectedItems();
+
 // Order of select interactions is important. The interaction that is added last
 // will be the one that receives the select event first and can stop the propagation.
 olMap.addInteraction(unitSelectInteraction);
@@ -187,6 +190,14 @@ watch(
       doClearCache: false,
       filterVisible: !doNotFilterLayers.value,
     });
+    // trigger redraw of selected features
+    if (selectedFeatureIds.value.size > 0) {
+      const ids = Array.from(selectedFeatureIds.value);
+      selectedFeatureIds.value.clear();
+      for (const id of ids) {
+        selectedFeatureIds.value.add(id);
+      }
+    }
   },
 );
 

@@ -8,6 +8,7 @@ export const useMainToolbarStore = defineStore("mainToolbar", {
     currentToolbar: null as ToolbarType | null,
     addMultiple: false,
     currentDrawStyle: {} as Partial<SimpleStyleSpec>,
+    modifyFeatureState: false,
   }),
   actions: {
     toggleToolbar(toolbar: ToolbarType | null) {

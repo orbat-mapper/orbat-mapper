@@ -1,6 +1,11 @@
 import { NewScenarioStore } from "./newScenarioStore";
 import { CurrentState } from "@/types/scenarioModels";
-import { NScenarioEvent, NUnit, ScenarioEventUpdate } from "@/types/internalModels";
+import {
+  NScenarioEvent,
+  NScenarioFeature,
+  NUnit,
+  ScenarioEventUpdate,
+} from "@/types/internalModels";
 import dayjs, { ManipulateType } from "dayjs";
 import { computed } from "vue";
 import turfLength from "@turf/length";
@@ -10,6 +15,10 @@ import { EntityId } from "@/types/base";
 import { klona } from "klona";
 import { createEventHook } from "@vueuse/core";
 import { invalidateUnitStyle } from "@/geo/unitStyles";
+import {
+  CurrentScenarioFeatureState,
+  ScenarioFeatureState,
+} from "@/types/scenarioGeoModels";
 
 export type GoToScenarioEventOptions = {
   silent?: boolean;
@@ -28,6 +37,15 @@ export function createInitialState(unit: NUnit): CurrentState | null {
       sidc: unit.sidc,
     };
   return null;
+}
+
+function createInitialFeatureState(
+  feature: NScenarioFeature,
+): CurrentScenarioFeatureState | null {
+  return {
+    t: Number.MIN_SAFE_INTEGER,
+    geometry: feature.geometry,
+  };
 }
 
 export function useScenarioTime(store: NewScenarioStore) {
@@ -90,9 +108,19 @@ export function useScenarioTime(store: NewScenarioStore) {
         const feature = state.featureMap[featureId];
         const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
         const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
-
-        if (feature)
-          feature._hidden = timestamp <= visibleFromT || timestamp >= visibleUntilT;
+        if (!feature) return;
+        feature._hidden = timestamp <= visibleFromT || timestamp >= visibleUntilT;
+        if (feature.state?.length) {
+          let currentState = createInitialFeatureState(feature);
+          for (const s of feature.state) {
+            if (s.t <= timestamp) {
+              currentState = { ...currentState, ...s };
+            } else {
+              break;
+            }
+          }
+          feature._state = currentState;
+        }
       });
     });
     state.currentTime = timestamp;
@@ -150,6 +178,15 @@ export function useScenarioTime(store: NewScenarioStore) {
 
     Object.values(state.unitMap).forEach((unit) => {
       (unit?.state || []).forEach((s) => {
+        // round to nearest hour
+        const t = Math.round(s.t / 3600000) * 3600000;
+        histogram[t] = (histogram[t] || 0) + 1;
+        max = Math.max(max, histogram[t]);
+      });
+    });
+
+    Object.values(state.featureMap).forEach((feature) => {
+      (feature?.state || []).forEach((s) => {
         // round to nearest hour
         const t = Math.round(s.t / 3600000) * 3600000;
         histogram[t] = (histogram[t] || 0) + 1;

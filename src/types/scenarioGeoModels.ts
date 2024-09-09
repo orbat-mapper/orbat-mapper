@@ -1,4 +1,4 @@
-import type { Feature as GeoJsonFeature, LineString, Point, Polygon } from "geojson";
+import type { Feature as GeoJsonFeature, Geometry } from "geojson";
 import { FillStyleSpec, SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
 import { ScenarioTime } from "@/types/base";
 import {
@@ -48,7 +48,7 @@ export interface ScenarioFeatureMeta extends Partial<VisibilityInfo> {
 export interface ScenarioFeatureState extends Partial<ScenarioEventDescription> {
   id: string;
   t: ScenarioTime;
-  geometry?: Point | LineString | Polygon;
+  geometry?: Geometry;
   properties?: ScenarioFeatureProperties;
 }
 

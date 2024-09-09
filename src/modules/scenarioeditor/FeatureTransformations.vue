@@ -92,7 +92,7 @@ function doTransformation(
   feature: NScenarioFeature,
   { transform, options }: TransformationOperation,
 ): Feature | null | undefined {
-  const geoJSONFeature = turfFeature(feature.geometry);
+  const geoJSONFeature = turfFeature(feature?._state?.geometry ?? feature.geometry);
   if (transform === "buffer") {
     const { radius, steps = 64, units = "kilometers" } = options;
     return turfBuffer(geoJSONFeature, radius, { units, steps });
@@ -113,7 +113,7 @@ function doTransformation(
 }
 
 watch(
-  () => props.feature?.geometry,
+  [() => props.feature?.geometry, () => props.feature?._state?.geometry],
   () => {
     toggleRedraw.value = !toggleRedraw.value;
   },

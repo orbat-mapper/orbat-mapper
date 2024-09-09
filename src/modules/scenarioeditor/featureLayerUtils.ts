@@ -100,7 +100,16 @@ export function createScenarioLayerFeatures(
     featureProjection,
   });
   const olFeatures: Feature[] = [];
-  features.forEach((feature, index) => {
+  features.forEach((fullFeature, index) => {
+    let feature = fullFeature;
+    if (fullFeature._state) {
+      const { geometry, properties, ...rest } = fullFeature._state;
+      feature = {
+        ...fullFeature,
+        geometry: geometry || fullFeature.geometry,
+      };
+    }
+
     feature.meta._zIndex = index;
     if (feature.meta?.radius && feature.geometry.type === "Point") {
       const newRadius = convertRadius(

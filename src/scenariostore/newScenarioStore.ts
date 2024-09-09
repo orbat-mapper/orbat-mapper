@@ -289,6 +289,12 @@ function prepareScenario(newScenario: Scenario): ScenarioState {
     };
     layer.features.forEach((feature) => {
       const tmp = { ...feature };
+      tmp.state = tmp.state?.map((s) => ({
+        ...s,
+        t: +dayjs(s.t),
+        id: s.id || nanoid(),
+      }));
+
       tmp.meta = mapVisibility(tmp.meta);
       featureMap[feature.id] = { ...tmp, _pid: layer.id };
     });
@@ -364,6 +370,7 @@ export type ActionLabel =
   | "addUnitPosition"
   | "updateFeature"
   | "updateFeatureGeometry"
+  | "updateFeatureState"
   | "addSide"
   | "updateLayer"
   | "moveLayer"

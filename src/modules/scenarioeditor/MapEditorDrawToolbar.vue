@@ -2,7 +2,7 @@
   <FloatingPanel
     class="pointer-events-auto flex items-center space-x-0 rounded-md bg-white p-1"
   >
-    <p class="px-2 text-sm font-medium text-gray-500">Draw</p>
+    <p class="hidden px-2 text-sm font-medium text-gray-500 sm:block">Draw</p>
     <div class="h-5 border-l border-gray-300" />
     <MainToolbarButton title="Select" :active="!currentDrawType" @click="cancel()">
       <SelectIcon class="h-5 w-5" />
@@ -44,6 +44,13 @@
       <MainToolbarButton title="Edit" @click="startModify()" :active="isModifying">
         <EditIcon class="h-5 w-5" />
       </MainToolbarButton>
+      <MainToolbarButton
+        title="Modify feature history"
+        @click="toggleModifyHistory()"
+        :active="modifyHistory"
+      >
+        <IconClockEdit class="h-5 w-5" />
+      </MainToolbarButton>
       <MainToolbarButton title="translate" @click="toggleTranslate()" :active="translate">
         <MoveIcon class="h-5 w-5" />
       </MainToolbarButton>
@@ -72,6 +79,7 @@ import {
   IconVectorCircleVariant as CircleIcon,
   IconVectorLine as LineStringIcon,
   IconVectorSquare as PolygonIcon,
+  IconClockEditOutline as IconClockEdit,
 } from "@iconify-prerendered/vue-mdi";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 
@@ -110,6 +118,8 @@ const { selectedFeatureIds, activeFeatureId } = useSelectedItems();
 const { addMultiple, currentDrawStyle } = storeToRefs(useMainToolbarStore());
 const [snap, toggleSnap] = useToggle(true);
 const [translate, toggleTranslate] = useToggle(false);
+const [modifyHistory, toggleModifyHistory] = useToggle(false);
+
 let layer = ref<any>();
 
 watch(
@@ -124,7 +134,7 @@ watch(
   { immediate: true },
 );
 
-function updateFeatureGeometryFromOlFeature(olFeature: Feature) {
+function updateFeatureGeometryFromOlFeature(olFeature: Feature, updateState = false) {
   const t = convertOlFeatureToScenarioFeature(olFeature);
   const id = olFeature.getId();
   if (!id) return;
@@ -135,7 +145,11 @@ function updateFeatureGeometryFromOlFeature(olFeature: Feature) {
     properties: { ...feature.properties, ...t.properties },
     geometry: t.geometry,
   };
-  geo.updateFeature(id, dataUpdate, { noEmit: true });
+  if (updateState) {
+    geo.addFeatureStateGeometry(id, t.geometry);
+  } else {
+    geo.updateFeature(id, dataUpdate, { noEmit: true });
+  }
 }
 
 function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
@@ -171,7 +185,9 @@ const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawi
       activeFeatureId.value = newFeature.id;
     },
     modifyHandler: (olFeatures) => {
-      olFeatures.forEach((f) => updateFeatureGeometryFromOlFeature(f));
+      olFeatures.forEach((f) =>
+        updateFeatureGeometryFromOlFeature(f, modifyHistory.value),
+      );
     },
     snap,
     translate,
