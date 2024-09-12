@@ -16,13 +16,15 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed, watch } from "vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
+import { NUnit } from "@/types/internalModels";
 import { EntityId } from "@/types/base";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import CloseButton from "@/components/CloseButton.vue";
 import { useUiStore } from "@/stores/uiStore";
+import UnitBreadcrumbItem from "@/modules/scenarioeditor/UnitBreadcrumbItem.vue";
+import { BreadcrumbItemType } from "@/modules/scenarioeditor/types";
 
 const {
   unitActions,
@@ -59,18 +61,7 @@ watch(
   { flush: "sync" },
 );
 
-type BreadcrumbItem = {
-  name: string;
-  items?: ((NSide | NSideGroup | NUnit) & {
-    symbolOptions: Record<string, any>;
-    sidc: string;
-  })[];
-  id?: EntityId;
-  sidc?: string;
-  symbolOptions?: Record<string, any>;
-};
-
-const breadcrumbItems = computed((): BreadcrumbItem[] => {
+const breadcrumbItems = computed((): BreadcrumbItemType[] => {
   if (!activeParentId.value) return [];
   const { side, sideGroup, parents } = unitActions.getUnitHierarchy(
     activeParentId.value!,
@@ -123,7 +114,7 @@ const breadcrumbItems = computed((): BreadcrumbItem[] => {
         }),
       });
     }
-    return res as BreadcrumbItem[];
+    return res as BreadcrumbItemType[];
   } catch (e) {
     resetActiveParent();
     return [];
@@ -153,8 +144,6 @@ function onItemClick(entityId: EntityId) {
     activeUnitId.value = unit.id;
     return;
   }
-
-  console.log(side, sideGroup, parents);
 }
 </script>
 
@@ -171,18 +160,7 @@ function onItemClick(entityId: EntityId) {
             <BreadcrumbItem class="text-gray-800">
               <DropdownMenu v-if="(item.items?.length ?? 0) >= 1">
                 <DropdownMenuTrigger class="flex items-center gap-1">
-                  <div class="flex h-6 items-center overflow-clip">
-                    <MilitarySymbol
-                      v-if="item.sidc"
-                      :sidc="item.sidc"
-                      :options="item.symbolOptions ?? {}"
-                      :size="15"
-                      class="w-7"
-                    />
-                    <span :class="item.symbolOptions?.reinforcedReduced ? 'ml-2' : ''">{{
-                      item.name
-                    }}</span>
-                  </div>
+                  <UnitBreadcrumbItem :item="item" :key="item.id" />
                   <ChevronDown class="h-4 w-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">

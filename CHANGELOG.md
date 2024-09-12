@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 September 2024
 
+- Add drag and drop from unit breadcrumbs to the map.
 - Add experimental support for time varying scenario feature geometries.
 - Copy unit hierarchy with state using Ctrl/Meta+alt+drag-and-drop.
 - Add option for duplicating a unit (and unit hierarchy) including its state.

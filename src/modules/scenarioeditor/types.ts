@@ -38,3 +38,14 @@ export interface TableColumn extends SelectItem<ColumnField> {
 }
 
 export type DetailsPanel = "unit" | "event" | "mapLayer" | "feature" | "scenario";
+
+export type BreadcrumbItemType = {
+  name: string;
+  items?: ((NSide | NSideGroup | NUnit) & {
+    symbolOptions: Record<string, any>;
+    sidc: string;
+  })[];
+  id?: EntityId;
+  sidc?: string;
+  symbolOptions?: Record<string, any>;
+};
