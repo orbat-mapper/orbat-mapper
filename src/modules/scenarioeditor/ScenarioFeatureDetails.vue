@@ -65,7 +65,7 @@ const toolbarStore = useMainToolbarStore();
 
 const feature = computed(() => {
   if (props.selectedIds.size === 1) {
-    return geo.getFeatureById(props.selectedIds.values().next().value).feature;
+    return geo.getFeatureById(props.selectedIds.values().next().value!).feature;
   }
   return null;
 });

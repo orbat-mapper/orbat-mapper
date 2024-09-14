@@ -272,9 +272,9 @@ const combinedSymbolOptions = computed(() => ({
 
 const finalSymbolOptions = computed(() => ({
   ...combinedSymbolOptions.value,
-  ...cleanObject(
-    { reinforcedReduced: mapReinforcedStatus2Field(reinforcedReducedValue.value) } || {},
-  ),
+  ...cleanObject({
+    reinforcedReduced: mapReinforcedStatus2Field(reinforcedReducedValue.value),
+  }),
 }));
 
 // remove empty values in object

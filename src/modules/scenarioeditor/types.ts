@@ -44,8 +44,10 @@ export type BreadcrumbItemType = {
   items?: ((NSide | NSideGroup | NUnit) & {
     symbolOptions: Record<string, any>;
     sidc: string;
+    location?: boolean;
   })[];
   id?: EntityId;
   sidc?: string;
   symbolOptions?: Record<string, any>;
+  location?: boolean;
 };

@@ -10,9 +10,13 @@
         :class="{ 'opacity-20': isDragged }"
       />
     </div>
-    <span :class="item.symbolOptions?.reinforcedReduced ? 'ml-2' : ''">{{
-      item.name
-    }}</span>
+    <span
+      :class="[
+        item.symbolOptions?.reinforcedReduced ? 'ml-2' : '',
+        item.location ? 'text-red-900 underline' : '',
+      ]"
+      >{{ item.name }}</span
+    >
   </div>
 </template>
 <script setup lang="ts">
@@ -28,7 +32,6 @@ import { activeScenarioKey } from "@/components/injects";
 const props = defineProps<{ item: BreadcrumbItemType }>();
 
 const {
-  unitActions,
   store: { state },
 } = injectStrict(activeScenarioKey);
 
@@ -44,7 +47,7 @@ onMounted(() => {
   }
   dndCleanup = draggable({
     element: dragItemRef.value,
-    getInitialData: () => getUnitDragItem({ unit }),
+    getInitialData: () => getUnitDragItem({ unit }, "breadcrumbs"),
     onDragStart: () => (isDragged.value = true),
     onDrop: () => (isDragged.value = false),
   });

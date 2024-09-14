@@ -14,7 +14,7 @@ import {
 import { ChevronDown } from "lucide-vue-next";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { computed, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { NUnit } from "@/types/internalModels";
 import { EntityId } from "@/types/base";
@@ -25,6 +25,8 @@ import CloseButton from "@/components/CloseButton.vue";
 import { useUiStore } from "@/stores/uiStore";
 import UnitBreadcrumbItem from "@/modules/scenarioeditor/UnitBreadcrumbItem.vue";
 import { BreadcrumbItemType } from "@/modules/scenarioeditor/types";
+import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { isUnitDragItem } from "@/types/draggables";
 
 const {
   unitActions,
@@ -36,6 +38,8 @@ const { activeParentId, activeUnitId, resetActiveParent } = useActiveUnitStore()
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 const uiSettings = useUiStore();
+
+let isDragged = ref(false);
 
 const sides = computed(() => {
   return state.sides.map((side) => state.getSideById(side));
@@ -76,11 +80,13 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
       return {
         name: uunit.shortName || uunit.name,
         sidc: uunit.sidc || "",
+        location: Boolean(uunit._state?.location),
         id: uunit.id,
         symbolOptions: unitActions.getCombinedSymbolOptions(uunit),
         items: parent.subUnits.map((unitId) => ({
           ...state.getUnitById(unitId),
           symbolOptions: unitActions.getCombinedSymbolOptions(state.getUnitById(unitId)),
+          location: Boolean(uunit._state?.location),
         })),
       };
     });
@@ -110,6 +116,7 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
           return {
             ...state.getUnitById(unit.id),
             symbolOptions: unitActions.getCombinedSymbolOptions(unit as any),
+            location: Boolean(unit._state?.location),
           };
         }),
       });
@@ -145,10 +152,28 @@ function onItemClick(entityId: EntityId) {
     return;
   }
 }
+
+let cleanup = () => {};
+
+onMounted(() => {
+  cleanup = monitorForElements({
+    canMonitor: ({ source }) =>
+      isUnitDragItem(source.data) && source.data.source === "breadcrumbs",
+    onDragStart: () => (isDragged.value = true),
+    onDrop: () => (isDragged.value = false),
+  });
+});
+
+onUnmounted(() => {
+  cleanup();
+});
 </script>
 
 <template>
-  <ScrollArea class="relative flex border-b bg-gray-50 p-4 sm:p-3">
+  <ScrollArea
+    class="relative flex border-b p-4 sm:p-3"
+    :class="isDragged ? 'bg-gray-200' : 'bg-gray-50'"
+  >
     <CloseButton
       @click="uiSettings.showOrbatBreadcrumbs = false"
       class="absolute right-2 top-3 hidden sm:block"
@@ -176,7 +201,8 @@ function onItemClick(entityId: EntityId) {
                           :options="subItem.symbolOptions" /></span
                       ><span :class="[item.id === subItem.id ? 'font-semibold' : '']">{{
                         subItem.name
-                      }}</span>
+                      }}</span
+                      ><span v-if="subItem.location" class="text-red-700">&deg;</span>
                     </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>

@@ -20,6 +20,8 @@ const privateUnitDragKey = Symbol("unit");
 const privateSideKey = Symbol("side");
 const privateSideGroupKey = Symbol("sideGroup");
 
+export type UnitDragItemSource = "orbatTree" | "breadcrumbs";
+
 export type ScenarioFeatureDragItem = {
   [privateKey]: boolean;
   feature: NScenarioFeature;
@@ -33,6 +35,7 @@ export type ScenarioFeatureLayerDragItem = {
 export type UnitDragItem = {
   [privateUnitDragKey]: boolean;
   unit: NUnit;
+  source?: UnitDragItemSource;
 };
 
 export type SideGroupDragItem = {
@@ -77,10 +80,12 @@ export function isSideGroupDragItem(
 
 export function getUnitDragItem(
   data: Omit<UnitDragItem, typeof privateUnitDragKey>,
+  source?: UnitDragItemSource,
 ): UnitDragItem {
   return {
     [privateUnitDragKey]: true,
     ...data,
+    source,
   };
 }
 
