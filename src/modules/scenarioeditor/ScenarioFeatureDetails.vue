@@ -86,7 +86,7 @@ function toggleEditMode() {
   isEditMode.value = !isEditMode.value;
   isEditMediaMode.value = false;
   if (isEditMode.value) {
-    selectedTab.value = 0;
+    selectedTab.value = 1;
   }
 }
 
@@ -96,12 +96,12 @@ function toggleEditMediaMode() {
   isEditMediaMode.value = !isEditMediaMode.value;
   isEditMode.value = false;
   if (isEditMediaMode.value) {
-    selectedTab.value = 0;
+    selectedTab.value = 1;
   }
 }
 
 function showStylePanel() {
-  selectedTab.value = 1;
+  selectedTab.value = 0;
 }
 
 watch(
@@ -245,14 +245,14 @@ function onAction(action: ScenarioFeatureActions) {
         <div v-if="!isEditing" class="prose mt-4">
           <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
         </div>
-        <div v-else-if="isEditMode">
+        <div v-else-if="isEditMode" class="mt-4">
           <EditMetaForm
             :item="feature"
             @update="doMetaUpdate"
             @cancel="toggleEditMode()"
           />
         </div>
-        <div v-else-if="isEditMediaMode">
+        <div v-else-if="isEditMediaMode" class="mt-4">
           <EditMediaForm
             :media="media"
             @cancel="toggleEditMediaMode()"
