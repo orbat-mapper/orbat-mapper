@@ -1,20 +1,25 @@
 <script setup lang="ts">
-import { feature as turfFeature } from "@turf/helpers";
+import {
+  feature as turfFeature,
+  featureCollection as turfFeatureCollection,
+} from "@turf/helpers";
 import { buffer as turfBuffer } from "@turf/buffer";
 import { simplify as turfSimplify } from "@turf/simplify";
+import { bbox } from "@turf/bbox";
+import { bboxPolygon } from "@turf/bbox-polygon";
+import { convex } from "@turf/convex";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
-import { onUnmounted, ref, watch, watchEffect } from "vue";
+import { computed, onUnmounted, ref, watch, watchEffect } from "vue";
 import { SelectItem } from "@/components/types";
-import InputGroup from "@/components/InputGroup.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict, nanoid } from "@/utils";
 import { activeMapKey, activeScenarioKey } from "@/components/injects";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import type { NScenarioFeature } from "@/types/internalModels";
-import type { Feature } from "geojson";
+import type { Feature, FeatureCollection } from "geojson";
 import { useDebounceFn } from "@vueuse/core";
-import { bbox, bboxPolygon, convex, Units } from "@turf/turf";
+import { geometryCollection, Units } from "@turf/turf";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";
@@ -26,12 +31,21 @@ import { storeToRefs } from "pinia";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
+import { useSelectedItems } from "@/stores/selectedStore";
 
-const props = defineProps<{ feature?: NScenarioFeature }>();
+const props = defineProps<{}>();
 
 const scn = injectStrict(activeScenarioKey);
 
 const olMapRef = injectStrict(activeMapKey);
+
+const { selectedFeatureIds } = useSelectedItems();
+const selectedFeatures = computed(() => {
+  return Array.from(selectedFeatureIds.value).map(
+    (id) => scn.geo.getFeatureById(id)?.feature,
+  );
+});
+const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
 const transformationOptions: SelectItem[] = [
   { label: "Buffer", value: "buffer" },
@@ -66,8 +80,8 @@ const previewLayer = new VectorLayer({
 olMapRef.value.addLayer(previewLayer);
 
 const calculatePreview = useDebounceFn(
-  (feature: NScenarioFeature, op: TransformationOperation) => {
-    const geometry = doTransformation(feature, op);
+  (features: NScenarioFeature[], op: TransformationOperation) => {
+    const geometry = doTransformation(features, op);
     drawGeoJsonLayer(previewLayer, geometry);
   },
   500,
@@ -89,31 +103,42 @@ function createScenarioFeatureFromGeoJSON(
 }
 
 function doTransformation(
-  feature: NScenarioFeature,
+  features: NScenarioFeature[],
   { transform, options }: TransformationOperation,
-): Feature | null | undefined {
-  const geoJSONFeature = turfFeature(feature?._state?.geometry ?? feature.geometry);
+): Feature | FeatureCollection | null | undefined {
+  if (features.length === 0 || !features[0]) return;
+  const geoJSONFeatureOrFeatureCollection = isMultiMode.value
+    ? turfFeatureCollection(
+        selectedFeatures.value.map((f) => turfFeature(f?._state?.geometry ?? f.geometry)),
+      )
+    : turfFeature(features[0]?._state?.geometry ?? features[0].geometry);
   if (transform === "buffer") {
     const { radius, steps = 64, units = "kilometers" } = options;
-    return turfBuffer(geoJSONFeature, radius, { units, steps });
+    return turfBuffer(geoJSONFeatureOrFeatureCollection as any, radius, { units, steps });
   }
   if (transform === "boundingBox") {
-    return bboxPolygon(bbox(geoJSONFeature));
+    return bboxPolygon(bbox(geoJSONFeatureOrFeatureCollection));
   }
 
   if (transform === "convexHull") {
-    return convex(geoJSONFeature);
+    return convex(geoJSONFeatureOrFeatureCollection);
   }
 
   if (transform === "simplify") {
     const { tolerance = 0.5 } = options;
-    return turfSimplify(geoJSONFeature, { tolerance, highQuality: true });
+    return turfSimplify(geoJSONFeatureOrFeatureCollection, {
+      tolerance,
+      highQuality: true,
+    });
   }
   return null;
 }
 
 watch(
-  [() => props.feature?.geometry, () => props.feature?._state?.geometry],
+  [
+    () => selectedFeatures.value[0]?.geometry,
+    () => selectedFeatures.value[0]?._state?.geometry,
+  ],
   () => {
     toggleRedraw.value = !toggleRedraw.value;
   },
@@ -122,7 +147,7 @@ watch(
 
 watchEffect(() => {
   toggleRedraw.value;
-  if (!props.feature) return;
+  if (!selectedFeatures.value.length) return;
   if (transformation.value === "buffer") {
     const { radius, units, steps } = bufferOptions.value;
     currentOp.value = {
@@ -141,19 +166,30 @@ watchEffect(() => {
   }
 
   if (showPreview.value && currentOp.value) {
-    calculatePreview(props.feature, currentOp.value);
+    calculatePreview(selectedFeatures.value, currentOp.value);
   } else {
     previewLayer.getSource()?.clear();
   }
 });
 
 function onSubmit() {
-  if (!currentOp.value || !props.feature) return;
-  const t = doTransformation(props.feature, currentOp.value);
-  if (t) {
-    const scenarioFeature = createScenarioFeatureFromGeoJSON(t, props.feature._pid);
-    scenarioFeature.meta.name = `${props.feature.meta.name} (${currentOp.value.transform})`;
-    scn.geo.addFeature(scenarioFeature, props.feature._pid);
+  if (!currentOp.value || selectedFeatures.value.length === 0) return;
+  const activeFeature = selectedFeatures.value[0];
+  let transformedFeature = doTransformation(selectedFeatures.value, currentOp.value);
+  if (transformedFeature) {
+    if (transformedFeature.type === "FeatureCollection") {
+      transformedFeature = geometryCollection(
+        transformedFeature.features.map((f) => f.geometry) as any,
+      );
+    }
+    const layerId = activeFeature._pid;
+    const scenarioFeature = createScenarioFeatureFromGeoJSON(
+      transformedFeature,
+      selectedFeatures.value[0]._pid,
+    );
+    const featureName = isMultiMode.value ? "FeatureCollection" : activeFeature.meta.name;
+    scenarioFeature.meta.name = `${featureName} (${currentOp.value.transform})`;
+    scn.geo.addFeature(scenarioFeature, layerId);
     previewLayer.getSource()?.clear();
   }
 }
@@ -164,7 +200,7 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <div v-if="feature" class="pb-2">
+  <div v-if="selectedFeatureIds.size" class="pb-2">
     <form @submit.prevent="onSubmit" class="space-y-4">
       <SimpleSelect
         label="Transformation"
