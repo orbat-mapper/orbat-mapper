@@ -13,3 +13,9 @@ Check out the [tools section](../resources/tools.md) if you need something more 
 The development of this project is still ongoing. Some features are missing and not all of them have been
 fully documented. The user interface might also undergo major changes.
 :::
+
+::: info
+The user interface is currently not optimized for mobile devices. For the best editing experience
+use ORBAT Mapper on a laptop or desktop computer. Better support for mobile devices is planned for
+future releases.
+:::
