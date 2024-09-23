@@ -109,7 +109,12 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     guess.dataAsString = text;
     if (isFeatureCollection(json)) {
       guess.format = "geojson";
-      if ("uniqueDesignation" in (json.features[0]?.properties ?? {})) {
+      const geojsonProps = json.features[0]?.properties ?? {};
+      if (
+        "uniqueDesignation" in geojsonProps ||
+        "datetime" in geojsonProps ||
+        "drawable" in geojsonProps
+      ) {
         guess.dialect = "geojson-unitgenerator";
       }
     } else if (isGeoJsonFeature(json)) {

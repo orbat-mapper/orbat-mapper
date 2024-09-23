@@ -31,6 +31,7 @@ interface Props {
   selectAll?: boolean;
   showGlobalFilter?: boolean;
   initialState?: InitialTableState;
+  getSubRows?: (row: any) => any[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -68,7 +69,7 @@ const selectColumn: ColumnDef<any, any> = {
       type: "checkbox",
       checked: row.getIsSelected(),
       disabled: !row.getCanSelect(),
-
+      indeterminate: row.getIsSomeSelected(),
       class:
         "m-2 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6",
       onChange: row.getToggleSelectedHandler(),
@@ -113,6 +114,7 @@ const table = useVueTable({
   onRowSelectionChange: (updateOrValue) => valueUpdater(updateOrValue, rowSelection),
   // onGroupingChange: (updateOrValue) => valueUpdater(updateOrValue, grouping),
   onGlobalFilterChange: (updateOrValue) => valueUpdater(updateOrValue, query),
+  getSubRows: props.getSubRows,
 });
 
 const rowVirtualizerOptions = computed(() => {
@@ -120,7 +122,7 @@ const rowVirtualizerOptions = computed(() => {
     count: rows.value.length,
     getScrollElement: () => parentRef.value,
     estimateSize: () => props.rowHeight,
-    overscan: 5,
+    overscan: 50,
   };
 });
 const rows = computed(() => {
@@ -133,7 +135,7 @@ const virtualRows = computed(() => rowVirtualizer.value.getVirtualItems());
 
 watch([rowSelection, debouncedQuery], () => {
   const sel: any[] = [];
-  table.getFilteredSelectedRowModel().rows.forEach((row) => {
+  table.getFilteredSelectedRowModel().flatRows.forEach((row) => {
     sel.push(row.original);
   });
   emit("update:selected", sel);
