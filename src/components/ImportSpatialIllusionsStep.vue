@@ -91,6 +91,8 @@ function renderExpandCell({ getValue, row }: CellContext<SpatialIllusionsOrbat, 
     sidc: row.original.options.sidc,
     expanded: row.getIsExpanded(),
     level: row.depth,
+    canExpand: row.getCanExpand(),
+    onToggle: row.getToggleExpandedHandler(),
     symbolOptions,
   });
 }
