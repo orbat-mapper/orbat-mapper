@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-6 items-center overflow-clip">
+  <div class="flex h-7 items-center overflow-clip">
     <div ref="dragItemRef" class="relative flex flex-shrink-0 cursor-move">
       <MilitarySymbol
         v-if="item.sidc"
@@ -11,6 +11,7 @@
       />
     </div>
     <span
+      class="select-none"
       :class="[
         item.symbolOptions?.reinforcedReduced ? 'ml-2' : '',
         item.location ? 'text-red-900 underline' : '',
