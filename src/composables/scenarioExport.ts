@@ -317,12 +317,19 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   }
 
   function downloadAsOrbatMapper({
-    sides,
     fileName,
     scenarioName,
+    sideGroups,
   }: OrbatMapperExportSettings) {
     const scn = io.toObject();
-    const newScenario = { ...scn, sides: scn.sides.filter((e) => sides.includes(e.id)) };
+    const sidesWithFilteredGroups = scn.sides.map((side) => ({
+      ...side,
+      groups: side.groups.filter((g) => sideGroups.includes(g.id)),
+    }));
+    const newScenario = {
+      ...scn,
+      sides: sidesWithFilteredGroups.filter((e) => e.groups.length),
+    };
     newScenario.id = nanoid();
     newScenario.meta = {
       ...scn.meta!,

@@ -53,7 +53,7 @@ export interface GeoJsonSettings extends BaseExportSettings {
 }
 
 export interface OrbatMapperExportSettings extends BaseExportSettings {
-  sides: EntityId[];
+  sideGroups: EntityId[];
   scenarioName?: string;
 }
 

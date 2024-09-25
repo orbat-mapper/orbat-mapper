@@ -142,7 +142,7 @@ const form = ref<Form>({
   format: store.currentFormat ?? "orbatmapper",
   includeFeatures: false,
   includeUnits: true,
-  sides: [],
+  sideGroups: [],
   fileName: "scenario.json",
   embedIcons: true,
   useShortName: true,
