@@ -37,7 +37,7 @@
             class="inline-block w-full transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all sm:my-8 sm:p-6 sm:align-middle md:my-16"
             :class="maxWidth"
           >
-            <div class="">
+            <div class="overflow-auto p-0.5">
               <div class="mt-3 sm:ml-2 sm:mt-0">
                 <DialogTitle
                   as="h3"
