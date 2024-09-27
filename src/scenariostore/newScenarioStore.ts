@@ -71,7 +71,7 @@ export interface ScenarioState {
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
 
-function prepareScenario(newScenario: Scenario): ScenarioState {
+export function prepareScenario(newScenario: Scenario): ScenarioState {
   const unitMap: Record<EntityId, NUnit> = {};
   const sideMap: Record<EntityId, NSide> = {};
   const sideGroupMap: Record<EntityId, NSideGroup> = {};

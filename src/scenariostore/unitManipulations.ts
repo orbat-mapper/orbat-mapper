@@ -767,6 +767,15 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitState(unitId);
   }
 
+  function setUnitState(unitId: EntityId, state: State[]) {
+    update((s) => {
+      const unit = s.getUnitById(unitId);
+      if (!unit) return;
+      unit.state = state;
+    });
+    updateUnitState(unitId);
+  }
+
   function convertStateEntryToInitialLocation(unitId: EntityId, index: number) {
     const u = state.getUnitById(unitId);
     const stateEntry = u?.state?.[index];
@@ -798,6 +807,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       }
     }
     unit._state = currentState;
+    state.unitStateCounter++;
   }
 
   function updateUnitStateVia(
@@ -1157,6 +1167,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     deleteUnitStateEntry,
     deleteUnitStateEntryByStateId,
     clearUnitState,
+    setUnitState,
     units: computed(() => Object.values(state.unitMap)),
     getUnitOrSideGroup,
     getUnitById: (id: EntityId) => state.unitMap[id],

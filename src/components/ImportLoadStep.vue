@@ -222,6 +222,12 @@ async function onLoad() {
     emit("loaded", "orbatgenerator", data, fileInfo.value);
   }
 
+  if (format === "orbatmapper" && stringSource.value) {
+    const data = importJsonString<OrbatGeneratorOrbat>(stringSource.value);
+    NProgress.done();
+    emit("loaded", "orbatmapper", data, fileInfo.value);
+  }
+
   if (format === "xlsx" && stringSource.value) {
     send({ message: `Loaded data as ${format}` });
 

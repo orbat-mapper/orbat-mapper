@@ -81,6 +81,13 @@ onMounted(() => {
   if (props.selectAll) table.toggleAllRowsSelected(true);
 });
 
+watch(
+  () => props.data,
+  () => {
+    if (props.selectAll) table.toggleAllRowsSelected(true);
+  },
+);
+
 const computedColumns = computed((): ColumnDef<any, any>[] => {
   return [props.select && { ...selectColumn }, ...props.columns].filter(
     (e) => e,
@@ -122,7 +129,7 @@ const rowVirtualizerOptions = computed(() => {
     count: rows.value.length,
     getScrollElement: () => parentRef.value,
     estimateSize: () => props.rowHeight,
-    overscan: 50,
+    overscan: 20,
   };
 });
 const rows = computed(() => {

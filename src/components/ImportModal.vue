@@ -32,6 +32,10 @@ const ImportSpreadsheetStep = defineAsyncComponent(
   () => import("@/components/ImportSpreadsheetStep.vue"),
 );
 
+const ImportOrbatMapperStep = defineAsyncComponent(
+  () => import("@/components/ImportOrbatMapperStep.vue"),
+);
+
 type ImportState =
   | "select"
   | "milx"
@@ -40,7 +44,8 @@ type ImportState =
   | "orbatgenerator"
   | "image"
   | "kml"
-  | "xlsx";
+  | "xlsx"
+  | "orbatmapper";
 const importState = ref<ImportState>("select");
 const loadedData = shallowRef<any>([]);
 const fileInfo = shallowRef<ImportedFileInfo>();
@@ -125,6 +130,11 @@ function onCancel() {
       :file-info="fileInfo"
       @cancel="onCancel"
       @loaded="onImport"
+    />
+    <ImportOrbatMapperStep
+      v-else-if="importState === 'orbatmapper'"
+      :data="loadedData"
+      @cancel="onCancel"
     />
   </SimpleModal>
 </template>
