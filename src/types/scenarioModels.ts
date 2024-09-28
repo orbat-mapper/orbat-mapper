@@ -9,7 +9,7 @@ import type { EntityId, ScenarioTime } from "./base";
 import type { SidValue } from "@/symbology/values";
 import { type SymbolOptions } from "milsymbol";
 import { TextAmpValue } from "@/symbology/milsymbwrapper";
-import type { Geometry } from "geojson";
+import type { BBox, Geometry } from "geojson";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;
@@ -208,6 +208,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "0.31.0"
   | "0.30.0"
   | "0.20.0"
   | "0.19.0"
@@ -246,6 +247,7 @@ export interface ScenarioSettings {
   rangeRingGroups: RangeRingGroup[];
   statuses: UnitStatus[];
   map?: MapSettings;
+  boundingBox?: BBox;
 }
 
 export interface MapSettings {
