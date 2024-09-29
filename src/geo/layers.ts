@@ -12,7 +12,7 @@ import { nanoid } from "@/utils";
 import { NUnit } from "@/types/internalModels";
 import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils";
 
-export function createUnitLayer(): AnyVectorLayer {
+export function createUnitLayer() {
   return new VectorLayer({
     source: new VectorSource(),
     updateWhileInteracting: true,

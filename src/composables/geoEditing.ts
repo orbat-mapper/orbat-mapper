@@ -33,7 +33,7 @@ export interface GeoEditingOptions {
 
 export function useEditingInteraction(
   olMap: OLMap,
-  vectorLayer: MaybeRef<VectorLayer<Feature<Geometry>>>,
+  vectorLayer: MaybeRef<VectorLayer>,
   options: GeoEditingOptions = {},
 ) {
   let snapInteraction: Snap | undefined | null;

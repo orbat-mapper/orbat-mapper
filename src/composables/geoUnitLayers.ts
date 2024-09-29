@@ -164,7 +164,7 @@ export function useMapDrop(
 
 export function useMoveInteraction(
   mapRef: OLMap,
-  unitLayer: VectorLayer<Feature<Geometry>>,
+  unitLayer: VectorLayer,
   enabled: Ref<boolean>,
 ) {
   const {

@@ -49,7 +49,7 @@ import VectorLayer from "ol/layer/Vector";
 import LayerGroup from "ol/layer/Group";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/solid";
 import BaseLayerSwitcher from "./BaseLayerSwitcher.vue";
-import { AnyTileLayer, AnyVectorLayer, PointVectorLayer } from "@/geo/types";
+import { AnyTileLayer, AnyVectorLayer } from "@/geo/types";
 import TileSource from "ol/source/Tile";
 import { toLonLat } from "ol/proj";
 import OpacityInput from "./OpacityInput.vue";

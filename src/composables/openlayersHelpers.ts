@@ -4,13 +4,13 @@ import Feature from "ol/Feature";
 import type OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import { Collection } from "ol";
-import { AnyVectorLayer } from "@/geo/types";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import { tryOnBeforeUnmount } from "@vueuse/core";
 import { Vector as VectorSource } from "ol/source";
 import * as FileSaver from "file-saver";
 import { GeoJSON as GeoJSONFormat } from "ol/format";
 import type { GeoJSON } from "geojson";
+
 /**
  * Unregister open layers event automatically on unmount
  * @param eventKey
@@ -31,7 +31,7 @@ export function isCircle(feature: Feature) {
 
 export function getFeatureAndLayerById(
   featureId: FeatureId,
-  layerCollection: Collection<AnyVectorLayer>,
+  layerCollection: Collection<VectorLayer>,
 ) {
   for (let index = 0, ii = layerCollection.getLength(); index < ii; ++index) {
     const layer = layerCollection.item(index);
