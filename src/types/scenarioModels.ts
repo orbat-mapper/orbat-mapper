@@ -83,6 +83,7 @@ export interface Unit {
   status?: string;
   template?: EntityId;
   properties?: UnitProperties;
+  locked?: boolean;
   // internal runtime only state
   _state?: CurrentState | null;
   _pid?: EntityId; // parent
@@ -132,6 +133,7 @@ export interface SideGroup {
   subUnits: Unit[];
   symbolOptions?: UnitSymbolOptions;
   isHidden?: boolean;
+  locked?: boolean;
   _pid?: EntityId;
   _isNew?: boolean;
 }
@@ -140,6 +142,7 @@ export interface Side extends SideData {
   id: EntityId;
   groups: SideGroup[];
   isHidden?: boolean;
+  locked?: boolean;
   _isNew?: boolean;
 }
 

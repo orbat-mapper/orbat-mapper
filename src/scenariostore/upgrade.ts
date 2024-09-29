@@ -33,7 +33,7 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           ...rest
         } = upgradedFeature.properties ?? {};
 
-        const meta: Required<ScenarioFeatureMeta> = {
+        const meta: Required<Omit<ScenarioFeatureMeta, "locked">> = {
           type,
           visibleFromT,
           visibleUntilT,

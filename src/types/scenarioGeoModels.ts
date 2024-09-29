@@ -41,6 +41,7 @@ export interface ScenarioFeatureMeta extends Partial<VisibilityInfo> {
   description?: string;
   externalUrl?: string;
   radius?: number;
+  locked?: boolean;
   // internal runtime only state
   _zIndex?: number;
 }
@@ -77,6 +78,7 @@ export interface ScenarioLayer extends Partial<VisibilityInfo> {
   features: ScenarioFeature[];
   isHidden?: boolean;
   opacity?: number;
+  locked?: boolean;
   _isNew?: boolean;
   _isOpen?: boolean;
   _hidden?: boolean;
