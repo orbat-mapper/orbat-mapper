@@ -16,6 +16,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 interface Props {
   unit: NUnit;
   isMultiMode: boolean;
+  isLocked?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -150,13 +151,14 @@ function handleReset() {
                   : textAmplifiers.uniqueDesignation
               "
               @update:model-value="textAmplifiers[textAmpMap[field]] = $event"
-              :disabled="!overrideName"
+              :disabled="isLocked || !overrideName"
             />
             <TextAmpInput
               v-else
               :placeholder="field || placeholder"
               :model-value="textAmplifiers[textAmpMap[field]]"
               @update:model-value="textAmplifiers[textAmpMap[field]] = $event"
+              :disabled="isLocked"
             />
           </div>
 
@@ -171,8 +173,10 @@ function handleReset() {
           </div>
         </div>
         <footer class="mt-2 flex items-center justify-end gap-2 border-t pt-2">
-          <BaseButton small @click="handleReset">Reset</BaseButton>
-          <BaseButton small type="submit" secondary>Update</BaseButton>
+          <BaseButton small @click="handleReset" :disabled="isLocked">Reset</BaseButton>
+          <BaseButton small type="submit" secondary :disabled="isLocked"
+            >Update</BaseButton
+          >
         </footer>
       </form>
     </div>

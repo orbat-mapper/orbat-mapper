@@ -18,6 +18,8 @@ import { useToeActions } from "@/composables/scenarioActions";
 
 interface Props {
   unit: NUnit;
+  isLocked?: boolean;
+  isMultiMode?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -45,13 +47,14 @@ const groupItems = computed(() => {
   }));
 });
 
-const ringMenuItems: MenuItemData<RangeRingAction>[] = [
+const ringMenuItems = computed((): MenuItemData<RangeRingAction>[] => [
   {
     label: "Edit",
     action: RangeRingActions.Edit,
+    disabled: props.isLocked,
   },
-  { label: "Delete", action: RangeRingActions.Delete },
-];
+  { label: "Delete", action: RangeRingActions.Delete, disabled: props.isLocked },
+]);
 
 function addRangeRing() {
   unitActions.addRangeRing(props.unit.id, {
@@ -141,7 +144,8 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
       <button
         @click="addRangeRing()"
         type="button"
-        class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        :disabled="isLocked"
+        class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
       >
         + Add
       </button>
@@ -181,7 +185,7 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
       <tr
         v-for="(ring, index) in rangeRings"
         :key="ring.name"
-        @dblclick="editRing(index)"
+        @dblclick="!isLocked && editRing(index)"
         class="group"
       >
         <template v-if="index === editedIndex">
@@ -195,6 +199,7 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
                 autofocus
                 label="Name"
                 v-model="editedRangeRing.name"
+                :disabled="isLocked"
               />
               <InputGroupTemplate label="Range" v-slot="{ id }" class="col-span-1">
                 <div class="relative rounded-md shadow-sm">
@@ -252,9 +257,10 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
           <td class="relative">
             <input
               type="checkbox"
-              class="absolute left-6 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+              class="absolute left-6 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 disabled:opacity-50"
               :checked="!ring.hidden"
               @change="toggleRingVisibility(ring, index)"
+              :disabled="isLocked"
             />
           </td>
           <td class="px-2 text-sm">{{ getGroupName(ring) }}</td>
@@ -262,6 +268,7 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
             <RingStylePopover
               :ring-style="getRingStyle(ring)"
               @update="updateRingStyle(ring, index, $event)"
+              :disabled="isLocked"
             />
             <DotsMenu
               class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"

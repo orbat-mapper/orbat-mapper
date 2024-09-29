@@ -8,6 +8,7 @@ import { computed, ref } from "vue";
 
 interface Props {
   unit: NUnit;
+  isLocked?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -92,7 +93,7 @@ function updateAverageSpeed(data: UnitPropertyUpdate) {
             @click="showAverage = true"
           >
             <PropertyInput
-              v-if="showAverage"
+              v-if="!isLocked && showAverage"
               class="w-32"
               :property="props.unit.properties?.averageSpeed"
               @update-value="updateAverageSpeed"
@@ -106,7 +107,11 @@ function updateAverageSpeed(data: UnitPropertyUpdate) {
             class="flex cursor-pointer items-center justify-start"
             @click="showMax = true"
           >
-            <PropertyInput v-if="showMax" class="w-32" @update-value="updateMaxSpeed" />
+            <PropertyInput
+              v-if="!isLocked && showMax"
+              class="w-32"
+              @update-value="updateMaxSpeed"
+            />
             <span v-else>{{ maxSpeed }}</span>
           </td>
         </tr>

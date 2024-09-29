@@ -169,6 +169,7 @@ export function useMoveInteraction(
 ) {
   const {
     geo,
+    unitActions: { isUnitLocked },
     store: { state },
   } = injectStrict(activeScenarioKey);
   const modifyInteraction = new Modify({
@@ -179,11 +180,26 @@ export function useMoveInteraction(
   modifyInteraction.on(["modifystart", "modifyend"], (evt) => {
     mapRef.getTargetElement().style.cursor =
       evt.type === "modifystart" ? "grabbing" : "pointer";
+    if (evt.type === "modifystart") {
+      (evt as ModifyEvent).features.forEach((f) => {
+        const unitId = f.getId() as string;
+        if (isUnitLocked(unitId)) {
+          f.set("_geometry", f.getGeometry()?.clone(), true);
+        }
+      });
+    }
     if (evt.type === "modifyend") {
       const unitFeature = (evt as ModifyEvent).features.pop() as Feature<Point>;
       if (unitFeature) {
         const movedUnitId = unitFeature.getId() as string;
         if (!movedUnitId) return;
+
+        const oldGeometry = unitFeature.get("_geometry");
+        if (oldGeometry) {
+          unitFeature.setGeometry(oldGeometry);
+          unitFeature.set("_geometry", undefined, true);
+          return;
+        }
         const newCoordinate = unitFeature.getGeometry()?.getCoordinates();
         if (newCoordinate) geo.addUnitPosition(movedUnitId, toLonLat(newCoordinate));
       }

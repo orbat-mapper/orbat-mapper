@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import DotsMenu from "./DotsMenu.vue";
 import OrbatTree from "./OrbatTree.vue";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
+import { IconLockOutline } from "@iconify-prerendered/vue-mdi";
 import { SideAction, SideActions, UnitAction, UnitActions } from "@/types/constants";
 import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./EditSideGroupForm.vue";
@@ -13,10 +14,8 @@ import { activeScenarioKey } from "@/components/injects";
 
 import {
   getSideGroupDragItem,
-  idle,
   isSideGroupDragItem,
   isUnitDragItem,
-  ItemState,
 } from "@/types/draggables";
 import {
   attachInstruction,
@@ -72,6 +71,14 @@ const {
   { immediate: false },
 );
 
+const isLocked = computed(
+  () => !!(props.group.locked || state.sideMap[props.group._pid!].locked),
+);
+
+const isSideGroupLocked = computed(() => !!props.group.locked);
+
+const isSideLocked = computed(() => !!state.sideMap[props.group._pid!].locked);
+
 const combinedSymbolOptions = computed(() => {
   return {
     ...(state.sideMap[props.group._pid!].symbolOptions || {}),
@@ -95,7 +102,7 @@ onMounted(() => {
       element: dropRef.value!,
       dragHandle: dragRef.value!,
       getInitialData: () => getSideGroupDragItem({ sideGroup: props.group }),
-
+      canDrag: () => !isLocked.value,
       onDragStart: () => {
         isDragging.value = true;
       },
@@ -120,9 +127,10 @@ onMounted(() => {
       },
       canDrop: ({ source }) => {
         return (
-          isUnitDragItem(source.data) ||
-          (isSideGroupDragItem(source.data) &&
-            source.data.sideGroup.id !== props.group.id)
+          !isLocked.value &&
+          (isUnitDragItem(source.data) ||
+            (isSideGroupDragItem(source.data) &&
+              source.data.sideGroup.id !== props.group.id))
         );
       },
       onDragEnter: ({ self }) => {
@@ -160,14 +168,20 @@ const toggleOpen = () => {
   isOpen.value = !isOpen.value;
 };
 
-const sideGroupMenuItems: MenuItemData<SideAction>[] = [
-  { label: "Expand", action: SideActions.Expand },
-  { label: "Add root unit", action: SideActions.AddSubordinate },
-  { label: "Edit group", action: SideActions.Edit },
-  { label: "Delete group", action: SideActions.Delete },
-  { label: "Move up", action: SideActions.MoveUp },
-  { label: "Move down", action: SideActions.MoveDown },
-];
+const sideGroupMenuItems = computed((): MenuItemData<SideAction>[] => [
+  {
+    label: "Add root unit",
+    action: SideActions.AddSubordinate,
+    disabled: isLocked.value,
+  },
+  { label: "Edit group", action: SideActions.Edit, disabled: isLocked.value },
+  { label: "Delete group", action: SideActions.Delete, disabled: isLocked.value },
+  { label: "Move up", action: SideActions.MoveUp, disabled: isLocked.value },
+  { label: "Move down", action: SideActions.MoveDown, disabled: isLocked.value },
+  isSideGroupLocked.value
+    ? { label: "Unlock group", action: SideActions.Unlock, disabled: isSideLocked.value }
+    : { label: "Lock group", action: SideActions.Lock, disabled: isSideLocked.value },
+]);
 
 const onSideGroupAction = (group: NSideGroup, action: SideAction) => {
   if (action === SideActions.Expand) {
@@ -216,6 +230,11 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
           />
         </button>
       </div>
+      <IconLockOutline
+        v-if="isLocked"
+        class="size-5 text-gray-400"
+        :class="isSideLocked ? 'opacity-40' : ''"
+      />
       <DotsMenu
         :items="sideGroupMenuItems"
         @action="onSideGroupAction(group, $event)"

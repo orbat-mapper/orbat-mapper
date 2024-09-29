@@ -32,6 +32,7 @@
         <IconFilterVariantPlus v-if="checked" class="h-5 w-5" aria-hidden="true" />
         <IconFilterVariant v-else class="h-5 w-5" aria-hidden="true" />
       </Switch>
+      <IconLockOutline v-if="isLocked" class="h-6 w-6 text-gray-400" />
       <DotsMenu
         :items="sideMenuItems"
         @action="onSideAction"
@@ -75,6 +76,7 @@ import {
   IconDrag,
   IconFilterVariant,
   IconFilterVariantPlus,
+  IconLockOutline,
 } from "@iconify-prerendered/vue-mdi";
 import { SideAction, SideActions, type UnitAction } from "@/types/constants";
 import { useDebounce, useTimeoutFn } from "@vueuse/core";
@@ -99,7 +101,6 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import {
   getSideDragItem,
-  getSideGroupDragItem,
   isSideDragItem,
   isSideGroupDragItem,
   isUnitDragItem,
@@ -115,7 +116,9 @@ const props = withDefaults(defineProps<Props>(), { hideFilter: false });
 
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitAction): void;
+
   (e: "unit-click", unit: NUnit, event: MouseEvent): void;
+
   (
     e: "unit-drop",
     unit: NUnit,
@@ -153,6 +156,7 @@ const filterQuery = ref("");
 
 const showFilter = ref(false);
 const debouncedFilterQuery = useDebounce(filterQuery, 100);
+const isLocked = computed(() => !!props.side.locked);
 
 const sideGroups = computed(() =>
   props.side.groups.map((id) => store.state.sideGroupMap[id]),
@@ -238,14 +242,22 @@ onUnmounted(() => {
 
 if (props.side._isNew) showEditSideForm.value = true;
 
-const sideMenuItems: MenuItemData<SideAction>[] = [
-  { label: "Edit", action: SideActions.Edit },
-  { label: "Add group", action: SideActions.AddGroup },
-  { label: "Delete side", action: SideActions.Delete },
-  { label: "Move up", action: SideActions.MoveUp },
-  { label: "Move down", action: SideActions.MoveDown },
-  { label: "Add side", action: SideActions.Add },
-];
+const sideMenuItems = computed((): MenuItemData<SideAction>[] => [
+  { label: "Edit", action: SideActions.Edit, disabled: isLocked.value },
+  {
+    label: "Add subordinate",
+    action: SideActions.AddSubordinate,
+    disabled: isLocked.value,
+  },
+  { label: "Add group", action: SideActions.AddGroup, disabled: isLocked.value },
+  { label: "Delete side", action: SideActions.Delete, disabled: isLocked.value },
+  { label: "Move up", action: SideActions.MoveUp, disabled: isLocked.value },
+  { label: "Move down", action: SideActions.MoveDown, disabled: isLocked.value },
+  { label: "Add side", action: SideActions.Add, disabled: isLocked.value },
+  isLocked.value
+    ? { label: "Unlock side", action: SideActions.Unlock }
+    : { label: "Lock side", action: SideActions.Lock },
+]);
 
 const onSideAction = (action: SideAction) => {
   if (action === SideActions.Expand) {
@@ -267,6 +279,10 @@ function onSideGroupAction(sideGroup: NSideGroup, action: SideAction) {
     unitActions.reorderSideGroup(sideGroup.id, "down");
   } else if (action === SideActions.MoveUp) {
     unitActions.reorderSideGroup(sideGroup.id, "up");
+  } else if (action === SideActions.Lock) {
+    unitActions.updateSideGroup(sideGroup.id, { locked: true }, { noUndo: true });
+  } else if (action === SideActions.Unlock) {
+    unitActions.updateSideGroup(sideGroup.id, { locked: false }, { noUndo: true });
   }
 }
 

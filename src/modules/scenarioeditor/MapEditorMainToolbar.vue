@@ -63,6 +63,7 @@
           :symbol-options="symbolOptions"
           @click="addUnit(activeSidc)"
           title="Add unit"
+          :disabled="!activeParentId || unitActions.isUnitLocked(activeParentId)"
         >
           <AddSymbolIcon
             class="absolute -right-2 bottom-0 h-4 w-4 rounded-full bg-white bg-opacity-70 text-gray-600 group-hover:text-gray-900"
@@ -251,7 +252,7 @@ onStart(() => {
 onGetLocation((location) => {
   selectStore.hoverEnabled = true;
   groupUpdate(() => {
-    if (!activeParentId.value) return;
+    if (!activeParentId.value || unitActions.isUnitLocked(activeParentId.value)) return;
     const name = `${(activeParent.value?.subUnits?.length ?? 0) + 1}`;
     const sidc = new Sidc(activeSidc.value!);
     sidc.emt = currentEchelon.value;

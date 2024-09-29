@@ -1,7 +1,7 @@
 import { OrbatItemData, Unit } from "@/types/scenarioModels";
 import { TAB_SCENARIO_SETTINGS, UnitAction, UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
-import { computed } from "vue";
+import { computed, ComputedRef } from "vue";
 import { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
@@ -37,9 +37,15 @@ export function useUnitActions(
     waypointIds?: EntityId[],
   ) => {
     if (!unit) return;
-    if (action === UnitActions.AddSubordinate) {
-      unit._isOpen = true;
-      unitActions.createSubordinateUnit(unit.id);
+
+    if (action === UnitActions.Expand) {
+      unitActions.walkSubUnits(
+        unit.id,
+        (unit1) => {
+          unit1._isOpen = true;
+        },
+        { includeParent: true },
+      );
     }
 
     if (action === UnitActions.Zoom) {
@@ -68,6 +74,14 @@ export function useUnitActions(
       }
     }
     if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);
+
+    if (unitActions.isUnitLocked(unit.id)) return;
+
+    if (action === UnitActions.AddSubordinate) {
+      unit._isOpen = true;
+      unitActions.createSubordinateUnit(unit.id);
+    }
+
     if (action === UnitActions.Edit) {
       selectedUnitIds.value.clear();
       selectedUnitIds.value.add(unit.id);
@@ -82,15 +96,6 @@ export function useUnitActions(
       unitActions.cloneUnit(unit.id, { includeSubordinates: true, includeState: true });
     action === UnitActions.MoveUp && unitActions.reorderUnit(unit.id, "up");
     action === UnitActions.MoveDown && unitActions.reorderUnit(unit.id, "down");
-    if (action === UnitActions.Expand) {
-      unitActions.walkSubUnits(
-        unit.id,
-        (unit1) => {
-          unit1._isOpen = true;
-        },
-        { includeParent: true },
-      );
-    }
 
     if (action === UnitActions.Delete) {
       if (activeUnitId.value === unit.id) {
@@ -109,6 +114,13 @@ export function useUnitActions(
     if (action === UnitActions.ClearState) {
       unitActions.clearUnitState(unit.id);
     }
+
+    if (action === UnitActions.Lock) {
+      unitActions.updateUnitLocked(unit.id, true);
+    }
+    if (action === UnitActions.Unlock) {
+      unitActions.updateUnitLocked(unit.id, false);
+    }
   };
 
   function onUnitAction(
@@ -125,10 +137,15 @@ export function useUnitActions(
       });
     } else _onUnitAction(unitOrUnits, action, waypointIds);
   }
+
   return { onUnitAction };
 }
 
-export function useUnitMenu(item: OrbatItemData | NOrbatItemData | Unit) {
+export function useUnitMenu(
+  item: OrbatItemData | NOrbatItemData | Unit,
+  isLocked: ComputedRef<boolean>,
+  isSideGroupLocked: ComputedRef<boolean>,
+) {
   const unit = "unit" in item ? item.unit : item;
   // todo: item.children is not reactive
   const children = "unit" in item ? item.children : item.subUnits;
@@ -139,9 +156,13 @@ export function useUnitMenu(item: OrbatItemData | NOrbatItemData | Unit) {
 
   const unitMenuItems = computed((): MenuItemData<UnitAction>[] => {
     return [
-      { label: "Add subordinate", action: UnitActions.AddSubordinate },
-      { label: "Delete", action: UnitActions.Delete },
-      { label: "Edit", action: UnitActions.Edit },
+      {
+        label: "Add subordinate",
+        action: UnitActions.AddSubordinate,
+        disabled: isLocked.value,
+      },
+      { label: "Delete", action: UnitActions.Delete, disabled: isLocked.value },
+      { label: "Edit", action: UnitActions.Edit, disabled: isLocked.value },
       {
         label: "Expand",
         action: UnitActions.Expand,
@@ -154,18 +175,35 @@ export function useUnitMenu(item: OrbatItemData | NOrbatItemData | Unit) {
       },
       // { label: "Copy", action: UnitActions.Copy },
       // { label: "Paste", action: UnitActions.Paste },
-      { label: "Duplicate", action: UnitActions.Clone },
-      { label: "Duplicate (with state)", action: UnitActions.CloneWithState },
+      { label: "Duplicate", action: UnitActions.Clone, disabled: isLocked.value },
+      {
+        label: "Duplicate (with state)",
+        action: UnitActions.CloneWithState,
+        disabled: isLocked.value,
+      },
       {
         label: "Duplicate hierarchy",
         action: UnitActions.CloneWithSubordinates,
+        disabled: isLocked.value,
       },
       {
         label: "Duplicate hierarchy (with state)",
         action: UnitActions.CloneWithSubordinatesAndState,
+        disabled: isLocked.value,
       },
-      { label: "Move up", action: UnitActions.MoveUp },
-      { label: "Move down", action: UnitActions.MoveDown },
+      { label: "Move up", action: UnitActions.MoveUp, disabled: isLocked.value },
+      { label: "Move down", action: UnitActions.MoveDown, disabled: isLocked.value },
+      unit.locked
+        ? {
+            label: "Unlock",
+            action: UnitActions.Unlock,
+            disabled: isSideGroupLocked.value,
+          }
+        : {
+            label: "Lock",
+            action: UnitActions.Lock,
+            disabled: isSideGroupLocked.value,
+          },
     ];
   });
 

@@ -22,6 +22,8 @@ export const UnitActions = {
   Pan: "Pan",
   DeleteWaypoints: "DeleteWaypoint",
   ClearState: "ClearState",
+  Lock: "Lock",
+  Unlock: "Unlock",
 } as const;
 
 export type UnitAction = (typeof UnitActions)[keyof typeof UnitActions];
@@ -35,6 +37,8 @@ export const SideActions = {
   Add: "Add",
   MoveUp: "MoveUp",
   MoveDown: "MoveDown",
+  Lock: "Lock",
+  Unlock: "Unlock",
 } as const;
 
 export type SideAction = (typeof SideActions)[keyof typeof SideActions];

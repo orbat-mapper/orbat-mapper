@@ -15,14 +15,17 @@
             v-model="unitName"
             @update-value="updateUnit(unitId, { name: $event })"
             class="relative z-10 bg-transparent"
+            :disabled="isLocked"
           />
           <EditableLabel
             class="relative -top-4"
             v-model="shortName"
             @update-value="updateUnit(unitId, { shortName: $event })"
             text-class="text-sm text-gray-500"
+            :disabled="isLocked"
           />
         </div>
+        <IconLockOutline v-if="isLocked" class="h-6 w-6 text-gray-400" />
         <div v-if="unitStatus">
           <span
             class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
@@ -54,13 +57,17 @@
           <IconButton title="Zoom to" @click="actionWrapper(UnitActions.Zoom)">
             <ZoomIcon class="h-6 w-6" />
           </IconButton>
-          <IconButton title="Edit unit" @click="toggleEditMode()" :disabled="isMultiMode">
+          <IconButton
+            title="Edit unit"
+            @click="toggleEditMode()"
+            :disabled="isMultiMode || isLocked"
+          >
             <EditIcon class="h-6 w-6" />
           </IconButton>
           <IconButton
             title="Add/modify unit image"
             @click="toggleEditMediaMode()"
-            :disabled="isMultiMode"
+            :disabled="isMultiMode || isLocked"
           >
             <ImageIcon class="h-6 w-6" />
           </IconButton>
@@ -68,7 +75,7 @@
           <IconButton
             @click="startGetLocation()"
             title="Set unit location"
-            :disabled="isMultiMode"
+            :disabled="isMultiMode || isLocked"
           >
             <IconCrosshairsGps class="h-6 w-6" aria-hidden="true" />
           </IconButton>
@@ -78,7 +85,9 @@
             v-model:active-item="uiStore.activeItem"
           />
         </div>
-        <div><DotsMenu :items="unitMenuItems" /></div>
+        <div>
+          <DotsMenu :items="unitMenuItems" />
+        </div>
       </nav>
     </header>
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
@@ -130,22 +139,32 @@
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
       <TabPanel>
-        <UnitDetailsSymbol :unit="unit" :key="unit.id" :is-multi-mode="isMultiMode" />
+        <UnitDetailsSymbol
+          :unit="unit"
+          :key="unit.id"
+          :is-multi-mode="isMultiMode"
+          :is-locked="isLocked"
+        />
       </TabPanel>
       <TabPanel>
-        <UnitPanelState v-if="!isMultiMode" :unit="unit" />
+        <UnitPanelState v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
       <TabPanel>
-        <UnitDetailsMap v-if="!isMultiMode" :unit="unit" :is-multi-mode="isMultiMode" />
+        <UnitDetailsMap
+          v-if="!isMultiMode"
+          :unit="unit"
+          :is-multi-mode="isMultiMode"
+          :is-locked="isLocked"
+        />
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
       <TabPanel>
-        <UnitDetailsToe v-if="!isMultiMode" :unit="unit" />
+        <UnitDetailsToe v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
       <TabPanel>
-        <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" />
+        <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
 
@@ -168,6 +187,7 @@ import {
   IconImage as ImageIcon,
   IconMagnifyExpand as ZoomIcon,
   IconPencil as EditIcon,
+  IconLockOutline,
 } from "@iconify-prerendered/vue-mdi";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { GlobalEvents } from "vue-global-events";
@@ -211,7 +231,13 @@ const activeScenario = injectStrict(activeScenarioKey);
 const {
   store,
   geo: { addUnitPosition },
-  unitActions: { updateUnit, getUnitHierarchy, getCombinedSymbolOptions },
+  unitActions: {
+    updateUnit,
+    getUnitHierarchy,
+    getCombinedSymbolOptions,
+    isUnitLocked,
+    updateUnitLocked,
+  },
 } = activeScenario;
 
 const {
@@ -252,16 +278,37 @@ const unitStatus = computed(() => {
   return status ? unitStatusMap[status]?.name : undefined;
 });
 
+const isLocked = computed(() => isUnitLocked(props.unitId));
+
 const geoStore = useGeoStore();
 const unitSettings = useUnitSettingsStore();
 const { getModalSidc } = injectStrict(sidcModalKey);
 
-const unitMenuItems: MenuItemData[] = [
-  { label: "Change symbol", action: () => handleChangeSymbol() },
-  { label: "Edit unit data", action: () => toggleEditMode() },
-  { label: "Add or change image", action: () => toggleEditMediaMode() },
-  { label: "Remove unit image", action: () => removeMedia() },
-];
+const unitMenuItems = computed((): MenuItemData[] => [
+  {
+    label: "Change symbol",
+    action: () => handleChangeSymbol(),
+    disabled: isLocked.value,
+  },
+  { label: "Edit unit data", action: () => toggleEditMode(), disabled: isLocked.value },
+  {
+    label: "Add or change image",
+    action: () => toggleEditMediaMode(),
+    disabled: isLocked.value,
+  },
+  { label: "Remove unit image", action: () => removeMedia(), disabled: isLocked.value },
+  unit.value.locked
+    ? {
+        label: "Unlock unit",
+        action: () => setLocked(false),
+        disabled: isUnitLocked(props.unitId, { excludeUnit: true }),
+      }
+    : {
+        label: "Lock unit",
+        action: () => setLocked(true),
+        disabled: isUnitLocked(props.unitId, { excludeUnit: true }),
+      },
+]);
 
 watch(
   () => unit.value?.name,
@@ -321,6 +368,10 @@ function removeMedia() {
   updateUnit(props.unitId, { media: [] });
 }
 
+function setLocked(locked: boolean) {
+  updateUnitLocked(props.unitId, locked);
+}
+
 const hDescription = computed(() => renderMarkdown(unit.value.description || ""));
 const hasPosition = computed(() => Boolean(unit.value._state?.location));
 const media = computed(() => {
@@ -375,30 +426,37 @@ const buttonItems = computed(() => [
   {
     label: "Duplicate",
     onClick: () => actionWrapper(UnitActions.Clone),
+    disabled: isLocked.value,
   },
   {
     label: "Duplicate (with state)",
     onClick: () => actionWrapper(UnitActions.CloneWithState),
+    disabled: isLocked.value,
   },
   {
     label: "Duplicate hierarchy",
     onClick: () => actionWrapper(UnitActions.CloneWithSubordinates),
+    disabled: isLocked.value,
   },
   {
     label: "Duplicate hierarchy (with state)",
     onClick: () => actionWrapper(UnitActions.CloneWithSubordinatesAndState),
+    disabled: isLocked.value,
   },
   {
     label: "Move up",
     onClick: () => actionWrapper(UnitActions.MoveUp),
+    disabled: isLocked.value,
   },
   {
     label: "Move down",
     onClick: () => actionWrapper(UnitActions.MoveDown),
+    disabled: isLocked.value,
   },
   {
     label: "Create subordinate",
     onClick: () => actionWrapper(UnitActions.AddSubordinate),
+    disabled: isLocked.value,
   },
   {
     label: "Zoom",
@@ -412,11 +470,17 @@ const buttonItems = computed(() => [
   {
     label: "Delete",
     onClick: () => actionWrapper(UnitActions.Delete),
+    disabled: isLocked.value,
   },
-  { label: "Clear state", onClick: () => actionWrapper(UnitActions.ClearState) },
+  {
+    label: "Clear state",
+    onClick: () => actionWrapper(UnitActions.ClearState),
+    disabled: isLocked.value,
+  },
 ]);
 
 async function handleChangeSymbol() {
+  if (isLocked.value) return;
   const newSidcValue = await getModalSidc(unit.value.sidc, {
     symbolOptions: unit.value.symbolOptions,
     inheritedSymbolOptions: getCombinedSymbolOptions(unit.value, true),

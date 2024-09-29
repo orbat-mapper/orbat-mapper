@@ -12,12 +12,13 @@ import {
 import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
+import { IconLockOutline } from "@iconify-prerendered/vue-mdi";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { type UnitAction } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "@/composables/scenarioActions";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { activeParentKey } from "./injects";
+import { activeParentKey, activeScenarioKey } from "./injects";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { SymbolOptions } from "milsymbol";
@@ -44,6 +45,9 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const activeParentId = injectStrict(activeParentKey);
+const {
+  unitActions: { isUnitLocked },
+} = injectStrict(activeScenarioKey);
 
 const combinedOptions = computed(() => ({
   ...(props.symbolOptions || {}),
@@ -67,6 +71,10 @@ const isOpen = computed({
   },
 });
 
+const isLocked = computed(() => isUnitLocked(props.item.unit.id));
+const isSideGroupLocked = computed(() =>
+  isUnitLocked(props.item.unit.id, { excludeUnit: true }),
+);
 const {
   isPending,
   start: startOpenTimeout,
@@ -97,7 +105,7 @@ const hasActiveChildren = computed(() =>
   activeUnitStore.activeUnitParentIds.value.includes(props.item.unit.id),
 );
 
-const { unitMenuItems: menuItems } = useUnitMenu(props.item);
+const { unitMenuItems: menuItems } = useUnitMenu(props.item, isLocked, isSideGroupLocked);
 
 let dndCleanup: CleanupFn = () => {};
 const instruction = ref<Instruction | null>(null);
@@ -107,6 +115,7 @@ onMounted(() => {
   dndCleanup = combine(
     draggable({
       element: dragItemRef.value,
+      canDrag: () => !isUnitLocked(props.item.unit.id),
       getInitialData: () => getUnitDragItem({ unit: props.item.unit }),
       onDragStart: () => (isDragged.value = true),
       onDrop: () => (isDragged.value = false),
@@ -132,6 +141,7 @@ onMounted(() => {
       },
       canDrop: ({ source }) => {
         return (
+          !isUnitLocked(props.item.unit.id) &&
           isUnitDragItem(source.data) &&
           source.data.unit.id !== props.item.unit.id &&
           props.item.unit._pid !== source.data.unit.id
@@ -243,11 +253,14 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
         </button>
       </div>
 
-      <DotsMenu
-        class="flex-shrink-0 pr-2 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-        :items="menuItems"
-        @action="onUnitMenuAction(unit, $event)"
-      />
+      <div class="flex items-center">
+        <IconLockOutline v-if="unit.locked" class="h-5 w-5 text-gray-400" />
+        <DotsMenu
+          class="flex-shrink-0 pr-2 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+          :items="menuItems"
+          @action="onUnitMenuAction(unit, $event)"
+        />
+      </div>
       <TreeDropIndicator v-if="instruction" :instruction="instruction" />
     </div>
     <ul v-if="isOpen" class="ml-6 pb-1" ref="subTree">

@@ -114,7 +114,32 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
-  function updateSide(sideId: EntityId, sideData: Partial<SideUpdate>) {
+  function updateSide(
+    sideId: EntityId,
+    sideData: Partial<SideUpdate>,
+    { noUndo = false } = {},
+  ) {
+    if (noUndo) {
+      let side = state.sideMap[sideId!];
+      if (!side) return;
+      const updateSid =
+        sideData.standardIdentity ?? side.standardIdentity !== sideData.standardIdentity;
+      Object.assign(side, sideData);
+      if (updateSid) {
+        const sid = side.standardIdentity;
+        walkSide(
+          side.id,
+          (unit) => {
+            if (unit.sidc[SID_INDEX] !== sid) {
+              unit.sidc = setCharAt(unit.sidc, SID_INDEX, sid);
+            }
+            invalidateUnitStyle(unit.id);
+          },
+          state,
+        );
+      }
+      return;
+    }
     update((s) => {
       let side = s.sideMap[sideId!];
       if (!side) return;
@@ -165,11 +190,20 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
-  function updateSideGroup(sideGroupId: EntityId, sideGroupData: SideGroupUpdate) {
-    update((s) => {
-      let sideGroup = s.sideGroupMap[sideGroupId];
+  function updateSideGroup(
+    sideGroupId: EntityId,
+    sideGroupData: SideGroupUpdate,
+    { noUndo = false } = {},
+  ) {
+    if (noUndo) {
+      const sideGroup = state.sideGroupMap[sideGroupId];
       if (sideGroup) Object.assign(sideGroup, { ...sideGroupData, _isNew: false });
-    });
+    } else {
+      update((s) => {
+        let sideGroup = s.sideGroupMap[sideGroupId];
+        if (sideGroup) Object.assign(sideGroup, { ...sideGroupData, _isNew: false });
+      });
+    }
     clearUnitStyleCache();
   }
 
@@ -251,8 +285,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
   function updateUnit(
     unitId: EntityId,
     data: UnitUpdate,
-    { doUpdateUnitState = false } = {},
+    { doUpdateUnitState = false, ignoreLocked = false } = {},
   ) {
+    if (!ignoreLocked && isUnitLocked(unitId)) return;
     invalidateUnitStyle(unitId);
     update((s) => {
       let unit = s.unitMap[unitId];
@@ -261,6 +296,12 @@ export function useUnitManipulations(store: NewScenarioStore) {
       s.unitMap[unitId] = klona(unit);
     });
     if (doUpdateUnitState) updateUnitState(unitId);
+  }
+
+  function updateUnitLocked(unitId: EntityId, locked: boolean) {
+    const unit = state.unitMap[unitId];
+    if (!unit) return;
+    unit.locked = locked;
   }
 
   function updateUnitProperties(
@@ -1000,6 +1041,21 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function isUnitLocked(unitId: EntityId, { excludeUnit = false } = {}): boolean {
+    const unit = state.unitMap[unitId];
+    if (!unit) return false;
+    if (excludeUnit) {
+      return !!(
+        state.sideMap[unit._sid]?.locked || state.sideGroupMap[unit._gid]?.locked
+      );
+    }
+    return !!(
+      state.sideMap[unit._sid]?.locked ||
+      state.sideGroupMap[unit._gid]?.locked ||
+      unit.locked
+    );
+  }
+
   return {
     addUnit,
     deleteUnit,
@@ -1017,6 +1073,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     deleteSideGroup,
     createSubordinateUnit,
     updateUnit,
+    updateUnitLocked,
     deleteUnitStateEntry,
     deleteUnitStateEntryByStateId,
     clearUnitState,
@@ -1059,5 +1116,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitStatus,
     deleteUnitStatus,
     updateUnitProperties,
+    isUnitLocked,
   };
 }

@@ -3,7 +3,7 @@
   <div class="flex items-center justify-between">
     <span class="text-sm">Change</span>
     <div class="flex items-center">
-      <UnitStatusPopover @update="setUnitStatus" />
+      <UnitStatusPopover @update="setUnitStatus" :disabled="isLocked" />
       <SplitButton :items="stateItems" v-model:active-item="uiState.activeStateItem" />
     </div>
   </div>
@@ -152,6 +152,7 @@ import { useLocalStorage } from "@vueuse/core";
 
 interface Props {
   unit: NUnit;
+  isLocked?: boolean;
 }
 const props = defineProps<Props>();
 const { store, time, unitActions } = injectStrict(activeScenarioKey);
@@ -167,36 +168,42 @@ const state = computed(() => props.unit.state || []);
 const uiState = useUiStore();
 const { selectedWaypointIds } = useSelectedWaypoints();
 
-const menuItems: MenuItemData<StateAction>[] = [
-  { label: "Delete", action: "delete" },
-  { label: "Duplicate", action: "duplicate" },
-  { label: "Change time", action: "changeTime" },
-  { label: "Edit title", action: "editTitle" },
-  { label: "Edit location", action: "editLocation" },
-  { label: "Clear location", action: "clearLocation" },
-  { label: "Convert to initial position", action: "convertToInitialPosition" },
+const menuItems = computed((): MenuItemData<StateAction>[] => [
+  { label: "Delete", action: "delete", disabled: props.isLocked },
+  { label: "Duplicate", action: "duplicate", disabled: props.isLocked },
+  { label: "Change time", action: "changeTime", disabled: props.isLocked },
+  { label: "Edit title", action: "editTitle", disabled: props.isLocked },
+  { label: "Edit location", action: "editLocation", disabled: props.isLocked },
+  { label: "Clear location", action: "clearLocation", disabled: props.isLocked },
+  {
+    label: "Convert to initial position",
+    action: "convertToInitialPosition",
+    disabled: props.isLocked,
+  },
   // { label: "Change status", action: "changeStatus" },
-];
+]);
 
-const initialMenuItems: MenuItemData<StateAction>[] = [
-  { label: "Delete", action: "delete" },
-  { label: "Edit initial position", action: "editLocation" },
-];
+const initialMenuItems = computed((): MenuItemData<StateAction>[] => [
+  { label: "Delete", action: "delete", disabled: props.isLocked },
+  { label: "Edit initial position", action: "editLocation", disabled: props.isLocked },
+]);
 
-const stateItems: ButtonGroupItem[] = [
+const stateItems = computed((): ButtonGroupItem[] => [
   {
     label: "Change symbol",
     onClick: () => {
       handleChangeSymbol();
     },
+    disabled: props.isLocked,
   },
   {
     label: "Remove from map",
     onClick: () => {
       handleRemoveFromMap();
     },
+    disabled: props.isLocked,
   },
-];
+]);
 
 const coordinateInputFormat = useLocalStorage<CoordinateInputFormat>(
   "coordinateInputFormat",

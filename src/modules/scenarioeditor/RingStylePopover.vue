@@ -10,6 +10,7 @@ import { SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
 
 interface Props {
   ringStyle: Partial<RangeRingStyle>;
+  disabled?: boolean;
 }
 const props = defineProps<Props>();
 const emit = defineEmits(["update"]);
@@ -49,7 +50,11 @@ function updateValue(name: keyof SimpleStyleSpec, value: string | number) {
 <template>
   <Popover as="template">
     <Float placement="top-end" strategy="fixed">
-      <PopoverButton title="Change style" class="hover:bg-gray-100">
+      <PopoverButton
+        title="Change style"
+        class="hover:bg-gray-100 disabled:opacity-50"
+        :disabled="disabled"
+      >
         <DrawRangeRingMarker :styling="rStyle" />
       </PopoverButton>
       <PopoverPanel>

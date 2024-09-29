@@ -17,6 +17,7 @@ interface Props {
   items: EUnitEquipment[] | EUnitPersonnel[];
   values: NEquipmentData[] | NPersonnelData[];
   isMultiMode?: boolean;
+  isLocked?: boolean;
   showAdd?: boolean;
 }
 const props = defineProps<Props>();
@@ -38,8 +39,8 @@ const addForm = ref({
 });
 
 const itemActions = computed(() => [
-  { label: "Edit", action: "edit", disabled: props.isMultiMode },
-  { label: "Delete", action: "delete" },
+  { label: "Edit", action: "edit", disabled: props.isMultiMode || props.isLocked },
+  { label: "Delete", action: "delete", disabled: props.isLocked },
 ]);
 
 const sortedItems = computed(() =>

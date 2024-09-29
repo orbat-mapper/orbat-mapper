@@ -13,6 +13,7 @@ import { useToeActions } from "@/composables/scenarioActions";
 
 interface Props {
   unit: NUnit;
+  isLocked?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -115,12 +116,17 @@ function deletePersonnel(personnelId: string) {
       v-if="aggregatedEquipment.length || showAddEquipment"
       :title="`Equipment (${aggregatedEquipmentCount})`"
     >
-      <BaseButton small :disabled="isMultiMode" @click="toggleAddEquipment()"
+      <BaseButton small :disabled="isMultiMode || isLocked" @click="toggleAddEquipment()"
         >{{ showAddEquipment ? "Hide form" : "+ Add" }}
       </BaseButton>
     </TableHeader>
     <p v-if="showAddEquipment" class="mt-2 text-right">
-      <button type="button" class="btn-link" @click="toeActions.goToAddEquipment()">
+      <button
+        type="button"
+        class="btn-link"
+        @click="toeActions.goToAddEquipment()"
+        :disabled="isLocked"
+      >
         + Add new equipment type
       </button>
     </p>
@@ -137,12 +143,20 @@ function deletePersonnel(personnelId: string) {
       v-if="aggregatedPersonnel.length || showAddPersonnel"
       :title="`Personnel (${aggregatedPersonnelCount})`"
     >
-      <BaseButton small :disabled="isMultiMode" @click="toggleAddPersonnel()">{{
-        showAddPersonnel ? "Hide form" : "+ Add"
-      }}</BaseButton>
+      <BaseButton
+        small
+        :disabled="isMultiMode || isLocked"
+        @click="toggleAddPersonnel()"
+        >{{ showAddPersonnel ? "Hide form" : "+ Add" }}</BaseButton
+      >
     </TableHeader>
     <p v-if="showAddPersonnel" class="mt-2 text-right">
-      <button type="button" class="btn-link" @click="toeActions.goToAddPersonnel()">
+      <button
+        type="button"
+        class="btn-link"
+        @click="toeActions.goToAddPersonnel()"
+        :disabled="isLocked"
+      >
         + Add new personnel category
       </button>
     </p>
@@ -164,6 +178,7 @@ function deletePersonnel(personnelId: string) {
         small
         secondary
         @click="toggleAddEquipment()"
+        :disabled="isLocked"
         >Add equipment
       </BaseButton>
       <BaseButton
@@ -171,6 +186,7 @@ function deletePersonnel(personnelId: string) {
         small
         secondary
         @click="toggleAddPersonnel()"
+        :disabled="isLocked"
         >Add personnel
       </BaseButton>
     </div>

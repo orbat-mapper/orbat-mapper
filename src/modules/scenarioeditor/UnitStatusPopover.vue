@@ -9,6 +9,7 @@ import { computed, ref } from "vue";
 import { SelectItem } from "@/components/types";
 import BaseButton from "@/components/BaseButton.vue";
 
+const props = defineProps<{ disabled?: boolean }>();
 const emit = defineEmits<{ (e: "update", value: string | null | undefined): void }>();
 
 const {
@@ -35,8 +36,9 @@ function onFormSubmit(closeFunction: () => void) {
   <Popover as="template">
     <Float placement="top-end" strategy="fixed">
       <PopoverButton
+        :disabled="disabled"
         title="Change style"
-        class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
         >Set status
       </PopoverButton>
       <PopoverPanel v-slot="{ close }">

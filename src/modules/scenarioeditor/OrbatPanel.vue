@@ -241,6 +241,10 @@ function onSideAction(side: NSide, action: SideAction) {
     unitActions.reorderSide(side.id, "up");
   } else if (action === SideActions.Add) {
     addSide();
+  } else if (action === SideActions.Lock) {
+    unitActions.updateSide(side.id, { locked: true }, { noUndo: true });
+  } else if (action === SideActions.Unlock) {
+    unitActions.updateSide(side.id, { locked: false }, { noUndo: true });
   }
 }
 
