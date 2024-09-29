@@ -74,6 +74,12 @@ export function useUnitActions(
       }
     }
     if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);
+    if (action === UnitActions.Lock) {
+      unitActions.updateUnitLocked(unit.id, true);
+    }
+    if (action === UnitActions.Unlock) {
+      unitActions.updateUnitLocked(unit.id, false);
+    }
 
     if (unitActions.isUnitLocked(unit.id)) return;
 
@@ -113,13 +119,6 @@ export function useUnitActions(
 
     if (action === UnitActions.ClearState) {
       unitActions.clearUnitState(unit.id);
-    }
-
-    if (action === UnitActions.Lock) {
-      unitActions.updateUnitLocked(unit.id, true);
-    }
-    if (action === UnitActions.Unlock) {
-      unitActions.updateUnitLocked(unit.id, false);
     }
   };
 
