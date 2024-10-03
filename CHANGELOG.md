@@ -10,26 +10,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 September 2024
 
-- Add side, group and unit locking to prevent accidental changes.
-- Add preview and more options to Spatial Illusions unitgenerator ORBAT import.
-- Add support for transforming multiple features at once.
-- Add drag and drop from unit breadcrumbs to the map.
-- Add experimental support for time varying scenario feature geometries.
-- Copy unit hierarchy with state using Ctrl/Meta+alt+drag-and-drop.
-- Add option for duplicating a unit (and unit hierarchy) including its state.
-- Add playback keyboard shortcuts: alt+p or k to play/pause, < and > to increase and decrease playback speed.
-- Improved MilX/map.army import.
-- Add reinforced / reduced symbol modifier.
+- Added side, group and unit locking to prevent accidental changes.
+- Added preview and more options to the Spatial Illusions unit generator ORBAT import.
+- Added support for transforming multiple features simultaneously.
+- Enabled drag and drop for unit breadcrumbs onto the map.
+- Introduced experimental support for time-varying scenario feature geometries.
+- Enabled copying unit hierarchy with state using Ctrl/Meta+Alt+Drag-and-Drop.
+- Added an option to duplicate a unit (and its hierarchy) along with its state.
+- Added playback keyboard shortcuts: Alt+P or K to play/pause, < and > to adjust playback speed.
+- Improved MilX/map.army import functionality.
+- Added reinforced/reduced symbol modifier.
 
 August 2024
 
-- Added more paper sizes
-- Unit breadcrumb navigation toolbar.
-- Open symbol browser from command palette or main menu.
-- Copy unit hierarchy using Ctrl/Meta+drag-and-drop.
-- Move a feature by dragging it from the layers panel to the desired location.
-- Reorder and move side and groups in the ORBAT panel using drag and drop.
-- Add basic scenario feature transformations (buffer, convex hull, and bounding box).
+- Added more paper sizes.
+- Added unit breadcrumb navigation toolbar.
+- Enabled opening the symbol browser from the command palette or main menu.
+- Enabled copying unit hierarchy using Ctrl/Meta+drag-and-drop.
+- Enabled moving a feature by dragging it from the layers panel to the desired location.
+- Enabled reordering and moving sides and groups in the ORBAT panel using drag and drop.
+- Added basic scenario feature transformations (buffer, convex hull, and bounding box).
 
 July 2024
 

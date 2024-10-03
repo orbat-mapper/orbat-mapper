@@ -33,7 +33,9 @@
       </ul>
     </section>
     <section class="mb-2">
-      <p class="relative left-0 right-0 top-0 bg-gray-200 p-1 text-center text-gray-800">
+      <p
+        class="relative left-0 right-0 top-0 bg-gray-200 p-4 text-center text-sm text-gray-900"
+      >
         Please note that the demo scenarios are incomplete and they are still under
         development.
       </p>
