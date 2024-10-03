@@ -135,6 +135,7 @@ function onCancel() {
       v-else-if="importState === 'orbatmapper'"
       :data="loadedData"
       @cancel="onCancel"
+      @loaded="onImport"
     />
   </SimpleModal>
 </template>

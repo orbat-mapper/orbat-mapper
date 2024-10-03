@@ -9,7 +9,7 @@
       :initialFocus="initialFocus"
     >
       <div
-        class="flex min-h-screen items-start justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0"
+        class="flex min-h-screen items-start justify-center px-2 pb-2 pt-2 text-center sm:block sm:p-0"
       >
         <TransitionChild
           as="template"
@@ -34,11 +34,11 @@
           leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         >
           <div
-            class="inline-block w-full transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all sm:my-8 sm:p-6 sm:align-middle md:my-16"
+            class="inline-block w-full transform overflow-hidden rounded-lg bg-white px-0 pb-4 pt-5 text-left align-bottom shadow-xl transition-all sm:my-8 sm:align-middle md:my-16"
             :class="maxWidth"
           >
-            <div class="overflow-auto p-0.5">
-              <div class="mt-3 sm:ml-2 sm:mt-0">
+            <div class="overflow-y-auto px-4 pb-1 sm:px-6">
+              <div class="mt-3 sm:mt-0">
                 <DialogTitle
                   as="h3"
                   class="text-center text-lg font-medium leading-6 text-gray-900 sm:text-left"
