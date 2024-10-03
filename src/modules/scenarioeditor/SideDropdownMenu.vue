@@ -3,6 +3,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
@@ -26,6 +27,12 @@ const sideMenuItems = computed((): MenuItemData<SideAction>[] => [
   { label: "Move up", action: SideActions.MoveUp, disabled: props.isLocked },
   { label: "Move down", action: SideActions.MoveDown, disabled: props.isLocked },
   { label: "Add side", action: SideActions.Add, disabled: props.isLocked },
+  { label: "Duplicate", action: SideActions.Clone, disabled: props.isLocked },
+  {
+    label: "Duplicate (with state)",
+    action: SideActions.CloneWithState,
+    disabled: props.isLocked,
+  },
   props.isLocked
     ? { label: "Unlock side", action: SideActions.Unlock }
     : { label: "Lock side", action: SideActions.Lock },
@@ -44,6 +51,7 @@ const sideMenuItems = computed((): MenuItemData<SideAction>[] => [
       </button>
     </DropdownMenuTrigger>
     <DropdownMenuContent class="min-w-52 border-gray-300" align="end">
+      <DropdownMenuLabel inset>Side actions</DropdownMenuLabel>
       <DropdownMenuItem
         v-for="item in sideMenuItems"
         @select="emit('action', item.action)"

@@ -132,13 +132,22 @@ onMounted(() => {
       } else if (isSideGroupDragItem(sourceData)) {
         const target = mapInstructionToTarget(instruction);
         if (isSideGroupDragItem(destinationData)) {
-          unitActions.changeSideGroupParent(
-            sourceData.sideGroup.id,
-            destinationData.sideGroup.id,
-            target,
-          );
+          let sourceId = sourceData.sideGroup.id;
+          groupUpdate(() => {
+            if (isDuplicateAction) {
+              sourceId = unitActions.cloneSideGroup(sourceData.sideGroup.id, {
+                includeState: isDuplicateState,
+              })!;
+            }
+            unitActions.changeSideGroupParent(
+              sourceId,
+              destinationData.sideGroup.id,
+              target,
+            );
+          });
+
           nextTick(() => {
-            const el = document.getElementById(`osg-${sourceData.sideGroup.id}`);
+            const el = document.getElementById(`osg-${sourceId}`);
             if (el) {
               triggerPostMoveFlash(el);
             }

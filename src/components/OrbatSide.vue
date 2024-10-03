@@ -252,6 +252,7 @@ const onSideAction = (action: SideAction) => {
 };
 
 function onSideGroupAction(sideGroup: NSideGroup, action: SideAction) {
+  console.log("sideGroupAction", action);
   if (action === SideActions.Delete) {
     unitActions.deleteSideGroup(sideGroup.id);
   } else if (action === SideActions.MoveDown) {
@@ -262,6 +263,10 @@ function onSideGroupAction(sideGroup: NSideGroup, action: SideAction) {
     unitActions.updateSideGroup(sideGroup.id, { locked: true }, { noUndo: true });
   } else if (action === SideActions.Unlock) {
     unitActions.updateSideGroup(sideGroup.id, { locked: false }, { noUndo: true });
+  } else if (action === SideActions.Clone) {
+    unitActions.cloneSideGroup(sideGroup.id);
+  } else if (action === SideActions.CloneWithState) {
+    unitActions.cloneSideGroup(sideGroup.id, { includeState: true });
   }
 }
 

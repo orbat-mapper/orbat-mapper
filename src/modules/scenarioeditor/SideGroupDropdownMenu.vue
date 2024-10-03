@@ -3,6 +3,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
@@ -31,6 +32,12 @@ const sideGroupMenuItems = computed((): MenuItemData<SideAction>[] => [
   { label: "Delete group", action: SideActions.Delete, disabled: props.isLocked },
   { label: "Move up", action: SideActions.MoveUp, disabled: props.isLocked },
   { label: "Move down", action: SideActions.MoveDown, disabled: props.isLocked },
+  { label: "Duplicate", action: SideActions.Clone, disabled: props.isLocked },
+  {
+    label: "Duplicate (with state)",
+    action: SideActions.CloneWithState,
+    disabled: props.isLocked,
+  },
   props.isSideGroupLocked
     ? { label: "Unlock group", action: SideActions.Unlock, disabled: props.isSideLocked }
     : { label: "Lock group", action: SideActions.Lock, disabled: props.isSideLocked },
@@ -49,6 +56,7 @@ const sideGroupMenuItems = computed((): MenuItemData<SideAction>[] => [
       </button>
     </DropdownMenuTrigger>
     <DropdownMenuContent class="min-w-52 border-gray-300" align="end">
+      <DropdownMenuLabel inset>Group actions</DropdownMenuLabel>
       <DropdownMenuItem
         v-for="item in sideGroupMenuItems"
         @select="emit('action', item.action)"

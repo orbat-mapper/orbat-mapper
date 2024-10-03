@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 October 2024
 
+- Added clone/duplicate side group actions.
 - Added indicator when dragging using copy mode (ctrl+drag or ctrl+alt+drag).
 
 September 2024
