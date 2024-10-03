@@ -76,7 +76,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
   function addSide(
     sideData: Partial<SideUpdate> = {},
-    { markAsNew } = { markAsNew: true },
+    { markAsNew = true, addDefaultGroup = true } = {},
   ): EntityId {
     const newSide: NSide = {
       id: nanoid(),
@@ -92,7 +92,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
           s.sideMap[newSide.id] = newSide;
           s.sides.push(newSide.id);
         });
-        addSideGroup(newSide.id, { name: "Units", _isNew: false });
+        if (addDefaultGroup) {
+          addSideGroup(newSide.id, { name: "Units", _isNew: false });
+        }
       },
       { label: "addSide", value: newSide.id },
     );
@@ -611,13 +613,16 @@ export function useUnitManipulations(store: NewScenarioStore) {
     return newUnit.id;
   }
 
-  function cloneSideGroup(sideGroupId: EntityId, { includeState = false } = {}) {
+  function cloneSideGroup(
+    sideGroupId: EntityId,
+    { includeState = false, modifyName = true } = {},
+  ) {
     const sideGroup = state.sideGroupMap[sideGroupId];
     if (!sideGroup) return;
     const newSideGroup = {
       ...sideGroup,
       id: nanoid(),
-      name: `${sideGroup.name} (copy)`,
+      name: modifyName ? `${sideGroup.name} (copy)` : sideGroup.name,
       subUnits: [],
       _isNew: false,
     };
@@ -635,6 +640,27 @@ export function useUnitManipulations(store: NewScenarioStore) {
       });
     });
     return newSideGroupId;
+  }
+
+  function cloneSide(sideId: EntityId, { includeState = false } = {}) {
+    const side = state.sideMap[sideId];
+    if (!side) return;
+    const newSide = {
+      ...side,
+      id: nanoid(),
+      name: `${side.name} (copy)`,
+      groups: [],
+      _isNew: false,
+    };
+    let newSideId: EntityId | undefined;
+    groupUpdate(() => {
+      newSideId = addSide(newSide, { markAsNew: false, addDefaultGroup: false });
+      side.groups.forEach((groupId) => {
+        const newGroupId = cloneSideGroup(groupId, { includeState, modifyName: false });
+        newGroupId && newSideId && changeSideGroupParent(newGroupId, newSideId, "on");
+      });
+    });
+    return newSideId;
   }
 
   function reorderUnit(unitId: EntityId, direction: "up" | "down") {
@@ -1094,6 +1120,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     walkSubUnits,
     walkSide,
     cloneUnit,
+    cloneSide,
     cloneSideGroup,
     reorderUnit,
     getUnitHierarchy,

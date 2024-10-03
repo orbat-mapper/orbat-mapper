@@ -135,7 +135,7 @@ onMounted(() => {
           let sourceId = sourceData.sideGroup.id;
           groupUpdate(() => {
             if (isDuplicateAction) {
-              sourceId = unitActions.cloneSideGroup(sourceData.sideGroup.id, {
+              sourceId = unitActions.cloneSideGroup(sourceId, {
                 includeState: isDuplicateState,
               })!;
             }
@@ -153,13 +153,17 @@ onMounted(() => {
             }
           });
         } else if (isSideDragItem(destinationData)) {
-          unitActions.changeSideGroupParent(
-            sourceData.sideGroup.id,
-            destinationData.side.id,
-            "on",
-          );
+          let sourceId = sourceData.sideGroup.id;
+          groupUpdate(() => {
+            if (isDuplicateAction) {
+              sourceId = unitActions.cloneSideGroup(sourceId, {
+                includeState: isDuplicateState,
+              })!;
+            }
+            unitActions.changeSideGroupParent(sourceId, destinationData.side.id, "on");
+          });
           nextTick(() => {
-            const el = document.getElementById(`os-${sourceData.sideGroup.id}`);
+            const el = document.getElementById(`os-${sourceId}`);
             if (el) {
               triggerPostMoveFlash(el);
             }
@@ -167,15 +171,23 @@ onMounted(() => {
         }
       } else if (isSideDragItem(sourceData)) {
         const target = mapInstructionToTarget(instruction);
-        if (isSideDragItem(destinationData)) {
-          unitActions.moveSide(sourceData.side.id, destinationData.side.id, target);
-          nextTick(() => {
-            const el = document.getElementById(`os-${sourceData.side.id}`);
-            if (el) {
-              triggerPostMoveFlash(el);
-            }
-          });
-        }
+        groupUpdate(() => {
+          let sourceId = sourceData.side.id;
+          if (isDuplicateAction) {
+            sourceId = unitActions.cloneSide(sourceData.side.id, {
+              includeState: isDuplicateState,
+            })!;
+          }
+          if (isSideDragItem(destinationData)) {
+            unitActions.moveSide(sourceId, destinationData.side.id, target);
+            nextTick(() => {
+              const el = document.getElementById(`os-${sourceId}`);
+              if (el) {
+                triggerPostMoveFlash(el);
+              }
+            });
+          }
+        });
       }
     },
   });
@@ -270,6 +282,10 @@ function onSideAction(side: NSide, action: SideAction) {
     unitActions.updateSide(side.id, { locked: true }, { noUndo: true });
   } else if (action === SideActions.Unlock) {
     unitActions.updateSide(side.id, { locked: false }, { noUndo: true });
+  } else if (action === SideActions.Clone) {
+    unitActions.cloneSide(side.id);
+  } else if (action === SideActions.CloneWithState) {
+    unitActions.cloneSide(side.id, { includeState: true });
   }
 }
 
