@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import DotsMenu from "./DotsMenu.vue";
 import OrbatTree from "./OrbatTree.vue";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
-import { IconLockOutline } from "@iconify-prerendered/vue-mdi";
+import { IconDrag, IconLockOutline } from "@iconify-prerendered/vue-mdi";
 import { SideAction, SideActions, UnitAction, UnitActions } from "@/types/constants";
 import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./EditSideGroupForm.vue";
 import { NSideGroup, NUnit } from "@/types/internalModels";
-import { MenuItemData } from "./types";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 
@@ -24,23 +22,25 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
-import { IconDrag } from "@iconify-prerendered/vue-mdi";
 import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useTimeoutFn } from "@vueuse/core";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import SideGroupDropdownMenu from "@/modules/scenarioeditor/SideGroupDropdownMenu.vue";
 
 interface Props {
   group: NSideGroup;
   filterQuery?: string;
   hasLocationFilter?: boolean;
 }
+
 const props = defineProps<Props>();
 
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitAction): void;
+
   (e: "unit-click", unit: NUnit, event: MouseEvent): void;
 
   (e: "sidegroup-action", unit: NSideGroup, action: SideAction): void;
@@ -168,21 +168,6 @@ const toggleOpen = () => {
   isOpen.value = !isOpen.value;
 };
 
-const sideGroupMenuItems = computed((): MenuItemData<SideAction>[] => [
-  {
-    label: "Add root unit",
-    action: SideActions.AddSubordinate,
-    disabled: isLocked.value,
-  },
-  { label: "Edit group", action: SideActions.Edit, disabled: isLocked.value },
-  { label: "Delete group", action: SideActions.Delete, disabled: isLocked.value },
-  { label: "Move up", action: SideActions.MoveUp, disabled: isLocked.value },
-  { label: "Move down", action: SideActions.MoveDown, disabled: isLocked.value },
-  isSideGroupLocked.value
-    ? { label: "Unlock group", action: SideActions.Unlock, disabled: isSideLocked.value }
-    : { label: "Lock group", action: SideActions.Lock, disabled: isSideLocked.value },
-]);
-
 const onSideGroupAction = (group: NSideGroup, action: SideAction) => {
   if (action === SideActions.Expand) {
   } else if (action === SideActions.AddSubordinate) {
@@ -235,10 +220,11 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
         class="size-5 text-gray-400"
         :class="isSideLocked ? 'opacity-40' : ''"
       />
-      <DotsMenu
-        :items="sideGroupMenuItems"
+      <SideGroupDropdownMenu
+        :is-locked="isLocked"
+        :is-side-group-locked="isSideGroupLocked"
+        :is-side-locked="isSideLocked"
         @action="onSideGroupAction(group, $event)"
-        class="flex-shrink-0 pr-2"
       />
       <TreeDropIndicator
         v-if="instruction"
@@ -267,7 +253,7 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
         v-if="!group.subUnits.length"
         class="mr-4 flex justify-center border-2 border-dashed border-gray-300 p-8"
       >
-        <SecondaryButton @click="addGroupUnit(group)">Add root unit </SecondaryButton>
+        <SecondaryButton @click="addGroupUnit(group)">Add root unit</SecondaryButton>
       </div>
     </section>
   </div>

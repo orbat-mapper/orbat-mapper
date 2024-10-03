@@ -33,11 +33,7 @@
         <IconFilterVariant v-else class="h-5 w-5" aria-hidden="true" />
       </Switch>
       <IconLockOutline v-if="isLocked" class="h-6 w-6 text-gray-400" />
-      <DotsMenu
-        :items="sideMenuItems"
-        @action="onSideAction"
-        class="flex-shrink-0 pr-2"
-      />
+      <SideDropdownMenu @action="onSideAction" :is-locked="isLocked" />
       <TreeDropIndicator v-if="instruction" :instruction="instruction" class="z-10" />
     </header>
     <EditSideForm
@@ -69,7 +65,6 @@
 </template>
 
 <script setup lang="ts">
-import DotsMenu from "./DotsMenu.vue";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
 import {
@@ -84,7 +79,7 @@ import FilterQueryInput from "./FilterQueryInput.vue";
 import EditSideForm from "./EditSideForm.vue";
 import OrbatSideGroup from "./OrbatSideGroup.vue";
 import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
-import { DropTarget, MenuItemData } from "./types";
+import { DropTarget } from "./types";
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { Switch } from "@headlessui/vue";
@@ -106,6 +101,7 @@ import {
   isUnitDragItem,
 } from "@/types/draggables";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
+import SideDropdownMenu from "@/modules/scenarioeditor/SideDropdownMenu.vue";
 
 interface Props {
   side: NSide;
@@ -241,23 +237,6 @@ onUnmounted(() => {
 });
 
 if (props.side._isNew) showEditSideForm.value = true;
-
-const sideMenuItems = computed((): MenuItemData<SideAction>[] => [
-  { label: "Edit", action: SideActions.Edit, disabled: isLocked.value },
-  {
-    label: "Add subordinate",
-    action: SideActions.AddSubordinate,
-    disabled: isLocked.value,
-  },
-  { label: "Add group", action: SideActions.AddGroup, disabled: isLocked.value },
-  { label: "Delete side", action: SideActions.Delete, disabled: isLocked.value },
-  { label: "Move up", action: SideActions.MoveUp, disabled: isLocked.value },
-  { label: "Move down", action: SideActions.MoveDown, disabled: isLocked.value },
-  { label: "Add side", action: SideActions.Add, disabled: isLocked.value },
-  isLocked.value
-    ? { label: "Unlock side", action: SideActions.Unlock }
-    : { label: "Lock side", action: SideActions.Lock },
-]);
 
 const onSideAction = (action: SideAction) => {
   if (action === SideActions.Expand) {
