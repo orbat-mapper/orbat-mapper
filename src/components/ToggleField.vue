@@ -1,7 +1,8 @@
 <template>
-  <SwitchGroup as="div" class="flex items-center">
+  <SwitchGroup as="div" class="flex items-center" :class="disabled ? 'opacity-50' : ''">
     <Switch
       v-model="enabled"
+      :disabled="disabled"
       :class="[
         enabled ? 'bg-indigo-600' : 'bg-gray-200',
         'flex w-8 cursor-pointer rounded-full p-px ring-1 ring-inset ring-gray-900/5 transition-colors duration-200 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
@@ -23,6 +24,7 @@
 
 <script setup lang="ts">
 import { Switch, SwitchGroup, SwitchLabel } from "@headlessui/vue";
+const props = defineProps<{ disabled?: boolean }>();
 
 const enabled = defineModel({ default: true });
 </script>
