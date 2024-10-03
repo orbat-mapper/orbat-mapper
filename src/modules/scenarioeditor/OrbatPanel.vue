@@ -17,10 +17,16 @@
       @add="addSide()"
     />
   </div>
+  <div
+    v-if="isDragging && isCopying"
+    class="fixed right-1/2 top-2 z-50 rounded border bg-gray-50 bg-opacity-50 p-2 text-center text-sm text-gray-900"
+  >
+    <p>Dragging copy mode <span v-if="isCopyingState">(including state)</span></p>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import OrbatPanelAddSide from "@/components/OrbatPanelAddSide.vue";
 import { injectStrict, triggerPostMoveFlash } from "@/utils";
 import { activeParentKey, activeScenarioKey } from "@/components/injects";
@@ -57,6 +63,10 @@ const activeScenario = injectStrict(activeScenarioKey);
 const { store, unitActions, io, time } = activeScenario;
 const activeParentId = injectStrict(activeParentKey);
 
+const isDragging = ref(false);
+const isCopying = ref(false);
+const isCopyingState = ref(false);
+
 const { state, groupUpdate } = store;
 const { changeUnitParent, addSide } = unitActions;
 const bus = useEventBus(orbatUnitClick);
@@ -77,7 +87,14 @@ onMounted(() => {
       isUnitDragItem(source.data) ||
       isSideGroupDragItem(source.data) ||
       isSideDragItem(source.data),
+    onDragStart: ({ location }) => {
+      isDragging.value = true;
+      isCopying.value = location.initial.input.ctrlKey || location.initial.input.metaKey;
+      isCopyingState.value = isCopying.value && location.initial.input.altKey;
+    },
+
     onDrop: ({ source, location }) => {
+      isDragging.value = false;
       const destination = location.current.dropTargets[0];
       if (!destination) {
         return;
@@ -173,7 +190,6 @@ function onUnitDrop(
   unit: NUnit,
   destinationUnit: NUnit | NSideGroup,
   target: DropTarget,
-
   options: { isDuplicateAction?: boolean; isDuplicateState?: boolean } = {},
 ) {
   const isDuplicateAction = options.isDuplicateAction ?? false;
