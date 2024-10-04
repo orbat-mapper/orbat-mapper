@@ -323,14 +323,34 @@ export function useUnitManipulations(store: NewScenarioStore) {
   }
 
   function deleteUnit(id: string) {
-    groupUpdate(() => {
-      walkSubUnits(
-        id,
-        (unit1) => {
-          deleteSingleUnit(unit1.id);
-        },
-        { includeParent: true },
-      );
+    const unitIds: EntityId[] = [];
+    walkSubUnits(
+      id,
+      (unit1) => {
+        unitIds.push(unit1.id);
+      },
+      { includeParent: true },
+    );
+    unitIds.reverse();
+    update((s) => {
+      for (const id of unitIds) {
+        const u = s.unitMap[id];
+        if (!u) {
+          continue;
+        }
+        delete s.unitMap[id];
+        if (!u._pid) {
+          continue;
+        }
+        const parentUnit = s.unitMap[u._pid];
+        if (parentUnit) {
+          removeElement(id, parentUnit.subUnits);
+        } else {
+          const sideGroup = s.sideGroupMap[u._pid];
+          if (!sideGroup) return;
+          removeElement(id, sideGroup.subUnits);
+        }
+      }
     });
   }
 
