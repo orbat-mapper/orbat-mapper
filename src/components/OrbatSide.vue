@@ -252,7 +252,6 @@ const onSideAction = (action: SideAction) => {
 };
 
 function onSideGroupAction(sideGroup: NSideGroup, action: SideAction) {
-  console.log("sideGroupAction", action);
   if (action === SideActions.Delete) {
     unitActions.deleteSideGroup(sideGroup.id);
   } else if (action === SideActions.MoveDown) {

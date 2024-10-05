@@ -354,26 +354,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
-  function deleteSingleUnit(id: string) {
-    const u = state.unitMap[id];
-    if (!u) {
-      console.warn("Unit does not exists", id);
-      return;
-    }
-    update((s) => {
-      delete s.unitMap[id];
-      if (!u._pid) return;
-      const parentUnit = s.unitMap[u._pid];
-      if (parentUnit) {
-        removeElement(id, parentUnit.subUnits);
-      } else {
-        const sideGroup = s.sideGroupMap[u._pid];
-        if (!sideGroup) return;
-        removeElement(id, sideGroup.subUnits);
-      }
-    });
-  }
-
   function changeUnitParent(
     unitId: EntityId,
     targetId: EntityId,
@@ -611,22 +591,40 @@ export function useUnitManipulations(store: NewScenarioStore) {
       if (idx < 0) idx = undefined;
     }
     groupUpdate(() => {
-      addUnit(newUnit, unit._pid, idx, { updateState: includeState });
+      const rootUnitId = addUnit(newUnit, unit._pid, idx, { updateState: includeState });
+      const addedUnit = state.unitMap[rootUnitId];
+      const { _gid, _sid } = addedUnit;
       if (includeSubordinates) {
-        function helper(currentUnitId: EntityId, parentId: EntityId) {
-          const currentUnit = state.unitMap[currentUnitId]!;
-          const newUnit = {
-            ...currentUnit,
-            name: currentUnit.name,
-            id: nanoid(),
-            state: includeState ? cloneUnitState(currentUnit.state ?? []) : [],
-            _state: null,
-            subUnits: [],
-          };
-          addUnit(newUnit, parentId, undefined, { updateState: includeState });
-          currentUnit.subUnits.forEach((id) => helper(id, newUnit.id));
+        const clonedUnitIds: EntityId[] = [];
+        update((s) => {
+          function helper(currentUnitId: EntityId, parentId: EntityId) {
+            const currentUnit = state.unitMap[currentUnitId]!;
+            const newUnit = {
+              ...currentUnit,
+              id: nanoid(),
+              state: includeState ? cloneUnitState(currentUnit.state ?? []) : [],
+              subUnits: [],
+              _state: null,
+              _pid: parentId,
+              _gid,
+              _sid,
+              _isOpen: false,
+            };
+            if (!newUnit.state || !newUnit.state.length) {
+              unit._state = createInitialState(unit);
+            }
+            s.unitMap[newUnit.id] = newUnit;
+            clonedUnitIds.push(newUnit.id);
+            const parent = getUnitOrSideGroup(parentId, s);
+            if (!parent) return;
+            parent.subUnits.push(newUnit.id);
+            currentUnit.subUnits.forEach((id) => helper(id, newUnit.id));
+          }
+          unit.subUnits.forEach((e) => helper(e, newUnit.id));
+        });
+        if (includeState) {
+          clonedUnitIds.forEach((id) => updateUnitState(id));
         }
-        unit.subUnits.forEach((e) => helper(e, newUnit.id));
       }
     });
 
