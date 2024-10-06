@@ -1,16 +1,22 @@
 <template>
   <form @submit.prevent="onLoad" class="mt-4 space-y-6" ref="dropZoneRef">
     <fieldset class="space-y-4">
-      <RadioGroup v-model="store.inputSource" class="flex items-center space-x-8">
+      <SimpleSelect
+        class="sm:hidden"
+        label="Input source"
+        :items="sourceItems"
+        v-model="store.inputSource"
+      >
+      </SimpleSelect>
+      <RadioGroup
+        v-model="store.inputSource"
+        class="hidden items-center space-x-8 sm:flex"
+      >
         <RadioGroupLabel class="text-sm font-medium text-gray-700"
           >Input source</RadioGroupLabel
         >
         <RadioGroupOption
-          v-for="{ label, value } in [
-            { label: 'Local file', value: 'file' },
-            { label: 'Paste text', value: 'string' },
-            { label: 'URL', value: 'url' },
-          ]"
+          v-for="{ label, value } in sourceItems"
           v-slot="{ checked }"
           :key="value"
           :value="value"
@@ -137,6 +143,12 @@ const formatItems: SelectItem<ImportFormat>[] = [
   { label: "Order of Battle Generator", value: "orbatgenerator" },
   { label: "KML/KMZ", value: "kml" },
   { label: "XLSX", value: "xlsx" },
+];
+
+const sourceItems: SelectItem<string>[] = [
+  { label: "Local file", value: "file" },
+  { label: "Paste text", value: "string" },
+  { label: "URL", value: "url" },
 ];
 
 const stringSource = ref("");
