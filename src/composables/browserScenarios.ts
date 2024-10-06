@@ -115,11 +115,19 @@ export function useBrowserScenarios() {
     }
   }
 
+  async function importScenario(scenarioId: string) {
+    const { loadScenario } = await useIndexedDb();
+    const scenario = await loadScenario(scenarioId);
+    if (scenario) {
+      return scenario;
+    }
+  }
+
   onMounted(async () => {
     const { listScenarios } = await useIndexedDb();
     storedScenarios.value = await listScenarios();
     storedScenarios.value.reverse();
   });
 
-  return { storedScenarios, sortOptions, onAction, loadScenario };
+  return { storedScenarios, sortOptions, onAction, loadScenario, importScenario };
 }

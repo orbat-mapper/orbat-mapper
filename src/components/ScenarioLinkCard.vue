@@ -3,15 +3,21 @@
     class="relative flex flex-col rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400"
   >
     <div class="relative flex-1">
-      <router-link
-        :to="{ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId: data.id } }"
-        class="focus:outline-none"
+      <component
+        :is="noLink ? 'button' : 'router-link'"
+        v-bind="
+          noLink
+            ? { type: 'button' }
+            : { to: { name: MAP_EDIT_MODE_ROUTE, params: { scenarioId: data.id } } }
+        "
+        v-on="noLink ? { click: () => emit('action', 'open') } : {}"
+        class="text-left focus:outline-none"
         draggable="false"
       >
         <span class="absolute inset-0" aria-hidden="true" />
         <p class="text-sm font-medium text-gray-900">{{ data.name }}</p>
         <p class="line-clamp-3 text-sm text-gray-500">{{ data.description }}</p>
-      </router-link>
+      </component>
     </div>
     <footer class="-mr-2 flex flex-none items-center justify-between pt-4">
       <div>
@@ -34,7 +40,7 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { MenuItemData } from "@/components/types";
 import { StoredScenarioAction } from "@/types/constants";
 
-const props = defineProps<{ data: ScenarioMetadata }>();
+const props = defineProps<{ data: ScenarioMetadata; noLink?: boolean }>();
 const emit = defineEmits(["action"]);
 const menuItems: MenuItemData<StoredScenarioAction>[] = [
   { label: "Open", action: "open" },

@@ -69,6 +69,9 @@
           Please note that the scenario host must be configured to allow CORS requests.
         </p>
       </div>
+      <div v-else-if="store.inputSource === 'browser'" class="">
+        <ImportLoadStepBrowser @loaded="onBrowserLoad" />
+      </div>
     </fieldset>
     <AlertWarning v-if="isError && errorMessage" title="Error">{{
       errorMessage
@@ -133,6 +136,8 @@ import InputGroup from "@/components/InputGroup.vue";
 import AlertWarning from "@/components/AlertWarning.vue";
 import { isUrl } from "@/utils";
 import type { FeatureCollection } from "geojson";
+import ImportLoadStepBrowser from "@/modules/scenarioeditor/ImportLoadStepBrowser.vue";
+import { Scenario } from "@/types/scenarioModels";
 
 const emit = defineEmits(["cancel", "loaded"]);
 
@@ -149,6 +154,7 @@ const sourceItems: SelectItem<string>[] = [
   { label: "Local file", value: "file" },
   { label: "Paste text", value: "string" },
   { label: "URL", value: "url" },
+  { label: "Browser", value: "browser" },
 ];
 
 const stringSource = ref("");
@@ -187,6 +193,22 @@ const isGeojson = computed(() => form.value.format === "geojson");
 const isUnitGenerator = computed(() => form.value.format === "unitgenerator");
 const isOrbatGenerator = computed(() => form.value.format === "orbatgenerator");
 const { importMilxString, importJsonString } = useScenarioImport();
+
+async function onBrowserLoad(data: Scenario) {
+  fileInfo.value = {
+    format: "orbatmapper",
+    dataAsString: "",
+    objectUrl: "",
+    isInvalid: false,
+    errors: [],
+    dialect: "unknown",
+    isZipped: false,
+    isJson: false,
+    fileName: "indexed-db",
+    hasMultipleFiles: false,
+  };
+  emit("loaded", "orbatmapper", data, fileInfo.value);
+}
 
 async function onLoad() {
   const { format } = form.value;
@@ -265,7 +287,6 @@ const onFileLoad = (e: Event) => {
 
 const onUrlLoad = async () => {
   const url = urlSource.value;
-  console.log("url", url);
   if (!url) return;
   if (!isUrl(url)) {
     isError.value = true;
