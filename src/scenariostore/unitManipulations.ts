@@ -79,6 +79,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     { markAsNew = true, addDefaultGroup = true } = {},
   ): EntityId {
     const newSide: NSide = {
+      ...sideData,
       id: nanoid(),
       name: sideData.name || "New side",
       standardIdentity: sideData.standardIdentity || SID.Friend,
@@ -107,6 +108,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       const side = s.sideMap[sideId];
       if (!side) return;
       const newSideGroup: NSideGroup = {
+        ...data,
         id: nanoid(),
         name: data.name || "New group",
         subUnits: [],
@@ -636,6 +638,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     { includeState = false, modifyName = true } = {},
   ) {
     const sideGroup = state.sideGroupMap[sideGroupId];
+    console.log(sideGroup);
     if (!sideGroup) return;
     const newSideGroup = {
       ...sideGroup,
