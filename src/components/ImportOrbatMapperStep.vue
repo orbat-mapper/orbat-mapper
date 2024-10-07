@@ -26,6 +26,7 @@ import InputRadio from "@/components/InputRadio.vue";
 import MRadioGroup from "@/components/MRadioGroup.vue";
 import { useNotifications } from "@/composables/notifications";
 import AlertWarning from "@/components/AlertWarning.vue";
+import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 
 interface Props {
   data: Scenario;
@@ -135,8 +136,27 @@ const computedColumns = computed((): (ColumnDef<Unit> | false)[] => {
     {
       accessorFn: (f) => f.name,
       id: "name",
-      header: "Unit",
       cell: renderExpandCell,
+      header: ({ table, column }) => {
+        return h(
+          "button",
+          {
+            type: "button",
+            title: "Expand/collapse all",
+            onClick: table.getToggleAllRowsExpandedHandler(),
+            class: "flex items-center gap-2",
+          },
+          [
+            h(ChevronRightIcon, {
+              class: [
+                "size-6 transform transition-transform text-gray-500",
+                table.getIsAllRowsExpanded() ? "rotate-90" : "",
+              ],
+            }),
+            "Unit",
+          ],
+        );
+      },
       enableGlobalFilter: false,
       size: 350,
       enableSorting: false,
@@ -280,6 +300,7 @@ function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioSt
         :select="selectUnits"
         select-all
         v-model:selected="selectedUnits"
+        no-indeterminate
       />
 
       <fieldset>
