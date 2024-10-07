@@ -32,6 +32,7 @@ interface Props {
   showGlobalFilter?: boolean;
   initialState?: InitialTableState;
   getSubRows?: (row: any) => any[];
+  noIndeterminate?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -40,6 +41,7 @@ const props = withDefaults(defineProps<Props>(), {
   selected: () => [],
   selectAll: false,
   showGlobalFilter: false,
+  noIndeterminate: false,
 });
 
 const emit = defineEmits(["action", "update:selected"]);
@@ -69,7 +71,7 @@ const selectColumn: ColumnDef<any, any> = {
       type: "checkbox",
       checked: row.getIsSelected(),
       disabled: !row.getCanSelect(),
-      indeterminate: row.getIsSomeSelected(),
+      indeterminate: !props.noIndeterminate ? row.getIsSomeSelected() : undefined,
       class:
         "m-2 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6",
       onChange: row.getToggleSelectedHandler(),
