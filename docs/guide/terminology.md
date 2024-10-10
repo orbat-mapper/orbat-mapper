@@ -41,8 +41,8 @@ A group consists of one or more unit hierarchies. The topmost unit in a hierarch
 
 ## Units
 
-A unit is the basic building block of a scenario. It has properties like military symbol, name, description, echelon,
-location, etc.
+A unit is the basic building block of a scenario. It represents a military unit, such as a platoon, company,
+battalion,but it can also be used to represent infrastructure, equipment, vehicles, etc.
 
 <div class="grid grid-cols-3 gap-0 items-center justify-items-center content-end">
     <DocMilSymbol sidc="10031000161211000000" />
@@ -50,11 +50,38 @@ location, etc.
     <DocMilSymbol sidc="10061000151301020000" />
 </div>
 
+Units are organized hierarchically in a tree structure:
+
+![ORBAT](images/unit-hierarchy.png)
+
+Each unit has a set of attributes. The most commonly used
+attributes include:
+
+- _name_
+- _symbol/icon_
+- _location_
+
+Additional attributes can be assigned to units. Examples of these are:
+
+- _description_
+- _image_
+- _url_
+- _symbol modifiers_
+- _average speed_
+- _maximum speed_
+
+### Unit state
+
+In ORBAT Mapper, the state of a unit refers to the current values of its attributes, which can change over time. For
+instance, a unit's location updates as it moves, and its symbol may change if it sustains damage or is destroyed. While
+ORBAT Mapper is not a simulation tool, it can track changes in some unit attributes as the scenario unfolds.
+
 ### Table of Organization and Equipment (TO&E)
 
 A military unit is composed of personnel and equipment. This composition is often referred to as [Table of Organization
 and Equipment (TO&E)](https://en.wikipedia.org/wiki/Table_of_organization_and_equipment). The TO&E outlines the
-structure, roles, and responsibilities of personnel within the unit and specifies the types and quantities of its equipment.
+structure, roles, and responsibilities of personnel within the unit and specifies the types and quantities of its
+equipment.
 
 ORBAT mapper has basic support for representing TO&E-data.
 
