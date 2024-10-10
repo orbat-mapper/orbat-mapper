@@ -9,6 +9,7 @@ import type { FeatureCollection } from "geojson";
 import { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportImageStep from "@/components/ImportImageStep.vue";
 import { ImportedFileInfo } from "@/importexport/fileHandling";
+import DocLink from "@/components/DocLink.vue";
 
 const ImportGeojsonStep = defineAsyncComponent(
   () => import("@/components/ImportGeojsonStep.vue"),
@@ -81,7 +82,10 @@ function onCancel() {
     @cancel="onCancel"
     maxWidth="sm:max-w-xl md:max-w-4xl"
   >
-    <p class="text-sm leading-6 text-gray-500">Import data for use in your scenario</p>
+    <p class="flex items-center justify-between text-sm leading-6 text-gray-500">
+      <span>Import data for use in your scenario</span>
+      <DocLink href="https://docs.orbat-mapper.app/guide/import-data" />
+    </p>
     <ImportLoadStep
       v-if="importState === 'select'"
       @cancel="onCancel"

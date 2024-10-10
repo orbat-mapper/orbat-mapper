@@ -3,7 +3,7 @@ import { ExportFormat, ImportFormat } from "@/types/convert";
 import { useLocalStorage } from "@vueuse/core";
 
 export interface ImportState {
-  inputSource: "file" | "string";
+  inputSource: "file" | "url" | "browser" | "string";
   format: ImportFormat;
   keepOpen: boolean;
 }

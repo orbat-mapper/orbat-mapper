@@ -13,8 +13,8 @@
         class="hidden items-center space-x-8 sm:flex"
       >
         <RadioGroupLabel class="text-sm font-medium text-gray-700"
-          >Input source</RadioGroupLabel
-        >
+          >Input source
+        </RadioGroupLabel>
         <RadioGroupOption
           v-for="{ label, value } in sourceItems"
           v-slot="{ checked }"
@@ -73,39 +73,45 @@
         <ImportLoadStepBrowser @loaded="onBrowserLoad" />
       </div>
     </fieldset>
-    <AlertWarning v-if="isError && errorMessage" title="Error">{{
-      errorMessage
-    }}</AlertWarning>
-    <p v-if="guessedFormat" class="text-sm">
-      The format seems to be <span class="text-red-900">{{ guessedFormat }}.</span>
-    </p>
-    <SimpleSelect label="Select import format" :items="formatItems" v-model="form.format">
-      <template #hint>
-        <DocLink href="https://docs.orbat-mapper.app/guide/import-data" />
-      </template>
-    </SimpleSelect>
-    <div class="prose prose-sm">
-      <p v-if="isMilx">
-        Basic support for importing MilX layers from
-        <a href="https://www.map.army/">map.army</a>
+    <AlertWarning v-if="isError && errorMessage" title="Error"
+      >{{ errorMessage }}
+    </AlertWarning>
+    <div v-if="stringSource" class="space-y-4">
+      <p v-if="guessedFormat" class="text-sm">
+        The format seems to be <span class="text-red-900">{{ guessedFormat }}.</span>
       </p>
-      <p v-else-if="isGeojson">Import units and features.</p>
-      <p v-else-if="isUnitGenerator">
-        Import ORBAT generated with
-        <a href="https://spatialillusions.com/unitgenerator2/" target="_blank"
-          >Spatial Illusions Orbat builder</a
-        >.
-      </p>
-      <p v-else-if="isOrbatGenerator">
-        Import ORBAT generated with
-        <a href="https://www.orbatgenerator.com/" target="_blank"
-          >Order of Battle Generator</a
-        >.
+      <SimpleSelect
+        label="Select import format"
+        :items="formatItems"
+        v-model="form.format"
+      >
+        <template #hint>
+          <DocLink href="https://docs.orbat-mapper.app/guide/import-data" />
+        </template>
+      </SimpleSelect>
+      <div class="prose prose-sm">
+        <p v-if="isMilx">
+          Basic support for importing MilX layers from
+          <a href="https://www.map.army/">map.army</a>
+        </p>
+        <p v-else-if="isGeojson">Import units and features.</p>
+        <p v-else-if="isUnitGenerator">
+          Import ORBAT generated with
+          <a href="https://spatialillusions.com/unitgenerator2/" target="_blank"
+            >Spatial Illusions Orbat builder</a
+          >.
+        </p>
+        <p v-else-if="isOrbatGenerator">
+          Import ORBAT generated with
+          <a href="https://www.orbatgenerator.com/" target="_blank"
+            >Order of Battle Generator</a
+          >.
+        </p>
+      </div>
+      <p v-if="isMilx" class="prose prose-sm">
+        Please note that the import functionality is experimental.
       </p>
     </div>
-    <p v-if="isMilx" class="prose prose-sm">
-      Please note that the import functionality is experimental.
-    </p>
     <img v-if="objectUrl" :src="objectUrl" alt="Loaded image" />
 
     <footer class="flex items-center justify-end space-x-2 pt-4">
