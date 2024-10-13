@@ -570,7 +570,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       target = "below",
       includeSubordinates = false,
       includeState = false,
-      modifyName = true,
+      modifyName = false,
     }: Partial<CloneUnitOptions> = {},
   ) {
     const unit = state.unitMap[unitId];
@@ -638,7 +638,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     { includeState = false, modifyName = true } = {},
   ) {
     const sideGroup = state.sideGroupMap[sideGroupId];
-    console.log(sideGroup);
     if (!sideGroup) return;
     const newSideGroup = {
       ...sideGroup,
