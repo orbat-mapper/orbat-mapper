@@ -1,10 +1,10 @@
 {
   "id": "demo-narvik40",
   "type": "ORBAT-mapper",
-  "version": "0.30.0",
+  "version": "0.31.0",
   "meta": {
     "createdDate": "2024-04-01T17:14:51.567Z",
-    "lastModifiedDate": "2024-07-22T14:15:07.572Z"
+    "lastModifiedDate": "2024-10-13T06:13:57.006Z"
   },
   "name": "Battles of Narvik",
   "startTime": "1940-04-09T01:00:00+02:00",
@@ -96,6 +96,91 @@
                   ]
                 }
               ]
+            },
+            {
+              "id": "sWWZciPN6L",
+              "name": "6th Division",
+              "sidc": "10031000211211000000",
+              "state": [],
+              "subUnits": [
+                {
+                  "id": "d14BhMNBcx",
+                  "name": "14th Infantry Regiment",
+                  "sidc": "10031000171211000000",
+                  "state": [],
+                  "subUnits": [
+                    {
+                      "id": "KUSutyL3Xc",
+                      "name": "1",
+                      "sidc": "10031000161211000000",
+                      "state": [],
+                      "subUnits": [],
+                      "symbolOptions": {}
+                    },
+                    {
+                      "id": "2l3cnX2b3J",
+                      "name": "2",
+                      "sidc": "10031000161211000000",
+                      "state": [],
+                      "subUnits": [],
+                      "symbolOptions": {}
+                    }
+                  ],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "shortName": "14IR"
+                },
+                {
+                  "id": "axE8ef3E6l",
+                  "name": "15th Infantry Regiment",
+                  "sidc": "10031000171211000000",
+                  "state": [],
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "shortName": "15IR"
+                },
+                {
+                  "id": "ZA9ZRC04Kw",
+                  "name": "16th Infantry Regiment",
+                  "sidc": "10031000171211000000",
+                  "state": [],
+                  "subUnits": [
+                    {
+                      "id": "aseaAMx8WW",
+                      "name": "1",
+                      "sidc": "10031000161211000000",
+                      "state": [],
+                      "subUnits": [],
+                      "symbolOptions": {}
+                    },
+                    {
+                      "id": "X7lxh8BAm3",
+                      "name": "2",
+                      "sidc": "10031000161211000000",
+                      "state": [],
+                      "subUnits": [],
+                      "symbolOptions": {}
+                    }
+                  ],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "shortName": "16IR"
+                },
+                {
+                  "id": "0M0m90iLk4",
+                  "name": "Alta",
+                  "sidc": "10031000161211000000",
+                  "state": [],
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None"
+                }
+              ],
+              "symbolOptions": {},
+              "reinforcedStatus": "None",
+              "shortName": "6",
+              "externalUrl": "https://en.wikipedia.org/wiki/6th_Division_(Norway)"
             }
           ]
         },
