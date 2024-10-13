@@ -5,6 +5,8 @@ import {
 } from "@turf/helpers";
 import { buffer as turfBuffer } from "@turf/buffer";
 import { simplify as turfSimplify } from "@turf/simplify";
+import { bezierSpline as turfBezier } from "@turf/bezier-spline";
+import { polygonSmooth as turfPolygonSmooth } from "@turf/polygon-smooth";
 import { bbox } from "@turf/bbox";
 import { bboxPolygon } from "@turf/bbox-polygon";
 import { convex } from "@turf/convex";
@@ -17,7 +19,7 @@ import { injectStrict, nanoid } from "@/utils";
 import { activeMapKey, activeScenarioKey } from "@/components/injects";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import type { NScenarioFeature } from "@/types/internalModels";
-import type { Feature, FeatureCollection } from "geojson";
+import type { Feature, FeatureCollection, LineString, Polygon } from "geojson";
 import { useDebounceFn } from "@vueuse/core";
 import { geometryCollection, Units } from "@turf/turf";
 import VectorLayer from "ol/layer/Vector";
@@ -52,6 +54,7 @@ const transformationOptions: SelectItem[] = [
   { label: "Bounding box", value: "boundingBox" },
   { label: "Convex hull", value: "convexHull" },
   { label: "Simplify", value: "simplify" },
+  { label: "Smooth", value: "smooth" },
 ];
 
 const unitItems: SelectItem<Units>[] = [
@@ -131,7 +134,25 @@ function doTransformation(
       highQuality: true,
     });
   }
+
+  if (transform === "smooth") {
+    if (isLineString(geoJSONFeatureOrFeatureCollection)) {
+      return turfBezier(geoJSONFeatureOrFeatureCollection, {});
+    } else if (isPolygon(geoJSONFeatureOrFeatureCollection)) {
+      return turfPolygonSmooth(geoJSONFeatureOrFeatureCollection, { iterations: 4 });
+    }
+  }
   return null;
+}
+
+function isLineString(
+  feature: Feature | FeatureCollection,
+): feature is Feature<LineString> {
+  return feature.type === "Feature" && feature.geometry.type === "LineString";
+}
+
+function isPolygon(feature: Feature | FeatureCollection): feature is Feature<Polygon> {
+  return feature.type === "Feature" && feature.geometry.type === "Polygon";
 }
 
 watch(
@@ -161,6 +182,8 @@ watchEffect(() => {
   } else if (transformation.value === "simplify") {
     const { tolerance } = simplifyOptions.value;
     currentOp.value = { transform: "simplify", options: { tolerance } };
+  } else if (transformation.value === "smooth") {
+    currentOp.value = { transform: "smooth", options: {} };
   } else {
     currentOp.value = null;
   }

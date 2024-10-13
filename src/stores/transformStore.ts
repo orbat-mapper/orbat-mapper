@@ -18,7 +18,8 @@ export type TransformationOperation =
     }
   | { transform: "boundingBox"; options: {} }
   | { transform: "convexHull"; options: {} }
-  | { transform: "simplify"; options: SimplifyOptions };
+  | { transform: "simplify"; options: SimplifyOptions }
+  | { transform: "smooth"; options: {} };
 
 export const useTransformSettingsStore = defineStore("transformSettings", {
   state: () => ({
