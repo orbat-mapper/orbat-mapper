@@ -75,6 +75,7 @@ const previewLayer = new VectorLayer({
   source: new VectorSource({}),
   style: {
     "stroke-color": "red",
+    "stroke-width": 3,
     "stroke-line-dash": [10, 10],
     "fill-color": "rgba(188,35,65,0.2)",
   },
