@@ -490,13 +490,13 @@ export function useUnitManipulations(store: NewScenarioStore) {
     newUnit: NUnitAdd,
     parentId: EntityId,
     index?: number,
-    { noUndo = false, updateState = false } = {},
+    { noUndo = false, updateState = false, s = state } = {},
   ): EntityId {
     const unit = { ...newUnit } as NUnit;
     if (!unit.id) {
       unit.id = nanoid();
     }
-    const { side, sideGroup } = getUnitHierarchy(parentId);
+    const { side, sideGroup } = getUnitHierarchy(parentId, s);
     unit._pid = parentId;
     unit._gid = sideGroup.id;
     unit._sid = side.id;
@@ -505,8 +505,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
       unit._state = createInitialState(unit);
     }
     if (noUndo) {
-      state.unitMap[unit.id] = unit;
-      let parent = getUnitOrSideGroup(unit._pid!);
+      s.unitMap[unit.id] = unit;
+      let parent = getUnitOrSideGroup(unit._pid!, s);
       if (!parent) return unit.id;
       if (index === undefined) {
         parent.subUnits.push(unit.id);
@@ -998,14 +998,17 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
-  function addEquipment(data: Partial<NEquipmentData>, { noUndo = false } = {}) {
+  function addEquipment(
+    data: Partial<NEquipmentData>,
+    { noUndo = false, s = state } = {},
+  ) {
     const newEquipment = { id: nanoid(), name: "Equipment", ...klona(data) };
     if (newEquipment.id === undefined) {
       newEquipment.id = nanoid();
     }
     const newId = newEquipment.id;
     if (noUndo) {
-      state.equipmentMap[newId] = newEquipment;
+      s.equipmentMap[newId] = newEquipment;
     } else {
       update((s) => {
         s.equipmentMap[newId] = newEquipment;
@@ -1067,7 +1070,10 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
-  function addPersonnel(data: Partial<NPersonnelData>, { noUndo = false } = {}) {
+  function addPersonnel(
+    data: Partial<NPersonnelData>,
+    { noUndo = false, s = state } = {},
+  ) {
     const newPersonnel = { id: nanoid(), name: "Personnel", ...klona(data) };
 
     if (newPersonnel.id === undefined) {
@@ -1075,7 +1081,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     }
     const newId = newPersonnel.id;
     if (noUndo) {
-      state.personnelMap[newId] = newPersonnel;
+      s.personnelMap[newId] = newPersonnel;
     } else {
       update((s) => {
         s.personnelMap[newId] = newPersonnel;
