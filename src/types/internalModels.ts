@@ -64,7 +64,7 @@ export interface NSide extends Omit<Side, "groups"> {
   _isOpen?: boolean;
 }
 
-export interface SideUpdate extends Omit<NSide, "id"> {}
+export interface SideUpdate extends Omit<NSide, "id" | "groups"> {}
 
 export interface NSideGroup extends Omit<SideGroup, "subUnits" | "_pid"> {
   subUnits: EntityId[];
@@ -100,7 +100,7 @@ export type ScenarioMapLayerUpdate =
   | ScenarioXYZLayerUpdate
   | ScenarioKMLLayerUpdate;
 
-export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id">> {}
+export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id" | "subUnits">> {}
 export interface UnitUpdate extends Partial<Omit<NUnit, "id">> {}
 export interface ScenarioEventUpdate extends Partial<Omit<NScenarioEvent, "id">> {}
 export interface MediaUpdate extends Partial<Media> {}
