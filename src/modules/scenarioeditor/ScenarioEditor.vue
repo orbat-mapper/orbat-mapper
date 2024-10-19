@@ -110,11 +110,14 @@
       :filter="inputEventFilter"
       @keyup.?="showKeyboardShortcuts"
       @keydown.ctrl.k.prevent="showSearch = true"
+      @keydown.meta.k.prevent="showSearch = true"
       @keyup.prevent.alt.k="showSearch = true"
     />
     <GlobalEvents
       :filter="inputEventFilter"
+      @keydown.meta.z.exact="undo()"
       @keyup.ctrl.z.exact="undo()"
+      @keydown.meta.shift.z="redo()"
       @keyup.ctrl.shift.z="redo()"
       @keyup.ctrl.y="redo()"
     />
