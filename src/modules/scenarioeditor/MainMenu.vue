@@ -71,7 +71,7 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
       <DropdownMenuSeparator />
       <DropdownMenuItem @select="emit('uiAction', 'showSearch')"
         >Search
-        <DropdownMenuShortcut>Ctrl K</DropdownMenuShortcut>
+        <DropdownMenuShortcut class="ml-4">Ctrl/⌘ K</DropdownMenuShortcut>
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuSub>

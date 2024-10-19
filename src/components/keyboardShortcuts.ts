@@ -14,11 +14,11 @@ const genericShortcuts: KeyboardCategory = {
   label: "Generic",
   shortcuts: [
     { shortcut: [["?"]], description: "Show this help dialog" },
-    { shortcut: [["ctrl", "k"], ["s"]], description: "Open search" },
-    { shortcut: [["ctrl", "z"]], description: "Undo" },
+    { shortcut: [["ctrl / ⌘", "k"], ["s"]], description: "Open search" },
+    { shortcut: [["ctrl / ⌘", "z"]], description: "Undo" },
     {
       shortcut: [
-        ["ctrl", "shift", "z"],
+        ["ctrl / ⌘", "shift", "z"],
         ["ctrl", "y"],
       ],
       description: "Redo",
