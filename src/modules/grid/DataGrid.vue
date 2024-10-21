@@ -25,6 +25,7 @@ import InputGroup from "@/components/InputGroup.vue";
 interface Props {
   columns: (ColumnDef<any, any> | false | undefined)[];
   data: any[];
+  rowCount?: number;
   rowHeight?: number;
   select?: boolean;
   selected?: any[];
@@ -124,6 +125,7 @@ const table = useVueTable({
   // onGroupingChange: (updateOrValue) => valueUpdater(updateOrValue, grouping),
   onGlobalFilterChange: (updateOrValue) => valueUpdater(updateOrValue, query),
   getSubRows: props.getSubRows,
+  filterFromLeafRows: true,
 });
 
 const rowVirtualizerOptions = computed(() => {
@@ -172,7 +174,10 @@ const filteredRowCount = computed(() => {
       class="flex flex-none items-center justify-between pb-2"
     >
       <InputGroup v-model="query" placeholder="Filter rows" @keydown.esc="onEsc" />
-      <span class="text-sm">({{ filteredRowCount }} / {{ data.length }})</span>
+      <span class="text-sm"
+        >({{ filteredRowCount }} /
+        {{ rowCount === undefined ? data.length : rowCount }})</span
+      >
     </header>
     <section class="relative overflow-auto rounded-lg border shadow" ref="parentRef">
       <table class="grid">

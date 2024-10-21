@@ -9,17 +9,20 @@ import { ImportedFileInfo } from "@/importexport/fileHandling";
 import { detectSpreadsheetDialect } from "@/importexport/spreadsheets/utils";
 import {
   ExtendedOdinUnit,
+  OdinUnitInfoRow,
   parseOdinDragon,
 } from "@/importexport/spreadsheets/odinDragon";
-import { computed, h, ref } from "vue";
+import { computed, h, ref, shallowRef } from "vue";
 import { Unit } from "@/types/scenarioModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { SymbolItem } from "@/types/constants";
 import { addUnitHierarchy } from "@/importexport/convertUtils";
 import InputCheckbox from "@/components/InputCheckbox.vue";
-import { ColumnDef, InitialTableState } from "@tanstack/vue-table";
+import { CellContext, ColumnDef, InitialTableState } from "@tanstack/vue-table";
 import DataGrid from "@/modules/grid/DataGrid.vue";
+import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
+import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 
 interface Props {
   fileInfo: ImportedFileInfo;
@@ -46,27 +49,57 @@ const rootUnitItems = computed((): SymbolItem[] => {
 
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
+function renderExpandCell({ getValue, row }: CellContext<Unit, string>) {
+  return h(OrbatCellRenderer, {
+    value: getValue(),
+    sidc: row.original.sidc,
+    expanded: row.getIsExpanded(),
+    level: row.depth,
+    canExpand: row.getCanExpand(),
+    onToggle: row.getToggleExpandedHandler(),
+    symbolOptions: {},
+  });
+}
+
 const columns: ColumnDef<Unit, any>[] = [
   {
-    header: "Icon",
-    accessorFn: (u) => u.sidc,
-    id: "sidc",
-    size: 70,
-    cell: ({ row, getValue, cell }) => {
-      return h(MilitarySymbol, {
-        sidc: getValue(),
-        size: 20,
-        "data-sidc": getValue(),
-      });
+    accessorFn: (f) => f.name,
+    id: "name",
+    cell: renderExpandCell,
+    header: ({ table, column }) => {
+      return h(
+        "button",
+        {
+          type: "button",
+          title: "Expand/collapse all",
+          onClick: table.getToggleAllRowsExpandedHandler(),
+          class: "flex items-center gap-2",
+        },
+        [
+          h(ChevronRightIcon, {
+            class: [
+              "size-6 transform transition-transform text-gray-500",
+              table.getIsAllRowsExpanded() ? "rotate-90" : "",
+            ],
+          }),
+          "Unit",
+        ],
+      );
     },
+    enableGlobalFilter: true,
+    size: 450,
+    enableSorting: false,
   },
-  { accessorKey: "name", header: "Name", size: 200 },
-  { accessorKey: "PARENT NAME", header: "Parent name", size: 260 },
-  { accessorKey: "TEMPLATE NAME", header: "Template", size: 300 },
+  {
+    accessorKey: "TEMPLATE NAME",
+    header: "Template",
+    size: 300,
+    accessorFn: (u) => rowMapTest.value?.get(+u.id)?.["TEMPLATE NAME"],
+  },
 ];
 
 const initialTableState: InitialTableState = {
-  grouping: ["PARENT NAME"],
+  //grouping: ["PARENT NAME"],
   expanded: true,
 };
 
@@ -74,13 +107,15 @@ const { send } = useNotifications();
 
 const workbook = readSpreadsheet(props.fileInfo.dataAsArrayBuffer);
 const dialect = detectSpreadsheetDialect(workbook);
-const importedUnits = ref<ExtendedOdinUnit[]>([]);
-
+const importedUnits = shallowRef<Unit[]>([]);
+const rowMapTest = shallowRef<Map<number, OdinUnitInfoRow>>();
 if (dialect === "ODIN_DRAGON") {
-  const { unitRows } = parseOdinDragon(workbook, {
-    rowsOnly: true,
+  const { rootUnits, rowMap } = parseOdinDragon(workbook, {
+    rowsOnly: false,
+    expandTemplates: false,
   });
-  importedUnits.value = unitRows;
+  importedUnits.value = rootUnits;
+  rowMapTest.value = rowMap;
 }
 
 async function onLoad(e: Event) {
@@ -149,10 +184,12 @@ async function onLoad(e: Event) {
         <DataGrid
           :data="importedUnits"
           :columns="columns"
+          :row-count="rowMapTest?.size"
           :row-height="40"
           class="max-h-[40vh]"
           show-global-filter
           :initial-state="initialTableState"
+          :get-sub-rows="(row) => row.subUnits"
         />
       </section>
 

@@ -10,7 +10,7 @@ import { xlsxUtils } from "@/extlib/xlsx-lazy";
 import { Unit, UnitEquipment, UnitPersonnel } from "@/types/scenarioModels";
 import { convertLetterSidc2NumberSidc } from "@orbat-mapper/convert-symbology";
 
-interface OdinUnitInfoRow {
+export interface OdinUnitInfoRow {
   TYPE: string;
   NAME: string;
   UID: number;
@@ -74,6 +74,7 @@ export function parseOdinDragon(wb: WorkBook, options: ParseOdinDragonOptions = 
   return {
     unitRows: unitRows.map(convertUnitInfoRowToUnit),
     rootUnits: rootUnitHierarchies,
+    rowMap,
   };
 
   function helper(units: Unit[]) {
