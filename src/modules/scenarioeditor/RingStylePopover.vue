@@ -49,7 +49,7 @@ function updateValue(name: keyof SimpleStyleSpec, value: string | number) {
 </script>
 <template>
   <Popover as="template">
-    <Float placement="top-end" strategy="fixed">
+    <Float placement="top-end" strategy="fixed" portal>
       <PopoverButton
         title="Change style"
         class="hover:bg-gray-100 disabled:opacity-50"

@@ -274,6 +274,7 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
               class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
               :items="ringMenuItems"
               @action="onRangeRingAction($event, index)"
+              portal
             />
           </td>
         </template>
