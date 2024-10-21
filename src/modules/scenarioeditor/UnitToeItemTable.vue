@@ -163,7 +163,11 @@ resetAddForm();
             <td class="pl-2" :title="item.description">{{ item.name }}</td>
             <td class="pr-6 text-right tabular-nums">{{ item.count }}</td>
             <td class="not-prose w-6">
-              <DotsMenu :items="itemActions" @action="onItemAction(item, $event)" />
+              <DotsMenu
+                :items="itemActions"
+                @action="onItemAction(item, $event)"
+                portal
+              />
             </td>
           </template>
         </tr>
