@@ -153,13 +153,13 @@ export function parseOdinDragonTemplate(
   }
 }
 
-export interface TestUnit extends OdinUnitInfoRow, Unit {
+export interface ExtendedOdinUnit extends OdinUnitInfoRow, Unit {
   id: string;
   name: string;
   sidc: string;
 }
 
-function convertUnitInfoRowToUnit(row: OdinUnitInfoRow): TestUnit {
+function convertUnitInfoRowToUnit(row: OdinUnitInfoRow): ExtendedOdinUnit {
   return {
     ...row,
     id: row.UID.toString(),

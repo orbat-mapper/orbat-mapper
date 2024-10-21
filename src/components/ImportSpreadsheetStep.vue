@@ -7,7 +7,10 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { ImportedFileInfo } from "@/importexport/fileHandling";
 import { detectSpreadsheetDialect } from "@/importexport/spreadsheets/utils";
-import { parseOdinDragon, TestUnit } from "@/importexport/spreadsheets/odinDragon";
+import {
+  ExtendedOdinUnit,
+  parseOdinDragon,
+} from "@/importexport/spreadsheets/odinDragon";
 import { computed, h, ref } from "vue";
 import { Unit } from "@/types/scenarioModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
@@ -43,10 +46,10 @@ const rootUnitItems = computed((): SymbolItem[] => {
 
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
-const newColumns: ColumnDef<Unit, any>[] = [
+const columns: ColumnDef<Unit, any>[] = [
   {
-    accessorFn: (u) => u.sidc,
     header: "Icon",
+    accessorFn: (u) => u.sidc,
     id: "sidc",
     size: 70,
     cell: ({ row, getValue, cell }) => {
@@ -71,13 +74,13 @@ const { send } = useNotifications();
 
 const workbook = readSpreadsheet(props.fileInfo.dataAsArrayBuffer);
 const dialect = detectSpreadsheetDialect(workbook);
-const units = ref<TestUnit[]>([]);
+const importedUnits = ref<ExtendedOdinUnit[]>([]);
 
 if (dialect === "ODIN_DRAGON") {
-  const { unitRows, rootUnits } = parseOdinDragon(workbook, {
+  const { unitRows } = parseOdinDragon(workbook, {
     rowsOnly: true,
   });
-  units.value = unitRows;
+  importedUnits.value = unitRows;
 }
 
 async function onLoad(e: Event) {
@@ -144,8 +147,8 @@ async function onLoad(e: Event) {
       </div>
       <section class="mt-2 flex-auto">
         <DataGrid
-          :data="units"
-          :columns="newColumns"
+          :data="importedUnits"
+          :columns="columns"
           :row-height="40"
           class="max-h-[40vh]"
           show-global-filter
