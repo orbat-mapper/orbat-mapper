@@ -72,28 +72,29 @@ interface TextFieldMeta {
   y: number;
   field: TextAmpKey;
   placeholder?: string;
+  title?: string;
 }
 
 const landUnitFields: TextFieldMeta[] = [
-  { x: 3, y: 2, field: "G" },
-  { x: 3, y: 3, field: "H" },
-  { x: 1, y: 4, field: "T" },
-  { x: 3, y: 4, field: "M" },
+  { x: 3, y: 2, field: "G", title: "Staff Comments" },
+  { x: 3, y: 3, field: "H", title: "Additional Information" },
+  { x: 1, y: 4, field: "T", title: "Unique Designation" },
+  { x: 3, y: 4, field: "M", title: "Higher Formation" },
 ];
 
 const surfaceFields: TextFieldMeta[] = [
-  { x: 3, y: 1, field: "T" },
-  { x: 3, y: 4, field: "G" },
+  { x: 3, y: 1, field: "T", title: "Unique Designation" },
+  { x: 3, y: 4, field: "G", title: "Staff Comments" },
 ];
 
 const subSurfaceFields: TextFieldMeta[] = [
-  { x: 3, y: 1, field: "T" },
-  { x: 3, y: 4, field: "G" },
+  { x: 3, y: 1, field: "T", title: "Unique Designation" },
+  { x: 3, y: 4, field: "G", title: "Staff Comments" },
 ];
 
 const airFields: TextFieldMeta[] = [
-  { x: 3, y: 1, field: "T" },
-  { x: 3, y: 4, field: "G" },
+  { x: 3, y: 1, field: "T", title: "Unique Designation" },
+  { x: 3, y: 4, field: "G", title: "Staff Comments" },
 ];
 
 const textFields = computed(() => {
@@ -136,7 +137,7 @@ function handleReset() {
         <div class="grid grid-cols-3 grid-rows-5">
           <p class="col-start-1 row-start-1 h-9"></p>
           <div
-            v-for="{ x, y, field, placeholder } in textFields"
+            v-for="{ x, y, field, placeholder, title } in textFields"
             :key="field"
             :style="{ 'grid-row-start': y, 'grid-column-start': x }"
           >
@@ -152,6 +153,7 @@ function handleReset() {
               "
               @update:model-value="textAmplifiers[textAmpMap[field]] = $event"
               :disabled="isLocked || !overrideName"
+              :title="title"
             />
             <TextAmpInput
               v-else
@@ -159,6 +161,7 @@ function handleReset() {
               :model-value="textAmplifiers[textAmpMap[field]]"
               @update:model-value="textAmplifiers[textAmpMap[field]] = $event"
               :disabled="isLocked"
+              :title="title"
             />
           </div>
 
