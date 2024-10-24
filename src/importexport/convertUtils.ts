@@ -37,6 +37,7 @@ export function parseApplicationOrbat(text: string): Unit[] | null {
 
 type AddUnitHierarchyOptions = {
   newIds?: boolean;
+  includeState?: boolean;
 };
 
 export function addUnitHierarchy(
@@ -46,6 +47,7 @@ export function addUnitHierarchy(
   options: AddUnitHierarchyOptions = {},
 ) {
   const newIds = options.newIds ?? true;
+  const includeState = options.includeState ?? false;
   const noUndo = true;
   const { store, unitActions } = scenario;
   const { side } = unitActions.getUnitHierarchy(parentId);
@@ -74,7 +76,7 @@ export function addUnitHierarchy(
         subUnits: [],
         equipment,
         personnel,
-        state: [],
+        state: includeState && unit.state ? [...unit.state] : [],
         rangeRings: [],
       };
       unitActions.addUnit(newUnit, parentId, undefined, { noUndo, s });

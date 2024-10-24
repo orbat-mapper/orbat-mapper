@@ -75,12 +75,12 @@ export function useUnitManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
 
   function addSide(
-    sideData: Partial<SideUpdate> = {},
-    { markAsNew = true, addDefaultGroup = true } = {},
+    sideData: Partial<NSide> = {},
+    { markAsNew = true, addDefaultGroup = true, newId = true } = {},
   ): EntityId {
     const newSide: NSide = {
       ...sideData,
-      id: nanoid(),
+      id: newId || sideData.id === undefined ? nanoid() : sideData.id,
       name: sideData.name || "New side",
       standardIdentity: sideData.standardIdentity || SID.Friend,
       symbolOptions: sideData.symbolOptions || {},
@@ -102,14 +102,18 @@ export function useUnitManipulations(store: NewScenarioStore) {
     return newSide.id;
   }
 
-  function addSideGroup(sideId: EntityId, data: Partial<NSideGroup> = {}) {
+  function addSideGroup(
+    sideId: EntityId,
+    data: Partial<NSideGroup> = {},
+    { newId = true } = {},
+  ) {
     let newSideGroupId: EntityId | undefined = undefined;
     update((s) => {
       const side = s.sideMap[sideId];
       if (!side) return;
       const newSideGroup: NSideGroup = {
         ...data,
-        id: nanoid(),
+        id: newId || data.id === undefined ? nanoid() : data.id,
         name: data.name || "New group",
         subUnits: [],
         _pid: sideId,

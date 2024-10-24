@@ -1,18 +1,17 @@
 <script setup lang="ts">
-import { computed, h, reactive, ref, toRaw, watch } from "vue";
+import { computed, h, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import {
   mapReinforcedStatus2Field,
   Scenario,
+  SideGroup,
   Unit,
   UnitSymbolOptions,
 } from "@/types/scenarioModels";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
-import InputCheckbox from "@/components/InputCheckbox.vue";
-import InlineRadioGroup from "@/components/InlineRadioGroup.vue";
-import { RadioGroupItem, SelectItem } from "@/components/types";
+import { SelectItem } from "@/components/types";
 import { prepareScenario, ScenarioState } from "@/scenariostore/newScenarioStore";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { CellContext, ColumnDef } from "@tanstack/vue-table";
@@ -25,8 +24,12 @@ import PanelSubHeading from "@/components/PanelSubHeading.vue";
 import InputRadio from "@/components/InputRadio.vue";
 import MRadioGroup from "@/components/MRadioGroup.vue";
 import { useNotifications } from "@/composables/notifications";
-import AlertWarning from "@/components/AlertWarning.vue";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
+import SimpleDivider from "@/components/SimpleDivider.vue";
+import { addUnitHierarchy } from "@/importexport/convertUtils";
+import dayjs from "dayjs";
+import InlineAlertWarning from "@/components/InlineAlertWarning.vue";
 
 interface Props {
   data: Scenario;
@@ -34,21 +37,25 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
-const { unitActions, store: scnStore, time } = injectStrict(activeScenarioKey);
+const activeScenario = injectStrict(activeScenarioKey);
+const { unitActions, store: scnStore } = activeScenario;
 const { loadScenario } = useBrowserScenarios();
 const { send } = useNotifications();
 const store = useImportStore();
 
-const { state } = scnStore;
+const { state: targetState } = scnStore;
 
-const importMode = ref<"units" | "layers">("units");
+const importMode = ref<"side" | "group" | "units" | "layers">("side");
 const unitImportMode = ref<"units-only" | "units-and-state" | "state-only">("state-only");
+const stateMergeMode = ref<"replace" | "add_new">("replace");
 const selectUnits = ref(false);
-const selectedUnits = ref<Unit[]>([]);
+const selectedItems = ref<(Unit | SideGroup)[]>([]);
 
 const importedState = computed(() => {
   return prepareScenario(props.data);
 });
+
+const fmt = useTimeFormatStore();
 
 function getCombinedSymbolOptions(
   unitOrSideGroup: NUnit | NSideGroup,
@@ -80,7 +87,7 @@ const stats = computed(() => {
   };
 });
 
-const importSides = computed((): SelectItem[] => {
+const importedSides = computed((): SelectItem[] => {
   return importedState.value.sides
     .map((id) => importedState.value.sideMap[id])
     .map((side) => {
@@ -91,8 +98,8 @@ const importSides = computed((): SelectItem[] => {
     });
 });
 
-const importSideGroups = computed(() => {
-  return importedState.value.sideMap[currentSide.value].groups
+const importedSideGroups = computed(() => {
+  return importedState.value.sideMap[selectedSourceSideId.value].groups
     .map((id) => importedState.value.sideGroupMap[id])
     .map((sideGroup) => {
       return {
@@ -102,17 +109,26 @@ const importSideGroups = computed(() => {
     });
 });
 
-const currentSide = ref(importSides.value[0].value as string);
-const currentSideGroup = ref(importSideGroups.value[0].value as string);
+const selectedSourceSideId = ref(importedSides.value[0].value as string);
+const selectedSourceSideGroupId = ref(importedSideGroups.value[0].value as string);
 const currentData = computed(() => {
-  const s = props.data.sides.find((s) => s.id === currentSide.value);
-  const sg = s?.groups.find((g) => g.id === currentSideGroup.value);
+  const s = props.data.sides.find((s) => s.id === selectedSourceSideId.value);
+
+  if (importMode.value === "side") {
+    return s?.groups ?? [];
+  }
+
+  const sg = s?.groups.find((g) => g.id === selectedSourceSideGroupId.value);
   return sg?.subUnits ?? [];
 });
 
-watch(currentSide, (newSide) => {
+const hasExistingUnits = computed(() => {
+  return selectedItems.value.some((item) => item.id in targetState.unitMap);
+});
+
+watch(selectedSourceSideId, (newSide) => {
   const side = importedState.value.sideMap[newSide];
-  currentSideGroup.value = side.groups[0];
+  selectedSourceSideGroupId.value = side.groups[0];
 });
 
 function renderExpandCell({ getValue, row }: CellContext<Unit, string>) {
@@ -153,7 +169,7 @@ const computedColumns = computed((): (ColumnDef<Unit> | false)[] => {
                 table.getIsAllRowsExpanded() ? "rotate-90" : "",
               ],
             }),
-            "Unit",
+            "Name",
           ],
         );
       },
@@ -162,52 +178,63 @@ const computedColumns = computed((): (ColumnDef<Unit> | false)[] => {
       enableSorting: false,
     },
     {
-      accessorFn: (f) => (f.id in state.unitMap ? "Yes" : "No"),
+      accessorFn: (f) =>
+        f.state?.length
+          ? fmt.trackFormatter.format(+new Date(f.state[f.state.length - 1].t)) +
+            ` (${f.state.length})`
+          : "",
+      id: "t",
+      header: "Last state entry",
+      enableSorting: false,
+      size: 235,
+    },
+    {
+      accessorFn: (f) =>
+        f.id in targetState.unitMap || f.id in targetState.sideGroupMap ? "Yes" : "No",
       id: "exists",
       header: "Exists?",
       enableSorting: false,
+      size: 90,
     },
+
     {
-      accessorFn: (f) => (f.state?.length ? "Yes" : "No"),
-      id: "state",
-      header: "State?",
+      accessorFn: (f) => {
+        if (!f.state?.length) return "";
+        const existingUnit = targetState.unitMap[f.id];
+        if (!existingUnit) return "";
+        if (!existingUnit.state?.length) return "";
+        const lastTimestamp = existingUnit.state[existingUnit.state.length - 1].t;
+        const lastSourceTimestamp = f.state[f.state.length - 1].t;
+        const diff = +new Date(lastSourceTimestamp) - lastTimestamp;
+        if (diff === 0) return "";
+        return dayjs.duration(diff).toISOString();
+      },
+
+      id: "diff",
+      header: "Diff",
       enableSorting: false,
     },
   ];
 });
 
-const form = reactive({
-  importUnits: true,
-  importEvents: true,
-  eventMerging: "add_new",
-});
-
 const sides = computed(() => {
-  return state.sides.map((id) => state.sideMap[id]);
+  return targetState.sides.map((id) => targetState.sideMap[id]);
 });
 
-const mergeSettings: RadioGroupItem[] = [
-  { value: "replace", name: "Replace" },
-  { value: "add_new", name: "Add only new events" },
-];
+// check that the item is a unit
+function isUnit(item: Unit | SideGroup): item is Unit {
+  return "sidc" in item;
+}
 
 async function onMerge(e: Event) {
-  const selectedUnitIds = new Set(selectedUnits.value.map((u) => u.id));
+  const selectedUnitIds = new Set(selectedItems.value.filter(isUnit).map((u) => u.id));
 
   if (unitImportMode.value === "state-only") {
-    scnStore.groupUpdate(() => {
-      for (const importedUnitId of selectedUnitIds) {
-        const importedUnit = importedState.value.unitMap[importedUnitId];
-        if (!importedUnit || !importedUnit.state?.length) {
-          continue;
-        }
-        const existingUnit = state.unitMap[importedUnit.id];
-        if (!existingUnit) {
-          continue;
-        }
-        unitActions.setUnitState(existingUnit.id, importedUnit.state);
-      }
-    });
+    doStateOnlyImport(selectedUnitIds);
+  } else if (importMode.value === "side") {
+    doSideImport(selectedSourceSideId.value);
+  } else if (importMode.value === "group") {
+    // doGroupImport(selectedUnitIds);
   }
 
   send({
@@ -216,11 +243,68 @@ async function onMerge(e: Event) {
   });
 
   if (!store.keepOpen) emit("loaded");
+}
 
-  /*if (form.importUnits && form.importEvents && form.eventMerging === "add_new") {
-    const data = prepareScenario(props.data);
-    mergeScenarios(state, data);
-  }*/
+function doStateOnlyImport(selectedUnitIds: Set<string>) {
+  scnStore.groupUpdate(() => {
+    for (const importedUnitId of selectedUnitIds) {
+      const importedUnit = importedState.value.unitMap[importedUnitId];
+      if (!importedUnit || !importedUnit.state?.length) {
+        continue;
+      }
+      const existingUnit = targetState.unitMap[importedUnit.id];
+      if (!existingUnit) {
+        continue;
+      }
+      if (stateMergeMode.value === "replace" || !existingUnit.state?.length) {
+        unitActions.setUnitState(existingUnit.id, importedUnit.state);
+      } else {
+        const lastTimestamp = existingUnit.state[existingUnit.state.length - 1].t;
+        const newStates = importedUnit.state.filter((s) => s.t > lastTimestamp);
+        if (newStates.length) {
+          unitActions.setUnitState(existingUnit.id, [
+            ...existingUnit.state,
+            ...newStates,
+          ]);
+        }
+      }
+    }
+  });
+}
+
+function doSideImport(importedSideId: string) {
+  const sideAlreadyExists = importedSideId in targetState.sideMap;
+  if (sideAlreadyExists) {
+    console.warn("Side already exists in the target scenario");
+  }
+
+  const importedSide = importedState.value.sideMap[importedSideId];
+
+  scnStore.groupUpdate(() => {
+    const addedSideId = unitActions.addSide(importedSide, {
+      addDefaultGroup: false,
+      markAsNew: false,
+      newId: false,
+    });
+    for (const group of currentData.value) {
+      const groupId = group.id;
+      const importedGroup = importedState.value.sideGroupMap[groupId];
+      unitActions.addSideGroup(
+        addedSideId,
+        { ...importedGroup, _isNew: false },
+        {
+          newId: false,
+        },
+      );
+      if (!group.subUnits) continue;
+      for (const unit of group.subUnits) {
+        addUnitHierarchy(unit, groupId, activeScenario, {
+          newIds: false,
+          includeState: unitImportMode.value === "units-and-state",
+        });
+      }
+    }
+  });
 }
 
 function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioState) {
@@ -253,8 +337,9 @@ function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioSt
         <p class="truncate text-xs">{{ data.description }}</p>
         <p>Units: {{ stats.units }}</p>
       </section>
-      <AlertWarning title="Work in progress" class="rounded border"
-        >The scenario import functionality is currently limited.</AlertWarning
+
+      <InlineAlertWarning
+        >The scenario import functionality is currently limited.</InlineAlertWarning
       >
 
       <PanelSubHeading class="mt-4"
@@ -262,8 +347,10 @@ function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioSt
       >
       <div class="mt-2 flex items-center justify-between">
         <MRadioGroup class="flex w-full gap-5">
-          <InputRadio v-model="importMode" value="units">Units</InputRadio>
-          <InputRadio v-model="importMode" value="features" disabled>Layers</InputRadio>
+          <InputRadio v-model="importMode" value="side">Side</InputRadio>
+          <InputRadio v-model="importMode" value="group">Group</InputRadio>
+          <!--          <InputRadio v-model="importMode" value="units" disabled>Units</InputRadio>-->
+          <!--          <InputRadio v-model="importMode" value="features" disabled>Layers</InputRadio>-->
         </MRadioGroup>
         <ToggleField
           v-if="importMode === 'units'"
@@ -273,37 +360,46 @@ function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioSt
           >Select individual units</ToggleField
         >
       </div>
-
       <fieldset class="mt-4 flex w-full flex-col gap-4 sm:flex-row sm:items-center">
         <SimpleSelect
           label="Side"
-          :items="importSides"
-          v-model="currentSide"
+          :items="importedSides"
+          v-model="selectedSourceSideId"
           class="flex-auto"
         />
         <SimpleSelect
+          v-if="importMode === 'group' || importMode === 'units'"
           label="Side group"
-          :items="importSideGroups"
-          v-model="currentSideGroup"
+          :items="importedSideGroups"
+          v-model="selectedSourceSideGroupId"
           class="flex-auto"
         />
+        <div v-else class="flex-auto self-end">
+          <p v-if="selectedSourceSideId in targetState.sideMap">
+            This side exists in the target scenario
+          </p>
+        </div>
       </fieldset>
 
       <DataGrid
-        :key="currentSideGroup"
+        :key="selectedSourceSideGroupId"
         :data="currentData"
         :columns="computedColumns"
         :row-height="40"
         class="mt-4 max-h-[40vh]"
         :initial-state="{ expanded: true }"
-        :get-sub-rows="(row) => row.subUnits"
+        :get-sub-rows="(row) => row.subUnits ?? row.groups"
         :select="selectUnits"
         select-all
-        v-model:selected="selectedUnits"
+        v-model:selected="selectedItems"
         no-indeterminate
       />
 
       <fieldset>
+        <InlineAlertWarning v-if="hasExistingUnits"
+          >There are units in the source scenario that exists in the target
+          scenario.</InlineAlertWarning
+        >
         <PanelSubHeading class="mt-4">What do you want to import?</PanelSubHeading>
         <MRadioGroup class="mt-2 flex w-full gap-5">
           <InputRadio v-model="unitImportMode" :value="'units-only'" disabled
@@ -312,25 +408,23 @@ function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioSt
           <InputRadio v-model="unitImportMode" value="units-and-state" disabled
             >Units and state</InputRadio
           >
-          <InputRadio v-model="unitImportMode" value="state-only">State only</InputRadio>
+          <InputRadio v-model="unitImportMode" value="state-only"
+            >State (only for existing units)</InputRadio
+          >
+        </MRadioGroup>
+        <PanelSubHeading class="mt-4">State import options</PanelSubHeading>
+        <MRadioGroup class="mt-2 flex w-full gap-5">
+          <InputRadio v-model="stateMergeMode" value="replace"
+            >Overwrite existing state</InputRadio
+          >
+          <InputRadio v-model="stateMergeMode" value="add_new"
+            >Add only new state</InputRadio
+          >
         </MRadioGroup>
       </fieldset>
 
-      <!--      <fieldset>-->
-      <!--        <PanelSubHeading class="mt-4">Destination</PanelSubHeading>-->
-      <!--      </fieldset>-->
+      <SimpleDivider class="mt-4">Destination</SimpleDivider>
 
-      <!--
-      <fieldset :disabled="!form.importEvents" class="mt-2">
-        <legend class="text-sm font-semibold leading-6 text-gray-900">
-          State merging
-        </legend>
-        <p class="mt-1 text-sm leading-6 text-gray-600">
-          If a unit already exists, what should be done?
-        </p>
-        <InlineRadioGroup class="" :items="mergeSettings" v-model="form.eventMerging" />
-      </fieldset>
--->
       <footer
         class="flex flex-shrink-0 flex-col justify-between gap-3 pt-4 sm:flex-row sm:items-center"
       >

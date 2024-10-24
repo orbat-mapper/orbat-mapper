@@ -7,14 +7,9 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { ImportedFileInfo } from "@/importexport/fileHandling";
 import { detectSpreadsheetDialect } from "@/importexport/spreadsheets/utils";
-import {
-  ExtendedOdinUnit,
-  OdinUnitInfoRow,
-  parseOdinDragon,
-} from "@/importexport/spreadsheets/odinDragon";
+import { OdinUnitInfoRow, parseOdinDragon } from "@/importexport/spreadsheets/odinDragon";
 import { computed, h, ref, shallowRef } from "vue";
 import { Unit } from "@/types/scenarioModels";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { SymbolItem } from "@/types/constants";
 import { addUnitHierarchy } from "@/importexport/convertUtils";

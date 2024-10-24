@@ -4,7 +4,7 @@ import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 
 const props = defineProps<{
   value: string;
-  sidc: string;
+  sidc?: string;
   expanded: boolean;
   level: number;
   symbolOptions: Record<string, any>;
@@ -25,7 +25,7 @@ const emit = defineEmits(["toggle"]);
         />
       </button>
     </div>
-    <MilitarySymbol :sidc="sidc" :size="20" :options="symbolOptions" />
-    {{ value }}
+    <MilitarySymbol v-if="sidc" :sidc="sidc" :size="20" :options="symbolOptions" />
+    <span :class="{ 'font-bold': sidc === undefined }">{{ value }}</span>
   </div>
 </template>
