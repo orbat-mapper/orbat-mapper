@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="flex h-full min-h-full flex-col overflow-hidden bg-gray-300"
-    ref="dropZoneRef"
-  >
+  <div class="flex h-dvh flex-col overflow-hidden bg-gray-300" ref="dropZoneRef">
     <nav
       class="flex flex-shrink-0 items-center justify-between bg-gray-900 py-2 pl-6 pr-4 text-gray-200 print:hidden"
     >
