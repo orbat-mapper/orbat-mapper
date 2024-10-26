@@ -4,6 +4,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
@@ -51,13 +52,13 @@ const sideMenuItems = computed((): MenuItemData<SideAction>[] => [
       </button>
     </DropdownMenuTrigger>
     <DropdownMenuContent class="min-w-52 border-gray-300" align="end">
-      <DropdownMenuLabel inset>Side actions</DropdownMenuLabel>
+      <DropdownMenuLabel>Side actions</DropdownMenuLabel>
+      <DropdownMenuSeparator />
       <DropdownMenuItem
         v-for="item in sideMenuItems"
         @select="emit('action', item.action)"
         :key="item.action"
         :disabled="item.disabled"
-        inset
       >
         <span>{{ item.label }}</span>
       </DropdownMenuItem>
