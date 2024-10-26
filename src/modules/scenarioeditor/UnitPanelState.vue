@@ -27,7 +27,7 @@
         </p>
       </div>
       <div class="flex-0 relative flex items-center space-x-0">
-        <DotsMenu :items="initialMenuItems" @action="onStateAction(-1, $event)" />
+        <DotsMenu :items="initialMenuItems" @action="onStateAction(-1, $event)" portal />
       </div>
     </li>
     <li
@@ -101,7 +101,7 @@
         >
           <IconCrosshairsGps class="h-5 w-5" aria-hidden="true" />
         </IconButton>
-        <DotsMenu :items="menuItems" @action="onStateAction(index, $event)" />
+        <DotsMenu :items="menuItems" @action="onStateAction(index, $event)" portal />
       </div>
       <div
         v-if="s.via?.length || s.viaStartTime !== undefined || s.interpolate === false"

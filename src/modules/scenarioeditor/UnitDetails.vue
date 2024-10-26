@@ -86,7 +86,7 @@
           />
         </div>
         <div>
-          <DotsMenu :items="unitMenuItems" />
+          <DotsMenu :items="unitMenuItems" portal />
         </div>
       </nav>
     </header>
