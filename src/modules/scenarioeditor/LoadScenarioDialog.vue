@@ -4,8 +4,8 @@
       <RadioGroupLabel class="text-sm font-medium text-gray-700">Source</RadioGroupLabel>
       <RadioGroupOption
         v-for="{ label, value } in [
-          { label: 'Local', value: 'browser' },
-          { label: 'External', value: 'external' },
+          { label: 'Browser', value: 'browser' },
+          { label: 'Local file / URL', value: 'external' },
         ]"
         v-slot="{ checked }"
         :key="value"
