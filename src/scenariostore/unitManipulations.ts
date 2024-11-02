@@ -106,7 +106,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     sideId: EntityId,
     data: Partial<NSideGroup> = {},
     { newId = true } = {},
-  ) {
+  ): EntityId | undefined {
     let newSideGroupId: EntityId | undefined = undefined;
     update((s) => {
       const side = s.sideMap[sideId];

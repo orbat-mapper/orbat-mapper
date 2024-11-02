@@ -10,6 +10,7 @@ import {
 import { nanoid } from "@/utils";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
+import { convertStateToInternalFormat } from "@/scenariostore/newScenarioStore";
 
 export type OrbatToTextOptions = {
   indent?: string;
@@ -76,7 +77,14 @@ export function addUnitHierarchy(
         subUnits: [],
         equipment,
         personnel,
-        state: includeState && unit.state ? [...unit.state] : [],
+        state:
+          includeState && unit.state
+            ? [...unit.state].map((s) =>
+                newIds
+                  ? convertStateToInternalFormat({ ...s, id: "" })
+                  : convertStateToInternalFormat(s),
+              )
+            : [],
         rangeRings: [],
       };
       unitActions.addUnit(newUnit, parentId, undefined, { noUndo, s });

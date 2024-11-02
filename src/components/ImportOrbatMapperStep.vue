@@ -38,7 +38,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 const activeScenario = injectStrict(activeScenarioKey);
-const { unitActions, store: scnStore } = activeScenario;
+const { unitActions, store: scnStore, time } = activeScenario;
 const { loadScenario } = useBrowserScenarios();
 const { send } = useNotifications();
 const store = useImportStore();
@@ -48,6 +48,8 @@ const { state: targetState } = scnStore;
 const importMode = ref<"side" | "group" | "units" | "layers">("side");
 const unitImportMode = ref<"units-only" | "units-and-state" | "state-only">("state-only");
 const stateMergeMode = ref<"replace" | "add_new">("replace");
+const sideMergeMode = ref<"replace" | "add_new">("replace");
+const groupMergeMode = ref<"replace" | "add_new">("add_new");
 const selectUnits = ref(false);
 const selectedItems = ref<(Unit | SideGroup)[]>([]);
 
@@ -98,6 +100,17 @@ const importedSides = computed((): SelectItem[] => {
     });
 });
 
+const targetSides = computed((): SelectItem[] => {
+  return targetState.sides
+    .map((id) => targetState.sideMap[id])
+    .map((side) => {
+      return {
+        label: side.name,
+        value: side.id,
+      };
+    });
+});
+
 const importedSideGroups = computed(() => {
   return importedState.value.sideMap[selectedSourceSideId.value].groups
     .map((id) => importedState.value.sideGroupMap[id])
@@ -110,6 +123,7 @@ const importedSideGroups = computed(() => {
 });
 
 const selectedSourceSideId = ref(importedSides.value[0].value as string);
+const selectedTargetSideId = ref(targetSides.value[0].value as string);
 const selectedSourceSideGroupId = ref(importedSideGroups.value[0].value as string);
 const currentData = computed(() => {
   const s = props.data.sides.find((s) => s.id === selectedSourceSideId.value);
@@ -125,6 +139,19 @@ const currentData = computed(() => {
 const hasExistingUnits = computed(() => {
   return selectedItems.value.some((item) => item.id in targetState.unitMap);
 });
+
+const hasExistingSide = computed(() => {
+  return selectedSourceSideId.value in targetState.sideMap;
+});
+
+const hasExistingSideGroup = computed(() => {
+  return selectedSourceSideGroupId.value in targetState.sideGroupMap;
+});
+
+const wantsToImportState = computed(
+  () =>
+    unitImportMode.value === "units-and-state" || unitImportMode.value === "state-only",
+);
 
 watch(selectedSourceSideId, (newSide) => {
   const side = importedState.value.sideMap[newSide];
@@ -217,16 +244,12 @@ const computedColumns = computed((): (ColumnDef<Unit> | false)[] => {
   ];
 });
 
-const sides = computed(() => {
-  return targetState.sides.map((id) => targetState.sideMap[id]);
-});
-
 // check that the item is a unit
 function isUnit(item: Unit | SideGroup): item is Unit {
   return "sidc" in item;
 }
 
-async function onMerge(e: Event) {
+async function onFormSubmit(e: Event) {
   const selectedUnitIds = new Set(selectedItems.value.filter(isUnit).map((u) => u.id));
 
   if (unitImportMode.value === "state-only") {
@@ -234,8 +257,11 @@ async function onMerge(e: Event) {
   } else if (importMode.value === "side") {
     doSideImport(selectedSourceSideId.value);
   } else if (importMode.value === "group") {
-    // doGroupImport(selectedUnitIds);
+    console.warn("Group import not implemented yet.");
+    doGroupImport(selectedSourceSideGroupId.value);
   }
+  time.setCurrentTime(targetState.currentTime);
+  targetState.unitStateCounter++;
 
   send({
     message: "Imported data from scenario",
@@ -273,33 +299,41 @@ function doStateOnlyImport(selectedUnitIds: Set<string>) {
 }
 
 function doSideImport(importedSideId: string) {
-  const sideAlreadyExists = importedSideId in targetState.sideMap;
-  if (sideAlreadyExists) {
-    console.warn("Side already exists in the target scenario");
-  }
+  const sideAlreadyExists = hasExistingSide.value;
 
   const importedSide = importedState.value.sideMap[importedSideId];
+  let createNewId = sideMergeMode.value === "add_new";
 
   scnStore.groupUpdate(() => {
+    let deletedSideIndex = -1;
+    if (sideAlreadyExists && sideMergeMode.value === "replace") {
+      deletedSideIndex = targetState.sides.findIndex((id) => id === importedSideId);
+      unitActions.deleteSide(importedSideId);
+    }
+
     const addedSideId = unitActions.addSide(importedSide, {
       addDefaultGroup: false,
       markAsNew: false,
-      newId: false,
+      newId: createNewId,
     });
+    if (deletedSideIndex !== -1) {
+      const nextSideId = targetState.sides[deletedSideIndex + 1];
+      nextSideId && unitActions.moveSide(addedSideId, nextSideId, "above");
+    }
     for (const group of currentData.value) {
       const groupId = group.id;
       const importedGroup = importedState.value.sideGroupMap[groupId];
-      unitActions.addSideGroup(
+      const addedGroupId = unitActions.addSideGroup(
         addedSideId,
         { ...importedGroup, _isNew: false },
         {
-          newId: false,
+          newId: createNewId,
         },
       );
-      if (!group.subUnits) continue;
+      if (!group.subUnits || !addedGroupId) continue;
       for (const unit of group.subUnits) {
-        addUnitHierarchy(unit, groupId, activeScenario, {
-          newIds: false,
+        addUnitHierarchy(unit, addedGroupId, activeScenario, {
+          newIds: createNewId,
           includeState: unitImportMode.value === "units-and-state",
         });
       }
@@ -307,25 +341,41 @@ function doSideImport(importedSideId: string) {
   });
 }
 
-function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioState) {
+function doGroupImport(importedGroupId: string) {
+  const importedGroup = importedState.value.sideGroupMap[importedGroupId];
+  const targetSideId = selectedTargetSideId.value;
+  if (!importedGroup) return;
+  const groupAlreadyExists = importedGroupId in targetState.sideGroupMap;
+  const createNewId = groupMergeMode.value === "add_new";
+
   scnStore.groupUpdate(() => {
-    for (const [unitId, unit] of Object.entries(newScenario.unitMap)) {
-      const originalUnit = originalScenario.unitMap[unitId];
-      if (originalUnit.state?.length && unit.state?.length) {
-        const lastTimestamp = originalUnit.state[originalUnit.state.length - 1].t;
-        const newStates = unit.state.filter((s) => s.t > lastTimestamp);
-        if (newStates.length) {
-          unitActions.setUnitState(unitId, [...originalUnit.state, ...newStates]);
-        }
-      } else {
-      }
+    let deletedGroupIndex = -1;
+    if (groupAlreadyExists && groupMergeMode.value === "replace") {
+      unitActions.deleteSideGroup(importedGroupId);
+    }
+
+    const importedGroup = importedState.value.sideGroupMap[importedGroupId];
+    const addedGroupId = unitActions.addSideGroup(
+      targetSideId,
+      { ...importedGroup, _isNew: false },
+      {
+        newId: createNewId,
+      },
+    );
+    if (!addedGroupId) return;
+
+    for (const unit of currentData.value as Unit[]) {
+      addUnitHierarchy(unit, addedGroupId, activeScenario, {
+        newIds: createNewId,
+        includeState: unitImportMode.value === "units-and-state",
+      });
     }
   });
 }
 </script>
 <template>
   <div class="">
-    <form @submit.prevent="onMerge" class="mt-4 flex max-h-[80vh] flex-col">
+    <form @submit.prevent="onFormSubmit" class="mt-4 flex max-h-[80vh] flex-col">
       <div class="flex items-center justify-between">
         <p class="text-sm font-normal">You have loaded the following scenario:</p>
         <BaseButton secondary small @click="loadScenario(data)"
@@ -341,6 +391,8 @@ function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioSt
       <InlineAlertWarning
         >The scenario import functionality is currently limited.</InlineAlertWarning
       >
+
+      <SimpleDivider class="mt-4">Source</SimpleDivider>
 
       <PanelSubHeading class="mt-4"
         >Which parts of the scenario do you want to import?</PanelSubHeading
@@ -375,9 +427,7 @@ function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioSt
           class="flex-auto"
         />
         <div v-else class="flex-auto self-end">
-          <p v-if="selectedSourceSideId in targetState.sideMap">
-            This side exists in the target scenario
-          </p>
+          <p v-if="hasExistingSide">This side exists in the target scenario</p>
         </div>
       </fieldset>
 
@@ -387,7 +437,6 @@ function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioSt
         :columns="computedColumns"
         :row-height="40"
         class="mt-4 max-h-[40vh]"
-        :initial-state="{ expanded: true }"
         :get-sub-rows="(row) => row.subUnits ?? row.groups"
         :select="selectUnits"
         select-all
@@ -400,19 +449,83 @@ function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioSt
           >There are units in the source scenario that exists in the target
           scenario.</InlineAlertWarning
         >
+        <InlineAlertWarning v-if="hasExistingSideGroup"
+          >The selected group exists in the target scenario.</InlineAlertWarning
+        >
         <PanelSubHeading class="mt-4">What do you want to import?</PanelSubHeading>
-        <MRadioGroup class="mt-2 flex w-full gap-5">
-          <InputRadio v-model="unitImportMode" :value="'units-only'" disabled
+        <MRadioGroup class="mt-2 flex w-full items-center gap-5">
+          <InputRadio v-model="unitImportMode" :value="'units-only'"
             >Only units</InputRadio
           >
-          <InputRadio v-model="unitImportMode" value="units-and-state" disabled
+          <InputRadio v-model="unitImportMode" value="units-and-state"
             >Units and state</InputRadio
           >
-          <InputRadio v-model="unitImportMode" value="state-only"
+          <InputRadio v-if="hasExistingUnits" v-model="unitImportMode" value="state-only"
             >State (only for existing units)</InputRadio
+          ><span v-else class="text-sm text-gray-500"
+            >There are no source units that exists in the target scenario.</span
           >
         </MRadioGroup>
-        <PanelSubHeading class="mt-4">State import options</PanelSubHeading>
+      </fieldset>
+
+      <SimpleDivider class="mt-4">Target</SimpleDivider>
+      <fieldset
+        v-if="hasExistingSide && importMode === 'side' && unitImportMode !== 'state-only'"
+      >
+        <PanelSubHeading class="mt-4"
+          >The side you want to import already exists. What do you want to
+          do?</PanelSubHeading
+        >
+        <MRadioGroup class="mt-2 flex w-full gap-5">
+          <InputRadio v-model="sideMergeMode" value="replace"
+            >Overwrite existing side</InputRadio
+          >
+          <InputRadio v-model="sideMergeMode" value="add_new"
+            >Import as new side</InputRadio
+          >
+        </MRadioGroup>
+      </fieldset>
+      <fieldset
+        v-if="
+          hasExistingSideGroup &&
+          importMode === 'group' &&
+          unitImportMode !== 'state-only'
+        "
+      >
+        <PanelSubHeading class="mt-4"
+          >The group you want to import already exists. What do you want to
+          do?</PanelSubHeading
+        >
+        <MRadioGroup class="mt-2 flex w-full gap-5">
+          <InputRadio v-model="groupMergeMode" value="replace"
+            >Overwrite existing group</InputRadio
+          >
+          <InputRadio v-model="groupMergeMode" value="add_new"
+            >Import as new group</InputRadio
+          >
+        </MRadioGroup>
+      </fieldset>
+      <fieldset
+        v-if="
+          importMode === 'group' &&
+          unitImportMode !== 'state-only' &&
+          groupMergeMode !== 'replace'
+        "
+        class="mt-4"
+      >
+        <SimpleSelect
+          label="Target side"
+          :items="targetSides"
+          v-model="selectedTargetSideId"
+          class=""
+        />
+      </fieldset>
+      <template
+        v-if="hasExistingUnits && wantsToImportState && unitImportMode == 'state-only'"
+      >
+        <PanelSubHeading class="mt-4"
+          >State import options for existing units</PanelSubHeading
+        >
         <MRadioGroup class="mt-2 flex w-full gap-5">
           <InputRadio v-model="stateMergeMode" value="replace"
             >Overwrite existing state</InputRadio
@@ -421,10 +534,7 @@ function mergeScenarios(originalScenario: ScenarioState, newScenario: ScenarioSt
             >Add only new state</InputRadio
           >
         </MRadioGroup>
-      </fieldset>
-
-      <SimpleDivider class="mt-4">Destination</SimpleDivider>
-
+      </template>
       <footer
         class="flex flex-shrink-0 flex-col justify-between gap-3 pt-4 sm:flex-row sm:items-center"
       >

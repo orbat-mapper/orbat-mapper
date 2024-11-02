@@ -8,6 +8,7 @@ import type {
   ScenarioMetadata,
   Side,
   SideGroup,
+  State,
   Unit,
   UnitStatus,
 } from "@/types/scenarioModels";
@@ -71,6 +72,15 @@ export interface ScenarioState {
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
 
+export function convertStateToInternalFormat(e: State): State {
+  return {
+    ...e,
+    t: +dayjs(e.t),
+    viaStartTime: e.viaStartTime !== undefined ? +dayjs(e.viaStartTime) : undefined,
+    id: e.id || nanoid(),
+  };
+}
+
 export function prepareScenario(newScenario: Scenario): ScenarioState {
   const unitMap: Record<EntityId, NUnit> = {};
   const sideMap: Record<EntityId, NSide> = {};
@@ -133,12 +143,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     if (!unit.state) {
       unit.state = [];
     } else {
-      unit.state = unit.state.map((e) => ({
-        ...e,
-        t: +dayjs(e.t),
-        viaStartTime: e.viaStartTime !== undefined ? +dayjs(e.viaStartTime) : undefined,
-        id: e.id || nanoid(),
-      }));
+      unit.state = unit.state.map(convertStateToInternalFormat);
     }
     unit.state
       ?.filter((s) => s.title)
