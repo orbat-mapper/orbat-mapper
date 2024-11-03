@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, h, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { injectStrict } from "@/utils";
+import { injectStrict, moveItemMutable } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import {
   mapReinforcedStatus2Field,
@@ -12,7 +12,7 @@ import {
 } from "@/types/scenarioModels";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
 import { SelectItem } from "@/components/types";
-import { prepareScenario, ScenarioState } from "@/scenariostore/newScenarioStore";
+import { prepareScenario } from "@/scenariostore/newScenarioStore";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { CellContext, ColumnDef } from "@tanstack/vue-table";
 import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
@@ -257,7 +257,6 @@ async function onFormSubmit(e: Event) {
   } else if (importMode.value === "side") {
     doSideImport(selectedSourceSideId.value);
   } else if (importMode.value === "group") {
-    console.warn("Group import not implemented yet.");
     doGroupImport(selectedSourceSideGroupId.value);
   }
   time.setCurrentTime(targetState.currentTime);
@@ -302,7 +301,7 @@ function doSideImport(importedSideId: string) {
   const sideAlreadyExists = hasExistingSide.value;
 
   const importedSide = importedState.value.sideMap[importedSideId];
-  let createNewId = sideMergeMode.value === "add_new";
+  let createNewId = sideAlreadyExists && sideMergeMode.value === "add_new";
 
   scnStore.groupUpdate(() => {
     let deletedSideIndex = -1;
@@ -346,11 +345,14 @@ function doGroupImport(importedGroupId: string) {
   const targetSideId = selectedTargetSideId.value;
   if (!importedGroup) return;
   const groupAlreadyExists = importedGroupId in targetState.sideGroupMap;
-  const createNewId = groupMergeMode.value === "add_new";
+  const createNewId = groupAlreadyExists && groupMergeMode.value === "add_new";
 
   scnStore.groupUpdate(() => {
     let deletedGroupIndex = -1;
     if (groupAlreadyExists && groupMergeMode.value === "replace") {
+      deletedGroupIndex = targetState.sideMap[targetSideId].groups.findIndex(
+        (id) => id === importedGroupId,
+      );
       unitActions.deleteSideGroup(importedGroupId);
     }
 
@@ -363,6 +365,12 @@ function doGroupImport(importedGroupId: string) {
       },
     );
     if (!addedGroupId) return;
+    if (deletedGroupIndex !== -1) {
+      scnStore.update((s) => {
+        const groups = s.sideMap[targetSideId].groups;
+        moveItemMutable(groups, groups.length - 1, deletedGroupIndex);
+      });
+    }
 
     for (const unit of currentData.value as Unit[]) {
       addUnitHierarchy(unit, addedGroupId, activeScenario, {
@@ -445,7 +453,7 @@ function doGroupImport(importedGroupId: string) {
           >There are units in the source scenario that exists in the target
           scenario.</InlineAlertWarning
         >
-        <InlineAlertWarning v-if="hasExistingSideGroup"
+        <InlineAlertWarning v-if="importMode === 'group' && hasExistingSideGroup"
           >The selected group exists in the target scenario.</InlineAlertWarning
         >
         <PanelSubHeading class="mt-4">What do you want to import?</PanelSubHeading>

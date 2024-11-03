@@ -1,12 +1,7 @@
-import { Unit, UnitEquipment, type UnitStatus } from "@/types/scenarioModels";
+import { Unit, type UnitStatus } from "@/types/scenarioModels";
 import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
-import {
-  EUnitEquipment,
-  NUnitAdd,
-  NUnitEquipment,
-  NUnitPersonnel,
-} from "@/types/internalModels";
+import { NUnitAdd, NUnitEquipment, NUnitPersonnel } from "@/types/internalModels";
 import { nanoid } from "@/utils";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
@@ -118,9 +113,16 @@ export function addUnitHierarchy(
         status = tempUnitStatusIdMap[unit.status] || addUnitStatus({ name: unit.status });
       }
 
+      let id = newIds ? nanoid() : (unit.id ?? nanoid());
+      if (id in store.state.unitMap) {
+        console.warn(
+          `Unit  ${unit.name} with id ${id} already exists in the scenario. Creating new id.`,
+        );
+        id = nanoid();
+      }
       const newUnit: NUnitAdd = {
         ...unit,
-        id: newIds ? nanoid() : (unit.id ?? nanoid()),
+        id,
         sidc: setCharAt(unit.sidc, SID_INDEX, side.standardIdentity),
         subUnits: [],
         equipment,
