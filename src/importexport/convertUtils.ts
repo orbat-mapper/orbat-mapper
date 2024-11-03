@@ -11,6 +11,7 @@ import { nanoid } from "@/utils";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
 import { convertStateToInternalFormat } from "@/scenariostore/newScenarioStore";
+import { RangeRing } from "@/types/scenarioGeoModels";
 
 export type OrbatToTextOptions = {
   indent?: string;
@@ -57,6 +58,7 @@ export function addUnitHierarchy(
     function helper(unit: Unit, parentId: EntityId, depth: number = 0) {
       const equipment: NUnitEquipment[] = [];
       const personnel: NUnitPersonnel[] = [];
+      const rangeRings: RangeRing[] = [];
       unit.equipment?.forEach(({ name, count }) => {
         const { id } =
           s.equipmentMap[name] ||
@@ -68,6 +70,22 @@ export function addUnitHierarchy(
           s.personnelMap[name] ||
           unitActions.addPersonnel({ id: name, name }, { noUndo, s });
         personnel.push({ id: name, count });
+      });
+
+      unit.rangeRings?.forEach((rr) => {
+        const { group, ...rest } = rr;
+        if (group) {
+          let groupId = group
+            ? Object.values(s.rangeRingGroupMap).find((g) => g.name === group)?.id
+            : "";
+          if (!groupId) {
+            groupId = nanoid();
+            s.rangeRingGroupMap[groupId] = { id: groupId, name: group };
+          }
+          rangeRings.push({ ...rest, group: groupId });
+        } else {
+          rangeRings.push(rr);
+        }
       });
 
       const newUnit: NUnitAdd = {
@@ -85,7 +103,7 @@ export function addUnitHierarchy(
                   : convertStateToInternalFormat(s),
               )
             : [],
-        rangeRings: [],
+        rangeRings: rangeRings,
       };
       unitActions.addUnit(newUnit, parentId, undefined, { noUndo, s });
       unit.subUnits?.forEach((child) => helper(child, newUnit.id!));
