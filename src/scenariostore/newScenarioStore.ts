@@ -164,7 +164,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     unit.state
       ?.filter((s) => s.status)
       .forEach((s) => {
-        if (s.status && !unitStatusMap[s.status]) addUnitStatus({ name: s.status });
+        s.status = tempUnitStatusIdMap[s.status!] || addUnitStatus({ name: s.status! });
       });
     unit._state = null;
     if (!unit.id) {

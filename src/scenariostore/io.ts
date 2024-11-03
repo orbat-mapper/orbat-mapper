@@ -109,37 +109,45 @@ export type SerializeUnitOptions = {
 
 export function serializeUnit(
   unitId: EntityId,
-  state: ScenarioState,
+  scnState: ScenarioState,
   options: SerializeUnitOptions = {},
 ): Unit {
   const { newId = false, includeSubUnits = true } = options;
-  const nUnit = state.unitMap[unitId];
+  const nUnit = scnState.unitMap[unitId];
   let equipment = nUnit.equipment?.map(({ id, count }) => {
-    const { name } = state.equipmentMap[id];
+    const { name } = scnState.equipmentMap[id];
     return { name, count };
   });
   if (equipment?.length === 0) equipment = undefined;
   let personnel = nUnit.personnel?.map(({ id, count }) => {
-    const { name } = state.personnelMap[id];
+    const { name } = scnState.personnelMap[id];
     return { name, count };
   });
   if (personnel?.length === 0) personnel = undefined;
   let rangeRings = nUnit.rangeRings?.map(({ group, ...rest }) => {
-    return group ? { group: state.rangeRingGroupMap[group].name, ...rest } : rest;
+    return group ? { group: scnState.rangeRingGroupMap[group].name, ...rest } : rest;
   });
   if (rangeRings?.length === 0) rangeRings = undefined;
-  const { id, ...rest } = nUnit;
+  const { id, state, ...rest } = nUnit;
 
   return {
     id: newId ? nanoid() : id,
     ...rest,
-    status: nUnit.status ? state.unitStatusMap[nUnit.status]?.name : undefined,
+    status: nUnit.status ? scnState.unitStatusMap[nUnit.status]?.name : undefined,
     subUnits: includeSubUnits
-      ? nUnit.subUnits.map((subUnitId) => serializeUnit(subUnitId, state, options))
+      ? nUnit.subUnits.map((subUnitId) => serializeUnit(subUnitId, scnState, options))
       : [],
     equipment,
     personnel,
     rangeRings,
+    state: state
+      ? state.map((s) => {
+          if (s.status) {
+            return { ...s, status: scnState.unitStatusMap[s.status]?.name };
+          }
+          return s;
+        })
+      : undefined,
   };
 }
 
