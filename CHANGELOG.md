@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+November 2024
+
+- Added support for importing sides and groups from another scenario.
+
 October 2024
 
 - Added a "smooth" option to the scenario feature transformation panel.
