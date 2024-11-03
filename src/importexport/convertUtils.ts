@@ -1,4 +1,4 @@
-import { Unit, UnitEquipment } from "@/types/scenarioModels";
+import { Unit, UnitEquipment, type UnitStatus } from "@/types/scenarioModels";
 import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
 import {
@@ -53,8 +53,19 @@ export function addUnitHierarchy(
   const noUndo = true;
   const { store, unitActions } = scenario;
   const { side } = unitActions.getUnitHierarchy(parentId);
+  const tempUnitStatusIdMap: Record<string, string> = {};
+  for (const us of Object.values(store.state.unitStatusMap)) {
+    tempUnitStatusIdMap[us.name] = us.id;
+  }
 
   store.update((s) => {
+    function addUnitStatus(unitStatus: UnitStatus) {
+      const id = nanoid();
+      tempUnitStatusIdMap[unitStatus.name] = id;
+      s.unitStatusMap[id] = { ...unitStatus, id };
+      return id;
+    }
+
     function helper(unit: Unit, parentId: EntityId, depth: number = 0) {
       const equipment: NUnitEquipment[] = [];
       const personnel: NUnitPersonnel[] = [];
@@ -87,6 +98,25 @@ export function addUnitHierarchy(
           rangeRings.push(rr);
         }
       });
+      const unitState =
+        includeState && unit.state
+          ? [...unit.state].map((s) =>
+              newIds
+                ? convertStateToInternalFormat({ ...s, id: "" })
+                : convertStateToInternalFormat(s),
+            )
+          : [];
+
+      unitState
+        .filter((s) => s.status)
+        .forEach((s) => {
+          s.status = tempUnitStatusIdMap[s.status!] || addUnitStatus({ name: s.status! });
+        });
+
+      let status = undefined;
+      if (unit.status) {
+        status = tempUnitStatusIdMap[unit.status] || addUnitStatus({ name: unit.status });
+      }
 
       const newUnit: NUnitAdd = {
         ...unit,
@@ -95,15 +125,9 @@ export function addUnitHierarchy(
         subUnits: [],
         equipment,
         personnel,
-        state:
-          includeState && unit.state
-            ? [...unit.state].map((s) =>
-                newIds
-                  ? convertStateToInternalFormat({ ...s, id: "" })
-                  : convertStateToInternalFormat(s),
-              )
-            : [],
+        state: unitState,
         rangeRings: rangeRings,
+        status,
       };
       unitActions.addUnit(newUnit, parentId, undefined, { noUndo, s });
       unit.subUnits?.forEach((child) => helper(child, newUnit.id!));

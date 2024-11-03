@@ -388,10 +388,6 @@ function doGroupImport(importedGroupId: string) {
         <p>Units: {{ stats.units }}</p>
       </section>
 
-      <InlineAlertWarning
-        >The scenario import functionality is currently limited.</InlineAlertWarning
-      >
-
       <SimpleDivider class="mt-4">Source</SimpleDivider>
 
       <PanelSubHeading class="mt-4"
