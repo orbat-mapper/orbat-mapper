@@ -63,12 +63,21 @@ export function useRangeRingsLayer() {
 function createRangeRings(unit: NUnit) {
   return (
     unit.rangeRings
-      ?.filter((r) => !(r.hidden ?? false))
-      .map((r, i) =>
-        circle(unit._state!.location!, convertToMetric(r.range, r.uom || "km") / 1000, {
-          properties: { id: r.group ? r.group : `${unit.id}-${i}`, isGroup: !!r.group },
-        }),
-      ) || []
+      ?.map((r, i) =>
+        !r.hidden
+          ? circle(
+              unit._state!.location!,
+              convertToMetric(r.range, r.uom || "km") / 1000,
+              {
+                properties: {
+                  id: r.group ? r.group : `${unit.id}-${i}`,
+                  isGroup: !!r.group,
+                },
+              },
+            )
+          : null,
+      )
+      .filter((e) => e !== null) || []
   );
 }
 

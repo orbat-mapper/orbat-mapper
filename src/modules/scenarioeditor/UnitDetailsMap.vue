@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 
 import { NUnit } from "@/types/internalModels";
 import { RangeRing, RangeRingStyle } from "@/types/scenarioGeoModels";
-import { injectStrict } from "@/utils";
+import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { klona } from "klona";
 import InputGroup from "@/components/InputGroup.vue";
@@ -15,6 +15,7 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import RingStylePopover from "@/modules/scenarioeditor/RingStylePopover.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { useToeActions } from "@/composables/scenarioActions";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 interface Props {
   unit: NUnit;
@@ -27,6 +28,7 @@ const props = defineProps<Props>();
 const activeScenario = injectStrict(activeScenarioKey);
 const { unitActions, store } = activeScenario;
 const toeActions = useToeActions();
+const { selectedUnitIds } = useSelectedItems();
 
 const editedRangeRing = ref<RangeRing>({
   name: "",
@@ -34,9 +36,31 @@ const editedRangeRing = ref<RangeRing>({
   uom: "km",
   group: undefined,
 });
+
+const originalRangeRing = ref<RangeRing | null>(null);
 const editedIndex = ref(-1);
 
 const rangeRings = computed(() => {
+  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
+    const multiRangeRings: RangeRing[] = [];
+    const usedNames = new Set<string>();
+    const usedNameCounter = new Map<string, number>();
+    for (const unitId of selectedUnitIds.value) {
+      const unit = store.state.getUnitById(unitId);
+      if (!unit?.rangeRings) continue;
+      for (const ring of unit.rangeRings ?? []) {
+        usedNameCounter.set(ring.name, (usedNameCounter.get(ring.name) ?? 0) + 1);
+        if (usedNames.has(ring.name)) {
+          continue;
+        }
+        usedNames.add(ring.name);
+        multiRangeRings.push({ ...ring });
+      }
+    }
+    return multiRangeRings.map((ring) => {
+      return { ...ring, _counter: usedNameCounter.get(ring.name) };
+    });
+  }
   return props.unit.rangeRings ?? [];
 });
 
@@ -57,13 +81,23 @@ const ringMenuItems = computed((): MenuItemData<RangeRingAction>[] => [
 ]);
 
 function addRangeRing() {
-  unitActions.addRangeRing(props.unit.id, {
-    name: "New range ring",
-    range: 2,
+  const defaultRing: RangeRing = {
+    name: "New range ring " + nanoid(3),
+    range: 20,
     uom: "km",
     group: null,
-  });
-  editRing(props.unit.rangeRings!.length - 1);
+  };
+  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
+    store.groupUpdate(() => {
+      selectedUnitIds.value.forEach((unitId) => {
+        unitActions.addRangeRing(unitId, { ...defaultRing });
+      });
+    });
+  } else {
+    unitActions.addRangeRing(props.unit.id, { ...defaultRing });
+  }
+
+  editRingByName(defaultRing.name);
 }
 
 function getGroupName(ring: RangeRing) {
@@ -82,33 +116,75 @@ function getRingStyle(ring: RangeRing) {
 }
 
 function deleteRing(index: number) {
-  unitActions.deleteRangeRing(props.unit.id, index);
+  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
+    const name = rangeRings.value[index].name;
+    store.groupUpdate(() => {
+      selectedUnitIds.value.forEach((unitId) => {
+        unitActions.deleteRangeRingByName(unitId, name);
+      });
+    });
+  } else {
+    unitActions.deleteRangeRing(props.unit.id, index);
+  }
 }
 
 function editRing(index: number) {
-  const ring = props.unit.rangeRings?.[index];
+  const ring = rangeRings.value[index];
   if (!ring) return;
   editedRangeRing.value = klona(ring);
+  originalRangeRing.value = klona(ring);
   editedIndex.value = index;
+}
+
+function editRingByName(name: string) {
+  const index = rangeRings.value.findIndex((r) => r.name === name);
+  if (index >= 0) {
+    editRing(index);
+  } else {
+    editRing(0);
+  }
 }
 
 function toggleRingVisibility(ring: RangeRing, index: number) {
   const hidden = !(ring.hidden ?? false);
-  unitActions.updateRangeRing(props.unit.id, index, { hidden });
+  updateRangeRingOrRings(index, ring.name, { hidden });
+}
+
+function updateRangeRingOrRings(
+  index: number,
+  name: string,
+  data: Partial<RangeRing>,
+  { addIfNameDoesNotExists = false } = {},
+) {
+  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
+    store.groupUpdate(() => {
+      selectedUnitIds.value.forEach((unitId) => {
+        unitActions.updateRangeRingByName(unitId, name, data, { addIfNameDoesNotExists });
+      });
+    });
+  } else {
+    unitActions.updateRangeRing(props.unit.id, index, data);
+  }
 }
 
 function updateRing() {
   if (editedIndex.value < 0 || !editedRangeRing.value) return;
   const { name, range, uom, group } = editedRangeRing.value;
 
-  unitActions.updateRangeRing(props.unit.id, editedIndex.value, {
-    name,
-    range: +range,
-    uom,
-    group,
-  });
+  updateRangeRingOrRings(
+    editedIndex.value,
+    originalRangeRing.value?.name ?? name,
+    {
+      name,
+      range: +range,
+      uom,
+      group,
+    },
+    { addIfNameDoesNotExists: true },
+  );
   editedIndex.value = -1;
   editedRangeRing.value = { name: "", range: 0, uom: "km", group: null };
+  originalRangeRing.value = null;
 }
 
 function updateRingStyle(ring: RangeRing, index: number, style: Partial<RangeRingStyle>) {
@@ -116,11 +192,9 @@ function updateRingStyle(ring: RangeRing, index: number, style: Partial<RangeRin
     const group = store.state.rangeRingGroupMap[ring.group];
     if (group) {
       unitActions.updateRangeRingGroup(ring.group, { style });
-      unitActions.updateRangeRing(props.unit.id, index, { style });
     }
-  } else {
-    unitActions.updateRangeRing(props.unit.id, index, { style });
   }
+  updateRangeRingOrRings(index, ring.name, { style });
 }
 
 function onRangeRingAction(action: RangeRingAction, index: number) {
@@ -250,6 +324,7 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
         <template v-else>
           <td class="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-900 sm:pl-0">
             {{ ring.name }}
+            <span v-if="ring._counter" class="text-gray-500">({{ ring._counter }})</span>
           </td>
           <td class="whitespace-nowrap px-2 py-2 text-sm font-medium text-gray-900">
             {{ ring.range }} <span class="text-gray-800">{{ ring.uom || "km" }}</span>

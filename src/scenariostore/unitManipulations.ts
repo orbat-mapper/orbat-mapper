@@ -900,7 +900,13 @@ export function useUnitManipulations(store: NewScenarioStore) {
       const unit = s.getUnitById(unitId);
       if (!unit) return;
       if (!unit.rangeRings) unit.rangeRings = [];
-      unit.rangeRings.push(rangeRing);
+      // does it already exist?
+      const existingIndex = unit.rangeRings.findIndex((r) => r.name === rangeRing.name);
+      if (existingIndex >= 0) {
+        unit.rangeRings[existingIndex] = rangeRing;
+      } else {
+        unit.rangeRings.push(rangeRing);
+      }
     });
   }
 
@@ -913,9 +919,17 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
+  function deleteRangeRingByName(unitId: EntityId, name: string) {
+    const unit = state.getUnitById(unitId);
+    if (!unit?.rangeRings) return;
+    const index = unit.rangeRings.findIndex((r) => r.name === name);
+    if (index < 0) return;
+    deleteRangeRing(unitId, index);
+  }
+
   function updateRangeRing(unitId: EntityId, index: number, data: Partial<RangeRing>) {
     update((s) => {
-      const unit = s.getUnitById(unitId);
+      const unit = s.unitMap[unitId];
       if (!unit) return;
       if (!unit.rangeRings) return;
       const { style, ...rest } = data;
@@ -929,6 +943,23 @@ export function useUnitManipulations(store: NewScenarioStore) {
         }
       }
     });
+  }
+
+  function updateRangeRingByName(
+    unitId: EntityId,
+    name: string,
+    data: Partial<RangeRing>,
+    { addIfNameDoesNotExists = false } = {},
+  ) {
+    const unit = state.getUnitById(unitId);
+    if (!unit?.rangeRings) return;
+    const index = unit.rangeRings.findIndex((r) => r.name === name);
+    if (index < 0) {
+      if (!addIfNameDoesNotExists) return;
+      addRangeRing(unitId, { name, uom: "km", range: 2, ...data });
+      return;
+    }
+    updateRangeRing(unitId, index, data);
   }
 
   function updateRangeRingGroup(groupId: string, data: Partial<RangeRingGroup>) {
@@ -1200,7 +1231,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
     expandUnitWithSymbolOptions,
     addRangeRing,
     deleteRangeRing,
+    deleteRangeRingByName,
     updateRangeRing,
+    updateRangeRingByName,
     updateRangeRingGroup,
     addRangeRingGroup,
     deleteRangeRingGroup,

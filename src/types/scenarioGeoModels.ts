@@ -149,6 +149,7 @@ export interface RangeRing {
   hidden?: boolean;
   style?: Partial<RangeRingStyle>;
   group?: string | null;
+  _counter?: number;
 }
 
 export interface RangeRingGroup {
