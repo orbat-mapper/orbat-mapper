@@ -25,6 +25,9 @@
             >Use simple status modifier</ToggleField
           >
           <ToggleField v-model="uiSettings.debugMode">Debug mode</ToggleField>
+          <ToggleField v-if="uiSettings.debugMode" v-model="isDarkMode"
+            >Dark mode</ToggleField
+          >
         </div>
       </TabItem>
       <TabItem label="Time and date">
@@ -36,7 +39,7 @@
 
 <script setup lang="ts">
 import LayersPanel from "./LayersPanel.vue";
-import { useVModel } from "@vueuse/core";
+import { useDark, useVModel } from "@vueuse/core";
 import SlideOver from "./SlideOver.vue";
 import TabView from "./TabView.vue";
 import TabItem from "./TabItem.vue";
@@ -53,4 +56,5 @@ const open = useVModel(props, "modelValue");
 const settings = useSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
 const uiSettings = useUiStore();
+const isDarkMode = useDark({ initialValue: "light" });
 </script>
