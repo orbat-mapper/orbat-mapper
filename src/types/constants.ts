@@ -41,6 +41,8 @@ export const SideActions = {
   Unlock: "Unlock",
   Clone: "Clone",
   CloneWithState: "CloneWithState",
+  Hide: "Hide",
+  Show: "Show",
 } as const;
 
 export type SideAction = (typeof SideActions)[keyof typeof SideActions];

@@ -15,6 +15,7 @@ import { MenuItemData } from "@/components/types";
 
 const props = defineProps<{
   isLocked: boolean;
+  isHidden?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -37,6 +38,9 @@ const sideMenuItems = computed((): MenuItemData<SideAction>[] => [
   props.isLocked
     ? { label: "Unlock side", action: SideActions.Unlock }
     : { label: "Lock side", action: SideActions.Lock },
+  props.isHidden
+    ? { label: "Show side", action: SideActions.Show }
+    : { label: "Hide side", action: SideActions.Hide },
 ]);
 </script>
 

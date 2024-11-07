@@ -2,7 +2,12 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import OrbatTree from "./OrbatTree.vue";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
-import { IconDrag, IconLockOutline } from "@iconify-prerendered/vue-mdi";
+import {
+  IconDrag,
+  IconEye,
+  IconEyeOff,
+  IconLockOutline,
+} from "@iconify-prerendered/vue-mdi";
 import { SideAction, SideActions, UnitAction, UnitActions } from "@/types/constants";
 import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./EditSideGroupForm.vue";
@@ -75,6 +80,12 @@ const isLocked = computed(
   () => !!(props.group.locked || state.sideMap[props.group._pid!].locked),
 );
 
+const isHidden = computed(
+  () => !!props.group.isHidden || !!state.sideMap[props.group._pid!].isHidden,
+);
+
+const isSideGroupHidden = computed(() => !!props.group.isHidden);
+const isSideHidden = computed(() => !!state.sideMap[props.group._pid!].isHidden);
 const isSideGroupLocked = computed(() => !!props.group.locked);
 
 const isSideLocked = computed(() => !!state.sideMap[props.group._pid!].locked);
@@ -220,10 +231,24 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
         class="size-5 text-gray-400"
         :class="isSideLocked ? 'opacity-40' : ''"
       />
+      <button
+        v-if="isHidden"
+        type="button"
+        class="ml-1 text-gray-400 hover:text-gray-700"
+        :class="isSideHidden ? 'opacity-40' : ''"
+        title="Toggle visibility"
+        @click="onSideGroupAction(group, isHidden ? SideActions.Show : SideActions.Hide)"
+        :disabled="isSideHidden"
+      >
+        <IconEyeOff v-if="isHidden" class="h-5 w-5" />
+        <IconEye class="h-5 w-5" v-else />
+      </button>
       <SideGroupDropdownMenu
         :is-locked="isLocked"
         :is-side-group-locked="isSideGroupLocked"
         :is-side-locked="isSideLocked"
+        :is-side-hidden="isSideHidden"
+        :is-side-group-hidden="isSideGroupHidden"
         @action="onSideGroupAction(group, $event)"
       />
       <TreeDropIndicator
@@ -243,6 +268,7 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
         :units="group.subUnits"
         :unit-map="state.unitMap"
         class="mt-1"
+        :class="{ 'opacity-50': isHidden }"
         :filter-query="filterQuery"
         :location-filter="hasLocationFilter"
         @unit-action="onUnitAction"

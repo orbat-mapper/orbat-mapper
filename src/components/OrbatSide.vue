@@ -33,7 +33,21 @@
         <IconFilterVariant v-else class="h-5 w-5" aria-hidden="true" />
       </Switch>
       <IconLockOutline v-if="isLocked" class="h-6 w-6 text-gray-400" />
-      <SideDropdownMenu @action="onSideAction" :is-locked="isLocked" />
+      <button
+        v-if="isHidden"
+        type="button"
+        class="ml-1 text-gray-400 hover:text-gray-700"
+        title="Toggle visibility"
+        @click="onSideAction(isHidden ? SideActions.Show : SideActions.Hide)"
+      >
+        <IconEyeOff v-if="isHidden" class="h-5 w-5" />
+        <IconEye class="h-5 w-5" v-else />
+      </button>
+      <SideDropdownMenu
+        @action="onSideAction"
+        :is-locked="isLocked"
+        :is-hidden="isHidden"
+      />
       <TreeDropIndicator v-if="instruction" :instruction="instruction" class="z-10" />
     </header>
     <EditSideForm
@@ -72,6 +86,8 @@ import {
   IconFilterVariant,
   IconFilterVariantPlus,
   IconLockOutline,
+  IconEyeOff,
+  IconEye,
 } from "@iconify-prerendered/vue-mdi";
 import { SideAction, SideActions, type UnitAction } from "@/types/constants";
 import { useDebounce, useTimeoutFn } from "@vueuse/core";
@@ -153,6 +169,7 @@ const filterQuery = ref("");
 const showFilter = ref(false);
 const debouncedFilterQuery = useDebounce(filterQuery, 100);
 const isLocked = computed(() => !!props.side.locked);
+const isHidden = computed(() => props.side.isHidden);
 
 const sideGroups = computed(() =>
   props.side.groups.map((id) => store.state.sideGroupMap[id]),
@@ -266,6 +283,10 @@ function onSideGroupAction(sideGroup: NSideGroup, action: SideAction) {
     unitActions.cloneSideGroup(sideGroup.id);
   } else if (action === SideActions.CloneWithState) {
     unitActions.cloneSideGroup(sideGroup.id, { includeState: true });
+  } else if (action === SideActions.Hide) {
+    unitActions.updateSideGroup(sideGroup.id, { isHidden: true });
+  } else if (action === SideActions.Show) {
+    unitActions.updateSideGroup(sideGroup.id, { isHidden: false });
   }
 }
 

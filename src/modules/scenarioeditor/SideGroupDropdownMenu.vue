@@ -16,7 +16,9 @@ import { MenuItemData } from "@/components/types";
 const props = defineProps<{
   isLocked: boolean;
   isSideLocked: boolean;
+  isSideHidden: boolean;
   isSideGroupLocked: boolean;
+  isSideGroupHidden: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -42,6 +44,9 @@ const sideGroupMenuItems = computed((): MenuItemData<SideAction>[] => [
   props.isSideGroupLocked
     ? { label: "Unlock group", action: SideActions.Unlock, disabled: props.isSideLocked }
     : { label: "Lock group", action: SideActions.Lock, disabled: props.isSideLocked },
+  props.isSideGroupHidden
+    ? { label: "Show group", action: SideActions.Show, disabled: props.isSideHidden }
+    : { label: "Hide group", action: SideActions.Hide, disabled: props.isSideHidden },
 ]);
 </script>
 

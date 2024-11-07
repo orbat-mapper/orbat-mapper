@@ -286,6 +286,10 @@ function onSideAction(side: NSide, action: SideAction) {
     unitActions.cloneSide(side.id);
   } else if (action === SideActions.CloneWithState) {
     unitActions.cloneSide(side.id, { includeState: true });
+  } else if (action === SideActions.Hide) {
+    unitActions.updateSide(side.id, { isHidden: true });
+  } else if (action === SideActions.Show) {
+    unitActions.updateSide(side.id, { isHidden: false });
   }
 }
 

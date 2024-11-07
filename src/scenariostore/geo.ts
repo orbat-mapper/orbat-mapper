@@ -72,8 +72,17 @@ export function useGeo(store: NewScenarioStore) {
   const mapLayerEvent = createEventHook<ScenarioMapLayerEvent>();
   const featureLayerEvent = createEventHook<ScenarioFeatureLayerEvent>();
 
+  const hiddenGroups = computed(() => {
+    return new Set(
+      Object.values(state.sideGroupMap)
+        .filter((group) => !!(group.isHidden || state.sideMap[group._pid]?.isHidden))
+        .map((group) => group.id),
+    );
+  });
   const everyVisibleUnit = computed(() => {
-    return Object.values(state.unitMap).filter((unit) => unit._state?.location);
+    return Object.values(state.unitMap).filter(
+      (unit) => !hiddenGroups.value.has(unit._gid) && unit._state?.location,
+    );
   });
 
   function addUnitPosition(

@@ -1184,6 +1184,15 @@ export function useUnitManipulations(store: NewScenarioStore) {
     );
   }
 
+  function isUnitHidden(unitId: EntityId): boolean {
+    const unit = state.unitMap[unitId];
+    if (!unit) return false;
+
+    return !!(
+      state.sideMap[unit._sid]?.isHidden || state.sideGroupMap[unit._gid]?.isHidden
+    );
+  }
+
   return {
     addUnit,
     deleteUnit,
@@ -1250,5 +1259,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     deleteUnitStatus,
     updateUnitProperties,
     isUnitLocked,
+    isUnitHidden,
   };
 }

@@ -10,7 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 November 2024
 
-- Added multimode support to the map overlay unit details panel.
+- Added support for hiding sides and groups from the map.
+- Added multi edit support to the map overlay unit details panel.
 - Added support for importing sides and groups from another scenario.
 
 October 2024
