@@ -300,7 +300,8 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
   } else if (action === "zoomOut") {
     majorWidth.value = Math.max(majorWidth.value - 40, 55);
   } else if (action === "addScenarioEvent") {
-    addScenarioEvent({ title: "Event ", startTime: +hoveredDate.value! });
+    const day = hoveredDate.value!.getDate();
+    addScenarioEvent({ title: `Event ${day}`, startTime: +hoveredDate.value! });
   }
 }
 </script>

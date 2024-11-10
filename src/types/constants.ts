@@ -80,6 +80,8 @@ export type ScenarioFeatureActions =
   | "duplicate"
   | "removeMedia";
 
+export type ScenarioEventAction = "delete" | "changeTime";
+
 export type UiAction = "showKeyboardShortcuts" | "showSearch";
 
 export const ScenarioLayerActions = {
