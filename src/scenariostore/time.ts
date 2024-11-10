@@ -1,5 +1,5 @@
 import { NewScenarioStore } from "./newScenarioStore";
-import { CurrentState } from "@/types/scenarioModels";
+import { CurrentState, ScenarioEvent } from "@/types/scenarioModels";
 import {
   NScenarioEvent,
   NScenarioFeature,
@@ -19,6 +19,7 @@ import {
   CurrentScenarioFeatureState,
   ScenarioFeatureState,
 } from "@/types/scenarioGeoModels";
+import { nanoid } from "@/utils";
 
 export type GoToScenarioEventOptions = {
   silent?: boolean;
@@ -250,6 +251,24 @@ export function useScenarioTime(store: NewScenarioStore) {
     return state.eventMap[id];
   }
 
+  function addScenarioEvent(event: NScenarioEvent | ScenarioEvent) {
+    let newEvent = klona(event) as NScenarioEvent;
+    if (!newEvent.id) newEvent.id = nanoid();
+    if (!newEvent._type) newEvent._type = "scenario";
+    update((s) => {
+      s.events.push(newEvent.id);
+      s.eventMap[newEvent.id] = newEvent;
+      s.events.sort((a, b) => s.eventMap[a].startTime - s.eventMap[b].startTime);
+    });
+  }
+
+  function deleteScenarioEvent(id: EntityId) {
+    update((s) => {
+      s.events = s.events.filter((e) => e !== id);
+      delete s.eventMap[id];
+    });
+  }
+
   function updateScenarioEvent(id: EntityId, data: ScenarioEventUpdate) {
     const event = getEventById(id);
     if (!event) return;
@@ -277,7 +296,9 @@ export function useScenarioTime(store: NewScenarioStore) {
     goToNextScenarioEvent,
     goToPrevScenarioEvent,
     getEventById,
+    addScenarioEvent,
     updateScenarioEvent,
+    deleteScenarioEvent,
     computeTimeHistogram,
     onGoToScenarioEventEvent: goToScenarioEventHook.on,
   };

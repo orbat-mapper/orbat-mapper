@@ -21,6 +21,7 @@ const {
     timeZone,
     computeTimeHistogram,
     goToScenarioEvent,
+    addScenarioEvent,
   },
   store,
 } = useActiveScenario();
@@ -293,17 +294,19 @@ function onEventClick(event: NScenarioEvent) {
   goToScenarioEvent(event);
 }
 
-function onContexMenuAction(value: string) {
-  if (value === "zoomIn") {
+function onContextMenuAction(action: string, options?: Record<string, any>) {
+  if (action === "zoomIn") {
     majorWidth.value += 40;
-  } else if (value === "zoomOut") {
+  } else if (action === "zoomOut") {
     majorWidth.value = Math.max(majorWidth.value - 40, 55);
+  } else if (action === "addScenarioEvent") {
+    addScenarioEvent({ title: "Event ", startTime: +hoveredDate.value! });
   }
 }
 </script>
 <template>
   <TimelineContextMenu
-    @action="onContexMenuAction"
+    @action="onContextMenuAction"
     v-slot="{ onContextMenu }"
     :formattedHoveredDate="formattedHoveredDate"
   >

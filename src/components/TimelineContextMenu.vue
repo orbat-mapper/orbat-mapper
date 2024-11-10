@@ -14,13 +14,11 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { toLonLat } from "ol/proj";
-import { LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
   IconClockOutline,
-  IconSpeedometer,
   IconZoomInOutline,
   IconZoomOutOutline,
+  IconAddCircleOutline as AddEventIcon,
 } from "@iconify-prerendered/vue-mdi";
 
 const props = defineProps<{ formattedHoveredDate: string }>();
@@ -30,9 +28,7 @@ const emit = defineEmits<{
 
 function onContextMenuUpdate(open: boolean) {}
 
-function onContextMenu(e: MouseEvent) {
-  console.log("onContextMenu", e);
-}
+function onContextMenu(e: MouseEvent) {}
 </script>
 
 <template>
@@ -42,7 +38,7 @@ function onContextMenu(e: MouseEvent) {
     </ContextMenuTrigger>
     <ContextMenuContent>
       <ContextMenuLabel class="flex items-center">
-        <IconClockOutline class="mr-1 h-4 w-4" />
+        <IconClockOutline class="mr-2 size-5" />
         {{ formattedHoveredDate }}
       </ContextMenuLabel>
       <ContextMenuSeparator />
@@ -53,6 +49,11 @@ function onContextMenu(e: MouseEvent) {
       <ContextMenuItem @select.prevent="emit('action', 'zoomOut')">
         <IconZoomOutOutline class="mr-2 size-5" />
         Zoom Out
+      </ContextMenuItem>
+      <ContextMenuSeparator />
+      <ContextMenuItem @select="emit('action', 'addScenarioEvent')">
+        <AddEventIcon class="mr-2 size-5" />
+        Add scenario event
       </ContextMenuItem>
     </ContextMenuContent>
   </ContextMenu>
