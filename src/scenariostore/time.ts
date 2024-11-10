@@ -277,6 +277,9 @@ export function useScenarioTime(store: NewScenarioStore) {
         const e = s.eventMap[id];
         if (!e) return;
         s.eventMap[e.id] = klona(Object.assign(e, { ...data }));
+        if ("startTime" in data) {
+          s.events.sort((a, b) => s.eventMap[a].startTime - s.eventMap[b].startTime);
+        }
       });
     } else {
       console.warn("Cannot update non-scenario event yet");
