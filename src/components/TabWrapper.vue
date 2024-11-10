@@ -49,7 +49,7 @@ function changeTab(index: number) {
   <TabGroup :selected-index="tabIndex" @change="changeTab" class="-mx-4 mt-2" as="div">
     <div class="relative h-10 overflow-hidden border-b-2">
       <button
-        class="absolute inset-y-0 left-0 bg-white hover:text-gray-800 disabled:pointer-events-none disabled:opacity-0"
+        class="absolute inset-y-0 left-0 bg-card hover:text-gray-800 disabled:pointer-events-none disabled:opacity-0"
         :disabled="startMarkerIsVisible"
         aria-label="Scroll left"
         @click="x -= 100"
@@ -57,7 +57,7 @@ function changeTab(index: number) {
         <ChevronLeftIcon class="mx-2 h-6 w-6 text-gray-600" />
       </button>
       <button
-        class="absolute inset-y-0 right-0 bg-white disabled:pointer-events-none disabled:opacity-0"
+        class="absolute inset-y-0 right-0 bg-card disabled:pointer-events-none disabled:opacity-0"
         :disabled="endMarkerIsVisible"
         aria-label="Scroll right"
         @click="x += 100"
@@ -72,7 +72,9 @@ function changeTab(index: number) {
             v-for="({ label, title }, i) in tabListItems"
             :title="title"
             :class="[
-              selectedIndex === i ? 'border-army text-army' : 'border-transparent',
+              selectedIndex === i
+                ? 'border-army text-army dark:text-indigo-400'
+                : 'border-transparent',
               'flex-none border-b-2 px-1 py-2 text-sm font-medium',
             ]"
             >{{ label }}
