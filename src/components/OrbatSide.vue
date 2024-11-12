@@ -9,6 +9,7 @@
         class="h-6 w-6 flex-none cursor-move text-gray-500 group-focus-within:opacity-100 group-hover:opacity-100 sm:-ml-3 sm:opacity-0"
         ref="dragRef"
       />
+
       <button
         @click="toggleOpen"
         class="flex w-full items-center justify-between text-left"
@@ -20,6 +21,15 @@
           :class="isOpen ? 'rotate-180 transform' : ''"
           class="h-6 w-6 text-gray-400 group-hover:text-gray-900"
         />
+      </button>
+      <button
+        type="button"
+        class="ml-1 flex-none text-gray-400 hover:text-gray-700"
+        title="Toggle visibility"
+        @click="onSideAction(isHidden ? SideActions.Show : SideActions.Hide)"
+      >
+        <IconEyeOff v-if="isHidden" class="h-5 w-5" />
+        <IconEye class="h-5 w-5" v-else />
       </button>
       <Switch
         v-if="!hideFilter"
@@ -33,16 +43,7 @@
         <IconFilterVariant v-else class="h-5 w-5" aria-hidden="true" />
       </Switch>
       <IconLockOutline v-if="isLocked" class="h-6 w-6 text-gray-400" />
-      <button
-        v-if="isHidden"
-        type="button"
-        class="ml-1 text-gray-400 hover:text-gray-700"
-        title="Toggle visibility"
-        @click="onSideAction(isHidden ? SideActions.Show : SideActions.Hide)"
-      >
-        <IconEyeOff v-if="isHidden" class="h-5 w-5" />
-        <IconEye class="h-5 w-5" v-else />
-      </button>
+
       <SideDropdownMenu
         @action="onSideAction"
         :is-locked="isLocked"
