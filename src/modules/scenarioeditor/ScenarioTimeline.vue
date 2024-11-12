@@ -313,7 +313,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
   >
     <div
       ref="el"
-      class="mb-2 w-full transform select-none overflow-x-hidden border-t border-gray-500 bg-white text-sm transition-all"
+      class="mb-2 w-full transform select-none overflow-x-hidden border-t border-gray-500 bg-panel text-sm transition-all"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
       @pointermove="onPointerMove"
@@ -379,7 +379,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
           <div
             v-for="tick in minorTicks"
             :key="tick.timestamp"
-            class="min-h-[1rem] flex-none border-r border-gray-300"
+            class="min-h-[1rem] flex-none border-r border-gray-300 text-muted-foreground"
             :style="`width: ${minorWidth}px`"
           >
             {{ tick.label }}

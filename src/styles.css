@@ -16,6 +16,9 @@
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
 
+    --panel: 0 0% 100%;
+    --panel-foreground: 222.2 84% 4.9%;
+
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
 
@@ -48,6 +51,9 @@
 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
+
+    --panel: 222.2 84% 4.9%;
+    --panel-foreground: 210 40% 98%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;

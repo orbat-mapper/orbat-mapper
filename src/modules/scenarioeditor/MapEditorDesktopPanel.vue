@@ -5,7 +5,7 @@
   >
     <TabGroup
       as="div"
-      class="mr-1.5 flex h-full flex-auto flex-col bg-card hover-none:mr-3"
+      class="mr-1.5 flex h-full flex-auto flex-col bg-panel hover-none:mr-3"
       :class="{ hidden: !showBottomPanel }"
       :selected-index="activeTabIndex"
       @change="changeTab"
