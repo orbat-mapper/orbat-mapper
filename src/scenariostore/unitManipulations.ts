@@ -796,6 +796,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
   function updateUnitState(unitId: EntityId, undoable = false) {
     const unit = state.unitMap[unitId];
+    if (!unit) return;
     const timestamp = state.currentTime;
     if (!unit.state || !unit.state.length) {
       unit._state = createInitialState(unit);

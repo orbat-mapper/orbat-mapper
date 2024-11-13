@@ -22,6 +22,7 @@ export const UnitActions = {
   Pan: "Pan",
   DeleteWaypoints: "DeleteWaypoint",
   ClearState: "ClearState",
+  ClearStateOrDelete: "ClearStateOrDelete",
   Lock: "Lock",
   Unlock: "Unlock",
 } as const;

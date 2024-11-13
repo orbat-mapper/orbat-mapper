@@ -92,7 +92,7 @@ function handleDelete(e: KeyboardEvent) {
     onUnitAction(selectedUnits.value, UnitActions.DeleteWaypoints, wIds);
     return;
   }
-  onUnitAction(selectedUnits.value, UnitActions.Delete);
+  onUnitAction(selectedUnits.value, UnitActions.ClearStateOrDelete);
   onFeatureAction([...selectedFeatureIds.value], "delete");
 }
 

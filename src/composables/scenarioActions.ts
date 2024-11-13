@@ -103,7 +103,10 @@ export function useUnitActions(
     action === UnitActions.MoveUp && unitActions.reorderUnit(unit.id, "up");
     action === UnitActions.MoveDown && unitActions.reorderUnit(unit.id, "down");
 
-    if (action === UnitActions.Delete) {
+    if (
+      action === UnitActions.Delete ||
+      (action === UnitActions.ClearStateOrDelete && !unit.state?.length)
+    ) {
       if (activeUnitId.value === unit.id) {
         activeUnitId.value = null;
       }
@@ -117,7 +120,7 @@ export function useUnitActions(
       );
     }
 
-    if (action === UnitActions.ClearState) {
+    if (action === UnitActions.ClearState || action === UnitActions.ClearStateOrDelete) {
       unitActions.clearUnitState(unit.id);
     }
   };
@@ -161,6 +164,7 @@ export function useUnitMenu(
         disabled: isLocked.value,
       },
       { label: "Delete", action: UnitActions.Delete, disabled: isLocked.value },
+      { label: "Clear state", action: UnitActions.ClearState, disabled: isLocked.value },
       { label: "Edit", action: UnitActions.Edit, disabled: isLocked.value },
       {
         label: "Expand",
