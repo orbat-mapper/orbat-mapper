@@ -23,6 +23,8 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { storeToRefs } from "pinia";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey } from "@/components/injects";
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
@@ -31,6 +33,10 @@ const emit = defineEmits<{
   action: [value: ScenarioActions];
   uiAction: [value: UiAction];
 }>();
+
+const {
+  store: { undo, redo, canRedo, canUndo },
+} = injectStrict(activeScenarioKey);
 
 const route = useRoute();
 const uiSettings = useUiStore();
@@ -109,6 +115,19 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           </DropdownMenuItem>
           <DropdownMenuItem @select="emit('action', 'showInfo')">
             Show scenario info
+          </DropdownMenuItem>
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger><span>Edit</span></DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          <DropdownMenuItem @select="undo()" :disabled="!canUndo">
+            Undo
+            <DropdownMenuShortcut class="ml-4">Ctrl/⌘ Z</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem @select="redo()" :disabled="!canRedo">
+            Redo
+            <DropdownMenuShortcut class="ml-4">Ctrl/⌘ shift Z</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuSubContent>
       </DropdownMenuSub>
