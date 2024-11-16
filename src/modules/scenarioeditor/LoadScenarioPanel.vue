@@ -1,7 +1,7 @@
 <template>
   <div
     ref="dropZoneRef"
-    class="relative w-full rounded-lg border-2 border-dashed border-gray-300 p-4 ring-offset-2 focus-within:ring-2 hover:border-gray-500"
+    class="relative w-full rounded-lg border-2 border-dashed border-slate-300 p-4 ring-offset-2 focus-within:ring-2 hover:border-gray-500 dark:border-slate-600"
     :class="isOverDropZone ? 'cursor-crosshair border-green-500' : ''"
   >
     <input
@@ -20,7 +20,7 @@
         viewBox="0 0 24 24"
         stroke-width="1"
         stroke="currentColor"
-        class="h-12 w-12 text-gray-400"
+        class="h-12 w-12 text-slate-400 dark:text-slate-600"
       >
         <path
           stroke-linecap="round"

@@ -1,7 +1,9 @@
 <template>
-  <div class="flex h-full flex-col bg-gray-100">
+  <div class="flex h-full flex-col bg-gray-100 dark:bg-slate-900">
     <header>
-      <p class="relative left-0 right-0 top-0 bg-gray-300 p-1 text-center text-gray-900">
+      <p
+        class="relative left-0 right-0 top-0 bg-gray-300 p-1 text-center text-slate-900 dark:bg-slate-800 dark:text-slate-300"
+      >
         This is a work in progress prototype. Follow the
         <a href="https://github.com/orbat-mapper/orbat-mapper" class="underline"
           >development on GitHub <GithubIcon class="inline h-6 w-6 sm:h-10 sm:w-10" /> </a
@@ -17,21 +19,21 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6">
           <div class="text-center">
             <h1
-              class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl"
+              class="text-4xl font-bold tracking-tight text-heading sm:text-5xl md:text-6xl"
             >
-              <span class="text-red-900">ORBAT</span>
+              <span class="text-red-900 dark:text-red-900/90">ORBAT</span>
               Mapper<span class="absolute text-sm uppercase tracking-normal text-gray-500"
                 >beta</span
               >
             </h1>
             <p
-              class="mx-auto mt-3 max-w-md text-base text-gray-700 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl"
+              class="mx-auto mt-3 max-w-md text-base text-gray-700 dark:text-slate-400 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl"
             >
               Recreate historic battles and military scenarios in your browser
             </p>
             <p class="mt-4">
               <a
-                class="text-base font-semibold text-indigo-600 hover:text-indigo-700"
+                class="text-base font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
                 href="https://docs.orbat-mapper.app/guide/about-orbat-mapper"
                 target="_blank"
                 >View documentation →</a
@@ -45,11 +47,11 @@
         <LandingPageScenarios class="mt-16" />
       </section>
 
-      <section id="features" class="bg-white">
+      <section id="features" class="bg-white dark:bg-slate-900">
         <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div class="mx-auto max-w-3xl text-center">
-            <h2 class="text-3xl font-bold tracking-tight text-gray-900">Features</h2>
-            <p class="mt-4 text-lg text-gray-500">
+            <h2 class="text-3xl font-bold tracking-tight text-heading">Features</h2>
+            <p class="mt-4 text-lg text-gray-500 dark:text-slate-400">
               Some of the things you can do with ORBAT mapper
             </p>
           </div>
@@ -59,21 +61,25 @@
             <div v-for="feature in features" :key="feature.name" class="relative">
               <dt>
                 <CheckIcon class="absolute h-6 w-6 text-green-500" aria-hidden="true" />
-                <p class="ml-9 text-lg font-medium leading-6 text-gray-900">
+                <p class="ml-9 text-lg font-medium leading-6 text-heading">
                   {{ feature.name }}
                 </p>
               </dt>
-              <dd class="ml-9 mt-2 text-base text-gray-500">{{ feature.description }}</dd>
+              <dd class="ml-9 mt-2 text-base text-gray-500 dark:text-slate-400">
+                {{ feature.description }}
+              </dd>
             </div>
           </dl>
         </div>
       </section>
 
-      <section id="links" class="bg-gray-100">
+      <section id="links" class="bg-gray-100 dark:bg-slate-900">
         <ProseSection class="">
           <p class="text-center">Links to work in progress components and experiments</p>
           <div class="grid grid-cols-2 place-items-center gap-4">
-            <div class="aspect-w-5 aspect-h-2 overflow-hidden rounded-lg">
+            <div
+              class="aspect-w-5 aspect-h-2 overflow-hidden rounded-lg dark:bg-slate-400"
+            >
               <img
                 src="/images/orbat-chart-demo-min.png"
                 width="2136"
@@ -93,7 +99,7 @@
         </ProseSection>
       </section>
     </main>
-    <footer class="bg-white">
+    <footer class="bg-white dark:bg-slate-950">
       <div class="mx-auto max-w-7xl overflow-hidden px-6 py-20 sm:py-24 lg:px-8">
         <nav
           class="-mb-6 columns-2 sm:flex sm:justify-center sm:space-x-12"

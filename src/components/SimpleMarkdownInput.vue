@@ -1,7 +1,10 @@
 <template>
   <div>
     <div class="flex items-end justify-between">
-      <label :for="id || computedId" class="block text-sm font-medium text-gray-700">
+      <label
+        :for="id || computedId"
+        class="block text-sm font-medium text-gray-700 dark:text-slate-200"
+      >
         <slot name="label">{{ label }}</slot>
       </label>
       <nav class="flex space-x-3" aria-label="Tabs">
@@ -27,7 +30,7 @@
         v-show="!isPreview"
         v-model="localValue"
         :id="id || computedId"
-        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+        class="block w-full rounded-md border-gray-300 bg-transparent shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-white/5 sm:text-sm"
         v-bind="$attrs"
       />
       <div v-if="isPreview" class="prose prose-sm mt-4" v-html="renderedMarkdown"></div>

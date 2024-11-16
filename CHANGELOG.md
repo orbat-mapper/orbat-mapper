@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 November 2024
 
-- Added edit submenu to the main menu. 
+- Added edit submenu to the main menu.
 - Added basic scenario event support.
 - Added support for hiding sides and groups from the map.
 - Added multi edit support to the map overlay unit details panel.

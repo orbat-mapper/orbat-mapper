@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative flex flex-col rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400"
+    class="relative flex flex-col rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400 dark:border-slate-600 dark:bg-slate-800"
   >
     <div class="relative flex-1">
       <component
@@ -15,16 +15,18 @@
         draggable="false"
       >
         <span class="absolute inset-0" aria-hidden="true" />
-        <p class="text-sm font-medium text-gray-900">{{ data.name }}</p>
-        <p class="line-clamp-3 text-sm text-gray-500">{{ data.description }}</p>
+        <p class="text-sm font-medium text-heading">{{ data.name }}</p>
+        <p class="mt-2 line-clamp-3 text-sm text-gray-500 dark:text-slate-400">
+          {{ data.description }}
+        </p>
       </component>
     </div>
     <footer class="-mr-2 flex flex-none items-center justify-between pt-4">
       <div>
-        <p class="truncate text-sm text-gray-500">
+        <p class="truncate text-sm text-gray-500 dark:text-slate-500">
           Modified {{ formatTimeAgo(data.modified) }}
         </p>
-        <p class="truncate text-sm text-gray-500">
+        <p class="truncate text-sm dark:text-slate-500">
           Created {{ formatTimeAgo(data.created) }}
         </p>
       </div>

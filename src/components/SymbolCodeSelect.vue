@@ -1,6 +1,6 @@
 <template>
   <Listbox as="div" v-model="selectedValue" class="">
-    <ListboxLabel class="block text-sm font-medium text-gray-700">
+    <ListboxLabel class="block text-sm font-medium text-heading">
       {{ label }}
     </ListboxLabel>
     <Float
@@ -17,7 +17,7 @@
       leave-to="opacity-0"
     >
       <ListboxButton
-        class="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+        class="t ext-left relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-800 sm:text-sm"
       >
         <div class="flex items-center">
           <div class="flex h-8 w-10 flex-shrink-0 items-center">
@@ -38,7 +38,7 @@
       </ListboxButton>
 
       <ListboxOptions
-        class="max-h-56 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+        class="max-h-56 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-800 sm:text-sm"
       >
         <ListboxOption
           as="template"
@@ -58,13 +58,13 @@
                 <MilitarySymbol
                   :size="20"
                   :sidc="item.sidc"
-                  :options="{ ...symbolOptions, ...item.symbolOptions }"
+                  :options="{ ...symbolOptions, ...item.symbolOptions, outlineWidth: 4 }"
                 />
               </p>
               <span
                 :class="[
                   selected ? 'font-semibold' : 'font-normal',
-                  'ml-3 block truncate',
+                  'ml-3 block truncate dark:text-slate-200',
                 ]"
               >
                 {{ item.text }}

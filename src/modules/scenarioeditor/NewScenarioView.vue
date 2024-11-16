@@ -1,11 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gray-100 py-10">
+  <div class="min-h-screen bg-gray-100 py-10 dark:bg-slate-900">
     <header>
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold leading-tight text-gray-900">
-          Create new scenario
-        </h1>
-        <div class="prose mt-4">
+        <h1 class="text-3xl font-bold leading-tight text-heading">Create new scenario</h1>
+        <div class="prose mt-4 dark:prose-invert">
           <p>
             Here you can provide some initial data for your scenario if you want. You can
             always change these settings later.
@@ -47,7 +45,7 @@
           <template v-if="!noInitialOrbat">
             <div
               v-for="(sideData, idx) in form.sides"
-              class="relative rounded-md border bg-gray-50 p-4"
+              class="relative rounded-md border bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-800/20"
             >
               <div class="grid gap-4 md:grid-cols-2">
                 <InputGroup v-model="sideData.name" label="Side name" />
