@@ -45,6 +45,10 @@ export interface MarkerStyleSpec {
 
 export interface TextStyleSpec {
   showLabel: boolean;
+  "text-placement": "point" | "line";
+  "text-align": "left" | "right" | "center" | "end" | "start";
+  "text-offset-x": number;
+  "text-offset-y": number;
 }
 
 export interface SimpleStyleSpec
@@ -160,8 +164,8 @@ export const defaultSimpleStyleText = new Text({
 export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
   let stroke: Stroke | undefined = defaultSimplestyleStroke;
   let fill: Fill | undefined = defaultSimplestyleFill;
+  let text: Text | undefined = defaultSimpleStyleText;
   const markerSize = opts["marker-size"] || "medium";
-  //if (opts.stroke === undefined && opts.fill === undefined) return; // use default layer style
 
   if (opts.stroke || opts["stroke-width"] || opts["stroke-opacity"]) {
     let strokeColor = [...olColor.fromString(opts.stroke || "#555555")];
@@ -181,10 +185,35 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
   }
   if (opts["fill-opacity"] === 0) fill = undefined;
 
+  if (
+    opts["text-placement"] ||
+    opts["text-align"] ||
+    opts["text-offset-x"] !== undefined ||
+    opts["text-offset-y"] !== undefined
+  ) {
+    text = new Text({
+      font: 'bold 13px "InterVariable"',
+      placement: opts["text-placement"],
+      textAlign: opts["text-align"] ?? "left",
+      textBaseline: "middle",
+      fill: new Fill({
+        color: "#333333",
+      }),
+      stroke: new Stroke({
+        color: "#FBFCFB",
+        width: 4,
+      }),
+      // padding: [3, 3, 3, 3],
+      offsetX: opts["text-offset-x"] ?? 15,
+      offsetY: opts["text-offset-y"] ?? 0,
+      // offsetY: -15,
+    });
+  }
+
   return new Style({
     stroke,
     fill,
-    text: defaultSimpleStyleText,
+    text,
     image: createMarkerSymbol(
       opts["marker-symbol"] || "circle",
       markerSize,

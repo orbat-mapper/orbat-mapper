@@ -30,6 +30,10 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           "marker-symbol": markerSymbol,
           "stroke-width": strokeWidth,
           title,
+          "text-placement": textPlacement,
+          "text-align": textAlign,
+          "text-offset-x": textOffsetX,
+          "text-offset-y": textOffsetY,
           ...rest
         } = upgradedFeature.properties ?? {};
 
@@ -54,6 +58,10 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           "marker-size": markerSize,
           "marker-symbol": markerSymbol,
           "stroke-width": strokeWidth,
+          "text-placement": textPlacement,
+          "text-align": textAlign,
+          "text-offset-x": textOffsetX,
+          "text-offset-y": textOffsetY,
           title,
         };
         upgradedFeature.meta = meta;

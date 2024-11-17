@@ -224,7 +224,7 @@ function onAction(action: ScenarioFeatureActions) {
     </header>
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
       <TabPanel>
-        <section class="mt-4 grid w-full grid-cols-[max-content_1fr] gap-4 text-sm">
+        <section class="mt-4 grid w-full grid-cols-[max-content_1fr] gap-4 pb-1 text-sm">
           <ScenarioFeatureMarkerSettings
             v-if="feature && geometryType === 'Point'"
             :feature="feature"

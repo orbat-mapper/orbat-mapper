@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 November 2024
 
+- Added more feature label styling options.
 - Added edit submenu to the main menu.
 - Added basic scenario event support.
 - Added support for hiding sides and groups from the map.

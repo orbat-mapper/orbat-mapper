@@ -1,6 +1,6 @@
 import { ScenarioVersion } from "@/types/scenarioModels";
 
-export const SCENARIO_FILE_VERSION: ScenarioVersion = "0.31.0";
+export const SCENARIO_FILE_VERSION: ScenarioVersion = "0.32.0";
 export const LOCALSTORAGE_KEY = "orbat-scenario4";
 
 export const DEFAULT_BASEMAP_ID = "osm";
