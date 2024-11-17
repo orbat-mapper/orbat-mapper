@@ -64,6 +64,7 @@ const combinedSymbolOptions = computed(() => {
     ...getCombinedSymbolOptions(props.unit),
     uniqueDesignation: props.unit.shortName || props.unit.name,
     ...textAmplifiers.value,
+    outlineWidth: 4,
   };
 });
 
@@ -171,7 +172,7 @@ function handleReset() {
             <MilitarySymbol
               :sidc="displaySymbol"
               :size="75"
-              :modifiers="{ frame: true, monoColor: '#7a7575' }"
+              :modifiers="{ frame: true, monoColor: '#7a7575', outlineWidth: 4 }"
             />
           </div>
         </div>

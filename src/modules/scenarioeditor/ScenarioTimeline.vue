@@ -313,7 +313,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
   >
     <div
       ref="el"
-      class="mb-2 w-full transform select-none overflow-x-hidden border-t border-gray-500 bg-panel text-sm transition-all"
+      class="mb-2 w-full transform select-none overflow-x-hidden border-t border-gray-500 bg-mpanel text-sm transition-all"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
       @pointermove="onPointerMove"

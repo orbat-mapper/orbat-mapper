@@ -1,11 +1,11 @@
 <template>
   <aside
-    class="pointer-events-auto relative -mt-12 hidden max-h-[80vh] overflow-auto rounded-md border-b border-l border-t border-gray-300 shadow md:block"
+    class="pointer-events-auto relative -mt-12 hidden max-h-[80vh] overflow-auto rounded-md border-b border-l border-t border-gray-300 shadow dark:border-slate-700 md:block"
     :style="{ width: orbatPanelWidth + 'px' }"
   >
     <TabGroup
       as="div"
-      class="mr-1.5 flex h-full flex-auto flex-col bg-panel hover-none:mr-3"
+      class="mr-1.5 flex h-full flex-auto flex-col bg-mpanel hover-none:mr-3"
       :class="{ hidden: !showBottomPanel }"
       :selected-index="activeTabIndex"
       @change="changeTab"

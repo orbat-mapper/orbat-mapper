@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-dvh flex-col overflow-hidden bg-gray-300" ref="dropZoneRef">
     <nav
-      class="flex flex-shrink-0 items-center justify-between bg-gray-900 py-2 pl-6 pr-4 text-gray-200 print:hidden"
+      class="flex flex-shrink-0 items-center justify-between bg-slate-900 py-2 pl-6 pr-4 text-gray-200 print:hidden"
     >
       <div class="flex min-w-0 flex-auto items-center">
         <div class="flex min-w-0 flex-auto items-center">
@@ -32,7 +32,7 @@
         >
           <SearchIcon class="block h-6 w-6" />
         </button>
-        <div class="flex items-center rounded-lg bg-gray-800 px-1">
+        <div class="flex items-center rounded-lg bg-slate-800 px-1">
           <router-link
             :to="{ name: MAP_EDIT_MODE_ROUTE }"
             title="Map edit mode"

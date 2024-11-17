@@ -64,6 +64,7 @@ module.exports = {
           foreground: "hsl(var(--panel-foreground))",
         },
         heading: "var(--heading)",
+        mpanel: "var(--mpanel)",
       },
       screens: {
         "hover-none": { raw: "(hover: none)" },

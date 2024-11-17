@@ -40,6 +40,7 @@
 
     --heading: theme("colors.slate.950");
     --subheading: theme("colors.slate.800");
+    --mpanel: theme("colors.white");
   }
 
   .dark {
@@ -76,6 +77,7 @@
     --ring: 212.7 26.8% 83.9%;
 
     --heading: theme("colors.white");
+    --mpanel: theme("colors.slate.900");
   }
 }
 

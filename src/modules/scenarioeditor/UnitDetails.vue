@@ -21,7 +21,7 @@
             class="relative -top-4"
             v-model="shortName"
             @update-value="updateUnit(unitId, { shortName: $event })"
-            text-class="text-sm text-gray-500"
+            text-class="text-sm text-gray-500 dark:text-slate-300"
             :disabled="isLocked"
           />
         </div>
@@ -330,7 +330,7 @@ watch(
 );
 
 const combinedSymbolOptions = computed(() => {
-  return getCombinedSymbolOptions(unit.value);
+  return { ...getCombinedSymbolOptions(unit.value), outlineWidth: 4 };
 });
 
 const unitSidc = computed(() => unit.value._state?.sidc || unit.value.sidc);
