@@ -41,10 +41,17 @@ export interface MarkerStyleSpec {
   "marker-size": MarkerSize;
   "marker-color": string;
   "marker-symbol": MarkerSymbol;
+}
+
+export interface TextStyleSpec {
   showLabel: boolean;
 }
 
-export interface SimpleStyleSpec extends StrokeStyleSpec, FillStyleSpec, MarkerStyleSpec {
+export interface SimpleStyleSpec
+  extends StrokeStyleSpec,
+    FillStyleSpec,
+    MarkerStyleSpec,
+    TextStyleSpec {
   title: string;
 }
 

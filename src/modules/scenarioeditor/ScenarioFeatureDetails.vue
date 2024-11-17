@@ -39,6 +39,7 @@ import { inputEventFilter } from "@/components/helpers";
 import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatureDropdownMenu.vue";
 import { ScenarioFeatureActions } from "@/types/constants";
 import ScenarioFeatureState from "@/modules/scenarioeditor/ScenarioFeatureState.vue";
+import ScenarioFeatureTextSettings from "@/modules/scenarioeditor/ScenarioFeatureTextSettings.vue";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -236,6 +237,11 @@ function onAction(action: ScenarioFeatureActions) {
           />
           <ScenarioFeatureFillSettings
             v-if="feature && hasFill"
+            :feature="feature"
+            @update="doUpdateFeature"
+          />
+          <ScenarioFeatureTextSettings
+            v-if="feature && geometryType !== 'Circle'"
             :feature="feature"
             @update="doUpdateFeature"
           />

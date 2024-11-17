@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { MarkerStyleSpec, SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
+import { SimpleStyleSpec, StrokeStyleSpec, TextStyleSpec } from "@/geo/simplestyle";
 import { ScenarioFeature } from "@/types/scenarioGeoModels";
 import ColorPicker from "@/components/ColorPicker.vue";
-import ToggleField from "@/components/ToggleField.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits<{
@@ -16,12 +15,11 @@ const marker = computed(() => {
     stroke: style["stroke"] || "black",
     "stroke-width": style["stroke-width"] || 2,
     "stroke-opacity": style["stroke-opacity"] ?? 1,
-    showLabel: style["showLabel"] || false,
   };
 });
 
 function updateValue(
-  name: keyof StrokeStyleSpec | keyof MarkerStyleSpec,
+  name: keyof (StrokeStyleSpec & TextStyleSpec),
   value: string | number | boolean,
 ) {
   emit("update", { style: { [name]: value } });
@@ -78,10 +76,4 @@ function onChange(e: any) {}
     />
     <span class="">{{ opacityAsPercent }}%</span>
   </div>
-  <div class="self-end">Label</div>
-  <ToggleField
-    class="mt-4"
-    :model-value="marker['showLabel']"
-    @update:model-value="updateValue('showLabel', $event)"
-  ></ToggleField>
 </template>
