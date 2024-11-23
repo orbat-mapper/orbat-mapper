@@ -40,7 +40,7 @@
 
     --heading: theme("colors.slate.950");
     --subheading: theme("colors.slate.800");
-    --mpanel: theme("colors.white");
+    --mpanel: theme("colors.slate.50");
   }
 
   .dark {

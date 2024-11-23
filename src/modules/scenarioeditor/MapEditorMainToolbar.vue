@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="pointer-events-auto flex w-full items-center justify-between border border-gray-300 bg-gray-50 p-1 text-sm shadow sm:rounded-xl md:w-auto"
+    class="pointer-events-auto flex w-full items-center justify-between border border-gray-300 bg-mpanel p-1 text-sm shadow sm:rounded-xl md:w-auto"
   >
     <section class="flex items-center justify-between">
       <MainToolbarButton
@@ -214,7 +214,10 @@ const toggleMoveUnit = useToggle(moveUnitEnabled);
 
 const symbolOptions = computed(() =>
   activeParent.value
-    ? unitActions.getCombinedSymbolOptions(activeParent.value, true)
+    ? {
+        ...unitActions.getCombinedSymbolOptions(activeParent.value, true),
+        outlineWidth: 4,
+      }
     : {},
 );
 
