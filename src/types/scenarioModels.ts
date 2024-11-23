@@ -173,6 +173,8 @@ export interface ScenarioEventDescription {
   title: string;
   subTitle?: string;
   description?: string;
+  media?: Media[];
+  externalUrl?: string;
 }
 
 /**

@@ -2473,7 +2473,15 @@
       "where": {
         "type": "units",
         "units": ["ks0mMcty6I", "L3qn46k1P9"]
-      }
+      },
+      "media": [
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Leith_whaling_station.JPG/1024px-Leith_whaling_station.JPG",
+          "credits": "Markabq, Public domain, via Wikimedia Commons",
+          "caption": "Abandoned whaling station at Leith Harbour, South Georgia.",
+          "creditsUrl": "https://commons.wikimedia.org/wiki/File:Leith_whaling_station.JPG"
+        }
+      ]
     },
     {
       "title": "Argentine invasion force departs Argentina",

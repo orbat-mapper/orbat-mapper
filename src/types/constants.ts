@@ -83,7 +83,7 @@ export type ScenarioFeatureActions =
   | "duplicate"
   | "removeMedia";
 
-export type ScenarioEventAction = "delete" | "changeTime";
+export type ScenarioEventAction = "delete" | "changeTime" | "editMeta" | "editMedia";
 
 export type UiAction = "showKeyboardShortcuts" | "showSearch";
 
