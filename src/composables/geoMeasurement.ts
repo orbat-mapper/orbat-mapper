@@ -48,7 +48,7 @@ const lineBackgroundStyle = new Style({
 
 const labelStyle = new Style({
   text: new Text({
-    font: "14px Calibri,sans-serif",
+    font: '14px "InterVariable", sans-serif',
     fill: new Fill({
       color: "rgba(255, 255, 255, 1)",
     }),
@@ -72,7 +72,7 @@ const labelStyle = new Style({
 
 const tipStyle = new Style({
   text: new Text({
-    font: "12px Calibri,sans-serif",
+    font: "12px InterVariable, sans-serif",
     fill: new Fill({
       color: "rgba(255, 255, 255, 1)",
     }),
@@ -97,7 +97,7 @@ const modifyStyle = new Style({
   }),
   text: new Text({
     text: "Drag to modify",
-    font: "12px Calibri,sans-serif",
+    font: '12px "InterVariable", sans-serif',
     fill: new Fill({
       color: "rgba(255, 255, 255, 1)",
     }),
@@ -112,7 +112,7 @@ const modifyStyle = new Style({
 
 const segmentStyle = new Style({
   text: new Text({
-    font: "12px Calibri,sans-serif",
+    font: '12px "InterVariable", sans-serif',
     fill: new Fill({
       color: "rgba(255, 255, 255, 1)",
     }),
@@ -190,7 +190,8 @@ function measurementInteractionWrapper(
         line = geometry as LineString;
       }
     }
-    if (segments && line) {
+    // Draw segment labels. Skip if there is only one segment.
+    if (segments && line && line.getCoordinates().length > 2) {
       let count = 0;
       line.forEachSegment(function (a, b) {
         const segment = new LineString([a, b]);
@@ -224,8 +225,6 @@ function measurementInteractionWrapper(
   }
 
   function addInteraction(map: OLMap, drawType: MeasurementTypes) {
-    // const activeTip =
-    //   "Click to continue drawing the " + (drawType === "Polygon" ? "polygon" : "line");
     const activeTip = "";
     const idleTip = "Click to start measuring";
     let tip = idleTip;
