@@ -145,22 +145,22 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     } else {
       unit.state = unit.state.map(convertStateToInternalFormat);
     }
-    unit.state
-      ?.filter((s) => s.title)
-      .forEach((s) => {
-        const { t: startTime, subTitle, description } = s;
-        const nEvent: NScenarioEvent = {
-          id: s.id || nanoid(),
-          startTime,
-          title: s.title || "NN",
-          subTitle,
-          description,
-          _type: "unit",
-          _pid: unit.id,
-          //where: s.where,
-        };
-        eventMap[nEvent.id] = nEvent;
-      });
+    // unit.state
+    //   ?.filter((s) => s.title)
+    //   .forEach((s) => {
+    //     const { t: startTime, subTitle, description } = s;
+    //     const nEvent: NScenarioEvent = {
+    //       id: s.id || nanoid(),
+    //       startTime,
+    //       title: s.title || "NN",
+    //       subTitle,
+    //       description,
+    //       _type: "unit",
+    //       _pid: unit.id,
+    //       //where: s.where,
+    //     };
+    //     eventMap[nEvent.id] = nEvent;
+    //   });
     unit.state
       ?.filter((s) => s.status)
       .forEach((s) => {
