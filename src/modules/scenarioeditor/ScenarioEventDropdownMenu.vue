@@ -11,6 +11,8 @@ import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
 
 import { ScenarioEventAction, ScenarioFeatureActions } from "@/types/constants";
 
+const props = defineProps<{ hideEdit?: boolean }>();
+
 const emit = defineEmits<{
   action: [value: ScenarioEventAction];
 }>();
@@ -31,10 +33,10 @@ const emit = defineEmits<{
       <DropdownMenuItem @select="emit('action', 'changeTime')">
         <span>Modify time</span>
       </DropdownMenuItem>
-      <DropdownMenuItem @select="emit('action', 'editMeta')">
+      <DropdownMenuItem v-if="!hideEdit" @select="emit('action', 'editMeta')">
         <span>Edit</span>
       </DropdownMenuItem>
-      <DropdownMenuItem @select="emit('action', 'editMedia')">
+      <DropdownMenuItem v-if="!hideEdit" @select="emit('action', 'editMedia')">
         <span>Edit media</span>
       </DropdownMenuItem>
       <DropdownMenuItem @select="emit('action', 'delete')">

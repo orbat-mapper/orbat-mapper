@@ -260,6 +260,7 @@ export function useScenarioTime(store: NewScenarioStore) {
       s.eventMap[newEvent.id] = newEvent;
       s.events.sort((a, b) => s.eventMap[a].startTime - s.eventMap[b].startTime);
     });
+    return newEvent.id;
   }
 
   function deleteScenarioEvent(id: EntityId) {

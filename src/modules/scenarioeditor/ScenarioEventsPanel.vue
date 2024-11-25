@@ -8,6 +8,7 @@ import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import ScenarioEventDropdownMenu from "@/modules/scenarioeditor/ScenarioEventDropdownMenu.vue";
 import { ScenarioEventAction } from "@/types/constants";
 import BaseButton from "@/components/BaseButton.vue";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 interface Props {
   selectOnly?: boolean;
@@ -21,6 +22,7 @@ const {
   time: { goToScenarioEvent, deleteScenarioEvent, updateScenarioEvent, addScenarioEvent },
 } = injectStrict(activeScenarioKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
+const { activeScenarioEventId } = useSelectedItems();
 const fmt = useTimeFormatStore();
 const events = computed(() => store.state.events.map((id) => store.state.eventMap[id]));
 const t = computed(() => store.state.currentTime);
@@ -51,7 +53,8 @@ async function onAction(action: ScenarioEventAction, eventId: string) {
 
 function addEvent() {
   const day = new Date(t.value).getDate();
-  addScenarioEvent({ title: `Event ${day}`, startTime: t.value });
+  const eventId = addScenarioEvent({ title: `Event ${day}`, startTime: t.value });
+  activeScenarioEventId.value = eventId;
 }
 </script>
 <template>
@@ -92,7 +95,7 @@ function addEvent() {
             </div>
           </div>
           <div class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100">
-            <ScenarioEventDropdownMenu @action="onAction($event, event.id)" />
+            <ScenarioEventDropdownMenu hide-edit @action="onAction($event, event.id)" />
           </div>
         </li>
       </ul>

@@ -26,7 +26,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const {
-  time: { updateScenarioEvent },
+  time: { updateScenarioEvent, onGoToScenarioEventEvent },
 } = injectStrict(activeScenarioKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
 
@@ -41,7 +41,7 @@ const { time, store } = injectStrict(activeScenarioKey);
 
 const ui = useUiStore();
 const fmt = useTimeFormatStore();
-const { clear: clearSelected } = useSelectedItems();
+const { clear: clearSelected, activeScenarioEventId } = useSelectedItems();
 const scenarioEvent = computed(() => time.getEventById(props.eventId));
 
 const formattedEventTime = computed(() => {
@@ -93,6 +93,12 @@ async function onAction(action: ScenarioEventAction) {
       break;
   }
 }
+
+onGoToScenarioEventEvent(({ event }) => {
+  if (event.id !== props.eventId) {
+    activeScenarioEventId.value = event.id;
+  }
+});
 
 function updateMedia(mediaUpdate: MediaUpdate) {
   if (!mediaUpdate) return;

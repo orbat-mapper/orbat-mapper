@@ -10,6 +10,7 @@ import { useActiveScenario } from "@/composables/scenarioUtils";
 import { NScenarioEvent } from "@/types/internalModels";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import TimelineContextMenu from "@/components/TimelineContextMenu.vue";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const MS_PER_HOUR = 3600 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
@@ -97,6 +98,8 @@ const currentTimestamp = ref(0);
 const animate = ref(false);
 const hoveredX = ref(0);
 const showHoverMarker = ref(false);
+
+const { activeScenarioEventId } = useSelectedItems();
 
 const countColor = scaleSequential(interpolateOranges).domain([1, maxCount]);
 
@@ -215,15 +218,14 @@ function onWheel(e: WheelEvent) {
 }
 
 const events = computed(() => {
-  const scenarioEvents = store.state.events.map((id) => store.state.eventMap[id]);
-  if (store.state.info.startTime)
-    scenarioEvents.push({
-      id: "xx",
-      title: "Scenario start time",
-      _type: "scenario",
-      startTime: store.state.info.startTime,
-    });
-  return scenarioEvents;
+  return store.state.events.map((id) => store.state.eventMap[id]);
+  // if (store.state.info.startTime)
+  //   scenarioEvents.push({
+  //     id: "xx",
+  //     title: "Scenario start time",
+  //     _type: "scenario",
+  //     startTime: store.state.info.startTime,
+  //   });
 });
 
 function updateEvents(minDate: Date, maxDate: Date) {
@@ -301,7 +303,11 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
     majorWidth.value = Math.max(majorWidth.value - 40, 55);
   } else if (action === "addScenarioEvent") {
     const day = hoveredDate.value!.getDate();
-    addScenarioEvent({ title: `Event ${day}`, startTime: +hoveredDate.value! });
+    const eventId = addScenarioEvent({
+      title: `Event ${day}`,
+      startTime: +hoveredDate.value!,
+    });
+    activeScenarioEventId.value = eventId;
   }
 }
 </script>
