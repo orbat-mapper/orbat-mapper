@@ -106,7 +106,26 @@ const layers: LayerConfig[] = [
 ];
 
 export async function createBaseLayers(view: View, currentBaseLayerName = "osm") {
-  return layers.map((layerConfig) => {
+  let layers;
+  try {
+    const res = await fetch("/mapConfig.json");
+    layers = (await res.json()) as LayerConfig[];
+  } catch (e) {
+    console.error("Failed to fetch mapConfig.json", e);
+    return [
+      new TileLayer({
+        source: new OSM({ crossOrigin: "anonymous" }),
+        visible: true,
+        preload: Infinity,
+        properties: {
+          title: "OSM",
+          name: "osm",
+          layerType: "baselayer",
+        },
+      }),
+    ];
+  }
+  const baseLayers = layers.map((layerConfig) => {
     const { layerSourceType, layerType, title, name, tileLayerConfig } =
       klona(layerConfig);
 
@@ -135,4 +154,10 @@ export async function createBaseLayers(view: View, currentBaseLayerName = "osm")
       ...tileLayerConfig,
     });
   });
+
+  // ensure that at least one is visible
+  if (!baseLayers.some((l) => l.getVisible())) {
+    baseLayers[0]?.setVisible(true);
+  }
+  return baseLayers;
 }
