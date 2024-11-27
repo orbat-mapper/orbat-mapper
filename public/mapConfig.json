@@ -2,7 +2,6 @@
   {
     "title": "OSM",
     "name": "osm",
-    "layerType": "baselayer",
     "layerSourceType": "osm",
     "sourceOptions": {
       "crossOrigin": "anonymous"
@@ -11,7 +10,6 @@
   {
     "title": "OSM (DE)",
     "name": "osm-de",
-    "layerType": "baselayer",
     "layerSourceType": "osm",
     "sourceOptions": {
       "url": "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
@@ -21,7 +19,6 @@
   {
     "title": "Gray Basemap",
     "name": "grayBasemap",
-    "layerType": "baselayer",
     "layerSourceType": "xyz",
     "sourceOptions": {
       "attributions": "Tiles © <a href=\"https://services.arcgisonline.com/ArcGIS/rest/services/World_Light_Gray_Base/MapServer\">ArcGIS</a>",
@@ -32,7 +29,6 @@
   {
     "title": "Open topo map",
     "name": "openTopoMap",
-    "layerType": "baselayer",
     "layerSourceType": "xyz",
     "sourceOptions": {
       "url": "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
@@ -44,7 +40,6 @@
   {
     "title": "ESRI World imagery",
     "name": "esriWorldImagery",
-    "layerType": "baselayer",
     "layerSourceType": "xyz",
     "sourceOptions": {
       "crossOrigin": "anonymous",
@@ -56,7 +51,6 @@
   {
     "title": "Topographic Map Norway",
     "name": "kartverketTopo4",
-    "layerType": "baselayer",
     "layerSourceType": "xyz",
     "sourceOptions": {
       "crossOrigin": "anonymous",
