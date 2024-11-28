@@ -1,32 +1,10 @@
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
-import type { Options as TileLayerOptions } from "ol/layer/BaseTile";
-import type { Options as OSMOptions } from "ol/source/OSM";
 import OSM from "ol/source/OSM";
-import type { Options as XYZOptions } from "ol/source/XYZ";
 import XYZ from "ol/source/XYZ";
 import { transformExtent } from "ol/proj";
 import { klona } from "klona";
-
-interface BaseLayerConfig {
-  title: string;
-  name: string;
-  layerSourceType?: "osm" | "xyz";
-  layerType?: "baselayer";
-  tileLayerOptions?: Exclude<TileLayerOptions<any>, "source" | "map" | "properties">;
-}
-
-interface XYZLayerConfig extends BaseLayerConfig {
-  layerSourceType: "xyz";
-  sourceOptions: XYZOptions;
-}
-
-interface OSMLayerConfig extends BaseLayerConfig {
-  layerSourceType: "osm";
-  sourceOptions: OSMOptions;
-}
-
-type LayerConfig = XYZLayerConfig | OSMLayerConfig;
+import { LayerConfig, LayerConfigFile } from "@/geo/layerConfigTypes";
 
 function createFallbackLayers() {
   return [
@@ -47,7 +25,7 @@ export async function createBaseLayers(view: View, currentBaseLayerName = "osm")
   let layers;
   try {
     const res = await fetch("/mapConfig.json");
-    layers = (await res.json()) as LayerConfig[];
+    layers = (await res.json()) as LayerConfigFile;
   } catch (e) {
     console.error("Failed to fetch mapConfig.json", e);
     return createFallbackLayers();
