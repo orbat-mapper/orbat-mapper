@@ -59,9 +59,9 @@ there is currently no straightforward offline solution.
 
 ### Configuring default map layers
 
-You can configure the default map layers by modifying the [`public/mapConfig.json`](public/mapConfig.json) file. When
-building the application, the `mapConfig.json` file is copied to `dist/mapConfig.json`. You can also configure the basemap layers by modifying the
-`dist/mapConfig.json` file directly, but keep in mind that the `dist` directory is overwritten when building the
+You can configure the default map layers by modifying the [`public/config/mapConfig.json`](public/config/mapConfig.json) file. When
+building the application, the `mapConfig.json` file is copied to `dist/config/mapConfig.json`. You can also configure the basemap layers by modifying the
+`dist/config/mapConfig.json` file directly, but keep in mind that the `dist` directory is overwritten when building the
 application.
 
 The `mapConfig.json` file contains an JSON array of basemap layers. Example:
@@ -87,12 +87,7 @@ The `mapConfig.json` file contains an JSON array of basemap layers. Example:
       "attributions": "<a href=\"http://www.kartverket.no/\">Kartverket</a>"
     },
     "tileLayerConfig": {
-      "extent": [
-        2,
-        57,
-        33,
-        72
-      ]
+      "extent": [2, 57, 33, 72]
     }
   }
 ]

@@ -24,7 +24,7 @@ function createFallbackLayers() {
 export async function createBaseLayers(view: View, currentBaseLayerName = "osm") {
   let layers;
   try {
-    const res = await fetch("/mapConfig.json");
+    const res = await fetch("/config/mapConfig.json");
     layers = (await res.json()) as LayerConfigFile;
   } catch (e) {
     console.error("Failed to fetch mapConfig.json", e);
