@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { EUnitEquipment, EUnitPersonnel, NUnit } from "@/types/internalModels";
-import { computed, ref, shallowRef, triggerRef, watch } from "vue";
+import { computed, shallowRef, triggerRef, watch } from "vue";
 import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useLocalStorage, useToggle } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
 import BaseButton from "@/components/BaseButton.vue";
-import TableHeader from "@/components/TableHeader.vue";
 import UnitToeItemTable from "@/modules/scenarioeditor/UnitToeItemTable.vue";
 import { useToeActions } from "@/composables/scenarioActions";
 import ToggleField from "@/components/ToggleField.vue";
+import AccordionPanel from "@/components/AccordionPanel.vue";
 
 interface Props {
   unit: NUnit;
@@ -123,62 +123,64 @@ function deletePersonnel(personnelId: string) {
     <ToggleField v-model="includeSubordinates">Include subordinates</ToggleField>
   </div>
   <div class="prose p-1">
-    <TableHeader
-      v-if="aggregatedEquipment.length || showAddEquipment"
-      :title="`Equipment (${aggregatedEquipmentCount})`"
-    >
-      <BaseButton small :disabled="isMultiMode || isLocked" @click="toggleAddEquipment()"
-        >{{ showAddEquipment ? "Hide form" : "+ Add" }}
-      </BaseButton>
-    </TableHeader>
-    <p v-if="showAddEquipment" class="mt-2 text-right">
-      <button
-        type="button"
-        class="btn-link"
-        @click="toeActions.goToAddEquipment()"
-        :disabled="isLocked"
-      >
-        + Add new equipment type
-      </button>
-    </p>
-    <UnitToeItemTable
-      :items="aggregatedEquipment"
-      :is-multi-mode="isMultiMode"
-      :values="equipmentValues"
-      @update="updateEquipment"
-      @delete="deleteEquipment"
-      v-model:show-add="showAddEquipment"
-    />
+    <AccordionPanel :label="`Equipment (${aggregatedEquipmentCount})`" defaultOpen>
+      <div class="flex justify-end">
+        <BaseButton
+          small
+          :disabled="isMultiMode || isLocked"
+          @click="toggleAddEquipment()"
+          >{{ showAddEquipment ? "Hide form" : "+ Add" }}
+        </BaseButton>
+      </div>
+      <p v-if="showAddEquipment" class="mt-2 text-right">
+        <button
+          type="button"
+          class="btn-link"
+          @click="toeActions.goToAddEquipment()"
+          :disabled="isLocked"
+        >
+          + Add new equipment type
+        </button>
+      </p>
+      <UnitToeItemTable
+        :items="aggregatedEquipment"
+        :is-multi-mode="isMultiMode"
+        :is-locked="isLocked"
+        :values="equipmentValues"
+        @update="updateEquipment"
+        @delete="deleteEquipment"
+        v-model:show-add="showAddEquipment"
+      />
+    </AccordionPanel>
 
-    <TableHeader
-      v-if="aggregatedPersonnel.length || showAddPersonnel"
-      :title="`Personnel (${aggregatedPersonnelCount})`"
-    >
-      <BaseButton
-        small
-        :disabled="isMultiMode || isLocked"
-        @click="toggleAddPersonnel()"
-        >{{ showAddPersonnel ? "Hide form" : "+ Add" }}</BaseButton
-      >
-    </TableHeader>
-    <p v-if="showAddPersonnel" class="mt-2 text-right">
-      <button
-        type="button"
-        class="btn-link"
-        @click="toeActions.goToAddPersonnel()"
-        :disabled="isLocked"
-      >
-        + Add new personnel category
-      </button>
-    </p>
-    <UnitToeItemTable
-      :items="aggregatedPersonnel"
-      :is-multi-mode="isMultiMode"
-      :values="personnelValues"
-      @update="updatePersonnel"
-      @delete="deletePersonnel"
-      v-model:show-add="showAddPersonnel"
-    />
+    <AccordionPanel :label="`Personnel (${aggregatedPersonnelCount})`" defaultOpen>
+      <div class="flex justify-end" v-if="aggregatedPersonnel.length || showAddPersonnel">
+        <BaseButton
+          small
+          :disabled="isMultiMode || isLocked"
+          @click="toggleAddPersonnel()"
+          >{{ showAddPersonnel ? "Hide form" : "+ Add" }}
+        </BaseButton>
+      </div>
+      <p v-if="showAddPersonnel" class="mt-2 text-right">
+        <button
+          type="button"
+          class="btn-link"
+          @click="toeActions.goToAddPersonnel()"
+          :disabled="isLocked"
+        >
+          + Add new personnel category
+        </button>
+      </p>
+      <UnitToeItemTable
+        :items="aggregatedPersonnel"
+        :is-multi-mode="isMultiMode"
+        :values="personnelValues"
+        @update="updatePersonnel"
+        @delete="deletePersonnel"
+        v-model:show-add="showAddPersonnel"
+      />
+    </AccordionPanel>
 
     <p v-if="!aggregatedEquipment.length && !aggregatedPersonnel.length">
       <span v-if="includeSubordinates"
