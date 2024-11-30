@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { EUnitEquipment, EUnitPersonnel, NUnit } from "@/types/internalModels";
-import { computed, shallowRef, triggerRef, watch } from "vue";
+import { computed, ref, shallowRef, triggerRef, watch } from "vue";
 import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { useToggle } from "@vueuse/core";
+import { useLocalStorage, useToggle } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
 import BaseButton from "@/components/BaseButton.vue";
 import TableHeader from "@/components/TableHeader.vue";
 import UnitToeItemTable from "@/modules/scenarioeditor/UnitToeItemTable.vue";
 import { useToeActions } from "@/composables/scenarioActions";
+import ToggleField from "@/components/ToggleField.vue";
 
 interface Props {
   unit: NUnit;
@@ -24,6 +25,8 @@ const {
   },
   unitActions: { walkSubUnits, updateUnitEquipment, updateUnitPersonnel },
 } = injectStrict(activeScenarioKey);
+
+const includeSubordinates = useLocalStorage("includeSubordinates", true);
 
 const { selectedUnitIds } = useSelectedItems();
 const toeActions = useToeActions();
@@ -49,19 +52,23 @@ const [showAddEquipment, toggleAddEquipment] = useToggle(false);
 const [showAddPersonnel, toggleAddPersonnel] = useToggle(false);
 
 watch(
-  () => selectedUnitIds,
+  [() => selectedUnitIds, includeSubordinates],
   () => {
     const aggEquipment: Record<string, number> = {};
     const aggPersonnel: Record<string, number> = {};
     const allUnitIds = new Set<EntityId>();
     selectedUnitIds.value.forEach((unitId) => {
-      walkSubUnits(
-        unitId,
-        (unit) => {
-          allUnitIds.add(unit.id);
-        },
-        { includeParent: true },
-      );
+      if (includeSubordinates.value) {
+        walkSubUnits(
+          unitId,
+          (unit) => {
+            allUnitIds.add(unit.id);
+          },
+          { includeParent: true },
+        );
+      } else {
+        allUnitIds.add(unitId);
+      }
     });
     allUnitIds.forEach((unitId) => {
       const unit = unitMap[unitId];
@@ -111,6 +118,10 @@ function deletePersonnel(personnelId: string) {
 </script>
 
 <template>
+  <div class="mt-4 flex justify-between">
+    <div></div>
+    <ToggleField v-model="includeSubordinates">Include subordinates</ToggleField>
+  </div>
   <div class="prose p-1">
     <TableHeader
       v-if="aggregatedEquipment.length || showAddEquipment"
@@ -170,7 +181,9 @@ function deletePersonnel(personnelId: string) {
     />
 
     <p v-if="!aggregatedEquipment.length && !aggregatedPersonnel.length">
-      No data about equipment or personnel available.
+      <span v-if="includeSubordinates"
+        >No data about equipment or personnel available</span
+      ><span v-else>This unit does not have any equipment or personnel</span>.
     </p>
     <div class="mt-4 flex justify-end gap-2">
       <BaseButton
