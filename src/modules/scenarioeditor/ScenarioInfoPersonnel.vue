@@ -74,7 +74,7 @@ function onAddSubmit() {
 </script>
 
 <template>
-  <div class="prose max-w-none">
+  <div class="prose max-w-none dark:prose-invert">
     <TableHeader description="A list of personnel categories available in this scenario.">
       <BaseButton @click="store.toggleAddPersonnel()">
         {{ store.showAddPersonnel ? "Hide form" : "Add" }}
