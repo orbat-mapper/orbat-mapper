@@ -7,6 +7,7 @@ import {
   NPersonnelData,
   NSide,
   NSideGroup,
+  NState,
   NUnit,
   NUnitAdd,
   PersonnelDataUpdate,
@@ -66,7 +67,7 @@ export interface CloneUnitOptions {
 
 let counter = 1;
 
-function cloneUnitState(state: State[]) {
+function cloneUnitState(state: NState[]) {
   const stateCopy = klona(state);
   return stateCopy.map((s) => ({ ...s, id: nanoid() }));
 }
@@ -745,13 +746,13 @@ export function useUnitManipulations(store: NewScenarioStore) {
               const { id, t, ...rest } = newState;
               Object.assign(u.state[i], rest);
             } else {
-              u.state.splice(i, 0, newState as State);
+              u.state.splice(i, 0, newState as NState);
             }
 
             return;
           }
         }
-        u.state.push(newState as State);
+        u.state.push(newState as NState);
       },
       { label: "addUnitPosition", value: unitId },
     );
@@ -770,7 +771,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitState(unitId);
   }
 
-  function setUnitState(unitId: EntityId, state: State[]) {
+  function setUnitState(unitId: EntityId, state: NState[]) {
     update((s) => {
       const unit = s.getUnitById(unitId);
       if (!unit) return;
@@ -843,14 +844,17 @@ export function useUnitManipulations(store: NewScenarioStore) {
   function expandUnit(unit: NUnit): Unit {
     return {
       ...unit,
+      state: [],
       subUnits: unit.subUnits.map((subUnitId) => expandUnit(state.unitMap[subUnitId])),
-      equipment: unit.equipment?.map(({ id, count }) => ({
+      equipment: unit.equipment?.map(({ id, count, onHand }) => ({
         name: state.equipmentMap[id].name || "",
         count,
+        onHand,
       })),
-      personnel: unit.personnel?.map(({ id, count }) => ({
+      personnel: unit.personnel?.map(({ id, count, onHand }) => ({
         name: state.personnelMap[id].name || "",
         count,
+        onHand,
       })),
     };
   }
@@ -858,6 +862,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
   function expandUnitWithSymbolOptions(unit: NUnit): Unit {
     return {
       ...unit,
+      state: [],
       symbolOptions: getCombinedSymbolOptions(unit),
       subUnits: unit.subUnits.map((subUnitId) =>
         expandUnitWithSymbolOptions(state.unitMap[subUnitId]),

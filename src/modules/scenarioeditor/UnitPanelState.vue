@@ -132,12 +132,12 @@ import {
   IconMapMarkerOffOutline,
   IconMapMarkerPath,
 } from "@iconify-prerendered/vue-mdi";
-import type { State, StateAdd } from "@/types/scenarioModels";
+import type { StateAdd } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { StateAction, UnitActions } from "@/types/constants";
-import type { NUnit } from "@/types/internalModels";
+import type { NState, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, sidcModalKey, timeModalKey } from "@/components/injects";
 import DotsMenu from "@/components/DotsMenu.vue";
@@ -210,22 +210,22 @@ const coordinateInputFormat = useLocalStorage<CoordinateInputFormat>(
   "LonLat",
 );
 
-const editedTitle = ref<State | null>();
-const editedPosition = ref<State | null>();
+const editedTitle = ref<NState | null>();
+const editedPosition = ref<NState | null>();
 const editInitialPosition = ref(false);
 
 const deleteState = (index: number) => {
   unitActions.deleteUnitStateEntry(props.unit.id, index);
 };
 
-const isActive = (s: State, index: number) => {
+const isActive = (s: NState, index: number) => {
   if (!state.value?.length) return;
   const nextUnitTimestamp = state.value[index + 1]?.t || Number.MAX_VALUE;
   const currentTime = store.state.currentTime;
   return s.t <= currentTime && nextUnitTimestamp > currentTime;
 };
 
-const changeToState = (stateEntry: State) => {
+const changeToState = (stateEntry: NState) => {
   time.setCurrentTime(stateEntry.t);
 
   if (stateEntry.location) {
@@ -276,7 +276,7 @@ async function onStateAction(index: number, action: StateAction) {
   }
 }
 
-function onStateClick(e: MouseEvent, s: State) {
+function onStateClick(e: MouseEvent, s: NState) {
   if (s.location) {
     if (selectedWaypointIds.value.has(s.id)) {
       selectedWaypointIds.value.delete(s.id);
@@ -290,12 +290,12 @@ function onStateClick(e: MouseEvent, s: State) {
 }
 
 const newTitle = ref();
-function editTitle(s: State) {
+function editTitle(s: NState) {
   nextTick(() => (editedTitle.value = s));
   newTitle.value = s.title || "";
 }
 
-function doneEdit(s: State) {
+function doneEdit(s: NState) {
   if (!editedTitle.value) return;
   const index = state.value.indexOf(s);
   editedTitle.value = null;
@@ -316,12 +316,12 @@ function cancelEdit() {
 
 const newPosition = ref();
 
-function editPosition(s: State) {
+function editPosition(s: NState) {
   nextTick(() => (editedPosition.value = s));
   newPosition.value = s.location;
 }
 
-function doneEditPosition(s: State) {
+function doneEditPosition(s: NState) {
   if (!editedPosition.value) return;
   const index = state.value.indexOf(s);
   editedPosition.value = null;

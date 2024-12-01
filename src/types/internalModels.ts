@@ -7,6 +7,7 @@ import {
   Side,
   SideGroup,
   SpeedUnitOfMeasure,
+  State,
   Unit,
   UnitEquipment,
   UnitPersonnel,
@@ -27,10 +28,14 @@ import {
 import { Optional } from "@/types/helpers";
 
 export interface NUnit
-  extends Omit<Unit, "subUnits" | "_pid" | "_gid" | "_sid" | "personnel" | "equipment"> {
+  extends Omit<
+    Unit,
+    "subUnits" | "_pid" | "_gid" | "_sid" | "personnel" | "equipment" | "state"
+  > {
   subUnits: EntityId[];
   equipment?: NUnitEquipment[];
   personnel?: NUnitPersonnel[];
+  state?: NState[];
   _pid: EntityId;
   _gid: EntityId;
   _sid: EntityId;
@@ -123,6 +128,19 @@ export interface NPersonnelData extends PersonnelData {
 
 export interface NUnitStatus extends UnitStatus {
   id: string;
+}
+
+export interface NState extends Omit<State, "update" | "diff"> {
+  // an update replaces the current state with the new state
+  update?: {
+    equipment?: NUnitEquipment[];
+    personnel?: NUnitPersonnel[];
+  };
+  // a diff is applied to the current state to update it
+  diff?: {
+    equipment?: NUnitEquipment[];
+    personnel?: NUnitPersonnel[];
+  };
 }
 
 export interface UnitStatusUpdate extends Partial<Omit<NUnitStatus, "id">> {}

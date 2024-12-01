@@ -132,12 +132,13 @@ resetAddForm();
               sortAscending ? "&darr;" : "&uarr;"
             }}</span>
           </th>
-          <th class="pr-8 text-right" @click="toggleSort('count')">
+          <th class="whitespace-nowrap pr-4 text-right" @click="toggleSort('count')">
             Qty.
             <span v-if="sortKey === 'count'">{{
               sortAscending ? "&darr;" : "&uarr;"
             }}</span>
           </th>
+          <th class="pr-4 text-right">Avail.</th>
           <th></th>
         </tr>
       </thead>
@@ -162,6 +163,7 @@ resetAddForm();
           <template v-else>
             <td class="pl-2" :title="item.description">{{ item.name }}</td>
             <td class="pr-6 text-right tabular-nums">{{ item.count }}</td>
+            <td class="pr-6 text-right tabular-nums">{{ item.onHand }}</td>
             <td class="not-prose w-6">
               <DotsMenu
                 :items="itemActions"

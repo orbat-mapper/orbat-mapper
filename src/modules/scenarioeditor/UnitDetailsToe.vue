@@ -24,6 +24,7 @@ const {
     state: { equipmentMap, personnelMap, unitMap },
   },
   unitActions: { walkSubUnits, updateUnitEquipment, updateUnitPersonnel },
+  time,
 } = injectStrict(activeScenarioKey);
 
 const includeSubordinates = useLocalStorage("includeSubordinates", true);
@@ -52,9 +53,9 @@ const [showAddEquipment, toggleAddEquipment] = useToggle(false);
 const [showAddPersonnel, toggleAddPersonnel] = useToggle(false);
 
 watch(
-  [() => selectedUnitIds, includeSubordinates],
+  [() => selectedUnitIds, includeSubordinates, time.scenarioTime],
   () => {
-    const aggEquipment: Record<string, number> = {};
+    const aggEquipment: Record<string, { count: number; onHand: number }> = {};
     const aggPersonnel: Record<string, number> = {};
     const allUnitIds = new Set<EntityId>();
     selectedUnitIds.value.forEach((unitId) => {
@@ -72,20 +73,27 @@ watch(
     });
     allUnitIds.forEach((unitId) => {
       const unit = unitMap[unitId];
-      unit.equipment?.forEach((e) => {
-        aggEquipment[e.id] = (aggEquipment[e.id] ?? 0) + e.count;
+      const equipment = unit._state?.equipment ?? unit.equipment ?? [];
+      const personnel = unit._state?.personnel ?? unit.personnel ?? [];
+      equipment?.forEach((e) => {
+        const count = (aggEquipment[e.id]?.count ?? 0) + e.count;
+        const onHand = (aggEquipment[e.id]?.onHand ?? 0) + (e?.onHand ?? e.count);
+        aggEquipment[e.id] = { count, onHand };
       });
-      unit.personnel?.forEach((p) => {
+      personnel?.forEach((p) => {
         aggPersonnel[p.id] = (aggPersonnel[p.id] ?? 0) + p.count;
       });
     });
 
-    aggregatedEquipment.value = Object.entries(aggEquipment).map(([id, count]) => ({
-      id,
-      name: equipmentMap[id]?.name ?? id,
-      description: equipmentMap[id]?.description ?? "",
-      count,
-    }));
+    aggregatedEquipment.value = Object.entries(aggEquipment).map(
+      ([id, { count, onHand }]) => ({
+        id,
+        name: equipmentMap[id]?.name ?? id,
+        description: equipmentMap[id]?.description ?? "",
+        count,
+        onHand,
+      }),
+    );
     aggregatedPersonnel.value = Object.entries(aggPersonnel).map(([id, count]) => ({
       id,
       name: personnelMap[id]?.name ?? id,
@@ -122,7 +130,7 @@ function deletePersonnel(personnelId: string) {
     <div></div>
     <ToggleField v-model="includeSubordinates">Include subordinates</ToggleField>
   </div>
-  <div class="prose p-1">
+  <div class="prose p-1 dark:prose-invert">
     <AccordionPanel :label="`Equipment (${aggregatedEquipmentCount})`" defaultOpen>
       <div class="flex justify-end">
         <BaseButton

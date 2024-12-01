@@ -1,7 +1,7 @@
 import { Unit, type UnitStatus } from "@/types/scenarioModels";
 import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
-import { NUnitAdd, NUnitEquipment, NUnitPersonnel } from "@/types/internalModels";
+import { NState, NUnitAdd, NUnitEquipment, NUnitPersonnel } from "@/types/internalModels";
 import { nanoid } from "@/utils";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
@@ -65,17 +65,17 @@ export function addUnitHierarchy(
       const equipment: NUnitEquipment[] = [];
       const personnel: NUnitPersonnel[] = [];
       const rangeRings: RangeRing[] = [];
-      unit.equipment?.forEach(({ name, count }) => {
+      unit.equipment?.forEach(({ name, count, onHand }) => {
         const { id } =
           s.equipmentMap[name] ||
           unitActions.addEquipment({ id: name, name }, { noUndo, s });
-        equipment.push({ id, count });
+        equipment.push({ id, count, onHand });
       });
-      unit.personnel?.forEach(({ name, count }) => {
+      unit.personnel?.forEach(({ name, count, onHand }) => {
         const { id } =
           s.personnelMap[name] ||
           unitActions.addPersonnel({ id: name, name }, { noUndo, s });
-        personnel.push({ id: name, count });
+        personnel.push({ id, count, onHand });
       });
 
       unit.rangeRings?.forEach((rr) => {
@@ -108,6 +108,39 @@ export function addUnitHierarchy(
           s.status = tempUnitStatusIdMap[s.status!] || addUnitStatus({ name: s.status! });
         });
 
+      const internalUnitState: NState[] = unitState.map((s) => {
+        const { update, diff, ...rest } = s;
+        const newUpdate = update
+          ? {
+              equipment: update.equipment?.map((e) => {
+                const { name, ...rest } = e;
+                return { id: name, ...rest };
+              }),
+              personnel: update.personnel?.map((p) => {
+                const { name, ...rest } = p;
+                return { id: name, ...rest };
+              }),
+            }
+          : undefined;
+        const newDiff = diff
+          ? {
+              equipment: diff.equipment?.map((e) => {
+                const { name, ...rest } = e;
+                return { id: name, ...rest };
+              }),
+              personnel: diff.personnel?.map((p) => {
+                const { name, ...rest } = p;
+                return { id: name, ...rest };
+              }),
+            }
+          : undefined;
+        return {
+          ...rest,
+          update: newUpdate,
+          diff: newDiff,
+        };
+      });
+
       let status = undefined;
       if (unit.status) {
         status = tempUnitStatusIdMap[unit.status] || addUnitStatus({ name: unit.status });
@@ -127,7 +160,7 @@ export function addUnitHierarchy(
         subUnits: [],
         equipment,
         personnel,
-        state: unitState,
+        state: internalUnitState,
         rangeRings: rangeRings,
         status,
       };

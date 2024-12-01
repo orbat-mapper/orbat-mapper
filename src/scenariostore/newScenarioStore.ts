@@ -26,6 +26,7 @@ import type {
   NScenarioLayer,
   NSide,
   NSideGroup,
+  NState,
   NUnit,
   NUnitEquipment,
   NUnitPersonnel,
@@ -140,33 +141,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     side: Side,
   ) {
     const unit = klona(unit1);
-    if (!unit.state) {
-      unit.state = [];
-    } else {
-      unit.state = unit.state.map(convertStateToInternalFormat);
-    }
-    // unit.state
-    //   ?.filter((s) => s.title)
-    //   .forEach((s) => {
-    //     const { t: startTime, subTitle, description } = s;
-    //     const nEvent: NScenarioEvent = {
-    //       id: s.id || nanoid(),
-    //       startTime,
-    //       title: s.title || "NN",
-    //       subTitle,
-    //       description,
-    //       _type: "unit",
-    //       _pid: unit.id,
-    //       //where: s.where,
-    //     };
-    //     eventMap[nEvent.id] = nEvent;
-    //   });
-    unit.state
-      ?.filter((s) => s.status)
-      .forEach((s) => {
-        s.status = tempUnitStatusIdMap[s.status!] || addUnitStatus({ name: s.status! });
-      });
-    unit._state = null;
+
     if (!unit.id) {
       unit.id = nanoid();
     }
@@ -205,12 +180,71 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
         tempUnitStatusIdMap[unit.status] || addUnitStatus({ name: unit.status });
     }
 
+    // convert state as last step since it may reference other entities
+    if (!unit.state) {
+      unit.state = [];
+    } else {
+      unit.state = unit.state.map(convertStateToInternalFormat);
+    }
+    // unit.state
+    //   ?.filter((s) => s.title)
+    //   .forEach((s) => {
+    //     const { t: startTime, subTitle, description } = s;
+    //     const nEvent: NScenarioEvent = {
+    //       id: s.id || nanoid(),
+    //       startTime,
+    //       title: s.title || "NN",
+    //       subTitle,
+    //       description,
+    //       _type: "unit",
+    //       _pid: unit.id,
+    //       //where: s.where,
+    //     };
+    //     eventMap[nEvent.id] = nEvent;
+    //   });
+    unit.state
+      ?.filter((s) => s.status)
+      .forEach((s) => {
+        s.status = tempUnitStatusIdMap[s.status!] || addUnitStatus({ name: s.status! });
+      });
+    unit._state = null;
+
+    const newState: NState[] = unit.state.map((s) => {
+      const { update, diff, ...rest } = s;
+      const newUpdate = update
+        ? {
+            equipment: update.equipment?.map((e) => {
+              const { name, ...rest } = e;
+              return { id: tempEquipmentIdMap[name] ?? name, ...rest };
+            }),
+            personnel: update.personnel?.map((p) => {
+              const { name, ...rest } = p;
+              return { id: tempPersonnelIdMap[name] ?? name, ...rest };
+            }),
+          }
+        : undefined;
+      const newDiff = diff
+        ? {
+            equipment: diff.equipment?.map((e) => {
+              const { name, ...rest } = e;
+              return { id: tempEquipmentIdMap[name] ?? name, ...rest };
+            }),
+            personnel: diff.personnel?.map((p) => {
+              const { name, ...rest } = p;
+              return { id: tempPersonnelIdMap[name] ?? name, ...rest };
+            }),
+          }
+        : undefined;
+      return { ...rest, update: newUpdate, diff: newDiff };
+    });
+
     unitMap[unit1.id] = {
       ...unit,
       subUnits: unit.subUnits?.map((u) => u.id) || [],
       equipment,
       personnel,
       rangeRings,
+      state: newState,
     } as NUnit;
   }
 

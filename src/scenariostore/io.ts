@@ -7,6 +7,7 @@ import {
   ScenarioInfo,
   Side,
   SideGroup,
+  State,
   SymbologyStandard,
   Unit,
   UnitStatus,
@@ -35,6 +36,7 @@ import {
   SCENARIO_FILE_VERSION,
 } from "@/config/constants";
 import { useIndexedDb } from "@/scenariostore/localdb";
+import { klona } from "klona";
 
 export interface CreateEmptyScenarioOptions {
   id?: string;
@@ -114,14 +116,14 @@ export function serializeUnit(
 ): Unit {
   const { newId = false, includeSubUnits = true } = options;
   const nUnit = scnState.unitMap[unitId];
-  let equipment = nUnit.equipment?.map(({ id, count }) => {
+  let equipment = nUnit.equipment?.map(({ id, count, onHand }) => {
     const { name } = scnState.equipmentMap[id];
-    return { name, count };
+    return { name, count, onHand };
   });
   if (equipment?.length === 0) equipment = undefined;
-  let personnel = nUnit.personnel?.map(({ id, count }) => {
+  let personnel = nUnit.personnel?.map(({ id, count, onHand }) => {
     const { name } = scnState.personnelMap[id];
-    return { name, count };
+    return { name, count, onHand };
   });
   if (personnel?.length === 0) personnel = undefined;
   let rangeRings = nUnit.rangeRings?.map(({ group, ...rest }) => {
@@ -142,10 +144,45 @@ export function serializeUnit(
     rangeRings,
     state: state
       ? state.map((s) => {
-          if (s.status) {
-            return { ...s, status: scnState.unitStatusMap[s.status]?.name };
+          let diffEquipment, diffPersonnel;
+          const c = klona(s) as State;
+
+          if (s.diff) {
+            if (s.diff.equipment) {
+              diffEquipment = s.diff.equipment.map(({ id, count, onHand }) => {
+                return { name: scnState.equipmentMap[id]?.name ?? id, count, onHand };
+              });
+            }
+
+            if (s.diff?.personnel) {
+              diffPersonnel = s.diff.personnel.map(({ id, count, onHand }) => {
+                return { name: scnState.personnelMap[id]?.name ?? id, count, onHand };
+              });
+            }
+            c.diff = { equipment: diffEquipment, personnel: diffPersonnel };
           }
-          return s;
+
+          if (s.update) {
+            if (s.update.equipment) {
+              c.update = {
+                equipment: s.update.equipment.map(({ id, count, onHand }) => {
+                  return { name: scnState.equipmentMap[id]?.name ?? id, count, onHand };
+                }),
+              };
+            }
+            if (s.update.personnel) {
+              c.update = {
+                personnel: s.update.personnel.map(({ id, count, onHand }) => {
+                  return { name: scnState.personnelMap[id]?.name ?? id, count, onHand };
+                }),
+              };
+            }
+          }
+
+          if (s.status) {
+            c.status = scnState.unitStatusMap[s.status]?.name;
+          }
+          return c;
         })
       : undefined,
   };

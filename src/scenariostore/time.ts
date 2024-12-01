@@ -15,10 +15,7 @@ import { EntityId } from "@/types/base";
 import { klona } from "klona";
 import { createEventHook } from "@vueuse/core";
 import { invalidateUnitStyle } from "@/geo/unitStyles";
-import {
-  CurrentScenarioFeatureState,
-  ScenarioFeatureState,
-} from "@/types/scenarioGeoModels";
+import { CurrentScenarioFeatureState } from "@/types/scenarioGeoModels";
 import { nanoid } from "@/utils";
 
 export type GoToScenarioEventOptions = {
@@ -30,12 +27,14 @@ export type GoToScenarioEventEvent = {
 };
 
 export function createInitialState(unit: NUnit): CurrentState | null {
-  if (unit.location)
+  if (unit.location || unit.equipment?.length || unit.personnel?.length)
     return {
       t: Number.MIN_SAFE_INTEGER,
       location: unit.location,
       type: "initial",
       sidc: unit.sidc,
+      equipment: klona(unit.equipment),
+      personnel: klona(unit.personnel),
     };
   return null;
 }
@@ -63,7 +62,52 @@ export function useScenarioTime(store: NewScenarioStore) {
       let currentState = createInitialState(unit);
       for (const s of unit.state) {
         if (s.t <= timestamp) {
-          currentState = { ...currentState, ...s };
+          const { diff, update, ...rest } = s;
+          if (update?.equipment && currentState?.equipment) {
+            for (const e of update.equipment) {
+              const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
+              if (idx !== -1) {
+                currentState.equipment[idx] = { ...currentState.equipment[idx], ...e };
+              } else {
+                console.warn("Equipment not found", e);
+              }
+            }
+          }
+          if (update?.personnel && currentState?.personnel) {
+            for (const p of update.personnel) {
+              const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
+              if (idx !== -1) {
+                currentState.personnel[idx] = { ...currentState.personnel[idx], ...p };
+              } else {
+                console.warn("Personnel not found", p);
+              }
+            }
+          }
+          if (diff?.equipment && currentState?.equipment) {
+            for (const e of diff.equipment) {
+              const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
+              if (idx !== -1) {
+                const onHand =
+                  (currentState.equipment[idx]?.onHand || 0) + (e.onHand || 0);
+                currentState.equipment[idx] = { ...currentState.equipment[idx], onHand };
+              } else {
+                console.warn("Equipment not found", e);
+              }
+            }
+          }
+          if (diff?.personnel && currentState?.personnel) {
+            for (const p of diff.personnel) {
+              const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
+              if (idx !== -1) {
+                const onHand =
+                  (currentState.personnel[idx]?.onHand || 0) + (p.onHand || 0);
+                currentState.personnel[idx] = { ...currentState.personnel[idx], onHand };
+              } else {
+                console.warn("Personnel not found", p);
+              }
+            }
+          }
+          currentState = { ...currentState, ...rest };
         } else {
           if (
             currentState?.location &&
