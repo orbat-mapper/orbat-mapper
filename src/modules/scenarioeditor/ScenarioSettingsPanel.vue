@@ -83,14 +83,14 @@ function showScenarioInfo() {
       :key="scenarioInfoPanelStore.tabIndex + 20"
       :defaultOpen="scenarioInfoPanelStore.tabIndex === 1"
     >
-      <ScenarioInfoEquipment />
+      <ScenarioInfoEquipment class="relative" />
     </AccordionPanel>
     <AccordionPanel
       label="Personnel categories"
       :key="scenarioInfoPanelStore.tabIndex + 40"
       :defaultOpen="scenarioInfoPanelStore.tabIndex === 2"
     >
-      <ScenarioInfoPersonnel />
+      <ScenarioInfoPersonnel class="relative" />
     </AccordionPanel>
     <AccordionPanel
       label="Sensor groups"
