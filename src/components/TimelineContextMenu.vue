@@ -20,11 +20,14 @@ import {
   IconZoomOutOutline,
   IconAddCircleOutline as AddEventIcon,
 } from "@iconify-prerendered/vue-mdi";
+import { useUiStore } from "@/stores/uiStore";
 
 const props = defineProps<{ formattedHoveredDate: string }>();
 const emit = defineEmits<{
   action: [value: string];
 }>();
+
+const uiSettings = useUiStore();
 
 function onContextMenuUpdate(open: boolean) {}
 
@@ -55,6 +58,9 @@ function onContextMenu(e: MouseEvent) {}
         <AddEventIcon class="mr-2 size-5" />
         Add scenario event
       </ContextMenuItem>
+      <ContextMenuItem inset @select="uiSettings.showTimeline = false"
+        ><span class="ml-1">Hide timeline</span></ContextMenuItem
+      >
     </ContextMenuContent>
   </ContextMenu>
 </template>
