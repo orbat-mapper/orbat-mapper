@@ -18,7 +18,7 @@ export const useUiStore = defineStore("ui", {
     searchGeoMode: false,
     mapLayersPanelOpen: true,
     showToolbar: true,
-    showTimeline: useLocalStorage("showTimeline", false),
+    showTimeline: useLocalStorage("showTimeline", true),
     showLeftPanel: true,
     showOrbatBreadcrumbs: useLocalStorage("showOrbatBreadcrumbs", true),
   }),
