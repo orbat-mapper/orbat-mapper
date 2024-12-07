@@ -104,6 +104,10 @@ function onAddItemSubmit() {
   nextTick(() => resetAddForm());
 }
 
+function asPercent(item: EUnitEquipment | EUnitPersonnel) {
+  return Math.floor(((item.onHand ?? 1) / item.count) * 100) + "%";
+}
+
 resetAddForm();
 </script>
 
@@ -132,13 +136,18 @@ resetAddForm();
               sortAscending ? "&darr;" : "&uarr;"
             }}</span>
           </th>
-          <th class="whitespace-nowrap pr-4 text-right" @click="toggleSort('count')">
-            Qty.
+          <th
+            class="whitespace-nowrap pr-4 text-right"
+            @click="toggleSort('count')"
+            title="Assigned"
+          >
+            Assigned
             <span v-if="sortKey === 'count'">{{
               sortAscending ? "&darr;" : "&uarr;"
             }}</span>
           </th>
           <th class="pr-4 text-right">Avail.</th>
+          <th class="pr-4 text-right">%</th>
           <th></th>
         </tr>
       </thead>
@@ -164,6 +173,7 @@ resetAddForm();
             <td class="pl-2" :title="item.description">{{ item.name }}</td>
             <td class="pr-6 text-right tabular-nums">{{ item.count }}</td>
             <td class="pr-6 text-right tabular-nums">{{ item.onHand }}</td>
+            <td class="pr-6 text-right tabular-nums">{{ asPercent(item) }}</td>
             <td class="not-prose w-6">
               <DotsMenu
                 :items="itemActions"
