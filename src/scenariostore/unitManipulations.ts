@@ -1139,6 +1139,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         }
       }
     });
+    updateUnitState(unitId);
   }
 
   function updateUnitPersonnel(
@@ -1161,6 +1162,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         }
       }
     });
+    updateUnitState(unitId);
   }
 
   function isUnitLocked(unitId: EntityId, { excludeUnit = false } = {}): boolean {
@@ -1254,5 +1256,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitProperties,
     isUnitLocked,
     isUnitHidden,
+    updateUnitState,
   };
 }

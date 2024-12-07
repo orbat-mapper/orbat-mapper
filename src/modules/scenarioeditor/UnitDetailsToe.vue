@@ -22,8 +22,14 @@ const props = defineProps<Props>();
 const {
   store: {
     state: { equipmentMap, personnelMap, unitMap },
+    onUndoRedo,
   },
-  unitActions: { walkSubUnits, updateUnitEquipment, updateUnitPersonnel },
+  unitActions: {
+    walkSubUnits,
+    updateUnitEquipment,
+    updateUnitPersonnel,
+    updateUnitState,
+  },
   time,
 } = injectStrict(activeScenarioKey);
 
@@ -52,8 +58,14 @@ const personnelValues = computed(() => {
 const [showAddEquipment, toggleAddEquipment] = useToggle(false);
 const [showAddPersonnel, toggleAddPersonnel] = useToggle(false);
 
+onUndoRedo((param) => {
+  // Update the current state of the selected units in case equipment or personnel have changed
+  selectedUnitIds.value.forEach((unitId) => updateUnitState(unitId));
+  triggerRef(selectedUnitIds);
+});
+
 watch(
-  [() => selectedUnitIds, includeSubordinates, time.scenarioTime],
+  [selectedUnitIds, includeSubordinates, time.scenarioTime],
   () => {
     const aggEquipment: Record<string, { count: number; onHand: number }> = {};
     const aggPersonnel: Record<string, number> = {};
