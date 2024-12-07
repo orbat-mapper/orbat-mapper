@@ -8,6 +8,9 @@ import {
   Scenario,
   SideGroup,
   Unit,
+  UnitEquipment,
+  UnitPersonnel,
+  UnitStatus,
   UnitSymbolOptions,
 } from "@/types/scenarioModels";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
@@ -45,13 +48,18 @@ const store = useImportStore();
 
 const { state: targetState } = scnStore;
 
-const importMode = ref<"side" | "group" | "units" | "layers">("side");
+const importMode = ref<
+  "side" | "group" | "units" | "layers" | "statuses" | "equipment" | "personnel"
+>("side");
 const unitImportMode = ref<"units-only" | "units-and-state" | "state-only">("state-only");
 const stateMergeMode = ref<"replace" | "add_new">("replace");
 const sideMergeMode = ref<"replace" | "add_new">("replace");
 const groupMergeMode = ref<"replace" | "add_new">("add_new");
 const selectUnits = ref(false);
 const selectedItems = ref<(Unit | SideGroup)[]>([]);
+const selectedEquipment = ref<UnitEquipment[]>([]);
+const selectedPersonnel = ref<UnitPersonnel[]>([]);
+const selectedStatuses = ref<UnitStatus[]>([]);
 
 const importedState = computed(() => {
   return prepareScenario(props.data);
@@ -135,6 +143,22 @@ const currentData = computed(() => {
   const sg = s?.groups.find((g) => g.id === selectedSourceSideGroupId.value);
   return sg?.subUnits ?? [];
 });
+
+const currentEquipment = computed(() => {
+  return props.data.equipment ?? [];
+});
+
+const currentPersonnel = computed(() => {
+  return props.data.personnel ?? [];
+});
+
+const currentUnitStatuses = computed(() => {
+  return props.data.settings?.statuses ?? [];
+});
+
+const isSettingsImport = computed(() =>
+  ["statuses", "equipment", "personnel"].includes(importMode.value),
+);
 
 const hasExistingUnits = computed(() => {
   return selectedItems.value.some((item) => item.id in targetState.unitMap);
@@ -244,6 +268,48 @@ const computedColumns = computed((): (ColumnDef<Unit> | false)[] => {
   ];
 });
 
+const equipmentColumns: ColumnDef<UnitEquipment>[] = [
+  {
+    accessorFn: (f) => f.name,
+    id: "name",
+    header: "Name",
+    size: 400,
+  },
+  {
+    accessorFn: (f) => f.description,
+    id: "description",
+    header: "Description",
+  },
+];
+
+const personnelColumns: ColumnDef<UnitPersonnel>[] = [
+  {
+    accessorFn: (f) => f.name,
+    id: "name",
+    header: "Name",
+    size: 400,
+  },
+  {
+    accessorFn: (f) => f.description,
+    id: "description",
+    header: "Description",
+  },
+];
+
+const statusColumns: ColumnDef<UnitStatus>[] = [
+  {
+    accessorFn: (f) => f.name,
+    id: "name",
+    header: "Name",
+    size: 400,
+  },
+  {
+    accessorFn: (f) => f.description,
+    id: "description",
+    header: "Description",
+  },
+];
+
 // check that the item is a unit
 function isUnit(item: Unit | SideGroup): item is Unit {
   return "sidc" in item;
@@ -251,8 +317,13 @@ function isUnit(item: Unit | SideGroup): item is Unit {
 
 async function onFormSubmit(e: Event) {
   const selectedUnitIds = new Set(selectedItems.value.filter(isUnit).map((u) => u.id));
-
-  if (unitImportMode.value === "state-only") {
+  if (importMode.value === "equipment") {
+    doEquipmentImport(selectedEquipment.value);
+  } else if (importMode.value === "personnel") {
+    doPersonnelImport(selectedPersonnel.value);
+  } else if (importMode.value === "statuses") {
+    doStatusImport(selectedStatuses.value);
+  } else if (unitImportMode.value === "state-only") {
     doStateOnlyImport(selectedUnitIds);
   } else if (importMode.value === "side") {
     doSideImport(selectedSourceSideId.value);
@@ -268,6 +339,48 @@ async function onFormSubmit(e: Event) {
   });
 
   if (!store.keepOpen) emit("loaded");
+}
+
+function doEquipmentImport(selectedEquipment: UnitEquipment[]) {
+  const nameToIdMap = new Map(
+    Object.values(targetState.equipmentMap).map((e) => [e.name, e.id]),
+  );
+  scnStore.groupUpdate(() => {
+    for (const equipment of selectedEquipment) {
+      if (nameToIdMap.has(equipment.name)) {
+        continue;
+      }
+      unitActions.addEquipment(equipment);
+    }
+  });
+}
+
+function doPersonnelImport(selectedPersonnel: UnitPersonnel[]) {
+  const nameToIdMap = new Map(
+    Object.values(targetState.personnelMap).map((e) => [e.name, e.id]),
+  );
+  scnStore.groupUpdate(() => {
+    for (const personnel of selectedPersonnel) {
+      if (nameToIdMap.has(personnel.name)) {
+        continue;
+      }
+      unitActions.addPersonnel(personnel);
+    }
+  });
+}
+
+function doStatusImport(selectedStatuses: UnitStatus[]) {
+  const nameToIdMap = new Map(
+    Object.values(targetState.unitStatusMap).map((e) => [e.name, e.id]),
+  );
+  scnStore.groupUpdate(() => {
+    for (const status of selectedStatuses) {
+      if (nameToIdMap.has(status.name)) {
+        continue;
+      }
+      unitActions.addUnitStatus(status);
+    }
+  });
 }
 
 function doStateOnlyImport(selectedUnitIds: Set<string>) {
@@ -405,6 +518,13 @@ function doGroupImport(importedGroupId: string) {
         <MRadioGroup class="flex w-full gap-5">
           <InputRadio v-model="importMode" value="side">Side</InputRadio>
           <InputRadio v-model="importMode" value="group">Group</InputRadio>
+          <InputRadio v-model="importMode" value="equipment"
+            >Equipment categories</InputRadio
+          >
+          <InputRadio v-model="importMode" value="personnel"
+            >Personnel categories</InputRadio
+          >
+          <InputRadio v-model="importMode" value="statuses">Unit statuses</InputRadio>
           <!--          <InputRadio v-model="importMode" value="units" disabled>Units</InputRadio>-->
           <!--          <InputRadio v-model="importMode" value="features" disabled>Layers</InputRadio>-->
         </MRadioGroup>
@@ -416,128 +536,169 @@ function doGroupImport(importedGroupId: string) {
           >Select individual units</ToggleField
         >
       </div>
-      <fieldset class="mt-4 flex w-full flex-col gap-4 sm:flex-row sm:items-center">
-        <SimpleSelect
-          label="Side"
-          :items="importedSides"
-          v-model="selectedSourceSideId"
-          class="flex-auto"
-        />
-        <SimpleSelect
-          v-if="importMode === 'group' || importMode === 'units'"
-          label="Side group"
-          :items="importedSideGroups"
-          v-model="selectedSourceSideGroupId"
-          class="flex-auto"
-        />
-        <div v-else class="flex-auto self-end">
-          <p v-if="hasExistingSide">This side exists in the target scenario</p>
-        </div>
-      </fieldset>
+      <template v-if="!isSettingsImport">
+        <fieldset class="mt-4 flex w-full flex-col gap-4 sm:flex-row sm:items-center">
+          <SimpleSelect
+            label="Side"
+            :items="importedSides"
+            v-model="selectedSourceSideId"
+            class="flex-auto"
+          />
+          <SimpleSelect
+            v-if="importMode === 'group' || importMode === 'units'"
+            label="Side group"
+            :items="importedSideGroups"
+            v-model="selectedSourceSideGroupId"
+            class="flex-auto"
+          />
+          <div v-else class="flex-auto self-end">
+            <p v-if="hasExistingSide">This side exists in the target scenario</p>
+          </div>
+        </fieldset>
 
-      <DataGrid
-        :key="selectedSourceSideGroupId"
-        :data="currentData"
-        :columns="computedColumns"
-        :row-height="40"
-        class="mt-4 max-h-[40vh]"
-        :get-sub-rows="(row) => row.subUnits ?? row.groups"
-        :select="selectUnits"
-        select-all
-        v-model:selected="selectedItems"
-        no-indeterminate
-      />
-
-      <fieldset>
-        <InlineAlertWarning v-if="hasExistingUnits"
-          >There are units in the source scenario that exists in the target
-          scenario.</InlineAlertWarning
-        >
-        <InlineAlertWarning v-if="importMode === 'group' && hasExistingSideGroup"
-          >The selected group exists in the target scenario.</InlineAlertWarning
-        >
-        <PanelSubHeading class="mt-4">What do you want to import?</PanelSubHeading>
-        <MRadioGroup class="mt-2 flex w-full items-center gap-5">
-          <InputRadio v-model="unitImportMode" :value="'units-only'"
-            >Only units</InputRadio
-          >
-          <InputRadio v-model="unitImportMode" value="units-and-state"
-            >Units and state</InputRadio
-          >
-          <InputRadio v-if="hasExistingUnits" v-model="unitImportMode" value="state-only"
-            >State (only for existing units)</InputRadio
-          ><span v-else class="text-sm text-gray-500"
-            >There are no source units that exists in the target scenario.</span
-          >
-        </MRadioGroup>
-      </fieldset>
-
-      <SimpleDivider class="mt-4">Target</SimpleDivider>
-      <fieldset
-        v-if="hasExistingSide && importMode === 'side' && unitImportMode !== 'state-only'"
-      >
-        <PanelSubHeading class="mt-4"
-          >The side you want to import already exists. What do you want to
-          do?</PanelSubHeading
-        >
-        <MRadioGroup class="mt-2 flex w-full gap-5">
-          <InputRadio v-model="sideMergeMode" value="replace"
-            >Overwrite existing side</InputRadio
-          >
-          <InputRadio v-model="sideMergeMode" value="add_new"
-            >Import as new side</InputRadio
-          >
-        </MRadioGroup>
-      </fieldset>
-      <fieldset
-        v-if="
-          hasExistingSideGroup &&
-          importMode === 'group' &&
-          unitImportMode !== 'state-only'
-        "
-      >
-        <PanelSubHeading class="mt-4"
-          >The group you want to import already exists. What do you want to
-          do?</PanelSubHeading
-        >
-        <MRadioGroup class="mt-2 flex w-full gap-5">
-          <InputRadio v-model="groupMergeMode" value="replace"
-            >Overwrite existing group</InputRadio
-          >
-          <InputRadio v-model="groupMergeMode" value="add_new"
-            >Import as new group</InputRadio
-          >
-        </MRadioGroup>
-      </fieldset>
-      <fieldset
-        v-if="
-          importMode === 'group' &&
-          unitImportMode !== 'state-only' &&
-          groupMergeMode !== 'replace'
-        "
-        class="mt-4"
-      >
-        <SimpleSelect
-          label="Target side"
-          :items="targetSides"
-          v-model="selectedTargetSideId"
-          class=""
+        <DataGrid
+          :key="selectedSourceSideGroupId"
+          :data="currentData"
+          :columns="computedColumns"
+          :row-height="40"
+          class="mt-4 max-h-[40vh]"
+          :get-sub-rows="(row) => row.subUnits ?? row.groups"
+          :select="selectUnits"
+          select-all
+          v-model:selected="selectedItems"
+          no-indeterminate
         />
-      </fieldset>
-      <template
-        v-if="hasExistingUnits && wantsToImportState && unitImportMode == 'state-only'"
-      >
-        <PanelSubHeading class="mt-4"
-          >State import options for existing units</PanelSubHeading
+
+        <fieldset>
+          <InlineAlertWarning v-if="hasExistingUnits"
+            >There are units in the source scenario that exists in the target scenario.
+          </InlineAlertWarning>
+          <InlineAlertWarning v-if="importMode === 'group' && hasExistingSideGroup"
+            >The selected group exists in the target scenario.
+          </InlineAlertWarning>
+          <PanelSubHeading class="mt-4">What do you want to import?</PanelSubHeading>
+          <MRadioGroup class="mt-2 flex w-full items-center gap-5">
+            <InputRadio v-model="unitImportMode" :value="'units-only'"
+              >Only units
+            </InputRadio>
+            <InputRadio v-model="unitImportMode" value="units-and-state"
+              >Units and state
+            </InputRadio>
+            <InputRadio
+              v-if="hasExistingUnits"
+              v-model="unitImportMode"
+              value="state-only"
+              >State (only for existing units)
+            </InputRadio>
+            <span v-else class="text-sm text-gray-500"
+              >There are no source units that exists in the target scenario.</span
+            >
+          </MRadioGroup>
+        </fieldset>
+
+        <SimpleDivider class="mt-4">Target</SimpleDivider>
+        <fieldset
+          v-if="
+            hasExistingSide && importMode === 'side' && unitImportMode !== 'state-only'
+          "
         >
-        <MRadioGroup class="mt-2 flex w-full gap-5">
-          <InputRadio v-model="stateMergeMode" value="replace"
-            >Overwrite existing state</InputRadio
-          >
-          <InputRadio v-model="stateMergeMode" value="add_new"
-            >Add only new state</InputRadio
-          >
-        </MRadioGroup>
+          <PanelSubHeading class="mt-4"
+            >The side you want to import already exists. What do you want to do?
+          </PanelSubHeading>
+          <MRadioGroup class="mt-2 flex w-full gap-5">
+            <InputRadio v-model="sideMergeMode" value="replace"
+              >Overwrite existing side
+            </InputRadio>
+            <InputRadio v-model="sideMergeMode" value="add_new"
+              >Import as new side
+            </InputRadio>
+          </MRadioGroup>
+        </fieldset>
+        <fieldset
+          v-if="
+            hasExistingSideGroup &&
+            importMode === 'group' &&
+            unitImportMode !== 'state-only'
+          "
+        >
+          <PanelSubHeading class="mt-4"
+            >The group you want to import already exists. What do you want to do?
+          </PanelSubHeading>
+          <MRadioGroup class="mt-2 flex w-full gap-5">
+            <InputRadio v-model="groupMergeMode" value="replace"
+              >Overwrite existing group
+            </InputRadio>
+            <InputRadio v-model="groupMergeMode" value="add_new"
+              >Import as new group
+            </InputRadio>
+          </MRadioGroup>
+        </fieldset>
+        <fieldset
+          v-if="
+            importMode === 'group' &&
+            unitImportMode !== 'state-only' &&
+            groupMergeMode !== 'replace'
+          "
+          class="mt-4"
+        >
+          <SimpleSelect
+            label="Target side"
+            :items="targetSides"
+            v-model="selectedTargetSideId"
+            class=""
+          />
+        </fieldset>
+        <template
+          v-if="hasExistingUnits && wantsToImportState && unitImportMode == 'state-only'"
+        >
+          <PanelSubHeading class="mt-4"
+            >State import options for existing units
+          </PanelSubHeading>
+          <MRadioGroup class="mt-2 flex w-full gap-5">
+            <InputRadio v-model="stateMergeMode" value="replace"
+              >Overwrite existing state
+            </InputRadio>
+            <InputRadio v-model="stateMergeMode" value="add_new"
+              >Add only new state
+            </InputRadio>
+          </MRadioGroup>
+        </template>
+      </template>
+      <template v-else-if="importMode === 'equipment'">
+        <PanelSubHeading class="mt-4">Equipment categories</PanelSubHeading>
+        <DataGrid
+          :data="currentEquipment"
+          :columns="equipmentColumns"
+          :row-height="40"
+          v-model:selected="selectedEquipment"
+          select
+          select-all
+          class="mt-4 max-h-[40vh]"
+        />
+      </template>
+      <template v-else-if="importMode === 'personnel'">
+        <PanelSubHeading class="mt-4">Personnel categories</PanelSubHeading>
+        <DataGrid
+          :data="currentPersonnel"
+          :columns="personnelColumns"
+          :row-height="40"
+          v-model:selected="selectedPersonnel"
+          select
+          select-all
+          class="mt-4 max-h-[40vh]"
+        />
+      </template>
+      <template v-else-if="importMode === 'statuses'">
+        <PanelSubHeading class="mt-4">Unit statuses</PanelSubHeading>
+        <DataGrid
+          :data="currentUnitStatuses"
+          :columns="statusColumns"
+          :row-height="40"
+          v-model:selected="selectedStatuses"
+          select
+          select-all
+          class="mt-4 max-h-[40vh]"
+        />
       </template>
       <footer
         class="flex flex-shrink-0 flex-col justify-between gap-3 pt-4 sm:flex-row sm:items-center"

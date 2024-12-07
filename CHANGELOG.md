@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+December 2024
+
+- Added equipment, personnel and units statuses to the scenario data import options.
+- Added a "hide timeline" option to the timeline context menu.
+
 November 2024
 
 - Added more feature label styling options.
