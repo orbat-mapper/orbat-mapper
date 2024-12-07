@@ -34,7 +34,7 @@ function onFormSubmit(closeFunction: () => void) {
 </script>
 <template>
   <Popover as="template">
-    <Float placement="top-end" strategy="fixed">
+    <Float placement="top-end" strategy="fixed" portal>
       <PopoverButton
         :disabled="disabled"
         title="Change style"
