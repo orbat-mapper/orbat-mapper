@@ -39,6 +39,96 @@ export function createInitialState(unit: NUnit): CurrentState | null {
   return null;
 }
 
+export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
+  if (!unit.state || !unit.state.length) {
+    unit._state = createInitialState(unit);
+    return;
+  }
+  let currentState = createInitialState(unit);
+  for (const s of unit.state) {
+    if (s.t <= timestamp) {
+      const { diff, update, ...rest } = s;
+      if (update?.equipment && currentState?.equipment) {
+        for (const e of update.equipment) {
+          const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
+          if (idx !== -1) {
+            currentState.equipment[idx] = { ...currentState.equipment[idx], ...e };
+          } else {
+            console.warn("Equipment not found", e);
+          }
+        }
+      }
+      if (update?.personnel && currentState?.personnel) {
+        for (const p of update.personnel) {
+          const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
+          if (idx !== -1) {
+            currentState.personnel[idx] = { ...currentState.personnel[idx], ...p };
+          } else {
+            console.warn("Personnel not found", p);
+          }
+        }
+      }
+      if (diff?.equipment && currentState?.equipment) {
+        for (const e of diff.equipment) {
+          const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
+          if (idx !== -1) {
+            const onHand = (currentState.equipment[idx]?.onHand || 0) + (e.onHand || 0);
+            currentState.equipment[idx] = { ...currentState.equipment[idx], onHand };
+          } else {
+            console.warn("Equipment not found", e);
+          }
+        }
+      }
+      if (diff?.personnel && currentState?.personnel) {
+        for (const p of diff.personnel) {
+          const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
+          if (idx !== -1) {
+            const onHand = (currentState.personnel[idx]?.onHand || 0) + (p.onHand || 0);
+            currentState.personnel[idx] = { ...currentState.personnel[idx], onHand };
+          } else {
+            console.warn("Personnel not found", p);
+          }
+        }
+      }
+      currentState = { ...currentState, ...rest };
+    } else {
+      if (
+        currentState?.location &&
+        s.location &&
+        !(s.interpolate === false) &&
+        (s.viaStartTime ?? -Infinity) <= timestamp
+      ) {
+        if (s.viaStartTime) {
+          console.log("yo");
+        }
+        const n = lineString(
+          s.via
+            ? [currentState.location, ...s.via, s.location]
+            : [currentState.location, s.location],
+        );
+        const timeDiff = s.t - (s.viaStartTime ?? currentState.t);
+        const pathLength = turfLength(n);
+        const averageSpeed = pathLength / timeDiff;
+        const p = turfAlong(
+          n,
+          averageSpeed * (timestamp - (s.viaStartTime ?? currentState.t)),
+        );
+        currentState = {
+          ...currentState,
+          t: timestamp,
+          location: p.geometry.coordinates,
+          type: "interpolated",
+        };
+      }
+      break;
+    }
+  }
+  if (currentState?.sidc !== unit._state?.sidc) {
+    invalidateUnitStyle(unit.id);
+  }
+  unit._state = currentState;
+}
+
 function createInitialFeatureState(
   feature: NScenarioFeature,
 ): CurrentScenarioFeatureState | null {
@@ -54,97 +144,9 @@ export function useScenarioTime(store: NewScenarioStore) {
   const goToScenarioEventHook = createEventHook<GoToScenarioEventEvent>();
 
   function setCurrentTime(timestamp: number) {
-    Object.values(state.unitMap).forEach((unit) => {
-      if (!unit.state || !unit.state.length) {
-        unit._state = createInitialState(unit);
-        return;
-      }
-      let currentState = createInitialState(unit);
-      for (const s of unit.state) {
-        if (s.t <= timestamp) {
-          const { diff, update, ...rest } = s;
-          if (update?.equipment && currentState?.equipment) {
-            for (const e of update.equipment) {
-              const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
-              if (idx !== -1) {
-                currentState.equipment[idx] = { ...currentState.equipment[idx], ...e };
-              } else {
-                console.warn("Equipment not found", e);
-              }
-            }
-          }
-          if (update?.personnel && currentState?.personnel) {
-            for (const p of update.personnel) {
-              const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
-              if (idx !== -1) {
-                currentState.personnel[idx] = { ...currentState.personnel[idx], ...p };
-              } else {
-                console.warn("Personnel not found", p);
-              }
-            }
-          }
-          if (diff?.equipment && currentState?.equipment) {
-            for (const e of diff.equipment) {
-              const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
-              if (idx !== -1) {
-                const onHand =
-                  (currentState.equipment[idx]?.onHand || 0) + (e.onHand || 0);
-                currentState.equipment[idx] = { ...currentState.equipment[idx], onHand };
-              } else {
-                console.warn("Equipment not found", e);
-              }
-            }
-          }
-          if (diff?.personnel && currentState?.personnel) {
-            for (const p of diff.personnel) {
-              const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
-              if (idx !== -1) {
-                const onHand =
-                  (currentState.personnel[idx]?.onHand || 0) + (p.onHand || 0);
-                currentState.personnel[idx] = { ...currentState.personnel[idx], onHand };
-              } else {
-                console.warn("Personnel not found", p);
-              }
-            }
-          }
-          currentState = { ...currentState, ...rest };
-        } else {
-          if (
-            currentState?.location &&
-            s.location &&
-            !(s.interpolate === false) &&
-            (s.viaStartTime ?? -Infinity) <= timestamp
-          ) {
-            if (s.viaStartTime) {
-              console.log("yo");
-            }
-            const n = lineString(
-              s.via
-                ? [currentState.location, ...s.via, s.location]
-                : [currentState.location, s.location],
-            );
-            const timeDiff = s.t - (s.viaStartTime ?? currentState.t);
-            const pathLength = turfLength(n);
-            const averageSpeed = pathLength / timeDiff;
-            const p = turfAlong(
-              n,
-              averageSpeed * (timestamp - (s.viaStartTime ?? currentState.t)),
-            );
-            currentState = {
-              ...currentState,
-              t: timestamp,
-              location: p.geometry.coordinates,
-              type: "interpolated",
-            };
-          }
-          break;
-        }
-      }
-      if (currentState?.sidc !== unit._state?.sidc) {
-        invalidateUnitStyle(unit.id);
-      }
-      unit._state = currentState;
-    });
+    Object.values(state.unitMap).forEach((unit) =>
+      updateCurrentUnitState(unit, timestamp),
+    );
     Object.values(state.layerMap).forEach((layer) => {
       const visibleFromT = layer.visibleFromT || Number.MIN_SAFE_INTEGER;
       const visibleUntilT = layer.visibleUntilT || Number.MAX_SAFE_INTEGER;

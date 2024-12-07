@@ -21,7 +21,7 @@ import { SID_INDEX, Sidc } from "@/symbology/sidc";
 import { setCharAt } from "@/components/helpers";
 import { SID } from "@/symbology/values";
 import { klona } from "klona";
-import { createInitialState } from "@/scenariostore/time";
+import { createInitialState, updateCurrentUnitState } from "@/scenariostore/time";
 import { computed } from "vue";
 import {
   mapReinforcedStatus2Field,
@@ -795,23 +795,11 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitState(unitId);
   }
 
-  function updateUnitState(unitId: EntityId, undoable = false) {
+  function updateUnitState(unitId: EntityId) {
     const unit = state.unitMap[unitId];
     if (!unit) return;
     const timestamp = state.currentTime;
-    if (!unit.state || !unit.state.length) {
-      unit._state = createInitialState(unit);
-      return;
-    }
-    let currentState = createInitialState(unit);
-    for (const s of unit.state) {
-      if (s.t <= timestamp) {
-        currentState = { ...currentState, ...s };
-      } else {
-        break;
-      }
-    }
-    unit._state = currentState;
+    updateCurrentUnitState(unit, timestamp);
     state.unitStateCounter++;
   }
 
