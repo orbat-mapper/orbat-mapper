@@ -17,7 +17,9 @@
       />
     </Switch>
     <SwitchLabel as="span" class="ml-3 text-sm" v-if="$slots.default">
-      <span class="cursor-pointer font-medium text-gray-700"><slot></slot></span>
+      <span class="cursor-pointer font-medium text-gray-700 dark:text-gray-300"
+        ><slot></slot
+      ></span>
     </SwitchLabel>
   </SwitchGroup>
 </template>
