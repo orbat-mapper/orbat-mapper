@@ -68,7 +68,7 @@ watch(
   [selectedUnitIds, includeSubordinates, time.scenarioTime],
   () => {
     const aggEquipment: Record<string, { count: number; onHand: number }> = {};
-    const aggPersonnel: Record<string, number> = {};
+    const aggPersonnel: Record<string, { count: number; onHand: number }> = {};
     const allUnitIds = new Set<EntityId>();
     selectedUnitIds.value.forEach((unitId) => {
       if (includeSubordinates.value) {
@@ -93,7 +93,9 @@ watch(
         aggEquipment[e.id] = { count, onHand };
       });
       personnel?.forEach((p) => {
-        aggPersonnel[p.id] = (aggPersonnel[p.id] ?? 0) + p.count;
+        const count = (aggPersonnel[p.id]?.count ?? 0) + p.count;
+        const onHand = (aggPersonnel[p.id]?.onHand ?? 0) + (p?.onHand ?? p.count);
+        aggPersonnel[p.id] = { count, onHand };
       });
     });
 
@@ -106,12 +108,15 @@ watch(
         onHand,
       }),
     );
-    aggregatedPersonnel.value = Object.entries(aggPersonnel).map(([id, count]) => ({
-      id,
-      name: personnelMap[id]?.name ?? id,
-      description: personnelMap[id]?.description ?? "",
-      count,
-    }));
+    aggregatedPersonnel.value = Object.entries(aggPersonnel).map(
+      ([id, { count, onHand }]) => ({
+        id,
+        name: personnelMap[id]?.name ?? id,
+        description: personnelMap[id]?.description ?? "",
+        count,
+        onHand,
+      }),
+    );
   },
   { immediate: true, deep: true },
 );
