@@ -11,6 +11,14 @@ import UnitToeItemTable from "@/modules/scenarioeditor/UnitToeItemTable.vue";
 import { useToeActions } from "@/composables/scenarioActions";
 import ToggleField from "@/components/ToggleField.vue";
 import AccordionPanel from "@/components/AccordionPanel.vue";
+import PrimaryButton from "@/components/PrimaryButton.vue";
+import { storeToRefs } from "pinia";
+import { useToeEditStore } from "@/stores/toeStore";
+import MRadioGroup from "@/components/MRadioGroup.vue";
+import InputRadio from "@/components/InputRadio.vue";
+import HeadingDescription from "@/components/HeadingDescription.vue";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
+import type { StateAdd } from "@/types/scenarioModels";
 
 interface Props {
   unit: NUnit;
@@ -21,7 +29,7 @@ const props = defineProps<Props>();
 
 const {
   store: {
-    state: { equipmentMap, personnelMap, unitMap },
+    state: { equipmentMap, personnelMap, unitMap, currentTime },
     onUndoRedo,
   },
   unitActions: {
@@ -29,12 +37,18 @@ const {
     updateUnitEquipment,
     updateUnitPersonnel,
     updateUnitState,
+    addUnitStateEntry,
   },
   time,
 } = injectStrict(activeScenarioKey);
 
 const includeSubordinates = useLocalStorage("includeSubordinates", true);
+let prevIncludeSubordinates: boolean | undefined;
+const toeEditStore = useToeEditStore();
 
+const { isToeEditMode, toeEditMode } = storeToRefs(toeEditStore);
+
+const fmt = useTimeFormatStore();
 const { selectedUnitIds } = useSelectedItems();
 const toeActions = useToeActions();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
@@ -58,10 +72,25 @@ const personnelValues = computed(() => {
 const [showAddEquipment, toggleAddEquipment] = useToggle(false);
 const [showAddPersonnel, toggleAddPersonnel] = useToggle(false);
 
+const formattedTime = computed(() =>
+  fmt.scenarioFormatter.format(+time.scenarioTime.value),
+);
+
 onUndoRedo((param) => {
   // Update the current state of the selected units in case equipment or personnel have changed
   selectedUnitIds.value.forEach((unitId) => updateUnitState(unitId));
   triggerRef(selectedUnitIds);
+});
+
+watch(isToeEditMode, (isEditMode) => {
+  if (isEditMode) {
+    prevIncludeSubordinates = includeSubordinates.value;
+    includeSubordinates.value = false;
+  } else {
+    if (prevIncludeSubordinates !== undefined) {
+      includeSubordinates.value = prevIncludeSubordinates;
+    }
+  }
 });
 
 watch(
@@ -121,13 +150,35 @@ watch(
   { immediate: true, deep: true },
 );
 
-function updateEquipment(equipmentId: string, count: number) {
-  updateUnitEquipment(props.unit.id, equipmentId, { count });
+function updateEquipment(
+  equipmentId: string,
+  { count, onHand }: { count: number; onHand?: number },
+) {
+  if (toeEditMode.value === "onHand" && onHand) {
+    const newState: StateAdd = {
+      t: +time.scenarioTime.value,
+      update: { equipment: [{ id: equipmentId, onHand }] },
+    };
+    addUnitStateEntry(props.unit.id, newState);
+  } else {
+    updateUnitEquipment(props.unit.id, equipmentId, { count });
+  }
   triggerRef(selectedUnitIds);
 }
 
-function updatePersonnel(personnelId: string, count: number) {
-  updateUnitPersonnel(props.unit.id, personnelId, { count });
+function updatePersonnel(
+  personnelId: string,
+  { count, onHand }: { count: number; onHand?: number },
+) {
+  if (toeEditMode.value === "onHand" && onHand) {
+    const newState: StateAdd = {
+      t: +time.scenarioTime.value,
+      update: { personnel: [{ id: personnelId, onHand }] },
+    };
+    addUnitStateEntry(props.unit.id, newState);
+  } else {
+    updateUnitPersonnel(props.unit.id, personnelId, { count });
+  }
   triggerRef(selectedUnitIds);
 }
 
@@ -144,12 +195,30 @@ function deletePersonnel(personnelId: string) {
 
 <template>
   <div class="mt-4 flex justify-between">
-    <div></div>
-    <ToggleField v-model="includeSubordinates">Include subordinates</ToggleField>
+    <div>
+      <PrimaryButton @click="toeEditStore.toggleEditToeMode()"
+        ><span v-if="isToeEditMode">Done editing</span
+        ><span v-else>Edit TO&E</span></PrimaryButton
+      >
+    </div>
+    <ToggleField v-model="includeSubordinates" :disabled="isToeEditMode"
+      >Include subordinates</ToggleField
+    >
+  </div>
+  <div v-if="isToeEditMode" class="mt-4">
+    <HeadingDescription>What do you want to edit?</HeadingDescription>
+    <MRadioGroup class="mt-2 flex space-x-4">
+      <InputRadio v-model="toeEditMode" :value="'assigned'"
+        >Assigned (initial values)</InputRadio
+      >
+      <InputRadio v-model="toeEditMode" value="onHand"
+        >Available at {{ formattedTime }}</InputRadio
+      >
+    </MRadioGroup>
   </div>
   <div class="prose p-1 dark:prose-invert">
     <AccordionPanel :label="`Equipment (${aggregatedEquipmentCount})`" defaultOpen>
-      <div class="flex justify-end">
+      <div v-if="isToeEditMode" class="flex justify-end">
         <BaseButton
           small
           :disabled="isMultiMode || isLocked"
@@ -179,7 +248,7 @@ function deletePersonnel(personnelId: string) {
     </AccordionPanel>
 
     <AccordionPanel :label="`Personnel (${aggregatedPersonnelCount})`" defaultOpen>
-      <div class="flex justify-end" v-if="aggregatedPersonnel.length || showAddPersonnel">
+      <div class="flex justify-end" v-if="isToeEditMode">
         <BaseButton
           small
           :disabled="isMultiMode || isLocked"
@@ -187,7 +256,7 @@ function deletePersonnel(personnelId: string) {
           >{{ showAddPersonnel ? "Hide form" : "+ Add" }}
         </BaseButton>
       </div>
-      <p v-if="showAddPersonnel" class="mt-2 text-right">
+      <p v-if="isToeEditMode && showAddPersonnel" class="mt-2 text-right">
         <button
           type="button"
           class="btn-link"
@@ -212,23 +281,5 @@ function deletePersonnel(personnelId: string) {
         >No data about equipment or personnel available</span
       ><span v-else>This unit does not have any equipment or personnel</span>.
     </p>
-    <div class="mt-4 flex justify-end gap-2">
-      <BaseButton
-        v-if="!aggregatedEquipment.length"
-        small
-        secondary
-        @click="toggleAddEquipment()"
-        :disabled="isLocked"
-        >Add equipment
-      </BaseButton>
-      <BaseButton
-        v-if="!aggregatedPersonnel.length"
-        small
-        secondary
-        @click="toggleAddPersonnel()"
-        :disabled="isLocked"
-        >Add personnel
-      </BaseButton>
-    </div>
   </div>
 </template>

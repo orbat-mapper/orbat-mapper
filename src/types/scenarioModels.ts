@@ -10,7 +10,15 @@ import type { SidValue } from "@/symbology/values";
 import { type SymbolOptions } from "milsymbol";
 import { TextAmpValue } from "@/symbology/milsymbwrapper";
 import type { BBox, Geometry } from "geojson";
-import { NState, NUnitEquipment, NUnitPersonnel } from "@/types/internalModels";
+import {
+  NState,
+  NUnitEquipment,
+  NUnitPersonnel,
+  NUpdateUnitEquipment,
+  NUpdateUnitPersonnel,
+  UpdateUnitEquipment,
+  UpdateUnitPersonnel,
+} from "@/types/internalModels";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;
@@ -26,13 +34,13 @@ export interface State extends Partial<ScenarioEventDescription> {
   status?: string | null;
   // an update replaces the current state with the new state
   update?: {
-    equipment?: UnitEquipment[];
-    personnel?: UnitPersonnel[];
+    equipment?: UpdateUnitEquipment[];
+    personnel?: UpdateUnitPersonnel[];
   };
   // a diff is applied to the current state to update it
   diff?: {
-    equipment?: UnitEquipment[];
-    personnel?: UnitPersonnel[];
+    equipment?: UpdateUnitEquipment[];
+    personnel?: UpdateUnitPersonnel[];
   };
 }
 

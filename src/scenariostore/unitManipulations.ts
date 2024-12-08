@@ -1122,7 +1122,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
   function updateUnitEquipment(
     unitId: EntityId,
     equipmentId: string,
-    { count }: { count: number },
+    { count, onHand }: { count: number; onHand?: number },
   ) {
     update((s) => {
       const unit = s.unitMap[unitId];
@@ -1133,9 +1133,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
         const equipment = unit.equipment?.find((e) => e.id === equipmentId);
         if (!equipment) {
           if (unit.equipment === undefined) unit.equipment = [];
-          unit.equipment.push({ id: equipmentId, count });
+          unit.equipment.push({ id: equipmentId, count, onHand });
         } else {
-          Object.assign(equipment, { count });
+          Object.assign(equipment, { count, onHand });
         }
       }
     });
@@ -1145,7 +1145,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
   function updateUnitPersonnel(
     unitId: EntityId,
     personnelId: string,
-    { count }: { count: number },
+    { count, onHand }: { count: number; onHand?: number },
   ) {
     update((s) => {
       const unit = s.unitMap[unitId];
@@ -1158,7 +1158,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
           if (unit.personnel === undefined) unit.personnel = [];
           unit.personnel.push({ id: personnelId, count });
         } else {
-          Object.assign(personnel, { count });
+          Object.assign(personnel, { count, onHand });
         }
       }
     });

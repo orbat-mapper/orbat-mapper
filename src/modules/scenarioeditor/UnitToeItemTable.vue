@@ -12,6 +12,9 @@ import {
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import InputGroup from "@/components/InputGroup.vue";
+import InlineRadioGroup from "@/components/InlineRadioGroup.vue";
+import { useToeEditStore } from "@/stores/toeStore";
+import { storeToRefs } from "pinia";
 
 interface Props {
   items: EUnitEquipment[] | EUnitPersonnel[];
@@ -26,9 +29,11 @@ const emit = defineEmits(["delete", "update", "update:showAdd"]);
 const doShowAdd = useVModel(props, "showAdd", emit);
 const sortKey = ref<"name" | "count">("name");
 const [sortAscending, toggleAscending] = useToggle(true);
+const { isToeEditMode, toeEditMode } = storeToRefs(useToeEditStore());
 
 const editedId = ref();
-const form = ref({
+
+const form = ref<{ id: string; count: number; onHand?: number }>({
   id: "",
   count: -1,
 });
@@ -67,9 +72,13 @@ function toggleSort(column: "name" | "count") {
 }
 
 function startEdit(data: EUnitEquipment | EUnitPersonnel) {
+  if (!isToeEditMode.value) return;
   editedId.value = data.id;
   const { id, ...rest } = data;
-  form.value = { id: data.id, count: data.count };
+  form.value = {
+    id: data.id,
+    count: toeEditMode.value === "assigned" ? data.count : (data.onHand ?? data.count),
+  };
 }
 
 function cancelEdit() {
@@ -77,7 +86,11 @@ function cancelEdit() {
 }
 
 function onSubmit() {
-  emit("update", form.value.id, form.value.count);
+  if (toeEditMode.value === "onHand") {
+    emit("update", form.value.id, { onHand: form.value.count });
+  } else {
+    emit("update", form.value.id, { count: form.value.count });
+  }
   editedId.value = null;
 }
 
@@ -100,7 +113,7 @@ function resetAddForm() {
 }
 
 function onAddItemSubmit() {
-  emit("update", addForm.value.id, addForm.value.count);
+  emit("update", addForm.value.id, { count: addForm.value.count });
   nextTick(() => resetAddForm());
 }
 
@@ -113,7 +126,7 @@ resetAddForm();
 
 <template>
   <form
-    v-if="doShowAdd && valueItems.length"
+    v-if="isToeEditMode && doShowAdd && valueItems.length"
     @submit.prevent="onAddItemSubmit"
     class="flex w-full items-center gap-x-2 pb-4"
   >
@@ -148,15 +161,19 @@ resetAddForm();
           </th>
           <th class="pr-4 text-right">Avail.</th>
           <th class="pr-4 text-right">%</th>
-          <th></th>
+          <th v-if="isToeEditMode"></th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="item in sortedItems" :key="item.id" @dblclick="startEdit(item)">
           <template v-if="editedId === item.id">
             <td class="pl-2" :title="item.description">{{ item.name }}</td>
-            <td colspan="2">
-              <div class="flex items-center justify-end">
+
+            <td v-if="toeEditMode === 'onHand'" class="pr-6 text-right tabular-nums">
+              {{ item.count }}
+            </td>
+            <td colspan="4">
+              <div class="flex w-full items-center justify-between">
                 <input
                   type="number"
                   min="0"
@@ -164,8 +181,10 @@ resetAddForm();
                   v-model="form.count"
                   @vue:mounted="({ el }: any) => el.focus()"
                 />
-                <BaseButton small type="submit" secondary class="ml-2">Save</BaseButton>
-                <BaseButton small class="ml-2" @click="cancelEdit()">Cancel</BaseButton>
+                <div class="flex items-center">
+                  <BaseButton small type="submit" secondary class="ml-2">Save</BaseButton>
+                  <BaseButton small class="ml-2" @click="cancelEdit()">Cancel</BaseButton>
+                </div>
               </div>
             </td>
           </template>
@@ -174,7 +193,7 @@ resetAddForm();
             <td class="pr-6 text-right tabular-nums">{{ item.count }}</td>
             <td class="pr-6 text-right tabular-nums">{{ item.onHand }}</td>
             <td class="pr-6 text-right tabular-nums">{{ asPercent(item) }}</td>
-            <td class="not-prose w-6">
+            <td v-if="isToeEditMode" class="not-prose w-6">
               <DotsMenu
                 :items="itemActions"
                 @action="onItemAction(item, $event)"

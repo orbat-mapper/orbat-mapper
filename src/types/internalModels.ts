@@ -45,12 +45,28 @@ export interface NUnitEquipment extends Omit<UnitEquipment, "name"> {
   id: string;
 }
 
+export interface NUpdateUnitEquipment extends Omit<NUnitEquipment, "count"> {
+  count?: number;
+}
+
+export interface UpdateUnitEquipment extends Omit<UnitEquipment, "count"> {
+  count?: number;
+}
+
 export interface EUnitEquipment extends UnitEquipment {
   id: string;
 }
 
 export interface NUnitPersonnel extends Omit<UnitPersonnel, "name"> {
   id: string;
+}
+
+export interface NUpdateUnitPersonnel extends Omit<NUnitPersonnel, "count"> {
+  count?: number;
+}
+
+export interface UpdateUnitPersonnel extends Omit<UnitPersonnel, "count"> {
+  count?: number;
 }
 
 export interface EUnitPersonnel extends UnitPersonnel {
@@ -133,13 +149,13 @@ export interface NUnitStatus extends UnitStatus {
 export interface NState extends Omit<State, "update" | "diff"> {
   // an update replaces the current state with the new state
   update?: {
-    equipment?: NUnitEquipment[];
-    personnel?: NUnitPersonnel[];
+    equipment?: NUpdateUnitEquipment[];
+    personnel?: NUpdateUnitPersonnel[];
   };
   // a diff is applied to the current state to update it
   diff?: {
-    equipment?: NUnitEquipment[];
-    personnel?: NUnitPersonnel[];
+    equipment?: NUpdateUnitEquipment[];
+    personnel?: NUpdateUnitPersonnel[];
   };
 }
 
