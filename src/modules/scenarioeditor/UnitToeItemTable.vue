@@ -15,6 +15,7 @@ import InputGroup from "@/components/InputGroup.vue";
 import InlineRadioGroup from "@/components/InlineRadioGroup.vue";
 import { useToeEditStore } from "@/stores/toeStore";
 import { storeToRefs } from "pinia";
+import UnitToeItemTableMenu from "@/modules/scenarioeditor/UnitToeItemTableMenu.vue";
 
 interface Props {
   items: EUnitEquipment[] | EUnitPersonnel[];
@@ -29,7 +30,8 @@ const emit = defineEmits(["delete", "update", "update:showAdd"]);
 const doShowAdd = useVModel(props, "showAdd", emit);
 const sortKey = ref<"name" | "count">("name");
 const [sortAscending, toggleAscending] = useToggle(true);
-const { isToeEditMode, toeEditMode } = storeToRefs(useToeEditStore());
+const { isToeEditMode, toeEditMode, showAssigned, showOnHand, showPercentage } =
+  storeToRefs(useToeEditStore());
 
 const editedId = ref();
 
@@ -150,6 +152,7 @@ resetAddForm();
             }}</span>
           </th>
           <th
+            v-if="showAssigned"
             class="whitespace-nowrap pr-4 text-right"
             @click="toggleSort('count')"
             title="Assigned"
@@ -159,9 +162,11 @@ resetAddForm();
               sortAscending ? "&darr;" : "&uarr;"
             }}</span>
           </th>
-          <th class="pr-4 text-right">Avail.</th>
-          <th class="pr-4 text-right">%</th>
-          <th v-if="isToeEditMode"></th>
+          <th v-if="showOnHand" class="pr-4 text-right">Avail.</th>
+          <th v-if="showPercentage" class="pr-4 text-right">%</th>
+          <th class="not-prose">
+            <UnitToeItemTableMenu />
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -190,11 +195,18 @@ resetAddForm();
           </template>
           <template v-else>
             <td class="pl-2" :title="item.description">{{ item.name }}</td>
-            <td class="pr-6 text-right tabular-nums">{{ item.count }}</td>
-            <td class="pr-6 text-right tabular-nums">{{ item.onHand }}</td>
-            <td class="pr-6 text-right tabular-nums">{{ asPercent(item) }}</td>
-            <td v-if="isToeEditMode" class="not-prose w-6">
+            <td v-if="showAssigned" class="pr-6 text-right tabular-nums">
+              {{ item.count }}
+            </td>
+            <td v-if="showOnHand" class="pr-6 text-right tabular-nums">
+              {{ item.onHand }}
+            </td>
+            <td v-if="showPercentage" class="pr-6 text-right tabular-nums">
+              {{ asPercent(item) }}
+            </td>
+            <td class="not-prose w-6">
               <DotsMenu
+                v-if="isToeEditMode"
                 :items="itemActions"
                 @action="onItemAction(item, $event)"
                 portal
