@@ -1,6 +1,6 @@
 import { EntityId, HistoryAction } from "@/types/base";
 import { NewScenarioStore, ScenarioState } from "./newScenarioStore";
-import { moveElement, nanoid, removeElement } from "@/utils";
+import { mergeArray, moveElement, nanoid, removeElement } from "@/utils";
 import {
   EquipmentDataUpdate,
   NEquipmentData,
@@ -743,8 +743,36 @@ export function useUnitManipulations(store: NewScenarioStore) {
         for (let i = 0, len = u.state.length; i < len; i++) {
           if (t <= u.state[i].t) {
             if (merge && u.state[i].t === t) {
-              const { id, t, ...rest } = newState;
+              const { id, t, update, diff, ...rest } = newState;
               Object.assign(u.state[i], rest);
+              if (update) {
+                const source = u.state[i]?.update || {};
+                const dest = {
+                  equipment:
+                    source.equipment || update.equipment
+                      ? mergeArray(source.equipment ?? [], update.equipment ?? [], "id")
+                      : undefined,
+                  personnel:
+                    source.personnel || update.personnel
+                      ? mergeArray(source.personnel ?? [], update.personnel ?? [], "id")
+                      : undefined,
+                };
+                Object.assign(u.state[i], { update: dest });
+              }
+              if (diff) {
+                const source = u.state[i]?.diff || {};
+                const dest = {
+                  equipment:
+                    source.equipment || diff.equipment
+                      ? mergeArray(source.equipment ?? [], diff.equipment ?? [], "id")
+                      : undefined,
+                  personnel:
+                    source.personnel || diff.personnel
+                      ? mergeArray(source.personnel ?? [], diff.personnel ?? [], "id")
+                      : undefined,
+                };
+                Object.assign(u.state[i], { diff: dest });
+              }
             } else {
               u.state.splice(i, 0, newState as NState);
             }

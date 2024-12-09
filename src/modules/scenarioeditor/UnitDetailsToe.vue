@@ -159,7 +159,7 @@ function updateEquipment(
       t: +time.scenarioTime.value,
       update: { equipment: [{ id: equipmentId, onHand }] },
     };
-    addUnitStateEntry(props.unit.id, newState);
+    addUnitStateEntry(props.unit.id, newState, true);
   } else {
     updateUnitEquipment(props.unit.id, equipmentId, { count });
   }
@@ -175,7 +175,7 @@ function updatePersonnel(
       t: +time.scenarioTime.value,
       update: { personnel: [{ id: personnelId, onHand }] },
     };
-    addUnitStateEntry(props.unit.id, newState);
+    addUnitStateEntry(props.unit.id, newState, true);
   } else {
     updateUnitPersonnel(props.unit.id, personnelId, { count });
   }

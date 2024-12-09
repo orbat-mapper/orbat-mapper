@@ -79,7 +79,7 @@
           v-if="s.location === null"
           class="h-5 w-5 text-gray-600"
         />
-        <div class="flex">
+        <div class="mt-1 flex gap-1">
           <span
             v-if="s.sidc"
             class="w-12 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"
@@ -90,6 +90,8 @@
             class="w-auto rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800"
             >{{ unitStatusMap[s.status]?.name }}</span
           >
+          <span v-if="s.update?.equipment" class="badge">Equipment</span>
+          <span v-if="s.update?.personnel" class="badge">Personnel</span>
         </div>
       </div>
 

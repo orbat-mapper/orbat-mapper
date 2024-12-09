@@ -61,3 +61,14 @@ export function sortBy<T extends object, K extends keyof T>(
     }
   });
 }
+
+export function mergeArray<T>(a: T[], b: T[], key: keyof T): T[] {
+  const map = new Map();
+  for (const item of a) {
+    map.set(item[key], item);
+  }
+  for (const item of b) {
+    map.set(item[key], item);
+  }
+  return Array.from(map.values());
+}
