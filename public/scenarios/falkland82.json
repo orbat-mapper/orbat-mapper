@@ -1,10 +1,10 @@
 {
   "id": "demo-falklands82",
   "type": "ORBAT-mapper",
-  "version": "0.30.0",
+  "version": "0.33.0",
   "meta": {
     "createdDate": "2024-02-04T14:33:50.335Z",
-    "lastModifiedDate": "2024-07-22T14:09:42.240Z"
+    "lastModifiedDate": "2024-12-09T18:12:53.552Z"
   },
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
@@ -30,6 +30,7 @@
                   "id": "fb9O6b9w4r",
                   "name": "NP A",
                   "sidc": "10031000131211004600",
+                  "subUnits": [],
                   "state": [
                     {
                       "t": "1982-04-02T18:00:00-04:00",
@@ -46,13 +47,13 @@
                       "location": null,
                       "id": "w6RlXJ3kHK"
                     }
-                  ],
-                  "subUnits": []
+                  ]
                 },
                 {
                   "id": "EaungIuhgJ",
                   "name": "NP B",
                   "sidc": "10031000131211004600",
+                  "subUnits": [],
                   "state": [
                     {
                       "t": "1982-04-02T18:00:00-04:00",
@@ -69,13 +70,13 @@
                       "location": null,
                       "id": "1rjDwE9jtt"
                     }
-                  ],
-                  "subUnits": []
+                  ]
                 },
                 {
                   "id": "wSQ6YzQNhn",
                   "name": "NP C",
                   "sidc": "10031000131211004600",
+                  "subUnits": [],
                   "state": [
                     {
                       "t": "1982-04-02T18:00:00-04:00",
@@ -92,13 +93,13 @@
                       "location": null,
                       "id": "DYgld3Vl2u"
                     }
-                  ],
-                  "subUnits": []
+                  ]
                 },
                 {
                   "id": "TNVdKUtZQn",
                   "name": "NP D",
                   "sidc": "10031000131211004600",
+                  "subUnits": [],
                   "state": [
                     {
                       "t": "1982-04-02T18:00:00-04:00",
@@ -115,13 +116,13 @@
                       "location": null,
                       "id": "yIwHshJgJj"
                     }
-                  ],
-                  "subUnits": []
+                  ]
                 },
                 {
                   "id": "dZ8b08YeOc",
                   "name": "NP",
                   "sidc": "10031000131211004600",
+                  "subUnits": [],
                   "state": [
                     {
                       "t": "1982-03-24T13:00:00-04:00",
@@ -133,10 +134,10 @@
                       "t": "1982-04-14T10:00:00-04:00",
                       "id": "s8ujf0Y3IM"
                     }
-                  ],
-                  "subUnits": []
+                  ]
                 }
               ],
+              "shortName": "NP 8901",
               "state": [
                 {
                   "t": "1982-03-11T10:00:00-04:00",
@@ -158,8 +159,7 @@
                   "t": "1982-04-14T10:00:00-04:00",
                   "id": "OkMNdY9UW4"
                 }
-              ],
-              "shortName": "NP 8901"
+              ]
             },
             {
               "id": "Ev1wliqyqA",
@@ -179,6 +179,34 @@
                   "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Endurance_(A171)_at_Nassau_in_1982.JPEG"
                 }
               ],
+              "subUnits": [
+                {
+                  "id": "LpBP1MLw8b",
+                  "name": "NP E",
+                  "sidc": "10031000131211004600",
+                  "subUnits": [],
+                  "state": [
+                    {
+                      "t": "1982-03-31T20:00:00-04:00",
+                      "location": [-36.509564, -54.280661],
+                      "id": "AdZbOsSJ2G"
+                    },
+                    {
+                      "t": "1982-04-02T20:00:00-04:00",
+                      "location": [-36.493835, -54.282815],
+                      "id": "6mqtcwchS0"
+                    },
+                    {
+                      "location": null,
+                      "t": "1982-04-14T10:00:00-04:00",
+                      "id": "0Od1lO322x"
+                    }
+                  ]
+                }
+              ],
+              "externalUrl": "https://en.wikipedia.org/wiki/HMS_Endurance_(1967)",
+              "description": "A Royal Navy ice patrol vessel that served from 1967 to 1991. ",
+              "shortName": "END",
               "state": [
                 {
                   "t": "1982-03-10T12:00:00-04:00",
@@ -233,35 +261,7 @@
                   "t": "1982-05-01T12:00:00-04:00",
                   "location": [-50.83016162572641, -51.52127438243896]
                 }
-              ],
-              "subUnits": [
-                {
-                  "id": "LpBP1MLw8b",
-                  "name": "NP E",
-                  "sidc": "10031000131211004600",
-                  "state": [
-                    {
-                      "t": "1982-03-31T20:00:00-04:00",
-                      "location": [-36.509564, -54.280661],
-                      "id": "AdZbOsSJ2G"
-                    },
-                    {
-                      "t": "1982-04-02T20:00:00-04:00",
-                      "location": [-36.493835, -54.282815],
-                      "id": "6mqtcwchS0"
-                    },
-                    {
-                      "location": null,
-                      "t": "1982-04-14T10:00:00-04:00",
-                      "id": "0Od1lO322x"
-                    }
-                  ],
-                  "subUnits": []
-                }
-              ],
-              "externalUrl": "https://en.wikipedia.org/wiki/HMS_Endurance_(1967)",
-              "description": "A Royal Navy ice patrol vessel that served from 1967 to 1991. ",
-              "shortName": "END"
+              ]
             },
             {
               "id": "1lNcQCawMZ",
@@ -280,6 +280,8 @@
                   "id": "L3qn46k1P9",
                   "name": "BAS Team",
                   "sidc": "10031100001103000000",
+                  "subUnits": [],
+                  "shortName": "BAS1",
                   "state": [
                     {
                       "t": "1982-03-19T10:00:00-04:00",
@@ -291,21 +293,19 @@
                       "t": "1982-04-14T10:00:00-04:00",
                       "id": "dgbr0J8ZTS"
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "BAS1"
+                  ]
                 }
               ],
               "shortName": "BAS",
               "externalUrl": "https://en.wikipedia.org/wiki/British_Antarctic_Survey",
+              "description": "The British Antarctic Survey (BAS) is the United Kingdom's national polar research institute. It has a dual purpose, to conduct polar science, enabling better understanding of global issues, and to provide an active presence in the Antarctic on behalf of the UK. ",
               "state": [
                 {
                   "location": null,
                   "t": "1982-04-14T10:00:00-04:00",
                   "id": "dgbr0J8ZTssfS"
                 }
-              ],
-              "description": "The British Antarctic Survey (BAS) is the United Kingdom's national polar research institute. It has a dual purpose, to conduct polar science, enabling better understanding of global issues, and to provide an active presence in the Antarctic on behalf of the UK. "
+              ]
             }
           ]
         },
@@ -327,34 +327,8 @@
                       "id": "FvVpPwaNSb",
                       "name": "H1",
                       "sidc": "10030100001101050000",
-                      "state": [],
-                      "subUnits": []
-                    }
-                  ],
-                  "state": [
-                    {
-                      "id": "Mv7HOotcXj",
-                      "t": "1982-04-05T12:28:00-04:00",
-                      "location": [-1.1173328036438257, 50.80685167353582]
-                    },
-                    {
-                      "id": "Vb66r932uB",
-                      "t": "1982-04-17T08:37:36-04:00",
-                      "location": [-14.462270598542231, -7.958499470567418],
-                      "via": [
-                        [-7.6608637594704065, 48.51934973964879],
-                        [-22.60227000947038, 25.40732886250781]
-                      ]
-                    },
-                    {
-                      "id": "unpRSNzt48",
-                      "t": "1982-05-01T12:00:00-04:00",
-                      "location": [-55.392984716102795, -51.277440247344096]
-                    },
-                    {
-                      "id": "tjWKiIIir1",
-                      "t": "1982-05-04T07:00:00-04:00",
-                      "location": [-56.85900235304392, -52.658091731608685]
+                      "subUnits": [],
+                      "state": []
                     }
                   ],
                   "shortName": "HER",
@@ -386,7 +360,33 @@
                       "value": 28,
                       "uom": "knots"
                     }
-                  }
+                  },
+                  "state": [
+                    {
+                      "id": "Mv7HOotcXj",
+                      "t": "1982-04-05T12:28:00-04:00",
+                      "location": [-1.1173328036438257, 50.80685167353582]
+                    },
+                    {
+                      "id": "Vb66r932uB",
+                      "t": "1982-04-17T08:37:36-04:00",
+                      "location": [-14.462270598542231, -7.958499470567418],
+                      "via": [
+                        [-7.6608637594704065, 48.51934973964879],
+                        [-22.60227000947038, 25.40732886250781]
+                      ]
+                    },
+                    {
+                      "id": "unpRSNzt48",
+                      "t": "1982-05-01T12:00:00-04:00",
+                      "location": [-55.392984716102795, -51.277440247344096]
+                    },
+                    {
+                      "id": "tjWKiIIir1",
+                      "t": "1982-05-04T07:00:00-04:00",
+                      "location": [-56.85900235304392, -52.658091731608685]
+                    }
+                  ]
                 },
                 {
                   "id": "EYRRLrKOXc",
@@ -400,6 +400,29 @@
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Invincible_Returns_From_Falklands_War.jpg"
                     }
                   ],
+                  "shortName": "INV",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Invincible_(R05)",
+                  "subUnits": [],
+                  "rangeRings": [
+                    {
+                      "name": "FRS1 combat",
+                      "range": 400,
+                      "uom": "nmi",
+                      "hidden": true
+                    },
+                    {
+                      "name": "FRS1 ground attack",
+                      "range": 250,
+                      "uom": "nmi",
+                      "hidden": true
+                    }
+                  ],
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 28,
+                      "uom": "knots"
+                    }
+                  },
                   "state": [
                     {
                       "id": "M1urTWISo7",
@@ -431,42 +454,12 @@
                       "t": "1982-05-04T07:00:00-04:00",
                       "location": [-56.8753530991987, -52.548624075593715]
                     }
-                  ],
-                  "shortName": "INV",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Invincible_(R05)",
-                  "subUnits": [],
-                  "rangeRings": [
-                    {
-                      "name": "FRS1 combat",
-                      "range": 400,
-                      "uom": "nmi",
-                      "hidden": true
-                    },
-                    {
-                      "name": "FRS1 ground attack",
-                      "range": 250,
-                      "uom": "nmi",
-                      "hidden": true
-                    }
-                  ],
-                  "properties": {
-                    "averageSpeed": {
-                      "value": 28,
-                      "uom": "knots"
-                    }
-                  }
+                  ]
                 },
                 {
                   "id": "JlKcklgGEU",
                   "name": "HMS Glamorgan",
                   "sidc": "10033000001202030000",
-                  "state": [
-                    {
-                      "id": "49C07H9l5S",
-                      "t": "1982-05-01T12:00:00-04:00",
-                      "location": [-55.65461695073419, -51.35225320235355]
-                    }
-                  ],
                   "shortName": "GLA",
                   "externalUrl": "https://en.wikipedia.org/wiki/HMS_Glamorgan_(D19)",
                   "media": [
@@ -482,19 +475,19 @@
                       "value": 30,
                       "uom": "knots"
                     }
-                  }
+                  },
+                  "state": [
+                    {
+                      "id": "49C07H9l5S",
+                      "t": "1982-05-01T12:00:00-04:00",
+                      "location": [-55.65461695073419, -51.35225320235355]
+                    }
+                  ]
                 },
                 {
                   "id": "XFfDYeXpqD",
                   "name": "HMS Antrim",
                   "sidc": "10033000001202030000",
-                  "state": [
-                    {
-                      "id": "WiKLa9JeC6",
-                      "t": "1982-05-01T12:00:00-04:00",
-                      "location": [-51.126885653825305, -51.7559726884173]
-                    }
-                  ],
                   "shortName": "ANT",
                   "externalUrl": "https://en.wikipedia.org/wiki/HMS_Antrim_(D18)",
                   "subUnits": [],
@@ -512,13 +505,19 @@
                       "value": 30,
                       "uom": "knots"
                     }
-                  }
+                  },
+                  "state": [
+                    {
+                      "id": "WiKLa9JeC6",
+                      "t": "1982-05-01T12:00:00-04:00",
+                      "location": [-51.126885653825305, -51.7559726884173]
+                    }
+                  ]
                 },
                 {
                   "id": "QAygyetc2O",
                   "name": "HMS Cardiff",
                   "sidc": "10033000001202030000",
-                  "state": [],
                   "shortName": "CAR",
                   "externalUrl": "https://en.wikipedia.org/wiki/HMS_Cardiff_(D108)",
                   "subUnits": [],
@@ -536,13 +535,13 @@
                       "value": 30,
                       "uom": "knots"
                     }
-                  }
+                  },
+                  "state": []
                 },
                 {
                   "id": "qfk052La3b",
                   "name": "HMS Exeter",
                   "sidc": "10033000001202030000",
-                  "state": [],
                   "shortName": "EXE",
                   "externalUrl": "https://en.wikipedia.org/wiki/HMS_Exeter_(D89)",
                   "subUnits": [],
@@ -560,12 +559,31 @@
                       "value": 28.7,
                       "uom": "knots"
                     }
-                  }
+                  },
+                  "state": []
                 },
                 {
                   "id": "Vvg9xmBKiG",
                   "name": "HMS Sheffield",
                   "sidc": "10033000001202030000",
+                  "shortName": "SHE",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Sheffield_(D80)",
+                  "subUnits": [],
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/HMS_Sheffield_%28D80%29.jpg/1024px-HMS_Sheffield_%28D80%29.jpg",
+                      "caption": "",
+                      "credits": "Nathalmad, CC BY 3.0, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Sheffield_(D80).jpg"
+                    }
+                  ],
+                  "description": "",
+                  "properties": {
+                    "averageSpeed": {
+                      "value": 30,
+                      "uom": "knots"
+                    }
+                  },
                   "state": [
                     {
                       "id": "2WrRiki7Ev",
@@ -584,25 +602,7 @@
                       "t": "1982-05-10T12:00:00-04:00",
                       "location": [-53.84480815650268, -52.193210126916846]
                     }
-                  ],
-                  "shortName": "SHE",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Sheffield_(D80)",
-                  "subUnits": [],
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/HMS_Sheffield_%28D80%29.jpg/1024px-HMS_Sheffield_%28D80%29.jpg",
-                      "caption": "",
-                      "credits": "Nathalmad, CC BY 3.0, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Sheffield_(D80).jpg"
-                    }
-                  ],
-                  "description": "",
-                  "properties": {
-                    "averageSpeed": {
-                      "value": 30,
-                      "uom": "knots"
-                    }
-                  }
+                  ]
                 }
               ],
               "state": []
@@ -616,13 +616,6 @@
                   "id": "DNSpZc5oGg",
                   "name": "HMS Fearless",
                   "sidc": "10033000001203010000",
-                  "state": [
-                    {
-                      "id": "3LHzyH3dcS",
-                      "t": "1982-05-21T12:00:00-04:00",
-                      "location": [-59.139490323564374, -51.49727767960482]
-                    }
-                  ],
                   "subUnits": [],
                   "shortName": "FEA",
                   "media": [
@@ -640,19 +633,19 @@
                       "value": 21,
                       "uom": "knots"
                     }
-                  }
+                  },
+                  "state": [
+                    {
+                      "id": "3LHzyH3dcS",
+                      "t": "1982-05-21T12:00:00-04:00",
+                      "location": [-59.139490323564374, -51.49727767960482]
+                    }
+                  ]
                 },
                 {
                   "id": "BvwcW2uBrm",
                   "name": "HMS Intrepid",
                   "sidc": "10033000001203060000",
-                  "state": [
-                    {
-                      "id": "4z2546k7H0",
-                      "t": "1982-05-21T12:00:00-04:00",
-                      "location": [-59.13777370979484, -51.509459015174215]
-                    }
-                  ],
                   "subUnits": [],
                   "shortName": "INT",
                   "media": [
@@ -670,19 +663,19 @@
                     }
                   },
                   "description": "",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Intrepid_(L11)"
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Intrepid_(L11)",
+                  "state": [
+                    {
+                      "id": "4z2546k7H0",
+                      "t": "1982-05-21T12:00:00-04:00",
+                      "location": [-59.13777370979484, -51.509459015174215]
+                    }
+                  ]
                 },
                 {
                   "id": "SQVUQ1npSg",
                   "name": "RFA Sir Tristram",
                   "sidc": "10033000001203070000",
-                  "state": [
-                    {
-                      "id": "wTbs6AUBFp",
-                      "t": "1982-03-16T10:00:00-04:00",
-                      "location": [-14.412079097123714, -7.966426950615244]
-                    }
-                  ],
                   "subUnits": [],
                   "shortName": "TRI",
                   "symbolOptions": {},
@@ -693,48 +686,65 @@
                       "credits": "Ken Griffiths, CC BY-SA 4.0, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:War_damaged_RFA_Sir_Tristram_1983.jpg"
                     }
+                  ],
+                  "state": [
+                    {
+                      "id": "wTbs6AUBFp",
+                      "t": "1982-03-16T10:00:00-04:00",
+                      "location": [-14.412079097123714, -7.966426950615244]
+                    }
                   ]
                 },
                 {
                   "id": "yYeXx4Eykk",
                   "name": "RFA Sir Bedivere",
                   "sidc": "10033000001203070000",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "BED",
-                  "symbolOptions": {}
+                  "symbolOptions": {},
+                  "state": []
                 },
                 {
                   "id": "kCkMABqNoJ",
                   "name": "RFA Sir Galahad",
                   "sidc": "10033000001203070000",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "GAL",
-                  "symbolOptions": {}
+                  "symbolOptions": {},
+                  "state": []
                 },
                 {
                   "id": "cUgwn9vQQs",
                   "name": "RFA Sir Geraint",
                   "sidc": "10033000001203070000",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "GER",
-                  "symbolOptions": {}
+                  "symbolOptions": {},
+                  "state": []
                 },
                 {
                   "id": "HFpxW4hzrz",
                   "name": "RFA Sir Lancelot",
                   "sidc": "10033000001203070000",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "LAN",
-                  "symbolOptions": {}
+                  "symbolOptions": {},
+                  "state": []
                 },
                 {
                   "id": "me4LtjIhtM",
                   "name": "HMS Broadsword",
                   "sidc": "10033000001202040000",
+                  "subUnits": [],
+                  "shortName": "BRO",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/5/57/HMS_Broadsword%2C_1982_%28IWM%29.jpg",
+                      "caption": "",
+                      "credits": "Royal Navy official photographer, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Broadsword,_1982_(IWM).jpg"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "HfaAKnpY8I",
@@ -747,22 +757,22 @@
                       "location": [-59.186182218095624, -51.443170337741705],
                       "via": [[-59.070620393353046, -51.09371116964679]]
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "BRO",
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/5/57/HMS_Broadsword%2C_1982_%28IWM%29.jpg",
-                      "caption": "",
-                      "credits": "Royal Navy official photographer, Public domain, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Broadsword,_1982_(IWM).jpg"
-                    }
                   ]
                 },
                 {
                   "id": "x5YDPVA2NF",
                   "name": "HMS Brilliant",
                   "sidc": "10033000001202040000",
+                  "subUnits": [],
+                  "shortName": "BRI",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/f/f1/HMS_Brilliant_%28F90%29_enters_a_port_in_September_1985_%286421615%29.jpg",
+                      "caption": "",
+                      "credits": "Lt. Dave Parsons, U.S. Navy, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Brilliant_(F90)_enters_a_port_in_September_1985_(6421615).jpg"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "WeySHkOKCD",
@@ -775,22 +785,14 @@
                       "location": [-59.173822598955, -51.528258893873016],
                       "via": [[-58.9906843643281, -51.04857812028339]]
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "BRI",
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/f/f1/HMS_Brilliant_%28F90%29_enters_a_port_in_September_1985_%286421615%29.jpg",
-                      "caption": "",
-                      "credits": "Lt. Dave Parsons, U.S. Navy, Public domain, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Brilliant_(F90)_enters_a_port_in_September_1985_(6421615).jpg"
-                    }
                   ]
                 },
                 {
                   "id": "12ztMBWVbZ",
                   "name": "HMS Plymouth",
                   "sidc": "10033000001202040000",
+                  "subUnits": [],
+                  "shortName": "PLY",
                   "state": [
                     {
                       "id": "cqan0tar7o",
@@ -803,14 +805,22 @@
                       "location": [-59.15184994270499, -51.49535401316384],
                       "via": [[-59.089202207658396, -51.11930616105646]]
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "PLY"
+                  ]
                 },
                 {
                   "id": "RdAy81IXKY",
                   "name": "HMS Argonaut",
                   "sidc": "10033000001202040000",
+                  "subUnits": [],
+                  "shortName": "ARG",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/1/1b/HMS_Argonaut_%28F56%29_underway_on_the_Potomac_River_on_26_August_1985_%286409918%29.jpg",
+                      "caption": "",
+                      "credits": "Don S. Montgomery, USN, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Argonaut_(F56)_underway_on_the_Potomac_River_on_26_August_1985_(6409918).jpg"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "uhazWka4dl",
@@ -822,22 +832,14 @@
                       "t": "1982-05-21T12:00:00-04:00",
                       "location": [-59.19476528694327, -51.45172912901623]
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "ARG",
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/1/1b/HMS_Argonaut_%28F56%29_underway_on_the_Potomac_River_on_26_August_1985_%286409918%29.jpg",
-                      "caption": "",
-                      "credits": "Don S. Montgomery, USN, Public domain, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Argonaut_(F56)_underway_on_the_Potomac_River_on_26_August_1985_(6409918).jpg"
-                    }
                   ]
                 },
                 {
                   "id": "PyG1gvVYZt",
                   "name": "HMS Coventry",
                   "sidc": "10033000001202030000",
+                  "subUnits": [],
+                  "shortName": "COV",
                   "state": [
                     {
                       "id": "UMiAuf447W",
@@ -849,14 +851,14 @@
                       "t": "1982-05-04T07:00:00-04:00",
                       "location": [-57.08456540236029, -52.290454629952876]
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "COV"
+                  ]
                 },
                 {
                   "id": "TmpkuOe9HA",
                   "name": "HMS Yarmouth",
                   "sidc": "10033000001202040000",
+                  "subUnits": [],
+                  "shortName": "YAR",
                   "state": [
                     {
                       "id": "tHjdVv1sEx",
@@ -877,53 +879,51 @@
                         [-59.068091241230476, -51.11930616105646]
                       ]
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "YAR"
+                  ]
                 },
                 {
                   "id": "RIRCwVzPA9",
                   "name": "HMS Ardent",
                   "sidc": "10033000001202040000",
+                  "subUnits": [],
+                  "shortName": "ARD",
                   "state": [
                     {
                       "id": "sTN5b3NyMj",
                       "t": "1982-05-21T12:00:00-04:00",
                       "location": [-59.1302206092089, -51.67774001315201]
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "ARD"
+                  ]
                 },
                 {
                   "id": "ZbPGIYyCZA",
                   "name": "HMS Antelope",
                   "sidc": "10033000001202040000",
-                  "state": [],
                   "subUnits": [],
-                  "shortName": "ALO"
+                  "shortName": "ALO",
+                  "state": []
                 },
                 {
                   "id": "z1VBMSDi8W",
                   "name": "SS Uganda",
                   "sidc": "10033000001301070000",
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "shortName": "",
+                  "description": "",
+                  "externalUrl": "https://en.wikipedia.org/wiki/SS_Uganda_(1952)",
                   "state": [
                     {
                       "id": "HweBYCeNkM",
                       "t": "1982-04-28T11:45:00-04:00",
                       "location": [-14.438863565524574, -7.9822286135872815]
                     }
-                  ],
-                  "subUnits": [],
-                  "symbolOptions": {},
-                  "shortName": "",
-                  "description": "",
-                  "externalUrl": "https://en.wikipedia.org/wiki/SS_Uganda_(1952)"
+                  ]
                 }
               ],
-              "state": [],
               "shortName": "",
-              "description": "Amphibious Task Group "
+              "description": "Amphibious Task Group ",
+              "state": []
             },
             {
               "id": "nhr6p3jooc",
@@ -939,116 +939,116 @@
                       "id": "I9gwazz9du",
                       "name": "40 Cdo",
                       "sidc": "10031000161211004600",
+                      "subUnits": [
+                        {
+                          "id": "lEyxyPKkCG",
+                          "name": "A",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [],
+                          "state": []
+                        },
+                        {
+                          "id": "IJkPesxo7N",
+                          "name": "B",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [],
+                          "state": []
+                        },
+                        {
+                          "id": "Z3iF8EF84m",
+                          "name": "C",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [],
+                          "state": []
+                        }
+                      ],
+                      "shortName": "40",
                       "state": [
                         {
                           "id": "qg1FtIMI6r",
                           "t": "1982-05-21T12:00:00-04:00",
                           "location": [-59.02439137031722, -51.575277987286114]
                         }
-                      ],
-                      "subUnits": [
-                        {
-                          "id": "lEyxyPKkCG",
-                          "name": "A",
-                          "sidc": "10031000151211004600",
-                          "state": [],
-                          "subUnits": []
-                        },
-                        {
-                          "id": "IJkPesxo7N",
-                          "name": "B",
-                          "sidc": "10031000151211004600",
-                          "state": [],
-                          "subUnits": []
-                        },
-                        {
-                          "id": "Z3iF8EF84m",
-                          "name": "C",
-                          "sidc": "10031000151211004600",
-                          "state": [],
-                          "subUnits": []
-                        }
-                      ],
-                      "shortName": "40"
+                      ]
                     },
                     {
                       "id": "qMsLMRj0el",
                       "name": "42 Cdo",
                       "sidc": "10031000161211004600",
+                      "subUnits": [
+                        {
+                          "id": "uf0mPx3NYj",
+                          "name": "J",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [],
+                          "state": []
+                        },
+                        {
+                          "id": "YIFJFKQrwO",
+                          "name": "K",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [],
+                          "state": []
+                        },
+                        {
+                          "id": "fY8QSSqYve",
+                          "name": "L",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [],
+                          "state": []
+                        }
+                      ],
+                      "shortName": "42",
                       "state": [
                         {
                           "id": "G3YVFmGghA",
                           "t": "1982-05-21T12:00:00-04:00",
                           "location": [-58.991089063188305, -51.49850664621707]
                         }
-                      ],
-                      "subUnits": [
-                        {
-                          "id": "uf0mPx3NYj",
-                          "name": "J",
-                          "sidc": "10031000151211004600",
-                          "state": [],
-                          "subUnits": []
-                        },
-                        {
-                          "id": "YIFJFKQrwO",
-                          "name": "K",
-                          "sidc": "10031000151211004600",
-                          "state": [],
-                          "subUnits": []
-                        },
-                        {
-                          "id": "fY8QSSqYve",
-                          "name": "L",
-                          "sidc": "10031000151211004600",
-                          "state": [],
-                          "subUnits": []
-                        }
-                      ],
-                      "shortName": "42"
+                      ]
                     },
                     {
                       "id": "1EoJikAifw",
                       "name": "45 Cdo",
                       "sidc": "10031000161211004600",
+                      "subUnits": [
+                        {
+                          "id": "2NoeYJZwJr",
+                          "name": "X",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [],
+                          "state": []
+                        },
+                        {
+                          "id": "AD1yfLPhGz",
+                          "name": "Y",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [],
+                          "state": []
+                        },
+                        {
+                          "id": "rIKyKXL33h",
+                          "name": "Z",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [],
+                          "state": []
+                        }
+                      ],
+                      "shortName": "45",
                       "state": [
                         {
                           "id": "eTNg7rdLG8",
                           "t": "1982-05-21T12:00:00-04:00",
                           "location": [-59.08601780464338, -51.5648216429888]
                         }
-                      ],
-                      "subUnits": [
-                        {
-                          "id": "2NoeYJZwJr",
-                          "name": "X",
-                          "sidc": "10031000151211004600",
-                          "state": [],
-                          "subUnits": []
-                        },
-                        {
-                          "id": "AD1yfLPhGz",
-                          "name": "Y",
-                          "sidc": "10031000151211004600",
-                          "state": [],
-                          "subUnits": []
-                        },
-                        {
-                          "id": "rIKyKXL33h",
-                          "name": "Z",
-                          "sidc": "10031000151211004600",
-                          "state": [],
-                          "subUnits": []
-                        }
-                      ],
-                      "shortName": "45"
+                      ]
                     },
                     {
                       "id": "1fRATlEssI",
                       "name": "29 Cdo RA",
                       "sidc": "10031000161303000000",
-                      "state": [],
-                      "subUnits": []
+                      "subUnits": [],
+                      "state": []
                     },
                     {
                       "id": "ulsGPqOgtR",
@@ -1059,57 +1059,57 @@
                           "id": "VQwQFLrm6p",
                           "name": "29 FB",
                           "sidc": "10031000151303000000",
-                          "state": [],
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "FV7W2AH6LD",
                           "name": "43 AD",
                           "sidc": "10031000141301020000",
-                          "state": [],
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "eu470COdGt",
                           "name": "A COY",
                           "sidc": "10031000151211000001",
-                          "state": [],
                           "shortName": "A",
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "3nZfhSriiL",
                           "name": "B COY",
                           "sidc": "10031000151211000001",
-                          "state": [],
                           "shortName": "B",
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "c8Sl53ZGYp",
                           "name": "C COY",
                           "sidc": "10031000151213000001",
-                          "state": [],
                           "shortName": "C",
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "AAr9jW6zYK",
                           "name": "D COY",
                           "sidc": "10031000151211000001",
-                          "state": [],
                           "shortName": "D",
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         }
                       ],
+                      "shortName": "2",
                       "state": [
                         {
                           "id": "N4AZYpar5r",
                           "t": "1982-05-21T12:00:00-04:00",
                           "location": [-59.01100178291491, -51.615373893500085]
                         }
-                      ],
-                      "shortName": "2"
+                      ]
                     },
                     {
                       "id": "iFcRlZGNtz",
@@ -1120,43 +1120,43 @@
                           "id": "A4k7IOh0Jy",
                           "name": "A COY",
                           "sidc": "10031000151211000001",
-                          "state": [],
                           "shortName": "A",
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "LmrhD2CKOQ",
                           "name": "B COY",
                           "sidc": "10031000151211000001",
-                          "state": [],
                           "shortName": "B",
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "wDeuAYzGli",
                           "name": "C COY",
                           "sidc": "10031000151211000001",
-                          "state": [],
                           "shortName": "C",
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "oesQe6OaiM",
                           "name": "D COY",
                           "sidc": "10031000151213000001",
-                          "state": [],
                           "shortName": "D",
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         }
                       ],
+                      "shortName": "3",
                       "state": [
                         {
                           "id": "EhJ5aUnMGh",
                           "t": "1982-05-21T12:00:00-04:00",
                           "location": [-58.999843793412914, -51.49733111362477]
                         }
-                      ],
-                      "shortName": "3"
+                      ]
                     }
                   ],
                   "state": []
@@ -1165,132 +1165,132 @@
                   "id": "Bp0HcNM1p0",
                   "name": "5 Inf Bde",
                   "sidc": "10031000181211000000",
-                  "state": [],
                   "subUnits": [
                     {
                       "id": "MOJaDvbFjS",
                       "name": "2nd Bn Scots Guards",
                       "sidc": "10031000161211000000",
-                      "state": [],
                       "shortName": "SG",
                       "subUnits": [
                         {
                           "id": "DY25qL05nR",
                           "name": "Left Flank",
                           "sidc": "10031000151211000000",
-                          "state": [],
                           "shortName": "LF",
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "kSvPn3YJCo",
                           "name": "Right Flank",
                           "sidc": "10031000151211000000",
-                          "state": [],
                           "shortName": "RF",
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "saMMkkALt8",
                           "name": "G",
                           "sidc": "10031000151211000000",
-                          "state": [],
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         }
-                      ]
+                      ],
+                      "state": []
                     },
                     {
                       "id": "x8drGcZ7yU",
                       "name": "1st Bn Welsh Guards",
                       "sidc": "10031000161211000000",
-                      "state": [],
                       "subUnits": [
                         {
                           "id": "WcvWsuhKoD",
                           "name": "A",
                           "sidc": "10031000151211000000",
-                          "state": [],
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "tCzuEkXOC3",
                           "name": "B",
                           "sidc": "10031000151211000000",
-                          "state": [],
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "OBhJRPvRMW",
                           "name": "C",
                           "sidc": "10031000151211000000",
-                          "state": [],
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         }
                       ],
-                      "shortName": "WG"
+                      "shortName": "WG",
+                      "state": []
                     },
                     {
                       "id": "YZWcomyPhr",
                       "name": "1st Bn 7th Gurkha Rifles",
                       "sidc": "10031000161211000000",
-                      "state": [],
                       "subUnits": [
                         {
                           "id": "eMXoUeDBPz",
                           "name": "A",
                           "sidc": "10031000151211000000",
-                          "state": [],
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "lQlTXqkJRR",
                           "name": "B",
                           "sidc": "10031000151211000000",
-                          "state": [],
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "Np5PwEiV3y",
                           "name": "C",
                           "sidc": "10031000151211000000",
-                          "state": [],
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         },
                         {
                           "id": "PExEK5lrtk",
                           "name": "D",
                           "sidc": "10031000151211000000",
-                          "state": [],
-                          "subUnits": []
+                          "subUnits": [],
+                          "state": []
                         }
                       ],
-                      "shortName": "7 GR"
+                      "shortName": "7 GR",
+                      "state": []
                     },
                     {
                       "id": "HsNT7YLMU1",
                       "name": "36 Engineer Regiment",
                       "sidc": "10031000161407000000",
-                      "state": [],
                       "shortName": "36 Eng",
-                      "subUnits": []
+                      "subUnits": [],
+                      "state": []
                     },
                     {
                       "id": "OBopdAE5hg",
                       "name": "63 AD Squadron",
                       "sidc": "10031000151301020000",
-                      "state": [],
                       "shortName": "63 AD",
-                      "subUnits": []
+                      "subUnits": [],
+                      "state": []
                     },
                     {
                       "id": "xRPkup3gmJ",
                       "name": "97 Field Battery",
                       "sidc": "10031000151303000000",
-                      "state": [],
                       "shortName": "97 FB",
-                      "subUnits": []
+                      "subUnits": [],
+                      "state": []
                     }
-                  ]
+                  ],
+                  "state": []
                 }
               ],
               "state": []
@@ -1304,6 +1304,17 @@
                   "id": "ksCBbvo0PD",
                   "name": "HMS Conqueror",
                   "sidc": "10033500001101000006",
+                  "subUnits": [],
+                  "shortName": "Conqueror",
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Conqueror_(S48)",
+                  "media": [
+                    {
+                      "url": "https://media.iwm.org.uk/ciim5/169/790/mid_000000.jpg?action=e&cat=Photographs",
+                      "caption": "",
+                      "credits": "© Crown copyright. IWM (FKD 27)",
+                      "creditsUrl": "https://www.iwm.org.uk/collections/item/object/205045373"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "bSPeiXY2Zv",
@@ -1330,63 +1341,52 @@
                       "t": "1982-05-02T14:40:48-04:00",
                       "location": [-61.39035446861821, -55.54945374841025]
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "Conqueror",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Conqueror_(S48)",
-                  "media": [
-                    {
-                      "url": "https://media.iwm.org.uk/ciim5/169/790/mid_000000.jpg?action=e&cat=Photographs",
-                      "caption": "",
-                      "credits": "© Crown copyright. IWM (FKD 27)",
-                      "creditsUrl": "https://www.iwm.org.uk/collections/item/object/205045373"
-                    }
                   ]
                 },
                 {
                   "id": "d0L8MJdCqN",
                   "name": "HMS Courageous",
                   "sidc": "10033500001101000006",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "Courageous",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Courageous_(S50)"
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Courageous_(S50)",
+                  "state": []
                 },
                 {
                   "id": "V8W3DDOBuX",
                   "name": "HMS Spartan",
                   "sidc": "10033500001101000006",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "Spartan",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Spartan_(S105)"
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Spartan_(S105)",
+                  "state": []
                 },
                 {
                   "id": "0rac5JjD5g",
                   "name": "HMS Splendid",
                   "sidc": "10033500001101000006",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "Splendid",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Splendid_(S106)"
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Splendid_(S106)",
+                  "state": []
                 },
                 {
                   "id": "ZZYwUIpcrw",
                   "name": "HMS Valiant",
                   "sidc": "10033500001101000006",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "Valiant",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Valiant_(S102)"
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Valiant_(S102)",
+                  "state": []
                 },
                 {
                   "id": "EBnQ6ioNEs",
                   "name": "HMS Onyx",
                   "sidc": "10033500001101000002",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "Onyx",
-                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Onyx_(S21)"
+                  "externalUrl": "https://en.wikipedia.org/wiki/HMS_Onyx_(S21)",
+                  "state": []
                 }
               ],
               "state": []
@@ -1400,22 +1400,22 @@
                   "id": "pqWqv1Bp7w",
                   "name": "M Coy",
                   "sidc": "10031000151211004600",
-                  "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "state": []
                 },
                 {
                   "id": "fIwcGGk06T",
                   "name": "D Sq SAS",
                   "sidc": "10031000151211006300",
-                  "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "state": []
                 },
                 {
                   "id": "ZYarcZfXq6",
                   "name": "2 Sec SBS",
                   "sidc": "10031000141218030000",
-                  "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "state": []
                 }
               ],
               "state": []
@@ -1440,12 +1440,21 @@
               "id": "kzPA2jyP6Y",
               "name": "Combatants",
               "sidc": "10033000001200000000",
-              "state": [],
               "subUnits": [
                 {
                   "id": "W2ZO6vxg0q",
                   "name": "ARA Cabo San Antonio",
                   "sidc": "10033000001203070000",
+                  "subUnits": [],
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/De_Soto_County_LST-1171.jpg",
+                      "caption": "",
+                      "credits": "See page for author, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:De_Soto_County_LST-1171.jpg"
+                    }
+                  ],
+                  "shortName": "CSA",
                   "state": [
                     {
                       "t": "1982-03-11T10:00:00-04:00",
@@ -1487,29 +1496,12 @@
                       "t": "1982-05-26T20:00:00-04:00",
                       "id": "929pPngnPQ"
                     }
-                  ],
-                  "subUnits": [],
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/De_Soto_County_LST-1171.jpg",
-                      "caption": "",
-                      "credits": "See page for author, Public domain, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:De_Soto_County_LST-1171.jpg"
-                    }
-                  ],
-                  "shortName": "CSA"
+                  ]
                 },
                 {
                   "id": "AC8ZMWwYvR",
                   "name": "ARA Comodoro Py",
                   "sidc": "10033000001202030000",
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-62.124558602371216, -38.921489637879176],
-                      "id": "55eAstP3Ae"
-                    }
-                  ],
                   "subUnits": [],
                   "shortName": "CPY",
                   "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
@@ -1520,41 +1512,51 @@
                       "credits": "Col. Martín Otero, CC BY 2.5, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Veinticinco_de_Mayo.jpg"
                     }
+                  ],
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-62.124558602371216, -38.921489637879176],
+                      "id": "55eAstP3Ae"
+                    }
                   ]
                 },
                 {
                   "id": "KLFoTRFuAB",
                   "name": "ARA Comodoro Segui",
                   "sidc": "10033000001202030000",
+                  "subUnits": [],
+                  "shortName": "CSG",
+                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
                   "state": [
                     {
                       "t": "1982-03-11T10:00:00-04:00",
                       "location": [-62.10773578742981, -38.922558060636455],
                       "id": "twtCIcvL4E"
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "CSG",
-                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)"
+                  ]
                 },
                 {
                   "id": "VDqHwIOuso",
                   "name": "ARA Guerrico",
                   "sidc": "10033000001202051900",
+                  "subUnits": [],
+                  "shortName": "GUE",
                   "state": [
                     {
                       "t": "1982-04-02T20:00:00-04:00",
                       "location": [-36.49641, -54.285671],
                       "id": "mkkQD44CZk"
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "GUE"
+                  ]
                 },
                 {
                   "id": "n4cQBRLpod",
                   "name": "ARA Hipólito Bouchard",
                   "sidc": "10033000001202030000",
+                  "subUnits": [],
+                  "shortName": "HBO",
+                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
                   "state": [
                     {
                       "t": "1982-03-11T10:00:00-04:00",
@@ -1591,15 +1593,15 @@
                       "t": "1982-05-02T21:14:24-04:00",
                       "location": [-61.63404937672241, -55.41593008842774]
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "HBO",
-                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)"
+                  ]
                 },
                 {
                   "id": "57C8QDlA48",
                   "name": "ARA Piedra buena (D-29)",
                   "sidc": "10033000001202030000",
+                  "subUnits": [],
+                  "shortName": "PBU",
+                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Collett#Argentine_service",
                   "state": [
                     {
                       "t": "1982-03-11T10:00:00-04:00",
@@ -1636,22 +1638,12 @@
                       "t": "1982-05-02T21:14:24-04:00",
                       "location": [-61.63648424785495, -55.382746901606005]
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "PBU",
-                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Collett#Argentine_service"
+                  ]
                 },
                 {
                   "id": "5G3UQJUa9e",
                   "name": "ARA Santa Fe",
                   "sidc": "10033500001101000000",
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-61.986178639231525, -38.99540201865318],
-                      "id": "hUcDAlINEc"
-                    }
-                  ],
                   "subUnits": [],
                   "media": [
                     {
@@ -1661,12 +1653,21 @@
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Santa_Fe_(S-11).jpg#file"
                     }
                   ],
-                  "shortName": "SFE"
+                  "shortName": "SFE",
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-61.986178639231525, -38.99540201865318],
+                      "id": "hUcDAlINEc"
+                    }
+                  ]
                 },
                 {
                   "id": "oRsy5ZvKZO",
                   "name": "ARA Santisima Trinidad",
                   "sidc": "10033000001202030000",
+                  "subUnits": [],
+                  "shortName": "STR",
                   "state": [
                     {
                       "t": "1982-03-11T10:00:00-04:00",
@@ -1694,21 +1695,12 @@
                       "t": "1982-05-26T20:00:00-04:00",
                       "id": "FtPyxllBy5"
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "STR"
+                  ]
                 },
                 {
                   "id": "v1MIvqTJkj",
                   "name": "ARA Veinticinco de Mayo",
                   "sidc": "10033000001201000000",
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-62.13382831672671, -38.910270227594424],
-                      "id": "rKCJbthjrM"
-                    }
-                  ],
                   "subUnits": [],
                   "shortName": "VDM",
                   "externalUrl": "https://en.wikipedia.org/wiki/ARA_Veinticinco_de_Mayo_(V-2)",
@@ -1719,40 +1711,58 @@
                       "credits": "ValtTeck, CC BY-SA 4.0, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Veinticinco_de_Mayo.jpg"
                     }
+                  ],
+                  "state": [
+                    {
+                      "t": "1982-03-11T10:00:00-04:00",
+                      "location": [-62.13382831672671, -38.910270227594424],
+                      "id": "rKCJbthjrM"
+                    }
                   ]
                 },
                 {
                   "id": "StgaVQO18b",
                   "name": "ARA Drummond",
                   "sidc": "10033000001202050000",
+                  "subUnits": [],
+                  "shortName": "DRU",
                   "state": [
                     {
                       "t": "1982-03-11T10:00:00-04:00",
                       "location": [-62.01433110505183, -38.99967115754452],
                       "id": "6lM4rD1w9s"
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "DRU"
+                  ]
                 },
                 {
                   "id": "brruuJVSKS",
                   "name": "ARA Granville",
                   "sidc": "10033000001202050000",
+                  "subUnits": [],
+                  "shortName": "GRV",
                   "state": [
                     {
                       "t": "1982-03-11T10:00:00-04:00",
                       "location": [-61.94909978180964, -38.99113262219964],
                       "id": "QhNYqHMYuD"
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "GRV"
+                  ]
                 },
                 {
                   "id": "mhQX0REztU",
                   "name": "ARA General Belgrano",
                   "sidc": "10033000001202020000",
+                  "subUnits": [],
+                  "shortName": "GBE",
+                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_General_Belgrano",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/ARA_General_Belgrano_underway.jpg",
+                      "caption": "",
+                      "credits": "Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_General_Belgrano_underway.jpg"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "0DQ91sSfBb",
@@ -1811,60 +1821,61 @@
                         "units": ["mhQX0REztU"]
                       }
                     }
-                  ],
-                  "subUnits": [],
-                  "shortName": "GBE",
-                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_General_Belgrano",
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/ARA_General_Belgrano_underway.jpg",
-                      "caption": "",
-                      "credits": "Public domain, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_General_Belgrano_underway.jpg"
-                    }
                   ]
                 }
-              ]
+              ],
+              "state": []
             },
             {
               "id": "K4PFOFgCSG",
               "name": "Support ships",
               "sidc": "10033000001300000000",
-              "state": [],
               "subUnits": [
                 {
                   "id": "FfAifXXyRE",
                   "name": "ARA Almirante Irízar",
                   "sidc": "10033000001301001900",
+                  "subUnits": [
+                    {
+                      "id": "xDO7zxDv2C",
+                      "name": "H1",
+                      "sidc": "10030100001102000703",
+                      "subUnits": [],
+                      "state": []
+                    },
+                    {
+                      "id": "MsrVuaZMBE",
+                      "name": "H2",
+                      "sidc": "10030100001102000703",
+                      "subUnits": [],
+                      "state": []
+                    }
+                  ],
+                  "shortName": "AIR",
                   "state": [
                     {
                       "t": "1982-04-02T20:00:00-04:00",
                       "location": [-36.474094, -54.286774],
                       "id": "Ol62166MoN"
                     }
-                  ],
-                  "subUnits": [
-                    {
-                      "id": "xDO7zxDv2C",
-                      "name": "H1",
-                      "sidc": "10030100001102000703",
-                      "state": [],
-                      "subUnits": []
-                    },
-                    {
-                      "id": "MsrVuaZMBE",
-                      "name": "H2",
-                      "sidc": "10030100001102000703",
-                      "state": [],
-                      "subUnits": []
-                    }
-                  ],
-                  "shortName": "AIR"
+                  ]
                 },
                 {
                   "id": "rQVoXIJpJw",
                   "name": "ARA Bahía Buen Suceso",
                   "sidc": "10033000001301000000",
+                  "subUnits": [],
+                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Buen_Suceso",
+                  "shortName": "BBS",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/ARA_Bah%C3%ADa_Buen_Suceso.png/1280px-ARA_Bah%C3%ADa_Buen_Suceso.png",
+                      "caption": "",
+                      "credits": "Original copy of the photo, Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Bah%C3%ADa_Buen_Suceso.png"
+                    }
+                  ],
+                  "description": "A Bahía Aguirre-class 5,000-ton fleet transport that served in the Argentine Navy from 1950 to 1982.",
                   "state": [
                     {
                       "t": "1982-03-11T09:00:00-04:00",
@@ -1944,24 +1955,16 @@
                         "fillColor": "#aab074"
                       }
                     }
-                  ],
-                  "subUnits": [],
-                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Buen_Suceso",
-                  "shortName": "BBS",
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/ARA_Bah%C3%ADa_Buen_Suceso.png/1280px-ARA_Bah%C3%ADa_Buen_Suceso.png",
-                      "caption": "",
-                      "credits": "Original copy of the photo, Public domain, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Bah%C3%ADa_Buen_Suceso.png"
-                    }
-                  ],
-                  "description": "A Bahía Aguirre-class 5,000-ton fleet transport that served in the Argentine Navy from 1950 to 1982."
+                  ]
                 },
                 {
                   "id": "V8ElpGSpvK",
                   "name": "ARA Bahía Paraíso",
                   "sidc": "10033000001301000000",
+                  "subUnits": [],
+                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Para%C3%ADso",
+                  "shortName": "BPA",
+                  "description": "The ship operated as a naval auxiliary vessel from 1981 to 1986 and served in the Falklands War as a troop transport as well as hospital ship. It was involved in transporting troops to Leith Harbour prior to the Invasion of South Georgia. ",
                   "state": [
                     {
                       "t": "1982-03-11T10:00:00-04:00",
@@ -1978,29 +1981,26 @@
                       "location": [-36.684097226005825, -54.14272379683638],
                       "id": "Ci4gkXRU7f"
                     }
-                  ],
-                  "subUnits": [],
-                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Para%C3%ADso",
-                  "shortName": "BPA",
-                  "description": "The ship operated as a naval auxiliary vessel from 1981 to 1986 and served in the Falklands War as a troop transport as well as hospital ship. It was involved in transporting troops to Leith Harbour prior to the Invasion of South Georgia. "
+                  ]
                 },
                 {
                   "id": "gAJzCZKNNd",
                   "name": "ARA Punta Médanos",
                   "sidc": "10033000001301100000",
+                  "subUnits": [],
+                  "externalUrl": "",
+                  "shortName": "PME",
+                  "description": "",
                   "state": [
                     {
                       "t": "1982-03-11T10:00:00-04:00",
                       "location": [-62.12078205207824, -38.90946877327505],
                       "id": "ILr5wFvqlA"
                     }
-                  ],
-                  "subUnits": [],
-                  "externalUrl": "",
-                  "shortName": "PME",
-                  "description": ""
+                  ]
                 }
-              ]
+              ],
+              "state": []
             }
           ]
         },
@@ -2017,8 +2017,8 @@
                   "id": "4uaYzkhO8a",
                   "name": "TG 40.1",
                   "sidc": "10031004001211000000",
-                  "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "state": []
                 }
               ],
               "state": []
@@ -2034,6 +2034,7 @@
               "id": "ks0mMcty6I",
               "name": "Workers",
               "sidc": "10031100001104000000",
+              "subUnits": [],
               "state": [
                 {
                   "t": "1982-03-19T10:00:00-04:00",
@@ -2045,8 +2046,7 @@
                   "t": "1982-04-14T10:00:00-04:00",
                   "id": "eE3oEfoxYt"
                 }
-              ],
-              "subUnits": []
+              ]
             }
           ]
         },
@@ -2068,15 +2068,15 @@
                       "id": "c8Gp2Bt2Sl",
                       "name": "AA1",
                       "sidc": "10031500001110010000",
-                      "state": [],
-                      "subUnits": []
+                      "subUnits": [],
+                      "state": []
                     },
                     {
                       "id": "JuX2CtTDJj",
                       "name": "AA2",
                       "sidc": "10031500001105000000",
-                      "state": [],
-                      "subUnits": []
+                      "subUnits": [],
+                      "state": []
                     }
                   ],
                   "state": []
@@ -2085,62 +2085,62 @@
                   "id": "BoAMPXKcSq",
                   "name": "12th Inf Reg",
                   "sidc": "10031000171211000000",
-                  "state": [],
                   "subUnits": [
                     {
                       "id": "e2Dd1jHi3I",
                       "name": "A",
                       "sidc": "10031000161211000000",
+                      "subUnits": [],
                       "state": [
                         {
                           "id": "mqG97vVJpu",
                           "t": "1982-05-26T20:00:00-04:00",
                           "location": [-58.97594045601976, -51.825991847559145]
                         }
-                      ],
-                      "subUnits": []
+                      ]
                     },
                     {
                       "id": "wsQpmn3OGI",
                       "name": "B",
                       "sidc": "10031000161211000000",
+                      "subUnits": [],
                       "state": [
                         {
                           "id": "O1Yodf25k6",
                           "t": "1982-05-26T20:00:00-04:00",
                           "location": [-58.111871431119695, -51.67344058266559]
                         }
-                      ],
-                      "subUnits": []
+                      ]
                     },
                     {
                       "id": "zE8dqBnoiU",
                       "name": "C",
                       "sidc": "10031000161211000000",
+                      "subUnits": [],
                       "state": [
                         {
                           "id": "sUADx0xyRO",
                           "t": "1982-05-26T20:00:00-04:00",
                           "location": [-58.971863498317134, -51.82771586853235]
                         }
-                      ],
-                      "subUnits": []
+                      ]
                     }
-                  ]
+                  ],
+                  "state": []
                 },
                 {
                   "id": "hbLvBUqapH",
                   "name": "5th Inf Reg",
                   "sidc": "10031000171211000000",
-                  "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "state": []
                 },
                 {
                   "id": "rRKxj6Sfzf",
                   "name": "8th Inf Reg",
                   "sidc": "10031000171211000000",
-                  "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "state": []
                 }
               ],
               "state": []
@@ -2149,58 +2149,58 @@
               "id": "WEi8zOQmnr",
               "name": "10 Mechanized Infantry Brigade",
               "sidc": "10031000181211000000",
-              "state": [],
               "subUnits": [
                 {
                   "id": "EVkwU3z8me",
                   "name": "3rd Inf Reg",
                   "sidc": "10031000171211000000",
-                  "state": [],
                   "subUnits": [],
-                  "shortName": "3 Inf Reg"
+                  "shortName": "3 Inf Reg",
+                  "state": []
                 },
                 {
                   "id": "h7MAj2W9Ub",
                   "name": "7th Infantry Regiment",
                   "sidc": "10031000171211000000",
-                  "state": [],
                   "subUnits": [],
-                  "shortName": "7 Inf Reg"
+                  "shortName": "7 Inf Reg",
+                  "state": []
                 },
                 {
                   "id": "K6QslV9ovo",
                   "name": "6th Infantry Regiment",
                   "sidc": "10031000171211000000",
-                  "state": [],
                   "subUnits": [],
-                  "shortName": "6 Inf Reg"
+                  "shortName": "6 Inf Reg",
+                  "state": []
                 },
                 {
                   "id": "52lP3wBqgH",
                   "name": "25th Infantry Regiment",
                   "sidc": "10031000171211000000",
-                  "state": [],
                   "subUnits": [],
-                  "shortName": "25 Inf Reg"
+                  "shortName": "25 Inf Reg",
+                  "state": []
                 },
                 {
                   "id": "jksAfGOypF",
                   "name": "181st Armoured Cavalry Squadron",
                   "sidc": "10031000151205010000",
-                  "state": [],
                   "subUnits": [],
-                  "shortName": "181 Arm Cav Sqd"
+                  "shortName": "181 Arm Cav Sqd",
+                  "state": []
                 }
               ],
-              "shortName": "10 Mech Inf"
+              "shortName": "10 Mech Inf",
+              "state": []
             },
             {
               "id": "b2stPeJbsj",
               "name": "5th Marine Infantry Battalion",
               "sidc": "10031000161211004600",
-              "state": [],
               "subUnits": [],
-              "shortName": "5 Mar Inf Btn"
+              "shortName": "5 Mar Inf Btn",
+              "state": []
             }
           ]
         }

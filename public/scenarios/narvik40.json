@@ -1,10 +1,10 @@
 {
   "id": "demo-narvik40",
   "type": "ORBAT-mapper",
-  "version": "0.31.0",
+  "version": "0.33.0",
   "meta": {
     "createdDate": "2024-04-01T17:14:51.567Z",
-    "lastModifiedDate": "2024-10-13T06:13:57.006Z"
+    "lastModifiedDate": "2024-12-09T18:13:31.852Z"
   },
   "name": "Battles of Narvik",
   "startTime": "1940-04-09T01:00:00+02:00",
@@ -25,7 +25,6 @@
               "id": "elmfZkws7F",
               "name": "Naval units",
               "sidc": "10033000001210040000",
-              "state": [],
               "subUnits": [
                 {
                   "id": "EaPcn0Sv5yfULEaLgVpgN",
@@ -37,6 +36,16 @@
                       "uom": "knots"
                     }
                   },
+                  "subUnits": [],
+                  "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Eidsvold_%281900%29_a.jpg",
+                      "caption": "",
+                      "credits": "B. Weyer (1857-1936), Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:Eidsvold_(1900)_a.jpg"
+                    }
+                  ],
                   "state": [
                     {
                       "t": "1940-04-01T01:00:00+01:00",
@@ -48,16 +57,6 @@
                       "t": "1940-04-09T04:37:00+02:00",
                       "symbolOptions": {},
                       "id": "6oxb6J0jMU"
-                    }
-                  ],
-                  "subUnits": [],
-                  "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold",
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Eidsvold_%281900%29_a.jpg",
-                      "caption": "",
-                      "credits": "B. Weyer (1857-1936), Public domain, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:Eidsvold_(1900)_a.jpg"
                     }
                   ]
                 },
@@ -71,6 +70,16 @@
                       "uom": "knots"
                     }
                   },
+                  "subUnits": [],
+                  "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold",
+                  "media": [
+                    {
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/4/45/KNMS_Norge_1933.JPG",
+                      "caption": "",
+                      "credits": "Public domain, via Wikimedia Commons",
+                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:KNMS_Norge_1933.JPG"
+                    }
+                  ],
                   "state": [
                     {
                       "t": "1940-04-01T01:00:00+01:00",
@@ -83,104 +92,95 @@
                       "symbolOptions": {},
                       "id": "5JD4oLHRWf"
                     }
-                  ],
-                  "subUnits": [],
-                  "externalUrl": "https://en.wikipedia.org/wiki/HNoMS_Eidsvold",
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/4/45/KNMS_Norge_1933.JPG",
-                      "caption": "",
-                      "credits": "Public domain, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:KNMS_Norge_1933.JPG"
-                    }
                   ]
                 }
-              ]
+              ],
+              "state": []
             },
             {
               "id": "sWWZciPN6L",
               "name": "6th Division",
               "sidc": "10031000211211000000",
-              "state": [],
               "subUnits": [
                 {
                   "id": "d14BhMNBcx",
                   "name": "14th Infantry Regiment",
                   "sidc": "10031000171211000000",
-                  "state": [],
                   "subUnits": [
                     {
                       "id": "KUSutyL3Xc",
                       "name": "1",
                       "sidc": "10031000161211000000",
-                      "state": [],
                       "subUnits": [],
-                      "symbolOptions": {}
+                      "symbolOptions": {},
+                      "state": []
                     },
                     {
                       "id": "2l3cnX2b3J",
                       "name": "2",
                       "sidc": "10031000161211000000",
-                      "state": [],
                       "subUnits": [],
-                      "symbolOptions": {}
+                      "symbolOptions": {},
+                      "state": []
                     }
                   ],
                   "symbolOptions": {},
                   "reinforcedStatus": "None",
-                  "shortName": "14IR"
+                  "shortName": "14IR",
+                  "state": []
                 },
                 {
                   "id": "axE8ef3E6l",
                   "name": "15th Infantry Regiment",
                   "sidc": "10031000171211000000",
-                  "state": [],
                   "subUnits": [],
                   "symbolOptions": {},
                   "reinforcedStatus": "None",
-                  "shortName": "15IR"
+                  "shortName": "15IR",
+                  "state": []
                 },
                 {
                   "id": "ZA9ZRC04Kw",
                   "name": "16th Infantry Regiment",
                   "sidc": "10031000171211000000",
-                  "state": [],
                   "subUnits": [
                     {
                       "id": "aseaAMx8WW",
                       "name": "1",
                       "sidc": "10031000161211000000",
-                      "state": [],
                       "subUnits": [],
-                      "symbolOptions": {}
+                      "symbolOptions": {},
+                      "state": []
                     },
                     {
                       "id": "X7lxh8BAm3",
                       "name": "2",
                       "sidc": "10031000161211000000",
-                      "state": [],
                       "subUnits": [],
-                      "symbolOptions": {}
+                      "symbolOptions": {},
+                      "state": []
                     }
                   ],
                   "symbolOptions": {},
                   "reinforcedStatus": "None",
-                  "shortName": "16IR"
+                  "shortName": "16IR",
+                  "state": []
                 },
                 {
                   "id": "0M0m90iLk4",
                   "name": "Alta",
                   "sidc": "10031000161211000000",
-                  "state": [],
                   "subUnits": [],
                   "symbolOptions": {},
-                  "reinforcedStatus": "None"
+                  "reinforcedStatus": "None",
+                  "state": []
                 }
               ],
               "symbolOptions": {},
               "reinforcedStatus": "None",
               "shortName": "6",
-              "externalUrl": "https://en.wikipedia.org/wiki/6th_Division_(Norway)"
+              "externalUrl": "https://en.wikipedia.org/wiki/6th_Division_(Norway)",
+              "state": []
             }
           ]
         },
@@ -192,13 +192,11 @@
               "id": "84T0TIJw3uzI4owhauV57",
               "name": "Naval units",
               "sidc": "10033004001200000000",
-              "state": [],
               "subUnits": [
                 {
                   "id": "RjhMI5jVDqdnozd9CWF2c",
                   "name": "HMS Hardy",
                   "sidc": "10033000001202030000",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "Hardy",
                   "media": [
@@ -216,13 +214,13 @@
                       "value": 36,
                       "uom": "knots"
                     }
-                  }
+                  },
+                  "state": []
                 },
                 {
                   "id": "fAK5DNvzkEee-Bprww6Nn",
                   "name": "HMS Hotspur",
                   "sidc": "10033000001202030000",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "Hotspur",
                   "media": [
@@ -238,13 +236,13 @@
                       "value": 36,
                       "uom": "knots"
                     }
-                  }
+                  },
+                  "state": []
                 },
                 {
                   "id": "WrV9f5KQLDt3dbBJIWNWX",
                   "name": "HMS Hostile",
                   "sidc": "10033000001202030000",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "Hostile",
                   "media": [
@@ -262,13 +260,13 @@
                       "value": 36,
                       "uom": "knots"
                     }
-                  }
+                  },
+                  "state": []
                 },
                 {
                   "id": "2jGbCsiwmZ-xau6MJuMuI",
                   "name": "HMS Hunter",
                   "sidc": "10033000001202030000",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "Hunter",
                   "media": [
@@ -278,13 +276,13 @@
                       "credits": "Royal Navy official photographer, Public domain, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hunter_FL10190.jpg"
                     }
-                  ]
+                  ],
+                  "state": []
                 },
                 {
                   "id": "ERVsIaBmNfyTvW-Df5XaL",
                   "name": "HMS Havock",
                   "sidc": "10033000001202030000",
-                  "state": [],
                   "subUnits": [],
                   "shortName": "Havock",
                   "media": [
@@ -294,85 +292,87 @@
                       "credits": "Royal Navy official photographer, Public domain, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hasty.jpg"
                     }
-                  ]
+                  ],
+                  "state": []
                 }
-              ]
+              ],
+              "state": []
             },
             {
               "id": "82kVsYph7f",
               "name": "North West Expeditionary Force",
               "sidc": "10031004000000000000",
-              "state": [],
               "subUnits": [
                 {
                   "id": "OHAwyNiM39",
                   "name": "24th Infantry Brigade",
                   "sidc": "10031000181211000000",
-                  "state": [],
                   "subUnits": [
                     {
                       "id": "2az3bUhvA2",
                       "name": "1 SG",
                       "sidc": "10031000161211000000",
-                      "state": [],
                       "subUnits": [],
                       "shortName": "1 SG",
                       "textAmplifiers": {
                         "higherFormation": "24"
-                      }
+                      },
+                      "state": []
                     },
                     {
                       "id": "65tzFbGUCe",
                       "name": "1 IG",
                       "sidc": "10031000161211000000",
-                      "state": [],
                       "subUnits": [],
                       "shortName": "",
                       "textAmplifiers": {
                         "higherFormation": "24"
-                      }
+                      },
+                      "state": []
                     },
                     {
                       "id": "gULg9WePVH",
                       "name": "2 SWB",
                       "sidc": "10031000161211000000",
-                      "state": [],
                       "subUnits": [],
                       "shortName": "",
                       "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War",
                       "textAmplifiers": {
                         "higherFormation": "24"
-                      }
+                      },
+                      "state": []
                     },
                     {
                       "id": "weZFBcd0vw",
                       "name": "229 Field RE",
                       "sidc": "10031000151407000000",
-                      "state": [],
                       "subUnits": [],
                       "shortName": "",
                       "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War",
                       "textAmplifiers": {
                         "higherFormation": "24"
-                      }
+                      },
+                      "state": []
                     },
                     {
                       "id": "ypDWYk7VSY",
                       "name": "230 Field RE",
                       "sidc": "10031000151407000000",
-                      "state": [],
                       "subUnits": [],
                       "shortName": "",
                       "externalUrl": "https://en.wikipedia.org/wiki/South_Wales_Borderers#Second_World_War",
                       "textAmplifiers": {
                         "higherFormation": "24"
-                      }
+                      },
+                      "state": []
                     }
                   ],
-                  "shortName": "24 Guards"
+                  "shortName": "24 Guards",
+                  "state": []
                 }
               ],
-              "shortName": "NWEF"
+              "shortName": "NWEF",
+              "state": []
             }
           ]
         }
@@ -391,18 +391,18 @@
               "id": "4jUDHDPiJn",
               "name": "Naval units",
               "sidc": "10063000001210040000",
-              "state": [],
               "subUnits": [
                 {
                   "id": "Umq7QwBgfH",
                   "name": "Group I",
                   "sidc": "10063000001210030000",
-                  "state": [],
                   "subUnits": [
                     {
                       "id": "bpM1qg1xEY",
                       "name": "Z19 Herman Künne",
                       "sidc": "10063000001202030000",
+                      "subUnits": [],
+                      "shortName": "Künne",
                       "state": [
                         {
                           "id": "gb1QF9lQOR",
@@ -424,14 +424,14 @@
                           "location": [17.561409332434156, 68.54233844401088],
                           "via": [[17.145111050187356, 68.43070775254071]]
                         }
-                      ],
-                      "subUnits": [],
-                      "shortName": "Künne"
+                      ]
                     },
                     {
                       "id": "afkHbgvnGM",
                       "name": "Z17 Dieter von Roeder",
                       "sidc": "10063000001202030000",
+                      "subUnits": [],
+                      "shortName": "Roeder",
                       "state": [
                         {
                           "id": "vFpYyALC9D",
@@ -447,14 +447,14 @@
                             [14.536798494915923, 68.06352384594734]
                           ]
                         }
-                      ],
-                      "subUnits": [],
-                      "shortName": "Roeder"
+                      ]
                     },
                     {
                       "id": "YogCVYqEEF",
                       "name": "Z18 Hans Lüdemann",
                       "sidc": "10063000001202030000",
+                      "subUnits": [],
+                      "shortName": "Lüdemann",
                       "state": [
                         {
                           "id": "vyueHjfsHh",
@@ -472,14 +472,22 @@
                             [16.02304302116807, 68.36151213373807]
                           ]
                         }
-                      ],
-                      "subUnits": [],
-                      "shortName": "Lüdemann"
+                      ]
                     },
                     {
                       "id": "KVM1ZdVb0i",
                       "name": "Z21 Wilhelm Heidkamp",
                       "sidc": "10063000001202030000",
+                      "subUnits": [],
+                      "shortName": "Heidkamp",
+                      "media": [
+                        {
+                          "url": "https://upload.wikimedia.org/wikipedia/commons/7/75/Z21_Wilhelm_Heidkamp_-_NH_83980.jpg",
+                          "caption": "",
+                          "credits": "Naval History & Heritage Command, Public domain, via Wikimedia Commons",
+                          "creditsUrl": "https://commons.wikimedia.org/wiki/File:Z21_Wilhelm_Heidkamp_-_NH_83980.jpg"
+                        }
+                      ],
                       "state": [
                         {
                           "id": "1Tgdnl8mFY",
@@ -500,22 +508,14 @@
                           "t": "1940-04-09T04:37:00+02:00",
                           "location": [17.341158752198684, 68.43859372804374]
                         }
-                      ],
-                      "subUnits": [],
-                      "shortName": "Heidkamp",
-                      "media": [
-                        {
-                          "url": "https://upload.wikimedia.org/wikipedia/commons/7/75/Z21_Wilhelm_Heidkamp_-_NH_83980.jpg",
-                          "caption": "",
-                          "credits": "Naval History & Heritage Command, Public domain, via Wikimedia Commons",
-                          "creditsUrl": "https://commons.wikimedia.org/wiki/File:Z21_Wilhelm_Heidkamp_-_NH_83980.jpg"
-                        }
                       ]
                     },
                     {
                       "id": "FZ4oawwQsu",
                       "name": "Z22 Anton Schmitt",
                       "sidc": "10063000001202030000",
+                      "subUnits": [],
+                      "shortName": "Schmitt",
                       "state": [
                         {
                           "id": "IsCBeJnQA2",
@@ -531,14 +531,14 @@
                             [14.422908187892716, 68.09728641009772]
                           ]
                         }
-                      ],
-                      "subUnits": [],
-                      "shortName": "Schmitt"
+                      ]
                     },
                     {
                       "id": "IOhludOpmT",
                       "name": "Z13 Erich Koellner",
                       "sidc": "10063000001202030000",
+                      "subUnits": [],
+                      "shortName": "Koellner",
                       "state": [
                         {
                           "id": "FevGs6riTL",
@@ -563,14 +563,14 @@
                             [17.173763834091712, 68.43723250061927]
                           ]
                         }
-                      ],
-                      "subUnits": [],
-                      "shortName": "Koellner"
+                      ]
                     },
                     {
                       "id": "k6q1mmbloJ",
                       "name": "Z2 Georg Thiele",
                       "sidc": "10063000001202030000",
+                      "subUnits": [],
+                      "shortName": "Thiele",
                       "state": [
                         {
                           "id": "kMokDwo1jU",
@@ -587,14 +587,14 @@
                             [14.399460183505587, 68.03848264680411]
                           ]
                         }
-                      ],
-                      "subUnits": [],
-                      "shortName": "Thiele"
+                      ]
                     },
                     {
                       "id": "hPIRsiduCe",
                       "name": "Z11 Bernd von Arnim",
                       "sidc": "10063000001202030000",
+                      "subUnits": [],
+                      "shortName": "Arnim",
                       "state": [
                         {
                           "id": "TojT1nXWbz",
@@ -615,43 +615,43 @@
                           "t": "1940-04-09T04:37:00+02:00",
                           "location": [17.341158752198684, 68.4359762026327]
                         }
-                      ],
-                      "subUnits": [],
-                      "shortName": "Arnim"
+                      ]
                     },
                     {
                       "id": "R1Lr1X6O3h",
                       "name": "Rauenfels",
                       "sidc": "10063000001301010000",
-                      "state": [],
-                      "subUnits": []
+                      "subUnits": [],
+                      "state": []
                     },
                     {
                       "id": "OCyOmjWKBp",
                       "name": "FLK Jan Wellem",
                       "sidc": "10063000001301100000",
-                      "state": [],
                       "subUnits": [],
-                      "shortName": "Wellem"
+                      "shortName": "Wellem",
+                      "state": []
                     }
                   ],
-                  "symbolOptions": {}
+                  "symbolOptions": {},
+                  "state": []
                 },
                 {
                   "id": "E9iEDHE3Xi",
                   "name": "U-25",
                   "sidc": "10063500001101000000",
-                  "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "state": []
                 },
                 {
                   "id": "ukjG2w1sNn",
                   "name": "U-51",
                   "sidc": "10063500001101000000",
-                  "state": [],
-                  "subUnits": []
+                  "subUnits": [],
+                  "state": []
                 }
-              ]
+              ],
+              "state": []
             }
           ]
         }
