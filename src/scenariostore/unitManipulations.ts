@@ -1144,7 +1144,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         s.personnelMap[newId] = newPersonnel;
       });
     }
-    return newId;
+    return newPersonnel;
   }
 
   function updateUnitEquipment(
