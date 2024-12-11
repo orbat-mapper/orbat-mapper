@@ -163,7 +163,7 @@ resetAddForm();
             }}</span>
           </th>
           <th v-if="showOnHand" class="pr-4 text-right">Avail.</th>
-          <th v-if="showPercentage" class="pr-4 text-right">%</th>
+          <th v-if="showPercentage" class="min-w-[5rem] pr-4 text-right">%</th>
           <th class="not-prose">
             <UnitToeItemTableMenu />
           </th>
