@@ -154,7 +154,7 @@ function updateEquipment(
   equipmentId: string,
   { count, onHand }: { count: number; onHand?: number },
 ) {
-  if (toeEditMode.value === "onHand" && onHand) {
+  if (toeEditMode.value === "onHand") {
     const newState: StateAdd = {
       t: +time.scenarioTime.value,
       update: { equipment: [{ id: equipmentId, onHand }] },

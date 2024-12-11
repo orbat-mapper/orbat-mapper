@@ -74,7 +74,7 @@ function toggleSort(column: "name" | "count") {
 }
 
 function startEdit(data: EUnitEquipment | EUnitPersonnel) {
-  if (!isToeEditMode.value) return;
+  if (!isToeEditMode.value || editedId.value) return;
   editedId.value = data.id;
   const { id, ...rest } = data;
   form.value = {
