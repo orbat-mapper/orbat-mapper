@@ -14,11 +14,9 @@ import AccordionPanel from "@/components/AccordionPanel.vue";
 import PrimaryButton from "@/components/PrimaryButton.vue";
 import { storeToRefs } from "pinia";
 import { useToeEditStore } from "@/stores/toeStore";
-import MRadioGroup from "@/components/MRadioGroup.vue";
-import InputRadio from "@/components/InputRadio.vue";
-import HeadingDescription from "@/components/HeadingDescription.vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { StateAdd } from "@/types/scenarioModels";
+import PanelSubHeading from "@/components/PanelSubHeading.vue";
 
 interface Props {
   unit: NUnit;
@@ -29,7 +27,7 @@ const props = defineProps<Props>();
 
 const {
   store: {
-    state: { equipmentMap, personnelMap, unitMap, currentTime },
+    state: { equipmentMap, personnelMap, unitMap },
     onUndoRedo,
   },
   unitActions: {
@@ -243,24 +241,9 @@ function deletePersonnel(personnelId: string) {
       >Include subordinates
     </ToggleField>
   </div>
-  <div v-if="isToeEditMode" class="mt-4">
-    <HeadingDescription>What do you want to edit?</HeadingDescription>
-    <MRadioGroup class="mt-2 grid grid-cols-2 gap-2">
-      <InputRadio v-model="toeEditMode" :value="'assigned'"
-        >Assigned (initial values)
-      </InputRadio>
-      <InputRadio v-model="toeEditMode" value="onHand"
-        >Available at {{ formattedTime }}
-      </InputRadio>
-    </MRadioGroup>
-    <div v-if="toeEditMode === 'onHand'" class="f mt-2">
-      <HeadingDescription>Change mode</HeadingDescription>
-      <MRadioGroup class="mt-2 flex space-x-4">
-        <InputRadio v-model="changeMode" value="absolute">Absolute</InputRadio>
-        <InputRadio v-model="changeMode" value="diff">Difference</InputRadio>
-      </MRadioGroup>
-    </div>
-  </div>
+  <p class="mt-4 text-sm text-muted-foreground" v-if="isToeEditMode">
+    Double click on table rows to start editing.
+  </p>
   <div class="prose p-1 dark:prose-invert">
     <AccordionPanel :label="`Equipment (${aggregatedEquipmentCount})`" defaultOpen>
       <div v-if="isToeEditMode" class="flex justify-end">

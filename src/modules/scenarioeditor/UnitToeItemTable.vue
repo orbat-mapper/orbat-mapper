@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from "vue";
-import { sortBy } from "@/utils";
+import { computed, nextTick, ref, watch } from "vue";
+import { injectStrict, sortBy } from "@/utils";
 import { useToggle, useVModel } from "@vueuse/core";
 import DotsMenu from "@/components/DotsMenu.vue";
 import {
@@ -17,6 +17,12 @@ import { useToeEditStore } from "@/stores/toeStore";
 import { storeToRefs } from "pinia";
 import UnitToeItemTableMenu from "@/modules/scenarioeditor/UnitToeItemTableMenu.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
+import InlineFormPanel from "@/components/InlineFormPanel.vue";
+import InputRadio from "@/components/InputRadio.vue";
+import MRadioGroup from "@/components/MRadioGroup.vue";
+import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
+import { activeScenarioKey } from "@/components/injects";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
 
 interface Props {
   items: EUnitEquipment[] | EUnitPersonnel[];
@@ -27,6 +33,8 @@ interface Props {
 }
 const props = defineProps<Props>();
 const emit = defineEmits(["delete", "update", "update:showAdd", "diff", "add"]);
+
+const { time } = injectStrict(activeScenarioKey);
 
 const doShowAdd = useVModel(props, "showAdd", emit);
 const sortKey = ref<"name" | "count">("name");
@@ -39,7 +47,7 @@ const {
   showPercentage,
   changeMode,
 } = storeToRefs(useToeEditStore());
-
+const fmt = useTimeFormatStore();
 const editedId = ref();
 
 const form = ref<{ id: string; count: number; onHand?: number }>({
@@ -61,6 +69,10 @@ const sortedItems = computed(() =>
   sortBy(props.items, sortKey.value, sortAscending.value),
 );
 
+const formattedTime = computed(() =>
+  fmt.scenarioFormatter.format(+time.scenarioTime.value),
+);
+
 const usedItems = computed(() => props.items.map((i) => i.id));
 
 const valueItems = computed(() =>
@@ -71,6 +83,14 @@ const valueItems = computed(() =>
       value: v.id,
     })),
 );
+
+const numColumns = computed(() => {
+  let count = 2;
+  if (showAssigned.value) count++;
+  if (showOnHand.value) count++;
+  if (showPercentage.value) count++;
+  return count;
+});
 
 function toggleSort(column: "name" | "count") {
   if (sortKey.value === column) {
@@ -139,6 +159,22 @@ function asPercent(item: EUnitEquipment | EUnitPersonnel) {
 }
 
 resetAddForm();
+
+watch(changeMode, () => {
+  if (editedId.value) {
+    const data = props.items.find((i) => i.id === editedId.value);
+    if (!data) return;
+    if (toeEditMode.value === "onHand" && changeMode.value === "diff") {
+      form.value = { id: data.id, count: 0 };
+      return;
+    }
+
+    form.value = {
+      id: data.id,
+      count: toeEditMode.value === "assigned" ? data.count : (data.onHand ?? data.count),
+    };
+  }
+});
 </script>
 
 <template>
@@ -187,14 +223,36 @@ resetAddForm();
       <tbody>
         <tr v-for="item in sortedItems" :key="item.id" @dblclick="startEdit(item)">
           <template v-if="editedId === item.id">
-            <td class="pl-2" :title="item.description">{{ item.name }}</td>
-
-            <td v-if="toeEditMode === 'onHand'" class="pr-6 text-right tabular-nums">
-              {{ item.count }}
-            </td>
-            <td colspan="4">
-              <div class="flex w-full flex-col">
-                <div>
+            <td :colspan="numColumns">
+              <InlineFormPanel @close="cancelEdit()">
+                <p class="-mt-4 text-base font-bold">{{ item.name }}</p>
+                <InputGroupTemplate label="Edit mode">
+                  <MRadioGroup class="mt-2 grid grid-cols-2 gap-4">
+                    <InputRadio v-model="toeEditMode" :value="'assigned'"
+                      >Assigned (initial value)
+                    </InputRadio>
+                    <InputRadio v-model="toeEditMode" value="onHand"
+                      >Available at {{ formattedTime }}
+                    </InputRadio>
+                  </MRadioGroup>
+                </InputGroupTemplate>
+                <InputGroupTemplate
+                  label="Change mode"
+                  class="mt-4"
+                  v-if="toeEditMode === 'onHand'"
+                >
+                  <MRadioGroup class="mt-2 grid grid-cols-2 gap-4">
+                    <InputRadio v-model="changeMode" value="absolute"
+                      >Absolute</InputRadio
+                    >
+                    <InputRadio v-model="changeMode" value="diff">Difference</InputRadio>
+                  </MRadioGroup>
+                </InputGroupTemplate>
+                <InputGroupTemplate
+                  label="Assigned"
+                  class="mt-4"
+                  v-if="toeEditMode === 'assigned'"
+                >
                   <NumberInputGroup
                     type="number"
                     :min="
@@ -204,23 +262,27 @@ resetAddForm();
                     "
                     v-model="form.count"
                   />
+                </InputGroupTemplate>
+                <InputGroupTemplate v-else label="Assigned" class="mt-4">
+                  <span class="font-bold">{{ item.count }}</span>
+                </InputGroupTemplate>
+                <InputGroupTemplate
+                  :label="`Available (${changeMode === 'diff' ? 'diff' : 'abs'})`"
+                  class="mt-4"
+                  v-if="toeEditMode === 'onHand'"
+                >
+                  <NumberInputGroup
+                    type="number"
+                    :min="changeMode === 'absolute' ? 0 : undefined"
+                    v-model="form.count"
+                  />
+                </InputGroupTemplate>
+
+                <div class="mt-4 flex items-center justify-end border-t pt-4">
+                  <BaseButton small type="submit" primary class="">Save</BaseButton>
+                  <BaseButton small class="ml-2" @click="cancelEdit()">Cancel</BaseButton>
                 </div>
-                <div class="mt-2 flex items-center justify-between">
-                  <span class="text-xs font-bold">{{
-                    toeEditMode === "assigned" || changeMode === "absolute"
-                      ? "Abs."
-                      : "Diff."
-                  }}</span>
-                  <div class="flex items-center">
-                    <BaseButton small type="submit" secondary class="ml-2"
-                      >Save</BaseButton
-                    >
-                    <BaseButton small class="ml-2" @click="cancelEdit()"
-                      >Cancel</BaseButton
-                    >
-                  </div>
-                </div>
-              </div>
+              </InlineFormPanel>
             </td>
           </template>
           <template v-else>
