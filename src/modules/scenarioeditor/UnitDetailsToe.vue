@@ -46,7 +46,7 @@ const includeSubordinates = useLocalStorage("includeSubordinates", true);
 let prevIncludeSubordinates: boolean | undefined;
 const toeEditStore = useToeEditStore();
 
-const { isToeEditMode, toeEditMode } = storeToRefs(toeEditStore);
+const { isToeEditMode, toeEditMode, changeMode } = storeToRefs(toeEditStore);
 
 const fmt = useTimeFormatStore();
 const { selectedUnitIds } = useSelectedItems();
@@ -166,6 +166,25 @@ function updateEquipment(
   triggerRef(selectedUnitIds);
 }
 
+function addEquipment(
+  equipmentId: string,
+  { count, onHand }: { count: number; onHand?: number },
+) {
+  updateUnitEquipment(props.unit.id, equipmentId, { count, onHand });
+  triggerRef(selectedUnitIds);
+}
+
+function diffEquipment(equipmentId: string, { onHand }: { onHand: number }) {
+  if (toeEditMode.value === "onHand") {
+    const newState: StateAdd = {
+      t: +time.scenarioTime.value,
+      diff: { equipment: [{ id: equipmentId, onHand }] },
+    };
+    addUnitStateEntry(props.unit.id, newState, true);
+  }
+  triggerRef(selectedUnitIds);
+}
+
 function updatePersonnel(
   personnelId: string,
   { count, onHand }: { count: number; onHand?: number },
@@ -178,6 +197,25 @@ function updatePersonnel(
     addUnitStateEntry(props.unit.id, newState, true);
   } else {
     updateUnitPersonnel(props.unit.id, personnelId, { count });
+  }
+  triggerRef(selectedUnitIds);
+}
+
+function addPersonnel(
+  personnelId: string,
+  { count, onHand }: { count: number; onHand?: number },
+) {
+  updateUnitPersonnel(props.unit.id, personnelId, { count, onHand });
+  triggerRef(selectedUnitIds);
+}
+
+function diffPersonnel(personnelId: string, { onHand }: { onHand: number }) {
+  if (toeEditMode.value === "onHand") {
+    const newState: StateAdd = {
+      t: +time.scenarioTime.value,
+      diff: { personnel: [{ id: personnelId, onHand }] },
+    };
+    addUnitStateEntry(props.unit.id, newState, true);
   }
   triggerRef(selectedUnitIds);
 }
@@ -202,19 +240,26 @@ function deletePersonnel(personnelId: string) {
       >
     </div>
     <ToggleField v-model="includeSubordinates" :disabled="isToeEditMode"
-      >Include subordinates</ToggleField
-    >
+      >Include subordinates
+    </ToggleField>
   </div>
   <div v-if="isToeEditMode" class="mt-4">
     <HeadingDescription>What do you want to edit?</HeadingDescription>
-    <MRadioGroup class="mt-2 flex space-x-4">
+    <MRadioGroup class="mt-2 grid grid-cols-2 gap-2">
       <InputRadio v-model="toeEditMode" :value="'assigned'"
-        >Assigned (initial values)</InputRadio
-      >
+        >Assigned (initial values)
+      </InputRadio>
       <InputRadio v-model="toeEditMode" value="onHand"
-        >Available at {{ formattedTime }}</InputRadio
-      >
+        >Available at {{ formattedTime }}
+      </InputRadio>
     </MRadioGroup>
+    <div v-if="toeEditMode === 'onHand'" class="f mt-2">
+      <HeadingDescription>Change mode</HeadingDescription>
+      <MRadioGroup class="mt-2 flex space-x-4">
+        <InputRadio v-model="changeMode" value="absolute">Absolute</InputRadio>
+        <InputRadio v-model="changeMode" value="diff">Difference</InputRadio>
+      </MRadioGroup>
+    </div>
   </div>
   <div class="prose p-1 dark:prose-invert">
     <AccordionPanel :label="`Equipment (${aggregatedEquipmentCount})`" defaultOpen>
@@ -242,6 +287,8 @@ function deletePersonnel(personnelId: string) {
         :is-locked="isLocked"
         :values="equipmentValues"
         @update="updateEquipment"
+        @diff="diffEquipment"
+        @add="addEquipment"
         @delete="deleteEquipment"
         v-model:show-add="showAddEquipment"
       />
@@ -271,7 +318,9 @@ function deletePersonnel(personnelId: string) {
         :is-multi-mode="isMultiMode"
         :values="personnelValues"
         @update="updatePersonnel"
+        @add="addPersonnel"
         @delete="deletePersonnel"
+        @diff="diffPersonnel"
         v-model:show-add="showAddPersonnel"
       />
     </AccordionPanel>

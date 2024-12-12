@@ -72,7 +72,8 @@ export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
         for (const e of diff.equipment) {
           const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
           if (idx !== -1) {
-            const onHand = (currentState.equipment[idx]?.onHand || 0) + (e.onHand || 0);
+            const eq = currentState.equipment[idx];
+            const onHand = (eq?.onHand ?? eq.count) + (e.onHand ?? 0);
             currentState.equipment[idx] = { ...currentState.equipment[idx], onHand };
           } else {
             console.warn("Equipment not found", e);
@@ -83,7 +84,8 @@ export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
         for (const p of diff.personnel) {
           const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
           if (idx !== -1) {
-            const onHand = (currentState.personnel[idx]?.onHand || 0) + (p.onHand || 0);
+            const pe = currentState.personnel[idx];
+            const onHand = (pe?.onHand ?? pe.count) + (p.onHand ?? 0);
             currentState.personnel[idx] = { ...currentState.personnel[idx], onHand };
           } else {
             console.warn("Personnel not found", p);

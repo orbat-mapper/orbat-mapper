@@ -16,6 +16,7 @@ import InlineRadioGroup from "@/components/InlineRadioGroup.vue";
 import { useToeEditStore } from "@/stores/toeStore";
 import { storeToRefs } from "pinia";
 import UnitToeItemTableMenu from "@/modules/scenarioeditor/UnitToeItemTableMenu.vue";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
 
 interface Props {
   items: EUnitEquipment[] | EUnitPersonnel[];
@@ -25,13 +26,19 @@ interface Props {
   showAdd?: boolean;
 }
 const props = defineProps<Props>();
-const emit = defineEmits(["delete", "update", "update:showAdd"]);
+const emit = defineEmits(["delete", "update", "update:showAdd", "diff", "add"]);
 
 const doShowAdd = useVModel(props, "showAdd", emit);
 const sortKey = ref<"name" | "count">("name");
 const [sortAscending, toggleAscending] = useToggle(true);
-const { isToeEditMode, toeEditMode, showAssigned, showOnHand, showPercentage } =
-  storeToRefs(useToeEditStore());
+const {
+  isToeEditMode,
+  toeEditMode,
+  showAssigned,
+  showOnHand,
+  showPercentage,
+  changeMode,
+} = storeToRefs(useToeEditStore());
 
 const editedId = ref();
 
@@ -74,9 +81,13 @@ function toggleSort(column: "name" | "count") {
 }
 
 function startEdit(data: EUnitEquipment | EUnitPersonnel) {
-  if (!isToeEditMode.value || editedId.value) return;
+  if (!isToeEditMode.value || editedId.value === data.id) return;
   editedId.value = data.id;
   const { id, ...rest } = data;
+  if (toeEditMode.value === "onHand" && changeMode.value === "diff") {
+    form.value = { id, count: 0 };
+    return;
+  }
   form.value = {
     id: data.id,
     count: toeEditMode.value === "assigned" ? data.count : (data.onHand ?? data.count),
@@ -89,7 +100,11 @@ function cancelEdit() {
 
 function onSubmit() {
   if (toeEditMode.value === "onHand") {
-    emit("update", form.value.id, { onHand: form.value.count });
+    if (changeMode.value === "diff") {
+      emit("diff", form.value.id, { onHand: form.value.count });
+    } else {
+      emit("update", form.value.id, { onHand: form.value.count });
+    }
   } else {
     emit("update", form.value.id, { count: form.value.count });
   }
@@ -115,7 +130,7 @@ function resetAddForm() {
 }
 
 function onAddItemSubmit() {
-  emit("update", addForm.value.id, { count: addForm.value.count });
+  emit("add", addForm.value.id, { count: addForm.value.count });
   nextTick(() => resetAddForm());
 }
 
@@ -178,17 +193,32 @@ resetAddForm();
               {{ item.count }}
             </td>
             <td colspan="4">
-              <div class="flex w-full items-center justify-between">
-                <input
-                  type="number"
-                  min="0"
-                  class="w-24"
-                  v-model="form.count"
-                  @vue:mounted="({ el }: any) => el.focus()"
-                />
-                <div class="flex items-center">
-                  <BaseButton small type="submit" secondary class="ml-2">Save</BaseButton>
-                  <BaseButton small class="ml-2" @click="cancelEdit()">Cancel</BaseButton>
+              <div class="flex w-full flex-col">
+                <div>
+                  <NumberInputGroup
+                    type="number"
+                    :min="
+                      toeEditMode === 'assigned' || changeMode === 'absolute'
+                        ? 0
+                        : undefined
+                    "
+                    v-model="form.count"
+                  />
+                </div>
+                <div class="mt-2 flex items-center justify-between">
+                  <span class="text-xs font-bold">{{
+                    toeEditMode === "assigned" || changeMode === "absolute"
+                      ? "Abs."
+                      : "Diff."
+                  }}</span>
+                  <div class="flex items-center">
+                    <BaseButton small type="submit" secondary class="ml-2"
+                      >Save</BaseButton
+                    >
+                    <BaseButton small class="ml-2" @click="cancelEdit()"
+                      >Cancel</BaseButton
+                    >
+                  </div>
                 </div>
               </div>
             </td>
