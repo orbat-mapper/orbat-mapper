@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-hidden bg-white shadow">
+  <div class="overflow-hidden bg-panel shadow">
     <div class="relative px-4 py-5 sm:p-6">
       <p v-if="title" class="-mt-2 mb-4 text-sm text-gray-500">{{ title }}</p>
       <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
@@ -17,14 +17,9 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
 import { XMarkIcon } from "@heroicons/vue/24/outline";
 
-export default defineComponent({
-  components: { XMarkIcon },
-  emits: ["close"],
-  props: ["title"],
-  name: "InlineFormPanel",
-});
+const props = defineProps<{ title?: string }>();
+const emit = defineEmits(["close"]);
 </script>
