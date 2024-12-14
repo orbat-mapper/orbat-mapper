@@ -16,7 +16,6 @@ import { storeToRefs } from "pinia";
 import { useToeEditStore } from "@/stores/toeStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { StateAdd } from "@/types/scenarioModels";
-import PanelSubHeading from "@/components/PanelSubHeading.vue";
 
 interface Props {
   unit: NUnit;
@@ -54,11 +53,11 @@ const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 const aggregatedEquipment = shallowRef<EUnitEquipment[]>([]);
 const aggregatedPersonnel = shallowRef<EUnitPersonnel[]>([]);
 const aggregatedPersonnelCount = computed(() =>
-  aggregatedPersonnel.value.reduce((acc, p) => acc + p.count, 0),
+  aggregatedPersonnel.value.reduce((acc, e) => acc + (e.onHand ?? e.count ?? 0), 0),
 );
 
 const aggregatedEquipmentCount = computed(() =>
-  aggregatedEquipment.value.reduce((acc, e) => acc + e.count, 0),
+  aggregatedEquipment.value.reduce((acc, e) => acc + (e.onHand ?? e.count ?? 0), 0),
 );
 const equipmentValues = computed(() => {
   return sortBy(Object.values(equipmentMap), "name");
