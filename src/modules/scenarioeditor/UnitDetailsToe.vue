@@ -187,7 +187,7 @@ function updatePersonnel(
   personnelId: string,
   { count, onHand }: { count: number; onHand?: number },
 ) {
-  if (toeEditMode.value === "onHand" && onHand) {
+  if (toeEditMode.value === "onHand") {
     const newState: StateAdd = {
       t: +time.scenarioTime.value,
       update: { personnel: [{ id: personnelId, onHand }] },
