@@ -231,7 +231,7 @@ function deletePersonnel(personnelId: string) {
 <template>
   <div class="mt-4 flex justify-between">
     <div>
-      <PrimaryButton @click="toeEditStore.toggleEditToeMode()"
+      <PrimaryButton @click="toeEditStore.toggleEditToeMode()" :disabled="isLocked"
         ><span v-if="isToeEditMode">Done editing</span
         ><span v-else>Edit TO&E</span></PrimaryButton
       >
