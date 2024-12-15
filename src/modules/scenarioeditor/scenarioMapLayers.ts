@@ -18,7 +18,7 @@ import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import { isEmpty } from "ol/extent";
 import TileLayer from "ol/layer/Tile";
-import { TileJSON } from "ol/source";
+import TileJSON from "ol/source/TileJSON";
 import { unByKey } from "ol/Observable";
 import { fixExtent } from "@/utils/geoConvert";
 import {

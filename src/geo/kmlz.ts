@@ -1,4 +1,4 @@
-import { KML } from "ol/format";
+import KML from "ol/format/KML";
 import type { Options as KMLFormatOptions } from "ol/format/KML";
 import type { ReadOptions } from "ol/format/Feature";
 import { arrayBufferToString } from "@/importexport/fileHandling";

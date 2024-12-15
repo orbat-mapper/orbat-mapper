@@ -1,4 +1,5 @@
-import { Circle as CircleStyle, Style } from "ol/style";
+import CircleStyle from "ol/style/Circle";
+import Style from "ol/style/Style";
 import {
   createSimpleStyle,
   defaultSimplestyleFill,

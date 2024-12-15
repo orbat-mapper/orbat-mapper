@@ -6,7 +6,7 @@ import { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement"
 import { NUnit } from "@/types/internalModels";
 import type { Geometry, Position } from "geojson";
 import { featureCollection, point as turfPoint } from "@turf/helpers";
-import { GeoJSON } from "ol/format";
+import GeoJSON from "ol/format/GeoJSON";
 import turfEnvelope from "@turf/envelope";
 
 import Feature from "ol/Feature";

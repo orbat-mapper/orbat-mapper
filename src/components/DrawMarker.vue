@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, watchEffect } from "vue";
-import { Point } from "ol/geom";
+import { ref, watchEffect } from "vue";
+import Point from "ol/geom/Point";
 import { toContext } from "ol/render";
-import Fill from "ol/style/Fill";
-import Stroke from "ol/style/Stroke";
 import { Style } from "ol/style";
 import { createMarkerSymbol, MarkerSymbol } from "@/geo/simplestyle";
 

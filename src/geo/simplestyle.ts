@@ -10,7 +10,8 @@ import Fill from "ol/style/Fill";
 import * as olColor from "ol/color";
 import CircleStyle from "ol/style/Circle";
 import Style from "ol/style/Style";
-import { RegularShape, Text } from "ol/style";
+import RegularShape from "ol/style/RegularShape";
+import Text from "ol/style/Text";
 
 export interface StrokeStyleSpec {
   stroke: string | null | undefined;
