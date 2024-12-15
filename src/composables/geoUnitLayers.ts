@@ -35,7 +35,9 @@ import { Coordinate } from "ol/coordinate";
 import type { Position } from "geojson";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
-import { centroid, coordEach } from "@turf/turf";
+import { coordEach } from "@turf/meta";
+import { centroid } from "@turf/centroid";
+
 import { klona } from "klona";
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {

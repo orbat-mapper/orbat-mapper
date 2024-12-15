@@ -4,7 +4,7 @@ import MultiPoint from "ol/geom/MultiPoint";
 import Point from "ol/geom/Point";
 import { LocationState, Unit } from "@/types/scenarioModels";
 import { NUnit } from "@/types/internalModels";
-import { greatCircle } from "@turf/turf";
+import { greatCircle } from "@turf/great-circle";
 import { getDistance } from "ol/sphere";
 import type { Position } from "geojson";
 import { GeometryLayout } from "ol/geom/Geometry";

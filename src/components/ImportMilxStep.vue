@@ -17,7 +17,7 @@ import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { ColumnDef, InitialTableState } from "@tanstack/vue-table";
 import { ImportGeoJsonFeature } from "@/importexport/jsonish/types";
 import DataGrid from "@/modules/grid/DataGrid.vue";
-import { propReduce } from "@turf/turf";
+import { propReduce } from "@turf/meta";
 import { featureCollection } from "@turf/helpers";
 import { pick } from "es-toolkit";
 

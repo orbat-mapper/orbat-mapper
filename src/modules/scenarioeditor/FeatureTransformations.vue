@@ -21,7 +21,7 @@ import { FeatureId } from "@/types/scenarioGeoModels";
 import type { NScenarioFeature } from "@/types/internalModels";
 import type { Feature, FeatureCollection, LineString, Polygon } from "geojson";
 import { useDebounceFn } from "@vueuse/core";
-import { geometryCollection, Units } from "@turf/turf";
+import { geometryCollection, Units } from "@turf/helpers";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";

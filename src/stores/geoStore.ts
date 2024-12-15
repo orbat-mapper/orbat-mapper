@@ -12,7 +12,7 @@ import turfEnvelope from "@turf/envelope";
 import Feature from "ol/Feature";
 import { shallowRef } from "vue";
 import { useLocalStorage } from "@vueuse/core";
-import { AllGeoJSON } from "@turf/turf";
+import { AllGeoJSON } from "@turf/helpers";
 
 export interface ZoomOptions {
   maxZoom?: number;

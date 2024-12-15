@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { Units } from "@turf/turf";
+import { Units } from "@turf/helpers";
 
 export type BufferOptions = {
   radius: number;

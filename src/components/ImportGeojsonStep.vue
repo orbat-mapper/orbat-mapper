@@ -9,7 +9,7 @@ import { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
-import { featureEach, propReduce } from "@turf/turf";
+import { featureEach, propReduce } from "@turf/meta";
 import { SelectItem } from "@/components/types";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import InputRadio from "@/components/InputRadio.vue";
