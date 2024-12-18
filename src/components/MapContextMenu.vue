@@ -91,7 +91,6 @@ function onContextMenu(e: MouseEvent) {
     console.warn("No map ref");
     return;
   }
-  console.log(sidc.value);
   mapZoomLevel.value = mapRef.getView()?.getZoom() ?? 0;
   clickedUnits.value = [];
   clickedFeatures.value = [];
