@@ -14,6 +14,9 @@ import {
 } from "@/symbology/values";
 import { SymbolItem, SymbolValue } from "@/types/constants";
 import { Sidc } from "@/symbology/sidc";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey } from "@/components/injects";
+import { useActiveUnitStore } from "@/stores/dragStore";
 
 export type SymbolPage = "land" | "sea" | "air" | "space" | "equipment";
 
@@ -145,4 +148,23 @@ export function useToolbarUnitSymbolData() {
     seaItems,
     symbolPage,
   };
+}
+
+export function useActiveSidc() {
+  const { unitActions } = injectStrict(activeScenarioKey);
+  const { activeParent } = useActiveUnitStore();
+  const sidc = computed(() => {
+    const sidcObj = new Sidc(activeSidc.value);
+    sidcObj.emt = currentEchelon.value;
+    sidcObj.standardIdentity = currentSid.value;
+    return sidcObj.toString();
+  });
+  const symbolOptions = computed(() =>
+    activeParent.value
+      ? {
+          ...unitActions.getCombinedSymbolOptions(activeParent.value, true),
+        }
+      : {},
+  );
+  return { sidc, symbolOptions };
 }

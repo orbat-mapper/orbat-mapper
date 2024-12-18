@@ -44,12 +44,16 @@ import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { Position } from "geojson";
+import { useActiveSidc } from "@/composables/mainToolbarData";
+import { Sidc } from "@/symbology/sidc";
+import { useActiveUnitStore } from "@/stores/dragStore";
 
 const tm = useTimeFormatStore();
 
 const props = defineProps<{ mapRef?: OLMap }>();
 
 const { store, unitActions, geo } = injectStrict(activeScenarioKey);
+
 const { onScenarioActionHook } = injectStrict(searchActionsKey);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 
@@ -64,8 +68,9 @@ const uiSettings = useUiStore();
 const { send } = useNotifications();
 const { copy: copyToClipboard } = useClipboard();
 const { activeUnitId, activeFeatureId } = useSelectedItems();
+const { activeParent } = useActiveUnitStore();
 const playback = usePlaybackStore();
-
+const { sidc, symbolOptions } = useActiveSidc();
 const dropPosition = ref<Position>([0, 0]);
 const pixelPosition = ref<number[] | null>(null);
 const clickedUnits = ref<NUnit[]>([]);
@@ -86,6 +91,7 @@ function onContextMenu(e: MouseEvent) {
     console.warn("No map ref");
     return;
   }
+  console.log(sidc.value);
   mapZoomLevel.value = mapRef.getView()?.getZoom() ?? 0;
   clickedUnits.value = [];
   clickedFeatures.value = [];
@@ -153,6 +159,20 @@ function onContextMenuUpdate(open: boolean) {
   if (!open) {
     pixelPosition.value = null;
   }
+}
+
+function onAddUnit() {
+  store.groupUpdate(() => {
+    if (!activeParent.value || unitActions.isUnitLocked(activeParent.value.id)) return;
+
+    const name = `${(activeParent.value.subUnits?.length ?? 0) + 1}`;
+
+    const unitId = unitActions.createSubordinateUnit(activeParent.value.id, {
+      sidc: sidc.value,
+      name,
+    });
+    unitId && geo.addUnitPosition(unitId, dropPosition.value);
+  });
 }
 </script>
 <template>
@@ -225,6 +245,20 @@ function onContextMenuUpdate(open: boolean) {
         </ContextMenuSubContent>
       </ContextMenuSub>
       <ContextMenuSeparator v-if="clickedFeatures.length || clickedUnits.length" />
+      <ContextMenuSub>
+        <ContextMenuSubTrigger inset><span>Add</span></ContextMenuSubTrigger>
+        <ContextMenuSubContent>
+          <ContextMenuItem @select="onAddUnit"
+            ><MilitarySymbol
+              :sidc="sidc"
+              :options="symbolOptions"
+              :size="15"
+              class="w-8"
+            />
+            Unit
+          </ContextMenuItem>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
       <ContextMenuSub>
         <ContextMenuSubTrigger inset><span>Map settings</span></ContextMenuSubTrigger>
         <ContextMenuSubContent>

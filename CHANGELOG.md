@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 December 2024
 
+- Added an "Add unit" entry to the map context menu.
 - Added support for changing the available / on hand attribute of equipment and personnel through unit events.
 - Added an available / on hand attribute to equipment and personnel.
 - Added equipment, personnel and units statuses to the scenario data import options.
