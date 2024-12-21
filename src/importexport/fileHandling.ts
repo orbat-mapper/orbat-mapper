@@ -172,7 +172,10 @@ function isSpreadsheetFileType(file: File): boolean {
   return file.name.endsWith(".xlsx");
 }
 
-export function arrayBufferToString(arrayBuffer: ArrayBuffer, decoderType = "utf-8") {
+export function arrayBufferToString(
+  arrayBuffer: ArrayBuffer | Uint8Array<ArrayBufferLike>,
+  decoderType = "utf-8",
+) {
   let decoder = new TextDecoder(decoderType);
   return decoder.decode(arrayBuffer);
 }
