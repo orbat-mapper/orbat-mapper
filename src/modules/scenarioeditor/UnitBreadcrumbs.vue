@@ -33,7 +33,8 @@ const {
   store: { state },
 } = injectStrict(activeScenarioKey);
 
-const { activeParentId, activeUnitId, resetActiveParent } = useActiveUnitStore();
+const { activeParentId, activeUnitId, resetActiveParent, activeParent } =
+  useActiveUnitStore();
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
@@ -44,14 +45,6 @@ let isDragged = ref(false);
 const sides = computed(() => {
   return state.sides.map((side) => state.getSideById(side));
 });
-
-const activeParent = computed(
-  () =>
-    (activeParentId.value &&
-      state.getUnitById(activeParentId.value) &&
-      unitActions.expandUnitWithSymbolOptions(state.getUnitById(activeParentId.value))) ||
-    null,
-);
 
 watch(
   activeUnitId,
@@ -112,7 +105,8 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
         sidc: "",
         id: activeUnitId.value!,
         name: "...",
-        items: activeParent.value?.subUnits?.map((unit) => {
+        items: activeParent.value?.subUnits?.map((unitId) => {
+          const unit = state.getUnitById(unitId);
           return {
             ...state.getUnitById(unit.id),
             symbolOptions: unitActions.getCombinedSymbolOptions(unit as any),
