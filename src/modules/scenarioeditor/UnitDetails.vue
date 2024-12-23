@@ -158,6 +158,9 @@
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
       <TabPanel>
+        <UnitDetailsSupplies :unit="unit" :is-locked="isLocked" />
+      </TabPanel>
+      <TabPanel>
         <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
@@ -219,6 +222,7 @@ import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsProperties.vue";
 import UnitDetailsSymbol from "@/modules/scenarioeditor/UnitDetailsSymbol.vue";
+import UnitDetailsSupplies from "@/modules/scenarioeditor/UnitDetailsSupplies.vue";
 
 const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
@@ -250,6 +254,7 @@ const tabList = computed(() =>
         "Unit state",
         "Map overlay",
         { label: "TO&E", title: "Table of organization and equipment" },
+        "Supplies",
         "Properties",
         "Debug",
       ]
@@ -259,6 +264,7 @@ const tabList = computed(() =>
         "Unit state",
         "Map overlay",
         { label: "TO&E", title: "Table of organization and equipment" },
+        "Supplies",
         "Properties",
       ],
 );

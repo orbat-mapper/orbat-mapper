@@ -2,15 +2,11 @@ import { EntityId, HistoryAction } from "@/types/base";
 import { NewScenarioStore, ScenarioState } from "./newScenarioStore";
 import { mergeArray, moveElement, nanoid, removeElement } from "@/utils";
 import {
-  EquipmentDataUpdate,
-  NEquipmentData,
-  NPersonnelData,
   NSide,
   NSideGroup,
   NState,
   NUnit,
   NUnitAdd,
-  PersonnelDataUpdate,
   SideGroupUpdate,
   SideUpdate,
   UnitStatusUpdate,
@@ -31,9 +27,12 @@ import {
   UnitProperties,
   UnitSymbolOptions,
 } from "@/types/scenarioModels";
-import { Position, RangeRing, RangeRingGroup } from "@/types/scenarioGeoModels";
+import { Position } from "@/types/scenarioGeoModels";
 import { getNextEchelonBelow } from "@/symbology/helpers";
 import { clearUnitStyleCache, invalidateUnitStyle } from "@/geo/unitStyles";
+import { useSupplyManipulations } from "@/scenariostore/supplyManipulations";
+import { useToeManipulations } from "@/scenariostore/toeManipulations";
+import { useRangeRingManipulations } from "@/scenariostore/rangeRingManipulations";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -74,6 +73,38 @@ function cloneUnitState(state: NState[]) {
 
 export function useUnitManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
+
+  const {
+    addSupplyClass,
+    updateSupplyClass,
+    deleteSupplyClass,
+    addSupplyCategory,
+    deleteSupplyCategory,
+    updateSupplyCategory,
+    updateUnitSupply,
+  } = useSupplyManipulations(store);
+
+  const {
+    updateEquipment,
+    addEquipment,
+    updatePersonnel,
+    addPersonnel,
+    deletePersonnel,
+    deleteEquipment,
+    updateUnitEquipment,
+    updateUnitPersonnel,
+  } = useToeManipulations(store);
+
+  const {
+    addRangeRing,
+    deleteRangeRing,
+    deleteRangeRingByName,
+    updateRangeRing,
+    updateRangeRingByName,
+    updateRangeRingGroup,
+    addRangeRingGroup,
+    deleteRangeRingGroup,
+  } = useRangeRingManipulations(store);
 
   function addSide(
     sideData: Partial<NSide> = {},
@@ -627,6 +658,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
             parent.subUnits.push(newUnit.id);
             currentUnit.subUnits.forEach((id) => helper(id, newUnit.id));
           }
+
           unit.subUnits.forEach((e) => helper(e, newUnit.id));
         });
         if (includeState) {
@@ -756,6 +788,10 @@ export function useUnitManipulations(store: NewScenarioStore) {
                     source.personnel || update.personnel
                       ? mergeArray(source.personnel ?? [], update.personnel ?? [], "id")
                       : undefined,
+                  supplies:
+                    source.supplies || update.supplies
+                      ? mergeArray(source.supplies ?? [], update.supplies ?? [], "id")
+                      : undefined,
                 };
                 Object.assign(u.state[i], { update: dest });
               }
@@ -769,6 +805,10 @@ export function useUnitManipulations(store: NewScenarioStore) {
                   personnel:
                     source.personnel || diff.personnel
                       ? mergeArray(source.personnel ?? [], diff.personnel ?? [], "id")
+                      : undefined,
+                  supplies:
+                    source.supplies || diff.supplies
+                      ? mergeArray(source.supplies ?? [], diff.supplies ?? [], "id")
                       : undefined,
                 };
                 Object.assign(u.state[i], { diff: dest });
@@ -872,6 +912,11 @@ export function useUnitManipulations(store: NewScenarioStore) {
         count,
         onHand,
       })),
+      supplies: unit.supplies?.map(({ id, count, onHand }) => ({
+        name: state.supplyCategoryMap[id].name || "",
+        count,
+        onHand,
+      })),
     };
   }
 
@@ -889,6 +934,10 @@ export function useUnitManipulations(store: NewScenarioStore) {
       })),
       personnel: unit.personnel?.map(({ id, count }) => ({
         name: state.personnelMap[id].name || "",
+        count,
+      })),
+      supplies: unit.supplies?.map(({ id, count }) => ({
+        name: state.supplyCategoryMap[id].name || "",
         count,
       })),
     };
@@ -915,100 +964,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
       ...(ignoreUnit ? {} : unitOrSideGroup.symbolOptions || {}),
       ...(ignoreUnit ? {} : { reinforcedReduced: reinforcedReduced ?? "" }),
     };
-  }
-
-  function addRangeRing(unitId: EntityId, rangeRing: RangeRing) {
-    update((s) => {
-      const unit = s.getUnitById(unitId);
-      if (!unit) return;
-      if (!unit.rangeRings) unit.rangeRings = [];
-      // does it already exist?
-      const existingIndex = unit.rangeRings.findIndex((r) => r.name === rangeRing.name);
-      if (existingIndex >= 0) {
-        unit.rangeRings[existingIndex] = rangeRing;
-      } else {
-        unit.rangeRings.push(rangeRing);
-      }
-    });
-  }
-
-  function deleteRangeRing(unitId: EntityId, index: number) {
-    update((s) => {
-      const unit = s.getUnitById(unitId);
-      if (!unit) return;
-      if (!unit.rangeRings) return;
-      unit.rangeRings.splice(index, 1);
-    });
-  }
-
-  function deleteRangeRingByName(unitId: EntityId, name: string) {
-    const unit = state.getUnitById(unitId);
-    if (!unit?.rangeRings) return;
-    const index = unit.rangeRings.findIndex((r) => r.name === name);
-    if (index < 0) return;
-    deleteRangeRing(unitId, index);
-  }
-
-  function updateRangeRing(unitId: EntityId, index: number, data: Partial<RangeRing>) {
-    update((s) => {
-      const unit = s.unitMap[unitId];
-      if (!unit) return;
-      if (!unit.rangeRings) return;
-      const { style, ...rest } = data;
-      Object.assign(unit.rangeRings[index], rest);
-
-      if (style) {
-        if (unit.rangeRings[index].style) {
-          Object.assign(unit.rangeRings[index].style!, style);
-        } else {
-          unit.rangeRings[index].style = style;
-        }
-      }
-    });
-  }
-
-  function updateRangeRingByName(
-    unitId: EntityId,
-    name: string,
-    data: Partial<RangeRing>,
-    { addIfNameDoesNotExists = false } = {},
-  ) {
-    const unit = state.getUnitById(unitId);
-    if (!unit?.rangeRings) return;
-    const index = unit.rangeRings.findIndex((r) => r.name === name);
-    if (index < 0) {
-      if (!addIfNameDoesNotExists) return;
-      addRangeRing(unitId, { name, uom: "km", range: 2, ...data });
-      return;
-    }
-    updateRangeRing(unitId, index, data);
-  }
-
-  function updateRangeRingGroup(groupId: string, data: Partial<RangeRingGroup>) {
-    update((s) => {
-      const group = s.rangeRingGroupMap[groupId];
-      if (!group) return;
-      const { style, ...rest } = data;
-      Object.assign(group, rest);
-      if (style) {
-        if (group.style) {
-          Object.assign(group.style!, style);
-        } else {
-          group.style = style;
-        }
-      }
-    });
-  }
-
-  function addRangeRingGroup(data: Partial<RangeRingGroup>) {
-    const newGroup = { id: nanoid(), name: "Group", ...klona(data) };
-    if (newGroup.id === undefined) {
-      newGroup.id = nanoid();
-    }
-    const newId = newGroup.id;
-    update((s) => {
-      s.rangeRingGroupMap[newId] = newGroup;
-    });
   }
 
   function updateUnitStatus(id: string, data: UnitStatusUpdate) {
@@ -1045,152 +1000,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
       delete s.unitStatusMap[id];
     });
     return true;
-  }
-
-  function updateEquipment(id: string, data: EquipmentDataUpdate) {
-    update((s) => {
-      const equipment = s.equipmentMap[id];
-      if (!equipment) return;
-      Object.assign(equipment, data);
-    });
-  }
-
-  function addEquipment(
-    data: Partial<NEquipmentData>,
-    { noUndo = false, s = state } = {},
-  ) {
-    const newEquipment = { id: nanoid(), name: "Equipment", ...klona(data) };
-    if (newEquipment.id === undefined) {
-      newEquipment.id = nanoid();
-    }
-    const newId = newEquipment.id;
-    if (noUndo) {
-      s.equipmentMap[newId] = newEquipment;
-    } else {
-      update((s) => {
-        s.equipmentMap[newId] = newEquipment;
-      });
-    }
-    return newEquipment;
-  }
-
-  function deleteEquipment(id: string): boolean {
-    // check if equipment is used
-    const isUsed = Object.values(state.unitMap).some((unit) => {
-      if (unit.equipment) {
-        return unit.equipment.some((e) => e.id === id);
-      }
-      return false;
-    });
-    if (isUsed) return false;
-    update((s) => {
-      delete s.equipmentMap[id];
-    });
-    return true;
-  }
-
-  function deletePersonnel(id: string): boolean {
-    // check if personnel is used
-    const isUsed = Object.values(state.unitMap).some((unit) => {
-      if (unit.personnel) {
-        return unit.personnel.some((e) => e.id === id);
-      }
-      return false;
-    });
-    if (isUsed) return false;
-    update((s) => {
-      delete s.personnelMap[id];
-    });
-    return true;
-  }
-
-  function deleteRangeRingGroup(id: string): boolean {
-    // check if range ring group is used
-    const isUsed = Object.values(state.unitMap).some((unit) => {
-      if (unit.rangeRings) {
-        return unit.rangeRings.some((e) => e.group === id);
-      }
-      return false;
-    });
-    if (isUsed) return false;
-    update((s) => {
-      delete s.rangeRingGroupMap[id];
-    });
-    return true;
-  }
-
-  function updatePersonnel(id: string, data: PersonnelDataUpdate) {
-    update((s) => {
-      const personnel = s.personnelMap[id];
-      if (!personnel) return;
-      Object.assign(personnel, data);
-    });
-  }
-
-  function addPersonnel(
-    data: Partial<NPersonnelData>,
-    { noUndo = false, s = state } = {},
-  ) {
-    const newPersonnel = { id: nanoid(), name: "Personnel", ...klona(data) };
-
-    if (newPersonnel.id === undefined) {
-      newPersonnel.id = nanoid();
-    }
-    const newId = newPersonnel.id;
-    if (noUndo) {
-      s.personnelMap[newId] = newPersonnel;
-    } else {
-      update((s) => {
-        s.personnelMap[newId] = newPersonnel;
-      });
-    }
-    return newPersonnel;
-  }
-
-  function updateUnitEquipment(
-    unitId: EntityId,
-    equipmentId: string,
-    { count, onHand }: { count: number; onHand?: number },
-  ) {
-    update((s) => {
-      const unit = s.unitMap[unitId];
-      if (!unit) return;
-      if (count === -1) {
-        unit.equipment = unit.equipment?.filter((e) => e.id !== equipmentId);
-      } else {
-        const equipment = unit.equipment?.find((e) => e.id === equipmentId);
-        if (!equipment) {
-          if (unit.equipment === undefined) unit.equipment = [];
-          unit.equipment.push({ id: equipmentId, count, onHand });
-        } else {
-          Object.assign(equipment, { count, onHand });
-        }
-      }
-    });
-    updateUnitState(unitId);
-  }
-
-  function updateUnitPersonnel(
-    unitId: EntityId,
-    personnelId: string,
-    { count, onHand }: { count: number; onHand?: number },
-  ) {
-    update((s) => {
-      const unit = s.unitMap[unitId];
-      if (!unit) return;
-      if (count === -1) {
-        unit.personnel = unit.personnel?.filter((e) => e.id !== personnelId);
-      } else {
-        const personnel = unit.personnel?.find((e) => e.id === personnelId);
-        if (!personnel) {
-          if (unit.personnel === undefined) unit.personnel = [];
-          unit.personnel.push({ id: personnelId, count });
-        } else {
-          Object.assign(personnel, { count, onHand });
-        }
-      }
-    });
-    updateUnitState(unitId);
   }
 
   function isUnitLocked(unitId: EntityId, { excludeUnit = false } = {}): boolean {
@@ -1281,6 +1090,13 @@ export function useUnitManipulations(store: NewScenarioStore) {
     addUnitStatus,
     updateUnitStatus,
     deleteUnitStatus,
+    addSupplyClass,
+    updateSupplyClass,
+    deleteSupplyClass,
+    addSupplyCategory,
+    deleteSupplyCategory,
+    updateSupplyCategory,
+    updateUnitSupply,
     updateUnitProperties,
     isUnitLocked,
     isUnitHidden,

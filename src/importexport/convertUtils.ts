@@ -1,7 +1,13 @@
 import { Unit, type UnitStatus } from "@/types/scenarioModels";
 import { TScenario } from "@/scenariostore";
 import { EntityId } from "@/types/base";
-import { NState, NUnitAdd, NUnitEquipment, NUnitPersonnel } from "@/types/internalModels";
+import {
+  NState,
+  NUnitAdd,
+  NUnitEquipment,
+  NUnitPersonnel,
+  NUnitSupply,
+} from "@/types/internalModels";
 import { nanoid } from "@/utils";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
@@ -65,6 +71,7 @@ export function addUnitHierarchy(
       const equipment: NUnitEquipment[] = [];
       const personnel: NUnitPersonnel[] = [];
       const rangeRings: RangeRing[] = [];
+      const supplies: NUnitSupply[] = [];
       unit.equipment?.forEach(({ name, count, onHand }) => {
         const { id } =
           s.equipmentMap[name] ||
@@ -160,6 +167,7 @@ export function addUnitHierarchy(
         subUnits: [],
         equipment,
         personnel,
+        supplies,
         state: internalUnitState,
         rangeRings: rangeRings,
         status,

@@ -265,9 +265,15 @@ export function useToeActions() {
     scenarioInfoPanelStore.tabIndex = 2;
   }
 
+  function goToAddSupplies() {
+    uiStore.activeTabIndex = TAB_SCENARIO_SETTINGS;
+    scenarioInfoPanelStore.showAddSupplies = true;
+    scenarioInfoPanelStore.tabIndex = 3;
+  }
+
   function goToAddGroup() {
     uiStore.activeTabIndex = TAB_SCENARIO_SETTINGS;
-    scenarioInfoPanelStore.tabIndex = 3;
+    scenarioInfoPanelStore.tabIndex = 4;
     scenarioInfoPanelStore.showAddGroup = true;
   }
 

@@ -27,7 +27,12 @@ export type GoToScenarioEventEvent = {
 };
 
 export function createInitialState(unit: NUnit): CurrentState | null {
-  if (unit.location || unit.equipment?.length || unit.personnel?.length)
+  if (
+    unit.location ||
+    unit.equipment?.length ||
+    unit.personnel?.length ||
+    unit.supplies?.length
+  )
     return {
       t: Number.MIN_SAFE_INTEGER,
       location: unit.location,
@@ -35,6 +40,7 @@ export function createInitialState(unit: NUnit): CurrentState | null {
       sidc: unit.sidc,
       equipment: klona(unit.equipment),
       personnel: klona(unit.personnel),
+      supplies: klona(unit.supplies),
     };
   return null;
 }
@@ -68,6 +74,18 @@ export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
           }
         }
       }
+
+      if (update?.supplies && currentState?.supplies) {
+        for (const p of update.supplies) {
+          const idx = currentState.supplies.findIndex((pp) => pp.id === p.id);
+          if (idx !== -1) {
+            currentState.supplies[idx] = { ...currentState.supplies[idx], ...p };
+          } else {
+            console.warn("Supplies not found", p);
+          }
+        }
+      }
+
       if (diff?.equipment && currentState?.equipment) {
         for (const e of diff.equipment) {
           const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
@@ -89,6 +107,19 @@ export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
             currentState.personnel[idx] = { ...currentState.personnel[idx], onHand };
           } else {
             console.warn("Personnel not found", p);
+          }
+        }
+      }
+
+      if (diff?.supplies && currentState?.supplies) {
+        for (const p of diff.supplies) {
+          const idx = currentState.supplies.findIndex((pp) => pp.id === p.id);
+          if (idx !== -1) {
+            const pe = currentState.supplies[idx];
+            const onHand = (pe?.onHand ?? pe.count) + (p.onHand ?? 0);
+            currentState.supplies[idx] = { ...currentState.supplies[idx], onHand };
+          } else {
+            console.warn("Supplies not found", p);
           }
         }
       }

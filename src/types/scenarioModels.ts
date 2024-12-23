@@ -14,10 +14,10 @@ import {
   NState,
   NUnitEquipment,
   NUnitPersonnel,
-  NUpdateUnitEquipment,
-  NUpdateUnitPersonnel,
+  NUnitSupply,
   UpdateUnitEquipment,
   UpdateUnitPersonnel,
+  UpdateUnitSupplies,
 } from "@/types/internalModels";
 
 export interface State extends Partial<ScenarioEventDescription> {
@@ -36,11 +36,13 @@ export interface State extends Partial<ScenarioEventDescription> {
   update?: {
     equipment?: UpdateUnitEquipment[];
     personnel?: UpdateUnitPersonnel[];
+    supplies?: UpdateUnitSupplies[];
   };
   // a diff is applied to the current state to update it
   diff?: {
     equipment?: UpdateUnitEquipment[];
     personnel?: UpdateUnitPersonnel[];
+    supplies?: UpdateUnitSupplies[];
   };
 }
 
@@ -54,6 +56,7 @@ export interface CurrentState extends Omit<NState, "id"> {
   type?: CurrentStateType;
   equipment?: NUnitEquipment[];
   personnel?: NUnitPersonnel[];
+  supplies?: NUnitSupply[];
 }
 
 export interface LocationState extends State {
@@ -100,6 +103,7 @@ export interface Unit {
   rangeRings?: RangeRing[];
   equipment?: UnitEquipment[];
   personnel?: UnitPersonnel[];
+  supplies?: UnitSupply[];
   media?: Media[];
   status?: string;
   template?: EntityId;
@@ -140,6 +144,15 @@ export interface UnitPersonnel {
   name: string;
   description?: string;
   onHand?: number;
+}
+
+export interface UnitSupply {
+  count: number;
+  name: string;
+  description?: string;
+  onHand?: number;
+  supplyClass?: string;
+  uom?: string;
 }
 
 export interface SideData {
@@ -236,6 +249,8 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "0.37.0"
+  | "0.36.0"
   | "0.33.0"
   | "0.32.0"
   | "0.31.0"
@@ -267,6 +282,27 @@ export interface PersonnelData {
   description?: string;
 }
 
+export interface SupplyCategory {
+  name: string;
+  description?: string;
+  supplyClass?: string;
+  uom?: string;
+}
+
+export interface SupplyClass {
+  name: string;
+  description?: string;
+}
+
+export interface UnitOfMeasure {
+  name: string;
+  description?: string;
+  code?: string; // Abbreviation (e.g., kg, L)
+  type?: UoMType;
+}
+
+export type UoMType = "weight" | "volume" | "quantity" | "distance";
+
 export interface UnitStatus {
   name: string;
   description?: string;
@@ -276,6 +312,8 @@ export interface UnitStatus {
 export interface ScenarioSettings {
   rangeRingGroups: RangeRingGroup[];
   statuses: UnitStatus[];
+  supplyClasses: SupplyClass[];
+  supplyUoMs: UnitOfMeasure[];
   map?: MapSettings;
   boundingBox?: BBox;
 }
@@ -302,6 +340,7 @@ export interface Scenario extends ScenarioInfo {
   mapLayers: ScenarioMapLayer[];
   equipment?: EquipmentData[];
   personnel?: PersonnelData[];
+  supplyCategories?: SupplyCategory[];
   unitTemplates?: Unit[];
   settings?: ScenarioSettings;
 }
@@ -312,3 +351,26 @@ export interface OrbatItemData {
   unit: Unit;
   children: OrbatItemData[];
 }
+
+const exampleData: UnitOfMeasure[] = [
+  {
+    name: "Kilogram",
+    code: "kg",
+    type: "weight",
+  },
+  {
+    name: "Liter",
+    code: "L",
+    type: "volume",
+  },
+  {
+    name: "Each",
+    code: "ea",
+    type: "quantity",
+  },
+  {
+    name: "Meter",
+    code: "m",
+    type: "distance",
+  },
+];

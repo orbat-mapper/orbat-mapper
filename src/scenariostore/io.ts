@@ -11,6 +11,9 @@ import {
   SymbologyStandard,
   Unit,
   UnitStatus,
+  SupplyCategory,
+  SupplyClass,
+  UnitOfMeasure,
 } from "@/types/scenarioModels";
 import * as FileSaver from "file-saver";
 import {
@@ -73,7 +76,25 @@ export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): S
     events: [],
     layers: [{ id: nanoid(), name: "Features", features: [] }],
     mapLayers: [],
-    settings: { rangeRingGroups, statuses: [], map: { baseMapId: DEFAULT_BASEMAP_ID } },
+    settings: {
+      rangeRingGroups,
+      statuses: [],
+      map: { baseMapId: DEFAULT_BASEMAP_ID },
+      supplyClasses: [
+        { name: "Class I" },
+        { name: "Class II" },
+        { name: "Class III" },
+        { name: "Class IV" },
+        { name: "Class V" },
+      ],
+      supplyUoMs: [
+        { name: "Kilogram", code: "KG", type: "weight" },
+        { name: "Liter", code: "LI", type: "volume" },
+        { name: "Each", code: "EA", type: "quantity" },
+        { name: "Meter", code: "MR", type: "distance" },
+        { name: "Gallon", code: "GL", type: "volume" },
+      ],
+    },
   };
 }
 
@@ -126,9 +147,17 @@ export function serializeUnit(
     return { name, count, onHand };
   });
   if (personnel?.length === 0) personnel = undefined;
+
+  let supplies = nUnit.supplies?.map(({ id, count, onHand }) => {
+    const { name } = scnState.supplyCategoryMap[id];
+    return { name, count, onHand };
+  });
+  if (supplies?.length === 0) supplies = undefined;
+
   let rangeRings = nUnit.rangeRings?.map(({ group, ...rest }) => {
     return group ? { group: scnState.rangeRingGroupMap[group].name, ...rest } : rest;
   });
+
   if (rangeRings?.length === 0) rangeRings = undefined;
   const { id, state, ...rest } = nUnit;
 
@@ -141,10 +170,11 @@ export function serializeUnit(
       : [],
     equipment,
     personnel,
+    supplies,
     rangeRings,
     state: state
       ? state.map((s) => {
-          let diffEquipment, diffPersonnel;
+          let diffEquipment, diffPersonnel, diffSupplies;
           const c = klona(s) as State;
 
           if (s.diff) {
@@ -159,24 +189,51 @@ export function serializeUnit(
                 return { name: scnState.personnelMap[id]?.name ?? id, count, onHand };
               });
             }
-            c.diff = { equipment: diffEquipment, personnel: diffPersonnel };
+
+            if (s.diff?.supplies) {
+              diffSupplies = s.diff.supplies.map(({ id, count, onHand }) => {
+                return {
+                  name: scnState.supplyCategoryMap[id]?.name ?? id,
+                  count,
+                  onHand,
+                };
+              });
+            }
+            c.diff = {
+              equipment: diffEquipment,
+              personnel: diffPersonnel,
+              supplies: diffSupplies,
+            };
           }
 
           if (s.update) {
+            let updateEquipment, updatePersonnel, updateSupplies;
+
             if (s.update.equipment) {
-              c.update = {
-                equipment: s.update.equipment.map(({ id, count, onHand }) => {
-                  return { name: scnState.equipmentMap[id]?.name ?? id, count, onHand };
-                }),
-              };
+              updateEquipment = s.update.equipment.map(({ id, count, onHand }) => {
+                return { name: scnState.equipmentMap[id]?.name ?? id, count, onHand };
+              });
             }
             if (s.update.personnel) {
-              c.update = {
-                personnel: s.update.personnel.map(({ id, count, onHand }) => {
-                  return { name: scnState.personnelMap[id]?.name ?? id, count, onHand };
-                }),
-              };
+              updatePersonnel = s.update.personnel.map(({ id, count, onHand }) => {
+                return { name: scnState.personnelMap[id]?.name ?? id, count, onHand };
+              });
             }
+
+            if (s.update.supplies) {
+              updateSupplies = s.update.supplies.map(({ id, count, onHand }) => {
+                return {
+                  name: scnState.supplyCategoryMap[id]?.name ?? id,
+                  count,
+                  onHand,
+                };
+              });
+            }
+            c.update = {
+              equipment: updateEquipment,
+              personnel: updatePersonnel,
+              supplies: updateSupplies,
+            };
           }
 
           if (s.status) {
@@ -218,12 +275,32 @@ function getPersonnel(state: ScenarioState): PersonnelData[] {
   }));
 }
 
+function getSupplyCategories(state: ScenarioState): SupplyCategory[] {
+  return Object.values(state.supplyCategoryMap).map(({ id, ...sup }) => {
+    return {
+      ...sup,
+      supplyClass: sup.supplyClass
+        ? (state.supplyClassMap[sup.supplyClass]?.name ?? sup.supplyClass)
+        : undefined,
+      uom: sup.uom ? (state.supplyUomMap[sup.uom]?.name ?? sup.uom) : undefined,
+    };
+  });
+}
+
 function getRangeRingGroups(state: ScenarioState): RangeRingGroup[] {
   return Object.values(state.rangeRingGroupMap).map(({ id, ...rest }) => rest);
 }
 
 function getUnitStatuses(state: ScenarioState): UnitStatus[] {
   return Object.values(state.unitStatusMap).map(({ id, ...rest }) => rest);
+}
+
+function getSupplyClasses(state: ScenarioState): SupplyClass[] {
+  return Object.values(state.supplyClassMap).map(({ id, ...rest }) => rest);
+}
+
+function getSupplyUoMs(state: ScenarioState): UnitOfMeasure[] {
+  return Object.values(state.supplyUomMap).map(({ id, ...rest }) => rest);
 }
 
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
@@ -246,9 +323,12 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       mapLayers: getMapLayers(state),
       equipment: getEquipment(state),
       personnel: getPersonnel(state),
+      supplyCategories: getSupplyCategories(state),
       settings: {
         rangeRingGroups: getRangeRingGroups(state),
         statuses: getUnitStatuses(state),
+        supplyClasses: getSupplyClasses(state),
+        supplyUoMs: getSupplyUoMs(state),
         map: state.mapSettings,
       },
     };

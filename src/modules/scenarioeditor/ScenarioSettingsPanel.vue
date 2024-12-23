@@ -11,6 +11,9 @@ import ScenarioInfoUnitStatuses from "@/modules/scenarioeditor/ScenarioInfoUnitS
 import ScenarioMapSettings from "@/modules/scenarioeditor/ScenarioMapSettings.vue";
 import PanelHeading from "@/components/PanelHeading.vue";
 import HeadingDescription from "@/components/HeadingDescription.vue";
+import ScenarioInfoSupplies from "@/modules/scenarioeditor/ScenarioInfoSupplies.vue";
+import ScenarioInfoSupplyClasses from "@/modules/scenarioeditor/ScenarioInfoSupplyClasses.vue";
+import ScenarioInfoSupplyUnits from "@/modules/scenarioeditor/ScenarioInfoSupplyUnits.vue";
 
 const selectedItems = useSelectedItems();
 const scenarioInfoPanelStore = useScenarioInfoPanelStore();
@@ -93,9 +96,23 @@ function showScenarioInfo() {
       <ScenarioInfoPersonnel class="relative" />
     </AccordionPanel>
     <AccordionPanel
-      label="Sensor groups"
+      label="Supply categories"
       :key="scenarioInfoPanelStore.tabIndex + 50"
       :defaultOpen="scenarioInfoPanelStore.tabIndex === 3"
+    >
+      <ScenarioInfoSupplies class="relative" />
+    </AccordionPanel>
+    <AccordionPanel label="Supply classes">
+      <ScenarioInfoSupplyClasses />
+    </AccordionPanel>
+    <AccordionPanel label="Supply units">
+      <ScenarioInfoSupplyUnits />
+    </AccordionPanel>
+
+    <AccordionPanel
+      label="Sensor groups"
+      :key="scenarioInfoPanelStore.tabIndex + 60"
+      :defaultOpen="scenarioInfoPanelStore.tabIndex === 4"
     >
       <ScenarioInfoGroups />
     </AccordionPanel>

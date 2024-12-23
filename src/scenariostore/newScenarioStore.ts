@@ -11,6 +11,9 @@ import type {
   State,
   Unit,
   UnitStatus,
+  SupplyCategory,
+  SupplyClass,
+  UnitOfMeasure,
 } from "@/types/scenarioModels";
 import dayjs from "dayjs";
 import { nanoid } from "@/utils";
@@ -27,10 +30,14 @@ import type {
   NSide,
   NSideGroup,
   NState,
+  NSupplyCategory,
+  NSupplyClass,
+  NSupplyUoM,
   NUnit,
   NUnitEquipment,
   NUnitPersonnel,
   NUnitStatus,
+  NUnitSupply,
 } from "@/types/internalModels";
 import { useScenarioTime } from "./time";
 import type {
@@ -60,12 +67,15 @@ export interface ScenarioState {
   events: EntityId[];
   equipmentMap: Record<string, NEquipmentData>;
   personnelMap: Record<string, NPersonnelData>;
+  supplyCategoryMap: Record<string, NSupplyCategory>;
   currentTime: number;
   getUnitById: (id: EntityId) => NUnit;
   getSideById: (id: EntityId) => NSide;
   getSideGroupById: (id: EntityId) => NSideGroup;
   rangeRingGroupMap: Record<string, NRangeRingGroup>;
   unitStatusMap: Record<string, NUnitStatus>;
+  supplyClassMap: Record<string, NSupplyClass>;
+  supplyUomMap: Record<string, NSupplyUoM>;
   unitStateCounter: number;
   featureStateCounter: number;
   mapSettings: MapSettings;
@@ -95,14 +105,18 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
   const mapLayerMap: Record<FeatureId, ScenarioMapLayer> = {};
   const equipmentMap: Record<string, NEquipmentData> = {};
   const personnelMap: Record<string, NPersonnelData> = {};
+  const supplyCategoryMap: Record<string, NSupplyCategory> = {};
   const rangeRingGroupMap: Record<string, NRangeRingGroup> = {};
   const unitStatusMap: Record<string, NUnitStatus> = {};
-
+  const supplyClassMap: Record<string, NSupplyClass> = {};
+  const supplyUoMMap: Record<string, NSupplyUoM> = {};
   const tempEquipmentIdMap: Record<string, string> = {};
   const tempPersonnelIdMap: Record<string, string> = {};
+  const tempSuppliesIdMap: Record<string, string> = {};
   const tempRangeRingGroupIdMap: Record<string, string> = {};
   const tempUnitStatusIdMap: Record<string, string> = {};
-
+  const tempSupplyClassIdMap: Record<string, string> = {};
+  const tempSupplyUomIdMap: Record<string, string> = {};
   const scenario = upgradeScenarioIfNecessary(newScenario);
 
   const scenarioId = scenario.id ?? nanoid();
@@ -129,6 +143,18 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     unitStatusMap[id] = { ...s, id };
   });
 
+  scenario.settings?.supplyClasses?.forEach((s) => {
+    const id = nanoid();
+    supplyClassMap[id] = { ...s, id };
+    tempSupplyClassIdMap[s.name] = id;
+  });
+
+  scenario.settings?.supplyUoMs?.forEach((s) => {
+    const id = nanoid();
+    supplyUoMMap[id] = { ...s, id };
+    tempSupplyUomIdMap[s.name] = id;
+  });
+
   if (scenario.startTime !== undefined) {
     scenario.startTime = +dayjs(scenario.startTime);
   }
@@ -152,6 +178,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     unit._sid = side.id;
     const equipment: NUnitEquipment[] = [];
     const personnel: NUnitPersonnel[] = [];
+    const supplies: NUnitSupply[] = [];
     const rangeRings: RangeRing[] = [];
 
     unit.equipment?.forEach(({ name, count }) => {
@@ -162,6 +189,12 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     unit.personnel?.forEach(({ name, count }) => {
       const id = tempPersonnelIdMap[name] || addPersonnel({ name });
       personnel.push({ id, count });
+    });
+
+    unit.supplies?.forEach((s) => {
+      const { count, onHand, name } = s;
+      const id = tempSuppliesIdMap[s.name] || addSupplyCategory(s);
+      supplies.push({ id, count, onHand });
     });
 
     unit.rangeRings?.forEach((rr) => {
@@ -186,22 +219,6 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     } else {
       unit.state = unit.state.map(convertStateToInternalFormat);
     }
-    // unit.state
-    //   ?.filter((s) => s.title)
-    //   .forEach((s) => {
-    //     const { t: startTime, subTitle, description } = s;
-    //     const nEvent: NScenarioEvent = {
-    //       id: s.id || nanoid(),
-    //       startTime,
-    //       title: s.title || "NN",
-    //       subTitle,
-    //       description,
-    //       _type: "unit",
-    //       _pid: unit.id,
-    //       //where: s.where,
-    //     };
-    //     eventMap[nEvent.id] = nEvent;
-    //   });
     unit.state
       ?.filter((s) => s.status)
       .forEach((s) => {
@@ -221,6 +238,10 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
               const { name, ...rest } = p;
               return { id: tempPersonnelIdMap[name] ?? name, ...rest };
             }),
+            supplies: update.supplies?.map((s) => {
+              const { name, ...rest } = s;
+              return { id: tempSuppliesIdMap[name] ?? name, ...rest };
+            }),
           }
         : undefined;
       const newDiff = diff
@@ -233,6 +254,10 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
               const { name, ...rest } = p;
               return { id: tempPersonnelIdMap[name] ?? name, ...rest };
             }),
+            supplies: diff.supplies?.map((s) => {
+              const { name, ...rest } = s;
+              return { id: tempSuppliesIdMap[name] ?? name, ...rest };
+            }),
           }
         : undefined;
       return { ...rest, update: newUpdate, diff: newDiff };
@@ -243,6 +268,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
       subUnits: unit.subUnits?.map((u) => u.id) || [],
       equipment,
       personnel,
+      supplies,
       rangeRings,
       state: newState,
     } as NUnit;
@@ -254,6 +280,10 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
 
   scenario.personnel?.forEach((e) => {
     addPersonnel(e);
+  });
+
+  scenario.supplyCategories?.forEach((s) => {
+    addSupplyCategory(s);
   });
 
   scenario.settings?.rangeRingGroups?.forEach((g) => {
@@ -274,6 +304,23 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     return id;
   }
 
+  function addSupplyCategory(s: SupplyCategory) {
+    const id = nanoid();
+    const sc = { ...s, id };
+    if (sc.supplyClass) {
+      sc.supplyClass =
+        tempSupplyClassIdMap[sc.supplyClass] ?? addSupplyClass({ name: sc.supplyClass });
+    }
+
+    if (sc.uom) {
+      sc.uom = tempSupplyUomIdMap[sc.uom] ?? addSupplyUom({ name: sc.uom });
+    }
+
+    tempSuppliesIdMap[s.name] = id;
+    supplyCategoryMap[id] = { ...sc, id };
+    return id;
+  }
+
   function addRangeRingGroup(g: RangeRingGroup) {
     const id = nanoid();
     tempRangeRingGroupIdMap[g.name] = id;
@@ -285,6 +332,20 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     const id = nanoid();
     tempUnitStatusIdMap[s.name] = id;
     unitStatusMap[id] = { ...s, id };
+    return id;
+  }
+
+  function addSupplyClass(s: SupplyClass) {
+    const id = nanoid();
+    tempSupplyClassIdMap[s.name] = id;
+    supplyClassMap[id] = { ...s, id };
+    return id;
+  }
+
+  function addSupplyUom(s: UnitOfMeasure) {
+    const id = nanoid();
+    tempSupplyUomIdMap[s.name] = id;
+    supplyUoMMap[id] = { ...s, id };
     return id;
   }
 
@@ -360,12 +421,6 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     lastModifiedDate: scenario.meta?.lastModifiedDate ?? new Date().toISOString(),
   };
 
-  // scenario.meta ?? {
-  //     createdDate: new Date().toISOString(),
-  //     lastModifiedDate: new Date().toISOString()
-  //   }
-  // };
-
   return {
     id: scenarioId,
     meta,
@@ -384,6 +439,9 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     events,
     equipmentMap,
     personnelMap,
+    supplyCategoryMap,
+    supplyClassMap,
+    supplyUomMap: supplyUoMMap,
     rangeRingGroupMap,
     unitStateCounter,
     featureStateCounter,

@@ -8,10 +8,14 @@ import {
   SideGroup,
   SpeedUnitOfMeasure,
   State,
+  SupplyCategory,
+  SupplyClass,
   Unit,
   UnitEquipment,
+  UnitOfMeasure,
   UnitPersonnel,
   UnitStatus,
+  UnitSupply,
 } from "./scenarioModels";
 import { EntityId } from "./base";
 import {
@@ -30,11 +34,19 @@ import { Optional } from "@/types/helpers";
 export interface NUnit
   extends Omit<
     Unit,
-    "subUnits" | "_pid" | "_gid" | "_sid" | "personnel" | "equipment" | "state"
+    | "subUnits"
+    | "_pid"
+    | "_gid"
+    | "_sid"
+    | "personnel"
+    | "equipment"
+    | "state"
+    | "supplies"
   > {
   subUnits: EntityId[];
   equipment?: NUnitEquipment[];
   personnel?: NUnitPersonnel[];
+  supplies?: NUnitSupply[];
   state?: NState[];
   _pid: EntityId;
   _gid: EntityId;
@@ -42,6 +54,10 @@ export interface NUnit
 }
 
 export interface NUnitEquipment extends Omit<UnitEquipment, "name"> {
+  id: string;
+}
+
+export interface NUnitSupply extends Omit<UnitSupply, "name"> {
   id: string;
 }
 
@@ -57,6 +73,10 @@ export interface EUnitEquipment extends UnitEquipment {
   id: string;
 }
 
+export interface EUnitSupply extends UnitSupply {
+  id: string;
+}
+
 export interface NUnitPersonnel extends Omit<UnitPersonnel, "name"> {
   id: string;
 }
@@ -65,7 +85,15 @@ export interface NUpdateUnitPersonnel extends Omit<NUnitPersonnel, "count"> {
   count?: number;
 }
 
+export interface NUpdateUnitSupplies extends Omit<NUnitSupply, "count"> {
+  count?: number;
+}
+
 export interface UpdateUnitPersonnel extends Omit<UnitPersonnel, "count"> {
+  count?: number;
+}
+
+export interface UpdateUnitSupplies extends Omit<UnitSupply, "count"> {
   count?: number;
 }
 
@@ -142,7 +170,19 @@ export interface NPersonnelData extends PersonnelData {
   id: string;
 }
 
+export interface NSupplyCategory extends SupplyCategory {
+  id: string;
+}
+
 export interface NUnitStatus extends UnitStatus {
+  id: string;
+}
+
+export interface NSupplyClass extends SupplyClass {
+  id: string;
+}
+
+export interface NSupplyUoM extends UnitOfMeasure {
   id: string;
 }
 
@@ -151,17 +191,22 @@ export interface NState extends Omit<State, "update" | "diff"> {
   update?: {
     equipment?: NUpdateUnitEquipment[];
     personnel?: NUpdateUnitPersonnel[];
+    supplies?: NUpdateUnitSupplies[];
   };
   // a diff is applied to the current state to update it
   diff?: {
     equipment?: NUpdateUnitEquipment[];
     personnel?: NUpdateUnitPersonnel[];
+    supplies?: NUpdateUnitSupplies[];
   };
 }
 
+export interface SupplyClassUpdate extends Partial<Omit<NSupplyClass, "id">> {}
+export interface SupplyUomUpdate extends Partial<Omit<NSupplyUoM, "id">> {}
 export interface UnitStatusUpdate extends Partial<Omit<NUnitStatus, "id">> {}
 export interface EquipmentDataUpdate extends Partial<Omit<NEquipmentData, "id">> {}
 export interface PersonnelDataUpdate extends Partial<Omit<NPersonnelData, "id">> {}
+export interface SupplyCategoryUpdate extends Partial<Omit<NSupplyCategory, "id">> {}
 export const INTERNAL_NAMES = [
   "_state",
   "_pid",

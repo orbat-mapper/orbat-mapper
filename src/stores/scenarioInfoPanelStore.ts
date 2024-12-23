@@ -11,6 +11,8 @@ export const useScenarioInfoPanelStore = defineStore("scenarioInfoPanel", () => 
   const toggleAddPersonnel = useToggle(showAddPersonnel);
   const showAddGroup = ref(false);
   const toggleAddGroup = useToggle(showAddGroup);
+  const showAddSupplies = ref(false);
+  const toggleAddSupplies = useToggle(showAddSupplies);
 
   return {
     tabIndex,
@@ -20,5 +22,7 @@ export const useScenarioInfoPanelStore = defineStore("scenarioInfoPanel", () => 
     toggleAddPersonnel,
     showAddGroup,
     toggleAddGroup,
+    showAddSupplies,
+    toggleAddSupplies,
   };
 });
