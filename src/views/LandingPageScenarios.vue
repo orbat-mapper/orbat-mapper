@@ -112,9 +112,6 @@
         <li class="col-span-1 flex">
           <LoadScenarioFromUrlPanel @loaded="loadScenario" />
         </li>
-        <li class="col-span-1 flex">
-          <LoadScenarioFromLocalstoragePanel @loaded="loadFromLocalStorage" />
-        </li>
       </ul>
     </section>
   </div>
@@ -126,11 +123,9 @@ import { useRouter } from "vue-router";
 import WipBadge from "../components/WipBadge.vue";
 import { MAP_EDIT_MODE_ROUTE, NEW_SCENARIO_ROUTE } from "@/router/names";
 import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
-import { useScenario } from "@/scenariostore";
 import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromUrlPanel.vue";
 import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
 import SortDropdown from "@/components/SortDropdown.vue";
-import LoadScenarioFromLocalstoragePanel from "@/modules/scenarioeditor/LoadScenarioFromLocalstoragePanel.vue";
 import { DEMO_SCENARIOS, useBrowserScenarios } from "@/composables/browserScenarios";
 
 const { storedScenarios, sortOptions, onAction, loadScenario } = useBrowserScenarios();
@@ -146,11 +141,4 @@ const getScenarioTo = (scenarioId: string) => {
 const newScenario = () => {
   router.push({ name: NEW_SCENARIO_ROUTE });
 };
-
-const { scenario } = useScenario();
-
-async function loadFromLocalStorage() {
-  scenario.value.io.loadFromLocalStorage();
-  await loadScenario(scenario.value.io.serializeToObject());
-}
 </script>
