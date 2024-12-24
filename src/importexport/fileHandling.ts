@@ -173,7 +173,7 @@ function isSpreadsheetFileType(file: File): boolean {
 }
 
 export function arrayBufferToString(
-  arrayBuffer: ArrayBuffer | Uint8Array<ArrayBufferLike>,
+  arrayBuffer: ArrayBuffer | Uint8Array,
   decoderType = "utf-8",
 ) {
   let decoder = new TextDecoder(decoderType);
