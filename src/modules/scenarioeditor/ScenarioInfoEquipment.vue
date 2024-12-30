@@ -5,18 +5,35 @@ import { computed, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import TableHeader from "@/components/TableHeader.vue";
 import { NEquipmentData } from "@/types/internalModels";
-import DotsMenu from "@/components/DotsMenu.vue";
 import { useNotifications } from "@/composables/notifications";
 import InputGroup from "@/components/InputGroup.vue";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
+import ToeGrid from "@/modules/grid/ToeGrid.vue";
+import { ColumnDef } from "@tanstack/vue-table";
+import { useTestStore2 } from "@/stores/tableStores";
+import { storeToRefs } from "pinia";
+import { useWidthStore } from "@/stores/uiStore";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
 const store = useScenarioInfoPanelStore();
-
+const tableStore = useTestStore2();
+const selected = ref<NEquipmentData[]>([]);
 const equipment = computed(() => {
   return Object.values(scn.store.state.equipmentMap);
 });
+
+const { orbatPanelWidth } = storeToRefs(useWidthStore());
+
+const columns: ColumnDef<NEquipmentData>[] = [
+  { id: "name", header: "Name", accessorKey: "name", size: 200 },
+  {
+    id: "description",
+    header: "Description",
+    accessorKey: "description",
+    size: 100,
+  },
+];
 
 const itemActions = [
   { label: "Edit", action: "edit" },
@@ -74,7 +91,7 @@ function onItemAction(item: NEquipmentData, action: string) {
 </script>
 
 <template>
-  <div class="prose max-w-none dark:prose-invert">
+  <div class="">
     <TableHeader description="A list of equipment that is available in this scenario.">
       <BaseButton @click="store.toggleAddEquipment()">
         {{ store.showAddEquipment ? "Hide form" : "Add" }}
@@ -91,50 +108,26 @@ function onItemAction(item: NEquipmentData, action: string) {
         <BaseButton type="submit" small primary class="self-center">+Add</BaseButton>
       </div>
     </form>
-    <form @submit.prevent="onSubmit">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <td></td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="eq in equipment" :key="eq.id" @dblclick="startEdit(eq)">
-            <template v-if="eq.id === editedId">
-              <td>
-                <input
-                  type="text"
-                  @vue:mounted="({ el }: any) => el.focus()"
-                  v-model="form.name"
-                  class="h-full w-full text-sm"
-                  placeholder="Name"
-                />
-              </td>
-              <td class="" colspan="3">
-                <div class="flex">
-                  <input
-                    type="text"
-                    v-model="form.description"
-                    class="flex-auto text-sm"
-                    placeholder="Description"
-                  />
-                  <BaseButton small type="submit" secondary class="ml-2">Save</BaseButton>
-                  <BaseButton small class="ml-2" @click="cancelEdit()">Cancel</BaseButton>
-                </div>
-              </td>
-            </template>
-            <template v-else>
-              <td>{{ eq.name }}</td>
-              <td>{{ eq.description }}</td>
-              <td class="not-prose w-6">
-                <DotsMenu :items="itemActions" @action="onItemAction(eq, $event)" />
-              </td>
-            </template>
-          </tr>
-        </tbody>
-      </table>
-    </form>
+
+    <ToeGrid
+      :columns="columns"
+      :data="equipment"
+      class="mt-4"
+      v-model:selected="selected"
+      :table-store="tableStore"
+      select
+      v-model:editedId="editedId"
+    >
+      <template #inline-form="{ row }">
+        <form @submit.prevent="onSubmit" class="" @keyup.esc.stop="cancelEdit()">
+          <div class="sticky left-0 p-4" :style="{ maxWidth: orbatPanelWidth + 'px' }">
+            <InputGroup autofocus label="Name" />
+            <BaseButton type="submit" small primary class="self-center">Save</BaseButton>
+          </div>
+          {{ row }}
+        </form>
+      </template>
+    </ToeGrid>
+    {{ editedId }}
   </div>
 </template>

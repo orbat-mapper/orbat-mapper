@@ -14,6 +14,9 @@ interface Form {
   uom?: string;
 }
 
+const props = withDefaults(defineProps<{ heading?: string }>(), {
+  heading: "Add new supply category",
+});
 const modelValue = defineModel<Form>();
 const emit = defineEmits<{ cancel: [void]; submit: [form: Form] }>();
 
@@ -54,8 +57,8 @@ function onSubmit() {
 </script>
 
 <template>
-  <form @submit.prevent="onSubmit" class="mt-4 border-t-2 py-4">
-    <h3 class="text-sm font-semibold">Add new supply category</h3>
+  <form @submit.prevent="onSubmit" class="" @keyup.esc.stop="emit('cancel')">
+    <h3 class="text-sm font-semibold">{{ heading }}</h3>
     <section class="grid grid-cols-2 gap-6">
       <InputGroup autofocus label="Name" required v-model="form.name" />
       <SimpleSelect label="Class" v-model="form.supplyClass" :items="supplyClasses" />
