@@ -15,6 +15,10 @@ function tableStoreFactory(storeName: string) {
   });
 }
 
+export type TableStore = ReturnType<ReturnType<typeof tableStoreFactory>>;
+
 export const useTestStore2 = tableStoreFactory("testStore");
 export const useSupplyCategoryTableStore = tableStoreFactory("supplyCategoryTableStore");
-export type TableStore = ReturnType<ReturnType<typeof tableStoreFactory>>;
+export const useSupplyClassTableStore = tableStoreFactory("supplyClassTableStore");
+export const useEquipmentTableStore = tableStoreFactory("equipmentTableStore");
+export const usePersonnelTableStore = tableStoreFactory("personnelTableStore");

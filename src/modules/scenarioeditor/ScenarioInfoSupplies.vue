@@ -42,7 +42,6 @@ const columns: ColumnDef<NSupplyCategory>[] = [
 const editMode = ref(false);
 
 const editedId = ref<string | null>(null);
-const form = ref<Omit<NPersonnelData, "id">>({ name: "", description: "" });
 const addForm = ref<Omit<NSupplyCategory, "id">>({
   name: "",
   description: "",
@@ -88,7 +87,7 @@ function onAddSubmit(formData: Omit<NSupplyCategory, "id">) {
     });
     return;
   }
-  unitActions.addSupplyCategory({ ...addForm.value });
+  unitActions.addSupplyCategory({ ...formData });
   addForm.value = { ...formData, name: "", description: "" };
 }
 

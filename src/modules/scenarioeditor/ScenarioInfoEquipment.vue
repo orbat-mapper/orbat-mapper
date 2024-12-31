@@ -1,133 +1,124 @@
 <script setup lang="ts">
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
-import { computed, ref } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
+import { computed, ref, triggerRef } from "vue";
 import TableHeader from "@/components/TableHeader.vue";
 import { NEquipmentData } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
-import InputGroup from "@/components/InputGroup.vue";
-import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
-import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import { ColumnDef } from "@tanstack/vue-table";
-import { useTestStore2 } from "@/stores/tableStores";
-import { storeToRefs } from "pinia";
-import { useWidthStore } from "@/stores/uiStore";
+import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
+import ToeGrid from "@/modules/grid/ToeGrid.vue";
+import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
+import AddNameDescriptionForm from "@/modules/scenarioeditor/AddNameDescriptionForm.vue";
+import { useEquipmentTableStore, useSupplyClassTableStore } from "@/stores/tableStores";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
-const store = useScenarioInfoPanelStore();
-const tableStore = useTestStore2();
-const selected = ref<NEquipmentData[]>([]);
+
+const editMode = ref(false);
+const editedId = ref<string | null>();
+const showAddForm = ref(false);
+const rerender = ref(true);
+const tableStore = useEquipmentTableStore();
+const selectedItems = ref<NEquipmentData[]>([]);
+
 const equipment = computed(() => {
+  rerender.value;
   return Object.values(scn.store.state.equipmentMap);
 });
 
-const { orbatPanelWidth } = storeToRefs(useWidthStore());
-
 const columns: ColumnDef<NEquipmentData>[] = [
   { id: "name", header: "Name", accessorKey: "name", size: 200 },
-  {
-    id: "description",
-    header: "Description",
-    accessorKey: "description",
-    size: 100,
-  },
+  { id: "description", header: "Description", accessorKey: "description" },
 ];
 
-const itemActions = [
-  { label: "Edit", action: "edit" },
-  { label: "Delete", action: "delete" },
-];
-
-const editedId = ref();
-const form = ref<Omit<NEquipmentData, "id">>({ name: "", description: "" });
 const addForm = ref<Omit<NEquipmentData, "id">>({ name: "", description: "" });
 
-function startEdit(data: NEquipmentData) {
-  editedId.value = data.id;
-  const { id, ...rest } = data;
-  form.value = rest;
-}
-
-function onSubmit() {
-  scn.unitActions.updateEquipment(editedId.value, form.value!);
+function onSubmit(e: NEquipmentData) {
+  const { id, ...rest } = e;
+  scn.unitActions.updateEquipment(id, rest);
   editedId.value = null;
+  triggerRef(rerender);
 }
 
 function cancelEdit() {
   editedId.value = null;
 }
 
-function onAddSubmit() {
+function onAddSubmit(formData: Omit<NEquipmentData, "id">) {
   // check if name exists
-  if (equipment.value.find((e) => e.name === addForm.value.name)) {
+  if (equipment.value.find((e) => e.name === formData.name)) {
     send({
       type: "error",
-      message: "Equipment with this name already exists.",
+      message: "Equipment category with this name already exists.",
     });
     return;
   }
-  scn.unitActions.addEquipment({ ...addForm.value });
+  scn.unitActions.addEquipment({ ...formData });
   addForm.value = { name: "", description: "" };
 }
 
-function onItemAction(item: NEquipmentData, action: string) {
-  switch (action) {
-    case "edit":
-      startEdit(item);
-      break;
-    case "delete":
-      const success = scn.unitActions.deleteEquipment(item.id);
+function onDelete() {
+  const notDeletedItems: NEquipmentData[] = [];
+  scn.store.groupUpdate(() => {
+    selectedItems.value.forEach((e) => {
+      const success = scn.unitActions.deleteEquipment(e.id);
       if (!success) {
         send({
           type: "error",
-          message: "Cannot delete equipment that is in use.",
+          message: `${e.name}: Cannot delete an equipment category that is in use.`,
         });
+        notDeletedItems.push(e);
       }
-      break;
-  }
+    });
+  });
+  triggerRef(editMode);
+  selectedItems.value = notDeletedItems;
 }
 </script>
 
 <template>
   <div class="">
-    <TableHeader description="A list of equipment that is available in this scenario.">
-      <BaseButton @click="store.toggleAddEquipment()">
-        {{ store.showAddEquipment ? "Hide form" : "Add" }}
-      </BaseButton>
-    </TableHeader>
-    <form
-      v-if="store.showAddEquipment"
-      @submit.prevent="onAddSubmit"
-      class="not-prose grid grid-cols-3 gap-2"
-    >
-      <InputGroup autofocus label="Name" required v-model="addForm.name" />
-      <div class="col-span-2 flex items-start gap-3">
-        <InputGroup class="" label="Description" v-model="addForm.description" />
-        <BaseButton type="submit" small primary class="self-center">+Add</BaseButton>
-      </div>
-    </form>
-
+    <TableHeader
+      description="A list of equipment categories available in this scenario."
+    />
+    <ToeGridHeader
+      v-model:editMode="editMode"
+      v-model:addMode="showAddForm"
+      editLabel="Edit equipment"
+      :selected-count="selectedItems.length"
+      :hideEdit="equipment.length === 0"
+      @delete="onDelete()"
+    />
+    <AddNameDescriptionForm
+      v-if="showAddForm"
+      v-model="addForm"
+      @cancel="showAddForm = false"
+      @submit="onAddSubmit"
+    />
     <ToeGrid
+      v-if="equipment.length"
       :columns="columns"
       :data="equipment"
-      class="mt-4"
-      v-model:selected="selected"
-      :table-store="tableStore"
-      select
       v-model:editedId="editedId"
+      :select="editMode"
+      v-model:selected="selectedItems"
+      v-model:editMode="editMode"
+      :tableStore="tableStore"
     >
       <template #inline-form="{ row }">
-        <form @submit.prevent="onSubmit" class="" @keyup.esc.stop="cancelEdit()">
-          <div class="sticky left-0 p-4" :style="{ maxWidth: orbatPanelWidth + 'px' }">
-            <InputGroup autofocus label="Name" />
-            <BaseButton type="submit" small primary class="self-center">Save</BaseButton>
-          </div>
-          {{ row }}
-        </form>
+        <InlineFormWrapper class="pr-6">
+          <AddNameDescriptionForm
+            :model-value="row"
+            @submit="onSubmit($event as NEquipmentData)"
+            @cancel="cancelEdit()"
+            heading="Edit supply class"
+          />
+        </InlineFormWrapper>
       </template>
     </ToeGrid>
-    {{ editedId }}
+    <p v-else class="prose prose-sm dark:prose-invert">
+      Use the <kbd>Add</kbd> button to add equipment categories to this scenario.
+    </p>
   </div>
 </template>

@@ -1,147 +1,122 @@
 <script setup lang="ts">
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
-import { computed, ref } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
+import { computed, ref, triggerRef } from "vue";
 import TableHeader from "@/components/TableHeader.vue";
-import { NEquipmentData, NSupplyClass, NUnitStatus } from "@/types/internalModels";
-import DotsMenu from "@/components/DotsMenu.vue";
+import { NSupplyCategory, NSupplyClass } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
-import InputGroup from "@/components/InputGroup.vue";
-import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
+import { ColumnDef } from "@tanstack/vue-table";
+import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
+import ToeGrid from "@/modules/grid/ToeGrid.vue";
+import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
+import AddNameDescriptionForm from "@/modules/scenarioeditor/AddNameDescriptionForm.vue";
+import { useSupplyClassTableStore } from "@/stores/tableStores";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
-const store = useScenarioInfoPanelStore();
+
+const editMode = ref(false);
+const editedId = ref<string | null>();
+const showAddForm = ref(false);
+const rerender = ref(true);
+const tableStore = useSupplyClassTableStore();
+const selectedItems = ref<NSupplyClass[]>([]);
 
 const supplyClasses = computed(() => {
+  rerender.value;
   return Object.values(scn.store.state.supplyClassMap);
 });
 
-const itemActions = [
-  { label: "Edit", action: "edit" },
-  { label: "Delete", action: "delete" },
+const columns: ColumnDef<NSupplyClass>[] = [
+  { id: "name", header: "Name", accessorKey: "name" },
+  { id: "description", header: "Description", accessorKey: "description" },
 ];
 
-const editedId = ref();
-const form = ref<Omit<NSupplyClass, "id">>({ name: "", description: "" });
 const addForm = ref<Omit<NSupplyClass, "id">>({ name: "", description: "" });
 
-function startEdit(data: NUnitStatus) {
-  editedId.value = data.id;
-  const { id, ...rest } = data;
-  form.value = rest;
-}
-
-function onSubmit() {
-  scn.unitActions.updateSupplyClass(editedId.value, form.value!);
+function onSubmit(e: NSupplyClass) {
+  const { id, ...rest } = e;
+  scn.unitActions.updateSupplyClass(id, rest);
   editedId.value = null;
+  triggerRef(rerender);
 }
 
 function cancelEdit() {
   editedId.value = null;
 }
 
-function onAddSubmit() {
+function onAddSubmit(formData: Omit<NSupplyClass, "id">) {
   // check if name exists
-  if (supplyClasses.value.find((e) => e.name === addForm.value.name)) {
+  if (supplyClasses.value.find((e) => e.name === formData.name)) {
     send({
       type: "error",
-      message: "Unit status with this name already exists.",
+      message: "Supply class with this name already exists.",
     });
     return;
   }
-  scn.unitActions.addSupplyClass({ ...addForm.value });
+  scn.unitActions.addSupplyClass({ ...formData });
   addForm.value = { name: "", description: "" };
 }
 
-function onItemAction(item: NEquipmentData, action: string) {
-  switch (action) {
-    case "edit":
-      startEdit(item);
-      break;
-    case "delete":
-      const success = scn.unitActions.deleteSupplyClass(item.id);
+function onDelete() {
+  const notDeletedItems: NSupplyCategory[] = [];
+  scn.store.groupUpdate(() => {
+    selectedItems.value.forEach((e) => {
+      const success = scn.unitActions.deleteSupplyClass(e.id);
       if (!success) {
         send({
           type: "error",
-          message: "Cannot delete supply class that is in use.",
+          message: `${e.name}: Cannot delete a supply category that is in use.`,
         });
+        notDeletedItems.push(e);
       }
-      break;
-  }
+    });
+  });
+  triggerRef(editMode);
+  selectedItems.value = notDeletedItems;
 }
 </script>
 
 <template>
-  <div class="prose max-w-none dark:prose-invert">
-    <TableHeader description="A list of supplyClasses is available in this scenario.">
-      <BaseButton @click="store.toggleAddEquipment()">
-        {{ store.showAddEquipment ? "Hide form" : "Add" }}
-      </BaseButton>
-    </TableHeader>
-    <form
-      v-if="store.showAddEquipment"
-      @submit.prevent="onAddSubmit"
-      class="not-prose grid grid-cols-3 gap-2"
+  <div class="">
+    <TableHeader description="A list of supplyClasses is available in this scenario." />
+    <ToeGridHeader
+      v-model:editMode="editMode"
+      v-model:addMode="showAddForm"
+      editLabel="Edit supply classes"
+      :selected-count="selectedItems.length"
+      :hideEdit="supplyClasses.length === 0"
+      @delete="onDelete()"
+    />
+    <AddNameDescriptionForm
+      v-if="showAddForm"
+      v-model="addForm"
+      @cancel="showAddForm = false"
+      @submit="onAddSubmit"
+    />
+    <ToeGrid
+      v-if="supplyClasses.length"
+      :columns="columns"
+      :data="supplyClasses"
+      v-model:editedId="editedId"
+      :select="editMode"
+      v-model:selected="selectedItems"
+      v-model:editMode="editMode"
+      :tableStore="tableStore"
     >
-      <InputGroup autofocus label="Name" required v-model="addForm.name" />
-      <div class="col-span-2 flex items-start gap-3">
-        <InputGroup class="" label="Description" v-model="addForm.description" />
-        <BaseButton type="submit" small primary class="self-center">+Add</BaseButton>
-      </div>
-    </form>
-    <form @submit.prevent="onSubmit">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <td></td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="supplyClass in supplyClasses"
-            :key="supplyClass.id"
-            @dblclick="startEdit(supplyClass)"
-          >
-            <template v-if="supplyClass.id === editedId">
-              <td>
-                <input
-                  type="text"
-                  @vue:mounted="({ el }: any) => el.focus()"
-                  v-model="form.name"
-                  class="h-full w-full text-sm"
-                  placeholder="Name"
-                />
-              </td>
-              <td class="" colspan="3">
-                <div class="flex">
-                  <input
-                    type="text"
-                    v-model="form.description"
-                    class="flex-auto text-sm"
-                    placeholder="Description"
-                  />
-                  <BaseButton small type="submit" secondary class="ml-2">Save</BaseButton>
-                  <BaseButton small class="ml-2" @click="cancelEdit()">Cancel</BaseButton>
-                </div>
-              </td>
-            </template>
-            <template v-else>
-              <td>{{ supplyClass.name }}</td>
-              <td>{{ supplyClass.description }}</td>
-              <td class="not-prose w-6">
-                <DotsMenu
-                  :items="itemActions"
-                  @action="onItemAction(supplyClass, $event)"
-                />
-              </td>
-            </template>
-          </tr>
-        </tbody>
-      </table>
-    </form>
+      <template #inline-form="{ row }">
+        <InlineFormWrapper class="pr-6">
+          <AddNameDescriptionForm
+            :model-value="row"
+            @submit="onSubmit($event as NSupplyClass)"
+            @cancel="cancelEdit()"
+            heading="Edit supply class"
+          />
+        </InlineFormWrapper>
+      </template>
+    </ToeGrid>
+    <p v-else class="prose prose-sm dark:prose-invert">
+      Use the <kbd>Add</kbd> button to add supply classes to this scenario.
+    </p>
   </div>
 </template>
