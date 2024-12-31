@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import {
-  EUnitEquipment,
-  EUnitPersonnel,
-  EUnitSupply,
-  NUnit,
-} from "@/types/internalModels";
+import { EUnitSupply, NUnit } from "@/types/internalModels";
 import { computed, shallowRef, triggerRef, watch } from "vue";
 import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
@@ -12,16 +7,14 @@ import { useLocalStorage, useToggle } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
 import BaseButton from "@/components/BaseButton.vue";
-import UnitToeItemTable from "@/modules/scenarioeditor/UnitToeItemTable.vue";
 import { useToeActions } from "@/composables/scenarioActions";
 import ToggleField from "@/components/ToggleField.vue";
-import AccordionPanel from "@/components/AccordionPanel.vue";
-import PrimaryButton from "@/components/PrimaryButton.vue";
 import { storeToRefs } from "pinia";
-import { useSuppliesEditStore, useToeEditStore } from "@/stores/toeStore";
+import { useSuppliesEditStore } from "@/stores/toeStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { StateAdd } from "@/types/scenarioModels";
 import UnitSupplyItemTable from "@/modules/scenarioeditor/UnitSupplyItemTable.vue";
+import EditToggleButton from "@/components/EditToggleButton.vue";
 
 interface Props {
   unit: NUnit;
@@ -174,11 +167,8 @@ function deleteSupply(supplyId: string) {
 <template>
   <div class="mt-4 flex justify-between">
     <div>
-      <PrimaryButton
-        @click="suppliesEditStore.toggleEditSuppliesMode()"
-        :disabled="isLocked"
-        ><span v-if="isSuppliesEditMode">Done editing</span
-        ><span v-else>Edit supplies</span></PrimaryButton
+      <EditToggleButton v-model="isSuppliesEditMode" :disabled="isLocked" primary
+        >Edit supplies</EditToggleButton
       >
     </div>
     <ToggleField v-model="includeSubordinates" :disabled="isSuppliesEditMode"

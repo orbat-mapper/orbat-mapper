@@ -2,7 +2,6 @@
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { computed, ref, triggerRef } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
 import TableHeader from "@/components/TableHeader.vue";
 import { NPersonnelData, NSupplyCategory } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
@@ -12,7 +11,7 @@ import { ColumnDef } from "@tanstack/vue-table";
 import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import { useSupplyCategoryTableStore } from "@/stores/tableStores";
-import SecondaryButton from "@/components/SecondaryButton.vue";
+import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
 
 const { store, unitActions } = injectStrict(activeScenarioKey);
 const [showAddSupplies, toggleAddSupplies] = useToggle(false);
@@ -50,12 +49,6 @@ const addForm = ref<Omit<NSupplyCategory, "id">>({
   supplyClass: "",
   uom: "",
 });
-
-function startEdit(data: NPersonnelData) {
-  editedId.value = data.id;
-  const { id, ...rest } = data;
-  form.value = rest;
-}
 
 function onSubmit(e: NSupplyCategory) {
   const { id, ...rest } = e;
@@ -118,32 +111,24 @@ function getSupplyClass(supply: NSupplyCategory) {
   <div class="">
     <TableHeader description="A list of supply categories available in this scenario.">
     </TableHeader>
-    <div class="my-4 flex items-center justify-between gap-2">
-      <div>
-        <BaseButton v-if="selectedSupplies.length" small @click="onDelete()"
-          >Delete ({{ selectedSupplies.length }})</BaseButton
-        >
-      </div>
-      <div class="flex items-center gap-2">
-        <SecondaryButton @click="editMode = !editMode"
-          ><span v-if="editMode">Done editing</span
-          ><span v-else>Edit</span></SecondaryButton
-        >
-        <BaseButton @click="toggleAddSupplies()">
-          {{ showAddSupplies ? "Hide form" : "Add" }}
-        </BaseButton>
-      </div>
-    </div>
+    <ToeGridHeader
+      v-model:editMode="editMode"
+      v-model:addMode="showAddSupplies"
+      editLabel="Edit supply categories"
+      :selectedCount="selectedSupplies.length"
+      :hideEdit="supplies.length === 0"
+      @delete="onDelete()"
+    />
 
     <AddSypplyCategoryForm
       v-if="showAddSupplies"
       v-model="addForm"
       @cancel="toggleAddSupplies()"
       @submit="onAddSubmit"
-      heading="Edit supply category"
     />
 
     <ToeGrid
+      v-if="supplies.length"
       :columns="columns"
       :data="supplies"
       v-model:editedId="editedId"
@@ -158,9 +143,13 @@ function getSupplyClass(supply: NSupplyCategory) {
             :model-value="row"
             @submit="onSubmit($event as NSupplyCategory)"
             @cancel="cancelEdit()"
+            heading="Edit supply category"
           />
         </InlineFormWrapper>
       </template>
     </ToeGrid>
+    <p v-else class="prose prose-sm dark:prose-invert">
+      Use the <kbd>Add</kbd> button to add supply categories to this scenario.
+    </p>
   </div>
 </template>

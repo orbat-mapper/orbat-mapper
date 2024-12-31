@@ -59,7 +59,7 @@ function onSubmit() {
 <template>
   <form @submit.prevent="onSubmit" class="" @keyup.esc.stop="emit('cancel')">
     <h3 class="text-sm font-semibold">{{ heading }}</h3>
-    <section class="grid grid-cols-2 gap-6">
+    <section class="mt-4 grid grid-cols-2 gap-6">
       <InputGroup autofocus label="Name" required v-model="form.name" />
       <SimpleSelect label="Class" v-model="form.supplyClass" :items="supplyClasses" />
       <InputGroup class="" label="Description" v-model="form.description" />
