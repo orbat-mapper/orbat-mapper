@@ -217,7 +217,14 @@ watch(
                 }"
               >
                 <template v-if="!header.isPlaceholder">
-                  <div class="flex items-center">
+                  <div
+                    class="flex items-center"
+                    :class="[
+                      header.column.columnDef.meta?.align === 'right'
+                        ? 'flex-row-reverse'
+                        : '',
+                    ]"
+                  >
                     <span
                       ><FlexRender
                         :render="header.column.columnDef.header"
@@ -277,7 +284,10 @@ watch(
                   :key="cell.id"
                   :id="cell.id"
                   class="min-w-0 max-w-0 px-4 first:pl-[var(--gutter,theme(spacing.4))] last:pr-[var(--gutter,theme(spacing.4))]"
-                  :class="[dense ? 'py-2.5' : 'py-4']"
+                  :class="[
+                    dense ? 'py-2.5' : 'py-4',
+                    cell.column.columnDef.meta?.align === 'right' ? 'text-right' : '',
+                  ]"
                   :data-index="idx"
                   :style="{
                     width: `${cell.column.getSize()}px`,
