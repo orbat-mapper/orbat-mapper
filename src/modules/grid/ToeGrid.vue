@@ -246,7 +246,7 @@ watch(
                     @touchstart="header.getResizeHandler()($event)"
                     @click.stop
                     role="separator"
-                    class="z-5 absolute right-0 top-0 h-full w-2 cursor-col-resize select-none border-r-2 border-r-slate-950/5 hover:bg-red-100"
+                    class="z-5 absolute right-0 top-0 h-full w-2 cursor-col-resize select-none border-r-2 border-r-slate-950/5 hover:bg-red-100 dark:border-r-white/10"
                     :class="header.column.getIsResizing() ? 'bg-red-100' : ''"
                   />
                 </template>
