@@ -11,16 +11,14 @@ import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import AddNameDescriptionForm from "@/modules/scenarioeditor/AddNameDescriptionForm.vue";
 import { useSupplyClassTableStore } from "@/stores/tableStores";
+import { useToeEditableItems } from "@/composables/toeUtils";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
 
-const editMode = ref(false);
-const editedId = ref<string | null>();
-const showAddForm = ref(false);
-const rerender = ref(true);
+const { editMode, editedId, showAddForm, rerender, selectedItems } =
+  useToeEditableItems<NSupplyClass>();
 const tableStore = useSupplyClassTableStore();
-const selectedItems = ref<NSupplyClass[]>([]);
 
 const supplyClasses = computed(() => {
   rerender.value;

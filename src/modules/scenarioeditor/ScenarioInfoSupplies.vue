@@ -3,29 +3,34 @@ import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { computed, ref, triggerRef } from "vue";
 import TableHeader from "@/components/TableHeader.vue";
-import { NPersonnelData, NSupplyCategory } from "@/types/internalModels";
+import { NSupplyCategory } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
-import AddSypplyCategoryForm from "@/modules/scenarioeditor/AddSypplyCategoryForm.vue";
-import { useToggle } from "@vueuse/core";
+import AddSupplyCategoryForm from "@/modules/scenarioeditor/AddSupplyCategoryForm.vue";
 import { ColumnDef } from "@tanstack/vue-table";
 import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import { useSupplyCategoryTableStore } from "@/stores/tableStores";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
+import { useToeEditableItems } from "@/composables/toeUtils";
 
 const { store, unitActions } = injectStrict(activeScenarioKey);
-const [showAddSupplies, toggleAddSupplies] = useToggle(false);
+
 const { send } = useNotifications();
 
-const rerender = ref(true);
+const {
+  editMode,
+  editedId,
+  showAddForm,
+  rerender,
+  selectedItems: selectedSupplies,
+} = useToeEditableItems<NSupplyCategory>();
+
 const tableStore = useSupplyCategoryTableStore();
 
 const supplies = computed(() => {
   rerender.value;
   return Object.values(store.state.supplyCategoryMap);
 });
-
-const selectedSupplies = ref<NSupplyCategory[]>([]);
 
 const columns: ColumnDef<NSupplyCategory>[] = [
   { id: "name", header: "Name", accessorKey: "name", size: 200 },
@@ -39,9 +44,6 @@ const columns: ColumnDef<NSupplyCategory>[] = [
   },
 ];
 
-const editMode = ref(false);
-
-const editedId = ref<string | null>(null);
 const addForm = ref<Omit<NSupplyCategory, "id">>({
   name: "",
   description: "",
@@ -112,17 +114,17 @@ function getSupplyClass(supply: NSupplyCategory) {
     </TableHeader>
     <ToeGridHeader
       v-model:editMode="editMode"
-      v-model:addMode="showAddSupplies"
+      v-model:addMode="showAddForm"
       editLabel="Edit supply categories"
       :selectedCount="selectedSupplies.length"
       :hideEdit="supplies.length === 0"
       @delete="onDelete()"
     />
 
-    <AddSypplyCategoryForm
-      v-if="showAddSupplies"
+    <AddSupplyCategoryForm
+      v-if="showAddForm"
       v-model="addForm"
-      @cancel="toggleAddSupplies()"
+      @cancel="showAddForm = false"
       @submit="onAddSubmit"
     />
 
@@ -138,7 +140,7 @@ function getSupplyClass(supply: NSupplyCategory) {
     >
       <template #inline-form="{ row }">
         <InlineFormWrapper class="pr-6">
-          <AddSypplyCategoryForm
+          <AddSupplyCategoryForm
             :model-value="row"
             @submit="onSubmit($event as NSupplyCategory)"
             @cancel="cancelEdit()"

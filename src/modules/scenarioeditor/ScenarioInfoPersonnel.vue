@@ -11,16 +11,14 @@ import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import AddNameDescriptionForm from "@/modules/scenarioeditor/AddNameDescriptionForm.vue";
 import { usePersonnelTableStore } from "@/stores/tableStores";
+import { useToeEditableItems } from "@/composables/toeUtils";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
 
-const editMode = ref(false);
-const editedId = ref<string | null>();
-const showAddForm = ref(false);
-const rerender = ref(true);
+const { editMode, editedId, showAddForm, rerender, selectedItems } =
+  useToeEditableItems<NPersonnelData>();
 const tableStore = usePersonnelTableStore();
-const selectedItems = ref<NPersonnelData[]>([]);
 
 const personnel = computed(() => {
   rerender.value;

@@ -10,17 +10,16 @@ import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
 import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import AddNameDescriptionForm from "@/modules/scenarioeditor/AddNameDescriptionForm.vue";
-import { useEquipmentTableStore, useSupplyClassTableStore } from "@/stores/tableStores";
+import { useEquipmentTableStore } from "@/stores/tableStores";
+import { useToeEditableItems } from "@/composables/toeUtils";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
 
-const editMode = ref(false);
-const editedId = ref<string | null>();
-const showAddForm = ref(false);
-const rerender = ref(true);
+const { editMode, editedId, showAddForm, rerender, selectedItems } =
+  useToeEditableItems<NEquipmentData>();
+
 const tableStore = useEquipmentTableStore();
-const selectedItems = ref<NEquipmentData[]>([]);
 
 const equipment = computed(() => {
   rerender.value;
