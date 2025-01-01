@@ -298,7 +298,7 @@ export interface UnitOfMeasure {
   name: string;
   description?: string;
   code?: string; // Abbreviation (e.g., kg, L)
-  type?: UoMType;
+  type?: UoMType | "";
 }
 
 export type UoMType = "weight" | "volume" | "quantity" | "distance";

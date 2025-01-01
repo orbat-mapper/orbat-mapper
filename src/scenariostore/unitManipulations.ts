@@ -82,6 +82,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
     deleteSupplyCategory,
     updateSupplyCategory,
     updateUnitSupply,
+    addSupplyUom,
+    updateSupplyUom,
+    deleteSupplyUom,
   } = useSupplyManipulations(store);
 
   const {
@@ -1096,6 +1099,10 @@ export function useUnitManipulations(store: NewScenarioStore) {
     addSupplyCategory,
     deleteSupplyCategory,
     updateSupplyCategory,
+    addSupplyUom,
+    updateSupplyUom,
+    deleteSupplyUom,
+
     updateUnitSupply,
     updateUnitProperties,
     isUnitLocked,

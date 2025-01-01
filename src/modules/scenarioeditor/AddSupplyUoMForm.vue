@@ -6,12 +6,11 @@ import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { computed } from "vue";
 import { klona } from "klona";
+import { UnitOfMeasure, UoMType } from "@/types/scenarioModels";
+import { SelectItem } from "@/components/types";
 
-interface Form {
-  name: string;
-  description?: string;
-  supplyClass?: string;
-  uom?: string;
+interface Form extends UnitOfMeasure {
+  id?: string;
 }
 
 const props = withDefaults(defineProps<{ heading?: string }>(), {
@@ -20,35 +19,21 @@ const props = withDefaults(defineProps<{ heading?: string }>(), {
 const modelValue = defineModel<Form>();
 const emit = defineEmits<{ cancel: [void]; submit: [form: Form] }>();
 
-const { store } = injectStrict(activeScenarioKey);
-
+const uomTypes: SelectItem<UoMType | "">[] = [
+  { label: "Unspecified", value: "" },
+  { value: "quantity", label: "Quantity" },
+  { value: "volume", label: "Volume" },
+  { value: "weight", label: "Weight" },
+  { value: "distance", label: "Distance" },
+];
 const { form, handleSubmit } = useForm<Form>(
   {
     name: "",
+    code: "",
     description: "",
-    supplyClass: "",
-    uom: "",
   },
   modelValue,
 );
-
-const supplyClasses = computed(() => {
-  const classes = Object.values(store.state.supplyClassMap).map((sc) => ({
-    label: sc.description ? `${sc.name} (${sc.description})` : sc.name,
-    value: sc.id,
-  }));
-
-  return [{ label: "Unspecified", value: "" }, ...classes];
-});
-
-const supplyUnits = computed(() => {
-  const classes = Object.values(store.state.supplyUomMap).map((sc) => ({
-    label: sc.code ? `${sc.name} (${sc.code})` : sc.name,
-    value: sc.id,
-  }));
-
-  return [{ label: "Unspecified", value: "" }, ...classes];
-});
 
 function onSubmit() {
   handleSubmit();
@@ -61,13 +46,9 @@ function onSubmit() {
     <h3 class="text-sm font-semibold">{{ heading }}</h3>
     <section class="mt-4 grid grid-cols-2 gap-6">
       <InputGroup autofocus label="Name" required v-model="form.name" />
-      <SimpleSelect label="Class" v-model="form.supplyClass" :items="supplyClasses" />
+      <InputGroup label="Abbreviation" v-model="form.code" />
+      <SimpleSelect label="Type" v-model="form.type" :items="uomTypes" />
       <InputGroup class="" label="Description" v-model="form.description" />
-      <SimpleSelect
-        label="Unit of measure/issue"
-        v-model="form.uom"
-        :items="supplyUnits"
-      />
     </section>
     <div class="mt-6 flex items-center justify-end gap-x-6">
       <button

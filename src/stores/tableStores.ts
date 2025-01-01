@@ -22,3 +22,4 @@ export const useSupplyCategoryTableStore = tableStoreFactory("supplyCategoryTabl
 export const useSupplyClassTableStore = tableStoreFactory("supplyClassTableStore");
 export const useEquipmentTableStore = tableStoreFactory("equipmentTableStore");
 export const usePersonnelTableStore = tableStoreFactory("personnelTableStore");
+export const useSupplyUoMTableStore = tableStoreFactory("supplyUoMTableStore");
