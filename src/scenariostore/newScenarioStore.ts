@@ -9,11 +9,11 @@ import type {
   Side,
   SideGroup,
   State,
-  Unit,
-  UnitStatus,
   SupplyCategory,
   SupplyClass,
+  Unit,
   UnitOfMeasure,
+  UnitStatus,
 } from "@/types/scenarioModels";
 import dayjs from "dayjs";
 import { nanoid } from "@/utils";
@@ -78,6 +78,7 @@ export interface ScenarioState {
   supplyUomMap: Record<string, NSupplyUoM>;
   unitStateCounter: number;
   featureStateCounter: number;
+  settingsStateCounter: number; // used to force reactivity
   mapSettings: MapSettings;
 }
 
@@ -126,6 +127,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
 
   let unitStateCounter = 0;
   let featureStateCounter = 0;
+  let settingsStateCounter = 0;
 
   scenario.events.forEach((e) => {
     const nEvent: NScenarioEvent = {
@@ -445,6 +447,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     rangeRingGroupMap,
     unitStateCounter,
     featureStateCounter,
+    settingsStateCounter,
     unitStatusMap,
     mapSettings,
     getUnitById(id: EntityId) {

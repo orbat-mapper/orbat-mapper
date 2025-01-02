@@ -38,6 +38,7 @@ export function useSupplyManipulations(store: NewScenarioStore) {
       if (!supplyClass) return;
       Object.assign(supplyClass, data);
     });
+    state.settingsStateCounter++;
   }
 
   function addSupplyCategory(
@@ -65,6 +66,7 @@ export function useSupplyManipulations(store: NewScenarioStore) {
       if (!supplyCategory) return;
       Object.assign(supplyCategory, data);
     });
+    state.settingsStateCounter++;
   }
 
   function deleteSupplyClass(id: string): boolean {
@@ -132,6 +134,7 @@ export function useSupplyManipulations(store: NewScenarioStore) {
       if (!supplyUom) return;
       Object.assign(supplyUom, data);
     });
+    state.settingsStateCounter++;
   }
 
   function deleteSupplyUom(id: string): boolean {

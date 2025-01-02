@@ -21,7 +21,7 @@ const { editMode, editedId, showAddForm, rerender, selectedItems } =
 const tableStore = useSupplyUoMTableStore();
 
 const supplyUnits = computed(() => {
-  rerender.value;
+  scn.store.state.settingsStateCounter && rerender.value;
   return Object.values(scn.store.state.supplyUomMap);
 });
 
@@ -46,7 +46,7 @@ const addForm = ref<Omit<NSupplyUoM, "id">>({
 
 function onSubmit(e: NPersonnelData) {
   const { id, ...rest } = e;
-  scn.unitActions.updatePersonnel(id, rest);
+  scn.unitActions.updateSupplyUom(id, rest);
   editedId.value = null;
   triggerRef(rerender);
 }

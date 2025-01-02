@@ -28,7 +28,7 @@ const {
 const tableStore = useSupplyCategoryTableStore();
 
 const supplies = computed(() => {
-  rerender.value;
+  store.state.settingsStateCounter && rerender.value;
   return Object.values(store.state.supplyCategoryMap);
 });
 

@@ -21,7 +21,7 @@ const { editMode, editedId, showAddForm, rerender, selectedItems } =
 const tableStore = useSupplyClassTableStore();
 
 const supplyClasses = computed(() => {
-  rerender.value;
+  scn.store.state.settingsStateCounter && rerender.value;
   return Object.values(scn.store.state.supplyClassMap);
 });
 

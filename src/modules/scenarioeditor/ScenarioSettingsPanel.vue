@@ -14,6 +14,16 @@ import HeadingDescription from "@/components/HeadingDescription.vue";
 import ScenarioInfoSupplies from "@/modules/scenarioeditor/ScenarioInfoSupplies.vue";
 import ScenarioInfoSupplyClasses from "@/modules/scenarioeditor/ScenarioInfoSupplyClasses.vue";
 import ScenarioInfoSupplyUnits from "@/modules/scenarioeditor/ScenarioInfoSupplyUnits.vue";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey } from "@/components/injects";
+
+const {
+  store: { onUndoRedo, state },
+} = injectStrict(activeScenarioKey);
+
+onUndoRedo(() => {
+  state.settingsStateCounter++;
+});
 
 const selectedItems = useSelectedItems();
 const scenarioInfoPanelStore = useScenarioInfoPanelStore();
