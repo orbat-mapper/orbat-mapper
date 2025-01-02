@@ -179,7 +179,6 @@ const filteredRowCount = computed(() => {
 function onDblClick(row: any, e: MouseEvent) {
   editMode.value = true;
   editedId.value = row.original.id;
-  console.log({ action: "dblclick", data: row.original });
 }
 
 watch(
