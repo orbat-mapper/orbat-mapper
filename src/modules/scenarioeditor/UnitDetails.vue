@@ -151,14 +151,14 @@
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
       <TabPanel>
-        <UnitDetailsMap :unit="unit" :is-multi-mode="isMultiMode" :is-locked="isLocked" />
-      </TabPanel>
-      <TabPanel>
         <UnitDetailsToe v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
       <TabPanel>
         <UnitDetailsSupplies :unit="unit" :is-locked="isLocked" />
+      </TabPanel>
+      <TabPanel>
+        <UnitDetailsMap :unit="unit" :is-multi-mode="isMultiMode" :is-locked="isLocked" />
       </TabPanel>
       <TabPanel>
         <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
@@ -252,9 +252,9 @@ const tabList = computed(() =>
         "Details",
         "Map symbol",
         "Unit state",
-        "Map overlay",
         { label: "TO&E", title: "Table of organization and equipment" },
         "Supplies",
+        "Map overlay",
         "Properties",
         "Debug",
       ]
@@ -262,9 +262,9 @@ const tabList = computed(() =>
         "Details",
         "Map symbol",
         "Unit state",
-        "Map overlay",
         { label: "TO&E", title: "Table of organization and equipment" },
         "Supplies",
+        "Map overlay",
         "Properties",
       ],
 );
