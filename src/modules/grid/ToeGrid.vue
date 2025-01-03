@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from "vue";
-import { ArrowSmallDownIcon, ArrowSmallUpIcon } from "@heroicons/vue/20/solid";
 import {
   ColumnDef,
   FlexRender,
@@ -231,18 +230,9 @@ watch(
                     /></span>
                     <span
                       v-if="header.column.getCanSort() && header.column.getIsSorted()"
-                      class="flex-none rounded text-gray-700 group-hover:bg-gray-300 dark:text-gray-400"
+                      class="flex-none px-1 text-gray-700 group-hover:bg-gray-300 dark:text-gray-400"
                     >
-                      <ArrowSmallDownIcon
-                        v-if="header.column.getIsSorted() === 'asc'"
-                        class="h-5 w-5"
-                        aria-hidden="true"
-                      />
-                      <ArrowSmallUpIcon
-                        v-else-if="header.column.getIsSorted() === 'desc'"
-                        class="h-5 w-5"
-                        aria-hidden="true"
-                      />
+                      {{ header.column.getIsSorted() === "asc" ? "&darr;" : "&uarr;" }}
                     </span>
                   </div>
                   <div

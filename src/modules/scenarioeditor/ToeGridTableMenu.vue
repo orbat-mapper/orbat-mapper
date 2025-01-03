@@ -22,7 +22,7 @@ const cols = computed(() => props.table.getAllLeafColumns());
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <div class="z-10 bg-white">
+      <div class="z-10">
         <button
           type="button"
           class="rounded-full p-2 text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 dark:hover:text-gray-400"
