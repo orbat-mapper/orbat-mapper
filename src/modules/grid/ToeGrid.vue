@@ -231,7 +231,7 @@ watch(
                     /></span>
                     <span
                       v-if="header.column.getCanSort() && header.column.getIsSorted()"
-                      class="flex-none rounded text-gray-700 group-hover:bg-gray-300"
+                      class="flex-none rounded text-gray-700 group-hover:bg-gray-300 dark:text-gray-400"
                     >
                       <ArrowSmallDownIcon
                         v-if="header.column.getIsSorted() === 'asc'"
