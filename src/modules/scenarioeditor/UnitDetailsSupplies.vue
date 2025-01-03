@@ -1,20 +1,30 @@
 <script setup lang="ts">
-import { EUnitSupply, NUnit } from "@/types/internalModels";
-import { computed, shallowRef, triggerRef, watch } from "vue";
+import {
+  EUnitSupply,
+  NSupplyCategory,
+  NSupplyClass,
+  NUnit,
+  NUnitSupply,
+} from "@/types/internalModels";
+import { computed, ref, shallowRef, triggerRef, watch } from "vue";
 import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useLocalStorage, useToggle } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
-import BaseButton from "@/components/BaseButton.vue";
 import { useToeActions } from "@/composables/scenarioActions";
 import ToggleField from "@/components/ToggleField.vue";
 import { storeToRefs } from "pinia";
 import { useSuppliesEditStore } from "@/stores/toeStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { StateAdd } from "@/types/scenarioModels";
-import UnitSupplyItemTable from "@/modules/scenarioeditor/UnitSupplyItemTable.vue";
-import EditToggleButton from "@/components/EditToggleButton.vue";
+import { useToeEditableItems } from "@/composables/toeUtils";
+
+import ToeGrid from "@/modules/grid/ToeGrid.vue";
+import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
+import { ColumnDef } from "@tanstack/vue-table";
+import AddSupplyUoMForm from "@/modules/scenarioeditor/AddSupplyUoMForm.vue";
+import AddUnitSupplyForm from "@/modules/scenarioeditor/AddUnitSupplyForm.vue";
 
 interface Props {
   unit: NUnit;
@@ -24,13 +34,21 @@ interface Props {
 const props = defineProps<Props>();
 
 const {
-  store: {
-    state: { supplyCategoryMap, unitMap, supplyClassMap, supplyUomMap },
-    onUndoRedo,
-  },
+  store: { state, onUndoRedo, groupUpdate },
   unitActions: { walkSubUnits, updateUnitSupply, updateUnitState, addUnitStateEntry },
   time,
 } = injectStrict(activeScenarioKey);
+
+const addFormData = ref<NUnitSupply>({ id: "", count: 1 });
+
+const { unitMap, supplyCategoryMap, supplyClassMap, supplyUomMap } = state;
+
+const {
+  editedId,
+  showAddForm,
+  rerender,
+  selectedItems: selectedSupplies,
+} = useToeEditableItems<EUnitSupply>();
 
 const includeSubordinates = useLocalStorage("includeSubordinates", true);
 let prevIncludeSubordinates: boolean | undefined;
@@ -41,10 +59,41 @@ const { isSuppliesEditMode, suppliesEditMode, changeMode } =
 
 const fmt = useTimeFormatStore();
 const { selectedUnitIds } = useSelectedItems();
-const toeActions = useToeActions();
+
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 
 const aggregatedSupplies = shallowRef<EUnitSupply[]>([]);
+
+function asPercent(item: EUnitSupply) {
+  return Math.floor(((item.onHand ?? 1) / item.count) * 100) + "%";
+}
+
+const columns: ColumnDef<EUnitSupply>[] = [
+  { id: "name", header: "Name", accessorKey: "name", size: 100 },
+  { id: "class", header: "Class", accessorKey: "supplyClass" },
+  {
+    id: "assigned",
+    header: "Asgd.",
+    accessorKey: "count",
+    size: 80,
+    meta: { align: "right" },
+  },
+  {
+    id: "onHand",
+    header: "Avail.",
+    accessorKey: "onHand",
+    size: 80,
+    meta: { align: "right" },
+  },
+  { id: "uom", header: "Unit", accessorKey: "uom", size: 80 },
+  {
+    id: "percentage",
+    header: "%",
+    accessorFn: (f) => asPercent(f),
+    size: 80,
+    meta: { align: "right" },
+  },
+];
 
 const supplyCategoryValues = computed(() => {
   return sortBy(Object.values(supplyCategoryMap), "name");
@@ -74,7 +123,12 @@ watch(isSuppliesEditMode, (isEditMode) => {
 });
 
 watch(
-  [selectedUnitIds, includeSubordinates, time.scenarioTime],
+  [
+    selectedUnitIds,
+    includeSubordinates,
+    time.scenarioTime,
+    () => state.settingsStateCounter,
+  ],
   () => {
     const aggSupplies: Record<string, { count: number; onHand: number }> = {};
 
@@ -107,7 +161,8 @@ watch(
       ([id, { count, onHand }]) => {
         const sc = supplyCategoryMap[id];
         const supplyClass = supplyClassMap[sc?.supplyClass ?? ""]?.name ?? "";
-        const uom = supplyUomMap[sc?.uom ?? ""]?.name ?? "";
+        const uomObj = supplyUomMap[sc?.uom ?? ""];
+        const uom = uomObj?.code ?? uomObj?.name ?? "";
         return {
           id,
           name: sc?.name ?? id,
@@ -140,10 +195,11 @@ function updateSupply(
 }
 
 function addSupply(
+  unitId: string,
   supplyId: string,
   { count, onHand }: { count: number; onHand?: number },
 ) {
-  updateUnitSupply(props.unit.id, supplyId, { count, onHand });
+  updateUnitSupply(unitId, supplyId, { count, onHand });
   triggerRef(selectedUnitIds);
 }
 
@@ -158,52 +214,65 @@ function diffSupply(supplyId: string, { onHand }: { onHand: number }) {
   triggerRef(selectedUnitIds);
 }
 
-function deleteSupply(supplyId: string) {
-  updateUnitSupply(props.unit.id, supplyId, { count: -1 });
+function deleteSupply(unitId: string, supplyId: string) {
+  updateUnitSupply(unitId, supplyId, { count: -1 });
   triggerRef(selectedUnitIds);
+}
+
+function onAddSubmit(formData: NUnitSupply) {
+  const { id, count, onHand } = formData;
+  groupUpdate(() => {
+    selectedUnitIds.value.forEach((unitId) => {
+      addSupply(unitId, id, { count, onHand });
+    });
+  });
+
+  addFormData.value = { ...formData, id: "" };
+}
+
+function onDelete() {
+  groupUpdate(() => {
+    selectedUnitIds.value.forEach((unitId) => {
+      selectedSupplies.value.forEach((e) => {
+        deleteSupply(unitId, e.id);
+      });
+    });
+  });
+  selectedSupplies.value = [];
 }
 </script>
 
 <template>
-  <div class="mt-4 flex justify-between">
-    <div>
-      <EditToggleButton v-model="isSuppliesEditMode" :disabled="isLocked" primary
-        >Edit supplies</EditToggleButton
-      >
-    </div>
+  <div class="mt-4 flex items-center justify-between">
+    <p class="text-sm">Unit supplies</p>
     <ToggleField v-model="includeSubordinates" :disabled="isSuppliesEditMode"
       >Include subordinates
     </ToggleField>
   </div>
-  <p class="mt-4 text-sm text-muted-foreground" v-if="isSuppliesEditMode">
-    Double click on table rows to start editing.
-  </p>
-  <div class="prose p-1 dark:prose-invert">
-    <div v-if="isSuppliesEditMode" class="flex justify-end">
-      <BaseButton small :disabled="isMultiMode || isLocked" @click="toggleAddSupplies()"
-        >{{ showAddSupplies ? "Hide form" : "+ Add" }}
-      </BaseButton>
-    </div>
-    <p v-if="showAddSupplies" class="mt-2 text-right">
-      <button
-        type="button"
-        class="btn-link"
-        @click="toeActions.goToAddEquipment()"
-        :disabled="isLocked"
-      >
-        + Add new equipment type
-      </button>
-    </p>
-    <UnitSupplyItemTable
-      :items="aggregatedSupplies"
-      :is-multi-mode="isMultiMode"
-      :is-locked="isLocked"
-      :values="supplyCategoryValues"
-      @update="updateSupply"
-      @diff="diffSupply"
-      @add="addSupply"
-      @delete="deleteSupply"
-      v-model:show-add="showAddSupplies"
+
+  <div class="">
+    <ToeGridHeader
+      v-model:editMode="isSuppliesEditMode"
+      v-model:addMode="showAddForm"
+      editLabel="Edit supplies"
+      :selectedCount="selectedSupplies.length"
+      @delete="onDelete"
+    />
+    <AddUnitSupplyForm
+      v-if="showAddForm"
+      @cancel="showAddForm = false"
+      :usedSupplies="isMultiMode ? [] : aggregatedSupplies"
+      v-model:form="addFormData"
+      @submit="onAddSubmit"
+    />
+
+    <ToeGrid
+      :columns="columns"
+      :data="aggregatedSupplies"
+      v-model:editedId="editedId"
+      :select="isSuppliesEditMode"
+      v-model:selected="selectedSupplies"
+      v-model:editMode="isSuppliesEditMode"
     />
   </div>
 </template>

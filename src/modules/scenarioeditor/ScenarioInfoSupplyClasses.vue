@@ -77,7 +77,7 @@ function onDelete() {
 
 <template>
   <div class="">
-    <TableHeader description="A list of supplyClasses is available in this scenario." />
+    <TableHeader description="A list of supply classes available in this scenario." />
     <ToeGridHeader
       v-model:editMode="editMode"
       v-model:addMode="showAddForm"

@@ -2,7 +2,7 @@
   <div class="mt-6 flex items-center justify-end gap-x-6">
     <button
       type="button"
-      class="text-sm/6 font-semibold text-gray-900"
+      class="text-sm/6 font-semibold text-slate-900 dark:text-slate-200"
       @click="emit('cancel')"
     >
       Cancel
@@ -16,7 +16,5 @@
   </div>
 </template>
 <script setup lang="ts">
-import { defineEmits } from "vue";
-
 const emit = defineEmits(["cancel"]);
 </script>
