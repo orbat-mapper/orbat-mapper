@@ -12,6 +12,7 @@ import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import AddNameDescriptionForm from "@/modules/scenarioeditor/AddNameDescriptionForm.vue";
 import { usePersonnelTableStore } from "@/stores/tableStores";
 import { useToeEditableItems } from "@/composables/toeUtils";
+import { useUiStore } from "@/stores/uiStore";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
@@ -19,7 +20,7 @@ const { send } = useNotifications();
 const { editMode, editedId, showAddForm, rerender, selectedItems } =
   useToeEditableItems<NPersonnelData>();
 const tableStore = usePersonnelTableStore();
-
+const uiStore = useUiStore();
 const personnel = computed(() => {
   rerender.value;
   return Object.values(scn.store.state.personnelMap);
@@ -35,7 +36,16 @@ const addForm = ref<Omit<NPersonnelData, "id">>({ name: "", description: "" });
 function onSubmit(e: NPersonnelData) {
   const { id, ...rest } = e;
   scn.unitActions.updatePersonnel(id, rest);
-  editedId.value = null;
+  if (uiStore.goToNextOnSubmit) {
+    const currentIndex = personnel.value.findIndex((sc) => sc.id === id);
+    if (currentIndex < personnel.value.length - 1) {
+      editedId.value = personnel.value[currentIndex + 1].id;
+    } else {
+      editedId.value = null;
+    }
+  } else {
+    editedId.value = null;
+  }
   triggerRef(rerender);
 }
 
@@ -78,7 +88,7 @@ function onDelete() {
 <template>
   <div class="">
     <TableHeader
-      description="A list of equipment categories available in this scenario."
+      description="A list of personnel categories available in this scenario."
     />
     <ToeGridHeader
       v-model:editMode="editMode"
@@ -112,6 +122,7 @@ function onDelete() {
             @submit="onSubmit($event as NPersonnelData)"
             @cancel="cancelEdit()"
             heading="Edit personnel category"
+            showNextToggle
           />
         </InlineFormWrapper>
       </template>

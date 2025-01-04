@@ -12,6 +12,7 @@ import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import AddNameDescriptionForm from "@/modules/scenarioeditor/AddNameDescriptionForm.vue";
 import { useEquipmentTableStore } from "@/stores/tableStores";
 import { useToeEditableItems } from "@/composables/toeUtils";
+import { useUiStore } from "@/stores/uiStore";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
@@ -20,6 +21,7 @@ const { editMode, editedId, showAddForm, rerender, selectedItems } =
   useToeEditableItems<NEquipmentData>();
 
 const tableStore = useEquipmentTableStore();
+const uiStore = useUiStore();
 
 const equipment = computed(() => {
   scn.store.state.settingsStateCounter && rerender.value;
@@ -36,7 +38,17 @@ const addForm = ref<Omit<NEquipmentData, "id">>({ name: "", description: "" });
 function onSubmit(e: NEquipmentData) {
   const { id, ...rest } = e;
   scn.unitActions.updateEquipment(id, rest);
-  editedId.value = null;
+  if (uiStore.goToNextOnSubmit) {
+    const currentIndex = equipment.value.findIndex((sc) => sc.id === id);
+    if (currentIndex < equipment.value.length - 1) {
+      editedId.value = equipment.value[currentIndex + 1].id;
+    } else {
+      editedId.value = null;
+    }
+  } else {
+    editedId.value = null;
+  }
+
   triggerRef(rerender);
 }
 
@@ -112,6 +124,7 @@ function onDelete() {
             @submit="onSubmit($event as NEquipmentData)"
             @cancel="cancelEdit()"
             heading="Edit supply class"
+            showNextToggle
           />
         </InlineFormWrapper>
       </template>

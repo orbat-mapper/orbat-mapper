@@ -12,6 +12,7 @@ import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import { useSupplyCategoryTableStore } from "@/stores/tableStores";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
 import { useToeEditableItems } from "@/composables/toeUtils";
+import { useUiStore } from "@/stores/uiStore";
 
 const { store, unitActions } = injectStrict(activeScenarioKey);
 
@@ -26,6 +27,7 @@ const {
 } = useToeEditableItems<NSupplyCategory>();
 
 const tableStore = useSupplyCategoryTableStore();
+const uiStore = useUiStore();
 
 const supplies = computed(() => {
   store.state.settingsStateCounter && rerender.value;
@@ -54,7 +56,16 @@ const addForm = ref<Omit<NSupplyCategory, "id">>({
 function onSubmit(e: NSupplyCategory) {
   const { id, ...rest } = e;
   unitActions.updateSupplyCategory(id, rest);
-  editedId.value = null;
+  if (uiStore.goToNextOnSubmit) {
+    const currentIndex = supplies.value.findIndex((sc) => sc.id === id);
+    if (currentIndex < supplies.value.length - 1) {
+      editedId.value = supplies.value[currentIndex + 1].id;
+    } else {
+      editedId.value = null;
+    }
+  } else {
+    editedId.value = null;
+  }
   triggerRef(rerender);
 }
 
@@ -145,6 +156,7 @@ function getSupplyClass(supply: NSupplyCategory) {
             @submit="onSubmit($event as NSupplyCategory)"
             @cancel="cancelEdit()"
             heading="Edit supply category"
+            showNextToggle
           />
         </InlineFormWrapper>
       </template>
