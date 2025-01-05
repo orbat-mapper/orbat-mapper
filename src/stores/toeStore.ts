@@ -28,6 +28,8 @@ export const useSuppliesEditStore = defineStore("suppliesStore", () => {
   const isSuppliesEditMode = ref(false);
   const suppliesEditMode = useLocalStorage<ToeEditMode>("toeStoreEditMode", "assigned");
   const toggleEditSuppliesMode = useToggle(isSuppliesEditMode);
+  const isOnHandMode = useLocalStorage("suppliesStoreIsOnHandMode", false);
+  const isDiffMode = useLocalStorage("suppliesStoreIsDiffMode", false);
   const showAssigned = useLocalStorage("suppliesStoreShowAssigned", true);
   const showOnHand = useLocalStorage("suppliesStoreShowOnHand", true);
   const showPercentage = useLocalStorage("suppliesStoreShowPercentage", true);
@@ -37,6 +39,7 @@ export const useSuppliesEditStore = defineStore("suppliesStore", () => {
     "absolute",
   );
   const showUom = useLocalStorage("suppliesStoreShowUom", true);
+  const diffValue = ref(1);
 
   return {
     isSuppliesEditMode,
@@ -48,5 +51,8 @@ export const useSuppliesEditStore = defineStore("suppliesStore", () => {
     changeMode,
     showClass,
     showUom,
+    isDiffMode,
+    isOnHandMode,
+    diffValue,
   };
 });

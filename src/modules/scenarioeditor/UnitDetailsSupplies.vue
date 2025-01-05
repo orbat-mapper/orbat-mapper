@@ -1,18 +1,11 @@
 <script setup lang="ts">
-import {
-  EUnitSupply,
-  NSupplyCategory,
-  NSupplyClass,
-  NUnit,
-  NUnitSupply,
-} from "@/types/internalModels";
+import { EUnitSupply, NUnit, NUnitSupply } from "@/types/internalModels";
 import { computed, ref, shallowRef, triggerRef, watch } from "vue";
-import { injectStrict, sortBy } from "@/utils";
+import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { useLocalStorage, useToggle } from "@vueuse/core";
+import { useLocalStorage } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
-import { useToeActions } from "@/composables/scenarioActions";
 import ToggleField from "@/components/ToggleField.vue";
 import { storeToRefs } from "pinia";
 import { useSuppliesEditStore } from "@/stores/toeStore";
@@ -23,8 +16,11 @@ import { useToeEditableItems } from "@/composables/toeUtils";
 import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
 import { ColumnDef } from "@tanstack/vue-table";
-import AddSupplyUoMForm from "@/modules/scenarioeditor/AddSupplyUoMForm.vue";
 import AddUnitSupplyForm from "@/modules/scenarioeditor/AddUnitSupplyForm.vue";
+import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
+import ModifyUnitSupplyForm from "@/modules/scenarioeditor/ModifyUnitSupplyForm.vue";
+import { useUnitSupplyTableStore } from "@/stores/tableStores";
+import { useUiStore } from "@/stores/uiStore";
 
 interface Props {
   unit: NUnit;
@@ -54,8 +50,11 @@ const includeSubordinates = useLocalStorage("includeSubordinates", true);
 let prevIncludeSubordinates: boolean | undefined;
 const suppliesEditStore = useSuppliesEditStore();
 
-const { isSuppliesEditMode, suppliesEditMode, changeMode } =
+const { isSuppliesEditMode, suppliesEditMode, isDiffMode } =
   storeToRefs(suppliesEditStore);
+
+const tableStore = useUnitSupplyTableStore();
+const uiStore = useUiStore();
 
 const fmt = useTimeFormatStore();
 const { selectedUnitIds } = useSelectedItems();
@@ -94,16 +93,6 @@ const columns: ColumnDef<EUnitSupply>[] = [
     meta: { align: "right" },
   },
 ];
-
-const supplyCategoryValues = computed(() => {
-  return sortBy(Object.values(supplyCategoryMap), "name");
-});
-
-const [showAddSupplies, toggleAddSupplies] = useToggle(false);
-
-const formattedTime = computed(() =>
-  fmt.scenarioFormatter.format(+time.scenarioTime.value),
-);
 
 onUndoRedo((param) => {
   // Update the current state of the selected units in case equipment or personnel have changed
@@ -178,20 +167,33 @@ watch(
   { immediate: true, deep: true },
 );
 
-function updateSupply(
-  supplyId: string,
-  { count, onHand }: { count: number; onHand?: number },
-) {
-  if (suppliesEditMode.value === "onHand") {
-    const newState: StateAdd = {
-      t: +time.scenarioTime.value,
-      update: { supplies: [{ id: supplyId, onHand }] },
-    };
-    addUnitStateEntry(props.unit.id, newState, true);
-  } else {
-    updateUnitSupply(props.unit.id, supplyId, { count });
-  }
+function updateSupplyCount(supplyId: string, { count }: { count: number }) {
+  groupUpdate(() => {
+    selectedUnitIds.value.forEach((unitId) => {
+      updateUnitSupply(unitId, supplyId, { count });
+    });
+  });
+
   triggerRef(selectedUnitIds);
+  handleNextEditedId(supplyId);
+}
+
+function updateSupplyOnHand(supplyId: string, { onHand }: NUnitSupply) {
+  groupUpdate(() => {
+    selectedUnitIds.value.forEach((unitId) => {
+      // skip units that don't have the supply
+      const unit = unitMap[unitId];
+      if (!unit.supplies?.find((e) => e.id === supplyId)) return;
+      const newState: StateAdd = {
+        t: +time.scenarioTime.value,
+        update: { supplies: [{ id: supplyId, onHand }] },
+      };
+      addUnitStateEntry(unitId, newState, true);
+    });
+  });
+
+  triggerRef(selectedUnitIds);
+  handleNextEditedId(supplyId);
 }
 
 function addSupply(
@@ -203,15 +205,36 @@ function addSupply(
   triggerRef(selectedUnitIds);
 }
 
-function diffSupply(supplyId: string, { onHand }: { onHand: number }) {
-  if (suppliesEditMode.value === "onHand") {
-    const newState: StateAdd = {
-      t: +time.scenarioTime.value,
-      diff: { supplies: [{ id: supplyId, onHand }] },
-    };
-    addUnitStateEntry(props.unit.id, newState, true);
-  }
+function diffSupplyOnHand(supplyId: string, { onHand }: NUnitSupply) {
+  groupUpdate(() => {
+    selectedUnitIds.value.forEach((unitId) => {
+      // skip units that don't have the supply
+      const unit = unitMap[unitId];
+      if (!unit.supplies?.find((e) => e.id === supplyId)) return;
+
+      const newState: StateAdd = {
+        t: +time.scenarioTime.value,
+        diff: { supplies: [{ id: supplyId, onHand }] },
+      };
+      addUnitStateEntry(unitId, newState, true);
+    });
+  });
+
   triggerRef(selectedUnitIds);
+  handleNextEditedId(supplyId);
+}
+
+function handleNextEditedId(supplyId: string) {
+  if (uiStore.goToNextOnSubmit) {
+    const currentIndex = aggregatedSupplies.value.findIndex((sc) => sc.id === supplyId);
+    if (currentIndex < aggregatedSupplies.value.length - 1) {
+      editedId.value = aggregatedSupplies.value[currentIndex + 1].id;
+    } else {
+      editedId.value = null;
+    }
+  } else {
+    editedId.value = null;
+  }
 }
 
 function deleteSupply(unitId: string, supplyId: string) {
@@ -244,7 +267,7 @@ function onDelete() {
 
 <template>
   <div class="mt-4 flex items-center justify-between">
-    <p class="text-sm">Unit supplies</p>
+    <p class="text-sm font-medium">Unit supplies</p>
     <ToggleField v-model="includeSubordinates" :disabled="isSuppliesEditMode"
       >Include subordinates
     </ToggleField>
@@ -273,6 +296,19 @@ function onDelete() {
       :select="isSuppliesEditMode"
       v-model:selected="selectedSupplies"
       v-model:editMode="isSuppliesEditMode"
-    />
+    >
+      <template #inline-form="{ row }">
+        <InlineFormWrapper class="pr-6" details-panel>
+          <ModifyUnitSupplyForm
+            :itemData="row"
+            :heading="row.name"
+            @cancel="isSuppliesEditMode = false"
+            @diffOnHand="diffSupplyOnHand"
+            @updateCount="updateSupplyCount"
+            @updateOnHand="updateSupplyOnHand"
+          />
+        </InlineFormWrapper>
+      </template>
+    </ToeGrid>
   </div>
 </template>

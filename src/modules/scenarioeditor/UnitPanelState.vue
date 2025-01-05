@@ -92,8 +92,10 @@
           >
           <span v-if="s.update?.equipment" class="badge">Equipment</span>
           <span v-if="s.update?.personnel" class="badge">Personnel</span>
+          <span v-if="s.update?.supplies" class="badge">Supplies</span>
           <span v-if="s.diff?.equipment" class="badge">±Equipment</span>
           <span v-if="s.diff?.personnel" class="badge">±Personnel</span>
+          <span v-if="s.diff?.supplies" class="badge">±Supplies</span>
         </div>
       </div>
 
