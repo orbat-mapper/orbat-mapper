@@ -10,7 +10,7 @@
       />
     </div>
     <div class="ml-3 text-sm">
-      <label :for="_id" class="font-medium text-gray-700">
+      <label :for="_id" class="font-medium text-slate-700 dark:text-slate-300">
         <slot name="label">{{ label }}</slot>
       </label>
       <p v-if="description || $slots.description" class="text-gray-500">
