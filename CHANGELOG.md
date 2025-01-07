@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+January 2025
+
+- Added support for unit supplies.
+
 December 2024
 
 - Added an "Add unit" entry to the map context menu.
