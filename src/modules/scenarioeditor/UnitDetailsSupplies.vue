@@ -296,6 +296,7 @@ function onDelete() {
       :select="isSuppliesEditMode"
       v-model:selected="selectedSupplies"
       v-model:editMode="isSuppliesEditMode"
+      :tableStore="tableStore"
     >
       <template #inline-form="{ row }">
         <InlineFormWrapper class="pr-6" details-panel>
