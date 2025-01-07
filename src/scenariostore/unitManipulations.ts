@@ -1,6 +1,6 @@
-import { EntityId, HistoryAction } from "@/types/base";
+import { EntityId } from "@/types/base";
 import { NewScenarioStore, ScenarioState } from "./newScenarioStore";
-import { mergeArray, moveElement, nanoid, removeElement } from "@/utils";
+import { moveElement, nanoid, removeElement } from "@/utils";
 import {
   NSide,
   NSideGroup,
@@ -17,22 +17,20 @@ import { SID_INDEX, Sidc } from "@/symbology/sidc";
 import { setCharAt } from "@/components/helpers";
 import { SID } from "@/symbology/values";
 import { klona } from "klona";
-import { createInitialState, updateCurrentUnitState } from "@/scenariostore/time";
+import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
 import {
   mapReinforcedStatus2Field,
-  State,
-  StateAdd,
   Unit,
   UnitProperties,
   UnitSymbolOptions,
 } from "@/types/scenarioModels";
-import { Position } from "@/types/scenarioGeoModels";
 import { getNextEchelonBelow } from "@/symbology/helpers";
 import { clearUnitStyleCache, invalidateUnitStyle } from "@/geo/unitStyles";
 import { useSupplyManipulations } from "@/scenariostore/supplyManipulations";
 import { useToeManipulations } from "@/scenariostore/toeManipulations";
 import { useRangeRingManipulations } from "@/scenariostore/rangeRingManipulations";
+import { useUnitStateManipulations } from "@/scenariostore/unitStateManipulations";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -108,6 +106,17 @@ export function useUnitManipulations(store: NewScenarioStore) {
     addRangeRingGroup,
     deleteRangeRingGroup,
   } = useRangeRingManipulations(store);
+
+  const {
+    clearUnitState,
+    updateUnitState,
+    deleteUnitStateEntryByStateId,
+    addUnitStateEntry,
+    deleteUnitStateEntry,
+    updateUnitStateEntry,
+    setUnitState,
+    updateUnitStateVia,
+  } = useUnitStateManipulations(store);
 
   function addSide(
     sideData: Partial<NSide> = {},
@@ -732,174 +741,6 @@ export function useUnitManipulations(store: NewScenarioStore) {
     });
   }
 
-  function deleteUnitStateEntry(unitId: EntityId, index: number) {
-    update((s) => {
-      const _unit = s.getUnitById(unitId);
-      if (!_unit) return;
-      _unit.state?.splice(index, 1);
-    });
-
-    updateUnitState(unitId);
-  }
-
-  function clearUnitState(unitId: EntityId) {
-    update(
-      (s) => {
-        const _unit = s.getUnitById(unitId);
-        if (!_unit) return;
-        _unit.state = [];
-        _unit._state = createInitialState(_unit);
-      },
-      { label: "clearUnitState", value: unitId },
-    );
-    updateUnitState(unitId);
-  }
-
-  function deleteUnitStateEntryByStateId(unitId: EntityId, stateId: EntityId) {
-    update((s) => {
-      const _unit = s.getUnitById(unitId);
-      if (!_unit) return;
-      const index = _unit.state?.findIndex((s) => s.id === stateId) ?? -1;
-      if (index >= 0) _unit.state?.splice(index, 1);
-    });
-
-    updateUnitState(unitId);
-  }
-
-  function addUnitStateEntry(unitId: EntityId, state: StateAdd, merge = false) {
-    update(
-      (s) => {
-        const u = s.getUnitById(unitId);
-
-        const newState = klona(state);
-        newState.id = nanoid();
-        if (!u.state) u.state = [];
-        const t = state.t;
-        for (let i = 0, len = u.state.length; i < len; i++) {
-          if (t <= u.state[i].t) {
-            if (merge && u.state[i].t === t) {
-              const { id, t, update, diff, ...rest } = newState;
-              Object.assign(u.state[i], rest);
-              if (update) {
-                const source = u.state[i]?.update || {};
-                const dest = {
-                  equipment:
-                    source.equipment || update.equipment
-                      ? mergeArray(source.equipment ?? [], update.equipment ?? [], "id")
-                      : undefined,
-                  personnel:
-                    source.personnel || update.personnel
-                      ? mergeArray(source.personnel ?? [], update.personnel ?? [], "id")
-                      : undefined,
-                  supplies:
-                    source.supplies || update.supplies
-                      ? mergeArray(source.supplies ?? [], update.supplies ?? [], "id")
-                      : undefined,
-                };
-                Object.assign(u.state[i], { update: dest });
-              }
-              if (diff) {
-                const source = u.state[i]?.diff || {};
-                const dest = {
-                  equipment:
-                    source.equipment || diff.equipment
-                      ? mergeArray(source.equipment ?? [], diff.equipment ?? [], "id")
-                      : undefined,
-                  personnel:
-                    source.personnel || diff.personnel
-                      ? mergeArray(source.personnel ?? [], diff.personnel ?? [], "id")
-                      : undefined,
-                  supplies:
-                    source.supplies || diff.supplies
-                      ? mergeArray(source.supplies ?? [], diff.supplies ?? [], "id")
-                      : undefined,
-                };
-                Object.assign(u.state[i], { diff: dest });
-              }
-            } else {
-              u.state.splice(i, 0, newState as NState);
-            }
-
-            return;
-          }
-        }
-        u.state.push(newState as NState);
-      },
-      { label: "addUnitPosition", value: unitId },
-    );
-    updateUnitState(unitId);
-  }
-
-  function updateUnitStateEntry(unitId: EntityId, index: number, data: Partial<State>) {
-    update((s) => {
-      const unit = s.getUnitById(unitId);
-      if (!unit?.state) return;
-      Object.assign(unit.state[index], data);
-      unit.state.sort(({ t: a }, { t: b }) => (a < b ? -1 : a > b ? 1 : 0));
-    });
-    state.unitStateCounter++;
-
-    updateUnitState(unitId);
-  }
-
-  function setUnitState(unitId: EntityId, state: NState[]) {
-    update((s) => {
-      const unit = s.getUnitById(unitId);
-      if (!unit) return;
-      unit.state = state;
-    });
-    updateUnitState(unitId);
-  }
-
-  function convertStateEntryToInitialLocation(unitId: EntityId, index: number) {
-    const u = state.getUnitById(unitId);
-    const stateEntry = u?.state?.[index];
-    if (!stateEntry?.location) return;
-    const location = [...stateEntry.location];
-    groupUpdate(
-      () => {
-        deleteUnitStateEntry(unitId, index);
-        updateUnit(unitId, { location });
-      },
-      { label: "addUnitPosition", value: unitId },
-    );
-    updateUnitState(unitId);
-  }
-
-  function updateUnitState(unitId: EntityId) {
-    const unit = state.unitMap[unitId];
-    if (!unit) return;
-    const timestamp = state.currentTime;
-    updateCurrentUnitState(unit, timestamp);
-    state.unitStateCounter++;
-  }
-
-  function updateUnitStateVia(
-    unitId: EntityId,
-    action: HistoryAction,
-    stateIndex: number,
-    elementIndex: number,
-    data: Position,
-  ) {
-    update(
-      (s) => {
-        const unit = s.getUnitById(unitId);
-        if (!unit || !unit.state) return;
-        const stateElement = unit.state[stateIndex];
-        if (!stateElement) return;
-        if (!stateElement.via) stateElement.via = [];
-        if (action === "add") {
-          stateElement.via.splice(elementIndex, 0, data);
-        } else if (action === "modify") {
-          stateElement.via[elementIndex] = data;
-        } else if (action === "remove") {
-          stateElement.via.splice(elementIndex, 1);
-        }
-      },
-      { label: "addUnitPosition", value: unitId },
-    );
-  }
-
   function expandUnit(unit: NUnit): Unit {
     return {
       ...unit,
@@ -1027,6 +868,21 @@ export function useUnitManipulations(store: NewScenarioStore) {
     return !!(
       state.sideMap[unit._sid]?.isHidden || state.sideGroupMap[unit._gid]?.isHidden
     );
+  }
+
+  function convertStateEntryToInitialLocation(unitId: EntityId, index: number) {
+    const u = state.getUnitById(unitId);
+    const stateEntry = u?.state?.[index];
+    if (!stateEntry?.location) return;
+    const location = [...stateEntry.location];
+    groupUpdate(
+      () => {
+        deleteUnitStateEntry(unitId, index);
+        updateUnit(unitId, { location });
+      },
+      { label: "addUnitPosition", value: unitId },
+    );
+    updateUnitState(unitId);
   }
 
   return {
