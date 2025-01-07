@@ -9,6 +9,7 @@ import { nanoid } from "@/utils";
 import { klona } from "klona";
 import { EntityId } from "@/types/base";
 import { updateCurrentUnitState } from "@/scenariostore/time";
+import { removeUnusedUnitStateEntries } from "@/scenariostore/unitStateManipulations";
 
 export function useToeManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
@@ -116,6 +117,7 @@ export function useToeManipulations(store: NewScenarioStore) {
       if (!unit) return;
       if (count === -1) {
         unit.equipment = unit.equipment?.filter((e) => e.id !== equipmentId);
+        unit.state = removeUnusedUnitStateEntries(unit);
       } else {
         const equipment = unit.equipment?.find((e) => e.id === equipmentId);
         if (!equipment) {
@@ -139,6 +141,7 @@ export function useToeManipulations(store: NewScenarioStore) {
       if (!unit) return;
       if (count === -1) {
         unit.personnel = unit.personnel?.filter((e) => e.id !== personnelId);
+        unit.state = removeUnusedUnitStateEntries(unit);
       } else {
         const personnel = unit.personnel?.find((e) => e.id === personnelId);
         if (!personnel) {

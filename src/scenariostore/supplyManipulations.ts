@@ -9,6 +9,7 @@ import { nanoid } from "@/utils";
 import { klona } from "klona";
 import { EntityId } from "@/types/base";
 import { updateCurrentUnitState } from "@/scenariostore/time";
+import { removeUnusedUnitStateEntries } from "@/scenariostore/unitStateManipulations";
 
 export function useSupplyManipulations(store: NewScenarioStore) {
   const { state, update } = store;
@@ -104,6 +105,7 @@ export function useSupplyManipulations(store: NewScenarioStore) {
       if (!unit) return;
       if (count === -1) {
         unit.supplies = unit.supplies?.filter((e) => e.id !== supplyId);
+        unit.state = removeUnusedUnitStateEntries(unit);
       } else {
         const supply = unit.supplies?.find((e) => e.id === supplyId);
         if (!supply) {
