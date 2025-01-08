@@ -9,7 +9,6 @@ import { EntityId } from "@/types/base";
 import ToggleField from "@/components/ToggleField.vue";
 import { storeToRefs } from "pinia";
 import { useSuppliesEditStore } from "@/stores/toeStore";
-import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { StateAdd } from "@/types/scenarioModels";
 import { useToeEditableItems } from "@/composables/toeUtils";
 
@@ -50,13 +49,11 @@ const includeSubordinates = useLocalStorage("includeSubordinates", true);
 let prevIncludeSubordinates: boolean | undefined;
 const suppliesEditStore = useSuppliesEditStore();
 
-const { isSuppliesEditMode, suppliesEditMode, isDiffMode } =
-  storeToRefs(suppliesEditStore);
+const { isSuppliesEditMode } = storeToRefs(suppliesEditStore);
 
 const tableStore = useUnitSupplyTableStore();
 const uiStore = useUiStore();
 
-const fmt = useTimeFormatStore();
 const { selectedUnitIds } = useSelectedItems();
 
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);

@@ -17,6 +17,9 @@ import { useToeEditStore } from "@/stores/toeStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { StateAdd } from "@/types/scenarioModels";
 
+import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/vue";
+import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
+
 interface Props {
   unit: NUnit;
   isLocked?: boolean;
@@ -240,73 +243,78 @@ function deletePersonnel(personnelId: string) {
       >Include subordinates
     </ToggleField>
   </div>
-  <p class="mt-4 text-sm text-muted-foreground" v-if="isToeEditMode">
-    Double click on table rows to start editing.
-  </p>
+  <TabGroup>
+    <TabList class="flex items-center justify-around">
+      <Tab>Equipment</Tab>
+      <Tab>Personnel</Tab>
+    </TabList>
+    <TabPanels>
+      <TabPanel :unmount="false">
+        <div v-if="isToeEditMode" class="flex justify-end">
+          <BaseButton
+            small
+            :disabled="isMultiMode || isLocked"
+            @click="toggleAddEquipment()"
+            >{{ showAddEquipment ? "Hide form" : "+ Add" }}
+          </BaseButton>
+        </div>
+        <p v-if="showAddEquipment" class="mt-2 text-right">
+          <button
+            type="button"
+            class="btn-link"
+            @click="toeActions.goToAddEquipment()"
+            :disabled="isLocked"
+          >
+            + Add new equipment type
+          </button>
+        </p>
+        <UnitToeItemTable
+          :items="aggregatedEquipment"
+          :is-multi-mode="isMultiMode"
+          :is-locked="isLocked"
+          :values="equipmentValues"
+          @update="updateEquipment"
+          @diff="diffEquipment"
+          @add="addEquipment"
+          @delete="deleteEquipment"
+          v-model:show-add="showAddEquipment"
+        />
+      </TabPanel>
+      <TabPanel :unmount="false">
+        <div class="flex justify-end" v-if="isToeEditMode">
+          <BaseButton
+            small
+            :disabled="isMultiMode || isLocked"
+            @click="toggleAddPersonnel()"
+            >{{ showAddPersonnel ? "Hide form" : "+ Add" }}
+          </BaseButton>
+        </div>
+        <p v-if="isToeEditMode && showAddPersonnel" class="mt-2 text-right">
+          <button
+            type="button"
+            class="btn-link"
+            @click="toeActions.goToAddPersonnel()"
+            :disabled="isLocked"
+          >
+            + Add new personnel category
+          </button>
+        </p>
+        <UnitToeItemTable
+          :items="aggregatedPersonnel"
+          :is-multi-mode="isMultiMode"
+          :values="personnelValues"
+          @update="updatePersonnel"
+          @add="addPersonnel"
+          @delete="deletePersonnel"
+          @diff="diffPersonnel"
+          v-model:show-add="showAddPersonnel"
+        />
+      </TabPanel>
+      <TabPanel>Content 3</TabPanel>
+    </TabPanels>
+  </TabGroup>
+
   <div class="prose p-1 dark:prose-invert">
-    <AccordionPanel :label="`Equipment (${aggregatedEquipmentCount})`" defaultOpen>
-      <div v-if="isToeEditMode" class="flex justify-end">
-        <BaseButton
-          small
-          :disabled="isMultiMode || isLocked"
-          @click="toggleAddEquipment()"
-          >{{ showAddEquipment ? "Hide form" : "+ Add" }}
-        </BaseButton>
-      </div>
-      <p v-if="showAddEquipment" class="mt-2 text-right">
-        <button
-          type="button"
-          class="btn-link"
-          @click="toeActions.goToAddEquipment()"
-          :disabled="isLocked"
-        >
-          + Add new equipment type
-        </button>
-      </p>
-      <UnitToeItemTable
-        :items="aggregatedEquipment"
-        :is-multi-mode="isMultiMode"
-        :is-locked="isLocked"
-        :values="equipmentValues"
-        @update="updateEquipment"
-        @diff="diffEquipment"
-        @add="addEquipment"
-        @delete="deleteEquipment"
-        v-model:show-add="showAddEquipment"
-      />
-    </AccordionPanel>
-
-    <AccordionPanel :label="`Personnel (${aggregatedPersonnelCount})`" defaultOpen>
-      <div class="flex justify-end" v-if="isToeEditMode">
-        <BaseButton
-          small
-          :disabled="isMultiMode || isLocked"
-          @click="toggleAddPersonnel()"
-          >{{ showAddPersonnel ? "Hide form" : "+ Add" }}
-        </BaseButton>
-      </div>
-      <p v-if="isToeEditMode && showAddPersonnel" class="mt-2 text-right">
-        <button
-          type="button"
-          class="btn-link"
-          @click="toeActions.goToAddPersonnel()"
-          :disabled="isLocked"
-        >
-          + Add new personnel category
-        </button>
-      </p>
-      <UnitToeItemTable
-        :items="aggregatedPersonnel"
-        :is-multi-mode="isMultiMode"
-        :values="personnelValues"
-        @update="updatePersonnel"
-        @add="addPersonnel"
-        @delete="deletePersonnel"
-        @diff="diffPersonnel"
-        v-model:show-add="showAddPersonnel"
-      />
-    </AccordionPanel>
-
     <p v-if="!aggregatedEquipment.length && !aggregatedPersonnel.length">
       <span v-if="includeSubordinates"
         >No data about equipment or personnel available</span
