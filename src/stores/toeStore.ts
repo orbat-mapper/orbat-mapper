@@ -37,3 +37,39 @@ export const useSuppliesEditStore = defineStore("suppliesStore", () => {
     diffValue,
   };
 });
+
+export const useEquipmentEditStore = defineStore("equipmentStore", () => {
+  const isEditMode = ref(false);
+  const isOnHandMode = useLocalStorage("equipmentStoreIsOnHandMode", false);
+  const isDiffMode = useLocalStorage("equipmentStoreIsDiffMode", false);
+  const showAddForm = useLocalStorage("equipmentStoreShowAddForm", false);
+  const diffValue = ref(1);
+  const includeSubordinates = useLocalStorage("equipmentStoreIncludeSubordinates", true);
+
+  return {
+    isEditMode,
+    isDiffMode,
+    isOnHandMode,
+    diffValue,
+    showAddForm,
+    includeSubordinates,
+  };
+});
+
+export const usePersonnelEditStore = defineStore("personnelStore", () => {
+  const isEditMode = ref(false);
+  const isOnHandMode = useLocalStorage("personnelStoreIsOnHandMode", false);
+  const isDiffMode = useLocalStorage("personnelStoreIsDiffMode", false);
+  const showAddForm = useLocalStorage("personnelStoreShowAddForm", false);
+  const diffValue = ref(1);
+  const includeSubordinates = useLocalStorage("personnelStoreIncludeSubordinates", true);
+
+  return {
+    isEditMode,
+    isDiffMode,
+    isOnHandMode,
+    diffValue,
+    showAddForm,
+    includeSubordinates,
+  };
+});

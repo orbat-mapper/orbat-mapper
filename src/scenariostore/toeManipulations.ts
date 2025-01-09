@@ -28,6 +28,7 @@ export function useToeManipulations(store: NewScenarioStore) {
       if (!equipment) return;
       Object.assign(equipment, data);
     });
+    state.settingsStateCounter++;
   }
 
   function addEquipment(

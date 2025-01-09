@@ -10,7 +10,7 @@ import ToggleField from "@/components/ToggleField.vue";
 import { storeToRefs } from "pinia";
 import { useSuppliesEditStore } from "@/stores/toeStore";
 import type { StateAdd } from "@/types/scenarioModels";
-import { useToeEditableItems } from "@/composables/toeUtils";
+import { asPercent, useToeEditableItems } from "@/composables/toeUtils";
 
 import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
@@ -41,7 +41,6 @@ const { unitMap, supplyCategoryMap, supplyClassMap, supplyUomMap } = state;
 const {
   editedId,
   showAddForm,
-  rerender,
   selectedItems: selectedSupplies,
 } = useToeEditableItems<EUnitSupply>();
 
@@ -59,10 +58,6 @@ const { selectedUnitIds } = useSelectedItems();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 
 const aggregatedSupplies = shallowRef<EUnitSupply[]>([]);
-
-function asPercent(item: EUnitSupply) {
-  return Math.floor(((item.onHand ?? 1) / item.count) * 100) + "%";
-}
 
 const columns: ColumnDef<EUnitSupply>[] = [
   { id: "name", header: "Name", accessorKey: "name", size: 100 },

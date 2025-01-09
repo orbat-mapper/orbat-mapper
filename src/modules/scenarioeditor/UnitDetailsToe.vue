@@ -6,19 +6,24 @@ import { activeScenarioKey } from "@/components/injects";
 import { useLocalStorage, useToggle } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
-import BaseButton from "@/components/BaseButton.vue";
-import UnitToeItemTable from "@/modules/scenarioeditor/UnitToeItemTable.vue";
 import { useToeActions } from "@/composables/scenarioActions";
-import ToggleField from "@/components/ToggleField.vue";
-import AccordionPanel from "@/components/AccordionPanel.vue";
-import PrimaryButton from "@/components/PrimaryButton.vue";
 import { storeToRefs } from "pinia";
-import { useToeEditStore } from "@/stores/toeStore";
+import {
+  useEquipmentEditStore,
+  usePersonnelEditStore,
+  useToeEditStore,
+} from "@/stores/toeStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { StateAdd } from "@/types/scenarioModels";
 
-import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/vue";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
+import {
+  useUnitEquipmentTableStore,
+  useUnitPersonnelTableStore,
+} from "@/stores/tableStores";
+import { createToeTableColumns, useToeEditableItems } from "@/composables/toeUtils";
+import ToeGrid from "@/modules/grid/ToeGrid.vue";
 
 interface Props {
   unit: NUnit;
@@ -28,10 +33,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const {
-  store: {
-    state: { equipmentMap, personnelMap, unitMap },
-    onUndoRedo,
-  },
+  store: { state, onUndoRedo },
   unitActions: {
     walkSubUnits,
     updateUnitEquipment,
@@ -42,9 +44,28 @@ const {
   time,
 } = injectStrict(activeScenarioKey);
 
+const { equipmentMap, personnelMap, unitMap } = state;
+
 const includeSubordinates = useLocalStorage("includeSubordinates", true);
 let prevIncludeSubordinates: boolean | undefined;
 const toeEditStore = useToeEditStore();
+const unitEquipmentTableStore = useUnitEquipmentTableStore();
+const unitPersonnelTableStore = useUnitPersonnelTableStore();
+
+const {
+  editedId: editedEquipmentId,
+  showAddForm: showAddEquipmentNew,
+  selectedItems: selectedEquipment,
+} = useToeEditableItems<EUnitEquipment>();
+
+const {
+  editedId: editedPersonnelId,
+  showAddForm: showAddPersonnelNew,
+  selectedItems: selectedPersonnel,
+} = useToeEditableItems<EUnitPersonnel>();
+
+const equipmentEditStore = useEquipmentEditStore();
+const personnelEditStore = usePersonnelEditStore();
 
 const { isToeEditMode, toeEditMode, changeMode } = storeToRefs(toeEditStore);
 
@@ -59,22 +80,14 @@ const aggregatedPersonnelCount = computed(() =>
   aggregatedPersonnel.value.reduce((acc, e) => acc + (e.onHand ?? e.count ?? 0), 0),
 );
 
-const aggregatedEquipmentCount = computed(() =>
-  aggregatedEquipment.value.reduce((acc, e) => acc + (e.onHand ?? e.count ?? 0), 0),
-);
-const equipmentValues = computed(() => {
-  return sortBy(Object.values(equipmentMap), "name");
-});
+const equipmentColumns = createToeTableColumns();
+const personnelColumns = createToeTableColumns();
+
 const personnelValues = computed(() => {
   return sortBy(Object.values(personnelMap), "name");
 });
 
-const [showAddEquipment, toggleAddEquipment] = useToggle(false);
 const [showAddPersonnel, toggleAddPersonnel] = useToggle(false);
-
-const formattedTime = computed(() =>
-  fmt.scenarioFormatter.format(+time.scenarioTime.value),
-);
 
 onUndoRedo((param) => {
   // Update the current state of the selected units in case equipment or personnel have changed
@@ -82,19 +95,13 @@ onUndoRedo((param) => {
   triggerRef(selectedUnitIds);
 });
 
-watch(isToeEditMode, (isEditMode) => {
-  if (isEditMode) {
-    prevIncludeSubordinates = includeSubordinates.value;
-    includeSubordinates.value = false;
-  } else {
-    if (prevIncludeSubordinates !== undefined) {
-      includeSubordinates.value = prevIncludeSubordinates;
-    }
-  }
-});
-
 watch(
-  [selectedUnitIds, includeSubordinates, time.scenarioTime],
+  [
+    selectedUnitIds,
+    includeSubordinates,
+    time.scenarioTime,
+    () => state.settingsStateCounter,
+  ],
   () => {
     const aggEquipment: Record<string, { count: number; onHand: number }> = {};
     const aggPersonnel: Record<string, { count: number; onHand: number }> = {};
@@ -232,82 +239,55 @@ function deletePersonnel(personnelId: string) {
 </script>
 
 <template>
-  <div class="mt-4 flex justify-between">
-    <div>
-      <PrimaryButton @click="toeEditStore.toggleEditToeMode()" :disabled="isLocked"
-        ><span v-if="isToeEditMode">Done editing</span
-        ><span v-else>Edit TO&E</span></PrimaryButton
-      >
-    </div>
-    <ToggleField v-model="includeSubordinates" :disabled="isToeEditMode"
-      >Include subordinates
-    </ToggleField>
-  </div>
   <TabGroup>
-    <TabList class="flex items-center justify-around">
-      <Tab>Equipment</Tab>
-      <Tab>Personnel</Tab>
+    <TabList class="-mx-4 flex items-center border-b bg-gray-100 p-2 px-4">
+      <Tab
+        v-for="lbl in ['Equipment', 'Personnel']"
+        :key="lbl"
+        v-slot="{ selected }"
+        as="template"
+        ><button
+          type="button"
+          :class="[
+            selected ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:text-gray-800',
+            'w-full rounded-md px-3 py-2 text-sm font-medium',
+          ]"
+        >
+          {{ lbl }}
+        </button></Tab
+      >
     </TabList>
     <TabPanels>
       <TabPanel :unmount="false">
-        <div v-if="isToeEditMode" class="flex justify-end">
-          <BaseButton
-            small
-            :disabled="isMultiMode || isLocked"
-            @click="toggleAddEquipment()"
-            >{{ showAddEquipment ? "Hide form" : "+ Add" }}
-          </BaseButton>
-        </div>
-        <p v-if="showAddEquipment" class="mt-2 text-right">
-          <button
-            type="button"
-            class="btn-link"
-            @click="toeActions.goToAddEquipment()"
-            :disabled="isLocked"
-          >
-            + Add new equipment type
-          </button>
-        </p>
-        <UnitToeItemTable
-          :items="aggregatedEquipment"
-          :is-multi-mode="isMultiMode"
-          :is-locked="isLocked"
-          :values="equipmentValues"
-          @update="updateEquipment"
-          @diff="diffEquipment"
-          @add="addEquipment"
-          @delete="deleteEquipment"
-          v-model:show-add="showAddEquipment"
+        <ToeGridHeader
+          v-model:editMode="equipmentEditStore.isEditMode"
+          v-model:addMode="equipmentEditStore.showAddForm"
+          v-model:includeSubordinates="includeSubordinates"
+          :selectedCount="selectedEquipment.length"
+        />
+        <ToeGrid
+          :columns="equipmentColumns"
+          :data="aggregatedEquipment"
+          :tableStore="unitEquipmentTableStore"
+          v-model:editMode="equipmentEditStore.isEditMode"
+          :select="equipmentEditStore.isEditMode"
+          v-model:selected="selectedEquipment"
         />
       </TabPanel>
       <TabPanel :unmount="false">
-        <div class="flex justify-end" v-if="isToeEditMode">
-          <BaseButton
-            small
-            :disabled="isMultiMode || isLocked"
-            @click="toggleAddPersonnel()"
-            >{{ showAddPersonnel ? "Hide form" : "+ Add" }}
-          </BaseButton>
-        </div>
-        <p v-if="isToeEditMode && showAddPersonnel" class="mt-2 text-right">
-          <button
-            type="button"
-            class="btn-link"
-            @click="toeActions.goToAddPersonnel()"
-            :disabled="isLocked"
-          >
-            + Add new personnel category
-          </button>
-        </p>
-        <UnitToeItemTable
-          :items="aggregatedPersonnel"
-          :is-multi-mode="isMultiMode"
-          :values="personnelValues"
-          @update="updatePersonnel"
-          @add="addPersonnel"
-          @delete="deletePersonnel"
-          @diff="diffPersonnel"
-          v-model:show-add="showAddPersonnel"
+        <ToeGridHeader
+          v-model:editMode="equipmentEditStore.isEditMode"
+          v-model:addMode="personnelEditStore.showAddForm"
+          v-model:includeSubordinates="includeSubordinates"
+          :selectedCount="selectedPersonnel.length"
+        />
+        <ToeGrid
+          :columns="personnelColumns"
+          :data="aggregatedPersonnel"
+          :tableStore="unitPersonnelTableStore"
+          v-model:editMode="equipmentEditStore.isEditMode"
+          :select="personnelEditStore.isEditMode"
+          v-model:selected="selectedPersonnel"
         />
       </TabPanel>
       <TabPanel>Content 3</TabPanel>
