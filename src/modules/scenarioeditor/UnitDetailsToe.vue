@@ -14,11 +14,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { useLocalStorage } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
-import {
-  useEquipmentEditStore,
-  usePersonnelEditStore,
-  useToeEditStore,
-} from "@/stores/toeStore";
+import { useEquipmentEditStore, usePersonnelEditStore } from "@/stores/toeStore";
 import type { StateAdd } from "@/types/scenarioModels";
 
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
@@ -303,7 +299,7 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
 </script>
 
 <template>
-  <TabGroup>
+  <TabGroup :selected-index="uiStore.toeTabIndex" @change="uiStore.toeTabIndex = $event">
     <TabList class="-mx-4 flex items-center border-b bg-gray-100 p-2 px-4">
       <Tab
         v-for="lbl in ['Equipment', 'Personnel']"
