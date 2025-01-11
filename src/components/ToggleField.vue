@@ -10,7 +10,7 @@ const enabled = defineModel({ default: true });
       v-model="enabled"
       :disabled="disabled"
       :class="[
-        enabled ? 'bg-slate-600' : 'bg-slate-200',
+        enabled ? 'bg-slate-800' : 'bg-slate-200',
         'flex w-8 cursor-pointer rounded-full p-px ring-1 ring-inset ring-slate-900/5 transition-colors duration-200 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
       ]"
     >
