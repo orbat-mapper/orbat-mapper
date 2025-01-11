@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import { EUnitEquipment, EUnitPersonnel, NUnit } from "@/types/internalModels";
-import { computed, shallowRef, triggerRef, watch } from "vue";
-import { injectStrict, sortBy } from "@/utils";
+import {
+  EUnitEquipment,
+  EUnitPersonnel,
+  NUnit,
+  NUnitEquipment,
+  NUnitPersonnel,
+  NUnitSupply,
+  ToeMode,
+} from "@/types/internalModels";
+import { computed, ref, shallowRef, triggerRef, watch } from "vue";
+import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { useLocalStorage, useToggle } from "@vueuse/core";
+import { useLocalStorage } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
 import { useToeActions } from "@/composables/scenarioActions";
@@ -24,6 +32,10 @@ import {
 } from "@/stores/tableStores";
 import { createToeTableColumns, useToeEditableItems } from "@/composables/toeUtils";
 import ToeGrid from "@/modules/grid/ToeGrid.vue";
+import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
+import ModifyUnitToeItemForm from "@/modules/scenarioeditor/ModifyUnitToeItemForm.vue";
+import AddUnitToeItemForm from "@/modules/scenarioeditor/AddUnitToeItemForm.vue";
+import { useUiStore } from "@/stores/uiStore";
 
 interface Props {
   unit: NUnit;
@@ -33,7 +45,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const {
-  store: { state, onUndoRedo },
+  store: { state, onUndoRedo, groupUpdate },
   unitActions: {
     walkSubUnits,
     updateUnitEquipment,
@@ -47,33 +59,24 @@ const {
 const { equipmentMap, personnelMap, unitMap } = state;
 
 const includeSubordinates = useLocalStorage("includeSubordinates", true);
-let prevIncludeSubordinates: boolean | undefined;
+const uiStore = useUiStore();
 const toeEditStore = useToeEditStore();
 const unitEquipmentTableStore = useUnitEquipmentTableStore();
 const unitPersonnelTableStore = useUnitPersonnelTableStore();
 
-const {
-  editedId: editedEquipmentId,
-  showAddForm: showAddEquipmentNew,
-  selectedItems: selectedEquipment,
-} = useToeEditableItems<EUnitEquipment>();
+const { editedId: editedEquipmentId, selectedItems: selectedEquipment } =
+  useToeEditableItems<EUnitEquipment>();
 
-const {
-  editedId: editedPersonnelId,
-  showAddForm: showAddPersonnelNew,
-  selectedItems: selectedPersonnel,
-} = useToeEditableItems<EUnitPersonnel>();
+const { editedId: editedPersonnelId, selectedItems: selectedPersonnel } =
+  useToeEditableItems<EUnitPersonnel>();
 
 const equipmentEditStore = useEquipmentEditStore();
 const personnelEditStore = usePersonnelEditStore();
 
-const { isToeEditMode, toeEditMode, changeMode } = storeToRefs(toeEditStore);
-
-const fmt = useTimeFormatStore();
 const { selectedUnitIds } = useSelectedItems();
-const toeActions = useToeActions();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 
+const addFormData = ref<NUnitEquipment | NUnitPersonnel>({ id: "", count: 1 });
 const aggregatedEquipment = shallowRef<EUnitEquipment[]>([]);
 const aggregatedPersonnel = shallowRef<EUnitPersonnel[]>([]);
 const aggregatedPersonnelCount = computed(() =>
@@ -82,12 +85,6 @@ const aggregatedPersonnelCount = computed(() =>
 
 const equipmentColumns = createToeTableColumns();
 const personnelColumns = createToeTableColumns();
-
-const personnelValues = computed(() => {
-  return sortBy(Object.values(personnelMap), "name");
-});
-
-const [showAddPersonnel, toggleAddPersonnel] = useToggle(false);
 
 onUndoRedo((param) => {
   // Update the current state of the selected units in case equipment or personnel have changed
@@ -157,84 +154,140 @@ watch(
   { immediate: true, deep: true },
 );
 
-function updateEquipment(
-  equipmentId: string,
-  { count, onHand }: { count: number; onHand?: number },
+function onAddSubmit(toeMode: ToeMode, formData: NUnitSupply) {
+  const { id, count, onHand } = formData;
+  groupUpdate(() => {
+    selectedUnitIds.value.forEach((unitId) => {
+      if (toeMode === "equipment") {
+        updateUnitEquipment(unitId, id, { count, onHand });
+      } else if (toeMode === "personnel") {
+        updateUnitPersonnel(unitId, id, { count, onHand });
+      }
+    });
+  });
+  triggerRef(selectedUnitIds);
+
+  addFormData.value = { ...formData, id: "" };
+}
+
+function updateItemCount(
+  toeMode: ToeMode,
+  { id: itemId, count }: NUnitEquipment | NUnitPersonnel,
 ) {
-  if (toeEditMode.value === "onHand") {
-    const newState: StateAdd = {
-      t: +time.scenarioTime.value,
-      update: { equipment: [{ id: equipmentId, onHand }] },
-    };
-    addUnitStateEntry(props.unit.id, newState, true);
-  } else {
-    updateUnitEquipment(props.unit.id, equipmentId, { count });
-  }
+  groupUpdate(() => {
+    selectedUnitIds.value.forEach((unitId) => {
+      if (toeMode === "equipment") {
+        updateUnitEquipment(unitId, itemId, { count });
+      } else if (toeMode === "personnel") {
+        updateUnitPersonnel(unitId, itemId, { count });
+      }
+    });
+  });
   triggerRef(selectedUnitIds);
+  handleNextEditedId(toeMode, itemId);
 }
 
-function addEquipment(
-  equipmentId: string,
-  { count, onHand }: { count: number; onHand?: number },
+function updateItemOnHand(
+  toeMode: ToeMode,
+  { id: itemId, onHand }: NUnitEquipment | NUnitPersonnel,
 ) {
-  updateUnitEquipment(props.unit.id, equipmentId, { count, onHand });
+  groupUpdate(() => {
+    selectedUnitIds.value.forEach((unitId) => {
+      if (toeMode === "equipment") {
+        const unit = unitMap[unitId];
+        if (!unit.equipment?.find((e) => e.id === itemId)) return;
+        const newState: StateAdd = {
+          t: +time.scenarioTime.value,
+          update: { equipment: [{ id: itemId, onHand }] },
+        };
+        addUnitStateEntry(unitId, newState, true);
+      } else if (toeMode === "personnel") {
+        const unit = unitMap[unitId];
+        if (!unit.personnel?.find((p) => p.id === itemId)) return;
+        const newState: StateAdd = {
+          t: +time.scenarioTime.value,
+          update: { personnel: [{ id: itemId, onHand }] },
+        };
+        addUnitStateEntry(unitId, newState, true);
+      }
+    });
+  });
   triggerRef(selectedUnitIds);
+  handleNextEditedId(toeMode, itemId);
 }
 
-function diffEquipment(equipmentId: string, { onHand }: { onHand: number }) {
-  if (toeEditMode.value === "onHand") {
-    const newState: StateAdd = {
-      t: +time.scenarioTime.value,
-      diff: { equipment: [{ id: equipmentId, onHand }] },
-    };
-    addUnitStateEntry(props.unit.id, newState, true);
-  }
-  triggerRef(selectedUnitIds);
-}
-
-function updatePersonnel(
-  personnelId: string,
-  { count, onHand }: { count: number; onHand?: number },
+function diffItemOnHand(
+  toeMode: ToeMode,
+  { id: itemId, onHand }: NUnitEquipment | NUnitPersonnel,
 ) {
-  if (toeEditMode.value === "onHand") {
-    const newState: StateAdd = {
-      t: +time.scenarioTime.value,
-      update: { personnel: [{ id: personnelId, onHand }] },
-    };
-    addUnitStateEntry(props.unit.id, newState, true);
-  } else {
-    updateUnitPersonnel(props.unit.id, personnelId, { count });
+  groupUpdate(() => {
+    selectedUnitIds.value.forEach((unitId) => {
+      if (toeMode === "equipment") {
+        const unit = unitMap[unitId];
+        if (!unit.equipment?.find((e) => e.id === itemId)) return;
+        const newState: StateAdd = {
+          t: +time.scenarioTime.value,
+          diff: { equipment: [{ id: itemId, onHand }] },
+        };
+        addUnitStateEntry(unitId, newState, true);
+      } else if (toeMode === "personnel") {
+        const unit = unitMap[unitId];
+        if (!unit.personnel?.find((p) => p.id === itemId)) return;
+        const newState: StateAdd = {
+          t: +time.scenarioTime.value,
+          diff: { personnel: [{ id: itemId, onHand }] },
+        };
+        addUnitStateEntry(unitId, newState, true);
+      }
+    });
+  });
+  triggerRef(selectedUnitIds);
+  handleNextEditedId(toeMode, itemId);
+}
+
+function onDeleteItems(toeMode: ToeMode) {
+  groupUpdate(() => {
+    selectedUnitIds.value.forEach((unitId) => {
+      if (toeMode === "equipment") {
+        selectedEquipment.value.forEach(({ id: itemId }) => {
+          updateUnitEquipment(unitId, itemId, { count: -1 });
+        });
+        selectedEquipment.value = [];
+      } else if (toeMode === "personnel") {
+        selectedPersonnel.value.forEach(({ id: itemId }) => {
+          updateUnitPersonnel(unitId, itemId, { count: -1 });
+        });
+        selectedPersonnel.value = [];
+      }
+    });
+  });
+  triggerRef(selectedUnitIds);
+}
+
+function handleNextEditedId(mode: ToeMode, itemId: string) {
+  if (!uiStore.goToNextOnSubmit) {
+    if (mode === "equipment") {
+      editedEquipmentId.value = null;
+    } else if (mode === "personnel") {
+      editedPersonnelId.value = null;
+    }
+    return;
   }
-  triggerRef(selectedUnitIds);
-}
-
-function addPersonnel(
-  personnelId: string,
-  { count, onHand }: { count: number; onHand?: number },
-) {
-  updateUnitPersonnel(props.unit.id, personnelId, { count, onHand });
-  triggerRef(selectedUnitIds);
-}
-
-function diffPersonnel(personnelId: string, { onHand }: { onHand: number }) {
-  if (toeEditMode.value === "onHand") {
-    const newState: StateAdd = {
-      t: +time.scenarioTime.value,
-      diff: { personnel: [{ id: personnelId, onHand }] },
-    };
-    addUnitStateEntry(props.unit.id, newState, true);
+  if (mode === "equipment") {
+    const currentIndex = aggregatedEquipment.value.findIndex((e) => e.id === itemId);
+    if (currentIndex < aggregatedEquipment.value.length - 1) {
+      editedEquipmentId.value = aggregatedEquipment.value[currentIndex + 1].id;
+    } else {
+      editedEquipmentId.value = null;
+    }
+  } else if (mode === "personnel") {
+    const currentIndex = aggregatedPersonnel.value.findIndex((p) => p.id === itemId);
+    if (currentIndex < aggregatedPersonnel.value.length - 1) {
+      editedPersonnelId.value = aggregatedPersonnel.value[currentIndex + 1].id;
+    } else {
+      editedPersonnelId.value = null;
+    }
   }
-  triggerRef(selectedUnitIds);
-}
-
-function deleteEquipment(equipmentId: string) {
-  updateUnitEquipment(props.unit.id, equipmentId, { count: -1 });
-  triggerRef(selectedUnitIds);
-}
-
-function deletePersonnel(personnelId: string) {
-  updateUnitPersonnel(props.unit.id, personnelId, { count: -1 });
-  triggerRef(selectedUnitIds);
 }
 </script>
 
@@ -264,15 +317,39 @@ function deletePersonnel(personnelId: string) {
           v-model:addMode="equipmentEditStore.showAddForm"
           v-model:includeSubordinates="includeSubordinates"
           :selectedCount="selectedEquipment.length"
+          @delete="onDeleteItems('equipment')"
+        />
+        <AddUnitToeItemForm
+          v-if="equipmentEditStore.showAddForm"
+          mode="equipment"
+          :usedItems="isMultiMode ? [] : aggregatedEquipment"
+          @cancel="equipmentEditStore.showAddForm = false"
+          @submit="onAddSubmit('equipment', $event)"
         />
         <ToeGrid
+          v-if="aggregatedEquipment.length"
           :columns="equipmentColumns"
           :data="aggregatedEquipment"
           :tableStore="unitEquipmentTableStore"
           v-model:editMode="equipmentEditStore.isEditMode"
+          v-model:editedId="editedEquipmentId"
           :select="equipmentEditStore.isEditMode"
           v-model:selected="selectedEquipment"
-        />
+        >
+          <template #inline-form="{ row }">
+            <InlineFormWrapper class="pr-6" details-panel>
+              <ModifyUnitToeItemForm
+                :itemData="row"
+                :heading="row.name"
+                :editStore="equipmentEditStore"
+                @cancel="equipmentEditStore.isEditMode = false"
+                @updateCount="updateItemCount('equipment', $event)"
+                @updateOnHand="updateItemOnHand('equipment', $event)"
+                @diffOnHand="diffItemOnHand('equipment', $event)"
+              />
+            </InlineFormWrapper>
+          </template>
+        </ToeGrid>
       </TabPanel>
       <TabPanel :unmount="false">
         <ToeGridHeader
@@ -280,15 +357,41 @@ function deletePersonnel(personnelId: string) {
           v-model:addMode="personnelEditStore.showAddForm"
           v-model:includeSubordinates="includeSubordinates"
           :selectedCount="selectedPersonnel.length"
+          @delete="onDeleteItems('personnel')"
         />
+        <AddUnitToeItemForm
+          v-if="personnelEditStore.showAddForm"
+          mode="personnel"
+          :usedItems="isMultiMode ? [] : aggregatedPersonnel"
+          @cancel="personnelEditStore.showAddForm = false"
+          @submit="onAddSubmit('personnel', $event)"
+          @delete="onDeleteItems('personnel')"
+        />
+
         <ToeGrid
+          v-if="aggregatedPersonnel.length"
           :columns="personnelColumns"
           :data="aggregatedPersonnel"
           :tableStore="unitPersonnelTableStore"
+          :select="equipmentEditStore.isEditMode"
           v-model:editMode="equipmentEditStore.isEditMode"
-          :select="personnelEditStore.isEditMode"
+          v-model:editedId="editedPersonnelId"
           v-model:selected="selectedPersonnel"
-        />
+        >
+          <template #inline-form="{ row }">
+            <InlineFormWrapper class="pr-6" details-panel>
+              <ModifyUnitToeItemForm
+                :itemData="row"
+                :heading="row.name"
+                @cancel="equipmentEditStore.isEditMode = false"
+                :editStore="personnelEditStore"
+                @updateCount="updateItemCount('personnel', $event)"
+                @updateOnHand="updateItemOnHand('personnel', $event)"
+                @diffOnHand="diffItemOnHand('personnel', $event)"
+              />
+            </InlineFormWrapper>
+          </template>
+        </ToeGrid>
       </TabPanel>
       <TabPanel>Content 3</TabPanel>
     </TabPanels>

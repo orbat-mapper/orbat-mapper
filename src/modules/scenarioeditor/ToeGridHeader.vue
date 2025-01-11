@@ -12,7 +12,9 @@ defineProps<{
 const emit = defineEmits(["delete"]);
 const editMode = defineModel<boolean>("editMode");
 const addMode = defineModel<boolean>("addMode");
-const includeSubordinates = defineModel<boolean>("includeSubordinates");
+const includeSubordinates = defineModel<boolean>("includeSubordinates", {
+  default: undefined,
+});
 let prevIncludeSubordinates: boolean | undefined;
 
 watch(editMode, (isEditMode) => {

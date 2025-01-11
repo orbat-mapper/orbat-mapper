@@ -231,7 +231,6 @@ function handleNextEditedId(supplyId: string) {
 
 function deleteSupply(unitId: string, supplyId: string) {
   updateUnitSupply(unitId, supplyId, { count: -1 });
-  triggerRef(selectedUnitIds);
 }
 
 function onAddSubmit(formData: NUnitSupply) {
@@ -253,23 +252,17 @@ function onDelete() {
       });
     });
   });
+  triggerRef(selectedUnitIds);
   selectedSupplies.value = [];
 }
 </script>
 
 <template>
-  <div class="mt-4 flex items-center justify-between">
-    <p class="text-sm font-medium">Unit supplies</p>
-    <ToggleField v-model="includeSubordinates" :disabled="isSuppliesEditMode"
-      >Include subordinates
-    </ToggleField>
-  </div>
-
   <div class="">
     <ToeGridHeader
       v-model:editMode="isSuppliesEditMode"
       v-model:addMode="showAddForm"
-      editLabel="Edit supplies"
+      v-model:includeSubordinates="includeSubordinates"
       :selectedCount="selectedSupplies.length"
       @delete="onDelete"
     />
@@ -282,6 +275,7 @@ function onDelete() {
     />
 
     <ToeGrid
+      v-if="aggregatedSupplies.length"
       :columns="columns"
       :data="aggregatedSupplies"
       v-model:editedId="editedId"

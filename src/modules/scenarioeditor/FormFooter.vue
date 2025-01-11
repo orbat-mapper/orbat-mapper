@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import ToggleField from "@/components/ToggleField.vue";
 import { useUiStore } from "@/stores/uiStore";
-defineProps<{ showNextToggle?: boolean }>();
+withDefaults(
+  defineProps<{ showNextToggle?: boolean; submitLabel?: string; cancelLabel?: string }>(),
+  {
+    submitLabel: "Save",
+    cancelLabel: "Cancel",
+  },
+);
 const emit = defineEmits(["cancel"]);
 const uiStore = useUiStore();
 </script>
@@ -19,13 +25,13 @@ const uiStore = useUiStore();
         class="text-sm/6 font-semibold text-slate-900 dark:text-slate-200"
         @click="emit('cancel')"
       >
-        Cancel
+        {{ cancelLabel }}
       </button>
       <button
         type="submit"
         class="shadow-xs rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
       >
-        Save
+        {{ submitLabel }}
       </button>
     </div>
   </div>

@@ -151,8 +151,7 @@
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
       <TabPanel>
-        <UnitDetailsToe v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
-        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
+        <UnitDetailsToe :unit="unit" :is-locked="isLocked" />
       </TabPanel>
       <TabPanel>
         <UnitDetailsSupplies :unit="unit" :is-locked="isLocked" />

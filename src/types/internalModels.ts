@@ -233,3 +233,5 @@ export type UnitPropertyUpdate = {
   value?: number | string | null;
   uom: SpeedUnitOfMeasure;
 };
+
+export type ToeMode = "equipment" | "personnel";

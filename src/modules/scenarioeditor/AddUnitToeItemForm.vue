@@ -6,15 +6,25 @@ import { activeScenarioKey } from "@/components/injects";
 import { injectStrict, sortBy } from "@/utils";
 import { computed, watch } from "vue";
 import { klona } from "klona";
-import { EUnitSupply, NUnitSupply } from "@/types/internalModels";
+import {
+  EUnitEquipment,
+  EUnitPersonnel,
+  NUnitEquipment,
+  NUnitPersonnel,
+  ToeMode,
+} from "@/types/internalModels";
 import FormFooter from "@/modules/scenarioeditor/FormFooter.vue";
 
-interface Form extends NUnitSupply {}
+type Form = NUnitEquipment | NUnitPersonnel;
 
 const props = withDefaults(
-  defineProps<{ heading?: string; usedSupplies?: EUnitSupply[] }>(),
+  defineProps<{
+    heading?: string;
+    usedItems?: EUnitEquipment[] | EUnitPersonnel[];
+    mode: ToeMode;
+  }>(),
   {
-    heading: "Add unit supply",
+    heading: "Add item",
   },
 );
 
@@ -22,19 +32,17 @@ const { store } = injectStrict(activeScenarioKey);
 const modelValue = defineModel<Form>();
 const emit = defineEmits<{ cancel: [void]; submit: [form: Form] }>();
 
-const usedItems = computed(() => (props.usedSupplies ?? []).map((i) => i.id));
-const { supplyClassMap, supplyUomMap } = store.state;
+const usedItems = computed(() => (props.usedItems ?? []).map((i) => i.id));
 
-const supplyCategories = computed(() => {
-  const sc = Object.values(store.state.supplyCategoryMap)
+const itemCategories = computed(() => {
+  const c =
+    props.mode === "equipment" ? store.state.equipmentMap : store.state.personnelMap;
+  const sc = Object.values(c)
     .filter((v) => !usedItems.value.includes(v.id))
-    .map((sc) => {
-      const supplyClass = supplyClassMap[sc?.supplyClass ?? ""]?.name ?? "";
-      const uomObj = supplyUomMap[sc?.uom ?? ""];
-      const uom = uomObj?.code ?? uomObj?.name ?? "";
+    .map((ic) => {
       return {
-        label: `${sc.name}`,
-        value: sc.id,
+        label: ic.name,
+        value: ic.id,
       };
     });
 
@@ -55,10 +63,10 @@ function onSubmit() {
 }
 
 watch(
-  supplyCategories,
+  itemCategories,
   () => {
-    if (supplyCategories.value.length) {
-      form.value.id = supplyCategories.value[0].value;
+    if (itemCategories.value.length) {
+      form.value.id = itemCategories.value[0].value;
     }
   },
   { immediate: true },
@@ -68,12 +76,12 @@ watch(
 <template>
   <form @submit.prevent="onSubmit" class="" @keyup.esc.stop="emit('cancel')">
     <h3 class="text-sm font-semibold">{{ heading }}</h3>
-    <section v-if="supplyCategories.length" class="mt-4 grid grid-cols-2 gap-6">
-      <SimpleSelect label="Supply category" v-model="form.id" :items="supplyCategories" />
+    <section v-if="itemCategories.length" class="mt-4 grid grid-cols-2 gap-6">
+      <SimpleSelect label="Supply category" v-model="form.id" :items="itemCategories" />
       <InputGroup label="Initial value" type="number" v-model="form.count" />
     </section>
     <section v-else class="mt-4">
-      <p class="text-sm text-gray-500">No more supplies to add</p>
+      <p class="text-sm text-gray-500">No items to add</p>
     </section>
     <FormFooter @cancel="emit('cancel')" submitLabel="Add" />
   </form>

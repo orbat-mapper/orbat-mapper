@@ -73,3 +73,7 @@ export const usePersonnelEditStore = defineStore("personnelStore", () => {
     includeSubordinates,
   };
 });
+
+export type ToeEditStore =
+  | ReturnType<typeof useEquipmentEditStore>
+  | ReturnType<typeof usePersonnelEditStore>;
