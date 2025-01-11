@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
+import { ColumnSort } from "@tanstack/vue-table";
 
 function tableStoreFactory(storeName: string) {
   return defineStore(storeName, () => {
@@ -11,7 +12,9 @@ function tableStoreFactory(storeName: string) {
       storeName + "-columnWidth",
       {},
     );
-    return { columnVisibility, columnSizing };
+
+    const columnSorting = useLocalStorage<ColumnSort[]>(storeName + "-sorting", []);
+    return { columnVisibility, columnSizing, columnSorting };
   });
 }
 

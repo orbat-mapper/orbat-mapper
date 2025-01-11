@@ -10,6 +10,7 @@ import {
   getSortedRowModel,
   InitialTableState,
   RowSelectionState,
+  SortingState,
   useVueTable,
 } from "@tanstack/vue-table";
 import { valueUpdater } from "@/modules/grid/helpers";
@@ -52,11 +53,12 @@ const query = ref("");
 const debouncedQuery = useDebounce(query, 200);
 
 const rowSelection = ref<RowSelectionState>({});
-const { columnVisibility, columnSizing } = props.tableStore
+const { columnVisibility, columnSizing, columnSorting } = props.tableStore
   ? storeToRefs(props.tableStore)
   : {
       columnVisibility: ref({}),
       columnSizing: ref({}),
+      columnSorting: ref<SortingState>([]),
     };
 
 const selectColumn: ColumnDef<any, any> = {
@@ -125,6 +127,10 @@ const table = useVueTable({
     get columnSizing() {
       return columnSizing.value;
     },
+
+    get sorting() {
+      return columnSorting.value;
+    },
   },
   getRowId: (row) => row.id,
   enableRowSelection: true,
@@ -144,6 +150,7 @@ const table = useVueTable({
   onColumnVisibilityChange: (updateOrValue) =>
     valueUpdater(updateOrValue, columnVisibility),
   onColumnSizingChange: (updateOrValue) => valueUpdater(updateOrValue, columnSizing),
+  onSortingChange: (updateOrValue) => valueUpdater(updateOrValue, columnSorting),
 
   getSubRows: props.getSubRows,
   filterFromLeafRows: true,

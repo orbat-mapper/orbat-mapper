@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 import { TAB_ORBAT } from "@/types/constants";
 
+export let prevToeIncludeSubordinates: boolean | undefined = undefined;
+
 export const useUiStore = defineStore("ui", {
   state: () => ({
     modalOpen: false,
@@ -23,6 +25,9 @@ export const useUiStore = defineStore("ui", {
     showOrbatBreadcrumbs: useLocalStorage("showOrbatBreadcrumbs", true),
     goToNextOnSubmit: useLocalStorage("goToNextOnSubmit", true),
     toeTabIndex: 0,
+    toeIncludeSubordinates: useLocalStorage("toeIncludeSubordinates", true),
+    prevToeIncludeSubordinates: undefined as boolean | undefined,
+    prevSuppliesIncludeSubordinates: undefined as boolean | undefined,
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,

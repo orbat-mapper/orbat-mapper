@@ -28,7 +28,7 @@ import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import ModifyUnitToeItemForm from "@/modules/scenarioeditor/ModifyUnitToeItemForm.vue";
 import AddUnitToeItemForm from "@/modules/scenarioeditor/AddUnitToeItemForm.vue";
-import { useUiStore } from "@/stores/uiStore";
+import { prevToeIncludeSubordinates, useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
 
 interface Props {
@@ -52,8 +52,8 @@ const {
 
 const { equipmentMap, personnelMap, unitMap } = state;
 
-const includeSubordinates = useLocalStorage("includeSubordinates", true);
 const uiStore = useUiStore();
+const { toeIncludeSubordinates: includeSubordinates } = storeToRefs(uiStore);
 const unitEquipmentTableStore = useUnitEquipmentTableStore();
 const unitPersonnelTableStore = useUnitPersonnelTableStore();
 
@@ -87,14 +87,13 @@ onUndoRedo((param) => {
   triggerRef(selectedUnitIds);
 });
 
-let prevIncludeSubordinates: boolean | undefined;
 watch(isEditMode, (value) => {
   if (value) {
-    prevIncludeSubordinates = includeSubordinates.value;
+    uiStore.prevToeIncludeSubordinates = includeSubordinates.value;
     includeSubordinates.value = false;
   } else {
-    if (prevIncludeSubordinates !== undefined) {
-      includeSubordinates.value = prevIncludeSubordinates;
+    if (uiStore.prevToeIncludeSubordinates !== undefined) {
+      includeSubordinates.value = uiStore.prevToeIncludeSubordinates;
     }
   }
 });

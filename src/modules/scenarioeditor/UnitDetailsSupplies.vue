@@ -45,7 +45,6 @@ const {
 } = useToeEditableItems<EUnitSupply>();
 
 const includeSubordinates = useLocalStorage("includeSubordinates", true);
-let prevIncludeSubordinates: boolean | undefined;
 const suppliesEditStore = useSuppliesEditStore();
 
 const { isSuppliesEditMode } = storeToRefs(suppliesEditStore);
@@ -94,11 +93,11 @@ onUndoRedo((param) => {
 
 watch(isSuppliesEditMode, (isEditMode) => {
   if (isEditMode) {
-    prevIncludeSubordinates = includeSubordinates.value;
+    uiStore.prevToeIncludeSubordinates = includeSubordinates.value;
     includeSubordinates.value = false;
   } else {
-    if (prevIncludeSubordinates !== undefined) {
-      includeSubordinates.value = prevIncludeSubordinates;
+    if (uiStore.prevToeIncludeSubordinates !== undefined) {
+      includeSubordinates.value = uiStore.prevToeIncludeSubordinates;
     }
   }
 });
