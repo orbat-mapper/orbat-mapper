@@ -265,6 +265,7 @@ function onDelete() {
       v-model:includeSubordinates="includeSubordinates"
       :selectedCount="selectedSupplies.length"
       @delete="onDelete"
+      :isLocked="isLocked"
     />
     <AddUnitSupplyForm
       v-if="showAddForm"
@@ -283,6 +284,7 @@ function onDelete() {
       v-model:selected="selectedSupplies"
       v-model:editMode="isSuppliesEditMode"
       :tableStore="tableStore"
+      :isLocked="isLocked"
     >
       <template #inline-form="{ row }">
         <InlineFormWrapper class="pr-6" details-panel>

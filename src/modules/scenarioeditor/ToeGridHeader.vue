@@ -8,6 +8,7 @@ defineProps<{
   selectedCount?: number;
   editLabel?: string;
   hideEdit?: boolean;
+  isLocked?: boolean;
 }>();
 const emit = defineEmits(["delete"]);
 const editMode = defineModel<boolean>("editMode");
@@ -16,17 +17,6 @@ const includeSubordinates = defineModel<boolean>("includeSubordinates", {
   default: undefined,
 });
 let prevIncludeSubordinates: boolean | undefined;
-
-watch(editMode, (isEditMode) => {
-  if (isEditMode) {
-    prevIncludeSubordinates = includeSubordinates.value;
-    includeSubordinates.value = false;
-  } else {
-    if (prevIncludeSubordinates !== undefined) {
-      includeSubordinates.value = prevIncludeSubordinates;
-    }
-  }
-});
 </script>
 <template>
   <div class="my-4 flex items-center justify-between gap-2">
@@ -42,10 +32,10 @@ watch(editMode, (isEditMode) => {
       </ToggleField>
     </div>
     <div class="flex items-center gap-2">
-      <EditToggleButton v-if="!hideEdit" v-model="editMode"
+      <EditToggleButton v-if="!hideEdit" v-model="editMode" :disabled="isLocked"
         >{{ editLabel ?? "Edit" }}
       </EditToggleButton>
-      <BaseButton @click="addMode = !addMode">
+      <BaseButton @click="addMode = !addMode" :disabled="isLocked">
         {{ addMode ? "Hide form" : "Add" }}
       </BaseButton>
     </div>

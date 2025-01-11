@@ -31,6 +31,7 @@ interface Props {
   noIndeterminate?: boolean;
   dense?: boolean;
   tableStore?: TableStore;
+  isLocked?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -176,6 +177,7 @@ const filteredRowCount = computed(() => {
 });
 
 function onDblClick(row: any, e: MouseEvent) {
+  if (props.isLocked) return;
   editMode.value = true;
   editedId.value = row.original.id;
 }

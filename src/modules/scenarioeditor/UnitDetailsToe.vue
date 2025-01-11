@@ -14,14 +14,11 @@ import { activeScenarioKey } from "@/components/injects";
 import { useLocalStorage } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
-import { useToeActions } from "@/composables/scenarioActions";
-import { storeToRefs } from "pinia";
 import {
   useEquipmentEditStore,
   usePersonnelEditStore,
   useToeEditStore,
 } from "@/stores/toeStore";
-import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { StateAdd } from "@/types/scenarioModels";
 
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
@@ -36,6 +33,7 @@ import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import ModifyUnitToeItemForm from "@/modules/scenarioeditor/ModifyUnitToeItemForm.vue";
 import AddUnitToeItemForm from "@/modules/scenarioeditor/AddUnitToeItemForm.vue";
 import { useUiStore } from "@/stores/uiStore";
+import { storeToRefs } from "pinia";
 
 interface Props {
   unit: NUnit;
@@ -60,7 +58,6 @@ const { equipmentMap, personnelMap, unitMap } = state;
 
 const includeSubordinates = useLocalStorage("includeSubordinates", true);
 const uiStore = useUiStore();
-const toeEditStore = useToeEditStore();
 const unitEquipmentTableStore = useUnitEquipmentTableStore();
 const unitPersonnelTableStore = useUnitPersonnelTableStore();
 
@@ -72,6 +69,8 @@ const { editedId: editedPersonnelId, selectedItems: selectedPersonnel } =
 
 const equipmentEditStore = useEquipmentEditStore();
 const personnelEditStore = usePersonnelEditStore();
+
+const { isEditMode } = storeToRefs(equipmentEditStore);
 
 const { selectedUnitIds } = useSelectedItems();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
@@ -90,6 +89,18 @@ onUndoRedo((param) => {
   // Update the current state of the selected units in case equipment or personnel have changed
   selectedUnitIds.value.forEach((unitId) => updateUnitState(unitId));
   triggerRef(selectedUnitIds);
+});
+
+let prevIncludeSubordinates: boolean | undefined;
+watch(isEditMode, (value) => {
+  if (value) {
+    prevIncludeSubordinates = includeSubordinates.value;
+    includeSubordinates.value = false;
+  } else {
+    if (prevIncludeSubordinates !== undefined) {
+      includeSubordinates.value = prevIncludeSubordinates;
+    }
+  }
 });
 
 watch(
@@ -313,11 +324,12 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
     <TabPanels>
       <TabPanel :unmount="false">
         <ToeGridHeader
-          v-model:editMode="equipmentEditStore.isEditMode"
+          v-model:editMode="isEditMode"
           v-model:addMode="equipmentEditStore.showAddForm"
           v-model:includeSubordinates="includeSubordinates"
           :selectedCount="selectedEquipment.length"
           @delete="onDeleteItems('equipment')"
+          :isLocked="isLocked"
         />
         <AddUnitToeItemForm
           v-if="equipmentEditStore.showAddForm"
@@ -331,10 +343,11 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
           :columns="equipmentColumns"
           :data="aggregatedEquipment"
           :tableStore="unitEquipmentTableStore"
-          v-model:editMode="equipmentEditStore.isEditMode"
+          v-model:editMode="isEditMode"
           v-model:editedId="editedEquipmentId"
-          :select="equipmentEditStore.isEditMode"
+          :select="isEditMode"
           v-model:selected="selectedEquipment"
+          :isLocked="isLocked"
         >
           <template #inline-form="{ row }">
             <InlineFormWrapper class="pr-6" details-panel>
@@ -342,7 +355,7 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
                 :itemData="row"
                 :heading="row.name"
                 :editStore="equipmentEditStore"
-                @cancel="equipmentEditStore.isEditMode = false"
+                @cancel="isEditMode = false"
                 @updateCount="updateItemCount('equipment', $event)"
                 @updateOnHand="updateItemOnHand('equipment', $event)"
                 @diffOnHand="diffItemOnHand('equipment', $event)"
@@ -353,11 +366,12 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
       </TabPanel>
       <TabPanel :unmount="false">
         <ToeGridHeader
-          v-model:editMode="equipmentEditStore.isEditMode"
+          v-model:editMode="isEditMode"
           v-model:addMode="personnelEditStore.showAddForm"
           v-model:includeSubordinates="includeSubordinates"
           :selectedCount="selectedPersonnel.length"
           @delete="onDeleteItems('personnel')"
+          :isLocked="isLocked"
         />
         <AddUnitToeItemForm
           v-if="personnelEditStore.showAddForm"
@@ -373,17 +387,18 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
           :columns="personnelColumns"
           :data="aggregatedPersonnel"
           :tableStore="unitPersonnelTableStore"
-          :select="equipmentEditStore.isEditMode"
-          v-model:editMode="equipmentEditStore.isEditMode"
+          :select="isEditMode"
+          v-model:editMode="isEditMode"
           v-model:editedId="editedPersonnelId"
           v-model:selected="selectedPersonnel"
+          :isLocked="isLocked"
         >
           <template #inline-form="{ row }">
             <InlineFormWrapper class="pr-6" details-panel>
               <ModifyUnitToeItemForm
                 :itemData="row"
                 :heading="row.name"
-                @cancel="equipmentEditStore.isEditMode = false"
+                @cancel="isEditMode = false"
                 :editStore="personnelEditStore"
                 @updateCount="updateItemCount('personnel', $event)"
                 @updateOnHand="updateItemOnHand('personnel', $event)"
