@@ -8,10 +8,13 @@ import {
   NUnitPersonnel,
   NUnitSupply,
 } from "@/types/internalModels";
-import { nanoid } from "@/utils";
+import { createNameToIdMapObject, nanoid } from "@/utils";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
-import { convertStateToInternalFormat } from "@/scenariostore/newScenarioStore";
+import {
+  convertStateToInternalFormat,
+  ScenarioState,
+} from "@/scenariostore/newScenarioStore";
 import { RangeRing } from "@/types/scenarioGeoModels";
 
 export type OrbatToTextOptions = {
@@ -41,23 +44,30 @@ export function parseApplicationOrbat(text: string): Unit[] | null {
 type AddUnitHierarchyOptions = {
   newIds?: boolean;
   includeState?: boolean;
+  sourceState?: ScenarioState;
 };
 
 export function addUnitHierarchy(
   rootUnit: Unit,
   parentId: EntityId,
-  scenario: TScenario,
+  targetScenario: TScenario,
   options: AddUnitHierarchyOptions = {},
 ) {
   const newIds = options.newIds ?? true;
   const includeState = options.includeState ?? false;
   const noUndo = true;
-  const { store, unitActions } = scenario;
+  const { store, unitActions } = targetScenario;
+  const { sourceState } = options;
   const { side } = unitActions.getUnitHierarchy(parentId);
-  const tempUnitStatusIdMap: Record<string, string> = {};
-  for (const us of Object.values(store.state.unitStatusMap)) {
-    tempUnitStatusIdMap[us.name] = us.id;
-  }
+  const tempUnitStatusIdMap = createNameToIdMapObject(store.state.unitStatusMap);
+  const supplyNameToIdMap = createNameToIdMapObject(store.state.supplyCategoryMap);
+  const equipmentNameToIdMap = createNameToIdMapObject(store.state.equipmentMap);
+  const personnelNameToIdMap = createNameToIdMapObject(store.state.personnelMap);
+  const sourceSupplyNameToIdMap = createNameToIdMapObject(
+    sourceState?.supplyCategoryMap ?? {},
+  );
+  const targetSupplyUomNameToIdMap = createNameToIdMapObject(store.state.supplyUomMap);
+  const targetSupplyClassMap = createNameToIdMapObject(store.state.supplyClassMap);
 
   store.update((s) => {
     function addUnitStatus(unitStatus: UnitStatus) {
@@ -83,6 +93,58 @@ export function addUnitHierarchy(
           s.personnelMap[name] ||
           unitActions.addPersonnel({ id: name, name }, { noUndo, s });
         personnel.push({ id, count, onHand });
+      });
+
+      unit.supplies?.forEach((unitSupply) => {
+        // use existing one if it exists. For new supplies we use the name as id
+        let supplyId =
+          supplyNameToIdMap[unitSupply.name] ??
+          s.supplyCategoryMap[unitSupply.name ?? ""]?.id;
+        if (!supplyId) {
+          // the supply category does not exist, create it. Use the source state if available
+          const newSupplyCategory = sourceState?.supplyCategoryMap[
+            sourceSupplyNameToIdMap[unitSupply.name]
+          ] ?? {
+            id: unitSupply.name,
+            name: unitSupply.name,
+          };
+
+          let uomId: string | undefined = undefined;
+          if (newSupplyCategory.uom) {
+            const sourceUom = sourceState?.supplyUomMap[newSupplyCategory.uom];
+            // does the uom name exist in the target scenario?
+            uomId = targetSupplyUomNameToIdMap[sourceUom?.name ?? ""];
+            if (sourceUom && !uomId) {
+              uomId = unitActions.addSupplyUom({ ...sourceUom, id: sourceUom.name });
+            }
+          }
+
+          let supplyClassId: string | undefined = undefined;
+          if (newSupplyCategory.supplyClass) {
+            const sourceSupplyClass =
+              sourceState?.supplyClassMap[newSupplyCategory.supplyClass];
+            supplyClassId = targetSupplyClassMap[sourceSupplyClass?.name ?? ""];
+            if (sourceSupplyClass && !supplyClassId) {
+              supplyClassId = unitActions.addSupplyClass({
+                ...sourceSupplyClass,
+                id: sourceSupplyClass.name,
+              });
+            }
+
+            const sc = unitActions.addSupplyCategory(
+              {
+                ...newSupplyCategory,
+                id: newSupplyCategory.name,
+                uom: uomId,
+                supplyClass: supplyClassId,
+              },
+              { noUndo, s },
+            );
+            supplyId = sc.id;
+          }
+        }
+
+        supplies.push({ ...unitSupply, id: supplyId });
       });
 
       unit.rangeRings?.forEach((rr) => {
@@ -121,11 +183,15 @@ export function addUnitHierarchy(
           ? {
               equipment: update.equipment?.map((e) => {
                 const { name, ...rest } = e;
-                return { id: name, ...rest };
+                return { id: equipmentNameToIdMap[name] ?? name, ...rest };
               }),
               personnel: update.personnel?.map((p) => {
                 const { name, ...rest } = p;
-                return { id: name, ...rest };
+                return { id: personnelNameToIdMap[name] ?? name, ...rest };
+              }),
+              supplies: update.supplies?.map((s) => {
+                const { name, ...rest } = s;
+                return { id: supplyNameToIdMap[name] ?? name, ...rest };
               }),
             }
           : undefined;
@@ -133,11 +199,15 @@ export function addUnitHierarchy(
           ? {
               equipment: diff.equipment?.map((e) => {
                 const { name, ...rest } = e;
-                return { id: name, ...rest };
+                return { id: equipmentNameToIdMap[name] ?? name, ...rest };
               }),
               personnel: diff.personnel?.map((p) => {
                 const { name, ...rest } = p;
-                return { id: name, ...rest };
+                return { id: personnelNameToIdMap[name] ?? name, ...rest };
+              }),
+              supplies: diff.supplies?.map((s) => {
+                const { name, ...rest } = s;
+                return { id: supplyNameToIdMap[name] ?? name, ...rest };
               }),
             }
           : undefined;

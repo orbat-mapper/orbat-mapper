@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 January 2025
 
 - Improved display and editing of unit TO&E.
-- Added support for unit supplies.
+- Added support for unit supplies (including partial scenario import).
 
 December 2024
 

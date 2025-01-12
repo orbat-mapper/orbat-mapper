@@ -518,6 +518,7 @@ function doSideImport(importedSideId: string) {
         addUnitHierarchy(unit, addedGroupId, activeScenario, {
           newIds: createNewId,
           includeState: unitImportMode.value === "units-and-state",
+          sourceState: importedState.value,
         });
       }
     }
@@ -560,6 +561,7 @@ function doGroupImport(importedGroupId: string) {
       addUnitHierarchy(unit, addedGroupId, activeScenario, {
         newIds: createNewId,
         includeState: unitImportMode.value === "units-and-state",
+        sourceState: importedState.value,
       });
     }
   });

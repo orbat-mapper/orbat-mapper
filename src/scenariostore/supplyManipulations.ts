@@ -1,6 +1,8 @@
 import { NewScenarioStore, ScenarioState } from "@/scenariostore/newScenarioStore";
 import {
   NSupplyCategory,
+  NSupplyClass,
+  NSupplyUoM,
   SupplyCategoryUpdate,
   SupplyClassUpdate,
   SupplyUomUpdate,
@@ -22,15 +24,22 @@ export function useSupplyManipulations(store: NewScenarioStore) {
     state.unitStateCounter++;
   }
 
-  function addSupplyClass(data: Partial<SupplyClassUpdate>) {
+  function addSupplyClass(
+    data: Partial<NSupplyClass>,
+    { noUndo = false, s = state } = {},
+  ) {
     const newSupplyClass = { id: nanoid(), name: "Supply Class", ...klona(data) };
     if (newSupplyClass.id === undefined) {
       newSupplyClass.id = nanoid();
     }
     const newId = newSupplyClass.id;
-    update((s) => {
+    if (noUndo) {
       s.supplyClassMap[newId] = newSupplyClass;
-    });
+    } else {
+      update((s) => {
+        s.supplyClassMap[newId] = newSupplyClass;
+      });
+    }
     return newId;
   }
 
@@ -120,15 +129,19 @@ export function useSupplyManipulations(store: NewScenarioStore) {
     updateUnitState(unitId);
   }
 
-  function addSupplyUom(data: Partial<SupplyUomUpdate>) {
+  function addSupplyUom(data: Partial<NSupplyUoM>, { noUndo = false, s = state } = {}) {
     const newSupplyUom = { id: nanoid(), name: "Supply UoM", ...klona(data) };
     if (newSupplyUom.id === undefined) {
       newSupplyUom.id = nanoid();
     }
     const newId = newSupplyUom.id;
-    update((s) => {
+    if (noUndo) {
       s.supplyUomMap[newId] = newSupplyUom;
-    });
+    } else {
+      update((s) => {
+        s.supplyUomMap[newId] = newSupplyUom;
+      });
+    }
     return newId;
   }
 
