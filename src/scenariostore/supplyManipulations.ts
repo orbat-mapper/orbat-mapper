@@ -1,4 +1,4 @@
-import { NewScenarioStore } from "@/scenariostore/newScenarioStore";
+import { NewScenarioStore, ScenarioState } from "@/scenariostore/newScenarioStore";
 import {
   NSupplyCategory,
   SupplyCategoryUpdate,
@@ -164,4 +164,18 @@ export function useSupplyManipulations(store: NewScenarioStore) {
 
     updateUnitSupply,
   };
+}
+
+export function getUom(supply: NSupplyCategory, state: ScenarioState) {
+  const uomId = supply.uom ?? "";
+  if (!uomId) return "";
+  const uom = state.supplyUomMap[uomId];
+  return uom?.code ?? uom?.name ?? "";
+}
+
+export function getSupplyClass(supply: NSupplyCategory, state: ScenarioState) {
+  const classId = supply.supplyClass ?? "";
+  if (!classId) return "";
+  const supplyClass = state.supplyClassMap[classId];
+  return supplyClass?.name ?? "";
 }

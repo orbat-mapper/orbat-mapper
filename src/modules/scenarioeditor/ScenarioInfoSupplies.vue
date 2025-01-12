@@ -13,6 +13,7 @@ import { useSupplyCategoryTableStore } from "@/stores/tableStores";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
 import { useToeEditableItems } from "@/composables/toeUtils";
 import { useUiStore } from "@/stores/uiStore";
+import { getSupplyClass, getUom } from "@/scenariostore/supplyManipulations";
 
 const { store, unitActions } = injectStrict(activeScenarioKey);
 
@@ -36,8 +37,8 @@ const supplies = computed(() => {
 
 const columns: ColumnDef<NSupplyCategory>[] = [
   { id: "name", header: "Name", accessorKey: "name", size: 200 },
-  { id: "class", header: "Class", accessorFn: (f) => getSupplyClass(f) },
-  { id: "unit", header: "Unit", accessorFn: (f) => getUom(f), size: 80 },
+  { id: "class", header: "Class", accessorFn: (f) => getSupplyClass(f, store.state) },
+  { id: "unit", header: "Unit", accessorFn: (f) => getUom(f, store.state), size: 80 },
   {
     id: "description",
     header: "Description",
@@ -102,20 +103,6 @@ function onAddSubmit(formData: Omit<NSupplyCategory, "id">) {
   }
   unitActions.addSupplyCategory({ ...formData });
   addForm.value = { ...formData, name: "", description: "" };
-}
-
-function getUom(supply: NSupplyCategory) {
-  const uomId = supply.uom ?? "";
-  if (!uomId) return "";
-  const uom = store.state.supplyUomMap[uomId];
-  return uom?.code ?? uom?.name ?? "";
-}
-
-function getSupplyClass(supply: NSupplyCategory) {
-  const classId = supply.supplyClass ?? "";
-  if (!classId) return "";
-  const supplyClass = store.state.supplyClassMap[classId];
-  return supplyClass?.name ?? "";
 }
 </script>
 
