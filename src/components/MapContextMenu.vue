@@ -52,7 +52,12 @@ const tm = useTimeFormatStore();
 
 const props = defineProps<{ mapRef?: OLMap }>();
 
-const { store, unitActions, geo } = injectStrict(activeScenarioKey);
+const {
+  store,
+  unitActions,
+  geo,
+  helpers: { getUnitById },
+} = injectStrict(activeScenarioKey);
 
 const { onScenarioActionHook } = injectStrict(searchActionsKey);
 const breakpoints = useBreakpoints(breakpointsTailwind);
@@ -100,7 +105,7 @@ function onContextMenu(e: MouseEvent) {
     const layerType = layer?.get("layerType") as LayerType;
     if (layerType === "UNITS") {
       const unitId = feature.getId() as string;
-      const unit = store.state.getUnitById(unitId);
+      const unit = getUnitById(unitId);
       unit && clickedUnits.value.push(unit);
     } else if (layerType === "SCENARIO_FEATURE") {
       const featureId = feature.getId() as string;

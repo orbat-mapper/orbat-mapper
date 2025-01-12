@@ -188,6 +188,7 @@ const {
   store: { undo, redo, canRedo, canUndo, groupUpdate, state },
   unitActions,
   geo: { addUnitPosition },
+  helpers: { getSideById },
 } = injectStrict(activeScenarioKey);
 const mapRef = injectStrict(activeMapKey);
 
@@ -292,7 +293,7 @@ watch(activeParent, (unitOrSideGroup) => {
   if ("sidc" in unitOrSideGroup) {
     currentSid.value = unitOrSideGroup.sidc[SID_INDEX];
   } else {
-    currentSid.value = state.getSideById(unitOrSideGroup._pid).standardIdentity;
+    currentSid.value = getSideById(unitOrSideGroup._pid).standardIdentity;
   }
 });
 

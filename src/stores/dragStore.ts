@@ -17,12 +17,16 @@ export const useDragStore = defineStore("drag", {
 });
 
 export function useActiveUnitStore() {
-  const { unitActions, store } = injectStrict(activeScenarioKey);
+  const {
+    unitActions,
+    store,
+    helpers: { getUnitById, getSideById, getSideGroupById },
+  } = injectStrict(activeScenarioKey);
   const { activeUnitId } = useSelectedItems();
   const activeParentId = injectStrict(activeParentKey);
 
   const activeUnit = computed(
-    () => (activeUnitId.value && store.state.getUnitById(activeUnitId.value)) || null,
+    () => (activeUnitId.value && getUnitById(activeUnitId.value)) || null,
   );
 
   const activeParent = computed(
@@ -39,8 +43,8 @@ export function useActiveUnitStore() {
 
   function resetActiveParent() {
     const firstSideId = store.state.sides[0];
-    const firstGroup = store.state.getSideById(firstSideId)?.groups[0];
-    activeParentId.value = store.state.getSideGroupById(firstGroup)?.subUnits[0];
+    const firstGroup = getSideById(firstSideId)?.groups[0];
+    activeParentId.value = getSideGroupById(firstGroup)?.subUnits[0];
   }
 
   return {

@@ -45,6 +45,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     store: { state, onUndoRedo },
     geo,
     unitActions: { getCombinedSymbolOptions },
+    helpers: { getUnitById },
   } = activeScenario || injectStrict(activeScenarioKey);
 
   const unitLayer = createUnitLayer();
@@ -55,7 +56,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     let unitStyle = unitStyleCache.get(unitId);
 
     if (!unitStyle) {
-      const unit = state.getUnitById(unitId);
+      const unit = getUnitById(unitId);
       if (unit) {
         const symbolOptions = getCombinedSymbolOptions(unit);
         unitStyle = createUnitStyle(unit, symbolOptions);
@@ -231,8 +232,8 @@ export function useUnitSelectInteraction(
   const { selectedUnitIds: selectedIds, clear: clearSelectedItems } = useSelectedItems();
   const {
     geo,
-    store: { state },
     unitActions: { getCombinedSymbolOptions },
+    helpers: { getUnitById },
   } = injectStrict(activeScenarioKey);
 
   const unitSelectInteraction = new Select({
@@ -247,7 +248,7 @@ export function useUnitSelectInteraction(
     let unitStyle = selectedUnitStyleCache.get(unitId);
 
     if (!unitStyle) {
-      const unit = state.getUnitById(unitId);
+      const unit = getUnitById(unitId);
       if (unit) {
         const symbolOptions = getCombinedSymbolOptions(unit);
         unitStyle = createUnitStyle(unit, {

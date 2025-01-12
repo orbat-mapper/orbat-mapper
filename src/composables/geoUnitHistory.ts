@@ -69,6 +69,7 @@ export function useUnitHistory(
     geo,
     unitActions,
     store: { onUndoRedo, state },
+    helpers: { getUnitById },
   } = injectStrict(activeScenarioKey);
 
   const fmt = useTimeFormatStore();
@@ -91,7 +92,7 @@ export function useUnitHistory(
   function handleCtrlClickEvent(event: MapBrowserEvent<MouseEvent>) {
     const clickPosition = toLonLat(olMap.getEventCoordinate(event.originalEvent));
     selectedUnitIds.value.forEach((unitId) => {
-      const unit = state.getUnitById(unitId);
+      const unit = getUnitById(unitId);
       if (!unit) return;
       const lastLocationEntry = unit.state?.filter((s) => s.location).pop();
       let newTime = undefined;
@@ -341,7 +342,7 @@ export function useUnitHistory(
     arcLayerSource.clear();
     if (!showHistoryRef.value) return;
     selectedUnitIds.value.forEach((unitId) => {
-      const unit = state.getUnitById(unitId);
+      const unit = getUnitById(unitId);
       if (!unit) return;
 
       const { legFeatures, waypointFeatures, viaPointFeatures, arcFeatures } =

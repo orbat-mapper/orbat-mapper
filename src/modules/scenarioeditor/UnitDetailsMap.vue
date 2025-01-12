@@ -26,7 +26,11 @@ interface Props {
 const props = defineProps<Props>();
 
 const activeScenario = injectStrict(activeScenarioKey);
-const { unitActions, store } = activeScenario;
+const {
+  unitActions,
+  store,
+  helpers: { getUnitById },
+} = activeScenario;
 const toeActions = useToeActions();
 const { selectedUnitIds } = useSelectedItems();
 
@@ -46,7 +50,7 @@ const rangeRings = computed(() => {
     const usedNames = new Set<string>();
     const usedNameCounter = new Map<string, number>();
     for (const unitId of selectedUnitIds.value) {
-      const unit = store.state.getUnitById(unitId);
+      const unit = getUnitById(unitId);
       if (!unit?.rangeRings) continue;
       for (const ring of unit.rangeRings ?? []) {
         usedNameCounter.set(ring.name, (usedNameCounter.get(ring.name) ?? 0) + 1);

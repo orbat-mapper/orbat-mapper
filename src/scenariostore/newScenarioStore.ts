@@ -69,9 +69,9 @@ export interface ScenarioState {
   personnelMap: Record<string, NPersonnelData>;
   supplyCategoryMap: Record<string, NSupplyCategory>;
   currentTime: number;
-  getUnitById: (id: EntityId) => NUnit;
-  getSideById: (id: EntityId) => NSide;
-  getSideGroupById: (id: EntityId) => NSideGroup;
+  // getUnitById: (id: EntityId) => NUnit;
+  // getSideById: (id: EntityId) => NSide;
+  // getSideGroupById: (id: EntityId) => NSideGroup;
   rangeRingGroupMap: Record<string, NRangeRingGroup>;
   unitStatusMap: Record<string, NUnitStatus>;
   supplyClassMap: Record<string, NSupplyClass>;
@@ -450,15 +450,15 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     settingsStateCounter,
     unitStatusMap,
     mapSettings,
-    getUnitById(id: EntityId) {
-      return this.unitMap[id];
-    },
-    getSideById(id: EntityId) {
-      return this.sideMap[id];
-    },
-    getSideGroupById(id: EntityId) {
-      return this.sideGroupMap[id];
-    },
+    // getUnitById(id: EntityId) {
+    //   return this.unitMap[id];
+    // },
+    // getSideById(id: EntityId) {
+    //   return this.sideMap[id];
+    // },
+    // getSideGroupById(id: EntityId) {
+    //   return this.sideGroupMap[id];
+    // },
   };
 }
 
@@ -485,6 +485,7 @@ export type ActionLabel =
 export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);
   const store = useImmerStore<ScenarioState, ActionLabel>(inputState);
+
   useScenarioTime(store).setCurrentTime(store.state.currentTime);
   return store;
 }

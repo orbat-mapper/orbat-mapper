@@ -107,11 +107,12 @@ const { activeUnitId } = useSelectedItems();
 const {
   unitActions,
   store: { state },
+  helpers: { getUnitById },
 } = injectStrict(activeScenarioKey);
 const activeUnit = computed(
   () =>
     (activeUnitId.value &&
-      unitActions.expandUnitWithSymbolOptions(state.getUnitById(activeUnitId.value))) ||
+      unitActions.expandUnitWithSymbolOptions(getUnitById(activeUnitId.value))) ||
     null,
 );
 

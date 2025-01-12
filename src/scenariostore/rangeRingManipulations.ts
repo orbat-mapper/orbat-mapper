@@ -8,7 +8,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
   const { state, update } = store;
   function addRangeRing(unitId: EntityId, rangeRing: RangeRing) {
     update((s) => {
-      const unit = s.getUnitById(unitId);
+      const unit = s.unitMap[unitId];
       if (!unit) return;
       if (!unit.rangeRings) unit.rangeRings = [];
       // does it already exist?
@@ -23,7 +23,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
 
   function deleteRangeRing(unitId: EntityId, index: number) {
     update((s) => {
-      const unit = s.getUnitById(unitId);
+      const unit = s.unitMap[unitId];
       if (!unit) return;
       if (!unit.rangeRings) return;
       unit.rangeRings.splice(index, 1);
@@ -31,7 +31,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
   }
 
   function deleteRangeRingByName(unitId: EntityId, name: string) {
-    const unit = state.getUnitById(unitId);
+    const unit = state.unitMap[unitId];
     if (!unit?.rangeRings) return;
     const index = unit.rangeRings.findIndex((r) => r.name === name);
     if (index < 0) return;
@@ -62,7 +62,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
     data: Partial<RangeRing>,
     { addIfNameDoesNotExists = false } = {},
   ) {
-    const unit = state.getUnitById(unitId);
+    const unit = state.unitMap[unitId];
     if (!unit?.rangeRings) return;
     const index = unit.rangeRings.findIndex((r) => r.name === name);
     if (index < 0) {

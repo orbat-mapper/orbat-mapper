@@ -35,6 +35,7 @@ const props = defineProps<{ item: BreadcrumbItemType }>();
 const {
   store: { state },
   unitActions: { isUnitLocked },
+  helpers: { getUnitById },
 } = injectStrict(activeScenarioKey);
 
 const dragItemRef = ref<HTMLElement | null>(null);
@@ -43,7 +44,7 @@ let isDragged = ref(false);
 let dndCleanup: CleanupFn = () => {};
 onMounted(() => {
   if (!dragItemRef.value || !props.item.id) return;
-  const unit = state.getUnitById(props.item.id);
+  const unit = getUnitById(props.item.id);
   if (!unit) {
     return;
   }

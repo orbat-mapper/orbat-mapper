@@ -17,6 +17,7 @@ import { usePlaybackStore } from "@/stores/playbackStore";
 const {
   unitActions,
   store: { state },
+  helpers: { getUnitById },
 } = injectStrict(activeScenarioKey);
 const uiStore = useUiStore();
 const activeUnitStore = useActiveUnitStore();
@@ -35,11 +36,11 @@ const playback = usePlaybackStore();
 const { selectedWaypointIds } = useSelectedWaypoints();
 
 const selectedUnits = computed(() =>
-  [...selectedUnitIds.value].map((id) => state.getUnitById(id)),
+  [...selectedUnitIds.value].map((id) => getUnitById(id)),
 );
 
 const activeUnit = computed(
-  () => (activeUnitId.value && state.getUnitById(activeUnitId.value)) || null,
+  () => (activeUnitId.value && getUnitById(activeUnitId.value)) || null,
 );
 
 const createNewUnit = () => {
@@ -64,7 +65,7 @@ function handleZoomShortcut(e: KeyboardEvent) {
     onFeatureAction(fIds.length > 1 ? fIds : fIds[0], "zoom");
   } else if (selectedUnitIds.value.size || activeUnit.value) {
     if (selectedUnitIds.value.size > 1) {
-      const units = [...selectedUnitIds.value].map((id) => state.getUnitById(id));
+      const units = [...selectedUnitIds.value].map((id) => getUnitById(id));
       onUnitAction(units, UnitActions.Zoom);
     } else onUnitAction(activeUnit.value, UnitActions.Zoom);
   }
@@ -76,7 +77,7 @@ function handlePanShortcut(e: KeyboardEvent) {
     onFeatureAction(fIds.length > 1 ? fIds : fIds[0], "pan");
   } else if (selectedUnitIds.value.size || activeUnit.value) {
     if (selectedUnitIds.value.size > 1) {
-      const units = [...selectedUnitIds.value].map((id) => state.getUnitById(id));
+      const units = [...selectedUnitIds.value].map((id) => getUnitById(id));
       onUnitAction(units, UnitActions.Pan);
     } else onUnitAction(activeUnit.value, UnitActions.Pan);
   }

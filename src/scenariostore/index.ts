@@ -4,6 +4,8 @@ import { useUnitManipulations } from "./unitManipulations";
 import { useScenarioIO } from "./io";
 import { useScenarioTime } from "./time";
 import { useGeo } from "@/scenariostore/geo";
+import { EntityId } from "@/types/base";
+import { useStateHelpers } from "@/scenariostore/helpers";
 
 const globalStoreRef = shallowRef<NewScenarioStore>({} as any);
 
@@ -19,6 +21,7 @@ export function useScenario() {
         time: useScenarioTime(globalStoreRef.value),
         io: useScenarioIO(globalStoreRef),
         geo: useGeo(globalStoreRef.value),
+        helpers: useStateHelpers(globalStoreRef.value),
       };
     }),
     isLoading,

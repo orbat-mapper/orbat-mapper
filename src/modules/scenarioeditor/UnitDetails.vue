@@ -227,6 +227,7 @@ const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
 const {
   store,
+  helpers: { getUnitById },
   geo: { addUnitPosition },
   unitActions: {
     updateUnit,
@@ -269,7 +270,7 @@ const tabList = computed(() =>
 );
 
 const unit = computed(() => {
-  return store.state.getUnitById(props.unitId);
+  return getUnitById(props.unitId);
 });
 
 const unitStatus = computed(() => {
@@ -349,7 +350,7 @@ const uiStore = useUiStore();
 const { selectedUnitIds, clear: clearSelection } = useSelectedItems();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 const selectedUnits = computed(() =>
-  [...selectedUnitIds.value].map((id) => store.state.getUnitById(id)),
+  [...selectedUnitIds.value].map((id) => getUnitById(id)),
 );
 onGetLocation((location) => addUnitPosition(props.unitId, location));
 const isEditMode = ref(false);

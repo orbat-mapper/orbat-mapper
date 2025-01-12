@@ -93,7 +93,7 @@ export function useGeo(store: NewScenarioStore) {
     let newState: CurrentState | null = null;
     update(
       (s) => {
-        const u = s.getUnitById(unitId);
+        const u = s.unitMap[unitId];
         const t = atTime ?? s.currentTime;
         newState = { t, location: coordinates };
         if (t === s.currentTime) u._state = newState;

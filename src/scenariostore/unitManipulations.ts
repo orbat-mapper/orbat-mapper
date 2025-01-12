@@ -871,7 +871,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
   }
 
   function convertStateEntryToInitialLocation(unitId: EntityId, index: number) {
-    const u = state.getUnitById(unitId);
+    const u = state.unitMap[unitId];
     const stateEntry = u?.state?.[index];
     if (!stateEntry?.location) return;
     const location = [...stateEntry.location];

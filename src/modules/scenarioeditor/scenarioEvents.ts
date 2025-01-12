@@ -5,7 +5,7 @@ import { useGeoStore } from "@/stores/geoStore";
 export function useScenarioEvents(olMap: OLMap) {
   const {
     time: { onGoToScenarioEventEvent },
-    store: { state },
+    helpers: { getUnitById },
   } = useActiveScenario();
   const geoStore = useGeoStore();
 
@@ -14,7 +14,7 @@ export function useScenarioEvents(olMap: OLMap) {
     if (!where) return;
     const { maxZoom } = where;
     if (where.type === "units") {
-      const units = where.units.map((u) => state.getUnitById(u));
+      const units = where.units.map((u) => getUnitById(u));
       if (units) {
         geoStore.zoomToUnits(units, { duration: 900, maxZoom });
       }

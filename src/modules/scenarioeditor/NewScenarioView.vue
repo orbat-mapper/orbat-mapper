@@ -252,11 +252,14 @@ async function create() {
   scenario.value.io.loadFromObject(newScenario.value);
   scenario.value.time.setCurrentTime(startTime);
   const { state, clearUndoRedoStack } = scenario.value.store;
-  const { unitActions } = scenario.value;
+  const {
+    unitActions,
+    helpers: { getSideById },
+  } = scenario.value;
   if (!noInitialOrbat.value) {
     form.sides.forEach((sideData) => {
       const sideId = unitActions.addSide(sideData, { markAsNew: false });
-      const parentId = state.getSideById(sideId).groups[0];
+      const parentId = getSideById(sideId).groups[0];
       sideData.units.forEach((u) => {
         const sidc = new Sidc("10031000000000000000");
         sidc.standardIdentity = sideData.standardIdentity;

@@ -29,7 +29,11 @@ import { injectStrict } from "@/utils";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 import { UnitSymbolOptions } from "@/types/scenarioModels";
 
-const { store, unitActions } = injectStrict(activeScenarioKey);
+const {
+  store,
+  unitActions,
+  helpers: { getSideById },
+} = injectStrict(activeScenarioKey);
 const props = defineProps<{ sideGroupId: EntityId }>();
 const emit = defineEmits(["close"]);
 
@@ -42,7 +46,7 @@ const sideGroup = computed(() =>
   props.sideGroupId ? store?.state.sideGroupMap[props.sideGroupId] : undefined,
 );
 
-const side = computed(() => store.state.getSideById(sideGroup.value?._pid!));
+const side = computed(() => getSideById(sideGroup.value?._pid!));
 watch(
   () => props.sideGroupId,
   (sideGroupId) => {

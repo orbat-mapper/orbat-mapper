@@ -18,6 +18,7 @@ export function useScenarioSearch(
     unitActions,
     store: { state },
     geo,
+    helpers: { getUnitById },
   } = injectStrict(activeScenarioKey);
 
   function searchUnits(query: string, limitToPosition = false): UnitSearchResult[] {
@@ -28,12 +29,12 @@ export function useScenarioSearch(
     });
     return hits
       .filter((h) => {
-        if (limitToPosition) return state.getUnitById(h.obj.id)?._state?.location;
+        if (limitToPosition) return getUnitById(h.obj.id)?._state?.location;
         return true;
       })
       .slice(0, 10)
       .map((u, i) => {
-        const parent = u.obj._pid && ({ ...state.getUnitById(u.obj._pid) } as NUnit);
+        const parent = u.obj._pid && ({ ...getUnitById(u.obj._pid) } as NUnit);
         if (parent) {
           parent.symbolOptions = unitActions.getCombinedSymbolOptions(parent);
         }

@@ -115,7 +115,7 @@ function useRangeRingStyles(scn: TScenario) {
         const parts = id.split("-");
         const index = parts.pop();
         const unitId = parts.join("-");
-        const unit = scn.store.state.getUnitById(unitId);
+        const unit = scn.helpers.getUnitById(unitId);
         const ring = unit.rangeRings?.[index];
         style = ring?.style
           ? createSimpleStyle({ fill: null, stroke: "red", ...ring.style })

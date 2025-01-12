@@ -56,8 +56,13 @@ function mapField(field: any): string | number | Date {
 }
 
 export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {}) {
-  const { geo, store, unitActions, io } =
-    options.activeScenario || injectStrict(activeScenarioKey);
+  const {
+    geo,
+    store,
+    unitActions,
+    io,
+    helpers: { getUnitById },
+  } = options.activeScenario || injectStrict(activeScenarioKey);
   const { sideMap } = store.state;
 
   function convertUnitsToGeoJson(units: NUnit[], options: Partial<GeoJsonSettings> = {}) {
@@ -288,9 +293,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
 
   async function downloadAsSpatialIllusions(opts: UnitGeneratorSettings) {
     const { rootUnit } = opts;
-    const hierarchy = unitActions.expandUnitWithSymbolOptions(
-      store.state.getUnitById(rootUnit),
-    );
+    const hierarchy = unitActions.expandUnitWithSymbolOptions(getUnitById(rootUnit));
 
     const d = convertUnit(hierarchy, 0);
     function convertUnit(unit: Unit, level: number): SpatialIllusionsOrbat {

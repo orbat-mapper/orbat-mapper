@@ -297,7 +297,11 @@ provide(searchActionsKey, {
 const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
 
 const { loadFromObject } = props.activeScenario.io;
-const { unitActions, io } = props.activeScenario;
+const {
+  unitActions,
+  io,
+  helpers: { getUnitById },
+} = props.activeScenario;
 const route = useRoute();
 const router = useRouter();
 const { copy: copyToClipboard, copied } = useClipboard();
@@ -412,7 +416,7 @@ async function onScenarioAction(action: ScenarioActions) {
     const activeUnitId = selectedItems.activeUnitId.value;
     let initialSidc = "10031000001211000000";
     if (activeUnitId) {
-      initialSidc = state.getUnitById(activeUnitId).sidc;
+      initialSidc = getUnitById(activeUnitId).sidc;
     }
     await getModalSidc(initialSidc, { title: "Symbol browser", initialTab: 1 });
   }
