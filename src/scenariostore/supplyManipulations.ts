@@ -31,6 +31,7 @@ export function useSupplyManipulations(store: NewScenarioStore) {
     update((s) => {
       s.supplyClassMap[newId] = newSupplyClass;
     });
+    return newId;
   }
 
   function updateSupplyClass(id: string, data: SupplyClassUpdate) {
@@ -128,6 +129,7 @@ export function useSupplyManipulations(store: NewScenarioStore) {
     update((s) => {
       s.supplyUomMap[newId] = newSupplyUom;
     });
+    return newId;
   }
 
   function updateSupplyUom(id: string, data: SupplyUomUpdate) {

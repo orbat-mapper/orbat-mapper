@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, h, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { injectStrict, moveItemMutable } from "@/utils";
+import { createNameToIdMap, injectStrict, moveItemMutable } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import {
   mapReinforcedStatus2Field,
@@ -22,7 +22,7 @@ import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { useImportStore } from "@/stores/importExportStore";
-import { NSideGroup, NUnit } from "@/types/internalModels";
+import { NSideGroup, NSupplyCategory, NUnit } from "@/types/internalModels";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
 import InputRadio from "@/components/InputRadio.vue";
 import MRadioGroup from "@/components/MRadioGroup.vue";
@@ -33,6 +33,7 @@ import SimpleDivider from "@/components/SimpleDivider.vue";
 import { addUnitHierarchy } from "@/importexport/convertUtils";
 import dayjs from "dayjs";
 import InlineAlertWarning from "@/components/InlineAlertWarning.vue";
+import { getSupplyClass, getUom } from "@/scenariostore/supplyManipulations";
 
 interface Props {
   data: Scenario;
@@ -49,7 +50,14 @@ const store = useImportStore();
 const { state: targetState } = scnStore;
 
 const importMode = ref<
-  "side" | "group" | "units" | "layers" | "statuses" | "equipment" | "personnel"
+  | "side"
+  | "group"
+  | "units"
+  | "layers"
+  | "statuses"
+  | "equipment"
+  | "personnel"
+  | "supplyCategories"
 >("side");
 const unitImportMode = ref<"units-only" | "units-and-state" | "state-only">("state-only");
 const stateMergeMode = ref<"replace" | "add_new">("replace");
@@ -60,7 +68,7 @@ const selectedItems = ref<(Unit | SideGroup)[]>([]);
 const selectedEquipment = ref<UnitEquipment[]>([]);
 const selectedPersonnel = ref<UnitPersonnel[]>([]);
 const selectedStatuses = ref<UnitStatus[]>([]);
-
+const selectedSupplyCategories = ref<NSupplyCategory[]>([]);
 const importedState = computed(() => {
   return prepareScenario(props.data);
 });
@@ -156,8 +164,12 @@ const currentUnitStatuses = computed(() => {
   return props.data.settings?.statuses ?? [];
 });
 
+const currentSupplyCategories = computed(() => {
+  return Object.values(importedState.value.supplyCategoryMap);
+});
+
 const isSettingsImport = computed(() =>
-  ["statuses", "equipment", "personnel"].includes(importMode.value),
+  ["statuses", "equipment", "personnel", "supplyCategories"].includes(importMode.value),
 );
 
 const hasExistingUnits = computed(() => {
@@ -310,6 +322,27 @@ const statusColumns: ColumnDef<UnitStatus>[] = [
   },
 ];
 
+const supplyCategoryColumns: ColumnDef<NSupplyCategory>[] = [
+  { id: "name", header: "Name", accessorKey: "name", size: 200 },
+  {
+    id: "class",
+    header: "Class",
+    accessorFn: (f) => getSupplyClass(f, importedState.value),
+  },
+  {
+    id: "unit",
+    header: "Unit",
+    accessorFn: (f) => getUom(f, importedState.value),
+    size: 80,
+  },
+  {
+    id: "description",
+    header: "Description",
+    accessorKey: "description",
+    size: 100,
+  },
+];
+
 // check that the item is a unit
 function isUnit(item: Unit | SideGroup): item is Unit {
   return "sidc" in item;
@@ -323,6 +356,8 @@ async function onFormSubmit(e: Event) {
     doPersonnelImport(selectedPersonnel.value);
   } else if (importMode.value === "statuses") {
     doStatusImport(selectedStatuses.value);
+  } else if (importMode.value === "supplyCategories") {
+    doSupplyCategoryImport(selectedSupplyCategories.value);
   } else if (unitImportMode.value === "state-only") {
     doStateOnlyImport(selectedUnitIds);
   } else if (importMode.value === "side") {
@@ -342,9 +377,7 @@ async function onFormSubmit(e: Event) {
 }
 
 function doEquipmentImport(selectedEquipment: UnitEquipment[]) {
-  const nameToIdMap = new Map(
-    Object.values(targetState.equipmentMap).map((e) => [e.name, e.id]),
-  );
+  const nameToIdMap = createNameToIdMap(targetState.equipmentMap);
   scnStore.groupUpdate(() => {
     for (const equipment of selectedEquipment) {
       if (nameToIdMap.has(equipment.name)) {
@@ -356,9 +389,8 @@ function doEquipmentImport(selectedEquipment: UnitEquipment[]) {
 }
 
 function doPersonnelImport(selectedPersonnel: UnitPersonnel[]) {
-  const nameToIdMap = new Map(
-    Object.values(targetState.personnelMap).map((e) => [e.name, e.id]),
-  );
+  const nameToIdMap = createNameToIdMap(targetState.personnelMap);
+
   scnStore.groupUpdate(() => {
     for (const personnel of selectedPersonnel) {
       if (nameToIdMap.has(personnel.name)) {
@@ -370,15 +402,54 @@ function doPersonnelImport(selectedPersonnel: UnitPersonnel[]) {
 }
 
 function doStatusImport(selectedStatuses: UnitStatus[]) {
-  const nameToIdMap = new Map(
-    Object.values(targetState.unitStatusMap).map((e) => [e.name, e.id]),
-  );
+  const nameToIdMap = createNameToIdMap(targetState.unitStatusMap);
   scnStore.groupUpdate(() => {
     for (const status of selectedStatuses) {
       if (nameToIdMap.has(status.name)) {
         continue;
       }
       unitActions.addUnitStatus(status);
+    }
+  });
+}
+
+function doSupplyCategoryImport(selectedSupplyCategories: NSupplyCategory[]) {
+  const supplyCategoryNameToIdMap = createNameToIdMap(targetState.supplyCategoryMap);
+  const supplyClassNameToIdMap = createNameToIdMap(targetState.supplyClassMap);
+  const supplyUomNameToIdMap = createNameToIdMap(targetState.supplyUomMap);
+
+  scnStore.groupUpdate(() => {
+    for (const supplyCategory of selectedSupplyCategories) {
+      // skip supply categories with same name as existing ones
+      if (supplyCategoryNameToIdMap.has(supplyCategory.name)) {
+        continue;
+      }
+      let supplyClassId = supplyCategory.supplyClass;
+      // check if supply class exists
+      const supplyClass =
+        importedState.value.supplyClassMap[supplyCategory.supplyClass ?? ""];
+      if (supplyClass) {
+        supplyClassId = supplyClassNameToIdMap.get(supplyClass.name)!;
+
+        if (!supplyClassId) {
+          supplyClassId = unitActions.addSupplyClass(supplyClass);
+        }
+      }
+      // check if uom exists
+      let uomId = supplyCategory.uom;
+      const uom = importedState.value.supplyUomMap[supplyCategory.uom ?? ""];
+      if (uom) {
+        uomId = supplyUomNameToIdMap.get(uom.name);
+        if (!uomId) {
+          uomId = unitActions.addSupplyUom(uom);
+        }
+      }
+
+      unitActions.addSupplyCategory({
+        ...supplyCategory,
+        supplyClass: supplyClassId,
+        uom: uomId,
+      });
     }
   });
 }
@@ -525,6 +596,10 @@ function doGroupImport(importedGroupId: string) {
             >Personnel categories</InputRadio
           >
           <InputRadio v-model="importMode" value="statuses">Unit statuses</InputRadio>
+          <InputRadio v-model="importMode" value="supplyCategories"
+            >Supply categories</InputRadio
+          >
+
           <!--          <InputRadio v-model="importMode" value="units" disabled>Units</InputRadio>-->
           <!--          <InputRadio v-model="importMode" value="features" disabled>Layers</InputRadio>-->
         </MRadioGroup>
@@ -695,6 +770,18 @@ function doGroupImport(importedGroupId: string) {
           :columns="statusColumns"
           :row-height="40"
           v-model:selected="selectedStatuses"
+          select
+          select-all
+          class="mt-4 max-h-[40vh]"
+        />
+      </template>
+      <template v-else-if="importMode === 'supplyCategories'">
+        <PanelSubHeading class="mt-4">Supply categories</PanelSubHeading>
+        <DataGrid
+          :data="currentSupplyCategories"
+          :columns="supplyCategoryColumns"
+          :row-height="40"
+          v-model:selected="selectedSupplyCategories"
           select
           select-all
           class="mt-4 max-h-[40vh]"
