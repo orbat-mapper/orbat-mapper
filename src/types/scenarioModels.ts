@@ -109,12 +109,18 @@ export interface Unit {
   template?: EntityId;
   properties?: UnitProperties;
   locked?: boolean;
+  style?: UnitStyle;
   // internal runtime only state
   _state?: CurrentState | null;
   _pid?: EntityId; // parent
   _gid?: EntityId; // group
   _sid?: EntityId; // side
   _isOpen?: boolean;
+}
+
+export interface UnitStyle {
+  minZoom?: number; //[0-24]
+  maxZoom?: number;
 }
 
 export type SpeedUnitOfMeasure = "km/h" | "mph" | "knots" | "m/s" | "ft/s";

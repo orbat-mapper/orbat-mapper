@@ -39,6 +39,16 @@ import { coordEach } from "@turf/meta";
 import { centroid } from "@turf/centroid";
 
 import { klona } from "klona";
+import View from "ol/View";
+let zoomResolutions: number[] = [];
+
+export function calculateZoomToResolution(view: View) {
+  for (let i = 0; i <= 24; i++) {
+    zoomResolutions.push(view.getResolutionForZoom(i));
+  }
+}
+
+calculateZoomToResolution(new View());
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const {
@@ -55,13 +65,21 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     const unitId = feature?.getId() as string;
     let unitStyle = unitStyleCache.get(unitId);
 
+    const unit = getUnitById(unitId);
     if (!unitStyle) {
-      const unit = getUnitById(unitId);
       if (unit) {
         const symbolOptions = getCombinedSymbolOptions(unit);
         unitStyle = createUnitStyle(unit, symbolOptions);
         unitStyleCache.set(unitId, unitStyle);
       }
+    }
+    const { style = {} } = unit;
+
+    if (
+      ("minZoom" in style && resolution > zoomResolutions[style.minZoom ?? 0]) ||
+      ("maxZoom" in style && resolution < zoomResolutions[style.maxZoom ?? 24])
+    ) {
+      return;
     }
 
     return unitStyle;

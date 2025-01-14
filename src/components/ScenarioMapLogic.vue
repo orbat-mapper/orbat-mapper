@@ -13,6 +13,7 @@ import {
 import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import { storeToRefs } from "pinia";
 import {
+  calculateZoomToResolution,
   useMapDrop,
   useMoveInteraction,
   useUnitLayer,
@@ -73,6 +74,8 @@ const { isDragging, formattedPosition } = useMapDrop(mapRef, unitLayer);
 const olMap = props.olMap;
 mapRef.value = olMap;
 geoStore.olMap = olMap;
+
+calculateZoomToResolution(olMap.getView());
 
 const unitLayerGroup = new LayerGroup({
   layers: [unitLayer],
