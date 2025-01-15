@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import { NUnit } from "@/types/internalModels";
 import { RangeRing, RangeRingStyle } from "@/types/scenarioGeoModels";
@@ -16,6 +16,11 @@ import RingStylePopover from "@/modules/scenarioeditor/RingStylePopover.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { useToeActions } from "@/composables/scenarioActions";
 import { useSelectedItems } from "@/stores/selectedStore";
+import PanelHeading from "@/components/PanelHeading.vue";
+import ToggleField from "@/components/ToggleField.vue";
+import { useMapViewStore } from "@/stores/mapViewStore";
+import ZoomSlider from "@/components/ZoomSlider.vue";
+import ZoomSelector from "@/components/ZoomSelector.vue";
 
 interface Props {
   unit: NUnit;
@@ -33,6 +38,10 @@ const {
 } = activeScenario;
 const toeActions = useToeActions();
 const { selectedUnitIds } = useSelectedItems();
+const mapView = useMapViewStore();
+
+const range = ref<[number, number]>([0, 24]);
+const limitVisibility = ref(false);
 
 const editedRangeRing = ref<RangeRing>({
   name: "",
@@ -211,13 +220,36 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
       break;
   }
 }
+
+watch(range, ([min, max], [oldMin, oldMax]) => {
+  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
+    store.groupUpdate(() => {
+      selectedUnitIds.value.forEach((unitId) => {
+        const unit = getUnitById(unitId);
+        if (!unit) return;
+        const unitStyle = unit.style ?? {};
+        const newStyle = { ...unitStyle, minZoom: min, maxZoom: max };
+        unitActions.updateUnit(unit.id, { style: newStyle });
+      });
+    });
+  } else {
+    const unit = getUnitById(props.unit.id);
+    if (!unit) return;
+    const unitStyle = props.unit.style ?? {};
+    const newStyle = { ...unitStyle, minZoom: min, maxZoom: max };
+    unitActions.updateUnit(props.unit.id, { style: newStyle });
+  }
+});
 </script>
 <template>
-  <div class="mt-2 flex items-center">
-    <div class="flex-auto">
-      <h1 class="text-sm font-semibold leading-5 text-gray-900">Range rings</h1>
-      <!--      <p class="mt-1.5 text-sm text-red-700">Work in progress!</p>-->
-    </div>
+  <div class="mt-4 flex items-start gap-4">
+    <!--    <ToggleField v-model="limitVisibility" class="mt-2">Visibility</ToggleField>-->
+    <span class="mt-2 text-sm font-medium">Visibility</span>
+    <ZoomSelector v-model="range" class="mt-4 flex-auto" />
+  </div>
+  <div class="mt-4 flex items-center justify-between">
+    <PanelHeading>Range rings</PanelHeading>
+
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
         @click="addRangeRing()"

@@ -7,6 +7,8 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import type Select from "ol/interaction/Select";
 import ScenarioMapLogic from "@/components/ScenarioMapLogic.vue";
 import MapContextMenu from "@/components/MapContextMenu.vue";
+import { useMapViewStore } from "@/stores/mapViewStore";
+import View from "ol/View";
 
 const emit = defineEmits<{
   (
@@ -21,6 +23,7 @@ const emit = defineEmits<{
 
 const mapLogicComponent = ref<InstanceType<typeof ScenarioMapLogic> | null>(null);
 const mapSettings = useMapSettingsStore();
+const mapViewStore = useMapViewStore();
 const mapRef = shallowRef<OLMap>();
 const geoStore = useGeoStore();
 
@@ -28,6 +31,10 @@ const onMapReady = (olMap: OLMap) => {
   mapRef.value = olMap;
   geoStore.olMap = olMap;
 };
+
+function onMoveEnd({ view }: { view: View }) {
+  mapViewStore.zoomLevel = view.getZoom() ?? 0;
+}
 </script>
 <template>
   <div class="relative bg-white dark:bg-gray-900">
@@ -37,6 +44,7 @@ const onMapReady = (olMap: OLMap) => {
         @dragover.prevent
         :base-layer-name="mapSettings.baseLayerName"
         @contextmenu="onContextMenu"
+        @moveend="onMoveEnd"
       />
     </MapContextMenu>
 

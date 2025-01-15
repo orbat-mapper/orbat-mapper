@@ -157,7 +157,11 @@
         <UnitDetailsSupplies :unit="unit" :is-locked="isLocked" />
       </TabPanel>
       <TabPanel>
-        <UnitDetailsMap :unit="unit" :is-multi-mode="isMultiMode" :is-locked="isLocked" />
+        <UnitDetailsMapDisplay
+          :unit="unit"
+          :is-multi-mode="isMultiMode"
+          :is-locked="isLocked"
+        />
       </TabPanel>
       <TabPanel>
         <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
@@ -209,7 +213,7 @@ import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { TabPanel } from "@headlessui/vue";
 import EditableLabel from "@/components/EditableLabel.vue";
-import UnitDetailsMap from "@/modules/scenarioeditor/UnitDetailsMap.vue";
+import UnitDetailsMapDisplay from "@/modules/scenarioeditor/UnitDetailsMapDisplay.vue";
 import { useTabStore } from "@/stores/tabStore";
 import { storeToRefs } from "pinia";
 import UnitDetailsToe from "@/modules/scenarioeditor/UnitDetailsToe.vue";
@@ -254,7 +258,7 @@ const tabList = computed(() =>
         "Unit state",
         { label: "TO&E", title: "Table of organization and equipment" },
         "Supplies",
-        "Map overlay",
+        "Map display",
         "Properties",
         "Debug",
       ]
@@ -264,7 +268,7 @@ const tabList = computed(() =>
         "Unit state",
         { label: "TO&E", title: "Table of organization and equipment" },
         "Supplies",
-        "Map overlay",
+        "Map display",
         "Properties",
       ],
 );

@@ -264,9 +264,8 @@ export function useUnitSelectInteraction(
   function selectedUnitStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
     let unitStyle = selectedUnitStyleCache.get(unitId);
-
+    const unit = getUnitById(unitId);
     if (!unitStyle) {
-      const unit = getUnitById(unitId);
       if (unit) {
         const symbolOptions = getCombinedSymbolOptions(unit);
         unitStyle = createUnitStyle(unit, {
@@ -275,9 +274,16 @@ export function useUnitSelectInteraction(
           infoOutlineWidth: 8,
           outlineColor: "yellow",
           outlineWidth: 21,
-        });
+        })!;
         selectedUnitStyleCache.set(unitId, unitStyle);
       }
+    }
+    const { style = {} } = unit;
+    if (
+      ("minZoom" in style && resolution > zoomResolutions[style.minZoom ?? 0]) ||
+      ("maxZoom" in style && resolution < zoomResolutions[style.maxZoom ?? 24])
+    ) {
+      return;
     }
 
     return unitStyle;
