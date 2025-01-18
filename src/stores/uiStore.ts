@@ -28,6 +28,7 @@ export const useUiStore = defineStore("ui", {
     toeIncludeSubordinates: useLocalStorage("toeIncludeSubordinates", true),
     prevToeIncludeSubordinates: undefined as boolean | undefined,
     prevSuppliesIncludeSubordinates: undefined as boolean | undefined,
+    popperCounter: 0,
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,
@@ -36,7 +37,8 @@ export const useUiStore = defineStore("ui", {
         state.modalOpen ||
         state.editToolbarActive ||
         state.measurementActive ||
-        state.getLocationActive
+        state.getLocationActive ||
+        state.popperCounter > 0
       ),
   },
 });
