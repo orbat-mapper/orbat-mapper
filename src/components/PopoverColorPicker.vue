@@ -97,7 +97,7 @@ function onOpen(isOpen: boolean) {
         <span>{{ getColorName(selectedColor) }}</span>
       </button>
     </PopoverTrigger>
-    <PopoverContent class="relative" side="left" align="start">
+    <PopoverContent class="relative" :avoidCollisions="true">
       <header class="text-sm font-bold">Color</header>
       <RadioGroup v-model="selectedColor">
         <RadioGroupLabel
