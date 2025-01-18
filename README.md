@@ -12,6 +12,12 @@ _Screenshot:_
 
 ![Work in progress sample screenshot](images/screenshot-2023-09-01.png "Work in progress sample screenshot")
 
+ORBAT Mapper is an open-source project licensed under MIT, which means the source
+code is freely available for use, modification, and redistribution under the terms of the license.
+
+You're welcome to create a fork and adapt ORBAT Mapper to suit your needs, but please note that the project is currently
+in a rapidly evolving phase with frequent changes to the codebase.
+
 ## Getting started
 
 If you want to run ORBAT Mapper locally or developing your own version of ORBAT Mapper, you can do so by following these
@@ -59,8 +65,10 @@ there is currently no straightforward offline solution.
 
 ### Configuring default map layers
 
-You can configure the default map layers by modifying the [`public/config/mapConfig.json`](public/config/mapConfig.json) file. When
-building the application, the `mapConfig.json` file is copied to `dist/config/mapConfig.json`. You can also configure the basemap layers by modifying the
+You can configure the default map layers by modifying the [`public/config/mapConfig.json`](public/config/mapConfig.json)
+file. When
+building the application, the `mapConfig.json` file is copied to `dist/config/mapConfig.json`. You can also configure
+the basemap layers by modifying the
 `dist/config/mapConfig.json` file directly, but keep in mind that the `dist` directory is overwritten when building the
 application.
 
@@ -93,7 +101,8 @@ The `mapConfig.json` file contains an JSON array of basemap layers. Example:
 ]
 ```
 
-For an overview of the available configuration options see the `LayerConfigFile` type in [`layerConfigTypes.ts`](src/geo/layerConfigTypes.ts).
+For an overview of the available configuration options see the `LayerConfigFile` type in [
+`layerConfigTypes.ts`](src/geo/layerConfigTypes.ts).
 
 ### Hosting your own maps
 
