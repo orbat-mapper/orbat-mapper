@@ -1,4 +1,11 @@
-export const defaultColors = [
+export interface SelectableColor {
+  name: string;
+  value: string;
+  bgColor: string;
+  selectedColor: string;
+}
+
+export const defaultColors: SelectableColor[] = [
   {
     name: "Black",
     value: "Black",
@@ -48,3 +55,5 @@ export const defaultColors = [
     selectedColor: "ring-rose-500",
   },
 ];
+
+export const extraColors: SelectableColor[] = [];

@@ -4,6 +4,7 @@ import { FillStyleSpec, SimpleStyleSpec } from "@/geo/simplestyle";
 import { ScenarioFeature } from "@/types/scenarioGeoModels";
 import ColorPicker from "@/components/ColorPicker.vue";
 import { ScenarioFeatureUpdate } from "@/types/internalModels";
+import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits<{
@@ -35,7 +36,7 @@ function onChange(e: any) {}
 <template>
   <div class="col-span-2 -mb-2 font-semibold">Fill</div>
   <div class="self-center">Color</div>
-  <ColorPicker
+  <PopoverColorPicker
     :model-value="marker['fill']"
     @update:model-value="updateValue('fill', $event)"
   />

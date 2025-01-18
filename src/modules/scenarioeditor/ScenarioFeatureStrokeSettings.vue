@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { SimpleStyleSpec, StrokeStyleSpec, TextStyleSpec } from "@/geo/simplestyle";
 import { ScenarioFeature } from "@/types/scenarioGeoModels";
-import ColorPicker from "@/components/ColorPicker.vue";
+import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits<{
@@ -43,7 +43,7 @@ function onChange(e: any) {}
 <template>
   <div class="col-span-2 -mb-2 font-semibold">Stroke</div>
   <div class="self-center">Color</div>
-  <ColorPicker
+  <PopoverColorPicker
     class=""
     :model-value="marker['stroke']"
     @update:model-value="updateValue('stroke', $event)"

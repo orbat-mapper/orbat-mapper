@@ -8,6 +8,7 @@ import { SimpleStyleSpec } from "@/geo/simplestyle";
 import { useUiStore } from "@/stores/uiStore";
 import { PopoverClose } from "radix-vue";
 import CloseButton from "@/components/CloseButton.vue";
+import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 
 interface Props {
   ringStyle: Partial<RangeRingStyle>;
@@ -78,7 +79,7 @@ function onOpen(isOpen: boolean) {
       >
         <div class="col-span-2 -mb-2 font-semibold">Stroke</div>
         <div>Color</div>
-        <ColorPicker
+        <PopoverColorPicker
           :model-value="rStyle['stroke'] as string | undefined"
           @update:model-value="updateValue('stroke', $event)"
         />
@@ -115,9 +116,10 @@ function onOpen(isOpen: boolean) {
       >
         <div class="col-span-2 -mb-2 font-semibold">Fill</div>
         <div>Color</div>
-        <ColorPicker
+        <PopoverColorPicker
           :model-value="rStyle['fill'] as string | undefined"
           @update:model-value="updateValue('fill', $event)"
+          showNone
         />
 
         <label for="stroke-opacity">Opacity</label>
