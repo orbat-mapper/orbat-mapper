@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { FillStyleSpec, SimpleStyleSpec } from "@/geo/simplestyle";
+import {
+  defaultFillColor,
+  defaultFillOpacity,
+  defaultSimplestyleFill,
+  FillStyleSpec,
+  SimpleStyleSpec,
+} from "@/geo/simplestyle";
 import { ScenarioFeature } from "@/types/scenarioGeoModels";
 import ColorPicker from "@/components/ColorPicker.vue";
 import { ScenarioFeatureUpdate } from "@/types/internalModels";
@@ -14,8 +20,8 @@ const emit = defineEmits<{
 const marker = computed(() => {
   const { style } = props.feature;
   return {
-    fill: style["fill"] ?? "black",
-    "fill-opacity": style["fill-opacity"] ?? 0,
+    fill: style["fill"] ?? defaultFillColor,
+    "fill-opacity": style["fill-opacity"] ?? defaultFillOpacity,
   };
 });
 
@@ -54,5 +60,8 @@ function onChange(e: any) {}
       @change="onChange($event)"
     />
     <span class="ml-2">{{ opacityAsPercent }}%</span>
+  </div>
+  <div class="col-span-2">
+    {{ marker }}
   </div>
 </template>

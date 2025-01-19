@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { SimpleStyleSpec, StrokeStyleSpec, TextStyleSpec } from "@/geo/simplestyle";
+import {
+  defaultStrokeColor,
+  defaultStrokeOpacity,
+  defaultStrokeWidth,
+  SimpleStyleSpec,
+  StrokeStyleSpec,
+  TextStyleSpec,
+} from "@/geo/simplestyle";
 import { ScenarioFeature } from "@/types/scenarioGeoModels";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 
@@ -12,9 +19,9 @@ const emit = defineEmits<{
 const marker = computed(() => {
   const { style } = props.feature;
   return {
-    stroke: style["stroke"] || "black",
-    "stroke-width": style["stroke-width"] || 2,
-    "stroke-opacity": style["stroke-opacity"] ?? 1,
+    stroke: style["stroke"] ?? defaultStrokeColor,
+    "stroke-width": style["stroke-width"] ?? defaultStrokeWidth,
+    "stroke-opacity": style["stroke-opacity"] ?? defaultStrokeOpacity,
   };
 });
 
@@ -74,6 +81,5 @@ function onChange(e: any) {}
       @change="onChange($event)"
       class="min-w-20"
     />
-    <span class="">{{ opacityAsPercent }}%</span>
   </div>
 </template>

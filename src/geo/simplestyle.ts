@@ -144,8 +144,18 @@ export function createMarkerSymbol(
   });
 }
 
-export const defaultSimplestyleStroke = new Stroke({ color: "#555555", width: 2 });
-export const defaultSimplestyleFill = new Fill({ color: [0x55, 0x55, 0x55, 0.25] });
+export const defaultStrokeColor = "#555555";
+export const defaultStrokeOpacity = 1;
+export const defaultStrokeWidth = 2;
+export const defaultSimplestyleStroke = new Stroke({
+  color: defaultStrokeColor,
+  width: defaultStrokeWidth,
+});
+export const defaultFillColor = "#555555";
+export const defaultFillOpacity = 0.25;
+export const defaultSimplestyleFill = new Fill({
+  color: [0x55, 0x55, 0x55, defaultFillOpacity],
+});
 export const defaultSimpleStyleText = new Text({
   font: 'bold 13px "InterVariable"',
   textAlign: "left",
@@ -177,8 +187,8 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
   }
   if (opts["stroke-opacity"] === 0) stroke = undefined;
 
-  if (opts.fill) {
-    let fillColor = [...olColor.fromString(opts.fill)];
+  if (opts.fill || opts["fill-opacity"] !== undefined) {
+    let fillColor = [...olColor.fromString(opts.fill || defaultFillColor)];
     fillColor[3] = opts["fill-opacity"] ?? 0.5;
     fill = new Fill({ color: fillColor });
   } else if (opts.fill === null) {
