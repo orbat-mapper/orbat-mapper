@@ -61,7 +61,4 @@ function onChange(e: any) {}
     />
     <span class="ml-2">{{ opacityAsPercent }}%</span>
   </div>
-  <div class="col-span-2">
-    {{ marker }}
-  </div>
 </template>
