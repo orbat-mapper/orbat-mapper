@@ -75,11 +75,11 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
         unitStyleCache.set(unitId, unitStyle);
       }
     }
-    const { style = {} } = unit;
+    const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
 
     if (
-      ("minZoom" in style && resolution > zoomResolutions[style.minZoom ?? 0]) ||
-      ("maxZoom" in style && resolution < zoomResolutions[style.maxZoom ?? 24])
+      (limitVisibility && resolution > zoomResolutions[minZoom ?? 0]) ||
+      resolution < zoomResolutions[maxZoom ?? 24]
     ) {
       return;
     }
@@ -280,10 +280,11 @@ export function useUnitSelectInteraction(
         selectedUnitStyleCache.set(unitId, unitStyle);
       }
     }
-    const { style = {} } = unit;
+    const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
+
     if (
-      ("minZoom" in style && resolution > zoomResolutions[style.minZoom ?? 0]) ||
-      ("maxZoom" in style && resolution < zoomResolutions[style.maxZoom ?? 24])
+      (limitVisibility && resolution > zoomResolutions[minZoom ?? 0]) ||
+      resolution < zoomResolutions[maxZoom ?? 24]
     ) {
       return;
     }

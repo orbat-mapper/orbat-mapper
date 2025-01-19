@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 
 import { NUnit } from "@/types/internalModels";
 import { RangeRing, RangeRingStyle } from "@/types/scenarioGeoModels";
@@ -19,8 +19,8 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import PanelHeading from "@/components/PanelHeading.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { useMapViewStore } from "@/stores/mapViewStore";
-import ZoomSlider from "@/components/ZoomSlider.vue";
 import ZoomSelector from "@/components/ZoomSelector.vue";
+import { VisibilityStyleSpec } from "@/geo/simplestyle";
 
 interface Props {
   unit: NUnit;
@@ -40,9 +40,6 @@ const toeActions = useToeActions();
 const { selectedUnitIds } = useSelectedItems();
 const mapView = useMapViewStore();
 
-const range = ref<[number, number]>([0, 24]);
-const limitVisibility = ref(false);
-
 const editedRangeRing = ref<RangeRing>({
   name: "",
   range: 0,
@@ -52,6 +49,27 @@ const editedRangeRing = ref<RangeRing>({
 
 const originalRangeRing = ref<RangeRing | null>(null);
 const editedIndex = ref(-1);
+
+const marker = computed((): Partial<VisibilityStyleSpec> => {
+  const { style = {} } = props.unit;
+  return {
+    limitVisibility: style["limitVisibility"] ?? false,
+    minZoom: style["minZoom"] ?? 0,
+    maxZoom: style["maxZoom"] ?? 24,
+  };
+});
+
+const range = computed({
+  get: (): [number, number] => [marker.value.minZoom ?? 0, marker.value.maxZoom ?? 24],
+  set: (v) => {
+    updateVisibilityStyle({ minZoom: +v[0], maxZoom: +v[1] });
+  },
+});
+
+const limitVisibility = computed({
+  get: () => marker.value.limitVisibility,
+  set: (v) => updateVisibilityStyle({ limitVisibility: v }),
+});
 
 const rangeRings = computed(() => {
   if (props.isMultiMode && selectedUnitIds.value.size > 1) {
@@ -221,14 +239,14 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
   }
 }
 
-watch(range, ([min, max], [oldMin, oldMax]) => {
+function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
   if (props.isMultiMode && selectedUnitIds.value.size > 1) {
     store.groupUpdate(() => {
       selectedUnitIds.value.forEach((unitId) => {
         const unit = getUnitById(unitId);
         if (!unit) return;
         const unitStyle = unit.style ?? {};
-        const newStyle = { ...unitStyle, minZoom: min, maxZoom: max };
+        const newStyle = { ...unitStyle, ...style };
         unitActions.updateUnit(unit.id, { style: newStyle });
       });
     });
@@ -236,17 +254,21 @@ watch(range, ([min, max], [oldMin, oldMax]) => {
     const unit = getUnitById(props.unit.id);
     if (!unit) return;
     const unitStyle = props.unit.style ?? {};
-    const newStyle = { ...unitStyle, minZoom: min, maxZoom: max };
+    const newStyle = { ...unitStyle, ...style };
     unitActions.updateUnit(props.unit.id, { style: newStyle });
   }
-});
+}
 </script>
 <template>
-  <div class="mt-4 flex items-start gap-4">
-    <!--    <ToggleField v-model="limitVisibility" class="mt-2">Visibility</ToggleField>-->
-    <span class="mt-2 text-sm font-medium">Visibility</span>
-    <ZoomSelector v-model="range" class="mt-4 flex-auto" />
-  </div>
+  <section class="mt-4 grid w-full grid-cols-[8ch_1fr] gap-3 pb-1 text-sm">
+    <div class="col-span-2 -mb-6 mt-2 font-semibold">Visibility</div>
+    <div class="self-end">Limit</div>
+    <ToggleField class="mt-4" v-model="limitVisibility" />
+    <template v-if="limitVisibility">
+      <div>Zoom levels</div>
+      <ZoomSelector v-model="range" class="mt-4 flex-auto" />
+    </template>
+  </section>
   <div class="mt-4 flex items-center justify-between">
     <PanelHeading>Range rings</PanelHeading>
 

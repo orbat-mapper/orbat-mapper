@@ -12,7 +12,7 @@ const zoomAsPercentage = computed(() => {
 <template>
   <div class="relative h-10">
     <ZoomSlider v-model="range" :min="0" :max="24" />
-    <div class="absolute" :style="{ left: zoomAsPercentage }">
+    <div class="absolute select-none" :style="{ left: zoomAsPercentage }">
       <div class="-mx-4 w-8 text-center text-xs text-red-800">▲</div>
       <div
         class="-mx-4 -mt-1 w-8 rounded border bg-muted text-center text-xs text-muted-foreground"
