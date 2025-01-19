@@ -6,7 +6,7 @@ import { MarkerStyleSpec, MarkerSymbol, SimpleStyleSpec } from "@/geo/simplestyl
 import { ScenarioFeature } from "@/types/scenarioGeoModels";
 import { SelectItem } from "@/components/types";
 import DrawMarker from "@/components/DrawMarker.vue";
-import ColorPicker from "@/components/ColorPicker.vue";
+import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits<{
@@ -56,7 +56,7 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number | boole
 <template>
   <div class="col-span-2 -mb-2 font-semibold">Symbol</div>
   <div class="self-center">Color</div>
-  <ColorPicker
+  <PopoverColorPicker
     :model-value="marker['marker-color']"
     @update:model-value="updateValue('marker-color', $event)"
   />
