@@ -25,8 +25,9 @@ function onFocus() {
   spellcheck.value = true;
 }
 
-function onBlur() {
-  emit("update-value", value.value);
+function onBlur(e: FocusEvent) {
+  const target = e.target as HTMLInputElement;
+  emit("update-value", target?.value ?? value.value);
   spellcheck.value = false;
 }
 </script>
@@ -37,9 +38,10 @@ function onBlur() {
     type="text"
     v-model="input"
     @keyup.esc="onKey"
+    @keydown.esc.stop
     @keydown.enter.prevent="onKey"
     @focus="onFocus()"
-    @blur="onBlur()"
+    @blur="onBlur"
     :spellcheck="spellcheck"
     class="-mx-3 w-full resize-none rounded-md border-0 bg-transparent ring-0 ring-inset hover:ring-1 focus:ring-2 focus:ring-inset"
     :class="textClass"

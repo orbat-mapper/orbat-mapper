@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
 import { useVModel } from "@vueuse/core";
-import { computed } from "vue";
-import { defaultColors, extraColors } from "@/components/colors";
+import { computed, triggerRef } from "vue";
+import { defaultColors, extraColors, isValidHexColor } from "@/components/colors";
 import { useUiStore } from "@/stores/uiStore";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PopoverClose } from "radix-vue";
 import CloseButton from "@/components/CloseButton.vue";
+import EditableLabel from "@/components/EditableLabel.vue";
 
 interface Props {
   modelValue?: string;
@@ -56,6 +57,19 @@ const inputColor = computed({
   get: () => selectedColor.value ?? "#000000",
   set: (v) => (selectedColor.value = v),
 });
+
+const hexValue = computed({
+  get: () => selectedColor.value ?? "#000000",
+  set: (v) => (selectedColor.value = v),
+});
+
+function updateHexValue(value: string) {
+  if (isValidHexColor(value)) {
+    selectedColor.value = value;
+  } else {
+    triggerRef(selectedColor);
+  }
+}
 
 function getColorName(color: string) {
   return $colors.value.find((c) => c.value === color)?.name ?? color.toUpperCase();
@@ -148,6 +162,14 @@ function onOpen(isOpen: boolean) {
           id="color-picker"
           v-model="inputColor"
           class="h-4 flex-auto cursor-pointer p-0"
+        />
+      </div>
+      <div class="mt-4 flex items-center gap-4">
+        <span class="flex-none text-sm font-medium">Hex value</span>
+        <EditableLabel
+          class="flex-auto"
+          :model-value="hexValue"
+          @update-value="updateHexValue"
         />
       </div>
       <PopoverClose as-child>
