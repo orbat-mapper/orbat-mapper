@@ -52,11 +52,18 @@ export interface TextStyleSpec {
   "text-offset-y": number;
 }
 
+export interface VisibilityStyleSpec {
+  limitVisibility: boolean;
+  minZoom: number;
+  maxZoom: number;
+}
+
 export interface SimpleStyleSpec
   extends StrokeStyleSpec,
     FillStyleSpec,
     MarkerStyleSpec,
-    TextStyleSpec {
+    TextStyleSpec,
+    VisibilityStyleSpec {
   title: string;
 }
 

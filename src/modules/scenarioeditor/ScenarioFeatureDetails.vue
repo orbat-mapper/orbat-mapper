@@ -40,6 +40,7 @@ import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatur
 import { ScenarioFeatureActions } from "@/types/constants";
 import ScenarioFeatureState from "@/modules/scenarioeditor/ScenarioFeatureState.vue";
 import ScenarioFeatureTextSettings from "@/modules/scenarioeditor/ScenarioFeatureTextSettings.vue";
+import ScenarioFeatureVisibilitySettings from "@/modules/scenarioeditor/ScenarioFeatureVisibilitySettings.vue";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -224,7 +225,7 @@ function onAction(action: ScenarioFeatureActions) {
     </header>
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
       <TabPanel>
-        <section class="mt-4 grid w-full grid-cols-[max-content_1fr] gap-4 pb-1 text-sm">
+        <section class="mt-4 grid w-full grid-cols-[8ch_1fr] gap-3 pb-1 text-sm">
           <ScenarioFeatureMarkerSettings
             v-if="feature && geometryType === 'Point'"
             :feature="feature"
@@ -242,6 +243,11 @@ function onAction(action: ScenarioFeatureActions) {
           />
           <ScenarioFeatureTextSettings
             v-if="feature && geometryType !== 'Circle'"
+            :feature="feature"
+            @update="doUpdateFeature"
+          />
+          <ScenarioFeatureVisibilitySettings
+            v-if="feature"
             :feature="feature"
             @update="doUpdateFeature"
           />

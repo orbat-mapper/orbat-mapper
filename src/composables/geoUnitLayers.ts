@@ -4,7 +4,7 @@ import { computed, onMounted, onUnmounted, ref, Ref, unref, watch } from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import { fromLonLat, toLonLat } from "ol/proj";
-import { Geometry, Point } from "ol/geom";
+import { Point } from "ol/geom";
 import { DragBox, Modify, Select } from "ol/interaction";
 import { ModifyEvent } from "ol/interaction/Modify";
 import { Feature } from "ol";
@@ -40,9 +40,11 @@ import { centroid } from "@turf/centroid";
 
 import { klona } from "klona";
 import View from "ol/View";
+
 let zoomResolutions: number[] = [];
 
 export function calculateZoomToResolution(view: View) {
+  zoomResolutions = [];
   for (let i = 0; i <= 24; i++) {
     zoomResolutions.push(view.getResolutionForZoom(i));
   }

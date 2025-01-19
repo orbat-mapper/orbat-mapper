@@ -19,6 +19,7 @@ import {
   UpdateUnitPersonnel,
   UpdateUnitSupplies,
 } from "@/types/internalModels";
+import { VisibilityStyleSpec } from "@/geo/simplestyle";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;
@@ -118,10 +119,7 @@ export interface Unit {
   _isOpen?: boolean;
 }
 
-export interface UnitStyle {
-  minZoom?: number; //[0-24]
-  maxZoom?: number;
-}
+export interface UnitStyle extends Partial<VisibilityStyleSpec> {}
 
 export type SpeedUnitOfMeasure = "km/h" | "mph" | "knots" | "m/s" | "ft/s";
 export type UnitProperty = { value: number; uom: SpeedUnitOfMeasure };

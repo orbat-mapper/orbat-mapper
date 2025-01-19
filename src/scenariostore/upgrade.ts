@@ -34,6 +34,9 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           "text-align": textAlign,
           "text-offset-x": textOffsetX,
           "text-offset-y": textOffsetY,
+          limitVisibility,
+          minZoom,
+          maxZoom,
           ...rest
         } = upgradedFeature.properties ?? {};
 
@@ -63,6 +66,9 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           "text-offset-x": textOffsetX,
           "text-offset-y": textOffsetY,
           title,
+          limitVisibility,
+          minZoom,
+          maxZoom,
         };
         upgradedFeature.meta = meta;
         upgradedFeature.style = style;

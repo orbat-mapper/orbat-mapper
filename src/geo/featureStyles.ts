@@ -8,6 +8,18 @@ import {
 import { FeatureLike } from "ol/Feature";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import { TGeo } from "@/scenariostore";
+import View from "ol/View";
+
+let zoomResolutions: number[] = [];
+
+function calculateZoomToResolution(view: View) {
+  zoomResolutions = [];
+  for (let i = 0; i <= 24; i++) {
+    zoomResolutions.push(view.getResolutionForZoom(i));
+  }
+}
+
+calculateZoomToResolution(new View());
 
 const defaultStyle = new Style({
   stroke: defaultSimplestyleStroke,
@@ -26,19 +38,30 @@ export function useFeatureStyles(geo: TGeo) {
     styleCache.clear();
   }
 
-  function scenarioFeatureStyle(feature: FeatureLike, resolution: number) {
+  function scenarioFeatureStyle(
+    feature: FeatureLike,
+    resolution: number,
+    overrideLimitVisibility = false,
+  ) {
     const featureId = feature.getId() as FeatureId;
     let style = styleCache.get(featureId);
     const { feature: scenarioFeature } = geo.getFeatureById(featureId);
     const {
       meta: { name: label, _zIndex },
-      style: { showLabel = false },
+      style: { showLabel = false, limitVisibility, minZoom = 0, maxZoom = 24 },
     } = scenarioFeature;
     if (!style) {
       style = createSimpleStyle(scenarioFeature.style || {}) || defaultStyle;
       // @ts-ignore
       feature.set("_zIndex", scenarioFeature.meta._zIndex, true);
       styleCache.set(featureId, style);
+    }
+    if (
+      limitVisibility &&
+      !overrideLimitVisibility &&
+      (resolution > zoomResolutions[minZoom] || resolution < zoomResolutions[maxZoom])
+    ) {
+      return;
     }
     style.setZIndex(_zIndex ?? 0);
     style.getText()?.setText(showLabel && resolution < 1200 ? label : undefined);
