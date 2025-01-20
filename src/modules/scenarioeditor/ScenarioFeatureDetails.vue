@@ -226,6 +226,11 @@ function onAction(action: ScenarioFeatureActions) {
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
       <TabPanel>
         <section class="mt-4 grid w-full grid-cols-[8ch_1fr] gap-3 pb-1 text-sm">
+          <ScenarioFeatureVisibilitySettings
+            v-if="feature"
+            :feature="feature"
+            @update="doUpdateFeature"
+          />
           <ScenarioFeatureMarkerSettings
             v-if="feature && geometryType === 'Point'"
             :feature="feature"
@@ -243,11 +248,6 @@ function onAction(action: ScenarioFeatureActions) {
           />
           <ScenarioFeatureTextSettings
             v-if="feature && geometryType !== 'Circle'"
-            :feature="feature"
-            @update="doUpdateFeature"
-          />
-          <ScenarioFeatureVisibilitySettings
-            v-if="feature"
             :feature="feature"
             @update="doUpdateFeature"
           />
