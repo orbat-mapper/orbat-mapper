@@ -78,8 +78,9 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
 
     if (
-      (limitVisibility && resolution > zoomResolutions[minZoom ?? 0]) ||
-      resolution < zoomResolutions[maxZoom ?? 24]
+      limitVisibility &&
+      (resolution > zoomResolutions[minZoom ?? 0] ||
+        resolution < zoomResolutions[maxZoom ?? 24])
     ) {
       return;
     }
@@ -283,8 +284,9 @@ export function useUnitSelectInteraction(
     const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
 
     if (
-      (limitVisibility && resolution > zoomResolutions[minZoom ?? 0]) ||
-      resolution < zoomResolutions[maxZoom ?? 24]
+      limitVisibility &&
+      (resolution > zoomResolutions[minZoom ?? 0] ||
+        resolution < zoomResolutions[maxZoom ?? 24])
     ) {
       return;
     }
