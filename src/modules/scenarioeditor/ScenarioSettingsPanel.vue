@@ -82,6 +82,7 @@ function showScenarioInfo() {
     >
       <ScenarioInfoGroups />
     </AccordionPanel>
+    <AccordionPanel label="Unit templates"> </AccordionPanel>
     <AccordionPanel label="Unit statuses">
       <ScenarioInfoUnitStatuses />
     </AccordionPanel>
