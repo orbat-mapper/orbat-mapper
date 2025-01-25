@@ -32,6 +32,13 @@
     >
       <ShowMultipleIcon class="h-5 w-5" />
     </MainToolbarButton>
+    <MainToolbarButton
+      title="Show range circle"
+      @click="showCircle = !showCircle"
+      :active="showCircle"
+    >
+      <ShowCircleIcon class="h-5 w-5" />
+    </MainToolbarButton>
     <MainToolbarButton title="Toggle snapping" @click="snap = !snap" :active="snap">
       <SnapIcon class="h-5 w-5" />
     </MainToolbarButton>
@@ -47,12 +54,13 @@
 <script setup lang="ts">
 import {
   IconClose as CloseIcon,
+  IconMagnet as SnapIcon,
   IconMapMarkerDistance as ShowSegmentsIcon,
+  IconSelectionEllipse as ShowCircleIcon,
   IconSelectMultipleMarker as ShowMultipleIcon,
   IconTrashCanOutline as TrashIcon,
   IconVectorLine as LengthIcon,
   IconVectorSquare as AreaIcon,
-  IconMagnet as SnapIcon,
 } from "@iconify-prerendered/vue-mdi";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
@@ -70,13 +78,20 @@ const mapRef = injectStrict(activeMapKey);
 
 const store = useMainToolbarStore();
 const selectStore = useMapSelectStore();
-const { showSegments, clearPrevious, measurementType, measurementUnit, snap } =
-  storeToRefs(useMeasurementsStore());
+const {
+  showSegments,
+  clearPrevious,
+  measurementType,
+  measurementUnit,
+  snap,
+  showCircle,
+} = storeToRefs(useMeasurementsStore());
 const { clear } = useMeasurementInteraction(mapRef.value, measurementType, {
   showSegments,
   clearPrevious,
   measurementUnit,
   snap,
+  showCircle,
 });
 
 selectStore.unitSelectEnabled = false;

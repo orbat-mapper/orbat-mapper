@@ -4,15 +4,14 @@ import { Unit } from "@/types/scenarioModels";
 import { fromLonLat } from "ol/proj";
 import { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement";
 import { NUnit } from "@/types/internalModels";
-import type { Geometry, Position } from "geojson";
-import { featureCollection, point as turfPoint } from "@turf/helpers";
+import type { Position } from "geojson";
+import { AllGeoJSON, featureCollection, point as turfPoint } from "@turf/helpers";
 import GeoJSON from "ol/format/GeoJSON";
 import turfEnvelope from "@turf/envelope";
 
 import Feature from "ol/Feature";
 import { shallowRef } from "vue";
 import { useLocalStorage } from "@vueuse/core";
-import { AllGeoJSON } from "@turf/helpers";
 
 export interface ZoomOptions {
   maxZoom?: number;
@@ -103,6 +102,7 @@ export const useMeasurementsStore = defineStore("measurements", {
       showSegments: true,
       measurementUnit: "metric" as MeasurementUnit,
       snap: true,
+      showCircle: useLocalStorage("showMeasurementCircle", true),
     };
   },
 });

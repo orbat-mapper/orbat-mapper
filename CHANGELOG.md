@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 January 2025
 
+- Added range circle to length measurement tool. Can be switched on/off in the measurement toolbar.
 - Added zoom level visibility controls for units and scenario features.
 - Added custom fill and stroke color for range rings and scenario features.
 - Improved display and editing of unit TO&E.

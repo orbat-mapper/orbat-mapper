@@ -1,7 +1,7 @@
 // Based on https://openlayers.org/en/latest/examples/measure-style.html
 import OLMap from "ol/Map";
 import { Circle as CircleStyle, Fill, RegularShape, Stroke, Style, Text } from "ol/style";
-import Draw from "ol/interaction/Draw";
+import Draw, { DrawEvent } from "ol/interaction/Draw";
 import Modify from "ol/interaction/Modify";
 import { Geometry, LineString, Point, Polygon, SimpleGeometry } from "ol/geom";
 import { Vector as VectorSource } from "ol/source";
@@ -9,12 +9,15 @@ import { Vector as VectorLayer } from "ol/layer";
 import { getArea, getLength } from "ol/sphere";
 import Feature from "ol/Feature";
 import { MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
-import { ref, unref, watch } from "vue";
+import { ref, watch } from "vue";
 import { primaryAction } from "ol/events/condition";
 import Snap from "ol/interaction/Snap";
 import { Collection } from "ol";
 import { getSnappableFeatures } from "@/composables/openlayersHelpers";
 import { formatArea, formatLength } from "@/geo/utils";
+import { EventsKey } from "ol/events";
+import { unByKey } from "ol/Observable";
+import { circular } from "ol/geom/Polygon";
 
 export type MeasurementTypes = "LineString" | "Polygon";
 export type MeasurementUnit = "metric" | "imperial" | "nautical";
@@ -36,6 +39,14 @@ const style = new Style({
     fill: new Fill({
       color: "rgba(255, 255, 255, 0.2)",
     }),
+  }),
+});
+
+const circleStyle = new Style({
+  stroke: new Stroke({
+    color: "rgb(0, 0, 0)",
+    lineDash: [10, 10],
+    width: 2,
   }),
 });
 
@@ -136,23 +147,30 @@ const segmentStyle = new Style({
 
 function measurementInteractionWrapper(
   olMap: OLMap,
-  drawType: MeasurementTypes,
+  initialDrawType: MeasurementTypes,
   options: {
     clearPrevious: boolean;
     showSegments: boolean;
     measurementUnit: MeasurementUnit;
+    showCircle: boolean;
   } = {
     showSegments: true,
     clearPrevious: true,
     measurementUnit: "metric",
+    showCircle: true,
   },
 ) {
+  let drawType = initialDrawType;
   let showSegments = options.showSegments;
   let clearPrevious = options.clearPrevious;
   let measurementUnit = options.measurementUnit;
+  let showCircle = options.showCircle;
   let tipPoint: Point;
   let drawInteraction: Draw;
+  const eventKeys: EventsKey[] = [];
   const segmentStyles = [segmentStyle];
+  let measurementCircleFeature: Feature<Polygon> | null;
+  let circleEventKey: EventsKey | null;
   const source = new VectorSource();
   const vector = new VectorLayer({
     source: source,
@@ -224,7 +242,19 @@ function measurementInteractionWrapper(
     return styles;
   }
 
-  function addInteraction(map: OLMap, drawType: MeasurementTypes) {
+  function removeMeasurementCircle() {
+    if (measurementCircleFeature) {
+      source.removeFeature(measurementCircleFeature);
+      measurementCircleFeature.dispose();
+      measurementCircleFeature = null;
+    }
+    if (circleEventKey) {
+      unByKey(circleEventKey);
+      circleEventKey = null;
+    }
+  }
+
+  function addDrawInteraction(drawType: MeasurementTypes) {
     const activeTip = "";
     const idleTip = "Click to start measuring";
     let tip = idleTip;
@@ -241,35 +271,75 @@ function measurementInteractionWrapper(
         );
       },
     });
-    drawInteraction.on("drawstart", function () {
+    const key = drawInteraction.on("drawstart", function (event: DrawEvent) {
       if (clearPrevious) {
         source.clear();
       }
+      removeMeasurementCircle();
+      if (showCircle && drawType === "LineString") {
+        measurementCircleFeature = new Feature({
+          geometry: circular([0, 0], 100000),
+        });
+        measurementCircleFeature.setStyle([lineBackgroundStyle, circleStyle]);
+        source.addFeature(measurementCircleFeature);
+        event.feature.on("change", function () {
+          const lineStringGeometry = event.feature.getGeometry() as LineString;
+          const lastSegment = new LineString(
+            lineStringGeometry.getCoordinates().slice(-2),
+          );
+          lastSegment.transform("EPSG:3857", "EPSG:4326");
+          // const circle = new Circle(
+          //   lastSegment.getFirstCoordinate(),
+          //   lastSegment.getLength(),
+          // );
+          const circle = circular(
+            lastSegment.getFirstCoordinate(),
+            getLength(lastSegment, { projection: "EPSG:4326" }),
+            128,
+          );
+          circle.transform("EPSG:4326", "EPSG:3857");
+          measurementCircleFeature?.setGeometry(circle);
+        });
+      }
+
       modifyInteraction.setActive(false);
       tip = activeTip;
     });
-    drawInteraction.on("drawend", function () {
+    eventKeys.push(key);
+    const key2 = drawInteraction.on("drawend", function () {
+      removeMeasurementCircle();
       modifyStyle.setGeometry(tipPoint);
       modifyInteraction.setActive(true);
-      map.once("pointermove", function () {
+      olMap.once("pointermove", function () {
         // @ts-ignore
         modifyStyle.setGeometry();
       });
       tip = idleTip;
     });
+    eventKeys.push(key2);
     modifyInteraction.setActive(true);
-    map.addInteraction(drawInteraction);
+    olMap.addInteraction(drawInteraction);
   }
 
   function changeMeasurementType(type: MeasurementTypes) {
+    drawType = type;
     olMap.removeInteraction(drawInteraction);
-    addInteraction(olMap, type);
+    addDrawInteraction(type);
   }
 
   function setShowSegments(v: boolean) {
     showSegments = v;
     vector.changed();
     drawInteraction.getOverlay().changed();
+  }
+
+  function setShowCircle(v: boolean) {
+    showCircle = v;
+    if (!showCircle) {
+      removeMeasurementCircle();
+    }
+    olMap.removeInteraction(drawInteraction);
+    addDrawInteraction(drawType);
   }
 
   function setClearPrevious(v: boolean) {
@@ -288,6 +358,9 @@ function measurementInteractionWrapper(
   }
 
   function cleanup() {
+    unByKey(eventKeys);
+    eventKeys.length = 0;
+    removeMeasurementCircle();
     vector.getSource()?.clear();
     olMap.removeLayer(vector);
     olMap.removeInteraction(modifyInteraction);
@@ -299,7 +372,7 @@ function measurementInteractionWrapper(
   }
 
   olMap.addLayer(vector);
-  addInteraction(olMap, drawType);
+  addDrawInteraction(drawType);
   olMap.addInteraction(modifyInteraction);
 
   return {
@@ -308,6 +381,7 @@ function measurementInteractionWrapper(
     setClearPrevious,
     setActive,
     setUnit,
+    setShowCircle,
     cleanup,
     clear,
   };
@@ -319,6 +393,7 @@ export interface MeasurementInteractionOptions {
   enable?: MaybeRef<boolean>;
   measurementUnit?: MaybeRef<MeasurementUnit>;
   snap?: MaybeRef<boolean>;
+  showCircle?: MaybeRef<boolean>;
 }
 
 export function useMeasurementInteraction(
@@ -332,6 +407,7 @@ export function useMeasurementInteraction(
   const enableRef = ref(options.enable ?? true);
   const measurementUnitRef = ref(options.measurementUnit ?? "metric");
   const snapRef = ref(options.snap ?? true);
+  const showCircleRef = ref(options.showCircle ?? true);
 
   let snapInteraction: Snap | undefined | null;
   const featureCollection = new Collection<Feature<Geometry>>();
@@ -344,12 +420,15 @@ export function useMeasurementInteraction(
     setUnit,
     cleanup,
     clear,
+    setShowCircle,
   } = measurementInteractionWrapper(olMap, measurementTypeRef.value, {
     clearPrevious: clearPreviousRef.value,
     showSegments: showSegmentsRef.value,
     measurementUnit: measurementUnitRef.value,
+    showCircle: showCircleRef.value,
   });
 
+  watch(showCircleRef, (v) => setShowCircle(v));
   watch(measurementTypeRef, (type) => changeMeasurementType(type));
   watch(showSegmentsRef, (v) => setShowSegments(v));
   watch(clearPreviousRef, (v) => setClearPrevious(v), { immediate: true });
