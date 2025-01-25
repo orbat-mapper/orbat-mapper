@@ -72,10 +72,13 @@ watch(
 
 const tabsInfo = computed(() => {
   if (slots.default) {
-    return slots
-      .default()
-      .filter((child: any) => child.type.name === "TabItem")
-      .map((t) => ({ label: t.props?.label }));
+    return (
+      slots
+        //@ts-ignore
+        .default()
+        .filter((child: any) => child.type.name === "TabItem")
+        .map((t: any) => ({ label: t.props?.label }))
+    );
   }
   return [];
 });
