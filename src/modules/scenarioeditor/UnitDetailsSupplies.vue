@@ -3,12 +3,10 @@ import { EUnitSupply, NUnit, NUnitSupply } from "@/types/internalModels";
 import { computed, ref, shallowRef, triggerRef, watch } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { useLocalStorage } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { EntityId } from "@/types/base";
-import ToggleField from "@/components/ToggleField.vue";
 import { storeToRefs } from "pinia";
-import { useSuppliesEditStore } from "@/stores/toeStore";
+import { useEquipmentEditStore, useSuppliesEditStore } from "@/stores/toeStore";
 import type { StateAdd } from "@/types/scenarioModels";
 import { asPercent, useToeEditableItems } from "@/composables/toeUtils";
 
@@ -44,15 +42,19 @@ const {
   selectedItems: selectedSupplies,
 } = useToeEditableItems<EUnitSupply>();
 
-const includeSubordinates = useLocalStorage("includeSubordinates", true);
 const suppliesEditStore = useSuppliesEditStore();
 
-const { isSuppliesEditMode } = storeToRefs(suppliesEditStore);
+// use equipment store as a reference to check if we are in edit mode
+const equipmentEditStore = useEquipmentEditStore();
+const { isEditMode: isSuppliesEditMode } = storeToRefs(equipmentEditStore);
+
+// const { isSuppliesEditMode } = storeToRefs(suppliesEditStore);
 
 const tableStore = useUnitSupplyTableStore();
 const uiStore = useUiStore();
 
 const { selectedUnitIds } = useSelectedItems();
+const { toeIncludeSubordinates: includeSubordinates } = storeToRefs(uiStore);
 
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 
@@ -91,16 +93,16 @@ onUndoRedo((param) => {
   triggerRef(selectedUnitIds);
 });
 
-watch(isSuppliesEditMode, (isEditMode) => {
-  if (isEditMode) {
-    uiStore.prevToeIncludeSubordinates = includeSubordinates.value;
-    includeSubordinates.value = false;
-  } else {
-    if (uiStore.prevToeIncludeSubordinates !== undefined) {
-      includeSubordinates.value = uiStore.prevToeIncludeSubordinates;
-    }
-  }
-});
+// watch(isSuppliesEditMode, (isEditMode) => {
+//   if (isEditMode) {
+//     uiStore.prevToeIncludeSubordinates = includeSubordinates.value;
+//     includeSubordinates.value = false;
+//   } else {
+//     if (uiStore.prevToeIncludeSubordinates !== undefined) {
+//       includeSubordinates.value = uiStore.prevToeIncludeSubordinates;
+//     }
+//   }
+// });
 
 watch(
   [

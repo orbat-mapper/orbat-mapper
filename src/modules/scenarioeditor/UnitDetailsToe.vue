@@ -30,6 +30,7 @@ import ModifyUnitToeItemForm from "@/modules/scenarioeditor/ModifyUnitToeItemFor
 import AddUnitToeItemForm from "@/modules/scenarioeditor/AddUnitToeItemForm.vue";
 import { prevToeIncludeSubordinates, useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
+import UnitDetailsSupplies from "@/modules/scenarioeditor/UnitDetailsSupplies.vue";
 
 interface Props {
   unit: NUnit;
@@ -301,7 +302,7 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
   <TabGroup :selected-index="uiStore.toeTabIndex" @change="uiStore.toeTabIndex = $event">
     <TabList class="-mx-4 flex items-center border-b bg-gray-100 p-2 px-4">
       <Tab
-        v-for="lbl in ['Equipment', 'Personnel']"
+        v-for="lbl in ['Equipment', 'Personnel', 'Supplies']"
         :key="lbl"
         v-slot="{ selected }"
         as="template"
@@ -403,7 +404,9 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
           </template>
         </ToeGrid>
       </TabPanel>
-      <TabPanel>Content 3</TabPanel>
+      <TabPanel
+        ><UnitDetailsSupplies :unit="unit" :isLocked="isLocked"></UnitDetailsSupplies
+      ></TabPanel>
     </TabPanels>
   </TabGroup>
 

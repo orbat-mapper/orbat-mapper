@@ -154,9 +154,6 @@
         <UnitDetailsToe :unit="unit" :is-locked="isLocked" />
       </TabPanel>
       <TabPanel>
-        <UnitDetailsSupplies :unit="unit" :is-locked="isLocked" />
-      </TabPanel>
-      <TabPanel>
         <UnitDetailsMapDisplay
           :unit="unit"
           :is-multi-mode="isMultiMode"
@@ -185,9 +182,9 @@ import { computed, ref, watch } from "vue";
 import {
   IconCrosshairsGps,
   IconImage as ImageIcon,
+  IconLockOutline,
   IconMagnifyExpand as ZoomIcon,
   IconPencil as EditIcon,
-  IconLockOutline,
 } from "@iconify-prerendered/vue-mdi";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { GlobalEvents } from "vue-global-events";
@@ -256,8 +253,7 @@ const tabList = computed(() =>
         "Details",
         "Map symbol",
         "Unit state",
-        { label: "TO&E", title: "Table of organization and equipment" },
-        "Supplies",
+        { label: "TO&E/S", title: "Table of organization, equipment and supplies" },
         "Map display",
         "Properties",
         "Debug",
@@ -267,7 +263,6 @@ const tabList = computed(() =>
         "Map symbol",
         "Unit state",
         { label: "TO&E", title: "Table of organization and equipment" },
-        "Supplies",
         "Map display",
         "Properties",
       ],
