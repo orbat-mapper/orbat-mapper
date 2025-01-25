@@ -123,6 +123,10 @@ export function useUnitActions(
     if (action === UnitActions.ClearState || action === UnitActions.ClearStateOrDelete) {
       unitActions.clearUnitState(unit.id);
     }
+
+    if (action === UnitActions.CreateTemplate) {
+      unitActions.createTemplate(unit.id);
+    }
   };
 
   function onUnitAction(
@@ -192,6 +196,11 @@ export function useUnitMenu(
       {
         label: "Duplicate hierarchy (with state)",
         action: UnitActions.CloneWithSubordinatesAndState,
+        disabled: isLocked.value,
+      },
+      {
+        label: "Use as template",
+        action: UnitActions.CreateTemplate,
         disabled: isLocked.value,
       },
       { label: "Move up", action: UnitActions.MoveUp, disabled: isLocked.value },

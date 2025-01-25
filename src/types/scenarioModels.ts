@@ -124,6 +124,21 @@ export interface Unit {
   _lkey?: string; // label cache key
 }
 
+export interface UnitTemplate
+  extends Omit<
+    Unit,
+    | "id"
+    | "template"
+    | "subUnits"
+    | "location"
+    | "state"
+    | "_pid"
+    | "_gid"
+    | "_sid"
+    | "_isOpen"
+    | "_state"
+  > {}
+
 export interface UnitStyle extends Partial<VisibilityStyleSpec> {}
 
 export type SpeedUnitOfMeasure = "km/h" | "mph" | "knots" | "m/s" | "ft/s";
@@ -370,7 +385,7 @@ export interface Scenario extends ScenarioInfo {
   equipment?: EquipmentData[];
   personnel?: PersonnelData[];
   supplyCategories?: SupplyCategory[];
-  unitTemplates?: Unit[];
+  unitTemplates?: UnitTemplate[];
   settings?: ScenarioSettings;
 }
 

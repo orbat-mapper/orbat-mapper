@@ -25,6 +25,7 @@ export const UnitActions = {
   ClearStateOrDelete: "ClearStateOrDelete",
   Lock: "Lock",
   Unlock: "Unlock",
+  CreateTemplate: "CreateTemplate",
 } as const;
 
 export type UnitAction = (typeof UnitActions)[keyof typeof UnitActions];
