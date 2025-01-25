@@ -16,6 +16,7 @@ import {
   UnitPersonnel,
   UnitStatus,
   UnitSupply,
+  UnitTemplate,
 } from "./scenarioModels";
 import { EntityId } from "./base";
 import {
@@ -51,6 +52,14 @@ export interface NUnit
   _pid: EntityId;
   _gid: EntityId;
   _sid: EntityId;
+}
+
+export interface NUnitTemplate
+  extends Omit<UnitTemplate, "equipment" | "personnel" | "supplies"> {
+  id: string;
+  equipment?: NUnitEquipment[];
+  personnel?: NUnitPersonnel[];
+  supplies?: NUnitSupply[];
 }
 
 export interface NUnitEquipment extends Omit<UnitEquipment, "name"> {

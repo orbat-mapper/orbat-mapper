@@ -14,6 +14,7 @@ import type {
   Unit,
   UnitOfMeasure,
   UnitStatus,
+  UnitTemplate,
 } from "@/types/scenarioModels";
 import dayjs from "dayjs";
 import { nanoid } from "@/utils";
@@ -38,6 +39,7 @@ import type {
   NUnitPersonnel,
   NUnitStatus,
   NUnitSupply,
+  NUnitTemplate,
 } from "@/types/internalModels";
 import { useScenarioTime } from "./time";
 import type {
@@ -68,6 +70,7 @@ export interface ScenarioState {
   equipmentMap: Record<string, NEquipmentData>;
   personnelMap: Record<string, NPersonnelData>;
   supplyCategoryMap: Record<string, NSupplyCategory>;
+  unitTemplateMap: Record<string, NUnitTemplate>;
   currentTime: number;
   // getUnitById: (id: EntityId) => NUnit;
   // getSideById: (id: EntityId) => NSide;
@@ -111,6 +114,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
   const unitStatusMap: Record<string, NUnitStatus> = {};
   const supplyClassMap: Record<string, NSupplyClass> = {};
   const supplyUoMMap: Record<string, NSupplyUoM> = {};
+  const unitTemplateMap: Record<string, NUnitTemplate> = {};
   const tempEquipmentIdMap: Record<string, string> = {};
   const tempPersonnelIdMap: Record<string, string> = {};
   const tempSuppliesIdMap: Record<string, string> = {};
@@ -118,6 +122,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
   const tempUnitStatusIdMap: Record<string, string> = {};
   const tempSupplyClassIdMap: Record<string, string> = {};
   const tempSupplyUomIdMap: Record<string, string> = {};
+  const tempUnitTemplateIdMap: Record<string, string> = {};
   const scenario = upgradeScenarioIfNecessary(newScenario);
 
   const scenarioId = scenario.id ?? nanoid();
@@ -288,9 +293,44 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     addSupplyCategory(s);
   });
 
+  scenario.unitTemplates?.forEach((t) => {
+    addUnitTemplate(t);
+  });
+
   scenario.settings?.rangeRingGroups?.forEach((g) => {
     addRangeRingGroup(g);
   });
+
+  function addUnitTemplate(template: UnitTemplate) {
+    const nTemplate = convertUnitTemplateToInternalFormat(template);
+    tempUnitTemplateIdMap[nTemplate.name] = nTemplate.id;
+    unitTemplateMap[nTemplate.id] = nTemplate;
+    return nTemplate.id;
+  }
+
+  function convertUnitTemplateToInternalFormat(t: UnitTemplate): NUnitTemplate {
+    const id = nanoid();
+    const { equipment, personnel, supplies, ...rest } = t;
+    const newEquipment = equipment?.map((e) => {
+      const { name, ...rest } = e;
+      return { id: tempEquipmentIdMap[name] ?? name, ...rest };
+    });
+    const newPersonnel = personnel?.map((p) => {
+      const { name, ...rest } = p;
+      return { id: tempPersonnelIdMap[name] ?? name, ...rest };
+    });
+    const newSupplies = supplies?.map((s) => {
+      const { name, ...rest } = s;
+      return { id: tempSuppliesIdMap[name] ?? name, ...rest };
+    });
+    return {
+      id,
+      ...rest,
+      equipment: newEquipment,
+      personnel: newPersonnel,
+      supplies: newSupplies,
+    };
+  }
 
   function addPersonnel(p: PersonnelData) {
     const id = nanoid();
@@ -450,15 +490,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     settingsStateCounter,
     unitStatusMap,
     mapSettings,
-    // getUnitById(id: EntityId) {
-    //   return this.unitMap[id];
-    // },
-    // getSideById(id: EntityId) {
-    //   return this.sideMap[id];
-    // },
-    // getSideGroupById(id: EntityId) {
-    //   return this.sideGroupMap[id];
-    // },
+    unitTemplateMap,
   };
 }
 
