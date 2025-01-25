@@ -262,7 +262,7 @@ const tabList = computed(() =>
         "Details",
         "Map symbol",
         "Unit state",
-        { label: "TO&E", title: "Table of organization and equipment" },
+        { label: "TO&E/S", title: "Table of organization, equipment and supplies" },
         "Map display",
         "Properties",
       ],
