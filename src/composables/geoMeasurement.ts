@@ -282,12 +282,14 @@ function measurementInteractionWrapper(
         });
         measurementCircleFeature.setStyle([lineBackgroundStyle, circleStyle]);
         source.addFeature(measurementCircleFeature);
-        event.feature.on("change", function () {
+        circleEventKey = event.feature.on("change", function () {
           const lineStringGeometry = event.feature.getGeometry() as LineString;
           const lastSegment = new LineString(
             lineStringGeometry.getCoordinates().slice(-2),
           );
+          const radius = getLength(lastSegment, { projection: "EPSG:4326" });
           lastSegment.transform("EPSG:3857", "EPSG:4326");
+          if (radius === 0) return;
           // const circle = new Circle(
           //   lastSegment.getFirstCoordinate(),
           //   lastSegment.getLength(),
