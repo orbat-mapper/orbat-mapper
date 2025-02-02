@@ -40,8 +40,8 @@
             Clear
           </button>
         </div>
-        <ul class="my-4 flex w-full flex-wrap gap-1 pb-4">
-          <li v-for="sUnit in selectedUnits" class="relative flex">
+        <ul class="relative my-4 flex w-full flex-wrap gap-1 pb-4">
+          <li v-for="sUnit in visibleSelectedUnits" class="relative flex">
             <MilitarySymbol
               :sidc="sUnit.sidc"
               :size="24"
@@ -49,6 +49,15 @@
               :options="getCombinedSymbolOptions(sUnit)"
             />
             <span v-if="sUnit._state?.location" class="text-red-700">&deg;</span>
+          </li>
+          <li v-if="isTruncated">
+            <button
+              type="button"
+              class="absolute bottom-0 left-0 right-0 border bg-white bg-opacity-80 p-2 text-center text-gray-600"
+              @click="truncateUnits = !truncateUnits"
+            >
+              +{{ selectedUnits.length - visibleSelectedUnits.length }}
+            </button>
           </li>
         </ul>
       </div>
@@ -222,7 +231,6 @@ import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsProperties.vue";
 import UnitDetailsSymbol from "@/modules/scenarioeditor/UnitDetailsSymbol.vue";
-import UnitDetailsSupplies from "@/modules/scenarioeditor/UnitDetailsSupplies.vue";
 
 const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
@@ -246,6 +254,7 @@ const { unitDetailsTab: selectedTab } = storeToRefs(useTabStore());
 
 const unitName = ref("");
 const shortName = ref("");
+const truncateUnits = ref(true);
 
 const tabList = computed(() =>
   uiStore.debugMode
@@ -351,6 +360,18 @@ const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 const selectedUnits = computed(() =>
   [...selectedUnitIds.value].map((id) => getUnitById(id)),
 );
+
+const visibleSelectedUnits = computed(() => {
+  if (selectedUnits.value.length > 50 && truncateUnits.value) {
+    return selectedUnits.value.slice(0, 50);
+  }
+  return selectedUnits.value;
+});
+
+const isTruncated = computed(
+  () => selectedUnits.value.length > visibleSelectedUnits.value.length,
+);
+
 onGetLocation((location) => addUnitPosition(props.unitId, location));
 const isEditMode = ref(false);
 const toggleEditMode = useToggle(isEditMode);
