@@ -23,6 +23,7 @@ import {
   mapReinforcedStatus2Field,
   Unit,
   UnitProperties,
+  UnitStyle,
   UnitSymbolOptions,
 } from "@/types/scenarioModels";
 import { getNextEchelonBelow } from "@/symbology/helpers";
@@ -341,17 +342,70 @@ export function useUnitManipulations(store: NewScenarioStore) {
   function updateUnit(
     unitId: EntityId,
     data: UnitUpdate,
-    { doUpdateUnitState = false, ignoreLocked = false } = {},
+    { doUpdateUnitState = false, ignoreLocked = false, s = state, noUndo = false } = {},
   ) {
     if (!ignoreLocked && isUnitLocked(unitId)) return;
     invalidateUnitStyle(unitId);
-    update((s) => {
+    if (noUndo) {
       let unit = s.unitMap[unitId];
       if (!unit) return;
       Object.assign(unit, { ...data });
       s.unitMap[unitId] = klona(unit);
-    });
+    } else {
+      update((s) => {
+        let unit = s.unitMap[unitId];
+        if (!unit) return;
+        Object.assign(unit, { ...data });
+        s.unitMap[unitId] = klona(unit);
+      });
+    }
     if (doUpdateUnitState) updateUnitState(unitId);
+  }
+
+  function batchUpdateUnit(
+    unitIds: EntityId[],
+    data: UnitUpdate,
+    { doUpdateUnitState = false, ignoreLocked = false } = {},
+  ) {
+    const filteredUnitIds = ignoreLocked
+      ? unitIds
+      : unitIds.filter((id) => !isUnitLocked(id));
+    update((s) => {
+      filteredUnitIds.forEach((unitId) => {
+        const unit = s.unitMap[unitId];
+        if (!unit) return;
+        Object.assign(unit, { ...data });
+        s.unitMap[unitId] = klona(unit);
+        invalidateUnitStyle(unitId);
+      });
+    });
+    if (doUpdateUnitState) {
+      unitIds.forEach((id) => updateUnitState(id));
+    }
+  }
+
+  function batchUpdateUnitStyle(
+    unitIds: EntityId[],
+    data: Partial<UnitStyle>,
+    { doUpdateUnitState = false, ignoreLocked = false } = {},
+  ) {
+    const filteredUnitIds = ignoreLocked
+      ? unitIds
+      : unitIds.filter((id) => !isUnitLocked(id));
+    update((s) => {
+      filteredUnitIds.forEach((unitId) => {
+        const unit = s.unitMap[unitId];
+        if (!unit) return;
+        const unitStyle = unit.style ?? {};
+        const newStyle = { ...unitStyle, ...data };
+        Object.assign(unit, { style: newStyle });
+        // s.unitMap[unitId] = klona(unit);
+        invalidateUnitStyle(unitId);
+      });
+    });
+    if (doUpdateUnitState) {
+      unitIds.forEach((id) => updateUnitState(id));
+    }
   }
 
   function updateUnitLocked(unitId: EntityId, locked: boolean) {
@@ -964,5 +1018,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     isUnitLocked,
     isUnitHidden,
     updateUnitState,
+    batchUpdateUnit,
+    batchUpdateUnitStyle,
   };
 }

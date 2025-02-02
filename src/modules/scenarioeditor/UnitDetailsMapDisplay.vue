@@ -241,15 +241,7 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
 
 function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
   if (props.isMultiMode && selectedUnitIds.value.size > 1) {
-    store.groupUpdate(() => {
-      selectedUnitIds.value.forEach((unitId) => {
-        const unit = getUnitById(unitId);
-        if (!unit) return;
-        const unitStyle = unit.style ?? {};
-        const newStyle = { ...unitStyle, ...style };
-        unitActions.updateUnit(unit.id, { style: newStyle });
-      });
-    });
+    unitActions.batchUpdateUnitStyle([...selectedUnitIds.value], style);
   } else {
     const unit = getUnitById(props.unit.id);
     if (!unit) return;
