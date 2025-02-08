@@ -41,7 +41,7 @@
         </TabPanel>
         <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
         <TabPanel class="p-4 pb-10" :unmount="false"> <ScenarioSettingsPanel /></TabPanel>
-        <TabPanel><ScenarioFiltersTabPanel /></TabPanel>
+        <TabPanel :unmount="false"><ScenarioFiltersTabPanel /></TabPanel>
       </TabPanels>
     </TabGroup>
     <PanelResizeHandle

@@ -21,6 +21,7 @@ const {
 const sideTree = ref<NestedUnitStatItem[]>([]);
 const emtTree = ref<NestedUnitStatItem[]>([]);
 const iconTree = ref<NestedUnitStatItem[]>([]);
+const modifierTree = ref<NestedUnitStatItem[]>([]);
 const { selectedUnitIds } = useSelectedItems();
 
 const excludedKeys = ref<Set<string>>(new Set());
@@ -32,12 +33,24 @@ watchEffect(() => {
   const sideStatItems: NestedUnitStatItem[] = [];
   const emtStatItems: NestedUnitStatItem[] = [];
   const iconStatItems: NestedUnitStatItem[] = [];
+  const modifierStatItems: NestedUnitStatItem[] = [];
   Object.values(state.unitMap).forEach((unit) => {
-    const { sideKey, sideGroupKey, emtKey, symbolSetKey, entityKey, entityTypeKey } =
-      updateUnitStats(unit, stats);
+    const {
+      sideKey,
+      sideGroupKey,
+      emtKey,
+      symbolSetKey,
+      entityKey,
+      entityTypeKey,
+      mod1Key,
+      mod2Key,
+      modSymbolSetKey,
+    } = updateUnitStats(unit, stats);
 
     const iconSidc = new Sidc(unit.sidc);
     const originalEmt = iconSidc.emt;
+    const originalMod1 = iconSidc.modifierOne;
+    const originalMod2 = iconSidc.modifierTwo;
     iconSidc.emt = "00";
     iconSidc.hqtfd = "0";
     iconSidc.standardIdentity = "3";
@@ -47,6 +60,11 @@ watchEffect(() => {
     const sidc = iconSidc.toString();
     iconSidc.mainIcon = "000000";
     const sidcSymbolSet = iconSidc.toString();
+    iconSidc.modifierOne = originalMod1;
+    iconSidc.modifierTwo = originalMod2;
+    const sidcMod = iconSidc.toString();
+    iconSidc.modifierOne = "00";
+    iconSidc.modifierTwo = "00";
     iconSidc.emt = originalEmt;
     const sidcEmt = iconSidc.toString();
     if (stats[sideKey] === 1) {
@@ -76,6 +94,11 @@ watchEffect(() => {
     if (stats[symbolSetKey] === 1) {
       iconStatItems.push({
         key: symbolSetKey,
+        label: getIconLabel({ symbolSet: symbolSetKey }),
+        sidc: sidcSymbolSet,
+      });
+      modifierStatItems.push({
+        key: modSymbolSetKey,
         label: getIconLabel({ symbolSet: symbolSetKey }),
         sidc: sidcSymbolSet,
       });
@@ -113,12 +136,51 @@ watchEffect(() => {
         entityItem.children = sortBy(children, "label");
       }
     }
+    if (stats[mod1Key] === 1) {
+      const modifierItem = modifierStatItems.find((item) => item.key === modSymbolSetKey);
+      if (modifierItem) {
+        const children = modifierItem.children || [];
+        const sidc = new Sidc(sidcSymbolSet);
+        sidc.modifierOne = mod1Key.split("-")[2];
+
+        children.push({
+          key: mod1Key,
+          label: getModifierLabel({
+            symbolSet: symbolSetKey,
+            mod1: mod1Key.split("-")[2],
+          }),
+          sidc: sidc.toString(),
+        });
+        modifierItem.children = sortBy(children, "label");
+      }
+    }
+    if (stats[mod2Key] === 1) {
+      const modifierItem = modifierStatItems.find((item) => item.key === modSymbolSetKey);
+      if (modifierItem) {
+        const children = modifierItem.children || [];
+        const sidc = new Sidc(sidcSymbolSet);
+        sidc.modifierTwo = mod2Key.split("-")[2];
+        children.push({
+          key: mod2Key,
+          label: getModifierLabel({
+            symbolSet: symbolSetKey,
+            mod2: mod2Key.split("-")[2],
+          }),
+          sidc: sidc.toString(),
+        });
+        modifierItem.children = sortBy(children, "label");
+      }
+    }
   });
 
   flatStats.value = stats;
   sideTree.value = sortBy(sideStatItems, "label");
   emtTree.value = sortBy(emtStatItems, "label");
   iconTree.value = sortBy(iconStatItems, "label");
+  modifierTree.value = sortBy(
+    modifierStatItems.filter((i) => i.children?.length),
+    "label",
+  );
 });
 
 const selectedStats = computed(() => {
@@ -133,13 +195,26 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
   const unit =
     typeof unitOrUnitId === "string" ? state.unitMap[unitOrUnitId] : unitOrUnitId;
   const keys = createKeys(unit);
-  const { symbolSetKey, entityKey, entityTypeKey, emtKey, sideKey, sideGroupKey } = keys;
+  const {
+    symbolSetKey,
+    entityKey,
+    entityTypeKey,
+    emtKey,
+    sideKey,
+    sideGroupKey,
+    mod1Key,
+    mod2Key,
+    modSymbolSetKey,
+  } = keys;
   stats[symbolSetKey] = (stats[symbolSetKey] || 0) + 1;
   stats[entityKey] = (stats[entityKey] || 0) + 1;
   stats[entityTypeKey] = (stats[entityTypeKey] || 0) + 1;
   stats[emtKey] = (stats[emtKey] || 0) + 1;
   stats[sideKey] = (stats[sideKey] || 0) + 1;
   stats[sideGroupKey] = (stats[sideGroupKey] || 0) + 1;
+  stats[modSymbolSetKey] = (stats[modSymbolSetKey] || 0) + 1;
+  if (!mod1Key.endsWith("00")) stats[mod1Key] = (stats[mod1Key] || 0) + 1;
+  if (!mod2Key.endsWith("00")) stats[mod2Key] = (stats[mod2Key] || 0) + 1;
   return keys;
 }
 
@@ -151,7 +226,20 @@ function createKeys(unit: NUnit) {
   const emtKey = `emt-${sidc.emt}`;
   const sideKey = `side-${unit._sid}`;
   const sideGroupKey = `side-${unit._sid}-${unit._gid}`;
-  return { symbolSetKey, entityKey, entityTypeKey, emtKey, sideKey, sideGroupKey };
+  const modSymbolSetKey = `mod-${sidc.symbolSet}`;
+  const mod1Key = `mod1-${symbolSetKey}-${sidc.modifierOne}`;
+  const mod2Key = `mod2-${symbolSetKey}-${sidc.modifierTwo}`;
+  return {
+    symbolSetKey,
+    entityKey,
+    entityTypeKey,
+    emtKey,
+    sideKey,
+    sideGroupKey,
+    modSymbolSetKey,
+    mod1Key,
+    mod2Key,
+  };
 }
 
 function selectByKeys(keys: string[]) {
@@ -191,8 +279,17 @@ function selectByKeys(keys: string[]) {
 
 function selectByKey(key: string) {
   Object.values(state.unitMap).forEach((unit) => {
-    const { symbolSetKey, entityKey, entityTypeKey, emtKey, sideKey, sideGroupKey } =
-      createKeys(unit);
+    const {
+      symbolSetKey,
+      entityKey,
+      entityTypeKey,
+      emtKey,
+      sideKey,
+      sideGroupKey,
+      modSymbolSetKey,
+      mod1Key,
+      mod2Key,
+    } = createKeys(unit);
 
     if (
       excludedKeys.value.has(symbolSetKey) ||
@@ -200,7 +297,10 @@ function selectByKey(key: string) {
       excludedKeys.value.has(entityTypeKey) ||
       excludedKeys.value.has(emtKey) ||
       excludedKeys.value.has(sideKey) ||
-      excludedKeys.value.has(sideGroupKey)
+      excludedKeys.value.has(sideGroupKey) ||
+      excludedKeys.value.has(modSymbolSetKey) ||
+      excludedKeys.value.has(mod1Key) ||
+      excludedKeys.value.has(mod2Key)
     ) {
       return;
     }
@@ -216,6 +316,12 @@ function selectByKey(key: string) {
       selectedUnitIds.value.add(unit.id);
     } else if (key === sideGroupKey && !excludedKeys.value.has(sideGroupKey)) {
       selectedUnitIds.value.add(unit.id);
+    } else if (key === modSymbolSetKey) {
+      selectedUnitIds.value.add(unit.id);
+    } else if (key === mod1Key) {
+      selectedUnitIds.value.add(unit.id);
+    } else if (key === mod2Key) {
+      selectedUnitIds.value.add(unit.id);
     }
   });
 }
@@ -223,8 +329,17 @@ function selectByKey(key: string) {
 function clearByKey(key: string) {
   selectedUnitIds.value.forEach((unitId) => {
     const unit = state.unitMap[unitId];
-    const { symbolSetKey, entityKey, entityTypeKey, emtKey, sideKey, sideGroupKey } =
-      createKeys(unit);
+    const {
+      symbolSetKey,
+      entityKey,
+      entityTypeKey,
+      emtKey,
+      sideKey,
+      sideGroupKey,
+      mod2Key,
+      mod1Key,
+      modSymbolSetKey,
+    } = createKeys(unit);
     if (key === symbolSetKey) {
       selectedUnitIds.value.delete(unit.id);
     } else if (key === entityKey) {
@@ -236,6 +351,12 @@ function clearByKey(key: string) {
     } else if (key === sideKey) {
       selectedUnitIds.value.delete(unit.id);
     } else if (key === sideGroupKey) {
+      selectedUnitIds.value.delete(unit.id);
+    } else if (key === mod1Key) {
+      selectedUnitIds.value.delete(unit.id);
+    } else if (key === mod2Key) {
+      selectedUnitIds.value.delete(unit.id);
+    } else if (key === modSymbolSetKey) {
       selectedUnitIds.value.delete(unit.id);
     }
   });
@@ -257,6 +378,12 @@ type IconData = {
   symbolSet?: string;
   entity?: string;
   entityType?: string;
+};
+
+type ModifierData = {
+  symbolSet?: string;
+  mod1?: string;
+  mod2?: string;
 };
 
 function getSideLabel(sideId: string) {
@@ -285,6 +412,25 @@ function getIconLabel({ symbolSet, entity, entityType }: IconData) {
     const prefix = entity + entityType;
     const i = mainIcon?.find((icon) => icon.code.startsWith(prefix));
     return i?.entityType || i?.entity || label;
+  }
+  return label;
+}
+
+function getModifierLabel({ symbolSet, mod1, mod2 }: ModifierData) {
+  let label = symbolSet ?? mod1 ?? mod2 ?? "Unknown";
+  if (symbolSet === undefined) {
+    return label;
+  }
+  if (mod1) {
+    const modifiers = sym[symbolSet]?.modifierOne;
+    const i = modifiers?.find((mod) => mod.code === mod1);
+    return i?.modifier || label;
+  }
+
+  if (mod2) {
+    const modifiers = sym[symbolSet]?.modifierTwo;
+    const i = modifiers?.find((mod) => mod.code === mod2);
+    return i?.modifier || label;
   }
   return label;
 }
@@ -329,7 +475,7 @@ function expandAllIcons() {
         /></IconButton>
       </div>
     </header>
-    <AccordionPanel label="Unit symbol" defaultOpen>
+    <AccordionPanel label="Main unit icon" defaultOpen>
       <FilterTree
         :tree="iconTree"
         v-model:expandedKeys="expandedKeys"
@@ -346,6 +492,19 @@ function expandAllIcons() {
     <AccordionPanel label="Command level">
       <FilterTree
         :tree="emtTree"
+        v-model:expandedKeys="expandedKeys"
+        :stats="flatStats"
+        :selectedStats="selectedStats"
+        :excludedKeys="excludedKeys"
+        @select="onSelect"
+        @clear="clearByKey"
+        @exclude="excludedKeys.add($event)"
+        @clearExclude="excludedKeys.delete($event)"
+      />
+    </AccordionPanel>
+    <AccordionPanel label="Symbol modifiers">
+      <FilterTree
+        :tree="modifierTree"
         v-model:expandedKeys="expandedKeys"
         :stats="flatStats"
         :selectedStats="selectedStats"
