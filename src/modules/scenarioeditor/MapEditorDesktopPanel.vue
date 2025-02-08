@@ -14,7 +14,7 @@
         <div class="flex flex-auto items-center justify-evenly">
           <Tab
             as="template"
-            v-for="tab in ['ORBAT', 'Events', 'Layers', 'Settings']"
+            v-for="tab in ['ORBAT', 'Events', 'Layers', 'Settings', 'Filters']"
             :key="tab"
             v-slot="{ selected }"
           >
@@ -41,6 +41,7 @@
         </TabPanel>
         <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
         <TabPanel class="p-4 pb-10" :unmount="false"> <ScenarioSettingsPanel /></TabPanel>
+        <TabPanel><ScenarioFiltersTabPanel /></TabPanel>
       </TabPanels>
     </TabGroup>
     <PanelResizeHandle
@@ -61,11 +62,15 @@ import { activeMapKey } from "@/components/injects";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 import { storeToRefs } from "pinia";
 import { useUiStore, useWidthStore } from "@/stores/uiStore";
-import { onMounted, onUnmounted } from "vue";
+import { defineAsyncComponent, onMounted, onUnmounted } from "vue";
 import { ScenarioEvent } from "@/types/scenarioModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
 import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
+
+const ScenarioFiltersTabPanel = defineAsyncComponent(
+  () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
+);
 
 const emit = defineEmits(["close"]);
 

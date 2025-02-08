@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+February 2025
+
+- Added a new filter panel for selecting units based on their unit icon.
+
 January 2025
 
 - Added range circle to length measurement tool. Can be switched on/off in the measurement toolbar.

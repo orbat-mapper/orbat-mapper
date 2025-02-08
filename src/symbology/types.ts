@@ -1,6 +1,4 @@
-export interface SymbolSetMap {
-  [code: string]: SymbolSet;
-}
+export type SymbolSetMap = Record<string, SymbolSet>;
 
 export interface SymbolSet {
   symbolSet: string;

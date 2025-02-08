@@ -10,6 +10,22 @@ export const SURFACE_SYMBOLSET_VALUE = "30";
 export const SUBSURFACE_SYMBOLSET_VALUE = "35";
 export const CONTROL_MEASURE_SYMBOLSET_VALUE = "25";
 
+export const symbolSetValues: SymbolValue[] = [
+  { code: "10", text: "Land unit" },
+  { code: "11", text: "Land civilian unit/Organization" },
+  { code: "15", text: "Land equipment" },
+  { code: "20", text: "Land installations" },
+  { code: "25", text: "Control measure" },
+  { code: "27", text: "Dismounted individual" },
+  { code: "30", text: "Sea surface" },
+  { code: "35", text: "Sea subsurface" },
+  { code: "36", text: "Mine warfare" },
+  { code: "40", text: "Activity/Event" },
+  { code: "01", text: "Air" },
+  { code: "02", text: "Air missile" },
+  { code: "05", text: "Space" },
+];
+
 export const HQTFDummyValues: SymbolValue[] = [
   { code: "0", text: "Not Applicable" },
   { code: "1", text: "Feint/Dummy" },

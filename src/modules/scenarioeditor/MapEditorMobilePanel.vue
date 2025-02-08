@@ -32,7 +32,7 @@
         <div ref="swipeDownEl" class="flex flex-auto items-center justify-evenly">
           <Tab
             as="template"
-            v-for="tab in ['ORBAT', 'Events', 'Layers', 'Settings', 'Details']"
+            v-for="tab in ['ORBAT', 'Events', 'Layers', 'Settings', 'Filter', 'Details']"
             :key="tab"
             v-slot="{ selected }"
           >
@@ -57,8 +57,15 @@
         <TabPanel class="p-4 pb-10">
           <ScenarioEventsPanel />
         </TabPanel>
-        <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
-        <TabPanel class="p-4 pb-10"><ScenarioSettingsPanel /></TabPanel>
+        <TabPanel class="p-4 pb-10">
+          <ScenarioLayersTabPanel />
+        </TabPanel>
+        <TabPanel class="p-4 pb-10">
+          <ScenarioSettingsPanel />
+        </TabPanel>
+        <TabPanel>
+          <ScenarioFiltersTabPanel />
+        </TabPanel>
         <TabPanel class="pb-10">
           <UnitDetails
             v-if="activeDetailsPanel === 'unit'"
@@ -95,7 +102,7 @@ import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDeta
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import CloseButton from "@/components/CloseButton.vue";
 import IconButton from "@/components/IconButton.vue";
-import { ref, watch } from "vue";
+import { defineAsyncComponent, ref, watch } from "vue";
 import { useSwipe, useToggle } from "@vueuse/core";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useUiStore } from "@/stores/uiStore";
@@ -106,6 +113,10 @@ import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDe
 import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
+
+const ScenarioFiltersTabPanel = defineAsyncComponent(
+  () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
+);
 
 const emit = defineEmits([
   "open-time-modal",
