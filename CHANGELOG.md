@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 February 2025
 
+- Added a button to the unit panel for locating the unit in the ORBAT panel.
+- Added a keyboard shortcut `l` for locating the active unit in the ORBAT panel.
 - Added a new filter panel for selecting units based on their unit icon.
 
 January 2025

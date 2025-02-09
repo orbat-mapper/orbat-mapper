@@ -4,7 +4,7 @@ import { computed } from "vue";
 import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
@@ -19,6 +19,7 @@ const {
   store: { state },
   helpers: { getUnitById },
 } = injectStrict(activeScenarioKey);
+const { onUnitSelectHook } = injectStrict(searchActionsKey);
 const uiStore = useUiStore();
 const activeUnitStore = useActiveUnitStore();
 const {
@@ -97,6 +98,12 @@ function handleDelete(e: KeyboardEvent) {
   onFeatureAction([...selectedFeatureIds.value], "delete");
 }
 
+function handleLocate(e: KeyboardEvent) {
+  if (activeUnit.value) {
+    onUnitSelectHook.trigger({ unitId: activeUnit.value.id, options: { noZoom: true } });
+  }
+}
+
 function handlePlaybackShortcut(e: KeyboardEvent) {
   playback.togglePlayback();
 }
@@ -123,6 +130,7 @@ function handleSpecialKeys(e: KeyboardEvent) {
     @keydown.k.exact="handlePlaybackShortcut"
     @keydown.m.exact="handleMoveShortcut"
     @keydown.delete.exact="handleDelete"
+    @keydown.l.exact="handleLocate"
     @keydown="handleSpecialKeys"
   />
 </template>

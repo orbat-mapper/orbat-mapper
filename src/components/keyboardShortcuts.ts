@@ -38,6 +38,7 @@ export const mapEditModeShortcuts: KeyboardCategory[] = [
       { shortcut: [["z"]], description: "Zoom to unit" },
       { shortcut: [["p"]], description: "Pan to unit" },
       { shortcut: [["m"]], description: "Toggle move unit/feature mode" },
+      { shortcut: [["l"]], description: "Locate unit in the ORBAT" },
     ],
   },
   {

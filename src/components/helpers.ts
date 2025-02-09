@@ -23,7 +23,10 @@ export function useExpandTree(isOpen?: Ref<boolean>) {
 }
 
 export function inputEventFilter(event: Event) {
-  return !["INPUT", "TEXTAREA"].includes((event.target as HTMLElement).tagName);
+  return !(
+    ["INPUT", "TEXTAREA"].includes((event.target as HTMLElement).tagName) ||
+    (event.target as HTMLElement).dataset?.indent // added for FilterTree to avoid intervening with search
+  );
 }
 
 export function setCharAt(str: string, index: number, chr: string) {

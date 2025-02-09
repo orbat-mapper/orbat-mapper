@@ -88,6 +88,13 @@
           >
             <IconCrosshairsGps class="h-6 w-6" aria-hidden="true" />
           </IconButton>
+          <IconButton
+            title="Show in ORBAT"
+            :disabled="isMultiMode"
+            @click="locateInOrbat()"
+          >
+            <TreeLocateIcon class="h-6 w-6" aria-hidden="true" />
+          </IconButton>
           <SplitButton
             class="ml-1"
             :items="buttonItems"
@@ -194,6 +201,7 @@ import {
   IconLockOutline,
   IconMagnifyExpand as ZoomIcon,
   IconPencil as EditIcon,
+  IconFileTreeOutline as TreeLocateIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { GlobalEvents } from "vue-global-events";
@@ -207,7 +215,7 @@ import { UnitAction, UnitActions } from "@/types/constants";
 import SplitButton from "@/components/SplitButton.vue";
 import { EntityId } from "@/types/base";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, sidcModalKey } from "@/components/injects";
+import { activeScenarioKey, searchActionsKey, sidcModalKey } from "@/components/injects";
 import { MediaUpdate, UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
@@ -246,6 +254,8 @@ const {
     updateUnitLocked,
   },
 } = activeScenario;
+
+const { onUnitSelectHook } = injectStrict(searchActionsKey);
 
 const {
   state: { unitStatusMap },
@@ -520,5 +530,9 @@ async function handleChangeSymbol() {
       );
     } else updateUnit(props.unitId, dataUpdate);
   }
+}
+
+function locateInOrbat() {
+  onUnitSelectHook.trigger({ unitId: props.unitId, options: { noZoom: true } });
 }
 </script>

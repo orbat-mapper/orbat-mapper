@@ -49,7 +49,8 @@ const {
 const { onUnitAction } = useUnitActions();
 const toeActions = useToeActions();
 
-onUnitSelect(({ unitId }) => {
+onUnitSelect(({ unitId, options }) => {
+  const doZoom = !(options?.noZoom === true);
   ui.activeTabIndex = TAB_ORBAT;
   activeUnitId.value = unitId;
   selectedUnitIds.value.clear();
@@ -62,7 +63,9 @@ onUnitSelect(({ unitId }) => {
     if (el) {
       el.scrollIntoView();
     }
-    onUnitAction(unit, UnitActions.Zoom);
+    if (doZoom) {
+      onUnitAction(unit, UnitActions.Zoom);
+    }
   });
 });
 
