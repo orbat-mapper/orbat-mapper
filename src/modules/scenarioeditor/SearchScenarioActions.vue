@@ -58,7 +58,7 @@ onUnitSelect(({ unitId }) => {
   const { parents } = activeScenario.unitActions.getUnitHierarchy(unitId);
   parents.forEach((p) => (p._isOpen = true));
   nextTick(() => {
-    const el = document.getElementById(`o-${unitId}`);
+    const el = document.getElementById(`ou-${unitId}`);
     if (el) {
       el.scrollIntoView();
     }
