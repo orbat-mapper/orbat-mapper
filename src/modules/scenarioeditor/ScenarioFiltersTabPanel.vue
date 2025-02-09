@@ -5,7 +5,13 @@ import { activeScenarioKey } from "@/components/injects";
 import { computed, ref, watchEffect } from "vue";
 import { Sidc } from "@/symbology/sidc";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { echelonValues, symbolSetValues } from "@/symbology/values";
+import {
+  echelonValues,
+  HQTFDummyValues,
+  standardIdentityValues,
+  statusValues,
+  symbolSetValues,
+} from "@/symbology/values";
 import BaseButton from "@/components/BaseButton.vue";
 import { NUnit } from "@/types/internalModels";
 import { app6d as sym } from "@/symbology/standards/app6d";
@@ -22,6 +28,8 @@ const sideTree = ref<NestedUnitStatItem[]>([]);
 const emtTree = ref<NestedUnitStatItem[]>([]);
 const iconTree = ref<NestedUnitStatItem[]>([]);
 const modifierTree = ref<NestedUnitStatItem[]>([]);
+const statusTree = ref<NestedUnitStatItem[]>([]);
+const sidTree = ref<NestedUnitStatItem[]>([]);
 const { selectedUnitIds } = useSelectedItems();
 
 const excludedKeys = ref<Set<string>>(new Set());
@@ -30,10 +38,12 @@ const flatStats = ref<Record<string, number>>({});
 
 watchEffect(() => {
   const stats: Record<string, number> = {};
+  const sidStatItems: NestedUnitStatItem[] = [];
   const sideStatItems: NestedUnitStatItem[] = [];
   const emtStatItems: NestedUnitStatItem[] = [];
   const iconStatItems: NestedUnitStatItem[] = [];
   const modifierStatItems: NestedUnitStatItem[] = [];
+  const statusStatItems: NestedUnitStatItem[] = [];
   Object.values(state.unitMap).forEach((unit) => {
     const {
       sideKey,
@@ -45,6 +55,9 @@ watchEffect(() => {
       mod1Key,
       mod2Key,
       modSymbolSetKey,
+      statusKey,
+      hqtfdKey,
+      sidKey,
     } = updateUnitStats(unit, stats);
 
     const iconSidc = new Sidc(unit.sidc);
@@ -62,7 +75,6 @@ watchEffect(() => {
     const sidcSymbolSet = iconSidc.toString();
     iconSidc.modifierOne = originalMod1;
     iconSidc.modifierTwo = originalMod2;
-    const sidcMod = iconSidc.toString();
     iconSidc.modifierOne = "00";
     iconSidc.modifierTwo = "00";
     iconSidc.emt = originalEmt;
@@ -171,6 +183,37 @@ watchEffect(() => {
         modifierItem.children = sortBy(children, "label");
       }
     }
+    if (stats[statusKey] === 1) {
+      const tmpSidc = new Sidc("10031000100000000000");
+      const statusCode = statusKey.split("-")[1];
+      tmpSidc.status = statusCode;
+      statusStatItems.push({
+        key: statusKey,
+        label: getStatusLabel(statusCode),
+        sidc: tmpSidc.toString(),
+      });
+    }
+    if (stats[hqtfdKey] === 1) {
+      const tmpSidc = new Sidc("10031000100000000000");
+      const hqtfdCode = hqtfdKey.split("-")[1];
+      tmpSidc.hqtfd = hqtfdCode;
+      statusStatItems.push({
+        key: hqtfdKey,
+        label: getHqtfdLabel(hqtfdCode),
+        sidc: tmpSidc.toString(),
+      });
+    }
+
+    if (stats[sidKey] === 1) {
+      const tmpSidc = new Sidc("10031000000000000000");
+      const sidCode = sidKey.split("-")[1];
+      tmpSidc.standardIdentity = sidCode;
+      sidStatItems.push({
+        key: sidKey,
+        label: getSidLabel(sidCode),
+        sidc: tmpSidc.toString(),
+      });
+    }
   });
 
   flatStats.value = stats;
@@ -181,6 +224,8 @@ watchEffect(() => {
     modifierStatItems.filter((i) => i.children?.length),
     "label",
   );
+  statusTree.value = sortBy(statusStatItems, "label");
+  sidTree.value = sortBy(sidStatItems, "label");
 });
 
 const selectedStats = computed(() => {
@@ -205,6 +250,9 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
     mod1Key,
     mod2Key,
     modSymbolSetKey,
+    statusKey,
+    hqtfdKey,
+    sidKey,
   } = keys;
   stats[symbolSetKey] = (stats[symbolSetKey] || 0) + 1;
   stats[entityKey] = (stats[entityKey] || 0) + 1;
@@ -213,6 +261,9 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
   stats[sideKey] = (stats[sideKey] || 0) + 1;
   stats[sideGroupKey] = (stats[sideGroupKey] || 0) + 1;
   stats[modSymbolSetKey] = (stats[modSymbolSetKey] || 0) + 1;
+  stats[statusKey] = (stats[statusKey] || 0) + 1;
+  stats[sidKey] = (stats[sidKey] || 0) + 1;
+  if (!hqtfdKey.endsWith("0")) stats[hqtfdKey] = (stats[hqtfdKey] || 0) + 1;
   if (!mod1Key.endsWith("00")) stats[mod1Key] = (stats[mod1Key] || 0) + 1;
   if (!mod2Key.endsWith("00")) stats[mod2Key] = (stats[mod2Key] || 0) + 1;
   return keys;
@@ -220,6 +271,7 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
 
 function createKeys(unit: NUnit) {
   const sidc = new Sidc(unit.sidc);
+  const sidKey = `sid-${sidc.standardIdentity}`;
   const symbolSetKey = `${sidc.symbolSet}`;
   const entityKey = `${sidc.symbolSet}-${sidc.entity}`;
   const entityTypeKey = `${sidc.symbolSet}-${sidc.entity}-${sidc.entityType}`;
@@ -229,7 +281,10 @@ function createKeys(unit: NUnit) {
   const modSymbolSetKey = `mod-${sidc.symbolSet}`;
   const mod1Key = `mod1-${symbolSetKey}-${sidc.modifierOne}`;
   const mod2Key = `mod2-${symbolSetKey}-${sidc.modifierTwo}`;
+  const statusKey = `status-${sidc.status}`;
+  const hqtfdKey = `hqtfd-${sidc.hqtfd}`;
   return {
+    sidKey,
     symbolSetKey,
     entityKey,
     entityTypeKey,
@@ -239,42 +294,9 @@ function createKeys(unit: NUnit) {
     modSymbolSetKey,
     mod1Key,
     mod2Key,
+    statusKey,
+    hqtfdKey,
   };
-}
-
-function selectByKeys(keys: string[]) {
-  Object.values(state.unitMap).forEach((unit) => {
-    const { symbolSetKey, entityKey, entityTypeKey, emtKey, sideKey, sideGroupKey } =
-      createKeys(unit);
-    if (
-      excludedKeys.value.has(symbolSetKey) ||
-      excludedKeys.value.has(entityKey) ||
-      excludedKeys.value.has(entityTypeKey) ||
-      excludedKeys.value.has(emtKey) ||
-      excludedKeys.value.has(sideKey) ||
-      excludedKeys.value.has(sideGroupKey)
-    ) {
-      return;
-    }
-    if (keys.includes(symbolSetKey)) {
-      selectedUnitIds.value.add(unit.id);
-    }
-    if (keys.includes(entityKey)) {
-      selectedUnitIds.value.add(unit.id);
-    }
-    if (keys.includes(entityTypeKey)) {
-      selectedUnitIds.value.add(unit.id);
-    }
-    if (keys.includes(emtKey)) {
-      selectedUnitIds.value.add(unit.id);
-    }
-    if (keys.includes(sideKey)) {
-      selectedUnitIds.value.add(unit.id);
-    }
-    if (keys.includes(sideGroupKey)) {
-      selectedUnitIds.value.add(unit.id);
-    }
-  });
 }
 
 function selectByKey(key: string) {
@@ -289,6 +311,9 @@ function selectByKey(key: string) {
       modSymbolSetKey,
       mod1Key,
       mod2Key,
+      statusKey,
+      hqtfdKey,
+      sidKey,
     } = createKeys(unit);
 
     if (
@@ -300,7 +325,10 @@ function selectByKey(key: string) {
       excludedKeys.value.has(sideGroupKey) ||
       excludedKeys.value.has(modSymbolSetKey) ||
       excludedKeys.value.has(mod1Key) ||
-      excludedKeys.value.has(mod2Key)
+      excludedKeys.value.has(mod2Key) ||
+      excludedKeys.value.has(statusKey) ||
+      excludedKeys.value.has(hqtfdKey) ||
+      excludedKeys.value.has(sidKey)
     ) {
       return;
     }
@@ -322,6 +350,12 @@ function selectByKey(key: string) {
       selectedUnitIds.value.add(unit.id);
     } else if (key === mod2Key) {
       selectedUnitIds.value.add(unit.id);
+    } else if (key === statusKey) {
+      selectedUnitIds.value.add(unit.id);
+    } else if (key === hqtfdKey) {
+      selectedUnitIds.value.add(unit.id);
+    } else if (key === sidKey) {
+      selectedUnitIds.value.add(unit.id);
     }
   });
 }
@@ -339,6 +373,9 @@ function clearByKey(key: string) {
       mod2Key,
       mod1Key,
       modSymbolSetKey,
+      statusKey,
+      hqtfdKey,
+      sidKey,
     } = createKeys(unit);
     if (key === symbolSetKey) {
       selectedUnitIds.value.delete(unit.id);
@@ -358,6 +395,12 @@ function clearByKey(key: string) {
       selectedUnitIds.value.delete(unit.id);
     } else if (key === modSymbolSetKey) {
       selectedUnitIds.value.delete(unit.id);
+    } else if (key === statusKey) {
+      selectedUnitIds.value.delete(unit.id);
+    } else if (key === hqtfdKey) {
+      selectedUnitIds.value.delete(unit.id);
+    } else if (key === sidKey) {
+      selectedUnitIds.value.delete(unit.id);
     }
   });
 }
@@ -370,8 +413,20 @@ function getEchelonLabel(echelon: string) {
   return echelonValues.find((v) => v.code === echelon)?.text || echelon;
 }
 
+function getStatusLabel(code: string) {
+  return statusValues.find((v) => v.code === code)?.text || code;
+}
+
+function getHqtfdLabel(code: string) {
+  return HQTFDummyValues.find((v) => v.code === code)?.text || code;
+}
+
 function getSymbolSetLabel(symbolSet: string) {
   return symbolSetValues.find((v) => v.code === symbolSet)?.text || symbolSet;
+}
+
+function getSidLabel(code: string) {
+  return standardIdentityValues.find((v) => v.code === code)?.text || code;
 }
 
 type IconData = {
@@ -475,20 +530,6 @@ function expandAllIcons() {
         /></IconButton>
       </div>
     </header>
-    <AccordionPanel label="Main unit icon" defaultOpen>
-      <FilterTree
-        :tree="iconTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </AccordionPanel>
-
     <AccordionPanel label="Command level">
       <FilterTree
         :tree="emtTree"
@@ -502,9 +543,9 @@ function expandAllIcons() {
         @clearExclude="excludedKeys.delete($event)"
       />
     </AccordionPanel>
-    <AccordionPanel label="Symbol modifiers">
+    <AccordionPanel label="Main unit icon" defaultOpen>
       <FilterTree
-        :tree="modifierTree"
+        :tree="iconTree"
         v-model:expandedKeys="expandedKeys"
         :stats="flatStats"
         :selectedStats="selectedStats"
@@ -518,6 +559,45 @@ function expandAllIcons() {
     <AccordionPanel label="Side">
       <FilterTree
         :tree="sideTree"
+        v-model:expandedKeys="expandedKeys"
+        :stats="flatStats"
+        :selectedStats="selectedStats"
+        :excludedKeys="excludedKeys"
+        @select="onSelect"
+        @clear="clearByKey"
+        @exclude="excludedKeys.add($event)"
+        @clearExclude="excludedKeys.delete($event)"
+      />
+    </AccordionPanel>
+    <AccordionPanel label="Standard identity">
+      <FilterTree
+        :tree="sidTree"
+        v-model:expandedKeys="expandedKeys"
+        :stats="flatStats"
+        :selectedStats="selectedStats"
+        :excludedKeys="excludedKeys"
+        @select="onSelect"
+        @clear="clearByKey"
+        @exclude="excludedKeys.add($event)"
+        @clearExclude="excludedKeys.delete($event)"
+      />
+    </AccordionPanel>
+    <AccordionPanel label="Status">
+      <FilterTree
+        :tree="statusTree"
+        v-model:expandedKeys="expandedKeys"
+        :stats="flatStats"
+        :selectedStats="selectedStats"
+        :excludedKeys="excludedKeys"
+        @select="onSelect"
+        @clear="clearByKey"
+        @exclude="excludedKeys.add($event)"
+        @clearExclude="excludedKeys.delete($event)"
+      />
+    </AccordionPanel>
+    <AccordionPanel label="Symbol modifiers">
+      <FilterTree
+        :tree="modifierTree"
         v-model:expandedKeys="expandedKeys"
         :stats="flatStats"
         :selectedStats="selectedStats"

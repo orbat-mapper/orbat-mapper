@@ -56,11 +56,11 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
       </template>
       <span v-else class="h-6 w-6" />
       <div class="flex w-full items-center justify-between pl-0">
-        <div class="flex cursor-pointer items-center gap-2">
+        <div class="flex cursor-pointer items-center gap-1">
           <MilitarySymbol
             :sidc="item.value.sidc"
             :size="16"
-            :options="{ square: true, monoColor: 'black' }"
+            :options="{ monoColor: 'black' }"
             class="w-7"
           />
           <span>{{ item.value.label }}</span>
