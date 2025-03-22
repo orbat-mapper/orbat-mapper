@@ -7,9 +7,9 @@ import { Collection } from "ol";
 import { FeatureId } from "@/types/scenarioGeoModels";
 import { tryOnBeforeUnmount } from "@vueuse/core";
 import { Vector as VectorSource } from "ol/source";
-import * as FileSaver from "file-saver";
 import { GeoJSON as GeoJSONFormat } from "ol/format";
 import type { GeoJSON } from "geojson";
+import { saveBlobToLocalFile } from "@/utils/files";
 
 /**
  * Unregister open layers event automatically on unmount
@@ -113,7 +113,7 @@ export async function saveMapAsPng(map: OLMap, options: { fileName?: string } = 
     mapContext.setTransform(1, 0, 0, 1, 0, 0);
     const blob: Blob | null = await new Promise((resolve) => mapCanvas.toBlob(resolve));
 
-    blob && FileSaver.saveAs(blob, fileName);
+    blob && (await saveBlobToLocalFile(blob, fileName));
   });
   map.renderSync();
 }

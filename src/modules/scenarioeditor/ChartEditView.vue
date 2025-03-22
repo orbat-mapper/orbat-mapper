@@ -96,9 +96,9 @@ import ToggleField from "@/components/ToggleField.vue";
 import ResizablePanel from "@/components/ResizablePanel.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { promiseTimeout } from "@vueuse/core";
-import FileSaver from "file-saver";
 import { useSearchActions } from "@/composables/searchActions";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { saveBlobToLocalFile } from "@/utils/files";
 
 const rootUnitStore = useRootUnitStore();
 const options = useChartSettingsStore();
@@ -212,7 +212,7 @@ function downloadSvgAsPng(elementId: string, width: number, height: number) {
 
   image.onload = function () {
     ctx.drawImage(image, 0, 0);
-    canvas.toBlob((blob) => blob && FileSaver(blob, "orbat-chart.png"));
+    canvas.toBlob((blob) => blob && saveBlobToLocalFile(blob, "orbat-chart.png"));
     URL.revokeObjectURL(objectURL);
     svgElement?.setAttribute("width", savedWidth);
     svgElement?.setAttribute("height", savedHeight);
@@ -221,10 +221,10 @@ function downloadSvgAsPng(elementId: string, width: number, height: number) {
   image.src = objectURL;
 }
 
-function downloadElementAsSVG(elementId: string) {
+async function downloadElementAsSVG(elementId: string) {
   let svgElement = document.getElementById(elementId);
   if (!svgElement) return;
-  FileSaver.saveAs(
+  await saveBlobToLocalFile(
     new Blob([new XMLSerializer().serializeToString(svgElement)], {
       type: "image/svg+xml",
     }),

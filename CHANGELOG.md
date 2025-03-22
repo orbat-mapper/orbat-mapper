@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+March 2025
+
+- Use file system access API for file export in supported browsers (Chrome and Edge).
+
 February 2025
 
 - Added a button to the unit panel for locating the unit in the ORBAT panel.

@@ -9,7 +9,6 @@ import {
   OrbatMapperExportSettings,
   UnitGeneratorSettings,
 } from "@/types/convert";
-import * as FileSaver from "file-saver";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
@@ -24,6 +23,7 @@ import {
   OrbatMapperGeoJsonCollection,
   OrbatMapperGeoJsonLayer,
 } from "@/importexport/jsonish/types";
+import { saveBlobToLocalFile } from "@/utils/files";
 
 const symbolSettings = useSymbolSettingsStore();
 export interface UseScenarioExportOptions {
@@ -121,7 +121,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       : [];
     const combined = [...units, ...(features as any)];
 
-    FileSaver.saveAs(
+    await saveBlobToLocalFile(
       new Blob([JSON.stringify(featureCollection(combined), stringifyReplacer, 2)], {
         type: "application/json",
       }),
@@ -184,7 +184,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
 
   async function downloadAsKML(opts: ExportSettings) {
     const kmlString = await createKMLString([], opts);
-    FileSaver.saveAs(
+    await saveBlobToLocalFile(
       new Blob([kmlString], {
         type: "application/vnd.google-earth.kml+xml",
       }),
@@ -221,7 +221,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     data["doc.kml"] = new TextEncoder().encode(kmlString);
 
     const zipData = zipSync(data);
-    FileSaver.saveAs(
+    await saveBlobToLocalFile(
       new Blob([zipData], {
         type: "application/octet-stream",
       }),
@@ -256,7 +256,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     }
 
     const milxString = toMilx(layers);
-    FileSaver.saveAs(
+    await saveBlobToLocalFile(
       new Blob([milxString], {
         type: "application/xml",
       }),
@@ -311,7 +311,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
             : [],
       };
     }
-    FileSaver.saveAs(
+    await saveBlobToLocalFile(
       new Blob([JSON.stringify(d, undefined, 2)], {
         type: "application/json",
       }),
@@ -319,7 +319,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
-  function downloadAsOrbatMapper({
+  async function downloadAsOrbatMapper({
     fileName,
     scenarioName,
     sideGroups,
@@ -341,7 +341,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     };
     if (scenarioName) newScenario.name = scenarioName;
 
-    FileSaver.saveAs(
+    await saveBlobToLocalFile(
       new Blob([JSON.stringify(newScenario, undefined, 2)], {
         type: "application/json",
       }),

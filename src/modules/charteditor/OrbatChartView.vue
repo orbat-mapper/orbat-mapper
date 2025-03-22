@@ -57,7 +57,6 @@ import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import { Bars3BottomLeftIcon as MenuAlt2Icon } from "@heroicons/vue/24/solid";
 import { promiseTimeout } from "@vueuse/core";
 import DotsMenu from "@/components/DotsMenu.vue";
-import FileSaver from "file-saver";
 import SlideOver from "@/components/SlideOver.vue";
 import OrbatChartSettings from "./OrbatChartSettings.vue";
 import {
@@ -71,6 +70,7 @@ import { TScenario } from "@/scenariostore";
 import { activeScenarioKey } from "@/components/injects";
 import { MenuItemData } from "@/components/types";
 import { type ChartTab, ChartTabs } from "@/modules/charteditor/constants";
+import { saveBlobToLocalFile } from "@/utils/files";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 provide(activeScenarioKey, props.activeScenario);
@@ -155,7 +155,7 @@ function downloadSvgAsPng(elementId: string, width: number, height: number) {
 
   image.onload = function () {
     ctx.drawImage(image, 0, 0);
-    canvas.toBlob((blob) => blob && FileSaver(blob, "orbat-chart.png"));
+    canvas.toBlob((blob) => blob && saveBlobToLocalFile(blob, "orbat-chart.png"));
     URL.revokeObjectURL(objectURL);
     svgElement?.setAttribute("width", savedWidth);
     svgElement?.setAttribute("height", savedHeight);
@@ -167,7 +167,7 @@ function downloadSvgAsPng(elementId: string, width: number, height: number) {
 function downloadElementAsSVG(elementId: string) {
   let svgElement = document.getElementById(elementId);
   if (!svgElement) return;
-  FileSaver.saveAs(
+  saveBlobToLocalFile(
     new Blob([new XMLSerializer().serializeToString(svgElement)], {
       type: "image/svg+xml",
     }),

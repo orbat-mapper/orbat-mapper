@@ -8,14 +8,13 @@ import {
   Side,
   SideGroup,
   State,
-  SymbologyStandard,
-  Unit,
-  UnitStatus,
   SupplyCategory,
   SupplyClass,
+  SymbologyStandard,
+  Unit,
   UnitOfMeasure,
+  UnitStatus,
 } from "@/types/scenarioModels";
-import * as FileSaver from "file-saver";
 import {
   type NewScenarioStore,
   type ScenarioState,
@@ -40,6 +39,7 @@ import {
 } from "@/config/constants";
 import { useIndexedDb } from "@/scenariostore/localdb";
 import { klona } from "klona";
+import { saveBlobToLocalFile } from "@/utils/files";
 
 export interface CreateEmptyScenarioOptions {
   id?: string;
@@ -432,11 +432,11 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       const { default: filenamify } = await import("filenamify/browser");
       name = filenamify(store.value.state.info.name || "scenario.json");
     }
-    FileSaver.saveAs(
+    await saveBlobToLocalFile(
       new Blob([stringifyScenario()], {
         type: "application/json",
       }),
-      name,
+      name + ".json",
     );
   }
   return {

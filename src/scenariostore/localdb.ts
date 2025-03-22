@@ -1,7 +1,7 @@
-import { openDB, DBSchema, IDBPDatabase } from "idb";
+import { DBSchema, IDBPDatabase, openDB } from "idb";
 import { Scenario } from "@/types/scenarioModels";
 import { nanoid } from "@/utils";
-import FileSaver from "file-saver";
+import { saveBlobToLocalFile } from "@/utils/files";
 
 export interface ScenarioMetadata {
   id: string;
@@ -153,9 +153,9 @@ export async function useIndexedDb() {
     if (!name) {
       //@ts-ignore
       const { default: filenamify } = await import("filenamify/browser");
-      name = filenamify(scenario.name);
+      name = filenamify(scenario.name) + ".json";
     }
-    FileSaver.saveAs(
+    await saveBlobToLocalFile(
       new Blob([JSON.stringify(scenario)], {
         type: "application/json",
       }),
