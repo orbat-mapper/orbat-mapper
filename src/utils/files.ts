@@ -10,5 +10,11 @@ export async function saveBlobToLocalFile(
   const { fileSave } = await import("browser-fs-access");
   try {
     return await fileSave(data, { fileName, ...options });
-  } catch (AbortError) {}
+  } catch (error) {
+    if (error instanceof DOMException && error.name == "AbortError") {
+      return;
+    } else {
+      throw error;
+    }
+  }
 }
