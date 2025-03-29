@@ -224,7 +224,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     const zipData = zipSync(data);
     await saveBlobToLocalFile(
       new Blob([zipData], {
-        type: "application/octet-stream",
+        type: "application/vnd.google-earth.kmz",
       }),
       "scenario.kmz",
       { mimeTypes: ["application/vnd.google-earth.kmz"], extensions: [".kmz"] },

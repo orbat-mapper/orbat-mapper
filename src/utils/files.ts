@@ -11,7 +11,7 @@ export async function saveBlobToLocalFile(
   try {
     return await fileSave(data, { fileName, ...options });
   } catch (error) {
-    if (error instanceof DOMException && error.name == "AbortError") {
+    if (error instanceof DOMException && error.name === "AbortError") {
       return;
     } else {
       throw error;
