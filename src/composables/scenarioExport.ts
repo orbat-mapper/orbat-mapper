@@ -189,6 +189,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         type: "application/vnd.google-earth.kml+xml",
       }),
       "scenario.kml",
+      { mimeTypes: ["application/vnd.google-earth.kml+xml"], extensions: [".kml"] },
     );
   }
 
@@ -223,9 +224,10 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     const zipData = zipSync(data);
     await saveBlobToLocalFile(
       new Blob([zipData], {
-        type: "application/octet-stream",
+        type: "application/vnd.google-earth.kmz",
       }),
       "scenario.kmz",
+      { mimeTypes: ["application/vnd.google-earth.kmz"], extensions: [".kmz"] },
     );
   }
 
@@ -261,6 +263,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         type: "application/xml",
       }),
       "scenario.milxly",
+      { mimeTypes: ["application/xml"], extensions: [".milxly"] },
     );
   }
 
@@ -316,6 +319,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         type: "application/json",
       }),
       "spatialillusions-orbat.json",
+      { mimeTypes: ["application/json"], extensions: [".json"] },
     );
   }
 
@@ -346,6 +350,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         type: "application/json",
       }),
       fileName || "scenario-export-orbatmapper.json",
+      { mimeTypes: ["application/json"], extensions: [".json"] },
     );
   }
 
