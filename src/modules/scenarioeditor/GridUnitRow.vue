@@ -41,7 +41,7 @@ function toggleOpen() {
     <td>
       <div
         :id="`cell-${itemIndex}-0`"
-        class="flex items-center whitespace-nowrap border-2 border-white py-3 text-sm text-gray-900 outline-0 focus-within:border-red-800"
+        class="flex items-center border-2 border-white py-3 text-sm whitespace-nowrap text-gray-900 outline-0 focus-within:border-red-800"
         :style="`padding-left: ${level + 1}rem`"
         tabindex="0"
         @keydown.enter.exact="toggleOpen()"

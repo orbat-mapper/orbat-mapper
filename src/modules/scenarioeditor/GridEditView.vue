@@ -13,10 +13,10 @@
   >
     <div
       ref="target"
-      class="flex h-full w-full flex-col overflow-hidden bg-gray-50 shadow sm:rounded-lg"
+      class="flex h-full w-full flex-col overflow-hidden bg-gray-50 shadow-sm sm:rounded-lg"
     >
       <header
-        class="flex flex-shrink-0 items-center justify-between border-b border-gray-300 px-4 py-3 sm:px-6"
+        class="flex shrink-0 items-center justify-between border-b border-gray-300 px-4 py-3 sm:px-6"
       >
         <div class="flex w-full items-center space-x-2 overflow-x-auto sm:w-auto">
           <FilterQueryInput class="" v-model="filterQuery" />
@@ -31,7 +31,7 @@
           >Columns</CheckboxDropdown
         >
       </header>
-      <div class="relative min-w-0 max-w-none flex-auto overflow-auto pb-7">
+      <div class="relative max-w-none min-w-0 flex-auto overflow-auto pb-7">
         <table class="w-full table-fixed">
           <GridHeader :columns="columns" />
           <tbody class="divide-y divide-gray-200 bg-white">
@@ -77,7 +77,7 @@
           </tbody>
         </table>
       </div>
-      <footer class="h-12 flex-shrink-0 border-t border-gray-300 bg-gray-200"></footer>
+      <footer class="h-12 shrink-0 border-t border-gray-300 bg-gray-200"></footer>
     </div>
   </div>
 </template>

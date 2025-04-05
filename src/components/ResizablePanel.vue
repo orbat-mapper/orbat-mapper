@@ -17,7 +17,7 @@ const panelWidth = useVModel(props, "width", emit);
 </script>
 <template>
   <aside
-    class="relative flex flex-shrink-0 flex-col border-r-2 bg-gray-50"
+    class="relative flex shrink-0 flex-col border-r-2 bg-gray-50"
     ref="panelRef"
     :style="{ width: panelWidth + 'px' }"
   >

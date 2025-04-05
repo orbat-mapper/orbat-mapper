@@ -118,7 +118,7 @@ onMounted(() => {
 
 <template>
   <div :class="outerClass" @blur.capture="onOuterBlur">
-    <div class="relative rounded-sm shadow-sm">
+    <div class="relative rounded-sm shadow-xs">
       <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
         <MapPinIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
       </div>
@@ -127,7 +127,7 @@ onMounted(() => {
         ref="inputRef"
         :class="
           cn(
-            'block w-full rounded-md border-0 py-1.5 pl-10 pr-24 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 data-[invalid]:bg-red-200 sm:text-sm sm:leading-6',
+            'block w-full rounded-md border-0 py-1.5 pr-24 pl-10 text-gray-900 ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-600 focus:ring-inset data-invalid:bg-red-200 sm:text-sm sm:leading-6',
             props.class,
           )
         "
@@ -139,7 +139,7 @@ onMounted(() => {
         <label for="coordinate-format" class="sr-only">Coordinate format</label>
         <select
           id="coordinate-format"
-          class="h-full rounded-md border-0 bg-transparent py-0 pl-2 pr-7 text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+          class="h-full rounded-md border-0 bg-transparent py-0 pr-7 pl-2 text-gray-500 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm"
           v-model="inputFormat"
           ref="selectRef"
         >

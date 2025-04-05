@@ -113,7 +113,7 @@ const ringMenuItems = computed((): MenuItemData<RangeRingAction>[] => [
 
 function addRangeRing() {
   const defaultRing: RangeRing = {
-    name: "New range ring " + nanoid(3),
+    name: "New range ring-3 " + nanoid(3),
     range: 20,
     uom: "km",
     group: null,
@@ -253,7 +253,7 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
 </script>
 <template>
   <section class="mt-4 grid w-full grid-cols-[8ch_1fr] gap-3 pb-1 text-sm">
-    <div class="col-span-2 -mb-6 mt-2 font-semibold">Visibility</div>
+    <div class="col-span-2 mt-2 -mb-6 font-semibold">Visibility</div>
     <div class="self-end">Limit</div>
     <ToggleField class="mt-4" v-model="limitVisibility" />
     <template v-if="limitVisibility">
@@ -264,12 +264,12 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
   <div class="mt-4 flex items-center justify-between">
     <PanelHeading>Range rings</PanelHeading>
 
-    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+    <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
       <button
         @click="addRangeRing()"
         type="button"
         :disabled="isLocked"
-        class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+        class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
       >
         + Add
       </button>
@@ -280,25 +280,25 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
       <tr>
         <th
           scope="col"
-          class="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+          class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold whitespace-nowrap text-gray-900 sm:pl-0"
         >
           Name
         </th>
         <th
           scope="col"
-          class="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+          class="px-2 py-3.5 text-left text-sm font-semibold whitespace-nowrap text-gray-900"
         >
           Range
         </th>
         <th
           scope="col"
-          class="w-20 whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+          class="w-20 px-2 py-3.5 text-left text-sm font-semibold whitespace-nowrap text-gray-900"
         >
           Visible
         </th>
         <th
           scope="col"
-          class="w-20 whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+          class="w-20 px-2 py-3.5 text-left text-sm font-semibold whitespace-nowrap text-gray-900"
         >
           Group
         </th>
@@ -326,11 +326,11 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
                 :disabled="isLocked"
               />
               <InputGroupTemplate label="Range" v-slot="{ id }" class="col-span-1">
-                <div class="relative rounded-md shadow-sm">
+                <div class="relative rounded-md shadow-xs">
                   <input
                     type="text"
                     :id="id"
-                    class="block w-full rounded-md border-0 py-1.5 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    class="block w-full rounded-md border-0 py-1.5 pr-20 text-gray-900 ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm sm:leading-6"
                     v-model="editedRangeRing.range"
                   />
                   <div class="absolute inset-y-0 right-0 flex items-center">
@@ -339,7 +339,7 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
                       id="range"
                       name="range"
                       v-model="editedRangeRing.uom"
-                      class="h-full rounded-md border-0 bg-transparent py-0 pl-2 pr-7 text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                      class="h-full rounded-md border-0 bg-transparent py-0 pr-7 pl-2 text-gray-500 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm"
                     >
                       <option>m</option>
                       <option>km</option>
@@ -372,17 +372,17 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
           </td>
         </template>
         <template v-else>
-          <td class="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-900 sm:pl-0">
+          <td class="py-2 pr-3 pl-4 text-sm whitespace-nowrap text-gray-900 sm:pl-0">
             {{ ring.name }}
             <span v-if="ring._counter" class="text-gray-500">({{ ring._counter }})</span>
           </td>
-          <td class="whitespace-nowrap px-2 py-2 text-sm font-medium text-gray-900">
+          <td class="px-2 py-2 text-sm font-medium whitespace-nowrap text-gray-900">
             {{ ring.range }} <span class="text-gray-800">{{ ring.uom || "km" }}</span>
           </td>
           <td class="relative">
             <input
               type="checkbox"
-              class="absolute left-6 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 disabled:opacity-50"
+              class="absolute top-1/2 left-6 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 disabled:opacity-50"
               :checked="!ring.hidden"
               @change="toggleRingVisibility(ring, index)"
               :disabled="isLocked"

@@ -10,7 +10,7 @@
       >Show location of mouse cursor
     </ToggleField>
     <section>
-      <p class="text-base font-medium leading-loose text-gray-900">Coordinate format</p>
+      <p class="text-base leading-loose font-medium text-gray-900">Coordinate format</p>
       <RadioGroupList
         v-model="settings.coordinateFormat"
         :items="coordinateFormatItems"
@@ -18,7 +18,7 @@
     </section>
 
     <section>
-      <p class="text-base font-medium leading-loose text-gray-900">Measurement unit</p>
+      <p class="text-base leading-loose font-medium text-gray-900">Measurement unit</p>
       <RadioGroupList
         v-model="measurementStore.measurementUnit"
         :items="measurementItems"

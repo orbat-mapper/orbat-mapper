@@ -215,7 +215,7 @@ onUnmounted(() => {
           type="button"
           @click="activeLayerId = layer.id"
           @keydown.stop
-          class="text-gray-500 opacity-0 hover:text-gray-700 group-focus-within:opacity-100 group-hover:opacity-100"
+          class="text-gray-500 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 hover:text-gray-700"
           title="Set as active layer"
         >
           <IconStar v-if="activeLayerId === layer.id" class="h-5 w-5" />
@@ -225,7 +225,7 @@ onUnmounted(() => {
           type="button"
           @click="toggleFeatureLayerVisibility(layer)"
           @keydown.stop
-          class="ml-1 text-gray-500 opacity-0 hover:text-gray-700 group-focus-within:opacity-100 group-hover:opacity-100"
+          class="ml-1 text-gray-500 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 hover:text-gray-700"
           title="Toggle layer visibility"
         >
           <IconEyeOff v-if="layer.isHidden" class="h-5 w-5" />
@@ -246,11 +246,11 @@ onUnmounted(() => {
     <EditLayerInlineForm
       v-if="editedLayerId === layer.id"
       :layer="layer"
-      class="-ml-5 -mt-6 border"
+      class="-mt-6 -ml-5 border"
       @close="editedLayerId = null"
       @update="geo.updateLayer(layer.id, $event)"
     />
-    <ul class="-ml-5 -mt-6">
+    <ul class="-mt-6 -ml-5">
       <ScenarioFeatureListItem
         v-for="feature in features"
         :key="feature.id"

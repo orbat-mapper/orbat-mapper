@@ -1,7 +1,7 @@
 <template>
   <li
     :class="[
-      'flex cursor-default select-none items-center px-4 py-2',
+      'flex cursor-default items-center px-4 py-2 select-none',
       active && 'bg-army text-white',
     ]"
   >
@@ -18,7 +18,7 @@
       </p>
       <div :class="['flex justify-between text-sm']">
         <div class="space-x-1">
-          <span class="text-xs uppercase text-gray-400">{{
+          <span class="text-xs text-gray-400 uppercase">{{
             item.properties.category
           }}</span>
           <span>{{ item.properties.city }}</span>

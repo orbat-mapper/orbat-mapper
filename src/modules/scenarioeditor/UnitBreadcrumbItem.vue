@@ -1,6 +1,6 @@
 <template>
   <div class="flex h-7 items-center overflow-clip">
-    <div ref="dragItemRef" class="relative flex flex-shrink-0 cursor-move">
+    <div ref="dragItemRef" class="relative flex shrink-0 cursor-move">
       <MilitarySymbol
         v-if="item.sidc"
         :sidc="item.sidc"

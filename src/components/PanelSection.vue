@@ -4,7 +4,7 @@
   >
     <h3
       v-if="label"
-      class="font-xs flex items-center px-2 pb-1 pt-2 font-light text-gray-900"
+      class="font-xs flex items-center px-2 pt-2 pb-1 font-light text-gray-900"
     >
       {{ label }}
     </h3>

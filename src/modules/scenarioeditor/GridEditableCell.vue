@@ -97,7 +97,7 @@ function handleExternalEdit() {
 <template>
   <div
     ref="root"
-    class="editable-cell truncate whitespace-nowrap border-2 border-white px-3 py-3 text-sm text-gray-500 outline-0 focus-within:border-red-800"
+    class="editable-cell truncate border-2 border-white px-3 py-3 text-sm whitespace-nowrap text-gray-500 outline-0 focus-within:border-red-800"
     tabindex="0"
     :id="`cell-${rowIndex}-${colIndex}`"
     @keydown="onKeydown"

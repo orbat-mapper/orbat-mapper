@@ -425,7 +425,7 @@ onUnmounted(() => {
               type="button"
               @click="toggleMapLayerVisibility(layer)"
               @keydown.stop
-              class="ml-1 text-gray-500 opacity-0 hover:text-gray-700 group-focus-within:opacity-100 group-hover:opacity-100"
+              class="ml-1 text-gray-500 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 hover:text-gray-700"
               title="Toggle layer visibility"
             >
               <IconEyeOff v-if="layer.isHidden" class="h-5 w-5" />

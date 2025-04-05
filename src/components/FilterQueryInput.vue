@@ -41,7 +41,7 @@ const updateValue = (event: Event) => {
 </script>
 
 <template>
-  <div class="relative rounded-md shadow-sm">
+  <div class="relative rounded-md shadow-xs">
     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
       <IconFilterVariantPlus
         v-if="hasFilter"
@@ -54,13 +54,13 @@ const updateValue = (event: Event) => {
       :value="localValue"
       @input="updateValue"
       type="text"
-      class="block w-full rounded-md border-gray-300 pl-10 pr-10 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 sm:text-sm"
+      class="block w-full rounded-md border-gray-300 pr-10 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700"
       placeholder="Filter"
       v-bind="$attrs"
     />
     <div class="absolute inset-y-0 right-0 flex items-center pr-3">
       <button
-        class="rounded-md text-gray-400 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        class="rounded-md text-gray-400 hover:text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
         type="button"
         @click="localValue = ''"
       >
@@ -70,7 +70,7 @@ const updateValue = (event: Event) => {
         v-model="hasLocationFilter"
         title="Toggle location filter"
         @click="hasLocationFilter = !hasLocationFilter"
-        class="rounded-md text-gray-400 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        class="rounded-md text-gray-400 hover:text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
       >
         <IconCrosshairsOff v-if="hasLocationFilter" class="h-5 w-5" aria-hidden="true" />
         <IconCrosshairsGps v-else class="h-5 w-5" aria-hidden="true" />

@@ -5,7 +5,7 @@ const model = defineModel({ default: "" });
   <select
     id="locale"
     v-model="model"
-    class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+    class="block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base focus:border-indigo-500 focus:ring-indigo-500 focus:outline-hidden sm:text-sm"
   >
     <option value="">Default locale</option>
     <option value="af">Afrikaans</option>

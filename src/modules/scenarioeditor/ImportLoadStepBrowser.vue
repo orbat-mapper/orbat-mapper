@@ -1,7 +1,7 @@
 <template>
   <section class="">
     <header class="flex items-center justify-end border-b border-gray-200 pb-5">
-      <div class="mt-3 flex items-center sm:ml-4 sm:mt-0">
+      <div class="mt-3 flex items-center sm:mt-0 sm:ml-4">
         <SortDropdown class="mr-4" :options="sortOptions" />
       </div>
     </header>

@@ -48,10 +48,11 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
       });
     }
     stopEscListener = onKeyStroke("Escape", () => cancel());
+    //@ts-ignore
     clickEventKey = olMap.once("click", handleMapClickEvent);
   }
 
-  function handleMapClickEvent(event: MapBrowserEvent<MouseEvent>) {
+  function handleMapClickEvent(event: MapBrowserEvent<PointerEvent>) {
     event.stopPropagation();
     cleanUp();
     onGetLocationHook.trigger(

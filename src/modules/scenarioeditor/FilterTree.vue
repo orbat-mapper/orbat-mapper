@@ -24,7 +24,7 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
 <template>
   <TreeRoot
     v-slot="{ flattenItems }"
-    class="select-none list-none rounded-lg text-sm"
+    class="list-none rounded-lg text-sm select-none"
     :items="tree"
     :get-key="(item) => item.key"
     v-model:expanded="expandedKeys"
@@ -41,7 +41,7 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
           if (event.detail.originalEvent.type === 'click') event.preventDefault();
         }
       "
-      class="focus:ring-grass8 data-[selected]:bg-grass4 group my-0.5 flex items-center rounded px-2 py-1 outline-none even:bg-gray-100 hover:bg-gray-100 focus:ring-2"
+      class="focus:ring-grass8 data-selected:bg-grass4 group my-0.5 flex items-center rounded px-2 py-1 outline-hidden even:bg-gray-100 hover:bg-gray-100 focus:ring-2"
       :class="{ 'opacity-50': excludedKeys.has(item._id) }"
     >
       <template v-if="item.hasChildren">
@@ -82,7 +82,7 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
           title="Exclude"
         >
           <IconMinusCircleOutline
-            class="h-5 w-5 text-gray-200 group-hover:text-muted-foreground group-focus:text-muted-foreground"
+            class="group-hover:text-muted-foreground group-focus:text-muted-foreground h-5 w-5 text-gray-200"
           />
         </button>
         <button
@@ -91,7 +91,7 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
           @click.stop="emit('clearExclude', item._id)"
           title="Clear exclude"
         >
-          <IconClose class="h-5 w-5 text-foreground" />
+          <IconClose class="text-foreground h-5 w-5" />
         </button>
       </div>
     </TreeItem>

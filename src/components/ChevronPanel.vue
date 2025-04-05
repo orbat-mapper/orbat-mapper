@@ -67,12 +67,12 @@ const panelId = nanoid(5);
             <slot name="label">{{ label }}</slot>
           </span>
         </button>
-        <span class="relative ml-6 flex flex-shrink-0 items-center">
+        <span class="relative ml-6 flex shrink-0 items-center">
           <slot name="right" />
         </span>
       </h3>
     </div>
-    <div :id="panelId" v-show="isOpen" class="space-y-4 pl-6 pt-6">
+    <div :id="panelId" v-show="isOpen" class="space-y-4 pt-6 pl-6">
       <slot />
     </div>
   </div>

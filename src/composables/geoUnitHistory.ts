@@ -89,7 +89,7 @@ export function useUnitHistory(
     },
   });
 
-  function handleCtrlClickEvent(event: MapBrowserEvent<MouseEvent>) {
+  function handleCtrlClickEvent(event: MapBrowserEvent<PointerEvent>) {
     const clickPosition = toLonLat(olMap.getEventCoordinate(event.originalEvent));
     selectedUnitIds.value.forEach((unitId) => {
       const unit = getUnitById(unitId);

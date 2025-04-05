@@ -1,7 +1,7 @@
 <template>
   <div class="flex px-0.5">
     <aside class="hidden w-60 flex-none pr-2 md:block">
-      <p class="text-sm font-bold leading-7 text-gray-900">Entity type</p>
+      <p class="text-sm leading-7 font-bold text-gray-900">Entity type</p>
       <ul class="space-y-1.5 text-sm font-medium text-gray-600">
         <li
           v-for="[entity, entityIcons] in filteredIconsByEntity"
@@ -10,7 +10,7 @@
           <a href="#" type="button" @click="goTo(entityIcons[0].code)">{{ entity }}</a>
         </li>
       </ul>
-      <p class="mt-4 text-sm font-bold leading-7 text-gray-900">Modifiers</p>
+      <p class="mt-4 text-sm leading-7 font-bold text-gray-900">Modifiers</p>
       <ul class="space-y-1.5 text-sm font-medium text-gray-600">
         <li v-if="filteredMod1Items.length" class="hover:text-gray-800">
           <a href="#" type="button" @click="goTo('mod1')">Modifier 1</a>
@@ -23,12 +23,12 @@
     <div class="flex-auto">
       <div class="relative">
         <MagnifyingGlassIcon
-          class="pointer-events-none absolute left-0 top-3.5 h-5 w-5 text-gray-400"
+          class="pointer-events-none absolute top-3.5 left-0 h-5 w-5 text-gray-400"
           aria-hidden="true"
         />
         <input
           type="text"
-          class="h-12 w-full border-0 bg-transparent pl-7 pr-4 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+          class="h-12 w-full border-0 bg-transparent pr-4 pl-7 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
           placeholder="Search symbol set..."
           @keydown.esc="onEsc"
           v-model="searchQuery"
@@ -45,7 +45,7 @@
       <div class="mt-4 max-h-[40vh] overflow-auto sm:max-h-[50vh]">
         <div v-for="[entity, entityIcons] in filteredIconsByEntity" class="relative">
           <h3
-            class="sticky top-0 border-b border-t border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
+            class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
             :id="entity"
           >
             {{ entity }}
@@ -62,12 +62,12 @@
               <MilSymbol :size="symbolSize" :sidc="sidc" :modifiers="symbolOptions" />
               <p
                 v-if="entitySubtype && entityType"
-                class="mt-1 max-w-full overflow-hidden truncate text-center text-sm text-gray-500"
+                class="mt-1 max-w-full truncate overflow-hidden text-center text-sm text-gray-500"
               >
                 {{ entityType }}
               </p>
               <p
-                class="mt-1 max-w-full overflow-hidden break-words text-center text-sm font-medium"
+                class="mt-1 max-w-full overflow-hidden text-center text-sm font-medium break-words"
                 :class="code === iconValue ? 'text-red-900' : 'text-gray-900'"
               >
                 {{ entitySubtype || entityType || entity }}
@@ -76,7 +76,7 @@
           </div>
         </div>
         <h3
-          class="sticky top-0 border-b border-t border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
+          class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
         >
           Modifier 1
         </h3>
@@ -93,14 +93,14 @@
           >
             <MilSymbol :size="symbolSize" :sidc="sidc" :modifiers="symbolOptions" />
             <p
-              class="mt-1 max-w-full overflow-hidden break-words text-center text-sm text-gray-900"
+              class="mt-1 max-w-full overflow-hidden text-center text-sm break-words text-gray-900"
             >
               {{ text }}
             </p>
           </button>
         </div>
         <h3
-          class="sticky top-0 border-b border-t border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
+          class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
         >
           Modifier 2
         </h3>
@@ -117,7 +117,7 @@
           >
             <MilSymbol :size="symbolSize" :sidc="sidc" :modifiers="symbolOptions" />
             <p
-              class="mt-1 max-w-full overflow-hidden break-words text-center text-sm text-gray-900"
+              class="mt-1 max-w-full overflow-hidden text-center text-sm break-words text-gray-900"
             >
               {{ text }}
             </p>

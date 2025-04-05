@@ -73,7 +73,7 @@ function doGetLocation() {
     <MapEditToolbar
       v-if="mapRef"
       :ol-map="mapRef"
-      class="absolute left-3 top-[150px]"
+      class="absolute top-[150px] left-3"
       :layer="vectorLayer"
       add-multiple
       @modify="onModify"
@@ -82,12 +82,12 @@ function doGetLocation() {
     <MeasurementToolbar v-if="mapRef" :ol-map="mapRef" class="absolute bottom-4 left-3" />
     <template v-if="nn">
       <BaseButton
-        class="fixed left-2 top-20"
+        class="fixed top-20 left-2"
         :class="{ 'bg-red-100': nn.isActive }"
         @click="nn?.start()"
         >Get location</BaseButton
       >
-      <p class="fixed bottom-5 left-20 rounded border bg-white bg-opacity-70 p-1 px-2">
+      <p class="bg-opacity-70 fixed bottom-5 left-20 rounded border bg-white p-1 px-2">
         {{ loc }}
       </p></template
     >

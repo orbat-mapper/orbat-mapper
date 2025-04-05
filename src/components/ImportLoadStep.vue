@@ -61,7 +61,7 @@
         <div class="flex items-end justify-between gap-2">
           <InputGroup v-model="urlSource" label="URL" class="flex-auto" />
 
-          <div class="flex-shrink-0">
+          <div class="shrink-0">
             <BaseButton @click="onUrlLoad">Load from URL</BaseButton>
           </div>
         </div>

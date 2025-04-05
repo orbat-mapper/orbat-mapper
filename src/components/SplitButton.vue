@@ -1,23 +1,23 @@
 <template>
-  <span class="relative inline-flex rounded-md shadow-sm">
+  <span class="relative inline-flex rounded-md shadow-xs">
     <button
       type="button"
       @click="onClick(activeItemRef)"
       :disabled="activeItemRef.disabled"
-      class="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60 disabled:hover:cursor-default"
+      class="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden disabled:opacity-60 disabled:hover:cursor-default"
     >
       {{ activeItemRef.label }}
     </button>
     <Menu as="div" class="relative -ml-px block">
       <Float placement="bottom-end" :offset="4" strategy="fixed" portal flip shift>
         <MenuButton
-          class="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden"
         >
           <span class="sr-only">Open options</span>
           <ChevronDownIcon class="h-5 w-5" aria-hidden="true" />
         </MenuButton>
         <MenuItems
-          class="w-56 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+          class="ring-opacity-5 w-56 rounded-md bg-white py-1 shadow-lg ring-1 ring-black focus:outline-hidden"
         >
           <MenuItem
             v-for="item in menuItems"

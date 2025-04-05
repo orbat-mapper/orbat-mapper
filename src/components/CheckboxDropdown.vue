@@ -26,11 +26,11 @@ const selectedItems = useVModel(props, "modelValue", emit);
             ><slot>{{ label }}</slot></span
           >
           <span
-            class="ml-1.5 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-gray-700"
+            class="ml-1.5 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-semibold text-gray-700 tabular-nums"
             >{{ selectedItems.length }}</span
           >
           <ChevronDownIcon
-            class="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
+            class="-mr-1 ml-1 h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500"
             aria-hidden="true"
           />
         </PopoverButton>
@@ -45,7 +45,7 @@ const selectedItems = useVModel(props, "modelValue", emit);
         leave-to-class="transform opacity-0 scale-95"
       >
         <PopoverPanel
-          class="absolute right-0 z-10 mt-2 origin-top-right rounded-md bg-white p-4 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none"
+          class="ring-opacity-5 absolute right-0 z-10 mt-2 origin-top-right rounded-md bg-white p-4 shadow-2xl ring-1 ring-black focus:outline-hidden"
         >
           <form class="space-y-4">
             <div
@@ -62,7 +62,7 @@ const selectedItems = useVModel(props, "modelValue", emit);
               />
               <label
                 :for="`filter-${option.value}`"
-                class="ml-3 whitespace-nowrap pr-6 text-sm font-medium text-gray-900"
+                class="ml-3 pr-6 text-sm font-medium whitespace-nowrap text-gray-900"
                 >{{ option.label }}</label
               >
             </div>

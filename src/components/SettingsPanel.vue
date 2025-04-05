@@ -49,7 +49,7 @@ const panelId = nanoid(5);
           <slot name="label" :open="isOpen">{{ label }}</slot>
         </span>
       </button>
-      <span class="relative ml-6 flex flex-shrink-0 items-center">
+      <span class="relative ml-6 flex shrink-0 items-center">
         <slot name="right" :open="isOpen"></slot>
         <ChevronDownIcon
           class="ml-2 h-6 w-6 flex-none rotate-180 transform text-gray-500 transition-transform group-hover:text-gray-900"

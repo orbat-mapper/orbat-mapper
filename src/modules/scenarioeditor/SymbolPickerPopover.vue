@@ -72,7 +72,7 @@ async function handleChangeSymbol(close?: (ref?: Ref | HTMLElement) => void) {
           <header class="-mx-2 -mt-2 flex items-center justify-between border border-b">
             <RadioGroup
               v-model="symbolPage"
-              class="isolate flex divide-x divide-gray-200 shadow focus:outline-none"
+              class="isolate flex divide-x divide-gray-200 shadow-sm focus:outline-hidden"
             >
               <RadioGroupOption
                 as="template"
@@ -84,7 +84,7 @@ async function handleChangeSymbol(close?: (ref?: Ref | HTMLElement) => void) {
                 <div
                   :class="[
                     checked ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700',
-                    'group relative min-w-0 justify-self-center overflow-hidden bg-white px-4 py-2 hover:bg-gray-50 focus:z-10 focus:outline-none',
+                    'group relative min-w-0 justify-self-center overflow-hidden bg-white px-4 py-2 hover:bg-gray-50 focus:z-10 focus:outline-hidden',
                   ]"
                 >
                   <MilitarySymbol

@@ -61,12 +61,13 @@ onUnmounted(() => {
 </template>
 
 <style>
+@reference "tailwindcss";
 .ol-rotate {
   top: 5.5em;
   right: 0.5em;
 }
 
 .ol-zoom {
-  @apply bottom-12 left-[unset] right-2 top-[unset] sm:bottom-10;
+  @apply top-[unset] right-2 bottom-12 left-[unset] sm:bottom-10;
 }
 </style>

@@ -102,7 +102,7 @@ function onOpen(isOpen: boolean) {
         <span
           aria-hidden="true"
           :class="[
-            'flex size-6 items-center justify-center rounded-full border border-black border-opacity-10',
+            'border-opacity-10 flex size-6 items-center justify-center rounded-full border border-black',
           ]"
           :style="{ backgroundColor: selectedColor }"
         >
@@ -116,7 +116,7 @@ function onOpen(isOpen: boolean) {
       <RadioGroup v-model="selectedColor">
         <RadioGroupLabel
           v-if="label || $slots.label"
-          class="mb-4 block text-sm font-medium leading-6 text-gray-900"
+          class="mb-4 block text-sm leading-6 font-medium text-gray-900"
         >
           <slot name="label">{{ label }}</slot>
         </RadioGroupLabel>
@@ -131,9 +131,9 @@ function onOpen(isOpen: boolean) {
             <div
               :class="[
                 color.selectedColor,
-                active && checked ? 'ring ring-offset-1' : '',
+                active && checked ? 'ring-3 ring-offset-1' : '',
                 !active && checked ? 'ring-2' : '',
-                'relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 focus:outline-none',
+                'relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 focus:outline-hidden',
               ]"
             >
               <RadioGroupLabel as="span" class="sr-only">{{
@@ -143,7 +143,7 @@ function onOpen(isOpen: boolean) {
                 aria-hidden="true"
                 :class="[
                   color.bgColor,
-                  'flex h-7 w-7 items-center justify-center rounded-full border border-black border-opacity-10',
+                  'border-opacity-10 flex h-7 w-7 items-center justify-center rounded-full border border-black',
                 ]"
                 :style="{ backgroundColor: color.value }"
               >
@@ -173,7 +173,7 @@ function onOpen(isOpen: boolean) {
         />
       </div>
       <PopoverClose as-child>
-        <CloseButton class="absolute right-4 top-4" />
+        <CloseButton class="absolute top-4 right-4" />
       </PopoverClose>
     </PopoverContent>
   </Popover>

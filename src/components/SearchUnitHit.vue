@@ -1,7 +1,7 @@
 <template>
   <div class="flex w-full items-center justify-between">
     <div class="flex items-center">
-      <div class="flex h-10 w-10 flex-shrink-0">
+      <div class="flex h-10 w-10 shrink-0">
         <MilSymbol
           :size="20"
           :sidc="unit.sidc"

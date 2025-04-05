@@ -24,11 +24,11 @@
     </RadioGroup>
     <section v-if="inputSource === 'browser'" class="mt-4">
       <header class="flex items-center justify-end border-b border-gray-200 pb-5">
-        <div class="mt-3 flex items-center sm:ml-4 sm:mt-0">
+        <div class="mt-3 flex items-center sm:mt-0 sm:ml-4">
           <SortDropdown class="mr-4" :options="sortOptions" />
           <router-link
             :to="{ name: NEW_SCENARIO_ROUTE }"
-            class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Create new
           </router-link>

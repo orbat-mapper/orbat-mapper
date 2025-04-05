@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p class="fixed bottom-2 right-2 z-40 border bg-white p-2">{{ sIndex }}</p>
+    <p class="fixed right-2 bottom-2 z-40 border bg-white p-2">{{ sIndex }}</p>
     <div class="prose prose-sm p-4" v-html="renderedContent"></div>
   </div>
 </template>

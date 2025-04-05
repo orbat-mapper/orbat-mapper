@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    class="inline-flex items-center border shadow-sm"
+    class="inline-flex items-center border shadow-xs"
     :class="classes"
   >
     <slot />
@@ -24,7 +24,7 @@ const colorClasses = {
 };
 
 const focusClasses =
-  "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50";
+  "focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50";
 export default {
   name: "BaseButton",
   props: {

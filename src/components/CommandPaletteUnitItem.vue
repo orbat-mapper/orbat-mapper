@@ -1,7 +1,7 @@
 <template>
   <li
     :class="[
-      'flex cursor-default select-none items-center px-4 py-2',
+      'flex cursor-default items-center px-4 py-2 select-none',
       active ? 'bg-army text-white' : 'even:bg-gray-100',
     ]"
   >

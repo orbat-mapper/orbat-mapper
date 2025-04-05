@@ -24,7 +24,7 @@ const name = inject("radioGroupName", "name");
     />
     <label
       :for="_id"
-      class="ml-3 block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
+      class="ml-3 block text-sm leading-6 font-medium text-gray-900 dark:text-gray-300"
       ><slot
     /></label>
   </div>

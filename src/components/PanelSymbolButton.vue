@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    class="rounded hover:drop-shadow hover:sepia disabled:opacity-50 disabled:hover:sepia-0"
+    class="rounded hover:drop-shadow-sm hover:sepia disabled:opacity-50 disabled:hover:sepia-0"
     :class="[active ? 'invert' : '']"
   >
     <MilitarySymbol

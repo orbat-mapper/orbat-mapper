@@ -184,7 +184,7 @@ function handleReset() {
         </footer>
       </form>
     </div>
-    <p class="mt-2 text-sm font-medium leading-7">Preview</p>
+    <p class="mt-2 text-sm leading-7 font-medium">Preview</p>
 
     <div class="mt-4 flex justify-center">
       <MilitarySymbol

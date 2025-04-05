@@ -2,7 +2,7 @@
   <button
     ref="el"
     role="separator"
-    class="absolute bottom-0 top-0 z-30 w-1.5 cursor-col-resize touch-none hover-none:w-3 hover-none:bg-army2 hover-hover:hover:bg-army2"
+    class="hover-none:w-3 hover-none:bg-army2 hover-hover:hover:bg-army2 absolute top-0 bottom-0 z-30 w-1.5 cursor-col-resize touch-none"
     :class="left ? 'left-0' : 'right-0'"
     @dblclick="resetWidth"
     @pointerdown="onPointerDown"

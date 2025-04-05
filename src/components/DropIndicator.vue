@@ -21,16 +21,16 @@ const edgeToOrientationMap: Record<Edge, Orientation> = {
 
 const orientationStyles: Record<Orientation, string> = {
   horizontal:
-    "h-[--line-thickness] left-[--terminal-radius] right-0 before:left-[--negative-terminal-size]",
+    "h-(--line-thickness) left-(--terminal-radius) right-0 before:left-(--negative-terminal-size)",
   vertical:
-    "w-[--line-thickness] top-[--terminal-radius] bottom-0 before:top-[--negative-terminal-size]",
+    "w-(--line-thickness) top-(--terminal-radius) bottom-0 before:top-(--negative-terminal-size)",
 };
 
 const edgeStyles: Record<Edge, string> = {
-  top: "top-[--line-offset] before:top-[--offset-terminal]",
-  right: "right-[--line-offset] before:right-[--offset-terminal]",
-  bottom: "bottom-[--line-offset] before:bottom-[--offset-terminal]",
-  left: "left-[--line-offset] before:left-[--offset-terminal]",
+  top: "top-(--line-offset) before:top-(--offset-terminal)",
+  right: "right-(--line-offset) before:right-(--offset-terminal)",
+  bottom: "bottom-(--line-offset) before:bottom-(--offset-terminal)",
+  left: "left-(--line-offset) before:left-(--offset-terminal)",
 };
 
 const strokeSize = 2;
@@ -43,7 +43,7 @@ const offsetToAlignTerminalWithLine = (strokeSize - terminalSize) / 2;
     :class="[
       orientationStyles[edgeToOrientationMap[edge]],
       [edgeStyles[edge]],
-      'before:content[\'\'] pointer-events-none absolute z-10 box-border bg-blue-700 before:absolute before:h-[--terminal-size] before:w-[--terminal-size] before:rounded-full before:border-[length:--line-thickness] before:border-solid before:border-blue-700',
+      'before:content[\'\'] pointer-events-none absolute z-10 box-border bg-blue-700 before:absolute before:h-(--terminal-size) before:w-(--terminal-size) before:rounded-full before:border-(length:--line-thickness) before:border-solid before:border-blue-700',
     ]"
     :style="{
       '--line-thickness': `${strokeSize}px`,

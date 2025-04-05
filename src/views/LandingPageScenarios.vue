@@ -5,21 +5,21 @@
         Scenarios
       </h2>
     </div>
-    <p class="absolute right-6 top-2 z-10">
+    <p class="absolute top-2 right-6 z-10">
       <WipBadge />
     </p>
     <section v-if="storedScenarios.length > 0" class="mx-auto max-w-7xl p-6">
       <header
-        class="border-b border-gray-200 pb-5 dark:border-slate-800 sm:flex sm:items-center sm:justify-between"
+        class="border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between dark:border-slate-800"
       >
-        <h2 class="text-base font-semibold leading-6 text-gray-900 dark:text-slate-300">
+        <h2 class="text-base leading-6 font-semibold text-gray-900 dark:text-slate-300">
           Recent scenarios
         </h2>
-        <div class="mt-3 flex items-center sm:ml-4 sm:mt-0">
+        <div class="mt-3 flex items-center sm:mt-0 sm:ml-4">
           <SortDropdown class="mr-4" :options="sortOptions" />
           <router-link
             :to="{ name: NEW_SCENARIO_ROUTE }"
-            class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Create new scenario
           </router-link>
@@ -38,7 +38,7 @@
     </section>
     <section class="mb-2">
       <p
-        class="relative left-0 right-0 top-0 bg-gray-200 p-4 text-center text-sm text-gray-900 dark:bg-slate-800 dark:text-slate-300"
+        class="relative top-0 right-0 left-0 bg-gray-200 p-4 text-center text-sm text-gray-900 dark:bg-slate-800 dark:text-slate-300"
       >
         Please note that the demo scenarios are incomplete and they are still under
         development.
@@ -54,7 +54,7 @@
         <li
           v-for="scenario in DEMO_SCENARIOS"
           :key="scenario.name"
-          class="col-span-1 flex flex-col divide-y divide-gray-200 overflow-hidden rounded-lg border bg-white text-center shadow focus-within:border-blue-800 hover:border-army dark:bg-slate-800"
+          class="hover:border-army col-span-1 flex flex-col divide-y divide-gray-200 overflow-hidden rounded-lg border bg-white text-center shadow-sm focus-within:border-blue-800 dark:bg-slate-800"
         >
           <router-link
             :to="getScenarioTo(scenario.id)"
@@ -62,15 +62,15 @@
             draggable="false"
           >
             <img
-              class="mx-auto h-52 w-full flex-shrink-0 bg-black object-cover object-top"
+              class="mx-auto h-52 w-full shrink-0 bg-black object-cover object-top"
               :src="scenario.imageUrl"
               alt=""
               draggable="false"
             />
-            <h3 class="mt-6 text-sm font-medium text-heading">
+            <h3 class="text-heading mt-6 text-sm font-medium">
               {{ scenario.name }}
             </h3>
-            <dl class="mt-1 flex flex-grow flex-col justify-between p-4">
+            <dl class="mt-1 flex grow flex-col justify-between p-4">
               <dt class="sr-only">Summary</dt>
               <dd class="text-sm text-gray-500 dark:text-slate-400">
                 {{ scenario.summary }}
@@ -82,7 +82,7 @@
           <button
             type="button"
             @click="newScenario"
-            class="relative block w-full rounded-lg border-2 border-dashed border-slate-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-slate-600"
+            class="relative block w-full rounded-lg border-2 border-dashed border-slate-300 p-12 text-center hover:border-gray-400 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:border-slate-600"
           >
             <svg
               class="mx-auto h-12 w-12 text-slate-400 dark:text-slate-600"

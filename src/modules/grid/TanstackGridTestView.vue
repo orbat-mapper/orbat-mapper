@@ -234,7 +234,7 @@ watch(rowSelection, () => {
       <InputGroup v-model="query" placeholder="Search" />
     </div>
     <section
-      class="relative h-full overflow-auto rounded-lg border shadow"
+      class="relative h-full overflow-auto rounded-lg border shadow-sm"
       ref="parentRef"
     >
       <table class="grid">
@@ -251,7 +251,7 @@ watch(rowSelection, () => {
                 width: `${header.getSize()}px`,
               }"
               role="columnheader"
-              class="flex-0 relative flex w-full select-none items-center justify-between overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold text-gray-900"
+              class="relative flex items-center justify-between overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold text-gray-900 select-none"
               :class="{ 'cursor-pointer': header.column.getCanSort() }"
               @click="header.column.getToggleSortingHandler()?.($event)"
             >
@@ -289,7 +289,7 @@ watch(rowSelection, () => {
                   @touchstart="header.getResizeHandler()($event)"
                   @click.stop
                   role="separator"
-                  class="z-5 absolute right-0 top-0 h-full w-4 cursor-col-resize hover:bg-red-100 sm:w-2"
+                  class="absolute top-0 right-0 z-5 h-full w-4 cursor-col-resize hover:bg-red-100 sm:w-2"
                 />
               </template>
             </th>
@@ -344,7 +344,9 @@ watch(rowSelection, () => {
 </template>
 
 <style>
+@reference "../../styles.css";
+
 .cell {
-  @apply flex shrink-0 items-center overflow-hidden text-nowrap border-b p-4;
+  @apply flex shrink-0 items-center overflow-hidden border-b p-4 text-nowrap;
 }
 </style>

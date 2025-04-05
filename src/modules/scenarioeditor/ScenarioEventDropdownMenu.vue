@@ -23,7 +23,7 @@ const emit = defineEmits<{
     <DropdownMenuTrigger as="child" class="">
       <button
         type="button"
-        class="block rounded-full p-2 text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+        class="block rounded-full p-2 text-gray-500 hover:text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden"
       >
         <span class="sr-only">Open options</span>
         <EllipsisVerticalIcon class="size-5" aria-hidden="true" />

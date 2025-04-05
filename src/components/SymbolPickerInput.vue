@@ -4,8 +4,8 @@
       <label for="sidc" class="block text-sm font-medium text-gray-700"
         >Symbol code</label
       >
-      <div class="mt-1 flex rounded-md shadow-sm">
-        <div class="relative flex flex-grow items-stretch focus-within:z-10">
+      <div class="mt-1 flex rounded-md shadow-xs">
+        <div class="relative flex grow items-stretch focus-within:z-10">
           <input
             type="text"
             v-model="sidcValue"
@@ -18,7 +18,7 @@
         <button
           type="button"
           @click="openModal"
-          class="relative -ml-px inline-flex items-center space-x-2 rounded-r-md border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          class="relative -ml-px inline-flex items-center space-x-2 rounded-r-md border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden"
         >
           <MenuAlt3Icon class="h-5 w-5 text-gray-400" aria-hidden="true" />
           <span>Select</span>

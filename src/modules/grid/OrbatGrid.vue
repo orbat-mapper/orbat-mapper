@@ -181,7 +181,7 @@ function toggleGroupSelect(item: any, event: Event) {
 <template>
   <div
     v-bind="containerProps"
-    class="relative h-full rounded-lg border shadow"
+    class="relative h-full rounded-lg border shadow-sm"
     :class="{ 'touch-none': isDragging }"
   >
     <OrbatGridHeader
@@ -206,7 +206,7 @@ function toggleGroupSelect(item: any, event: Event) {
         >
           <div
             v-if="select"
-            class="flex w-10 flex-shrink-0 items-center justify-center overflow-hidden border-b px-4 py-3.5 text-gray-900"
+            class="flex w-10 shrink-0 items-center justify-center overflow-hidden border-b px-4 py-3.5 text-gray-900"
           >
             <input
               type="checkbox"
@@ -222,7 +222,7 @@ function toggleGroupSelect(item: any, event: Event) {
               width: `${columnWidths[column.id]}px`,
               minWidth: `${columnWidths[column.id]}px`,
             }"
-            class="flex-0 group flex items-center overflow-hidden border-b p-4"
+            class="group flex flex-0 items-center overflow-hidden border-b p-4"
             tabindex="0"
           >
             <div v-if="column.type === 'sidc'" class="">
@@ -236,7 +236,7 @@ function toggleGroupSelect(item: any, event: Event) {
             />
             <span
               v-else-if="column.type === 'text'"
-              class="truncate whitespace-nowrap text-sm text-gray-500"
+              class="truncate text-sm whitespace-nowrap text-gray-500"
               >{{ getValue(item, column.objectPath) }}</span
             >
           </div>

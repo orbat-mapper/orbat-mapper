@@ -88,7 +88,7 @@ const onFormSubmit = () => {
 };
 </script>
 <template>
-  <form @submit.prevent="onFormSubmit" class="mb-6 mt-0 space-y-4">
+  <form @submit.prevent="onFormSubmit" class="mt-0 mb-6 space-y-4">
     <template v-if="isScenarioEvent">
       <InputGroup label="Title" v-model="form.title" id="title-input" autofocus />
       <!--      <InputGroup label="Sub title" v-model="form.subTitle" />-->

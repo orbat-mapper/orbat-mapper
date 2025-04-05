@@ -1,16 +1,16 @@
 <template>
   <aside
-    class="pointer-events-auto relative -mt-12 hidden max-h-[80vh] overflow-auto rounded-md border-b border-l border-t border-gray-300 shadow dark:border-slate-700 md:block"
+    class="pointer-events-auto relative -mt-12 hidden max-h-[80vh] overflow-auto rounded-md border-t border-b border-l border-gray-300 shadow-sm md:block dark:border-slate-700"
     :style="{ width: orbatPanelWidth + 'px' }"
   >
     <TabGroup
       as="div"
-      class="mr-1.5 flex h-full flex-auto flex-col bg-mpanel hover-none:mr-3"
+      class="bg-mpanel hover-none:mr-3 mr-1.5 flex h-full flex-auto flex-col"
       :class="{ hidden: !showBottomPanel }"
       :selected-index="activeTabIndex"
       @change="changeTab"
     >
-      <TabList class="flex-0 flex justify-between border-b border-gray-500">
+      <TabList class="flex flex-0 justify-between border-b border-gray-500">
         <div class="flex flex-auto items-center justify-evenly">
           <Tab
             as="template"

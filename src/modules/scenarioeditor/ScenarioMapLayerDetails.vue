@@ -120,7 +120,7 @@ function toggleLayerVisibility() {
             step="0.01"
             class="transparent h-1 w-full cursor-pointer appearance-none rounded-lg border-transparent bg-red-800"
           />
-          <span class="ml-2 w-8 flex-shrink-0 text-sm">{{ opacityAsPercent }}%</span>
+          <span class="ml-2 w-8 shrink-0 text-sm">{{ opacityAsPercent }}%</span>
         </div>
         <div class="ml-2 flex shrink-0 items-center">
           <IconButton

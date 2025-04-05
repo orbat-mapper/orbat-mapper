@@ -19,7 +19,7 @@
   </div>
   <div
     v-if="isDragging && isCopying"
-    class="fixed right-1/2 top-2 z-50 rounded border bg-gray-50 bg-opacity-50 p-2 text-center text-sm text-gray-900"
+    class="bg-opacity-50 fixed top-2 right-1/2 z-50 rounded border bg-gray-50 p-2 text-center text-sm text-gray-900"
   >
     <p>Dragging copy mode <span v-if="isCopyingState">(including state)</span></p>
   </div>

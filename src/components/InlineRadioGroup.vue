@@ -5,7 +5,7 @@ const props = defineProps<{ items: RadioGroupItem<string>[] }>();
 const choice = defineModel<string>({ required: true });
 </script>
 <template>
-  <div class="space-y-6 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
+  <div class="space-y-6 sm:flex sm:items-center sm:space-y-0 sm:space-x-10">
     <div v-for="{ value, name } in items" :key="value" class="flex items-center">
       <input
         :id="value"
@@ -16,7 +16,7 @@ const choice = defineModel<string>({ required: true });
       />
       <label
         :for="value"
-        class="ml-3 block text-sm font-medium leading-6 text-gray-900"
+        class="ml-3 block text-sm leading-6 font-medium text-gray-900"
         >{{ name }}</label
       >
     </div>
