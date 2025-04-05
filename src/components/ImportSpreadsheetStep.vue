@@ -135,7 +135,7 @@ async function onLoad(e: Event) {
 <template>
   <div class="">
     <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
-      <div class="flex-shrink-0 overflow-auto">
+      <div class="shrink-0 overflow-auto">
         <div class="prose prose-sm max-w-none">
           <p>
             Import units exported from
@@ -188,7 +188,7 @@ async function onLoad(e: Event) {
         />
       </section>
 
-      <footer class="flex flex-shrink-0 items-center justify-end space-x-2 pt-4">
+      <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
         <BaseButton type="submit" primary small>Import</BaseButton>
         <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
       </footer>

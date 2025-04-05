@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-dvh flex-col overflow-hidden bg-gray-300" ref="dropZoneRef">
     <nav
-      class="flex flex-shrink-0 items-center justify-between bg-slate-900 py-2 pl-6 pr-4 text-gray-200 print:hidden"
+      class="flex shrink-0 items-center justify-between bg-slate-900 py-2 pr-4 pl-6 text-gray-200 print:hidden"
     >
       <div class="flex min-w-0 flex-auto items-center">
         <div class="flex min-w-0 flex-auto items-center">
@@ -22,13 +22,13 @@
             route.meta.helpUrl || 'https://docs.orbat-mapper.app/guide/about-orbat-mapper'
           "
           target="_blank"
-          class="hidden items-center justify-center rounded-md p-2 font-medium text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white sm:inline-flex"
+          class="hidden items-center justify-center rounded-md p-2 font-medium text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset sm:inline-flex"
         >
           Help
         </a>
         <button
           @click="showSearch = true"
-          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
         >
           <SearchIcon class="block h-6 w-6" />
         </button>
@@ -37,7 +37,7 @@
             :to="{ name: MAP_EDIT_MODE_ROUTE }"
             title="Map edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
           >
             <GlobeAltIcon class="h-6 w-6" />
           </router-link>
@@ -45,7 +45,7 @@
             :to="{ name: GRID_EDIT_ROUTE }"
             title="Grid edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
           >
             <TableIcon class="h-6 w-6" />
           </router-link>
@@ -53,7 +53,7 @@
             :to="{ name: CHART_EDIT_MODE_ROUTE }"
             title="Chart edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
           >
             <IconSitemap class="h-6 w-6" />
           </router-link>
@@ -61,7 +61,7 @@
         <div class="flex items-center">
           <button
             @click="undo()"
-            class="inline-flex hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white disabled:opacity-50 sm:block"
+            class="hidden inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
             title="Undo action (ctrl+z)"
             :disabled="!canUndo"
           >
@@ -69,7 +69,7 @@
           </button>
           <button
             @click="redo()"
-            class="inline-flex hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white disabled:opacity-50 sm:block"
+            class="hidden inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
             title="Redo action"
             :disabled="!canRedo"
           >
@@ -78,14 +78,14 @@
         </div>
         <button
           @click="showKeyboardShortcuts"
-          class="inline-flex hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white sm:block"
+          class="hidden inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset sm:block"
           title="Show keyboard shortcuts"
         >
           <IconKeyboard class="block h-6 w-6" />
         </button>
 
         <button
-          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
           @click="isOpen = !isOpen"
         >
           <MenuIcon class="block h-6 w-6" />
@@ -164,7 +164,7 @@
     </div>
     <div
       v-if="uiStore.debugMode"
-      class="fixed bottom-2 left-2 z-50 rounded bg-gray-50 bg-opacity-70 text-gray-900 print:hidden"
+      class="bg-opacity-70 fixed bottom-2 left-2 z-50 rounded bg-gray-50 text-gray-900 print:hidden"
     >
       <p class="p-2 text-xs font-bold">
         <span class="sm:hidden">mo</span>

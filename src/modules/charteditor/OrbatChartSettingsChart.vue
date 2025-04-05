@@ -4,7 +4,7 @@
     <template v-if="!chartMode">
       <InputGroupTemplate label="Root unit" v-if="rootUnitStore.unit" class="my-4">
         <div class="flex items-start">
-          <div class="mt-2 w-16 flex-shrink-0">
+          <div class="mt-2 w-16 shrink-0">
             <MilSymbol
               :sidc="rootUnitStore.unit.sidc"
               :size="30"

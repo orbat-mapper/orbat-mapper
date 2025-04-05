@@ -9,7 +9,7 @@
       :initialFocus="initialFocus"
     >
       <div
-        class="flex min-h-screen items-start justify-center px-2 pb-2 pt-2 text-center sm:block sm:p-0"
+        class="flex min-h-screen items-start justify-center px-2 pt-2 pb-2 text-center sm:block sm:p-0"
       >
         <TransitionChild
           as="template"
@@ -21,7 +21,7 @@
           leave-to="opacity-0"
         >
           <DialogOverlay
-            class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+            class="bg-opacity-75 fixed inset-0 bg-gray-500 transition-opacity"
           />
         </TransitionChild>
         <TransitionChild
@@ -34,24 +34,24 @@
           leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         >
           <div
-            class="inline-block w-full transform overflow-hidden rounded-lg bg-white px-0 pb-4 pt-5 text-left align-bottom shadow-xl transition-all sm:my-8 sm:align-middle md:my-16"
+            class="inline-block w-full transform overflow-hidden rounded-lg bg-white px-0 pt-5 pb-4 text-left align-bottom shadow-xl transition-all sm:my-8 sm:align-middle md:my-16"
             :class="maxWidth"
           >
             <div class="overflow-y-auto px-4 pb-1 sm:px-6">
               <div class="mt-3 sm:mt-0">
                 <DialogTitle
                   as="h3"
-                  class="text-center text-lg font-medium leading-6 text-gray-900 sm:text-left"
+                  class="text-center text-lg leading-6 font-medium text-gray-900 sm:text-left"
                 >
                   <slot name="title">{{ dialogTitle }}</slot>
                 </DialogTitle>
                 <slot></slot>
               </div>
             </div>
-            <div class="absolute right-0 top-0 pr-4 pt-4 sm:block">
+            <div class="absolute top-0 right-0 pt-4 pr-4 sm:block">
               <button
                 type="button"
-                class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
                 @click="doClose()"
               >
                 <span class="sr-only">Close</span>

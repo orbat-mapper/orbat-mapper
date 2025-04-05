@@ -75,8 +75,8 @@ function onAddSubmit() {
 </script>
 
 <template>
-  <div class="prose max-w-none dark:prose-invert">
-    <TableHeader description="Range ring groups available in this scenario.">
+  <div class="prose dark:prose-invert max-w-none">
+    <TableHeader description="Range ring-3 groups available in this scenario.">
       <BaseButton @click="store.toggleAddGroup()">
         {{ store.showAddGroup ? "Hide form" : "Add" }}
       </BaseButton>

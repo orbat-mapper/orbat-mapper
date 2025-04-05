@@ -55,7 +55,7 @@ const sideGroupMenuItems = computed((): MenuItemData<SideAction>[] => [
     <DropdownMenuTrigger as="child" class="mr-2">
       <button
         type="button"
-        class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-army2 focus:ring-offset-2"
+        class="focus:ring-army2 inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
       >
         <span class="sr-only">Open options</span>
         <EllipsisVerticalIcon class="h-5 w-5" aria-hidden="true" />

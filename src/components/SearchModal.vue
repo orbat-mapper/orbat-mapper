@@ -11,7 +11,7 @@
           <li v-for="hit in hits">
             <button
               type="button"
-              class="flex w-full items-center rounded border border-transparent p-2 hover:border hover:border-army hover:bg-red-100 focus:ring"
+              class="hover:border-army flex w-full items-center rounded border border-transparent p-2 hover:border hover:bg-red-100 focus:ring-3"
               :class="hit.index === currentHitIndex ? 'bg-blue-200' : 'bg-gray-100'"
               @click="onSelect(hit.index)"
             >

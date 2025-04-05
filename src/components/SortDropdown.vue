@@ -33,14 +33,14 @@ const onItemClick = (item: MenuItemData<string | Function>) => {
         >
           Sort
           <ChevronDownIcon
-            class="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
+            class="-mr-1 ml-1 h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500"
             aria-hidden="true"
           />
         </MenuButton>
       </div>
 
       <MenuItems
-        class="w-40 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none"
+        class="ring-opacity-5 w-40 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black focus:outline-hidden"
       >
         <div class="py-1">
           <MenuItem

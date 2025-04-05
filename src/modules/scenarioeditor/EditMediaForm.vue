@@ -32,7 +32,7 @@ const onFormSubmit = () => {
 };
 </script>
 <template>
-  <form @submit.prevent="onFormSubmit" class="mb-6 mt-0 space-y-4">
+  <form @submit.prevent="onFormSubmit" class="mt-0 mb-6 space-y-4">
     <InputGroup label="Image URL" v-model="form.url" autofocus />
     <InputGroup label="Caption" v-model="form.caption" />
     <InputGroup label="Credits" v-model="form.credits" />

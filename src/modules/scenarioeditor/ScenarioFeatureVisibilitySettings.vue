@@ -31,7 +31,7 @@ const range = computed({
 });
 </script>
 <template>
-  <div class="col-span-2 -mb-6 mt-2 font-semibold">Visibility</div>
+  <div class="col-span-2 mt-2 -mb-6 font-semibold">Visibility</div>
   <div class="self-end">Limit</div>
   <ToggleField
     class="mt-4"

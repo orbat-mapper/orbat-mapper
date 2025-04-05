@@ -608,7 +608,7 @@ function doGroupImport(importedGroupId: string) {
         <ToggleField
           v-if="importMode === 'units'"
           v-model="selectUnits"
-          class="flex-0 flex-shrink-0"
+          class="flex-0 shrink-0"
           disabled
           >Select individual units</ToggleField
         >
@@ -790,7 +790,7 @@ function doGroupImport(importedGroupId: string) {
         />
       </template>
       <footer
-        class="flex flex-shrink-0 flex-col justify-between gap-3 pt-4 sm:flex-row sm:items-center"
+        class="flex shrink-0 flex-col justify-between gap-3 pt-4 sm:flex-row sm:items-center"
       >
         <ToggleField v-model="store.keepOpen">Keep dialog open</ToggleField>
         <div class="flex items-center gap-2">

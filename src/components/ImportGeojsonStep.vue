@@ -220,7 +220,7 @@ function loadAsFeatures() {
   <div class="">
     <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
       <fieldset class="flex items-center gap-x-10">
-        <p class="flex-none text-sm font-semibold leading-6 text-gray-900">
+        <p class="flex-none text-sm leading-6 font-semibold text-gray-900">
           Import GeoJSON as
         </p>
         <MRadioGroup class="flex w-full gap-10">
@@ -282,7 +282,7 @@ function loadAsFeatures() {
         </section>
       </div>
 
-      <footer class="flex flex-shrink-0 items-center justify-end space-x-2 pt-4">
+      <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
         <BaseButton type="submit" primary small>Import</BaseButton>
         <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
       </footer>

@@ -1,6 +1,44 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@config '../tailwind.config.cjs';
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility btn-group {
+  @apply relative z-0 inline-flex rounded-md shadow-xs;
+
+  & button {
+    @apply relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden;
+  }
+}
+
+@utility btn-group-btn {
+  @apply relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden;
+}
+
+@utility kbd-shortcut {
+  @apply mx-0.5 inline-flex items-center rounded border border-gray-200 px-2 font-mono font-sans text-sm font-medium text-gray-600;
+}
+
+@utility btn-link {
+  @apply text-sm font-semibold text-indigo-600 hover:text-indigo-900 disabled:opacity-50;
+}
 
 @layer base {
   :root {
@@ -38,9 +76,9 @@
 
     --radius: 0.5rem;
 
-    --heading: theme("colors.slate.950");
-    --subheading: theme("colors.slate.800");
-    --mpanel: theme("colors.slate.50");
+    --heading: var(--color-slate-950);
+    --subheading: var(--color-slate-800);
+    --mpanel: var(--color-slate-50);
   }
 
   .dark {
@@ -76,8 +114,8 @@
 
     --ring: 212.7 26.8% 83.9%;
 
-    --heading: theme("colors.white");
-    --mpanel: theme("colors.slate.900");
+    --heading: var(--color-white);
+    --mpanel: var(--color-slate-900);
   }
 }
 
@@ -90,38 +128,16 @@
   }
 }
 
-@layer components {
-  .btn-group {
-    @apply relative z-0 inline-flex rounded-md shadow-sm;
-  }
-
-  .btn-group button {
-    @apply relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500;
-  }
-
-  .btn-group-btn {
-    @apply relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500;
-  }
-
-  .kbd-shortcut {
-    @apply mx-0.5 inline-flex items-center rounded border border-gray-200 px-2 font-mono font-sans text-sm font-medium text-gray-600;
-  }
-
-  .btn-link {
-    @apply text-sm font-semibold text-indigo-600 hover:text-indigo-900 disabled:opacity-50;
-  }
-}
-
 .location-control {
-  @apply absolute bottom-2 left-3 rounded bg-white bg-opacity-50 px-1 text-base tabular-nums tracking-tighter text-gray-800;
+  @apply absolute bottom-2 left-3 rounded bg-white/50 px-1 text-base tracking-tighter text-gray-800 tabular-nums;
 }
 
 .badge {
-  @apply inline-flex items-center rounded-md bg-yellow-50 px-1.5 py-0.5 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20;
+  @apply inline-flex items-center rounded-md bg-yellow-50 px-1.5 py-0.5 text-xs font-medium text-yellow-800 ring-1 ring-yellow-600/20 ring-inset;
 }
 
 .muted-badge {
-  @apply inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10;
+  @apply inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-gray-500/10 ring-inset;
 }
 
 ::-webkit-scrollbar {

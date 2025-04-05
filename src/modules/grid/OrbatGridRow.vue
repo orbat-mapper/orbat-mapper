@@ -2,7 +2,7 @@
   <div class="group flex divide-x divide-gray-200 hover:bg-gray-50">
     <div
       v-if="select"
-      class="flex-0 flex w-10 items-center justify-center overflow-hidden border-b px-4 py-3.5 text-gray-900"
+      class="flex w-10 flex-0 items-center justify-center overflow-hidden border-b px-4 py-3.5 text-gray-900"
     >
       <input
         type="checkbox"
@@ -12,7 +12,7 @@
     <div
       v-for="column in columnDefs"
       :style="{ width: column.width + 'px', minWidth: column.width + 'px' }"
-      class="flex-0 group flex items-center overflow-hidden border-b p-4"
+      class="group flex flex-0 items-center overflow-hidden border-b p-4"
       tabindex="0"
     >
       <div v-if="column.type === 'sidc'" class="">
@@ -26,7 +26,7 @@
       />
       <span
         v-else-if="column.type === 'text'"
-        class="truncate whitespace-nowrap text-sm text-gray-500"
+        class="truncate text-sm whitespace-nowrap text-gray-500"
         >{{ data[column.field] }}</span
       >
     </div>

@@ -57,7 +57,7 @@ const reparentStyle = computed(() => {
 });
 
 const lineStyles =
-  "'before:content[\\'\\'] pointer-events-none top-0 right-0 absolute z-10 box-border bg-blue-700 before:absolute before:h-[--terminal-size] before:w-[--terminal-size] before:rounded-full before:border-[length:--line-thickness] before:border-solid before:border-blue-700'";
+  "'before:content[\\'\\'] pointer-events-none top-0 right-0 absolute z-10 box-border bg-blue-700 before:absolute before:h-(--terminal-size) before:w-(--terminal-size) before:rounded-full before:border-(length:--line-thickness) before:border-solid before:border-blue-700'";
 const lineAboveStyles =
   "before:top-0 before:transform-translate-x-[-50%] before:transform-translate-y-[-50%] after:top-[-1px]";
 

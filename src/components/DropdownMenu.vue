@@ -2,7 +2,7 @@
   <Menu as="div" class="relative text-left">
     <Float placement="bottom-end" :offset="8" shift>
       <MenuButton
-        class="group flex items-center rounded-md text-gray-300 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-army2 focus:ring-offset-2"
+        class="group focus:ring-army2 flex items-center rounded-md text-gray-300 hover:text-gray-200 focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
       >
         <span
           ><slot>{{ label }}</slot></span
@@ -13,7 +13,7 @@
         />
       </MenuButton>
       <MenuItems
-        class="w-48 divide-y divide-gray-200 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800"
+        class="ring-opacity-5 w-48 divide-y divide-gray-200 rounded-md bg-white shadow-lg ring-1 ring-black focus:outline-hidden dark:bg-gray-800"
       >
         <div class="py-1">
           <MenuItem
@@ -26,7 +26,7 @@
               href="#"
               :class="[
                 active
-                  ? 'border-r-2 border-army2 bg-gray-100 text-gray-900'
+                  ? 'border-army2 border-r-2 bg-gray-100 text-gray-900'
                   : 'text-gray-700 dark:text-gray-300',
                 'block px-4 py-2 text-sm',
                 disabled ? 'opacity-50 hover:cursor-default' : '',

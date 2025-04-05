@@ -17,19 +17,19 @@ const emit = defineEmits(["opened", "closed"]);
         @click="open ? emit('closed') : emit('opened')"
         class="group flex w-full items-center justify-between py-3 text-sm text-gray-400"
       >
-        <span class="font-bold text-heading">
+        <span class="text-heading font-bold">
           <slot name="label">{{ label }}</slot>
         </span>
         <span class="ml-6 flex items-center">
           <slot name="right"></slot>
           <PlusSmallIcon
             v-if="!open"
-            class="h-5 w-5 group-hover:text-gray-500 dark:group-hover:text-heading"
+            class="dark:group-hover:text-heading h-5 w-5 group-hover:text-gray-500"
             aria-hidden="true"
           />
           <MinusSmallIcon
             v-else
-            class="h-5 w-5 group-hover:text-gray-500 dark:group-hover:text-heading"
+            class="dark:group-hover:text-heading h-5 w-5 group-hover:text-gray-500"
             aria-hidden="true"
           />
         </span>

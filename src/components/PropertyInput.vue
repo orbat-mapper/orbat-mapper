@@ -35,11 +35,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="relative rounded-md shadow-sm">
+  <div class="relative rounded-md shadow-xs">
     <input
       ref="aEle"
       type="text"
-      class="block w-full rounded-md border-0 py-1.5 pr-16 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+      class="block w-full rounded-md border-0 py-1.5 pr-16 text-gray-900 ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm sm:leading-6"
       v-model.number="value"
       @keyup.esc="onKey"
       @keydown.enter.prevent="onKey"
@@ -50,7 +50,7 @@ onMounted(() => {
         ref="bEle"
         name="uom"
         v-model="uom"
-        class="h-full rounded-md border-0 bg-transparent py-0 pl-2 pr-7 text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+        class="h-full rounded-md border-0 bg-transparent py-0 pr-7 pl-2 text-gray-500 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm"
         @blur="onBlur"
       >
         <option>m/s</option>

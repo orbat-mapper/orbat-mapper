@@ -5,7 +5,7 @@
       <div v-if="!isMultiMode" class="flex">
         <button
           type="button"
-          class="mr-2 inline-flex h-20 w-16 flex-shrink-0 justify-center"
+          class="mr-2 inline-flex h-20 w-16 shrink-0 justify-center"
           @click="handleChangeSymbol()"
         >
           <MilitarySymbol :sidc="unitSidc" :size="34" :options="combinedSymbolOptions" />
@@ -28,7 +28,7 @@
         <IconLockOutline v-if="isLocked" class="h-6 w-6 text-gray-400" />
         <div v-if="unitStatus">
           <span
-            class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
+            class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-gray-500/10 ring-inset"
             >{{ unitStatus }}</span
           >
         </div>
@@ -53,7 +53,7 @@
           <li v-if="isTruncated">
             <button
               type="button"
-              class="absolute bottom-0 left-0 right-0 border bg-white bg-opacity-80 p-2 text-center text-gray-600"
+              class="bg-opacity-80 absolute right-0 bottom-0 left-0 border bg-white p-2 text-center text-gray-600"
               @click="truncateUnits = !truncateUnits"
             >
               +{{ selectedUnits.length - visibleSelectedUnits.length }}

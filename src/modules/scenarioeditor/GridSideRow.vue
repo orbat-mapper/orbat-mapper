@@ -27,7 +27,7 @@ const emit = defineEmits(["toggle", "expand", "updateSide", "nextCell", "activeI
         @click="emit('toggle', side)"
         @keydown.enter.exact="emit('toggle', side)"
         tabindex="0"
-        class="flex h-12 items-center whitespace-nowrap border-2 border-gray-100 px-4 py-2 pr-3 text-left font-bold font-medium text-gray-900 focus-within:border-red-800 hover:cursor-pointer sm:px-0"
+        class="flex h-12 items-center border-2 border-gray-100 px-4 py-2 pr-3 text-left font-bold font-medium whitespace-nowrap text-gray-900 focus-within:border-red-800 hover:cursor-pointer sm:px-0"
       >
         <button @click.stop="emit('toggle', side)" class="ml-0">
           <ChevronRightIcon

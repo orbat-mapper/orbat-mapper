@@ -1,7 +1,7 @@
 <template>
   <div class="mt-4">
     <RadioGroup v-model="data">
-      <RadioGroupLabel class="text-sm font-medium text-heading"
+      <RadioGroupLabel class="text-heading text-sm font-medium"
         >Standard identity
       </RadioGroupLabel>
       <div
@@ -19,14 +19,14 @@
             :class="[
               checked ? 'border-transparent' : 'border-gray-300',
               active ? 'border-indigo-500 ring-2 ring-indigo-500' : '',
-              'relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none dark:bg-slate-900',
+              'relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-xs focus:outline-hidden dark:bg-slate-900',
             ]"
           >
             <span class="flex flex-1">
               <span class="flex w-full flex-col items-center">
                 <RadioGroupLabel
                   as="span"
-                  class="block text-sm font-medium text-heading"
+                  class="text-heading block text-sm font-medium"
                   >{{ sid.text }}</RadioGroupLabel
                 >
                 <RadioGroupDescription as="span" class="mt-2 flex"
@@ -40,7 +40,7 @@
             <CheckCircleIcon
               :class="[
                 !checked ? 'invisible' : '',
-                'absolute right-1 top-1 h-5 w-5 text-indigo-600',
+                'absolute top-1 right-1 h-5 w-5 text-indigo-600',
               ]"
               aria-hidden="true"
             />

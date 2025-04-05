@@ -410,7 +410,7 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
     </TabPanels>
   </TabGroup>
 
-  <div class="prose p-1 dark:prose-invert">
+  <div class="prose dark:prose-invert p-1">
     <p v-if="!aggregatedEquipment.length && !aggregatedPersonnel.length">
       <span v-if="includeSubordinates"
         >No data about equipment or personnel available</span

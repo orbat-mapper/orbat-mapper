@@ -3,7 +3,7 @@
     <div class="flex divide-x divide-gray-200">
       <div
         v-if="select"
-        class="flex w-10 flex-shrink-0 items-center justify-center overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-gray-900"
+        class="flex w-10 shrink-0 items-center justify-center overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-gray-900"
       >
         <input
           type="checkbox"
@@ -21,7 +21,7 @@
           minWidth: `${widths[column.id]}px`,
         }"
         role="columnheader"
-        class="flex-0 relative flex w-full items-center justify-between overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold text-gray-900"
+        class="relative flex w-full flex-0 items-center justify-between overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold text-gray-900"
         :class="{ 'cursor-pointer': column.sortable }"
         @click="onColumnClick(column)"
       >

@@ -3,14 +3,14 @@
     <Float placement="left-start" strategy="fixed" flip shift :portal="portal">
       <MenuButton
         @click.stop=""
-        class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-army2 focus:ring-offset-2"
+        class="focus:ring-army2 inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
       >
         <span class="sr-only">Open options</span>
         <EllipsisVerticalIcon class="h-5 w-5" aria-hidden="true" />
       </MenuButton>
 
       <MenuItems
-        class="mx-3 mt-1 w-48 divide-y divide-gray-200 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800"
+        class="ring-opacity-5 mx-3 mt-1 w-48 divide-y divide-gray-200 rounded-md bg-white shadow-lg ring-1 ring-black focus:outline-hidden dark:bg-gray-800"
       >
         <div class="py-1">
           <MenuItem
@@ -23,7 +23,7 @@
               type="button"
               :class="[
                 active
-                  ? 'border-r-2 border-army2 bg-gray-100 text-gray-900'
+                  ? 'border-army2 border-r-2 bg-gray-100 text-gray-900'
                   : 'text-gray-700 dark:text-gray-300',
                 'inline-flex w-full px-4 py-2 text-sm',
                 disabled ? 'opacity-50 hover:cursor-default' : '',

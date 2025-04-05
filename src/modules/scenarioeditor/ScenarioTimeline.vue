@@ -319,7 +319,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
   >
     <div
       ref="el"
-      class="mb-2 w-full transform select-none overflow-x-hidden border-t border-gray-500 bg-mpanel text-sm transition-all"
+      class="bg-mpanel mb-2 w-full transform overflow-x-hidden border-t border-gray-500 text-sm transition-all select-none"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
       @pointermove="onPointerMove"
@@ -333,7 +333,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
         <IconTriangleDown class="h-4 w-4 scale-x-150 transform text-red-900" />
       </div>
       <div
-        class="touch-none select-none text-sm"
+        class="touch-none text-sm select-none"
         :class="animate ? 'transition-all' : 'transition-none'"
         :style="`transform:translate(${totalXOffset}px)`"
       >
@@ -375,7 +375,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
           <div
             v-for="tick in majorTicks"
             :key="tick.timestamp"
-            class="flex-none border-b border-r border-gray-300 border-r-gray-500 pl-0.5"
+            class="flex-none border-r border-b border-gray-300 border-r-gray-500 pl-0.5"
             :style="`width: ${majorWidth}px`"
           >
             {{ tick.label }}
@@ -385,7 +385,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
           <div
             v-for="tick in minorTicks"
             :key="tick.timestamp"
-            class="min-h-[1rem] flex-none border-r border-gray-300 text-muted-foreground"
+            class="text-muted-foreground min-h-[1rem] flex-none border-r border-gray-300"
             :style="`width: ${minorWidth}px`"
           >
             {{ tick.label }}
@@ -395,13 +395,13 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
 
       <p
         v-if="showHoverMarker && !isDragging"
-        class="absolute right-1 top-0 hidden select-none p-0 text-xs text-red-900 sm:block"
+        class="absolute top-0 right-1 hidden p-0 text-xs text-red-900 select-none sm:block"
       >
         {{ formattedHoveredDate }}
       </p>
       <div
         v-if="showHoverMarker"
-        class="absolute bottom-0 top-0 hidden w-0.5 bg-red-500 bg-opacity-50 hover-hover:block"
+        class="bg-opacity-50 hover-hover:block absolute top-0 bottom-0 hidden w-0.5 bg-red-500"
         :style="`left: ${hoveredX}px`"
       />
     </div>

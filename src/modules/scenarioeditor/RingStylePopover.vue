@@ -75,7 +75,7 @@ function onOpen(isOpen: boolean) {
         <div />
       </div>
       <section
-        class="mt-4 grid w-full grid-cols-[max-content_1fr] gap-4 pb-1 text-sm text-foreground"
+        class="text-foreground mt-4 grid w-full grid-cols-[max-content_1fr] gap-4 pb-1 text-sm"
       >
         <div class="col-span-2 -mb-2 font-semibold">Stroke</div>
         <div>Color</div>
@@ -112,7 +112,7 @@ function onOpen(isOpen: boolean) {
       </section>
 
       <section
-        class="mt-4 grid w-full grid-cols-[max-content_1fr] gap-4 pb-1 text-sm text-foreground"
+        class="text-foreground mt-4 grid w-full grid-cols-[max-content_1fr] gap-4 pb-1 text-sm"
       >
         <div class="col-span-2 -mb-2 font-semibold">Fill</div>
         <div>Color</div>
@@ -137,7 +137,7 @@ function onOpen(isOpen: boolean) {
         </div>
       </section>
       <PopoverClose as-child>
-        <CloseButton class="absolute right-4 top-4" />
+        <CloseButton class="absolute top-4 right-4" />
       </PopoverClose>
     </PopoverContent>
   </Popover>

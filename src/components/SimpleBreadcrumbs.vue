@@ -4,17 +4,14 @@
       <li>
         <div>
           <p class="text-gray-400">
-            <HomeIcon class="h-5 w-5 flex-shrink-0" aria-hidden="true" />
+            <HomeIcon class="h-5 w-5 shrink-0" aria-hidden="true" />
             <span class="sr-only">Root</span>
           </p>
         </div>
       </li>
       <li v-for="item in items" :key="item.name">
         <div class="flex items-center">
-          <ChevronRightIcon
-            class="h-5 w-5 flex-shrink-0 text-gray-400"
-            aria-hidden="true"
-          />
+          <ChevronRightIcon class="h-5 w-5 shrink-0 text-gray-400" aria-hidden="true" />
           <span
             v-if="item.static"
             type="button"

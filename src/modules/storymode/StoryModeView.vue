@@ -5,12 +5,12 @@
     >
       Test
     </p>
-    <header class="relative w-full bg-gray-100 p-4 md:flex-shrink-0">
+    <header class="relative w-full bg-gray-100 p-4 md:shrink-0">
       <h1>{{ state.info.name }}</h1>
       <button
         type="button"
         @click="toggleSidebar()"
-        class="fixed right-4 top-2 z-20 inline-flex items-center justify-center rounded-md bg-white bg-opacity-75 p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        class="bg-opacity-75 fixed top-2 right-4 z-20 inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
       >
         <span class="sr-only">Open main menu</span>
         <MenuIcon v-if="!sidebarIsOpen" class="block h-6 w-6" aria-hidden="true" />

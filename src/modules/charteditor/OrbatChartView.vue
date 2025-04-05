@@ -1,7 +1,7 @@
 <template>
   <div class="relative flex h-full w-screen overflow-hidden">
     <aside
-      class="hidden bg-gray-50 lg:flex lg:w-[20rem] lg:flex-shrink-0 lg:border-r lg:border-gray-200 print:hidden"
+      class="hidden bg-gray-50 lg:flex lg:w-[20rem] lg:shrink-0 lg:border-r lg:border-gray-200 print:hidden"
     >
       <OrbatChartSettings v-model:tab="currentTab" class="print:hidden" />
     </aside>
@@ -24,11 +24,11 @@
         :specific-options="specificOptions.$state"
         enable-pan-zoom
       />
-      <div class="absolute left-4 top-4 flex items-center space-x-4 print:hidden">
+      <div class="absolute top-4 left-4 flex items-center space-x-4 print:hidden">
         <button
           type="button"
           @click="isMenuOpen = true"
-          class="border-r border-gray-200 p-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden"
+          class="border-r border-gray-200 p-4 text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden focus:ring-inset lg:hidden"
         >
           <span class="sr-only">Open sidebar</span>
           <MenuAlt2Icon class="h-6 w-6" aria-hidden="true" />

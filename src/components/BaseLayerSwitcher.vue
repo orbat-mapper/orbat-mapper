@@ -35,13 +35,13 @@ const nsettings = computed(() => [...props.settings]);
         <div
           :class="[
             settingIdx === 0 ? 'rounded-tl-md rounded-tr-md' : '',
-            settingIdx === settings.length - 1 ? 'rounded-bl-md rounded-br-md' : '',
+            settingIdx === settings.length - 1 ? 'rounded-br-md rounded-bl-md' : '',
             checked ? 'z-10 border-indigo-200 bg-indigo-50' : 'border-gray-200',
-            'relative flex cursor-pointer border p-4 focus:outline-none',
+            'relative flex cursor-pointer border p-4 focus:outline-hidden',
           ]"
         >
           <span
-            class="flex-shrink-0"
+            class="shrink-0"
             :class="[
               checked ? 'border-transparent bg-indigo-600' : 'border-gray-300 bg-white',
               active ? 'ring-2 ring-indigo-500 ring-offset-2' : '',
@@ -72,7 +72,7 @@ const nsettings = computed(() => [...props.settings]);
                 v-else
                 :model-value="setting.opacity"
                 @update:model-value="$emit('update:layerOpacity', setting, $event)"
-                class="flex-shrink-0"
+                class="shrink-0"
               />
             </RadioGroupLabel>
             <RadioGroupDescription

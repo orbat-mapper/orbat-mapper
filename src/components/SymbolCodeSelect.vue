@@ -1,6 +1,6 @@
 <template>
   <Listbox as="div" v-model="selectedValue" class="">
-    <ListboxLabel class="block text-sm font-medium text-heading">
+    <ListboxLabel class="text-heading block text-sm font-medium">
       {{ label }}
     </ListboxLabel>
     <Float
@@ -17,10 +17,10 @@
       leave-to="opacity-0"
     >
       <ListboxButton
-        class="t ext-left relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-800 sm:text-sm"
+        class="t ext-left relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 shadow-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden sm:text-sm dark:bg-slate-800"
       >
         <div class="flex items-center">
-          <div class="flex h-8 w-10 flex-shrink-0 items-center">
+          <div class="flex h-8 w-10 shrink-0 items-center">
             <MilitarySymbol
               :sidc="selected?.sidc || ''"
               alt=""
@@ -38,7 +38,7 @@
       </ListboxButton>
 
       <ListboxOptions
-        class="max-h-56 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-800 sm:text-sm"
+        class="ring-opacity-5 max-h-56 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-base shadow-lg ring-1 ring-black focus:outline-hidden sm:text-sm dark:bg-slate-800"
       >
         <ListboxOption
           as="template"
@@ -50,11 +50,11 @@
           <li
             :class="[
               active ? 'bg-indigo-600 text-white' : 'text-gray-900',
-              'relative cursor-default select-none py-2 pl-3 pr-9',
+              'relative cursor-default py-2 pr-9 pl-3 select-none',
             ]"
           >
             <div class="flex items-center">
-              <p class="flex h-7 w-8 flex-shrink-0 items-center justify-center">
+              <p class="flex h-7 w-8 shrink-0 items-center justify-center">
                 <MilitarySymbol
                   :size="20"
                   :sidc="item.sidc"

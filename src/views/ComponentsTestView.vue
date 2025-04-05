@@ -3,7 +3,7 @@
     <div class="py-10">
       <header>
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 class="text-3xl font-bold leading-tight text-gray-900">Test components</h1>
+          <h1 class="text-3xl leading-tight font-bold text-gray-900">Test components</h1>
         </div>
       </header>
       <main class="mt-4">
@@ -126,7 +126,7 @@
               </SettingsPanel>
             </div>
           </section>
-          <div class="fixed left-20 top-10">
+          <div class="fixed top-10 left-20">
             <DotsMenu :items="scenarioMenuItems" class="relative -mr-2 pt-2"></DotsMenu>
           </div>
         </div>

@@ -32,7 +32,7 @@
               type="button"
               @click="toggleLeftPanel()"
               title="Show panel"
-              class="pointer-events-auto absolute -my-12 rounded bg-white bg-opacity-70 p-1 text-gray-600 hover:text-gray-900"
+              class="bg-opacity-70 pointer-events-auto absolute -my-12 rounded bg-white p-1 text-gray-600 hover:text-gray-900"
             >
               <ShowPanelIcon class="h-7 w-7" />
             </button>

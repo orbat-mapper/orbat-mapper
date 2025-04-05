@@ -35,7 +35,7 @@ function toggleOpen() {
       <div
         :id="`cell-${itemIndex}-0`"
         tabindex="0"
-        class="flex h-12 items-center whitespace-nowrap border-2 border-gray-100 bg-gray-100 py-2 pr-3 text-sm font-medium text-gray-900 focus-within:border-red-800"
+        class="flex h-12 items-center border-2 border-gray-100 bg-gray-100 py-2 pr-3 text-sm font-medium whitespace-nowrap text-gray-900 focus-within:border-red-800"
         @click.self="toggleOpen()"
         @keydown.enter.exact="toggleOpen()"
       >
@@ -66,7 +66,7 @@ function toggleOpen() {
     </td>
     <td :colspan="columns.length - 1" class="">
       <div
-        class="flex h-12 items-center whitespace-nowrap py-2 pr-3 text-sm font-medium text-gray-900"
+        class="flex h-12 items-center py-2 pr-3 text-sm font-medium whitespace-nowrap text-gray-900"
       >
         <BaseButton small class="ml-2" @click="emit('expand', sideGroup)"
           >Expand/collapse

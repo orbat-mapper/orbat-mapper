@@ -67,7 +67,7 @@ function addEvent() {
           <div class="relative flex-auto pb-4">
             <span
               v-if="eventIdx !== events.length - 1"
-              class="absolute left-2 top-2 -ml-px h-full w-0.5 bg-gray-200"
+              class="absolute top-2 left-2 -ml-px h-full w-0.5 bg-gray-200"
               aria-hidden="true"
             />
             <div class="relative flex space-x-4">

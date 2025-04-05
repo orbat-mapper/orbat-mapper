@@ -74,7 +74,7 @@ function onItemAction(item: NEquipmentData, action: string) {
 </script>
 
 <template>
-  <div class="prose max-w-none dark:prose-invert">
+  <div class="prose dark:prose-invert max-w-none">
     <TableHeader description="A list of unit statues is available in this scenario.">
       <BaseButton @click="store.toggleAddEquipment()">
         {{ store.showAddEquipment ? "Hide form" : "Add" }}

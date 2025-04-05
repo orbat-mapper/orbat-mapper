@@ -1,7 +1,7 @@
 <template>
   <li
     :class="[
-      'flex cursor-default select-none items-center px-4 py-2',
+      'flex cursor-default items-center px-4 py-2 select-none',
       active && 'bg-army text-white',
     ]"
   >
@@ -12,7 +12,7 @@
       class="ml-3 flex-auto truncate"
       v-html="item.highlight ? item.highlight : item.name"
     />
-    <p class="flex-shrink-0 text-xs font-medium">
+    <p class="shrink-0 text-xs font-medium">
       {{ formatDateString(item.startTime, timeZone).split("T")[0] }}
     </p>
   </li>

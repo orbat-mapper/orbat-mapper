@@ -8,7 +8,7 @@
     </div>
   </div>
 
-  <ul class="mt-2 divide-y divide-gray-200 border-b border-t border-gray-200">
+  <ul class="mt-2 divide-y divide-gray-200 border-t border-b border-gray-200">
     <li v-if="unit.location" class="relative flex items-center py-4">
       <div class="flex min-w-0 flex-auto flex-col text-sm">
         <span class="font-medium text-gray-500">Initial position</span>
@@ -26,7 +26,7 @@
           {{ formatPosition(unit.location) }}
         </p>
       </div>
-      <div class="flex-0 relative flex items-center space-x-0">
+      <div class="relative flex flex-0 items-center space-x-0">
         <DotsMenu :items="initialMenuItems" @action="onStateAction(-1, $event)" portal />
       </div>
     </li>
@@ -57,7 +57,7 @@
         />
         <p
           v-else-if="s.title"
-          class="my-1 font-medium leading-tight text-gray-900"
+          class="my-1 leading-tight font-medium text-gray-900"
           @dblclick="editTitle(s)"
         >
           {{ s.title }}
@@ -99,7 +99,7 @@
         </div>
       </div>
 
-      <div class="flex-0 relative flex items-center space-x-0">
+      <div class="relative flex flex-0 items-center space-x-0">
         <IconButton
           title="Goto Time and Place"
           @click="changeToState(s)"

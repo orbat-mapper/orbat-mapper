@@ -217,7 +217,7 @@ watch(
                 v-for="header in headerGroup.headers"
                 :key="header.id"
                 role="columnheader"
-                class="sticky top-0 z-10 min-w-0 max-w-0 truncate border-b border-b-slate-950/10 bg-mpanel px-4 py-2 font-medium first:border-l-0 first:pl-[var(--gutter,theme(spacing.4))] last:pr-[var(--gutter,theme(spacing.4))] dark:border-b-white/10"
+                class="bg-mpanel sticky top-0 z-10 max-w-0 min-w-0 truncate border-b border-b-slate-950/10 px-4 py-2 font-medium first:border-l-0 first:pl-(--gutter,--spacing(4)) last:pr-(--gutter,--spacing(4)) dark:border-b-white/10"
                 @click="header.column.getToggleSortingHandler()?.($event)"
                 :style="{
                   width: `${header.getSize()}px`,
@@ -251,13 +251,13 @@ watch(
                     @touchstart="header.getResizeHandler()($event)"
                     @click.stop
                     role="separator"
-                    class="z-5 absolute right-0 top-0 h-full w-2 cursor-col-resize select-none border-r-2 border-r-slate-950/5 hover:bg-red-100 dark:border-r-white/10"
+                    class="absolute top-0 right-0 z-5 h-full w-2 cursor-col-resize border-r-2 border-r-slate-950/5 select-none hover:bg-red-100 dark:border-r-white/10"
                     :class="header.column.getIsResizing() ? 'bg-red-100' : ''"
                   />
                 </template>
               </th>
               <th
-                class="sticky right-0 top-0 z-10 truncate border-b border-b-slate-950/10 bg-mpanel px-4 py-2 text-right font-medium first:border-l-0 first:pl-[var(--gutter,theme(spacing.4))] last:pr-[var(--gutter,theme(spacing.4))] dark:border-b-white/10"
+                class="bg-mpanel sticky top-0 right-0 z-10 truncate border-b border-b-slate-950/10 px-4 py-2 text-right font-medium first:border-l-0 first:pl-(--gutter,--spacing(4)) last:pr-(--gutter,--spacing(4)) dark:border-b-white/10"
               >
                 <ToeGridTableMenu :table="table" />
               </th>
@@ -281,7 +281,7 @@ watch(
                   v-for="(cell, idx) in row.getVisibleCells()"
                   :key="cell.id"
                   :id="cell.id"
-                  class="min-w-0 max-w-0 px-4 first:pl-[var(--gutter,theme(spacing.4))] last:pr-[var(--gutter,theme(spacing.4))]"
+                  class="max-w-0 min-w-0 px-4 first:pl-(--gutter,--spacing(4)) last:pr-(--gutter,--spacing(4))"
                   :class="[
                     dense ? 'py-2.5' : 'py-4',
                     cell.column.columnDef.meta?.align === 'right' ? 'text-right' : '',

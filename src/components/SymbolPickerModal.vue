@@ -3,7 +3,7 @@
     v-model="open"
     :dialog-title="dialogTitle"
     @cancel="emit('cancel')"
-    max-width="md:max-w-screen-md max-w-screen-lg"
+    max-width="md:max-w-(--breakpoint-md) max-w-(--breakpoint-lg)"
   >
     <div class="flex h-full flex-col">
       <header class="mt-4 flex h-20 w-full items-center justify-between">
@@ -21,11 +21,11 @@
             <div class="relative">
               <div class="relative">
                 <MagnifyingGlassIcon
-                  class="pointer-events-none absolute left-4 top-3.5 h-5 w-5 text-gray-400"
+                  class="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-gray-400"
                   aria-hidden="true"
                 />
                 <ComboboxInput
-                  class="h-12 w-full border-0 bg-transparent pl-11 pr-4 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+                  class="h-12 w-full border-0 bg-transparent pr-4 pl-11 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
                   placeholder="Search..."
                   @change="searchQuery = $event.target.value"
                   ref="searchInputRef"
@@ -48,7 +48,7 @@
                     >
                       <li
                         :class="[
-                          'flex cursor-default select-none items-center px-4 py-2',
+                          'flex cursor-default items-center px-4 py-2 select-none',
                           active ? 'bg-army text-white' : 'even:bg-gray-100',
                         ]"
                       >
@@ -167,7 +167,7 @@
           </keep-alive>
         </TabItem>
       </TabView>
-      <div class="flex flex-shrink-0 justify-end space-x-2 pt-4">
+      <div class="flex shrink-0 justify-end space-x-2 pt-4">
         <SecondaryButton type="button" @click="clearModifiers()" class=""
           >Clear modifiers
         </SecondaryButton>

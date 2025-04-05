@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="pointer-events-auto flex w-full items-center justify-between border border-gray-300 bg-mpanel p-1 text-sm shadow sm:rounded-xl md:w-auto"
+    class="bg-mpanel pointer-events-auto flex w-full items-center justify-between border border-gray-300 p-1 text-sm shadow-sm sm:rounded-xl md:w-auto"
   >
     <section class="flex items-center justify-between">
       <MainToolbarButton
@@ -66,7 +66,7 @@
           :disabled="!activeParentId || unitActions.isUnitLocked(activeParentId)"
         >
           <AddSymbolIcon
-            class="absolute -right-2 bottom-0 h-4 w-4 rounded-full bg-white bg-opacity-70 text-gray-600 group-hover:text-gray-900"
+            class="bg-opacity-70 absolute -right-2 bottom-0 h-4 w-4 rounded-full bg-white text-gray-600 group-hover:text-gray-900"
           />
         </PanelSymbolButton>
         <SymbolPickerPopover :symbol-options="symbolOptions" :add-unit="addUnit" />
@@ -124,7 +124,7 @@
     </section>
     <FloatingPanel
       v-if="isGetLocationActive"
-      class="absolute bottom-14 overflow-visible bg-opacity-75 p-2 px-4 text-sm sm:bottom-16 sm:left-1/2 sm:-translate-x-1/2"
+      class="bg-opacity-75 absolute bottom-14 overflow-visible p-2 px-4 text-sm sm:bottom-16 sm:left-1/2 sm:-translate-x-1/2"
     >
       Click on map or ORBAT to place unit.
       <button

@@ -2,7 +2,7 @@
   <div class="flex h-full flex-col bg-gray-100 dark:bg-slate-900">
     <header>
       <p
-        class="relative left-0 right-0 top-0 bg-gray-300 p-1 text-center text-slate-900 dark:bg-slate-800 dark:text-slate-300"
+        class="relative top-0 right-0 left-0 bg-gray-300 p-1 text-center text-slate-900 dark:bg-slate-800 dark:text-slate-300"
       >
         This is a work in progress prototype. Follow the
         <a href="https://github.com/orbat-mapper/orbat-mapper" class="underline"
@@ -19,15 +19,15 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6">
           <div class="text-center">
             <h1
-              class="text-4xl font-bold tracking-tight text-heading sm:text-5xl md:text-6xl"
+              class="text-heading text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl"
             >
               <span class="text-red-900 dark:text-red-900/90">ORBAT</span>
-              Mapper<span class="absolute text-sm uppercase tracking-normal text-gray-500"
+              Mapper<span class="absolute text-sm tracking-normal text-gray-500 uppercase"
                 >beta</span
               >
             </h1>
             <p
-              class="mx-auto mt-3 max-w-md text-base text-gray-700 dark:text-slate-400 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl"
+              class="mx-auto mt-3 max-w-md text-base text-gray-700 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl dark:text-slate-400"
             >
               Recreate historic battles and military scenarios in your browser
             </p>
@@ -50,22 +50,22 @@
       <section id="features" class="bg-white dark:bg-slate-900">
         <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div class="mx-auto max-w-3xl text-center">
-            <h2 class="text-3xl font-bold tracking-tight text-heading">Features</h2>
+            <h2 class="text-heading text-3xl font-bold tracking-tight">Features</h2>
             <p class="mt-4 text-lg text-gray-500 dark:text-slate-400">
               Some of the things you can do with ORBAT mapper
             </p>
           </div>
           <dl
-            class="mt-12 space-y-10 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-12 sm:space-y-0 lg:grid-cols-4 lg:gap-x-8"
+            class="mt-12 space-y-10 sm:grid sm:grid-cols-2 sm:space-y-0 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-4 lg:gap-x-8"
           >
             <div v-for="feature in features" :key="feature.name" class="relative">
               <dt>
                 <CheckIcon class="absolute h-6 w-6 text-green-500" aria-hidden="true" />
-                <p class="ml-9 text-lg font-medium leading-6 text-heading">
+                <p class="text-heading ml-9 text-lg leading-6 font-medium">
                   {{ feature.name }}
                 </p>
               </dt>
-              <dd class="ml-9 mt-2 text-base text-gray-500 dark:text-slate-400">
+              <dd class="mt-2 ml-9 text-base text-gray-500 dark:text-slate-400">
                 {{ feature.description }}
               </dd>
             </div>
@@ -88,7 +88,7 @@
               />
             </div>
             <ul class="flex flex-col gap-4">
-              <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="flex-shrink-0"
+              <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="shrink-0"
                 >Orbat chart test
               </router-link>
               <router-link to="/storymode" class="">Story mode test</router-link>

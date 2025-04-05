@@ -56,7 +56,7 @@ onKeyStroke("Escape", (event) => {
 
 <template>
   <div class="flex flex-col">
-    <VerticalToolbar class="shadow">
+    <VerticalToolbar class="shadow-sm">
       <ToolbarButton
         top
         @click="toggleAddMultiple()"
@@ -99,7 +99,7 @@ onKeyStroke("Escape", (event) => {
       </ToolbarButton>
     </VerticalToolbar>
 
-    <VerticalToolbar class="mt-2 shadow">
+    <VerticalToolbar class="mt-2 shadow-sm">
       <ToolbarButton
         top
         title="Modify feature"

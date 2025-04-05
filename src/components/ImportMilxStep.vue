@@ -216,7 +216,7 @@ async function onLoad(e: Event) {
         </section>
       </div>
 
-      <footer class="flex flex-shrink-0 items-center justify-between pt-4">
+      <footer class="flex shrink-0 items-center justify-between pt-4">
         <ToggleField v-model="store.keepOpen">Keep dialog open on import</ToggleField>
         <div class="flex items-center space-x-2">
           <BaseButton type="submit" primary small>Import</BaseButton>

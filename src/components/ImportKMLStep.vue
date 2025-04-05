@@ -83,7 +83,7 @@ function onCancel() {
         </AlertWarning>
       </div>
 
-      <footer class="flex flex-shrink-0 items-center justify-end space-x-2 pt-4">
+      <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
         <BaseButton type="submit" primary small>Import</BaseButton>
         <BaseButton small @click="onCancel()">Cancel</BaseButton>
       </footer>

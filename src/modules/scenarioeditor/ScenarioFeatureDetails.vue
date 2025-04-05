@@ -192,7 +192,7 @@ function onAction(action: ScenarioFeatureActions) {
   <div>
     <ItemMedia v-if="media" :media="media" />
     <header class="">
-      <div v-if="isMultiMode" class="mb-2 mt-6 flex items-center justify-between">
+      <div v-if="isMultiMode" class="mt-6 mb-2 flex items-center justify-between">
         <p class="font-medium">{{ selectedFeatureIds.size }} features selected</p>
         <button @click="clearSelection()" class="text-indigo-600 hover:text-indigo-900">
           Clear

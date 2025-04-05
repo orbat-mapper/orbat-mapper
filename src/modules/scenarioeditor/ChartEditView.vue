@@ -38,14 +38,14 @@
     </ResizablePanel>
     <main class="relative h-full flex-auto bg-gray-50">
       <SimpleBreadcrumbs
-        class="absolute left-2 top-2 z-10 bg-gray-50 bg-opacity-80 print:hidden"
+        class="bg-opacity-80 absolute top-2 left-2 z-10 bg-gray-50 print:hidden"
         :items="breadcrumbItems"
       />
-      <nav class="absolute right-4 top-2 z-10 rounded-full bg-white print:hidden">
+      <nav class="absolute top-2 right-4 z-10 rounded-full bg-white print:hidden">
         <DotsMenu :items="menuItems" />
       </nav>
 
-      <ToggleField class="absolute bottom-2 right-2 z-10 print:hidden" v-model="debug"
+      <ToggleField class="absolute right-2 bottom-2 z-10 print:hidden" v-model="debug"
         >Debug mode</ToggleField
       >
       <p v-if="!activeUnit" class="p-8 text-center">Select a root unit in the sidebar</p>

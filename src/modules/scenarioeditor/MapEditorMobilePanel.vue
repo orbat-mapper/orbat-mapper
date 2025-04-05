@@ -28,7 +28,7 @@
       :selected-index="activeTabIndex"
       @change="changeTab"
     >
-      <TabList class="flex-0 flex justify-between border-b border-gray-500">
+      <TabList class="flex flex-0 justify-between border-b border-gray-500">
         <div ref="swipeDownEl" class="flex flex-auto items-center justify-evenly">
           <Tab
             as="template"

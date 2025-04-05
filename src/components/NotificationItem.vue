@@ -9,7 +9,7 @@
   >
     <div
       v-if="show"
-      class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5"
+      class="ring-opacity-5 pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black"
     >
       <div class="p-4">
         <div class="flex items-start">
@@ -19,10 +19,10 @@
             </p>
           </div>
 
-          <div class="ml-4 flex flex-shrink-0">
+          <div class="ml-4 flex shrink-0">
             <button
               @click="close()"
-              class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
             >
               <span class="sr-only">Close</span>
               <XIcon class="h-5 w-5" aria-hidden="true" />

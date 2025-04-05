@@ -2,8 +2,8 @@
   <div class="min-h-screen bg-gray-100 py-10 dark:bg-slate-900">
     <header>
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold leading-tight text-heading">Create new scenario</h1>
-        <div class="prose mt-4 dark:prose-invert">
+        <h1 class="text-heading text-3xl leading-tight font-bold">Create new scenario</h1>
+        <div class="prose dark:prose-invert mt-4">
           <p>
             Here you can provide some initial data for your scenario if you want. You can
             always change these settings later.
@@ -54,7 +54,7 @@
                 v-model="sideData.standardIdentity"
                 v-model:fill-color="sideData.symbolOptions.fillColor"
               />
-              <SimpleDivider class="mb-4 mt-4">Root units</SimpleDivider>
+              <SimpleDivider class="mt-4 mb-4">Root units</SimpleDivider>
               <div class="space-y-6">
                 <template v-for="(unit, i) in sideData.units">
                   <div class="flex items-end gap-4 md:grid md:grid-cols-2">
@@ -104,7 +104,7 @@
               <button
                 v-if="idx === form.sides.length - 1"
                 type="button"
-                class="btn-link absolute right-4 top-2"
+                class="btn-link absolute top-2 right-4"
                 @click="form.sides.pop()"
               >
                 Remove side

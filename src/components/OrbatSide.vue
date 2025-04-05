@@ -3,7 +3,7 @@
     <header
       ref="dropRef"
       :id="`os-${side.id}`"
-      class="group relative -ml-4 flex items-center justify-between border-b-2 border-t-2 border-gray-300 bg-gray-200 py-1 pl-4 dark:border-gray-600 dark:bg-gray-700"
+      class="group relative -ml-4 flex items-center justify-between border-t-2 border-b-2 border-gray-300 bg-gray-200 py-1 pl-4 dark:border-gray-600 dark:bg-gray-700"
     >
       <IconDrag
         class="h-6 w-6 flex-none cursor-move text-gray-500 group-focus-within:opacity-100 group-hover:opacity-100 sm:-ml-3 sm:opacity-0"
@@ -58,7 +58,7 @@
       class="-ml-6"
     />
     <div v-show="isOpen">
-      <div v-if="showFilter" class="mr-10 mt-4">
+      <div v-if="showFilter" class="mt-4 mr-10">
         <FilterQueryInput
           v-model="filterQuery"
           v-model:location-filter="hasLocationFilter"

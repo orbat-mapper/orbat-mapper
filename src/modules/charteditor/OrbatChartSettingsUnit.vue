@@ -3,7 +3,7 @@
     <p class="text-sm text-gray-600">Unit specific options.</p>
     <div v-if="currentUnit" class="s">
       <header class="flex items-start">
-        <div class="h-20 w-16 flex-shrink-0">
+        <div class="h-20 w-16 shrink-0">
           <MilitarySymbol
             :sidc="currentUnit.sidc"
             :size="34"

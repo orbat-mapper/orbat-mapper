@@ -200,7 +200,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
   <li :id="'ou-' + unit.id" class="relative text-gray-900 dark:text-gray-400">
     <div
       ref="itemRef"
-      class="group relative flex items-center justify-between border-l-2 py-2 pl-2 hover:bg-gray-200 dark:hover:bg-gray-700 sm:pl-0"
+      class="group relative flex items-center justify-between border-l-2 py-2 pl-2 hover:bg-gray-200 sm:pl-0 dark:hover:bg-gray-700"
       @dblclick="isOpen = !isOpen"
       @click="onUnitClick(unit, $event)"
       :class="[
@@ -225,7 +225,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
         <button class="flex items-center space-x-1">
           <div class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
             <div
-              class="relative flex flex-shrink-0 cursor-move justify-center"
+              class="relative flex shrink-0 cursor-move justify-center"
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
               ref="dragItemRef"
             >
@@ -236,7 +236,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
               />
               <span
                 v-if="unit.reinforcedStatus"
-                class="absolute -right-2.5 -top-2 text-xs font-medium"
+                class="absolute -top-2 -right-2.5 text-xs font-medium"
                 >{{
                   mapReinforcedStatus2Field(unit.reinforcedStatus, { compact: true })
                 }}</span
@@ -256,7 +256,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
       <div class="flex items-center">
         <IconLockOutline v-if="unit.locked" class="h-5 w-5 text-gray-400" />
         <DotsMenu
-          class="flex-shrink-0 pr-2 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+          class="shrink-0 pr-2 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           :items="menuItems"
           @action="onUnitMenuAction(unit, $event)"
         />
