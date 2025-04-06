@@ -63,7 +63,7 @@ import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPa
 import { storeToRefs } from "pinia";
 import { useUiStore, useWidthStore } from "@/stores/uiStore";
 import { defineAsyncComponent, onMounted, onUnmounted } from "vue";
-import { ScenarioEvent } from "@/types/scenarioModels";
+import { type ScenarioEvent } from "@/types/scenarioModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
 import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";

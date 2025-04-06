@@ -1,4 +1,4 @@
-import {
+import type {
   CurrentStateType,
   EquipmentData,
   Media,
@@ -17,8 +17,8 @@ import {
   UnitStatus,
   UnitSupply,
 } from "./scenarioModels";
-import { EntityId } from "./base";
-import {
+import type { EntityId } from "./base";
+import type {
   FeatureId,
   RangeRingGroup,
   ScenarioFeature,
@@ -29,7 +29,7 @@ import {
   ScenarioTileJSONLayer,
   ScenarioXYZLayer,
 } from "@/types/scenarioGeoModels";
-import { Optional } from "@/types/helpers";
+import type { Optional } from "@/types/helpers";
 
 export interface NUnit
   extends Omit<

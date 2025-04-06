@@ -1,4 +1,4 @@
-import { nextTick, onBeforeUpdate, onMounted, Ref } from "vue";
+import { nextTick, onBeforeUpdate, onMounted, type Ref } from "vue";
 import { nanoid } from "nanoid";
 import { promiseTimeout } from "@vueuse/core";
 

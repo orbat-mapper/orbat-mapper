@@ -77,7 +77,7 @@ import {
   RadioGroupOption,
 } from "@headlessui/vue";
 import { CheckCircleIcon } from "@heroicons/vue/20/solid";
-import { SymbolItem, SymbolValue } from "@/types/constants";
+import type { SymbolItem, SymbolValue } from "@/types/constants";
 import MilSymbol from "@/components/MilSymbol.vue";
 import { useToggle, useVModel } from "@vueuse/core";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";

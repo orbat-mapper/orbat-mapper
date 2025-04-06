@@ -1,9 +1,9 @@
 import dayjs from "dayjs";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { toStringHDMS } from "ol/coordinate";
-import { formatDecimalDegrees, formatMGRS, MGRSPrecision } from "@/utils/geoConvert";
+import { formatDecimalDegrees, formatMGRS, type MGRSPrecision } from "@/utils/geoConvert";
 import type { MeasurementUnit } from "@/composables/geoMeasurement";
-import { CoordinateFormatType } from "@/composables/geoShowLocation";
+import { type CoordinateFormatType } from "@/composables/geoShowLocation";
 import { truncate } from "@turf/truncate";
 import { point } from "@turf/helpers";
 import type { Position } from "geojson";

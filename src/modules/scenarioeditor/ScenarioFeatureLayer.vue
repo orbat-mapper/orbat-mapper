@@ -11,16 +11,16 @@ import {
 } from "@iconify-prerendered/vue-mdi";
 import EditLayerInlineForm from "@/modules/scenarioeditor/EditLayerInlineForm.vue";
 import ScenarioFeatureListItem from "@/modules/scenarioeditor/ScenarioFeatureListItem.vue";
-import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
+import type { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { MenuItemData } from "@/components/types";
+import type { MenuItemData } from "@/components/types";
 import {
-  ScenarioFeatureActions,
-  ScenarioLayerAction,
+  type ScenarioFeatureActions,
+  type ScenarioLayerAction,
   ScenarioLayerActions,
 } from "@/types/constants";
-import { FeatureId } from "@/types/scenarioGeoModels";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { onMounted, onUnmounted, ref } from "vue";
 import {
@@ -32,7 +32,7 @@ import {
   idle,
   isScenarioFeatureDragItem,
   isScenarioFeatureLayerDragItem,
-  ItemState,
+  type ItemState,
 } from "@/types/draggables";
 import { useTimeoutFn } from "@vueuse/core";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";

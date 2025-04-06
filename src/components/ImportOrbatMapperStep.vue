@@ -3,8 +3,7 @@ import { computed, h, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { createNameToIdMap, injectStrict, moveItemMutable } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import {
-  mapReinforcedStatus2Field,
+import type {
   Scenario,
   SideGroup,
   Unit,
@@ -13,16 +12,17 @@ import {
   UnitStatus,
   UnitSymbolOptions,
 } from "@/types/scenarioModels";
+import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
-import { SelectItem } from "@/components/types";
+import type { SelectItem } from "@/components/types";
 import { prepareScenario } from "@/scenariostore/newScenarioStore";
 import SimpleSelect from "@/components/SimpleSelect.vue";
-import { CellContext, ColumnDef } from "@tanstack/vue-table";
+import type { CellContext, ColumnDef } from "@tanstack/vue-table";
 import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { useImportStore } from "@/stores/importExportStore";
-import { NSideGroup, NSupplyCategory, NUnit } from "@/types/internalModels";
+import type { NSideGroup, NSupplyCategory, NUnit } from "@/types/internalModels";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
 import InputRadio from "@/components/InputRadio.vue";
 import MRadioGroup from "@/components/MRadioGroup.vue";

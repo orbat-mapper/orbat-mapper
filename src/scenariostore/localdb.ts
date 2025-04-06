@@ -1,5 +1,6 @@
-import { DBSchema, IDBPDatabase, openDB } from "idb";
-import { Scenario } from "@/types/scenarioModels";
+import type { DBSchema, IDBPDatabase } from "idb";
+import { openDB } from "idb";
+import type { Scenario } from "@/types/scenarioModels";
 import { nanoid } from "@/utils";
 import { saveBlobToLocalFile } from "@/utils/files";
 

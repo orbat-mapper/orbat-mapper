@@ -1,23 +1,23 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from "vue";
 import {
-  ColumnDef,
+  type ColumnDef,
   FlexRender,
   getCoreRowModel,
   getExpandedRowModel,
   getFilteredRowModel,
   getGroupedRowModel,
   getSortedRowModel,
-  InitialTableState,
-  RowSelectionState,
-  SortingState,
+  type InitialTableState,
+  type RowSelectionState,
+  type SortingState,
   useVueTable,
 } from "@tanstack/vue-table";
 import { valueUpdater } from "@/modules/grid/helpers";
 import { useDebounce } from "@vueuse/core";
 import ToeGridTableMenu from "@/modules/scenarioeditor/ToeGridTableMenu.vue";
 import { storeToRefs } from "pinia";
-import { TableStore } from "@/stores/tableStores";
+import { type TableStore } from "@/stores/tableStores";
 import BaseButton from "@/components/BaseButton.vue";
 
 interface Props {

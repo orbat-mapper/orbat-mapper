@@ -1,7 +1,7 @@
 import { nanoid, toDom } from "@/utils";
-import { TScenario } from "@/scenariostore";
+import type { TScenario } from "@/scenariostore";
 import type { FeatureCollection } from "geojson";
-import { ImportGeoJsonFeature } from "@/importexport/jsonish/types";
+import type { ImportGeoJsonFeature } from "@/importexport/jsonish/types";
 
 export interface MilxImportedLayer {
   id: string;

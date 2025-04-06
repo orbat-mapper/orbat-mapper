@@ -2,7 +2,7 @@ import OLMap from "ol/Map";
 import { type MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
 import { ref, watch } from "vue";
 import { ScaleLine } from "ol/control";
-import { MeasurementUnit } from "@/composables/geoMeasurement";
+import type { MeasurementUnit } from "@/composables/geoMeasurement";
 
 export type CoordinateFormatType = "MGRS" | "DecimalDegrees" | "DegreeMinuteSeconds";
 

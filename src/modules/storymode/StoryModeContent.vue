@@ -9,7 +9,7 @@
 import { computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import { renderMarkdown } from "../../composables/formatting";
 import { actions, content } from "../../testdata/testStory";
-import scrollama, { ScrollamaInstance } from "scrollama";
+import scrollama, { type ScrollamaInstance } from "scrollama";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 
 export default defineComponent({

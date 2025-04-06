@@ -7,8 +7,8 @@ import {
 } from "@/modules/scenarioeditor/featureLayerUtils";
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import { nextTick, onMounted, onUnmounted, ref } from "vue";
-import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
-import {
+import type { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
+import type {
   FeatureId,
   ScenarioLayer,
   ScenarioMapLayer,
@@ -17,13 +17,13 @@ import {
 import { IconEye, IconEyeOff } from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
-import { ButtonGroupItem, DropTarget, MenuItemData } from "@/components/types";
-import {
+import type { ButtonGroupItem, DropTarget, MenuItemData } from "@/components/types";
+import type {
   ScenarioFeatureActions,
   ScenarioLayerAction,
-  ScenarioLayerActions,
   ScenarioMapLayerAction,
 } from "@/types/constants";
+import { ScenarioLayerActions } from "@/types/constants";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
@@ -36,7 +36,7 @@ import {
   isScenarioFeatureLayerDragItem,
 } from "@/types/draggables";
 import {
-  Edge,
+  type Edge,
   extractClosestEdge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 

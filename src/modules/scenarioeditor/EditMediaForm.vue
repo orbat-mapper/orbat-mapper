@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Media } from "@/types/scenarioModels";
+import { type Media } from "@/types/scenarioModels";
 import InputGroup from "@/components/InputGroup.vue";
 import { ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";

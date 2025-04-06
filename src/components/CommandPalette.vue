@@ -137,18 +137,17 @@ import { useDebounce, useVModel } from "@vueuse/core";
 import { useActionSearch, useScenarioSearch } from "@/composables/searching";
 import CommandPaletteUnitItem from "@/components/CommandPaletteUnitItem.vue";
 import CommandPaletteLayerFeatureItem from "@/components/CommandPaletteLayerFeatureItem.vue";
-import {
+import type {
   ActionSearchResult,
   EventSearchResult,
-  MapLayerSearchResult,
   LayerFeatureSearchResult,
-  SearchResult,
+  MapLayerSearchResult,
   UnitSearchResult,
 } from "@/components/types";
 import CommandPaletteEventItem from "@/components/CommandPaletteEventItem.vue";
 import { useGeoStore } from "@/stores/geoStore";
 import { toLonLat } from "ol/proj";
-import { PhotonSearchResult, useGeoSearch } from "@/composables/geosearching";
+import { type PhotonSearchResult, useGeoSearch } from "@/composables/geosearching";
 import CommandPalettePlaceItem from "@/components/CommandPalettePlaceItem.vue";
 import { useUiStore } from "@/stores/uiStore";
 import CommandPaletteActionItem from "@/components/CommandPaletteActionItem.vue";

@@ -3,8 +3,8 @@ import InputGroup from "@/components/InputGroup.vue";
 import { useForm } from "@/composables/forms";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { klona } from "klona";
-import { UnitOfMeasure, UoMType } from "@/types/scenarioModels";
-import { SelectItem } from "@/components/types";
+import type { UnitOfMeasure, UoMType } from "@/types/scenarioModels";
+import { type SelectItem } from "@/components/types";
 import FormFooter from "@/modules/scenarioeditor/FormFooter.vue";
 
 interface Form extends UnitOfMeasure {

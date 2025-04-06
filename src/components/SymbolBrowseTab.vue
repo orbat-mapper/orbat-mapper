@@ -133,7 +133,7 @@ import SymbolCodeSelect from "./SymbolCodeSelect.vue";
 import { computed, nextTick, onActivated, ref, watch } from "vue";
 import { groupBy } from "@/utils";
 import { useSymbolItems } from "@/composables/symbolData";
-import { UnitSymbolOptions } from "@/types/scenarioModels";
+import { type UnitSymbolOptions } from "@/types/scenarioModels";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import { breakpointsTailwind, useBreakpoints, useDebounce } from "@vueuse/core";
 

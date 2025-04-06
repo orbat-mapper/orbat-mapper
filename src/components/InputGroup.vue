@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { HTMLAttributes, onMounted } from "vue";
+import { type HTMLAttributes, onMounted } from "vue";
 import { nanoid } from "nanoid";
 
 const props = defineProps<{

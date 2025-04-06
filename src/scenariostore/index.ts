@@ -1,10 +1,9 @@
-import { computed, ref, shallowRef, UnwrapRef } from "vue";
-import { NewScenarioStore } from "./newScenarioStore";
+import { computed, ref, shallowRef, type UnwrapRef } from "vue";
+import type { NewScenarioStore } from "./newScenarioStore";
 import { useUnitManipulations } from "./unitManipulations";
 import { useScenarioIO } from "./io";
 import { useScenarioTime } from "./time";
 import { useGeo } from "@/scenariostore/geo";
-import { EntityId } from "@/types/base";
 import { useStateHelpers } from "@/scenariostore/helpers";
 
 const globalStoreRef = shallowRef<NewScenarioStore>({} as any);

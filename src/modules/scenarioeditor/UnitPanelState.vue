@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, VNode } from "vue";
+import { computed, nextTick, ref, type VNode } from "vue";
 import {
   IconCrosshairsGps,
   IconMapMarkerAlert,
@@ -142,13 +142,15 @@ import type { StateAdd } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
 import { useUnitActions } from "@/composables/scenarioActions";
-import { StateAction, UnitActions } from "@/types/constants";
+import { type StateAction, UnitActions } from "@/types/constants";
 import type { NState, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, sidcModalKey, timeModalKey } from "@/components/injects";
 import DotsMenu from "@/components/DotsMenu.vue";
-import CoordinateInput, { CoordinateInputFormat } from "@/components/CoordinateInput.vue";
-import { ButtonGroupItem, MenuItemData } from "@/components/types";
+import CoordinateInput, {
+  type CoordinateInputFormat,
+} from "@/components/CoordinateInput.vue";
+import type { ButtonGroupItem, MenuItemData } from "@/components/types";
 import SplitButton from "@/components/SplitButton.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";

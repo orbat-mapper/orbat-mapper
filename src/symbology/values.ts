@@ -1,6 +1,6 @@
 // Values based on code from https://github.com/spatialillusions/milsymbol-generator
 
-import { SymbolValue } from "@/types/constants";
+import { type SymbolValue } from "@/types/constants";
 
 export const AIR_SYMBOLSET_VALUE = "01";
 export const SPACE_SYMBOLSET_VALUE = "05";

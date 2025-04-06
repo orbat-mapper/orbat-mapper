@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import ToggleField from "@/components/ToggleField.vue";
-import { ChartItemType } from "./orbatchart";
+import { type ChartItemType } from "./orbatchart";
 import { useChartSettings } from "./composables";
 
 interface Props {

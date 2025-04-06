@@ -5,7 +5,7 @@ import {
   RadioGroupLabel,
   RadioGroupOption,
 } from "@headlessui/vue";
-import { LayerInfo } from "./LayersPanel.vue";
+import { type LayerInfo } from "./LayersPanel.vue";
 import OpacityInput from "./OpacityInput.vue";
 import { computed } from "vue";
 

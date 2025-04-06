@@ -1,6 +1,6 @@
 import type { Position } from "geojson";
 import { forward } from "mgrs";
-import { CoordinateFormat, toStringHDMS } from "ol/coordinate";
+import { type CoordinateFormat, toStringHDMS } from "ol/coordinate";
 import { type CoordinateFormatType } from "@/composables/geoShowLocation";
 export type MGRSPrecision = 1 | 2 | 3 | 4 | 5;
 export function formatDecimalDegrees(p: Position, precision: number) {

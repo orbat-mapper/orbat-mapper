@@ -1,21 +1,21 @@
-import { NewScenarioStore } from "./newScenarioStore";
-import { CurrentState, ScenarioEvent } from "@/types/scenarioModels";
-import {
+import type { NewScenarioStore } from "./newScenarioStore";
+import type { CurrentState, ScenarioEvent } from "@/types/scenarioModels";
+import type {
   NScenarioEvent,
   NScenarioFeature,
   NUnit,
   ScenarioEventUpdate,
 } from "@/types/internalModels";
-import dayjs, { ManipulateType } from "dayjs";
+import dayjs, { type ManipulateType } from "dayjs";
 import { computed } from "vue";
 import turfLength from "@turf/length";
 import turfAlong from "@turf/along";
 import { lineString } from "@turf/helpers";
-import { EntityId } from "@/types/base";
+import type { EntityId } from "@/types/base";
 import { klona } from "klona";
 import { createEventHook } from "@vueuse/core";
 import { invalidateUnitStyle } from "@/geo/unitStyles";
-import { CurrentScenarioFeatureState } from "@/types/scenarioGeoModels";
+import type { CurrentScenarioFeatureState } from "@/types/scenarioGeoModels";
 import { nanoid } from "@/utils";
 
 export type GoToScenarioEventOptions = {

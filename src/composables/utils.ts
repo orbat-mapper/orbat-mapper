@@ -1,4 +1,4 @@
-import { Ref, VNode, watch } from "vue";
+import { type Ref, type VNode, watch } from "vue";
 import { useTimeoutFn } from "@vueuse/core";
 
 // Based on https://vueuse.org/shared/bisyncref/#usage

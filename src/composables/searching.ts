@@ -1,15 +1,15 @@
 import fuzzysort from "fuzzysort";
-import { NUnit } from "@/types/internalModels";
+import type { NUnit } from "@/types/internalModels";
 import { groupBy, htmlTagEscape, injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import {
+import type {
   ActionSearchResult,
   EventSearchResult,
   MapLayerSearchResult,
   LayerFeatureSearchResult,
   UnitSearchResult,
 } from "@/components/types";
-import { ScenarioActions } from "@/types/constants";
+import type { ScenarioActions } from "@/types/constants";
 
 export function useScenarioSearch(
   searchActions?: (query: string) => ActionSearchResult[],

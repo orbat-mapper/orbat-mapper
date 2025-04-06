@@ -7,7 +7,7 @@ import { utcFormat } from "d3-time-format";
 import { interpolateOranges } from "d3-scale-chromatic";
 import { scaleSequential } from "d3-scale";
 import { useActiveScenario } from "@/composables/scenarioUtils";
-import { NScenarioEvent } from "@/types/internalModels";
+import { type NScenarioEvent } from "@/types/internalModels";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import TimelineContextMenu from "@/components/TimelineContextMenu.vue";
 import { useSelectedItems } from "@/stores/selectedStore";

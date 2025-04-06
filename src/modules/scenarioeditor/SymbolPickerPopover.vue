@@ -10,16 +10,16 @@ import {
   RadioGroupOption,
 } from "@headlessui/vue";
 import FloatingPanel from "@/components/FloatingPanel.vue";
-import { Ref, ref } from "vue";
+import { type Ref, ref } from "vue";
 import { useToolbarUnitSymbolData } from "@/composables/mainToolbarData";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
-import { UnitSymbolOptions } from "@/types/scenarioModels";
+import { type UnitSymbolOptions } from "@/types/scenarioModels";
 import { injectStrict } from "@/utils";
 import { sidcModalKey } from "@/components/injects";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import PanelButton from "@/components/PanelButton.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
-import { MenuItemData } from "@/components/types";
+import type { MenuItemData } from "@/components/types.ts";
 
 interface Props {
   symbolOptions: UnitSymbolOptions;

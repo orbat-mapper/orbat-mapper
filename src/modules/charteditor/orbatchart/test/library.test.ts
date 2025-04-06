@@ -1,10 +1,11 @@
+import { describe, expect, it } from "vitest";
 import {
   ChartOrientations,
   DEFAULT_OPTIONS,
   OrbatChart,
-  PartialOrbChartOptions,
-  SymbolGenerator,
-  ChartUnit,
+  type PartialOrbChartOptions,
+  type SymbolGenerator,
+  type ChartUnit,
 } from "../index";
 import { ORBAT1 } from "./testorbats";
 import ms from "milsymbol";

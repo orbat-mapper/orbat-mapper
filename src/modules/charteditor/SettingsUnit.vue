@@ -69,7 +69,12 @@ import InputGroup from "@/components/InputGroup.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { enum2Items } from "@/utils";
-import { ChartItemType, FontStyles, FontWeights, LabelPlacements } from "./orbatchart";
+import {
+  type ChartItemType,
+  FontStyles,
+  FontWeights,
+  LabelPlacements,
+} from "./orbatchart";
 import { useChartSettings } from "./composables";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 

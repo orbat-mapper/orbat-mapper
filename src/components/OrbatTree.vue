@@ -2,10 +2,10 @@
 import { computed, ref, watch } from "vue";
 import OrbatTreeItem from "./OrbatTreeItem.vue";
 import { type UnitAction } from "@/types/constants";
-import { EntityId } from "@/types/base";
+import type { EntityId } from "@/types/base";
 import type { NUnit } from "@/types/internalModels";
 import { filterUnits } from "@/composables/filtering";
-import { UnitSymbolOptions } from "@/types/scenarioModels";
+import { type UnitSymbolOptions } from "@/types/scenarioModels";
 
 interface Props {
   units: EntityId[];

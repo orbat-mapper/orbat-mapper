@@ -1,7 +1,7 @@
 import type { Scenario } from "@/types/scenarioModels";
 import { compare as compareVersions } from "compare-versions";
 import type { ScenarioFeatureMeta } from "@/types/scenarioGeoModels";
-import { SimpleStyleSpec } from "@/geo/simplestyle";
+import { type SimpleStyleSpec } from "@/geo/simplestyle";
 
 export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
   if (compareVersions(scenario.version, "0.30.0", "<")) {

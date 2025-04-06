@@ -9,16 +9,16 @@ import { injectStrict, nanoid } from "@/utils";
 import { Collection } from "ol";
 import { getFeatureAndLayerById, useOlEvent } from "@/composables/openlayersHelpers";
 import GeoJSON from "ol/format/GeoJSON";
-import Feature, { FeatureLike } from "ol/Feature";
+import Feature, { type FeatureLike } from "ol/Feature";
 import type { FeatureId, ScenarioFeature } from "@/types/scenarioGeoModels";
 import Circle from "ol/geom/Circle";
-import { fromLonLat, ProjectionLike } from "ol/proj";
+import { fromLonLat, type ProjectionLike } from "ol/proj";
 import LineString from "ol/geom/LineString";
 import type { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
 import { onUnmounted, ref, watch } from "vue";
 import { unByKey } from "ol/Observable";
-import { EventsKey } from "ol/events";
+import { type EventsKey } from "ol/events";
 import {
   IconLayersOutline,
   IconMapMarker,
@@ -26,14 +26,14 @@ import {
   IconVectorLine,
   IconVectorTriangle,
 } from "@iconify-prerendered/vue-mdi";
-import { ScenarioFeatureActions } from "@/types/constants";
+import type { ScenarioFeatureActions } from "@/types/constants";
 import Select, { SelectEvent } from "ol/interaction/Select";
-import { MaybeRef } from "@vueuse/core";
+import { type MaybeRef } from "@vueuse/core";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
-import { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
-import { TScenario } from "@/scenariostore";
-import { UseFeatureStyles } from "@/geo/featureStyles";
-import { MenuItemData } from "@/components/types";
+import type { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
+import type { TScenario } from "@/scenariostore";
+import type { UseFeatureStyles } from "@/geo/featureStyles";
+import type { MenuItemData } from "@/components/types";
 import Fill from "ol/style/Fill";
 import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";

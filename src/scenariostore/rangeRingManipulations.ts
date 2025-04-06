@@ -1,8 +1,8 @@
-import { EntityId } from "@/types/base";
-import { RangeRing, RangeRingGroup } from "@/types/scenarioGeoModels";
+import type { EntityId } from "@/types/base";
+import type { RangeRing, RangeRingGroup } from "@/types/scenarioGeoModels";
 import { nanoid } from "@/utils";
 import { klona } from "klona";
-import { NewScenarioStore } from "@/scenariostore/newScenarioStore";
+import type { NewScenarioStore } from "@/scenariostore/newScenarioStore";
 
 export function useRangeRingManipulations(store: NewScenarioStore) {
   const { state, update } = store;

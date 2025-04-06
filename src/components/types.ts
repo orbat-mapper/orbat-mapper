@@ -2,8 +2,8 @@ import type { LayerFeatureItem } from "@/types/scenarioGeoModels";
 import type { NUnit, ScenarioEventType } from "@/types/internalModels";
 import type { ScenarioActions, UnitAction } from "@/types/constants";
 import type { InjectionKey } from "vue";
-import { CurrentState, UnitSymbolOptions } from "@/types/scenarioModels";
-import { EntityId } from "@/types/base";
+import type { CurrentState, UnitSymbolOptions } from "@/types/scenarioModels";
+import type { EntityId } from "@/types/base";
 
 export interface ButtonGroupItem {
   label: string;

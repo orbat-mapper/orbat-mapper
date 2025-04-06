@@ -4,7 +4,7 @@ import OSM from "ol/source/OSM";
 import XYZ from "ol/source/XYZ";
 import { transformExtent } from "ol/proj";
 import { klona } from "klona";
-import { LayerConfig, LayerConfigFile } from "@/geo/layerConfigTypes";
+import type { LayerConfigFile } from "@/geo/layerConfigTypes";
 
 function createFallbackLayers() {
   return [

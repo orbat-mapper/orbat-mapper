@@ -1,7 +1,7 @@
-import { injectStrict, MS_PER_DAY, MS_PER_HOUR } from "@/utils";
+import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { EntityId, HistoryAction } from "@/types/base";
-import { Coordinate } from "ol/coordinate";
+import type { EntityId, HistoryAction } from "@/types/base";
+import type { Coordinate } from "ol/coordinate";
 import { toLonLat } from "ol/proj";
 import {
   createUnitHistoryLayers,
@@ -13,14 +13,14 @@ import {
 import Modify, { ModifyEvent } from "ol/interaction/Modify";
 import { LineString, Point } from "ol/geom";
 import { Feature, MapBrowserEvent } from "ol";
-import { MaybeRef } from "@vueuse/core";
+import type { MaybeRef } from "@vueuse/core";
 import { ref, watch } from "vue";
 
 import { useSelectedItems } from "@/stores/selectedStore";
 import { altKeyOnly, click, singleClick } from "ol/events/condition";
 import Select, { SelectEvent } from "ol/interaction/Select";
 import { useOlEvent } from "@/composables/openlayersHelpers";
-import { FeatureLike } from "ol/Feature";
+import type { FeatureLike } from "ol/Feature";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import OLMap from "ol/Map";
 import { MapCtrlClick } from "@/geo/olInteractions";

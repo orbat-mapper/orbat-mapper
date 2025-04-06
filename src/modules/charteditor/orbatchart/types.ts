@@ -1,5 +1,5 @@
-import { Symbol as MilSymbol, SymbolOptions } from "milsymbol";
-import { Selection } from "d3-selection";
+import type { Symbol as MilSymbol, SymbolOptions } from "milsymbol";
+import { type Selection } from "d3-selection";
 
 export type SVGElementSelection = Selection<SVGElement, any, any, any>;
 export type GElementSelection = Selection<SVGGElement, any, any, any>;

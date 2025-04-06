@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import MilSymbol from "./MilSymbol.vue";
-import { UnitSearchResult } from "./types";
+import { type UnitSearchResult } from "./types";
 
 const props = defineProps<{ unit: UnitSearchResult }>();
 </script>

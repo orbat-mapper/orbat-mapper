@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
 
-import { ScenarioFeatureActions } from "@/types/constants";
+import { type ScenarioFeatureActions } from "@/types/constants";
 
 const emit = defineEmits<{
   action: [value: ScenarioFeatureActions];

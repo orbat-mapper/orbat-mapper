@@ -99,9 +99,9 @@ import {
 } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon as SelectorIcon } from "@heroicons/vue/20/solid";
 import { useVModel } from "@vueuse/core";
-import { SymbolItem } from "@/types/constants";
+import { type SymbolItem } from "@/types/constants";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import { UnitSymbolOptions } from "@/types/scenarioModels";
+import { type UnitSymbolOptions } from "@/types/scenarioModels";
 
 interface Props {
   modelValue?: string;

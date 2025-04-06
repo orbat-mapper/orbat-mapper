@@ -1,5 +1,5 @@
 import OLMap from "ol/Map";
-import { MaybeRef } from "@vueuse/core";
+import { type MaybeRef } from "@vueuse/core";
 import type VectorLayer from "ol/layer/Vector";
 import type VectorSource from "ol/source/Vector";
 import { onUnmounted, ref, unref, watch } from "vue";

@@ -1,14 +1,9 @@
 <script setup lang="ts">
-import {
-  ExportFormat,
-  ExportSettings,
-  GeoJsonSettings,
-  XlsxSettings,
-} from "@/types/convert";
+import type { ExportFormat, GeoJsonSettings } from "@/types/convert";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import { useVModel } from "@vueuse/core";
-import { Ref } from "vue";
-import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
+import { type Ref } from "vue";
+
 interface Props {
   modelValue: GeoJsonSettings;
   format: ExportFormat;

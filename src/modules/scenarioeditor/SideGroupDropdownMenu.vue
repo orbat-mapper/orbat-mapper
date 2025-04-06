@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
 
-import { SideAction, SideActions } from "@/types/constants";
+import { type SideAction, SideActions } from "@/types/constants";
 import { computed } from "vue";
-import { MenuItemData } from "@/components/types";
+import { type MenuItemData } from "@/components/types";
 
 const props = defineProps<{
   isLocked: boolean;

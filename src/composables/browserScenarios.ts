@@ -1,9 +1,9 @@
 import { computed, onMounted, ref } from "vue";
-import { ScenarioMetadata, useIndexedDb } from "@/scenariostore/localdb";
-import { MenuItemData } from "@/components/types";
-import { StoredScenarioAction } from "@/types/constants";
+import { type ScenarioMetadata, useIndexedDb } from "@/scenariostore/localdb";
+import type { MenuItemData } from "@/components/types";
+import type { StoredScenarioAction } from "@/types/constants";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
-import { Scenario } from "@/types/scenarioModels";
+import type { Scenario } from "@/types/scenarioModels";
 import { nanoid } from "@/utils";
 import { useRouter } from "vue-router";
 

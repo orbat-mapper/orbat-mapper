@@ -26,11 +26,10 @@
 
 <script setup lang="ts">
 import BaseButton from "@/components/BaseButton.vue";
-import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { computed, ref } from "vue";
-import { ImportedFileInfo } from "@/importexport/fileHandling";
+import { type ImportedFileInfo } from "@/importexport/fileHandling";
 import InputGroup from "@/components/InputGroup.vue";
 import { stripFileExtension } from "@/utils/files";
 import AlertWarning from "@/components/AlertWarning.vue";

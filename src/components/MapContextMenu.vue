@@ -35,17 +35,19 @@ import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core"
 
 import { useUiStore } from "@/stores/uiStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
-import { getGeometryIcon, LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
+import {
+  getGeometryIcon,
+  type LayerType,
+} from "@/modules/scenarioeditor/featureLayerUtils";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, searchActionsKey } from "@/components/injects";
-import { NScenarioFeature, NUnit } from "@/types/internalModels";
+import type { NScenarioFeature, NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { Position } from "geojson";
 import { useActiveSidc } from "@/composables/mainToolbarData";
-import { Sidc } from "@/symbology/sidc";
 import { useActiveUnitStore } from "@/stores/dragStore";
 
 const tm = useTimeFormatStore();

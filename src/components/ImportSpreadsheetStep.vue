@@ -5,16 +5,19 @@ import { useNotifications } from "@/composables/notifications";
 
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { ImportedFileInfo } from "@/importexport/fileHandling";
+import type { ImportedFileInfo } from "@/importexport/fileHandling";
 import { detectSpreadsheetDialect } from "@/importexport/spreadsheets/utils";
-import { OdinUnitInfoRow, parseOdinDragon } from "@/importexport/spreadsheets/odinDragon";
+import {
+  type OdinUnitInfoRow,
+  parseOdinDragon,
+} from "@/importexport/spreadsheets/odinDragon";
 import { computed, h, ref, shallowRef } from "vue";
-import { Unit } from "@/types/scenarioModels";
+import type { Unit } from "@/types/scenarioModels";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
-import { SymbolItem } from "@/types/constants";
+import type { SymbolItem } from "@/types/constants";
 import { addUnitHierarchy } from "@/importexport/convertUtils";
 import InputCheckbox from "@/components/InputCheckbox.vue";
-import { CellContext, ColumnDef, InitialTableState } from "@tanstack/vue-table";
+import type { CellContext, ColumnDef, InitialTableState } from "@tanstack/vue-table";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";

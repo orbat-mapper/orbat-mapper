@@ -1,17 +1,21 @@
 import OLMap from "ol/Map";
 import { injectStrict, nanoid } from "@/utils";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
-import { ScenarioFeatureLayerEvent } from "@/scenariostore/geo";
-import { FeatureId, ScenarioFeatureMeta, ScenarioLayer } from "@/types/scenarioGeoModels";
-import { NScenarioFeature, ScenarioLayerUpdate } from "@/types/internalModels";
-import { ProjectionLike, toLonLat } from "ol/proj";
+import type { ScenarioFeatureLayerEvent } from "@/scenariostore/geo";
+import type {
+  FeatureId,
+  ScenarioFeatureMeta,
+  ScenarioLayer,
+} from "@/types/scenarioGeoModels";
+import type { NScenarioFeature, ScenarioLayerUpdate } from "@/types/internalModels";
+import { type ProjectionLike, toLonLat } from "ol/proj";
 import VectorLayer from "ol/layer/Vector";
 import {
   createScenarioLayerFeatures,
   getOrCreateLayerGroup,
   LayerTypes,
 } from "@/modules/scenarioeditor/featureLayerUtils";
-import { ActionLabel } from "@/scenariostore/newScenarioStore";
+import { type ActionLabel } from "@/scenariostore/newScenarioStore";
 import VectorSource from "ol/source/Vector";
 import { getFeatureAndLayerById, isCircle } from "@/composables/openlayersHelpers";
 import Feature from "ol/Feature";

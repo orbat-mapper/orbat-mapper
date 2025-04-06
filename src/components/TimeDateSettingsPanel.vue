@@ -1,18 +1,8 @@
 <script setup lang="ts">
 import PanelHeading from "@/components/PanelHeading.vue";
-import { RadioGroupItem } from "@/components/types";
 import HeadingDesciption from "@/components/HeadingDescription.vue";
-import { computed } from "vue";
-import RadioGroupList from "@/components/RadioGroupList.vue";
-import {
-  TimeFormat,
-  useTimeFormatSettingsStore,
-  useTimeFormatStore,
-} from "@/stores/timeFormatStore";
+import { useTimeFormatSettingsStore, useTimeFormatStore } from "@/stores/timeFormatStore";
 import { useActiveScenario } from "@/composables/scenarioUtils";
-import LanguageSelect from "@/components/LanguageSelect.vue";
-import SimpleSelect from "@/components/SimpleSelect.vue";
-import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import { storeToRefs } from "pinia";
 import AccordionPanel from "@/components/AccordionPanel.vue";
 import TimeDateSettingsDetails from "@/components/TimeDateSettingsDetails.vue";

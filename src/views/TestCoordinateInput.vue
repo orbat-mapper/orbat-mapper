@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import CoordinateInput, { CoordinateInputFormat } from "@/components/CoordinateInput.vue";
+import CoordinateInput, {
+  type CoordinateInputFormat,
+} from "@/components/CoordinateInput.vue";
 import { ref } from "vue";
 import type { Position } from "geojson";
 import { formatPosition } from "@/geo/utils";

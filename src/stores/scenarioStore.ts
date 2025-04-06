@@ -1,4 +1,4 @@
-import { Side, SideGroup, Unit, UnitOrSide } from "@/types/scenarioModels";
+import type { Side, SideGroup, Unit, UnitOrSide } from "@/types/scenarioModels";
 
 /**
  * Visit every unit and apply callback

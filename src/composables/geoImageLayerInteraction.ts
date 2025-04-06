@@ -9,7 +9,7 @@ import Feature from "ol/Feature";
 import { boundingExtent, getCenter, getHeight, getWidth } from "ol/extent";
 import { Collection } from "ol";
 import { useOlEvent } from "@/composables/openlayersHelpers";
-import { FeatureId } from "@/types/scenarioGeoModels";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 
 export interface TransformUpdate {
   id: FeatureId;

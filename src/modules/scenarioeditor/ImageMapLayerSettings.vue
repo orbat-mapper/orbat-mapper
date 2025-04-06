@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ScenarioImageLayer } from "@/types/scenarioGeoModels";
+import type { ScenarioImageLayer } from "@/types/scenarioGeoModels";
 import { onMounted, onUnmounted, ref, watch } from "vue";
-import { ScenarioImageLayerUpdate, ScenarioMapLayerUpdate } from "@/types/internalModels";
-import { LayerUpdateOptions, useMapLayerInfo } from "@/composables/geoMapLayers";
+import type {
+  ScenarioImageLayerUpdate,
+  ScenarioMapLayerUpdate,
+} from "@/types/internalModels";
+import { type LayerUpdateOptions, useMapLayerInfo } from "@/composables/geoMapLayers";
 import { useEventBus } from "@vueuse/core";
 import { imageLayerAction } from "@/components/eventKeys";
 import { getChangedValues } from "@/utils";

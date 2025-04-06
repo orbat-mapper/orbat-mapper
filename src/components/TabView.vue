@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, provide, reactive, useSlots, watch } from "vue";
-import { tabsProviderKey, TabsState } from "@/components/types";
+import { tabsProviderKey, type TabsState } from "@/components/types";
 
 interface Props {
   currentTab?: number;

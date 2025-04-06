@@ -25,7 +25,7 @@ import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { onMounted, onUnmounted, ref } from "vue";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { BreadcrumbItemType } from "@/modules/scenarioeditor/types";
+import { type BreadcrumbItemType } from "@/modules/scenarioeditor/types";
 import { getUnitDragItem } from "@/types/draggables";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";

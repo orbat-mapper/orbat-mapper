@@ -1,13 +1,13 @@
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
-import { Coordinate } from "ol/coordinate";
+import type { Coordinate } from "ol/coordinate";
 import type { Unit } from "@/types/scenarioModels";
 import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
 import { fromLonLat } from "ol/proj";
 import View from "ol/View";
 import { nanoid } from "@/utils";
-import { NUnit } from "@/types/internalModels";
+import type { NUnit } from "@/types/internalModels";
 import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils";
 
 export function createUnitLayer() {

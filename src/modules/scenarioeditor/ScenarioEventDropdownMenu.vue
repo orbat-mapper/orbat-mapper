@@ -3,13 +3,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
 
-import { ScenarioEventAction, ScenarioFeatureActions } from "@/types/constants";
+import type { ScenarioEventAction } from "@/types/constants";
 
 const props = defineProps<{ hideEdit?: boolean }>();
 

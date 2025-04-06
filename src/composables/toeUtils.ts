@@ -1,6 +1,6 @@
 import { ref } from "vue";
-import { ColumnDef } from "@tanstack/vue-table";
-import { EUnitEquipment, EUnitPersonnel, EUnitSupply } from "@/types/internalModels";
+import type { ColumnDef } from "@tanstack/vue-table";
+import type { EUnitEquipment, EUnitPersonnel, EUnitSupply } from "@/types/internalModels";
 
 export function useToeEditableItems<T>() {
   const editMode = ref(false);

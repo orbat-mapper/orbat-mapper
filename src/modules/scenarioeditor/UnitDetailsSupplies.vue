@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { EUnitSupply, NUnit, NUnitSupply } from "@/types/internalModels";
+import type { EUnitSupply, NUnit, NUnitSupply } from "@/types/internalModels";
 import { computed, ref, shallowRef, triggerRef, watch } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { EntityId } from "@/types/base";
+import { type EntityId } from "@/types/base";
 import { storeToRefs } from "pinia";
 import { useEquipmentEditStore, useSuppliesEditStore } from "@/stores/toeStore";
 import type { StateAdd } from "@/types/scenarioModels";
@@ -12,7 +12,7 @@ import { asPercent, useToeEditableItems } from "@/composables/toeUtils";
 
 import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
-import { ColumnDef } from "@tanstack/vue-table";
+import { type ColumnDef } from "@tanstack/vue-table";
 import AddUnitSupplyForm from "@/modules/scenarioeditor/AddUnitSupplyForm.vue";
 import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import ModifyUnitSupplyForm from "@/modules/scenarioeditor/ModifyUnitSupplyForm.vue";

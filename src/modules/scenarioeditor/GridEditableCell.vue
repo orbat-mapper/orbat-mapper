@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { doFocus } from "@/composables/utils";
 import { isTypedCharValid } from "@/components/helpers";
-import { CellType } from "@/modules/scenarioeditor/types";
+import { type CellType } from "@/modules/scenarioeditor/types";
 
 interface Props {
   value?: string | number;

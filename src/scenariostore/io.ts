@@ -1,5 +1,5 @@
 import { until, useFetch, useLocalStorage } from "@vueuse/core";
-import {
+import type {
   EquipmentData,
   PersonnelData,
   Scenario,
@@ -21,13 +21,13 @@ import {
   useNewScenarioStore,
 } from "./newScenarioStore";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
-import { ShallowRef } from "vue";
+import type { ShallowRef } from "vue";
 import { isLoading } from "@/scenariostore/index";
 import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
 import dayjs from "dayjs";
-import {
+import type {
   RangeRingGroup,
-  type ScenarioLayer,
+  ScenarioLayer,
   ScenarioMapLayer,
 } from "@/types/scenarioGeoModels";
 import { type EntityId } from "@/types/base";

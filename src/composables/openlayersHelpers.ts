@@ -1,10 +1,10 @@
-import { EventsKey } from "ol/events";
+import type { EventsKey } from "ol/events";
 import { unByKey } from "ol/Observable";
 import Feature from "ol/Feature";
 import type OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import { Collection } from "ol";
-import { FeatureId } from "@/types/scenarioGeoModels";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import { tryOnBeforeUnmount } from "@vueuse/core";
 import { Vector as VectorSource } from "ol/source";
 import { GeoJSON as GeoJSONFormat } from "ol/format";

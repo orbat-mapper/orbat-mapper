@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { ArrowSmallDownIcon, ArrowSmallUpIcon } from "@heroicons/vue/20/solid";
-import {
+import type {
   CheckedState,
   ColumnWidths,
   RuntimeColumnProperties,

@@ -1,5 +1,5 @@
-import { computed, ref, Ref, shallowRef, watch } from "vue";
-import { SymbolItem, SymbolValue } from "@/types/constants";
+import { computed, ref, type Ref, shallowRef, watch } from "vue";
+import type { SymbolItem, SymbolValue } from "@/types/constants";
 import {
   CONTROL_MEASURE_SYMBOLSET_VALUE,
   DISMOUNTED_SYMBOLSET_VALUE,
@@ -15,12 +15,12 @@ import {
   UNIT_SYMBOLSET_VALUE,
 } from "@/symbology/values";
 import { Sidc } from "@/symbology/sidc";
-import { SymbolSetMap } from "@/symbology/types";
+import type { SymbolSetMap } from "@/symbology/types";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import {
   mapReinforcedStatus2Field,
-  ReinforcedStatus,
-  SymbologyStandard,
+  type ReinforcedStatus,
+  type SymbologyStandard,
 } from "@/types/scenarioModels";
 
 const symbology = shallowRef<SymbolSetMap | undefined>();

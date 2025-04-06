@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref } from "vue";
+import { computed, defineComponent, type PropType, ref } from "vue";
 import { CheckIcon, ChevronUpDownIcon as SelectorIcon } from "@heroicons/vue/24/solid";
 import {
   Combobox,
@@ -65,7 +65,7 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/vue";
-import { SelectItem } from "./types";
+import { type SelectItem } from "./types";
 import { useVModel } from "@vueuse/core";
 
 export default defineComponent({

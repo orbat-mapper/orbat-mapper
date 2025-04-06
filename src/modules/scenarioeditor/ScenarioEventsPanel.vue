@@ -2,11 +2,11 @@
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import { computed } from "vue";
-import { NScenarioEvent } from "@/types/internalModels";
+import type { NScenarioEvent } from "@/types/internalModels";
 import PanelHeading from "@/components/PanelHeading.vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import ScenarioEventDropdownMenu from "@/modules/scenarioeditor/ScenarioEventDropdownMenu.vue";
-import { ScenarioEventAction } from "@/types/constants";
+import type { ScenarioEventAction } from "@/types/constants";
 import BaseButton from "@/components/BaseButton.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 

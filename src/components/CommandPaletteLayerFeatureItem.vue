@@ -15,7 +15,7 @@
   </li>
 </template>
 <script setup lang="ts">
-import { LayerFeatureSearchResult } from "@/components/types";
+import { type LayerFeatureSearchResult } from "@/components/types";
 import { getItemsIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 
 const props = defineProps<{ item: LayerFeatureSearchResult; active?: boolean }>();

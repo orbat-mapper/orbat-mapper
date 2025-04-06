@@ -2,7 +2,7 @@
 // https://github.com/tailwindlabs/headlessui/blob/452b2c2852950cd846fe58e49ad432bb160e6e66/packages/%40headlessui-vue/examples/src/playground-utils/hooks/use-popper.js
 // Copyright (c) 2020 Tailwind Labs
 
-import { onMounted, ref, VNode, watchEffect } from "vue";
+import { onMounted, ref, type VNode, watchEffect } from "vue";
 import { createPopper } from "@popperjs/core";
 
 export function usePopper(options: any) {

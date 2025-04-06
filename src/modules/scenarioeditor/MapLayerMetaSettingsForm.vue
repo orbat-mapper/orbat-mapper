@@ -1,15 +1,10 @@
 <script setup lang="ts">
-import {
-  ScenarioMapLayer,
-  ScenarioTileJSONLayer,
-  ScenarioXYZLayer,
-} from "@/types/scenarioGeoModels";
+import type { ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import InputGroup from "@/components/InputGroup.vue";
 import { computed, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { getChangedValues, nanoid, sanitizeHTML } from "@/utils";
+import { getChangedValues } from "@/utils";
 import { useFocusOnMount } from "@/components/helpers";
-import { ScenarioImageLayerUpdate } from "@/types/internalModels";
 import TextAreaGroup from "@/components/TextAreaGroup.vue";
 
 interface Props {

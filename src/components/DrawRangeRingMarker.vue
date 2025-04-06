@@ -3,7 +3,7 @@ import { ref, watchEffect } from "vue";
 import { toContext } from "ol/render";
 import { createSimpleStyle } from "@/geo/simplestyle";
 import Circle from "ol/geom/Circle";
-import { RangeRingStyle } from "@/types/scenarioGeoModels";
+import { type RangeRingStyle } from "@/types/scenarioGeoModels";
 
 interface Props {
   styling: RangeRingStyle;

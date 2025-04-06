@@ -94,7 +94,7 @@ import { useFocusOnMount } from "@/components/helpers";
 import BaseButton from "@/components/BaseButton.vue";
 import SimpleModal from "./SimpleModal.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
-import { SelectItem } from "@/components/types";
+import { type SelectItem } from "@/components/types";
 import { computed, ref } from "vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import type { ExportFormat, ExportSettings } from "@/types/convert";

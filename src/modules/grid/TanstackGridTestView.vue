@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from "vue";
-import { NUnit } from "@/types/internalModels";
+import type { NUnit } from "@/types/internalModels";
 import { useScenario } from "@/scenariostore";
-import { MenuItemData } from "@/components/types";
-import { SideAction, SideActions } from "@/types/constants";
-import ToggleField from "@/components/ToggleField.vue";
+import type { MenuItemData } from "@/components/types";
+import { type SideAction, SideActions } from "@/types/constants";
 import BaseButton from "@/components/BaseButton.vue";
 import {
-  ColumnDef,
+  type ColumnDef,
   createColumnHelper,
   FlexRender,
   getCoreRowModel,
@@ -15,9 +14,9 @@ import {
   getFilteredRowModel,
   getGroupedRowModel,
   getSortedRowModel,
-  GroupingState,
-  RowSelectionState,
-  SortingState,
+  type GroupingState,
+  type RowSelectionState,
+  type SortingState,
   useVueTable,
 } from "@tanstack/vue-table";
 

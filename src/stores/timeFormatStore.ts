@@ -4,8 +4,8 @@ import { defineStore } from "pinia";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { formatDateString, formatDTG } from "@/geo/utils";
-import { TScenario } from "@/scenariostore";
-import { RadioGroupItem } from "@/components/types";
+import type { TScenario } from "@/scenariostore";
+import type { RadioGroupItem } from "@/components/types";
 
 export type TimeFormat = "iso" | "local" | "military" | "custom";
 

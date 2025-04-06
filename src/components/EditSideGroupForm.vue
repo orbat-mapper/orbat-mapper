@@ -27,7 +27,7 @@ import type { EntityId } from "@/types/base";
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
-import { UnitSymbolOptions } from "@/types/scenarioModels";
+import { type UnitSymbolOptions } from "@/types/scenarioModels";
 
 const {
   store,

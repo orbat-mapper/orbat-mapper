@@ -1,7 +1,7 @@
 import {
   ChartOrientations,
   LevelLayouts,
-  OrbChartOptions,
+  type OrbChartOptions,
   UnitLevelDistances,
   VerticalAlignments,
 } from "./types";

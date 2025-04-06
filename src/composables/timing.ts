@@ -1,4 +1,4 @@
-import { MaybeRef, tryOnScopeDispose } from "@vueuse/core";
+import { type MaybeRef, tryOnScopeDispose } from "@vueuse/core";
 import { ref, unref } from "vue";
 
 export function useTimer(

@@ -17,7 +17,7 @@ import { ChevronDownIcon } from "@heroicons/vue/20/solid";
 import { useUiStore } from "@/stores/uiStore";
 import { LANDING_PAGE_ROUTE } from "@/router/names";
 
-import { ScenarioActions, UiAction } from "@/types/constants";
+import type { ScenarioActions, UiAction } from "@/types/constants";
 import { useRoute } from "vue-router";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { storeToRefs } from "pinia";

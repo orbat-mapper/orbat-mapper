@@ -7,7 +7,7 @@
 
 import { type WorkBook } from "xlsx";
 import { xlsxUtils } from "@/extlib/xlsx-lazy";
-import { Unit, UnitEquipment, UnitPersonnel } from "@/types/scenarioModels";
+import type { Unit, UnitEquipment, UnitPersonnel } from "@/types/scenarioModels";
 import { convertLetterSidc2NumberSidc } from "@orbat-mapper/convert-symbology";
 
 export interface OdinUnitInfoRow {

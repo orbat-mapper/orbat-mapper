@@ -1,19 +1,10 @@
 <script setup lang="ts">
-import {
-  ScenarioMapLayer,
-  ScenarioTileJSONLayer,
-  ScenarioXYZLayer,
-} from "@/types/scenarioGeoModels";
-import { computed, ref, watch } from "vue";
+import { type ScenarioMapLayer } from "@/types/scenarioGeoModels";
+import { ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { getChangedValues } from "@/utils";
-import TileMapLayerSettingsForm from "@/modules/scenarioeditor/TileMapLayerSettingsForm.vue";
 import DescriptionItem from "@/components/DescriptionItem.vue";
-import {
-  ScenarioMapLayerUpdate,
-  ScenarioTileJSONLayerUpdate,
-  ScenarioXYZLayerUpdate,
-} from "@/types/internalModels";
+import type { ScenarioMapLayerUpdate } from "@/types/internalModels";
 import { useMapLayerInfo } from "@/composables/geoMapLayers";
 import MapLayerMetaSettingsForm from "@/modules/scenarioeditor/MapLayerMetaSettingsForm.vue";
 

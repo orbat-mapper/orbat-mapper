@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { NUnit, UnitPropertyUpdate } from "@/types/internalModels";
+import type { NUnit, UnitPropertyUpdate } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { SpeedUnitOfMeasure, UnitProperty } from "@/types/scenarioModels";
+import type { SpeedUnitOfMeasure, UnitProperty } from "@/types/scenarioModels";
 import PropertyInput from "@/components/PropertyInput.vue";
 import { computed, ref } from "vue";
 

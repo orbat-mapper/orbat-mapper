@@ -1,5 +1,5 @@
 import type { Unzipped } from "fflate";
-import { GuessedFormatDialect, GuessedImportFormat } from "@/types/convert";
+import type { GuessedFormatDialect, GuessedImportFormat } from "@/types/convert";
 import type { FeatureCollection, Feature } from "geojson";
 
 export interface ImportedFileInfo {

@@ -1,7 +1,7 @@
 import fuzzysort from "fuzzysort";
 import { groupBy, htmlTagEscape } from "@/utils";
 import { useSymbologyData } from "@/composables/symbolData";
-import { Ref } from "vue";
+import { type Ref } from "vue";
 
 export interface SymbolSearchResult {
   category: "Main icon" | "Modifier 1" | "Modifier 2";

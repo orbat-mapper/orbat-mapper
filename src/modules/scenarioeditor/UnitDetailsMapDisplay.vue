@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { NUnit } from "@/types/internalModels";
-import { RangeRing, RangeRingStyle } from "@/types/scenarioGeoModels";
+import type { NUnit } from "@/types/internalModels";
+import type { RangeRing, RangeRingStyle } from "@/types/scenarioGeoModels";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { klona } from "klona";
 import InputGroup from "@/components/InputGroup.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { MenuItemData } from "@/components/types";
-import { RangeRingAction, RangeRingActions } from "@/types/constants";
+import type { MenuItemData } from "@/components/types";
+import { type RangeRingAction, RangeRingActions } from "@/types/constants";
 import DotsMenu from "@/components/DotsMenu.vue";
 import RingStylePopover from "@/modules/scenarioeditor/RingStylePopover.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
@@ -20,7 +20,7 @@ import PanelHeading from "@/components/PanelHeading.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { useMapViewStore } from "@/stores/mapViewStore";
 import ZoomSelector from "@/components/ZoomSelector.vue";
-import { VisibilityStyleSpec } from "@/geo/simplestyle";
+import { type VisibilityStyleSpec } from "@/geo/simplestyle";
 
 interface Props {
   unit: NUnit;

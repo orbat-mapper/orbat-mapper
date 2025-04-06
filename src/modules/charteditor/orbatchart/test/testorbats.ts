@@ -1,4 +1,4 @@
-import { ChartUnit } from "../types";
+import { type ChartUnit } from "../types";
 
 export const ORBAT1: ChartUnit = {
   name: "A Bde",

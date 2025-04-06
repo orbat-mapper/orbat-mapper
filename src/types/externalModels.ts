@@ -1,6 +1,6 @@
 // TypeScript types for the Spatial Illusions ORBAT builder export format
 import { type SymbolOptions } from "milsymbol";
-import { ReinforcedStatus } from "@/types/scenarioModels";
+import type { ReinforcedStatus } from "@/types/scenarioModels";
 
 export interface SpatialIllusionsOrbat {
   options: SpatialIllusionsOptions;

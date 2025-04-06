@@ -164,7 +164,7 @@ import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useEventBus, useToggle } from "@vueuse/core";
 import PanelSymbolButton from "@/components/PanelSymbolButton.vue";
 import FloatingPanel from "@/components/FloatingPanel.vue";
-import { computed, onMounted, Ref, watch } from "vue";
+import { computed, onMounted, type Ref, watch } from "vue";
 import { SID_INDEX, Sidc } from "@/symbology/sidc";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 import { useMapSelectStore } from "@/stores/mapSelectStore";

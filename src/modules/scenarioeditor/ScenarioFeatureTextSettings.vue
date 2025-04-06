@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { SimpleStyleSpec, TextStyleSpec } from "@/geo/simplestyle";
-import { ScenarioFeature } from "@/types/scenarioGeoModels";
+import type { SimpleStyleSpec, TextStyleSpec } from "@/geo/simplestyle";
+import type { ScenarioFeature } from "@/types/scenarioGeoModels";
 import ToggleField from "@/components/ToggleField.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";

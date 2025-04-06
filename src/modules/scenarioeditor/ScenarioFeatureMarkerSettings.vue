@@ -2,9 +2,9 @@
 import { computed } from "vue";
 
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
-import { MarkerStyleSpec, MarkerSymbol, SimpleStyleSpec } from "@/geo/simplestyle";
-import { ScenarioFeature } from "@/types/scenarioGeoModels";
-import { SelectItem } from "@/components/types";
+import type { MarkerStyleSpec, MarkerSymbol, SimpleStyleSpec } from "@/geo/simplestyle";
+import type { ScenarioFeature } from "@/types/scenarioGeoModels";
+import type { SelectItem } from "@/components/types";
 import DrawMarker from "@/components/DrawMarker.vue";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 

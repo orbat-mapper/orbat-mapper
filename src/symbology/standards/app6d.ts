@@ -8,7 +8,7 @@
  *
  */
 
-import { SymbolSetMap } from "../types";
+import type { SymbolSetMap } from "../types";
 
 export const app6d: SymbolSetMap = {
   "10": {

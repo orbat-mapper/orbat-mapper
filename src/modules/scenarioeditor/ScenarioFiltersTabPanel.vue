@@ -13,10 +13,12 @@ import {
   symbolSetValues,
 } from "@/symbology/values";
 import BaseButton from "@/components/BaseButton.vue";
-import { NUnit } from "@/types/internalModels";
+import type { NUnit } from "@/types/internalModels";
 import { app6d as sym } from "@/symbology/standards/app6d";
 import AccordionPanel from "@/components/AccordionPanel.vue";
-import FilterTree, { NestedUnitStatItem } from "@/modules/scenarioeditor/FilterTree.vue";
+import FilterTree, {
+  type NestedUnitStatItem,
+} from "@/modules/scenarioeditor/FilterTree.vue";
 import { IconExpandAllOutline } from "@iconify-prerendered/vue-mdi";
 import IconButton from "@/components/IconButton.vue";
 
