@@ -90,22 +90,22 @@ import {
   IconEyeOff,
   IconEye,
 } from "@iconify-prerendered/vue-mdi";
-import { SideAction, SideActions, type UnitAction } from "@/types/constants";
+import { type SideAction, SideActions, type UnitAction } from "@/types/constants";
 import { useDebounce, useTimeoutFn } from "@vueuse/core";
 import FilterQueryInput from "./FilterQueryInput.vue";
 import EditSideForm from "./EditSideForm.vue";
 import OrbatSideGroup from "./OrbatSideGroup.vue";
-import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
-import { DropTarget } from "./types";
+import type { NSide, NSideGroup, NUnit } from "@/types/internalModels";
+import type { DropTarget } from "./types";
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { Switch } from "@headlessui/vue";
 import {
   attachInstruction,
   extractInstruction,
-  Instruction,
+  type Instruction,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
-import { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
+import { type CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import {
   draggable,

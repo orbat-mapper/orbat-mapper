@@ -48,9 +48,9 @@ import ToggleField from "@/components/ToggleField.vue";
 
 import {
   LevelLayouts,
-  OnBranchClickCallback,
-  OnLevelClickCallback,
-  RenderedUnitNode,
+  type OnBranchClickCallback,
+  type OnLevelClickCallback,
+  type RenderedUnitNode,
 } from "./orbatchart";
 import { ORBAT1 } from "./orbatchart/test/testorbats";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
@@ -66,9 +66,9 @@ import {
   useSpecificChartOptionsStore,
 } from "./chartSettingsStore";
 import { sizeToWidthHeight } from "./orbatchart/sizes";
-import { TScenario } from "@/scenariostore";
+import { type TScenario } from "@/scenariostore";
 import { activeScenarioKey } from "@/components/injects";
-import { MenuItemData } from "@/components/types";
+import { type MenuItemData } from "@/components/types";
 import { type ChartTab, ChartTabs } from "@/modules/charteditor/constants";
 import { saveBlobToLocalFile } from "@/utils/files";
 

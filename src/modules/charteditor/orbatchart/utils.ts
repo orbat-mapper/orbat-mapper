@@ -1,4 +1,4 @@
-import { ChartUnit, UnitNodeVisitorCallback } from "./types";
+import type { ChartUnit, UnitNodeVisitorCallback } from "./types";
 
 export function walkTree(root: ChartUnit, callback: UnitNodeVisitorCallback) {
   let level = 0;

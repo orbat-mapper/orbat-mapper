@@ -115,7 +115,7 @@ import {
   onActivated,
   onUnmounted,
   provide,
-  ShallowRef,
+  type ShallowRef,
   shallowRef,
   watch,
 } from "vue";

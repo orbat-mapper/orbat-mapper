@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { SymbolItem } from "@/types/constants";
+import { type SymbolItem } from "@/types/constants";
 import { computed } from "vue";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { useVModel } from "@vueuse/core";

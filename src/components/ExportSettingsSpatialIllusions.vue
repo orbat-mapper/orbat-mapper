@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ExportFormat, UnitGeneratorSettings } from "@/types/convert";
+import type { ExportFormat, UnitGeneratorSettings } from "@/types/convert";
 import { useVModel } from "@vueuse/core";
-import { ref, Ref } from "vue";
+import { ref, type Ref } from "vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
-import { SelectItem } from "@/components/types";
-import { EntityId } from "@/types/base";
+import type { SelectItem } from "@/components/types";
+import type { EntityId } from "@/types/base";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";

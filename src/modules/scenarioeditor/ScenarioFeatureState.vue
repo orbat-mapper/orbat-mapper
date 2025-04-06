@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
-import { ScenarioFeature, ScenarioFeatureState } from "@/types/scenarioGeoModels";
+import type { ScenarioFeature, ScenarioFeatureState } from "@/types/scenarioGeoModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed } from "vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
-import { StateAction } from "@/types/constants";
+import { type StateAction } from "@/types/constants";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { IconCrosshairsGps } from "@iconify-prerendered/vue-mdi";
 import IconButton from "@/components/IconButton.vue";
-import { MenuItemData } from "@/components/types";
-import ToggleField from "@/components/ToggleField.vue";
+import { type MenuItemData } from "@/components/types";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import BaseButton from "@/components/BaseButton.vue";
 

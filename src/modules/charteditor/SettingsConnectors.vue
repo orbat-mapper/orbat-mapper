@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ChartItemType } from "./orbatchart";
+import { type ChartItemType } from "./orbatchart";
 import { useChartSettings } from "./composables";
 import InputGroup from "@/components/InputGroup.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";

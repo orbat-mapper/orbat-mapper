@@ -1,15 +1,8 @@
 <script setup lang="ts">
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
-import { computed, ref } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
-import TableHeader from "@/components/TableHeader.vue";
-import { NPersonnelData } from "@/types/internalModels";
-import DotsMenu from "@/components/DotsMenu.vue";
-import { useNotifications } from "@/composables/notifications";
-import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
-import InputGroup from "@/components/InputGroup.vue";
-import { SelectItem } from "@/components/types";
+import { computed } from "vue";
+import { type SelectItem } from "@/components/types";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 

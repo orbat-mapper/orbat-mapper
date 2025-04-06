@@ -1,7 +1,7 @@
 import type { Feature as GeoJsonFeature, Geometry } from "geojson";
-import { FillStyleSpec, SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
-import { ScenarioTime } from "@/types/base";
-import {
+import type { FillStyleSpec, SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
+import type { ScenarioTime } from "@/types/base";
+import type {
   CurrentStateType,
   Media,
   ScenarioEventDescription,

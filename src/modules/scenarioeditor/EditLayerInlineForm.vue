@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { ScenarioLayerInstance } from "@/types/scenarioGeoModels";
+import { type ScenarioLayerInstance } from "@/types/scenarioGeoModels";
 import { useFocusOnMount } from "@/components/helpers";
 import InputGroup from "../../components/InputGroup.vue";
 import InlineFormPanel from "../../components/InlineFormPanel.vue";
 import BaseButton from "../../components/BaseButton.vue";
-import { NScenarioLayer } from "@/types/internalModels";
+import { type NScenarioLayer } from "@/types/internalModels";
 import { formatDateString } from "@/geo/utils";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";

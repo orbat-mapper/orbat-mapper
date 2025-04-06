@@ -6,7 +6,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { injectStrict, sortBy } from "@/utils";
 import { computed, watch } from "vue";
 import { klona } from "klona";
-import {
+import type {
   EUnitEquipment,
   EUnitPersonnel,
   NUnitEquipment,

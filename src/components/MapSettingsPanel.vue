@@ -29,12 +29,12 @@
 <script setup lang="ts">
 import ToggleField from "@/components/ToggleField.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
-import { RadioGroupItem } from "@/components/types";
-import { CoordinateFormatType } from "@/composables/geoShowLocation";
+import type { RadioGroupItem } from "@/components/types";
+import type { CoordinateFormatType } from "@/composables/geoShowLocation";
 import RadioGroupList from "@/components/RadioGroupList.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
-import { MeasurementUnit } from "@/composables/geoMeasurement";
+import { type MeasurementUnit } from "@/composables/geoMeasurement";
 
 const settings = useMapSettingsStore();
 const measurementStore = useMeasurementsStore();

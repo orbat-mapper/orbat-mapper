@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { ChevronRightIcon, HomeIcon } from "@heroicons/vue/20/solid";
-import { BreadcrumbItem } from "@/components/types";
+import { type BreadcrumbItem } from "@/components/types";
 
 interface Props {
   items: BreadcrumbItem[];

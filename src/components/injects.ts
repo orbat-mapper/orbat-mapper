@@ -1,15 +1,15 @@
 import type { InjectionKey, Ref, ShallowRef } from "vue";
 import type { EntityId } from "@/types/base";
-import { TScenario } from "@/scenariostore";
-import { UseFeatureStyles } from "@/geo/featureStyles";
-import { SidcModalPromise, TimeModalPromise } from "@/composables/modals";
-import { EventHook } from "@vueuse/core";
-import { FeatureId } from "@/types/scenarioGeoModels";
+import type { TScenario } from "@/scenariostore";
+import type { UseFeatureStyles } from "@/geo/featureStyles";
+import type { SidcModalPromise, TimeModalPromise } from "@/composables/modals";
+import type { EventHook } from "@vueuse/core";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import type OLMap from "ol/Map";
 import type Select from "ol/interaction/Select";
-import { EventSearchResult } from "@/components/types";
-import { PhotonSearchResult } from "@/composables/geosearching";
-import { ScenarioActions } from "@/types/constants";
+import type { EventSearchResult } from "@/components/types";
+import type { PhotonSearchResult } from "@/composables/geosearching";
+import type { ScenarioActions } from "@/types/constants";
 
 export const activeParentKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>

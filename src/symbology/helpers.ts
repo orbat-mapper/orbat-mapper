@@ -1,4 +1,4 @@
-import { echelonValues, SidValue, standardIdentityValues } from "@/symbology/values";
+import { echelonValues, type SidValue, standardIdentityValues } from "@/symbology/values";
 import type { SymbolItem } from "@/types/constants";
 
 export const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {

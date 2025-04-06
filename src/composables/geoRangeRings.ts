@@ -7,13 +7,13 @@ import circle from "@turf/circle";
 import union from "@turf/union";
 import { featureCollection } from "@turf/helpers";
 import { GeoJSON } from "ol/format";
-import { NUnit } from "@/types/internalModels";
+import type { NUnit } from "@/types/internalModels";
 import { convertToMetric } from "@/utils/convert";
 import { Stroke, Style } from "ol/style";
-import Feature, { FeatureLike } from "ol/Feature";
-import { FeatureId } from "@/types/scenarioGeoModels";
+import Feature, { type FeatureLike } from "ol/Feature";
+import { type FeatureId } from "@/types/scenarioGeoModels";
 import { createSimpleStyle } from "@/geo/simplestyle";
-import { TScenario } from "@/scenariostore";
+import { type TScenario } from "@/scenariostore";
 
 export function useRangeRingsLayer() {
   const scn = injectStrict(activeScenarioKey);

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {
+import type {
   EUnitEquipment,
   EUnitPersonnel,
   NUnit,
@@ -11,9 +11,8 @@ import {
 import { computed, ref, shallowRef, triggerRef, watch } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { useLocalStorage } from "@vueuse/core";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { EntityId } from "@/types/base";
+import type { EntityId } from "@/types/base";
 import { useEquipmentEditStore, usePersonnelEditStore } from "@/stores/toeStore";
 import type { StateAdd } from "@/types/scenarioModels";
 
@@ -28,7 +27,7 @@ import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import ModifyUnitToeItemForm from "@/modules/scenarioeditor/ModifyUnitToeItemForm.vue";
 import AddUnitToeItemForm from "@/modules/scenarioeditor/AddUnitToeItemForm.vue";
-import { prevToeIncludeSubordinates, useUiStore } from "@/stores/uiStore";
+import { useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
 import UnitDetailsSupplies from "@/modules/scenarioeditor/UnitDetailsSupplies.vue";
 

@@ -13,14 +13,12 @@ import type {
 } from "@/importexport/milx/types";
 import { convertLetterSidc2NumberSidc } from "@orbat-mapper/convert-symbology";
 import { nanoid } from "@/utils";
-import {
+import type {
   ConvertedProperties,
   ImportGeoJsonCollection,
   ImportGeoJsonProperties,
-  MilSymbolProperties,
-  OrbatMapperGeoJsonCollection,
 } from "@/importexport/jsonish/types";
-import { TextAmpKey, textAmpMap } from "@/symbology/milsymbwrapper";
+import { type TextAmpKey, textAmpMap } from "@/symbology/milsymbwrapper";
 
 const supportedAttributes: TextAmpKey[] = ["M", "G", "H"];
 

@@ -1,7 +1,7 @@
-import { Unit, type UnitStatus } from "@/types/scenarioModels";
-import { TScenario } from "@/scenariostore";
-import { EntityId } from "@/types/base";
-import {
+import type { Unit, UnitStatus } from "@/types/scenarioModels";
+import type { TScenario } from "@/scenariostore";
+import type { EntityId } from "@/types/base";
+import type {
   NState,
   NUnitAdd,
   NUnitEquipment,
@@ -13,9 +13,9 @@ import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
 import {
   convertStateToInternalFormat,
-  ScenarioState,
+  type ScenarioState,
 } from "@/scenariostore/newScenarioStore";
-import { RangeRing } from "@/types/scenarioGeoModels";
+import type { RangeRing } from "@/types/scenarioGeoModels";
 
 export type OrbatToTextOptions = {
   indent?: string;

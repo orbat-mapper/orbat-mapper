@@ -1,4 +1,4 @@
-import { SpeedUnitOfMeasure } from "@/types/scenarioModels";
+import type { SpeedUnitOfMeasure } from "@/types/scenarioModels";
 
 export function convertToMetric(value: number, unit: "m" | "km" | "ft" | "mi" | "nmi") {
   if (unit === "m") return value;

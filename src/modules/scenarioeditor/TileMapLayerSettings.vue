@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ScenarioTileJSONLayer, ScenarioXYZLayer } from "@/types/scenarioGeoModels";
+import type { ScenarioTileJSONLayer, ScenarioXYZLayer } from "@/types/scenarioGeoModels";
 import { computed, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { getChangedValues } from "@/utils";
 import TileMapLayerSettingsForm from "@/modules/scenarioeditor/TileMapLayerSettingsForm.vue";
 import DescriptionItem from "@/components/DescriptionItem.vue";
-import {
+import type {
   ScenarioTileJSONLayerUpdate,
   ScenarioXYZLayerUpdate,
 } from "@/types/internalModels";

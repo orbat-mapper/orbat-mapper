@@ -8,7 +8,7 @@
  *
  */
 
-import { SymbolSetMap } from "../types";
+import type { SymbolSetMap } from "../types";
 
 export const ms2525d: SymbolSetMap = {
   "10": {

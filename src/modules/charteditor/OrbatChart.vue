@@ -5,8 +5,8 @@ import {
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon,
 } from "@heroicons/vue/20/solid";
-import {
-  OrbatChart,
+import { OrbatChart } from "./orbatchart";
+import type {
   PartialOrbChartOptions,
   SpecificOptions,
   SymbolGenerator,

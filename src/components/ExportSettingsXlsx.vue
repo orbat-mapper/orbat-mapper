@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ExportFormat, ExportSettings, XlsxSettings } from "@/types/convert";
+import type { ExportFormat, XlsxSettings } from "@/types/convert";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import { useVModel } from "@vueuse/core";
-import { Ref } from "vue";
+import { type Ref } from "vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
+
 interface Props {
   modelValue: XlsxSettings;
   format: ExportFormat;

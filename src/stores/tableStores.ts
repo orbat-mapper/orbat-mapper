@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
-import { ColumnSort } from "@tanstack/vue-table";
+import type { ColumnSort } from "@tanstack/vue-table";
 
 function tableStoreFactory(storeName: string) {
   return defineStore(storeName, () => {

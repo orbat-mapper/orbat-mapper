@@ -1,11 +1,11 @@
-import { NewScenarioStore } from "@/scenariostore/newScenarioStore";
-import { NState, NUnit } from "@/types/internalModels";
+import type { NewScenarioStore } from "@/scenariostore/newScenarioStore";
+import type { NState, NUnit } from "@/types/internalModels";
 import { mergeArray, nanoid } from "@/utils";
 import { klona } from "klona";
-import { EntityId, HistoryAction } from "@/types/base";
+import type { EntityId, HistoryAction } from "@/types/base";
 import { createInitialState, updateCurrentUnitState } from "@/scenariostore/time";
-import { State, StateAdd } from "@/types/scenarioModels";
-import { Position } from "@/types/scenarioGeoModels";
+import type { State, StateAdd } from "@/types/scenarioModels";
+import { type Position } from "@/types/scenarioGeoModels";
 
 export function removeUnusedUnitStateEntries(unit: NUnit) {
   if (!unit || !unit.state) return;

@@ -1,4 +1,4 @@
-import { ScenarioMapLayer, ScenarioMapLayerType } from "@/types/scenarioGeoModels";
+import type { ScenarioMapLayer, ScenarioMapLayerType } from "@/types/scenarioGeoModels";
 import { computed } from "vue";
 
 export type LayerUpdateOptions = {

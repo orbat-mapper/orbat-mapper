@@ -20,8 +20,8 @@
 </template>
 
 <script setup lang="ts">
-import { PropType } from "vue";
-import { ButtonGroupItem } from "./types";
+import { type PropType } from "vue";
+import type { ButtonGroupItem } from "./types";
 
 const props = defineProps({
   items: { type: Array as PropType<ButtonGroupItem[]>, required: true },

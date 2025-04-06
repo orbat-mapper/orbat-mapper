@@ -8,10 +8,15 @@ import {
   IconEyeOff,
   IconLockOutline,
 } from "@iconify-prerendered/vue-mdi";
-import { SideAction, SideActions, UnitAction, UnitActions } from "@/types/constants";
+import {
+  type SideAction,
+  SideActions,
+  type UnitAction,
+  UnitActions,
+} from "@/types/constants";
 import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./EditSideGroupForm.vue";
-import { NSideGroup, NUnit } from "@/types/internalModels";
+import type { NSideGroup, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 
@@ -23,9 +28,9 @@ import {
 import {
   attachInstruction,
   extractInstruction,
-  Instruction,
+  type Instruction,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
-import { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
+import { type CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import {
   draggable,

@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
-import { Table } from "@tanstack/vue-table";
+import { type Table } from "@tanstack/vue-table";
 import { computed } from "vue";
 
 const props = defineProps<{ table: Table<any> }>();

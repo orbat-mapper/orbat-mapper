@@ -6,15 +6,15 @@ import {
   ChevronRightIcon,
 } from "@heroicons/vue/20/solid";
 import {
-  ColumnDef,
+  type ColumnDef,
   FlexRender,
   getCoreRowModel,
   getExpandedRowModel,
   getFilteredRowModel,
   getGroupedRowModel,
   getSortedRowModel,
-  InitialTableState,
-  RowSelectionState,
+  type InitialTableState,
+  type RowSelectionState,
   useVueTable,
 } from "@tanstack/vue-table";
 import { useVirtualizer } from "@tanstack/vue-virtual";

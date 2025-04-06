@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";
-import { EntityId } from "@/types/base";
+import { type EntityId } from "@/types/base";
 import { computed, ref, watch } from "vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import { useUiStore } from "@/stores/uiStore";
 import ScenarioEventDropdownMenu from "@/modules/scenarioeditor/ScenarioEventDropdownMenu.vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
-import { ScenarioEventAction } from "@/types/constants";
+import type { ScenarioEventAction } from "@/types/constants";
 import { useSelectedItems } from "@/stores/selectedStore";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import TabWrapper from "@/components/TabWrapper.vue";
@@ -15,7 +15,7 @@ import { TabPanel } from "@headlessui/vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import { useToggle } from "@vueuse/core";
-import { MediaUpdate, ScenarioEventUpdate } from "@/types/internalModels";
+import type { MediaUpdate, ScenarioEventUpdate } from "@/types/internalModels";
 import DescriptionItem from "@/components/DescriptionItem.vue";
 import { renderMarkdown } from "@/composables/formatting";
 

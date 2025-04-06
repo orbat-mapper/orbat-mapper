@@ -1,12 +1,11 @@
 import { defineStore } from "pinia";
-import {
-  DEFAULT_OPTIONS,
-  LevelLayouts,
+import type {
+  ChartUnit,
   PartialOrbChartOptions,
   RenderedUnitNode,
   SpecificOptions,
-  ChartUnit,
 } from "./orbatchart";
+import { DEFAULT_OPTIONS, LevelLayouts } from "./orbatchart";
 
 export interface State {
   maxLevels: number;

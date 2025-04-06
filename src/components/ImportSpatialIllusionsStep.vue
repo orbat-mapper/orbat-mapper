@@ -39,17 +39,17 @@ import { computed, h, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { NUnit, NUnitAdd } from "@/types/internalModels";
-import { SymbolItem } from "@/types/constants";
+import type { NUnit, NUnitAdd } from "@/types/internalModels";
+import type { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
 import {
   mapSpatialIllusionsReinforced,
-  SpatialIllusionsOrbat,
+  type SpatialIllusionsOrbat,
 } from "@/types/externalModels";
-import { EntityId } from "@/types/base";
-import { CellContext, ColumnDef } from "@tanstack/vue-table";
+import type { EntityId } from "@/types/base";
+import type { CellContext, ColumnDef } from "@tanstack/vue-table";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";

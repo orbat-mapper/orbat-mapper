@@ -2,20 +2,20 @@
 import { computed, h, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { useImportStore } from "@/stores/importExportStore";
-import { MilxImportedLayer } from "@/composables/scenarioImport";
+import type { MilxImportedLayer } from "@/composables/scenarioImport";
 
 import { injectStrict, nanoid, removeUndefined } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { NUnit } from "@/types/internalModels";
+import type { NUnit } from "@/types/internalModels";
 import type { Point } from "geojson";
-import { SymbolItem } from "@/types/constants";
+import type { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
 import ToggleField from "@/components/ToggleField.vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import { ColumnDef, InitialTableState } from "@tanstack/vue-table";
-import { ImportGeoJsonFeature } from "@/importexport/jsonish/types";
+import type { ColumnDef, InitialTableState } from "@tanstack/vue-table";
+import type { ImportGeoJsonFeature } from "@/importexport/jsonish/types";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import { propReduce } from "@turf/meta";
 import { featureCollection } from "@turf/helpers";

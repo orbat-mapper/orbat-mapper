@@ -35,9 +35,9 @@
 <script setup lang="ts">
 import { IconMapMarker, IconVectorSquare } from "@iconify-prerendered/vue-mdi";
 import { formatLength } from "@/geo/utils";
-import { PhotonSearchResult } from "@/composables/geosearching";
+import { type PhotonSearchResult } from "@/composables/geosearching";
 import type { Feature, Point } from "geojson";
-import { GeoSearchProperties } from "@/types/search";
+import { type GeoSearchProperties } from "@/types/search";
 import { getDistance } from "ol/sphere";
 import { useMeasurementsStore } from "@/stores/geoStore";
 

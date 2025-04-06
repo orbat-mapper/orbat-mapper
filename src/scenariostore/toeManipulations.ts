@@ -1,5 +1,5 @@
-import { NewScenarioStore } from "@/scenariostore/newScenarioStore";
-import {
+import type { NewScenarioStore } from "@/scenariostore/newScenarioStore";
+import type {
   EquipmentDataUpdate,
   NEquipmentData,
   NPersonnelData,
@@ -7,7 +7,7 @@ import {
 } from "@/types/internalModels";
 import { nanoid } from "@/utils";
 import { klona } from "klona";
-import { EntityId } from "@/types/base";
+import type { EntityId } from "@/types/base";
 import { updateCurrentUnitState } from "@/scenariostore/time";
 import { removeUnusedUnitStateEntries } from "@/scenariostore/unitStateManipulations";
 

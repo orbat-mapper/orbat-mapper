@@ -48,7 +48,7 @@ import MapContainer from "@/components/MapContainer.vue";
 import { invoke, useTitle, useToggle } from "@vueuse/core";
 import OLMap from "ol/Map";
 import StoryModeContent from "./StoryModeContent.vue";
-import { chapter, StoryStateChange } from "@/testdata/testStory";
+import { chapter, type StoryStateChange } from "@/testdata/testStory";
 import { fromLonLat } from "ol/proj";
 import dayjs from "dayjs";
 import { flyTo } from "@/geo/layers";

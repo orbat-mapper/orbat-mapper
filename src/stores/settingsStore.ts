@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { SymbologyStandard } from "@/types/scenarioModels";
+import { type SymbologyStandard } from "@/types/scenarioModels";
 import { useLocalStorage } from "@vueuse/core";
 
 export const useSettingsStore = defineStore("settings", {

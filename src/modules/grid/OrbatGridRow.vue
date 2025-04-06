@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { RuntimeColumnProperties } from "@/modules/grid/gridTypes";
+import { type RuntimeColumnProperties } from "@/modules/grid/gridTypes";
 import DotsMenu from "@/components/DotsMenu.vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 

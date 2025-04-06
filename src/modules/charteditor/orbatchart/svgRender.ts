@@ -1,19 +1,19 @@
 // language=CSS format=false
 import {
-  BasicUnitNode,
-  ChartUnit,
-  ConnectorOptions,
-  FontOptions,
-  GElementSelection,
+  type BasicUnitNode,
+  type ChartUnit,
+  type ConnectorOptions,
+  type FontOptions,
+  type GElementSelection,
   type LevelLayout,
   LevelLayouts,
-  OrbChartOptions,
-  PartialOrbChartOptions,
-  RenderedLevel,
-  RenderedUnitNode,
-  SpecificOptions,
-  SVGElementSelection,
-  UnitNodeInfo,
+  type OrbChartOptions,
+  type PartialOrbChartOptions,
+  type RenderedLevel,
+  type RenderedUnitNode,
+  type SpecificOptions,
+  type SVGElementSelection,
+  type UnitNodeInfo,
 } from "./types";
 import ms from "milsymbol";
 import { sortBy } from "@/utils";

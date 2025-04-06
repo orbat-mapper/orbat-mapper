@@ -8,9 +8,9 @@ import type {
 import type { EntityId, ScenarioTime } from "./base";
 import type { SidValue } from "@/symbology/values";
 import { type SymbolOptions } from "milsymbol";
-import { TextAmpValue } from "@/symbology/milsymbwrapper";
+import type { TextAmpValue } from "@/symbology/milsymbwrapper";
 import type { BBox, Geometry } from "geojson";
-import {
+import type {
   NState,
   NUnitEquipment,
   NUnitPersonnel,
@@ -19,7 +19,7 @@ import {
   UpdateUnitPersonnel,
   UpdateUnitSupplies,
 } from "@/types/internalModels";
-import { VisibilityStyleSpec } from "@/geo/simplestyle";
+import type { VisibilityStyleSpec } from "@/geo/simplestyle";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;

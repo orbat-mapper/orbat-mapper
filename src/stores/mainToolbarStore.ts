@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { SimpleStyleSpec } from "@/geo/simplestyle";
+import type { SimpleStyleSpec } from "@/geo/simplestyle";
 
 export type ToolbarType = "measurements" | "draw" | "track";
 

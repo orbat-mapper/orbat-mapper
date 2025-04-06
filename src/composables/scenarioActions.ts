@@ -1,23 +1,23 @@
-import { OrbatItemData, Unit } from "@/types/scenarioModels";
-import { TAB_SCENARIO_SETTINGS, UnitAction, UnitActions } from "@/types/constants";
+import type { OrbatItemData, Unit } from "@/types/scenarioModels";
+import { TAB_SCENARIO_SETTINGS, type UnitAction, UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
-import { computed, ComputedRef } from "vue";
-import { NOrbatItemData, NUnit } from "@/types/internalModels";
+import { computed, type ComputedRef } from "vue";
+import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { MenuItemData } from "@/components/types";
+import type { MenuItemData } from "@/components/types";
 import { multiPoint } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
 import { GeoJSON } from "ol/format";
 import Feature from "ol/Feature";
-import { TScenario } from "@/scenariostore";
-import { FeatureId } from "@/types/scenarioGeoModels";
+import type { TScenario } from "@/scenariostore";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import OLMap from "ol/Map";
 import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import { useUiStore } from "@/stores/uiStore";
-import { EntityId } from "@/types/base";
+import type { EntityId } from "@/types/base";
 
 export function useUnitActions(
   options: Partial<{

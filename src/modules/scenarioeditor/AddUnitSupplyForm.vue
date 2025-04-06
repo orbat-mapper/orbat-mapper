@@ -6,7 +6,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { injectStrict, sortBy } from "@/utils";
 import { computed, watch } from "vue";
 import { klona } from "klona";
-import { EUnitSupply, NUnitSupply } from "@/types/internalModels";
+import type { EUnitSupply, NUnitSupply } from "@/types/internalModels";
 import FormFooter from "@/modules/scenarioeditor/FormFooter.vue";
 
 interface Form extends NUnitSupply {}

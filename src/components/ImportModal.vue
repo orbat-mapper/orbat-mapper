@@ -4,11 +4,11 @@ import SimpleModal from "./SimpleModal.vue";
 import { useVModel } from "@vueuse/core";
 import ImportLoadStep from "@/components/ImportLoadStep.vue";
 import { defineAsyncComponent, ref, shallowRef } from "vue";
-import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
+import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
 import type { FeatureCollection } from "geojson";
-import { MilxImportedLayer } from "@/composables/scenarioImport";
+import type { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportImageStep from "@/components/ImportImageStep.vue";
-import { ImportedFileInfo } from "@/importexport/fileHandling";
+import type { ImportedFileInfo } from "@/importexport/fileHandling";
 import DocLink from "@/components/DocLink.vue";
 
 const ImportGeojsonStep = defineAsyncComponent(

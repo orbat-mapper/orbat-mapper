@@ -1,7 +1,5 @@
-import { MenuItemData } from "@/components/types";
-import { ComputedRef, InjectionKey, Ref } from "vue";
-
-import { SelectedScenarioFeatures } from "@/stores/selectedStore";
+import type { MenuItemData } from "@/components/types";
+import type { ComputedRef, InjectionKey } from "vue";
 
 export type CellType = "text" | "number" | "sidc" | "dots";
 export type ColumnWidths = Record<string, number>;

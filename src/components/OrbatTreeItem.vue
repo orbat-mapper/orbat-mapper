@@ -7,7 +7,7 @@ import {
 import {
   attachInstruction,
   extractInstruction,
-  Instruction,
+  type Instruction,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
@@ -21,7 +21,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { activeParentKey, activeScenarioKey } from "./injects";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import { SymbolOptions } from "milsymbol";
+import { type SymbolOptions } from "milsymbol";
 import { injectStrict } from "@/utils";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useTimeoutFn } from "@vueuse/core";

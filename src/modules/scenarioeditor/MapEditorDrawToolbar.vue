@@ -100,7 +100,7 @@ import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useSelectedItems } from "@/stores/selectedStore";
 import Feature from "ol/Feature";
-import { AnyVectorLayer } from "@/geo/types";
+import { type AnyVectorLayer } from "@/geo/types";
 import { convertOlFeatureToScenarioFeature } from "@/modules/scenarioeditor/scenarioFeatureLayers";
 
 const {

@@ -1,17 +1,16 @@
-import { NewScenarioStore } from "@/scenariostore/newScenarioStore";
+import type { NewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { computed } from "vue";
-import { CurrentState } from "@/types/scenarioModels";
-import {
+import type { CurrentState } from "@/types/scenarioModels";
+import type {
   CurrentScenarioFeatureState,
   FeatureId,
   LayerFeatureItem,
   Position,
-  ScenarioFeature,
   ScenarioLayer,
   ScenarioMapLayer,
 } from "@/types/scenarioGeoModels";
-import { EntityId } from "@/types/base";
-import {
+import type { EntityId } from "@/types/base";
+import type {
   NScenarioFeature,
   NScenarioLayer,
   ScenarioFeatureUpdate,
@@ -21,9 +20,8 @@ import {
 import { klona } from "klona";
 import { moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
-import { DropTarget } from "@/components/types";
-import { createInitialState } from "@/scenariostore/time";
-import { Geometry } from "geojson";
+import type { DropTarget } from "@/components/types";
+import type { Geometry } from "geojson";
 
 export type ScenarioMapLayerEvent =
   | {

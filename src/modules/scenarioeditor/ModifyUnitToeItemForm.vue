@@ -5,7 +5,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { computed, watch } from "vue";
 import { klona } from "klona";
-import {
+import type {
   EUnitEquipment,
   EUnitSupply,
   NUnitEquipment,
@@ -13,7 +13,7 @@ import {
 } from "@/types/internalModels";
 import FormFooter from "@/modules/scenarioeditor/FormFooter.vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";
-import { ToeEditStore } from "@/stores/toeStore";
+import { type ToeEditStore } from "@/stores/toeStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 
 type Form = NUnitEquipment | NUnitPersonnel;

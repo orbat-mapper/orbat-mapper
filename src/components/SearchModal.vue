@@ -40,12 +40,12 @@ import { useDebounce, useVModel } from "@vueuse/core";
 import SearchModalInput from "./SearchModalInput.vue";
 import SearchUnitHit from "./SearchUnitHit.vue";
 import ToggleField from "./ToggleField.vue";
-import { LayerFeatureSearchResult, UnitSearchResult } from "./types";
+import type { LayerFeatureSearchResult, UnitSearchResult } from "./types";
 import { groupBy, htmlTagEscape, injectStrict } from "../utils";
 import SearchFeatureHit from "./SearchFeatureHit.vue";
 import * as fuzzysort from "fuzzysort";
 import { activeScenarioKey } from "@/components/injects";
-import { NUnit } from "@/types/internalModels";
+import { type NUnit } from "@/types/internalModels";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits([

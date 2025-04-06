@@ -3,13 +3,10 @@ import { computed } from "vue";
 import {
   defaultFillColor,
   defaultFillOpacity,
-  defaultSimplestyleFill,
-  FillStyleSpec,
-  SimpleStyleSpec,
+  type FillStyleSpec,
+  type SimpleStyleSpec,
 } from "@/geo/simplestyle";
-import { ScenarioFeature } from "@/types/scenarioGeoModels";
-import ColorPicker from "@/components/ColorPicker.vue";
-import { ScenarioFeatureUpdate } from "@/types/internalModels";
+import { type ScenarioFeature } from "@/types/scenarioGeoModels";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();

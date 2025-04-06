@@ -39,8 +39,8 @@ import { type ScenarioMetadata } from "@/scenariostore/localdb";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { formatTimeAgo } from "@vueuse/core";
 import DotsMenu from "@/components/DotsMenu.vue";
-import { MenuItemData } from "@/components/types";
-import { StoredScenarioAction } from "@/types/constants";
+import { type MenuItemData } from "@/components/types";
+import { type StoredScenarioAction } from "@/types/constants";
 
 const props = defineProps<{ data: ScenarioMetadata; noLink?: boolean }>();
 const emit = defineEmits(["action"]);

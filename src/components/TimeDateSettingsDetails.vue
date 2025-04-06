@@ -3,7 +3,11 @@ import RadioGroupList from "@/components/RadioGroupList.vue";
 import LanguageSelect from "@/components/LanguageSelect.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
-import { intlItems, timeFormatItems, TimeFormatSettings } from "@/stores/timeFormatStore";
+import {
+  intlItems,
+  timeFormatItems,
+  type TimeFormatSettings,
+} from "@/stores/timeFormatStore";
 
 const props = defineProps<{ sampleTime: string }>();
 const settings = defineModel<TimeFormatSettings>({ required: true });

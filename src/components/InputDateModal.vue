@@ -62,7 +62,7 @@ import { useFocusOnMount } from "@/components/helpers";
 import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
-import { ScenarioEvent } from "@/types/scenarioModels";
+import { type ScenarioEvent } from "@/types/scenarioModels";
 
 interface Props {
   dialogTitle?: string;

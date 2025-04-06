@@ -49,12 +49,12 @@ import VectorLayer from "ol/layer/Vector";
 import LayerGroup from "ol/layer/Group";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/solid";
 import BaseLayerSwitcher from "./BaseLayerSwitcher.vue";
-import { AnyTileLayer, AnyVectorLayer } from "@/geo/types";
+import type { AnyTileLayer, AnyVectorLayer } from "@/geo/types";
 import TileSource from "ol/source/Tile";
 import { toLonLat } from "ol/proj";
 import OpacityInput from "./OpacityInput.vue";
 import { getUid } from "ol";
-import { LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
+import { type LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import ImageLayer from "ol/layer/Image";
 

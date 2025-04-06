@@ -1,7 +1,7 @@
 import OLMap from "ol/Map";
 import {
   createEventHook,
-  Fn,
+  type Fn,
   onClickOutside,
   onKeyStroke,
   tryOnBeforeUnmount,

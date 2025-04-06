@@ -3,7 +3,7 @@ import { ref, watchEffect } from "vue";
 import Point from "ol/geom/Point";
 import { toContext } from "ol/render";
 import { Style } from "ol/style";
-import { createMarkerSymbol, MarkerSymbol } from "@/geo/simplestyle";
+import { createMarkerSymbol, type MarkerSymbol } from "@/geo/simplestyle";
 
 interface Props {
   marker?: MarkerSymbol;

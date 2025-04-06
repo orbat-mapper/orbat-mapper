@@ -1,13 +1,12 @@
 <script setup lang="ts">
-//@ts-nocheck
 import OrbatGrid from "@/modules/grid/OrbatGrid.vue";
 
-import { ColumnProperties } from "@/modules/grid/gridTypes";
-import { NUnit } from "@/types/internalModels";
+import type { ColumnProperties } from "@/modules/grid/gridTypes";
+import type { NUnit } from "@/types/internalModels";
 import { onMounted, ref } from "vue";
 import { useScenario } from "@/scenariostore";
-import { MenuItemData } from "@/components/types";
-import { SideAction, SideActions } from "@/types/constants";
+import type { MenuItemData } from "@/components/types";
+import { type SideAction, SideActions } from "@/types/constants";
 import ToggleField from "@/components/ToggleField.vue";
 import BaseButton from "@/components/BaseButton.vue";
 

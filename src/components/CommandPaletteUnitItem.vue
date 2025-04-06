@@ -44,6 +44,6 @@
 </template>
 <script setup lang="ts">
 import MilSymbol from "@/components/MilSymbol.vue";
-import { UnitSearchResult } from "@/components/types";
+import { type UnitSearchResult } from "@/components/types";
 const props = defineProps<{ item: UnitSearchResult; active?: boolean }>();
 </script>

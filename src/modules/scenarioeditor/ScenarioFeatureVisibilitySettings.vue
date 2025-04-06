@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { SimpleStyleSpec, VisibilityStyleSpec } from "@/geo/simplestyle";
-import { ScenarioFeature } from "@/types/scenarioGeoModels";
+import type { SimpleStyleSpec, VisibilityStyleSpec } from "@/geo/simplestyle";
+import { type ScenarioFeature } from "@/types/scenarioGeoModels";
 import ToggleField from "@/components/ToggleField.vue";
 import ZoomSelector from "@/components/ZoomSelector.vue";
 

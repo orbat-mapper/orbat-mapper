@@ -1,6 +1,6 @@
-import { EntityId } from "@/types/base";
-import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
-import { SelectItem } from "@/components/types";
+import type { EntityId } from "@/types/base";
+import type { NSide, NSideGroup, NUnit } from "@/types/internalModels";
+import type { SelectItem } from "@/components/types";
 
 export interface UnitItem {
   type: "unit";

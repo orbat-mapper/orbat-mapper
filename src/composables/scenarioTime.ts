@@ -1,4 +1,4 @@
-import { MaybeRef } from "@vueuse/core";
+import { type MaybeRef } from "@vueuse/core";
 import { computed, ref, unref, watch } from "vue";
 import dayjs from "dayjs";
 

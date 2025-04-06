@@ -1,7 +1,7 @@
-import { FeatureId } from "@/types/scenarioGeoModels";
-import { EntityId } from "@/types/base";
+import type { FeatureId } from "@/types/scenarioGeoModels";
+import type { EntityId } from "@/types/base";
 import { computed, ref, watch } from "vue";
-import { DetailsPanel } from "@/modules/scenarioeditor/types";
+import { type DetailsPanel } from "@/modules/scenarioeditor/types";
 
 export type SelectedScenarioFeatures = Set<FeatureId>;
 

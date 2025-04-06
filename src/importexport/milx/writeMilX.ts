@@ -5,13 +5,13 @@ import { x } from "xastscript";
 import { convertNumberSidc2LetterSidc } from "@orbat-mapper/convert-symbology";
 
 import { BR, BRTAB, tagIdValue, tagValue } from "@/importexport/milx/domutils";
-import {
+import type {
   MilSymbolProperties,
   OrbatMapperGeoJsonCollection,
   OrbatMapperGeoJsonFeature,
   OrbatMapperGeoJsonLayer,
 } from "@/importexport/jsonish/types";
-import { textAmpMapInv, TextAmpValue } from "@/symbology/milsymbwrapper";
+import { textAmpMapInv, type TextAmpValue } from "@/symbology/milsymbwrapper";
 
 const supportedAttributes: TextAmpValue[] = [
   "higherFormation",

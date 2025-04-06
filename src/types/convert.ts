@@ -1,4 +1,4 @@
-import { EntityId } from "@/types/base";
+import { type EntityId } from "@/types/base";
 
 export type ExportFormat =
   | "orbatmapper"

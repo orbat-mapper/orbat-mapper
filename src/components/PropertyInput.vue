@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { UnitProperty } from "@/types/scenarioModels";
-import { UnitPropertyUpdate } from "@/types/internalModels";
+import { type UnitProperty } from "@/types/scenarioModels";
+import { type UnitPropertyUpdate } from "@/types/internalModels";
 
 const props = withDefaults(
   defineProps<{

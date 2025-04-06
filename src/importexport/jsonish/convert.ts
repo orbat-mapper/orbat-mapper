@@ -1,7 +1,7 @@
 import type { FeatureCollection } from "geojson";
 import { nanoid } from "@/utils";
 import { convertLetterSidc2NumberSidc } from "@orbat-mapper/convert-symbology";
-import {
+import type {
   GeoJsonSymbolProperties,
   MilSymbolProperties,
   OrbatMapperGeoJsonCollection,

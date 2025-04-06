@@ -1,11 +1,11 @@
-import {
+import type {
   NScenarioFeature,
   NScenarioLayer,
   NSide,
   NSideGroup,
   NUnit,
 } from "@/types/internalModels";
-import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 
 export type ItemState =
   | { type: "idle" }

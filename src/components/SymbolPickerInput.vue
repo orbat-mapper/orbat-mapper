@@ -34,7 +34,7 @@ import { useVModel } from "@vueuse/core";
 import { Bars3BottomRightIcon as MenuAlt3Icon } from "@heroicons/vue/24/solid";
 import { injectStrict } from "@/utils";
 import { sidcModalKey } from "@/components/injects";
-import { UnitSymbolOptions } from "@/types/scenarioModels";
+import { type UnitSymbolOptions } from "@/types/scenarioModels";
 
 interface Props {
   modelValue?: string;

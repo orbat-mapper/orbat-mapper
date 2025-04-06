@@ -208,16 +208,16 @@ import SecondaryButton from "./SecondaryButton.vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import {
   mapReinforcedStatus2Field,
-  ReinforcedStatus,
-  UnitSymbolOptions,
+  type ReinforcedStatus,
+  type UnitSymbolOptions,
 } from "@/types/scenarioModels";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 import SymbolCodeViewer from "@/components/SymbolCodeViewer.vue";
 import { Sidc } from "@/symbology/sidc";
 import {
-  MainIconSearchResult,
-  ModifierOneSearchResult,
-  ModifierTwoSearchResult,
+  type MainIconSearchResult,
+  type ModifierOneSearchResult,
+  type ModifierTwoSearchResult,
   useSymbologySearch,
 } from "@/composables/symbolSearching";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";

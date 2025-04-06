@@ -31,9 +31,9 @@ import OrbatPanelAddSide from "@/components/OrbatPanelAddSide.vue";
 import { injectStrict, triggerPostMoveFlash } from "@/utils";
 import { activeParentKey, activeScenarioKey } from "@/components/injects";
 import OrbatSide from "@/components/OrbatSide.vue";
-import { NSide, NSideGroup, NUnit } from "@/types/internalModels";
-import { SideAction, SideActions } from "@/types/constants";
-import { DropTarget } from "@/components/types";
+import type { NSide, NSideGroup, NUnit } from "@/types/internalModels";
+import { type SideAction, SideActions } from "@/types/constants";
+import { type DropTarget } from "@/components/types";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { useEventBus, useEventListener } from "@vueuse/core";
 import { orbatUnitClick } from "@/components/eventKeys";
@@ -45,13 +45,13 @@ import {
   orbatToText,
   parseApplicationOrbat,
 } from "@/importexport/convertUtils";
-import { EntityId } from "@/types/base";
+import { type EntityId } from "@/types/base";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { isSideDragItem, isSideGroupDragItem, isUnitDragItem } from "@/types/draggables";
 
 import {
   extractInstruction,
-  Instruction,
+  type Instruction,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 
 interface Props {

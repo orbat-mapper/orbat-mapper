@@ -6,7 +6,7 @@ import OLMap from "ol/Map";
 import { defaults as defaultControls } from "ol/control";
 import View from "ol/View";
 import "ol/ol.css";
-import { Coordinate } from "ol/coordinate";
+import { type Coordinate } from "ol/coordinate";
 import { fromLonLat } from "ol/proj";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { createBaseLayers } from "@/geo/baseLayers";

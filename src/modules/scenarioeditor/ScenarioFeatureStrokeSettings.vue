@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import type { SimpleStyleSpec, StrokeStyleSpec, TextStyleSpec } from "@/geo/simplestyle";
 import {
   defaultStrokeColor,
   defaultStrokeOpacity,
   defaultStrokeWidth,
-  SimpleStyleSpec,
-  StrokeStyleSpec,
-  TextStyleSpec,
 } from "@/geo/simplestyle";
-import { ScenarioFeature } from "@/types/scenarioGeoModels";
+import type { ScenarioFeature } from "@/types/scenarioGeoModels";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();

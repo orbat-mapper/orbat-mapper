@@ -1,8 +1,8 @@
 import { featureCollection, point } from "@turf/helpers";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { TScenario } from "@/scenariostore";
-import {
+import type { TScenario } from "@/scenariostore";
+import type {
   ColumnMapping,
   ExportSettings,
   GeoJsonSettings,
@@ -12,13 +12,13 @@ import {
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
-import { INTERNAL_NAMES, NUnit } from "@/types/internalModels";
+import { INTERNAL_NAMES, type NUnit } from "@/types/internalModels";
 import type { Unit } from "@/types/scenarioModels";
 import {
   reinforcedStatus2SpatialIllusions,
-  SpatialIllusionsOrbat,
+  type SpatialIllusionsOrbat,
 } from "@/types/externalModels";
-import {
+import type {
   MilSymbolProperties,
   OrbatMapperGeoJsonCollection,
   OrbatMapperGeoJsonLayer,

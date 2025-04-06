@@ -14,7 +14,7 @@
 </template>
 <script setup lang="ts">
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import { UnitSymbolOptions } from "@/types/scenarioModels";
+import { type UnitSymbolOptions } from "@/types/scenarioModels";
 
 interface Props {
   sidc: string;

@@ -21,8 +21,8 @@
 import { useBrowserScenarios } from "@/composables/browserScenarios";
 import SortDropdown from "@/components/SortDropdown.vue";
 import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
-import { StoredScenarioAction } from "@/types/constants";
-import { ScenarioMetadata } from "@/scenariostore/localdb";
+import { type StoredScenarioAction } from "@/types/constants";
+import { type ScenarioMetadata } from "@/scenariostore/localdb";
 const emit = defineEmits(["loaded"]);
 const { importScenario, storedScenarios, sortOptions, onAction } = useBrowserScenarios();
 

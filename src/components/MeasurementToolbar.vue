@@ -59,7 +59,7 @@ import ToolbarButton from "./ToolbarButton.vue";
 import OLMap from "ol/Map";
 import { useMeasurementInteraction } from "@/composables/geoMeasurement";
 import { watch } from "vue";
-import { Fn, onKeyDown, useToggle } from "@vueuse/core";
+import { type Fn, onKeyDown, useToggle } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import { useUiStore } from "@/stores/uiStore";

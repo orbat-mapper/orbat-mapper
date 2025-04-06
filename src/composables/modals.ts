@@ -1,7 +1,7 @@
 import { useConfirmDialog } from "@vueuse/core";
 import { computed, ref } from "vue";
 import NProgress from "nprogress";
-import { ReinforcedStatus, UnitSymbolOptions } from "@/types/scenarioModels";
+import type { ReinforcedStatus, UnitSymbolOptions } from "@/types/scenarioModels";
 
 export interface ModalTimestampOptions {
   timeZone: string;

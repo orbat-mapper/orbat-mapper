@@ -1,10 +1,10 @@
 import { select } from "d3-selection";
 import { arrSum, flattenArray, walkTree } from "./utils";
-import {
+import type {
   BasicUnitNode,
+  ChartUnit,
   GElementSelection,
-  type LevelLayout,
-  LevelLayouts,
+  LevelLayout,
   OrbChartOptions,
   RenderedBranch,
   RenderedChart,
@@ -13,10 +13,8 @@ import {
   SpecificOptions,
   SVGElementSelection,
   ToSvgOptions,
-  ChartUnit,
-  UnitLevelDistances,
-  VerticalAlignments,
 } from "./types";
+import { LevelLayouts, UnitLevelDistances, VerticalAlignments } from "./types";
 import {
   DEFAULT_CHART_HEIGHT,
   DEFAULT_CHART_WIDTH,

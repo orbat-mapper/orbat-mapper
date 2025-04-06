@@ -58,7 +58,7 @@ import {
   RadioGroupLabel,
   RadioGroupOption,
 } from "@headlessui/vue";
-import { RadioGroupItem } from "@/components/types";
+import { type RadioGroupItem } from "@/components/types";
 
 defineProps<{
   items: RadioGroupItem[];

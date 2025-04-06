@@ -1,7 +1,7 @@
-import { EntityId } from "@/types/base";
-import { NewScenarioStore, ScenarioState } from "./newScenarioStore";
+import type { EntityId } from "@/types/base";
+import type { NewScenarioStore, ScenarioState } from "./newScenarioStore";
 import { moveElement, nanoid, removeElement } from "@/utils";
-import {
+import type {
   NSide,
   NSideGroup,
   NState,
@@ -12,20 +12,20 @@ import {
   UnitStatusUpdate,
   UnitUpdate,
 } from "@/types/internalModels";
-import { CloneTarget, DropTarget } from "@/components/types";
+import type { CloneTarget, DropTarget } from "@/components/types";
 import { SID_INDEX, Sidc } from "@/symbology/sidc";
 import { setCharAt } from "@/components/helpers";
 import { SID } from "@/symbology/values";
 import { klona } from "klona";
 import { createInitialState } from "@/scenariostore/time";
 import { computed } from "vue";
-import {
-  mapReinforcedStatus2Field,
+import type {
   Unit,
   UnitProperties,
   UnitStyle,
   UnitSymbolOptions,
 } from "@/types/scenarioModels";
+import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
 import { getNextEchelonBelow } from "@/symbology/helpers";
 import { clearUnitStyleCache, invalidateUnitStyle } from "@/geo/unitStyles";
 import { useSupplyManipulations } from "@/scenariostore/supplyManipulations";

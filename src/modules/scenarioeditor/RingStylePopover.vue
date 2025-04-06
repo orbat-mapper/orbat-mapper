@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { RangeRingStyle } from "@/types/scenarioGeoModels";
+import { type RangeRingStyle } from "@/types/scenarioGeoModels";
 import DrawRangeRingMarker from "@/components/DrawRangeRingMarker.vue";
 import { computed } from "vue";
-import ColorPicker from "@/components/ColorPicker.vue";
-import { SimpleStyleSpec } from "@/geo/simplestyle";
+import { type SimpleStyleSpec } from "@/geo/simplestyle";
 import { useUiStore } from "@/stores/uiStore";
 import { PopoverClose } from "radix-vue";
 import CloseButton from "@/components/CloseButton.vue";

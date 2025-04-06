@@ -6,13 +6,13 @@ import {
   leadershipValues,
   mobilityValues,
   SID,
-  SidValue,
+  type SidValue,
   SUBSURFACE_SYMBOLSET_VALUE,
   SURFACE_SYMBOLSET_VALUE,
   towedArrayValues,
   UNIT_SYMBOLSET_VALUE,
 } from "@/symbology/values";
-import { SymbolItem, SymbolValue } from "@/types/constants";
+import type { SymbolItem, SymbolValue } from "@/types/constants";
 import { Sidc } from "@/symbology/sidc";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";

@@ -6,8 +6,8 @@ import {
   featureMenuItems,
   getGeometryIcon,
 } from "@/modules/scenarioeditor/featureLayerUtils";
-import { ScenarioFeatureActions } from "@/types/constants";
-import { NScenarioFeature } from "@/types/internalModels";
+import type { ScenarioFeatureActions } from "@/types/constants";
+import type { NScenarioFeature } from "@/types/internalModels";
 import {
   draggable,
   dropTargetForElements,
@@ -16,7 +16,6 @@ import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import {
   attachClosestEdge,
-  Edge,
   extractClosestEdge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import DropIndicator from "@/components/DropIndicator.vue";
@@ -24,7 +23,7 @@ import {
   getScenarioFeatureDragItem,
   idle,
   isScenarioFeatureDragItem,
-  ItemState,
+  type ItemState,
 } from "@/types/draggables";
 
 interface Props {

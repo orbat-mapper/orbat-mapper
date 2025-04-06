@@ -8,14 +8,14 @@ import { Vector as VectorSource } from "ol/source";
 import { Vector as VectorLayer } from "ol/layer";
 import { getArea, getLength } from "ol/sphere";
 import Feature from "ol/Feature";
-import { MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
+import { type MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
 import { ref, watch } from "vue";
 import { primaryAction } from "ol/events/condition";
 import Snap from "ol/interaction/Snap";
 import { Collection } from "ol";
 import { getSnappableFeatures } from "@/composables/openlayersHelpers";
 import { formatArea, formatLength } from "@/geo/utils";
-import { EventsKey } from "ol/events";
+import type { EventsKey } from "ol/events";
 import { unByKey } from "ol/Observable";
 import { circular } from "ol/geom/Polygon";
 

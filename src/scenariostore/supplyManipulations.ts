@@ -1,5 +1,5 @@
-import { NewScenarioStore, ScenarioState } from "@/scenariostore/newScenarioStore";
-import {
+import type { NewScenarioStore, ScenarioState } from "@/scenariostore/newScenarioStore";
+import type {
   NSupplyCategory,
   NSupplyClass,
   NSupplyUoM,
@@ -9,7 +9,7 @@ import {
 } from "@/types/internalModels";
 import { nanoid } from "@/utils";
 import { klona } from "klona";
-import { EntityId } from "@/types/base";
+import type { EntityId } from "@/types/base";
 import { updateCurrentUnitState } from "@/scenariostore/time";
 import { removeUnusedUnitStateEntries } from "@/scenariostore/unitStateManipulations";
 

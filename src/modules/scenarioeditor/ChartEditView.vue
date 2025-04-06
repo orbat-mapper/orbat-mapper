@@ -84,14 +84,14 @@ import OrbatChart from "@/modules/charteditor/OrbatChart.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import SimpleBreadcrumbs from "@/components/SimpleBreadcrumbs.vue";
-import { BreadcrumbItem, MenuItemData } from "@/components/types";
+import type { BreadcrumbItem, MenuItemData } from "@/components/types";
 import OrbatChartSettings from "@/modules/charteditor/OrbatChartSettings.vue";
-import {
+import type {
   OnBranchClickCallback,
   OnLevelClickCallback,
   RenderedUnitNode,
 } from "@/modules/charteditor/orbatchart";
-import { ChartTab, ChartTabs } from "@/modules/charteditor/constants";
+import { type ChartTab, ChartTabs } from "@/modules/charteditor/constants";
 import ToggleField from "@/components/ToggleField.vue";
 import ResizablePanel from "@/components/ResizablePanel.vue";
 import DotsMenu from "@/components/DotsMenu.vue";

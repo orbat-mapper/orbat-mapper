@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TableColumn } from "@/modules/scenarioeditor/types";
+import { type TableColumn } from "@/modules/scenarioeditor/types";
 
 interface Props {
   columns: TableColumn[];

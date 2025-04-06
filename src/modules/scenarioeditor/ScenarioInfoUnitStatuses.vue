@@ -4,7 +4,7 @@ import { injectStrict } from "@/utils";
 import { computed, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import TableHeader from "@/components/TableHeader.vue";
-import { NEquipmentData, NUnitStatus } from "@/types/internalModels";
+import type { NEquipmentData, NUnitStatus } from "@/types/internalModels";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useNotifications } from "@/composables/notifications";
 import InputGroup from "@/components/InputGroup.vue";

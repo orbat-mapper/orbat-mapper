@@ -16,7 +16,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { Media } from "@/types/scenarioModels";
+import { type Media } from "@/types/scenarioModels";
 
 const props = defineProps<{ media: Media }>();
 </script>

@@ -2,7 +2,7 @@ import OLMap from "ol/Map";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import LayerGroup from "ol/layer/Group";
-import {
+import type {
   FeatureId,
   ScenarioImageLayer,
   ScenarioKMLLayer,
@@ -23,21 +23,20 @@ import { unByKey } from "ol/Observable";
 import { fixExtent } from "@/utils/geoConvert";
 import {
   IconImage as ImageIcon,
-  IconWebBox,
   IconVectorSquare as VectorIcon,
+  IconWebBox,
 } from "@iconify-prerendered/vue-mdi";
-import {
+import type {
   ScenarioMapLayerUpdate,
   ScenarioTileJSONLayerUpdate,
 } from "@/types/internalModels";
 import XYZ from "ol/source/XYZ";
-import { TGeo } from "@/scenariostore";
+import type { TGeo } from "@/scenariostore";
 import {
-  TransformUpdate,
+  type TransformUpdate,
   useImageLayerTransformInteraction,
 } from "@/composables/geoImageLayerInteraction";
 import VectorSource from "ol/source/Vector";
-import { KML } from "ol/format";
 import VectorLayer from "ol/layer/Vector";
 import { KMLZ } from "@/geo/kmlz";
 import { imageCache } from "@/importexport/fileHandling";

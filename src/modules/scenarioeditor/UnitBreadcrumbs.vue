@@ -16,15 +16,15 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import { NUnit } from "@/types/internalModels";
-import { EntityId } from "@/types/base";
+import type { NUnit } from "@/types/internalModels";
+import type { EntityId } from "@/types/base";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import CloseButton from "@/components/CloseButton.vue";
 import { useUiStore } from "@/stores/uiStore";
 import UnitBreadcrumbItem from "@/modules/scenarioeditor/UnitBreadcrumbItem.vue";
-import { BreadcrumbItemType } from "@/modules/scenarioeditor/types";
+import type { BreadcrumbItemType } from "@/modules/scenarioeditor/types";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { isUnitDragItem } from "@/types/draggables";
 

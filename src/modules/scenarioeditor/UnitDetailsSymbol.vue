@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NUnit } from "@/types/internalModels";
+import { type NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed, ref, watch } from "vue";
@@ -8,9 +8,9 @@ import { Sidc } from "@/symbology/sidc";
 import { Dimension, symbolSetToDimension } from "@/symbology/values";
 import TextAmpInput from "@/modules/scenarioeditor/TextAmpInput.vue";
 import ToggleField from "@/components/ToggleField.vue";
-import { TextAmpKey, textAmpMap, TextAmpValue } from "@/symbology/milsymbwrapper";
+import { type TextAmpKey, textAmpMap } from "@/symbology/milsymbwrapper";
 import BaseButton from "@/components/BaseButton.vue";
-import { TextAmplifiers } from "@/types/scenarioModels";
+import type { TextAmplifiers } from "@/types/scenarioModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 
 interface Props {

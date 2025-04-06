@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ScenarioTileJSONLayer, ScenarioXYZLayer } from "@/types/scenarioGeoModels";
+import type { ScenarioTileJSONLayer, ScenarioXYZLayer } from "@/types/scenarioGeoModels";
 import InputGroup from "@/components/InputGroup.vue";
 import { computed, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { getChangedValues, nanoid, sanitizeHTML } from "@/utils";
+import { getChangedValues, sanitizeHTML } from "@/utils";
 import { useFocusOnMount } from "@/components/helpers";
-import { ScenarioImageLayerUpdate } from "@/types/internalModels";
+import { type ScenarioImageLayerUpdate } from "@/types/internalModels";
 import { useToggle } from "@vueuse/core";
 import TextAreaGroup from "@/components/TextAreaGroup.vue";
 import { toLonLat } from "ol/proj";

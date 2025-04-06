@@ -6,7 +6,7 @@ import SimpleSelect from "@/components/SimpleSelect.vue";
 import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed, ref } from "vue";
-import { SelectItem } from "@/components/types";
+import { type SelectItem } from "@/components/types";
 import BaseButton from "@/components/BaseButton.vue";
 
 const props = defineProps<{ disabled?: boolean }>();

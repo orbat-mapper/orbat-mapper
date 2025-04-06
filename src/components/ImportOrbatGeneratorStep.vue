@@ -28,13 +28,13 @@ import { useNotifications } from "@/composables/notifications";
 import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { NUnit, NUnitAdd } from "@/types/internalModels";
-import { SymbolItem } from "@/types/constants";
+import type { NUnit, NUnitAdd } from "@/types/internalModels";
+import type { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
 import type { OrbatGeneratorOrbat } from "@/types/externalModels";
-import { EntityId } from "@/types/base";
+import type { EntityId } from "@/types/base";
 
 interface Props {
   data: OrbatGeneratorOrbat;

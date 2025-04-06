@@ -5,9 +5,9 @@ import {
   defaultSimplestyleFill,
   defaultSimplestyleStroke,
 } from "./simplestyle";
-import { FeatureLike } from "ol/Feature";
+import type { FeatureLike } from "ol/Feature";
 import type { FeatureId } from "@/types/scenarioGeoModels";
-import { TGeo } from "@/scenariostore";
+import type { TGeo } from "@/scenariostore";
 import View from "ol/View";
 
 let zoomResolutions: number[] = [];

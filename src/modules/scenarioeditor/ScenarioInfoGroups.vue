@@ -4,12 +4,11 @@ import { injectStrict } from "@/utils";
 import { computed, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import TableHeader from "@/components/TableHeader.vue";
-import { NPersonnelData, NRangeRingGroup } from "@/types/internalModels";
+import type { NRangeRingGroup } from "@/types/internalModels";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useNotifications } from "@/composables/notifications";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import InputGroup from "@/components/InputGroup.vue";
-import { RangeRingGroup } from "@/types/scenarioGeoModels";
 
 const scn = injectStrict(activeScenarioKey);
 const store = useScenarioInfoPanelStore();

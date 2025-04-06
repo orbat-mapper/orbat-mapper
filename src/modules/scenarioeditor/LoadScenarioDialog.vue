@@ -53,7 +53,7 @@
 <script setup lang="ts">
 import SimpleModal from "@/components/SimpleModal.vue";
 import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
-import { Scenario } from "@/types/scenarioModels";
+import { type Scenario } from "@/types/scenarioModels";
 import LoadScenarioUrlForm from "@/modules/scenarioeditor/LoadScenarioUrlForm.vue";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";

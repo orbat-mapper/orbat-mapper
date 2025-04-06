@@ -125,7 +125,7 @@
 import { computed, onMounted, ref, shallowRef } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
-import { SelectItem } from "@/components/types";
+import { type SelectItem } from "@/components/types";
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
 import type { GuessedImportFormat, ImportFormat, ImportSettings } from "@/types/convert";
 import { useNotifications } from "@/composables/notifications";
@@ -134,16 +134,16 @@ import { useDropZone } from "@vueuse/core";
 import TextAreaGroup from "@/components/TextAreaGroup.vue";
 import { useImportStore } from "@/stores/importExportStore";
 import { useScenarioImport } from "@/composables/scenarioImport";
-import { guessImportFormat, ImportedFileInfo } from "@/importexport/fileHandling";
+import { guessImportFormat, type ImportedFileInfo } from "@/importexport/fileHandling";
 import { useDragStore } from "@/stores/dragStore";
-import { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
+import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
 import DocLink from "@/components/DocLink.vue";
 import InputGroup from "@/components/InputGroup.vue";
 import AlertWarning from "@/components/AlertWarning.vue";
 import { isUrl } from "@/utils";
 import type { FeatureCollection } from "geojson";
 import ImportLoadStepBrowser from "@/modules/scenarioeditor/ImportLoadStepBrowser.vue";
-import { Scenario } from "@/types/scenarioModels";
+import { type Scenario } from "@/types/scenarioModels";
 
 const emit = defineEmits(["cancel", "loaded"]);
 

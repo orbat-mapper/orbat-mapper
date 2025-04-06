@@ -1,5 +1,5 @@
-import { EntityId } from "@/types/base";
-import { FeatureId } from "@/types/scenarioGeoModels";
+import type { EntityId } from "@/types/base";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 
 export function groupBy<T extends object, K extends keyof T>(arr: T[], key: K) {
   return arr.reduce((acc, item) => {

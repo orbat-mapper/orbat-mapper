@@ -1,4 +1,4 @@
-import { UnitSymbolOptions } from "@/types/scenarioModels";
+import type { UnitSymbolOptions } from "@/types/scenarioModels";
 
 export const DragOperations = {
   OrbatDrag: "OrbatDrag",

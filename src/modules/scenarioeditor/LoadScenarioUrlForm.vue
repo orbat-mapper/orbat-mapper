@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { Scenario } from "@/types/scenarioModels";
+import { type Scenario } from "@/types/scenarioModels";
 import InputGroup from "@/components/InputGroup.vue";
 import { computed, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";

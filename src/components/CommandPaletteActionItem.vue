@@ -15,20 +15,17 @@
   </li>
 </template>
 <script setup lang="ts">
-import { ActionSearchResult } from "@/components/types";
+import { type ActionSearchResult } from "@/components/types";
 import {
-  IconHexagonOutline,
   IconAddCircleOutline,
-  IconFileUploadOutline,
-  IconFileDownloadOutline,
   IconContentSaveOutline,
+  IconFileDownloadOutline,
+  IconFileUploadOutline,
+  IconHexagonOutline,
   IconPause,
   IconPlay,
   IconSpeedometer,
   IconSpeedometerSlow,
-  IconTarget,
-  IconClockStart,
-  IconClockEnd,
 } from "@iconify-prerendered/vue-mdi";
 
 const iconMap: Record<string, any> = {

@@ -197,11 +197,11 @@
 import { computed, ref, watch } from "vue";
 import {
   IconCrosshairsGps,
+  IconFileTreeOutline as TreeLocateIcon,
   IconImage as ImageIcon,
   IconLockOutline,
   IconMagnifyExpand as ZoomIcon,
   IconPencil as EditIcon,
-  IconFileTreeOutline as TreeLocateIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { GlobalEvents } from "vue-global-events";
@@ -211,12 +211,12 @@ import { useToggle } from "@vueuse/core";
 import { renderMarkdown } from "@/composables/formatting";
 import UnitPanelState from "./UnitPanelState.vue";
 import { useUnitActions } from "@/composables/scenarioActions";
-import { UnitAction, UnitActions } from "@/types/constants";
+import { type UnitAction, UnitActions } from "@/types/constants";
 import SplitButton from "@/components/SplitButton.vue";
-import { EntityId } from "@/types/base";
+import { type EntityId } from "@/types/base";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, searchActionsKey, sidcModalKey } from "@/components/injects";
-import { MediaUpdate, UnitUpdate } from "@/types/internalModels";
+import type { MediaUpdate, UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
@@ -233,7 +233,7 @@ import { storeToRefs } from "pinia";
 import UnitDetailsToe from "@/modules/scenarioeditor/UnitDetailsToe.vue";
 import TabWrapper from "@/components/TabWrapper.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
-import { MenuItemData } from "@/components/types";
+import { type MenuItemData } from "@/components/types";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";

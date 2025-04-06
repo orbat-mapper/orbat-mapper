@@ -1,6 +1,6 @@
 import type { Feature, FeatureCollection, LineString, Point } from "geojson";
-import { TextAmpKey, TextAmpValue } from "@/symbology/milsymbwrapper";
-import { ReinforcedStatus, Unit } from "@/types/scenarioModels";
+import type { TextAmpKey, TextAmpValue } from "@/symbology/milsymbwrapper";
+import type { ReinforcedStatus, Unit } from "@/types/scenarioModels";
 
 export interface GeoJsonSymbolProperties {
   sidc?: string;

@@ -13,20 +13,20 @@ import { convex } from "@turf/convex";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { computed, onUnmounted, ref, watch, watchEffect } from "vue";
-import { SelectItem } from "@/components/types";
+import type { SelectItem } from "@/components/types";
 import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict, nanoid } from "@/utils";
 import { activeMapKey, activeScenarioKey } from "@/components/injects";
-import { FeatureId } from "@/types/scenarioGeoModels";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { NScenarioFeature } from "@/types/internalModels";
 import type { Feature, FeatureCollection, LineString, Polygon } from "geojson";
 import { useDebounceFn } from "@vueuse/core";
-import { geometryCollection, Units } from "@turf/helpers";
+import { geometryCollection, type Units } from "@turf/helpers";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";
 import {
-  TransformationOperation,
+  type TransformationOperation,
   useTransformSettingsStore,
 } from "@/stores/transformStore";
 import { storeToRefs } from "pinia";

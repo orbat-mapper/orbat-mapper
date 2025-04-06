@@ -47,7 +47,7 @@ import { Float } from "@headlessui-float/vue";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
 import { ChevronDownIcon } from "@heroicons/vue/24/solid";
 import { computed, ref } from "vue";
-import { ButtonGroupItem } from "./types";
+import { type ButtonGroupItem } from "./types";
 
 interface Props {
   items: ButtonGroupItem[];

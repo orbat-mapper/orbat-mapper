@@ -206,13 +206,13 @@ import {
 
 import { createEventHook, useClipboard, useTitle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
-import { ScenarioActions, TAB_LAYERS, UiAction } from "@/types/constants";
+import { type ScenarioActions, TAB_LAYERS, type UiAction } from "@/types/constants";
 import AppNotifications from "@/components/AppNotifications.vue";
 import { useNotifications } from "@/composables/notifications";
-import { FeatureId } from "@/types/scenarioGeoModels";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import NProgress from "nprogress";
-import { TScenario } from "@/scenariostore";
-import { EntityId } from "@/types/base";
+import type { TScenario } from "@/scenariostore";
+import type { EntityId } from "@/types/base";
 import {
   activeFeatureStylesKey,
   activeLayerKey,
@@ -224,7 +224,7 @@ import {
   timeModalKey,
 } from "@/components/injects";
 import { useFeatureStyles } from "@/geo/featureStyles";
-import { EventSearchResult } from "@/components/types";
+import type { EventSearchResult } from "@/components/types";
 import { useDateModal, useSidcModal } from "@/composables/modals";
 import { storeToRefs } from "pinia";
 import {
@@ -236,7 +236,7 @@ import {
 import { useFileDropZone } from "@/composables/filedragdrop";
 import { useTabStore } from "@/stores/tabStore";
 import CommandPalette from "@/components/CommandPalette.vue";
-import { PhotonSearchResult } from "@/composables/geosearching";
+import type { PhotonSearchResult } from "@/composables/geosearching";
 import { useSelectedItems } from "@/stores/selectedStore";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";

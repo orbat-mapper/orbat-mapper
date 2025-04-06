@@ -3,9 +3,9 @@ import PanelSymbolButton from "@/components/PanelSymbolButton.vue";
 import { Float } from "@headlessui-float/vue";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/vue";
 import FloatingPanel from "@/components/FloatingPanel.vue";
-import { Ref } from "vue";
+import { type Ref } from "vue";
 import { useToolbarUnitSymbolData } from "@/composables/mainToolbarData";
-import { UnitSymbolOptions } from "@/types/scenarioModels";
+import { type UnitSymbolOptions } from "@/types/scenarioModels";
 
 interface Props {
   symbolOptions: UnitSymbolOptions;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Tab, TabGroup, TabList, TabPanels } from "@headlessui/vue";
 import { computed, ref } from "vue";
-import { TabItem } from "@/components/types";
+import type { TabItem } from "@/components/types";
 import { useElementVisibility, useScroll } from "@vueuse/core";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/24/outline";
 

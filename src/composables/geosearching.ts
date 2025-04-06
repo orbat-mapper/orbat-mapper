@@ -1,7 +1,7 @@
 import { ref } from "vue";
 import { useFetch } from "@vueuse/core";
 import type { Feature, FeatureCollection, Point } from "geojson";
-import { GeoSearchProperties, PhotonFeatureProperties } from "@/types/search";
+import type { GeoSearchProperties, PhotonFeatureProperties } from "@/types/search";
 
 export interface GeoSearchOptions {
   mapCenter?: number[] | null;

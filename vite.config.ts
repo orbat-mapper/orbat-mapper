@@ -1,24 +1,15 @@
-import { fileURLToPath, URL } from "url";
-import { defineConfig } from "vitest/config";
+import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import vueDevTools from "vite-plugin-vue-devtools";
 import tailwindcss from "@tailwindcss/vite";
-// import { visualizer } from "rollup-plugin-visualizer";
 
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), tailwindcss()],
+  plugins: [vue(), vueDevTools(), tailwindcss()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
-  test: {
-    globals: true,
-    environment: "jsdom",
-  },
-  // build: {
-  //   rollupOptions: {
-  //     plugins: [visualizer()],
-  //   },
-  // },
 });
