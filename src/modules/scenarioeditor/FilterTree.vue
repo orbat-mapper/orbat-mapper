@@ -9,7 +9,7 @@ export type NestedUnitStatItem = {
 <script setup lang="ts">
 import { IconClose, IconMinusCircleOutline } from "@iconify-prerendered/vue-mdi";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import { TreeItem, TreeRoot } from "radix-vue";
+import { TreeItem, TreeRoot } from "reka-ui";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 
 const props = defineProps<{

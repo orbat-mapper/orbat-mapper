@@ -7,7 +7,7 @@ import {
   type ContextMenuCheckboxItemProps,
   ContextMenuItemIndicator,
   useForwardPropsEmits,
-} from "radix-vue";
+} from "reka-ui";
 import { computed, type HTMLAttributes } from "vue";
 
 const props = defineProps<
@@ -26,17 +26,20 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
 
 <template>
   <ContextMenuCheckboxItem
+    data-slot="context-menu-checkbox-item"
     v-bind="forwarded"
     :class="
       cn(
-        'focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50',
+        `focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
         props.class,
       )
     "
   >
-    <span class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span
+      class="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center"
+    >
       <ContextMenuItemIndicator>
-        <Check class="h-4 w-4" />
+        <Check class="size-4" />
       </ContextMenuItemIndicator>
     </span>
     <slot />

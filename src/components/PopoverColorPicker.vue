@@ -5,7 +5,7 @@ import { computed, triggerRef } from "vue";
 import { defaultColors, extraColors, isValidHexColor } from "@/components/colors";
 import { useUiStore } from "@/stores/uiStore";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { PopoverClose } from "radix-vue";
+import { PopoverClose } from "reka-ui";
 import CloseButton from "@/components/CloseButton.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 

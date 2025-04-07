@@ -134,38 +134,31 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
       <DropdownMenuSub>
         <DropdownMenuSubTrigger><span class="mr-4">View</span></DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
-          <DropdownMenuCheckboxItem
-            v-model:checked="uiSettings.showToolbar"
-            @select.prevent
+          <DropdownMenuCheckboxItem v-model="uiSettings.showToolbar" @select.prevent
             >Map toolbar
           </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem
-            v-model:checked="uiSettings.showTimeline"
-            @select.prevent
+          <DropdownMenuCheckboxItem v-model="uiSettings.showTimeline" @select.prevent
             >Timeline
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
             v-if="!isMobile"
-            v-model:checked="uiSettings.showLeftPanel"
+            v-model="uiSettings.showLeftPanel"
             @select.prevent
             >ORBAT panel
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
-            v-model:checked="uiSettings.showOrbatBreadcrumbs"
+            v-model="uiSettings.showOrbatBreadcrumbs"
             @select.prevent
             >Unit breadcrumbs</DropdownMenuCheckboxItem
           >
           <DropdownMenuSeparator />
-          <DropdownMenuCheckboxItem v-model:checked="showScaleLine" @select.prevent>
+          <DropdownMenuCheckboxItem v-model="showScaleLine" @select.prevent>
             Scale line
           </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem v-model:checked="showLocation" @select.prevent>
+          <DropdownMenuCheckboxItem v-model="showLocation" @select.prevent>
             Pointer location
           </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem
-            v-model:checked="showDayNightTerminator"
-            @select.prevent
-          >
+          <DropdownMenuCheckboxItem v-model="showDayNightTerminator" @select.prevent>
             Day/nigth terminator
           </DropdownMenuCheckboxItem>
           <DropdownMenuSub>
