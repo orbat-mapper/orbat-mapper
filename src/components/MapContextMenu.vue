@@ -268,16 +268,13 @@ function onAddUnit() {
       <ContextMenuSub>
         <ContextMenuSubTrigger inset><span>Map settings</span></ContextMenuSubTrigger>
         <ContextMenuSubContent>
-          <ContextMenuCheckboxItem v-model:checked="showScaleLine" @select.prevent>
+          <ContextMenuCheckboxItem v-model="showScaleLine" @select.prevent>
             Scale line
           </ContextMenuCheckboxItem>
-          <ContextMenuCheckboxItem v-model:checked="showLocation" @select.prevent>
+          <ContextMenuCheckboxItem v-model="showLocation" @select.prevent>
             Pointer location
           </ContextMenuCheckboxItem>
-          <ContextMenuCheckboxItem
-            v-model:checked="showDayNightTerminator"
-            @select.prevent
-          >
+          <ContextMenuCheckboxItem v-model="showDayNightTerminator" @select.prevent>
             Day/nigth terminator
           </ContextMenuCheckboxItem>
           <ContextMenuSub>
@@ -342,10 +339,7 @@ function onAddUnit() {
             <ContextMenuShortcut>&lt;</ContextMenuShortcut>
           </ContextMenuItem>
           <ContextMenuSeparator />
-          <ContextMenuCheckboxItem
-            v-model:checked="playback.playbackLooping"
-            @select.prevent
-          >
+          <ContextMenuCheckboxItem v-model="playback.playbackLooping" @select.prevent>
             Loop playback
           </ContextMenuCheckboxItem>
 
@@ -399,22 +393,19 @@ function onAddUnit() {
         </ContextMenuSubContent>
       </ContextMenuSub>
       <ContextMenuSeparator />
-      <ContextMenuCheckboxItem v-model:checked="uiSettings.showToolbar" @select.prevent
+      <ContextMenuCheckboxItem v-model="uiSettings.showToolbar" @select.prevent
         >Map toolbar
       </ContextMenuCheckboxItem>
-      <ContextMenuCheckboxItem v-model:checked="uiSettings.showTimeline" @select.prevent
+      <ContextMenuCheckboxItem v-model="uiSettings.showTimeline" @select.prevent
         >Timeline
       </ContextMenuCheckboxItem>
       <ContextMenuCheckboxItem
         v-if="!isMobile"
-        v-model:checked="uiSettings.showLeftPanel"
+        v-model="uiSettings.showLeftPanel"
         @select.prevent
         >ORBAT panel
       </ContextMenuCheckboxItem>
-      <ContextMenuCheckboxItem
-        v-model:checked="uiSettings.showOrbatBreadcrumbs"
-        @select.prevent
-      >
+      <ContextMenuCheckboxItem v-model="uiSettings.showOrbatBreadcrumbs" @select.prevent>
         Unit breadcrumbs
       </ContextMenuCheckboxItem>
     </ContextMenuContent>

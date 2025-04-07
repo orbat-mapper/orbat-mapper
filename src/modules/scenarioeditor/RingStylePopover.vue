@@ -5,7 +5,7 @@ import DrawRangeRingMarker from "@/components/DrawRangeRingMarker.vue";
 import { computed } from "vue";
 import { type SimpleStyleSpec } from "@/geo/simplestyle";
 import { useUiStore } from "@/stores/uiStore";
-import { PopoverClose } from "radix-vue";
+import { PopoverClose } from "reka-ui";
 import CloseButton from "@/components/CloseButton.vue";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 

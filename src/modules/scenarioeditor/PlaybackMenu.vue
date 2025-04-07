@@ -61,10 +61,7 @@ const playback = usePlaybackStore();
           <DropdownMenuShortcut>&lt;</DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuCheckboxItem
-          v-model:checked="playback.playbackLooping"
-          @select.prevent
-        >
+        <DropdownMenuCheckboxItem v-model="playback.playbackLooping" @select.prevent>
           Loop playback
         </DropdownMenuCheckboxItem>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SliderRootEmits, SliderRootProps } from "radix-vue";
+import type { SliderRootEmits, SliderRootProps } from "reka-ui";
 import { cn } from "@/lib/utils";
 import {
   SliderRange,
@@ -7,7 +7,7 @@ import {
   SliderThumb,
   SliderTrack,
   useForwardPropsEmits,
-} from "radix-vue";
+} from "reka-ui";
 import { computed, type HTMLAttributes } from "vue";
 import { useMapViewStore } from "@/stores/mapViewStore";
 
