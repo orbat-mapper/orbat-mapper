@@ -114,7 +114,7 @@ const onFormSubmit = (eventUpdate: ScenarioEventUpdate) => {
 };
 </script>
 <template>
-  <div v-if="scenarioEvent" :key="scenarioEvent.id" class="@container">
+  <div v-if="scenarioEvent" :key="scenarioEvent.id" class="p-1">
     <ItemMedia v-if="media" :media="media" />
     <header class="">
       <EditableLabel v-model="title" @updateValue="updateTitle" />
