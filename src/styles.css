@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
-
+@plugin "@tailwindcss/forms";
 /*@config '../tailwind.config.cjs';*/
 
 @custom-variant dark (&:is(.dark *));
@@ -158,6 +158,13 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  @layer base {
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+      cursor: pointer;
+    }
+  }
 }
 
 /*
@@ -223,4 +230,9 @@
   background-color: rgba(0, 0, 0, 0.5);
   border-radius: 20px;
   border: transparent;
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
 }
