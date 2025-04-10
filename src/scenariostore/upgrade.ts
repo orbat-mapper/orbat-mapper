@@ -37,6 +37,8 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           limitVisibility,
           minZoom,
           maxZoom,
+          textMinZoom,
+          textMaxZoom,
           ...rest
         } = upgradedFeature.properties ?? {};
 
@@ -69,6 +71,8 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           limitVisibility,
           minZoom,
           maxZoom,
+          textMinZoom,
+          textMaxZoom,
         };
         upgradedFeature.meta = meta;
         upgradedFeature.style = style;

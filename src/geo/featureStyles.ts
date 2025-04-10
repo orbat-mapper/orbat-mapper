@@ -48,7 +48,14 @@ export function useFeatureStyles(geo: TGeo) {
     const { feature: scenarioFeature } = geo.getFeatureById(featureId);
     const {
       meta: { name: label, _zIndex },
-      style: { showLabel = false, limitVisibility, minZoom = 0, maxZoom = 24 },
+      style: {
+        showLabel = false,
+        limitVisibility,
+        minZoom = 0,
+        maxZoom = 24,
+        textMinZoom = 0,
+        textMaxZoom = 24,
+      },
     } = scenarioFeature;
     if (!style) {
       style = createSimpleStyle(scenarioFeature.style || {}) || defaultStyle;
@@ -64,7 +71,15 @@ export function useFeatureStyles(geo: TGeo) {
       return;
     }
     style.setZIndex(_zIndex ?? 0);
-    style.getText()?.setText(showLabel && resolution < 1200 ? label : undefined);
+    if (
+      showLabel &&
+      resolution < zoomResolutions[textMinZoom] &&
+      resolution > zoomResolutions[textMaxZoom]
+    ) {
+      style.getText()?.setText(label);
+    } else {
+      style.getText()?.setText(undefined);
+    }
     return style;
   }
 

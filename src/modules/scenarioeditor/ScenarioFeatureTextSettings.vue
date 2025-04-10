@@ -5,6 +5,7 @@ import type { ScenarioFeature } from "@/types/scenarioGeoModels";
 import ToggleField from "@/components/ToggleField.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
+import ZoomSelector from "@/components/ZoomSelector.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits<{
@@ -19,6 +20,8 @@ const marker = computed((): Partial<TextStyleSpec> => {
     "text-align": style["text-align"] || "center",
     "text-offset-x": style["text-offset-x"] ?? 15,
     "text-offset-y": style["text-offset-y"] ?? 0,
+    textMinZoom: style["textMinZoom"] ?? 0,
+    textMaxZoom: style["textMaxZoom"] ?? 24,
   };
 });
 
@@ -35,6 +38,16 @@ const align = [
   { label: "End", value: "end" },
 ];
 
+const range = computed({
+  get: (): [number, number] => [
+    marker.value.textMinZoom ?? 0,
+    marker.value.textMaxZoom ?? 24,
+  ],
+  set: (v) => {
+    emit("update", { style: { textMinZoom: +v[0], textMaxZoom: +v[1] } });
+  },
+});
+
 function updateValue(name: keyof TextStyleSpec, value: boolean) {
   emit("update", { style: { [name]: value } });
 }
@@ -48,6 +61,8 @@ function updateValue(name: keyof TextStyleSpec, value: boolean) {
     @update:model-value="updateValue('showLabel', $event)"
   />
   <template v-if="marker.showLabel">
+    <div>Zoom levels</div>
+    <ZoomSelector v-model="range" class="mt-4 flex-auto" />
     <div class="self-center">Placement</div>
     <SimpleSelect
       :model-value="marker['text-placement']"

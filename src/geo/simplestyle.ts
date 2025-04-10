@@ -50,6 +50,8 @@ export interface TextStyleSpec {
   "text-align": "left" | "right" | "center" | "end" | "start";
   "text-offset-x": number;
   "text-offset-y": number;
+  textMinZoom: number;
+  textMaxZoom: number;
 }
 
 export interface VisibilityStyleSpec {

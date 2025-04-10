@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+April 2025
+
+- Added zoom level controls for scenario feature labels.
+
 March 2025
 
 - Use file system access API for file export in supported browsers (Chrome and Edge).
