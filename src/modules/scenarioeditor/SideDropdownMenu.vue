@@ -7,7 +7,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
+import { EllipsisVertical } from "lucide-vue-next";
+import { Button } from "@/components/ui/button";
 
 import { type SideAction, SideActions } from "@/types/constants";
 import { computed } from "vue";
@@ -47,15 +48,11 @@ const sideMenuItems = computed((): MenuItemData<SideAction>[] => [
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as="child" class="mr-2">
-      <button
-        type="button"
-        class="focus:ring-army2 inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
-      >
-        <span class="sr-only">Open options</span>
-        <EllipsisVerticalIcon class="h-5 w-5" aria-hidden="true" />
-      </button>
+      <Button variant="ghost" size="icon" class="text-muted-foreground">
+        <EllipsisVertical />
+      </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent class="min-w-52 border-gray-300" align="end">
+    <DropdownMenuContent class="min-w-52" align="end">
       <DropdownMenuLabel>Side actions</DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuItem

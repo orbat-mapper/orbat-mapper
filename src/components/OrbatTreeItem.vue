@@ -256,7 +256,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
       <div class="flex items-center">
         <IconLockOutline v-if="unit.locked" class="h-5 w-5 text-gray-400" />
         <DotsMenu
-          class="shrink-0 pr-2 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+          class="shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           :items="menuItems"
           @action="onUnitMenuAction(unit, $event)"
         />
