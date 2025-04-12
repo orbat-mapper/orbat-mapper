@@ -1,4 +1,3 @@
-<!-- This example requires Tailwind CSS v2.0+ -->
 <template>
   <TransitionRoot as="template" :show="open">
     <Dialog
@@ -25,10 +24,12 @@
             :leave-to="left ? '-translate-x-full' : 'translate-x-full'"
           >
             <div class="w-screen max-w-xs sm:max-w-md">
-              <div class="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
+              <div
+                class="bg-sidebar flex h-full flex-col overflow-y-scroll py-6 shadow-xl"
+              >
                 <div class="px-4 sm:px-6">
                   <div class="flex items-start justify-between">
-                    <DialogTitle class="text-lg font-medium text-gray-900">
+                    <DialogTitle class="text-primary text-lg font-medium">
                       <slot name="title">{{ title }}</slot>
                     </DialogTitle>
                     <div class="ml-3 flex h-7 items-center">
