@@ -7,27 +7,7 @@
             <DescriptionItem label="Time zone name">
               {{ timeZone }}
             </DescriptionItem>
-
-            <SwitchGroup as="div" class="flex items-center">
-              <Switch
-                v-model="enabled"
-                :class="[
-                  enabled ? 'bg-indigo-600' : 'bg-gray-200',
-                  'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden',
-                ]"
-              >
-                <span
-                  aria-hidden="true"
-                  :class="[
-                    enabled ? 'translate-x-5' : 'translate-x-0',
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out',
-                  ]"
-                />
-              </Switch>
-              <SwitchLabel as="span" class="ml-3">
-                <span class="text-sm font-medium text-gray-900">UTC mode</span>
-              </SwitchLabel>
-            </SwitchGroup>
+            <ToggleField v-model="enabled">UTC mode</ToggleField>
           </div>
           <InputGroup :id="focusId" label="Date" type="date" v-model="date"></InputGroup>
           <div class="flex space-x-4">
@@ -51,7 +31,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useStorage, useVModel } from "@vueuse/core";
-import { Switch, SwitchGroup, SwitchLabel } from "@headlessui/vue";
 
 import SimpleModal from "./SimpleModal.vue";
 import PrimaryButton from "./PrimaryButton.vue";
@@ -63,6 +42,7 @@ import TabView from "@/components/TabView.vue";
 import TabItem from "@/components/TabItem.vue";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 import { type ScenarioEvent } from "@/types/scenarioModels";
+import ToggleField from "@/components/ToggleField.vue";
 
 interface Props {
   dialogTitle?: string;

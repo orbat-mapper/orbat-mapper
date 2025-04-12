@@ -1,31 +1,17 @@
 <script setup lang="ts">
-import { Switch, SwitchGroup, SwitchLabel } from "@headlessui/vue";
+import { useId } from "vue";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 const props = defineProps<{ disabled?: boolean }>();
 
 const enabled = defineModel({ default: true });
+const id = useId();
 </script>
 <template>
-  <SwitchGroup as="div" class="flex items-center" :class="disabled ? 'opacity-50' : ''">
-    <Switch
-      v-model="enabled"
-      :disabled="disabled"
-      :class="[
-        enabled ? 'bg-slate-800' : 'bg-slate-200',
-        'flex w-8 cursor-pointer rounded-full p-px ring-1 ring-slate-900/5 transition-colors duration-200 ease-in-out ring-inset focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
-      ]"
-    >
-      <span
-        aria-hidden="true"
-        :class="[
-          enabled ? 'translate-x-3.5' : 'translate-x-0',
-          'h-4 w-4 transform rounded-full bg-white shadow-xs ring-1 ring-slate-900/5 transition duration-200 ease-in-out',
-        ]"
-      />
-    </Switch>
-    <SwitchLabel as="span" class="ml-3 text-sm" v-if="$slots.default">
-      <span class="cursor-pointer font-medium text-slate-700 dark:text-slate-300"
-        ><slot
-      /></span>
-    </SwitchLabel>
-  </SwitchGroup>
+  <div class="flex items-center space-x-2">
+    <Switch v-model="enabled" :id="id" :disabled />
+    <Label v-if="$slots.default" :for="id" :disabled>
+      <slot />
+    </Label>
+  </div>
 </template>

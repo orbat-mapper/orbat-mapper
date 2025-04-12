@@ -13,7 +13,6 @@
             <TestCoordinateInput />
           </section>
 
-          <MainMenu />
           <section class="space-y-4" @click="onClick">
             <h3 class="border-b text-lg">Basic button</h3>
             <p class="flex items-start space-x-2">
@@ -81,6 +80,7 @@
           </section>
           <section>
             <ToggleField v-model="toggle">Test</ToggleField>
+            <ToggleField v-model="toggle" disabled>Test</ToggleField>
           </section>
 
           <section>
@@ -152,8 +152,6 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import type { MenuItemData } from "@/components/types";
 import type { ScenarioActions } from "@/types/constants";
 import LinkButton from "@/components/LinkButton.vue";
-import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
-import CoordinateInput from "@/components/CoordinateInput.vue";
 import TestCoordinateInput from "@/views/TestCoordinateInput.vue";
 
 const num = ref(1);
