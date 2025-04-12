@@ -11,8 +11,8 @@ import {
   IconFilterVariant,
   IconFilterVariantPlus,
 } from "@iconify-prerendered/vue-mdi";
-import { Switch } from "@headlessui/vue";
 import { useVModel } from "@vueuse/core";
+import { Toggle } from "reka-ui";
 
 interface Props {
   id?: string;
@@ -66,7 +66,7 @@ const updateValue = (event: Event) => {
       >
         <CloseIcon class="h-5 w-5" aria-hidden="true" />
       </button>
-      <Switch
+      <Toggle
         v-model="hasLocationFilter"
         title="Toggle location filter"
         @click="hasLocationFilter = !hasLocationFilter"
@@ -74,7 +74,7 @@ const updateValue = (event: Event) => {
       >
         <IconCrosshairsOff v-if="hasLocationFilter" class="h-5 w-5" aria-hidden="true" />
         <IconCrosshairsGps v-else class="h-5 w-5" aria-hidden="true" />
-      </Switch>
+      </Toggle>
     </div>
   </div>
 </template>
