@@ -21,6 +21,7 @@ import ToggleField from "@/components/ToggleField.vue";
 import { useMapViewStore } from "@/stores/mapViewStore";
 import ZoomSelector from "@/components/ZoomSelector.vue";
 import { type VisibilityStyleSpec } from "@/geo/simplestyle";
+import PanelDataGrid from "@/components/PanelDataGrid.vue";
 
 interface Props {
   unit: NUnit;
@@ -252,7 +253,7 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
 }
 </script>
 <template>
-  <section class="mt-4 grid w-full grid-cols-[8ch_1fr] gap-3 pb-1 text-sm">
+  <PanelDataGrid class="mt-4">
     <div class="col-span-2 mt-2 -mb-6 font-semibold">Visibility</div>
     <div class="self-end">Limit</div>
     <ToggleField class="mt-4" v-model="limitVisibility" />
@@ -260,7 +261,7 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
       <div>Zoom levels</div>
       <ZoomSelector v-model="range" class="mt-4 flex-auto" />
     </template>
-  </section>
+  </PanelDataGrid>
   <div class="mt-4 flex items-center justify-between">
     <PanelHeading>Range rings</PanelHeading>
 

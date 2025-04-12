@@ -41,6 +41,7 @@ import type { ScenarioFeatureActions } from "@/types/constants";
 import ScenarioFeatureState from "@/modules/scenarioeditor/ScenarioFeatureState.vue";
 import ScenarioFeatureTextSettings from "@/modules/scenarioeditor/ScenarioFeatureTextSettings.vue";
 import ScenarioFeatureVisibilitySettings from "@/modules/scenarioeditor/ScenarioFeatureVisibilitySettings.vue";
+import PanelDataGrid from "@/components/PanelDataGrid.vue";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -225,7 +226,7 @@ function onAction(action: ScenarioFeatureActions) {
     </header>
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
       <TabPanel>
-        <section class="mt-4 grid w-full grid-cols-[8ch_1fr] gap-3 pb-1 text-sm">
+        <PanelDataGrid class="mt-4">
           <ScenarioFeatureVisibilitySettings
             v-if="feature"
             :feature="feature"
@@ -251,7 +252,7 @@ function onAction(action: ScenarioFeatureActions) {
             :feature="feature"
             @update="doUpdateFeature"
           />
-        </section>
+        </PanelDataGrid>
       </TabPanel>
       <TabPanel>
         <div v-if="!isEditing" class="prose mt-4">
