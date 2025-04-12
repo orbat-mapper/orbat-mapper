@@ -30,7 +30,7 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
   let stopEscListener: Fn;
   let stopClickOutside: Fn | undefined;
 
-  const onGetLocationHook = createEventHook<Position>();
+  const onGetLocationHook = createEventHook<[Position]>();
   const onCancelHook = createEventHook();
   const onStartHook = createEventHook();
   let prevHoverValue = true;
