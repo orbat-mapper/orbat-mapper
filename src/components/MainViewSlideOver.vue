@@ -1,7 +1,9 @@
 <template>
   <SlideOver v-model="open" title="Settings">
-    <TabView gap="gap-x-6">
-      <TabItem label="Map view"><MapSettingsPanel /></TabItem>
+    <TabView gap="gap-x-2">
+      <TabItem label="Map view">
+        <MapSettingsPanel />
+      </TabItem>
       <TabItem label="Map layers">
         <LayersPanel />
       </TabItem>
@@ -19,15 +21,15 @@
             v-model="settings.orbatIconSize"
           />
           <ToggleField v-model="settings.orbatShortName"
-            >Use short names in ORBAT</ToggleField
-          >
+            >Use short names in ORBAT
+          </ToggleField>
           <ToggleField v-model="symbolSettings.simpleStatusModifier"
-            >Use simple status modifier</ToggleField
-          >
+            >Use simple status modifier
+          </ToggleField>
           <ToggleField v-model="uiSettings.debugMode">Debug mode</ToggleField>
           <ToggleField v-if="uiSettings.debugMode" v-model="isDarkMode"
-            >Dark mode</ToggleField
-          >
+            >Dark mode
+          </ToggleField>
         </div>
       </TabItem>
       <TabItem label="Time and date">
