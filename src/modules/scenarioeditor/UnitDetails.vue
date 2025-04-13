@@ -25,7 +25,7 @@
             :disabled="isLocked"
           />
         </div>
-        <IconLockOutline v-if="isLocked" class="h-6 w-6 text-gray-400" />
+        <IconLockOutline v-if="isLocked" class="size-5 text-gray-400" />
         <div v-if="unitStatus">
           <span
             class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-gray-500/10 ring-inset"
@@ -62,23 +62,23 @@
         </ul>
       </div>
       <nav class="-mt-4 mb-4 flex items-center justify-between">
-        <div class="flex items-center gap-x-1">
+        <div class="flex items-center gap-0.5">
           <IconButton title="Zoom to" @click="actionWrapper(UnitActions.Zoom)">
-            <ZoomIcon class="h-6 w-6" />
+            <ZoomIcon class="size-5" />
           </IconButton>
           <IconButton
             title="Edit unit"
             @click="toggleEditMode()"
             :disabled="isMultiMode || isLocked"
           >
-            <EditIcon class="h-6 w-6" />
+            <EditIcon class="size-5" />
           </IconButton>
           <IconButton
             title="Add/modify unit image"
             @click="toggleEditMediaMode()"
             :disabled="isMultiMode || isLocked"
           >
-            <ImageIcon class="h-6 w-6" />
+            <ImageIcon class="size-5" />
           </IconButton>
 
           <IconButton
@@ -86,14 +86,14 @@
             title="Set unit location"
             :disabled="isMultiMode || isLocked"
           >
-            <IconCrosshairsGps class="h-6 w-6" aria-hidden="true" />
+            <IconCrosshairsGps class="size-5" aria-hidden="true" />
           </IconButton>
           <IconButton
             title="Show in ORBAT"
             :disabled="isMultiMode"
             @click="locateInOrbat()"
           >
-            <TreeLocateIcon class="h-6 w-6" aria-hidden="true" />
+            <TreeLocateIcon class="size-5" aria-hidden="true" />
           </IconButton>
           <SplitButton
             class="ml-1"

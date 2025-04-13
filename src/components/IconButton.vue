@@ -1,8 +1,9 @@
+<script setup lang="ts">
+import { Button } from "@/components/ui/button";
+</script>
+
 <template>
-  <button
-    type="button"
-    class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-600 focus:z-10 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden disabled:opacity-50"
-  >
+  <Button variant="ghost" size="icon" class="text-muted-foreground">
     <slot />
-  </button>
+  </Button>
 </template>
