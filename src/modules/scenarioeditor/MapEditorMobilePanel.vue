@@ -5,7 +5,7 @@
         class="relative flex flex-1 items-center justify-center"
         @click="toggleBottomPanel()"
       >
-        <IconButton class="" @click.stop>
+        <IconButton class="">
           <IconChevronDoubleUp class="h-6 w-6" @click="toggleBottomPanel()" />
         </IconButton>
       </div>
