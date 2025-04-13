@@ -61,7 +61,7 @@
         <div class="flex items-center">
           <button
             @click="undo()"
-            class="hidden inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
+            class="hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
             title="Undo action (ctrl+z)"
             :disabled="!canUndo"
           >
@@ -69,7 +69,7 @@
           </button>
           <button
             @click="redo()"
-            class="hidden inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
+            class="hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
             title="Redo action"
             :disabled="!canRedo"
           >
@@ -78,7 +78,7 @@
         </div>
         <button
           @click="showKeyboardShortcuts"
-          class="hidden inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset sm:block"
+          class="hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset sm:block"
           title="Show keyboard shortcuts"
         >
           <IconKeyboard class="block h-6 w-6" />
