@@ -8,7 +8,6 @@ type SlideOverProps = {
 
 defineProps<SlideOverProps>();
 const isOpen = defineModel<boolean>();
-console.log("hello");
 </script>
 <template>
   <Sheet v-model:open="isOpen" :side="left ? 'left' : 'right'">
