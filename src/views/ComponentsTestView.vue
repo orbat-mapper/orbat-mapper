@@ -39,6 +39,10 @@
             </p>
           </section>
           <section class="space-y-4">
+            <h3 class="border-b text-lg">Split button</h3>
+            <SplitButton :items="mapLayerButtonItems" />
+          </section>
+          <section class="space-y-4">
             <h3 class="border-b text-lg">Input groups</h3>
             <div class="grid grid-cols-3 gap-4">
               <InputGroup
@@ -149,10 +153,11 @@ import SettingsPanel from "@/components/SettingsPanel.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import CheckboxDropdown from "@/components/CheckboxDropdown.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
-import type { MenuItemData } from "@/components/types";
+import type { ButtonGroupItem, MenuItemData } from "@/components/types";
 import type { ScenarioActions } from "@/types/constants";
 import LinkButton from "@/components/LinkButton.vue";
 import TestCoordinateInput from "@/views/TestCoordinateInput.vue";
+import SplitButton from "@/components/SplitButton.vue";
 
 const num = ref(1);
 const v = ref("Test");
@@ -177,6 +182,27 @@ const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
   { label: "Copy to clipboard", action: "exportToClipboard" },
   { label: "Export scenario", action: "export" },
   { label: "Import", action: "import" },
+];
+
+const mapLayerButtonItems: ButtonGroupItem[] = [
+  {
+    label: "Add feature layer",
+    onClick: () => {
+      console.log("Add feature layer");
+    },
+  },
+  {
+    label: "Add image layer",
+    onClick: () => console.log("Add image layer"),
+  },
+  {
+    label: "Add XYZ tile layer",
+    onClick: () => console.log("Add XYZ tile layer"),
+  },
+  {
+    label: "Add TileJSON layer",
+    onClick: () => console.log("Add TileJSON layer"),
+  },
 ];
 
 function onClick(e: Event) {
