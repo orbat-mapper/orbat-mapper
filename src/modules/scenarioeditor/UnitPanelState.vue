@@ -100,11 +100,7 @@
       </div>
 
       <div class="relative flex flex-0 items-center space-x-0">
-        <IconButton
-          title="Goto Time and Place"
-          @click="changeToState(s)"
-          class="bg-gray-50"
-        >
+        <IconButton title="Goto Time and Place" @click="changeToState(s)">
           <IconCrosshairsGps class="h-5 w-5" aria-hidden="true" />
         </IconButton>
         <DotsMenu :items="menuItems" @action="onStateAction(index, $event)" portal />
