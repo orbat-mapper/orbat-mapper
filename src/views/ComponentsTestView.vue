@@ -51,13 +51,16 @@
                 description="Description"
                 autofocus
               />
-              <NumberInputGroup
-                v-model="num"
-                :max="10"
-                :min="-3"
-                label="Label"
-                description="Description"
-              />
+              <div>
+                <NumberInputGroup
+                  v-model="num"
+                  :max="10"
+                  :min="-3"
+                  label="Label"
+                  description="Description"
+                  class="max-w-36"
+                />
+              </div>
               <InputGroup
                 ><template #label
                   ><span class="text-red-500">Label slot</span></template

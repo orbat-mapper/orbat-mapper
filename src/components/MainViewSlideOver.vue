@@ -17,7 +17,6 @@
           <NumberInputGroup
             InputGroup
             label="ORBAT symbol size"
-            type="number"
             v-model="settings.orbatIconSize"
           />
           <ToggleField v-model="settings.orbatShortName"

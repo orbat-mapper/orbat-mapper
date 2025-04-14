@@ -37,7 +37,6 @@
     />
     <NumberInputGroup
       label="Label offset"
-      type="number"
       :model-value="mergedOptions.labelOffset"
       @update:model-value="setValue('labelOffset', $event)"
       :class="!usedOptions.has('labelOffset') && 'sepia-[50%]'"

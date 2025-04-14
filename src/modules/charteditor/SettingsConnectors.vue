@@ -9,7 +9,6 @@
 
     <NumberInputGroup
       label="Line width"
-      type="number"
       :model-value="mergedOptions.lineWidth"
       @update:model-value="setValue('lineWidth', $event)"
       :class="!usedOptions.has('lineWidth') && 'sepia-[50%]'"

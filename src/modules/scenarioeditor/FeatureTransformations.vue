@@ -239,11 +239,7 @@ onUnmounted(() => {
             <NumberInputGroup label="Radius" v-model.number="bufferOptions.radius" />
           </div>
           <SimpleSelect label="Units" :items="unitItems" v-model="bufferOptions.units" />
-          <NumberInputGroup
-            label="Steps"
-            v-model.number="bufferOptions.steps"
-            type="number"
-          />
+          <NumberInputGroup label="Steps" v-model.number="bufferOptions.steps" />
         </div>
       </div>
       <div v-else-if="transformation === 'simplify'">

@@ -33,11 +33,7 @@
       </section>
     </div>
     <SlideOver v-model="sidebarIsOpen" title="Settings">
-      <NumberInputGroup
-        label="Symbol size"
-        type="number"
-        v-model="settingsStore.mapIconSize"
-      />
+      <NumberInputGroup label="Symbol size" v-model="settingsStore.mapIconSize" />
     </SlideOver>
   </div>
 </template>

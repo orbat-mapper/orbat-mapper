@@ -34,7 +34,7 @@
         >Select root unit
       </CreateEmtpyDashed>
     </template>
-    <NumberInputGroup label="Levels" type="number" v-model="options.maxLevels" />
+    <NumberInputGroup label="Levels" v-model="options.maxLevels" />
     <div class="mt-4 w-full border-t border-gray-200" />
     <AccordionPanel label="Page settings">
       <SimpleSelect
