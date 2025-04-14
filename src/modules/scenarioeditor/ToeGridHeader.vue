@@ -2,7 +2,7 @@
 import BaseButton from "@/components/BaseButton.vue";
 import EditToggleButton from "@/components/EditToggleButton.vue";
 import ToggleField from "@/components/ToggleField.vue";
-import { watch } from "vue";
+import PlainButton from "@/components/PlainButton.vue";
 
 defineProps<{
   selectedCount?: number;
@@ -35,9 +35,9 @@ let prevIncludeSubordinates: boolean | undefined;
       <EditToggleButton v-if="!hideEdit" v-model="editMode" :disabled="isLocked"
         >{{ editLabel ?? "Edit" }}
       </EditToggleButton>
-      <BaseButton @click="addMode = !addMode" :disabled="isLocked">
+      <PlainButton @click="addMode = !addMode" :disabled="isLocked">
         {{ addMode ? "Hide form" : "Add" }}
-      </BaseButton>
+      </PlainButton>
     </div>
   </div>
 </template>

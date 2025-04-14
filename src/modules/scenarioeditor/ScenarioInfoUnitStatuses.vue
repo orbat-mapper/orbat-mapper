@@ -9,6 +9,7 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { useNotifications } from "@/composables/notifications";
 import InputGroup from "@/components/InputGroup.vue";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
+import { Button } from "@/components/ui/button";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
@@ -76,9 +77,9 @@ function onItemAction(item: NEquipmentData, action: string) {
 <template>
   <div class="prose dark:prose-invert max-w-none">
     <TableHeader description="A list of unit statues is available in this scenario.">
-      <BaseButton @click="store.toggleAddEquipment()">
+      <Button variant="outline" @click="store.toggleAddEquipment()">
         {{ store.showAddEquipment ? "Hide form" : "Add" }}
-      </BaseButton>
+      </Button>
     </TableHeader>
     <form
       v-if="store.showAddEquipment"

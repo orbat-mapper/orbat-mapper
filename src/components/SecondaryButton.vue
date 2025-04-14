@@ -1,14 +1,7 @@
 <template>
-  <BaseButton secondary small>
-    <slot />
-  </BaseButton>
+  <Button variant="secondary" size="sm"><slot /></Button>
 </template>
 
-<script>
-import BaseButton from "./BaseButton.vue";
-
-export default {
-  name: "SecondaryButton",
-  components: { BaseButton },
-};
+<script setup lang="ts">
+import { Button } from "@/components/ui/button";
 </script>

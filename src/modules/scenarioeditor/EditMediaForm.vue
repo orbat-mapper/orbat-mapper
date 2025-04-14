@@ -2,8 +2,8 @@
 import { type Media } from "@/types/scenarioModels";
 import InputGroup from "@/components/InputGroup.vue";
 import { ref, watch } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
 import { klona } from "klona";
+import { Button } from "@/components/ui/button";
 
 const props = defineProps<{ media?: Media | null }>();
 const emit = defineEmits(["cancel", "update"]);
@@ -38,8 +38,8 @@ const onFormSubmit = () => {
     <InputGroup label="Credits" v-model="form.credits" />
     <InputGroup label="Credits URL" v-model="form.creditsUrl" />
     <div class="flex items-center justify-end space-x-2">
-      <BaseButton type="submit" small primary>Save</BaseButton>
-      <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
+      <Button type="submit" size="sm">Save</Button>
+      <Button variant="outline" size="sm" @click="emit('cancel')">Cancel</Button>
     </div>
   </form>
 </template>

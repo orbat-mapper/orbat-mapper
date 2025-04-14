@@ -18,7 +18,7 @@ import { useDebounce } from "@vueuse/core";
 import ToeGridTableMenu from "@/modules/scenarioeditor/ToeGridTableMenu.vue";
 import { storeToRefs } from "pinia";
 import { type TableStore } from "@/stores/tableStores";
-import BaseButton from "@/components/BaseButton.vue";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   columns: (ColumnDef<any, any> | false | undefined)[];
@@ -300,8 +300,11 @@ watch(
                 </td>
                 <td class="sticky right-0">
                   <div v-if="editMode" class="flex grow-0 items-center justify-end pr-4">
-                    <BaseButton small @click="editedId = row.original.id"
-                      >Edit</BaseButton
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      @click="editedId = row.original.id"
+                      >Edit</Button
                     >
                   </div>
                 </td>

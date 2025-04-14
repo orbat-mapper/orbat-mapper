@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, h, ref } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
 import { useImportStore } from "@/stores/importExportStore";
 import type { MilxImportedLayer } from "@/composables/scenarioImport";
 
@@ -20,6 +19,7 @@ import DataGrid from "@/modules/grid/DataGrid.vue";
 import { propReduce } from "@turf/meta";
 import { featureCollection } from "@turf/helpers";
 import { pick } from "es-toolkit";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   data: MilxImportedLayer[];
@@ -219,8 +219,8 @@ async function onLoad(e: Event) {
       <footer class="flex shrink-0 items-center justify-between pt-4">
         <ToggleField v-model="store.keepOpen">Keep dialog open on import</ToggleField>
         <div class="flex items-center space-x-2">
-          <BaseButton type="submit" primary small>Import</BaseButton>
-          <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
+          <Button type="submit" size="sm">Import</Button>
+          <Button variant="outline" size="sm" @click="emit('cancel')">Cancel</Button>
         </div>
       </footer>
     </form>

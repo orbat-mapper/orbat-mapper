@@ -62,7 +62,7 @@
           <InputGroup v-model="urlSource" label="URL" class="flex-auto" />
 
           <div class="shrink-0">
-            <BaseButton @click="onUrlLoad">Load from URL</BaseButton>
+            <Button variant="outline" @click="onUrlLoad">Load from URL</Button>
           </div>
         </div>
         <p class="mt-2 text-sm">
@@ -115,15 +115,14 @@
     <img v-if="objectUrl" :src="objectUrl" alt="Loaded image" />
 
     <footer class="flex items-center justify-end space-x-2 pt-4">
-      <BaseButton type="submit" primary small>Load</BaseButton>
-      <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
+      <Button type="submit" size="sm">Load</Button>
+      <Button size="sm" @click="emit('cancel')">Cancel</Button>
     </footer>
   </form>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, shallowRef } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { type SelectItem } from "@/components/types";
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
@@ -144,6 +143,7 @@ import { isUrl } from "@/utils";
 import type { FeatureCollection } from "geojson";
 import ImportLoadStepBrowser from "@/modules/scenarioeditor/ImportLoadStepBrowser.vue";
 import { type Scenario } from "@/types/scenarioModels";
+import { Button } from "@/components/ui/button";
 
 const emit = defineEmits(["cancel", "loaded"]);
 

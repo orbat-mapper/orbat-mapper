@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { ScenarioTileJSONLayer, ScenarioXYZLayer } from "@/types/scenarioGeoModels";
 import { computed, ref, watch } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
 import { getChangedValues } from "@/utils";
 import TileMapLayerSettingsForm from "@/modules/scenarioeditor/TileMapLayerSettingsForm.vue";
 import DescriptionItem from "@/components/DescriptionItem.vue";
@@ -10,6 +9,7 @@ import type {
   ScenarioXYZLayerUpdate,
 } from "@/types/internalModels";
 import { useMapLayerInfo } from "@/composables/geoMapLayers";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   layer: ScenarioTileJSONLayer | ScenarioXYZLayer;
@@ -65,7 +65,7 @@ function updateData(formData: ScenarioTileJSONLayerUpdate | ScenarioXYZLayerUpda
         layer.url || "Not set"
       }}</DescriptionItem>
       <footer class="mt-4 flex justify-end space-x-2">
-        <BaseButton small type="button" @click="editMode = true">Edit</BaseButton>
+        <Button variant="outline" size="sm" @click="editMode = true">Edit</Button>
       </footer>
     </div>
     <p v-if="!isInitialized" class="mt-2 text-sm text-gray-500">

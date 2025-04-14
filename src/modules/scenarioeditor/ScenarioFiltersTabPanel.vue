@@ -21,6 +21,7 @@ import FilterTree, {
 } from "@/modules/scenarioeditor/FilterTree.vue";
 import { IconExpandAllOutline } from "@iconify-prerendered/vue-mdi";
 import IconButton from "@/components/IconButton.vue";
+import { Button } from "@/components/ui/button";
 
 const {
   store: { state },
@@ -519,13 +520,20 @@ function expandAllIcons() {
     >
       <PanelHeading>Select units</PanelHeading>
       <div class="flex items-center space-x-1">
-        <BaseButton v-if="excludedKeys.size" small @click="excludedKeys.clear()"
-          >Clear excluded
-          <span class="muted-badge">{{ excludedKeys.size }}</span></BaseButton
+        <Button
+          v-if="excludedKeys.size"
+          variant="outline"
+          size="sm"
+          @click="excludedKeys.clear()"
+          >Clear excluded <span class="muted-badge">{{ excludedKeys.size }}</span></Button
         >
-        <BaseButton v-if="selectedUnitIds.size" small @click="selectedUnitIds.clear()"
+        <Button
+          v-if="selectedUnitIds.size"
+          variant="outline"
+          size="sm"
+          @click="selectedUnitIds.clear()"
           >Clear selected
-          <span class="muted-badge ml-1">{{ selectedUnitIds.size }}</span></BaseButton
+          <span class="muted-badge ml-1">{{ selectedUnitIds.size }}</span></Button
         >
         <IconButton title="Expand all" @click="expandAllIcons()"
           ><IconExpandAllOutline

@@ -76,9 +76,9 @@ function onAddSubmit() {
 <template>
   <div class="prose dark:prose-invert max-w-none">
     <TableHeader description="Range ring-3 groups available in this scenario.">
-      <BaseButton @click="store.toggleAddGroup()">
+      <Button variant="outline" @click="store.toggleAddGroup()">
         {{ store.showAddGroup ? "Hide form" : "Add" }}
-      </BaseButton>
+      </Button>
     </TableHeader>
     <form
       v-if="store.showAddGroup"

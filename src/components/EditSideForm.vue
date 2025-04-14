@@ -3,12 +3,11 @@ import { computed, ref, watch } from "vue";
 import InputGroup from "./InputGroup.vue";
 import InlineFormPanel from "./InlineFormPanel.vue";
 import { useFocusOnMount } from "./helpers";
-import BaseButton from "./BaseButton.vue";
 import { activeScenarioKey } from "@/components/injects";
 import type { SideUpdate } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import StandardIdentitySelect from "@/components/StandardIdentitySelect.vue";
-import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
+import { Button } from "@/components/ui/button";
 
 const props = defineProps<{ sideId: string }>();
 const emit = defineEmits(["close"]);
@@ -53,8 +52,8 @@ const { focusId } = useFocusOnMount();
         compact
       />
       <div class="flex justify-end space-x-2">
-        <BaseButton small primary type="submit">Save</BaseButton>
-        <BaseButton @click="$emit('close')">Cancel</BaseButton>
+        <Button size="sm" type="submit">Save</Button>
+        <Button variant="outline" size="sm" @click="$emit('close')">Cancel</Button>
       </div>
     </form>
   </InlineFormPanel>

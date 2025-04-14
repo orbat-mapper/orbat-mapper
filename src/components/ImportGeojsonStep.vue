@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, h, ref } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { NScenarioFeature, NUnit } from "@/types/internalModels";
@@ -18,6 +17,7 @@ import DataGrid from "@/modules/grid/DataGrid.vue";
 import type { ColumnDef } from "@tanstack/vue-table";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import AlertWarning from "@/components/AlertWarning.vue";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   data: GeoJSONFeature | FeatureCollection;
@@ -283,8 +283,8 @@ function loadAsFeatures() {
       </div>
 
       <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
-        <BaseButton type="submit" primary small>Import</BaseButton>
-        <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
+        <Button type="submit" size="sm">Import</Button>
+        <Button size="sm" variant="outline" @click="emit('cancel')">Cancel</Button>
       </footer>
     </form>
   </div>

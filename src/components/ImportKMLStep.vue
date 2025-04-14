@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { ref } from "vue";
@@ -9,6 +8,7 @@ import { stripFileExtension } from "@/utils/files";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import AlertWarning from "@/components/AlertWarning.vue";
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   objectUrl: string;
@@ -84,8 +84,8 @@ function onCancel() {
       </div>
 
       <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
-        <BaseButton type="submit" primary small>Import</BaseButton>
-        <BaseButton small @click="onCancel()">Cancel</BaseButton>
+        <Button type="submit" size="sm">Export</Button>
+        <Button variant="outline" size="sm" @click="onCancel">Cancel</Button>
       </footer>
     </form>
   </div>

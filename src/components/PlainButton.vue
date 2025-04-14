@@ -1,16 +1,9 @@
 <template>
-  <BaseButton small>
+  <Button variant="outline" size="sm">
     <slot />
-  </BaseButton>
+  </Button>
 </template>
 
-<script>
-import BaseButton from "./BaseButton.vue";
-
-export default {
-  name: "PlainButton",
-  components: { BaseButton },
-};
+<script setup lang="ts">
+import { Button } from "@/components/ui/button";
 </script>
-
-<style scoped></style>

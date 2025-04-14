@@ -9,9 +9,9 @@ import { Dimension, symbolSetToDimension } from "@/symbology/values";
 import TextAmpInput from "@/modules/scenarioeditor/TextAmpInput.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { type TextAmpKey, textAmpMap } from "@/symbology/milsymbwrapper";
-import BaseButton from "@/components/BaseButton.vue";
 import type { TextAmplifiers } from "@/types/scenarioModels";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   unit: NUnit;
@@ -177,9 +177,11 @@ function handleReset() {
           </div>
         </div>
         <footer class="mt-2 flex items-center justify-end gap-2 border-t pt-2">
-          <BaseButton small @click="handleReset" :disabled="isLocked">Reset</BaseButton>
-          <BaseButton small type="submit" secondary :disabled="isLocked"
-            >Update</BaseButton
+          <Button size="sm" variant="outline" @click="handleReset" :disabled="isLocked"
+            >Reset</Button
+          >
+          <Button size="sm" variant="secondary" type="submit" :disabled="isLocked"
+            >Update</Button
           >
         </footer>
       </form>

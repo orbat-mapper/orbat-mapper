@@ -17,15 +17,14 @@
       </AlertWarning>
 
       <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
-        <BaseButton type="submit" primary small>Import</BaseButton>
-        <BaseButton small @click="onCancel()">Cancel</BaseButton>
+        <Button type="submit" size="sm">Export</Button>
+        <Button variant="outline" size="sm" @click="onCancel">Cancel</Button>
       </footer>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { computed, ref } from "vue";
@@ -33,6 +32,7 @@ import { type ImportedFileInfo } from "@/importexport/fileHandling";
 import InputGroup from "@/components/InputGroup.vue";
 import { stripFileExtension } from "@/utils/files";
 import AlertWarning from "@/components/AlertWarning.vue";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   objectUrl: string;

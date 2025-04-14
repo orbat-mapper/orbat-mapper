@@ -80,8 +80,8 @@
       <footer class="flex items-center justify-between space-x-2">
         <ToggleField v-model="store.keepOpen">Keep dialog open on export</ToggleField>
         <div class="flex items-center space-x-2">
-          <BaseButton type="submit" primary small>Export</BaseButton>
-          <BaseButton small @click="onCancel">Cancel</BaseButton>
+          <Button type="submit" size="sm">Export</Button>
+          <Button variant="outline" size="sm" @click="onCancel">Cancel</Button>
         </div>
       </footer>
     </form>
@@ -90,8 +90,6 @@
 
 <script setup lang="ts">
 import { useFocusOnMount } from "@/components/helpers";
-
-import BaseButton from "@/components/BaseButton.vue";
 import SimpleModal from "./SimpleModal.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { type SelectItem } from "@/components/types";
@@ -110,6 +108,7 @@ import ExportSettingsOrbatMapper from "@/components/ExportSettingsOrbatMapper.vu
 
 import ToggleField from "@/components/ToggleField.vue";
 import { useExportStore } from "@/stores/importExportStore";
+import { Button } from "@/components/ui/button";
 
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue", "cancel"]);

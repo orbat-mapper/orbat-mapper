@@ -8,7 +8,6 @@ import { activeScenarioKey } from "@/components/injects";
 import { klona } from "klona";
 import InputGroup from "@/components/InputGroup.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
-import BaseButton from "@/components/BaseButton.vue";
 import type { MenuItemData } from "@/components/types";
 import { type RangeRingAction, RangeRingActions } from "@/types/constants";
 import DotsMenu from "@/components/DotsMenu.vue";
@@ -22,6 +21,7 @@ import { useMapViewStore } from "@/stores/mapViewStore";
 import ZoomSelector from "@/components/ZoomSelector.vue";
 import { type VisibilityStyleSpec } from "@/geo/simplestyle";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   unit: NUnit;
@@ -363,10 +363,15 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
                   + Add new group
                 </button>
                 <div>
-                  <BaseButton type="submit" secondary small>Update</BaseButton>
-                  <BaseButton small type="button" class="ml-2" @click="editedIndex = -1">
+                  <Button type="submit" variant="secondary" size="sm">Update</Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    class="ml-2"
+                    @click="editedIndex = -1"
+                  >
                     Cancel
-                  </BaseButton>
+                  </Button>
                 </div>
               </div>
             </form>

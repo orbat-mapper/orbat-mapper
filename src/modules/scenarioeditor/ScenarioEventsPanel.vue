@@ -9,6 +9,7 @@ import ScenarioEventDropdownMenu from "@/modules/scenarioeditor/ScenarioEventDro
 import type { ScenarioEventAction } from "@/types/constants";
 import BaseButton from "@/components/BaseButton.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   selectOnly?: boolean;
@@ -101,6 +102,8 @@ function addEvent() {
       </ul>
     </div>
 
-    <BaseButton small @click="addEvent()" class="mt-4">Add scenario event</BaseButton>
+    <Button size="sm" variant="outline" @click="addEvent()" class="mt-4"
+      >Add scenario event</Button
+    >
   </div>
 </template>
