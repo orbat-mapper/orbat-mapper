@@ -1,5 +1,5 @@
 <template>
-  <SimpleModal v-model="open" dialog-title="Keyboard shortcuts">
+  <NewSimpleModal v-model="open" dialog-title="Keyboard shortcuts">
     <div class="mt-4">
       <div v-for="category in shortcuts">
         <h4 class="border-b-2 border-gray-300 pb-1 text-base font-medium text-gray-900">
@@ -22,7 +22,7 @@
         </ul>
       </div>
     </div>
-  </SimpleModal>
+  </NewSimpleModal>
 </template>
 
 <script setup lang="ts">
@@ -37,6 +37,7 @@ import {
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { GRID_EDIT_ROUTE, MAP_EDIT_MODE_ROUTE, OLD_MAP_ROUTE } from "@/router/names";
+import NewSimpleModal from "@/components/NewSimpleModal.vue";
 const route = useRoute();
 
 const props = defineProps({
