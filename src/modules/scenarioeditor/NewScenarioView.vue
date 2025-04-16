@@ -73,7 +73,7 @@
                       :items="iconItems(sideData.standardIdentity)"
                       :symbol-options="sideData.symbolOptions"
                     />
-                    <NewSymbolCodeSelect
+                    <SymbolCodeSelect
                       class="w-full"
                       label="Echelon"
                       v-model="unit.rootUnitEchelon"
@@ -172,12 +172,11 @@ import { nanoid } from "@/utils";
 import { Sidc } from "@/symbology/sidc";
 import StandardIdentitySelect from "@/components/StandardIdentitySelect.vue";
 import SimpleDivider from "@/components/SimpleDivider.vue";
-import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import type { SymbolItem, SymbolValue } from "@/types/constants";
 import { echelonItems } from "@/symbology/helpers";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useIndexedDb } from "@/scenariostore/localdb";
-import NewSymbolCodeSelect from "@/components/NewSymbolCodeSelect.vue";
+import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 
 const router = useRouter();
 const { scenario } = useScenario();

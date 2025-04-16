@@ -1,11 +1,11 @@
 <template>
-  <NewSymbolCodeSelect label="Fill color" :items="colorIconItems" v-model="colorValue" />
+  <SymbolCodeSelect label="Fill color" :items="colorIconItems" v-model="colorValue" />
 </template>
 
 <script setup lang="ts">
 import { type NullableSymbolItem } from "@/types/constants";
 import { computed } from "vue";
-import NewSymbolCodeSelect from "@/components/NewSymbolCodeSelect.vue";
+import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 
 interface Props {
   modelValue?: string | null;
