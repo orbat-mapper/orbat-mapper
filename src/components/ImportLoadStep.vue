@@ -116,7 +116,7 @@
 
     <footer class="flex items-center justify-end space-x-2 pt-4">
       <Button type="submit" size="sm">Load</Button>
-      <Button size="sm" @click="emit('cancel')">Cancel</Button>
+      <Button size="sm" variant="outline" @click="emit('cancel')">Cancel</Button>
     </footer>
   </form>
 </template>

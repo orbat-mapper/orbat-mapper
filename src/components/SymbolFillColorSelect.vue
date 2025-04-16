@@ -1,15 +1,14 @@
 <template>
-  <SymbolCodeSelect label="Fill color" :items="colorIconItems" v-model="colorValue" />
+  <NewSymbolCodeSelect label="Fill color" :items="colorIconItems" v-model="colorValue" />
 </template>
 
 <script setup lang="ts">
-import { type SymbolItem } from "@/types/constants";
+import { type NullableSymbolItem } from "@/types/constants";
 import { computed } from "vue";
-import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
-import { useVModel } from "@vueuse/core";
+import NewSymbolCodeSelect from "@/components/NewSymbolCodeSelect.vue";
 
 interface Props {
-  modelValue?: string;
+  modelValue?: string | null;
   sid?: string;
   defaultFillColor?: string;
 }
@@ -17,10 +16,10 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), { sid: "3", modelValue: "" });
 const emit = defineEmits(["update:modelValue"]);
 
-const colorValue = useVModel(props, "modelValue", emit);
+const colorValue = defineModel<string | null>({ default: null });
 
-const colors: Omit<SymbolItem, "sidc">[] = [
-  { code: "", text: "Default" },
+const colors: Omit<NullableSymbolItem, "sidc">[] = [
+  { code: null, text: "Default" },
   { code: "#80e0ff", text: "Blue (standard)" },
   { code: "#ff8080", text: "Red (standard)" },
   { code: "#aaffaa", text: "Green (standard)" },
@@ -35,7 +34,7 @@ const colors: Omit<SymbolItem, "sidc">[] = [
   { code: "#a2e3e8", text: "Aviation (Battle Order)" },
 ];
 
-const colorIconItems = computed((): SymbolItem[] =>
+const colorIconItems = computed((): NullableSymbolItem[] =>
   colors.map((item) => ({
     ...item,
     sidc: "100" + props.sid + 10 + "00" + "00" + "0000000000",

@@ -125,6 +125,10 @@ export interface SymbolItem extends SymbolValue {
   symbolOptions?: UnitSymbolOptions;
 }
 
+export interface NullableSymbolItem extends Omit<SymbolItem, "code"> {
+  code: string | null;
+}
+
 const stateActions = [
   "delete",
   "changeTime",

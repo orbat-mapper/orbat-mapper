@@ -96,7 +96,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(["update:modelValue", "update:fillColor"]);
 
 const data = useVModel(props, "modelValue", emit);
-const fillColorValue = useVModel(props, "fillColor", emit);
+const fillColorValue = defineModel<string | null>("fillColor");
 
 const sidItems = [
   {

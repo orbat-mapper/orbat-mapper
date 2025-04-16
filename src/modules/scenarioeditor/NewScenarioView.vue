@@ -73,8 +73,8 @@
                       :items="iconItems(sideData.standardIdentity)"
                       :symbol-options="sideData.symbolOptions"
                     />
-                    <SymbolCodeSelect
-                      class=""
+                    <NewSymbolCodeSelect
+                      class="w-full"
                       label="Echelon"
                       v-model="unit.rootUnitEchelon"
                       :items="echelonItems(sideData.standardIdentity)"
@@ -177,6 +177,7 @@ import type { SymbolItem, SymbolValue } from "@/types/constants";
 import { echelonItems } from "@/symbology/helpers";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useIndexedDb } from "@/scenariostore/localdb";
+import NewSymbolCodeSelect from "@/components/NewSymbolCodeSelect.vue";
 
 const router = useRouter();
 const { scenario } = useScenario();
