@@ -5,7 +5,7 @@
     @cancel="emit('cancel')"
     class="max-w-(--breakpoint-lg) md:max-w-(--breakpoint-md)"
   >
-    <div class="flex h-full flex-col">
+    <div class="flex h-full flex-col" @keyup.ctrl.enter="onSubmit">
       <header class="mt-4 flex h-20 w-full items-center justify-between">
         <MilitarySymbol :sidc="csidc" :size="34" :options="finalSymbolOptions" />
         <SymbolCodeViewer :sidc="csidc" @update="updateFromSidcInput" />
@@ -75,7 +75,13 @@
               </ComboboxOptions></div
           ></Combobox>
 
-          <form class="space-y-4 p-0.5" @submit.prevent="onSubmit" v-if="isLoaded">
+          <form
+            class="space-y-4 p-0.5"
+            @submit.prevent="onSubmit"
+            v-if="isLoaded"
+            @keydown.ctrl.enter.exact="onSubmit"
+            @keydown.meta.enter.exact="onSubmit"
+          >
             <div class="flex w-full items-end gap-1">
               <SymbolCodeSelect
                 class="flex-auto"
@@ -171,9 +177,7 @@
         <SecondaryButton type="button" @click="clearModifiers()" class=""
           >Clear modifiers
         </SecondaryButton>
-        <PrimaryButton type="button" @click="onSubmit()" class=""
-          >Select symbol
-        </PrimaryButton>
+        <PrimaryButton @click="onSubmit()" class="">Select symbol </PrimaryButton>
       </div>
     </div>
   </NewSimpleModal>
