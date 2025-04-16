@@ -1,9 +1,9 @@
 <template>
-  <SimpleModal
+  <NewSimpleModal
     v-model="open"
     :dialog-title="dialogTitle"
     @cancel="emit('cancel')"
-    max-width="md:max-w-(--breakpoint-md) max-w-(--breakpoint-lg)"
+    class="max-w-(--breakpoint-lg) md:max-w-(--breakpoint-md)"
   >
     <div class="flex h-full flex-col">
       <header class="mt-4 flex h-20 w-full items-center justify-between">
@@ -176,7 +176,7 @@
         </PrimaryButton>
       </div>
     </div>
-  </SimpleModal>
+  </NewSimpleModal>
 </template>
 
 <script setup lang="ts">
@@ -197,7 +197,6 @@ import {
   useVModel,
   whenever,
 } from "@vueuse/core";
-import SimpleModal from "./SimpleModal.vue";
 import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
 import { useSymbolItems } from "@/composables/symbolData";
 import NProgress from "nprogress";
@@ -223,6 +222,7 @@ import {
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import { doFocus } from "@/composables/utils";
 import BaseButton from "@/components/BaseButton.vue";
+import NewSimpleModal from "@/components/NewSimpleModal.vue";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
