@@ -1,16 +1,13 @@
 <script setup lang="ts">
-import { type HTMLAttributes, onMounted, onUnmounted, ref, watch } from "vue";
+import { type HTMLAttributes, onMounted, onUnmounted, watch } from "vue";
 
 import { useUiStore } from "@/stores/uiStore";
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogScrollContent,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 interface SimpleModalProps {
@@ -29,15 +26,10 @@ watch(open, async (v) => {
   uiStore.modalOpen = v;
 });
 
-function doClose() {
-  emit("cancel");
-  open.value = false;
-}
-
 onUnmounted(() => (uiStore.modalOpen = false));
 </script>
 <template>
-  <Dialog v-model:open="open">
+  <Dialog v-model:open="open" @update:open="emit('cancel')">
     <DialogScrollContent :class="props.class">
       <DialogHeader>
         <DialogTitle>{{ dialogTitle }}</DialogTitle>
