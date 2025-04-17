@@ -1,12 +1,9 @@
 <template>
   <div>
     <div class="flex items-end justify-between">
-      <label
-        :for="id || computedId"
-        class="block text-sm font-medium text-gray-700 dark:text-slate-200"
-      >
+      <Label :for="id || computedId">
         <slot name="label">{{ label }}</slot>
-      </label>
+      </Label>
       <nav class="flex space-x-3" aria-label="Tabs">
         <button
           v-for="(tab, index) in tabs"
@@ -25,15 +22,18 @@
         </button>
       </nav>
     </div>
-    <div class="mt-1">
-      <textarea
+    <div class="mt-1.5">
+      <Textarea
         v-show="!isPreview"
         v-model="localValue"
         :id="id || computedId"
-        class="block w-full rounded-md border-gray-300 bg-transparent shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-white/5"
         v-bind="$attrs"
       />
-      <div v-if="isPreview" class="prose prose-sm mt-4" v-html="renderedMarkdown"></div>
+      <div
+        v-if="isPreview"
+        class="dark:prose-invert prose prose-sm mt-4"
+        v-html="renderedMarkdown"
+      ></div>
     </div>
     <p
       v-if="!isPreview && (description || $slots.description)"
@@ -50,6 +50,8 @@ import { computed, defineComponent, ref } from "vue";
 import { nanoid } from "nanoid";
 import { renderMarkdown } from "../composables/formatting";
 import { GlobalEvents } from "vue-global-events";
+import { Textarea } from "@/components/ui/textarea/index.js";
+import { Label } from "@/components/ui/label/index.js";
 
 const dtabs = [
   { name: "Write", href: "#", current: true },
@@ -66,7 +68,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   inheritAttrs: false,
-  components: { GlobalEvents },
+  components: { Label, Textarea, GlobalEvents },
   setup(props, { emit }) {
     const computedId = nanoid();
     const localValue = computed({

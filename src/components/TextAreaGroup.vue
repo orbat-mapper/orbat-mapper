@@ -1,17 +1,15 @@
 <template>
   <div>
-    <label :for="id || computedId" class="block text-sm font-medium text-gray-700">
+    <Label :for="id || computedId" class="">
       <slot name="label">{{ label }}</slot>
-    </label>
+    </Label>
     <div class="mt-1">
-      <textarea
-        v-model="localValue"
-        :id="id || computedId"
-        class="block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        v-bind="$attrs"
-      />
+      <Textarea v-model="localValue" :id="id || computedId" v-bind="$attrs" />
     </div>
-    <p v-if="description || $slots.description" class="mt-2 text-sm text-gray-500">
+    <p
+      v-if="description || $slots.description"
+      class="text-muted-foreground mt-2 text-sm"
+    >
       <slot name="description">{{ description }}</slot>
     </p>
   </div>
@@ -20,9 +18,12 @@
 <script>
 import { computed, defineComponent } from "vue";
 import { nanoid } from "nanoid";
+import { Textarea } from "@/components/ui/textarea/index.js";
+import { Label } from "@/components/ui/label/index.js";
 
 export default defineComponent({
   name: "TextAreaGroup",
+  components: { Label, Textarea },
   props: {
     id: [String],
     label: String,
