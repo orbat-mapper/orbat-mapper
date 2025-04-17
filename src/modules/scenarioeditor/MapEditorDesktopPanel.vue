@@ -30,7 +30,7 @@
             </button>
           </Tab>
         </div>
-        <CloseButton @click="emit('close')" class="px-4" />
+        <CloseButton @click="emit('close')" class="mt-2 mr-1" />
       </TabList>
       <TabPanels class="flex-auto overflow-y-auto">
         <TabPanel :unmount="false" class="pb-10">

@@ -171,7 +171,7 @@ onUnmounted(() => {
   >
     <CloseButton
       @click="uiSettings.showOrbatBreadcrumbs = false"
-      class="absolute top-3 right-2 hidden sm:block"
+      class="absolute top-2 right-2 hidden sm:block"
     />
     <div class="sm:flex sm:items-center sm:justify-center">
       <Breadcrumb class="w-max">
