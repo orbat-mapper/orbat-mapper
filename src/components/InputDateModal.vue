@@ -52,7 +52,7 @@ function onEventClick(event: ScenarioEvent) {
 <template>
   <NewSimpleModal v-model="open" :dialog-title="dialogTitle" @cancel="emit('cancel')">
     <TabView class="">
-      <TabItem label="Time">
+      <TabItem label="Time" class="px-1">
         <form @submit.prevent="updateTime" class="mt-4 space-y-6">
           <div class="flex items-center justify-between">
             <DescriptionItem label="Time zone name">
@@ -60,7 +60,7 @@ function onEventClick(event: ScenarioEvent) {
             </DescriptionItem>
             <ToggleField v-model="enabled">UTC mode</ToggleField>
           </div>
-          <InputGroup :id="focusId" label="Date" type="date" v-model="date"></InputGroup>
+          <InputGroup :id="focusId" label="Date" type="date" v-model="date" />
           <div class="flex space-x-4">
             <InputGroup label="Hour" v-model="hour" type="number" min="0" max="23" />
             <InputGroup label="Minute" v-model="minute" type="number" min="0" max="59" />
