@@ -9,6 +9,7 @@ import { type ScenarioImageLayerUpdate } from "@/types/internalModels";
 import { useToggle } from "@vueuse/core";
 import TextAreaGroup from "@/components/TextAreaGroup.vue";
 import { toLonLat } from "ol/proj";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   layer: ScenarioTileJSONLayer | ScenarioXYZLayer | ScenarioImageLayerUpdate;
@@ -115,9 +116,9 @@ function loadAdvanced() {
           v-model="formData.attributions"
         />
         <p class="flex justify-end" v-if="layer.type === 'ImageLayer'">
-          <button type="button" class="btn-link" @click="toggleAdvanced()">
+          <Button type="button" variant="link" size="sm" @click="toggleAdvanced()">
             + Add image from Map-georeferencer
-          </button>
+          </Button>
         </p>
       </template>
       <template v-else>

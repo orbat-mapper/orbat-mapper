@@ -57,10 +57,10 @@
       </div>
     </RadioGroup>
     <div class="mt-2 flex justify-end">
-      <button type="button" @click="toggleShowAll()" class="btn-link">
+      <Button type="button" variant="link" @click="toggleShowAll()" size="sm">
         <template v-if="showAll"><span aria-hidden="true"> ←</span> View less</template>
         <template v-else>View more<span aria-hidden="true"> →</span></template>
-      </button>
+      </Button>
     </div>
     <div class="mt-0 grid gap-4" :class="compact ? 'grid-cols-1' : 'sm:grid-cols-2'">
       <SymbolFillColorSelect v-model="fillColorValue" :sid="data" />
@@ -81,6 +81,7 @@ import type { SymbolItem, SymbolValue } from "@/types/constants";
 import MilSymbol from "@/components/MilSymbol.vue";
 import { useToggle, useVModel } from "@vueuse/core";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   modelValue: string;

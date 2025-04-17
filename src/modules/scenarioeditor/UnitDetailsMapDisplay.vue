@@ -359,9 +359,14 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
               />
 
               <div class="col-span-2 flex items-center justify-between">
-                <button type="button" class="btn-link" @click="toeActions.goToAddGroup()">
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  @click="toeActions.goToAddGroup()"
+                >
                   + Add new group
-                </button>
+                </Button>
                 <div>
                   <Button type="submit" variant="secondary" size="sm">Update</Button>
                   <Button

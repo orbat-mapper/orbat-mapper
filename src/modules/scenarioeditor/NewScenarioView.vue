@@ -81,39 +81,45 @@
                       :symbol-options="sideData.symbolOptions"
                     />
                   </div>
-                  <p class="text-base text-sm text-gray-900">
+                  <p class="text-base text-sm">
                     Don't worry if you can't find the right icon. You can change it later.
                   </p>
                   <SimpleDivider v-if="i < sideData.units.length - 1" />
                 </template>
               </div>
               <footer class="mt-6 flex justify-end gap-x-2">
-                <button
+                <Button
+                  variant="link"
                   type="button"
-                  class="btn-link"
+                  size="sm"
                   :disabled="!sideData.units.length"
                   @click="removeUnit(sideData, sideData.units[sideData.units.length - 1])"
                 >
                   Remove unit
-                </button>
+                </Button>
                 <span class="text-gray-300">|</span>
-                <button type="button" class="btn-link" @click="addRootUnit(sideData)">
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  @click="addRootUnit(sideData)"
+                >
                   + Add root unit
-                </button>
+                </Button>
               </footer>
-              <button
+              <Button
+                variant="link"
+                size="sm"
                 v-if="idx === form.sides.length - 1"
-                type="button"
-                class="btn-link absolute top-2 right-4"
                 @click="form.sides.pop()"
               >
                 Remove side
-              </button>
+              </Button>
             </div>
             <footer class="mt-6 flex justify-end">
-              <button type="button" class="btn-link" @click="addSide()">
+              <Button type="button" variant="link" size="sm" @click="addSide()">
                 + Add side
-              </button>
+              </Button>
             </footer>
           </template>
         </FormCard>
@@ -177,6 +183,7 @@ import { echelonItems } from "@/symbology/helpers";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useIndexedDb } from "@/scenariostore/localdb";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
+import { Button } from "@/components/ui/button";
 
 const router = useRouter();
 const { scenario } = useScenario();
