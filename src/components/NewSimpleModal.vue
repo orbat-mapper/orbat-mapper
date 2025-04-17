@@ -9,6 +9,7 @@ import {
   DialogScrollContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils.ts";
 
 interface SimpleModalProps {
   dialogTitle?: string;
@@ -30,7 +31,9 @@ onUnmounted(() => (uiStore.modalOpen = false));
 </script>
 <template>
   <Dialog v-model:open="open" @update:open="emit('cancel')">
-    <DialogScrollContent :class="props.class">
+    <DialogScrollContent
+      :class="cn('max-w-[calc(100%-1rem)] rounded sm:max-w-lg', props.class)"
+    >
       <DialogHeader>
         <DialogTitle>{{ dialogTitle }}</DialogTitle>
         <DialogDescription v-if="dialogTitle || $slots.description">

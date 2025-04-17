@@ -1,5 +1,56 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import { useStorage } from "@vueuse/core";
+import PrimaryButton from "./PrimaryButton.vue";
+import InputGroup from "./InputGroup.vue";
+import DescriptionItem from "./DescriptionItem.vue";
+import { useDateElements } from "@/composables/scenarioTime";
+import { useFocusOnMount } from "@/components/helpers";
+import TabView from "@/components/TabView.vue";
+import TabItem from "@/components/TabItem.vue";
+import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
+import { type ScenarioEvent } from "@/types/scenarioModels";
+import ToggleField from "@/components/ToggleField.vue";
+import NewSimpleModal from "@/components/NewSimpleModal.vue";
+
+interface Props {
+  dialogTitle?: string;
+  timestamp?: number;
+  modelValue?: boolean;
+  timeZone?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  dialogTitle: "Set scenario date and time",
+  timestamp: 386467200000,
+  modelValue: false,
+  timeZone: "UTC",
+});
+const emit = defineEmits(["update:timestamp", "cancel"]);
+
+const { focusId } = useFocusOnMount(undefined, 150);
+
+const open = defineModel<boolean>();
+const enabled = useStorage("utc-mode", false);
+const isLocal = computed(() => !enabled.value);
+const { date, hour, minute, resDateTime } = useDateElements({
+  timestamp: props.timestamp,
+  isLocal,
+  timeZone: props.timeZone,
+});
+
+const updateTime = () => {
+  emit("update:timestamp", resDateTime.value.valueOf());
+  open.value = false;
+};
+
+function onEventClick(event: ScenarioEvent) {
+  emit("update:timestamp", event.startTime);
+  open.value = false;
+}
+</script>
 <template>
-  <SimpleModal v-model="open" :dialog-title="dialogTitle" @cancel="emit('cancel')">
+  <NewSimpleModal v-model="open" :dialog-title="dialogTitle" @cancel="emit('cancel')">
     <TabView class="">
       <TabItem label="Time">
         <form @submit.prevent="updateTime" class="mt-4 space-y-6">
@@ -25,58 +76,5 @@
         <ScenarioEventsPanel select-only @event-click="onEventClick" />
       </TabItem>
     </TabView>
-  </SimpleModal>
+  </NewSimpleModal>
 </template>
-
-<script setup lang="ts">
-import { computed } from "vue";
-import { useStorage, useVModel } from "@vueuse/core";
-
-import SimpleModal from "./SimpleModal.vue";
-import PrimaryButton from "./PrimaryButton.vue";
-import InputGroup from "./InputGroup.vue";
-import DescriptionItem from "./DescriptionItem.vue";
-import { useDateElements } from "@/composables/scenarioTime";
-import { useFocusOnMount } from "@/components/helpers";
-import TabView from "@/components/TabView.vue";
-import TabItem from "@/components/TabItem.vue";
-import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
-import { type ScenarioEvent } from "@/types/scenarioModels";
-import ToggleField from "@/components/ToggleField.vue";
-
-interface Props {
-  dialogTitle?: string;
-  timestamp?: number;
-  modelValue?: boolean;
-  timeZone?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  dialogTitle: "Set scenario date and time",
-  timestamp: 386467200000,
-  modelValue: false,
-  timeZone: "UTC",
-});
-const emit = defineEmits(["update:modelValue", "update:timestamp", "cancel"]);
-
-const { focusId } = useFocusOnMount(undefined, 150);
-
-const open = useVModel(props, "modelValue");
-const enabled = useStorage("utc-mode", false);
-const isLocal = computed(() => !enabled.value);
-const { date, hour, minute, resDateTime } = useDateElements({
-  timestamp: props.timestamp,
-  isLocal,
-  timeZone: props.timeZone,
-});
-
-const updateTime = () => {
-  emit("update:timestamp", resDateTime.value.valueOf());
-  open.value = false;
-};
-
-function onEventClick(event: ScenarioEvent) {
-  emit("update:timestamp", event.startTime);
-  open.value = false;
-}
-</script>

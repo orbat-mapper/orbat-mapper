@@ -7,7 +7,6 @@ import PanelHeading from "@/components/PanelHeading.vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import ScenarioEventDropdownMenu from "@/modules/scenarioeditor/ScenarioEventDropdownMenu.vue";
 import type { ScenarioEventAction } from "@/types/constants";
-import BaseButton from "@/components/BaseButton.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { Button } from "@/components/ui/button";
 
@@ -102,7 +101,12 @@ function addEvent() {
       </ul>
     </div>
 
-    <Button size="sm" variant="outline" @click="addEvent()" class="mt-4"
+    <Button
+      v-if="!selectOnly"
+      size="sm"
+      variant="outline"
+      @click="addEvent()"
+      class="mt-4"
       >Add scenario event</Button
     >
   </div>
