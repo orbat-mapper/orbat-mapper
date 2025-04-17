@@ -40,7 +40,11 @@ const selected = computed(() =>
               :sidc="selected?.sidc || ''"
               alt=""
               :size="20"
-              :options="{ ...symbolOptions, ...selected?.symbolOptions }"
+              :options="{
+                outlineWidth: 8,
+                ...symbolOptions,
+                ...selected?.symbolOptions,
+              }"
             />
             <span class="truncate">{{ selected?.text }}</span>
           </template>
@@ -61,7 +65,11 @@ const selected = computed(() =>
               :size="20"
               class="size-8"
               :sidc="item.sidc"
-              :options="{ ...symbolOptions, ...item.symbolOptions, outlineWidth: 4 }"
+              :options="{
+                outlineWidth: 8,
+                ...symbolOptions,
+                ...item.symbolOptions,
+              }"
             />
             {{ item.text }}
           </SelectItem>

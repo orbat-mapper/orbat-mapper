@@ -29,7 +29,7 @@ onMounted(() => {
 </script>
 <template>
   <div :class="cn('group', props.class)" :data-disabled="disabled">
-    <Label v-if="label || $slots.label" :for="inputId">
+    <Label v-if="label || $slots.label" :for="inputId" class="text-sm">
       <slot name="label">{{ label }}</slot>
     </Label>
     <div class="mt-1">

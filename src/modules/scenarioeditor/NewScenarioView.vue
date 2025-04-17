@@ -59,10 +59,10 @@
                 <template v-for="(unit, i) in sideData.units">
                   <div class="flex items-end gap-4 md:grid md:grid-cols-2">
                     <InputGroup label="Root unit name" v-model="unit.rootUnitName" />
-                    <MilitarySymbol
+                    <NewMilitarySymbol
                       :size="32"
                       :sidc="unitSidc(unit, sideData)"
-                      :options="sideData.symbolOptions"
+                      :options="{ ...sideData.symbolOptions, outlineWidth: 8 }"
                     />
                   </div>
                   <div class="mt-4 grid gap-4 md:grid-cols-2">
@@ -81,7 +81,7 @@
                       :symbol-options="sideData.symbolOptions"
                     />
                   </div>
-                  <p class="text-base text-sm">
+                  <p class="text-muted-foreground text-sm">
                     Don't worry if you can't find the right icon. You can change it later.
                   </p>
                   <SimpleDivider v-if="i < sideData.units.length - 1" />
@@ -180,10 +180,10 @@ import StandardIdentitySelect from "@/components/StandardIdentitySelect.vue";
 import SimpleDivider from "@/components/SimpleDivider.vue";
 import type { SymbolItem, SymbolValue } from "@/types/constants";
 import { echelonItems } from "@/symbology/helpers";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useIndexedDb } from "@/scenariostore/localdb";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { Button } from "@/components/ui/button";
+import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 
 const router = useRouter();
 const { scenario } = useScenario();

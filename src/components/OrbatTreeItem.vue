@@ -20,7 +20,7 @@ import { useUnitMenu } from "@/composables/scenarioActions";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { activeParentKey, activeScenarioKey } from "./injects";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { type SymbolOptions } from "milsymbol";
 import { injectStrict } from "@/utils";
 import { useSelectedItems } from "@/stores/selectedStore";
@@ -52,6 +52,7 @@ const {
 const combinedOptions = computed(() => ({
   ...(props.symbolOptions || {}),
   ...(props.item.unit.symbolOptions || {}),
+  outlineWidth: 8,
 }));
 
 let subTree = ref<HTMLElement | null>(null);
@@ -225,7 +226,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
         <button class="flex items-center space-x-1">
           <div class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
             <div
-              class="relative flex shrink-0 cursor-move justify-center"
+              class="relative flex cursor-move justify-center"
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
               ref="dragItemRef"
             >
@@ -243,9 +244,9 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
               >
             </div>
             <span
-              class="flex-auto pl-1.5 text-left text-gray-900 dark:text-gray-300"
+              class="flex-auto pl-1 text-left"
               :class="{
-                'font-bold dark:text-amber-600': isActiveUnit,
+                'font-bold': isActiveUnit,
               }"
               >{{ unitLabel }}</span
             ><span v-if="unit._state?.location" class="text-red-700">&deg;</span>
