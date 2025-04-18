@@ -43,7 +43,7 @@ function onBlur(e: FocusEvent) {
     @focus="onFocus()"
     @blur="onBlur"
     :spellcheck="spellcheck"
-    class="-mx-3 w-full resize-none rounded-md border-0 bg-transparent ring-0 ring-inset hover:ring-1 focus:ring-2 focus:ring-inset"
+    class="ring-ring -mx-3 w-full resize-none rounded-md border-0 bg-transparent ring-0 ring-inset hover:ring-1 focus:ring-2 focus:ring-inset"
     :class="textClass"
   />
 </template>

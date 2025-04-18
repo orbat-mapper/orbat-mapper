@@ -5,23 +5,24 @@
         v-if="item.sidc"
         :sidc="item.sidc"
         :options="item.symbolOptions ?? {}"
+        :modifiers="{ outlineWidth: 8 }"
         :size="15"
         class="w-7"
         :class="{ 'opacity-20': isDragged }"
       />
     </div>
     <span
-      class="select-none"
+      class="ml-1 select-none"
       :class="[
         item.symbolOptions?.reinforcedReduced ? 'ml-2' : '',
-        item.location ? 'text-red-900 underline' : '',
+        item.location ? 'text-accent-foreground underline' : '',
       ]"
       >{{ item.name }}</span
     >
   </div>
 </template>
 <script setup lang="ts">
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { onMounted, onUnmounted, ref } from "vue";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";

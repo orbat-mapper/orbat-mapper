@@ -36,9 +36,9 @@
       <div v-else>
         <div class="flex items-center justify-between">
           <p class="font-medium">{{ selectedUnitIds.size }} units selected</p>
-          <button @click="clearSelection()" class="text-indigo-600 hover:text-indigo-900">
-            Clear
-          </button>
+          <Button type="button" size="sm" variant="outline" @click="clearSelection()"
+            >Clear
+          </Button>
         </div>
         <ul class="relative my-4 flex w-full flex-wrap gap-1 pb-4">
           <li v-for="sUnit in visibleSelectedUnits" class="relative flex">
@@ -239,6 +239,7 @@ import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsProperties.vue";
 import UnitDetailsSymbol from "@/modules/scenarioeditor/UnitDetailsSymbol.vue";
+import { Button } from "@/components/ui/button";
 
 const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);

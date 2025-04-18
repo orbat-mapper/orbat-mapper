@@ -15,7 +15,7 @@ import { ChevronDown } from "lucide-vue-next";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import type { NUnit } from "@/types/internalModels";
 import type { EntityId } from "@/types/base";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -167,7 +167,7 @@ onUnmounted(() => {
 <template>
   <ScrollArea
     class="relative flex border-b p-4 sm:p-3"
-    :class="isDragged ? 'bg-gray-200' : 'bg-gray-50'"
+    :class="isDragged ? 'bg-gray-200' : 'bg-sidebar'"
   >
     <CloseButton
       @click="uiSettings.showOrbatBreadcrumbs = false"
@@ -177,7 +177,7 @@ onUnmounted(() => {
       <Breadcrumb class="w-max">
         <BreadcrumbList>
           <template v-for="(item, index) in breadcrumbItems">
-            <BreadcrumbItem class="text-gray-800">
+            <BreadcrumbItem class="text-primary">
               <DropdownMenu v-if="(item.items?.length ?? 0) >= 1">
                 <DropdownMenuTrigger class="flex items-center gap-1">
                   <UnitBreadcrumbItem :item="item" :key="item.id" />
@@ -189,11 +189,14 @@ onUnmounted(() => {
                     :key="subItem.id"
                     @select="onItemClick(subItem.id)"
                   >
-                    <div class="flex items-center">
+                    <div class="text-primary flex items-center">
                       <span v-if="subItem.sidc" class="mr-1.5 flex w-7 items-center">
                         <MilitarySymbol
                           :sidc="subItem.sidc"
-                          :options="subItem.symbolOptions" /></span
+                          :options="{
+                            ...subItem.symbolOptions,
+                            outlineWidth: 8,
+                          }" /></span
                       ><span :class="[item.id === subItem.id ? 'font-semibold' : '']">{{
                         subItem.name
                       }}</span
