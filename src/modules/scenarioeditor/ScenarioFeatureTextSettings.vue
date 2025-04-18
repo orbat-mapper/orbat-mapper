@@ -48,7 +48,10 @@ const range = computed({
   },
 });
 
-function updateValue(name: keyof TextStyleSpec, value?: boolean | number | string) {
+function updateValue(
+  name: keyof TextStyleSpec,
+  value?: boolean | number | string | null,
+) {
   emit("update", { style: { [name]: value } });
 }
 </script>
