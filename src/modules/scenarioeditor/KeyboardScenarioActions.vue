@@ -54,10 +54,20 @@ const duplicateUnit = () => {
 
 function handleEscape(e: KeyboardEvent) {
   if (uiStore.escEnabled) {
+    if (isRekaComponent(e)) return;
     clearSelected();
     activeUnitStore.clearActiveUnit();
     activeScenarioEventId.value = null;
   }
+}
+
+function isRekaComponent(e: KeyboardEvent) {
+  let target = e.target as HTMLElement;
+  if (!target) return false;
+  return !!(
+    (target?.id && target.id.includes("dropdown")) ||
+    target.dataset?.slot?.includes("dropdown")
+  );
 }
 
 function handleZoomShortcut(e: KeyboardEvent) {
