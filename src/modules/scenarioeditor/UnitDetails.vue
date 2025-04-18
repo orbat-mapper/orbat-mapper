@@ -102,7 +102,7 @@
           />
         </div>
         <div>
-          <DotsMenu :items="unitMenuItems" portal />
+          <DotsMenu :items="unitMenuItems" />
         </div>
       </nav>
     </header>

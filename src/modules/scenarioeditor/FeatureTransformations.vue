@@ -117,7 +117,7 @@ function doTransformation(
       )
     : turfFeature(features[0]?._state?.geometry ?? features[0].geometry);
   if (transform === "buffer") {
-    const { radius, steps = 64, units = "kilometers" } = options;
+    const { radius, steps = 8, units = "kilometers" } = options;
     return turfBuffer(geoJSONFeatureOrFeatureCollection as any, radius, { units, steps });
   }
   if (transform === "boundingBox") {
@@ -234,7 +234,7 @@ onUnmounted(() => {
 
       <div v-if="transformation === 'buffer'">
         <PanelSubHeading>Buffer options</PanelSubHeading>
-        <div class="mt-2 grid grid-cols-1 gap-4">
+        <div class="mt-2 grid grid-cols-2 gap-4">
           <div class="col-span-1">
             <NumberInputGroup label="Radius" v-model.number="bufferOptions.radius" />
           </div>

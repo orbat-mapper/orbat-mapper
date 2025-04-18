@@ -3,13 +3,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVerticalIcon } from "@heroicons/vue/20/solid";
 
 import { type ScenarioFeatureActions } from "@/types/constants";
+import { Button } from "@/components/ui/button";
+import { EllipsisVertical } from "lucide-vue-next";
 
 const emit = defineEmits<{
   action: [value: ScenarioFeatureActions];
@@ -19,12 +19,11 @@ const emit = defineEmits<{
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as="child" class="">
-      <button type="button" class="block p-2.5 text-gray-500 hover:text-gray-900">
-        <span class="sr-only">Open options</span>
-        <EllipsisVerticalIcon class="h-6 w-6" aria-hidden="true" />
-      </button>
+      <Button variant="ghost" size="sm" class="text-muted-foreground">
+        <EllipsisVertical />
+      </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent class="min-w-52 border-gray-300" align="end">
+    <DropdownMenuContent class="min-w-52" align="end">
       <DropdownMenuItem inset @select="emit('action', 'zoom')">
         <span>Zoom to</span>
       </DropdownMenuItem>
@@ -38,8 +37,6 @@ const emit = defineEmits<{
       <DropdownMenuItem inset @select="emit('action', 'removeMedia')">
         <span>Remove image</span>
       </DropdownMenuItem>
-
-      <DropdownMenuSeparator />
     </DropdownMenuContent>
   </DropdownMenu>
 </template>

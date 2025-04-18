@@ -42,6 +42,7 @@ import ScenarioFeatureState from "@/modules/scenarioeditor/ScenarioFeatureState.
 import ScenarioFeatureTextSettings from "@/modules/scenarioeditor/ScenarioFeatureTextSettings.vue";
 import ScenarioFeatureVisibilitySettings from "@/modules/scenarioeditor/ScenarioFeatureVisibilitySettings.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -195,9 +196,9 @@ function onAction(action: ScenarioFeatureActions) {
     <header class="">
       <div v-if="isMultiMode" class="mt-6 mb-2 flex items-center justify-between">
         <p class="font-medium">{{ selectedFeatureIds.size }} features selected</p>
-        <button @click="clearSelection()" class="text-indigo-600 hover:text-indigo-900">
+        <Button variant="outline" type="button" size="sm" @click="clearSelection()">
           Clear
-        </button>
+        </Button>
       </div>
       <div v-if="feature" class="">
         <EditableLabel v-model="featureName" @update-value="updateValue" />
@@ -205,18 +206,21 @@ function onAction(action: ScenarioFeatureActions) {
 
       <nav class="flex items-center justify-between">
         <div class="flex items-center">
-          <component :is="getGeometryIcon(feature!)" class="mr-2 h-6 w-6 text-red-900" />
+          <component
+            :is="getGeometryIcon(feature!)"
+            class="text-muted-foreground mr-2 size-6"
+          />
           <IconButton @click="doZoom()" title="Zoom to feature">
-            <ZoomIcon class="h-6 w-6" />
+            <ZoomIcon class="size-5" />
           </IconButton>
           <IconButton @click="showStylePanel()" title="Change feature style">
-            <StyleIcon class="h-6 w-6" />
+            <StyleIcon class="size-5" />
           </IconButton>
           <IconButton title="Edit feature data" @click="toggleEditMode()">
-            <EditIcon class="h-6 w-6" />
+            <EditIcon class="size-5" />
           </IconButton>
           <IconButton title="Add/modify image" @click="toggleEditMediaMode()">
-            <ImageIcon class="h-6 w-6" />
+            <ImageIcon class="size-5" />
           </IconButton>
         </div>
         <div>
