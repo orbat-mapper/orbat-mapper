@@ -1,6 +1,5 @@
 <!--suppress JSDeprecatedSymbols -->
 <script setup lang="ts">
-import SimpleModal from "./SimpleModal.vue";
 import { useVModel } from "@vueuse/core";
 import ImportLoadStep from "@/components/ImportLoadStep.vue";
 import { defineAsyncComponent, ref, shallowRef } from "vue";
@@ -10,6 +9,7 @@ import type { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportImageStep from "@/components/ImportImageStep.vue";
 import type { ImportedFileInfo } from "@/importexport/fileHandling";
 import DocLink from "@/components/DocLink.vue";
+import NewSimpleModal from "@/components/NewSimpleModal.vue";
 
 const ImportGeojsonStep = defineAsyncComponent(
   () => import("@/components/ImportGeojsonStep.vue"),
@@ -76,11 +76,11 @@ function onCancel() {
 </script>
 
 <template>
-  <SimpleModal
+  <NewSimpleModal
     v-model="open"
     dialog-title="Import data"
     @cancel="onCancel"
-    maxWidth="sm:max-w-xl md:max-w-4xl"
+    class="sm:max-w-xl md:max-w-4xl"
   >
     <p class="flex items-center justify-between text-sm leading-6 text-gray-500">
       <span>Import data for use in your scenario</span>
@@ -141,5 +141,5 @@ function onCancel() {
       @cancel="onCancel"
       @loaded="onImport"
     />
-  </SimpleModal>
+  </NewSimpleModal>
 </template>
