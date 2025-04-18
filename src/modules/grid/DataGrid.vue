@@ -179,7 +179,10 @@ const filteredRowCount = computed(() => {
         {{ rowCount === undefined ? data.length : rowCount }})</span
       >
     </header>
-    <section class="relative overflow-auto rounded-lg border shadow-sm" ref="parentRef">
+    <section
+      class="border-border relative overflow-auto rounded-lg border shadow-sm"
+      ref="parentRef"
+    >
       <table class="grid">
         <thead class="sticky top-0 z-10">
           <tr

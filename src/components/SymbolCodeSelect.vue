@@ -53,7 +53,7 @@ const selected = computed(() =>
           </template>
         </SelectValue>
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent class="border-border">
         <SelectGroup>
           <SelectItem
             v-for="item in items"

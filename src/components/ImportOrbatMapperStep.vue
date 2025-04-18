@@ -576,9 +576,9 @@ function doGroupImport(importedGroupId: string) {
           >Load as new scenario
         </BaseButton>
       </div>
-      <section class="mt-2 rounded border p-3">
+      <section class="border-border mt-2 rounded border p-3">
         <h2 class="text-sm font-medium">{{ data.name }}</h2>
-        <p class="truncate text-xs">{{ data.description }}</p>
+        <p class="line-clamp-1 text-xs">{{ data.description }}</p>
         <p>Units: {{ stats.units }}</p>
       </section>
 
