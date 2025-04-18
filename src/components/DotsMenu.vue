@@ -3,8 +3,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical } from "lucide-vue-next";
@@ -31,7 +29,7 @@ const onItemClick = (item: MenuItemData<string | Function>) => {
       <DropdownMenuContent class="" align="end">
         <DropdownMenuItem
           v-for="item in items"
-          @select.prevent.stop="onItemClick(item)"
+          @select="onItemClick(item)"
           :disabled="item.disabled"
         >
           <span>{{ item.label }}</span>

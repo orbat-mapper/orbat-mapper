@@ -261,12 +261,12 @@ async function onStateAction(index: number, action: StateAction) {
       });
     }
   } else if (action === "editTitle") {
-    editTitle(state.value[index]);
+    await editTitle(state.value[index]);
   } else if (action === "editLocation") {
     if (index < 0) {
       startEditInitialPosition();
     } else {
-      editPosition(state.value[index]);
+      await editPosition(state.value[index]);
     }
   } else if (action === "duplicate") {
     unitActions.addUnitStateEntry(props.unit.id, {
@@ -294,8 +294,9 @@ function onStateClick(e: MouseEvent, s: NState) {
 }
 
 const newTitle = ref();
-function editTitle(s: NState) {
-  nextTick(() => (editedTitle.value = s));
+async function editTitle(s: NState) {
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  editedTitle.value = s;
   newTitle.value = s.title || "";
 }
 
@@ -320,8 +321,9 @@ function cancelEdit() {
 
 const newPosition = ref();
 
-function editPosition(s: NState) {
-  nextTick(() => (editedPosition.value = s));
+async function editPosition(s: NState) {
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  editedPosition.value = s;
   newPosition.value = s.location;
 }
 
