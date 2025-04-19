@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { geometryCollection, type Units } from "@turf/helpers";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
-import SimpleSelect from "@/components/SimpleSelect.vue";
 import { computed, onUnmounted, ref, watch, watchEffect } from "vue";
-import type { SelectItem } from "@/components/types";
+import type { NewSelectItem } from "@/components/types";
 import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict, nanoid } from "@/utils";
 import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
@@ -25,6 +24,7 @@ import {
   doUnitTransformation,
   type TransformationOperation,
 } from "@/geo/transformations.ts";
+import NewSelect from "@/components/NewSelect.vue";
 
 const props = withDefaults(defineProps<{ unitMode?: boolean }>(), { unitMode: false });
 
@@ -48,15 +48,17 @@ const selectedItems = computed(() => {
 });
 const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
-const transformationOptions: SelectItem[] = [
-  { label: "Buffer", value: "buffer" },
-  { label: "Bounding box", value: "boundingBox" },
-  { label: "Convex hull", value: "convexHull" },
-  { label: "Simplify", value: "simplify" },
-  { label: "Smooth", value: "smooth" },
-];
+const transformationOptions = computed(() => {
+  return [
+    { label: "Buffer", value: "buffer" },
+    { label: "Bounding box", value: "boundingBox" },
+    { label: "Convex hull", value: "convexHull" },
+    { label: "Simplify", value: "simplify", disabled: props.unitMode },
+    { label: "Smooth", value: "smooth", disabled: props.unitMode },
+  ];
+});
 
-const unitItems: SelectItem<Units>[] = [
+const unitItems: NewSelectItem<Units>[] = [
   { label: "Kilometers", value: "kilometers" },
   { label: "Meters", value: "meters" },
   { label: "Miles", value: "miles" },
@@ -185,7 +187,7 @@ onUnmounted(() => {
 <template>
   <div v-if="selectedItems.length" class="pb-2">
     <form @submit.prevent="onSubmit" class="space-y-4">
-      <SimpleSelect
+      <NewSelect
         label="Transformation"
         :items="transformationOptions"
         v-model="transformation"
@@ -197,7 +199,7 @@ onUnmounted(() => {
           <div class="col-span-1">
             <NumberInputGroup label="Radius" v-model.number="bufferOptions.radius" />
           </div>
-          <SimpleSelect label="Units" :items="unitItems" v-model="bufferOptions.units" />
+          <NewSelect label="Units" :items="unitItems" v-model="bufferOptions.units" />
           <NumberInputGroup label="Steps" v-model.number="bufferOptions.steps" />
         </div>
       </div>
