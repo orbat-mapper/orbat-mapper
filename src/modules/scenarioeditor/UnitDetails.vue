@@ -180,6 +180,9 @@
         <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
       </TabPanel>
+      <TabPanel>
+        <FeatureTransformations class="mt-4" unitMode />
+      </TabPanel>
 
       <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
         <pre>{{ unit }}</pre>
@@ -194,7 +197,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
 import {
   IconCrosshairsGps,
   IconFileTreeOutline as TreeLocateIcon,
@@ -241,6 +244,10 @@ import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsPropertie
 import UnitDetailsSymbol from "@/modules/scenarioeditor/UnitDetailsSymbol.vue";
 import { Button } from "@/components/ui/button";
 
+const FeatureTransformations = defineAsyncComponent(
+  () => import("@/modules/scenarioeditor/FeatureTransformations.vue"),
+);
+
 const props = defineProps<{ unitId: EntityId }>();
 const activeScenario = injectStrict(activeScenarioKey);
 const {
@@ -276,6 +283,7 @@ const tabList = computed(() =>
         { label: "TO&E/S", title: "Table of organization, equipment and supplies" },
         "Map display",
         "Properties",
+        "Transform",
         "Debug",
       ]
     : [
@@ -285,6 +293,7 @@ const tabList = computed(() =>
         { label: "TO&E/S", title: "Table of organization, equipment and supplies" },
         "Map display",
         "Properties",
+        "Transform",
       ],
 );
 

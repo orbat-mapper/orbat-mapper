@@ -6,9 +6,9 @@ import { computed, onUnmounted, ref, watch, watchEffect } from "vue";
 import type { SelectItem } from "@/components/types";
 import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict, nanoid } from "@/utils";
-import { activeMapKey, activeScenarioKey } from "@/components/injects";
+import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
 import type { FeatureId } from "@/types/scenarioGeoModels";
-import type { NScenarioFeature } from "@/types/internalModels";
+import type { NScenarioFeature, NUnit } from "@/types/internalModels";
 import type { Feature } from "geojson";
 import { useDebounceFn } from "@vueuse/core";
 import VectorLayer from "ol/layer/Vector";
@@ -22,20 +22,29 @@ import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import {
   doScenarioFeatureTransformation,
+  doUnitTransformation,
   type TransformationOperation,
 } from "@/geo/transformations.ts";
 
-const props = defineProps<{}>();
+const props = withDefaults(defineProps<{ unitMode?: boolean }>(), { unitMode: false });
+
+const isUnitMode = props.unitMode;
 
 const scn = injectStrict(activeScenarioKey);
+const activeLayerId = injectStrict(activeLayerKey);
 
 const olMapRef = injectStrict(activeMapKey);
 
-const { selectedFeatureIds } = useSelectedItems();
-const selectedFeatures = computed(() => {
-  return Array.from(selectedFeatureIds.value).map(
-    (id) => scn.geo.getFeatureById(id)?.feature,
-  );
+const { selectedFeatureIds, selectedUnitIds } = useSelectedItems();
+
+const selectedItems = computed(() => {
+  if (props.unitMode) {
+    return Array.from(selectedUnitIds.value).map((id) => scn.helpers.getUnitById(id));
+  } else {
+    return Array.from(selectedFeatureIds.value).map(
+      (id) => scn.geo.getFeatureById(id)?.feature,
+    );
+  }
 });
 const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
@@ -74,8 +83,11 @@ const previewLayer = new VectorLayer({
 olMapRef.value.addLayer(previewLayer);
 
 const calculatePreview = useDebounceFn(
-  (features: NScenarioFeature[], op: TransformationOperation) => {
-    const geometry = doScenarioFeatureTransformation(features, op);
+  (features: NScenarioFeature[] | NUnit[], op: TransformationOperation) => {
+    const geometry = isUnitMode
+      ? doUnitTransformation(features as NUnit[], op)
+      : doScenarioFeatureTransformation(features as NScenarioFeature[], op);
+
     drawGeoJsonLayer(previewLayer, geometry);
   },
   500,
@@ -96,20 +108,22 @@ function createScenarioFeatureFromGeoJSON(
   };
 }
 
-watch(
-  [
-    () => selectedFeatures.value[0]?.geometry,
-    () => selectedFeatures.value[0]?._state?.geometry,
-  ],
-  () => {
-    toggleRedraw.value = !toggleRedraw.value;
-  },
-  { deep: true },
-);
+if (!props.unitMode) {
+  watch(
+    [
+      () => (selectedItems.value[0] as NScenarioFeature)?.geometry,
+      () => (selectedItems.value[0] as NScenarioFeature)?._state?.geometry,
+    ],
+    () => {
+      toggleRedraw.value = !toggleRedraw.value;
+    },
+    { deep: true },
+  );
+}
 
 watchEffect(() => {
   toggleRedraw.value;
-  if (!selectedFeatures.value.length) return;
+  if (!selectedItems.value.length) return;
   if (transformation.value === "buffer") {
     const { radius, units, steps } = bufferOptions.value;
     currentOp.value = {
@@ -130,33 +144,35 @@ watchEffect(() => {
   }
 
   if (showPreview.value && currentOp.value) {
-    calculatePreview(selectedFeatures.value, currentOp.value);
+    calculatePreview(selectedItems.value, currentOp.value);
   } else {
     previewLayer.getSource()?.clear();
   }
 });
 
 function onSubmit() {
-  if (!currentOp.value || selectedFeatures.value.length === 0) return;
-  const activeFeature = selectedFeatures.value[0];
-  let transformedFeature = doScenarioFeatureTransformation(
-    selectedFeatures.value,
-    currentOp.value,
-  );
+  if (!currentOp.value || selectedItems.value.length === 0) return;
+  const activeFeature = selectedItems.value[0];
+  let transformedFeature = isUnitMode
+    ? doUnitTransformation(selectedItems.value as NUnit[], currentOp.value)
+    : doScenarioFeatureTransformation(
+        selectedItems.value as NScenarioFeature[],
+        currentOp.value,
+      );
   if (transformedFeature) {
     if (transformedFeature.type === "FeatureCollection") {
       transformedFeature = geometryCollection(
         transformedFeature.features.map((f) => f.geometry) as any,
       );
     }
-    const layerId = activeFeature._pid;
-    const scenarioFeature = createScenarioFeatureFromGeoJSON(
-      transformedFeature,
-      selectedFeatures.value[0]._pid,
-    );
-    const featureName = isMultiMode.value ? "FeatureCollection" : activeFeature.meta.name;
+    const layerId = activeLayerId.value;
+    const scenarioFeature = createScenarioFeatureFromGeoJSON(transformedFeature, -1);
+    const activeFeatureName = isUnitMode
+      ? (activeFeature as NUnit).name
+      : (activeFeature as NScenarioFeature).meta.name;
+    const featureName = isMultiMode.value ? "FeatureCollection" : activeFeatureName;
     scenarioFeature.meta.name = `${featureName} (${currentOp.value.transform})`;
-    scn.geo.addFeature(scenarioFeature, layerId);
+    scn.geo.addFeature(scenarioFeature, layerId!);
     previewLayer.getSource()?.clear();
   }
 }
@@ -167,7 +183,7 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <div v-if="selectedFeatureIds.size" class="pb-2">
+  <div v-if="selectedItems.length" class="pb-2">
     <form @submit.prevent="onSubmit" class="space-y-4">
       <SimpleSelect
         label="Transformation"

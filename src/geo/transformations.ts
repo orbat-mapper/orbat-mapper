@@ -1,8 +1,9 @@
-import type { Feature, FeatureCollection, LineString, Polygon } from "geojson";
-import type { NScenarioFeature } from "@/types/internalModels.ts";
+import type { Feature, FeatureCollection, Geometry, LineString, Polygon } from "geojson";
+import type { NScenarioFeature, NUnit } from "@/types/internalModels.ts";
 import {
   feature as turfFeature,
   featureCollection as turfFeatureCollection,
+  point,
   type Units as UnitOfMeasurement,
 } from "@turf/helpers";
 import { buffer as turfBuffer } from "@turf/buffer";
@@ -54,6 +55,21 @@ export function doScenarioFeatureTransformation(
           features.map((f) => turfFeature(f?._state?.geometry ?? f.geometry)),
         )
       : turfFeature(features[0]?._state?.geometry ?? features[0].geometry);
+  return doTransformation(geoJSONFeatureOrFeatureCollection, opts);
+}
+
+function unitToFeature(unit: NUnit): Feature {
+  const location = unit?._state?.location ?? unit.location!;
+  return point(location);
+}
+
+export function doUnitTransformation(units: NUnit[], opts: TransformationOperation) {
+  const filteredUnits = units.filter((unit) => unit?._state?.location ?? unit.location);
+  if (filteredUnits.length === 0) return;
+  const geoJSONFeatureOrFeatureCollection =
+    filteredUnits.length > 1
+      ? turfFeatureCollection(filteredUnits.map(unitToFeature))
+      : unitToFeature(filteredUnits[0]);
   return doTransformation(geoJSONFeatureOrFeatureCollection, opts);
 }
 
