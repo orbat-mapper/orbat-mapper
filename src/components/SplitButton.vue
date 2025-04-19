@@ -9,11 +9,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-vue-next";
+import { cn } from "@/lib/utils.ts";
 
 interface Props {
   items: ButtonGroupItem[];
   static?: boolean;
   activeItem?: ButtonGroupItem | null | undefined;
+  triggerClass?: string;
 }
 const props = withDefaults(defineProps<Props>(), { static: false });
 const emit = defineEmits(["update:activeItem"]);
@@ -48,7 +50,7 @@ const onClick = (item: ButtonGroupItem) => {
       class="rounded-r-none text-left ring-inset"
       :title="activeItemRef.label"
     >
-      <span class="max-w-24 truncate">{{ activeItemRef.label }}</span>
+      <span :class="cn('truncate', triggerClass)">{{ activeItemRef.label }}</span>
     </Button>
     <DropdownMenu>
       <DropdownMenuTrigger as-child>

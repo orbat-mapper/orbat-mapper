@@ -97,6 +97,7 @@
           </IconButton>
           <SplitButton
             class="ml-1"
+            triggerClass="max-w-24"
             :items="buttonItems"
             v-model:active-item="uiStore.activeItem"
           />
