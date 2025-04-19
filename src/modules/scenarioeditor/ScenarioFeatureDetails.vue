@@ -237,7 +237,10 @@ function onAction(action: ScenarioFeatureActions) {
             @update="doUpdateFeature"
           />
           <ScenarioFeatureMarkerSettings
-            v-if="feature && geometryType === 'Point'"
+            v-if="
+              feature &&
+              (geometryType === 'Point' || geometryType === 'GeometryCollection')
+            "
             :feature="feature"
             @update="doUpdateFeature"
           />

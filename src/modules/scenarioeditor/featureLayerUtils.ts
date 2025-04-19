@@ -25,6 +25,7 @@ import {
   IconVectorCircleVariant,
   IconVectorLine,
   IconVectorTriangle,
+  IconMapMarkerMultipleOutline,
 } from "@iconify-prerendered/vue-mdi";
 import type { ScenarioFeatureActions } from "@/types/constants";
 import Select, { SelectEvent } from "ol/interaction/Select";
@@ -41,7 +42,15 @@ import CircleStyle from "ol/style/Circle";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { SimpleGeometry } from "ol/geom";
 
-const selectStyle = new Style({ stroke: new Stroke({ color: "#ffff00", width: 9 }) });
+const selectStyle = new Style({
+  stroke: new Stroke({ color: "#ffff00", width: 9 }),
+  image: new CircleStyle({
+    radius: 15,
+    fill: new Fill({
+      color: "#ffff00",
+    }),
+  }),
+});
 const selectMarkerStyle = new Style({
   image: new CircleStyle({
     radius: 15,
@@ -63,6 +72,7 @@ const geometryIconMap: any = {
   LineString: IconVectorLine,
   Polygon: IconVectorTriangle,
   Circle: IconVectorCircleVariant,
+  GeometryCollection: IconMapMarkerMultipleOutline,
   layer: IconLayersOutline,
 };
 
