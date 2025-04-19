@@ -16,6 +16,7 @@ import { polygonSmooth as turfPolygonSmooth } from "@turf/polygon-smooth";
 import { center as turfCenter } from "@turf/center";
 import { centerOfMass as turfCenterOfMass } from "@turf/center-of-mass";
 import { centroid as turfCentroid } from "@turf/centroid";
+import { explode as turfExplode } from "@turf/explode";
 
 export type BufferOptions = {
   radius: number;
@@ -36,7 +37,8 @@ export type TransformationOperation =
   | { transform: "smooth"; options: {} }
   | { transform: "center"; options: {} }
   | { transform: "centerOfMass"; options: {} }
-  | { transform: "centroid"; options: {} };
+  | { transform: "centroid"; options: {} }
+  | { transform: "explode"; options: {} };
 
 export type TransformationType = TransformationOperation["transform"];
 
@@ -123,6 +125,9 @@ function doTransformation(
 
   if (transform === "centroid") {
     return turfCentroid(geoJSONFeatureOrFeatureCollection);
+  }
+  if (transform === "explode") {
+    return turfExplode(geoJSONFeatureOrFeatureCollection);
   }
   return null;
 }

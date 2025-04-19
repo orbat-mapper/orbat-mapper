@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 April 2025
 
-- Added centroid, center(absolute) and center of mass transformations.
+- Added explode, centroid, center(absolute) and center of mass transformations.
 - Added transform panel for units.
 - Added zoom level controls for scenario feature labels.
 

@@ -51,12 +51,17 @@ const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
 const transformationOptions = computed((): NewSelectItem<TransformationType>[] => {
   return [
-    { label: "Buffer", value: "buffer" },
+    {
+      label: "Buffer",
+      value: "buffer",
+      description: "Calculates a buffer for input features for a given radius.",
+    },
     { label: "Bounding box", value: "boundingBox" },
     { label: "Convex hull", value: "convexHull" },
     { label: "Center (absolute)", value: "center" },
     { label: "Center of mass", value: "centerOfMass" },
     { label: "Centroid", value: "centroid" },
+    { label: "Explode", value: "explode" },
     { label: "Simplify", value: "simplify", disabled: props.unitMode },
     { label: "Smooth", value: "smooth", disabled: props.unitMode },
   ];
@@ -154,6 +159,8 @@ watchEffect(() => {
     currentOp.value = { transform: "centerOfMass", options: {} };
   } else if (transformation.value === "centroid") {
     currentOp.value = { transform: "centroid", options: {} };
+  } else if (transformation.value === "explode") {
+    currentOp.value = { transform: "explode", options: {} };
   } else {
     currentOp.value = null;
   }

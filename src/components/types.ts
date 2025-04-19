@@ -26,6 +26,7 @@ export interface NewSelectItem<T = string | number> {
   label: string;
   value: T;
   disabled?: boolean;
+  description?: string;
 }
 
 export interface SearchResult {
