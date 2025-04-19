@@ -23,6 +23,7 @@ import {
   doScenarioFeatureTransformation,
   doUnitTransformation,
   type TransformationOperation,
+  type TransformationType,
 } from "@/geo/transformations.ts";
 import NewSelect from "@/components/NewSelect.vue";
 
@@ -48,13 +49,14 @@ const selectedItems = computed(() => {
 });
 const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
-const transformationOptions = computed(() => {
+const transformationOptions = computed((): NewSelectItem<TransformationType>[] => {
   return [
     { label: "Buffer", value: "buffer" },
     { label: "Bounding box", value: "boundingBox" },
     { label: "Convex hull", value: "convexHull" },
     { label: "Center (absolute)", value: "center" },
     { label: "Center of mass", value: "centerOfMass" },
+    { label: "Centroid", value: "centroid" },
     { label: "Simplify", value: "simplify", disabled: props.unitMode },
     { label: "Smooth", value: "smooth", disabled: props.unitMode },
   ];
@@ -150,6 +152,8 @@ watchEffect(() => {
     currentOp.value = { transform: "center", options: {} };
   } else if (transformation.value === "centerOfMass") {
     currentOp.value = { transform: "centerOfMass", options: {} };
+  } else if (transformation.value === "centroid") {
+    currentOp.value = { transform: "centroid", options: {} };
   } else {
     currentOp.value = null;
   }

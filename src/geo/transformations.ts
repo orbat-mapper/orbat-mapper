@@ -1,4 +1,4 @@
-import type { Feature, FeatureCollection, Geometry, LineString, Polygon } from "geojson";
+import type { Feature, FeatureCollection, LineString, Polygon } from "geojson";
 import type { NScenarioFeature, NUnit } from "@/types/internalModels.ts";
 import {
   feature as turfFeature,
@@ -15,6 +15,7 @@ import { bezierSpline as turfBezier } from "@turf/bezier-spline";
 import { polygonSmooth as turfPolygonSmooth } from "@turf/polygon-smooth";
 import { center as turfCenter } from "@turf/center";
 import { centerOfMass as turfCenterOfMass } from "@turf/center-of-mass";
+import { centroid as turfCentroid } from "@turf/centroid";
 
 export type BufferOptions = {
   radius: number;
@@ -34,7 +35,10 @@ export type TransformationOperation =
   | { transform: "simplify"; options: SimplifyOptions }
   | { transform: "smooth"; options: {} }
   | { transform: "center"; options: {} }
-  | { transform: "centerOfMass"; options: {} };
+  | { transform: "centerOfMass"; options: {} }
+  | { transform: "centroid"; options: {} };
+
+export type TransformationType = TransformationOperation["transform"];
 
 export function isLineString(
   feature: Feature | FeatureCollection,
@@ -115,6 +119,10 @@ function doTransformation(
 
   if (transform === "centerOfMass") {
     return turfCenterOfMass(geoJSONFeatureOrFeatureCollection);
+  }
+
+  if (transform === "centroid") {
+    return turfCentroid(geoJSONFeatureOrFeatureCollection);
   }
   return null;
 }
