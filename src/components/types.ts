@@ -22,6 +22,12 @@ export interface SelectItem<T = string | number> {
   value: T;
 }
 
+export interface NewSelectItem<T = string | number> {
+  label: string;
+  value: T;
+  disabled?: boolean;
+}
+
 export interface SearchResult {
   category: "Units" | "Features" | "Events" | "Places" | "Actions" | "Map layers";
   index: number;

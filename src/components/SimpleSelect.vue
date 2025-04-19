@@ -20,10 +20,8 @@
 
 <script setup lang="ts">
 import InputGroupTemplate from "./InputGroupTemplate.vue";
-import { useVModel } from "@vueuse/core";
 import { computed } from "vue";
 import { type SelectItem } from "./types";
-import SelectTrigger from "./ui/select/SelectTrigger.vue";
 
 const props = withDefaults(
   defineProps<{
