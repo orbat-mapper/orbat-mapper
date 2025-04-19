@@ -1,15 +1,5 @@
 <script setup lang="ts">
-import {
-  feature as turfFeature,
-  featureCollection as turfFeatureCollection,
-} from "@turf/helpers";
-import { buffer as turfBuffer } from "@turf/buffer";
-import { simplify as turfSimplify } from "@turf/simplify";
-import { bezierSpline as turfBezier } from "@turf/bezier-spline";
-import { polygonSmooth as turfPolygonSmooth } from "@turf/polygon-smooth";
-import { bbox } from "@turf/bbox";
-import { bboxPolygon } from "@turf/bbox-polygon";
-import { convex } from "@turf/convex";
+import { geometryCollection, type Units } from "@turf/helpers";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { computed, onUnmounted, ref, watch, watchEffect } from "vue";
@@ -19,21 +9,21 @@ import { injectStrict, nanoid } from "@/utils";
 import { activeMapKey, activeScenarioKey } from "@/components/injects";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { NScenarioFeature } from "@/types/internalModels";
-import type { Feature, FeatureCollection, LineString, Polygon } from "geojson";
+import type { Feature } from "geojson";
 import { useDebounceFn } from "@vueuse/core";
-import { geometryCollection, type Units } from "@turf/helpers";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";
-import {
-  type TransformationOperation,
-  useTransformSettingsStore,
-} from "@/stores/transformStore";
+import { useTransformSettingsStore } from "@/stores/transformStore";
 import { storeToRefs } from "pinia";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
+import {
+  doScenarioFeatureTransformation,
+  type TransformationOperation,
+} from "@/geo/transformations.ts";
 
 const props = defineProps<{}>();
 
@@ -85,7 +75,7 @@ olMapRef.value.addLayer(previewLayer);
 
 const calculatePreview = useDebounceFn(
   (features: NScenarioFeature[], op: TransformationOperation) => {
-    const geometry = doTransformation(features, op);
+    const geometry = doScenarioFeatureTransformation(features, op);
     drawGeoJsonLayer(previewLayer, geometry);
   },
   500,
@@ -104,56 +94,6 @@ function createScenarioFeatureFromGeoJSON(
     style: {},
     _pid: layerId,
   };
-}
-
-function doTransformation(
-  features: NScenarioFeature[],
-  { transform, options }: TransformationOperation,
-): Feature | FeatureCollection | null | undefined {
-  if (features.length === 0 || !features[0]) return;
-  const geoJSONFeatureOrFeatureCollection = isMultiMode.value
-    ? turfFeatureCollection(
-        selectedFeatures.value.map((f) => turfFeature(f?._state?.geometry ?? f.geometry)),
-      )
-    : turfFeature(features[0]?._state?.geometry ?? features[0].geometry);
-  if (transform === "buffer") {
-    const { radius, steps = 8, units = "kilometers" } = options;
-    return turfBuffer(geoJSONFeatureOrFeatureCollection as any, radius, { units, steps });
-  }
-  if (transform === "boundingBox") {
-    return bboxPolygon(bbox(geoJSONFeatureOrFeatureCollection));
-  }
-
-  if (transform === "convexHull") {
-    return convex(geoJSONFeatureOrFeatureCollection);
-  }
-
-  if (transform === "simplify") {
-    const { tolerance = 0.5 } = options;
-    return turfSimplify(geoJSONFeatureOrFeatureCollection, {
-      tolerance,
-      highQuality: true,
-    });
-  }
-
-  if (transform === "smooth") {
-    if (isLineString(geoJSONFeatureOrFeatureCollection)) {
-      return turfBezier(geoJSONFeatureOrFeatureCollection, {});
-    } else if (isPolygon(geoJSONFeatureOrFeatureCollection)) {
-      return turfPolygonSmooth(geoJSONFeatureOrFeatureCollection, { iterations: 4 });
-    }
-  }
-  return null;
-}
-
-function isLineString(
-  feature: Feature | FeatureCollection,
-): feature is Feature<LineString> {
-  return feature.type === "Feature" && feature.geometry.type === "LineString";
-}
-
-function isPolygon(feature: Feature | FeatureCollection): feature is Feature<Polygon> {
-  return feature.type === "Feature" && feature.geometry.type === "Polygon";
 }
 
 watch(
@@ -199,7 +139,10 @@ watchEffect(() => {
 function onSubmit() {
   if (!currentOp.value || selectedFeatures.value.length === 0) return;
   const activeFeature = selectedFeatures.value[0];
-  let transformedFeature = doTransformation(selectedFeatures.value, currentOp.value);
+  let transformedFeature = doScenarioFeatureTransformation(
+    selectedFeatures.value,
+    currentOp.value,
+  );
   if (transformedFeature) {
     if (transformedFeature.type === "FeatureCollection") {
       transformedFeature = geometryCollection(
@@ -258,7 +201,7 @@ onUnmounted(() => {
       </div>
       <footer class="flex items-center justify-between">
         <InputCheckbox v-model="showPreview" label="Show preview" />
-        <BaseButton type="submit" primary small>Apply</BaseButton>
+        <BaseButton type="submit" primary small>Create feature</BaseButton>
       </footer>
     </form>
   </div>

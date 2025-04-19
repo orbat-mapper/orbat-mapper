@@ -1,0 +1,92 @@
+import type { Feature, FeatureCollection, LineString, Polygon } from "geojson";
+import type { NScenarioFeature } from "@/types/internalModels.ts";
+import {
+  feature as turfFeature,
+  featureCollection as turfFeatureCollection,
+  type Units as UnitOfMeasurement,
+} from "@turf/helpers";
+import { buffer as turfBuffer } from "@turf/buffer";
+import { bboxPolygon } from "@turf/bbox-polygon";
+import { bbox } from "@turf/bbox";
+import { convex } from "@turf/convex";
+import { simplify as turfSimplify } from "@turf/simplify";
+import { bezierSpline as turfBezier } from "@turf/bezier-spline";
+import { polygonSmooth as turfPolygonSmooth } from "@turf/polygon-smooth";
+
+export type BufferOptions = {
+  radius: number;
+  units?: UnitOfMeasurement;
+  steps?: number;
+};
+export type SimplifyOptions = {
+  tolerance?: number;
+};
+export type TransformationOperation =
+  | {
+      transform: "buffer";
+      options: BufferOptions;
+    }
+  | { transform: "boundingBox"; options: {} }
+  | { transform: "convexHull"; options: {} }
+  | { transform: "simplify"; options: SimplifyOptions }
+  | { transform: "smooth"; options: {} };
+
+export function isLineString(
+  feature: Feature | FeatureCollection,
+): feature is Feature<LineString> {
+  return feature.type === "Feature" && feature.geometry.type === "LineString";
+}
+
+export function isPolygon(
+  feature: Feature | FeatureCollection,
+): feature is Feature<Polygon> {
+  return feature.type === "Feature" && feature.geometry.type === "Polygon";
+}
+
+export function doScenarioFeatureTransformation(
+  features: NScenarioFeature[],
+  opts: TransformationOperation,
+): Feature | FeatureCollection | null | undefined {
+  if (features.length === 0 || !features[0]) return;
+  const geoJSONFeatureOrFeatureCollection =
+    features.length > 1
+      ? turfFeatureCollection(
+          features.map((f) => turfFeature(f?._state?.geometry ?? f.geometry)),
+        )
+      : turfFeature(features[0]?._state?.geometry ?? features[0].geometry);
+  return doTransformation(geoJSONFeatureOrFeatureCollection, opts);
+}
+
+function doTransformation(
+  geoJSONFeatureOrFeatureCollection: Feature | FeatureCollection,
+  { transform, options }: TransformationOperation,
+): Feature | FeatureCollection | null | undefined {
+  if (transform === "buffer") {
+    const { radius, steps = 8, units = "kilometers" } = options;
+    return turfBuffer(geoJSONFeatureOrFeatureCollection as any, radius, { units, steps });
+  }
+  if (transform === "boundingBox") {
+    return bboxPolygon(bbox(geoJSONFeatureOrFeatureCollection));
+  }
+
+  if (transform === "convexHull") {
+    return convex(geoJSONFeatureOrFeatureCollection);
+  }
+
+  if (transform === "simplify") {
+    const { tolerance = 0.5 } = options;
+    return turfSimplify(geoJSONFeatureOrFeatureCollection, {
+      tolerance,
+      highQuality: true,
+    });
+  }
+
+  if (transform === "smooth") {
+    if (isLineString(geoJSONFeatureOrFeatureCollection)) {
+      return turfBezier(geoJSONFeatureOrFeatureCollection, {});
+    } else if (isPolygon(geoJSONFeatureOrFeatureCollection)) {
+      return turfPolygonSmooth(geoJSONFeatureOrFeatureCollection, { iterations: 4 });
+    }
+  }
+  return null;
+}

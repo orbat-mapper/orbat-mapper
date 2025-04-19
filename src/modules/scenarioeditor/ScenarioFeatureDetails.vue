@@ -279,7 +279,7 @@ function onAction(action: ScenarioFeatureActions) {
       </TabPanel>
       <TabPanel><ScenarioFeatureState v-if="feature" :feature="feature" /></TabPanel>
       <TabPanel>
-        <FeatureTransformations :feature="feature!" class="mt-4" />
+        <FeatureTransformations class="mt-4" />
       </TabPanel>
       <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
         <pre>{{ feature }}</pre>

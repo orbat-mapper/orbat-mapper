@@ -1,25 +1,5 @@
 import { defineStore } from "pinia";
-import type { Units } from "@turf/helpers";
-
-export type BufferOptions = {
-  radius: number;
-  units?: Units;
-  steps?: number;
-};
-
-export type SimplifyOptions = {
-  tolerance?: number;
-};
-
-export type TransformationOperation =
-  | {
-      transform: "buffer";
-      options: BufferOptions;
-    }
-  | { transform: "boundingBox"; options: {} }
-  | { transform: "convexHull"; options: {} }
-  | { transform: "simplify"; options: SimplifyOptions }
-  | { transform: "smooth"; options: {} };
+import type { BufferOptions, SimplifyOptions } from "@/geo/transformations.ts";
 
 export const useTransformSettingsStore = defineStore("transformSettings", {
   state: () => ({
