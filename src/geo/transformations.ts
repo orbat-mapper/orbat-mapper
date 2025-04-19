@@ -13,6 +13,8 @@ import { convex } from "@turf/convex";
 import { simplify as turfSimplify } from "@turf/simplify";
 import { bezierSpline as turfBezier } from "@turf/bezier-spline";
 import { polygonSmooth as turfPolygonSmooth } from "@turf/polygon-smooth";
+import { center as turfCenter } from "@turf/center";
+import { centerOfMass as turfCenterOfMass } from "@turf/center-of-mass";
 
 export type BufferOptions = {
   radius: number;
@@ -30,7 +32,9 @@ export type TransformationOperation =
   | { transform: "boundingBox"; options: {} }
   | { transform: "convexHull"; options: {} }
   | { transform: "simplify"; options: SimplifyOptions }
-  | { transform: "smooth"; options: {} };
+  | { transform: "smooth"; options: {} }
+  | { transform: "center"; options: {} }
+  | { transform: "centerOfMass"; options: {} };
 
 export function isLineString(
   feature: Feature | FeatureCollection,
@@ -103,6 +107,14 @@ function doTransformation(
     } else if (isPolygon(geoJSONFeatureOrFeatureCollection)) {
       return turfPolygonSmooth(geoJSONFeatureOrFeatureCollection, { iterations: 4 });
     }
+  }
+
+  if (transform === "center") {
+    return turfCenter(geoJSONFeatureOrFeatureCollection);
+  }
+
+  if (transform === "centerOfMass") {
+    return turfCenterOfMass(geoJSONFeatureOrFeatureCollection);
   }
   return null;
 }

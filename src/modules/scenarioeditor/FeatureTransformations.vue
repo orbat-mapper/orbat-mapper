@@ -53,6 +53,8 @@ const transformationOptions = computed(() => {
     { label: "Buffer", value: "buffer" },
     { label: "Bounding box", value: "boundingBox" },
     { label: "Convex hull", value: "convexHull" },
+    { label: "Center (absolute)", value: "center" },
+    { label: "Center of mass", value: "centerOfMass" },
     { label: "Simplify", value: "simplify", disabled: props.unitMode },
     { label: "Smooth", value: "smooth", disabled: props.unitMode },
   ];
@@ -79,6 +81,9 @@ const previewLayer = new VectorLayer({
     "stroke-width": 3,
     "stroke-line-dash": [10, 10],
     "fill-color": "rgba(188,35,65,0.2)",
+    "circle-radius": 5,
+    "circle-fill-color": "red",
+    "circle-stroke-color": "red",
   },
 });
 
@@ -141,6 +146,10 @@ watchEffect(() => {
     currentOp.value = { transform: "simplify", options: { tolerance } };
   } else if (transformation.value === "smooth") {
     currentOp.value = { transform: "smooth", options: {} };
+  } else if (transformation.value === "center") {
+    currentOp.value = { transform: "center", options: {} };
+  } else if (transformation.value === "centerOfMass") {
+    currentOp.value = { transform: "centerOfMass", options: {} };
   } else {
     currentOp.value = null;
   }
