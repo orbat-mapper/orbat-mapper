@@ -22,8 +22,8 @@ const onItemClick = (item: MenuItemData<string | Function>) => {
   <div>
     <DropdownMenu>
       <DropdownMenuTrigger as="child" class="mr-2" @click.stop>
-        <Button variant="ghost" size="sm" class="text-muted-foreground">
-          <EllipsisVertical />
+        <Button variant="ghost" size="icon" class="text-muted-foreground">
+          <EllipsisVertical class="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent class="" align="end">

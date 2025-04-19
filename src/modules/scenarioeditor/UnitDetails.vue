@@ -46,7 +46,7 @@
               :sidc="sUnit.sidc"
               :size="24"
               class="block"
-              :options="getCombinedSymbolOptions(sUnit)"
+              :options="{ ...getCombinedSymbolOptions(sUnit), outlineWidth: 8 }"
             />
             <span v-if="sUnit._state?.location" class="text-red-700">&deg;</span>
           </li>
@@ -226,7 +226,7 @@ import { useGetMapLocation } from "@/composables/geoMapLocation";
 import OLMap from "ol/Map";
 import { useUiStore } from "@/stores/uiStore";
 import { SID_INDEX } from "@/symbology/sidc";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { TabPanel } from "@headlessui/vue";
 import EditableLabel from "@/components/EditableLabel.vue";
@@ -364,7 +364,7 @@ watch(
 );
 
 const combinedSymbolOptions = computed(() => {
-  return { ...getCombinedSymbolOptions(unit.value), outlineWidth: 4 };
+  return { ...getCombinedSymbolOptions(unit.value), outlineWidth: 8 };
 });
 
 const unitSidc = computed(() => unit.value._state?.sidc || unit.value.sidc);
