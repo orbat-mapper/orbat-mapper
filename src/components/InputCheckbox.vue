@@ -1,3 +1,19 @@
+<script setup lang="ts">
+import { computed, useId } from "vue";
+import { nanoid } from "nanoid";
+
+interface Props {
+  id?: string;
+  label?: string;
+  description?: string;
+}
+const props = withDefaults(defineProps<Props>(), {});
+const localValue = defineModel<boolean | any[]>({
+  required: false,
+});
+
+const _id = props.id || useId();
+</script>
 <template>
   <div class="relative flex items-start">
     <div class="flex h-5 items-center">
@@ -5,7 +21,7 @@
         type="checkbox"
         v-model="localValue"
         :id="_id"
-        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+        class="border-border focus-visible:outline-ring dark:bg-input appearance-none rounded border bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
         v-bind="$attrs"
       />
     </div>
@@ -19,27 +35,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed } from "vue";
-import { nanoid } from "nanoid";
-
-interface Props {
-  id?: string;
-  label?: string;
-  description?: string;
-  modelValue?: boolean | any[];
-}
-const props = withDefaults(defineProps<Props>(), {});
-const emit = defineEmits(["update:modelValue"]);
-
-const _id = props.id || nanoid(5);
-
-const localValue = computed({
-  get: () => props.modelValue,
-  set: (value) => emit("update:modelValue", value),
-});
-</script>
 
 <script lang="ts">
 export default {
