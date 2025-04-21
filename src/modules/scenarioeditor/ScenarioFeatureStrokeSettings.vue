@@ -8,6 +8,7 @@ import {
 } from "@/geo/simplestyle";
 import type { ScenarioFeature } from "@/types/scenarioGeoModels";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
+import { Slider } from "@/components/ui/slider";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits<{
@@ -31,16 +32,16 @@ function updateValue(
 }
 
 const width = computed({
-  get: () => marker.value["stroke-width"],
-  set: (v) => emit("update", { style: { "stroke-width": v } }),
+  get: () => [marker.value["stroke-width"]],
+  set: ([v]) => emit("update", { style: { "stroke-width": v } }),
 });
 
 const opacity = computed({
-  get: () => marker.value["stroke-opacity"],
-  set: (v) => emit("update", { style: { "stroke-opacity": v } }),
+  get: () => [marker.value["stroke-opacity"]],
+  set: ([v]) => emit("update", { style: { "stroke-opacity": v } }),
 });
 
-const opacityAsPercent = computed(() => (opacity.value! * 100).toFixed(0));
+const opacityAsPercent = computed(() => (opacity.value[0]! * 100).toFixed(0));
 
 function onChange(e: any) {}
 </script>
@@ -55,13 +56,12 @@ function onChange(e: any) {}
   />
   <label for="stroke-width" class="">Width</label>
   <div class="grid grid-cols-[1fr_5ch] gap-4">
-    <input
+    <Slider
       id="stroke-width"
-      v-model.number="width"
-      type="range"
-      min="1"
-      max="10"
-      step="1"
+      v-model="width"
+      :min="1"
+      :max="10"
+      :step="1"
       @change="onChange($event)"
       class="min-w-20"
     />
@@ -69,15 +69,15 @@ function onChange(e: any) {}
   </div>
   <label for="stroke-opacity">Opacity</label>
   <div class="grid grid-cols-[1fr_5ch] gap-4">
-    <input
+    <Slider
       id="stroke-opacity"
-      v-model.number="opacity"
-      type="range"
-      min="0"
-      max="1"
-      step="0.01"
+      v-model="opacity"
+      :min="0"
+      :max="1"
+      :step="0.01"
       @change="onChange($event)"
       class="min-w-20"
     />
+    <span>{{ opacityAsPercent }}%</span>
   </div>
 </template>

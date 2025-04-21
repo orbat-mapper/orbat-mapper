@@ -8,6 +8,7 @@ import { useUiStore } from "@/stores/uiStore";
 import { PopoverClose } from "reka-ui";
 import CloseButton from "@/components/CloseButton.vue";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
+import { Slider } from "@/components/ui/slider";
 
 interface Props {
   ringStyle: Partial<RangeRingStyle>;
@@ -29,23 +30,23 @@ const rStyle = computed((): RangeRingStyle => {
 const uiStore = useUiStore();
 
 const width = computed({
-  get: () => rStyle.value["stroke-width"],
-  set: (v) => emit("update", { "stroke-width": v }),
+  get: () => [rStyle.value["stroke-width"]],
+  set: ([v]) => emit("update", { "stroke-width": v }),
 });
 
 const strokeOpacity = computed({
-  get: () => rStyle.value["stroke-opacity"],
-  set: (v) => emit("update", { "stroke-opacity": v }),
+  get: () => [rStyle.value["stroke-opacity"]],
+  set: ([v]) => emit("update", { "stroke-opacity": v }),
 });
 
-const strokeOpacityAsPercent = computed(() => (strokeOpacity.value! * 100).toFixed(0));
+const strokeOpacityAsPercent = computed(() => (strokeOpacity.value[0]! * 100).toFixed(0));
 
 const fillOpacity = computed({
-  get: () => rStyle.value["fill-opacity"],
-  set: (v) => emit("update", { "fill-opacity": v }),
+  get: () => [rStyle.value["fill-opacity"]],
+  set: ([v]) => emit("update", { "fill-opacity": v }),
 });
 
-const fillOpacityAsPercent = computed(() => (fillOpacity.value! * 100).toFixed(0));
+const fillOpacityAsPercent = computed(() => (fillOpacity.value[0]! * 100).toFixed(0));
 
 function updateValue(name: keyof SimpleStyleSpec, value: string | number) {
   emit("update", { [name]: value });
@@ -84,26 +85,24 @@ function onOpen(isOpen: boolean) {
         />
         <label for="stroke-width" class="">Width</label>
         <div class="grid grid-cols-[1fr_5ch] gap-4">
-          <input
+          <Slider
             id="stroke-width"
-            v-model.number="width"
-            type="range"
-            min="1"
-            max="10"
-            step="1"
+            v-model="width"
+            :min="1"
+            :max="10"
+            :step="1"
             class="min-w-20"
           />
           <span class="">{{ rStyle["stroke-width"] }} px</span>
         </div>
         <label for="stroke-opacity">Opacity</label>
         <div class="grid grid-cols-[1fr_5ch] gap-4">
-          <input
+          <Slider
             id="stroke-opacity"
-            v-model.number="strokeOpacity"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
+            v-model="strokeOpacity"
+            :min="0"
+            :max="1"
+            :step="0.01"
             class="min-w-20"
           />
           <span class="">{{ strokeOpacityAsPercent }}%</span>
@@ -123,13 +122,12 @@ function onOpen(isOpen: boolean) {
 
         <label for="stroke-opacity">Opacity</label>
         <div class="grid grid-cols-[1fr_5ch] gap-4">
-          <input
+          <Slider
             id="stroke-opacity"
-            v-model.number="fillOpacity"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
+            v-model="fillOpacity"
+            :min="0"
+            :max="1"
+            :step="0.01"
             class="min-w-20"
           />
           <span class="">{{ fillOpacityAsPercent }}%</span>

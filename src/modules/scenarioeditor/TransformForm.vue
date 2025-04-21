@@ -3,7 +3,7 @@ import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
 import NewSelect from "@/components/NewSelect.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
-import { computed, watchEffect } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import type { NewSelectItem } from "@/components/types.ts";
 import type {
   TransformationOperation,
@@ -12,6 +12,7 @@ import type {
 import type { Units } from "@turf/helpers";
 import { storeToRefs } from "pinia";
 import { useTransformSettingsStore } from "@/stores/transformStore.ts";
+import { Slider } from "@/components/ui/slider";
 
 type TransformFormProperties = {
   unitMode?: boolean;
@@ -26,6 +27,15 @@ const currentOp = defineModel<TransformationOperation | null>();
 const { transformation, bufferOptions, simplifyOptions } = storeToRefs(
   useTransformSettingsStore(),
 );
+
+const sliderValue = computed({
+  get() {
+    return [simplifyOptions.value.tolerance ?? 0];
+  },
+  set([value]) {
+    simplifyOptions.value.tolerance = value;
+  },
+});
 
 const transformationOptions = computed((): NewSelectItem<TransformationType>[] => {
   return [
@@ -110,16 +120,16 @@ function onSubmit() {
     </div>
     <div v-else-if="transformation === 'simplify'">
       <PanelSubHeading>Simplify</PanelSubHeading>
-      <div class="grid grid-cols-1 gap-4">
-        <InputGroupTemplate label="Tolerance"
-          ><input
-            type="range"
-            v-model.number="simplifyOptions.tolerance"
-            min="0"
-            max=".15"
-            step="0.00001"
-            class="w-full"
-        /></InputGroupTemplate>
+      <div class="mt-4 grid grid-cols-1 gap-4">
+        <InputGroupTemplate label="Tolerance">
+          <Slider
+            v-model="sliderValue"
+            :min="0"
+            :max="0.15"
+            :step="0.00001"
+            class="mt-4"
+          />
+        </InputGroupTemplate>
       </div>
     </div>
   </form>
