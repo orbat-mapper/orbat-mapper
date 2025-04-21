@@ -17,6 +17,7 @@ export interface StrokeStyleSpec {
   stroke: string | null | undefined;
   "stroke-opacity": number;
   "stroke-width": number;
+  "stroke-style": "solid" | "dashed" | "dotted";
   _stroke?: string | null;
 }
 
@@ -156,6 +157,8 @@ export function createMarkerSymbol(
 export const defaultStrokeColor = "#555555";
 export const defaultStrokeOpacity = 1;
 export const defaultStrokeWidth = 2;
+export const strokeStyleDashed = [10, 10];
+export const strokeStyleDotted = [5, 10];
 export const defaultSimplestyleStroke = new Stroke({
   color: defaultStrokeColor,
   width: defaultStrokeWidth,
@@ -187,10 +190,25 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
   let text: Text | undefined = defaultSimpleStyleText;
   const markerSize = opts["marker-size"] || "medium";
 
-  if (opts.stroke || opts["stroke-width"] || opts["stroke-opacity"]) {
+  if (
+    opts.stroke ||
+    opts["stroke-width"] ||
+    opts["stroke-opacity"] ||
+    opts["stroke-style"]
+  ) {
     let strokeColor = [...olColor.fromString(opts.stroke || "#555555")];
     if (opts["stroke-opacity"]) strokeColor[3] = opts["stroke-opacity"];
-    stroke = new Stroke({ color: strokeColor, width: opts["stroke-width"] || 2 });
+
+    stroke = new Stroke({
+      color: strokeColor,
+      width: opts["stroke-width"] || 2,
+    });
+    if (opts["stroke-style"] === "dashed") {
+      stroke.setLineDash(strokeStyleDashed);
+    } else if (opts["stroke-style"] === "dotted") {
+      stroke.setLineDash(strokeStyleDotted);
+    } else {
+    }
   } else if (opts.stroke === null) {
     stroke = undefined;
   }

@@ -24,6 +24,7 @@ const rStyle = computed((): RangeRingStyle => {
     stroke: props.ringStyle.stroke ?? "#f43f5e",
     "stroke-width": props.ringStyle["stroke-width"] ?? 2,
     "stroke-opacity": props.ringStyle["stroke-opacity"] ?? 1,
+    "stroke-style": props.ringStyle["stroke-style"] ?? "solid",
   };
 });
 

@@ -9,6 +9,7 @@ import {
 import type { ScenarioFeature } from "@/types/scenarioGeoModels";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 import { Slider } from "@/components/ui/slider";
+import NewSelect from "@/components/NewSelect.vue";
 
 const props = defineProps<{ feature: ScenarioFeature }>();
 const emit = defineEmits<{
@@ -21,6 +22,7 @@ const marker = computed(() => {
     stroke: style["stroke"] ?? defaultStrokeColor,
     "stroke-width": style["stroke-width"] ?? defaultStrokeWidth,
     "stroke-opacity": style["stroke-opacity"] ?? defaultStrokeOpacity,
+    "stroke-style": style["stroke-style"] ?? "solid",
   };
 });
 
@@ -28,6 +30,7 @@ function updateValue(
   name: keyof (StrokeStyleSpec & TextStyleSpec),
   value: string | number | boolean,
 ) {
+  console.log("updateValue", name, value);
   emit("update", { style: { [name]: value } });
 }
 
@@ -79,5 +82,18 @@ function onChange(e: any) {}
       class="min-w-20"
     />
     <span>{{ opacityAsPercent }}%</span>
+  </div>
+  <label for="stroke-style" class="self-center">Style</label>
+  <div class="grid grid-cols-[1fr_5ch] gap-4">
+    <NewSelect
+      id="stroke-style"
+      :model-value="marker['stroke-style']"
+      @update:model-value="updateValue('stroke-style', $event!)"
+      :items="[
+        { label: 'Solid', value: 'solid' },
+        { label: 'Dashed', value: 'dashed' },
+        { label: 'Dotted', value: 'dotted' },
+      ]"
+    />
   </div>
 </template>

@@ -57,6 +57,7 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           fill,
           "fill-opacity": fillOpacity,
           "stroke-opacity": strokeOpacity,
+          "stroke-style": "solid",
           showLabel,
           stroke,
           "marker-color": markerColor,

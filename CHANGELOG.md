@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 April 2025
 
+- Added dashed and dotted stroke/line styles.
 - Added concave hull transformation.
 - Added explode, centroid, center(absolute) and center of mass transformations.
 - Added transform panel for units.
