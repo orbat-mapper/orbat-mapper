@@ -36,6 +36,7 @@ const transformationOptions = computed((): NewSelectItem<TransformationType>[] =
     },
     { label: "Bounding box", value: "boundingBox" },
     { label: "Convex hull", value: "convexHull" },
+    { label: "Concave hull", value: "concaveHull" },
     { label: "Center (absolute)", value: "center" },
     { label: "Center of mass", value: "centerOfMass" },
     { label: "Centroid", value: "centroid" },
@@ -64,6 +65,8 @@ watchEffect(() => {
     currentOp.value = { transform: "boundingBox", options: {} };
   } else if (transformation.value === "convexHull") {
     currentOp.value = { transform: "convexHull", options: {} };
+  } else if (transformation.value === "concaveHull") {
+    currentOp.value = { transform: "concaveHull", options: {} };
   } else if (transformation.value === "simplify") {
     const { tolerance } = simplifyOptions.value;
     currentOp.value = { transform: "simplify", options: { tolerance } };

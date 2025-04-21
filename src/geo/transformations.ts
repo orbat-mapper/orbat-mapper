@@ -33,6 +33,7 @@ export type TransformationOperation =
     }
   | { transform: "boundingBox"; options: {} }
   | { transform: "convexHull"; options: {} }
+  | { transform: "concaveHull"; options: {} }
   | { transform: "simplify"; options: SimplifyOptions }
   | { transform: "smooth"; options: {} }
   | { transform: "center"; options: {} }
@@ -99,6 +100,10 @@ function doTransformation(
     return convex(geoJSONFeatureOrFeatureCollection);
   }
 
+  if (transform === "concaveHull") {
+    return convex(geoJSONFeatureOrFeatureCollection, { concavity: 1 });
+  }
+
   if (transform === "simplify") {
     const { tolerance = 0.5 } = options;
     return turfSimplify(geoJSONFeatureOrFeatureCollection, {
@@ -129,5 +134,6 @@ function doTransformation(
   if (transform === "explode") {
     return turfExplode(geoJSONFeatureOrFeatureCollection);
   }
+
   return null;
 }
