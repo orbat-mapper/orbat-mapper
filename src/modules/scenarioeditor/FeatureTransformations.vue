@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { geometryCollection, type Units } from "@turf/helpers";
-import PanelSubHeading from "@/components/PanelSubHeading.vue";
-import { computed, onUnmounted, ref, watch, watchEffect } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import type { NewSelectItem } from "@/components/types";
 import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict, nanoid } from "@/utils";
@@ -16,8 +15,6 @@ import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";
 import { useTransformSettingsStore } from "@/stores/transformStore";
 import { storeToRefs } from "pinia";
 import InputCheckbox from "@/components/InputCheckbox.vue";
-import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
-import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import {
   doScenarioFeatureTransformation,
@@ -25,7 +22,7 @@ import {
   type TransformationOperation,
   type TransformationType,
 } from "@/geo/transformations.ts";
-import NewSelect from "@/components/NewSelect.vue";
+import TransformForm from "@/modules/scenarioeditor/TransformForm.vue";
 
 const props = withDefaults(defineProps<{ unitMode?: boolean }>(), { unitMode: false });
 
@@ -49,38 +46,11 @@ const selectedItems = computed(() => {
 });
 const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
-const transformationOptions = computed((): NewSelectItem<TransformationType>[] => {
-  return [
-    {
-      label: "Buffer",
-      value: "buffer",
-      description: "Calculates a buffer for input features for a given radius.",
-    },
-    { label: "Bounding box", value: "boundingBox" },
-    { label: "Convex hull", value: "convexHull" },
-    { label: "Center (absolute)", value: "center" },
-    { label: "Center of mass", value: "centerOfMass" },
-    { label: "Centroid", value: "centroid" },
-    { label: "Explode", value: "explode" },
-    { label: "Simplify", value: "simplify", disabled: props.unitMode },
-    { label: "Smooth", value: "smooth", disabled: props.unitMode },
-  ];
-});
-
-const unitItems: NewSelectItem<Units>[] = [
-  { label: "Kilometers", value: "kilometers" },
-  { label: "Meters", value: "meters" },
-  { label: "Miles", value: "miles" },
-  { label: "Feet", value: "feet" },
-  { label: "Nautical miles", value: "nauticalmiles" },
-];
-
-const { showPreview, transformation, bufferOptions, simplifyOptions } = storeToRefs(
-  useTransformSettingsStore(),
-);
+const { showPreview } = storeToRefs(useTransformSettingsStore());
 
 const currentOp = ref<TransformationOperation | null>(null);
 const toggleRedraw = ref(true);
+
 const previewLayer = new VectorLayer({
   source: new VectorSource({}),
   style: {
@@ -135,36 +105,7 @@ if (!props.unitMode) {
   );
 }
 
-watchEffect(() => {
-  toggleRedraw.value;
-  if (!selectedItems.value.length) return;
-  if (transformation.value === "buffer") {
-    const { radius, units, steps } = bufferOptions.value;
-    currentOp.value = {
-      transform: "buffer",
-      options: { radius, units, steps },
-    };
-  } else if (transformation.value === "boundingBox") {
-    currentOp.value = { transform: "boundingBox", options: {} };
-  } else if (transformation.value === "convexHull") {
-    currentOp.value = { transform: "convexHull", options: {} };
-  } else if (transformation.value === "simplify") {
-    const { tolerance } = simplifyOptions.value;
-    currentOp.value = { transform: "simplify", options: { tolerance } };
-  } else if (transformation.value === "smooth") {
-    currentOp.value = { transform: "smooth", options: {} };
-  } else if (transformation.value === "center") {
-    currentOp.value = { transform: "center", options: {} };
-  } else if (transformation.value === "centerOfMass") {
-    currentOp.value = { transform: "centerOfMass", options: {} };
-  } else if (transformation.value === "centroid") {
-    currentOp.value = { transform: "centroid", options: {} };
-  } else if (transformation.value === "explode") {
-    currentOp.value = { transform: "explode", options: {} };
-  } else {
-    currentOp.value = null;
-  }
-
+watch([currentOp, toggleRedraw, showPreview], () => {
   if (showPreview.value && currentOp.value) {
     calculatePreview(selectedItems.value, currentOp.value);
   } else {
@@ -206,42 +147,14 @@ onUnmounted(() => {
 </script>
 <template>
   <div v-if="selectedItems.length" class="pb-2">
-    <form @submit.prevent="onSubmit" class="space-y-4">
-      <NewSelect
-        label="Transformation"
-        :items="transformationOptions"
-        v-model="transformation"
-      />
+    <TransformForm v-model="currentOp" :unitMode />
 
-      <div v-if="transformation === 'buffer'">
-        <PanelSubHeading>Buffer options</PanelSubHeading>
-        <div class="mt-2 grid grid-cols-2 gap-4">
-          <div class="col-span-1">
-            <NumberInputGroup label="Radius" v-model.number="bufferOptions.radius" />
-          </div>
-          <NewSelect label="Units" :items="unitItems" v-model="bufferOptions.units" />
-          <NumberInputGroup label="Steps" v-model.number="bufferOptions.steps" />
-        </div>
-      </div>
-      <div v-else-if="transformation === 'simplify'">
-        <PanelSubHeading>Simplify</PanelSubHeading>
-        <div class="grid grid-cols-1 gap-4">
-          <InputGroupTemplate label="Tolerance"
-            ><input
-              type="range"
-              v-model.number="simplifyOptions.tolerance"
-              min="0"
-              max=".15"
-              step="0.00001"
-              class="w-full"
-          /></InputGroupTemplate>
-        </div>
-      </div>
-      <footer class="flex items-center justify-between">
-        <InputCheckbox v-model="showPreview" label="Show preview" />
-        <BaseButton type="submit" primary small>Create feature</BaseButton>
-      </footer>
-    </form>
+    <footer class="mt-4 flex items-center justify-between">
+      <InputCheckbox v-model="showPreview" label="Show preview" />
+      <BaseButton type="button" primary small @click="onSubmit"
+        >Create feature</BaseButton
+      >
+    </footer>
   </div>
   <div v-else class="text-center text-sm text-gray-500">
     Please select a feature to transform
