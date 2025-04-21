@@ -266,14 +266,9 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
     <PanelHeading>Range rings</PanelHeading>
 
     <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-      <button
-        @click="addRangeRing()"
-        type="button"
-        :disabled="isLocked"
-        class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
-      >
+      <Button @click="addRangeRing()" type="button" :disabled="isLocked" size="sm">
         + Add
-      </button>
+      </Button>
     </div>
   </div>
   <table v-if="rangeRings.length > 0" class="w-full divide-y divide-gray-300">

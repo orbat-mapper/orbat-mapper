@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { PopoverClose } from "reka-ui";
 import CloseButton from "@/components/CloseButton.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   modelValue?: string;
@@ -98,18 +99,18 @@ function onOpen(isOpen: boolean) {
 <template>
   <Popover @update:open="onOpen">
     <PopoverTrigger as-child
-      ><button type="button" class="flex items-center gap-2 hover:bg-gray-100">
+      ><Button type="button" variant="ghost" class="justify-start">
         <span
           aria-hidden="true"
           :class="[
-            'border-opacity-10 flex size-6 items-center justify-center rounded-full border border-black',
+            'border-opacity-10 flex size-6 items-center justify-center rounded-full border border-gray-700 dark:border-gray-600',
           ]"
           :style="{ backgroundColor: selectedColor }"
         >
           <span v-if="!selectedColor">x</span>
         </span>
         <span>{{ getColorName(selectedColor) }}</span>
-      </button>
+      </Button>
     </PopoverTrigger>
     <PopoverContent class="relative" :avoidCollisions="true">
       <header class="text-sm font-bold">Color</header>
