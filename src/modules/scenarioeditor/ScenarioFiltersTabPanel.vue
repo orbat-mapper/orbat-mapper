@@ -22,6 +22,8 @@ import FilterTree, {
 import { IconExpandAllOutline } from "@iconify-prerendered/vue-mdi";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
+import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
+import { Accordion } from "@/components/ui/accordion";
 
 const {
   store: { state },
@@ -540,7 +542,7 @@ function expandAllIcons() {
         /></IconButton>
       </div>
     </header>
-    <AccordionPanel label="Command level">
+    <NewAccordionPanel label="Command level">
       <FilterTree
         :tree="emtTree"
         v-model:expandedKeys="expandedKeys"
@@ -552,8 +554,8 @@ function expandAllIcons() {
         @exclude="excludedKeys.add($event)"
         @clearExclude="excludedKeys.delete($event)"
       />
-    </AccordionPanel>
-    <AccordionPanel label="Main unit icon" defaultOpen>
+    </NewAccordionPanel>
+    <NewAccordionPanel label="Main unit icon">
       <FilterTree
         :tree="iconTree"
         v-model:expandedKeys="expandedKeys"
@@ -565,8 +567,8 @@ function expandAllIcons() {
         @exclude="excludedKeys.add($event)"
         @clearExclude="excludedKeys.delete($event)"
       />
-    </AccordionPanel>
-    <AccordionPanel label="Side">
+    </NewAccordionPanel>
+    <NewAccordionPanel label="Side">
       <FilterTree
         :tree="sideTree"
         v-model:expandedKeys="expandedKeys"
@@ -578,8 +580,8 @@ function expandAllIcons() {
         @exclude="excludedKeys.add($event)"
         @clearExclude="excludedKeys.delete($event)"
       />
-    </AccordionPanel>
-    <AccordionPanel label="Standard identity">
+    </NewAccordionPanel>
+    <NewAccordionPanel label="Standard identity">
       <FilterTree
         :tree="sidTree"
         v-model:expandedKeys="expandedKeys"
@@ -591,8 +593,8 @@ function expandAllIcons() {
         @exclude="excludedKeys.add($event)"
         @clearExclude="excludedKeys.delete($event)"
       />
-    </AccordionPanel>
-    <AccordionPanel label="Status">
+    </NewAccordionPanel>
+    <NewAccordionPanel label="Status">
       <FilterTree
         :tree="statusTree"
         v-model:expandedKeys="expandedKeys"
@@ -604,8 +606,8 @@ function expandAllIcons() {
         @exclude="excludedKeys.add($event)"
         @clearExclude="excludedKeys.delete($event)"
       />
-    </AccordionPanel>
-    <AccordionPanel label="Symbol modifiers">
+    </NewAccordionPanel>
+    <NewAccordionPanel label="Symbol modifiers">
       <FilterTree
         :tree="modifierTree"
         v-model:expandedKeys="expandedKeys"
@@ -617,6 +619,6 @@ function expandAllIcons() {
         @exclude="excludedKeys.add($event)"
         @clearExclude="excludedKeys.delete($event)"
       />
-    </AccordionPanel>
+    </NewAccordionPanel>
   </div>
 </template>
