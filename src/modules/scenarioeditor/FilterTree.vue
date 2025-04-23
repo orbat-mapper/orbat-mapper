@@ -8,7 +8,7 @@ export type NestedUnitStatItem = {
 </script>
 <script setup lang="ts">
 import { IconClose, IconMinusCircleOutline } from "@iconify-prerendered/vue-mdi";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { TreeItem, TreeRoot } from "reka-ui";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 
@@ -41,7 +41,7 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
           if (event.detail.originalEvent.type === 'click') event.preventDefault();
         }
       "
-      class="focus:ring-grass8 data-selected:bg-grass4 group my-0.5 flex items-center rounded px-2 py-1 outline-hidden even:bg-gray-100 hover:bg-gray-100 focus:ring-2"
+      class="focus:ring-grass8 data-selected:bg-grass4 group even:bg-muted/50 hover:bg-muted my-0.5 flex items-center rounded px-2 py-1 outline-hidden focus:ring-2"
       :class="{ 'opacity-50': excludedKeys.has(item._id) }"
     >
       <template v-if="item.hasChildren">
@@ -60,8 +60,8 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
           <MilitarySymbol
             :sidc="item.value.sidc"
             :size="16"
-            :options="{ monoColor: 'black' }"
-            class="w-7"
+            :options="{ monoColor: 'currentColor' }"
+            class="text-foreground/90 w-7"
           />
           <span>{{ item.value.label }}</span>
           <span class="muted-badge">{{ stats[item.value.key] }}</span>
