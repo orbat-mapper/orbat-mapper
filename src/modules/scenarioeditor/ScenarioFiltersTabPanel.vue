@@ -537,9 +537,6 @@ function expandAllIcons() {
           >Clear selected
           <span class="muted-badge ml-1">{{ selectedUnitIds.size }}</span></Button
         >
-        <IconButton title="Expand all" @click="expandAllIcons()"
-          ><IconExpandAllOutline
-        /></IconButton>
       </div>
     </header>
     <NewAccordionPanel label="Command level">
@@ -555,7 +552,11 @@ function expandAllIcons() {
         @clearExclude="excludedKeys.delete($event)"
       />
     </NewAccordionPanel>
-    <NewAccordionPanel label="Main unit icon">
+    <NewAccordionPanel label="Main unit icon" default-open>
+      <template #header
+        ><IconButton title="Expand all" @click.stop="expandAllIcons()"
+          ><IconExpandAllOutline /></IconButton
+      ></template>
       <FilterTree
         :tree="iconTree"
         v-model:expandedKeys="expandedKeys"
