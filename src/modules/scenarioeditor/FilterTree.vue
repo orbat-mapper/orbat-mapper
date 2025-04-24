@@ -11,6 +11,7 @@ import { IconClose, IconMinusCircleOutline } from "@iconify-prerendered/vue-mdi"
 import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { TreeItem, TreeRoot } from "reka-ui";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
+import { Badge } from "@/components/ui/badge";
 
 const props = defineProps<{
   tree: NestedUnitStatItem[];
@@ -64,17 +65,17 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
             class="text-foreground/90 w-7"
           />
           <span>{{ item.value.label }}</span>
-          <span class="muted-badge">{{ stats[item.value.key] }}</span>
+          <Badge variant="outline" class="ml-1">{{ stats[item.value.key] }}</Badge>
         </div>
-        <button
-          v-if="selectedStats[item._id]"
-          type="button"
-          @click.stop="emit('clear', item._id)"
-          class="badge"
-          title="Clear selected"
-        >
-          {{ selectedStats[item._id] }}
-        </button>
+        <Badge v-if="selectedStats[item._id]" as-child>
+          <button
+            type="button"
+            @click.stop="emit('clear', item._id)"
+            title="Clear selected"
+          >
+            {{ selectedStats[item._id] }}
+          </button>
+        </Badge>
         <button
           v-else-if="!excludedKeys.has(item._id)"
           type="button"

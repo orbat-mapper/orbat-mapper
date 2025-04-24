@@ -21,6 +21,7 @@ import { IconExpandAllOutline } from "@iconify-prerendered/vue-mdi";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
 import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
+import { Badge } from "@/components/ui/badge";
 
 const {
   store: { state },
@@ -515,7 +516,7 @@ function expandAllIcons() {
 <template>
   <div class="px-4">
     <header
-      class="sticky top-0 z-10 -mx-4 flex h-12 items-center justify-between bg-white px-4 py-2 dark:bg-gray-800"
+      class="bg-sidebar/95 sticky top-0 z-10 -mx-4 flex h-12 items-center justify-between px-4 py-2"
     >
       <PanelHeading>Select units</PanelHeading>
       <div class="flex items-center space-x-1">
@@ -524,7 +525,8 @@ function expandAllIcons() {
           variant="outline"
           size="sm"
           @click="excludedKeys.clear()"
-          >Clear excluded <span class="muted-badge">{{ excludedKeys.size }}</span></Button
+          >Clear excluded
+          <Badge variant="secondary">{{ excludedKeys.size }}</Badge></Button
         >
         <Button
           v-if="selectedUnitIds.size"
@@ -532,7 +534,7 @@ function expandAllIcons() {
           size="sm"
           @click="selectedUnitIds.clear()"
           >Clear selected
-          <span class="muted-badge ml-1">{{ selectedUnitIds.size }}</span></Button
+          <Badge variant="secondary">{{ selectedUnitIds.size }}</Badge></Button
         >
       </div>
     </header>
