@@ -18,11 +18,12 @@ import InputCheckbox from "@/components/InputCheckbox.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import {
   doScenarioFeatureTransformation,
-  doUnitTransformation,
+  doUnitTransformations,
   type TransformationOperation,
   type TransformationType,
 } from "@/geo/transformations.ts";
 import TransformForm from "@/modules/scenarioeditor/TransformForm.vue";
+import { Button } from "@/components/ui/button";
 
 const props = withDefaults(defineProps<{ unitMode?: boolean }>(), { unitMode: false });
 
@@ -49,6 +50,7 @@ const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 const { showPreview } = storeToRefs(useTransformSettingsStore());
 
 const currentOp = ref<TransformationOperation | null>(null);
+const transformations = ref<(TransformationOperation | null)[]>([null]);
 const toggleRedraw = ref(true);
 
 const previewLayer = new VectorLayer({
@@ -67,10 +69,10 @@ const previewLayer = new VectorLayer({
 olMapRef.value.addLayer(previewLayer);
 
 const calculatePreview = useDebounceFn(
-  (features: NScenarioFeature[] | NUnit[], op: TransformationOperation) => {
+  (features: NScenarioFeature[] | NUnit[], ops: TransformationOperation[]) => {
     const geometry = isUnitMode
-      ? doUnitTransformation(features as NUnit[], op)
-      : doScenarioFeatureTransformation(features as NScenarioFeature[], op);
+      ? doUnitTransformations(features as NUnit[], ops)
+      : doScenarioFeatureTransformation(features as NScenarioFeature[], ops);
 
     drawGeoJsonLayer(previewLayer, geometry);
   },
@@ -105,22 +107,31 @@ if (!props.unitMode) {
   );
 }
 
-watch([currentOp, toggleRedraw, showPreview], () => {
-  if (showPreview.value && currentOp.value) {
-    calculatePreview(selectedItems.value, currentOp.value);
-  } else {
-    previewLayer.getSource()?.clear();
-  }
-});
+watch(
+  [transformations, toggleRedraw, showPreview],
+  () => {
+    if (showPreview.value && transformations.value) {
+      calculatePreview(
+        selectedItems.value,
+        transformations.value.filter((v) => !!v),
+      );
+    } else {
+      previewLayer.getSource()?.clear();
+    }
+  },
+  { deep: true },
+);
 
 function onSubmit() {
-  if (!currentOp.value || selectedItems.value.length === 0) return;
+  if (selectedItems.value.length === 0) return;
   const activeFeature = selectedItems.value[0];
+  const filteredTrans = transformations.value.filter((v) => !!v);
+  if (filteredTrans.length === 0) return;
   let transformedFeature = isUnitMode
-    ? doUnitTransformation(selectedItems.value as NUnit[], currentOp.value)
+    ? doUnitTransformations(selectedItems.value as NUnit[], filteredTrans)
     : doScenarioFeatureTransformation(
         selectedItems.value as NScenarioFeature[],
-        currentOp.value,
+        filteredTrans,
       );
   if (transformedFeature) {
     if (transformedFeature.type === "FeatureCollection") {
@@ -134,7 +145,7 @@ function onSubmit() {
       ? (activeFeature as NUnit).name
       : (activeFeature as NScenarioFeature).meta.name;
     const featureName = isMultiMode.value ? "FeatureCollection" : activeFeatureName;
-    scenarioFeature.meta.name = `${featureName} (${currentOp.value.transform})`;
+    scenarioFeature.meta.name = `${featureName} (${filteredTrans[0].transform})`;
     scn.geo.addFeature(scenarioFeature, layerId!);
     previewLayer.getSource()?.clear();
   }
@@ -144,12 +155,32 @@ onUnmounted(() => {
   previewLayer.getSource()?.clear();
   olMapRef.value.removeLayer(previewLayer);
 });
+
+function addTransformation() {
+  transformations.value.push(null);
+}
 </script>
 <template>
   <div v-if="selectedItems.length" class="pb-2">
-    <TransformForm v-model="currentOp" :unitMode />
+    <div class="grid grid-cols-1 gap-8">
+      <TransformForm
+        v-for="(op, i) in transformations"
+        :key="i"
+        v-model="transformations[i]"
+        :unitMode
+      />
+    </div>
 
-    <footer class="mt-4 flex items-center justify-between">
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      class="mt-4"
+      @click="addTransformation()"
+      >Add</Button
+    >
+
+    <footer class="border-border mt-4 flex items-center justify-between border-t pt-4">
       <InputCheckbox v-model="showPreview" label="Show preview" />
       <BaseButton type="button" primary small @click="onSubmit"
         >Create feature</BaseButton

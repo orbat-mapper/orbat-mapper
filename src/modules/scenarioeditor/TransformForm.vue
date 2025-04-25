@@ -24,9 +24,8 @@ const props = withDefaults(defineProps<TransformFormProperties>(), {
 
 const currentOp = defineModel<TransformationOperation | null>();
 
-const { transformation, bufferOptions, simplifyOptions } = storeToRefs(
-  useTransformSettingsStore(),
-);
+const transformation = ref<TransformationType>("buffer");
+const { bufferOptions, simplifyOptions } = storeToRefs(useTransformSettingsStore());
 
 const sliderValue = computed({
   get() {
@@ -51,8 +50,8 @@ const transformationOptions = computed((): NewSelectItem<TransformationType>[] =
     { label: "Center of mass", value: "centerOfMass" },
     { label: "Centroid", value: "centroid" },
     { label: "Explode", value: "explode" },
-    { label: "Simplify", value: "simplify", disabled: props.unitMode },
-    { label: "Smooth", value: "smooth", disabled: props.unitMode },
+    { label: "Simplify", value: "simplify" },
+    { label: "Smooth", value: "smooth" },
   ];
 });
 

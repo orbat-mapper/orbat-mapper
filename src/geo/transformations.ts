@@ -57,7 +57,7 @@ export function isPolygon(
 
 export function doScenarioFeatureTransformation(
   features: NScenarioFeature[],
-  opts: TransformationOperation,
+  opts: TransformationOperation[],
 ): Feature | FeatureCollection | null | undefined {
   if (features.length === 0 || !features[0]) return;
   const geoJSONFeatureOrFeatureCollection =
@@ -66,7 +66,9 @@ export function doScenarioFeatureTransformation(
           features.map((f) => turfFeature(f?._state?.geometry ?? f.geometry)),
         )
       : turfFeature(features[0]?._state?.geometry ?? features[0].geometry);
-  return doTransformation(geoJSONFeatureOrFeatureCollection, opts);
+  return opts.reduce<Feature | FeatureCollection>((acc, opt) => {
+    return doTransformation(acc, opt) as Feature | FeatureCollection;
+  }, geoJSONFeatureOrFeatureCollection);
 }
 
 function unitToFeature(unit: NUnit): Feature {
@@ -74,14 +76,16 @@ function unitToFeature(unit: NUnit): Feature {
   return point(location);
 }
 
-export function doUnitTransformation(units: NUnit[], opts: TransformationOperation) {
+export function doUnitTransformations(units: NUnit[], opts: TransformationOperation[]) {
   const filteredUnits = units.filter((unit) => unit?._state?.location ?? unit.location);
   if (filteredUnits.length === 0) return;
   const geoJSONFeatureOrFeatureCollection =
     filteredUnits.length > 1
       ? turfFeatureCollection(filteredUnits.map(unitToFeature))
       : unitToFeature(filteredUnits[0]);
-  return doTransformation(geoJSONFeatureOrFeatureCollection, opts);
+  return opts.reduce<Feature | FeatureCollection>((acc, opt) => {
+    return doTransformation(acc, opt) as Feature | FeatureCollection;
+  }, geoJSONFeatureOrFeatureCollection);
 }
 
 function doTransformation(
