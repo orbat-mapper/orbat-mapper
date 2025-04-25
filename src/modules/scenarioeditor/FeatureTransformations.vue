@@ -78,7 +78,7 @@ const calculatePreview = useDebounceFn(
 
     drawGeoJsonLayer(previewLayer, geometry);
   },
-  500,
+  200,
 );
 
 function createScenarioFeatureFromGeoJSON(
@@ -110,7 +110,13 @@ if (!props.unitMode) {
 }
 
 watch(
-  [transformations, toggleRedraw, showPreview],
+  [
+    transformations,
+    toggleRedraw,
+    showPreview,
+    () => scn.store.state.unitStateCounter,
+    () => scn.store.state.currentTime,
+  ],
   () => {
     if (showPreview.value && transformations.value) {
       calculatePreview(

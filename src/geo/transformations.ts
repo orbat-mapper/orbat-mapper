@@ -1,7 +1,14 @@
-import type { Feature, FeatureCollection, LineString, Polygon } from "geojson";
+import type {
+  Feature,
+  FeatureCollection,
+  LineString,
+  MultiPolygon,
+  Polygon,
+} from "geojson";
 import type { NScenarioFeature, NUnit } from "@/types/internalModels.ts";
 import {
   feature as turfFeature,
+  featureCollection,
   featureCollection as turfFeatureCollection,
   point,
   type Units as UnitOfMeasurement,
@@ -17,6 +24,7 @@ import { center as turfCenter } from "@turf/center";
 import { centerOfMass as turfCenterOfMass } from "@turf/center-of-mass";
 import { centroid as turfCentroid } from "@turf/centroid";
 import { explode as turfExplode } from "@turf/explode";
+import { union as turfUnion } from "@turf/union";
 import { nanoid } from "@/utils";
 
 export type BufferOptions = {
@@ -42,6 +50,7 @@ export type TransformationOperation =
   | { id: string; transform: "center"; options: {}; disabled?: boolean }
   | { id: string; transform: "centerOfMass"; options: {}; disabled?: boolean }
   | { id: string; transform: "centroid"; options: {}; disabled?: boolean }
+  | { id: string; transform: "union"; options: {}; disabled?: boolean }
   | { id: string; transform: "explode"; options: {}; disabled?: boolean };
 
 export type TransformationType = TransformationOperation["transform"];
@@ -162,6 +171,23 @@ function doSingleTransformation(
   }
   if (transform === "explode") {
     return turfExplode(geoJSONFeatureOrFeatureCollection);
+  }
+  if (transform === "union") {
+    const collection =
+      geoJSONFeatureOrFeatureCollection.type === "FeatureCollection"
+        ? geoJSONFeatureOrFeatureCollection
+        : featureCollection([geoJSONFeatureOrFeatureCollection]);
+    // check if the collection is Polygon or MultiPolygon
+    if (
+      collection.features.length > 1 &&
+      collection.features.every(
+        (v) => v.geometry.type === "Polygon" || v.geometry.type === "MultiPolygon",
+      )
+    ) {
+      return turfUnion(collection as FeatureCollection<Polygon | MultiPolygon>);
+    } else {
+      return geoJSONFeatureOrFeatureCollection;
+    }
   }
 
   return null;

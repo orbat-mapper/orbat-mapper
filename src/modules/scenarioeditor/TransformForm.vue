@@ -75,6 +75,7 @@ const transformationOptions = computed((): NewSelectItem<TransformationType>[] =
     { label: "Explode", value: "explode" },
     { label: "Simplify", value: "simplify" },
     { label: "Smooth", value: "smooth" },
+    { label: "Union", value: "union" },
   ];
 });
 
@@ -157,6 +158,13 @@ watchEffect(() => {
     currentOp.value = {
       id,
       transform: "explode",
+      options: {},
+      disabled: disabled.value,
+    };
+  } else if (transformation.value === "union") {
+    currentOp.value = {
+      id,
+      transform: "union",
       options: {},
       disabled: disabled.value,
     };
