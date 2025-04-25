@@ -6,13 +6,15 @@ import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { computed, ref, watchEffect } from "vue";
 import type { NewSelectItem } from "@/components/types.ts";
 import type {
+  BufferOptions,
+  SimplifyOptions,
   TransformationOperation,
   TransformationType,
 } from "@/geo/transformations.ts";
 import type { Units } from "@turf/helpers";
-import { storeToRefs } from "pinia";
-import { useTransformSettingsStore } from "@/stores/transformStore.ts";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 
 type TransformFormProperties = {
   unitMode?: boolean;
@@ -22,10 +24,31 @@ const props = withDefaults(defineProps<TransformFormProperties>(), {
   unitMode: false,
 });
 
-const currentOp = defineModel<TransformationOperation | null>();
+const emit = defineEmits(["delete"]);
 
-const transformation = ref<TransformationType>("buffer");
-const { bufferOptions, simplifyOptions } = storeToRefs(useTransformSettingsStore());
+const currentOp = defineModel<TransformationOperation>({ required: true });
+
+const transformation = ref<TransformationType>(currentOp.value.transform);
+const disabled = ref(false);
+const enabled = computed({
+  get() {
+    return !disabled.value;
+  },
+  set(value) {
+    disabled.value = !value;
+  },
+});
+const bufferOptions = ref<BufferOptions>(
+  currentOp.value.transform === "buffer"
+    ? currentOp.value.options
+    : { radius: 0, units: "kilometers", steps: 8 },
+);
+
+const simplifyOptions = ref<SimplifyOptions>(
+  currentOp.value.transform === "simplify"
+    ? currentOp.value.options
+    : { tolerance: 0.001 },
+);
 
 const sliderValue = computed({
   get() {
@@ -63,34 +86,80 @@ const unitItems: NewSelectItem<Units>[] = [
   { label: "Nautical miles", value: "nauticalmiles" },
 ];
 
+const id = currentOp.value.id;
 watchEffect(() => {
   if (transformation.value === "buffer") {
     const { radius, units, steps } = bufferOptions.value;
     currentOp.value = {
+      id,
       transform: "buffer",
       options: { radius, units, steps },
+      disabled: disabled.value,
     };
   } else if (transformation.value === "boundingBox") {
-    currentOp.value = { transform: "boundingBox", options: {} };
+    currentOp.value = {
+      id,
+      transform: "boundingBox",
+      options: {},
+      disabled: disabled.value,
+    };
   } else if (transformation.value === "convexHull") {
-    currentOp.value = { transform: "convexHull", options: {} };
+    currentOp.value = {
+      id,
+      transform: "convexHull",
+      options: {},
+      disabled: disabled.value,
+    };
   } else if (transformation.value === "concaveHull") {
-    currentOp.value = { transform: "concaveHull", options: {} };
+    currentOp.value = {
+      id,
+      transform: "concaveHull",
+      options: {},
+      disabled: disabled.value,
+    };
   } else if (transformation.value === "simplify") {
     const { tolerance } = simplifyOptions.value;
-    currentOp.value = { transform: "simplify", options: { tolerance } };
+    currentOp.value = {
+      id,
+      transform: "simplify",
+      options: { tolerance },
+      disabled: disabled.value,
+    };
   } else if (transformation.value === "smooth") {
-    currentOp.value = { transform: "smooth", options: {} };
+    currentOp.value = {
+      id,
+      transform: "smooth",
+      options: {},
+      disabled: disabled.value,
+    };
   } else if (transformation.value === "center") {
-    currentOp.value = { transform: "center", options: {} };
+    currentOp.value = {
+      id,
+      transform: "center",
+      options: {},
+      disabled: disabled.value,
+    };
   } else if (transformation.value === "centerOfMass") {
-    currentOp.value = { transform: "centerOfMass", options: {} };
+    currentOp.value = {
+      id,
+      transform: "centerOfMass",
+      options: {},
+      disabled: disabled.value,
+    };
   } else if (transformation.value === "centroid") {
-    currentOp.value = { transform: "centroid", options: {} };
+    currentOp.value = {
+      id,
+      transform: "centroid",
+      options: {},
+      disabled: disabled.value,
+    };
   } else if (transformation.value === "explode") {
-    currentOp.value = { transform: "explode", options: {} };
-  } else {
-    currentOp.value = null;
+    currentOp.value = {
+      id,
+      transform: "explode",
+      options: {},
+      disabled: disabled.value,
+    };
   }
 });
 
@@ -131,5 +200,9 @@ function onSubmit() {
         </InputGroupTemplate>
       </div>
     </div>
+    <nav>
+      <Switch v-model="enabled" />
+      <Button variant="outline" size="sm" @click="emit('delete')">Delete</Button>
+    </nav>
   </form>
 </template>

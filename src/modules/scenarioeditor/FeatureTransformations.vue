@@ -17,6 +17,7 @@ import { storeToRefs } from "pinia";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import {
+  createDefaultTransformationOperation,
   doScenarioFeatureTransformation,
   doUnitTransformations,
   type TransformationOperation,
@@ -49,8 +50,9 @@ const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
 const { showPreview } = storeToRefs(useTransformSettingsStore());
 
-const currentOp = ref<TransformationOperation | null>(null);
-const transformations = ref<(TransformationOperation | null)[]>([null]);
+const transformations = ref<TransformationOperation[]>([
+  createDefaultTransformationOperation(),
+]);
 const toggleRedraw = ref(true);
 
 const previewLayer = new VectorLayer({
@@ -157,7 +159,11 @@ onUnmounted(() => {
 });
 
 function addTransformation() {
-  transformations.value.push(null);
+  transformations.value.push(createDefaultTransformationOperation());
+}
+
+function deleteTransformation(index: number) {
+  transformations.value.splice(index, 1);
 }
 </script>
 <template>
@@ -165,9 +171,10 @@ function addTransformation() {
     <div class="grid grid-cols-1 gap-8">
       <TransformForm
         v-for="(op, i) in transformations"
-        :key="i"
+        :key="op.id"
         v-model="transformations[i]"
         :unitMode
+        @delete="deleteTransformation(i)"
       />
     </div>
 

@@ -17,6 +17,7 @@ import { center as turfCenter } from "@turf/center";
 import { centerOfMass as turfCenterOfMass } from "@turf/center-of-mass";
 import { centroid as turfCentroid } from "@turf/centroid";
 import { explode as turfExplode } from "@turf/explode";
+import { nanoid } from "@/utils";
 
 export type BufferOptions = {
   radius: number;
@@ -28,20 +29,35 @@ export type SimplifyOptions = {
 };
 export type TransformationOperation =
   | {
+      id: string;
       transform: "buffer";
       options: BufferOptions;
+      disabled?: boolean;
     }
-  | { transform: "boundingBox"; options: {} }
-  | { transform: "convexHull"; options: {} }
-  | { transform: "concaveHull"; options: {} }
-  | { transform: "simplify"; options: SimplifyOptions }
-  | { transform: "smooth"; options: {} }
-  | { transform: "center"; options: {} }
-  | { transform: "centerOfMass"; options: {} }
-  | { transform: "centroid"; options: {} }
-  | { transform: "explode"; options: {} };
+  | { id: string; transform: "boundingBox"; options: {}; disabled?: boolean }
+  | { id: string; transform: "convexHull"; options: {}; disabled?: boolean }
+  | { id: string; transform: "concaveHull"; options: {}; disabled?: boolean }
+  | { id: string; transform: "simplify"; options: SimplifyOptions; disabled?: boolean }
+  | { id: string; transform: "smooth"; options: {}; disabled?: boolean }
+  | { id: string; transform: "center"; options: {}; disabled?: boolean }
+  | { id: string; transform: "centerOfMass"; options: {}; disabled?: boolean }
+  | { id: string; transform: "centroid"; options: {}; disabled?: boolean }
+  | { id: string; transform: "explode"; options: {}; disabled?: boolean };
 
 export type TransformationType = TransformationOperation["transform"];
+
+export function createDefaultTransformationOperation(): TransformationOperation {
+  return {
+    id: nanoid(),
+    transform: "buffer",
+    options: {
+      radius: 2,
+      units: "kilometers",
+      steps: 8,
+    },
+    disabled: false,
+  };
+}
 
 export function isLineString(
   feature: Feature | FeatureCollection,
@@ -57,7 +73,7 @@ export function isPolygon(
 
 export function doScenarioFeatureTransformation(
   features: NScenarioFeature[],
-  opts: TransformationOperation[],
+  transformations: TransformationOperation[],
 ): Feature | FeatureCollection | null | undefined {
   if (features.length === 0 || !features[0]) return;
   const geoJSONFeatureOrFeatureCollection =
@@ -66,9 +82,7 @@ export function doScenarioFeatureTransformation(
           features.map((f) => turfFeature(f?._state?.geometry ?? f.geometry)),
         )
       : turfFeature(features[0]?._state?.geometry ?? features[0].geometry);
-  return opts.reduce<Feature | FeatureCollection>((acc, opt) => {
-    return doTransformation(acc, opt) as Feature | FeatureCollection;
-  }, geoJSONFeatureOrFeatureCollection);
+  return doTransformations(geoJSONFeatureOrFeatureCollection, transformations);
 }
 
 function unitToFeature(unit: NUnit): Feature {
@@ -76,19 +90,30 @@ function unitToFeature(unit: NUnit): Feature {
   return point(location);
 }
 
-export function doUnitTransformations(units: NUnit[], opts: TransformationOperation[]) {
+export function doUnitTransformations(
+  units: NUnit[],
+  transformations: TransformationOperation[],
+) {
   const filteredUnits = units.filter((unit) => unit?._state?.location ?? unit.location);
   if (filteredUnits.length === 0) return;
   const geoJSONFeatureOrFeatureCollection =
     filteredUnits.length > 1
       ? turfFeatureCollection(filteredUnits.map(unitToFeature))
       : unitToFeature(filteredUnits[0]);
-  return opts.reduce<Feature | FeatureCollection>((acc, opt) => {
-    return doTransformation(acc, opt) as Feature | FeatureCollection;
+  return doTransformations(geoJSONFeatureOrFeatureCollection, transformations);
+}
+
+function doTransformations(
+  geoJSONFeatureOrFeatureCollection: Feature | FeatureCollection,
+  transformations: TransformationOperation[],
+) {
+  const activeTransformations = transformations.filter((t) => !!t && !t.disabled);
+  return activeTransformations.reduce<Feature | FeatureCollection>((acc, opt) => {
+    return doSingleTransformation(acc, opt) as Feature | FeatureCollection;
   }, geoJSONFeatureOrFeatureCollection);
 }
 
-function doTransformation(
+function doSingleTransformation(
   geoJSONFeatureOrFeatureCollection: Feature | FeatureCollection,
   { transform, options }: TransformationOperation,
 ): Feature | FeatureCollection | null | undefined {
