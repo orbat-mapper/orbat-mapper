@@ -30,7 +30,7 @@ const inputId = useId();
     <Label :for="inputId">{{ label }}</Label>
     <NumberFieldContent>
       <NumberFieldDecrement />
-      <NumberFieldInput />
+      <NumberFieldInput :id="inputId" />
       <NumberFieldIncrement />
     </NumberFieldContent>
   </NumberField>
