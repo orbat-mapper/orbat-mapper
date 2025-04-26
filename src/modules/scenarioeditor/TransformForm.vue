@@ -36,6 +36,7 @@ const currentOp = defineModel<TransformationOperation>({ required: true });
 
 const transformation = ref<TransformationType>(currentOp.value.transform);
 const disabled = ref(false);
+const isOpen = ref(currentOp.value.isOpen ?? true);
 const enabled = computed({
   get() {
     return !disabled.value;
@@ -109,6 +110,7 @@ watchEffect(() => {
       transform: "buffer",
       options: { radius, units, steps },
       disabled: disabled.value,
+      isOpen: isOpen.value,
     };
   } else if (transformation.value === "boundingBox") {
     currentOp.value = {
@@ -116,6 +118,7 @@ watchEffect(() => {
       transform: "boundingBox",
       options: {},
       disabled: disabled.value,
+      isOpen: isOpen.value,
     };
   } else if (transformation.value === "convexHull") {
     currentOp.value = {
@@ -123,6 +126,7 @@ watchEffect(() => {
       transform: "convexHull",
       options: {},
       disabled: disabled.value,
+      isOpen: isOpen.value,
     };
   } else if (transformation.value === "concaveHull") {
     currentOp.value = {
@@ -130,6 +134,7 @@ watchEffect(() => {
       transform: "concaveHull",
       options: {},
       disabled: disabled.value,
+      isOpen: isOpen.value,
     };
   } else if (transformation.value === "simplify") {
     const { tolerance } = simplifyOptions.value;
@@ -138,6 +143,7 @@ watchEffect(() => {
       transform: "simplify",
       options: { tolerance },
       disabled: disabled.value,
+      isOpen: isOpen.value,
     };
   } else if (transformation.value === "smooth") {
     currentOp.value = {
@@ -145,6 +151,7 @@ watchEffect(() => {
       transform: "smooth",
       options: {},
       disabled: disabled.value,
+      isOpen: isOpen.value,
     };
   } else if (transformation.value === "center") {
     currentOp.value = {
@@ -152,6 +159,7 @@ watchEffect(() => {
       transform: "center",
       options: {},
       disabled: disabled.value,
+      isOpen: isOpen.value,
     };
   } else if (transformation.value === "centerOfMass") {
     currentOp.value = {
@@ -159,6 +167,7 @@ watchEffect(() => {
       transform: "centerOfMass",
       options: {},
       disabled: disabled.value,
+      isOpen: isOpen.value,
     };
   } else if (transformation.value === "centroid") {
     currentOp.value = {
@@ -166,6 +175,7 @@ watchEffect(() => {
       transform: "centroid",
       options: {},
       disabled: disabled.value,
+      isOpen: isOpen.value,
     };
   } else if (transformation.value === "explode") {
     currentOp.value = {
@@ -173,6 +183,7 @@ watchEffect(() => {
       transform: "explode",
       options: {},
       disabled: disabled.value,
+      isOpen: isOpen.value,
     };
   } else if (transformation.value === "union") {
     currentOp.value = {
@@ -180,6 +191,7 @@ watchEffect(() => {
       transform: "union",
       options: {},
       disabled: disabled.value,
+      isOpen: isOpen.value,
     };
   }
 });
@@ -190,7 +202,7 @@ function onSubmit() {
 }
 </script>
 <template>
-  <Collapsible default-open class="border-border -mx-2 rounded border">
+  <Collapsible v-model:open="isOpen" class="border-border -mx-2 rounded border">
     <header class="flex items-center justify-between rounded border-b p-2 px-4">
       <h4 class="text-sm font-bold">{{ transformationLabel }}</h4>
       <div class="flex items-center gap-1">

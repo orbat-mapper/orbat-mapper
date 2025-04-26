@@ -1,17 +1,19 @@
 import { defineStore } from "pinia";
-import type { BufferOptions, SimplifyOptions } from "@/geo/transformations.ts";
+import {
+  type BufferOptions,
+  createDefaultTransformationOperation,
+  type SimplifyOptions,
+  type TransformationOperation,
+} from "@/geo/transformations.ts";
+import { ref } from "vue";
 
-export const useTransformSettingsStore = defineStore("transformSettings", {
-  state: () => ({
-    showPreview: true,
-    transformation: "buffer",
-    bufferOptions: {
-      radius: 2,
-      units: "kilometers",
-      steps: 8,
-    } as BufferOptions,
-    simplifyOptions: {
-      tolerance: 0.01,
-    } as SimplifyOptions,
-  }),
+export const useTransformSettingsStore = defineStore("transformSettings", () => {
+  const showPreview = ref(true);
+  const transformations = ref<TransformationOperation[]>([
+    createDefaultTransformationOperation(),
+  ]);
+  return {
+    showPreview,
+    transformations,
+  };
 });

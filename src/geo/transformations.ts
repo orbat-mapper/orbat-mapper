@@ -41,17 +41,60 @@ export type TransformationOperation =
       transform: "buffer";
       options: BufferOptions;
       disabled?: boolean;
+      isOpen?: boolean;
     }
-  | { id: string; transform: "boundingBox"; options: {}; disabled?: boolean }
-  | { id: string; transform: "convexHull"; options: {}; disabled?: boolean }
-  | { id: string; transform: "concaveHull"; options: {}; disabled?: boolean }
-  | { id: string; transform: "simplify"; options: SimplifyOptions; disabled?: boolean }
-  | { id: string; transform: "smooth"; options: {}; disabled?: boolean }
-  | { id: string; transform: "center"; options: {}; disabled?: boolean }
-  | { id: string; transform: "centerOfMass"; options: {}; disabled?: boolean }
-  | { id: string; transform: "centroid"; options: {}; disabled?: boolean }
-  | { id: string; transform: "union"; options: {}; disabled?: boolean }
-  | { id: string; transform: "explode"; options: {}; disabled?: boolean };
+  | {
+      id: string;
+      transform: "boundingBox";
+      options: {};
+      disabled?: boolean;
+      isOpen?: boolean;
+    }
+  | {
+      id: string;
+      transform: "convexHull";
+      options: {};
+      disabled?: boolean;
+      isOpen?: boolean;
+    }
+  | {
+      id: string;
+      transform: "concaveHull";
+      options: {};
+      disabled?: boolean;
+      isOpen?: boolean;
+    }
+  | {
+      id: string;
+      transform: "simplify";
+      options: SimplifyOptions;
+      disabled?: boolean;
+      isOpen?: boolean;
+    }
+  | { id: string; transform: "smooth"; options: {}; disabled?: boolean; isOpen?: boolean }
+  | { id: string; transform: "center"; options: {}; disabled?: boolean; isOpen?: boolean }
+  | {
+      id: string;
+      transform: "centerOfMass";
+      options: {};
+      disabled?: boolean;
+      isOpen?: boolean;
+    }
+  | {
+      id: string;
+      transform: "centroid";
+      options: {};
+      disabled?: boolean;
+      isOpen?: boolean;
+    }
+  | { id: string; transform: "union"; options: {}; disabled?: boolean; isOpen?: boolean }
+  | {
+      id: string;
+      transform: "explode";
+      options: {};
+      disabled?: boolean;
+      isOpen?: boolean;
+    };
 
 export type TransformationType = TransformationOperation["transform"];
 
@@ -65,6 +108,7 @@ export function createDefaultTransformationOperation(): TransformationOperation 
       steps: 8,
     },
     disabled: false,
+    isOpen: true,
   };
 }
 

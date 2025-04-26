@@ -48,11 +48,8 @@ const selectedItems = computed(() => {
 });
 const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
-const { showPreview } = storeToRefs(useTransformSettingsStore());
+const { showPreview, transformations } = storeToRefs(useTransformSettingsStore());
 
-const transformations = ref<TransformationOperation[]>([
-  createDefaultTransformationOperation(),
-]);
 const toggleRedraw = ref(true);
 
 const previewLayer = new VectorLayer({
