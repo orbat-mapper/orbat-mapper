@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronsUpDown, Trash2Icon } from "lucide-vue-next";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
 import NewSelect from "@/components/NewSelect.vue";
@@ -77,6 +83,13 @@ const transformationOptions = computed((): NewSelectItem<TransformationType>[] =
     { label: "Smooth", value: "smooth" },
     { label: "Union", value: "union" },
   ];
+});
+
+const transformationLabel = computed(() => {
+  const selectedOption = transformationOptions.value.find(
+    (option) => option.value === transformation.value,
+  );
+  return selectedOption ? selectedOption.label : transformation.value;
 });
 
 const unitItems: NewSelectItem<Units>[] = [
@@ -177,40 +190,54 @@ function onSubmit() {
 }
 </script>
 <template>
-  <form @submit.prevent="onSubmit" class="space-y-4">
-    <NewSelect
-      label="Transformation"
-      :items="transformationOptions"
-      v-model="transformation"
-    />
+  <Collapsible default-open class="border-border -mx-2 rounded border">
+    <header class="flex items-center justify-between rounded border-b p-2 px-4">
+      <h4 class="text-sm font-bold">{{ transformationLabel }}</h4>
+      <div class="flex items-center gap-1">
+        <Switch v-model="enabled" />
+        <Button variant="ghost" size="sm" @click="emit('delete')">
+          <Trash2Icon />
+        </Button>
+        <CollapsibleTrigger as-child>
+          <Button variant="ghost" size="sm" class="w-9 p-0">
+            <ChevronsUpDown class="h-4 w-4" />
+            <span class="sr-only">Toggle</span>
+          </Button>
+        </CollapsibleTrigger>
+      </div>
+    </header>
+    <CollapsibleContent class="p-4">
+      <form @submit.prevent="onSubmit" class="space-y-4">
+        <NewSelect
+          label="Transformation"
+          :items="transformationOptions"
+          v-model="transformation"
+        />
 
-    <div v-if="transformation === 'buffer'">
-      <PanelSubHeading>Buffer options</PanelSubHeading>
-      <div class="mt-2 grid grid-cols-2 gap-4">
-        <div class="col-span-1">
-          <NumberInputGroup label="Radius" v-model.number="bufferOptions.radius" />
+        <div v-if="transformation === 'buffer'">
+          <div class="mt-2 grid grid-cols-2 gap-4">
+            <div class="col-span-1">
+              <NumberInputGroup label="Radius" v-model.number="bufferOptions.radius" />
+            </div>
+            <NewSelect label="Units" :items="unitItems" v-model="bufferOptions.units" />
+            <NumberInputGroup label="Steps" v-model.number="bufferOptions.steps" />
+          </div>
         </div>
-        <NewSelect label="Units" :items="unitItems" v-model="bufferOptions.units" />
-        <NumberInputGroup label="Steps" v-model.number="bufferOptions.steps" />
-      </div>
-    </div>
-    <div v-else-if="transformation === 'simplify'">
-      <PanelSubHeading>Simplify</PanelSubHeading>
-      <div class="mt-4 grid grid-cols-1 gap-4">
-        <InputGroupTemplate label="Tolerance">
-          <Slider
-            v-model="sliderValue"
-            :min="0"
-            :max="0.15"
-            :step="0.00001"
-            class="mt-4"
-          />
-        </InputGroupTemplate>
-      </div>
-    </div>
-    <nav>
-      <Switch v-model="enabled" />
-      <Button variant="outline" size="sm" @click="emit('delete')">Delete</Button>
-    </nav>
-  </form>
+        <div v-else-if="transformation === 'simplify'">
+          <PanelSubHeading>Simplify</PanelSubHeading>
+          <div class="mt-4 grid grid-cols-1 gap-4">
+            <InputGroupTemplate label="Tolerance">
+              <Slider
+                v-model="sliderValue"
+                :min="0"
+                :max="0.15"
+                :step="0.00001"
+                class="mt-4"
+              />
+            </InputGroupTemplate>
+          </div>
+        </div>
+      </form>
+    </CollapsibleContent>
+  </Collapsible>
 </template>

@@ -174,7 +174,7 @@ function deleteTransformation(index: number) {
 </script>
 <template>
   <div v-if="selectedItems.length" class="pb-2">
-    <div class="grid grid-cols-1 gap-8">
+    <div class="grid grid-cols-1 gap-1">
       <TransformForm
         v-for="(op, i) in transformations"
         :key="op.id"
