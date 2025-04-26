@@ -203,19 +203,18 @@ function onSubmit() {
 </script>
 <template>
   <Collapsible v-model:open="isOpen" class="border-border -mx-2 rounded border">
-    <header class="flex items-center justify-between rounded border-b p-2 px-4">
-      <h4 class="text-sm font-bold">{{ transformationLabel }}</h4>
-      <div class="flex items-center gap-1">
-        <Switch v-model="enabled" />
-        <Button variant="ghost" size="sm" @click="emit('delete')">
-          <Trash2Icon />
-        </Button>
-        <CollapsibleTrigger as-child>
-          <Button variant="ghost" size="sm" class="w-9 p-0">
-            <ChevronsUpDown class="h-4 w-4" />
-            <span class="sr-only">Toggle</span>
+    <header class="relative flex items-center justify-between rounded border-b p-2 px-4">
+      <CollapsibleTrigger class="flex w-full items-center justify-between"
+        ><span class="text-sm font-bold">{{ transformationLabel }}</span
+        ><ChevronsUpDown class="h-4 w-4"
+      /></CollapsibleTrigger>
+      <div class="pointer-events-none absolute inset-0 flex justify-end">
+        <div class="pointer-events-auto mr-8 flex items-center gap-1">
+          <Switch v-model="enabled" />
+          <Button variant="ghost" size="sm" @click="emit('delete')">
+            <Trash2Icon />
           </Button>
-        </CollapsibleTrigger>
+        </div>
       </div>
     </header>
     <CollapsibleContent class="p-4">
