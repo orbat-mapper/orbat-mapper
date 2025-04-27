@@ -160,7 +160,7 @@ export function useScenarioFeatureSelect(
     VectorLayer<any>
   >;
 
-  const { selectedFeatureIds: selectedIds } = useSelectedItems();
+  const { selectedFeatureIds: selectedIds, selectedUnitIds } = useSelectedItems();
 
   const enableRef = ref(options.enable ?? true);
 
@@ -200,6 +200,11 @@ export function useScenarioFeatureSelect(
           const { feature } = getFeatureAndLayerById(fid, scenarioLayersOl) || {};
           if (feature) selectedFeatures.push(feature);
         });
+      } else {
+        if (selectedUnitIds.value.size > 0) {
+          selectedIds.value.clear();
+          selectedFeatures.clear();
+        }
       }
       isInternal = false;
     },
