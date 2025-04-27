@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { geometryCollection, type Units } from "@turf/helpers";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PlusIcon } from "lucide-vue-next";
+import { geometryCollection } from "@turf/helpers";
 import { computed, onUnmounted, ref, watch } from "vue";
-import type { NewSelectItem } from "@/components/types";
 import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict, nanoid } from "@/utils";
 import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
@@ -21,10 +22,13 @@ import {
   doScenarioFeatureTransformation,
   doUnitTransformations,
   type TransformationOperation,
-  type TransformationType,
 } from "@/geo/transformations.ts";
 import TransformForm from "@/modules/scenarioeditor/TransformForm.vue";
 import { Button } from "@/components/ui/button";
+import ScenarioFeatureSelect from "@/components/ScenarioFeatureSelect.vue";
+import { Label } from "@/components/ui/label";
+import { useTimeFormatStore } from "@/stores/timeFormatStore.ts";
+import { geometry } from "@turf/turf";
 
 const props = withDefaults(defineProps<{ unitMode?: boolean }>(), { unitMode: false });
 
@@ -34,6 +38,11 @@ const scn = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
 
 const olMapRef = injectStrict(activeMapKey);
+const fmt = useTimeFormatStore();
+
+const formattedTime = computed(() =>
+  fmt.scenarioFormatter.format(+scn.time.scenarioTime.value),
+);
 
 const { selectedFeatureIds, selectedUnitIds } = useSelectedItems();
 
@@ -48,9 +57,12 @@ const selectedItems = computed(() => {
 });
 const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
-const { showPreview, transformations } = storeToRefs(useTransformSettingsStore());
+const { showPreview, transformations, updateActiveFeature, updateAtTime } = storeToRefs(
+  useTransformSettingsStore(),
+);
 
 const toggleRedraw = ref(true);
+const addActiveLayer = ref(activeLayerId.value!);
 
 const previewLayer = new VectorLayer({
   source: new VectorSource({}),
@@ -127,7 +139,7 @@ watch(
   { deep: true },
 );
 
-function onSubmit() {
+function onSubmit(updateMode = false) {
   if (selectedItems.value.length === 0) return;
   const activeFeature = selectedItems.value[0];
   const filteredTrans = transformations.value.filter((v) => !!v);
@@ -138,22 +150,36 @@ function onSubmit() {
         selectedItems.value as NScenarioFeature[],
         filteredTrans,
       );
-  if (transformedFeature) {
-    if (transformedFeature.type === "FeatureCollection") {
-      transformedFeature = geometryCollection(
-        transformedFeature.features.map((f) => f.geometry) as any,
+  if (!transformedFeature) return;
+  if (transformedFeature.type === "FeatureCollection") {
+    transformedFeature = geometryCollection(
+      transformedFeature.features.map((f) => f.geometry) as any,
+    );
+  }
+  const scenarioFeature = createScenarioFeatureFromGeoJSON(transformedFeature, -1);
+
+  if (updateMode && updateActiveFeature.value) {
+    if (updateAtTime.value) {
+      scn.geo.addFeatureStateGeometry(
+        updateActiveFeature.value,
+        scenarioFeature.geometry,
       );
+    } else {
+      scn.geo.updateFeature(updateActiveFeature.value, {
+        geometry: scenarioFeature.geometry,
+      });
     }
-    const layerId = activeLayerId.value;
-    const scenarioFeature = createScenarioFeatureFromGeoJSON(transformedFeature, -1);
+  } else {
+    const layerId = addActiveLayer.value;
+
     const activeFeatureName = isUnitMode
       ? (activeFeature as NUnit).name
       : (activeFeature as NScenarioFeature).meta.name;
     const featureName = isMultiMode.value ? "FeatureCollection" : activeFeatureName;
     scenarioFeature.meta.name = `${featureName} (${filteredTrans[0].transform})`;
     scn.geo.addFeature(scenarioFeature, layerId!);
-    previewLayer.getSource()?.clear();
   }
+  previewLayer.getSource()?.clear();
 }
 
 onUnmounted(() => {
@@ -180,22 +206,53 @@ function deleteTransformation(index: number) {
         @delete="deleteTransformation(i)"
       />
     </div>
-
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      class="mt-4"
-      @click="addTransformation()"
-      >Add</Button
-    >
-
-    <footer class="border-border mt-4 flex items-center justify-between border-t pt-4">
-      <InputCheckbox v-model="showPreview" label="Show preview" />
-      <BaseButton type="button" primary small @click="onSubmit"
-        >Create feature</BaseButton
+    <div class="mt-4 flex items-center justify-between">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        class=""
+        @click="addTransformation()"
+        ><PlusIcon />Add</Button
       >
-    </footer>
+      <InputCheckbox v-model="showPreview" label="Show preview" />
+    </div>
+    <Tabs defaultValue="add" class="border-border mt-4 border-t pt-4">
+      <TabsList class="w-full">
+        <TabsTrigger value="add">New feature</TabsTrigger>
+        <TabsTrigger value="update">Update existing</TabsTrigger>
+      </TabsList>
+      <TabsContent value="add">
+        <Label class="mt-2 pb-1.5">Select layer</Label>
+        <ScenarioFeatureSelect v-model="addActiveLayer" layer-mode class="" />
+        <div class="mt-4 flex items-center justify-end">
+          <BaseButton type="button" primary small @click="onSubmit(false)"
+            >Create feature
+          </BaseButton>
+        </div>
+      </TabsContent>
+      <TabsContent value="update">
+        <Label class="mt-2 pb-1.5">Select feature</Label>
+        <ScenarioFeatureSelect v-model="updateActiveFeature" />
+        <div class="mt-4">
+          <InputCheckbox
+            v-model="updateAtTime"
+            :label="`Update geometry at ${formattedTime}`"
+            description=""
+          />
+        </div>
+        <div class="mt-4 flex items-center justify-end">
+          <BaseButton
+            type="button"
+            primary
+            small
+            @click="onSubmit(true)"
+            :disabled="!updateActiveFeature"
+            >Update feature
+          </BaseButton>
+        </div>
+      </TabsContent>
+    </Tabs>
   </div>
   <div v-else class="text-center text-sm text-gray-500">
     Please select a feature to transform
