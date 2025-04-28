@@ -66,7 +66,8 @@ function isRekaComponent(e: KeyboardEvent) {
   if (!target) return false;
   return !!(
     (target?.id && target.id.includes("dropdown")) ||
-    target.dataset?.slot?.includes("dropdown")
+    target.dataset?.slot?.includes("dropdown") ||
+    target.dataset?.slot?.includes("menu-item")
   );
 }
 
