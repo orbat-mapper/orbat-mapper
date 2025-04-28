@@ -74,7 +74,8 @@ const uiSettings = useUiStore();
 
 const { send } = useNotifications();
 const { copy: copyToClipboard } = useClipboard();
-const { activeUnitId, activeFeatureId } = useSelectedItems();
+const { activeUnitId, activeFeatureId, selectedUnitIds, selectedFeatureIds } =
+  useSelectedItems();
 const { activeParent } = useActiveUnitStore();
 const playback = usePlaybackStore();
 const { sidc, symbolOptions } = useActiveSidc();
@@ -153,12 +154,31 @@ async function onCopy() {
   });
 }
 
-function onUnitSelect(unit: NUnit) {
-  activeUnitId.value = unit.id;
+function onUnitSelect(unit: NUnit, event: MouseEvent | PointerEvent | KeyboardEvent) {
+  if (event.shiftKey) {
+    if (selectedUnitIds.value.has(unit.id)) {
+      selectedUnitIds.value.delete(unit.id);
+    } else {
+      selectedUnitIds.value.add(unit.id);
+    }
+  } else {
+    activeUnitId.value = unit.id;
+  }
 }
 
-function onFeatureSelect(feature: NScenarioFeature) {
-  activeFeatureId.value = feature.id;
+function onFeatureSelect(
+  feature: NScenarioFeature,
+  event: MouseEvent | PointerEvent | KeyboardEvent,
+) {
+  if (event.shiftKey) {
+    if (selectedFeatureIds.value.has(feature.id)) {
+      selectedFeatureIds.value.delete(feature.id);
+    } else {
+      selectedFeatureIds.value.add(feature.id);
+    }
+  } else {
+    activeFeatureId.value = feature.id;
+  }
 }
 
 function onContextMenuUpdate(open: boolean) {
@@ -210,7 +230,8 @@ function onAddUnit() {
           <ContextMenuItem
             v-for="unit in clickedUnits"
             :key="unit.id"
-            @select.prevent="onUnitSelect(unit)"
+            @select.prevent
+            @click="onUnitSelect(unit, $event)"
           >
             <div class="flex items-center">
               <span class="flex w-7 items-center">
@@ -218,7 +239,7 @@ function onAddUnit() {
                   :sidc="unit.sidc"
                   :options="unitActions.getCombinedSymbolOptions(unit)"
               /></span>
-              <span :class="[activeUnitId === unit.id ? 'font-semibold' : '']">{{
+              <span :class="[selectedUnitIds.has(unit.id) ? 'font-semibold' : '']">{{
                 unit.name
               }}</span>
             </div>
@@ -236,16 +257,18 @@ function onAddUnit() {
           <ContextMenuItem
             v-for="feature in clickedFeatures"
             :key="feature.id"
-            @select.prevent="onFeatureSelect(feature)"
+            @select.prevent
+            @click="onFeatureSelect(feature, $event)"
           >
             <div class="flex items-center">
               <component
                 :is="getGeometryIcon(feature)"
                 class="mr-1 h-5 w-5 text-gray-400"
               />
-              <span :class="[activeFeatureId === feature.id ? 'font-semibold' : '']">{{
-                feature.meta.name
-              }}</span>
+              <span
+                :class="[selectedFeatureIds.has(feature.id) ? 'font-semibold' : '']"
+                >{{ feature.meta.name }}</span
+              >
             </div>
           </ContextMenuItem>
         </ContextMenuSubContent>
