@@ -8,8 +8,7 @@ import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
-import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
-import { useTabStore } from "@/stores/tabStore";
+import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import { usePlaybackStore } from "@/stores/playbackStore";
@@ -64,10 +63,11 @@ function handleEscape(e: KeyboardEvent) {
 function isRekaComponent(e: KeyboardEvent) {
   let target = e.target as HTMLElement;
   if (!target) return false;
-  return !!(
+  return (
     (target?.id && target.id.includes("dropdown")) ||
-    target.dataset?.slot?.includes("dropdown") ||
-    target.dataset?.slot?.includes("menu-item")
+    ["dropdown", "menu-item", "popover", "select"].some((type) =>
+      target.dataset?.slot?.includes(type),
+    )
   );
 }
 

@@ -2,7 +2,7 @@
   <h3 class="mt-6 font-medium text-gray-900">Unit state</h3>
   <div class="flex items-center justify-between">
     <span class="text-sm">Change</span>
-    <div class="flex items-center">
+    <div class="flex items-center gap-1">
       <UnitStatusPopover @update="setUnitStatus" :disabled="isLocked" />
       <SplitButton :items="stateItems" v-model:active-item="uiState.activeStateItem" />
     </div>
