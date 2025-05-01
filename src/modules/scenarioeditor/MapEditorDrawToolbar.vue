@@ -168,7 +168,6 @@ function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
   );
   scenarioFeature.meta.name = `${scenarioFeature.meta.type} ${_zIndex + 1}`;
   scenarioFeature.meta._zIndex = _zIndex;
-  scenarioFeature._pid = scenarioLayer.id;
   scenarioFeature.style = currentDrawStyle.value ?? {};
 
   olFeature.set("_zIndex", _zIndex);

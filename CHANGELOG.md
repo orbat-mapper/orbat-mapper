@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+May 2025
+
+- Added 'add point/marker' action to the map context menu.
+
 April 2025
 
 - Added support for chaining multiple transformations.

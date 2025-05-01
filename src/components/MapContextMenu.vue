@@ -23,6 +23,7 @@ import {
   IconSpeedometer,
   IconSpeedometerSlow,
   IconTarget,
+  IconMapMarker as PointIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { computed, ref } from "vue";
 import type OLMap from "ol/Map";
@@ -39,8 +40,12 @@ import {
   getGeometryIcon,
   type LayerType,
 } from "@/modules/scenarioeditor/featureLayerUtils";
-import { injectStrict } from "@/utils";
-import { activeScenarioKey, searchActionsKey } from "@/components/injects";
+import { injectStrict, nanoid } from "@/utils";
+import {
+  activeLayerKey,
+  activeScenarioKey,
+  searchActionsKey,
+} from "@/components/injects";
 import type { NScenarioFeature, NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
@@ -49,8 +54,11 @@ import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { Position } from "geojson";
 import { useActiveSidc } from "@/composables/mainToolbarData";
 import { useActiveUnitStore } from "@/stores/dragStore";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore.ts";
+import type { ScenarioFeature } from "@/types/scenarioGeoModels.ts";
 
 const tm = useTimeFormatStore();
+const mainToolbarStore = useMainToolbarStore();
 
 const props = defineProps<{ mapRef?: OLMap }>();
 
@@ -60,6 +68,7 @@ const {
   geo,
   helpers: { getUnitById },
 } = injectStrict(activeScenarioKey);
+const activeLayerId = injectStrict(activeLayerKey);
 
 const { onScenarioActionHook } = injectStrict(searchActionsKey);
 const breakpoints = useBreakpoints(breakpointsTailwind);
@@ -200,6 +209,28 @@ function onAddUnit() {
     unitId && geo.addUnitPosition(unitId, dropPosition.value);
   });
 }
+
+function onAddPoint() {
+  const activeLayer = geo.getLayerById(activeLayerId.value ?? geo.layers.value[0]?.id);
+  if (!activeLayer) return;
+  const name = `Point ${(activeLayer.features.length ?? 0) + 1}`;
+
+  const newFeature: ScenarioFeature = {
+    type: "Feature",
+    id: nanoid(),
+    meta: {
+      type: "Point",
+      name,
+    },
+    geometry: {
+      type: "Point",
+      coordinates: dropPosition.value,
+    },
+    style: mainToolbarStore.currentDrawStyle ?? {},
+    properties: {},
+  };
+  geo.addFeature(newFeature, activeLayer.id);
+}
 </script>
 <template>
   <ContextMenu @update:open="onContextMenuUpdate">
@@ -286,6 +317,9 @@ function onAddUnit() {
             />
             Unit
           </ContextMenuItem>
+          <ContextMenuItem @select="onAddPoint"
+            ><PointIcon />Point/marker</ContextMenuItem
+          >
         </ContextMenuSubContent>
       </ContextMenuSub>
       <ContextMenuSub>

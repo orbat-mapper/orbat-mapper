@@ -383,12 +383,12 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function addFeature(
-    data: NScenarioFeature,
+    data: Omit<NScenarioFeature, "_pid">,
     layerId: FeatureId,
     options: UpdateOptions = {},
   ) {
     const noEmit = options.noEmit ?? false;
-    const newFeature = klona(data);
+    const newFeature = klona(data) as NScenarioFeature;
     if (!newFeature.id) newFeature.id = nanoid();
     newFeature._pid = layerId;
     update(
