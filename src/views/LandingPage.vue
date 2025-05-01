@@ -32,11 +32,12 @@
               Recreate historic battles and military scenarios in your browser
             </p>
             <p class="mt-4">
-              <a
-                class="text-base font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
-                href="https://docs.orbat-mapper.app/guide/about-orbat-mapper"
-                target="_blank"
-                >View documentation →</a
+              <Button as-child variant="link"
+                ><a
+                  href="https://docs.orbat-mapper.app/guide/about-orbat-mapper"
+                  target="_blank"
+                  >View documentation →</a
+                ></Button
               >
             </p>
           </div>
@@ -168,6 +169,7 @@ import LandingPageScenarios from "./LandingPageScenarios.vue";
 import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
 import { ORBAT_CHART_ROUTE } from "@/router/names";
 import { CheckIcon } from "@heroicons/vue/24/outline";
+import { Button } from "@/components/ui/button";
 
 const features = [
   {

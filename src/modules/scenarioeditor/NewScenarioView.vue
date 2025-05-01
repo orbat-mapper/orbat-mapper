@@ -14,12 +14,11 @@
     <div class="mx-auto my-10 max-w-7xl sm:px-6 lg:px-8">
       <form class="mt-6 space-y-6" @submit.prevent="create()">
         <div class="flex items-center justify-between space-x-3 px-4 sm:px-0">
-          <a
-            class="text-indigo-600 underline hover:text-indigo-900"
-            href="https://docs.orbat-mapper.app/guide/getting-started"
-            target="_blank"
-            >View documentation</a
-          >
+          <Button as-child variant="link"
+            ><a href="https://docs.orbat-mapper.app/guide/getting-started" target="_blank"
+              >View documentation →</a
+            >
+          </Button>
           <BaseButton primary type="submit">Create scenario</BaseButton>
         </div>
         <FormCard
@@ -138,7 +137,7 @@
             <InputGroup label="Hour" v-model="hour" type="number" min="0" max="23" />
             <InputGroup label="Minute" v-model="minute" type="number" min="0" max="59" />
           </div>
-          <p class="font-mono text-gray-700">{{ resDateTime.format() }}</p>
+          <p class="text-muted-foreground font-mono">{{ resDateTime.format() }}</p>
         </FormCard>
         <FormCard
           label="Symbology standard"

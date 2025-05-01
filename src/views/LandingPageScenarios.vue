@@ -15,14 +15,13 @@
         <h2 class="text-base leading-6 font-semibold text-gray-900 dark:text-slate-300">
           Recent scenarios
         </h2>
-        <div class="mt-3 flex items-center sm:mt-0 sm:ml-4">
-          <SortDropdown class="mr-4" :options="sortOptions" />
-          <router-link
-            :to="{ name: NEW_SCENARIO_ROUTE }"
-            class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Create new scenario
-          </router-link>
+        <div class="mt-3 flex items-center gap-1 sm:mt-0 sm:ml-4">
+          <SortDropdown :options="sortOptions" />
+          <Button as-child>
+            <router-link :to="{ name: NEW_SCENARIO_ROUTE }">
+              Create new scenario
+            </router-link>
+          </Button>
         </div>
       </header>
       <ul
@@ -127,6 +126,7 @@ import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromU
 import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
 import SortDropdown from "@/components/SortDropdown.vue";
 import { DEMO_SCENARIOS, useBrowserScenarios } from "@/composables/browserScenarios";
+import { Button } from "@/components/ui/button";
 
 const { storedScenarios, sortOptions, onAction, loadScenario } = useBrowserScenarios();
 
