@@ -1,32 +1,30 @@
 <template>
-  <FloatingPanel
-    class="pointer-events-auto flex items-center space-x-0 rounded-md bg-white p-1"
-  >
-    <p class="hidden px-2 text-sm font-medium text-gray-500 sm:block">Draw</p>
-    <div class="h-5 border-l border-gray-300" />
+  <FloatingPanel class="pointer-events-auto flex items-center space-x-0 rounded-md p-1">
+    <p class="text-muted-foreground hidden px-2 text-sm font-medium sm:block">Draw</p>
+    <div class="border-border mr-2 h-5 border-l" />
     <MainToolbarButton title="Select" :active="!currentDrawType" @click="cancel()">
-      <SelectIcon class="h-5 w-5" />
+      <SelectIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton
       title="Point"
       @click="startDrawing('Point')"
       :active="currentDrawType === 'Point'"
     >
-      <PointIcon class="h-5 w-5" />
+      <PointIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton
       title="Line"
       @click="startDrawing('LineString')"
       :active="currentDrawType === 'LineString'"
     >
-      <LineStringIcon class="h-5 w-5" />
+      <LineStringIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton
       title="Polygon"
       @click="startDrawing('Polygon')"
       :active="currentDrawType === 'Polygon'"
     >
-      <PolygonIcon class="h-5 w-5" />
+      <PolygonIcon class="size-5" />
     </MainToolbarButton>
 
     <MainToolbarButton
@@ -34,36 +32,36 @@
       @click="startDrawing('Circle')"
       :active="currentDrawType === 'Circle'"
     >
-      <CircleIcon class="h-5 w-5" />
+      <CircleIcon class="size-5" />
     </MainToolbarButton>
-    <div class="h-5 border-l border-gray-300" />
+    <div class="mx-2 h-5 border-l border-gray-300" />
     <div class="flex items-center">
       <MainToolbarButton title="Snap to grid" @click="toggleSnap()" :active="snap">
-        <SnapIcon class="h-5 w-5" />
+        <SnapIcon class="size-5" />
       </MainToolbarButton>
       <MainToolbarButton title="Edit" @click="startModify()" :active="isModifying">
-        <EditIcon class="h-5 w-5" />
+        <EditIcon class="size-5" />
       </MainToolbarButton>
       <MainToolbarButton
         title="Modify feature history"
         @click="toggleModifyHistory()"
         :active="modifyHistory"
       >
-        <IconClockEdit class="h-5 w-5" />
+        <IconClockEdit class="size-5" />
       </MainToolbarButton>
       <MainToolbarButton title="translate" @click="toggleTranslate()" :active="translate">
-        <MoveIcon class="h-5 w-5" />
+        <MoveIcon class="size-5" />
       </MainToolbarButton>
       <MainToolbarButton
         title="Delete"
         :disabled="selectedFeatureIds.size === 0"
         @click="onFeatureDelete()"
       >
-        <DeleteIcon class="h-5 w-5" />
+        <DeleteIcon class="size-5" />
       </MainToolbarButton>
     </div>
     <MainToolbarButton title="Toggle toolbar" @click="store.clearToolbar()">
-      <CloseIcon class="h-5 w-5" />
+      <CloseIcon class="size-5" />
     </MainToolbarButton>
   </FloatingPanel>
 </template>

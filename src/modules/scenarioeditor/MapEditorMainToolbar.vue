@@ -1,56 +1,56 @@
 <template>
   <nav
-    class="bg-mpanel pointer-events-auto flex w-full items-center justify-between border border-gray-300 p-1 text-sm shadow-sm sm:rounded-xl md:w-auto"
+    class="bg-popover border-border pointer-events-auto flex w-full items-center justify-between border p-1 text-sm shadow-sm sm:rounded-xl md:w-auto"
   >
     <section class="flex items-center justify-between">
       <MainToolbarButton
         title="Keep selected tool active after drawing"
         @click="toggleAddMultiple()"
-        class="hidden sm:block"
+        class="hidden sm:flex"
       >
-        <IconLockOutline v-if="addMultiple" class="h-5 w-5" />
-        <IconLockOpenVariantOutline v-else class="h-5 w-5" />
+        <IconLockOutline v-if="addMultiple" class="size-5" />
+        <IconLockOpenVariantOutline v-else class="size-6" />
       </MainToolbarButton>
       <MainToolbarButton @click="toggleMoveUnit(false)" :active="!moveUnitEnabled">
-        <SelectIcon class="h-6 w-6" />
+        <SelectIcon class="size-6" />
       </MainToolbarButton>
       <MainToolbarButton
         :active="moveUnitEnabled"
         @click="toggleMoveUnit(true)"
         title="Move unit"
       >
-        <MoveIcon class="h-6 w-6" />
+        <MoveIcon class="size-6" />
       </MainToolbarButton>
       <MainToolbarButton
         @click="emit('show-settings')"
         title="Show settings"
-        class="hidden md:block"
+        class="hidden md:flex"
       >
-        <SettingsIcon class="h-6 w-6" />
+        <SettingsIcon class="size-6" />
       </MainToolbarButton>
-      <div class="h-7 border-l-2 border-gray-300 sm:mx-1" />
+      <div class="border-border h-7 border-l-2 sm:mx-1" />
       <MainToolbarButton
         :active="store.currentToolbar === 'measurements'"
         @click="store.toggleToolbar('measurements')"
         title="Measurements"
       >
-        <MeasurementIcon class="h-6 w-6" />
+        <MeasurementIcon class="size-6" />
       </MainToolbarButton>
       <MainToolbarButton
         :active="store.currentToolbar === 'draw'"
         @click="store.toggleToolbar('draw')"
         title="Draw"
       >
-        <DrawIcon class="h-6 w-6" />
+        <DrawIcon class="size-6" />
       </MainToolbarButton>
       <MainToolbarButton
         title="Unit track"
         :active="store.currentToolbar === 'track'"
         @click="store.toggleToolbar('track')"
       >
-        <IconMapMarkerPath class="h-6 w-6" />
+        <IconMapMarkerPath class="size-6" />
       </MainToolbarButton>
-      <div class="h-7 border-l-2 border-gray-300 sm:mx-1" />
+      <div class="border-border h-7 border-l-2 sm:mx-1" />
       <div class="ml-2 flex items-center">
         <EchelonPickerPopover
           :symbol-options="symbolOptions"
@@ -73,53 +73,49 @@
       </div>
     </section>
     <section class="flex items-center">
-      <div class="-mx-1 h-7 border-l-2 border-gray-300 sm:mx-1" />
+      <div class="border-border -mx-1 h-7 border-l-2 sm:mx-1" />
       <MainToolbarButton title="Undo" @click="undo()" :disabled="!canUndo">
-        <UndoIcon class="h-6 w-6" />
+        <UndoIcon class="size-6" />
       </MainToolbarButton>
       <MainToolbarButton title="Redo" @click="redo()" :disabled="!canRedo">
-        <RedoIcon class="h-6 w-6" />
+        <RedoIcon class="size-6" />
       </MainToolbarButton>
-      <div class="mx-1 hidden h-7 border-l-2 border-gray-300 sm:block" />
+      <div class="border-border mx-1 hidden h-7 border-l-2 sm:block" />
       <MainToolbarButton
         title="Select Time and Date"
-        class="hidden sm:block"
+        class="hidden sm:flex"
         @click="emit('open-time-modal')"
       >
         <span class="sr-only">Select Time and Date</span>
-        <CalendarIcon class="h-5 w-5" aria-hidden="true" />
+        <CalendarIcon class="size-5" aria-hidden="true" />
       </MainToolbarButton>
       <MainToolbarButton
         title="Previous Day"
-        class="hidden sm:block"
+        class="hidden sm:flex"
         @click="emit('dec-day')"
       >
         <span class="sr-only">Previous Day</span>
-        <IconChevronLeft class="h-5 w-5" aria-hidden="true" />
+        <IconChevronLeft class="size-5" aria-hidden="true" />
       </MainToolbarButton>
-      <MainToolbarButton
-        title="Next Day"
-        class="hidden sm:block"
-        @click="emit('inc-day')"
-      >
+      <MainToolbarButton title="Next Day" class="hidden sm:flex" @click="emit('inc-day')">
         <span class="sr-only">Next Day</span>
-        <IconChevronRight class="h-5 w-5" aria-hidden="true" />
+        <IconChevronRight class="size-5" aria-hidden="true" />
       </MainToolbarButton>
       <MainToolbarButton
         title="Previous Event"
-        class="hidden sm:block"
+        class="hidden sm:flex"
         @click="emit('prev-event')"
       >
         <span class="sr-only">Previous Event</span>
-        <IconSkipPrevious class="h-5 w-5" aria-hidden="true" />
+        <IconSkipPrevious class="size-5" aria-hidden="true" />
       </MainToolbarButton>
       <MainToolbarButton
         title="Next Event"
-        class="hidden sm:block"
+        class="hidden sm:flex"
         @click="emit('next-event')"
       >
         <span class="sr-only">Next Event</span>
-        <IconSkipNext class="h-5 w-5" aria-hidden="true" />
+        <IconSkipNext class="size-5 w-5" aria-hidden="true" />
       </MainToolbarButton>
     </section>
     <FloatingPanel
@@ -127,13 +123,9 @@
       class="bg-opacity-75 absolute bottom-14 overflow-visible p-2 px-4 text-sm sm:bottom-16 sm:left-1/2 sm:-translate-x-1/2"
     >
       Click on map or ORBAT to place unit.
-      <button
-        type="button"
-        class="ml-4 font-medium text-blue-700 hover:text-blue-600"
-        @click="cancelGetLocation()"
-      >
+      <Button type="button" variant="link" size="sm" @click="cancelGetLocation()">
         Cancel
-      </button>
+      </Button>
     </FloatingPanel>
   </nav>
 </template>
@@ -174,6 +166,7 @@ import { orbatUnitClick } from "@/components/eventKeys";
 import { CalendarIcon } from "@heroicons/vue/24/solid";
 import SymbolPickerPopover from "@/modules/scenarioeditor/SymbolPickerPopover.vue";
 import EchelonPickerPopover from "@/modules/scenarioeditor/EchelonPickerPopover.vue";
+import { Button } from "@/components/ui/button";
 
 const emit = defineEmits([
   "open-time-modal",

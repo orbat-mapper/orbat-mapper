@@ -1,21 +1,19 @@
 <template>
-  <FloatingPanel
-    class="pointer-events-auto flex items-center space-x-0.5 rounded-md bg-white p-1"
-  >
-    <p class="px-2 text-sm font-medium text-gray-500">Measure</p>
+  <FloatingPanel class="pointer-events-auto flex items-center space-x-0.5 rounded-md p-1">
+    <p class="text-muted-foreground px-2 text-sm font-medium">Measure</p>
     <MainToolbarButton
       title="Length"
       @click="measurementType = 'LineString'"
       :active="measurementType === 'LineString'"
     >
-      <LengthIcon class="h-5 w-5" />
+      <LengthIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton
       title="Area"
       @click="measurementType = 'Polygon'"
       :active="measurementType === 'Polygon'"
     >
-      <AreaIcon class="h-5 w-5" />
+      <AreaIcon class="size-5" />
     </MainToolbarButton>
     <div class="h-5 border-l border-gray-300" />
     <MainToolbarButton
@@ -23,31 +21,31 @@
       @click="showSegments = !showSegments"
       :active="showSegments"
     >
-      <ShowSegmentsIcon class="h-5 w-5" />
+      <ShowSegmentsIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton
       title="Show multiple measurements"
       @click="clearPrevious = !clearPrevious"
       :active="!clearPrevious"
     >
-      <ShowMultipleIcon class="h-5 w-5" />
+      <ShowMultipleIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton
       title="Show range circle"
       @click="showCircle = !showCircle"
       :active="showCircle"
     >
-      <ShowCircleIcon class="h-5 w-5" />
+      <ShowCircleIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton title="Toggle snapping" @click="snap = !snap" :active="snap">
-      <SnapIcon class="h-5 w-5" />
+      <SnapIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton title="Clear measurements" @click="clear()">
-      <TrashIcon class="h-5 w-5" />
+      <TrashIcon class="size-5" />
     </MainToolbarButton>
 
     <MainToolbarButton title="Toggle toolbar" @click="store.clearToolbar()">
-      <CloseIcon class="h-5 w-5" />
+      <CloseIcon class="size-5" />
     </MainToolbarButton>
   </FloatingPanel>
 </template>

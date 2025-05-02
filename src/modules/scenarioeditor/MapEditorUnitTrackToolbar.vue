@@ -15,18 +15,16 @@ const unitSettings = useUnitSettingsStore();
 const store = useMainToolbarStore();
 </script>
 <template>
-  <FloatingPanel
-    class="pointer-events-auto flex items-center space-x-1 rounded-md bg-white p-1"
-  >
-    <p class="px-2 text-sm font-medium text-gray-500">Track</p>
-    <div class="h-5 border-l border-gray-300" />
+  <FloatingPanel class="pointer-events-auto flex items-center space-x-1 rounded-md p-1">
+    <p class="text-muted-foreground px-2 text-sm font-medium">Track</p>
+    <div class="border-border h-5 border-l" />
 
     <MainToolbarButton
       title="Show unit track"
       @click="unitSettings.showHistory = !unitSettings.showHistory"
       :active="unitSettings.showHistory"
     >
-      <ShowPathIcon class="h-5 w-5" />
+      <ShowPathIcon class="size-5" />
     </MainToolbarButton>
 
     <MainToolbarButton
@@ -34,7 +32,7 @@ const store = useMainToolbarStore();
       @click="unitSettings.editHistory = !unitSettings.editHistory"
       :active="unitSettings.editHistory"
     >
-      <EditIcon class="h-5 w-5" />
+      <EditIcon class="size-5" />
     </MainToolbarButton>
 
     <MainToolbarButton
@@ -42,11 +40,11 @@ const store = useMainToolbarStore();
       @click="unitSettings.showWaypointTimestamps = !unitSettings.showWaypointTimestamps"
       :active="unitSettings.showWaypointTimestamps"
     >
-      <IconTimelineClockOutline class="h-5 w-5" />
+      <IconTimelineClockOutline class="size-5" />
     </MainToolbarButton>
 
     <MainToolbarButton title="Toggle toolbar" @click="store.clearToolbar()">
-      <CloseIcon class="h-5 w-5" />
+      <CloseIcon class="size-5" />
     </MainToolbarButton>
   </FloatingPanel>
 </template>
