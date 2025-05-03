@@ -12,9 +12,13 @@ import { Button } from "@/components/ui/button";
 
 interface Props {
   selectOnly?: boolean;
+  hideDropdown?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), { selectOnly: false });
+const props = withDefaults(defineProps<Props>(), {
+  selectOnly: false,
+  hideDropdown: false,
+});
 const emit = defineEmits(["event-click"]);
 
 const {
@@ -58,7 +62,7 @@ function addEvent() {
 }
 </script>
 <template>
-  <div class="">
+  <div class="p-0.5">
     <PanelHeading>Scenario events</PanelHeading>
 
     <div class="flow-root">
@@ -94,7 +98,10 @@ function addEvent() {
               </div>
             </div>
           </div>
-          <div class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100">
+          <div
+            v-if="!hideDropdown"
+            class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+          >
             <ScenarioEventDropdownMenu hide-edit @action="onAction($event, event.id)" />
           </div>
         </li>

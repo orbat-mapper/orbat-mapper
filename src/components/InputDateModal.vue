@@ -12,7 +12,7 @@ import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vu
 import { type ScenarioEvent } from "@/types/scenarioModels";
 import ToggleField from "@/components/ToggleField.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface Props {
   dialogTitle?: string;
   timestamp?: number;
@@ -51,8 +51,12 @@ function onEventClick(event: ScenarioEvent) {
 </script>
 <template>
   <NewSimpleModal v-model="open" :dialog-title="dialogTitle" @cancel="emit('cancel')">
-    <TabView class="">
-      <TabItem label="Time" class="px-1">
+    <Tabs class="" default-value="time">
+      <TabsList class="w-full">
+        <TabsTrigger value="time" class="">Time</TabsTrigger>
+        <TabsTrigger value="events" class="">Events </TabsTrigger>
+      </TabsList>
+      <TabsContent value="time">
         <form @submit.prevent="updateTime" class="mt-4 space-y-6">
           <div class="flex items-center justify-between">
             <DescriptionItem label="Time zone name">
@@ -71,10 +75,10 @@ function onEventClick(event: ScenarioEvent) {
             <PrimaryButton type="submit" class="">Update time</PrimaryButton>
           </p>
         </form>
-      </TabItem>
-      <TabItem label="Events">
-        <ScenarioEventsPanel select-only @event-click="onEventClick" />
-      </TabItem>
-    </TabView>
+      </TabsContent>
+      <TabsContent value="events">
+        <ScenarioEventsPanel select-only @event-click="onEventClick" hide-dropdown />
+      </TabsContent>
+    </Tabs>
   </NewSimpleModal>
 </template>
