@@ -42,8 +42,8 @@ const cols = computed(() => props.table.getAllLeafColumns());
             v-for="col in cols.filter((c) => typeof c.columnDef.header === 'string')"
           >
             <DropdownMenuCheckboxItem
-              :checked="col.getIsVisible()"
-              @update:checked="col.toggleVisibility($event)"
+              :modelValue="col.getIsVisible()"
+              @update:modelValue="col.toggleVisibility($event)"
               @select.prevent
               :disabled="!col.getCanHide()"
             >

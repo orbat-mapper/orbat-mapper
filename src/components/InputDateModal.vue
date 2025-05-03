@@ -6,13 +6,12 @@ import InputGroup from "./InputGroup.vue";
 import DescriptionItem from "./DescriptionItem.vue";
 import { useDateElements } from "@/composables/scenarioTime";
 import { useFocusOnMount } from "@/components/helpers";
-import TabView from "@/components/TabView.vue";
-import TabItem from "@/components/TabItem.vue";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 import { type ScenarioEvent } from "@/types/scenarioModels";
 import ToggleField from "@/components/ToggleField.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 interface Props {
   dialogTitle?: string;
   timestamp?: number;

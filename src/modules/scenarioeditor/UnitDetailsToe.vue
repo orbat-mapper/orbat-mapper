@@ -16,7 +16,7 @@ import type { EntityId } from "@/types/base";
 import { useEquipmentEditStore, usePersonnelEditStore } from "@/stores/toeStore";
 import type { StateAdd } from "@/types/scenarioModels";
 
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
 import {
   useUnitEquipmentTableStore,
@@ -298,116 +298,109 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
 </script>
 
 <template>
-  <TabGroup :selected-index="uiStore.toeTabIndex" @change="uiStore.toeTabIndex = $event">
-    <TabList class="-mx-4 flex items-center border-b bg-gray-100 p-2 px-4">
-      <Tab
-        v-for="lbl in ['Equipment', 'Personnel', 'Supplies']"
-        :key="lbl"
-        v-slot="{ selected }"
-        as="template"
-        ><button
-          type="button"
-          :class="[
-            selected ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:text-gray-800',
-            'w-full rounded-md px-3 py-2 text-sm font-medium',
-          ]"
+  <Tabs v-model="uiStore.toeTabIndex" class="w-full gap-0" :unmountOnHide="false">
+    <div class="-mx-4">
+      <TabsList class="border-border h-12 w-full rounded-none border-b px-4 py-1">
+        <TabsTrigger
+          v-for="(lbl, k) in ['Equipment', 'Personnel', 'Supplies']"
+          :key="lbl"
+          :value="k"
         >
           {{ lbl }}
-        </button></Tab
-      >
-    </TabList>
-    <TabPanels>
-      <TabPanel :unmount="false">
-        <ToeGridHeader
-          v-model:editMode="isEditMode"
-          v-model:addMode="equipmentEditStore.showAddForm"
-          v-model:includeSubordinates="includeSubordinates"
-          :selectedCount="selectedEquipment.length"
-          @delete="onDeleteItems('equipment')"
-          :isLocked="isLocked"
-        />
-        <AddUnitToeItemForm
-          v-if="equipmentEditStore.showAddForm"
-          mode="equipment"
-          :usedItems="isMultiMode ? [] : aggregatedEquipment"
-          @cancel="equipmentEditStore.showAddForm = false"
-          @submit="onAddSubmit('equipment', $event)"
-        />
-        <ToeGrid
-          v-if="aggregatedEquipment.length"
-          :columns="equipmentColumns"
-          :data="aggregatedEquipment"
-          :tableStore="unitEquipmentTableStore"
-          v-model:editMode="isEditMode"
-          v-model:editedId="editedEquipmentId"
-          :select="isEditMode"
-          v-model:selected="selectedEquipment"
-          :isLocked="isLocked"
-        >
-          <template #inline-form="{ row }">
-            <InlineFormWrapper class="pr-6" details-panel>
-              <ModifyUnitToeItemForm
-                :itemData="row"
-                :heading="row.name"
-                :editStore="equipmentEditStore"
-                @cancel="isEditMode = false"
-                @updateCount="updateItemCount('equipment', $event)"
-                @updateOnHand="updateItemOnHand('equipment', $event)"
-                @diffOnHand="diffItemOnHand('equipment', $event)"
-              />
-            </InlineFormWrapper>
-          </template>
-        </ToeGrid>
-      </TabPanel>
-      <TabPanel :unmount="false">
-        <ToeGridHeader
-          v-model:editMode="isEditMode"
-          v-model:addMode="personnelEditStore.showAddForm"
-          v-model:includeSubordinates="includeSubordinates"
-          :selectedCount="selectedPersonnel.length"
-          @delete="onDeleteItems('personnel')"
-          :isLocked="isLocked"
-        />
-        <AddUnitToeItemForm
-          v-if="personnelEditStore.showAddForm"
-          mode="personnel"
-          :usedItems="isMultiMode ? [] : aggregatedPersonnel"
-          @cancel="personnelEditStore.showAddForm = false"
-          @submit="onAddSubmit('personnel', $event)"
-          @delete="onDeleteItems('personnel')"
-        />
+        </TabsTrigger>
+      </TabsList>
+    </div>
 
-        <ToeGrid
-          v-if="aggregatedPersonnel.length"
-          :columns="personnelColumns"
-          :data="aggregatedPersonnel"
-          :tableStore="unitPersonnelTableStore"
-          :select="isEditMode"
-          v-model:editMode="isEditMode"
-          v-model:editedId="editedPersonnelId"
-          v-model:selected="selectedPersonnel"
-          :isLocked="isLocked"
-        >
-          <template #inline-form="{ row }">
-            <InlineFormWrapper class="pr-6" details-panel>
-              <ModifyUnitToeItemForm
-                :itemData="row"
-                :heading="row.name"
-                @cancel="isEditMode = false"
-                :editStore="personnelEditStore"
-                @updateCount="updateItemCount('personnel', $event)"
-                @updateOnHand="updateItemOnHand('personnel', $event)"
-                @diffOnHand="diffItemOnHand('personnel', $event)"
-              />
-            </InlineFormWrapper>
-          </template>
-        </ToeGrid>
-      </TabPanel>
-      <TabPanel
-        ><UnitDetailsSupplies :unit="unit" :isLocked="isLocked"></UnitDetailsSupplies
-      ></TabPanel>
-    </TabPanels>
-  </TabGroup>
+    <TabsContent :value="0">
+      <ToeGridHeader
+        v-model:editMode="isEditMode"
+        v-model:addMode="equipmentEditStore.showAddForm"
+        v-model:includeSubordinates="includeSubordinates"
+        :selectedCount="selectedEquipment.length"
+        @delete="onDeleteItems('equipment')"
+        :isLocked="isLocked"
+      />
+      <AddUnitToeItemForm
+        v-if="equipmentEditStore.showAddForm"
+        mode="equipment"
+        :usedItems="isMultiMode ? [] : aggregatedEquipment"
+        @cancel="equipmentEditStore.showAddForm = false"
+        @submit="onAddSubmit('equipment', $event)"
+      />
+      <ToeGrid
+        v-if="aggregatedEquipment.length"
+        :columns="equipmentColumns"
+        :data="aggregatedEquipment"
+        :tableStore="unitEquipmentTableStore"
+        v-model:editMode="isEditMode"
+        v-model:editedId="editedEquipmentId"
+        :select="isEditMode"
+        v-model:selected="selectedEquipment"
+        :isLocked="isLocked"
+      >
+        <template #inline-form="{ row }">
+          <InlineFormWrapper class="pr-6" details-panel>
+            <ModifyUnitToeItemForm
+              :itemData="row"
+              :heading="row.name"
+              :editStore="equipmentEditStore"
+              @cancel="isEditMode = false"
+              @updateCount="updateItemCount('equipment', $event)"
+              @updateOnHand="updateItemOnHand('equipment', $event)"
+              @diffOnHand="diffItemOnHand('equipment', $event)"
+            />
+          </InlineFormWrapper>
+        </template>
+      </ToeGrid>
+    </TabsContent>
+    <TabsContent :value="1">
+      <ToeGridHeader
+        v-model:editMode="isEditMode"
+        v-model:addMode="personnelEditStore.showAddForm"
+        v-model:includeSubordinates="includeSubordinates"
+        :selectedCount="selectedPersonnel.length"
+        @delete="onDeleteItems('personnel')"
+        :isLocked="isLocked"
+      />
+      <AddUnitToeItemForm
+        v-if="personnelEditStore.showAddForm"
+        mode="personnel"
+        :usedItems="isMultiMode ? [] : aggregatedPersonnel"
+        @cancel="personnelEditStore.showAddForm = false"
+        @submit="onAddSubmit('personnel', $event)"
+        @delete="onDeleteItems('personnel')"
+      />
+
+      <ToeGrid
+        v-if="aggregatedPersonnel.length"
+        :columns="personnelColumns"
+        :data="aggregatedPersonnel"
+        :tableStore="unitPersonnelTableStore"
+        :select="isEditMode"
+        v-model:editMode="isEditMode"
+        v-model:editedId="editedPersonnelId"
+        v-model:selected="selectedPersonnel"
+        :isLocked="isLocked"
+      >
+        <template #inline-form="{ row }">
+          <InlineFormWrapper class="pr-6" details-panel>
+            <ModifyUnitToeItemForm
+              :itemData="row"
+              :heading="row.name"
+              @cancel="isEditMode = false"
+              :editStore="personnelEditStore"
+              @updateCount="updateItemCount('personnel', $event)"
+              @updateOnHand="updateItemOnHand('personnel', $event)"
+              @diffOnHand="diffItemOnHand('personnel', $event)"
+            />
+          </InlineFormWrapper>
+        </template>
+      </ToeGrid>
+    </TabsContent>
+    <TabsContent :value="2">
+      <UnitDetailsSupplies :unit="unit" :isLocked="isLocked"></UnitDetailsSupplies>
+    </TabsContent>
+  </Tabs>
 
   <div class="prose dark:prose-invert p-1">
     <p v-if="!aggregatedEquipment.length && !aggregatedPersonnel.length">
