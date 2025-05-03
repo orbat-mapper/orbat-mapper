@@ -1,20 +1,7 @@
-<template>
-  <button
-    type="button"
-    class="rounded hover:drop-shadow-sm hover:sepia disabled:opacity-50 disabled:hover:sepia-0"
-    :class="[active ? 'invert' : '']"
-  >
-    <MilitarySymbol
-      :sidc="sidc"
-      :size="size"
-      :options="{ ...symbolOptions, square: true }"
-    />
-    <slot />
-  </button>
-</template>
 <script setup lang="ts">
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { type UnitSymbolOptions } from "@/types/scenarioModels";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   sidc: string;
@@ -28,3 +15,14 @@ const props = withDefaults(defineProps<Props>(), {
   size: 24,
 });
 </script>
+<template>
+  <Button type="button" variant="ghost" size="icon" :class="[active ? 'invert' : '']">
+    <NewMilitarySymbol
+      :sidc="sidc"
+      :size="size"
+      class="size-9"
+      :options="{ ...symbolOptions, square: true }"
+    />
+    <slot />
+  </Button>
+</template>

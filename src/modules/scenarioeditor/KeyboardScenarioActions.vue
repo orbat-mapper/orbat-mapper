@@ -64,8 +64,14 @@ function isRekaComponent(e: KeyboardEvent) {
   let target = e.target as HTMLElement;
   if (!target) return false;
   return (
-    (target?.id && target.id.includes("dropdown")) ||
-    ["dropdown", "menu-item", "popover", "select"].some((type) =>
+    isTargetReka(target) || (target.parentElement && isTargetReka(target.parentElement))
+  );
+}
+
+function isTargetReka(target: HTMLElement) {
+  return (
+    (target?.id && (target.id.includes("dropdown") || target.id.includes("popover"))) ||
+    ["dropdown", "context-menu", "popover", "select"].some((type) =>
       target.dataset?.slot?.includes(type),
     )
   );

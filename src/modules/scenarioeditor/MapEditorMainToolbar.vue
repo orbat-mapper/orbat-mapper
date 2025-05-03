@@ -210,7 +210,7 @@ const symbolOptions = computed(() =>
   activeParent.value
     ? {
         ...unitActions.getCombinedSymbolOptions(activeParent.value, true),
-        outlineWidth: 4,
+        outlineWidth: 5,
       }
     : {},
 );
@@ -290,8 +290,7 @@ watch(activeParent, (unitOrSideGroup) => {
   }
 });
 
-function selectEchelon(sidc: string, closePopover: (ref?: Ref | HTMLElement) => void) {
+function selectEchelon(sidc: string) {
   currentEchelon.value = new Sidc(sidc).emt;
-  closePopover();
 }
 </script>

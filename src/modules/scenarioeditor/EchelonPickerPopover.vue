@@ -1,45 +1,50 @@
 <script setup lang="ts">
 import PanelSymbolButton from "@/components/PanelSymbolButton.vue";
-import { Float } from "@headlessui-float/vue";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/vue";
-import FloatingPanel from "@/components/FloatingPanel.vue";
-import { type Ref } from "vue";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ref } from "vue";
 import { useToolbarUnitSymbolData } from "@/composables/mainToolbarData";
 import { type UnitSymbolOptions } from "@/types/scenarioModels";
 
 interface Props {
   symbolOptions: UnitSymbolOptions;
-  selectEchelon: (sidc: string, closePopover: (ref?: Ref | HTMLElement) => void) => void;
+  selectEchelon: (sidc: string) => void;
 }
 
 const props = defineProps<Props>();
+const isOpen = ref(false);
 
 const { echelonSidc, emtItems } = useToolbarUnitSymbolData();
+
+const onSelect = (sidc: string) => {
+  props.selectEchelon(sidc);
+  isOpen.value = false;
+};
 </script>
 <template>
-  <Popover as="template">
-    <Float placement="top" :offset="12" flip shift strategy="fixed">
-      <PopoverButton as="template">
-        <PanelSymbolButton
-          :size="20"
-          :sidc="echelonSidc || ''"
-          :symbol-options="symbolOptions"
-          title="Select echelon"
-        />
-      </PopoverButton>
-      <PopoverPanel focus v-slot="{ close }">
-        <FloatingPanel class="grid grid-cols-5 justify-items-center gap-2 p-2">
-          <PanelSymbolButton
-            class="self-end"
-            v-for="{ sidc, text } in emtItems"
-            :key="sidc"
-            :sidc="sidc"
-            :title="text"
-            :symbol-options="symbolOptions"
-            @click="selectEchelon(sidc, close)"
-          />
-        </FloatingPanel>
-      </PopoverPanel>
-    </Float>
+  <Popover v-model:open="isOpen">
+    <PopoverTrigger as-child>
+      <PanelSymbolButton
+        :size="20"
+        :sidc="echelonSidc || ''"
+        :symbol-options="symbolOptions"
+        title="Select echelon"
+      />
+    </PopoverTrigger>
+    <PopoverContent
+      class="grid grid-cols-5 justify-items-center gap-2 p-2"
+      align="center"
+      side="top"
+      :sideOffset="10"
+    >
+      <PanelSymbolButton
+        class="self-end"
+        v-for="{ sidc, text } in emtItems"
+        :key="sidc"
+        :sidc="sidc"
+        :title="text"
+        :symbol-options="symbolOptions"
+        @click="onSelect(sidc)"
+      />
+    </PopoverContent>
   </Popover>
 </template>

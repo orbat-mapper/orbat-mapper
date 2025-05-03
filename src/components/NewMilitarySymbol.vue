@@ -5,7 +5,7 @@ import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 
 export default defineComponent({
-  name: "MilitarySymbol",
+  name: "NewMilitarySymbol",
   props: {
     sidc: { type: String },
     size: {
