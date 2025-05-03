@@ -21,7 +21,6 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.5.2",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.0.3",
-    "@headlessui-float/vue": "^0.14.4",
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
     "@iconify-prerendered/vue-mdi": "^0.23.1718880438",
