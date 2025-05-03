@@ -2,19 +2,17 @@
 import { IconChevronUp, IconPlus as AddSymbolIcon } from "@iconify-prerendered/vue-mdi";
 import PanelSymbolButton from "@/components/PanelSymbolButton.vue";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-import { RadioGroup, RadioGroupOption } from "@headlessui/vue";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ref } from "vue";
 import { useToolbarUnitSymbolData } from "@/composables/mainToolbarData";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { type UnitSymbolOptions } from "@/types/scenarioModels";
 import { injectStrict } from "@/utils";
 import { sidcModalKey } from "@/components/injects";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import PanelButton from "@/components/PanelButton.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import type { MenuItemData } from "@/components/types.ts";
 import { Button } from "@/components/ui/button";
+import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 
 interface Props {
   symbolOptions: UnitSymbolOptions;
@@ -67,50 +65,35 @@ function onAddUnit(sidc: string) {
       </Button>
     </PopoverTrigger>
     <PopoverContent
-      class="overflow-hidden p-2"
+      class="p-2 px-1"
       align="center"
       side="top"
       :sideOffset="10"
+      @keydown.esc.stop="isOpen = false"
     >
-      <header class="-mx-2 -mt-2 flex items-center justify-between border border-b">
-        <RadioGroup
-          v-model="symbolPage"
-          class="isolate flex divide-x divide-gray-200 shadow-sm focus:outline-hidden"
-        >
-          <RadioGroupOption
-            as="template"
-            v-for="{ id, sidc, title } in symbolTabs"
+      <Tabs v-model="symbolPage" class="w-full">
+        <TabsList class="border-border flex h-10 w-full">
+          <TabsTrigger
+            v-for="{ id, title, sidc } in symbolTabs"
             :key="id"
-            v-slot="{ checked, active }"
             :value="id"
+            :title="title"
           >
-            <div
-              :class="[
-                checked ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700',
-                'group relative min-w-0 justify-self-center overflow-hidden bg-white px-4 py-2 hover:bg-gray-50 focus:z-10 focus:outline-hidden',
-              ]"
-            >
-              <MilitarySymbol
-                :sidc="sidc"
-                :title="title"
-                :size="15"
-                :options="{
-                  monoColor: checked ? 'black' : 'black',
-                  strokeWidth: 8,
-                }"
-              />
-              <span
-                aria-hidden="true"
-                :class="[
-                  checked ? 'bg-army' : 'bg-transparent',
-                  'absolute inset-x-0 bottom-0 h-0.5',
-                ]"
-              />
-            </div>
-          </RadioGroupOption>
-        </RadioGroup>
-        <DotsMenu :items="panelItems" class="" />
-      </header>
+            <NewMilitarySymbol
+              :sidc="sidc"
+              :title="title"
+              :size="15"
+              class="size-6"
+              :options="{
+                monoColor: 'currentColor',
+                strokeWidth: 8,
+              }"
+            />
+          </TabsTrigger>
+          <DotsMenu :items="panelItems" class="" />
+        </TabsList>
+      </Tabs>
+
       <div class="mt-3 grid h-20 grid-cols-5 place-items-center items-center gap-2">
         <PanelSymbolButton
           class=""
@@ -128,9 +111,15 @@ function onAddUnit(sidc: string) {
           :symbol-options="symbolOptions"
           @click="onAddUnit(customSidc)"
         />
-        <PanelButton @click="handleChangeSymbol()" title="Add symbol">
-          <AddSymbolIcon class="h-5 w-5" />
-        </PanelButton>
+        <Button
+          variant="ghost"
+          size="icon"
+          type="button"
+          @click="handleChangeSymbol()"
+          title="Add symbol"
+        >
+          <AddSymbolIcon class="size-5" />
+        </Button>
       </div>
     </PopoverContent>
   </Popover>
