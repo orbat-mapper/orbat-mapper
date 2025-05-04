@@ -392,7 +392,7 @@ onUnmounted(() => {
       <ul class="-mt-6">
         <li
           v-for="layer in mapLayers"
-          class="group flex items-center justify-between border-l pl-1 hover:bg-amber-50"
+          class="group hover:bg-background/40 flex items-center justify-between border-l pl-1"
           :key="layer.id"
           @dblclick="onImageLayerDoubleClick(layer)"
           @click="onImageLayerClick(layer, $event)"
@@ -405,7 +405,7 @@ onUnmounted(() => {
           <button class="flex flex-auto items-center py-2.5 sm:py-2">
             <component :is="getMapLayerIcon(layer)" class="h-5 w-5 text-gray-400" />
             <span
-              class="ml-2 text-left text-sm text-gray-700 group-hover:text-gray-900"
+              class="ml-2 text-left text-sm group-hover:text-gray-900"
               :class="{
                 'font-bold': activeMapLayerId === layer.id,
                 'opacity-50': layer.isHidden,
@@ -425,7 +425,7 @@ onUnmounted(() => {
               type="button"
               @click="toggleMapLayerVisibility(layer)"
               @keydown.stop
-              class="ml-1 text-gray-500 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 hover:text-gray-700"
+              class="text-muted-foreground ml-1 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 hover:text-gray-700"
               title="Toggle layer visibility"
             >
               <IconEyeOff v-if="layer.isHidden" class="h-5 w-5" />

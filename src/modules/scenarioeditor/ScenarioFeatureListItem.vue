@@ -96,13 +96,13 @@ onUnmounted(() => {
 <template>
   <li
     ref="elRef"
-    class="group relative flex items-center justify-between border-l select-none hover:bg-amber-50"
+    class="group hover:bg-accent relative flex items-center justify-between border-l select-none"
     :data-feature-id="feature.id"
     :class="[
       itemState.type === 'drag-over'
         ? 'bg-gray-100'
         : selected
-          ? 'border-yellow-500 bg-yellow-100'
+          ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900'
           : 'border-transparent',
       itemState.type === 'dragging' ? 'opacity-20' : '',
     ]"
@@ -117,9 +117,9 @@ onUnmounted(() => {
       @dblclick="emit('feature-double-click', $event)"
       class="flex flex-auto items-center py-2.5 sm:py-2"
     >
-      <component :is="getGeometryIcon(feature)" class="h-5 w-5 text-gray-400" />
+      <component :is="getGeometryIcon(feature)" class="text-muted-foreground h-5 w-5" />
       <span
-        class="ml-2 text-left text-sm text-gray-700 group-hover:text-gray-900"
+        class="group-hover:text-accent-foreground text-foreground ml-2 text-left text-sm"
         :class="{ 'font-bold': active, 'opacity-50': hidden }"
       >
         {{ feature.meta.name || feature.type || feature.geometry.type }}

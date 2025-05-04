@@ -183,7 +183,7 @@ onUnmounted(() => {
     <template #left
       ><span ref="handleRef">
         <IconDrag
-          class="h-6 w-6 cursor-move text-gray-400 group-focus-within:opacity-100 group-hover:opacity-100 sm:opacity-0"
+          class="text-muted-foreground h-6 w-6 cursor-move group-focus-within:opacity-100 group-hover:opacity-100 sm:opacity-0"
         /> </span
     ></template>
     <template #label
@@ -215,7 +215,7 @@ onUnmounted(() => {
           type="button"
           @click="activeLayerId = layer.id"
           @keydown.stop
-          class="text-gray-500 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 hover:text-gray-700"
+          class="text-muted-foreground hover:text-primary-foreground opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           title="Set as active layer"
         >
           <IconStar v-if="activeLayerId === layer.id" class="h-5 w-5" />
@@ -225,7 +225,7 @@ onUnmounted(() => {
           type="button"
           @click="toggleFeatureLayerVisibility(layer)"
           @keydown.stop
-          class="ml-1 text-gray-500 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 hover:text-gray-700"
+          class="text-muted-foreground hover:text-primary-foreground ml-1 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           title="Toggle layer visibility"
         >
           <IconEyeOff v-if="layer.isHidden" class="h-5 w-5" />
@@ -234,7 +234,7 @@ onUnmounted(() => {
 
         <IconClockOutline
           v-if="layer.visibleFromT || layer.visibleUntilT"
-          class="h-5 w-5 text-gray-400"
+          class="text-muted-foreground h-5 w-5"
         />
         <DotsMenu
           class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"

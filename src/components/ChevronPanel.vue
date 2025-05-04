@@ -38,7 +38,7 @@ const panelId = nanoid(5);
 </script>
 
 <template>
-  <div as="div" class="border-b border-gray-200 py-2">
+  <div class="border-border border-b py-2">
     <div ref="headerRef" class="">
       <h3
         :class="
@@ -63,7 +63,7 @@ const panelId = nanoid(5);
             }"
           />
 
-          <span class="ml-2 min-w-0 flex-auto truncate text-left font-bold text-gray-900">
+          <span class="ml-2 min-w-0 flex-auto truncate text-left font-bold">
             <slot name="label">{{ label }}</slot>
           </span>
         </button>

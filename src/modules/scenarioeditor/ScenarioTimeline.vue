@@ -319,7 +319,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
   >
     <div
       ref="el"
-      class="bg-mpanel mb-2 w-full transform overflow-x-hidden border-t border-gray-500 text-sm transition-all select-none"
+      class="bg-background border-border mb-2 w-full transform overflow-x-hidden border-t text-sm transition-all select-none"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
       @pointermove="onPointerMove"
@@ -329,7 +329,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
       @mouseleave="showHoverMarker = false"
       @contextmenu="onContextMenu"
     >
-      <div class="flex h-3.5 items-center justify-center overflow-clip bg-gray-100">
+      <div class="bg-background flex h-3.5 items-center justify-center overflow-clip">
         <IconTriangleDown class="h-4 w-4 scale-x-150 transform text-red-900" />
       </div>
       <div
@@ -401,7 +401,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
       </p>
       <div
         v-if="showHoverMarker"
-        class="bg-opacity-50 hover-hover:block absolute top-0 bottom-0 hidden w-0.5 bg-red-500"
+        class="hover-hover:flex absolute top-0 bottom-0 w-0.5 bg-red-900/50"
         :style="`left: ${hoveredX}px`"
       />
     </div>
