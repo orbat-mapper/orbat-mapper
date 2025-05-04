@@ -319,7 +319,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
   >
     <div
       ref="el"
-      class="bg-background border-border mb-2 w-full transform overflow-x-hidden border-t text-sm transition-all select-none"
+      class="bg-sidebar border-border mb-2 w-full transform overflow-x-hidden border-t text-sm transition-all select-none"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
       @pointermove="onPointerMove"
@@ -329,7 +329,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
       @mouseleave="showHoverMarker = false"
       @contextmenu="onContextMenu"
     >
-      <div class="bg-background flex h-3.5 items-center justify-center overflow-clip">
+      <div class="bg-sidebar flex h-3.5 items-center justify-center overflow-clip">
         <IconTriangleDown class="h-4 w-4 scale-x-150 transform text-red-900" />
       </div>
       <div
@@ -371,11 +371,11 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
             :style="`width: ${timelineWidth}px`"
           ></div>
         </div>
-        <div class="flex justify-center border-gray-300">
+        <div class="border-muted-foreground flex justify-center">
           <div
             v-for="tick in majorTicks"
             :key="tick.timestamp"
-            class="flex-none border-r border-b border-gray-300 border-r-gray-500 pl-0.5"
+            class="border-muted-foreground flex-none border-r border-b pl-0.5"
             :style="`width: ${majorWidth}px`"
           >
             {{ tick.label }}
@@ -385,7 +385,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
           <div
             v-for="tick in minorTicks"
             :key="tick.timestamp"
-            class="text-muted-foreground min-h-[1rem] flex-none border-r border-gray-300"
+            class="text-muted-foreground border-muted-foreground min-h-[1rem] flex-none border-r pl-0.5"
             :style="`width: ${minorWidth}px`"
           >
             {{ tick.label }}
@@ -395,13 +395,13 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
 
       <p
         v-if="showHoverMarker && !isDragging"
-        class="absolute top-0 right-1 hidden p-0 text-xs text-red-900 select-none sm:block"
+        class="absolute top-0 right-1 hidden p-0 text-xs text-red-900 select-none sm:block dark:text-red-600"
       >
         {{ formattedHoveredDate }}
       </p>
       <div
         v-if="showHoverMarker"
-        class="hover-hover:flex absolute top-0 bottom-0 w-0.5 bg-red-900/50"
+        class="hover-hover:flex absolute top-0 bottom-0 w-0.5 bg-red-900/50 dark:bg-red-600/50"
         :style="`left: ${hoveredX}px`"
       />
     </div>

@@ -1,5 +1,5 @@
 <template>
-  <h2 class="text-base leading-7 font-semibold text-gray-900 dark:text-gray-100">
+  <h2 class="text-sidebar-foreground text-base leading-7 font-semibold">
     <slot />
   </h2>
 </template>

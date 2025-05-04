@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="bg-popover border-border pointer-events-auto flex w-full items-center justify-between border p-1 text-sm shadow-sm sm:rounded-xl md:w-auto"
+    class="bg-sidebar border-border pointer-events-auto flex w-full items-center justify-between border p-1 text-sm shadow-sm sm:rounded-xl sm:p-2 md:w-auto"
   >
     <section class="flex items-center justify-between">
       <MainToolbarButton

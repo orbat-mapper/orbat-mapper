@@ -516,7 +516,7 @@ function expandAllIcons() {
 <template>
   <div class="px-4">
     <header
-      class="bg-sidebar/95 sticky top-0 z-10 -mx-4 flex h-12 items-center justify-between px-4 py-2"
+      class="bg-sidebar sticky top-0 z-10 -mx-4 flex h-12 items-center justify-between px-4 py-2"
     >
       <PanelHeading>Select units</PanelHeading>
       <div class="flex items-center space-x-1">

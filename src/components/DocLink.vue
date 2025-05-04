@@ -1,5 +1,8 @@
 <template>
-  <a target="_blank" class="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-    ><slot>Help</slot>&nearr;</a
+  <Button as-child variant="link"
+    ><a target="_blank" class=""> <slot>Help</slot> &nearr;</a></Button
   >
 </template>
+<script setup lang="ts">
+import { Button } from "@/components/ui/button";
+</script>
