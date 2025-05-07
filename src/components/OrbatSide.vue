@@ -223,10 +223,10 @@ const toggleOpen = () => {
     <header
       ref="dropRef"
       :id="`os-${side.id}`"
-      class="group relative -ml-4 flex items-center justify-between border-t-2 border-b-2 border-gray-300 bg-gray-200 py-1 pl-4 dark:border-gray-600 dark:bg-gray-700"
+      class="group relative -ml-4 flex items-center justify-between border-t-2 border-b-2 border-gray-300 bg-gray-200 py-0 pl-4 dark:border-gray-600 dark:bg-gray-700"
     >
       <IconDrag
-        class="h-6 w-6 flex-none cursor-move text-gray-500 group-focus-within:opacity-100 group-hover:opacity-100 sm:-ml-3 sm:opacity-0"
+        class="size-6 flex-none cursor-move text-gray-500 group-focus-within:opacity-100 group-hover:opacity-100 sm:-ml-3 sm:opacity-0"
         ref="dragRef"
       />
 
@@ -234,12 +234,12 @@ const toggleOpen = () => {
         @click="toggleOpen"
         class="flex w-full items-center justify-between text-left"
       >
-        <span class="text-base font-medium text-gray-900 dark:text-gray-200">
+        <span class="text-sm font-medium text-gray-900 dark:text-gray-200">
           {{ side.name }}
         </span>
         <ChevronUpIcon
           :class="isOpen ? 'rotate-180 transform' : ''"
-          class="h-6 w-6 text-gray-400 group-hover:text-gray-900"
+          class="size-5 text-gray-400 group-hover:text-gray-900"
         />
       </button>
       <button
@@ -262,7 +262,7 @@ const toggleOpen = () => {
         <IconFilterVariantPlus v-if="pressed" class="h-5 w-5" aria-hidden="true" />
         <IconFilterVariant v-else class="h-5 w-5" aria-hidden="true" />
       </Toggle>
-      <IconLockOutline v-if="isLocked" class="h-6 w-6 text-gray-400" />
+      <IconLockOutline v-if="isLocked" class="size-6 text-gray-400" />
 
       <SideDropdownMenu
         @action="onSideAction"

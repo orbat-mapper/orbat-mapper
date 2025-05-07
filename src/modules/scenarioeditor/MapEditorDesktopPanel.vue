@@ -23,14 +23,14 @@
                 selected
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400',
-                'w-1/2 border-b-2 px-1 py-4 text-center text-sm font-medium',
+                'w-1/2 border-b-2 px-1 py-3 text-center text-sm font-medium',
               ]"
             >
               {{ tab }}
             </button>
           </Tab>
         </div>
-        <CloseButton @click="emit('close')" class="mt-2 mr-1" />
+        <CloseButton @click="emit('close')" class="mt-1 mr-1" />
       </TabList>
       <TabPanels class="flex-auto overflow-y-auto">
         <TabPanel :unmount="false" class="pb-10">

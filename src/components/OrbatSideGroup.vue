@@ -206,7 +206,7 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
 <template>
   <div>
     <header
-      class="group relative mt-4 flex items-center justify-between py-0"
+      class="group relative mt-1 flex items-center justify-between py-0"
       :class="isDragging ? 'opacity-20' : ''"
       ref="dropRef"
       :id="`osg-${group.id}`"
@@ -221,13 +221,13 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
           class="flex w-full items-center justify-between text-left"
         >
           <span
-            class="text-base font-medium text-gray-800 hover:text-gray-900 dark:text-gray-300"
+            class="text-sm font-medium text-gray-800 hover:text-gray-900 dark:text-gray-300"
           >
             {{ group.name || "Units" }}
           </span>
           <ChevronUpIcon
             :class="isOpen ? 'rotate-180 transform' : ''"
-            class="h-6 w-6 text-gray-400 group-hover:text-gray-900"
+            class="size-5 text-gray-400 group-hover:text-gray-900"
           />
         </button>
       </div>
@@ -272,7 +272,7 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
       <OrbatTree
         :units="group.subUnits"
         :unit-map="state.unitMap"
-        class="mt-1"
+        class="mt-0"
         :class="{ 'opacity-50': isHidden }"
         :filter-query="filterQuery"
         :location-filter="hasLocationFilter"

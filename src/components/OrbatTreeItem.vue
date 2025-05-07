@@ -201,7 +201,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
   <li :id="'ou-' + unit.id" class="relative text-gray-900 dark:text-gray-400">
     <div
       ref="itemRef"
-      class="group relative flex items-center justify-between border-l-2 py-2 pl-2 hover:bg-gray-200 sm:pl-0 dark:hover:bg-gray-700"
+      class="group relative flex items-center justify-between border-l-2 py-1 pl-2 hover:bg-gray-200 sm:pl-0 dark:hover:bg-gray-700"
       @dblclick="isOpen = !isOpen"
       @click="onUnitClick(unit, $event)"
       :class="[
@@ -223,7 +223,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
             />
           </button>
         </div>
-        <button class="flex items-center space-x-1">
+        <button class="flex items-center space-x-1 text-sm">
           <div class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
             <div
               class="relative flex cursor-move justify-center"
@@ -246,7 +246,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
             <span
               class="flex-auto pl-1 text-left"
               :class="{
-                'font-bold': isActiveUnit,
+                'font-medium': isActiveUnit,
               }"
               >{{ unitLabel }}</span
             ><span v-if="unit._state?.location" class="text-red-700">&deg;</span>
