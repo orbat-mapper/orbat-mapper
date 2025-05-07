@@ -4,7 +4,7 @@
       class="bg-sidebar border-sidebar-border pointer-events-auto relative mt-4 flex max-h-[70vh] flex-col overflow-clip rounded-md border shadow-sm"
       :style="{ width: widthStore.detailsWidth + 'px' }"
     >
-      <CloseButton class="absolute top-2 right-4 z-10" @click="emit('close')" />
+      <CloseButton class="absolute top-1 right-1 z-99" @click="emit('close')" />
       <div class="flex-auto overflow-auto p-4">
         <slot />
       </div>

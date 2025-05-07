@@ -1,7 +1,7 @@
 <template>
   <div v-if="unit" class="@container" :key="unit.id">
     <ItemMedia v-if="media" :media="media" />
-    <header class="-mx-4 px-4 pt-4">
+    <header class="-mx-4 px-2 pt-2">
       <div v-if="!isMultiMode" class="flex">
         <button
           type="button"
@@ -10,7 +10,7 @@
         >
           <MilitarySymbol :sidc="unitSidc" :size="34" :options="combinedSymbolOptions" />
         </button>
-        <div class="-mt-1.5 flex-auto">
+        <div class="-mt-1.5 flex-auto pr-4">
           <EditableLabel
             v-model="unitName"
             @update-value="updateUnit(unitId, { name: $event })"
