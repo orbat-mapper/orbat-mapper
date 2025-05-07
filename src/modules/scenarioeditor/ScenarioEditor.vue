@@ -1,7 +1,7 @@
 <template>
   <div class="bg-background flex h-dvh flex-col overflow-hidden" ref="dropZoneRef">
     <nav
-      class="flex shrink-0 items-center justify-between bg-slate-900 py-2 pr-4 pl-6 text-gray-200 print:hidden"
+      class="flex shrink-0 items-center justify-between bg-slate-900 py-1 pr-4 pl-6 text-gray-200 print:hidden"
     >
       <div class="flex min-w-0 flex-auto items-center">
         <div class="flex min-w-0 flex-auto items-center">
@@ -37,7 +37,7 @@
             :to="{ name: MAP_EDIT_MODE_ROUTE }"
             title="Map edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+            class="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
           >
             <GlobeAltIcon class="h-6 w-6" />
           </router-link>
@@ -45,7 +45,7 @@
             :to="{ name: GRID_EDIT_ROUTE }"
             title="Grid edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+            class="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
           >
             <TableIcon class="h-6 w-6" />
           </router-link>
@@ -53,7 +53,7 @@
             :to="{ name: CHART_EDIT_MODE_ROUTE }"
             title="Chart edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+            class="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
           >
             <IconSitemap class="h-6 w-6" />
           </router-link>
@@ -61,7 +61,7 @@
         <div class="flex items-center">
           <button
             @click="undo()"
-            class="hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
+            class="hidden items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
             title="Undo action (ctrl+z)"
             :disabled="!canUndo"
           >
@@ -69,7 +69,7 @@
           </button>
           <button
             @click="redo()"
-            class="hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
+            class="hidden items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
             title="Redo action"
             :disabled="!canRedo"
           >
@@ -78,14 +78,14 @@
         </div>
         <button
           @click="showKeyboardShortcuts"
-          class="hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset sm:block"
+          class="hidden items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset sm:block"
           title="Show keyboard shortcuts"
         >
           <IconKeyboard class="block h-6 w-6" />
         </button>
 
         <button
-          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+          class="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
           @click="isOpen = !isOpen"
         >
           <MenuIcon class="block h-6 w-6" />
@@ -262,7 +262,6 @@ const ImportModal = defineAsyncComponent(() => import("@/components/ImportModal.
 const dropZoneRef = ref<HTMLDivElement>();
 const activeParentId = ref<EntityId | undefined | null>(null);
 const activeLayerId = ref<FeatureId | undefined | null>(null);
-const activeScenarioEventId = ref<EntityId | undefined | null>(null);
 const scnFeatureStyles = useFeatureStyles(props.activeScenario.geo);
 
 const uiTabs = useTabStore();
@@ -294,9 +293,8 @@ provide(searchActionsKey, {
   onScenarioActionHook,
 });
 
-const { state, update, undo, redo, canRedo, canUndo } = props.activeScenario.store;
+const { state, undo, redo, canRedo, canUndo } = props.activeScenario.store;
 
-const { loadFromObject } = props.activeScenario.io;
 const {
   unitActions,
   io,
