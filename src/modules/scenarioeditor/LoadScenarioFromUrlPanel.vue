@@ -19,13 +19,13 @@
     >
       Please select a valid scenario file.
     </p>
-    <SimpleModal v-model="showModal" dialog-title="Load scenario from URL">
+    <NewSimpleModal v-model="showModal" dialog-title="Load scenario from URL">
       <LoadScenarioUrlForm
         class="mt-4"
         @loaded="emit('loaded', $event)"
         :url="initialUrl"
       />
-    </SimpleModal>
+    </NewSimpleModal>
   </div>
 </template>
 <script setup lang="ts">
@@ -37,6 +37,7 @@ import { IconWebPlus } from "@iconify-prerendered/vue-mdi";
 import SimpleModal from "@/components/SimpleModal.vue";
 import LoadScenarioUrlForm from "@/modules/scenarioeditor/LoadScenarioUrlForm.vue";
 import { useRoute } from "vue-router";
+import NewSimpleModal from "@/components/NewSimpleModal.vue";
 
 const emit = defineEmits(["update:modelValue", "loaded"]);
 

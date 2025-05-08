@@ -1,5 +1,9 @@
 <template>
-  <SimpleModal v-model="open" dialog-title="Load scenario">
+  <NewSimpleModal
+    v-model="open"
+    dialog-title="Load scenario"
+    class="sm:max-w-xl md:max-w-4xl"
+  >
     <RadioGroup v-model="inputSource" class="mt-4 flex items-center gap-x-4">
       <RadioGroupLabel class="text-sm font-medium text-gray-700">Source</RadioGroupLabel>
       <RadioGroupOption
@@ -47,7 +51,7 @@
       <LoadScenarioPanel class="h-40" @loaded="onLoaded" />
       <LoadScenarioUrlForm class="mt-4" @loaded="onLoaded" />
     </div>
-  </SimpleModal>
+  </NewSimpleModal>
 </template>
 
 <script setup lang="ts">
@@ -61,6 +65,7 @@ import { ref } from "vue";
 import { NEW_SCENARIO_ROUTE } from "@/router/names";
 import SortDropdown from "@/components/SortDropdown.vue";
 import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
+import NewSimpleModal from "@/components/NewSimpleModal.vue";
 
 const open = defineModel({ default: false });
 const inputSource = ref<"external" | "browser">("browser");

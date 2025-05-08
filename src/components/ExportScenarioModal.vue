@@ -1,5 +1,10 @@
 <template>
-  <SimpleModal v-model="open" dialog-title="Export scenario" @cancel="onCancel">
+  <NewSimpleModal
+    v-model="open"
+    dialog-title="Export scenario"
+    @cancel="onCancel"
+    class="sm:max-w-xl md:max-w-4xl"
+  >
     <p class="mt-1 text-sm text-gray-500">
       Export scenario data for use with other software applications and tools
     </p>
@@ -85,7 +90,7 @@
         </div>
       </footer>
     </form>
-  </SimpleModal>
+  </NewSimpleModal>
 </template>
 
 <script setup lang="ts">
@@ -109,6 +114,7 @@ import ExportSettingsOrbatMapper from "@/components/ExportSettingsOrbatMapper.vu
 import ToggleField from "@/components/ToggleField.vue";
 import { useExportStore } from "@/stores/importExportStore";
 import { Button } from "@/components/ui/button";
+import NewSimpleModal from "@/components/NewSimpleModal.vue";
 
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue", "cancel"]);
