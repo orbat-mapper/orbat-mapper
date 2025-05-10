@@ -19,7 +19,7 @@
     </form>
     <div v-else class="space-y-4 p-0">
       <DescriptionItem label="Description">
-        <div class="prose-esm prose dark:prose-invert" v-html="hDescription"></div>
+        <div class="prose-sm prose dark:prose-invert" v-html="hDescription"></div>
       </DescriptionItem>
 
       <DescriptionItem label="Start time"
@@ -45,7 +45,6 @@
 import { computed, defineAsyncComponent, ref, watch } from "vue";
 import DescriptionItem from "@/components/DescriptionItem.vue";
 import PrimaryButton from "@/components/PrimaryButton.vue";
-import SecondaryButton from "@/components/SecondaryButton.vue";
 import { renderMarkdown } from "@/composables/formatting";
 import { useToggle } from "@vueuse/core";
 import PlainButton from "@/components/PlainButton.vue";
