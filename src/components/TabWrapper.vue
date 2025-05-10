@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Tab, TabGroup, TabList, TabPanels } from "@headlessui/vue";
-import { computed, ref } from "vue";
+import { computed, onMounted, ref, useTemplateRef } from "vue";
 import type { TabItem } from "@/components/types";
 import { useElementVisibility, useScroll } from "@vueuse/core";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/24/outline";
@@ -13,11 +13,11 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["update:modelValue"]);
 const $selectedTab = ref(0);
-const scrollRef = ref(null);
+const scrollRef = useTemplateRef("scrollRef");
 const { x } = useScroll(scrollRef, { behavior: "smooth" });
-const startTarget = ref(null);
+const startTarget = useTemplateRef("startTarget");
 const startMarkerIsVisible = useElementVisibility(startTarget);
-const endTarget = ref(null);
+const endTarget = useTemplateRef("endTarget");
 const endMarkerIsVisible = useElementVisibility(endTarget);
 
 const tabListItems = computed(() => {
@@ -43,6 +43,17 @@ const tabIndex = computed({
 function changeTab(index: number) {
   tabIndex.value = index;
 }
+
+onMounted(() => {
+  const selectedTab = scrollRef.value?.querySelector(`[data-index="${tabIndex.value}"]`);
+  if (selectedTab) {
+    selectedTab.scrollIntoView({
+      behavior: "instant",
+      block: "nearest",
+      inline: "center",
+    });
+  }
+});
 </script>
 
 <template>
@@ -66,11 +77,13 @@ function changeTab(index: number) {
       </button>
 
       <div class="h-20 overflow-x-auto" ref="scrollRef">
-        <TabList class="mb-2 flex space-x-3 border-b-2 px-4" v-slot="{ selectedIndex }">
+        <TabList class="mb-2 flex space-x-3 border-b-2 px-6" v-slot="{ selectedIndex }">
           <div ref="startTarget" class="-mr-3 flex-none" />
           <Tab
             v-for="({ label, title }, i) in tabListItems"
             :title="title"
+            :data-index="i"
+            :key="i"
             :class="[
               selectedIndex === i
                 ? 'border-army text-army dark:text-indigo-400'
