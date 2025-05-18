@@ -1,4 +1,3 @@
-// language=CSS format=false
 import {
   type BasicUnitNode,
   type ChartUnit,
@@ -66,17 +65,15 @@ function convertBasicUnitNode2UnitNodeInfo(
   basicUnitNode: BasicUnitNode,
   options: Partial<OrbChartOptions>,
 ): UnitNodeInfo {
-  let symb: ms.Symbol;
   const symbolOptions = { size: options.symbolSize, ...basicUnitNode.unit.symbolOptions };
-  if (options.symbolGenerator) {
-    symb = options.symbolGenerator(basicUnitNode.unit.sidc, symbolOptions);
-  } else {
-    symb = new ms.Symbol(
-      basicUnitNode.unit.sidc,
-      symbolOptions,
-      // {uniqueDesignation: node.shortName || node.name},
-    );
-  }
+  const symb = options.symbolGenerator
+    ? options.symbolGenerator(basicUnitNode.unit.sidc, symbolOptions)
+    : new ms.Symbol(
+        basicUnitNode.unit.sidc,
+        symbolOptions,
+        // {uniqueDesignation: node.shortName || node.name},
+      );
+
   let unitNodeInfo = basicUnitNode as UnitNodeInfo;
   unitNodeInfo.symbolBoxSize = symb.getSize();
   unitNodeInfo.anchor = symb.getAnchor();
