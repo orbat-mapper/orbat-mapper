@@ -3,7 +3,7 @@
     v-model="open"
     :dialog-title="dialogTitle"
     @cancel="emit('cancel')"
-    class="max-w-(--breakpoint-lg) md:max-w-(--breakpoint-md)"
+    class="md:max-w-(--breakpoint-md) lg:max-w-(--breakpoint-lg)"
   >
     <div class="flex h-full flex-col" @keyup.ctrl.enter="onSubmit">
       <header class="mt-4 flex h-20 w-full items-center justify-between">
