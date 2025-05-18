@@ -413,11 +413,12 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     loadFromObject(scn);
   }
 
-  async function loadDemoScenario(id: string | "falkland82" | "narvik40") {
+  async function loadDemoScenario(id: string | "falkland82" | "narvik40" | "drobak1940") {
     isLoading.value = true;
     const idUrlMap: Record<string, string> = {
       falkland82: "/scenarios/falkland82.json",
       narvik40: "/scenarios/narvik40.json",
+      drobak1940: "/scenarios/drobak1940.json",
     };
     const url = idUrlMap[id];
     if (!url) {

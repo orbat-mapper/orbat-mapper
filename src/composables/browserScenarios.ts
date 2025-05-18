@@ -24,6 +24,14 @@ export const DEMO_SCENARIOS = [
     imageUrl:
       "https://upload.wikimedia.org/wikipedia/commons/5/5f/Norwegian_Army_Colt_heavy_machine_gun_at_the_Narvik_front.jpg",
   },
+  {
+    name: "Battle of Drøbak Sound",
+    id: "drobak1940",
+    summary:
+      "A naval battle fought on April 9, 1940, during the German invasion of Norway. It was a significant engagement that delayed the German advance",
+    imageUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/d/d5/Bundesarchiv_DVM_10_Bild-23-63-09%2C_Kreuzer_%22Bl%C3%BCcher%22.jpg",
+  },
 ];
 
 export function useBrowserScenarios() {
