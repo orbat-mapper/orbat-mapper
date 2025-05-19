@@ -9,7 +9,12 @@ import { EllipsisVertical } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { type MenuItemData } from "@/components/types";
 
-const props = defineProps<{ items: MenuItemData[]; portal?: boolean }>();
+const props = withDefaults(
+  defineProps<{ items: MenuItemData[]; sideOffset?: number }>(),
+  {
+    sideOffset: 10,
+  },
+);
 const emit = defineEmits(["action"]);
 
 const onItemClick = (item: MenuItemData<string | Function>) => {
@@ -26,7 +31,7 @@ const onItemClick = (item: MenuItemData<string | Function>) => {
           <EllipsisVertical class="size-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent class="" align="end">
+      <DropdownMenuContent :side-offset="sideOffset" align="end">
         <DropdownMenuItem
           v-for="item in items"
           @select="onItemClick(item)"
