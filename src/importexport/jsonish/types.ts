@@ -11,8 +11,10 @@ export interface GeoJsonSymbolProperties {
   additionalInformation?: string;
 }
 
-export interface TacticalJsonProperties extends Partial<Record<TextAmpValue, string>> {
+export interface TacticalJsonProperties
+  extends Partial<Omit<Record<TextAmpValue, string>, "direction">> {
   sidc: string;
+  direction?: number;
 }
 
 export interface MilSymbolProperties extends TacticalJsonProperties {
@@ -21,6 +23,7 @@ export interface MilSymbolProperties extends TacticalJsonProperties {
   shortName?: string;
   description?: string;
   fillColor?: string;
+  direction?: number;
 }
 
 export interface OrbatMapperGeoJsonLayer {

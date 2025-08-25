@@ -223,7 +223,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
 
     const zipData = zipSync(data);
     await saveBlobToLocalFile(
-      new Blob([zipData], {
+      new Blob([zipData as BlobPart], {
         type: "application/vnd.google-earth.kmz",
       }),
       "scenario.kmz",

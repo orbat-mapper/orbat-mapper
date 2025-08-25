@@ -64,11 +64,11 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
       guess.format = "kml";
       guess.dataAsString = arrayBufferToString(kmz[1]);
       guess.objectUrl = URL.createObjectURL(
-        new Blob([kmz[1]], { type: "application/vnd.google-earth.kml+xml" }),
+        new Blob([kmz[1] as BlobPart], { type: "application/vnd.google-earth.kml+xml" }),
       );
       Object.entries(unzipped).forEach(([filename, data]) => {
         if (!filename.endsWith(".kml")) {
-          imageCache.set(filename, URL.createObjectURL(new Blob([data])));
+          imageCache.set(filename, URL.createObjectURL(new Blob([data as BlobPart])));
         }
       });
       return guess;
