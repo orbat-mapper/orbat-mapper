@@ -27,10 +27,10 @@ export const BR = u("text", "\n");
 export const TAB = u("text", "  ");
 export const BRTAB = u("text", "\n  ");
 
-export function tagValue(tagName: string, value: string) {
-  return x(tagName, [u("text", value)]);
+export function tagValue(tagName: string, value: string | number) {
+  return x(tagName, [u("text", `${value}`)]);
 }
 
-export function tagIdValue(tagName: string, id: string, value: string) {
-  return x(tagName, { ID: id }, [u("text", value)]);
+export function tagIdValue(tagName: string, id: string, value: string | number) {
+  return x(tagName, { ID: id }, [u("text", `${value}`)]);
 }

@@ -86,7 +86,7 @@ function convertSymbol(properties: MilSymbolProperties) {
     console.warn("Failed to convert", properties, match, sidc);
   }
 
-  const attributes: Record<string, string> = {};
+  const attributes: Record<string, string | number> = {};
   if (fillColor) {
     attributes["XO"] = convertColor(fillColor);
   }

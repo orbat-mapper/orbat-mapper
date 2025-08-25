@@ -126,6 +126,14 @@ function handleReset() {
   overrideName.value = false;
   onSubmit();
 }
+
+function setTextAmpValue(field: TextAmpKey, value: string | number | undefined) {
+  const key = textAmpMap[field] as keyof TextAmplifiers;
+  if (key === undefined) return;
+
+  //@ts-ignore
+  textAmplifiers.value[key] = value;
+}
 </script>
 <template>
   <section class="-mx-4 sm:mx-0">
@@ -152,7 +160,7 @@ function handleReset() {
                     : unit.shortName || unit.name
                   : textAmplifiers.uniqueDesignation
               "
-              @update:model-value="textAmplifiers[textAmpMap[field]] = $event"
+              @update:model-value="setTextAmpValue(field, $event)"
               :disabled="isLocked || !overrideName"
               :title="title"
             />
@@ -160,7 +168,7 @@ function handleReset() {
               v-else
               :placeholder="field || placeholder"
               :model-value="textAmplifiers[textAmpMap[field]]"
-              @update:model-value="textAmplifiers[textAmpMap[field]] = $event"
+              @update:model-value="setTextAmpValue(field, $event)"
               :disabled="isLocked"
               :title="title"
             />

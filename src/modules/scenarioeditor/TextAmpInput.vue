@@ -4,5 +4,5 @@
 <script setup lang="ts">
 import { Input } from "@/components/ui/input";
 
-const model = defineModel<string>();
+const model = defineModel<string | number>();
 </script>

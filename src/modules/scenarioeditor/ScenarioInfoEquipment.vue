@@ -123,7 +123,7 @@ function onDelete() {
             :model-value="row"
             @submit="onSubmit($event as NEquipmentData)"
             @cancel="cancelEdit()"
-            heading="Edit supply class"
+            heading="Edit equipment category"
             showNextToggle
           />
         </InlineFormWrapper>

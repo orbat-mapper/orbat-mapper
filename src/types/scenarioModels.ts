@@ -68,7 +68,9 @@ export interface UnitSymbolOptions extends SymbolOptions {
   fillColor?: string;
 }
 
-export type TextAmplifiers = Partial<Record<TextAmpValue, string>>;
+export type TextAmplifiers = Partial<
+  Omit<Record<TextAmpValue, string>, "direction"> & { direction: number }
+>;
 export type ReinforcedStatus = "Reinforced" | "Reduced" | "ReinforcedReduced" | "None";
 
 export function mapReinforcedStatus2Field(

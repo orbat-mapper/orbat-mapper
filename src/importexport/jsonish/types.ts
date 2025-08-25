@@ -23,7 +23,6 @@ export interface MilSymbolProperties extends TacticalJsonProperties {
   shortName?: string;
   description?: string;
   fillColor?: string;
-  direction?: number;
 }
 
 export interface OrbatMapperGeoJsonLayer {
