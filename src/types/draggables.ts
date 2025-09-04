@@ -20,7 +20,7 @@ const privateUnitDragKey = Symbol("unit");
 const privateSideKey = Symbol("side");
 const privateSideGroupKey = Symbol("sideGroup");
 
-export type UnitDragItemSource = "orbatTree" | "breadcrumbs";
+export type UnitDragItemSource = "orbatTree" | "breadcrumbs" | "detailsPanel";
 
 export type ScenarioFeatureDragItem = {
   [privateKey]: boolean;
