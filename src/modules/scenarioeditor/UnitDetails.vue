@@ -1,204 +1,12 @@
-<template>
-  <div v-if="unit" class="@container" :key="unit.id">
-    <ItemMedia v-if="media" :media="media" />
-    <header class="-mx-4 px-2 pt-2">
-      <div v-if="!isMultiMode" class="flex">
-        <button
-          type="button"
-          class="mr-2 inline-flex h-20 w-16 shrink-0 justify-center"
-          @click="handleChangeSymbol()"
-        >
-          <MilitarySymbol :sidc="unitSidc" :size="34" :options="combinedSymbolOptions" />
-        </button>
-        <div class="-mt-1.5 flex-auto pr-4">
-          <EditableLabel
-            v-model="unitName"
-            @update-value="updateUnit(unitId, { name: $event })"
-            class="relative z-10 bg-transparent"
-            :disabled="isLocked"
-          />
-          <EditableLabel
-            class="relative -top-4"
-            v-model="shortName"
-            @update-value="updateUnit(unitId, { shortName: $event })"
-            text-class="text-sm text-gray-500 dark:text-slate-300"
-            :disabled="isLocked"
-          />
-        </div>
-        <IconLockOutline v-if="isLocked" class="size-5 text-gray-400" />
-        <div v-if="unitStatus">
-          <span
-            class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-gray-500/10 ring-inset"
-            >{{ unitStatus }}</span
-          >
-        </div>
-      </div>
-      <div v-else>
-        <div class="flex items-center justify-between">
-          <p class="font-medium">{{ selectedUnitIds.size }} units selected</p>
-          <Button type="button" size="sm" variant="outline" @click="clearSelection()"
-            >Clear
-          </Button>
-        </div>
-        <ul class="relative my-4 flex w-full flex-wrap gap-1 pb-4">
-          <li v-for="sUnit in visibleSelectedUnits" class="relative flex">
-            <MilitarySymbol
-              :sidc="sUnit.sidc"
-              :size="24"
-              class="block"
-              :options="{ ...getCombinedSymbolOptions(sUnit), outlineWidth: 8 }"
-            />
-            <span v-if="sUnit._state?.location" class="text-red-700">&deg;</span>
-          </li>
-          <li v-if="isTruncated">
-            <button
-              type="button"
-              class="bg-opacity-80 absolute right-0 bottom-0 left-0 border bg-white p-2 text-center text-gray-600"
-              @click="truncateUnits = !truncateUnits"
-            >
-              +{{ selectedUnits.length - visibleSelectedUnits.length }}
-            </button>
-          </li>
-        </ul>
-      </div>
-      <nav class="-mt-4 mb-4 flex items-center justify-between">
-        <div class="flex items-center gap-0.5">
-          <IconButton title="Zoom to" @click="actionWrapper(UnitActions.Zoom)">
-            <ZoomIcon class="size-5" />
-          </IconButton>
-          <IconButton
-            title="Edit unit"
-            @click="toggleEditMode()"
-            :disabled="isMultiMode || isLocked"
-          >
-            <EditIcon class="size-5" />
-          </IconButton>
-          <IconButton
-            title="Add/modify unit image"
-            @click="toggleEditMediaMode()"
-            :disabled="isMultiMode || isLocked"
-          >
-            <ImageIcon class="size-5" />
-          </IconButton>
-
-          <IconButton
-            @click="startGetLocation()"
-            title="Set unit location"
-            :disabled="isMultiMode || isLocked"
-          >
-            <IconCrosshairsGps class="size-5" aria-hidden="true" />
-          </IconButton>
-          <IconButton
-            title="Show in ORBAT"
-            :disabled="isMultiMode"
-            @click="locateInOrbat()"
-          >
-            <TreeLocateIcon class="size-5" aria-hidden="true" />
-          </IconButton>
-          <SplitButton
-            class="ml-1"
-            triggerClass="max-w-24"
-            :items="buttonItems"
-            v-model:active-item="uiStore.activeItem"
-          />
-        </div>
-        <div>
-          <DotsMenu :items="unitMenuItems" />
-        </div>
-      </nav>
-    </header>
-    <TabWrapper :tab-list="tabList" v-model="selectedTab">
-      <TabPanel class="pt-4">
-        <section class="relative" v-if="!isMultiMode">
-          <EditMetaForm
-            v-if="isEditMode"
-            :item="unit"
-            @update="onFormSubmit"
-            @cancel="toggleEditMode()"
-          />
-          <EditMediaForm
-            v-else-if="isEditMediaMode"
-            :media="media"
-            @cancel="toggleEditMediaMode()"
-            @update="updateMedia"
-          />
-          <div v-else-if="!isMultiMode" class="mb-4 space-y-4">
-            <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
-            <DescriptionItem v-if="unit.shortName" label="Short name"
-              >{{ unit.shortName }}
-            </DescriptionItem>
-            <DescriptionItem
-              v-if="unit.externalUrl"
-              label="External URL"
-              dd-class="truncate"
-              ><a
-                target="_blank"
-                draggable="false"
-                class="underline"
-                :href="unit.externalUrl"
-                >{{ unit.externalUrl }}</a
-              ></DescriptionItem
-            >
-            <DescriptionItem v-if="unit.description" label="Description">
-              <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
-            </DescriptionItem>
-
-            <DescriptionItem v-if="unit.location" label="Initial location">
-              <div class="flex items-center justify-between">
-                <p>{{ formatPosition(unit.location) }}</p>
-                <IconButton @click="geoStore.panToLocation(unit.location)">
-                  <IconCrosshairsGps class="h-5 w-5" />
-                </IconButton>
-              </div>
-            </DescriptionItem>
-          </div>
-        </section>
-        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
-      </TabPanel>
-      <TabPanel>
-        <UnitDetailsSymbol
-          :unit="unit"
-          :key="unit.id"
-          :is-multi-mode="isMultiMode"
-          :is-locked="isLocked"
-        />
-      </TabPanel>
-      <TabPanel>
-        <UnitPanelState v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
-        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
-      </TabPanel>
-      <TabPanel>
-        <UnitDetailsToe :unit="unit" :is-locked="isLocked" />
-      </TabPanel>
-      <TabPanel>
-        <UnitDetailsMapDisplay
-          :unit="unit"
-          :is-multi-mode="isMultiMode"
-          :is-locked="isLocked"
-        />
-      </TabPanel>
-      <TabPanel>
-        <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
-        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
-      </TabPanel>
-      <TabPanel>
-        <FeatureTransformations class="mt-4" unitMode />
-      </TabPanel>
-
-      <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
-        <pre>{{ unit }}</pre>
-      </TabPanel>
-    </TabWrapper>
-    <GlobalEvents
-      v-if="uiStore.shortcutsEnabled"
-      :filter="inputEventFilter"
-      @keyup.e="toggleEditMode()"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, watch } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  ref,
+  useTemplateRef,
+  watch,
+  watchEffect,
+} from "vue";
 import {
   IconCrosshairsGps,
   IconFileTreeOutline as TreeLocateIcon,
@@ -211,7 +19,7 @@ import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { GlobalEvents } from "vue-global-events";
 import { inputEventFilter, setCharAt } from "@/components/helpers";
 import DescriptionItem from "@/components/DescriptionItem.vue";
-import { useToggle } from "@vueuse/core";
+import { unrefElement, useToggle } from "@vueuse/core";
 import { renderMarkdown } from "@/composables/formatting";
 import UnitPanelState from "./UnitPanelState.vue";
 import { useUnitActions } from "@/composables/scenarioActions";
@@ -244,6 +52,8 @@ import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsProperties.vue";
 import UnitDetailsSymbol from "@/modules/scenarioeditor/UnitDetailsSymbol.vue";
 import { Button } from "@/components/ui/button";
+import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { getUnitDragItem } from "@/types/draggables.ts";
 
 const FeatureTransformations = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/FeatureTransformations.vue"),
@@ -274,6 +84,8 @@ const { unitDetailsTab: selectedTab } = storeToRefs(useTabStore());
 const unitName = ref("");
 const shortName = ref("");
 const truncateUnits = ref(true);
+const isDragged = ref(false);
+const elRef = useTemplateRef("elRef");
 
 const tabList = computed(() =>
   uiStore.debugMode
@@ -338,6 +150,20 @@ const unitMenuItems = computed((): MenuItemData[] => [
         disabled: isUnitLocked(props.unitId, { excludeUnit: true }),
       },
 ]);
+
+watchEffect((onCleanup) => {
+  const el = unrefElement(elRef.value) as HTMLElement | null;
+  if (!el) return;
+  const dndFunction = draggable({
+    element: el,
+    getInitialData: () => getUnitDragItem({ unit: unit.value }, "detailsPanel"),
+    onDragStart: () => (isDragged.value = true),
+    onDrop: () => (isDragged.value = false),
+    canDrag: () => !isUnitLocked(unit.value.id),
+  });
+
+  onCleanup(() => dndFunction());
+});
 
 watch(
   () => unit.value?.name,
@@ -547,3 +373,202 @@ function locateInOrbat() {
   onUnitSelectHook.trigger({ unitId: props.unitId, options: { noZoom: true } });
 }
 </script>
+<template>
+  <div v-if="unit" class="@container" :key="unit.id">
+    <ItemMedia v-if="media" :media="media" />
+    <header class="-mx-4 px-2 pt-2">
+      <div v-if="!isMultiMode" class="flex">
+        <button
+          type="button"
+          class="mr-2 inline-flex h-20 w-16 shrink-0 justify-center"
+          @click="handleChangeSymbol()"
+          ref="elRef"
+        >
+          <MilitarySymbol :sidc="unitSidc" :size="34" :options="combinedSymbolOptions" />
+        </button>
+        <div class="-mt-1.5 flex-auto pr-4">
+          <EditableLabel
+            v-model="unitName"
+            @update-value="updateUnit(unitId, { name: $event })"
+            class="relative z-10 bg-transparent"
+            :disabled="isLocked"
+          />
+          <EditableLabel
+            class="relative -top-4"
+            v-model="shortName"
+            @update-value="updateUnit(unitId, { shortName: $event })"
+            text-class="text-sm text-gray-500 dark:text-slate-300"
+            :disabled="isLocked"
+          />
+        </div>
+        <IconLockOutline v-if="isLocked" class="size-5 text-gray-400" />
+        <div v-if="unitStatus">
+          <span
+            class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-gray-500/10 ring-inset"
+            >{{ unitStatus }}</span
+          >
+        </div>
+      </div>
+      <div v-else>
+        <div class="flex items-center justify-between">
+          <p class="font-medium">{{ selectedUnitIds.size }} units selected</p>
+          <Button type="button" size="sm" variant="outline" @click="clearSelection()"
+            >Clear
+          </Button>
+        </div>
+        <ul class="relative my-4 flex w-full flex-wrap gap-1 pb-4">
+          <li v-for="sUnit in visibleSelectedUnits" class="relative flex">
+            <MilitarySymbol
+              :sidc="sUnit.sidc"
+              :size="24"
+              class="block"
+              :options="{ ...getCombinedSymbolOptions(sUnit), outlineWidth: 8 }"
+            />
+            <span v-if="sUnit._state?.location" class="text-red-700">&deg;</span>
+          </li>
+          <li v-if="isTruncated">
+            <button
+              type="button"
+              class="bg-opacity-80 absolute right-0 bottom-0 left-0 border bg-white p-2 text-center text-gray-600"
+              @click="truncateUnits = !truncateUnits"
+            >
+              +{{ selectedUnits.length - visibleSelectedUnits.length }}
+            </button>
+          </li>
+        </ul>
+      </div>
+      <nav class="-mt-4 mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-0.5">
+          <IconButton title="Zoom to" @click="actionWrapper(UnitActions.Zoom)">
+            <ZoomIcon class="size-5" />
+          </IconButton>
+          <IconButton
+            title="Edit unit"
+            @click="toggleEditMode()"
+            :disabled="isMultiMode || isLocked"
+          >
+            <EditIcon class="size-5" />
+          </IconButton>
+          <IconButton
+            title="Add/modify unit image"
+            @click="toggleEditMediaMode()"
+            :disabled="isMultiMode || isLocked"
+          >
+            <ImageIcon class="size-5" />
+          </IconButton>
+
+          <IconButton
+            @click="startGetLocation()"
+            title="Set unit location"
+            :disabled="isMultiMode || isLocked"
+          >
+            <IconCrosshairsGps class="size-5" aria-hidden="true" />
+          </IconButton>
+          <IconButton
+            title="Show in ORBAT"
+            :disabled="isMultiMode"
+            @click="locateInOrbat()"
+          >
+            <TreeLocateIcon class="size-5" aria-hidden="true" />
+          </IconButton>
+          <SplitButton
+            class="ml-1"
+            triggerClass="max-w-24"
+            :items="buttonItems"
+            v-model:active-item="uiStore.activeItem"
+          />
+        </div>
+        <div>
+          <DotsMenu :items="unitMenuItems" />
+        </div>
+      </nav>
+    </header>
+    <TabWrapper :tab-list="tabList" v-model="selectedTab">
+      <TabPanel class="pt-4">
+        <section class="relative" v-if="!isMultiMode">
+          <EditMetaForm
+            v-if="isEditMode"
+            :item="unit"
+            @update="onFormSubmit"
+            @cancel="toggleEditMode()"
+          />
+          <EditMediaForm
+            v-else-if="isEditMediaMode"
+            :media="media"
+            @cancel="toggleEditMediaMode()"
+            @update="updateMedia"
+          />
+          <div v-else-if="!isMultiMode" class="mb-4 space-y-4">
+            <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
+            <DescriptionItem v-if="unit.shortName" label="Short name"
+              >{{ unit.shortName }}
+            </DescriptionItem>
+            <DescriptionItem
+              v-if="unit.externalUrl"
+              label="External URL"
+              dd-class="truncate"
+              ><a
+                target="_blank"
+                draggable="false"
+                class="underline"
+                :href="unit.externalUrl"
+                >{{ unit.externalUrl }}</a
+              ></DescriptionItem
+            >
+            <DescriptionItem v-if="unit.description" label="Description">
+              <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
+            </DescriptionItem>
+
+            <DescriptionItem v-if="unit.location" label="Initial location">
+              <div class="flex items-center justify-between">
+                <p>{{ formatPosition(unit.location) }}</p>
+                <IconButton @click="geoStore.panToLocation(unit.location)">
+                  <IconCrosshairsGps class="h-5 w-5" />
+                </IconButton>
+              </div>
+            </DescriptionItem>
+          </div>
+        </section>
+        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
+      </TabPanel>
+      <TabPanel>
+        <UnitDetailsSymbol
+          :unit="unit"
+          :key="unit.id"
+          :is-multi-mode="isMultiMode"
+          :is-locked="isLocked"
+        />
+      </TabPanel>
+      <TabPanel>
+        <UnitPanelState v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
+        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
+      </TabPanel>
+      <TabPanel>
+        <UnitDetailsToe :unit="unit" :is-locked="isLocked" />
+      </TabPanel>
+      <TabPanel>
+        <UnitDetailsMapDisplay
+          :unit="unit"
+          :is-multi-mode="isMultiMode"
+          :is-locked="isLocked"
+        />
+      </TabPanel>
+      <TabPanel>
+        <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
+        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
+      </TabPanel>
+      <TabPanel>
+        <FeatureTransformations class="mt-4" unitMode />
+      </TabPanel>
+
+      <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
+        <pre>{{ unit }}</pre>
+      </TabPanel>
+    </TabWrapper>
+    <GlobalEvents
+      v-if="uiStore.shortcutsEnabled"
+      :filter="inputEventFilter"
+      @keyup.e="toggleEditMode()"
+    />
+  </div>
+</template>
