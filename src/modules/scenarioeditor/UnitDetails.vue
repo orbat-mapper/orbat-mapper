@@ -6,6 +6,8 @@ import {
   useTemplateRef,
   watch,
   watchEffect,
+  render,
+  h,
 } from "vue";
 import {
   IconCrosshairsGps,
@@ -54,6 +56,9 @@ import UnitDetailsSymbol from "@/modules/scenarioeditor/UnitDetailsSymbol.vue";
 import { Button } from "@/components/ui/button";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { getUnitDragItem } from "@/types/draggables.ts";
+import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview";
+import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
+import MilSymbol from "@/components/MilSymbol.vue";
 
 const FeatureTransformations = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/FeatureTransformations.vue"),
@@ -160,6 +165,22 @@ watchEffect((onCleanup) => {
     onDragStart: () => (isDragged.value = true),
     onDrop: () => (isDragged.value = false),
     canDrag: () => !isUnitLocked(unit.value.id),
+    onGenerateDragPreview({ nativeSetDragImage }) {
+      setCustomNativeDragPreview({
+        getOffset: pointerOutsideOfPreview({ x: "16px", y: "8px" }),
+        render: ({ container }) => {
+          return render(
+            h(MilitarySymbol, {
+              sidc: unit.value.sidc,
+              options: combinedSymbolOptions.value,
+              size: 25,
+            }),
+            container,
+          );
+        },
+        nativeSetDragImage,
+      });
+    },
   });
 
   onCleanup(() => dndFunction());
