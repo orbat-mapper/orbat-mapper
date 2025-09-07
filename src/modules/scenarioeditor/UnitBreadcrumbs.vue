@@ -16,7 +16,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
-import type { NUnit } from "@/types/internalModels";
+import type { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import type { EntityId } from "@/types/base";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
@@ -69,7 +69,7 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
 
   try {
     const parentsWithItems = parents.map((uunit) => {
-      const parent =
+      const parent: NUnit | NSideGroup | NSide =
         getUnitById(uunit._pid) ??
         getSideGroupById(uunit._pid) ??
         getSideById(uunit._pid);
@@ -80,15 +80,26 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
         location: Boolean(uunit._state?.location),
         id: uunit.id,
         symbolOptions: unitActions.getCombinedSymbolOptions(uunit),
-        items: parent.subUnits.map((unitId) => ({
-          ...getUnitById(unitId),
-          symbolOptions: unitActions.getCombinedSymbolOptions(getUnitById(unitId)),
-          location: Boolean(uunit._state?.location),
-        })),
+        items: [
+          ...parent.subUnits.map(getUnitById).map((subUnit) => ({
+            ...subUnit,
+            symbolOptions: unitActions.getCombinedSymbolOptions(subUnit),
+            location: Boolean(subUnit._state?.location),
+          })),
+          ...("groups" in parent
+            ? side.groups.map((group) => getSideGroupById(group))
+            : []),
+        ],
       };
     });
 
-    const sideGroups = side.groups.map((group) => getSideGroupById(group));
+    const sideGroups = [
+      ...side.subUnits.map((unitId) => ({
+        ...getUnitById(unitId),
+        symbolOptions: unitActions.getCombinedSymbolOptions(getUnitById(unitId)),
+      })),
+      ...side.groups.map((group) => getSideGroupById(group)),
+    ];
     const res = [
       {
         name: isMobile.value ? side.name.slice(0, 2) : side.name,
