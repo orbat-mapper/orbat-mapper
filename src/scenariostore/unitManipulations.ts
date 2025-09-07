@@ -653,7 +653,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     } else {
       update((s) => {
         s.unitMap[unit.id] = unit;
-        let parent = getUnitOrSideGroup(unit._pid!, s);
+        let parent = getUnitOrSideGroupOrSide(unit._pid!, s);
         if (!parent) return;
         if (index === undefined) {
           parent.subUnits.push(unit.id);
