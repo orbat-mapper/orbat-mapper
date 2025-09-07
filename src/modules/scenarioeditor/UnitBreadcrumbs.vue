@@ -69,7 +69,10 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
 
   try {
     const parentsWithItems = parents.map((uunit) => {
-      const parent = getUnitById(uunit._pid) ?? getSideGroupById(uunit._pid);
+      const parent =
+        getUnitById(uunit._pid) ??
+        getSideGroupById(uunit._pid) ??
+        getSideById(uunit._pid);
       if (!parent) return { name: uunit.name, items: [] };
       return {
         name: uunit.shortName || uunit.name,
@@ -93,14 +96,16 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
         id: side.id,
         sidc: "",
       },
-      {
-        name: isMobile.value ? sideGroup.name.slice(0, 2) : sideGroup.name,
-        items: sideGroups,
-        id: sideGroup.id,
-        sidc: "",
-      },
+      sideGroup
+        ? {
+            name: isMobile.value ? sideGroup.name.slice(0, 2) : sideGroup.name,
+            items: sideGroups,
+            id: sideGroup.id,
+            sidc: "",
+          }
+        : null,
       ...parentsWithItems,
-    ];
+    ].filter((i) => i !== null);
     if (activeParent.value?.subUnits?.length) {
       res.push({
         sidc: "",
@@ -131,12 +136,9 @@ function onItemClick(entityId: EntityId) {
     let id;
     if (sideGroup) {
       id = sideGroup.subUnits[0];
-    } else if (side) {
-      id = side.groups[0];
     } else {
-      const side = getSideById(entityId);
       const sideGroup = getSideGroupById(side.groups[0]);
-      id = sideGroup?.subUnits[0];
+      id = side?.subUnits[0] ?? sideGroup?.subUnits[0];
     }
     unit = getUnitById(id);
   }

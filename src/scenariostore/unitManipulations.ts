@@ -38,8 +38,8 @@ export type NWalkSubUnitCallback = (unit: NUnit) => void;
 export type NWalkSideCallback = (
   unit: NUnit,
   level: number,
-  parent: NUnit | NSideGroup,
-  sideGroup: NSideGroup,
+  parent: NUnit | NSideGroup | NSide,
+  sideGroup: NSideGroup | undefined | null,
   side: NSide,
 ) => void | false | true;
 
@@ -130,6 +130,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       standardIdentity: sideData.standardIdentity || SID.Friend,
       symbolOptions: sideData.symbolOptions || {},
       groups: [],
+      subUnits: [],
       _isNew: markAsNew ?? true,
     };
     groupUpdate(
@@ -470,17 +471,17 @@ export function useUnitManipulations(store: NewScenarioStore) {
       if (target === "above" || target === "below") {
         parentId = getUnitOrSideGroup(targetId)?._pid!;
       }
-      const newParent = getUnitOrSideGroup(parentId, s);
+      const newParent = getUnitOrSideGroupOrSide(parentId, s);
       if (!(unit && newParent)) return;
       const { side, sideGroup, parents } = getUnitHierarchy(newParent.id, s);
       if (parents.includes(unit)) {
         console.error("Not allowed");
         return;
       }
-      const originalParent = getUnitOrSideGroup(unit._pid, s);
+      const originalParent = getUnitOrSideGroupOrSide(unit._pid, s);
       unit._pid = parentId;
       unit._sid = side.id;
-      unit._gid = sideGroup.id;
+      unit._gid = sideGroup?.id;
 
       if (originalParent) {
         removeElement(unitId, originalParent.subUnits);
@@ -504,7 +505,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
               u.sidc = setCharAt(u.sidc, SID_INDEX, side.standardIdentity);
             }
             u._sid = side.id;
-            u._gid = sideGroup.id;
+            u._gid = sideGroup?.id;
             invalidateUnitStyle(u.id);
           },
           { state: s, includeParent: true },
@@ -538,8 +539,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
     function helper(
       currentUnitId: EntityId,
-      parent: NUnit | NSideGroup,
-      sideGroup: NSideGroup,
+      parent: NUnit | NSideGroup | NSide,
+      sideGroup?: NSideGroup,
     ) {
       const currentUnit = s.unitMap[currentUnitId]!;
       const r = callback(currentUnit, level, parent, sideGroup, side);
@@ -560,11 +561,19 @@ export function useUnitManipulations(store: NewScenarioStore) {
         if (r === true) break;
       }
     }
+
+    for (const unitId of side.subUnits ?? []) {
+      const r = helper(unitId, side);
+      if (r === true) break;
+    }
   }
 
-  function getUnitHierarchy(entityId: EntityId, s = state) {
+  function getUnitHierarchy(
+    entityId: EntityId,
+    s = state,
+  ): { side: NSide; sideGroup: NSideGroup | undefined; parents: NUnit[] } {
     const parents: NUnit[] = [];
-    const unit = getUnitOrSideGroup(entityId, s);
+    const unit = getUnitOrSideGroupOrSide(entityId, s);
 
     const helper = (uId: EntityId) => {
       const u = s.unitMap[uId];
@@ -577,15 +586,41 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
     helper(entityId);
     parents.reverse();
-    const sideGroup =
-      s.sideGroupMap[parents[0]?._pid || unit?._pid!] || s.sideGroupMap[unit?.id!];
-    const side = sideGroup && s.sideMap[sideGroup._pid!];
+    let sideGroupId, sideId;
+    if (parents.length) {
+      sideGroupId = parents[0]._pid;
+    } else if (unit && "_gid" in unit) {
+      sideGroupId = unit._gid;
+    } else {
+      sideGroupId = unit && "_pid" in unit ? unit.id : undefined;
+    }
+
+    const sideGroup = sideGroupId ? s.sideGroupMap[sideGroupId] : undefined;
+    if (sideGroup) {
+      sideId = sideGroup._pid;
+    } else if (unit && "_sid" in unit) {
+      sideId = unit._sid;
+    } else if (unit && "_pid" in unit) {
+      sideId = unit._pid;
+    } else if (unit) {
+      sideId = unit.id;
+    }
+    const side = s.sideMap[sideId!];
     return { side, sideGroup, parents };
   }
 
   function getUnitOrSideGroup(id: EntityId, s = state): NUnit | NSideGroup | undefined {
     if (id in s.unitMap) return s.unitMap[id];
     return s.sideGroupMap[id] || undefined;
+  }
+
+  function getUnitOrSideGroupOrSide(
+    id: EntityId,
+    s = state,
+  ): NUnit | NSideGroup | NSide | undefined {
+    if (id in s.unitMap) return s.unitMap[id];
+    if (id in s.sideGroupMap) return s.sideGroupMap[id];
+    return s.sideMap[id];
   }
 
   function addUnit(
@@ -600,7 +635,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     }
     const { side, sideGroup } = getUnitHierarchy(parentId, s);
     unit._pid = parentId;
-    unit._gid = sideGroup.id;
+    unit._gid = sideGroup?.id;
     unit._sid = side.id;
     unit._isOpen = false;
     if (!unit.state || !unit.state.length) {
@@ -608,7 +643,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     }
     if (noUndo) {
       s.unitMap[unit.id] = unit;
-      let parent = getUnitOrSideGroup(unit._pid!, s);
+      let parent = getUnitOrSideGroupOrSide(unit._pid!, s);
       if (!parent) return unit.id;
       if (index === undefined) {
         parent.subUnits.push(unit.id);
@@ -633,7 +668,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
   }
 
   function createSubordinateUnit(parentId: EntityId, data: Partial<NUnit> = {}) {
-    const parent = getUnitOrSideGroup(parentId);
+    const parent = getUnitOrSideGroupOrSide(parentId);
     if (!parent) return;
     let sidc: Sidc;
     if (data.sidc) {
@@ -644,7 +679,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       sidc.emt = getNextEchelonBelow(parentSidc.emt);
     } else {
       sidc = new Sidc("10031000000000000000");
-      const side = state.sideMap[parent._pid!];
+      const side = "_pid" in parent ? state.sideMap[parent._pid] : parent;
       sidc.standardIdentity = side?.standardIdentity || "0";
     }
     const newUnit: NUnit = {
@@ -905,12 +940,13 @@ export function useUnitManipulations(store: NewScenarioStore) {
     if (!unit) return false;
     if (excludeUnit) {
       return !!(
-        state.sideMap[unit._sid]?.locked || state.sideGroupMap[unit._gid]?.locked
+        state.sideMap[unit._sid]?.locked ||
+        (unit._gid && state.sideGroupMap[unit._gid]?.locked)
       );
     }
     return !!(
       state.sideMap[unit._sid]?.locked ||
-      state.sideGroupMap[unit._gid]?.locked ||
+      (unit._gid && state.sideGroupMap[unit._gid]?.locked) ||
       unit.locked
     );
   }
@@ -920,7 +956,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     if (!unit) return false;
 
     return !!(
-      state.sideMap[unit._sid]?.isHidden || state.sideGroupMap[unit._gid]?.isHidden
+      state.sideMap[unit._sid]?.isHidden ||
+      (unit._gid && state.sideGroupMap[unit._gid]?.isHidden)
     );
   }
 

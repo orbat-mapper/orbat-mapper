@@ -8,8 +8,8 @@ import type { Side, SideGroup, Unit, UnitOrSide } from "@/types/scenarioModels";
 export type WalkSideCallback = (
   unit: Unit,
   level: number,
-  parent: Unit | SideGroup,
-  sideGroup: SideGroup,
+  parent: Unit | SideGroup | Side,
+  sideGroup: SideGroup | undefined | null,
   side: Side,
 ) => void;
 
@@ -28,7 +28,11 @@ export interface SideUnits {
 export function walkSide(side: Side, callback: WalkSideCallback) {
   let level = 0;
 
-  function helper(currentUnit: Unit, parent: Unit | SideGroup, sideGroup: SideGroup) {
+  function helper(
+    currentUnit: Unit,
+    parent: Unit | SideGroup | Side,
+    sideGroup?: SideGroup,
+  ) {
     callback(currentUnit, level, parent, sideGroup, side);
     if (currentUnit.subUnits) {
       level += 1;
@@ -41,6 +45,10 @@ export function walkSide(side: Side, callback: WalkSideCallback) {
 
   for (const sideGroup of side.groups) {
     sideGroup.subUnits.forEach((unit) => helper(unit, sideGroup, sideGroup));
+  }
+
+  if (side.subUnits) {
+    side.subUnits.forEach((unit) => helper(unit, side));
   }
 }
 

@@ -127,7 +127,7 @@ const breadcrumbItems = computed((): BreadcrumbItem[] => {
   const { side, sideGroup, parents } = unitActions.getUnitHierarchy(activeUnitId.value);
   return [
     { name: side.name, static: true },
-    { name: sideGroup.name, static: true },
+    { name: sideGroup?.name ?? "Root", static: true },
     ...parents.map((e) => ({ name: e.name, static: true })),
     { name: activeUnit.value?.name!, static: true },
   ];
