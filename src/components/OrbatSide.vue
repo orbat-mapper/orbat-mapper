@@ -179,7 +179,7 @@ if (props.side._isNew) showEditSideForm.value = true;
 const onSideAction = (action: SideAction) => {
   if (action === SideActions.Expand) {
   } else if (action === SideActions.AddSubordinate) {
-    // unitManipulationStore.createSubordinateUnit(props.side.groups[0]);
+    unitActions.createSubordinateUnit(props.side.id);
   } else if (action === SideActions.AddGroup) {
     unitActions.addSideGroup(props.side.id);
   } else if (action === SideActions.Edit) {

@@ -30,6 +30,11 @@ const sideMenuItems = computed((): MenuItemData<SideAction>[] => [
   { label: "Move up", action: SideActions.MoveUp, disabled: props.isLocked },
   { label: "Move down", action: SideActions.MoveDown, disabled: props.isLocked },
   { label: "Add side", action: SideActions.Add, disabled: props.isLocked },
+  {
+    label: "Add root unit",
+    action: SideActions.AddSubordinate,
+    disabled: props.isLocked,
+  },
   { label: "Duplicate", action: SideActions.Clone, disabled: props.isLocked },
   {
     label: "Duplicate (with state)",
