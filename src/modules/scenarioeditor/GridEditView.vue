@@ -168,8 +168,25 @@ const filteredOrbat = computed(() => {
     .map((id) => state.sideMap[id])
     .forEach((side) => {
       const sideGroupList: SideGroupItem[] = [];
-      side.groups
-        .map((id) => state.sideGroupMap[id])
+      const dummyGroups = [...side.groups];
+      if (side.subUnits) {
+        dummyGroups.push(side.id);
+      }
+      dummyGroups
+        .map((id) => {
+          if (id in state.sideGroupMap) {
+            return state.sideGroupMap[id];
+          } else {
+            // Create a dummy side group for root units
+            return {
+              id: side.id,
+              name: "(Root units)",
+              shortName: "",
+              _pid: side.id,
+              subUnits: side.subUnits || [],
+            } as NSideGroup;
+          }
+        })
         .forEach((sideGroup) => {
           const filteredUnits = filterUnits(
             sideGroup.subUnits,
