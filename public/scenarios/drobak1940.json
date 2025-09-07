@@ -1,10 +1,10 @@
 {
   "id": "q3J8k9uMjj",
   "type": "ORBAT-mapper",
-  "version": "0.40.0",
+  "version": "1.0.0",
   "meta": {
     "createdDate": "2025-05-10T15:47:04.658Z",
-    "lastModifiedDate": "2025-05-18T06:04:19.662Z"
+    "lastModifiedDate": "2025-09-07T13:24:20.199Z"
   },
   "name": "Battle of Drøbak Sound",
   "startTime": "1940-04-08T12:00:00+02:00",
@@ -16,432 +16,420 @@
       "name": "Norway",
       "standardIdentity": "3",
       "symbolOptions": {},
-      "units": [
-        {
-          "rootUnitName": "HQ",
-          "rootUnitEchelon": "18",
-          "rootUnitIcon": "121100"
-        }
-      ],
       "id": "DNY0eNfGlX",
-      "groups": [
+      "groups": [],
+      "subUnits": [
         {
-          "name": "Units",
-          "id": "uBIX5HHmnm",
+          "id": "ZMdgTKyJKJ",
+          "name": "1st Naval District",
+          "sidc": "10031000001701000000",
           "subUnits": [
             {
-              "id": "ZMdgTKyJKJ",
-              "name": "1st Naval District",
+              "id": "JD9Kx12K9D",
+              "name": "1st Naval District HQ",
+              "sidc": "10031002001701000000",
+              "subUnits": [],
+              "symbolOptions": {},
+              "reinforcedStatus": "None",
+              "textAmplifiers": {
+                "uniqueDesignation": "1"
+              },
+              "location": [10.491233447723738, 59.427528583747886],
+              "state": []
+            },
+            {
+              "id": "Soh6zwdDz1",
+              "name": "Oslofjord Defense Sector",
               "sidc": "10031000001701000000",
               "subUnits": [
                 {
-                  "id": "JD9Kx12K9D",
-                  "name": "1st Naval District HQ",
-                  "sidc": "10031002001701000000",
-                  "subUnits": [],
-                  "symbolOptions": {},
-                  "reinforcedStatus": "None",
-                  "textAmplifiers": {
-                    "uniqueDesignation": "1"
-                  },
-                  "location": [10.491233447723738, 59.427528583747886],
-                  "state": []
-                },
-                {
-                  "id": "Soh6zwdDz1",
-                  "name": "Oslofjord Defense Sector",
+                  "id": "6i8peJbCf0",
+                  "name": "1st Submarine Division",
                   "sidc": "10031000001701000000",
                   "subUnits": [
                     {
-                      "id": "6i8peJbCf0",
-                      "name": "1st Submarine Division",
-                      "sidc": "10031000001701000000",
-                      "subUnits": [
-                        {
-                          "id": "YSUCwB5BLy",
-                          "name": "SS A2",
-                          "sidc": "10033500001101000000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "Zo3maII40y",
-                          "name": "SS A3",
-                          "sidc": "10033500001101000000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "OpakdkFWoX",
-                          "name": "SS A4",
-                          "sidc": "10033500001101000000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "4UQju3QKxn",
-                          "name": "AS Sarpen",
-                          "sidc": "10033000001301120000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        }
-                      ],
+                      "id": "YSUCwB5BLy",
+                      "name": "SS A2",
+                      "sidc": "10033500001101000000",
+                      "subUnits": [],
                       "symbolOptions": {},
                       "reinforcedStatus": "None",
                       "state": []
                     },
                     {
-                      "id": "VRqBsvZbRu",
-                      "name": "1st Minesweeper Division",
-                      "sidc": "10031000001701000000",
-                      "subUnits": [
-                        {
-                          "id": "mHeHjLxS3d",
-                          "name": "AM Hauk",
-                          "sidc": "10033000001204020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "f97yZo2ZJZ",
-                          "name": "AM Falk",
-                          "sidc": "10033000001204020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "QI5eULmLNA",
-                          "name": "AM Hvas",
-                          "sidc": "10033000001204020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "ugnavErPCU",
-                          "name": "AM Kjæk",
-                          "sidc": "10033000001204020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        }
-                      ],
+                      "id": "Zo3maII40y",
+                      "name": "SS A3",
+                      "sidc": "10033500001101000000",
+                      "subUnits": [],
                       "symbolOptions": {},
+                      "reinforcedStatus": "None",
                       "state": []
                     },
                     {
-                      "id": "7zO9fdHR9z",
-                      "name": "3rd Minsweeper Division",
-                      "sidc": "10031000001701000000",
-                      "subUnits": [
-                        {
-                          "id": "9jCn2easKA",
-                          "name": "AM Otra",
-                          "sidc": "10033000001204020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "KlGpQB7rbg",
-                          "name": "AM Rauma",
-                          "sidc": "10033000001204020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        }
-                      ],
+                      "id": "OpakdkFWoX",
+                      "name": "SS A4",
+                      "sidc": "10033500001101000000",
+                      "subUnits": [],
                       "symbolOptions": {},
+                      "reinforcedStatus": "None",
                       "state": []
                     },
                     {
-                      "id": "oXLpa2Zhla",
-                      "name": "Sector Patrol Vessels",
-                      "sidc": "10031000001701000000",
-                      "subUnits": [
-                        {
-                          "id": "JZbqYDJMmE",
-                          "name": "Farm",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "0owiTSBKma",
-                          "name": "Pol III",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "WPnTI50B9z",
-                          "name": "Skudd I",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "ZZyzrspuQs",
-                          "name": "Skudd II",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "OBpT7N93Yk",
-                          "name": "Oter I",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "iDqSRWuSgy",
-                          "name": "Hval II",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "tH1XXsG0Ly",
-                          "name": "Hval III",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "tAHz7wr83l",
-                          "name": "Treff",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "QZOJGZRvJD",
-                          "name": "Ramoen",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "KvAl86vu1s",
-                          "name": "Sætre",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "0Jy5MnGzZs",
-                          "name": "Beta",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        }
-                      ],
+                      "id": "4UQju3QKxn",
+                      "name": "AS Sarpen",
+                      "sidc": "10033000001301120000",
+                      "subUnits": [],
                       "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    }
+                  ],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "state": []
+                },
+                {
+                  "id": "VRqBsvZbRu",
+                  "name": "1st Minesweeper Division",
+                  "sidc": "10031000001701000000",
+                  "subUnits": [
+                    {
+                      "id": "mHeHjLxS3d",
+                      "name": "AM Hauk",
+                      "sidc": "10033000001204020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
                       "state": []
                     },
                     {
-                      "id": "ey6qIuUY0b",
-                      "name": "Oslofjord Fortress",
+                      "id": "f97yZo2ZJZ",
+                      "name": "AM Falk",
+                      "sidc": "10033000001204020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "QI5eULmLNA",
+                      "name": "AM Hvas",
+                      "sidc": "10033000001204020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "ugnavErPCU",
+                      "name": "AM Kjæk",
+                      "sidc": "10033000001204020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    }
+                  ],
+                  "symbolOptions": {},
+                  "state": []
+                },
+                {
+                  "id": "7zO9fdHR9z",
+                  "name": "3rd Minsweeper Division",
+                  "sidc": "10031000001701000000",
+                  "subUnits": [
+                    {
+                      "id": "9jCn2easKA",
+                      "name": "AM Otra",
+                      "sidc": "10033000001204020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "KlGpQB7rbg",
+                      "name": "AM Rauma",
+                      "sidc": "10033000001204020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    }
+                  ],
+                  "symbolOptions": {},
+                  "state": []
+                },
+                {
+                  "id": "oXLpa2Zhla",
+                  "name": "Sector Patrol Vessels",
+                  "sidc": "10031000001701000000",
+                  "subUnits": [
+                    {
+                      "id": "JZbqYDJMmE",
+                      "name": "Farm",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "0owiTSBKma",
+                      "name": "Pol III",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "WPnTI50B9z",
+                      "name": "Skudd I",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "ZZyzrspuQs",
+                      "name": "Skudd II",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "OBpT7N93Yk",
+                      "name": "Oter I",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "iDqSRWuSgy",
+                      "name": "Hval II",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "tH1XXsG0Ly",
+                      "name": "Hval III",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "tAHz7wr83l",
+                      "name": "Treff",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "QZOJGZRvJD",
+                      "name": "Ramoen",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "KvAl86vu1s",
+                      "name": "Sætre",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "0Jy5MnGzZs",
+                      "name": "Beta",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    }
+                  ],
+                  "symbolOptions": {},
+                  "state": []
+                },
+                {
+                  "id": "ey6qIuUY0b",
+                  "name": "Oslofjord Fortress",
+                  "sidc": "10031000001303004600",
+                  "subUnits": [
+                    {
+                      "id": "obtS0iju8j",
+                      "name": "Oslofjord Fortress11",
                       "sidc": "10031000001303004600",
-                      "subUnits": [
-                        {
-                          "id": "obtS0iju8j",
-                          "name": "Oslofjord Fortress11",
-                          "sidc": "10031000001303004600",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "state": []
-                        },
-                        {
-                          "id": "fqTKw92904",
-                          "name": "Oslofjord Fortress12",
-                          "sidc": "10031000001303004600",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "state": []
-                        }
-                      ],
+                      "subUnits": [],
                       "symbolOptions": {},
-                      "reinforcedStatus": "None",
                       "state": []
-                    }
-                  ],
-                  "symbolOptions": {},
-                  "reinforcedStatus": "None",
-                  "state": []
-                },
-                {
-                  "id": "M9povpLf8S",
-                  "name": "Oscarsborg Defense Sector",
-                  "sidc": "10031000001701000000",
-                  "subUnits": [
+                    },
                     {
-                      "id": "wSmMWQAmCQ",
-                      "name": "Sector Patrol Vessels",
-                      "sidc": "10031000001701000000",
-                      "subUnits": [
-                        {
-                          "id": "H74GpF5VNL",
-                          "name": "Alpha",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "5We8Z261vT",
-                          "name": "Furu",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        },
-                        {
-                          "id": "46QDdyR7g1",
-                          "name": "Kranfartøy 2",
-                          "sidc": "10033000001205020000",
-                          "subUnits": [],
-                          "symbolOptions": {},
-                          "reinforcedStatus": "None",
-                          "state": []
-                        }
-                      ],
+                      "id": "fqTKw92904",
+                      "name": "Oslofjord Fortress12",
+                      "sidc": "10031000001303004600",
+                      "subUnits": [],
                       "symbolOptions": {},
                       "state": []
                     }
                   ],
                   "symbolOptions": {},
                   "reinforcedStatus": "None",
-                  "state": []
-                },
-                {
-                  "id": "7jZSLrNcTq",
-                  "name": "Kristiansand Defense Sector",
-                  "sidc": "10031000001701000000",
-                  "subUnits": [],
-                  "symbolOptions": {},
-                  "reinforcedStatus": "None",
-                  "state": []
-                },
-                {
-                  "id": "b2qXpk8Zs4",
-                  "name": "1st Minelayer Division",
-                  "sidc": "10031000001701000000",
-                  "subUnits": [
-                    {
-                      "id": "4XHaeFWRYc",
-                      "name": "Laugen",
-                      "sidc": "10033000001204010000",
-                      "subUnits": [],
-                      "symbolOptions": {},
-                      "reinforcedStatus": "None",
-                      "state": [
-                        {
-                          "id": "OM0HMXDs5O",
-                          "t": "1940-04-08T12:00:00+02:00",
-                          "location": [10.471056766668115, 59.2445642340237]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "ueoP30k2KJ",
-                      "name": "Glommen",
-                      "sidc": "10033000001204010000",
-                      "subUnits": [],
-                      "symbolOptions": {},
-                      "reinforcedStatus": "None",
-                      "state": [
-                        {
-                          "id": "ol05F0mWu0",
-                          "t": "1940-04-08T12:00:00+02:00",
-                          "location": [10.471147759467742, 59.24422521779354]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "fwm51dd7WQ",
-                      "name": "Nor",
-                      "sidc": "10033000001204010000",
-                      "subUnits": [],
-                      "symbolOptions": {},
-                      "reinforcedStatus": "None",
-                      "state": [
-                        {
-                          "id": "wM60igknSg",
-                          "t": "1940-04-08T12:00:00+02:00",
-                          "location": [10.471329745067, 59.24383301834126]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "RsMtH0cs40",
-                      "name": "Vidar",
-                      "sidc": "10033000001204010000",
-                      "subUnits": [],
-                      "symbolOptions": {},
-                      "reinforcedStatus": "None",
-                      "state": [
-                        {
-                          "id": "363p62R3U4",
-                          "t": "1940-04-08T12:00:00+02:00",
-                          "location": [10.471550727580382, 59.24346075706083]
-                        }
-                      ]
-                    }
-                  ],
-                  "symbolOptions": {},
-                  "shortName": "",
-                  "description": "",
-                  "externalUrl": "",
                   "state": []
                 }
               ],
               "symbolOptions": {},
               "reinforcedStatus": "None",
               "state": []
+            },
+            {
+              "id": "M9povpLf8S",
+              "name": "Oscarsborg Defense Sector",
+              "sidc": "10031000001701000000",
+              "subUnits": [
+                {
+                  "id": "wSmMWQAmCQ",
+                  "name": "Sector Patrol Vessels",
+                  "sidc": "10031000001701000000",
+                  "subUnits": [
+                    {
+                      "id": "H74GpF5VNL",
+                      "name": "Alpha",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "5We8Z261vT",
+                      "name": "Furu",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    },
+                    {
+                      "id": "46QDdyR7g1",
+                      "name": "Kranfartøy 2",
+                      "sidc": "10033000001205020000",
+                      "subUnits": [],
+                      "symbolOptions": {},
+                      "reinforcedStatus": "None",
+                      "state": []
+                    }
+                  ],
+                  "symbolOptions": {},
+                  "state": []
+                }
+              ],
+              "symbolOptions": {},
+              "reinforcedStatus": "None",
+              "state": []
+            },
+            {
+              "id": "7jZSLrNcTq",
+              "name": "Kristiansand Defense Sector",
+              "sidc": "10031000001701000000",
+              "subUnits": [],
+              "symbolOptions": {},
+              "reinforcedStatus": "None",
+              "state": []
+            },
+            {
+              "id": "b2qXpk8Zs4",
+              "name": "1st Minelayer Division",
+              "sidc": "10031000001701000000",
+              "subUnits": [
+                {
+                  "id": "4XHaeFWRYc",
+                  "name": "Laugen",
+                  "sidc": "10033000001204010000",
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "state": [
+                    {
+                      "id": "OM0HMXDs5O",
+                      "t": "1940-04-08T12:00:00+02:00",
+                      "location": [10.471056766668115, 59.2445642340237]
+                    }
+                  ]
+                },
+                {
+                  "id": "ueoP30k2KJ",
+                  "name": "Glommen",
+                  "sidc": "10033000001204010000",
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "state": [
+                    {
+                      "id": "ol05F0mWu0",
+                      "t": "1940-04-08T12:00:00+02:00",
+                      "location": [10.471147759467742, 59.24422521779354]
+                    }
+                  ]
+                },
+                {
+                  "id": "fwm51dd7WQ",
+                  "name": "Nor",
+                  "sidc": "10033000001204010000",
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "state": [
+                    {
+                      "id": "wM60igknSg",
+                      "t": "1940-04-08T12:00:00+02:00",
+                      "location": [10.471329745067, 59.24383301834126]
+                    }
+                  ]
+                },
+                {
+                  "id": "RsMtH0cs40",
+                  "name": "Vidar",
+                  "sidc": "10033000001204010000",
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "state": [
+                    {
+                      "id": "363p62R3U4",
+                      "t": "1940-04-08T12:00:00+02:00",
+                      "location": [10.471550727580382, 59.24346075706083]
+                    }
+                  ]
+                }
+              ],
+              "symbolOptions": {},
+              "shortName": "",
+              "description": "",
+              "externalUrl": "",
+              "state": []
             }
-          ]
+          ],
+          "symbolOptions": {},
+          "reinforcedStatus": "None",
+          "state": []
         }
       ]
     },
@@ -449,93 +437,69 @@
       "name": "Germany",
       "standardIdentity": "6",
       "symbolOptions": {},
-      "units": [
-        {
-          "rootUnitName": "HQ",
-          "rootUnitEchelon": "18",
-          "rootUnitIcon": "121100"
-        }
-      ],
       "id": "9aha4yGON4",
-      "groups": [
+      "groups": [],
+      "subUnits": [
         {
-          "name": "Units",
-          "id": "D2bjV8u3Bx",
+          "id": "B5o5KWsSPv",
+          "name": "Naval Command East",
+          "sidc": "10061000001701000000",
           "subUnits": [
             {
-              "id": "jQELe6VC9E",
-              "name": "Naval Command West",
-              "sidc": "10061000001701000000",
-              "subUnits": [],
-              "symbolOptions": {},
-              "reinforcedStatus": "None",
-              "state": []
-            },
-            {
-              "id": "B5o5KWsSPv",
-              "name": "Naval Command East",
-              "sidc": "10061000001701000000",
+              "id": "83Ki3VwBrS",
+              "name": "Task Group 5",
+              "sidc": "10063000001210030000",
               "subUnits": [
                 {
-                  "id": "83Ki3VwBrS",
-                  "name": "Task Group 5",
-                  "sidc": "10063000001210030000",
-                  "subUnits": [
-                    {
-                      "id": "IKuVV3SXDX",
-                      "name": "Blücher",
-                      "sidc": "10063000001202020002",
-                      "subUnits": [],
-                      "symbolOptions": {},
-                      "reinforcedStatus": "None",
-                      "state": []
-                    },
-                    {
-                      "id": "5a8AS0Dsri",
-                      "name": "Lützow",
-                      "sidc": "10063000001202020002",
-                      "subUnits": [],
-                      "symbolOptions": {},
-                      "reinforcedStatus": "None",
-                      "state": []
-                    },
-                    {
-                      "id": "dHgqUvBuzD",
-                      "name": "Emden",
-                      "sidc": "10063000001202020003",
-                      "subUnits": [],
-                      "symbolOptions": {},
-                      "reinforcedStatus": "None",
-                      "state": []
-                    },
-                    {
-                      "id": "nP6tUb2aM5",
-                      "name": "Möwe",
-                      "sidc": "10063000001205001700",
-                      "subUnits": [],
-                      "symbolOptions": {},
-                      "reinforcedStatus": "None",
-                      "state": []
-                    },
-                    {
-                      "id": "tfMz9CDxRA",
-                      "name": "Albatross",
-                      "sidc": "10063000001205001700",
-                      "subUnits": [],
-                      "symbolOptions": {},
-                      "reinforcedStatus": "None",
-                      "state": []
-                    },
-                    {
-                      "id": "sW8t7NvDsg",
-                      "name": "Kondor",
-                      "sidc": "10063000001205001700",
-                      "subUnits": [],
-                      "symbolOptions": {},
-                      "reinforcedStatus": "None",
-                      "state": []
-                    }
-                  ],
+                  "id": "IKuVV3SXDX",
+                  "name": "Blücher",
+                  "sidc": "10063000001202020002",
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "state": []
+                },
+                {
+                  "id": "5a8AS0Dsri",
+                  "name": "Lützow",
+                  "sidc": "10063000001202020002",
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "state": []
+                },
+                {
+                  "id": "dHgqUvBuzD",
+                  "name": "Emden",
+                  "sidc": "10063000001202020003",
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "state": []
+                },
+                {
+                  "id": "nP6tUb2aM5",
+                  "name": "Möwe",
+                  "sidc": "10063000001205001700",
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "state": []
+                },
+                {
+                  "id": "tfMz9CDxRA",
+                  "name": "Albatross",
+                  "sidc": "10063000001205001700",
+                  "subUnits": [],
+                  "symbolOptions": {},
+                  "reinforcedStatus": "None",
+                  "state": []
+                },
+                {
+                  "id": "sW8t7NvDsg",
+                  "name": "Kondor",
+                  "sidc": "10063000001205001700",
+                  "subUnits": [],
                   "symbolOptions": {},
                   "reinforcedStatus": "None",
                   "state": []
@@ -545,7 +509,19 @@
               "reinforcedStatus": "None",
               "state": []
             }
-          ]
+          ],
+          "symbolOptions": {},
+          "reinforcedStatus": "None",
+          "state": []
+        },
+        {
+          "id": "jQELe6VC9E",
+          "name": "Naval Command West",
+          "sidc": "10061000001701000000",
+          "subUnits": [],
+          "symbolOptions": {},
+          "reinforcedStatus": "None",
+          "state": []
         }
       ]
     }
