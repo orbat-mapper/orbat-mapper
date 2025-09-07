@@ -1,6 +1,6 @@
 import type { LayerFeatureItem } from "@/types/scenarioGeoModels";
 import type { NUnit, ScenarioEventType } from "@/types/internalModels";
-import type { ScenarioActions, UnitAction } from "@/types/constants";
+import type { ScenarioActions, SideAction, UnitAction } from "@/types/constants";
 import type { InjectionKey } from "vue";
 import type { CurrentState, UnitSymbolOptions } from "@/types/scenarioModels";
 import type { EntityId } from "@/types/base";
@@ -87,6 +87,12 @@ export interface MenuItemData<T = string | Function> {
   disabled?: boolean;
   active?: boolean;
 }
+
+export interface MenuItemSeparator {
+  separator: true;
+}
+
+export type DropdownMenuItemType = MenuItemData<SideAction> | MenuItemSeparator;
 
 export interface BreadcrumbItem {
   name: string;
