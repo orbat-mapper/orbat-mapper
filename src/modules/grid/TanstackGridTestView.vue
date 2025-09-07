@@ -193,7 +193,7 @@ onMounted(async () => {
           ...unit,
           sideId: side.id,
           sideName: side?.name,
-          sideGroupName: sideGroup.name,
+          sideGroupName: sideGroup?.name ?? "",
           symbolOptions: unitActions.getCombinedSymbolOptions(unit),
         });
       },

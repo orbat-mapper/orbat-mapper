@@ -38,6 +38,7 @@ import {
 } from "@/types/draggables";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import SideDropdownMenu from "@/modules/scenarioeditor/SideDropdownMenu.vue";
+import OrbatTree from "@/components/OrbatTree.vue";
 
 interface Props {
   side: NSide;
@@ -132,7 +133,7 @@ onMounted(() => {
       },
       canDrop: ({ source }) => {
         return (
-          (isUnitDragItem(source.data) && source.data.unit._sid !== props.side.id) ||
+          isUnitDragItem(source.data) ||
           (isSideGroupDragItem(source.data) &&
             source.data.sideGroup._pid !== props.side.id) ||
           (isSideDragItem(source.data) && source.data.side.id !== props.side.id)
@@ -282,6 +283,18 @@ const toggleOpen = () => {
         <FilterQueryInput
           v-model="filterQuery"
           v-model:location-filter="hasLocationFilter"
+        />
+      </div>
+      <div v-if="side.subUnits.length" class="mt-2">
+        <OrbatTree
+          :units="side.subUnits"
+          :unit-map="store.state.unitMap"
+          :class="{ 'opacity-50': isHidden }"
+          :filter-query="filterQuery"
+          :location-filter="hasLocationFilter"
+          @unit-action="onUnitAction"
+          @unit-click="(unit, event) => emit('unit-click', unit, event)"
+          :symbol-options="{ ...side.symbolOptions }"
         />
       </div>
       <div v-for="group in sideGroups" :key="group.id">

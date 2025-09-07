@@ -106,7 +106,7 @@ onMounted(() => {
       const isDuplicateAction =
         location.initial.input.ctrlKey || location.initial.input.metaKey;
       const isDuplicateState = isDuplicateAction && location.initial.input.altKey;
-      if (isUnitDragItem(sourceData) && !isSideDragItem(destinationData)) {
+      if (isUnitDragItem(sourceData)) {
         const target = mapInstructionToTarget(instruction);
         if (isUnitDragItem(destinationData)) {
           onUnitDrop(sourceData.unit, destinationData.unit, target, {
@@ -118,6 +118,11 @@ onMounted(() => {
           }
         } else if (isSideGroupDragItem(destinationData)) {
           onUnitDrop(sourceData.unit, destinationData.sideGroup, target, {
+            isDuplicateAction,
+            isDuplicateState,
+          });
+        } else if (isSideDragItem(destinationData)) {
+          onUnitDrop(sourceData.unit, destinationData.side, "on", {
             isDuplicateAction,
             isDuplicateState,
           });
@@ -209,7 +214,7 @@ function mapInstructionToTarget(instruction: Instruction): DropTarget {
 
 function onUnitDrop(
   unit: NUnit,
-  destinationUnit: NUnit | NSideGroup,
+  destinationUnit: NUnit | NSideGroup | NSide,
   target: DropTarget,
   options: { isDuplicateAction?: boolean; isDuplicateState?: boolean } = {},
 ) {

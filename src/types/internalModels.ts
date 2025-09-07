@@ -49,7 +49,7 @@ export interface NUnit
   supplies?: NUnitSupply[];
   state?: NState[];
   _pid: EntityId;
-  _gid: EntityId;
+  _gid?: EntityId;
   _sid: EntityId;
 }
 
@@ -108,8 +108,9 @@ export interface OlUnitProps
   stateType: CurrentStateType;
 }
 
-export interface NSide extends Omit<Side, "groups"> {
+export interface NSide extends Omit<Side, "groups" | "subUnits"> {
   groups: EntityId[];
+  subUnits: EntityId[];
   _isOpen?: boolean;
 }
 

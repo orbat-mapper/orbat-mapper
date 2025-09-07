@@ -164,8 +164,8 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
   function prepareUnit(
     unit1: Unit,
     level: number,
-    parent: Unit | SideGroup,
-    sideGroup: SideGroup,
+    parent: Unit | SideGroup | Side,
+    sideGroup: SideGroup | null | undefined,
     side: Side,
   ) {
     const unit = klona(unit1);
@@ -176,7 +176,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
 
     unit._pid = parent.id;
     unit._isOpen = false;
-    unit._gid = sideGroup.id;
+    unit._gid = sideGroup?.id;
     unit._sid = side.id;
     const equipment: NUnitEquipment[] = [];
     const personnel: NUnitPersonnel[] = [];
@@ -352,7 +352,11 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
   }
 
   scenario.sides.forEach((side) => {
-    sideMap[side.id] = { ...side, groups: side.groups.map((group) => group.id) };
+    sideMap[side.id] = {
+      ...side,
+      groups: side.groups.map((group) => group.id),
+      subUnits: side.subUnits?.map((unit) => unit.id) ?? [],
+    };
     sides.push(side.id);
     side.groups.forEach((group) => {
       sideGroupMap[group.id] = {

@@ -79,7 +79,8 @@ export function useGeo(store: NewScenarioStore) {
   });
   const everyVisibleUnit = computed(() => {
     return Object.values(state.unitMap).filter(
-      (unit) => !hiddenGroups.value.has(unit._gid) && unit._state?.location,
+      (unit) =>
+        !(unit._gid && hiddenGroups.value.has(unit._gid)) && unit._state?.location,
     );
   });
 

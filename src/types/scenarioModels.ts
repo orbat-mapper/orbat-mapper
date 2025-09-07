@@ -182,9 +182,10 @@ export interface SideGroup {
 
 export interface Side extends SideData {
   id: EntityId;
-  groups: SideGroup[];
   isHidden?: boolean;
+  groups: SideGroup[];
   locked?: boolean;
+  subUnits?: Unit[];
   _isNew?: boolean;
 }
 

@@ -350,7 +350,7 @@ onMounted(() => {
 const { onUnitSelect } = useSearchActions();
 onUnitSelect(({ unitId }) => {
   const { parents, side, sideGroup } = unitActions.getUnitHierarchy(unitId);
-  sgOpen.value.set(sideGroup, true);
+  sideGroup && sgOpen.value.set(sideGroup, true);
   sideOpen.value.set(side, true);
   parents.forEach((p) => (p._isOpen = true));
   nextTick(() => {
