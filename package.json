@@ -108,7 +108,7 @@
     "tailwindcss": "^4.1.3",
     "tw-animate-css": "^1.3.7",
     "typescript": "^5.9.2",
-    "vite": "^6.3.5",
+    "vite": "^6.3.6",
     "vite-plugin-vue-devtools": "^7.7.7",
     "vitepress": "^1.6.4",
     "vue-tsc": "^2.2.12"
