@@ -10,7 +10,7 @@ import GeoJSON from "ol/format/GeoJSON";
 import turfEnvelope from "@turf/envelope";
 
 import Feature from "ol/Feature";
-import { shallowRef } from "vue";
+import { shallowRef, ref } from "vue";
 import { useLocalStorage } from "@vueuse/core";
 
 export interface ZoomOptions {
@@ -18,102 +18,118 @@ export interface ZoomOptions {
   duration?: number;
 }
 
-export const useGeoStore = defineStore("geo", {
-  state: () => ({
-    olMap: shallowRef<OLMap | null | undefined>(null),
-  }),
-  actions: {
-    zoomToUnit(unit?: Unit | NUnit | null, duration = 900) {
-      if (!this.olMap) return;
-      const location = unit?._state?.location;
-      if (!location) return;
-      const view = this.olMap.getView();
-      view.animate({
-        zoom: 15,
-        center: fromLonLat(location, view.getProjection()),
-        duration,
-      });
-    },
+export const useGeoStore = defineStore("geo", () => {
+  const olMap = shallowRef<OLMap | null | undefined>(null);
 
-    zoomToUnits(units: NUnit[], options: ZoomOptions = {}) {
-      const { duration = 900, maxZoom = 15 } = options;
-      const points = units
-        .filter((u) => u._state?.location)
-        .map((u) => turfPoint(u._state?.location!));
-      if (!points.length) return;
-      const c = featureCollection(points);
-      this.zoomToGeometry(c, { duration, maxZoom });
-    },
+  function zoomToUnit(unit?: Unit | NUnit | null, duration = 900) {
+    if (!olMap.value) return;
+    const location = unit?._state?.location;
+    if (!location) return;
+    const view = olMap.value.getView();
+    view.animate({
+      zoom: 15,
+      center: fromLonLat(location, view.getProjection()),
+      duration,
+    });
+  }
 
-    zoomToGeometry(geometry: AllGeoJSON, options: ZoomOptions = {}) {
-      if (!this.olMap) return;
-      const { duration = 900, maxZoom = 15 } = options;
-      const bb = new GeoJSON().readFeature(turfEnvelope(geometry), {
-        featureProjection: "EPSG:3857",
-        dataProjection: "EPSG:4326",
-      }) as Feature<any>;
-      if (!bb) return;
-      this.olMap.getView().fit(bb.getGeometry(), { maxZoom, duration });
-    },
+  function zoomToUnits(units: NUnit[], options: ZoomOptions = {}) {
+    const { duration = 900, maxZoom = 15 } = options;
+    const points = units
+      .filter((u) => u._state?.location)
+      .map((u) => turfPoint(u._state?.location!));
+    if (!points.length) return;
+    const c = featureCollection(points);
+    zoomToGeometry(c, { duration, maxZoom });
+  }
 
-    zoomToLocation(location?: Position, duration = 900) {
-      if (!this.olMap) return;
-      if (!location) return;
-      const view = this.olMap!.getView();
-      view.animate({
-        zoom: 10,
-        center: fromLonLat(location, view.getProjection()),
-        duration,
-      });
-    },
+  function zoomToGeometry(geometry: AllGeoJSON, options: ZoomOptions = {}) {
+    if (!olMap.value) return;
+    const { duration = 900, maxZoom = 15 } = options;
+    const bb = new GeoJSON().readFeature(turfEnvelope(geometry), {
+      featureProjection: "EPSG:3857",
+      dataProjection: "EPSG:4326",
+    }) as Feature<any>;
+    if (!bb) return;
+    olMap.value.getView().fit(bb.getGeometry(), { maxZoom, duration });
+  }
 
-    panToUnit(unit?: Unit | NUnit | null, duration = 900) {
-      if (!this.olMap) return;
-      const location = unit?._state?.location;
-      if (!location) return;
-      const view = this.olMap.getView();
-      view.animate({
-        center: fromLonLat(location, view.getProjection()),
-        duration,
-      });
-    },
+  function zoomToLocation(location?: Position, duration = 900) {
+    if (!olMap.value) return;
+    if (!location) return;
+    const view = olMap.value.getView();
+    view.animate({
+      zoom: 10,
+      center: fromLonLat(location, view.getProjection()),
+      duration,
+    });
+  }
 
-    panToLocation(location?: Position, duration = 900) {
-      if (!this.olMap) return;
-      if (!location) return;
-      const view = this.olMap.getView();
-      view.animate({
-        center: fromLonLat(location, view.getProjection()),
-        duration,
-      });
-    },
+  function panToUnit(unit?: Unit | NUnit | null, duration = 900) {
+    if (!olMap.value) return;
+    const location = unit?._state?.location;
+    if (!location) return;
+    const view = olMap.value.getView();
+    view.animate({
+      center: fromLonLat(location, view.getProjection()),
+      duration,
+    });
+  }
 
-    updateMapSize() {
-      this.olMap?.updateSize();
-    },
-  },
+  function panToLocation(location?: Position, duration = 900) {
+    if (!olMap.value) return;
+    if (!location) return;
+    const view = olMap.value.getView();
+    view.animate({
+      center: fromLonLat(location, view.getProjection()),
+      duration,
+    });
+  }
+
+  function updateMapSize() {
+    olMap.value?.updateSize();
+  }
+
+  return {
+    olMap,
+    zoomToUnit,
+    zoomToUnits,
+    zoomToGeometry,
+    zoomToLocation,
+    panToUnit,
+    panToLocation,
+    updateMapSize,
+  };
 });
 
-export const useMeasurementsStore = defineStore("measurements", {
-  state() {
-    return {
-      measurementType: "LineString" as MeasurementTypes,
-      clearPrevious: true,
-      showSegments: true,
-      measurementUnit: "metric" as MeasurementUnit,
-      snap: true,
-      showCircle: useLocalStorage("showMeasurementCircle", true),
-    };
-  },
+export const useMeasurementsStore = defineStore("measurements", () => {
+  const measurementType = ref<MeasurementTypes>("LineString");
+  const clearPrevious = ref(true);
+  const showSegments = ref(true);
+  const measurementUnit = ref<MeasurementUnit>("metric");
+  const snap = ref(true);
+  const showCircle = useLocalStorage("showMeasurementCircle", true);
+
+  return {
+    measurementType,
+    clearPrevious,
+    showSegments,
+    measurementUnit,
+    snap,
+    showCircle,
+  };
 });
 
-export const useUnitSettingsStore = defineStore("unitSettings", {
-  state() {
-    return {
-      showHistory: useLocalStorage("showHistory", true),
-      editHistory: false,
-      moveUnitEnabled: false,
-      showWaypointTimestamps: useLocalStorage("showWaypointTimestamps", false),
-    };
-  },
+export const useUnitSettingsStore = defineStore("unitSettings", () => {
+  const showHistory = useLocalStorage("showHistory", true);
+  const editHistory = ref(false);
+  const moveUnitEnabled = ref(false);
+  const showWaypointTimestamps = useLocalStorage("showWaypointTimestamps", false);
+
+  return {
+    showHistory,
+    editHistory,
+    moveUnitEnabled,
+    showWaypointTimestamps,
+  };
 });
