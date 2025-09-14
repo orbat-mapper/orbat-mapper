@@ -45,6 +45,7 @@ export interface State extends Partial<ScenarioEventDescription> {
     personnel?: UpdateUnitPersonnel[];
     supplies?: UpdateUnitSupplies[];
   };
+  pid?: EntityId; // parent unit id
 }
 
 export interface StateAdd extends Omit<NState, "id"> {
@@ -58,6 +59,7 @@ export interface CurrentState extends Omit<NState, "id"> {
   equipment?: NUnitEquipment[];
   personnel?: NUnitPersonnel[];
   supplies?: NUnitSupply[];
+  subUnits?: EntityId[];
 }
 
 export interface LocationState extends State {
