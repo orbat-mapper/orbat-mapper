@@ -33,8 +33,9 @@ export function filterUnits(
     } else if (parentMatched && resetOpen) {
       oi.unit._isOpen = false;
     }
-    if (currentUnit.subUnits?.length) {
-      for (const subUnit of currentUnit.subUnits) {
+    const subUnits = currentUnit._state?.subUnits ?? currentUnit.subUnits ?? [];
+    if (subUnits.length) {
+      for (const subUnit of subUnits) {
         let su = helper(subUnit, matched || parentMatched);
         if (su.length) {
           childMatched = true;

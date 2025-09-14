@@ -41,6 +41,7 @@ export function createInitialState(unit: NUnit): CurrentState | null {
       equipment: klona(unit.equipment),
       personnel: klona(unit.personnel),
       supplies: klona(unit.supplies),
+      pid: unit._pid,
     };
   return null;
 }
@@ -123,6 +124,7 @@ export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
           }
         }
       }
+
       currentState = { ...currentState, ...rest };
     } else {
       if (
@@ -152,6 +154,9 @@ export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
       }
       break;
     }
+  }
+
+  if (currentState?.pid && currentState.pid !== unit._pid) {
   }
   if (currentState?.sidc !== unit._state?.sidc) {
     unit._ikey = undefined;
