@@ -130,7 +130,11 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
-  async function createKMLString(sidcs: string[], opts: KmlKmzExportSettings) {
+  async function createKMLString(
+    sidcs: string[],
+    opts: KmlKmzExportSettings,
+    offsetCache?: Map<string, { x: number; y: number }>,
+  ) {
     const { foldersToKML } = await import("@/extlib/tokml");
     const root: Root = { type: "root", children: [] };
 
@@ -186,6 +190,8 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         sidc,
         labelScale: opts.labelScale,
         iconScale: opts.iconScale,
+        xOffset: offsetCache?.get(sidc)?.x,
+        yOffset: offsetCache?.get(sidc)?.y,
       })),
     );
   }
@@ -205,6 +211,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     const { zipSync } = await import("fflate");
     const data: Record<string, Uint8Array> = {};
     const usedSidcs = new Set<string>();
+    const offsetCache = new Map<string, { x: number; y: number }>();
     if (opts.embedIcons) {
       for (const unit of geo.everyVisibleUnit.value) {
         const sidc = unit._state?.sidc || unit.sidc;
@@ -219,6 +226,8 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
             ...symbolOptions,
             ...outlineOptions,
           });
+          const { x, y } = symb.getAnchor();
+          offsetCache.set(cacheKey, { x, y: -y / 2 });
           usedSidcs.add(cacheKey);
           const blob: Blob | null = await new Promise((resolve) =>
             symb.asCanvas().toBlob(resolve),
@@ -229,7 +238,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         }
       }
     }
-    const kmlString = await createKMLString([...usedSidcs], opts);
+    const kmlString = await createKMLString([...usedSidcs], opts, offsetCache);
 
     data["doc.kml"] = new TextEncoder().encode(kmlString);
 
