@@ -84,7 +84,7 @@ function onCancel() {
       </div>
 
       <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
-        <Button type="submit" size="sm">Export</Button>
+        <Button type="submit" size="sm">Import</Button>
         <Button variant="outline" size="sm" @click="onCancel">Cancel</Button>
       </footer>
     </form>
