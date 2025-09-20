@@ -21,7 +21,7 @@ type Literal = typeof BR;
  * kmlWithFolders method: a tree of folders and features,
  * starting with a root element.
  */
-export function foldersToKML(root: Root, styles: any[] = []): string {
+export function foldersToKML(root: Root, styles: StyleSettings[] = []): string {
   return toXml(
     u("root", [
       x(
@@ -37,11 +37,18 @@ export function foldersToKML(root: Root, styles: any[] = []): string {
   );
 }
 
-function convertStyle(sidc: string) {
+type StyleSettings = { sidc: string; iconScale?: number; labelScale?: number };
+function convertStyle({ sidc, iconScale = 1, labelScale = 1 }: StyleSettings) {
   return [
     BR,
     x("Style", { id: `sidc${sidc}` }, [
-      x("IconStyle", [x("Icon", [x("href", [u("text", `icons/${sidc}.png`)])])]),
+      x("IconStyle", [
+        x("Icon", [x("href", [u("text", `icons/${sidc}.png`)])]),
+        iconScale !== 1 ? x("scale", [u("text", `${iconScale}`)]) : undefined,
+      ]),
+      x("LabelStyle", [
+        labelScale !== 1 ? x("scale", [u("text", `${labelScale}`)]) : undefined,
+      ]), // Add this line for small labels
     ]),
   ];
 }

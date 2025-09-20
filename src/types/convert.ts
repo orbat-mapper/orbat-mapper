@@ -57,17 +57,27 @@ export interface OrbatMapperExportSettings extends BaseExportSettings {
   scenarioName?: string;
 }
 
-export interface ExportSettings
-  extends XlsxSettings,
-    UnitGeneratorSettings,
-    GeoJsonSettings,
-    OrbatMapperExportSettings {
-  fileName: string;
+export interface KmlKmzExportSettings {
   includeUnits: boolean;
   includeFeatures: boolean;
   embedIcons: boolean;
   useShortName: boolean;
   oneFolderPerSide: boolean;
+  iconScale: number;
+  labelScale: number;
+}
+
+export interface ExportSettings
+  extends XlsxSettings,
+    UnitGeneratorSettings,
+    GeoJsonSettings,
+    OrbatMapperExportSettings,
+    KmlKmzExportSettings {
+  fileName: string;
+  includeUnits: boolean;
+  includeFeatures: boolean;
+  embedIcons: boolean;
+  useShortName: boolean;
 }
 
 export interface ImportSettings {
