@@ -6,6 +6,7 @@ import type {
   ColumnMapping,
   ExportSettings,
   GeoJsonSettings,
+  KmlKmzExportSettings,
   OrbatMapperExportSettings,
   UnitGeneratorSettings,
 } from "@/types/convert";
@@ -129,7 +130,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
-  async function createKMLString(sidcs: string[], opts: ExportSettings) {
+  async function createKMLString(sidcs: string[], opts: KmlKmzExportSettings) {
     const { foldersToKML } = await import("@/extlib/tokml");
     const root: Root = { type: "root", children: [] };
 
@@ -182,7 +183,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     return foldersToKML(root, sidcs);
   }
 
-  async function downloadAsKML(opts: ExportSettings) {
+  async function downloadAsKML(opts: KmlKmzExportSettings) {
     const kmlString = await createKMLString([], opts);
     await saveBlobToLocalFile(
       new Blob([kmlString], {
@@ -193,7 +194,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
-  async function downloadAsKMZ(opts: ExportSettings) {
+  async function downloadAsKMZ(opts: KmlKmzExportSettings) {
     const { zipSync } = await import("fflate");
     const data: Record<string, Uint8Array> = {};
     const usedSidcs = new Set<string>();

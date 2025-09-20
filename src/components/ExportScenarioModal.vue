@@ -1,101 +1,5 @@
-<template>
-  <NewSimpleModal
-    v-model="open"
-    dialog-title="Export scenario"
-    @cancel="onCancel"
-    class="sm:max-w-xl md:max-w-4xl"
-  >
-    <p class="mt-1 text-sm text-gray-500">
-      Export scenario data for use with other software applications and tools
-    </p>
-    <form @submit.prevent="onExport" class="mt-4 space-y-6">
-      <SimpleSelect
-        label="Select export format"
-        :items="formatItems"
-        v-model="form.format"
-      >
-        <template #hint>
-          <DocLink href="https://docs.orbat-mapper.app/guide/export-data" />
-        </template>
-      </SimpleSelect>
-      <div class="text-sm text-gray-700">
-        <p v-if="isKml">
-          KML is a file format used to display data in an Earth browser such as Google
-          Earth. Use KMZ if you want to include unit icons.
-        </p>
-        <p v-else-if="isKmz">
-          KMZ is a compressed version of KML. Use this format if you want to include unit
-          icons.
-        </p>
-      </div>
-      <ExportSettingsXlsx v-if="format === 'xlsx'" :format="format" v-model="form" />
-      <ExportSettingsSpatialIllusions
-        v-else-if="format === 'unitgenerator'"
-        :format="format"
-        v-model="form"
-      />
-      <ExportSettingsOrbatMapper v-else-if="format === 'orbatmapper'" v-model="form" />
-      <ExportSettingsGeoJson
-        v-else-if="format === 'geojson'"
-        :format="format"
-        v-model="form"
-      />
-      <template v-else>
-        <fieldset class="space-y-4">
-          <InputCheckbox
-            label="Include units"
-            description="Units with a location at current scenario time"
-            v-model="form.includeUnits"
-          />
-          <InputCheckbox
-            v-if="!isMilx"
-            label="Include scenario features"
-            v-model="form.includeFeatures"
-            description=""
-          />
-          <InputCheckbox
-            v-if="isKml || isKmz"
-            label="Use short unit names"
-            v-model="form.useShortName"
-          />
-          <InputCheckbox
-            v-if="isKml || isKmz || isMilx"
-            :label="isMilx ? 'Use one layer per side' : 'Use one folder per side'"
-            v-model="form.oneFolderPerSide"
-          />
-          <InputCheckbox
-            v-if="isKmz"
-            label="Include unit icons"
-            v-model="form.embedIcons"
-            description="Embed icons as images"
-          />
-        </fieldset>
-      </template>
-
-      <p v-if="isKmz || isKml" class="text-sm text-gray-700">
-        Please note that the export functionality is experimental. Scenario feature export
-        is currently limited to geometries (no styles).
-      </p>
-
-      <p v-if="isMilx" class="text-sm text-gray-700">
-        Please note that the MilX export is experimental. It is currently limited and has
-        several bugs.
-      </p>
-
-      <footer class="flex items-center justify-between space-x-2">
-        <ToggleField v-model="store.keepOpen">Keep dialog open on export</ToggleField>
-        <div class="flex items-center space-x-2">
-          <Button type="submit" size="sm">Export</Button>
-          <Button variant="outline" size="sm" @click="onCancel">Cancel</Button>
-        </div>
-      </footer>
-    </form>
-  </NewSimpleModal>
-</template>
-
 <script setup lang="ts">
 import { useFocusOnMount } from "@/components/helpers";
-import SimpleModal from "./SimpleModal.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { type SelectItem } from "@/components/types";
 import { computed, ref } from "vue";
@@ -110,6 +14,7 @@ import ExportSettingsSpatialIllusions from "@/components/ExportSettingsSpatialIl
 import ExportSettingsGeoJson from "@/components/ExportSettingsGeoJson.vue";
 import DocLink from "@/components/DocLink.vue";
 import ExportSettingsOrbatMapper from "@/components/ExportSettingsOrbatMapper.vue";
+import ExportSettingsKmlKmz from "@/components/ExportSettingsKmlKmz.vue";
 
 import ToggleField from "@/components/ToggleField.vue";
 import { useExportStore } from "@/stores/importExportStore";
@@ -186,7 +91,7 @@ async function onExport(e: Event) {
   } else if (format === "unitgenerator") {
     await downloadAsSpatialIllusions(form.value);
   } else if (format === "orbatmapper") {
-    downloadAsOrbatMapper(form.value);
+    await downloadAsOrbatMapper(form.value);
   }
   NProgress.done();
   if (!store.keepOpen) open.value = false;
@@ -200,3 +105,93 @@ function onCancel() {
   emit("cancel");
 }
 </script>
+
+<template>
+  <NewSimpleModal
+    v-model="open"
+    dialog-title="Export scenario"
+    @cancel="onCancel"
+    class="sm:max-w-xl md:max-w-4xl"
+  >
+    <p class="mt-1 text-sm text-gray-500">
+      Export scenario data for use with other software applications and tools
+    </p>
+    <form @submit.prevent="onExport" class="mt-4 space-y-6">
+      <SimpleSelect
+        label="Select export format"
+        :items="formatItems"
+        v-model="form.format"
+      >
+        <template #hint>
+          <DocLink href="https://docs.orbat-mapper.app/guide/export-data" />
+        </template>
+      </SimpleSelect>
+      <div class="text-sm text-gray-700">
+        <p v-if="isKml">
+          KML is a file format used to display data in an Earth browser such as Google
+          Earth. Use KMZ if you want to include unit icons.
+        </p>
+        <p v-else-if="isKmz">
+          KMZ is a compressed version of KML. Use this format if you want to include unit
+          icons.
+        </p>
+      </div>
+      <ExportSettingsXlsx v-if="format === 'xlsx'" :format="format" v-model="form" />
+      <ExportSettingsSpatialIllusions
+        v-else-if="format === 'unitgenerator'"
+        :format="format"
+        v-model="form"
+      />
+      <ExportSettingsOrbatMapper v-else-if="format === 'orbatmapper'" v-model="form" />
+      <ExportSettingsGeoJson
+        v-else-if="format === 'geojson'"
+        :format="format"
+        v-model="form"
+      />
+      <ExportSettingsKmlKmz
+        v-else-if="format === 'kml' || format === 'kmz'"
+        :format="format"
+        v-model="form"
+      />
+      <template v-else>
+        <!-- fallback for other formats -->
+        <fieldset class="space-y-4">
+          <InputCheckbox
+            label="Include units"
+            description="Units with a location at current scenario time"
+            v-model="form.includeUnits"
+          />
+          <InputCheckbox
+            v-if="!isMilx"
+            label="Include scenario features"
+            v-model="form.includeFeatures"
+            description=""
+          />
+          <InputCheckbox
+            v-if="isMilx"
+            :label="'Use one layer per side'"
+            v-model="form.oneFolderPerSide"
+          />
+        </fieldset>
+      </template>
+
+      <p v-if="isKmz || isKml" class="text-sm text-gray-700">
+        Please note that the export functionality is experimental. Scenario feature export
+        is currently limited to geometries (no styles).
+      </p>
+
+      <p v-if="isMilx" class="text-sm text-gray-700">
+        Please note that the MilX export is experimental. It is currently limited and has
+        several bugs.
+      </p>
+
+      <footer class="flex items-center justify-between space-x-2">
+        <ToggleField v-model="store.keepOpen">Keep dialog open on export</ToggleField>
+        <div class="flex items-center space-x-2">
+          <Button type="submit" size="sm">Export</Button>
+          <Button variant="outline" size="sm" @click="onCancel">Cancel</Button>
+        </div>
+      </footer>
+    </form>
+  </NewSimpleModal>
+</template>
