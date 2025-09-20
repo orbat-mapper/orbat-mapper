@@ -210,10 +210,14 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         const sidc = unit._state?.sidc || unit.sidc;
         const symbolOptions = unitActions.getCombinedSymbolOptions(unit);
         const cacheKey = (sidc + (symbolOptions.fillColor || "")).replaceAll("#", "");
+        const outlineOptions = opts.drawSymbolOutline
+          ? { outlineWidth: opts.outlineWidth, outlineColor: opts.outlineColor }
+          : {};
         if (!usedSidcs.has(cacheKey)) {
           const symb = symbolGenerator(sidc, {
             ...symbolSettings.symbolOptions,
             ...symbolOptions,
+            ...outlineOptions,
           });
           usedSidcs.add(cacheKey);
           const blob: Blob | null = await new Promise((resolve) =>

@@ -65,6 +65,9 @@ export interface KmlKmzExportSettings {
   oneFolderPerSide: boolean;
   iconScale: number;
   labelScale: number;
+  drawSymbolOutline: boolean;
+  outlineColor: string;
+  outlineWidth: number;
 }
 
 export interface ExportSettings

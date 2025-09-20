@@ -10,12 +10,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 September 2025
 
-- Added KML/KMZ export settings for adjusting icon and label scale.
+- Add symbol outline KML/KMZ export setting.
+- Add KML/KMZ export settings for adjusting icon and label scale.
 - Units can now be added directly to a side. A side group is no longer required.
 
 May 2025
 
-- Added 'add point/marker' action to the map context menu.
+- Add 'add point/marker' action to the map context menu.
 
 April 2025
 

@@ -66,9 +66,11 @@ const form = ref<Form>({
   includeId: true,
   iconScale: 1,
   labelScale: 1,
+  drawSymbolOutline: true,
+  outlineColor: "rgba(255,255,255,0.8)",
+  outlineWidth: 8,
 });
 
-const { focusId } = useFocusOnMount(undefined, 150);
 const { send } = useNotifications();
 
 const format = computed(() => form.value.format);
