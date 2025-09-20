@@ -2,6 +2,8 @@
 import { computed } from "vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import type { ExportFormat, ExportSettings, KmlKmzExportSettings } from "@/types/convert";
+import { Slider } from "@/components/ui/slider";
+import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 
 const props = defineProps<{
   format: ExportFormat;
@@ -11,6 +13,20 @@ const form = defineModel<KmlKmzExportSettings>({ required: true });
 
 const isKml = computed(() => props.format === "kml");
 const isKmz = computed(() => props.format === "kmz");
+
+const iconScale = computed({
+  get: () => [form.value.iconScale ?? 1],
+  set: ([value]: number[]) => {
+    form.value.iconScale = value;
+  },
+});
+
+const labelScale = computed({
+  get: () => [form.value.labelScale ?? 1],
+  set: ([value]: number[]) => {
+    form.value.labelScale = value;
+  },
+});
 </script>
 
 <template>
@@ -37,5 +53,21 @@ const isKmz = computed(() => props.format === "kmz");
       v-model="form.embedIcons"
       description="Embed icons as images"
     />
+    <div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
+      <InputGroupTemplate label="Label scale">
+        <Slider v-model="labelScale" :min="0" :max="2" :step="0.1" class="mt-4" />
+        <template #description>{{ form.labelScale }}</template>
+        <template #hint
+          ><span class="text-sm font-medium">{{ form.labelScale }}x</span></template
+        >
+      </InputGroupTemplate>
+      <InputGroupTemplate label="Icon scale">
+        <Slider v-model="iconScale" :min="0.5" :max="2" :step="0.1" class="mt-4" />
+        <template #description>{{ form.iconScale }}</template>
+        <template #hint
+          ><span class="text-sm font-medium">{{ form.iconScale }}x</span></template
+        >
+      </InputGroupTemplate>
+    </div>
   </fieldset>
 </template>

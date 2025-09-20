@@ -180,7 +180,14 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         children: features,
       });
     }
-    return foldersToKML(root, sidcs);
+    return foldersToKML(
+      root,
+      sidcs.map((sidc) => ({
+        sidc,
+        labelScale: opts.labelScale,
+        iconScale: opts.iconScale,
+      })),
+    );
   }
 
   async function downloadAsKML(opts: KmlKmzExportSettings) {

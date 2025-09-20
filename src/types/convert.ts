@@ -57,12 +57,14 @@ export interface OrbatMapperExportSettings extends BaseExportSettings {
   scenarioName?: string;
 }
 
-export interface KmlKmzExportSettings extends BaseExportSettings {
+export interface KmlKmzExportSettings {
   includeUnits: boolean;
   includeFeatures: boolean;
   embedIcons: boolean;
   useShortName: boolean;
   oneFolderPerSide: boolean;
+  iconScale: number;
+  labelScale: number;
 }
 
 export interface ExportSettings

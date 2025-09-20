@@ -64,6 +64,8 @@ const form = ref<Form>({
   maxLevels: 3,
   includeIdInProperties: false,
   includeId: true,
+  iconScale: 1,
+  labelScale: 1,
 });
 
 const { focusId } = useFocusOnMount(undefined, 150);
