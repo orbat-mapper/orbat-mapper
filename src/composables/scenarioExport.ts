@@ -12,7 +12,7 @@ import type {
 } from "@/types/convert";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Root } from "@tmcw/togeojson";
-import { useSymbolSettingsStore } from "@/stores/settingsStore";
+import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import { INTERNAL_NAMES, type NUnit } from "@/types/internalModels";
 import type { Unit } from "@/types/scenarioModels";
 import {
@@ -65,6 +65,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     helpers: { getUnitById },
   } = options.activeScenario || injectStrict(activeScenarioKey);
   const { sideMap } = store.state;
+  const settingsStore = useSettingsStore();
 
   function convertUnitsToGeoJson(units: NUnit[], options: Partial<GeoJsonSettings> = {}) {
     const features = units.map((unit) => {
@@ -138,16 +139,22 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       root.children.push({
         type: "folder",
         meta: { name },
-        children: convertUnitsToGeoJson(units).features.map((unit) => {
-          const { name, shortName, description } = unit.properties;
+        children: convertUnitsToGeoJson(units, {
+          includeIdInProperties: true,
+        }).features.map((unit) => {
+          const { name, shortName, description, id } = unit.properties;
+          const styleUrl = opts.renderAmplifiers
+            ? `#sidc${id}`
+            : `#sidc${unit.properties.sidc}${(unit.properties.fillColor || "").replaceAll(
+                "#",
+                "",
+              )}`;
           return {
             ...unit,
             properties: {
               name: opts.useShortName ? shortName || name : name,
               description,
-              styleUrl: `#sidc${unit.properties.sidc}${(
-                unit.properties.fillColor || ""
-              ).replaceAll("#", "")}`,
+              styleUrl,
             },
           };
         }),
@@ -209,12 +216,23 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       for (const unit of geo.everyVisibleUnit.value) {
         const sidc = unit._state?.sidc || unit.sidc;
         const symbolOptions = unitActions.getCombinedSymbolOptions(unit);
-        const cacheKey = (sidc + (symbolOptions.fillColor || "")).replaceAll("#", "");
+        const cacheKey = opts.renderAmplifiers
+          ? unit.id
+          : (sidc + (symbolOptions.fillColor || "")).replaceAll("#", "");
         const outlineOptions = opts.drawSymbolOutline
           ? { outlineWidth: opts.outlineWidth, outlineColor: opts.outlineColor }
           : {};
+
+        let amplifiers = {};
+        if (opts.renderAmplifiers) {
+          const { uniqueDesignation = unit.shortName || unit.name, ...textAmplifiers } =
+            unit.textAmplifiers || {};
+          amplifiers = { uniqueDesignation, ...textAmplifiers };
+        }
+
         if (!usedSidcs.has(cacheKey)) {
           const symb = symbolGenerator(sidc, {
+            ...amplifiers,
             ...symbolSettings.symbolOptions,
             ...symbolOptions,
             ...outlineOptions,

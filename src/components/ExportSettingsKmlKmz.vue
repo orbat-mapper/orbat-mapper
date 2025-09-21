@@ -5,6 +5,7 @@ import type { ExportFormat, ExportSettings, KmlKmzExportSettings } from "@/types
 import { Slider } from "@/components/ui/slider";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import AccordionPanel from "@/components/AccordionPanel.vue";
+import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
 
 const props = defineProps<{
   format: ExportFormat;
@@ -59,23 +60,32 @@ const labelScale = computed({
     <div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
       <InputGroupTemplate label="Label scale">
         <Slider v-model="labelScale" :min="0" :max="2" :step="0.1" class="mt-4" />
-        <template #description>{{ form.labelScale }}</template>
+        <template #description>Setting it to 0 will hide the label</template>
         <template #hint
           ><span class="text-sm font-medium">{{ form.labelScale }}x</span></template
         >
       </InputGroupTemplate>
       <InputGroupTemplate label="Icon scale">
-        <Slider v-model="iconScale" :min="0.5" :max="2" :step="0.1" class="mt-4" />
-        <template #description>{{ form.iconScale }}</template>
+        <Slider v-model="iconScale" :min="0.5" :max="3" :step="0.1" class="mt-4" />
+        <template #description>A scale of 1 is approximately 32x32 pixels</template>
         <template #hint
           ><span class="text-sm font-medium">{{ form.iconScale }}x</span></template
         >
       </InputGroupTemplate>
     </div>
-    <AccordionPanel label="Advanced settings" v-if="isKmz">
+    <NewAccordionPanel label="Advanced settings" v-if="isKmz" default-open>
       <div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
-        <InputCheckbox label="Draw symbol outline" v-model="form.drawSymbolOutline" />
+        <InputCheckbox
+          label="Draw symbol outline"
+          v-model="form.drawSymbolOutline"
+          description="Improves visibility"
+        />
+        <InputCheckbox
+          label="Render symbol amplifiers"
+          v-model="form.renderAmplifiers"
+          description="Warning: will increase file size"
+        />
       </div>
-    </AccordionPanel>
+    </NewAccordionPanel>
   </fieldset>
 </template>

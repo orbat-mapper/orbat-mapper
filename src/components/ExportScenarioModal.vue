@@ -8,7 +8,7 @@ import type { ExportFormat, ExportSettings } from "@/types/convert";
 import { useScenarioExport } from "@/composables/scenarioExport";
 import { useNotifications } from "@/composables/notifications";
 import NProgress from "nprogress";
-import { useVModel } from "@vueuse/core";
+import { useLocalStorage, useVModel } from "@vueuse/core";
 import ExportSettingsXlsx from "@/components/ExportSettingsXlsx.vue";
 import ExportSettingsSpatialIllusions from "@/components/ExportSettingsSpatialIllusions.vue";
 import ExportSettingsGeoJson from "@/components/ExportSettingsGeoJson.vue";
@@ -48,7 +48,7 @@ interface Form extends ExportSettings {
   format: ExportFormat;
 }
 
-const form = ref<Form>({
+const form = useLocalStorage("exportSettings", {
   format: store.currentFormat ?? "orbatmapper",
   includeFeatures: false,
   includeUnits: true,
@@ -64,12 +64,13 @@ const form = ref<Form>({
   maxLevels: 3,
   includeIdInProperties: false,
   includeId: true,
-  iconScale: 1,
+  iconScale: 1.5,
   labelScale: 1,
   drawSymbolOutline: true,
   outlineColor: "rgba(255,255,255,0.8)",
   outlineWidth: 8,
-});
+  renderAmplifiers: false,
+} as Form);
 
 const { send } = useNotifications();
 
