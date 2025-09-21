@@ -10,8 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 September 2025
 
-- Add symbol outline KML/KMZ export setting.
-- Add KML/KMZ export settings for adjusting icon and label scale.
+- New KML/KMZ export options:
+  - draw symbol outline
+  - adjust icon and label scale
+  - render symbol amplifiers
 - Units can now be added directly to a side. A side group is no longer required.
 
 May 2025

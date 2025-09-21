@@ -68,6 +68,7 @@ export interface KmlKmzExportSettings {
   drawSymbolOutline: boolean;
   outlineColor: string;
   outlineWidth: number;
+  renderAmplifiers: boolean;
 }
 
 export interface ExportSettings
