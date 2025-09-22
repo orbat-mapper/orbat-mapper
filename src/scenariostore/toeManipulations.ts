@@ -18,7 +18,7 @@ export function useToeManipulations(store: NewScenarioStore) {
     const unit = state.unitMap[unitId];
     if (!unit) return;
     const timestamp = state.currentTime;
-    updateCurrentUnitState(unit, timestamp);
+    updateCurrentUnitState(unit, timestamp, store);
     state.unitStateCounter++;
   }
 

@@ -20,6 +20,7 @@ import type {
   UpdateUnitSupplies,
 } from "@/types/internalModels";
 import type { VisibilityStyleSpec } from "@/geo/simplestyle";
+import type { DropTarget } from "@/components/types.ts";
 import type { SymbolFillColor } from "@/config/colors.ts";
 
 export interface State extends Partial<ScenarioEventDescription> {
@@ -46,8 +47,10 @@ export interface State extends Partial<ScenarioEventDescription> {
     personnel?: UpdateUnitPersonnel[];
     supplies?: UpdateUnitSupplies[];
   };
-  pid?: EntityId; // parent unit id
+  changeParent?: ParentChange;
 }
+
+export type ParentChange = { pid: EntityId; target: DropTarget };
 
 export interface StateAdd extends Omit<NState, "id"> {
   id?: string;
@@ -60,7 +63,7 @@ export interface CurrentState extends Omit<NState, "id"> {
   equipment?: NUnitEquipment[];
   personnel?: NUnitPersonnel[];
   supplies?: NUnitSupply[];
-  subUnits?: EntityId[];
+  // subUnits?: EntityId[];
 }
 
 export interface LocationState extends State {

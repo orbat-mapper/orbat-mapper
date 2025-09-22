@@ -96,6 +96,7 @@
           <span v-if="s.diff?.equipment" class="badge">±Equipment</span>
           <span v-if="s.diff?.personnel" class="badge">±Personnel</span>
           <span v-if="s.diff?.supplies" class="badge">±Supplies</span>
+          <span v-if="s.changeParent" class="badge">Change parent</span>
         </div>
       </div>
 

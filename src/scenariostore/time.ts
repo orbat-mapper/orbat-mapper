@@ -1,5 +1,5 @@
 import type { NewScenarioStore } from "./newScenarioStore";
-import type { CurrentState, ScenarioEvent } from "@/types/scenarioModels";
+import type { CurrentState, ParentChange, ScenarioEvent } from "@/types/scenarioModels";
 import type {
   NScenarioEvent,
   NScenarioFeature,
@@ -41,20 +41,25 @@ export function createInitialState(unit: NUnit): CurrentState | null {
       equipment: klona(unit.equipment),
       personnel: klona(unit.personnel),
       supplies: klona(unit.supplies),
-      pid: unit._pid,
     };
   return null;
 }
 
-export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
+export function updateCurrentUnitState(
+  unit: NUnit,
+  timestamp: number,
+  store: NewScenarioStore,
+) {
   if (!unit.state || !unit.state.length) {
     unit._state = createInitialState(unit);
     return;
   }
   let currentState = createInitialState(unit);
+  let parentChange: ParentChange | null = null;
   for (const s of unit.state) {
     if (s.t <= timestamp) {
       const { diff, update, ...rest } = s;
+      parentChange = s.changeParent ?? parentChange;
       if (update?.equipment && currentState?.equipment) {
         for (const e of update.equipment) {
           const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
@@ -156,7 +161,15 @@ export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
     }
   }
 
-  if (currentState?.pid && currentState.pid !== unit._pid) {
+  // Check if we have a parent change
+  if (
+    parentChange &&
+    unit._parentChange?.pid !== parentChange.pid &&
+    unit._parentChange?.target !== parentChange.target
+  ) {
+    console.log("Parent change detected", parentChange);
+
+    unit._parentChange = { ...parentChange };
   }
   if (currentState?.sidc !== unit._state?.sidc) {
     unit._ikey = undefined;
@@ -181,7 +194,7 @@ export function useScenarioTime(store: NewScenarioStore) {
 
   function setCurrentTime(timestamp: number) {
     Object.values(state.unitMap).forEach((unit) =>
-      updateCurrentUnitState(unit, timestamp),
+      updateCurrentUnitState(unit, timestamp, store),
     );
     Object.values(state.layerMap).forEach((layer) => {
       const visibleFromT = layer.visibleFromT || Number.MIN_SAFE_INTEGER;
