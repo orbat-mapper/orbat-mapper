@@ -17,6 +17,7 @@ import { createEventHook } from "@vueuse/core";
 import { invalidateUnitStyle } from "@/geo/unitStyles";
 import type { CurrentScenarioFeatureState } from "@/types/scenarioGeoModels";
 import { nanoid } from "@/utils";
+import { changeUnitParentTemporarily } from "@/scenariostore/testtime.ts";
 
 export type GoToScenarioEventOptions = {
   silent?: boolean;
@@ -168,8 +169,15 @@ export function updateCurrentUnitState(
     unit._parentChange?.target !== parentChange.target
   ) {
     console.log("Parent change detected", parentChange);
+    changeUnitParentTemporarily(unit.id, parentChange.pid, parentChange.target, store);
 
     unit._parentChange = { ...parentChange };
+  } else {
+    if (unit._parentChange) {
+      // revert to original parent
+      // changeUnitParentTemporarily(unit.id, unit._pid!, "on", store);
+      unit._parentChange = undefined;
+    }
   }
   if (currentState?.sidc !== unit._state?.sidc) {
     unit._ikey = undefined;
