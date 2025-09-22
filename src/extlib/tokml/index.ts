@@ -37,14 +37,35 @@ export function foldersToKML(root: Root, styles: StyleSettings[] = []): string {
   );
 }
 
-type StyleSettings = { sidc: string; iconScale?: number; labelScale?: number };
-function convertStyle({ sidc, iconScale = 1, labelScale = 1 }: StyleSettings) {
+type StyleSettings = {
+  sidc: string;
+  iconScale?: number;
+  labelScale?: number;
+  xOffset?: number;
+  yOffset?: number;
+};
+function convertStyle({
+  sidc,
+  iconScale = 1,
+  labelScale = 1,
+  xOffset,
+  yOffset,
+}: StyleSettings) {
+  const hasOffset = xOffset !== undefined && yOffset !== undefined;
   return [
     BR,
     x("Style", { id: `sidc${sidc}` }, [
       x("IconStyle", [
         x("Icon", [x("href", [u("text", `icons/${sidc}.png`)])]),
         iconScale !== 1 ? x("scale", [u("text", `${iconScale}`)]) : undefined,
+        hasOffset
+          ? x("hotSpot", {
+              x: `${xOffset}`,
+              y: `${yOffset}`,
+              xunits: "insetPixels",
+              yunits: "insetPixels",
+            })
+          : undefined,
       ]),
       x("LabelStyle", [
         labelScale !== 1 ? x("scale", [u("text", `${labelScale}`)]) : undefined,
