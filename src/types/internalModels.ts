@@ -2,6 +2,7 @@ import type {
   CurrentStateType,
   EquipmentData,
   Media,
+  ParentChange,
   PersonnelData,
   ScenarioEvent,
   Side,
@@ -51,6 +52,8 @@ export interface NUnit
   _pid: EntityId;
   _gid?: EntityId;
   _sid: EntityId;
+  _subUnits?: EntityId[];
+  _parentChange?: ParentChange;
 }
 
 export interface NUnitEquipment extends Omit<UnitEquipment, "name"> {
@@ -221,6 +224,7 @@ export const INTERNAL_NAMES = [
   "_status",
   "_isTemporary",
   "_counter",
+  "_subUnits",
 ];
 export const TIMESTAMP_NAMES = ["t", "visibleFromT", "visibleUntilT", "startTime"];
 export type ScenarioEventType = "unit" | "scenario";
