@@ -23,7 +23,9 @@ attributes.
 
 ## KML
 
-ORBAT Mapper does not support a 3D view, but you kan export you scenario as KMZ and view your scenario in Google Earth.
+KML (Keyhole Markup Language) is an XML-based format used to display geographic data in mapping applications such as
+Google Earth. Exporting to KML makes it easy to share and visualize your scenario data in widely used geospatial tools.
+For more information, see the [KML documentation](https://developers.google.com/kml/documentation).
 
 ![Google earh](images/google-earth.png)
 
