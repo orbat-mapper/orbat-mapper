@@ -24,19 +24,17 @@ export function useKmlExport(scenario: TScenario) {
     const root: Root = { type: "root", children: [] };
 
     function createUnitsFolder(units: NUnit[], name: string): Folder {
+      const { features } = convertUnitsToGeoJson(units, {
+        includeIdInProperties: true,
+      });
       return {
         type: "folder",
         meta: { name },
-        children: convertUnitsToGeoJson(units, {
-          includeIdInProperties: true,
-        }).features.map((unit: any) => {
-          const { name, shortName, description, id } = unit.properties;
+        children: features.map((unit: any) => {
+          const { name, shortName, description, id, sidc, fillColor } = unit.properties;
           const styleUrl = opts.renderAmplifiers
             ? `#sidc${id}`
-            : `#sidc${unit.properties.sidc}${(unit.properties.fillColor || "").replaceAll(
-                "#",
-                "",
-              )}`;
+            : `#sidc${sidc}${(fillColor || "").replaceAll("#", "")}`;
           return {
             ...unit,
             properties: {
@@ -55,7 +53,7 @@ export function useKmlExport(scenario: TScenario) {
 
     if (opts.includeUnits) {
       if (opts.folderMode === "side") {
-        Object.keys(sideMap).forEach((sideId) => {
+        for (const sideId of Object.keys(sideMap)) {
           const side = sideMap[sideId];
           const units: NUnit[] = [];
           unitActions.walkSide(sideId, (unit: any) => {
@@ -64,13 +62,11 @@ export function useKmlExport(scenario: TScenario) {
           if (units.length) {
             root.children.push(createUnitsFolder(units, side.name));
           }
-        });
+        }
       } else if (opts.folderMode === "sideGroup") {
         for (const sideId of Object.keys(sideMap)) {
           const side = sideMap[sideId];
-          if (!side) {
-            continue;
-          }
+          if (!side) continue;
           const sideFolder: Folder = {
             type: "folder",
             meta: { name: side.name },
@@ -87,7 +83,6 @@ export function useKmlExport(scenario: TScenario) {
               sideFolder.children.push(createUnitsFolder(sideGroupUnits, group.name));
             }
           }
-
           const sideUnits: NUnit[] = [];
           for (const rootUnitId of side.subUnits) {
             unitActions.walkItem(rootUnitId, (unit) => {
@@ -98,7 +93,6 @@ export function useKmlExport(scenario: TScenario) {
             const tempFolder = createUnitsFolder(sideUnits, "Root units");
             sideFolder.children.push(...tempFolder.children);
           }
-
           if (sideFolder.children.length) {
             root.children.push(sideFolder);
           }
@@ -115,6 +109,7 @@ export function useKmlExport(scenario: TScenario) {
         children: features,
       });
     }
+
     return foldersToKML(
       root,
       sidcs.map((sidc) => ({
@@ -126,7 +121,6 @@ export function useKmlExport(scenario: TScenario) {
       })),
     );
   }
-
   async function downloadAsKML(opts: KmlKmzExportSettings) {
     const kmlString = await createKMLString([], opts);
     await saveBlobToLocalFile(
