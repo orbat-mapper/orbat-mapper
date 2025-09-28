@@ -6,6 +6,8 @@ import { Slider } from "@/components/ui/slider";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import AccordionPanel from "@/components/AccordionPanel.vue";
 import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
+import MRadioGroup from "@/components/MRadioGroup.vue";
+import InputRadio from "@/components/InputRadio.vue";
 
 const props = defineProps<{
   format: ExportFormat;
@@ -49,15 +51,24 @@ const labelScale = computed({
         v-if="isKml || isKmz"
         v-model="form.useShortName"
       />
-      <InputCheckbox :label="'Use one folder per side'" v-model="form.oneFolderPerSide" />
       <InputCheckbox
         v-if="isKmz"
         label="Include unit icons"
         v-model="form.embedIcons"
         description="Embed icons as images"
       />
+      <InputGroupTemplate class="col-span-full" label="Folder settings">
+        <MRadioGroup class="mt-4 sm:flex sm:gap-6">
+          <InputRadio v-model="form.folderMode" value="one">One folder</InputRadio>
+          <InputRadio v-model="form.folderMode" value="side">One per side</InputRadio>
+          <InputRadio v-model="form.folderMode" value="sideGroup"
+            >Side and groups (nested)</InputRadio
+          >
+        </MRadioGroup>
+      </InputGroupTemplate>
     </div>
-    <div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
+
+    <div class="mt-6 grid grid-cols-1 gap-8 sm:grid-cols-2">
       <InputGroupTemplate label="Label scale">
         <Slider v-model="labelScale" :min="0" :max="2" :step="0.1" class="mt-4" />
         <template #description>Setting it to 0 will hide the label</template>

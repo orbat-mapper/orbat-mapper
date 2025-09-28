@@ -57,11 +57,14 @@ export interface OrbatMapperExportSettings extends BaseExportSettings {
   scenarioName?: string;
 }
 
+type FolderMode = "one" | "side" | "sideGroup";
+
 export interface KmlKmzExportSettings {
   includeUnits: boolean;
   includeFeatures: boolean;
   embedIcons: boolean;
   useShortName: boolean;
+  folderMode: FolderMode;
   oneFolderPerSide: boolean;
   iconScale: number;
   labelScale: number;

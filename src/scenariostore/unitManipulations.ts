@@ -568,6 +568,61 @@ export function useUnitManipulations(store: NewScenarioStore) {
     }
   }
 
+  function walkItem(itemId: EntityId, callback: NWalkSideCallback, s = state) {
+    let level = 0;
+
+    function helper(
+      currentUnitId: EntityId,
+      parent: NUnit | NSideGroup | NSide,
+      sideGroup?: NSideGroup,
+      side?: NSide,
+    ) {
+      const currentUnit = s.unitMap[currentUnitId]!;
+      const r = callback(currentUnit, level, parent, sideGroup, side!);
+      if (r !== undefined) return r;
+      if (currentUnit.subUnits) {
+        level += 1;
+        for (const subUnitId of currentUnit.subUnits) {
+          helper(subUnitId, currentUnit, sideGroup, side);
+        }
+        level -= 1;
+      }
+    }
+
+    if (itemId in s.sideMap) {
+      // item is a side
+      const side = s.sideMap[itemId];
+      if (!side) return;
+      for (const sideGroupId of side.groups) {
+        const sideGroup = s.sideGroupMap[sideGroupId]!;
+        for (const unitId of sideGroup.subUnits) {
+          const r = helper(unitId, sideGroup, sideGroup, side);
+          if (r === true) break;
+        }
+      }
+      for (const unitId of side.subUnits ?? []) {
+        const r = helper(unitId, side, undefined, side);
+        if (r === true) break;
+      }
+    } else if (itemId in s.sideGroupMap) {
+      // item is a side group
+      const sideGroup = s.sideGroupMap[itemId];
+      if (!sideGroup) return;
+      const side = s.sideMap[sideGroup._pid];
+      for (const unitId of sideGroup.subUnits) {
+        const r = helper(unitId, sideGroup, sideGroup, side);
+        if (r === true) break;
+      }
+    } else if (itemId in s.unitMap) {
+      // item is a unit
+      const unit = s.unitMap[itemId];
+      if (!unit) return;
+      const sideGroup = unit._gid ? s.sideGroupMap[unit._gid] : undefined;
+      const side = unit._sid ? s.sideMap[unit._sid] : undefined;
+      helper(unit.id, unit, sideGroup, side);
+    }
+  }
+
   function getUnitHierarchy(
     entityId: EntityId,
     s = state,
@@ -982,6 +1037,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     changeUnitParent,
     walkSubUnits,
     walkSide,
+    walkItem,
     cloneUnit,
     cloneSide,
     cloneSideGroup,

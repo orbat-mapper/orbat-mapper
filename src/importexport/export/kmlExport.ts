@@ -1,5 +1,5 @@
 import type { KmlKmzExportSettings } from "@/types/convert";
-import type { Root } from "@tmcw/togeojson";
+import type { Folder, Root } from "@tmcw/togeojson";
 import type { NUnit } from "@/types/internalModels";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
@@ -23,8 +23,8 @@ export function useKmlExport(scenario: TScenario) {
     const { foldersToKML } = await import("@/extlib/tokml");
     const root: Root = { type: "root", children: [] };
 
-    function createFolder(units: NUnit[], name: string) {
-      root.children.push({
+    function createUnitsFolder(units: NUnit[], name: string): Folder {
+      return {
         type: "folder",
         meta: { name },
         children: convertUnitsToGeoJson(units, {
@@ -46,7 +46,7 @@ export function useKmlExport(scenario: TScenario) {
             },
           };
         }),
-      });
+      };
     }
 
     const features = opts.includeFeatures
@@ -54,17 +54,57 @@ export function useKmlExport(scenario: TScenario) {
       : [];
 
     if (opts.includeUnits) {
-      if (opts.oneFolderPerSide) {
+      if (opts.folderMode === "side") {
         Object.keys(sideMap).forEach((sideId) => {
           const side = sideMap[sideId];
           const units: NUnit[] = [];
           unitActions.walkSide(sideId, (unit: any) => {
             if (unit._state?.location) units.push(unit);
           });
-          createFolder(units, side.name);
+          if (units.length) {
+            root.children.push(createUnitsFolder(units, side.name));
+          }
         });
+      } else if (opts.folderMode === "sideGroup") {
+        for (const sideId of Object.keys(sideMap)) {
+          const side = sideMap[sideId];
+          if (!side) {
+            continue;
+          }
+          const sideFolder: Folder = {
+            type: "folder",
+            meta: { name: side.name },
+            children: [],
+          };
+          for (const groupId of side.groups) {
+            const group = store.state.sideGroupMap[groupId];
+            if (!group) continue;
+            const sideGroupUnits: NUnit[] = [];
+            unitActions.walkItem(group.id, (unit) => {
+              if (unit._state?.location) sideGroupUnits.push(unit);
+            });
+            if (sideGroupUnits.length) {
+              sideFolder.children.push(createUnitsFolder(sideGroupUnits, group.name));
+            }
+          }
+
+          const sideUnits: NUnit[] = [];
+          for (const rootUnitId of side.subUnits) {
+            unitActions.walkItem(rootUnitId, (unit) => {
+              if (unit._state?.location) sideUnits.push(unit);
+            });
+          }
+          if (sideUnits.length) {
+            const tempFolder = createUnitsFolder(sideUnits, "Root units");
+            sideFolder.children.push(...tempFolder.children);
+          }
+
+          if (sideFolder.children.length) {
+            root.children.push(sideFolder);
+          }
+        }
       } else {
-        createFolder(geo.everyVisibleUnit.value, "Units");
+        root.children.push(createUnitsFolder(geo.everyVisibleUnit.value, "Units"));
       }
     }
 

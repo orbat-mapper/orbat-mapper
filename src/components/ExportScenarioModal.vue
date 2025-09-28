@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { useFocusOnMount } from "@/components/helpers";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { type SelectItem } from "@/components/types";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import type { ExportFormat, ExportSettings } from "@/types/convert";
 import { useScenarioExport } from "@/importexport/export/scenarioExport.ts";
@@ -59,6 +58,7 @@ const form = useLocalStorage("exportSettings", {
   oneSheetPerSide: true,
   columns: [],
   oneFolderPerSide: true,
+  folderMode: "side",
   customColors: true,
   rootUnit: "",
   maxLevels: 3,
