@@ -50,6 +50,7 @@ export interface GeoJsonSettings extends BaseExportSettings {
   includeFeatures: boolean;
   includeIdInProperties: boolean;
   includeId: boolean;
+  includeSelectedUnitsOnly: boolean;
 }
 
 export interface OrbatMapperExportSettings extends BaseExportSettings {
@@ -61,6 +62,7 @@ type FolderMode = "one" | "side" | "sideGroup";
 
 export interface KmlKmzExportSettings {
   includeUnits: boolean;
+  includeSelectedUnitsOnly: boolean;
   includeFeatures: boolean;
   embedIcons: boolean;
   useShortName: boolean;

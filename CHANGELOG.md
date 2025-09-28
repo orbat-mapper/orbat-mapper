@@ -15,6 +15,7 @@ September 2025
   - adjust icon and label scale
   - render symbol amplifiers
   - nested folders for sides and groups
+  - export only selected units
 - Units can now be added directly to a side. A side group is no longer required.
 
 May 2025

@@ -47,30 +47,35 @@ interface Form extends ExportSettings {
   format: ExportFormat;
 }
 
-const form = useLocalStorage("exportSettings", {
-  format: store.currentFormat ?? "orbatmapper",
-  includeFeatures: false,
-  includeUnits: true,
-  sideGroups: [],
-  fileName: "scenario.json",
-  embedIcons: true,
-  useShortName: true,
-  oneSheetPerSide: true,
-  columns: [],
-  oneFolderPerSide: true,
-  folderMode: "side",
-  customColors: true,
-  rootUnit: "",
-  maxLevels: 3,
-  includeIdInProperties: false,
-  includeId: true,
-  iconScale: 1.5,
-  labelScale: 1,
-  drawSymbolOutline: true,
-  outlineColor: "rgba(255,255,255,0.8)",
-  outlineWidth: 8,
-  renderAmplifiers: false,
-} as Form);
+const form = useLocalStorage(
+  "exportSettings",
+  {
+    format: store.currentFormat ?? "orbatmapper",
+    includeFeatures: false,
+    includeUnits: true,
+    includeSelectedUnitsOnly: false,
+    sideGroups: [],
+    fileName: "scenario.json",
+    embedIcons: true,
+    useShortName: true,
+    oneSheetPerSide: true,
+    columns: [],
+    oneFolderPerSide: true,
+    folderMode: "side",
+    customColors: true,
+    rootUnit: "",
+    maxLevels: 3,
+    includeIdInProperties: false,
+    includeId: true,
+    iconScale: 1.5,
+    labelScale: 1,
+    drawSymbolOutline: true,
+    outlineColor: "rgba(255,255,255,0.8)",
+    outlineWidth: 8,
+    renderAmplifiers: false,
+  } as Form,
+  { writeDefaults: true },
+);
 
 const { send } = useNotifications();
 

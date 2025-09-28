@@ -4,10 +4,10 @@ import InputCheckbox from "@/components/InputCheckbox.vue";
 import type { ExportFormat, ExportSettings, KmlKmzExportSettings } from "@/types/convert";
 import { Slider } from "@/components/ui/slider";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
-import AccordionPanel from "@/components/AccordionPanel.vue";
 import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
 import MRadioGroup from "@/components/MRadioGroup.vue";
 import InputRadio from "@/components/InputRadio.vue";
+import { useSelectedItems } from "@/stores/selectedStore.ts";
 
 const props = defineProps<{
   format: ExportFormat;
@@ -17,6 +17,8 @@ const form = defineModel<KmlKmzExportSettings>({ required: true });
 
 const isKml = computed(() => props.format === "kml");
 const isKmz = computed(() => props.format === "kmz");
+
+const { selectedUnitIds } = useSelectedItems();
 
 const iconScale = computed({
   get: () => [form.value.iconScale ?? 1],
@@ -41,6 +43,13 @@ const labelScale = computed({
         description="Units with a location at current scenario time"
         v-model="form.includeUnits"
       />
+      <InputCheckbox
+        v-if="form.includeUnits"
+        :label="`Include selected units only (${selectedUnitIds.size})`"
+        description="Selected units with a location"
+        v-model="form.includeSelectedUnitsOnly"
+      />
+      <div v-else />
       <InputCheckbox
         label="Include scenario features"
         v-model="form.includeFeatures"

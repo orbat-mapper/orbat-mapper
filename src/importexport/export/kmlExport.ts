@@ -6,6 +6,7 @@ import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { useGeoJsonConverter } from "@/importexport/export/geojsonConverter";
 import type { TScenario } from "@/scenariostore";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
+import { useSelectedItems } from "@/stores/selectedStore.ts";
 
 // This composable provides KML/KMZ export functions, parameterized with required dependencies.
 export function useKmlExport(scenario: TScenario) {
@@ -15,6 +16,7 @@ export function useKmlExport(scenario: TScenario) {
   const { sideMap } = store.state;
 
   const symbolSettings = useSymbolSettingsStore();
+  const { selectedUnitIds } = useSelectedItems();
   async function createKMLString(
     sidcs: string[],
     opts: KmlKmzExportSettings,
@@ -57,7 +59,11 @@ export function useKmlExport(scenario: TScenario) {
           const side = sideMap[sideId];
           const units: NUnit[] = [];
           unitActions.walkSide(sideId, (unit: any) => {
-            if (unit._state?.location) units.push(unit);
+            if (
+              unit._state?.location &&
+              (opts.includeSelectedUnitsOnly ? selectedUnitIds.value.has(unit.id) : true)
+            )
+              units.push(unit);
           });
           if (units.length) {
             root.children.push(createUnitsFolder(units, side.name));
@@ -77,7 +83,13 @@ export function useKmlExport(scenario: TScenario) {
             if (!group) continue;
             const sideGroupUnits: NUnit[] = [];
             unitActions.walkItem(group.id, (unit) => {
-              if (unit._state?.location) sideGroupUnits.push(unit);
+              if (
+                unit._state?.location &&
+                (opts.includeSelectedUnitsOnly
+                  ? selectedUnitIds.value.has(unit.id)
+                  : true)
+              )
+                sideGroupUnits.push(unit);
             });
             if (sideGroupUnits.length) {
               sideFolder.children.push(createUnitsFolder(sideGroupUnits, group.name));
@@ -86,7 +98,13 @@ export function useKmlExport(scenario: TScenario) {
           const sideUnits: NUnit[] = [];
           for (const rootUnitId of side.subUnits) {
             unitActions.walkItem(rootUnitId, (unit) => {
-              if (unit._state?.location) sideUnits.push(unit);
+              if (
+                unit._state?.location &&
+                (opts.includeSelectedUnitsOnly
+                  ? selectedUnitIds.value.has(unit.id)
+                  : true)
+              )
+                sideUnits.push(unit);
             });
           }
           if (sideUnits.length) {
