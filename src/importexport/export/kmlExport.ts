@@ -157,6 +157,9 @@ export function useKmlExport(scenario: TScenario) {
     const offsetCache = new Map<string, { x: number; y: number }>();
     if (opts.embedIcons) {
       for (const unit of geo.everyVisibleUnit.value) {
+        if (opts.includeSelectedUnitsOnly && !selectedUnitIds.value.has(unit.id)) {
+          continue;
+        }
         const sidc = unit._state?.sidc || unit.sidc;
         const symbolOptions = unitActions.getCombinedSymbolOptions(unit);
         const cacheKey = opts.renderAmplifiers
