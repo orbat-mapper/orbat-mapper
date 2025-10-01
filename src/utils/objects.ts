@@ -55,3 +55,35 @@ export function createNameToIdMapObject<T extends { name: string; id: string }>(
 ): Record<string, string> {
   return Object.fromEntries(Object.values(items).map((e) => [e.name, e.id]));
 }
+
+// Simple hash function (djb2 algorithm)
+function simpleHash(str: string) {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) + hash + str.charCodeAt(i); // hash * 33 + c
+  }
+  return hash >>> 0; // Convert to unsigned
+}
+
+// Stable stringify to guarantee consistent key order
+function stableStringify(obj: Record<string, any>): string {
+  if (obj === null) return "null";
+  if (typeof obj !== "object") return JSON.stringify(obj);
+  if (Array.isArray(obj)) {
+    return "[" + obj.map(stableStringify).join(",") + "]";
+  }
+  return (
+    "{" +
+    Object.keys(obj)
+      .sort()
+      .map((key) => JSON.stringify(key) + ":" + stableStringify(obj[key]))
+      .join(",") +
+    "}"
+  );
+}
+
+// Hash a JS object
+export function hashObject(obj: Record<string, any>): string {
+  const str = stableStringify(obj);
+  return simpleHash(str).toString(16); // Returns a hex string
+}

@@ -8,6 +8,11 @@ import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
 import MRadioGroup from "@/components/MRadioGroup.vue";
 import InputRadio from "@/components/InputRadio.vue";
 import { useSelectedItems } from "@/stores/selectedStore.ts";
+import { useTimeFormatStore } from "@/stores/timeFormatStore.ts";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey } from "@/components/injects.ts";
+import SimpleSelect from "@/components/SimpleSelect.vue";
+import { Button } from "@/components/ui/button";
 
 const props = defineProps<{
   format: ExportFormat;
@@ -15,6 +20,13 @@ const props = defineProps<{
 }>();
 const form = defineModel<KmlKmzExportSettings>({ required: true });
 
+const { store, time } = injectStrict(activeScenarioKey);
+
+const fmt = useTimeFormatStore();
+
+const formattedTime = computed(() =>
+  fmt.scenarioFormatter.format(+time.scenarioTime.value),
+);
 const isKml = computed(() => props.format === "kml");
 const isKmz = computed(() => props.format === "kmz");
 
@@ -33,6 +45,36 @@ const labelScale = computed({
     form.value.labelScale = value;
   },
 });
+
+const events = computed(() => {
+  return store.state.events
+    .map((e) => store.state.eventMap[e])
+    .sort((a, b) => (a.startTime < b.startTime ? -1 : 1))
+    .map((e) => ({
+      label: `${fmt.scenarioFormatter.format(e.startTime)} - ${e.title}`,
+      value: e.id,
+    }));
+});
+
+if (!events.value.some((e) => e.value === form.value.exportEventId)) {
+  form.value.exportEventId = events.value[0]?.value;
+}
+
+if (!Array.isArray(form.value.exportEventIds)) {
+  form.value.exportEventIds = [];
+} else {
+  form.value.exportEventIds = form.value.exportEventIds.filter((id) =>
+    events.value.some((e) => e.value === id),
+  );
+}
+
+function toggleAllEvents() {
+  if (form.value.exportEventIds.length === events.value.length) {
+    form.value.exportEventIds = [];
+  } else {
+    form.value.exportEventIds = events.value.map((e) => e.value);
+  }
+}
 </script>
 
 <template>
@@ -93,6 +135,34 @@ const labelScale = computed({
         >
       </InputGroupTemplate>
     </div>
+    <NewAccordionPanel label="Time mode" default-open>
+      <MRadioGroup class="mt-2 sm:flex sm:gap-6">
+        <InputRadio v-model="form.timeMode" value="current"
+          >Current time ({{ formattedTime }})</InputRadio
+        >
+        <InputRadio v-model="form.timeMode" value="event">Event</InputRadio>
+        <InputRadio v-model="form.timeMode" value="multiple">Multiple events</InputRadio>
+      </MRadioGroup>
+      <SimpleSelect
+        class="mt-4"
+        label="Select event"
+        v-if="form.timeMode === 'event'"
+        :items="events"
+        v-model="form.exportEventId"
+      />
+      <div v-else-if="form.timeMode === 'multiple'" class="mt-4 space-y-2">
+        <Button type="button" variant="outline" size="sm" @click="toggleAllEvents()"
+          >Toggle all</Button
+        >
+        <InputCheckbox
+          v-for="e in events"
+          :label="e.label"
+          :value="e.value"
+          v-model="form.exportEventIds"
+        />
+      </div>
+    </NewAccordionPanel>
+
     <NewAccordionPanel label="Advanced settings" v-if="isKmz" default-open>
       <div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
         <InputCheckbox

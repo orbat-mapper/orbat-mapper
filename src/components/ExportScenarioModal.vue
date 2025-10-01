@@ -73,6 +73,9 @@ const form = useLocalStorage(
     outlineColor: "rgba(255,255,255,0.8)",
     outlineWidth: 8,
     renderAmplifiers: false,
+    timeMode: "current",
+    exportEventId: "",
+    exportEventIds: [],
   } as Form,
   { writeDefaults: true },
 );

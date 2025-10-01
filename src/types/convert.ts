@@ -58,7 +58,8 @@ export interface OrbatMapperExportSettings extends BaseExportSettings {
   scenarioName?: string;
 }
 
-type FolderMode = "one" | "side" | "sideGroup";
+export type FolderMode = "one" | "side" | "sideGroup";
+export type TimeMode = "current" | "event" | "multiple";
 
 export interface KmlKmzExportSettings {
   includeUnits: boolean;
@@ -74,6 +75,9 @@ export interface KmlKmzExportSettings {
   outlineColor: string;
   outlineWidth: number;
   renderAmplifiers: boolean;
+  timeMode: TimeMode;
+  exportEventId?: EntityId;
+  exportEventIds: EntityId[];
 }
 
 export interface ExportSettings

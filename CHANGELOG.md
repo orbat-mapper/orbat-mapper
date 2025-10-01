@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 September 2025
 
 - New KML/KMZ export options:
+  - export scenario events as KML folders
   - draw symbol outline
   - adjust icon and label scale
   - render symbol amplifiers
