@@ -181,18 +181,20 @@ if (props.side._isNew) showEditSideForm.value = true;
 
 const onSideAction = (action: SideAction) => {
   if (action === SideActions.Expand) {
-  } else if (action === SideActions.AddSubordinate) {
+  } else if (action === SideActions.AddSubordinate && !uiStore.readOnlyMode) {
     unitActions.createSubordinateUnit(props.side.id);
-  } else if (action === SideActions.AddGroup) {
+  } else if (action === SideActions.AddGroup && !uiStore.readOnlyMode) {
     unitActions.addSideGroup(props.side.id);
-  } else if (action === SideActions.Edit) {
+  } else if (action === SideActions.Edit && !uiStore.readOnlyMode) {
     showEditSideForm.value = true;
-  } else {
+  } else if (!uiStore.readOnlyMode) {
     emit("side-action", props.side, action);
   }
 };
 
 function onSideGroupAction(sideGroup: NSideGroup, action: SideAction) {
+  if (uiStore.readOnlyMode) return;
+  
   if (action === SideActions.Delete) {
     unitActions.deleteSideGroup(sideGroup.id);
   } else if (action === SideActions.MoveDown) {
