@@ -7,6 +7,7 @@
         title="Keep selected tool active after drawing"
         @click="toggleAddMultiple()"
         class="hidden sm:flex"
+        :disabled="uiStore.readOnlyMode"
       >
         <IconLockOutline v-if="addMultiple" class="size-5" />
         <IconLockOpenVariantOutline v-else class="size-6" />
@@ -18,6 +19,7 @@
         :active="moveUnitEnabled"
         @click="toggleMoveUnit(true)"
         title="Move unit"
+        :disabled="uiStore.readOnlyMode"
       >
         <MoveIcon class="size-6" />
       </MainToolbarButton>
@@ -33,6 +35,7 @@
         :active="store.currentToolbar === 'measurements'"
         @click="store.toggleToolbar('measurements')"
         title="Measurements"
+        :disabled="uiStore.readOnlyMode"
       >
         <MeasurementIcon class="size-6" />
       </MainToolbarButton>
@@ -40,6 +43,7 @@
         :active="store.currentToolbar === 'draw'"
         @click="store.toggleToolbar('draw')"
         title="Draw"
+        :disabled="uiStore.readOnlyMode"
       >
         <DrawIcon class="size-6" />
       </MainToolbarButton>
@@ -47,6 +51,7 @@
         title="Unit track"
         :active="store.currentToolbar === 'track'"
         @click="store.toggleToolbar('track')"
+        :disabled="uiStore.readOnlyMode"
       >
         <IconMapMarkerPath class="size-6" />
       </MainToolbarButton>
@@ -63,7 +68,7 @@
           :symbol-options="symbolOptions"
           @click="addUnit(activeSidc)"
           title="Add unit"
-          :disabled="!activeParentId || unitActions.isUnitLocked(activeParentId)"
+          :disabled="!activeParentId || unitActions.isUnitLocked(activeParentId) || uiStore.readOnlyMode"
         >
           <AddSymbolIcon
             class="bg-opacity-70 absolute -right-2 bottom-0 h-4 w-4 rounded-full bg-white text-gray-600 group-hover:text-gray-900"
@@ -74,10 +79,10 @@
     </section>
     <section class="flex items-center">
       <div class="border-border -mx-1 h-7 border-l-2 sm:mx-1" />
-      <MainToolbarButton title="Undo" @click="undo()" :disabled="!canUndo">
+      <MainToolbarButton title="Undo" @click="undo()" :disabled="!canUndo || uiStore.readOnlyMode">
         <UndoIcon class="size-6" />
       </MainToolbarButton>
-      <MainToolbarButton title="Redo" @click="redo()" :disabled="!canRedo">
+      <MainToolbarButton title="Redo" @click="redo()" :disabled="!canRedo || uiStore.readOnlyMode">
         <RedoIcon class="size-6" />
       </MainToolbarButton>
       <div class="border-border mx-1 hidden h-7 border-l-2 sm:block" />
@@ -167,6 +172,7 @@ import { CalendarIcon } from "@heroicons/vue/24/solid";
 import SymbolPickerPopover from "@/modules/scenarioeditor/SymbolPickerPopover.vue";
 import EchelonPickerPopover from "@/modules/scenarioeditor/EchelonPickerPopover.vue";
 import { Button } from "@/components/ui/button";
+import { useUiStore } from "@/stores/uiStore";
 
 const emit = defineEmits([
   "open-time-modal",
@@ -184,6 +190,7 @@ const {
   helpers: { getSideById },
 } = injectStrict(activeScenarioKey);
 const mapRef = injectStrict(activeMapKey);
+const uiStore = useUiStore();
 
 const store = useMainToolbarStore();
 const { addMultiple } = storeToRefs(store);
@@ -228,6 +235,7 @@ const {
 });
 
 function addUnit(sidc: string, closePopover?: (ref?: Ref | HTMLElement) => void) {
+  if (uiStore.readOnlyMode) return;
   activeSidc.value = sidc;
   closePopover && closePopover();
   startGetLocation();

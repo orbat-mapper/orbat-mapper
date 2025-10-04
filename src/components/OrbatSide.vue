@@ -39,6 +39,7 @@ import {
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import SideDropdownMenu from "@/modules/scenarioeditor/SideDropdownMenu.vue";
 import OrbatTree from "@/components/OrbatTree.vue";
+import { useUiStore } from "@/stores/uiStore";
 
 interface Props {
   side: NSide;
@@ -65,6 +66,7 @@ interface Emits {
 const emit = defineEmits<Emits>();
 
 const { store, unitActions } = injectStrict(activeScenarioKey);
+const uiStore = useUiStore();
 
 const isOpen = ref(true);
 const dropRef = ref<HTMLElement | null>(null);
@@ -89,7 +91,7 @@ const filterQuery = ref("");
 
 const showFilter = ref(false);
 const debouncedFilterQuery = useDebounce(filterQuery, 100);
-const isLocked = computed(() => !!props.side.locked);
+const isLocked = computed(() => !!props.side.locked || uiStore.readOnlyMode);
 const isHidden = computed(() => props.side.isHidden);
 
 const sideGroups = computed(() =>

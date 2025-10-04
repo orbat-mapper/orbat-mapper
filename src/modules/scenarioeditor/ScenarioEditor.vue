@@ -63,7 +63,7 @@
             @click="undo()"
             class="hidden items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
             title="Undo action (ctrl+z)"
-            :disabled="!canUndo"
+            :disabled="!canUndo || uiStore.readOnlyMode"
           >
             <IconUndo class="block h-6 w-6" />
           </button>
@@ -71,7 +71,7 @@
             @click="redo()"
             class="hidden items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
             title="Redo action"
-            :disabled="!canRedo"
+            :disabled="!canRedo || uiStore.readOnlyMode"
           >
             <IconRedo class="block h-6 w-6" />
           </button>
@@ -112,11 +112,11 @@
     />
     <GlobalEvents
       :filter="inputEventFilter"
-      @keydown.meta.z.exact="undo()"
-      @keyup.ctrl.z.exact="undo()"
-      @keydown.meta.shift.z="redo()"
-      @keyup.ctrl.shift.z="redo()"
-      @keyup.ctrl.y="redo()"
+      @keydown.meta.z.exact="!uiStore.readOnlyMode && undo()"
+      @keyup.ctrl.z.exact="!uiStore.readOnlyMode && undo()"
+      @keydown.meta.shift.z="!uiStore.readOnlyMode && redo()"
+      @keyup.ctrl.shift.z="!uiStore.readOnlyMode && redo()"
+      @keyup.ctrl.y="!uiStore.readOnlyMode && redo()"
     />
     <ShortcutsModal v-model="shortcutsModalVisible" />
     <MainViewSlideOver v-model="isOpen" />

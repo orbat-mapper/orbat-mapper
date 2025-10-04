@@ -39,6 +39,7 @@ import {
 import { useTimeoutFn } from "@vueuse/core";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import SideGroupDropdownMenu from "@/modules/scenarioeditor/SideGroupDropdownMenu.vue";
+import { useUiStore } from "@/stores/uiStore";
 
 interface Props {
   group: NSideGroup;
@@ -65,6 +66,7 @@ const instruction = ref<Instruction | null>(null);
 const {
   store: { state },
 } = injectStrict(activeScenarioKey);
+const uiStore = useUiStore();
 
 const isDragOver = ref(false);
 const isOpen = ref(true);
@@ -82,7 +84,7 @@ const {
 );
 
 const isLocked = computed(
-  () => !!(props.group.locked || state.sideMap[props.group._pid!].locked),
+  () => !!(props.group.locked || state.sideMap[props.group._pid!].locked || uiStore.readOnlyMode),
 );
 
 const isHidden = computed(

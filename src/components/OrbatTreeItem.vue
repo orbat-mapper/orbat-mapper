@@ -28,6 +28,7 @@ import { useTimeoutFn } from "@vueuse/core";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import { getUnitDragItem, isUnitDragItem } from "@/types/draggables";
 import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
+import { useUiStore } from "@/stores/uiStore";
 
 interface Props {
   item: NOrbatItemData;
@@ -72,9 +73,10 @@ const isOpen = computed({
   },
 });
 
-const isLocked = computed(() => isUnitLocked(props.item.unit.id));
+const uiStore = useUiStore();
+const isLocked = computed(() => isUnitLocked(props.item.unit.id) || uiStore.readOnlyMode);
 const isSideGroupLocked = computed(() =>
-  isUnitLocked(props.item.unit.id, { excludeUnit: true }),
+  isUnitLocked(props.item.unit.id, { excludeUnit: true }) || uiStore.readOnlyMode,
 );
 const {
   isPending,
