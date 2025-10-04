@@ -124,7 +124,7 @@ const unitStatus = computed(() => {
   return status ? unitStatusMap[status]?.name : undefined;
 });
 
-const isLocked = computed(() => isUnitLocked(props.unitId));
+const isLocked = computed(() => isUnitLocked(props.unitId) || uiStore.readOnlyMode);
 
 const geoStore = useGeoStore();
 const unitSettings = useUnitSettingsStore();
@@ -147,12 +147,12 @@ const unitMenuItems = computed((): MenuItemData[] => [
     ? {
         label: "Unlock unit",
         action: () => setLocked(false),
-        disabled: isUnitLocked(props.unitId, { excludeUnit: true }),
+        disabled: isUnitLocked(props.unitId, { excludeUnit: true }) || uiStore.readOnlyMode,
       }
     : {
         label: "Lock unit",
         action: () => setLocked(true),
-        disabled: isUnitLocked(props.unitId, { excludeUnit: true }),
+        disabled: isUnitLocked(props.unitId, { excludeUnit: true }) || uiStore.readOnlyMode,
       },
 ]);
 

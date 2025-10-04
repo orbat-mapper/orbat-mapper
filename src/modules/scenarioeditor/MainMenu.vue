@@ -86,7 +86,7 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           <DropdownMenuItem @select="emit('action', 'exportJson')"
             >Download scenario
           </DropdownMenuItem>
-          <DropdownMenuItem @select="emit('action', 'save')">
+          <DropdownMenuItem @select="emit('action', 'save')" :disabled="uiSettings.readOnlyMode">
             Save scenario
           </DropdownMenuItem>
           <DropdownMenuItem @select="emit('action', 'loadNew')">
@@ -103,14 +103,14 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           <DropdownMenuItem @select="emit('action', 'exportToImage')">
             Export as image
           </DropdownMenuItem>
-          <DropdownMenuItem @select="emit('action', 'import')">
+          <DropdownMenuItem @select="emit('action', 'import')" :disabled="uiSettings.readOnlyMode">
             Import data...
           </DropdownMenuItem>
           <DropdownMenuItem @select="emit('action', 'exportToClipboard')">
             Copy scenario to clipboard
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem @select="emit('action', 'duplicate')">
+          <DropdownMenuItem @select="emit('action', 'duplicate')" :disabled="uiSettings.readOnlyMode">
             Duplicate scenario
           </DropdownMenuItem>
           <DropdownMenuItem @select="emit('action', 'showInfo')">
@@ -121,11 +121,11 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
       <DropdownMenuSub>
         <DropdownMenuSubTrigger><span>Edit</span></DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
-          <DropdownMenuItem @select="undo()" :disabled="!canUndo">
+          <DropdownMenuItem @select="undo()" :disabled="!canUndo || uiSettings.readOnlyMode">
             Undo
             <DropdownMenuShortcut class="ml-4">Ctrl/⌘ Z</DropdownMenuShortcut>
           </DropdownMenuItem>
-          <DropdownMenuItem @select="redo()" :disabled="!canRedo">
+          <DropdownMenuItem @select="redo()" :disabled="!canRedo || uiSettings.readOnlyMode">
             Redo
             <DropdownMenuShortcut class="ml-4">Ctrl/⌘ shift Z</DropdownMenuShortcut>
           </DropdownMenuItem>
@@ -134,6 +134,10 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
       <DropdownMenuSub>
         <DropdownMenuSubTrigger><span class="mr-4">View</span></DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
+          <DropdownMenuCheckboxItem v-model="uiSettings.readOnlyMode" @select.prevent
+            >Read-only mode
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuSeparator />
           <DropdownMenuCheckboxItem v-model="uiSettings.showToolbar" @select.prevent
             >Map toolbar
           </DropdownMenuCheckboxItem>
