@@ -109,6 +109,7 @@ onMounted(() => {
     draggable({
       element: dropRef.value!,
       dragHandle: dragRef.value!,
+      canDrag: () => !isLocked.value,
       getInitialData: () => getSideDragItem({ side: props.side }),
 
       onDragStart: () => {

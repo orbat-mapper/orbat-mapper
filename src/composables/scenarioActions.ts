@@ -30,6 +30,7 @@ export function useUnitActions(
   } = options.activeScenario || injectStrict(activeScenarioKey);
   const { selectedUnitIds, activeUnitId } = useSelectedItems();
   const geoStore = useGeoStore();
+  const uiStore = useUiStore();
 
   const _onUnitAction = (
     unit: NUnit | undefined | null,
@@ -74,14 +75,14 @@ export function useUnitActions(
       }
     }
     if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);
-    if (action === UnitActions.Lock) {
+    if (action === UnitActions.Lock && !uiStore.readOnlyMode) {
       unitActions.updateUnitLocked(unit.id, true);
     }
-    if (action === UnitActions.Unlock) {
+    if (action === UnitActions.Unlock && !uiStore.readOnlyMode) {
       unitActions.updateUnitLocked(unit.id, false);
     }
 
-    if (unitActions.isUnitLocked(unit.id)) return;
+    if (unitActions.isUnitLocked(unit.id) || uiStore.readOnlyMode) return;
 
     if (action === UnitActions.AddSubordinate) {
       unit._isOpen = true;
@@ -215,6 +216,7 @@ export function useUnitMenu(
 
 export function useScenarioFeatureActions() {
   const mapRef = useGeoStore().olMap! as OLMap;
+  const uiStore = useUiStore();
   const {
     store: { groupUpdate },
     geo,
@@ -236,8 +238,8 @@ export function useScenarioFeatureActions() {
         (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {
           if (action === "zoom") zoomToFeature(featureId);
           if (action === "pan") panToFeature(featureId);
-          if (action === "delete") geo.deleteFeature(featureId);
-          if (action === "duplicate") {
+          if (action === "delete" && !uiStore.readOnlyMode) geo.deleteFeature(featureId);
+          if (action === "duplicate" && !uiStore.readOnlyMode) {
             geo.duplicateFeature(featureId);
           }
         });
