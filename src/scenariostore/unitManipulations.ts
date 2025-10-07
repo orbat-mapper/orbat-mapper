@@ -447,13 +447,12 @@ export function useUnitManipulations(store: NewScenarioStore) {
         if (!u._pid) {
           continue;
         }
-        const parentUnit = s.unitMap[u._pid];
+        const parentUnit = getUnitOrSideGroupOrSide(u._pid, s);
+
         if (parentUnit) {
           removeElement(id, parentUnit.subUnits);
         } else {
-          const sideGroup = s.sideGroupMap[u._pid];
-          if (!sideGroup) return;
-          removeElement(id, sideGroup.subUnits);
+          return;
         }
       }
     });
