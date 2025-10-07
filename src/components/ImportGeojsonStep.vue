@@ -18,6 +18,7 @@ import type { ColumnDef } from "@tanstack/vue-table";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import AlertWarning from "@/components/AlertWarning.vue";
 import { Button } from "@/components/ui/button";
+import { useRootUnits } from "@/composables/scenarioUtils.ts";
 
 interface Props {
   data: GeoJSONFeature | FeatureCollection;
@@ -82,18 +83,7 @@ const computedColumns = computed((): (ColumnDef<GeoJSONFeature, any> | false)[] 
   ];
 });
 
-const rootUnitItems = computed((): SymbolItem[] => {
-  return Object.values(state.sideGroupMap)
-    .map((value) => value.subUnits)
-    .flat()
-    .map((e) => state.unitMap[e])
-    .map((u) => ({
-      text: u.name,
-      code: u.id,
-      sidc: u.sidc,
-      symbolOptions: unitActions.getCombinedSymbolOptions(u),
-    }));
-});
+const { rootUnitItems } = useRootUnits();
 
 const geoJSONFeatures = computed((): GeoJSONFeature[] => {
   const extractedFeatures: GeoJSONFeature[] = [];

@@ -29,12 +29,12 @@ import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { NUnit, NUnitAdd } from "@/types/internalModels";
-import type { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
 import type { OrbatGeneratorOrbat } from "@/types/externalModels";
 import type { EntityId } from "@/types/base";
+import { useRootUnits } from "@/composables/scenarioUtils.ts";
 
 interface Props {
   data: OrbatGeneratorOrbat;
@@ -43,28 +43,10 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 const { unitActions, store: scnStore, time } = injectStrict(activeScenarioKey);
-const store = useImportStore();
-const { state } = scnStore;
 
 const { send } = useNotifications();
 
-const sides = computed(() => {
-  return state.sides.map((id) => state.sideMap[id]);
-});
-
-const rootUnitItems = computed((): SymbolItem[] => {
-  return Object.values(state.sideGroupMap)
-    .map((value) => value.subUnits)
-    .flat()
-    .map((e) => state.unitMap[e])
-    .map((u) => ({
-      text: u.name,
-      code: u.id,
-      sidc: u.sidc,
-      symbolOptions: unitActions.getCombinedSymbolOptions(u),
-    }));
-});
-
+const { rootUnitItems } = useRootUnits();
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
 async function onLoad(e: Event) {

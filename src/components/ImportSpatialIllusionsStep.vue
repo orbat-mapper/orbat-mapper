@@ -40,7 +40,6 @@ import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { NUnit, NUnitAdd } from "@/types/internalModels";
-import type { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
@@ -53,6 +52,7 @@ import type { CellContext, ColumnDef } from "@tanstack/vue-table";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";
+import { useRootUnits } from "@/composables/scenarioUtils.ts";
 
 interface Props {
   data: SpatialIllusionsOrbat;
@@ -61,24 +61,11 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 const { unitActions, store: scnStore, time } = injectStrict(activeScenarioKey);
-const { state } = scnStore;
 
 const useFillColor = ref(true);
 const expandedStackedUnits = ref(true);
 
-const rootUnitItems = computed((): SymbolItem[] => {
-  return Object.values(state.sideGroupMap)
-    .map((value) => value.subUnits)
-    .flat()
-    .map((e) => state.unitMap[e])
-    .map((u) => ({
-      text: u.name,
-      code: u.id,
-      sidc: u.sidc,
-      symbolOptions: unitActions.getCombinedSymbolOptions(u),
-    }));
-});
-
+const { rootUnitItems } = useRootUnits();
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
 function renderExpandCell({ getValue, row }: CellContext<SpatialIllusionsOrbat, string>) {
