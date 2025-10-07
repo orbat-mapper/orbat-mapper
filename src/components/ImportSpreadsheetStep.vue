@@ -11,16 +11,16 @@ import {
   type OdinUnitInfoRow,
   parseOdinDragon,
 } from "@/importexport/spreadsheets/odinDragon";
-import { computed, h, ref, shallowRef } from "vue";
+import { h, ref, shallowRef } from "vue";
 import type { Unit } from "@/types/scenarioModels";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
-import type { SymbolItem } from "@/types/constants";
 import { addUnitHierarchy } from "@/importexport/convertUtils";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import type { CellContext, ColumnDef, InitialTableState } from "@tanstack/vue-table";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
+import { useRootUnits } from "@/composables/scenarioUtils.ts";
 
 interface Props {
   fileInfo: ImportedFileInfo;
@@ -29,22 +29,12 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 const scenario = injectStrict(activeScenarioKey);
-const {
-  store: { state },
-} = scenario;
 
 const expandTemplates = ref(true);
 const includeEquipment = ref(true);
 const includePersonnel = ref(true);
 
-const rootUnitItems = computed((): SymbolItem[] => {
-  return Object.values(state.sideGroupMap)
-    .map((value) => value.subUnits)
-    .flat()
-    .map((e) => state.unitMap[e])
-    .map((u) => ({ text: u.name, code: u.id, sidc: u.sidc }));
-});
-
+const { rootUnitItems } = useRootUnits();
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
 function renderExpandCell({ getValue, row }: CellContext<Unit, string>) {
