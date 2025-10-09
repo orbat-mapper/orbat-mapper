@@ -40,6 +40,10 @@ import { centroid } from "@turf/centroid";
 
 import { klona } from "klona";
 import View from "ol/View";
+import Text from "ol/style/Text";
+import Fill from "ol/style/Fill";
+import Stroke from "ol/style/Stroke";
+import Style from "ol/style/Style";
 
 let zoomResolutions: number[] = [];
 
@@ -52,6 +56,14 @@ export function calculateZoomToResolution(view: View) {
 
 calculateZoomToResolution(new View());
 
+const labelStyle = new Style({
+  text: new Text({
+    textAlign: "center",
+    fill: new Fill({ color: "#aa3300" }),
+    stroke: new Stroke({ color: "rgba(255,255,255,0.9)", width: 5 }),
+  }),
+});
+
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const {
     store: { state, onUndoRedo },
@@ -61,6 +73,25 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
   } = activeScenario || injectStrict(activeScenarioKey);
 
   const unitLayer = createUnitLayer();
+  const labelLayer = new VectorLayer({
+    declutter: true,
+    source: unitLayer.getSource()!,
+    style: (feature) => {
+      const unitId = feature?.getId() as string;
+
+      const unit = getUnitById(unitId);
+      const unitStyle = unitStyleCache.get(unitId);
+      labelStyle.getText()?.setText(unit?.shortName || unit?.name || "");
+      if (unitStyle?.getImage()) {
+        const anchor = unitStyle.getImage()?.getAnchor();
+        const height = unitStyle.getImage()?.getSize()?.[1] || 0;
+        if (anchor) {
+          labelStyle.getText()?.setOffsetY(height - anchor[1] + 10);
+        }
+      }
+      return labelStyle;
+    },
+  });
   unitLayer.setStyle(unitStyleFunction);
 
   function unitStyleFunction(feature: FeatureLike, resolution: number) {
@@ -84,6 +115,15 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     ) {
       return;
     }
+    // const text = unitStyle?.getText();
+    // if (text) {
+    //   text?.setText(unit.shortName || unit.name);
+    //   const anchor = unitStyle?.getImage()?.getAnchor();
+    //   const height = unitStyle?.getImage()?.getSize()?.[1] || 0;
+    //   if (anchor) {
+    //     text.setOffsetY(height - anchor[1] + 10);
+    //   }
+    // }
 
     return unitStyle;
   }
@@ -112,7 +152,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     //   unitLayer.animateFeature(f, new Fade({ duration: 1000 }))
     // );
   };
-  return { unitLayer, drawUnits, animateUnits };
+  return { unitLayer, labelLayer, drawUnits, animateUnits };
 }
 
 export function useMapDrop(

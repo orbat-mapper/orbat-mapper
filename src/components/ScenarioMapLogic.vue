@@ -65,7 +65,7 @@ const settingsStore = useSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
 const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
-const { unitLayer, drawUnits } = useUnitLayer();
+const { unitLayer, drawUnits, labelLayer } = useUnitLayer();
 
 const { onScenarioAction } = useSearchActions();
 
@@ -78,7 +78,7 @@ geoStore.olMap = olMap;
 calculateZoomToResolution(olMap.getView());
 
 const unitLayerGroup = new LayerGroup({
-  layers: [unitLayer],
+  layers: [unitLayer, labelLayer],
 });
 
 unitLayerGroup.set("title", "Units");

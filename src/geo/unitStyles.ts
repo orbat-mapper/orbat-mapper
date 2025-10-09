@@ -4,6 +4,9 @@ import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Symbol as MilSymbol } from "milsymbol";
 import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import type { NUnit } from "@/types/internalModels";
+import Text from "ol/style/Text";
+import Fill from "ol/style/Fill";
+import Stroke from "ol/style/Stroke";
 
 export const unitStyleCache = new Map<string, Style>();
 export const selectedUnitStyleCache = new Map<string, Style>();
@@ -43,7 +46,7 @@ export function createUnitStyle(unit: NUnit, symbolOptions: UnitSymbolOptions): 
     unit.textAmplifiers || {};
   const milSymbol = symbolGenerator(sidc, {
     size: settingsStore.mapIconSize * (window.devicePixelRatio || 1),
-    uniqueDesignation,
+    // uniqueDesignation,
     outlineColor: "white",
     outlineWidth: 8,
     ...textAmplifiers,
