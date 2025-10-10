@@ -11,6 +11,7 @@ import { Feature } from "ol";
 import { type MaybeRef } from "@vueuse/core";
 import {
   clearUnitStyleCache,
+  createUnitLabelData,
   createUnitStyle,
   labelStyleCache,
   selectedUnitStyleCache,
@@ -58,13 +59,24 @@ export function calculateZoomToResolution(view: View) {
 
 calculateZoomToResolution(new View());
 
-const labelStyle = new Style({
+const unitLabelStyle = new Style({
   text: new Text({
     textAlign: "center",
     font: '12px "InterVariable"',
     // fill: new Fill({ color: "#aa3300" }),
     fill: new Fill({ color: "black" }),
     stroke: new Stroke({ color: "rgba(255,255,255,0.9)", width: 3 }),
+    textBaseline: "top",
+  }),
+});
+
+const selectedUnitLabelStyle = new Style({
+  text: new Text({
+    textAlign: "center",
+    font: '12px "InterVariable"',
+    // fill: new Fill({ color: "#aa3300" }),
+    fill: new Fill({ color: "black" }),
+    stroke: new Stroke({ color: "rgb(232,230,7)", width: 3 }),
     textBaseline: "top",
   }),
 });
@@ -88,7 +100,6 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       title: "Unit labels",
       layerType: LayerTypes.units,
     },
-
     style: labelStyleFunction,
   });
 
@@ -97,13 +108,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     let unitStyle = unitStyleCache.get(unitId);
 
     const unit = getUnitById(unitId);
-    if (!unitStyle) {
-      if (unit) {
-        const symbolOptions = getCombinedSymbolOptions(unit);
-        unitStyle = createUnitStyle(unit, symbolOptions);
-        unitStyleCache.set(unitId, unitStyle);
-      }
-    }
+    if (!unit) return;
     const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
 
     if (
@@ -113,35 +118,20 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     ) {
       return;
     }
+
+    if (!unitStyle) {
+      const symbolOptions = getCombinedSymbolOptions(unit);
+      unitStyle = createUnitStyle(unit, symbolOptions);
+      unitStyleCache.set(unitId, unitStyle);
+    }
+
     return unitStyle;
   }
 
   function labelStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
 
-    let labelData = labelStyleCache.get(unitId);
     const unit = getUnitById(unitId);
-    if (!unit) return;
-    if (!labelData) {
-      const unitStyle = unitStyleCache.get(unitId);
-
-      const label = unit.shortName || unit?.name || "";
-      const anchor = unitStyle?.getImage()?.getAnchor() ?? [0, 0];
-      const iconHeight = unitStyle?.getImage()?.getSize()?.[1] || 0;
-      const yOffset = iconHeight - anchor[1] + 5;
-      labelData = {
-        yOffset,
-        text: wordWrap(label, { width: 20 }),
-      };
-
-      if (unitStyle) {
-        labelStyleCache.set(unitId, labelData);
-      } else {
-        // unit style is not cached yet. Use a default offset
-        labelData.yOffset = 15;
-      }
-    }
-
     const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
 
     if (
@@ -151,10 +141,22 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     ) {
       return;
     }
-    const textStyle = labelStyle.getText()!;
+
+    let labelData = labelStyleCache.get(unitId);
+    if (!unit) return;
+    if (!labelData) {
+      const unitStyle = unitStyleCache.get(unitId);
+      labelData = createUnitLabelData(unit, unitStyle);
+
+      if (unitStyle) {
+        labelStyleCache.set(unitId, labelData);
+      }
+    }
+
+    const textStyle = unitLabelStyle.getText()!;
     textStyle.setText(labelData.text);
     textStyle.setOffsetY(labelData.yOffset);
-    return labelStyle;
+    return unitLabelStyle;
   }
 
   onUndoRedo(() => {
@@ -335,21 +337,9 @@ export function useUnitSelectInteraction(
 
   function selectedUnitStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
-    let unitStyle = selectedUnitStyleCache.get(unitId);
+
     const unit = getUnitById(unitId);
-    if (!unitStyle) {
-      if (unit) {
-        const symbolOptions = getCombinedSymbolOptions(unit);
-        unitStyle = createUnitStyle(unit, {
-          ...symbolOptions,
-          infoOutlineColor: "yellow",
-          infoOutlineWidth: 8,
-          outlineColor: "yellow",
-          outlineWidth: 21,
-        })!;
-        selectedUnitStyleCache.set(unitId, unitStyle);
-      }
-    }
+    if (!unit) return;
     const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
 
     if (
@@ -358,6 +348,28 @@ export function useUnitSelectInteraction(
         resolution < zoomResolutions[maxZoom ?? 24])
     ) {
       return;
+    }
+    let unitStyle = selectedUnitStyleCache.get(unitId);
+
+    if (!unitStyle) {
+      const symbolOptions = getCombinedSymbolOptions(unit);
+      unitStyle = createUnitStyle(unit, {
+        ...symbolOptions,
+        infoOutlineColor: "yellow",
+        infoOutlineWidth: 8,
+        outlineColor: "yellow",
+        outlineWidth: 21,
+      })!;
+      selectedUnitStyleCache.set(unitId, unitStyle);
+    }
+
+    let labelData = labelStyleCache.get(unitId) ?? createUnitLabelData(unit, unitStyle);
+
+    if (labelData) {
+      const textStyle = selectedUnitLabelStyle.getText()!;
+      textStyle.setText(labelData.text);
+      textStyle.setOffsetY(labelData.yOffset);
+      return [unitStyle, selectedUnitLabelStyle];
     }
 
     return unitStyle;

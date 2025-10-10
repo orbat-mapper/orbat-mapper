@@ -4,9 +4,7 @@ import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Symbol as MilSymbol } from "milsymbol";
 import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import type { NUnit } from "@/types/internalModels";
-import Text from "ol/style/Text";
-import Fill from "ol/style/Fill";
-import Stroke from "ol/style/Stroke";
+import { wordWrap } from "@/utils";
 
 export type UnitLabelData = {
   yOffset: number;
@@ -62,4 +60,19 @@ export function createUnitStyle(unit: NUnit, symbolOptions: UnitSymbolOptions): 
     ...symbolOptions,
   });
   return createMilSymbolStyle(milSymbol);
+}
+
+export function createUnitLabelData(
+  unit: NUnit,
+  unitStyle: Style | undefined,
+): UnitLabelData {
+  const label = unit.shortName || unit.name || "";
+  const anchor = unitStyle?.getImage()?.getAnchor() ?? [0, 0];
+  const iconHeight = unitStyle?.getImage()?.getSize()?.[1] || 0;
+  const yOffset = iconHeight - anchor[1] + 5;
+
+  return {
+    yOffset: unitStyle ? yOffset : 15,
+    text: wordWrap(label, { width: 20 }),
+  };
 }
