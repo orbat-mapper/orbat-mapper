@@ -12,6 +12,7 @@ import { type MaybeRef } from "@vueuse/core";
 import {
   clearUnitStyleCache,
   createUnitStyle,
+  labelStyleCache,
   selectedUnitStyleCache,
   unitStyleCache,
 } from "@/geo/unitStyles";
@@ -22,7 +23,7 @@ import {
 } from "ol/events/condition";
 import { SelectEvent } from "ol/interaction/Select";
 import { useOlEvent } from "./openlayersHelpers";
-import { injectStrict } from "@/utils";
+import { injectStrict, nanoid, wordWrap } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { EntityId } from "@/types/base";
 import type { TScenario } from "@/scenariostore";
@@ -44,6 +45,7 @@ import Text from "ol/style/Text";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
+import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils.ts";
 
 let zoomResolutions: number[] = [];
 
@@ -59,8 +61,11 @@ calculateZoomToResolution(new View());
 const labelStyle = new Style({
   text: new Text({
     textAlign: "center",
-    fill: new Fill({ color: "#aa3300" }),
-    stroke: new Stroke({ color: "rgba(255,255,255,0.9)", width: 5 }),
+    font: '12px "InterVariable"',
+    // fill: new Fill({ color: "#aa3300" }),
+    fill: new Fill({ color: "black" }),
+    stroke: new Stroke({ color: "rgba(255,255,255,0.9)", width: 3 }),
+    textBaseline: "top",
   }),
 });
 
@@ -73,26 +78,19 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
   } = activeScenario || injectStrict(activeScenarioKey);
 
   const unitLayer = createUnitLayer();
+  unitLayer.setStyle(unitStyleFunction);
+
   const labelLayer = new VectorLayer({
     declutter: true,
     source: unitLayer.getSource()!,
-    style: (feature) => {
-      const unitId = feature?.getId() as string;
-
-      const unit = getUnitById(unitId);
-      const unitStyle = unitStyleCache.get(unitId);
-      labelStyle.getText()?.setText(unit?.shortName || unit?.name || "");
-      if (unitStyle?.getImage()) {
-        const anchor = unitStyle.getImage()?.getAnchor();
-        const height = unitStyle.getImage()?.getSize()?.[1] || 0;
-        if (anchor) {
-          labelStyle.getText()?.setOffsetY(height - anchor[1] + 10);
-        }
-      }
-      return labelStyle;
+    properties: {
+      id: nanoid(),
+      title: "Unit labels",
+      layerType: LayerTypes.units,
     },
+
+    style: labelStyleFunction,
   });
-  unitLayer.setStyle(unitStyleFunction);
 
   function unitStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
@@ -115,17 +113,48 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     ) {
       return;
     }
-    // const text = unitStyle?.getText();
-    // if (text) {
-    //   text?.setText(unit.shortName || unit.name);
-    //   const anchor = unitStyle?.getImage()?.getAnchor();
-    //   const height = unitStyle?.getImage()?.getSize()?.[1] || 0;
-    //   if (anchor) {
-    //     text.setOffsetY(height - anchor[1] + 10);
-    //   }
-    // }
-
     return unitStyle;
+  }
+
+  function labelStyleFunction(feature: FeatureLike, resolution: number) {
+    const unitId = feature?.getId() as string;
+
+    let labelData = labelStyleCache.get(unitId);
+    const unit = getUnitById(unitId);
+    if (!unit) return;
+    if (!labelData) {
+      const unitStyle = unitStyleCache.get(unitId);
+
+      const label = unit.shortName || unit?.name || "";
+      const anchor = unitStyle?.getImage()?.getAnchor() ?? [0, 0];
+      const iconHeight = unitStyle?.getImage()?.getSize()?.[1] || 0;
+      const yOffset = iconHeight - anchor[1] + 5;
+      labelData = {
+        yOffset,
+        text: wordWrap(label, { width: 20 }),
+      };
+
+      if (unitStyle) {
+        labelStyleCache.set(unitId, labelData);
+      } else {
+        // unit style is not cached yet. Use a default offset
+        labelData.yOffset = 15;
+      }
+    }
+
+    const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
+
+    if (
+      limitVisibility &&
+      (resolution > zoomResolutions[minZoom ?? 0] ||
+        resolution < zoomResolutions[maxZoom ?? 24])
+    ) {
+      return;
+    }
+    const textStyle = labelStyle.getText()!;
+    textStyle.setText(labelData.text);
+    textStyle.setOffsetY(labelData.yOffset);
+    return labelStyle;
   }
 
   onUndoRedo(() => {

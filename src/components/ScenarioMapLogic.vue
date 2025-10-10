@@ -78,7 +78,7 @@ geoStore.olMap = olMap;
 calculateZoomToResolution(olMap.getView());
 
 const unitLayerGroup = new LayerGroup({
-  layers: [unitLayer, labelLayer],
+  layers: [labelLayer, unitLayer],
 });
 
 unitLayerGroup.set("title", "Units");

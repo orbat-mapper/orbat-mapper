@@ -8,23 +8,31 @@ import Text from "ol/style/Text";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 
+export type UnitLabelData = {
+  yOffset: number;
+  text: string;
+};
 export const unitStyleCache = new Map<string, Style>();
 export const selectedUnitStyleCache = new Map<string, Style>();
+export const labelStyleCache = new Map<string, UnitLabelData>();
 
 export function clearUnitStyleCache() {
   unitStyleCache.clear();
   selectedUnitStyleCache.clear();
+  labelStyleCache.clear();
 }
 
 export function invalidateUnitStyle(cacheKey: string) {
   unitStyleCache.delete(cacheKey);
   selectedUnitStyleCache.delete(cacheKey);
+  labelStyleCache.delete(cacheKey);
 }
 
 function createMilSymbolStyle(milSymbol: MilSymbol) {
   const { x, y } = milSymbol.getAnchor();
   const image = new Icon({
-    scale: 1 / (window.devicePixelRatio || 1),
+    scale: 1,
+    // scale: 1 / (window.devicePixelRatio || 1),
     anchor: [x, y],
     anchorXUnits: "pixels",
     anchorYUnits: "pixels",
