@@ -11,7 +11,9 @@ import { Feature } from "ol";
 import { type MaybeRef } from "@vueuse/core";
 import {
   clearUnitStyleCache,
+  createUnitLabelData,
   createUnitStyle,
+  labelStyleCache,
   selectedUnitStyleCache,
   unitStyleCache,
 } from "@/geo/unitStyles";
@@ -22,7 +24,7 @@ import {
 } from "ol/events/condition";
 import { SelectEvent } from "ol/interaction/Select";
 import { useOlEvent } from "./openlayersHelpers";
-import { injectStrict } from "@/utils";
+import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { EntityId } from "@/types/base";
 import type { TScenario } from "@/scenariostore";
@@ -40,6 +42,12 @@ import { centroid } from "@turf/centroid";
 
 import { klona } from "klona";
 import View from "ol/View";
+import Text from "ol/style/Text";
+import Fill from "ol/style/Fill";
+import Stroke from "ol/style/Stroke";
+import Style from "ol/style/Style";
+import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils.ts";
+import { useSettingsStore } from "@/stores/settingsStore.ts";
 
 let zoomResolutions: number[] = [];
 
@@ -52,6 +60,28 @@ export function calculateZoomToResolution(view: View) {
 
 calculateZoomToResolution(new View());
 
+const unitLabelStyle = new Style({
+  text: new Text({
+    textAlign: "center",
+    font: '12px "InterVariable"',
+    // fill: new Fill({ color: "#aa3300" }),
+    fill: new Fill({ color: "black" }),
+    stroke: new Stroke({ color: "rgba(255,255,255,0.9)", width: 4 }),
+    textBaseline: "top",
+  }),
+});
+
+const selectedUnitLabelStyle = new Style({
+  text: new Text({
+    textAlign: "center",
+    font: '12px "InterVariable"',
+    // fill: new Fill({ color: "#aa3300" }),
+    fill: new Fill({ color: "black" }),
+    stroke: new Stroke({ color: "rgb(232,230,7)", width: 3 }),
+    textBaseline: "top",
+  }),
+});
+
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const {
     store: { state, onUndoRedo },
@@ -59,22 +89,37 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     unitActions: { getCombinedSymbolOptions },
     helpers: { getUnitById },
   } = activeScenario || injectStrict(activeScenarioKey);
+  const settings = useSettingsStore();
 
   const unitLayer = createUnitLayer();
   unitLayer.setStyle(unitStyleFunction);
+
+  const labelLayer = new VectorLayer({
+    declutter: true,
+    source: unitLayer.getSource()!,
+    updateWhileInteracting: true,
+    updateWhileAnimating: true,
+    properties: {
+      id: nanoid(),
+      title: "Unit labels",
+      layerType: LayerTypes.units,
+    },
+    style: settings.mapUnitLabelBelow ? labelStyleFunction : undefined,
+  });
+
+  watch(
+    () => settings.mapUnitLabelBelow,
+    (v) => {
+      labelLayer.setStyle(v ? labelStyleFunction : undefined);
+    },
+  );
 
   function unitStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
     let unitStyle = unitStyleCache.get(unitId);
 
     const unit = getUnitById(unitId);
-    if (!unitStyle) {
-      if (unit) {
-        const symbolOptions = getCombinedSymbolOptions(unit);
-        unitStyle = createUnitStyle(unit, symbolOptions);
-        unitStyleCache.set(unitId, unitStyle);
-      }
-    }
+    if (!unit) return;
     const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
 
     if (
@@ -85,7 +130,44 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       return;
     }
 
+    if (!unitStyle) {
+      const symbolOptions = getCombinedSymbolOptions(unit);
+      unitStyle = createUnitStyle(unit, symbolOptions);
+      unitStyleCache.set(unitId, unitStyle);
+    }
+
     return unitStyle;
+  }
+
+  function labelStyleFunction(feature: FeatureLike, resolution: number) {
+    const unitId = feature?.getId() as string;
+
+    const unit = getUnitById(unitId);
+    const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
+
+    if (
+      limitVisibility &&
+      (resolution > zoomResolutions[minZoom ?? 0] ||
+        resolution < zoomResolutions[maxZoom ?? 24])
+    ) {
+      return;
+    }
+
+    let labelData = labelStyleCache.get(unitId);
+    if (!unit) return;
+    if (!labelData) {
+      const unitStyle = unitStyleCache.get(unitId);
+      labelData = createUnitLabelData(unit, unitStyle);
+
+      if (unitStyle) {
+        labelStyleCache.set(unitId, labelData);
+      }
+    }
+
+    const textStyle = unitLabelStyle.getText()!;
+    textStyle.setText(labelData.text);
+    textStyle.setOffsetY(labelData.yOffset);
+    return unitLabelStyle;
   }
 
   onUndoRedo(() => {
@@ -112,7 +194,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     //   unitLayer.animateFeature(f, new Fade({ duration: 1000 }))
     // );
   };
-  return { unitLayer, drawUnits, animateUnits };
+  return { unitLayer, labelLayer, drawUnits, animateUnits };
 }
 
 export function useMapDrop(
@@ -246,6 +328,7 @@ export function useUnitSelectInteraction(
     enableBoxSelect: MaybeRef<boolean>;
   }> = {},
 ) {
+  const settings = useSettingsStore();
   let isInternal = false;
   const enableRef = ref(options.enable ?? true);
   const enableBoxSelectRef = ref(options.enableBoxSelect ?? true);
@@ -266,21 +349,9 @@ export function useUnitSelectInteraction(
 
   function selectedUnitStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
-    let unitStyle = selectedUnitStyleCache.get(unitId);
+
     const unit = getUnitById(unitId);
-    if (!unitStyle) {
-      if (unit) {
-        const symbolOptions = getCombinedSymbolOptions(unit);
-        unitStyle = createUnitStyle(unit, {
-          ...symbolOptions,
-          infoOutlineColor: "yellow",
-          infoOutlineWidth: 8,
-          outlineColor: "yellow",
-          outlineWidth: 21,
-        })!;
-        selectedUnitStyleCache.set(unitId, unitStyle);
-      }
-    }
+    if (!unit) return;
     const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
 
     if (
@@ -289,6 +360,30 @@ export function useUnitSelectInteraction(
         resolution < zoomResolutions[maxZoom ?? 24])
     ) {
       return;
+    }
+    let unitStyle = selectedUnitStyleCache.get(unitId);
+
+    if (!unitStyle) {
+      const symbolOptions = getCombinedSymbolOptions(unit);
+      unitStyle = createUnitStyle(unit, {
+        ...symbolOptions,
+        infoOutlineColor: "yellow",
+        infoOutlineWidth: 8,
+        outlineColor: "yellow",
+        outlineWidth: 21,
+      })!;
+      selectedUnitStyleCache.set(unitId, unitStyle);
+    }
+
+    if (!settings.mapUnitLabelBelow) return unitStyle;
+
+    let labelData = labelStyleCache.get(unitId) ?? createUnitLabelData(unit, unitStyle);
+
+    if (labelData) {
+      const textStyle = selectedUnitLabelStyle.getText()!;
+      textStyle.setText(labelData.text);
+      textStyle.setOffsetY(labelData.yOffset);
+      return [unitStyle, selectedUnitLabelStyle];
     }
 
     return unitStyle;

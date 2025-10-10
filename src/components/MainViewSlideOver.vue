@@ -25,6 +25,10 @@
           <ToggleField v-model="symbolSettings.simpleStatusModifier"
             >Use simple status modifier
           </ToggleField>
+          <ToggleField v-model="settings.mapUnitLabelBelow"
+            >Show map unit labels below icons
+          </ToggleField>
+
           <ToggleField v-model="uiSettings.debugMode">Debug mode</ToggleField>
           <ToggleField v-if="uiSettings.debugMode" v-model="isDarkMode"
             >Dark mode
