@@ -95,6 +95,8 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
   const labelLayer = new VectorLayer({
     declutter: true,
     source: unitLayer.getSource()!,
+    updateWhileInteracting: true,
+    updateWhileAnimating: true,
     properties: {
       id: nanoid(),
       title: "Unit labels",
