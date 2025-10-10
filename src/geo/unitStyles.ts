@@ -52,7 +52,7 @@ export function createUnitStyle(unit: NUnit, symbolOptions: UnitSymbolOptions): 
     unit.textAmplifiers || {};
   const milSymbol = symbolGenerator(sidc, {
     size: settingsStore.mapIconSize * (window.devicePixelRatio || 1),
-    // uniqueDesignation,
+    uniqueDesignation: settingsStore.mapUnitLabelBelow ? "" : uniqueDesignation,
     outlineColor: "white",
     outlineWidth: 8,
     ...textAmplifiers,
@@ -72,7 +72,7 @@ export function createUnitLabelData(
   const yOffset = iconHeight - anchor[1] + 5;
 
   return {
-    yOffset: unitStyle ? yOffset : 15,
+    yOffset: unitStyle ? yOffset : 20,
     text: wordWrap(label, { width: 20 }),
   };
 }

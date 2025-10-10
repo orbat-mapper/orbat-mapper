@@ -25,6 +25,7 @@ import { useMeasurementsStore } from "@/stores/geoStore";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
+import { useSettingsStore } from "@/stores/settingsStore.ts";
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
@@ -40,6 +41,7 @@ const {
 
 const route = useRoute();
 const uiSettings = useUiStore();
+const settings = useSettingsStore();
 
 const { coordinateFormat, showLocation, showScaleLine, showDayNightTerminator } =
   storeToRefs(useMapSettingsStore());
@@ -160,6 +162,9 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem v-model="showDayNightTerminator" @select.prevent>
             Day/nigth terminator
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem v-model="settings.mapUnitLabelBelow" @select.prevent>
+            Unit labels below icons
           </DropdownMenuCheckboxItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger inset

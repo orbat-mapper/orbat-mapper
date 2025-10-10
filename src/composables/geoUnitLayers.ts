@@ -24,7 +24,7 @@ import {
 } from "ol/events/condition";
 import { SelectEvent } from "ol/interaction/Select";
 import { useOlEvent } from "./openlayersHelpers";
-import { injectStrict, nanoid, wordWrap } from "@/utils";
+import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { EntityId } from "@/types/base";
 import type { TScenario } from "@/scenariostore";
@@ -47,6 +47,7 @@ import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils.ts";
+import { useSettingsStore } from "@/stores/settingsStore.ts";
 
 let zoomResolutions: number[] = [];
 
@@ -65,7 +66,7 @@ const unitLabelStyle = new Style({
     font: '12px "InterVariable"',
     // fill: new Fill({ color: "#aa3300" }),
     fill: new Fill({ color: "black" }),
-    stroke: new Stroke({ color: "rgba(255,255,255,0.9)", width: 3 }),
+    stroke: new Stroke({ color: "rgba(255,255,255,0.9)", width: 4 }),
     textBaseline: "top",
   }),
 });
@@ -88,6 +89,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     unitActions: { getCombinedSymbolOptions },
     helpers: { getUnitById },
   } = activeScenario || injectStrict(activeScenarioKey);
+  const settings = useSettingsStore();
 
   const unitLayer = createUnitLayer();
   unitLayer.setStyle(unitStyleFunction);
@@ -102,8 +104,15 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       title: "Unit labels",
       layerType: LayerTypes.units,
     },
-    style: labelStyleFunction,
+    style: settings.mapUnitLabelBelow ? labelStyleFunction : undefined,
   });
+
+  watch(
+    () => settings.mapUnitLabelBelow,
+    (v) => {
+      labelLayer.setStyle(v ? labelStyleFunction : undefined);
+    },
+  );
 
   function unitStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
@@ -319,6 +328,7 @@ export function useUnitSelectInteraction(
     enableBoxSelect: MaybeRef<boolean>;
   }> = {},
 ) {
+  const settings = useSettingsStore();
   let isInternal = false;
   const enableRef = ref(options.enable ?? true);
   const enableBoxSelectRef = ref(options.enableBoxSelect ?? true);
@@ -364,6 +374,8 @@ export function useUnitSelectInteraction(
       })!;
       selectedUnitStyleCache.set(unitId, unitStyle);
     }
+
+    if (!settings.mapUnitLabelBelow) return unitStyle;
 
     let labelData = labelStyleCache.get(unitId) ?? createUnitLabelData(unit, unitStyle);
 

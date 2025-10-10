@@ -56,6 +56,7 @@ import { useActiveSidc } from "@/composables/mainToolbarData";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore.ts";
 import type { ScenarioFeature } from "@/types/scenarioGeoModels.ts";
+import { useSettingsStore } from "@/stores/settingsStore.ts";
 
 const tm = useTimeFormatStore();
 const mainToolbarStore = useMainToolbarStore();
@@ -80,6 +81,7 @@ const { coordinateFormat, showLocation, showScaleLine, showDayNightTerminator } 
 
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
 const uiSettings = useUiStore();
+const settings = useSettingsStore();
 
 const { send } = useNotifications();
 const { copy: copyToClipboard } = useClipboard();
@@ -373,6 +375,9 @@ function onAddPoint() {
           </ContextMenuCheckboxItem>
           <ContextMenuCheckboxItem v-model="showScaleLine" @select.prevent>
             Scale line
+          </ContextMenuCheckboxItem>
+          <ContextMenuCheckboxItem v-model="settings.mapUnitLabelBelow" @select.prevent>
+            Unit labels below icons
           </ContextMenuCheckboxItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
