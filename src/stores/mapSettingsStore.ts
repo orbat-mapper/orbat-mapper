@@ -9,6 +9,8 @@ export interface MapSettingsState {
   baseLayerName: string;
   showScaleLine: boolean;
   showDayNightTerminator: boolean;
+  mapIconSize: number;
+  mapUnitLabelBelow: boolean;
 }
 export const useMapSettingsStore = defineStore("mapSettings", {
   state: () => ({
@@ -20,5 +22,7 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     showScaleLine: useLocalStorage("showScaleLine", true),
     baseLayerName: DEFAULT_BASEMAP_ID,
     showDayNightTerminator: false,
+    mapIconSize: useLocalStorage("mapIconSize", 30),
+    mapUnitLabelBelow: useLocalStorage("mapUnitLabelBelow", false),
   }),
 });

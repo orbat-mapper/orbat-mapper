@@ -18,12 +18,12 @@ import {
   IconClockEnd,
   IconClockStart,
   IconContentCopy,
+  IconMapMarker as PointIcon,
   IconPause,
   IconPlay,
   IconSpeedometer,
   IconSpeedometerSlow,
   IconTarget,
-  IconMapMarker as PointIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { computed, ref } from "vue";
 import type OLMap from "ol/Map";
@@ -56,7 +56,6 @@ import { useActiveSidc } from "@/composables/mainToolbarData";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore.ts";
 import type { ScenarioFeature } from "@/types/scenarioGeoModels.ts";
-import { useSettingsStore } from "@/stores/settingsStore.ts";
 
 const tm = useTimeFormatStore();
 const mainToolbarStore = useMainToolbarStore();
@@ -81,7 +80,7 @@ const { coordinateFormat, showLocation, showScaleLine, showDayNightTerminator } 
 
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
 const uiSettings = useUiStore();
-const settings = useSettingsStore();
+const mapSettings = useMapSettingsStore();
 
 const { send } = useNotifications();
 const { copy: copyToClipboard } = useClipboard();
@@ -376,7 +375,10 @@ function onAddPoint() {
           <ContextMenuCheckboxItem v-model="showScaleLine" @select.prevent>
             Scale line
           </ContextMenuCheckboxItem>
-          <ContextMenuCheckboxItem v-model="settings.mapUnitLabelBelow" @select.prevent>
+          <ContextMenuCheckboxItem
+            v-model="mapSettings.mapUnitLabelBelow"
+            @select.prevent
+          >
             Unit labels below icons
           </ContextMenuCheckboxItem>
         </ContextMenuSubContent>

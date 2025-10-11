@@ -47,7 +47,6 @@ import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils.ts";
-import { useSettingsStore } from "@/stores/settingsStore.ts";
 
 let zoomResolutions: number[] = [];
 
@@ -89,7 +88,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     unitActions: { getCombinedSymbolOptions },
     helpers: { getUnitById },
   } = activeScenario || injectStrict(activeScenarioKey);
-  const settings = useSettingsStore();
+  const mapSettings = useMapSettingsStore();
 
   const unitLayer = createUnitLayer();
   unitLayer.setStyle(unitStyleFunction);
@@ -104,11 +103,11 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       title: "Unit labels",
       layerType: LayerTypes.units,
     },
-    style: settings.mapUnitLabelBelow ? labelStyleFunction : undefined,
+    style: mapSettings.mapUnitLabelBelow ? labelStyleFunction : undefined,
   });
 
   watch(
-    () => settings.mapUnitLabelBelow,
+    () => mapSettings.mapUnitLabelBelow,
     (v) => {
       labelLayer.setStyle(v ? labelStyleFunction : undefined);
     },
@@ -328,7 +327,7 @@ export function useUnitSelectInteraction(
     enableBoxSelect: MaybeRef<boolean>;
   }> = {},
 ) {
-  const settings = useSettingsStore();
+  const mapSettings = useMapSettingsStore();
   let isInternal = false;
   const enableRef = ref(options.enable ?? true);
   const enableBoxSelectRef = ref(options.enableBoxSelect ?? true);
@@ -375,7 +374,7 @@ export function useUnitSelectInteraction(
       selectedUnitStyleCache.set(unitId, unitStyle);
     }
 
-    if (!settings.mapUnitLabelBelow) return unitStyle;
+    if (!mapSettings.mapUnitLabelBelow) return unitStyle;
 
     let labelData = labelStyleCache.get(unitId) ?? createUnitLabelData(unit, unitStyle);
 

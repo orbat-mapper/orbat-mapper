@@ -59,6 +59,7 @@ import { useUnitLayer } from "@/composables/geoUnitLayers";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
 import { useFeatureStyles } from "@/geo/featureStyles";
 import { useScenarioFeatureLayers } from "@/modules/scenarioeditor/scenarioFeatureLayers";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore.ts";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 provide(activeScenarioKey, props.activeScenario);
@@ -75,7 +76,7 @@ const sidebarIsOpen = ref(false);
 const toggleSidebar = useToggle(sidebarIsOpen);
 const mapRef = shallowRef<OLMap>();
 
-const settingsStore = useSettingsStore();
+const settingsStore = useMapSettingsStore();
 
 useTitle(windowTitle);
 

@@ -2,9 +2,10 @@ import { Icon, Style } from "ol/style";
 import type { UnitSymbolOptions } from "@/types/scenarioModels";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Symbol as MilSymbol } from "milsymbol";
-import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
+import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import type { NUnit } from "@/types/internalModels";
 import { wordWrap } from "@/utils";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore.ts";
 
 export type UnitLabelData = {
   yOffset: number;
@@ -45,14 +46,14 @@ export function createUnitStyle(unit: NUnit, symbolOptions: UnitSymbolOptions): 
   const { name = "", shortName = "" } = unit;
   const sidc = unit._state?.sidc || unit.sidc;
 
-  const settingsStore = useSettingsStore();
+  const mapSettingsStore = useMapSettingsStore();
   const symbolSettings = useSymbolSettingsStore();
 
   const { uniqueDesignation = shortName || name, ...textAmplifiers } =
     unit.textAmplifiers || {};
   const milSymbol = symbolGenerator(sidc, {
-    size: settingsStore.mapIconSize * (window.devicePixelRatio || 1),
-    uniqueDesignation: settingsStore.mapUnitLabelBelow ? "" : uniqueDesignation,
+    size: mapSettingsStore.mapIconSize * (window.devicePixelRatio || 1),
+    uniqueDesignation: mapSettingsStore.mapUnitLabelBelow ? "" : uniqueDesignation,
     outlineColor: "white",
     outlineWidth: 8,
     ...textAmplifiers,

@@ -1,3 +1,27 @@
+<script setup lang="ts">
+import LayersPanel from "./LayersPanel.vue";
+import { useDark, useVModel } from "@vueuse/core";
+import SlideOver from "./SlideOver.vue";
+import TabView from "./TabView.vue";
+import TabItem from "./TabItem.vue";
+import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
+import NumberInputGroup from "./NumberInputGroup.vue";
+import MapSettingsPanel from "@/components/MapSettingsPanel.vue";
+import ToggleField from "@/components/ToggleField.vue";
+import { useUiStore } from "@/stores/uiStore";
+import TimeDateSettingsPanel from "@/components/TimeDateSettingsPanel.vue";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore.ts";
+
+const props = defineProps({ modelValue: Boolean });
+
+const open = useVModel(props, "modelValue");
+const settings = useSettingsStore();
+const mapSettings = useMapSettingsStore();
+const symbolSettings = useSymbolSettingsStore();
+const uiSettings = useUiStore();
+const isDarkMode = useDark({ initialValue: "light" });
+</script>
+
 <template>
   <SlideOver v-model="open" title="Settings">
     <TabView gap="gap-x-2">
@@ -12,7 +36,7 @@
           <NumberInputGroup
             InputGroup
             label="Map symbol size"
-            v-model="settings.mapIconSize"
+            v-model="mapSettings.mapIconSize"
           />
           <NumberInputGroup
             InputGroup
@@ -25,7 +49,7 @@
           <ToggleField v-model="symbolSettings.simpleStatusModifier"
             >Use simple status modifier
           </ToggleField>
-          <ToggleField v-model="settings.mapUnitLabelBelow"
+          <ToggleField v-model="mapSettings.mapUnitLabelBelow"
             >Show map unit labels below icons
           </ToggleField>
 
@@ -41,25 +65,3 @@
     </TabView>
   </SlideOver>
 </template>
-
-<script setup lang="ts">
-import LayersPanel from "./LayersPanel.vue";
-import { useDark, useVModel } from "@vueuse/core";
-import SlideOver from "./SlideOver.vue";
-import TabView from "./TabView.vue";
-import TabItem from "./TabItem.vue";
-import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
-import NumberInputGroup from "./NumberInputGroup.vue";
-import MapSettingsPanel from "@/components/MapSettingsPanel.vue";
-import ToggleField from "@/components/ToggleField.vue";
-import { useUiStore } from "@/stores/uiStore";
-import TimeDateSettingsPanel from "@/components/TimeDateSettingsPanel.vue";
-
-const props = defineProps({ modelValue: Boolean });
-
-const open = useVModel(props, "modelValue");
-const settings = useSettingsStore();
-const symbolSettings = useSymbolSettingsStore();
-const uiSettings = useUiStore();
-const isDarkMode = useDark({ initialValue: "light" });
-</script>

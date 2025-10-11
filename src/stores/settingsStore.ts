@@ -5,10 +5,8 @@ import { useLocalStorage } from "@vueuse/core";
 export const useSettingsStore = defineStore("settings", {
   state() {
     return {
-      mapIconSize: useLocalStorage("mapIconSize", 30),
       orbatIconSize: useLocalStorage("orbatIconSize", 20),
       orbatShortName: useLocalStorage("orbatShortName", false),
-      mapUnitLabelBelow: useLocalStorage("mapUnitLabelBelow", false),
     };
   },
 });
