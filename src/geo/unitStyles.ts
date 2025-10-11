@@ -74,7 +74,8 @@ export function createUnitLabelData(
   const label = unit.shortName || unit.name || "";
   const anchor = unitStyle?.getImage()?.getAnchor() ?? [0, 0];
   const iconHeight = unitStyle?.getImage()?.getSize()?.[1] || 0;
-  const yOffset = iconHeight - anchor[1] + 5;
+  const scale = (unitStyle?.getImage()?.getScale() as number) || 1;
+  const yOffset = (iconHeight - anchor[1]) * scale + 5;
 
   return {
     yOffset: unitStyle ? yOffset : 20,
