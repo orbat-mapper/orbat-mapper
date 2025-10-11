@@ -30,8 +30,7 @@ export function invalidateUnitStyle(cacheKey: string) {
 function createMilSymbolStyle(milSymbol: MilSymbol) {
   const { x, y } = milSymbol.getAnchor();
   const image = new Icon({
-    scale: 1,
-    // scale: 1 / (window.devicePixelRatio || 1),
+    scale: 1 / (window.devicePixelRatio || 1),
     anchor: [x, y],
     anchorXUnits: "pixels",
     anchorYUnits: "pixels",
