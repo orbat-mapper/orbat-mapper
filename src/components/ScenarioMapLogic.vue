@@ -60,6 +60,7 @@ const mapRef = shallowRef<OLMap>();
 const uiStore = useUiStore();
 const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
 const unitSettingsStore = useUnitSettingsStore();
+const mapSettingsStore = useMapSettingsStore();
 const geoStore = useGeoStore();
 const settingsStore = useSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
@@ -181,7 +182,7 @@ function redrawUnits() {
 
 watch(geo.everyVisibleUnit, () => redrawUnits(), { deep: true });
 
-watch([settingsStore, symbolSettings], () => {
+watch([settingsStore, symbolSettings, mapSettingsStore], () => {
   clearUnitStyleCache();
   drawUnits();
 });

@@ -375,11 +375,19 @@ function onAddPoint() {
           <ContextMenuCheckboxItem v-model="showScaleLine" @select.prevent>
             Scale line
           </ContextMenuCheckboxItem>
+          <ContextMenuSeparator />
           <ContextMenuCheckboxItem
             v-model="mapSettings.mapUnitLabelBelow"
             @select.prevent
           >
             Unit labels below icons
+          </ContextMenuCheckboxItem>
+          <ContextMenuCheckboxItem
+            v-model="mapSettings.mapWrapUnitLabels"
+            @select.prevent
+            v-if="mapSettings.mapUnitLabelBelow"
+          >
+            Wrap long unit labels
           </ContextMenuCheckboxItem>
         </ContextMenuSubContent>
       </ContextMenuSub>

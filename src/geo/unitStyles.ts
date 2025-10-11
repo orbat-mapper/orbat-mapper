@@ -62,9 +62,14 @@ export function createUnitStyle(unit: NUnit, symbolOptions: UnitSymbolOptions): 
   return createMilSymbolStyle(milSymbol);
 }
 
+type UnitLabelOptions = {
+  wrapLabels?: boolean;
+  wrapWidth?: number;
+};
 export function createUnitLabelData(
   unit: NUnit,
   unitStyle: Style | undefined,
+  { wrapLabels = true, wrapWidth = 20 }: UnitLabelOptions = {},
 ): UnitLabelData {
   const label = unit.shortName || unit.name || "";
   const anchor = unitStyle?.getImage()?.getAnchor() ?? [0, 0];
@@ -73,6 +78,6 @@ export function createUnitLabelData(
 
   return {
     yOffset: unitStyle ? yOffset : 20,
-    text: wordWrap(label, { width: 20 }),
+    text: wrapLabels ? wordWrap(label, { width: wrapWidth }) : label,
   };
 }

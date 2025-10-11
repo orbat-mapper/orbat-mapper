@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+October 2025
+
+- New options for customizing map unit labels:
+  - show below unit icon
+  - adjust font size
+  - wrap long names
+
 September 2025
 
 - New KML/KMZ export options:

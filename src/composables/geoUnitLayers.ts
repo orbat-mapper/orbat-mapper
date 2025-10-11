@@ -113,6 +113,15 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     },
   );
 
+  watch(
+    () => mapSettings.mapLabelSize,
+    (v) => {
+      unitLabelStyle.getText()?.setFont(`${v}px "InterVariable"`);
+      selectedUnitLabelStyle.getText()?.setFont(`${v}px "InterVariable"`);
+    },
+    { immediate: true },
+  );
+
   function unitStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
     let unitStyle = unitStyleCache.get(unitId);
@@ -156,7 +165,10 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     if (!unit) return;
     if (!labelData) {
       const unitStyle = unitStyleCache.get(unitId);
-      labelData = createUnitLabelData(unit, unitStyle);
+      labelData = createUnitLabelData(unit, unitStyle, {
+        wrapLabels: mapSettings.mapWrapUnitLabels,
+        wrapWidth: mapSettings.mapWrapLabelWidth,
+      });
 
       if (unitStyle) {
         labelStyleCache.set(unitId, labelData);
@@ -376,7 +388,12 @@ export function useUnitSelectInteraction(
 
     if (!mapSettings.mapUnitLabelBelow) return unitStyle;
 
-    let labelData = labelStyleCache.get(unitId) ?? createUnitLabelData(unit, unitStyle);
+    let labelData =
+      labelStyleCache.get(unitId) ??
+      createUnitLabelData(unit, unitStyle, {
+        wrapLabels: mapSettings.mapWrapUnitLabels,
+        wrapWidth: mapSettings.mapWrapLabelWidth,
+      });
 
     if (labelData) {
       const textStyle = selectedUnitLabelStyle.getText()!;

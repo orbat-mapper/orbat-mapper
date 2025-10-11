@@ -3,15 +3,6 @@ import { type CoordinateFormatType } from "@/composables/geoShowLocation";
 import { useLocalStorage } from "@vueuse/core";
 import { DEFAULT_BASEMAP_ID } from "@/config/constants";
 
-export interface MapSettingsState {
-  showLocation: boolean;
-  coordinateFormat: CoordinateFormatType;
-  baseLayerName: string;
-  showScaleLine: boolean;
-  showDayNightTerminator: boolean;
-  mapIconSize: number;
-  mapUnitLabelBelow: boolean;
-}
 export const useMapSettingsStore = defineStore("mapSettings", {
   state: () => ({
     showLocation: useLocalStorage("showLocation", true),
@@ -24,5 +15,8 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     showDayNightTerminator: false,
     mapIconSize: useLocalStorage("mapIconSize", 30),
     mapUnitLabelBelow: useLocalStorage("mapUnitLabelBelow", false),
+    mapWrapUnitLabels: useLocalStorage("mapWrapUnitLabels", false),
+    mapWrapLabelWidth: useLocalStorage("mapWrapLabelWidth", 15),
+    mapLabelSize: useLocalStorage("mapLabelSize", 12),
   }),
 });

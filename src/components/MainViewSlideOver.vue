@@ -38,19 +38,12 @@ const isDarkMode = useDark({ initialValue: "light" });
             label="Map symbol size"
             v-model="mapSettings.mapIconSize"
           />
-          <NumberInputGroup
-            InputGroup
-            label="ORBAT symbol size"
-            v-model="settings.orbatIconSize"
-          />
+          <NumberInputGroup label="ORBAT symbol size" v-model="settings.orbatIconSize" />
           <ToggleField v-model="settings.orbatShortName"
             >Use short names in ORBAT
           </ToggleField>
           <ToggleField v-model="symbolSettings.simpleStatusModifier"
             >Use simple status modifier
-          </ToggleField>
-          <ToggleField v-model="mapSettings.mapUnitLabelBelow"
-            >Show map unit labels below icons
           </ToggleField>
 
           <ToggleField v-model="uiSettings.debugMode">Debug mode</ToggleField>

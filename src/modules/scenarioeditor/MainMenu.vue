@@ -168,6 +168,14 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           >
             Unit labels below icons
           </DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem
+            v-model="mapSettings.mapWrapUnitLabels"
+            @select.prevent
+            v-if="mapSettings.mapUnitLabelBelow"
+          >
+            Wrap long unit labels
+          </DropdownMenuCheckboxItem>
+
           <DropdownMenuSub>
             <DropdownMenuSubTrigger inset
               ><span class="pr-4">Measurement units</span></DropdownMenuSubTrigger
