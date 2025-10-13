@@ -1,4 +1,5 @@
 import { DefaultTheme, defineConfig } from "vitepress";
+import Tailwind from '@tailwindcss/vite'
 
 export default defineConfig({
   cleanUrls: true,
@@ -6,6 +7,9 @@ export default defineConfig({
   description: "",
   head: [["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }]],
   vite: {
+    plugins: [
+      Tailwind()
+    ],
     ssr: {
       noExternal: ["milsymbol"],
     },
