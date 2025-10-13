@@ -10,7 +10,7 @@ In this section we will go through some terminology you will encounter while bui
 
 ## Sides and groups
 
-A scenario consists of _units_ organized into _groups_ and _sides_. A side typically represents a nation or
+A scenario consists of _units_ organized into _sides_ and _groups_. A side typically represents a nation or
 coalition. In a WWII scenario the sides would typically be _Allied forces_ and _Axis forces_.
 
 For each side you can specify a standard identity / affiliation. The standard identity determines the color and shape
@@ -35,9 +35,10 @@ distinguish different nations by symbol color.
 </div>
 
 Each side consists of one or more groups of units. A group is just a way to organize your units. They can for instance
-represent branches (army, navy, air-force, etc.), a task force, a battlefront, etc. The default group name is _Units_.
+represent branches (army, navy, air-force, etc.), a task force, a battlefront, etc. You can also choose not to use groups
+and place units directly under a side.
 
-A group consists of one or more unit hierarchies. The topmost unit in a hierarchy is called a _root unit_.
+A side/group consists of one or more unit hierarchies. The topmost unit in a hierarchy is called a _root unit_.
 
 ## Units
 

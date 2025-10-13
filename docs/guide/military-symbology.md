@@ -10,14 +10,11 @@ APP-6D](https://nso.nato.int/nso/nsdd/main/standards/ap-details/1912/EN)
 when displaying units, equipment and installations. All symbols are rendered using
 the excellent [Milsymbol](https://spatialillusions.com/milsymbol/index.html) library.
 
-<div class="flex items-center gap-4 justify-center">
+<div class="grid grid-cols-4 gap-8 items-center justify-items-center content-end">
     <DocMilSymbol sidc="10031000131211004600" /> 
     <DocMilSymbol sidc="10061000151205010000" />
     <DocMilSymbol sidc="10031500331105030000" />
     <DocMilSymbol sidc="10032000001213010000" />
-</div>
-
-<div class="flex gap-4 items-center justify-center">
     <DocMilSymbol sidc="10011000000000000000" />
     <DocMilSymbol sidc="10031000000000000000" />
     <DocMilSymbol sidc="10041000000000000000" />
@@ -53,7 +50,7 @@ ORBAT Mapper allows you to choose between MILSTD 2525 and APP-6. There are some 
 most
 notable is that APP-6D has the dismounted individual symbol set:
 
-<div class="flex gap-4 items-center justify-center">
+<div class="grid grid-cols-2 gap-8 items-center justify-items-center content-end">
     <DocMilSymbol sidc="10032700001101010039" />
     <DocMilSymbol sidc="10032700001102090001" />
 </div>
