@@ -28,6 +28,7 @@ import { useTimeoutFn } from "@vueuse/core";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import { getUnitDragItem, isUnitDragItem } from "@/types/draggables";
 import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
+import { images } from "@/geo/unitStyles.ts";
 
 interface Props {
   item: NOrbatItemData;
@@ -195,6 +196,8 @@ const onUnitMenuAction = (unit: NUnit, action: UnitAction) => {
 const onUnitClick = (unit: NUnit, event: MouseEvent) => {
   emit("unit-click", unit, event);
 };
+
+const index = Math.floor(Math.random() * images.length);
 </script>
 
 <template>
@@ -230,11 +233,12 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
               ref="dragItemRef"
             >
-              <MilitarySymbol
-                :sidc="unit._state?.sidc || unit.sidc"
-                :size="settingsStore.orbatIconSize"
-                :options="combinedOptions"
-              />
+              <img :src="images[index]" class="size-6" />
+              <!--              <MilitarySymbol-->
+              <!--                :sidc="unit._state?.sidc || unit.sidc"-->
+              <!--                :size="settingsStore.orbatIconSize"-->
+              <!--                :options="combinedOptions"-->
+              <!--              />-->
               <span
                 v-if="unit.reinforcedStatus"
                 class="absolute -top-2 -right-2.5 text-xs font-medium"
