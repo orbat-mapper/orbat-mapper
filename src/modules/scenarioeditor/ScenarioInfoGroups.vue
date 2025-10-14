@@ -9,6 +9,7 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { useNotifications } from "@/composables/notifications";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import InputGroup from "@/components/InputGroup.vue";
+import { Button } from "@/components/ui/button";
 
 const scn = injectStrict(activeScenarioKey);
 const store = useScenarioInfoPanelStore();
@@ -75,7 +76,7 @@ function onAddSubmit() {
 
 <template>
   <div class="prose dark:prose-invert max-w-none">
-    <TableHeader description="Range ring-3 groups available in this scenario.">
+    <TableHeader description="Range ring groups available in this scenario.">
       <Button variant="outline" @click="store.toggleAddGroup()">
         {{ store.showAddGroup ? "Hide form" : "Add" }}
       </Button>
