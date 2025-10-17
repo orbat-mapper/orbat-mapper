@@ -11,20 +11,17 @@ import EditableLabel from "@/components/EditableLabel.vue";
 import { Button } from "@/components/ui/button";
 
 interface Props {
-  modelValue?: string;
   label?: string;
   showNone?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: defaultColors[1].selectedColor,
   showNone: false,
 });
-const emit = defineEmits(["update:modelValue"]);
+
+const selectedColor = defineModel<string>({ default: defaultColors[1].selectedColor });
 
 const uiStore = useUiStore();
-
-const selectedColor = useVModel(props, "modelValue", emit);
 const $colors = computed(() => {
   const cols = props.showNone
     ? [
