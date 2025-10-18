@@ -16,6 +16,7 @@ import ScenarioInfoSupplyClasses from "@/modules/scenarioeditor/ScenarioInfoSupp
 import ScenarioInfoSupplyUnits from "@/modules/scenarioeditor/ScenarioInfoSupplyUnits.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
+import ScenarioSymbolColorSettings from "@/modules/scenarioeditor/ScenarioSymbolColorSettings.vue";
 
 const {
   store: { onUndoRedo, state },
@@ -86,6 +87,9 @@ function showScenarioInfo() {
     </AccordionPanel>
     <AccordionPanel label="Map settings">
       <ScenarioMapSettings />
+    </AccordionPanel>
+    <AccordionPanel label="Symbol fill colors">
+      <ScenarioSymbolColorSettings />
     </AccordionPanel>
   </div>
 </template>
