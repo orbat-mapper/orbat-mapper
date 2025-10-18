@@ -1,6 +1,8 @@
-import type { SymbolItem } from "@/types/constants.ts";
+import type { SymbolValue } from "@/types/constants.ts";
 
-export const SYMBOL_FILL_COLORS: Pick<SymbolItem, "text" | "code">[] = [
+export type SymbolFillColor = SymbolValue;
+
+export const SYMBOL_FILL_COLORS: SymbolFillColor[] = [
   { code: "#80e0ff", text: "Blue (standard)" },
   { code: "#ff8080", text: "Red (standard)" },
   { code: "#aaffaa", text: "Green (standard)" },

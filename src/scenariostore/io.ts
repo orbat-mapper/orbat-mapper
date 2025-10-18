@@ -94,6 +94,7 @@ export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): S
         { name: "Meter", code: "MR", type: "distance" },
         { name: "Gallon", code: "GL", type: "volume" },
       ],
+      symbolFillColors: [],
     },
   };
 }
@@ -306,6 +307,10 @@ function getSupplyUoMs(state: ScenarioState): UnitOfMeasure[] {
   return Object.values(state.supplyUomMap).map(({ id, ...rest }) => rest);
 }
 
+function getSymbolFillColors(state: ScenarioState) {
+  return Object.values(state.symbolFillColorMap).map(({ id, ...rest }) => rest);
+}
+
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   const settingsStore = useSymbolSettingsStore();
 
@@ -333,6 +338,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
         supplyClasses: getSupplyClasses(state),
         supplyUoMs: getSupplyUoMs(state),
         map: state.mapSettings,
+        symbolFillColors: getSymbolFillColors(state),
       },
     };
   }

@@ -33,6 +33,7 @@ import type {
   NSupplyCategory,
   NSupplyClass,
   NSupplyUoM,
+  NSymbolFillColor,
   NUnit,
   NUnitEquipment,
   NUnitPersonnel,
@@ -69,9 +70,6 @@ export interface ScenarioState {
   personnelMap: Record<string, NPersonnelData>;
   supplyCategoryMap: Record<string, NSupplyCategory>;
   currentTime: number;
-  // getUnitById: (id: EntityId) => NUnit;
-  // getSideById: (id: EntityId) => NSide;
-  // getSideGroupById: (id: EntityId) => NSideGroup;
   rangeRingGroupMap: Record<string, NRangeRingGroup>;
   unitStatusMap: Record<string, NUnitStatus>;
   supplyClassMap: Record<string, NSupplyClass>;
@@ -80,6 +78,7 @@ export interface ScenarioState {
   featureStateCounter: number;
   settingsStateCounter: number; // used to force reactivity
   mapSettings: MapSettings;
+  symbolFillColorMap: Record<string, NSymbolFillColor>;
 }
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
@@ -111,6 +110,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
   const unitStatusMap: Record<string, NUnitStatus> = {};
   const supplyClassMap: Record<string, NSupplyClass> = {};
   const supplyUoMMap: Record<string, NSupplyUoM> = {};
+  const symbolFillColorMap: Record<string, NSymbolFillColor> = {};
   const tempEquipmentIdMap: Record<string, string> = {};
   const tempPersonnelIdMap: Record<string, string> = {};
   const tempSuppliesIdMap: Record<string, string> = {};
@@ -155,6 +155,11 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     const id = nanoid();
     supplyUoMMap[id] = { ...s, id };
     tempSupplyUomIdMap[s.name] = id;
+  });
+
+  scenario.settings?.symbolFillColors?.forEach((s) => {
+    const id = nanoid();
+    symbolFillColorMap[id] = { ...s, id };
   });
 
   if (scenario.startTime !== undefined) {
@@ -454,15 +459,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     settingsStateCounter,
     unitStatusMap,
     mapSettings,
-    // getUnitById(id: EntityId) {
-    //   return this.unitMap[id];
-    // },
-    // getSideById(id: EntityId) {
-    //   return this.sideMap[id];
-    // },
-    // getSideGroupById(id: EntityId) {
-    //   return this.sideGroupMap[id];
-    // },
+    symbolFillColorMap,
   };
 }
 

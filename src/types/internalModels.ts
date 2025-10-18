@@ -30,6 +30,7 @@ import type {
   ScenarioXYZLayer,
 } from "@/types/scenarioGeoModels";
 import type { Optional } from "@/types/helpers";
+import type { SymbolFillColor } from "@/config/colors.ts";
 
 export interface NUnit
   extends Omit<
@@ -187,6 +188,10 @@ export interface NSupplyUoM extends UnitOfMeasure {
   id: string;
 }
 
+export interface NSymbolFillColor extends SymbolFillColor {
+  id: string;
+}
+
 export interface NState extends Omit<State, "update" | "diff"> {
   // an update replaces the current state with the new state
   update?: {
@@ -208,6 +213,7 @@ export interface UnitStatusUpdate extends Partial<Omit<NUnitStatus, "id">> {}
 export interface EquipmentDataUpdate extends Partial<Omit<NEquipmentData, "id">> {}
 export interface PersonnelDataUpdate extends Partial<Omit<NPersonnelData, "id">> {}
 export interface SupplyCategoryUpdate extends Partial<Omit<NSupplyCategory, "id">> {}
+export interface SymbolFillColorUpdate extends Partial<Omit<NSymbolFillColor, "id">> {}
 export const INTERNAL_NAMES = [
   "_state",
   "_pid",
