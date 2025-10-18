@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 October 2025
 
+- Added support for adding custom symbol fill colors
 - New options for customizing map unit labels:
   - show below unit icon
   - adjust font size
