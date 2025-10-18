@@ -5,6 +5,7 @@ import { useScenarioIO } from "./io";
 import { useScenarioTime } from "./time";
 import { useGeo } from "@/scenariostore/geo";
 import { useStateHelpers } from "@/scenariostore/helpers";
+import { useScenarioSettings } from "@/scenariostore/settingsManipulations.ts";
 
 const globalStoreRef = shallowRef<NewScenarioStore>({} as any);
 
@@ -21,6 +22,7 @@ export function useScenario() {
         io: useScenarioIO(globalStoreRef),
         geo: useGeo(globalStoreRef.value),
         helpers: useStateHelpers(globalStoreRef.value),
+        settings: useScenarioSettings(globalStoreRef.value),
       };
     }),
     isLoading,
