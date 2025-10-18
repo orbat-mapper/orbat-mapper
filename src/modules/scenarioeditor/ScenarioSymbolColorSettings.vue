@@ -43,7 +43,7 @@ const columns: ColumnDef<SymbolFillColor>[] = [
 ];
 
 const addForm = ref<SymbolFillColor>({
-  code: "",
+  code: "#ffaabb",
   text: "",
 });
 

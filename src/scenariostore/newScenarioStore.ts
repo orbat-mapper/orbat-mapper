@@ -50,6 +50,7 @@ import type {
 } from "@/types/scenarioGeoModels";
 import { DEFAULT_BASEMAP_ID } from "@/config/constants";
 import { upgradeScenarioIfNecessary } from "@/scenariostore/upgrade";
+import { SYMBOL_FILL_COLORS } from "@/config/colors.ts";
 
 export interface ScenarioState {
   id: EntityId;
@@ -111,6 +112,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
   const supplyClassMap: Record<string, NSupplyClass> = {};
   const supplyUoMMap: Record<string, NSupplyUoM> = {};
   const symbolFillColorMap: Record<string, NSymbolFillColor> = {};
+  const tempSymbolFillColors = new Set<string>();
   const tempEquipmentIdMap: Record<string, string> = {};
   const tempPersonnelIdMap: Record<string, string> = {};
   const tempSuppliesIdMap: Record<string, string> = {};
@@ -157,9 +159,11 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     tempSupplyUomIdMap[s.name] = id;
   });
 
+  SYMBOL_FILL_COLORS.forEach((s) => tempSymbolFillColors.add(s.code));
   scenario.settings?.symbolFillColors?.forEach((s) => {
     const id = nanoid();
     symbolFillColorMap[id] = { ...s, id };
+    tempSymbolFillColors.add(s.code);
   });
 
   if (scenario.startTime !== undefined) {
@@ -178,6 +182,8 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     if (!unit.id) {
       unit.id = nanoid();
     }
+
+    checkFillColor(unit);
 
     unit._pid = parent.id;
     unit._isOpen = false;
@@ -235,6 +241,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
 
     const newState: NState[] = unit.state.map((s) => {
       const { update, diff, ...rest } = s;
+      checkFillColor(s);
       const newUpdate = update
         ? {
             equipment: update.equipment?.map((e) => {
@@ -356,6 +363,20 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     return id;
   }
 
+  function checkFillColor(item: Unit | Side | SideGroup | State) {
+    if (item.symbolOptions?.fillColor) {
+      if (!tempSymbolFillColors.has(item.symbolOptions.fillColor)) {
+        const newColor: NSymbolFillColor = {
+          id: nanoid(),
+          text: `Custom color (${item.symbolOptions.fillColor})`,
+          code: item.symbolOptions.fillColor,
+        };
+        symbolFillColorMap[newColor.id] = newColor;
+        tempSymbolFillColors.add(item.symbolOptions.fillColor);
+      }
+    }
+  }
+
   scenario.sides.forEach((side) => {
     sideMap[side.id] = {
       ...side,
@@ -363,12 +384,14 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
       subUnits: side.subUnits?.map((unit) => unit.id) ?? [],
     };
     sides.push(side.id);
+    checkFillColor(side);
     side.groups.forEach((group) => {
       sideGroupMap[group.id] = {
         ...group,
         _pid: side.id,
         subUnits: group.subUnits.map((unit) => unit.id),
       };
+      checkFillColor(group);
     });
     walkSide(side, prepareUnit);
   });
