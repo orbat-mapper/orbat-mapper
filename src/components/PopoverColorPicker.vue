@@ -96,18 +96,20 @@ function onOpen(isOpen: boolean) {
 <template>
   <Popover @update:open="onOpen">
     <PopoverTrigger as-child
-      ><Button type="button" variant="ghost" class="justify-start">
-        <span
-          aria-hidden="true"
-          :class="[
-            'border-opacity-10 flex size-6 items-center justify-center rounded-full border border-gray-700 dark:border-gray-600',
-          ]"
-          :style="{ backgroundColor: selectedColor }"
-        >
-          <span v-if="!selectedColor">x</span>
-        </span>
-        <span>{{ getColorName(selectedColor) }}</span>
-      </Button>
+      ><slot name="trigger"
+        ><Button type="button" variant="ghost" class="justify-start">
+          <span
+            aria-hidden="true"
+            :class="[
+              'border-opacity-10 flex size-6 items-center justify-center rounded-full border border-gray-700 dark:border-gray-600',
+            ]"
+            :style="{ backgroundColor: selectedColor }"
+          >
+            <span v-if="!selectedColor">x</span>
+          </span>
+          <span>{{ getColorName(selectedColor) }}</span>
+        </Button></slot
+      >
     </PopoverTrigger>
     <PopoverContent class="relative" :avoidCollisions="true">
       <header class="text-sm font-bold">Color</header>

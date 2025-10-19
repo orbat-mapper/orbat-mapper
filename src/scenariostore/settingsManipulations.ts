@@ -14,10 +14,20 @@ import { klona } from "klona";
 import type { EntityId } from "@/types/base";
 import { updateCurrentUnitState } from "@/scenariostore/time";
 import { removeUnusedUnitStateEntries } from "@/scenariostore/unitStateManipulations";
-import type { SymbolFillColor } from "@/config/colors.ts";
+import { SYMBOL_FILL_COLORS, type SymbolFillColor } from "@/config/colors.ts";
 
 export function useScenarioSettings(store: NewScenarioStore) {
   const { state, update } = store;
+
+  function addColorIfAbsent(code: string) {
+    const existing = [
+      ...SYMBOL_FILL_COLORS,
+      ...Object.values(state.symbolFillColorMap),
+    ].find((color) => color.code.toLowerCase() === code.toLowerCase());
+    if (!existing) {
+      addSymbolFillColor({ code, text: `Custom color (${code})` });
+    }
+  }
 
   function addSymbolFillColor(
     data: Partial<NSymbolFillColor>,
@@ -62,5 +72,6 @@ export function useScenarioSettings(store: NewScenarioStore) {
     addSymbolFillColor,
     updateSymbolFillColor,
     deleteSymbolFillColor,
+    addColorIfAbsent,
   };
 }
