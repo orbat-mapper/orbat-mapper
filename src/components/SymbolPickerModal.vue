@@ -150,11 +150,19 @@
               :items="mod2Items"
               :symbol-options="combinedSymbolOptions"
             />
-            <SymbolFillColorSelect
-              v-if="!hideSymbolColor"
-              v-model="internalSymbolOptions.fillColor"
-              :default-fill-color="inheritedSymbolOptions?.fillColor"
-            />
+            <div v-if="!hideSymbolColor" class="flex w-full items-end gap-2">
+              <SymbolFillColorSelect
+                v-model="internalSymbolOptions.fillColor"
+                :default-fill-color="inheritedSymbolOptions?.fillColor"
+                class="flex-auto"
+              /><PopoverColorPicker v-model="internalSymbolOptions.fillColor"
+                ><template #trigger
+                  ><Button type="button" variant="outline" size="lg"
+                    >Custom color</Button
+                  ></template
+                ></PopoverColorPicker
+              >
+            </div>
           </form>
         </TabItem>
         <TabItem label="Browse" v-slot="{ isActive }">
@@ -227,6 +235,10 @@ import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import { doFocus } from "@/composables/utils";
 import BaseButton from "@/components/BaseButton.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
+import { Button } from "@/components/ui/button";
+import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey } from "@/components/injects.ts";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
@@ -251,7 +263,7 @@ const props = withDefaults(defineProps<Props>(), {
   hideSymbolColor: false,
 });
 const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
-
+const scn = injectStrict(activeScenarioKey);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 
@@ -340,6 +352,8 @@ const onSubmit = () => {
       ? { fillColor: internalSymbolOptions.value.fillColor }
       : {},
   });
+  if (internalSymbolOptions.value.fillColor)
+    scn.settings.addColorIfAbsent(internalSymbolOptions.value.fillColor);
   open.value = false;
 };
 
