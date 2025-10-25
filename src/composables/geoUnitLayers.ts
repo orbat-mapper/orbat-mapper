@@ -104,11 +104,13 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       layerType: LayerTypes.units,
     },
     style: mapSettings.mapUnitLabelBelow ? labelStyleFunction : undefined,
+    visible: mapSettings.mapUnitLabelBelow,
   });
 
   watch(
     () => mapSettings.mapUnitLabelBelow,
     (v) => {
+      labelLayer.setVisible(v);
       labelLayer.setStyle(v ? labelStyleFunction : undefined);
     },
   );
