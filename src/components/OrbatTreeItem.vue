@@ -47,6 +47,7 @@ const emit = defineEmits<Emits>();
 const activeParentId = injectStrict(activeParentKey);
 const {
   unitActions: { isUnitLocked },
+  store: { state },
 } = injectStrict(activeScenarioKey);
 
 const combinedOptions = computed(() => ({
@@ -96,6 +97,13 @@ const unitLabel = computed(() =>
     ? unit.value.shortName || unit.value.name
     : unit.value.name,
 );
+
+const customSidc = computed(() => {
+  const sidc = unit.value._state?.sidc || unit.value.sidc;
+  if (sidc.startsWith("custom:")) {
+    return sidc.slice(7);
+  }
+});
 
 const activeUnitStore = useActiveUnitStore();
 
@@ -230,26 +238,37 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
               ref="dragItemRef"
             >
-              <MilitarySymbol
-                :sidc="unit._state?.sidc || unit.sidc"
-                :size="settingsStore.orbatIconSize"
-                :options="combinedOptions"
+              <img
+                v-if="customSidc"
+                :src="state.customSymbolMap[customSidc]?.src ?? ''"
+                :alt="unitLabel"
+                :style="{ width: settingsStore.orbatIconSize * 1.2 + 'px' }"
+                draggable="false"
               />
-              <span
-                v-if="unit.reinforcedStatus"
-                class="absolute -top-2 -right-2.5 text-xs font-medium"
-                >{{
-                  mapReinforcedStatus2Field(unit.reinforcedStatus, { compact: true })
-                }}</span
-              >
+              <template v-else>
+                <MilitarySymbol
+                  :sidc="unit._state?.sidc || unit.sidc"
+                  :size="settingsStore.orbatIconSize"
+                  :options="combinedOptions"
+                />
+                <span
+                  v-if="unit.reinforcedStatus"
+                  class="absolute -top-2 -right-2.5 text-xs font-medium"
+                  >{{
+                    mapReinforcedStatus2Field(unit.reinforcedStatus, { compact: true })
+                  }}</span
+                >
+              </template>
             </div>
+
             <span
               class="flex-auto pl-1 text-left"
               :class="{
                 'font-medium': isActiveUnit,
               }"
               >{{ unitLabel }}</span
-            ><span v-if="unit._state?.location" class="text-red-700">&deg;</span>
+            >
+            <span v-if="unit._state?.location" class="text-red-700">&deg;</span>
           </div>
         </button>
       </div>

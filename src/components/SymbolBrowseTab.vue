@@ -42,7 +42,7 @@
         label="Symbol set"
       />
 
-      <div class="mt-4 max-h-[40vh] overflow-auto sm:max-h-[50vh]">
+      <div class="mt-4 max-h-[40vh] overflow-auto">
         <div v-for="[entity, entityIcons] in filteredIconsByEntity" class="relative">
           <h3
             class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"

@@ -12,6 +12,7 @@ import { type TextAmpKey, textAmpMap } from "@/symbology/milsymbwrapper";
 import type { TextAmplifiers } from "@/types/scenarioModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { Button } from "@/components/ui/button";
+import UnitSymbol from "@/components/UnitSymbol.vue";
 
 interface Props {
   unit: NUnit;
@@ -27,6 +28,13 @@ const {
 } = activeScenario;
 
 const { selectedUnitIds } = useSelectedItems();
+
+const customSymbol = computed(() => {
+  if (props.unit.sidc.startsWith("custom:")) {
+    const symbolId = props.unit.sidc.slice(7);
+    return activeScenario.store.state.customSymbolMap[symbolId];
+  }
+});
 
 const overrideName = ref<boolean>(
   props.unit.textAmplifiers?.uniqueDesignation !== undefined,
@@ -137,7 +145,7 @@ function setTextAmpValue(field: TextAmpKey, value: string | number | undefined) 
 </script>
 <template>
   <section class="-mx-4 sm:mx-0">
-    <div>
+    <div v-if="!customSymbol">
       <header class="my-4 flex items-center justify-between">
         <p />
         <ToggleField v-model="overrideName">Override name</ToggleField>
@@ -199,13 +207,17 @@ function setTextAmpValue(field: TextAmpKey, value: string | number | undefined) 
         </footer>
       </form>
     </div>
+    <p v-else class="text-muted-foreground mt-4 text-sm">
+      Text amplifiers are not available for custom symbols.
+    </p>
     <p class="mt-2 text-sm leading-7 font-medium">Preview</p>
 
     <div class="mt-4 flex justify-center">
-      <MilitarySymbol
+      <UnitSymbol
         :sidc="props.unit.sidc"
         :size="30"
         :options="combinedSymbolOptions"
+        class="w-30"
       />
     </div>
     <pre></pre>

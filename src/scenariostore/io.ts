@@ -311,6 +311,10 @@ function getSymbolFillColors(state: ScenarioState) {
   return Object.values(state.symbolFillColorMap).map(({ id, ...rest }) => rest);
 }
 
+function getCustomSymbols(state: ScenarioState) {
+  return Object.values(state.customSymbolMap);
+}
+
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   const settingsStore = useSymbolSettingsStore();
 
@@ -339,6 +343,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
         supplyUoMs: getSupplyUoMs(state),
         map: state.mapSettings,
         symbolFillColors: getSymbolFillColors(state),
+        customSymbols: getCustomSymbols(state),
       },
     };
   }

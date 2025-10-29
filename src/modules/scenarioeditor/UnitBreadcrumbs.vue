@@ -27,6 +27,7 @@ import UnitBreadcrumbItem from "@/modules/scenarioeditor/UnitBreadcrumbItem.vue"
 import type { BreadcrumbItemType } from "@/modules/scenarioeditor/types";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { isUnitDragItem } from "@/types/draggables";
+import UnitSymbol from "@/components/UnitSymbol.vue";
 
 const {
   unitActions,
@@ -203,8 +204,11 @@ onUnmounted(() => {
                     @select="onItemClick(subItem.id)"
                   >
                     <div class="text-primary flex items-center">
-                      <span v-if="subItem.sidc" class="mr-1.5 flex w-7 items-center">
-                        <MilitarySymbol
+                      <span
+                        v-if="subItem.sidc"
+                        class="mr-1.5 flex max-h-7 w-7 items-center"
+                      >
+                        <UnitSymbol
                           :sidc="subItem.sidc"
                           :options="{
                             ...subItem.symbolOptions,

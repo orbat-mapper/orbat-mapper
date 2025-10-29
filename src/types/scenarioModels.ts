@@ -257,6 +257,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "2.0.0"
   | "1.1.0"
   | "1.0.0"
   | "0.40.0"
@@ -330,6 +331,17 @@ export interface ScenarioSettings {
   map?: MapSettings;
   boundingBox?: BBox;
   symbolFillColors?: SymbolFillColor[];
+  customSymbols?: CustomSymbol[];
+}
+
+// add documentation
+export interface CustomSymbol {
+  id: string;
+  name: string;
+  /** Image source URI */
+  src: string;
+  /** @default [0.5 0.5] */
+  anchor?: [number, number];
 }
 
 export interface MapSettings {

@@ -82,12 +82,13 @@ const selectedUnitLabelStyle = new Style({
 });
 
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
+  const scenario = activeScenario || injectStrict(activeScenarioKey);
   const {
     store: { state, onUndoRedo },
     geo,
     unitActions: { getCombinedSymbolOptions },
     helpers: { getUnitById },
-  } = activeScenario || injectStrict(activeScenarioKey);
+  } = scenario;
   const mapSettings = useMapSettingsStore();
 
   const unitLayer = createUnitLayer();
@@ -142,7 +143,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
 
     if (!unitStyle) {
       const symbolOptions = getCombinedSymbolOptions(unit);
-      unitStyle = createUnitStyle(unit, symbolOptions);
+      unitStyle = createUnitStyle(unit, symbolOptions, scenario);
       unitStyleCache.set(unitId, unitStyle);
     }
 
@@ -347,11 +348,12 @@ export function useUnitSelectInteraction(
   const enableBoxSelectRef = ref(options.enableBoxSelect ?? true);
 
   const { selectedUnitIds: selectedIds, clear: clearSelectedItems } = useSelectedItems();
+  const activeScenario = injectStrict(activeScenarioKey);
   const {
     geo,
     unitActions: { getCombinedSymbolOptions },
     helpers: { getUnitById },
-  } = injectStrict(activeScenarioKey);
+  } = activeScenario;
 
   const unitSelectInteraction = new Select({
     layers,
@@ -378,13 +380,18 @@ export function useUnitSelectInteraction(
 
     if (!unitStyle) {
       const symbolOptions = getCombinedSymbolOptions(unit);
-      unitStyle = createUnitStyle(unit, {
-        ...symbolOptions,
-        infoOutlineColor: "yellow",
-        infoOutlineWidth: 8,
-        outlineColor: "yellow",
-        outlineWidth: 21,
-      })!;
+      unitStyle = createUnitStyle(
+        unit,
+        {
+          ...symbolOptions,
+          infoOutlineColor: "yellow",
+          infoOutlineWidth: 8,
+          outlineColor: "yellow",
+          outlineWidth: 21,
+        },
+        activeScenario,
+        "yellow",
+      )!;
       selectedUnitStyleCache.set(unitId, unitStyle);
     }
 

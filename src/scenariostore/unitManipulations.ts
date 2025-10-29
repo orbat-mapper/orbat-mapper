@@ -500,6 +500,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         walkSubUnits(
           unitId,
           (u) => {
+            if (u.sidc.startsWith("custom:")) return;
             if (u.sidc[SID_INDEX] !== side.standardIdentity) {
               u.sidc = setCharAt(u.sidc, SID_INDEX, side.standardIdentity);
             }

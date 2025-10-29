@@ -59,6 +59,7 @@ import { getUnitDragItem } from "@/types/draggables.ts";
 import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import MilSymbol from "@/components/MilSymbol.vue";
+import UnitSymbol from "@/components/UnitSymbol.vue";
 
 const FeatureTransformations = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/FeatureTransformations.vue"),
@@ -165,22 +166,22 @@ watchEffect((onCleanup) => {
     onDragStart: () => (isDragged.value = true),
     onDrop: () => (isDragged.value = false),
     canDrag: () => !isUnitLocked(unit.value.id),
-    onGenerateDragPreview({ nativeSetDragImage }) {
-      setCustomNativeDragPreview({
-        getOffset: pointerOutsideOfPreview({ x: "16px", y: "8px" }),
-        render: ({ container }) => {
-          return render(
-            h(MilitarySymbol, {
-              sidc: unit.value.sidc,
-              options: combinedSymbolOptions.value,
-              size: 25,
-            }),
-            container,
-          );
-        },
-        nativeSetDragImage,
-      });
-    },
+    // onGenerateDragPreview({ nativeSetDragImage }) {
+    //   setCustomNativeDragPreview({
+    //     getOffset: pointerOutsideOfPreview({ x: "16px", y: "8px" }),
+    //     render: ({ container }) => {
+    //       return render(
+    //         h(UnitSymbol, {
+    //           sidc: unit.value.sidc,
+    //           options: combinedSymbolOptions.value,
+    //           size: 25,
+    //         }),
+    //         container,
+    //       );
+    //     },
+    //     nativeSetDragImage,
+    //   });
+    // },
   });
 
   onCleanup(() => dndFunction());
@@ -401,11 +402,11 @@ function locateInOrbat() {
       <div v-if="!isMultiMode" class="flex">
         <button
           type="button"
-          class="mr-2 inline-flex h-20 w-16 shrink-0 justify-center"
+          class="mr-2 inline-flex w-16 justify-start"
           @click="handleChangeSymbol()"
           ref="elRef"
         >
-          <MilitarySymbol :sidc="unitSidc" :size="34" :options="combinedSymbolOptions" />
+          <UnitSymbol :sidc="unitSidc" :size="34" :options="combinedSymbolOptions" />
         </button>
         <div class="-mt-1.5 flex-auto pr-4">
           <EditableLabel
@@ -439,10 +440,10 @@ function locateInOrbat() {
         </div>
         <ul class="relative my-4 flex w-full flex-wrap gap-1 pb-4">
           <li v-for="sUnit in visibleSelectedUnits" class="relative flex">
-            <MilitarySymbol
+            <UnitSymbol
               :sidc="sUnit.sidc"
               :size="24"
-              class="block"
+              class="block w-9"
               :options="{ ...getCombinedSymbolOptions(sUnit), outlineWidth: 8 }"
             />
             <span v-if="sUnit._state?.location" class="text-red-700">&deg;</span>
@@ -458,7 +459,7 @@ function locateInOrbat() {
           </li>
         </ul>
       </div>
-      <nav class="-mt-4 mb-4 flex items-center justify-between">
+      <nav class="-mt-2 mb-4 flex items-center justify-between">
         <div class="flex items-center gap-0.5">
           <IconButton title="Zoom to" @click="actionWrapper(UnitActions.Zoom)">
             <ZoomIcon class="size-5" />
