@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/empty";
 import { ShapesIcon } from "lucide-vue-next";
 import { activeScenarioKey } from "@/components/injects.ts";
+import { CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
 
 interface Props {
   initialSidc?: string | null;
@@ -68,7 +69,7 @@ function onEsc(e: KeyboardEvent) {
             type="button"
             v-for="{ id, name, src } in filteredIcons"
             :key="id"
-            @click="emit('update-sidc', `custom1:${id}`)"
+            @click="emit('update-sidc', id)"
             class="flex w-full scroll-m-12 flex-col items-center justify-center rounded border border-transparent p-3 hover:border-gray-500"
           >
             <span class="relative"
@@ -78,7 +79,11 @@ function onEsc(e: KeyboardEvent) {
             ></span>
             <p
               class="mt-1 max-w-full shrink-0 overflow-hidden text-center text-sm font-medium break-words"
-              :class="id === initialSidc?.substring(7) ? 'text-red-900' : 'text-gray-900'"
+              :class="
+                id === initialSidc?.slice(CUSTOM_SYMBOL_SLICE)
+                  ? 'text-red-900'
+                  : 'text-gray-900'
+              "
             >
               {{ name }}
             </p>

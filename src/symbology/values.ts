@@ -26,6 +26,14 @@ export const symbolSetValues: SymbolValue[] = [
   { code: "05", text: "Space" },
 ];
 
+export const symbolSetMap: Record<string, SymbolValue> = symbolSetValues.reduce(
+  (acc, curr) => {
+    acc[curr.code] = curr;
+    return acc;
+  },
+  {} as Record<string, SymbolValue>,
+);
+
 export const HQTFDummyValues: SymbolValue[] = [
   { code: "0", text: "Not Applicable" },
   { code: "1", text: "Feint/Dummy" },

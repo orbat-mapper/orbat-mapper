@@ -340,6 +340,7 @@ export interface CustomSymbol {
   name: string;
   /** Image source URI */
   src: string;
+  symbolSet: string;
   /** @default [0.5 0.5] */
   anchor?: [number, number];
 }
