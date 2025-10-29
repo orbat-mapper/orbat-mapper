@@ -260,6 +260,7 @@ import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects.ts";
 import SymbolPickerCustomSymbol from "@/components/SymbolPickerCustomSymbol.vue";
+import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
@@ -288,11 +289,13 @@ const scn = injectStrict(activeScenarioKey);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 
-const customSymbolId = ref(props.sidc?.startsWith("custom:") ? props.sidc : null);
+const customSymbolId = ref(
+  props.sidc?.startsWith(CUSTOM_SYMBOL_PREFIX) ? props.sidc : null,
+);
 
 const customSymbol = computed(() => {
   if (!customSymbolId.value) return null;
-  return scn.store.state.customSymbolMap[customSymbolId.value.substring(7)];
+  return scn.store.state.customSymbolMap[customSymbolId.value.slice(CUSTOM_SYMBOL_SLICE)];
 });
 
 const searchInputRef = ref();
@@ -354,7 +357,7 @@ const {
   reinforcedReducedValue,
 } = useSymbolItems(
   computed(() => {
-    if (props.sidc?.startsWith("custom:")) {
+    if (props.sidc?.startsWith(CUSTOM_SYMBOL_PREFIX)) {
       return "10031000001211000000";
     }
     return props.sidc || "10031000001211000000";

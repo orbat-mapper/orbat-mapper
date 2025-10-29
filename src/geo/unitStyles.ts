@@ -7,6 +7,7 @@ import type { NUnit } from "@/types/internalModels";
 import { wordWrap } from "@/utils";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore.ts";
 import type { TScenario } from "@/scenariostore";
+import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
 
 export type UnitLabelData = {
   yOffset: number;
@@ -74,8 +75,9 @@ export function createUnitStyle(
   const { uniqueDesignation = shortName || name, ...textAmplifiers } =
     unit.textAmplifiers || {};
 
-  if (sidc.startsWith("custom:")) {
-    const customSymbol = scenario.store.state.customSymbolMap[sidc.substring(7)];
+  if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
+    const customSymbol =
+      scenario.store.state.customSymbolMap[sidc.slice(CUSTOM_SYMBOL_SLICE)];
     return customSymbol
       ? createCustomSymbolStyle(customSymbol, mapSettingsStore.mapIconSize * 1.2, color)
       : new Style();

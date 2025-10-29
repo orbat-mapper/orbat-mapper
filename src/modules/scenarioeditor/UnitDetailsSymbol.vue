@@ -13,6 +13,7 @@ import type { TextAmplifiers } from "@/types/scenarioModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { Button } from "@/components/ui/button";
 import UnitSymbol from "@/components/UnitSymbol.vue";
+import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
 
 interface Props {
   unit: NUnit;
@@ -30,8 +31,8 @@ const {
 const { selectedUnitIds } = useSelectedItems();
 
 const customSymbol = computed(() => {
-  if (props.unit.sidc.startsWith("custom:")) {
-    const symbolId = props.unit.sidc.slice(7);
+  if (props.unit.sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
+    const symbolId = props.unit.sidc.slice(CUSTOM_SYMBOL_SLICE);
     return activeScenario.store.state.customSymbolMap[symbolId];
   }
 });
