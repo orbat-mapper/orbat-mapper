@@ -1,3 +1,5 @@
+import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
+
 /**
  *  Symbol Identification Codes (SIDC)
  *
@@ -95,6 +97,7 @@ export class Sidc implements SicElements {
 
 export const SID_INDEX = 3;
 export const ORBAT_MAPPER_ORIGINATOR = "987";
+export const CUSTOM_SYMBOL_SID_INDEX = CUSTOM_SYMBOL_PREFIX.length + SID_INDEX;
 
 export function parseExtendedSidc(sidc: string): ExtendedSidcElements {
   const originatorIdentifier = sidc.substring(20, 23);

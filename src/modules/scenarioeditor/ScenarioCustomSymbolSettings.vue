@@ -15,6 +15,7 @@ import AddSymbolFillColorForm from "@/modules/scenarioeditor/AddSymbolFillColorF
 import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import AddCustomSymbolForm from "@/modules/scenarioeditor/AddCustomSymbolForm.vue";
 import { clearUnitStyleCache } from "@/geo/unitStyles.ts";
+import { symbolSetMap, symbolSetValues } from "@/symbology/values.ts";
 
 const scn = injectStrict(activeScenarioKey);
 const icons = computed(() => {
@@ -41,11 +42,18 @@ const columns: ColumnDef<CustomSymbol>[] = [
     size: 100,
   },
   { id: "name", header: "Name", accessorKey: "name", size: 200 },
+  {
+    id: "symbolSet",
+    header: "Domain",
+    accessorFn: (f) => symbolSetMap[f.symbolSet]?.text ?? f.symbolSet,
+    size: 200,
+  },
 ];
 
 const addForm = ref<Omit<CustomSymbol, "id">>({
   name: "Name",
   src: "",
+  symbolSet: "10",
 });
 
 function cancelEdit() {
@@ -89,7 +97,7 @@ function onAddSubmit(formData: Omit<CustomSymbol, "id">) {
     return;
   }
   scn.settings.addCustomSymbol({ ...formData });
-  addForm.value = { name: "Name", src: "" };
+  addForm.value = { name: "Name", src: "", symbolSet: "10" };
   clearUnitStyleCache();
 }
 </script>

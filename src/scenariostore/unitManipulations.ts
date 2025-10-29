@@ -13,7 +13,7 @@ import type {
   UnitUpdate,
 } from "@/types/internalModels";
 import type { CloneTarget, DropTarget } from "@/components/types";
-import { SID_INDEX, Sidc } from "@/symbology/sidc";
+import { CUSTOM_SYMBOL_SID_INDEX, SID_INDEX, Sidc } from "@/symbology/sidc";
 import { setCharAt } from "@/components/helpers";
 import { SID } from "@/symbology/values";
 import { klona } from "klona";
@@ -501,9 +501,18 @@ export function useUnitManipulations(store: NewScenarioStore) {
         walkSubUnits(
           unitId,
           (u) => {
-            if (u.sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) return;
-            if (u.sidc[SID_INDEX] !== side.standardIdentity) {
-              u.sidc = setCharAt(u.sidc, SID_INDEX, side.standardIdentity);
+            if (u.sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
+              if (u.sidc[CUSTOM_SYMBOL_SID_INDEX] !== side.standardIdentity) {
+                u.sidc = setCharAt(
+                  u.sidc,
+                  CUSTOM_SYMBOL_SID_INDEX,
+                  side.standardIdentity,
+                );
+              }
+            } else {
+              if (u.sidc[SID_INDEX] !== side.standardIdentity) {
+                u.sidc = setCharAt(u.sidc, SID_INDEX, side.standardIdentity);
+              }
             }
             u._sid = side.id;
             u._gid = sideGroup?.id;

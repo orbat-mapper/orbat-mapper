@@ -98,6 +98,7 @@ export function useScenarioSettings(store: NewScenarioStore) {
       id: nanoid(),
       name: "Custom Symbol",
       src: "custom1:xxxxxx",
+      symbolSet: "10",
       ...klona(data),
     };
 

@@ -3,13 +3,15 @@ import InputGroup from "@/components/InputGroup.vue";
 import { useForm } from "@/composables/forms";
 import { klona } from "klona";
 import FormFooter from "@/modules/scenarioeditor/FormFooter.vue";
-import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 import TextAreaGroup from "@/components/TextAreaGroup.vue";
+import { symbolSetValues } from "@/symbology/values.ts";
+import SimpleSelect from "@/components/SimpleSelect.vue";
 
 interface Form {
   id?: string;
   name: string;
   src: string;
+  symbolSet: string;
   anchor?: [number, number];
 }
 
@@ -26,9 +28,15 @@ const { form, handleSubmit } = useForm<Form>(
   {
     name: "",
     src: "",
+    symbolSet: "10",
   },
   modelValue,
 );
+
+const symbolSetItems = symbolSetValues.map((s) => ({
+  label: s.text,
+  value: s.code,
+}));
 
 function onSubmit(e: KeyboardEvent | Event) {
   // prevent double form submission with ctrl/meta+enter
@@ -51,6 +59,7 @@ function onSubmit(e: KeyboardEvent | Event) {
     <section class="mt-4 grid grid-cols-1 gap-6">
       <InputGroup autofocus label="Name" required v-model="form.name" />
       <TextAreaGroup label="URL or URI" required v-model="form.src"></TextAreaGroup>
+      <SimpleSelect v-model="form.symbolSet" :items="symbolSetItems" />
     </section>
     <FormFooter @cancel="emit('cancel')" :showNextToggle="showNextToggle" />
   </form>
