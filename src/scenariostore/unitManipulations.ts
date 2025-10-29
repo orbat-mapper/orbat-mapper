@@ -32,6 +32,7 @@ import { useSupplyManipulations } from "@/scenariostore/supplyManipulations";
 import { useToeManipulations } from "@/scenariostore/toeManipulations";
 import { useRangeRingManipulations } from "@/scenariostore/rangeRingManipulations";
 import { useUnitStateManipulations } from "@/scenariostore/unitStateManipulations";
+import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 
 export type NWalkSubUnitCallback = (unit: NUnit) => void;
 
@@ -500,7 +501,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         walkSubUnits(
           unitId,
           (u) => {
-            if (u.sidc.startsWith("custom:")) return;
+            if (u.sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) return;
             if (u.sidc[SID_INDEX] !== side.standardIdentity) {
               u.sidc = setCharAt(u.sidc, SID_INDEX, side.standardIdentity);
             }

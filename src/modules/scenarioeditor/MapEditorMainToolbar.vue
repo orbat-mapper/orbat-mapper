@@ -167,6 +167,7 @@ import { CalendarIcon } from "@heroicons/vue/24/solid";
 import SymbolPickerPopover from "@/modules/scenarioeditor/SymbolPickerPopover.vue";
 import EchelonPickerPopover from "@/modules/scenarioeditor/EchelonPickerPopover.vue";
 import { Button } from "@/components/ui/button";
+import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 
 const emit = defineEmits([
   "open-time-modal",
@@ -197,7 +198,7 @@ const { activeUnitId, resetActiveParent, activeParent, activeParentId } =
 const { currentSid, currentEchelon, activeSidc } = useToolbarUnitSymbolData();
 
 const computedSidc = computed(() => {
-  const computedActiveSidc = activeSidc.value.startsWith("custom:")
+  const computedActiveSidc = activeSidc.value.startsWith(CUSTOM_SYMBOL_PREFIX)
     ? "10031000141211000000"
     : activeSidc.value;
   const parsedSidc = new Sidc(computedActiveSidc);
@@ -287,7 +288,7 @@ bus.on((unit) => {
 watch(activeParent, (unitOrSideGroup) => {
   if (!unitOrSideGroup) return;
   const hasCustomSymbol =
-    "sidc" in unitOrSideGroup && unitOrSideGroup.sidc.startsWith("custom:");
+    "sidc" in unitOrSideGroup && unitOrSideGroup.sidc.startsWith(CUSTOM_SYMBOL_PREFIX);
   if ("sidc" in unitOrSideGroup && !hasCustomSymbol) {
     currentSid.value = unitOrSideGroup.sidc[SID_INDEX];
   } else {

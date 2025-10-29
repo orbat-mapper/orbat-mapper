@@ -71,7 +71,7 @@ export function useScenarioSettings(store: NewScenarioStore) {
 
   function deleteCustomSymbol(id: string): boolean {
     const isUsed = Object.values(state.unitMap).some((unit) => {
-      const customId = `custom:${id}`;
+      const customId = `custom1:${id}`;
       return !!(unit.sidc === customId || unit.state?.some((st) => st.sidc === customId));
     });
     if (isUsed) return false;
@@ -97,7 +97,7 @@ export function useScenarioSettings(store: NewScenarioStore) {
     const newCustomSymbol: CustomSymbol = {
       id: nanoid(),
       name: "Custom Symbol",
-      src: "custom:xxxxxx",
+      src: "custom1:xxxxxx",
       ...klona(data),
     };
 

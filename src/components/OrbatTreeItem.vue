@@ -28,6 +28,7 @@ import { useTimeoutFn } from "@vueuse/core";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import { getUnitDragItem, isUnitDragItem } from "@/types/draggables";
 import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
+import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
 
 interface Props {
   item: NOrbatItemData;
@@ -100,8 +101,8 @@ const unitLabel = computed(() =>
 
 const customSidc = computed(() => {
   const sidc = unit.value._state?.sidc || unit.value.sidc;
-  if (sidc.startsWith("custom:")) {
-    return sidc.slice(7);
+  if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
+    return sidc.slice(CUSTOM_SYMBOL_SLICE);
   }
 });
 
