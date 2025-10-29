@@ -5,7 +5,6 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import ScenarioInfoGroups from "@/modules/scenarioeditor/ScenarioInfoGroups.vue";
 import ScenarioInfoPersonnel from "@/modules/scenarioeditor/ScenarioInfoPersonnel.vue";
 import ScenarioInfoEquipment from "@/modules/scenarioeditor/ScenarioInfoEquipment.vue";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import ScenarioInfoUnitStatuses from "@/modules/scenarioeditor/ScenarioInfoUnitStatuses.vue";
 import ScenarioMapSettings from "@/modules/scenarioeditor/ScenarioMapSettings.vue";
@@ -17,6 +16,7 @@ import ScenarioInfoSupplyUnits from "@/modules/scenarioeditor/ScenarioInfoSupply
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import ScenarioSymbolColorSettings from "@/modules/scenarioeditor/ScenarioSymbolColorSettings.vue";
+import ScenarioCustomSymbolSettings from "@/modules/scenarioeditor/ScenarioCustomSymbolSettings.vue";
 
 const {
   store: { onUndoRedo, state },
@@ -90,6 +90,9 @@ function showScenarioInfo() {
     </AccordionPanel>
     <AccordionPanel label="Symbol fill colors">
       <ScenarioSymbolColorSettings />
+    </AccordionPanel>
+    <AccordionPanel label="Custom unit symbols">
+      <ScenarioCustomSymbolSettings />
     </AccordionPanel>
   </div>
 </template>

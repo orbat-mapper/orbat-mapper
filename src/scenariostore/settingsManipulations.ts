@@ -15,6 +15,7 @@ import type { EntityId } from "@/types/base";
 import { updateCurrentUnitState } from "@/scenariostore/time";
 import { removeUnusedUnitStateEntries } from "@/scenariostore/unitStateManipulations";
 import { SYMBOL_FILL_COLORS, type SymbolFillColor } from "@/config/colors.ts";
+import type { CustomSymbol } from "@/types/scenarioModels.ts";
 
 export function useScenarioSettings(store: NewScenarioStore) {
   const { state, update } = store;
@@ -68,10 +69,59 @@ export function useScenarioSettings(store: NewScenarioStore) {
     });
   }
 
+  function deleteCustomSymbol(id: string): boolean {
+    const isUsed = Object.values(state.unitMap).some((unit) => {
+      const customId = `custom:${id}`;
+      return !!(unit.sidc === customId || unit.state?.some((st) => st.sidc === customId));
+    });
+    if (isUsed) return false;
+    update((s) => {
+      delete s.customSymbolMap[id];
+    });
+    return true;
+  }
+
+  function updateCustomSymbol(id: string, data: Partial<Omit<CustomSymbol, "id">>) {
+    update((s) => {
+      const customSymbol = s.customSymbolMap[id];
+      if (!customSymbol) return;
+      Object.assign(customSymbol, data);
+    });
+    state.settingsStateCounter++;
+  }
+
+  function addCustomSymbol(
+    data: Partial<CustomSymbol>,
+    { noUndo = false, s = state } = {},
+  ) {
+    const newCustomSymbol: CustomSymbol = {
+      id: nanoid(),
+      name: "Custom Symbol",
+      src: "custom:xxxxxx",
+      ...klona(data),
+    };
+
+    if (newCustomSymbol.id === undefined) {
+      newCustomSymbol.id = nanoid();
+    }
+    const newId = newCustomSymbol.id;
+    if (noUndo) {
+      s.customSymbolMap[newId] = newCustomSymbol;
+    } else {
+      update((s) => {
+        s.customSymbolMap[newId] = newCustomSymbol;
+      });
+    }
+    return newCustomSymbol;
+  }
+
   return {
     addSymbolFillColor,
     updateSymbolFillColor,
     deleteSymbolFillColor,
     addColorIfAbsent,
+    deleteCustomSymbol,
+    updateCustomSymbol,
+    addCustomSymbol,
   };
 }

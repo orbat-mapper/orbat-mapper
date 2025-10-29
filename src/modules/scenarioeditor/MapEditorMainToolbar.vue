@@ -197,7 +197,10 @@ const { activeUnitId, resetActiveParent, activeParent, activeParentId } =
 const { currentSid, currentEchelon, activeSidc } = useToolbarUnitSymbolData();
 
 const computedSidc = computed(() => {
-  const parsedSidc = new Sidc(activeSidc.value);
+  const computedActiveSidc = activeSidc.value.startsWith("custom:")
+    ? "10031000141211000000"
+    : activeSidc.value;
+  const parsedSidc = new Sidc(computedActiveSidc);
   parsedSidc.standardIdentity = currentSid.value;
   parsedSidc.emt = "00";
   parsedSidc.hqtfd = "0";
@@ -283,10 +286,16 @@ bus.on((unit) => {
 
 watch(activeParent, (unitOrSideGroup) => {
   if (!unitOrSideGroup) return;
-  if ("sidc" in unitOrSideGroup) {
+  const hasCustomSymbol =
+    "sidc" in unitOrSideGroup && unitOrSideGroup.sidc.startsWith("custom:");
+  if ("sidc" in unitOrSideGroup && !hasCustomSymbol) {
     currentSid.value = unitOrSideGroup.sidc[SID_INDEX];
   } else {
-    currentSid.value = getSideById(unitOrSideGroup._pid).standardIdentity;
+    if (hasCustomSymbol) {
+      currentSid.value = getSideById(unitOrSideGroup._sid).standardIdentity;
+    } else {
+      currentSid.value = getSideById(unitOrSideGroup._pid).standardIdentity;
+    }
   }
 });
 

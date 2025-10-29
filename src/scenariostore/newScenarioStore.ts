@@ -1,5 +1,6 @@
 import { useImmerStore } from "@/composables/immerStore";
 import type {
+  CustomSymbol,
   EquipmentData,
   MapSettings,
   PersonnelData,
@@ -80,6 +81,7 @@ export interface ScenarioState {
   settingsStateCounter: number; // used to force reactivity
   mapSettings: MapSettings;
   symbolFillColorMap: Record<string, NSymbolFillColor>;
+  customSymbolMap: Record<string, CustomSymbol>;
 }
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
@@ -112,6 +114,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
   const supplyClassMap: Record<string, NSupplyClass> = {};
   const supplyUoMMap: Record<string, NSupplyUoM> = {};
   const symbolFillColorMap: Record<string, NSymbolFillColor> = {};
+  const customSymbolMap: Record<string, CustomSymbol> = {};
   const tempSymbolFillColors = new Set<string>();
   const tempEquipmentIdMap: Record<string, string> = {};
   const tempPersonnelIdMap: Record<string, string> = {};
@@ -157,6 +160,10 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     const id = nanoid();
     supplyUoMMap[id] = { ...s, id };
     tempSupplyUomIdMap[s.name] = id;
+  });
+
+  scenario.settings?.customSymbols?.forEach((s) => {
+    customSymbolMap[s.id] = s;
   });
 
   SYMBOL_FILL_COLORS.forEach((s) => tempSymbolFillColors.add(s.code));
@@ -483,6 +490,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     unitStatusMap,
     mapSettings,
     symbolFillColorMap,
+    customSymbolMap,
   };
 }
 

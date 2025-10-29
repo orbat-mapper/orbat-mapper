@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type NullableSymbolItem } from "@/types/constants";
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { SYMBOL_FILL_COLORS, type SymbolFillColor } from "@/config/colors.ts";
 import { injectStrict } from "@/utils";
@@ -15,13 +15,13 @@ const props = withDefaults(defineProps<Props>(), { sid: "3" });
 const emit = defineEmits(["update:modelValue"]);
 const colorValue = defineModel<string | null>({ default: null });
 
-const scn = injectStrict(activeScenarioKey);
+const scn = inject(activeScenarioKey);
 
 const colorIconItems = computed((): NullableSymbolItem[] =>
   [
     { code: null, text: "Default" },
     ...SYMBOL_FILL_COLORS,
-    ...Object.values(scn.store.state.symbolFillColorMap),
+    ...Object.values(scn?.store.state.symbolFillColorMap ?? {}),
   ].map((item) => ({
     ...item,
     sidc: "100" + props.sid + 10 + "00" + "00" + "0000000000",

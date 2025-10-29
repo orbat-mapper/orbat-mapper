@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-7 items-center overflow-clip">
     <div ref="dragItemRef" class="relative flex shrink-0 cursor-move">
-      <MilitarySymbol
+      <UnitSymbol
         v-if="item.sidc"
         :sidc="item.sidc"
         :options="item.symbolOptions ?? {}"
@@ -30,6 +30,7 @@ import { type BreadcrumbItemType } from "@/modules/scenarioeditor/types";
 import { getUnitDragItem } from "@/types/draggables";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
+import UnitSymbol from "@/components/UnitSymbol.vue";
 
 const props = defineProps<{ item: BreadcrumbItemType }>();
 

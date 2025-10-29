@@ -6,9 +6,17 @@
     class="md:max-w-(--breakpoint-md) lg:max-w-(--breakpoint-lg)"
   >
     <div class="flex h-full flex-col" @keyup.ctrl.enter="onSubmit">
-      <header class="mt-4 flex h-20 w-full items-center justify-between">
-        <MilitarySymbol :sidc="csidc" :size="34" :options="finalSymbolOptions" />
-        <SymbolCodeViewer :sidc="csidc" @update="updateFromSidcInput" />
+      <header class="mt-4 flex h-20 w-full shrink-0 items-center justify-between">
+        <template v-if="!customSymbol">
+          <MilitarySymbol :sidc="csidc" :size="34" :options="finalSymbolOptions" />
+          <SymbolCodeViewer :sidc="csidc" @update="updateFromSidcInput" />
+        </template>
+        <img
+          v-else
+          :src="customSymbol.src"
+          :alt="customSymbol.name"
+          class="w-16 object-contain"
+        />
       </header>
 
       <TabView class="flex-auto" v-model:current-tab="currentTab">
@@ -117,19 +125,20 @@
                 :items="statusItems"
                 :symbol-options="combinedSymbolOptions"
               />
-
-              <SymbolCodeSelect
-                v-model="hqtfdValue"
-                label="Headquaters / Task force / Dummy"
-                :items="hqtfdItems"
-                :symbol-options="combinedSymbolOptions"
-              />
-              <SymbolCodeSelect
-                v-model="emtValue"
-                label="Echelon / Mobility / Towed array"
-                :items="emtItems"
-                :symbol-options="combinedSymbolOptions"
-              />
+              <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <SymbolCodeSelect
+                  v-model="hqtfdValue"
+                  label="Headquaters / Task force / Dummy"
+                  :items="hqtfdItems"
+                  :symbol-options="combinedSymbolOptions"
+                />
+                <SymbolCodeSelect
+                  v-model="emtValue"
+                  label="Echelon / Mobility / Towed array"
+                  :items="emtItems"
+                  :symbol-options="combinedSymbolOptions"
+                />
+              </div>
             </template>
 
             <SymbolCodeMultilineSelect
@@ -138,18 +147,20 @@
               :items="icons"
               :symbol-options="combinedSymbolOptions"
             />
-            <SymbolCodeSelect
-              v-model="mod1Value"
-              label="Modifier 1"
-              :items="mod1Items"
-              :symbol-options="combinedSymbolOptions"
-            />
-            <SymbolCodeSelect
-              v-model="mod2Value"
-              label="Modifier 2"
-              :items="mod2Items"
-              :symbol-options="combinedSymbolOptions"
-            />
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <SymbolCodeSelect
+                v-model="mod1Value"
+                label="Modifier 1"
+                :items="mod1Items"
+                :symbol-options="combinedSymbolOptions"
+              />
+              <SymbolCodeSelect
+                v-model="mod2Value"
+                label="Modifier 2"
+                :items="mod2Items"
+                :symbol-options="combinedSymbolOptions"
+              />
+            </div>
             <div v-if="!hideSymbolColor" class="flex w-full items-end gap-2">
               <SymbolFillColorSelect
                 v-model="internalSymbolOptions.fillColor"
@@ -165,7 +176,11 @@
             </div>
           </form>
         </TabItem>
-        <TabItem label="Browse" v-slot="{ isActive }">
+        <TabItem
+          label="Browse"
+          v-slot="{ isActive }"
+          class="max-h-[50vh] sm:max-h-[60vh]"
+        >
           <keep-alive>
             <SymbolBrowseTab
               v-if="isActive"
@@ -175,7 +190,12 @@
             />
           </keep-alive>
         </TabItem>
-        <TabItem label="Legacy" v-slot="{ isActive }">
+        <TabItem label="Custom symbol"
+          ><SymbolPickerCustomSymbol
+            :initialSidc="customSymbolId"
+            @update-sidc="updateFromCustomSymbol"
+        /></TabItem>
+        <TabItem label="Legacy convert" v-slot="{ isActive }">
           <keep-alive>
             <LegacyConverter v-if="isActive" />
           </keep-alive>
@@ -239,6 +259,7 @@ import { Button } from "@/components/ui/button";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects.ts";
+import SymbolPickerCustomSymbol from "@/components/SymbolPickerCustomSymbol.vue";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
@@ -266,6 +287,13 @@ const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
 const scn = injectStrict(activeScenarioKey);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
+
+const customSymbolId = ref(props.sidc?.startsWith("custom:") ? props.sidc : null);
+
+const customSymbol = computed(() => {
+  if (!customSymbolId.value) return null;
+  return scn.store.state.customSymbolMap[customSymbolId.value.substring(7)];
+});
 
 const searchInputRef = ref();
 const open = useVModel(props, "isVisible");
@@ -325,7 +353,12 @@ const {
   reinforcedReducedItems,
   reinforcedReducedValue,
 } = useSymbolItems(
-  computed(() => props.sidc || ""),
+  computed(() => {
+    if (props.sidc?.startsWith("custom:")) {
+      return "10031000001211000000";
+    }
+    return props.sidc || "10031000001211000000";
+  }),
   props.reinforcedStatus,
 );
 loadData();
@@ -345,15 +378,19 @@ watchEffect(() => {
 });
 
 const onSubmit = () => {
-  emit("update:sidc", {
-    sidc: csidc.value,
-    reinforcedStatus: reinforcedReducedValue.value,
-    symbolOptions: internalSymbolOptions.value.fillColor
-      ? { fillColor: internalSymbolOptions.value.fillColor }
-      : {},
-  });
-  if (internalSymbolOptions.value.fillColor)
-    scn.settings.addColorIfAbsent(internalSymbolOptions.value.fillColor);
+  if (customSymbolId.value) {
+    emit("update:sidc", { sidc: customSymbolId.value });
+  } else {
+    emit("update:sidc", {
+      sidc: csidc.value,
+      reinforcedStatus: reinforcedReducedValue.value,
+      symbolOptions: internalSymbolOptions.value.fillColor
+        ? { fillColor: internalSymbolOptions.value.fillColor }
+        : {},
+    });
+    if (internalSymbolOptions.value.fillColor)
+      scn.settings.addColorIfAbsent(internalSymbolOptions.value.fillColor);
+  }
   open.value = false;
 };
 
@@ -382,6 +419,10 @@ function updateFromBrowseTab(sidc: string) {
   csidc.value = sidc;
 }
 
+function updateFromCustomSymbol(sidc: string) {
+  customSymbolId.value = sidc;
+}
+
 function updateFromSidcInput(sidc: string) {
   if (!/^\d+$/.test(sidc)) {
     return;
@@ -398,5 +439,9 @@ watch(currentTab, async (v) => {
     await nextTick();
     searchInputRef.value?.el.focus();
   }
+});
+
+watch(csidc, (value) => {
+  customSymbolId.value = null;
 });
 </script>

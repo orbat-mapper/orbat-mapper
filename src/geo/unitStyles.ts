@@ -1,11 +1,12 @@
 import { Icon, Style } from "ol/style";
-import type { UnitSymbolOptions } from "@/types/scenarioModels";
+import type { CustomSymbol, UnitSymbolOptions } from "@/types/scenarioModels";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Symbol as MilSymbol } from "milsymbol";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import type { NUnit } from "@/types/internalModels";
 import { wordWrap } from "@/utils";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore.ts";
+import type { TScenario } from "@/scenariostore";
 
 export type UnitLabelData = {
   yOffset: number;
@@ -41,7 +42,29 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
   });
 }
 
-export function createUnitStyle(unit: NUnit, symbolOptions: UnitSymbolOptions): Style {
+function createCustomSymbolStyle(
+  customSymbol: CustomSymbol,
+  size: number,
+  color?: string,
+): Style {
+  const image = new Icon({
+    anchor: customSymbol.anchor ?? [0.5, 0.5],
+    src: customSymbol.src,
+    width: size,
+    crossOrigin: "anonymous",
+    color,
+  });
+  return new Style({
+    image,
+  });
+}
+
+export function createUnitStyle(
+  unit: NUnit,
+  symbolOptions: UnitSymbolOptions,
+  scenario: TScenario,
+  color?: string,
+): Style {
   const { name = "", shortName = "" } = unit;
   const sidc = unit._state?.sidc || unit.sidc;
 
@@ -50,6 +73,14 @@ export function createUnitStyle(unit: NUnit, symbolOptions: UnitSymbolOptions): 
 
   const { uniqueDesignation = shortName || name, ...textAmplifiers } =
     unit.textAmplifiers || {};
+
+  if (sidc.startsWith("custom:")) {
+    const customSymbol = scenario.store.state.customSymbolMap[sidc.substring(7)];
+    return customSymbol
+      ? createCustomSymbolStyle(customSymbol, mapSettingsStore.mapIconSize * 1.2, color)
+      : new Style();
+  }
+
   const milSymbol = symbolGenerator(sidc, {
     size: mapSettingsStore.mapIconSize * (window.devicePixelRatio || 1),
     uniqueDesignation: mapSettingsStore.mapUnitLabelBelow ? "" : uniqueDesignation,
