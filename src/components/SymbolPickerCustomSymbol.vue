@@ -3,6 +3,15 @@ import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import { computed, ref } from "vue";
 import { useDebounce } from "@vueuse/core";
 import { injectStrict } from "@/utils";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { ShapesIcon } from "lucide-vue-next";
 import { activeScenarioKey } from "@/components/injects.ts";
 
 interface Props {
@@ -37,7 +46,7 @@ function onEsc(e: KeyboardEvent) {
 
 <template>
   <div class="flex px-0.5">
-    <div class="flex-auto">
+    <div v-if="filteredIcons.length" class="flex-auto">
       <div class="relative">
         <MagnifyingGlassIcon
           class="pointer-events-none absolute top-3.5 left-0 h-5 w-5 text-gray-400"
@@ -77,5 +86,17 @@ function onEsc(e: KeyboardEvent) {
         </div>
       </div>
     </div>
+    <Empty v-else class="border border-dashed">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <ShapesIcon />
+        </EmptyMedia>
+        <EmptyTitle>No custom symbols available</EmptyTitle>
+        <EmptyDescription>
+          Go to <span class="font-medium">Settings -> Custom unit symbols</span> in the
+          ORBAT panel to add new symbols/icons to your scenario.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   </div>
 </template>
