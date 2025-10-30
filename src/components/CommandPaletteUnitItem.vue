@@ -1,3 +1,10 @@
+<script setup lang="ts">
+import { type UnitSearchResult } from "@/components/types";
+import UnitSymbol from "@/components/UnitSymbol.vue";
+
+const props = defineProps<{ item: UnitSearchResult; active?: boolean }>();
+</script>
+
 <template>
   <li
     :class="[
@@ -6,7 +13,8 @@
     ]"
   >
     <div class="relative flex w-7 justify-center">
-      <MilSymbol
+      <UnitSymbol
+        v-if="item.sidc"
         :sidc="item.sidc"
         :size="20"
         aria-hidden="true"
@@ -28,7 +36,8 @@
       v-html="item.highlight ? item.highlight : item.name"
     />
     <p v-if="item.parent" class="flex text-xs opacity-80">
-      <MilSymbol
+      <UnitSymbol
+        v-if="item.parent.sidc"
         :size="12"
         :sidc="item.parent.sidc"
         :modifiers="{
@@ -42,8 +51,3 @@
     </p>
   </li>
 </template>
-<script setup lang="ts">
-import MilSymbol from "@/components/MilSymbol.vue";
-import { type UnitSearchResult } from "@/components/types";
-const props = defineProps<{ item: UnitSearchResult; active?: boolean }>();
-</script>
