@@ -15,7 +15,7 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), { size: 15 });
 const { store } = injectStrict(activeScenarioKey);
 const customSidc = computed(() => {
-  if (props.sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
+  if (props.sidc?.startsWith(CUSTOM_SYMBOL_PREFIX)) {
     const symbolId = props.sidc.slice(CUSTOM_SYMBOL_SLICE);
     return store.state.customSymbolMap[symbolId];
   }
