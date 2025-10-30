@@ -72,11 +72,12 @@ function onEsc(e: KeyboardEvent) {
             @click="emit('update-sidc', id)"
             class="flex w-full scroll-m-12 flex-col items-center justify-center rounded border border-transparent p-3 hover:border-gray-500"
           >
-            <span class="relative"
-              ><img :src :alt="name" class="w-24 flex-auto object-contain" /><span
-                class="absolute top-1/2 left-1/2 -mt-1 -ml-1 size-2 rounded-full bg-red-900 text-center text-red-900"
-              ></span
-            ></span>
+            <span class="relative">
+              <img :src :alt="name" class="w-24 flex-auto object-contain" />
+              <!--              <span-->
+              <!--                class="absolute top-1/2 left-1/2 -mt-1 -ml-1 size-2 rounded-full bg-red-900 text-center text-red-900"-->
+              <!--              />-->
+            </span>
             <p
               class="mt-1 max-w-full shrink-0 overflow-hidden text-center text-sm font-medium break-words"
               :class="

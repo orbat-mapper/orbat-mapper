@@ -36,7 +36,7 @@ import IconButton from "@/components/IconButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 import OLMap from "ol/Map";
 import { useUiStore } from "@/stores/uiStore";
-import { SID_INDEX } from "@/symbology/sidc";
+import { CUSTOM_SYMBOL_SID_INDEX, SID_INDEX } from "@/symbology/sidc";
 import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { TabPanel } from "@headlessui/vue";
@@ -60,6 +60,7 @@ import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/eleme
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import MilSymbol from "@/components/MilSymbol.vue";
 import UnitSymbol from "@/components/UnitSymbol.vue";
+import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 
 const FeatureTransformations = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/FeatureTransformations.vue"),
@@ -377,13 +378,18 @@ async function handleChangeSymbol() {
   });
   if (newSidcValue !== undefined) {
     const { sidc, symbolOptions = {}, reinforcedStatus } = newSidcValue;
+    const isCustomSymbol = sidc.startsWith(CUSTOM_SYMBOL_PREFIX);
     const dataUpdate: UnitUpdate = { sidc, symbolOptions };
     if (reinforcedStatus) dataUpdate.reinforcedStatus = reinforcedStatus;
     if (isMultiMode.value) {
       store.groupUpdate(() =>
         selectedUnitIds.value.forEach((unitId) => {
           const { side } = getUnitHierarchy(unitId);
-          dataUpdate.sidc = setCharAt(sidc, SID_INDEX, side.standardIdentity);
+          dataUpdate.sidc = setCharAt(
+            sidc,
+            isCustomSymbol ? CUSTOM_SYMBOL_SID_INDEX : SID_INDEX,
+            side.standardIdentity,
+          );
           updateUnit(unitId, dataUpdate);
         }),
       );

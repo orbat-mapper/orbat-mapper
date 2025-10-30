@@ -357,7 +357,6 @@ const {
   reinforcedReducedValue,
 } = useSymbolItems(
   computed(() => {
-    console.log("Initial SIDC prop:", props.sidc);
     if (props.sidc?.startsWith(CUSTOM_SYMBOL_PREFIX)) {
       return (
         props.sidc.slice(CUSTOM_SYMBOL_PREFIX.length, CUSTOM_SYMBOL_PREFIX.length + 10) +
@@ -428,7 +427,6 @@ function updateFromBrowseTab(sidc: string) {
 
 function updateFromCustomSymbol(symbolId: string) {
   customSymbolId.value = `${CUSTOM_SYMBOL_PREFIX + csidc.value.substring(0, 10)}:${symbolId}`;
-  console.log("Custom symbol selected:", customSymbolId.value);
 }
 
 function updateFromSidcInput(sidc: string) {
