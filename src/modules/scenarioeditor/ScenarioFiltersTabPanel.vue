@@ -22,6 +22,7 @@ import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
 import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
 import { Badge } from "@/components/ui/badge";
+import { getFullUnitSidc } from "@/symbology/helpers.ts";
 
 const {
   store: { state },
@@ -63,7 +64,7 @@ watchEffect(() => {
       sidKey,
     } = updateUnitStats(unit, stats);
 
-    const iconSidc = new Sidc(unit.sidc);
+    const iconSidc = new Sidc(getFullUnitSidc(unit.sidc));
     const originalEmt = iconSidc.emt;
     const originalMod1 = iconSidc.modifierOne;
     const originalMod2 = iconSidc.modifierTwo;
@@ -274,7 +275,7 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
 }
 
 function createKeys(unit: NUnit) {
-  const sidc = new Sidc(unit.sidc);
+  const sidc = new Sidc(getFullUnitSidc(unit.sidc, "0000000000"));
   const sidKey = `sid-${sidc.standardIdentity}`;
   const symbolSetKey = `${sidc.symbolSet}`;
   const entityKey = `${sidc.symbolSet}-${sidc.entity}`;
