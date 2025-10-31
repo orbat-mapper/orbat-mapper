@@ -261,6 +261,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects.ts";
 import SymbolPickerCustomSymbol from "@/components/SymbolPickerCustomSymbol.vue";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
+import { getFullUnitSidc } from "@/symbology/helpers.ts";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
@@ -357,13 +358,7 @@ const {
   reinforcedReducedValue,
 } = useSymbolItems(
   computed(() => {
-    if (props.sidc?.startsWith(CUSTOM_SYMBOL_PREFIX)) {
-      return (
-        props.sidc.slice(CUSTOM_SYMBOL_PREFIX.length, CUSTOM_SYMBOL_PREFIX.length + 10) +
-        "0000000000"
-      );
-    }
-    return props.sidc || "10031000001211000000";
+    return getFullUnitSidc(props.sidc || "10031000001211000000");
   }),
   props.reinforcedStatus,
 );

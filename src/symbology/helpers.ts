@@ -1,5 +1,6 @@
 import { echelonValues, type SidValue, standardIdentityValues } from "@/symbology/values";
 import type { SymbolItem } from "@/types/constants";
+import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 
 export const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {
   return {
@@ -26,4 +27,13 @@ export function echelonItems(sid: SidValue) {
       sidc: "100" + sid + "10" + "00" + code + "0000000000",
     };
   });
+}
+
+export function getFullUnitSidc(sidc: string, fill = "0000000000"): string {
+  if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
+    return (
+      sidc.slice(CUSTOM_SYMBOL_PREFIX.length, CUSTOM_SYMBOL_PREFIX.length + 10) + fill
+    );
+  }
+  return sidc;
 }
