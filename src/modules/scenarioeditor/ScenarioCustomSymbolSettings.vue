@@ -3,19 +3,16 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects.ts";
 import { computed, h, ref, triggerRef } from "vue";
 import { useToeEditableItems } from "@/composables/toeUtils.ts";
-import type { NPersonnelData, NSymbolFillColor } from "@/types/internalModels.ts";
 import { useNotifications } from "@/composables/notifications.ts";
 import { useFillColorTableStore } from "@/stores/tableStores.ts";
 import type { ColumnDef } from "@tanstack/vue-table";
-import type { SymbolFillColor } from "@/config/colors.ts";
 import type { CustomSymbol } from "@/types/scenarioModels.ts";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
 import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
-import AddSymbolFillColorForm from "@/modules/scenarioeditor/AddSymbolFillColorForm.vue";
 import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import AddCustomSymbolForm from "@/modules/scenarioeditor/AddCustomSymbolForm.vue";
 import { clearUnitStyleCache } from "@/geo/unitStyles.ts";
-import { symbolSetMap, symbolSetValues } from "@/symbology/values.ts";
+import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 
 const scn = injectStrict(activeScenarioKey);
 const icons = computed(() => {
@@ -27,7 +24,7 @@ const { editMode, editedId, showAddForm, rerender, selectedItems } =
   useToeEditableItems<CustomSymbol>();
 const { send } = useNotifications();
 const tableStore = useFillColorTableStore();
-const columns: ColumnDef<CustomSymbol>[] = [
+const columns: ColumnDef<CustomSymbol, any>[] = [
   {
     id: "src",
     header: "Icon",
@@ -43,17 +40,25 @@ const columns: ColumnDef<CustomSymbol>[] = [
   },
   { id: "name", header: "Name", accessorKey: "name", size: 200 },
   {
-    id: "symbolSet",
-    header: "Domain",
-    accessorFn: (f) => symbolSetMap[f.symbolSet]?.text ?? f.symbolSet,
-    size: 200,
+    id: "sidc",
+    header: "SIDC",
+    accessorKey: "sidc",
+    cell: ({ row, getValue, cell }) => {
+      return h("div", { class: "flex items-center justify-center" }, [
+        h(MilitarySymbol, {
+          sidc: getValue(),
+          size: 40,
+        }),
+      ]);
+    },
+    size: 50,
   },
 ];
 
 const addForm = ref<Omit<CustomSymbol, "id">>({
   name: "Name",
   src: "",
-  symbolSet: "10",
+  sidc: "10031000001100000000",
 });
 
 function cancelEdit() {
@@ -97,7 +102,7 @@ function onAddSubmit(formData: Omit<CustomSymbol, "id">) {
     return;
   }
   scn.settings.addCustomSymbol({ ...formData });
-  addForm.value = { name: "Name", src: "", symbolSet: "10" };
+  addForm.value = { name: "Name", src: "", sidc: "10031000001100000000" };
   clearUnitStyleCache();
 }
 </script>

@@ -146,13 +146,14 @@
       :sidc="initialSidcModalValue"
       @update:sidc="confirmSidcModal($event)"
       @cancel="cancelSidcModal"
-      :dialog-title="sidcModalTitle"
-      :hide-modifiers="hideModifiers"
-      :hide-symbol-color="hideSymbolColor"
-      :inherited-symbol-options="inheritedSymbolOptions"
-      :symbol-options="symbolOptions"
-      :initial-tab="sidcModalInitialTab"
-      :reinforced-status="initialReinforcedReduced"
+      :dialogTitle="sidcModalTitle"
+      :hideModifiers
+      :hideSymbolColor
+      :hideCustomSymbols
+      :inheritedSymbolOptions
+      :symbolOptions
+      :initialTab="sidcModalInitialTab"
+      :reinforcedStatus="initialReinforcedReduced"
     />
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
     <ImportModal v-if="showImportModal" v-model="showImportModal" />
@@ -345,6 +346,7 @@ const {
   sidcModalTitle,
   hideModifiers,
   hideSymbolColor,
+  hideCustomSymbols,
   symbolOptions,
   inheritedSymbolOptions,
   initialTab: sidcModalInitialTab,

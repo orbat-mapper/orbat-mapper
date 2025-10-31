@@ -16,6 +16,7 @@ import { updateCurrentUnitState } from "@/scenariostore/time";
 import { removeUnusedUnitStateEntries } from "@/scenariostore/unitStateManipulations";
 import { SYMBOL_FILL_COLORS, type SymbolFillColor } from "@/config/colors.ts";
 import type { CustomSymbol } from "@/types/scenarioModels.ts";
+import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 
 export function useScenarioSettings(store: NewScenarioStore) {
   const { state, update } = store;
@@ -71,8 +72,13 @@ export function useScenarioSettings(store: NewScenarioStore) {
 
   function deleteCustomSymbol(id: string): boolean {
     const isUsed = Object.values(state.unitMap).some((unit) => {
-      const customId = `custom1:${id}`;
-      return !!(unit.sidc === customId || unit.state?.some((st) => st.sidc === customId));
+      const customId = `:${id}`;
+      return !!(
+        (unit.sidc.startsWith(CUSTOM_SYMBOL_PREFIX) && unit.sidc.endsWith(customId)) ||
+        unit.state?.some(
+          (st) => st.sidc?.startsWith(CUSTOM_SYMBOL_PREFIX) && st.sidc.endsWith(customId),
+        )
+      );
     });
     if (isUsed) return false;
     update((s) => {
@@ -98,7 +104,7 @@ export function useScenarioSettings(store: NewScenarioStore) {
       id: nanoid(),
       name: "Custom Symbol",
       src: "custom1:xxxxxx",
-      symbolSet: "10",
+      sidc: "10031000001100000000",
       ...klona(data),
     };
 

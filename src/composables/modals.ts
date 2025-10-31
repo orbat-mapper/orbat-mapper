@@ -49,6 +49,7 @@ export interface ModalSidcOptions {
   title: string;
   hideModifiers: boolean;
   hideSymbolColor: boolean;
+  hideCustomSymbols: boolean;
   symbolOptions: UnitSymbolOptions;
   inheritedSymbolOptions: UnitSymbolOptions;
   initialTab: number;
@@ -67,6 +68,7 @@ export function useSidcModal() {
   const sidcModalTitle = ref("Select symbol");
   const hideModifiers = ref(false);
   const hideSymbolColor = ref(false);
+  const hideCustomSymbols = ref(false);
   const symbolOptions = ref<UnitSymbolOptions>({});
   const inheritedSymbolOptions = ref<UnitSymbolOptions>({});
   const initialTab = ref(0);
@@ -111,6 +113,7 @@ export function useSidcModal() {
     inheritedSymbolOptions,
     initialTab,
     initialReinforcedReduced,
+    hideCustomSymbols,
   };
 }
 
