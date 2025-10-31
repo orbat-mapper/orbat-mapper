@@ -190,7 +190,7 @@
             />
           </keep-alive>
         </TabItem>
-        <TabItem label="Custom symbol"
+        <TabItem v-if="!hideCustomSymbols" label="Custom symbol"
           ><SymbolPickerCustomSymbol
             :initialSidc="customSymbolId"
             @update-sidc="updateFromCustomSymbol"
@@ -273,6 +273,7 @@ interface Props {
   dialogTitle?: string;
   hideModifiers?: boolean;
   hideSymbolColor?: boolean;
+  hideCustomSymbols?: boolean;
   inheritedSymbolOptions?: UnitSymbolOptions;
   symbolOptions?: UnitSymbolOptions;
   initialTab?: number;
