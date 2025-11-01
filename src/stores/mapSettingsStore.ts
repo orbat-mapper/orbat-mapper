@@ -14,6 +14,7 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     baseLayerName: DEFAULT_BASEMAP_ID,
     showDayNightTerminator: false,
     mapIconSize: useLocalStorage("mapIconSize", 30),
+    mapCustomIconScale: useLocalStorage("mapCustomIconScale", 1.7),
     mapUnitLabelBelow: useLocalStorage("mapUnitLabelBelow", false),
     mapWrapUnitLabels: useLocalStorage("mapWrapUnitLabels", false),
     mapWrapLabelWidth: useLocalStorage("mapWrapLabelWidth", 15),
