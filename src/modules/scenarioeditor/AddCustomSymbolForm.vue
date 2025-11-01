@@ -90,6 +90,7 @@ async function openSymbolPicker() {
             required
             placeholder="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
             :rows="2"
+            class="h-16 wrap-anywhere"
           />
           <FieldDescription>Data URIs are supported</FieldDescription>
         </Field>
