@@ -79,7 +79,11 @@ export function createUnitStyle(
     const customSymbol =
       scenario.store.state.customSymbolMap[sidc.slice(CUSTOM_SYMBOL_SLICE)];
     return customSymbol
-      ? createCustomSymbolStyle(customSymbol, mapSettingsStore.mapIconSize * 1.2, color)
+      ? createCustomSymbolStyle(
+          customSymbol,
+          mapSettingsStore.mapIconSize * (mapSettingsStore.mapCustomIconScale || 1.7),
+          color,
+        )
       : new Style();
   }
 
