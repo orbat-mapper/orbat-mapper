@@ -275,7 +275,7 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
 }
 
 function createKeys(unit: NUnit) {
-  const sidc = new Sidc(getFullUnitSidc(unit.sidc, "0000000000"));
+  const sidc = new Sidc(getFullUnitSidc(unit.sidc));
   const sidKey = `sid-${sidc.standardIdentity}`;
   const symbolSetKey = `${sidc.symbolSet}`;
   const entityKey = `${sidc.symbolSet}-${sidc.entity}`;

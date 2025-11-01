@@ -29,3 +29,4 @@ export const useUnitSupplyTableStore = tableStoreFactory("unitSupplyTableStore")
 export const useUnitEquipmentTableStore = tableStoreFactory("unitEquipmentTableStore");
 export const useUnitPersonnelTableStore = tableStoreFactory("unitPersonnelTableStore");
 export const useFillColorTableStore = tableStoreFactory("fillColorTableStore");
+export const useCustomSymbolTableStore = tableStoreFactory("customSymbolTableStore");

@@ -29,11 +29,9 @@ export function echelonItems(sid: SidValue) {
   });
 }
 
-export function getFullUnitSidc(sidc: string, fill = "0000000000"): string {
+export function getFullUnitSidc(sidc: string): string {
   if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
-    return (
-      sidc.slice(CUSTOM_SYMBOL_PREFIX.length, CUSTOM_SYMBOL_PREFIX.length + 10) + fill
-    );
+    return sidc.slice(CUSTOM_SYMBOL_PREFIX.length, CUSTOM_SYMBOL_PREFIX.length + 20);
   }
   return sidc;
 }

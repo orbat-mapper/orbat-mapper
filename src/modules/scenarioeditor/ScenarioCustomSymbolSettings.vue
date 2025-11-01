@@ -4,7 +4,7 @@ import { activeScenarioKey } from "@/components/injects.ts";
 import { computed, h, ref, triggerRef } from "vue";
 import { useToeEditableItems } from "@/composables/toeUtils.ts";
 import { useNotifications } from "@/composables/notifications.ts";
-import { useFillColorTableStore } from "@/stores/tableStores.ts";
+import { useCustomSymbolTableStore } from "@/stores/tableStores.ts";
 import type { ColumnDef } from "@tanstack/vue-table";
 import type { CustomSymbol } from "@/types/scenarioModels.ts";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
@@ -23,7 +23,7 @@ const icons = computed(() => {
 const { editMode, editedId, showAddForm, rerender, selectedItems } =
   useToeEditableItems<CustomSymbol>();
 const { send } = useNotifications();
-const tableStore = useFillColorTableStore();
+const tableStore = useCustomSymbolTableStore();
 const columns: ColumnDef<CustomSymbol, any>[] = [
   {
     id: "src",
@@ -40,7 +40,7 @@ const columns: ColumnDef<CustomSymbol, any>[] = [
   },
   { id: "name", header: "Name", accessorKey: "name", size: 200 },
   {
-    id: "sidc",
+    id: "sidcIcon",
     header: "SIDC",
     accessorKey: "sidc",
     cell: ({ row, getValue, cell }) => {
@@ -48,11 +48,15 @@ const columns: ColumnDef<CustomSymbol, any>[] = [
         h(MilitarySymbol, {
           sidc: getValue(),
           size: 40,
+          options: { monoColor: "#7a7575" },
         }),
       ]);
     },
-    size: 50,
+    size: 80,
+    enableSorting: false,
   },
+  { id: "sidc", header: "SIDC Code", accessorKey: "sidc", size: 200 },
+  { id: "id", header: "Id", accessorKey: "id", size: 100 },
 ];
 
 const addForm = ref<Omit<CustomSymbol, "id">>({
@@ -132,6 +136,7 @@ function onAddSubmit(formData: Omit<CustomSymbol, "id">) {
       :select="editMode"
       v-model:selected="selectedItems"
       v-model:editMode="editMode"
+      :initialState="{ columnVisibility: { id: false } }"
     >
       <template #inline-form="{ row }">
         <InlineFormWrapper class="pr-6">
