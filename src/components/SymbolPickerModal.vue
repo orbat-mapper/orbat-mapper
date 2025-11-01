@@ -1,3 +1,249 @@
+<script setup lang="ts">
+import { computed, defineAsyncComponent, nextTick, ref, watch, watchEffect } from "vue";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from "@headlessui/vue";
+
+import PrimaryButton from "./PrimaryButton.vue";
+import SymbolCodeSelect from "./SymbolCodeSelect.vue";
+import {
+  breakpointsTailwind,
+  useBreakpoints,
+  useDebounce,
+  useVModel,
+  whenever,
+} from "@vueuse/core";
+import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
+import { useSymbolItems } from "@/composables/symbolData";
+import NProgress from "nprogress";
+import TabView from "./TabView.vue";
+import TabItem from "./TabItem.vue";
+import SymbolBrowseTab from "./SymbolBrowseTab.vue";
+import SecondaryButton from "./SecondaryButton.vue";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import {
+  mapReinforcedStatus2Field,
+  type ReinforcedStatus,
+  type UnitSymbolOptions,
+} from "@/types/scenarioModels";
+import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
+import SymbolCodeViewer from "@/components/SymbolCodeViewer.vue";
+import { Sidc } from "@/symbology/sidc";
+import {
+  type MainIconSearchResult,
+  type ModifierOneSearchResult,
+  type ModifierTwoSearchResult,
+  useSymbologySearch,
+} from "@/composables/symbolSearching";
+import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
+import { doFocus } from "@/composables/utils";
+import BaseButton from "@/components/BaseButton.vue";
+import NewSimpleModal from "@/components/NewSimpleModal.vue";
+import { Button } from "@/components/ui/button";
+import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey } from "@/components/injects.ts";
+import SymbolPickerCustomSymbol from "@/components/SymbolPickerCustomSymbol.vue";
+import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
+import { getFullUnitSidc } from "@/symbology/helpers.ts";
+
+const LegacyConverter = defineAsyncComponent(
+  () => import("@/components/LegacyConverter.vue"),
+);
+
+interface Props {
+  isVisible?: boolean;
+  initialSidc?: string;
+  dialogTitle?: string;
+  hideModifiers?: boolean;
+  hideSymbolColor?: boolean;
+  hideCustomSymbols?: boolean;
+  inheritedSymbolOptions?: UnitSymbolOptions;
+  symbolOptions?: UnitSymbolOptions;
+  initialTab?: number;
+  reinforcedStatus?: ReinforcedStatus;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isVisible: true,
+  dialogTitle: "Symbol picker",
+  hideModifiers: false,
+  hideSymbolColor: false,
+});
+const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
+const scn = injectStrict(activeScenarioKey);
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smallerOrEqual("md");
+
+const customSymbolId = ref(
+  props.initialSidc?.startsWith(CUSTOM_SYMBOL_PREFIX)
+    ? props.initialSidc.slice(CUSTOM_SYMBOL_SLICE)
+    : null,
+);
+
+const customSymbol = computed(() => {
+  if (!customSymbolId.value) return null;
+  return scn.store.state.customSymbolMap[customSymbolId.value];
+});
+
+const searchInputRef = ref();
+const open = useVModel(props, "isVisible");
+const searchQuery = ref("");
+const debouncedQuery = useDebounce(searchQuery, 100);
+const currentTab = ref(props.initialTab ?? 0);
+
+const groupedHits = ref<ReturnType<typeof search>["groups"]>();
+
+const hitCount = ref(0);
+
+const internalSymbolOptions = ref<UnitSymbolOptions>({
+  ...(props.symbolOptions || {}),
+});
+
+const combinedSymbolOptions = computed(() => ({
+  ...(props.inheritedSymbolOptions || {}),
+  ...cleanObject(internalSymbolOptions.value || {}),
+}));
+
+const finalSymbolOptions = computed(() => ({
+  ...combinedSymbolOptions.value,
+  ...cleanObject({
+    reinforcedReduced: mapReinforcedStatus2Field(reinforcedReducedValue.value),
+  }),
+}));
+
+// remove empty values in object
+const cleanObject = (obj: any) => {
+  Object.keys(obj).forEach((key) => {
+    if (obj[key] && typeof obj[key] === "object") cleanObject(obj[key]);
+    else if (obj[key] === "" || obj[key] === null || obj[key] === undefined)
+      delete obj[key];
+  });
+  return obj;
+};
+
+const {
+  csidc,
+  loadData,
+  isLoaded,
+  sidValue,
+  symbolSetValue,
+  iconValue,
+  statusValue,
+  statusItems,
+  hqtfdItems,
+  hqtfdValue,
+  emtValue,
+  emtItems,
+  mod1Value,
+  mod2Value,
+  mod1Items,
+  mod2Items,
+  icons,
+  symbolSets,
+  reinforcedReducedItems,
+  reinforcedReducedValue,
+} = useSymbolItems(
+  computed(() => {
+    return getFullUnitSidc(props.initialSidc || "10031000001211000000");
+  }),
+  props.reinforcedStatus,
+);
+loadData();
+
+whenever(isLoaded, () => NProgress.done(), { immediate: true });
+
+const { search } = useSymbologySearch(sidValue);
+
+const showReinforcedStatus = computed(() => {
+  return symbolSetValue.value === "10" || symbolSetValue.value === "11";
+});
+
+watchEffect(() => {
+  const { numberOfHits, groups } = search(debouncedQuery.value);
+  hitCount.value = numberOfHits;
+  groupedHits.value = groups;
+});
+
+const onSubmit = () => {
+  if (customSymbolId.value) {
+    emit("update:sidc", {
+      sidc: `${CUSTOM_SYMBOL_PREFIX}${csidc.value}:${customSymbolId.value}`,
+    });
+  } else {
+    emit("update:sidc", {
+      sidc: csidc.value,
+      reinforcedStatus: reinforcedReducedValue.value,
+      symbolOptions: internalSymbolOptions.value.fillColor
+        ? { fillColor: internalSymbolOptions.value.fillColor }
+        : {},
+    });
+    if (internalSymbolOptions.value.fillColor)
+      scn.settings.addColorIfAbsent(internalSymbolOptions.value.fillColor);
+  }
+  open.value = false;
+};
+
+function onSelect(
+  hit: MainIconSearchResult | ModifierOneSearchResult | ModifierTwoSearchResult,
+) {
+  const newSidc = new Sidc(hit.sidc);
+  symbolSetValue.value = newSidc.symbolSet;
+  if (hit.category === "Main icon") {
+    iconValue.value = newSidc.mainIcon;
+  } else if (hit.category === "Modifier 1") {
+    mod1Value.value = newSidc.modifierOne;
+  } else if (hit.category === "Modifier 2") {
+    mod2Value.value = newSidc.modifierTwo;
+  }
+}
+
+function clearModifiers() {
+  mod1Value.value = "00";
+  mod2Value.value = "00";
+  emtValue.value = "00";
+  hqtfdValue.value = "0";
+}
+
+function updateFromBrowseTab(sidc: string) {
+  customSymbolId.value = null;
+  csidc.value = sidc;
+}
+
+function updateFromCustomSymbol(symbolId: string) {
+  const customSymbol = scn.store.state.customSymbolMap[symbolId];
+  const sidc = new Sidc(customSymbol ? customSymbol.sidc : "10031000001100000000");
+  sidc.standardIdentity = sidValue.value;
+  csidc.value = sidc.toString();
+  customSymbolId.value = symbolId;
+}
+
+function updateFromSidcInput(sidc: string) {
+  if (!/^\d+$/.test(sidc)) {
+    return;
+  }
+  const oldSidc = new Sidc(csidc.value);
+  const ns = new Sidc(sidc);
+  ns.standardIdentity = oldSidc.standardIdentity;
+
+  csidc.value = ns.toString();
+}
+
+watch(currentTab, async (v) => {
+  if (v === 0 && !isMobile.value) {
+    await nextTick();
+    searchInputRef.value?.el.focus();
+  }
+});
+
+// watch(csidc, (value) => {
+//   customSymbolId.value = null;
+// });
+</script>
+
 <template>
   <NewSimpleModal
     v-model="open"
@@ -161,7 +407,10 @@
                 :symbol-options="combinedSymbolOptions"
               />
             </div>
-            <div v-if="!hideSymbolColor" class="flex w-full items-end gap-2">
+            <div
+              v-if="!hideSymbolColor && !customSymbolId"
+              class="flex w-full items-end gap-2"
+            >
               <SymbolFillColorSelect
                 v-model="internalSymbolOptions.fillColor"
                 :default-fill-color="inheritedSymbolOptions?.fillColor"
@@ -210,240 +459,3 @@
     </div>
   </NewSimpleModal>
 </template>
-
-<script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, ref, watch, watchEffect } from "vue";
-import {
-  Combobox,
-  ComboboxInput,
-  ComboboxOption,
-  ComboboxOptions,
-} from "@headlessui/vue";
-
-import PrimaryButton from "./PrimaryButton.vue";
-import SymbolCodeSelect from "./SymbolCodeSelect.vue";
-import {
-  breakpointsTailwind,
-  useBreakpoints,
-  useDebounce,
-  useVModel,
-  whenever,
-} from "@vueuse/core";
-import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
-import { useSymbolItems } from "@/composables/symbolData";
-import NProgress from "nprogress";
-import TabView from "./TabView.vue";
-import TabItem from "./TabItem.vue";
-import SymbolBrowseTab from "./SymbolBrowseTab.vue";
-import SecondaryButton from "./SecondaryButton.vue";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import {
-  mapReinforcedStatus2Field,
-  type ReinforcedStatus,
-  type UnitSymbolOptions,
-} from "@/types/scenarioModels";
-import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
-import SymbolCodeViewer from "@/components/SymbolCodeViewer.vue";
-import { Sidc } from "@/symbology/sidc";
-import {
-  type MainIconSearchResult,
-  type ModifierOneSearchResult,
-  type ModifierTwoSearchResult,
-  useSymbologySearch,
-} from "@/composables/symbolSearching";
-import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
-import { doFocus } from "@/composables/utils";
-import BaseButton from "@/components/BaseButton.vue";
-import NewSimpleModal from "@/components/NewSimpleModal.vue";
-import { Button } from "@/components/ui/button";
-import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
-import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects.ts";
-import SymbolPickerCustomSymbol from "@/components/SymbolPickerCustomSymbol.vue";
-import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
-import { getFullUnitSidc } from "@/symbology/helpers.ts";
-
-const LegacyConverter = defineAsyncComponent(
-  () => import("@/components/LegacyConverter.vue"),
-);
-
-interface Props {
-  isVisible?: boolean;
-  sidc?: string;
-  dialogTitle?: string;
-  hideModifiers?: boolean;
-  hideSymbolColor?: boolean;
-  hideCustomSymbols?: boolean;
-  inheritedSymbolOptions?: UnitSymbolOptions;
-  symbolOptions?: UnitSymbolOptions;
-  initialTab?: number;
-  reinforcedStatus?: ReinforcedStatus;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  isVisible: true,
-  dialogTitle: "Symbol picker",
-  hideModifiers: false,
-  hideSymbolColor: false,
-});
-const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
-const scn = injectStrict(activeScenarioKey);
-const breakpoints = useBreakpoints(breakpointsTailwind);
-const isMobile = breakpoints.smallerOrEqual("md");
-
-const customSymbolId = ref(
-  props.sidc?.startsWith(CUSTOM_SYMBOL_PREFIX) ? props.sidc : null,
-);
-
-const customSymbol = computed(() => {
-  if (!customSymbolId.value) return null;
-  return scn.store.state.customSymbolMap[customSymbolId.value.slice(CUSTOM_SYMBOL_SLICE)];
-});
-
-const searchInputRef = ref();
-const open = useVModel(props, "isVisible");
-const searchQuery = ref("");
-const debouncedQuery = useDebounce(searchQuery, 100);
-const currentTab = ref(props.initialTab ?? 0);
-
-const groupedHits = ref<ReturnType<typeof search>["groups"]>();
-
-const hitCount = ref(0);
-
-const internalSymbolOptions = ref<UnitSymbolOptions>({
-  ...(props.symbolOptions || {}),
-});
-
-const combinedSymbolOptions = computed(() => ({
-  ...(props.inheritedSymbolOptions || {}),
-  ...cleanObject(internalSymbolOptions.value || {}),
-}));
-
-const finalSymbolOptions = computed(() => ({
-  ...combinedSymbolOptions.value,
-  ...cleanObject({
-    reinforcedReduced: mapReinforcedStatus2Field(reinforcedReducedValue.value),
-  }),
-}));
-
-// remove empty values in object
-const cleanObject = (obj: any) => {
-  Object.keys(obj).forEach((key) => {
-    if (obj[key] && typeof obj[key] === "object") cleanObject(obj[key]);
-    else if (obj[key] === "" || obj[key] === null || obj[key] === undefined)
-      delete obj[key];
-  });
-  return obj;
-};
-
-const {
-  csidc,
-  loadData,
-  isLoaded,
-  sidValue,
-  symbolSetValue,
-  iconValue,
-  statusValue,
-  statusItems,
-  hqtfdItems,
-  hqtfdValue,
-  emtValue,
-  emtItems,
-  mod1Value,
-  mod2Value,
-  mod1Items,
-  mod2Items,
-  icons,
-  symbolSets,
-  reinforcedReducedItems,
-  reinforcedReducedValue,
-} = useSymbolItems(
-  computed(() => {
-    return getFullUnitSidc(props.sidc || "10031000001211000000");
-  }),
-  props.reinforcedStatus,
-);
-loadData();
-
-whenever(isLoaded, () => NProgress.done(), { immediate: true });
-
-const { search } = useSymbologySearch(sidValue);
-
-const showReinforcedStatus = computed(() => {
-  return symbolSetValue.value === "10" || symbolSetValue.value === "11";
-});
-
-watchEffect(() => {
-  const { numberOfHits, groups } = search(debouncedQuery.value);
-  hitCount.value = numberOfHits;
-  groupedHits.value = groups;
-});
-
-const onSubmit = () => {
-  if (customSymbolId.value) {
-    emit("update:sidc", { sidc: customSymbolId.value });
-  } else {
-    emit("update:sidc", {
-      sidc: csidc.value,
-      reinforcedStatus: reinforcedReducedValue.value,
-      symbolOptions: internalSymbolOptions.value.fillColor
-        ? { fillColor: internalSymbolOptions.value.fillColor }
-        : {},
-    });
-    if (internalSymbolOptions.value.fillColor)
-      scn.settings.addColorIfAbsent(internalSymbolOptions.value.fillColor);
-  }
-  open.value = false;
-};
-
-function onSelect(
-  hit: MainIconSearchResult | ModifierOneSearchResult | ModifierTwoSearchResult,
-) {
-  const newSidc = new Sidc(hit.sidc);
-  symbolSetValue.value = newSidc.symbolSet;
-  if (hit.category === "Main icon") {
-    iconValue.value = newSidc.mainIcon;
-  } else if (hit.category === "Modifier 1") {
-    mod1Value.value = newSidc.modifierOne;
-  } else if (hit.category === "Modifier 2") {
-    mod2Value.value = newSidc.modifierTwo;
-  }
-}
-
-function clearModifiers() {
-  mod1Value.value = "00";
-  mod2Value.value = "00";
-  emtValue.value = "00";
-  hqtfdValue.value = "0";
-}
-
-function updateFromBrowseTab(sidc: string) {
-  csidc.value = sidc;
-}
-
-function updateFromCustomSymbol(symbolId: string) {
-  customSymbolId.value = `${CUSTOM_SYMBOL_PREFIX + csidc.value.substring(0, 10)}:${symbolId}`;
-}
-
-function updateFromSidcInput(sidc: string) {
-  if (!/^\d+$/.test(sidc)) {
-    return;
-  }
-  const oldSidc = new Sidc(csidc.value);
-  const ns = new Sidc(sidc);
-  ns.standardIdentity = oldSidc.standardIdentity;
-
-  csidc.value = ns.toString();
-}
-
-watch(currentTab, async (v) => {
-  if (v === 0 && !isMobile.value) {
-    await nextTick();
-    searchInputRef.value?.el.focus();
-  }
-});
-
-watch(csidc, (value) => {
-  customSymbolId.value = null;
-});
-</script>

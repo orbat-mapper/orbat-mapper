@@ -143,7 +143,7 @@
     />
     <SymbolPickerModal
       v-if="showSidcModal"
-      :sidc="initialSidcModalValue"
+      :initialSidc="initialSidcModalValue"
       @update:sidc="confirmSidcModal($event)"
       @cancel="cancelSidcModal"
       :dialogTitle="sidcModalTitle"
