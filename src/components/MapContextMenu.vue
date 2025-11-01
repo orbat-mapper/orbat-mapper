@@ -56,6 +56,7 @@ import { useActiveSidc } from "@/composables/mainToolbarData";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore.ts";
 import type { ScenarioFeature } from "@/types/scenarioGeoModels.ts";
+import UnitSymbol from "@/components/UnitSymbol.vue";
 
 const tm = useTimeFormatStore();
 const mainToolbarStore = useMainToolbarStore();
@@ -267,8 +268,9 @@ function onAddPoint() {
           >
             <div class="flex items-center">
               <span class="flex w-7 items-center">
-                <MilitarySymbol
+                <UnitSymbol
                   :sidc="unit.sidc"
+                  class="w-6"
                   :options="unitActions.getCombinedSymbolOptions(unit)"
               /></span>
               <span :class="[selectedUnitIds.has(unit.id) ? 'font-semibold' : '']">{{

@@ -102,7 +102,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     properties: {
       id: nanoid(),
       title: "Unit labels",
-      layerType: LayerTypes.units,
+      layerType: LayerTypes.labels,
     },
     style: mapSettings.mapUnitLabelBelow ? labelStyleFunction : undefined,
     visible: mapSettings.mapUnitLabelBelow,
