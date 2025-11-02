@@ -82,7 +82,7 @@ function onCancel() {
     @cancel="onCancel"
     class="sm:max-w-xl md:max-w-4xl"
   >
-    <div class="overflow-x-hidden">
+    <div class="-mx-6 overflow-x-hidden px-6">
       <p class="flex items-center justify-between text-sm leading-6 text-gray-500">
         <span>Import data for use in your scenario</span>
         <DocLink href="https://docs.orbat-mapper.app/guide/import-data" />
