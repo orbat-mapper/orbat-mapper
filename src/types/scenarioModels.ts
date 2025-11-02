@@ -120,6 +120,8 @@ export interface Unit {
   _gid?: EntityId; // group
   _sid?: EntityId; // side
   _isOpen?: boolean;
+  _ikey?: string; // icon cache key
+  _lkey?: string; // label cache key
 }
 
 export interface UnitStyle extends Partial<VisibilityStyleSpec> {}

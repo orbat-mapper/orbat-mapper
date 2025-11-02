@@ -127,7 +127,6 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
 
   function unitStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
-    let unitStyle = unitStyleCache.get(unitId);
 
     const unit = getUnitById(unitId);
     if (!unit) return;
@@ -141,10 +140,13 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       return;
     }
 
+    let unitStyle = unitStyleCache.get(unit._ikey ?? unitId);
     if (!unitStyle) {
       const symbolOptions = getCombinedSymbolOptions(unit);
-      unitStyle = createUnitStyle(unit, symbolOptions, scenario);
-      unitStyleCache.set(unitId, unitStyle);
+      const { style, cacheKey } = createUnitStyle(unit, symbolOptions, scenario);
+      unitStyle = style;
+      unit._ikey = cacheKey;
+      unitStyleCache.set(unit._ikey ?? unitId, unitStyle);
     }
 
     return unitStyle;
@@ -167,7 +169,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     let labelData = labelStyleCache.get(unitId);
     if (!unit) return;
     if (!labelData) {
-      const unitStyle = unitStyleCache.get(unitId);
+      const unitStyle = unitStyleCache.get(unit._ikey ?? unitId);
       labelData = createUnitLabelData(unit, unitStyle, {
         wrapLabels: mapSettings.mapWrapUnitLabels,
         wrapWidth: mapSettings.mapWrapLabelWidth,
@@ -357,7 +359,7 @@ export function useUnitSelectInteraction(
 
   const unitSelectInteraction = new Select({
     layers,
-    style: selectedUnitStyleFunction,
+    style: selectedUnitStyleFunction as any,
     condition: clickCondition,
     removeCondition: altKeyOnly,
   });
@@ -376,11 +378,11 @@ export function useUnitSelectInteraction(
     ) {
       return;
     }
-    let unitStyle = selectedUnitStyleCache.get(unitId);
+    let unitStyle = selectedUnitStyleCache.get(unit._ikey ?? unitId);
 
     if (!unitStyle) {
       const symbolOptions = getCombinedSymbolOptions(unit);
-      unitStyle = createUnitStyle(
+      const { style, cacheKey } = createUnitStyle(
         unit,
         {
           ...symbolOptions,
@@ -392,7 +394,8 @@ export function useUnitSelectInteraction(
         activeScenario,
         "yellow",
       )!;
-      selectedUnitStyleCache.set(unitId, unitStyle);
+      unitStyle = style;
+      selectedUnitStyleCache.set(unit._ikey ?? unitId, unitStyle);
     }
 
     if (!mapSettings.mapUnitLabelBelow) return unitStyle;

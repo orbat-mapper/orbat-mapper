@@ -131,9 +131,6 @@ export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
         !(s.interpolate === false) &&
         (s.viaStartTime ?? -Infinity) <= timestamp
       ) {
-        if (s.viaStartTime) {
-          console.log("yo");
-        }
         const n = lineString(
           s.via
             ? [currentState.location, ...s.via, s.location]
@@ -157,6 +154,7 @@ export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
     }
   }
   if (currentState?.sidc !== unit._state?.sidc) {
+    unit._ikey = undefined;
     invalidateUnitStyle(unit.id);
   }
   unit._state = currentState;

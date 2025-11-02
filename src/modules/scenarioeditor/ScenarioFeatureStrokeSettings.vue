@@ -30,7 +30,6 @@ function updateValue(
   name: keyof (StrokeStyleSpec & TextStyleSpec),
   value: string | number | boolean,
 ) {
-  console.log("updateValue", name, value);
   emit("update", { style: { [name]: value } });
 }
 

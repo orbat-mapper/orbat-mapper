@@ -4,7 +4,7 @@ import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Symbol as MilSymbol } from "milsymbol";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import type { NUnit } from "@/types/internalModels";
-import { wordWrap } from "@/utils";
+import { hashObject, wordWrap } from "@/utils";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore.ts";
 import type { TScenario } from "@/scenariostore";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
@@ -65,7 +65,7 @@ export function createUnitStyle(
   symbolOptions: UnitSymbolOptions,
   scenario: TScenario,
   color?: string,
-): Style {
+): { style: Style; cacheKey: string } {
   const { name = "", shortName = "" } = unit;
   const sidc = unit._state?.sidc || unit.sidc;
 
@@ -76,18 +76,21 @@ export function createUnitStyle(
     unit.textAmplifiers || {};
 
   if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
-    const customSymbol =
-      scenario.store.state.customSymbolMap[sidc.slice(CUSTOM_SYMBOL_SLICE)];
-    return customSymbol
-      ? createCustomSymbolStyle(
-          customSymbol,
-          mapSettingsStore.mapIconSize * (mapSettingsStore.mapCustomIconScale || 1.7),
-          color,
-        )
-      : new Style();
+    const customSymbolId = sidc.slice(CUSTOM_SYMBOL_SLICE);
+    const cacheKey = customSymbolId;
+    const customSymbol = scenario.store.state.customSymbolMap[customSymbolId];
+    return {
+      style: customSymbol
+        ? createCustomSymbolStyle(
+            customSymbol,
+            mapSettingsStore.mapIconSize * (mapSettingsStore.mapCustomIconScale || 1.7),
+            color,
+          )
+        : new Style(),
+      cacheKey,
+    };
   }
-
-  const milSymbol = symbolGenerator(sidc, {
+  const options = {
     size: mapSettingsStore.mapIconSize * (window.devicePixelRatio || 1),
     uniqueDesignation: mapSettingsStore.mapUnitLabelBelow ? "" : uniqueDesignation,
     outlineColor: "white",
@@ -95,8 +98,13 @@ export function createUnitStyle(
     ...textAmplifiers,
     ...symbolSettings.symbolOptions,
     ...symbolOptions,
-  });
-  return createMilSymbolStyle(milSymbol);
+  };
+
+  const milSymbol = symbolGenerator(sidc, options);
+  return {
+    style: createMilSymbolStyle(milSymbol),
+    cacheKey: sidc + hashObject(options),
+  };
 }
 
 type UnitLabelOptions = {

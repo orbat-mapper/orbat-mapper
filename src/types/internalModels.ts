@@ -227,6 +227,8 @@ export const INTERNAL_NAMES = [
   "_status",
   "_isTemporary",
   "_counter",
+  "_ikey",
+  "_lkey",
 ];
 export const TIMESTAMP_NAMES = ["t", "visibleFromT", "visibleUntilT", "startTime"];
 export type ScenarioEventType = "unit" | "scenario";

@@ -346,10 +346,16 @@ export function useUnitManipulations(store: NewScenarioStore) {
     data: UnitUpdate,
     { doUpdateUnitState = false, ignoreLocked = false, s = state, noUndo = false } = {},
   ) {
+    let unit = s.unitMap[unitId];
+    if (!unit) return;
     if (!ignoreLocked && isUnitLocked(unitId)) return;
     invalidateUnitStyle(unitId);
+    if (unit._ikey) {
+      invalidateUnitStyle(unit._ikey);
+      unit._ikey = undefined;
+    }
+
     if (noUndo) {
-      let unit = s.unitMap[unitId];
       if (!unit) return;
       Object.assign(unit, { ...data });
       s.unitMap[unitId] = klona(unit);
