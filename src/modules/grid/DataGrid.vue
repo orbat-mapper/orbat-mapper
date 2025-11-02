@@ -292,8 +292,7 @@ const filteredRowCount = computed(() => {
 </template>
 
 <style>
-@import "../../styles.css";
-@import "tailwindcss";
+@reference "tailwindcss";
 
 .cell {
   @apply flex shrink-0 items-center overflow-hidden border-b p-4 text-nowrap;
