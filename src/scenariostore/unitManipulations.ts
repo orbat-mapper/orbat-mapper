@@ -26,7 +26,7 @@ import type {
   UnitSymbolOptions,
 } from "@/types/scenarioModels";
 import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
-import { getNextEchelonBelow } from "@/symbology/helpers";
+import { getNextEchelonBelow, setSid } from "@/symbology/helpers";
 import { clearUnitStyleCache, invalidateUnitStyle } from "@/geo/unitStyles";
 import { useSupplyManipulations } from "@/scenariostore/supplyManipulations";
 import { useToeManipulations } from "@/scenariostore/toeManipulations";
@@ -201,10 +201,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
         walkSide(
           side.id,
           (unit) => {
-            if (unit.sidc[SID_INDEX] !== sid) {
-              unit.sidc = setCharAt(unit.sidc, SID_INDEX, sid);
-            }
+            unit.sidc = setSid(unit.sidc, sid);
             invalidateUnitStyle(unit.id);
+            unit._ikey = undefined;
           },
           state,
         );
@@ -222,9 +221,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
         walkSide(
           side.id,
           (unit) => {
-            if (unit.sidc[SID_INDEX] !== sid) {
-              unit.sidc = setCharAt(unit.sidc, SID_INDEX, sid);
-            }
+            unit.sidc = setSid(unit.sidc, sid);
+            unit._ikey = undefined;
             invalidateUnitStyle(unit.id);
           },
           s,
