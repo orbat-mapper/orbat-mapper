@@ -71,6 +71,18 @@ function cloneUnitState(state: NState[]) {
   return stateCopy.map((s) => ({ ...s, id: nanoid() }));
 }
 
+function updateSidIfNecessary(u: NUnit, side: NSide) {
+  if (u.sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
+    if (u.sidc[CUSTOM_SYMBOL_SID_INDEX] !== side.standardIdentity) {
+      u.sidc = setCharAt(u.sidc, CUSTOM_SYMBOL_SID_INDEX, side.standardIdentity);
+    }
+  } else {
+    if (u.sidc[SID_INDEX] !== side.standardIdentity) {
+      u.sidc = setCharAt(u.sidc, SID_INDEX, side.standardIdentity);
+    }
+  }
+}
+
 export function useUnitManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
 
@@ -308,9 +320,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       walkSide(
         side.id,
         (unit) => {
-          if (unit.sidc[SID_INDEX] !== side.standardIdentity) {
-            unit.sidc = setCharAt(unit.sidc, SID_INDEX, side.standardIdentity);
-          }
+          updateSidIfNecessary(unit, side);
           unit._sid = side.id;
           invalidateUnitStyle(unit.id);
         },
@@ -507,19 +517,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         walkSubUnits(
           unitId,
           (u) => {
-            if (u.sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
-              if (u.sidc[CUSTOM_SYMBOL_SID_INDEX] !== side.standardIdentity) {
-                u.sidc = setCharAt(
-                  u.sidc,
-                  CUSTOM_SYMBOL_SID_INDEX,
-                  side.standardIdentity,
-                );
-              }
-            } else {
-              if (u.sidc[SID_INDEX] !== side.standardIdentity) {
-                u.sidc = setCharAt(u.sidc, SID_INDEX, side.standardIdentity);
-              }
-            }
+            updateSidIfNecessary(u, side);
             u._sid = side.id;
             u._gid = sideGroup?.id;
             invalidateUnitStyle(u.id);

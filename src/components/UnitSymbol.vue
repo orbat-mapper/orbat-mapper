@@ -17,7 +17,8 @@ const { store } = injectStrict(activeScenarioKey);
 const customSidc = computed(() => {
   if (props.sidc?.startsWith(CUSTOM_SYMBOL_PREFIX)) {
     const symbolId = props.sidc.slice(CUSTOM_SYMBOL_SLICE);
-    return store.state.customSymbolMap[symbolId];
+    const mapping = props.options?.customSymbolMap ?? store.state.customSymbolMap ?? {};
+    return mapping[symbolId];
   }
 });
 </script>

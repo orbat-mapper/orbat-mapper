@@ -1,6 +1,8 @@
 import { echelonValues, type SidValue, standardIdentityValues } from "@/symbology/values";
 import type { SymbolItem } from "@/types/constants";
-import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
+import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
+import { CUSTOM_SYMBOL_SID_INDEX, SID_INDEX } from "@/symbology/sidc.ts";
+import { setCharAt } from "@/components/helpers.ts";
 
 export const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {
   return {
@@ -32,6 +34,25 @@ export function echelonItems(sid: SidValue) {
 export function getFullUnitSidc(sidc: string): string {
   if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
     return sidc.slice(CUSTOM_SYMBOL_PREFIX.length, CUSTOM_SYMBOL_PREFIX.length + 20);
+  }
+  return sidc;
+}
+
+export function getCustomSymbolId(sidc: string): string | null | undefined {
+  if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
+    return sidc.slice(CUSTOM_SYMBOL_SLICE);
+  }
+}
+
+export function setSid(sidc: string, sidValue: string): string {
+  if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
+    if (sidc[CUSTOM_SYMBOL_SID_INDEX] !== sidValue) {
+      return setCharAt(sidc, CUSTOM_SYMBOL_SID_INDEX, sidValue);
+    }
+  } else {
+    if (sidc[SID_INDEX] !== sidValue) {
+      return setCharAt(sidc, SID_INDEX, sidValue);
+    }
   }
   return sidc;
 }

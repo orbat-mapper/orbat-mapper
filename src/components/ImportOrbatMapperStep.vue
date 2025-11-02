@@ -198,6 +198,7 @@ function renderExpandCell({ getValue, row }: CellContext<Unit, string>) {
   let symbolOptions: Record<string, any> = getCombinedSymbolOptions(
     importedState.value.unitMap[row.original.id],
   );
+  symbolOptions.customSymbolMap = importedState.value.customSymbolMap ?? {};
 
   return h(OrbatCellRenderer, {
     value: getValue(),

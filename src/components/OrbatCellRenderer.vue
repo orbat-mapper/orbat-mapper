@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
+import UnitSymbol from "@/components/UnitSymbol.vue";
 
 const props = defineProps<{
   value: string;
@@ -25,7 +25,13 @@ const emit = defineEmits(["toggle"]);
         />
       </button>
     </div>
-    <MilitarySymbol v-if="sidc" :sidc="sidc" :size="20" :options="symbolOptions" />
+    <UnitSymbol
+      v-if="sidc"
+      :sidc="sidc"
+      class="max-h-8"
+      :size="20"
+      :options="symbolOptions"
+    />
     <span :class="{ 'font-bold': sidc === undefined }">{{ value }}</span>
   </div>
 </template>

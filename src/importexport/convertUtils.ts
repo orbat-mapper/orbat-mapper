@@ -9,13 +9,13 @@ import type {
   NUnitSupply,
 } from "@/types/internalModels";
 import { createNameToIdMapObject, nanoid } from "@/utils";
-import { setCharAt } from "@/components/helpers";
-import { SID_INDEX } from "@/symbology/sidc";
 import {
   convertStateToInternalFormat,
   type ScenarioState,
 } from "@/scenariostore/newScenarioStore";
 import type { RangeRing } from "@/types/scenarioGeoModels";
+import { getCustomSymbolId, setSid } from "@/symbology/helpers.ts";
+import { klona } from "klona";
 
 export type OrbatToTextOptions = {
   indent?: string;
@@ -68,6 +68,7 @@ export function addUnitHierarchy(
   );
   const targetSupplyUomNameToIdMap = createNameToIdMapObject(store.state.supplyUomMap);
   const targetSupplyClassMap = createNameToIdMapObject(store.state.supplyClassMap);
+  const sourceCustomSymbolIds = new Set<string>();
 
   store.update((s) => {
     function addUnitStatus(unitStatus: UnitStatus) {
@@ -82,6 +83,18 @@ export function addUnitHierarchy(
       const personnel: NUnitPersonnel[] = [];
       const rangeRings: RangeRing[] = [];
       const supplies: NUnitSupply[] = [];
+      const customSymbolId = getCustomSymbolId(unit.sidc);
+      if (customSymbolId) {
+        sourceCustomSymbolIds.add(customSymbolId);
+      }
+      unit.state
+        ?.filter((s) => s.sidc)
+        ?.forEach((s) => {
+          const csidc = getCustomSymbolId(s.sidc!);
+          if (csidc) {
+            sourceCustomSymbolIds.add(csidc);
+          }
+        });
       unit.equipment?.forEach(({ name, count, onHand }) => {
         const { id } =
           s.equipmentMap[name] ||
@@ -233,7 +246,7 @@ export function addUnitHierarchy(
       const newUnit: NUnitAdd = {
         ...unit,
         id,
-        sidc: setCharAt(unit.sidc, SID_INDEX, side.standardIdentity),
+        sidc: setSid(unit.sidc, side.standardIdentity),
         subUnits: [],
         equipment,
         personnel,
@@ -247,5 +260,14 @@ export function addUnitHierarchy(
     }
 
     helper(rootUnit, parentId);
+    // copy over custom symbols used by the source scenario
+    sourceCustomSymbolIds.forEach((csid) => {
+      if (!s.customSymbolMap[csid]) {
+        const sourceSymbol = sourceState?.customSymbolMap[csid];
+        if (sourceSymbol) {
+          s.customSymbolMap[csid] = klona(sourceSymbol);
+        }
+      }
+    });
   });
 }
