@@ -412,7 +412,12 @@ function locateInOrbat() {
           @click="handleChangeSymbol()"
           ref="elRef"
         >
-          <UnitSymbol :sidc="unitSidc" :size="34" :options="combinedSymbolOptions" />
+          <UnitSymbol
+            class="w-16"
+            :sidc="unitSidc"
+            :size="34"
+            :options="combinedSymbolOptions"
+          />
         </button>
         <div class="-mt-1.5 flex-auto pr-4">
           <EditableLabel
