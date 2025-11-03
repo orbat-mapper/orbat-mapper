@@ -160,6 +160,8 @@ export function useKmlExport(scenario: TScenario) {
         } else {
           writeFolders(root);
         }
+      } else if (opts.timeMode === "current") {
+        writeFolders(root);
       }
     }
 
