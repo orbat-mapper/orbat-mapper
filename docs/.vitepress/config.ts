@@ -62,6 +62,7 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
         // { text: "Grid edit mode", link: "grid-edit-mode" },
         // { text: "Chart edit mode", link: "chart-edit-mode" },
         { text: "Map layers", link: "map-layers" },
+        {text: "Custom symbols", link: "custom-symbols" },
       ],
     },
     {
