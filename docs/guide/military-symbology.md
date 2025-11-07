@@ -4,11 +4,10 @@ import DocMilSymbol from "../components/DocMilSymbol.vue";
 
 # Military symbology
 
-ORBAT Mapper uses military map symbols defined
+ORBAT Mapper primarily uses military map symbols defined
 in [MIL-STD 2525D](https://www.jcs.mil/Portals/36/Documents/Doctrine/Other_Pubs/ms_2525d.pdf) and [NATO
 APP-6D](https://nso.nato.int/nso/nsdd/main/standards/ap-details/1912/EN)
-when displaying units, equipment and installations. All symbols are rendered using
-the excellent [Milsymbol](https://spatialillusions.com/milsymbol/index.html) library.
+for units, equipment and installations. Standard military symbols are rendered by the excellent [Milsymbol](https://spatialillusions.com/milsymbol/index.html) library.
 
 <div class="grid grid-cols-4 gap-8 items-center justify-items-center content-end">
     <DocMilSymbol sidc="10031000131211004600" /> 
@@ -54,3 +53,10 @@ notable is that APP-6D has the dismounted individual symbol set:
     <DocMilSymbol sidc="10032700001101010039" />
     <DocMilSymbol sidc="10032700001102090001" />
 </div>
+
+## Custom unit symbols
+
+If standard military symbols are not sufficient for your needs, ORBAT Mapper also allows you to create custom unit
+symbols. See the [custom unit symbols guide](./custom-symbols.md) for more information.
+
+![Custom unit symbols example](images/custom-symbols-small.jpg)
