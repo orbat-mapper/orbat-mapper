@@ -22,7 +22,7 @@ Enter a descriptive name for your custom symbol
 **URL/URI** Provide a URL or Data URL for the symbol image.
 Supported input formats:
 
-- [Data URLs](<(https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data)>) (base64-encoded images or SVGs, e.g., `data:image/png;base64,...`)
+- [Data URLs](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data) (base64-encoded images or SVGs, e.g., `data:image/png;base64,...`)
 - Regular URLs to image files (e.g., `https://example.com/symbol.png`). Subject to [CORS restrictions](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS).
 
 :::info
@@ -57,7 +57,43 @@ for filtering and selecting units. It may also be used when exporting data to fo
 
 After you have added your custom symbol, it will appear in the list of available custom symbols:
 
+![Custom symbols list](images/custom-symbols-list.png)
+
+You can edit or delete custom symbols using the "_Edit symbols_" button. You can also double click
+on a row in the custom symbols list to open the edit form.
+
+![Edit custom symbol form](images/custom-symbols-edit.png)
+
 ## Using custom symbols
+
+To use a custom symbol open the symbol picker by clicking the symbol icon in the unit
+details panel:
+
+![Open symbol picker](images/custom-symbols-open-picker.png)
+
+In the symbol picker, switch to the _Custom symbol_ tab to see your custom symbols:
+
+![Custom symbol picker](images/custom-symbols-picker.png)
+
+You can go back to a standard military symbol by switching to the _Browse_ tab and selecting
+a symbol from a symbol set.
+
+## Where to find symbol icons
+
+Here are a few starting points:
+
+- [Iconify.design](https://icon-sets.iconify.design/) A large collection of open-source icon sets.
+- [Icônes](https://icones.js.org/) Icon explorer with instant searching, powered by Iconify.
+- [Icon Archive](https://iconarchive.com/) A large collection of icon sets in various styles and formats.
+
+A few tips :
+
+- Look for icons in SVG format for the best scalability and quality.
+- Ensure the icons have transparent backgrounds (especially for PNGs) to blend well on different map backgrounds.
+- Check the licensing terms to ensure you have the right to use the icons in your project.
+- Avoid using large images.
+- If you use ordinary URLs, ensure the hosting server allows cross-origin requests (CORS).
+- Check the readability of the icons on different backgrounds and at various sizes. Adding a subtle outline or shadow can help improve visibility.
 
 ## Troubleshooting
 
