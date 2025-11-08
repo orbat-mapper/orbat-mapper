@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
+import { ArrowUpRightIcon, ShapesIcon } from "lucide-vue-next";
 import { computed, ref } from "vue";
 import { useDebounce } from "@vueuse/core";
 import { injectStrict } from "@/utils";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { ShapesIcon } from "lucide-vue-next";
 import { activeScenarioKey } from "@/components/injects.ts";
 import { CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   initialSidc?: string | null;
@@ -103,6 +103,15 @@ function onEsc(e: KeyboardEvent) {
           ORBAT panel to add new symbols/icons to your scenario.
         </EmptyDescription>
       </EmptyHeader>
+      <Button variant="link" as-child class="text-muted-foreground" size="sm">
+        <a
+          href="https://docs.orbat-mapper.app/guide/custom-symbols"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Documentation <ArrowUpRightIcon />
+        </a>
+      </Button>
     </Empty>
   </div>
 </template>

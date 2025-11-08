@@ -13,6 +13,8 @@ import ToeGrid from "@/modules/grid/ToeGrid.vue";
 import AddCustomSymbolForm from "@/modules/scenarioeditor/AddCustomSymbolForm.vue";
 import { clearUnitStyleCache } from "@/geo/unitStyles.ts";
 import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
+import { Button } from "@/components/ui/button";
+import { ArrowUpRightIcon } from "lucide-vue-next";
 
 const scn = injectStrict(activeScenarioKey);
 const icons = computed(() => {
@@ -152,5 +154,17 @@ function onAddSubmit(formData: Omit<CustomSymbol, "id">) {
     <p v-else class="prose prose-sm dark:prose-invert">
       Use the <kbd>Add</kbd> button to add additional symbols to this scenario.
     </p>
+    <div class="mt-6 text-center">
+      <Button variant="link" as-child class="text-muted-foreground" size="sm">
+        <a
+          href="https://docs.orbat-mapper.app/guide/custom-symbols"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Documentation
+          <ArrowUpRightIcon />
+        </a>
+      </Button>
+    </div>
   </div>
 </template>
