@@ -1,15 +1,20 @@
-import { NewScenarioStore } from "@/scenariostore/newScenarioStore";
-import { NUnitTemplate } from "@/types/internalModels";
+import { type NewScenarioStore } from "@/scenariostore/newScenarioStore";
+import { type NUnitTemplate, type NUnitTemplateAdd } from "@/types/internalModels";
 import { klona } from "klona";
+import { nanoid } from "@/utils";
 
 export function useUnitTemplateManipulations(store: NewScenarioStore) {
-  const { state, update } = store;
+  const { update } = store;
 
   function addUnitTemplate(
-    data: Partial<NUnitTemplate>,
-    { noUndo = false, s = state } = {},
+    data: NUnitTemplateAdd,
+    { noUndo = false, s = store.state } = {},
   ) {
-    const newUnitTemplate = { id: nanoid(), name: "Unit Template", ...klona(data) };
+    const newUnitTemplate = {
+      id: nanoid(),
+      name: "Unit Template",
+      ...klona(data),
+    };
     if (newUnitTemplate.id === undefined) {
       newUnitTemplate.id = nanoid();
     }
@@ -25,26 +30,26 @@ export function useUnitTemplateManipulations(store: NewScenarioStore) {
   }
 
   function createTemplateFromUnit(unitId: string) {
-    const unit = state.unitMap[unitId];
+    const unit = store.state.unitMap[unitId];
     if (!unit) return;
-    const { id, _pid, _gid, _sid, ...unitTemplate } = klona(unit);
+    const { id, _pid, _gid, _sid, state, ...unitTemplate } = klona(unit);
     return addUnitTemplate(unitTemplate);
   }
 
-  function updateUnitTemplate(id: string, data: UnitTemplateUpdate) {
+  function updateUnitTemplate(id: string, data: Partial<NUnitTemplate>) {
     update((s) => {
       const unitTemplate = s.unitTemplateMap[id];
       if (!unitTemplate) return;
       Object.assign(unitTemplate, data);
     });
-    state.settingsStateCounter++;
+    store.state.settingsStateCounter++;
   }
 
   function deleteUnitTemplate(id: string) {
     update((s) => {
       delete s.unitTemplateMap[id];
     });
-    state.settingsStateCounter++;
+    store.state.settingsStateCounter++;
   }
 
   return {
