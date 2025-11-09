@@ -136,7 +136,10 @@ export interface UnitTemplate
     | "_gid"
     | "_sid"
     | "_isOpen"
+    | "_ikey"
+    | "_lkey"
     | "_state"
+    | "style"
   > {}
 
 export interface UnitStyle extends Partial<VisibilityStyleSpec> {}

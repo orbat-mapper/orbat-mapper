@@ -26,6 +26,7 @@ export function useUnitActions(
 ) {
   const {
     unitActions,
+    unitTemplateActions,
     store: { groupUpdate },
   } = options.activeScenario || injectStrict(activeScenarioKey);
   const { selectedUnitIds, activeUnitId } = useSelectedItems();
@@ -125,7 +126,7 @@ export function useUnitActions(
     }
 
     if (action === UnitActions.CreateTemplate) {
-      unitActions.createTemplate(unit.id);
+      unitTemplateActions.createTemplateFromUnit(unit.id);
     }
   };
 
