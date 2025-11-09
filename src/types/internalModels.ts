@@ -113,7 +113,7 @@ export interface EUnitPersonnel extends UnitPersonnel {
 
 export interface NUnitAdd extends Optional<NUnit, "id" | "_pid" | "_gid" | "_sid"> {}
 
-export interface NUnitTemplateAdd extends Optional<NUnitTemplate, "id" | "name"> {}
+export interface NUnitTemplateAdd extends Omit<NUnitTemplate, "id" | "name"> {}
 
 export interface OlUnitProps
   extends Pick<NUnit, "id" | "sidc" | "name" | "shortName" | "symbolOptions"> {

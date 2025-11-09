@@ -32,7 +32,19 @@ export function useUnitTemplateManipulations(store: NewScenarioStore) {
   function createTemplateFromUnit(unitId: string) {
     const unit = store.state.unitMap[unitId];
     if (!unit) return;
-    const { id, _pid, _gid, _sid, state, ...unitTemplate } = klona(unit);
+    const {
+      id,
+      _pid,
+      _gid,
+      _sid,
+      state,
+      _isOpen,
+      _ikey,
+      _lkey,
+      _state,
+      ...unitTemplate
+    } = klona(unit);
+
     return addUnitTemplate(unitTemplate);
   }
 

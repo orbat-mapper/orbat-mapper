@@ -17,6 +17,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import ScenarioSymbolColorSettings from "@/modules/scenarioeditor/ScenarioSymbolColorSettings.vue";
 import ScenarioCustomSymbolSettings from "@/modules/scenarioeditor/ScenarioCustomSymbolSettings.vue";
+import ScenarioUnitTemplateSettings from "@/modules/scenarioeditor/ScenarioUnitTemplateSettings.vue";
 
 const {
   store: { onUndoRedo, state },
@@ -82,7 +83,6 @@ function showScenarioInfo() {
     >
       <ScenarioInfoGroups />
     </AccordionPanel>
-    <AccordionPanel label="Unit templates"> </AccordionPanel>
     <AccordionPanel label="Unit statuses">
       <ScenarioInfoUnitStatuses />
     </AccordionPanel>
@@ -94,6 +94,9 @@ function showScenarioInfo() {
     </AccordionPanel>
     <AccordionPanel label="Custom unit symbols">
       <ScenarioCustomSymbolSettings />
+    </AccordionPanel>
+    <AccordionPanel label="Unit templates">
+      <ScenarioUnitTemplateSettings />
     </AccordionPanel>
   </div>
 </template>
