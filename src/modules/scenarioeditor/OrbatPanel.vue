@@ -23,6 +23,16 @@
   >
     <p>Dragging copy mode <span v-if="isCopyingState">(including state)</span></p>
   </div>
+  <div
+    v-if="isDraggingUnit && selectedUnitIds.size > 1"
+    class="bg-opacity-50 fixed top-2 right-1/2 z-50 rounded border bg-gray-50 p-2 text-center text-sm text-gray-900"
+  >
+    <p>
+      Dragging
+      <span class="bg-muted rounded-full border px-1">{{ selectedUnitIds.size }}</span>
+      units
+    </p>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -64,6 +74,7 @@ const { store, unitActions, io, time } = activeScenario;
 const activeParentId = injectStrict(activeParentKey);
 
 const isDragging = ref(false);
+const isDraggingUnit = ref(false);
 const isCopying = ref(false);
 const isCopyingState = ref(false);
 
@@ -87,14 +98,16 @@ onMounted(() => {
       isUnitDragItem(source.data) ||
       isSideGroupDragItem(source.data) ||
       isSideDragItem(source.data),
-    onDragStart: ({ location }) => {
+    onDragStart: ({ location, source }) => {
       isDragging.value = true;
       isCopying.value = location.initial.input.ctrlKey || location.initial.input.metaKey;
       isCopyingState.value = isCopying.value && location.initial.input.altKey;
+      isDraggingUnit.value = isUnitDragItem(source.data);
     },
 
     onDrop: ({ source, location }) => {
       isDragging.value = false;
+      isDraggingUnit.value = false;
       const destination = location.current.dropTargets[0];
       if (!destination) {
         return;
@@ -221,14 +234,16 @@ function onUnitDrop(
   const isDuplicateAction = options.isDuplicateAction ?? false;
   const isDuplicateState = options.isDuplicateState ?? false;
   groupUpdate(() => {
-    let unitId = unit.id;
-    if (isDuplicateAction) {
-      unitId = unitActions.cloneUnit(unit.id, {
-        includeSubordinates: true,
-        includeState: isDuplicateState,
-      })!;
+    for (const id of selectedUnitIds.value) {
+      let unitId = id;
+      if (isDuplicateAction) {
+        unitId = unitActions.cloneUnit(id, {
+          includeSubordinates: true,
+          includeState: isDuplicateState,
+        })!;
+      }
+      changeUnitParent(unitId, destinationUnit.id, target);
     }
-    changeUnitParent(unitId, destinationUnit.id, target);
   });
   if (isDuplicateState) {
     time.setCurrentTime(state.currentTime);
