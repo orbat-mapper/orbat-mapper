@@ -84,7 +84,7 @@ const selectedUnitLabelStyle = new Style({
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const scenario = activeScenario || injectStrict(activeScenarioKey);
   const {
-    store: { state, onUndoRedo },
+    store: { state, onUndoRedo, groupUpdate },
     geo,
     unitActions: { getCombinedSymbolOptions },
     helpers: { getUnitById },
@@ -217,8 +217,13 @@ export function useMapDrop(
   mapRef: MaybeRef<OLMap | null | undefined>,
   unitLayer: MaybeRef<VectorLayer<any>>,
 ) {
-  const { geo } = injectStrict(activeScenarioKey);
+  const {
+    geo,
+    store: { groupUpdate },
+    helpers: { getUnitById },
+  } = injectStrict(activeScenarioKey);
   const mStore = useMapSettingsStore();
+  const { selectedUnitIds } = useSelectedItems();
   let dndCleanup = () => {};
   const isDragging = ref(false);
   const dropPosition = ref<Position>([0, 0]);
@@ -253,16 +258,21 @@ export function useMapDrop(
 
         const dropPosition = self.data.position as Coordinate;
         if (isUnitDragItem(dragData)) {
-          const unitSource = unref(unitLayer).getSource();
-          const existingUnitFeature = unitSource?.getFeatureById(dragData.unit.id);
+          groupUpdate(() => {
+            for (const unitId of selectedUnitIds.value) {
+              const unitSource = unref(unitLayer).getSource();
+              const existingUnitFeature = unitSource?.getFeatureById(unitId);
 
-          geo.addUnitPosition(dragData.unit.id, dropPosition);
+              geo.addUnitPosition(unitId, dropPosition);
 
-          if (existingUnitFeature) {
-            existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
-          } else {
-            unitSource?.addFeature(createUnitFeatureAt(dropPosition, dragData.unit));
-          }
+              if (existingUnitFeature) {
+                existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
+              } else {
+                const unit = getUnitById(unitId);
+                unit && unitSource?.addFeature(createUnitFeatureAt(dropPosition, unit));
+              }
+            }
+          });
         } else if (isScenarioFeatureDragItem(dragData)) {
           const geometryCenter = centroid(dragData.feature).geometry.coordinates;
           const to = dropPosition;

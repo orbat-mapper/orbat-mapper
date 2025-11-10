@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, h, onMounted, onUnmounted, ref, render } from "vue";
 import {
   draggable,
   dropTargetForElements,
@@ -11,7 +11,7 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import { ChevronRightIcon } from "@heroicons/vue/20/solid";
+import { ChevronRightIcon, StarIcon } from "@heroicons/vue/20/solid";
 import { IconLockOutline } from "@iconify-prerendered/vue-mdi";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { type UnitAction } from "@/types/constants";
@@ -29,6 +29,9 @@ import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import { getUnitDragItem, isUnitDragItem } from "@/types/draggables";
 import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
+import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
+import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview";
+import UnitSymbol from "@/components/UnitSymbol.vue";
 
 interface Props {
   item: NOrbatItemData;
@@ -154,7 +157,8 @@ onMounted(() => {
           !isUnitLocked(props.item.unit.id) &&
           isUnitDragItem(source.data) &&
           source.data.unit.id !== props.item.unit.id &&
-          props.item.unit._pid !== source.data.unit.id
+          props.item.unit._pid !== source.data.unit.id &&
+          !selectedUnitIds.value.has(props.item.unit.id)
         );
       },
       onDragEnter: ({ self }) => {
