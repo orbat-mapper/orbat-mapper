@@ -210,7 +210,7 @@ export function useKmlExport(scenario: TScenario) {
   }
 
   async function downloadAsKMZ(opts: KmlKmzExportSettings) {
-    const { zipSync } = await import("fflate");
+    const { zipSync, strToU8 } = await import("fflate");
     const { foldersToKML } = await import("@/extlib/tokml");
     const data: Record<string, Uint8Array> = {};
     const offsetCache = new Map<string, OffsetItem>();
@@ -254,7 +254,7 @@ export function useKmlExport(scenario: TScenario) {
       })),
     );
 
-    data["doc.kml"] = new TextEncoder().encode(kmlString);
+    data["doc.kml"] = strToU8(kmlString);
     const zipData = zipSync(data);
     await saveBlobToLocalFile(
       new Blob([zipData as BlobPart], {
