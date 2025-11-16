@@ -31,6 +31,7 @@ const TanstackGridTestView = () => import("@/modules/grid/TanstackGridTestView.v
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
 const ScenarioEditorMap = () => import("@/modules/scenarioeditor/ScenarioEditorMap.vue");
+const GlobeView = () => import("@/modules/globeview/GlobeView.vue");
 const routes = [
   {
     path: "/scenario/:scenarioId",
@@ -100,6 +101,7 @@ const routes = [
     path: "/testgrid2",
     component: TanstackGridTestView,
   },
+  { path: "/globe", component: GlobeView },
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];
 

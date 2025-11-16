@@ -12,4 +12,14 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  // See https://github.com/maplibre/maplibre-gl-js/issues/6680#issuecomment-3523713122
+  build: {
+    target: "es2022",
+  },
+
+  optimizeDeps: {
+    esbuildOptions: {
+      target: "es2022",
+    },
+  },
 });
