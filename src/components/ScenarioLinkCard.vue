@@ -8,7 +8,7 @@
         v-bind="
           noLink
             ? { type: 'button' }
-            : { to: { name: MAP_EDIT_MODE_ROUTE, params: { scenarioId: data.id } } }
+            : { to: { name: routeName, params: { scenarioId: data.id } } }
         "
         v-on="noLink ? { click: () => emit('action', 'open') } : {}"
         class="text-left focus:outline-hidden"
@@ -42,7 +42,13 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { type MenuItemData } from "@/components/types";
 import { type StoredScenarioAction } from "@/types/constants";
 
-const props = defineProps<{ data: ScenarioMetadata; noLink?: boolean }>();
+const props = withDefaults(
+  defineProps<{ data: ScenarioMetadata; noLink?: boolean; routeName?: string }>(),
+  {
+    noLink: false,
+    routeName: MAP_EDIT_MODE_ROUTE,
+  },
+);
 const emit = defineEmits(["action"]);
 const menuItems: MenuItemData<StoredScenarioAction>[] = [
   { label: "Open", action: "open" },
