@@ -4,6 +4,7 @@ import "nprogress/nprogress.css";
 import LandingPage from "../views/LandingPage.vue";
 import {
   CHART_EDIT_MODE_ROUTE,
+  GLOBE_ROUTE,
   GRID_EDIT_ROUTE,
   LANDING_PAGE_ROUTE,
   MAP_EDIT_MODE_ROUTE,
@@ -101,7 +102,7 @@ const routes = [
     path: "/testgrid2",
     component: TanstackGridTestView,
   },
-  { path: "/globe", component: GlobeView },
+  { path: "/globe/:scenarioId", props: true, component: GlobeView, name: GLOBE_ROUTE },
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];
 

@@ -95,7 +95,7 @@
               <router-link to="/storymode" class="">Story mode test</router-link>
               <router-link to="/testgrid" class="">Test grid</router-link>
               <router-link to="/testgrid2" class="">Tanstack Table Test grid</router-link>
-              <router-link to="/globe" class="">Globe view</router-link>
+              <router-link to="/globe/demo-falkland82" class="">Globe view</router-link>
             </ul>
           </div>
         </ProseSection>

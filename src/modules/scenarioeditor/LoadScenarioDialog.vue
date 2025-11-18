@@ -5,11 +5,15 @@ import LoadScenarioUrlForm from "@/modules/scenarioeditor/LoadScenarioUrlForm.vu
 import { useBrowserScenarios } from "@/composables/browserScenarios";
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
 import { ref } from "vue";
-import { NEW_SCENARIO_ROUTE } from "@/router/names";
+import { MAP_EDIT_MODE_ROUTE, NEW_SCENARIO_ROUTE } from "@/router/names";
 import SortDropdown from "@/components/SortDropdown.vue";
 import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Button } from "@/components/ui/button";
+
+const props = withDefaults(defineProps<{ routeName?: string }>(), {
+  routeName: MAP_EDIT_MODE_ROUTE,
+});
 
 const open = defineModel({ default: false });
 const inputSource = ref<"external" | "browser">("browser");
@@ -17,7 +21,7 @@ const inputSource = ref<"external" | "browser">("browser");
 const { loadScenario, storedScenarios, sortOptions, onAction } = useBrowserScenarios();
 
 function onLoaded(scenario: Scenario) {
-  loadScenario(scenario);
+  loadScenario(scenario, props.routeName);
   open.value = false;
 }
 </script>
@@ -67,6 +71,7 @@ function onLoaded(scenario: Scenario) {
           :key="info.id"
           :data="info"
           @action="onAction($event, info)"
+          :routeName="routeName"
         />
       </ul>
     </section>
