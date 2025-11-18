@@ -93,7 +93,7 @@ export function useBrowserScenarios() {
     }
   }
 
-  async function loadScenario(v: Scenario) {
+  async function loadScenario(v: Scenario, routeName = MAP_EDIT_MODE_ROUTE) {
     const { addScenario, getScenarioInfo, putScenario } = await useIndexedDb();
 
     const existingScenarioInfo = await getScenarioInfo(v.id ?? nanoid());
@@ -108,10 +108,10 @@ export function useBrowserScenarios() {
       } else {
         scenarioId = await addScenario(v, nanoid());
       }
-      await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
+      await router.push({ name: routeName, params: { scenarioId } });
     } else {
       const scenarioId = await addScenario(v);
-      await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
+      await router.push({ name: routeName, params: { scenarioId } });
     }
   }
 

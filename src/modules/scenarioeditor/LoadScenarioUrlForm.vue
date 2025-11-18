@@ -1,35 +1,10 @@
-<template>
-  <form class="space-y-4" @submit.prevent="fetchScenario">
-    <InputGroup v-model="scenarioUrl" label="URL" />
-    <p class="text-sm">
-      Please note that the scenario host must be configured to allow CORS requests.
-    </p>
-
-    <p v-if="isError" class="text-sm text-red-600">
-      {{ errorMessage }}
-    </p>
-    <p v-if="sharableUrl" class="prose prose-sm">
-      <a :href="sharableUrl" target="_blank">{{ sharableUrl }}</a>
-      <BaseButton class="ml-2" small @click="copy(sharableUrl)"
-        >Copy to clipboard
-      </BaseButton>
-    </p>
-    <p class="flex justify-end gap-2 pt-4">
-      <BaseButton type="button" small @click="createSharableUrl()"
-        >Create sharable URL
-      </BaseButton>
-      <BaseButton type="submit" primary small>Load from URL</BaseButton>
-    </p>
-  </form>
-</template>
-
 <script setup lang="ts">
 import { type Scenario } from "@/types/scenarioModels";
 import InputGroup from "@/components/InputGroup.vue";
 import { computed, ref } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
 import { isUrl } from "@/utils";
 import { useClipboard } from "@vueuse/core";
+import { Button } from "@/components/ui/button";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -77,3 +52,28 @@ function createSharableUrl() {
   navigator.clipboard.writeText(url.toString());
 }
 </script>
+
+<template>
+  <form class="space-y-4" @submit.prevent="fetchScenario">
+    <InputGroup v-model="scenarioUrl" label="URL" />
+    <p class="text-sm">
+      Please note that the scenario host must be configured to allow CORS requests.
+    </p>
+
+    <p v-if="isError" class="text-sm text-red-600">
+      {{ errorMessage }}
+    </p>
+    <div v-if="sharableUrl" class="prose prose-sm">
+      <a :href="sharableUrl" target="_blank">{{ sharableUrl }}</a>
+      <Button class="ml-2" variant="outline" size="sm" @click="copy(sharableUrl)"
+        >Copy to clipboard
+      </Button>
+    </div>
+    <p class="flex justify-end gap-2 pt-4">
+      <Button type="button" variant="secondary" @click="createSharableUrl()"
+        >Create sharable URL
+      </Button>
+      <Button type="submit">Load from URL</Button>
+    </p>
+  </form>
+</template>
