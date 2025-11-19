@@ -47,7 +47,9 @@ export function createInitialState(unit: NUnit): CurrentState | null {
 
 export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
   if (!unit.state || !unit.state.length) {
-    unit._state = createInitialState(unit);
+    if (!unit._state) {
+      unit._state = createInitialState(unit);
+    }
     return;
   }
   let currentState = createInitialState(unit);
