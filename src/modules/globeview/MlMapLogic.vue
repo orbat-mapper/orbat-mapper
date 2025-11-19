@@ -1,13 +1,24 @@
 <script setup lang="ts">
 import { type GeoJSONSource, type Map as MlMap, type Subscription } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, provide, watch } from "vue";
 import type { Feature } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
+import { featureCollection } from "@turf/helpers";
+import { centerOfMass } from "@turf/turf";
+import { activeScenarioKey } from "@/components/injects.ts";
+import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
+import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
+import { usePlaybackStore } from "@/stores/playbackStore.ts";
+import { useRafFn } from "@vueuse/core";
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
   activeScenario: TScenario;
 }>();
+
+provide(activeScenarioKey, activeScenario);
+
+const playback = usePlaybackStore();
 
 function setupMapLayers() {
   !mlMap.getSource("unitSource") &&
@@ -60,42 +71,52 @@ function setupMapLayers() {
       .asCanvas(2)
       ?.getContext("2d")
       ?.getImageData(0, 0, 2 * width, 2 * height);
-    if (data) {
+    if (data && !mlMap.hasImage(e.id)) {
       mlMap.addImage(e.id, data, { pixelRatio: 2 });
     }
   });
 }
 
 setupMapLayers();
-console.log("Initializing map for scenario ", activeScenario.store.state.id);
-if (activeScenario.store.state.id === "demo-falklands82")
-  activeScenario.time.setCurrentTime(+new Date("1982-05-21T12:00:00-04:00"));
-addUnits();
+if (activeScenario.store.state.id === "demo-falklands82") {
+  // activeScenario.time.setCurrentTime(+new Date("1982-05-21T12:00:00-04:00"));
+}
 
-function addUnits() {
+addUnits(true);
+
+watch(
+  () => activeScenario.store.state.currentTime,
+  (time) => {
+    addUnits();
+  },
+);
+
+function addUnits(initial = false) {
   const source = mlMap.getSource("unitSource") as GeoJSONSource;
   if (!source) return;
 
   const visibleUnits = activeScenario.geo.everyVisibleUnit.value;
-  const features = visibleUnits.map((unit) => {
-    return {
-      type: "Feature",
-      geometry: {
-        type: "Point",
-        coordinates: unit._state?.location,
-      },
-      properties: {
-        id: unit.id,
-        sidc: unit.sidc,
-        label: unit.shortName || unit.name || "Unnamed Unit",
-      },
-    };
-  }) as Feature[];
-
-  source.setData({
-    type: "FeatureCollection",
-    features: features,
-  });
+  const features = featureCollection(
+    visibleUnits.map((unit) => {
+      return {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: unit._state?.location,
+        },
+        properties: {
+          id: unit.id,
+          sidc: unit.sidc,
+          label: unit.shortName || unit.name || "Unnamed Unit",
+        },
+      } as Feature;
+    }),
+  );
+  if (initial) {
+    const center = centerOfMass(features);
+    mlMap.setCenter(center.geometry.coordinates as [number, number]);
+  }
+  source.setData(features);
 }
 
 onMounted(() => {
@@ -113,5 +134,38 @@ onUnmounted(() => {
   //   mlMap.removeSource("unitSource");
   // }
 });
+
+const { pause, resume, isActive } = useRafFn(
+  ({ delta }) => {
+    if (
+      playback.playbackLooping &&
+      playback.endMarker !== undefined &&
+      playback.startMarker !== undefined
+    ) {
+      if (activeScenario.store.state.currentTime >= playback.endMarker) {
+        activeScenario.time.setCurrentTime(playback.startMarker);
+        return;
+      }
+    }
+
+    const newTime = activeScenario.store.state.currentTime + playback.playbackSpeed;
+    activeScenario.time.setCurrentTime(newTime);
+  },
+  { immediate: false, fpsLimit: 60 },
+);
+
+watch(
+  () => playback.playbackRunning,
+  (running) => {
+    if (running) {
+      resume();
+    } else {
+      pause();
+    }
+  },
+  { immediate: true },
+);
 </script>
-<template></template>
+<template>
+  <div class="fixed top-0 right-0"><PlaybackMenu /></div>
+</template>

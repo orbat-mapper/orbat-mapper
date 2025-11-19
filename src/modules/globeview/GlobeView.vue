@@ -7,6 +7,7 @@ import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
 import { useIndexedDb } from "@/scenariostore/localdb.ts";
 import { Button } from "@/components/ui/button";
 import { GLOBE_ROUTE } from "@/router/names.ts";
+import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 const LoadScenarioDialog = defineAsyncComponent(
   () => import("../scenarioeditor/LoadScenarioDialog.vue"),
 );
@@ -26,7 +27,6 @@ watch(
   () => props.scenarioId,
   async (newScenarioId) => {
     localReady.value = false;
-    console.log("Loading scenario:", newScenarioId);
     showLoadScenarioDialog.value = false;
     if (isDemoScenario(newScenarioId)) {
       const demoId = newScenarioId.replace("demo-", "");
@@ -61,10 +61,11 @@ watch(isReady, (newVal) => {
 <template>
   <div class="flex h-full w-full flex-col">
     <header class="bg-background flex shrink-0 items-center gap-2">
-      <h1 class="p-2 text-base font-bold">Globe View</h1>
+      <h1 class="p-2 text-base font-bold">Globe View (experiment)</h1>
       <Button @click="showLoadScenarioDialog = true" variant="outline"
         >Load scenario</Button
       >
+      <Button variant="link" asChild><router-link to="/">Back</router-link></Button>
     </header>
     <div class="relative flex-auto">
       <MaplibreMap @ready="onMapReady" class="bg-radial from-gray-800 to-gray-950" />
