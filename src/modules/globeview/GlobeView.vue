@@ -2,18 +2,19 @@
 import MaplibreMap from "@/modules/globeview/MaplibreMap.vue";
 import { useScenario } from "@/scenariostore";
 import type { Map as MlMap } from "maplibre-gl";
-import { defineAsyncComponent, onMounted, ref, shallowRef, watch } from "vue";
+import { defineAsyncComponent, ref, shallowRef, watch } from "vue";
 import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
 import { useIndexedDb } from "@/scenariostore/localdb.ts";
 import { Button } from "@/components/ui/button";
 import { GLOBE_ROUTE } from "@/router/names.ts";
-import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
+import { useFps } from "@vueuse/core";
+
 const LoadScenarioDialog = defineAsyncComponent(
   () => import("../scenarioeditor/LoadScenarioDialog.vue"),
 );
 
 const props = defineProps<{ scenarioId: string }>();
-
+const fps = useFps();
 const { scenario, isReady } = useScenario();
 const showLoadScenarioDialog = ref(false);
 const localReady = ref(false);
@@ -66,6 +67,11 @@ watch(isReady, (newVal) => {
         >Load scenario</Button
       >
       <Button variant="link" asChild><router-link to="/">Back</router-link></Button>
+
+      <!-- FPS indicator, placed to the right -->
+      <div class="text-muted-foreground text-sm" title="Frames per second">
+        FPS: {{ fps }}
+      </div>
     </header>
     <div class="relative flex-auto">
       <MaplibreMap @ready="onMapReady" class="bg-radial from-gray-800 to-gray-950" />
