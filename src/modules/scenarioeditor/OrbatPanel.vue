@@ -234,7 +234,8 @@ function onUnitDrop(
   const isDuplicateAction = options.isDuplicateAction ?? false;
   const isDuplicateState = options.isDuplicateState ?? false;
   groupUpdate(() => {
-    for (const id of selectedUnitIds.value) {
+    const selUnits = new Set([...selectedUnitIds.value, unit.id]);
+    for (const id of selUnits) {
       let unitId = id;
       if (isDuplicateAction) {
         unitId = unitActions.cloneUnit(id, {

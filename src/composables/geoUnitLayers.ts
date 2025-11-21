@@ -259,7 +259,8 @@ export function useMapDrop(
         const dropPosition = self.data.position as Coordinate;
         if (isUnitDragItem(dragData)) {
           groupUpdate(() => {
-            for (const unitId of selectedUnitIds.value) {
+            const selUnits = new Set([...selectedUnitIds.value, dragData.unit.id]);
+            for (const unitId of selUnits) {
               const unitSource = unref(unitLayer).getSource();
               const existingUnitFeature = unitSource?.getFeatureById(unitId);
 
