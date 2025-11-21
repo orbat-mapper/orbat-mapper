@@ -163,23 +163,7 @@
     >
       <p class="rounded border bg-white/40 p-4 text-gray-900">Drop file to import data</p>
     </div>
-    <div
-      v-if="uiStore.debugMode"
-      class="bg-opacity-70 fixed bottom-2 left-2 z-50 rounded bg-gray-50 text-gray-900 print:hidden"
-    >
-      <p class="p-2 text-xs font-bold">
-        <span class="sm:hidden">mo</span>
-        <span class="hidden sm:inline md:hidden">sm</span>
-        <span class="hidden md:inline lg:hidden">md</span>
-        <span class="hidden lg:inline xl:hidden">lg</span>
-        <span class="hidden xl:inline 2xl:hidden">xl</span>
-        <span class="3xl:hidden hidden 2xl:inline">2xl</span>
-        <span class="3xl:inline 4xl:hidden hidden">3xl</span>
-        <span class="4xl:inline hidden">4xl+</span>
-      </p>
-
-      <p></p>
-    </div>
+    <DebugInfo v-if="uiStore.debugMode" />
   </div>
 </template>
 
@@ -243,6 +227,7 @@ import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
+import DebugInfo from "@/components/DebugInfo.vue";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 
