@@ -23,7 +23,12 @@ import {
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import type { ShallowRef } from "vue";
 import { isLoading } from "@/scenariostore/index";
-import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
+import {
+  INTERNAL_NAMES,
+  type NState,
+  type NUnit,
+  TIMESTAMP_NAMES,
+} from "@/types/internalModels";
 import dayjs from "dayjs";
 import type {
   RangeRingGroup,
@@ -141,23 +146,7 @@ export function serializeUnit(
 ): Unit {
   const { newId = false, includeSubUnits = true } = options;
   const nUnit = scnState.unitMap[unitId];
-  let equipment = nUnit.equipment?.map(({ id, count, onHand }) => {
-    const { name } = scnState.equipmentMap[id];
-    return { name, count, onHand };
-  });
-  if (equipment?.length === 0) equipment = undefined;
-  let personnel = nUnit.personnel?.map(({ id, count, onHand }) => {
-    const { name } = scnState.personnelMap[id];
-    return { name, count, onHand };
-  });
-  if (personnel?.length === 0) personnel = undefined;
-
-  let supplies = nUnit.supplies?.map(({ id, count, onHand }) => {
-    const { name } = scnState.supplyCategoryMap[id];
-    return { name, count, onHand };
-  });
-  if (supplies?.length === 0) supplies = undefined;
-
+  let { equipment, personnel, supplies } = serializeToeStuff(nUnit, scnState);
   let rangeRings = nUnit.rangeRings?.map(({ group, ...rest }) => {
     return group ? { group: scnState.rangeRingGroupMap[group].name, ...rest } : rest;
   });
@@ -176,77 +165,98 @@ export function serializeUnit(
     personnel,
     supplies,
     rangeRings,
-    state: state
-      ? state.map((s) => {
-          let diffEquipment, diffPersonnel, diffSupplies;
-          const c = klona(s) as State;
-
-          if (s.diff) {
-            if (s.diff.equipment) {
-              diffEquipment = s.diff.equipment.map(({ id, count, onHand }) => {
-                return { name: scnState.equipmentMap[id]?.name ?? id, count, onHand };
-              });
-            }
-
-            if (s.diff?.personnel) {
-              diffPersonnel = s.diff.personnel.map(({ id, count, onHand }) => {
-                return { name: scnState.personnelMap[id]?.name ?? id, count, onHand };
-              });
-            }
-
-            if (s.diff?.supplies) {
-              diffSupplies = s.diff.supplies.map(({ id, count, onHand }) => {
-                return {
-                  name: scnState.supplyCategoryMap[id]?.name ?? id,
-                  count,
-                  onHand,
-                };
-              });
-            }
-            c.diff = {
-              equipment: diffEquipment,
-              personnel: diffPersonnel,
-              supplies: diffSupplies,
-            };
-          }
-
-          if (s.update) {
-            let updateEquipment, updatePersonnel, updateSupplies;
-
-            if (s.update.equipment) {
-              updateEquipment = s.update.equipment.map(({ id, count, onHand }) => {
-                return { name: scnState.equipmentMap[id]?.name ?? id, count, onHand };
-              });
-            }
-            if (s.update.personnel) {
-              updatePersonnel = s.update.personnel.map(({ id, count, onHand }) => {
-                return { name: scnState.personnelMap[id]?.name ?? id, count, onHand };
-              });
-            }
-
-            if (s.update.supplies) {
-              updateSupplies = s.update.supplies.map(({ id, count, onHand }) => {
-                return {
-                  name: scnState.supplyCategoryMap[id]?.name ?? id,
-                  count,
-                  onHand,
-                };
-              });
-            }
-            c.update = {
-              equipment: updateEquipment,
-              personnel: updatePersonnel,
-              supplies: updateSupplies,
-            };
-          }
-
-          if (s.status) {
-            c.status = scnState.unitStatusMap[s.status]?.name;
-          }
-          return c;
-        })
-      : undefined,
+    state: state ? state.map((s) => serializeState(s, scnState)) : undefined,
   };
+}
+
+function serializeToeStuff(nUnit: NUnit, scnState: ScenarioState) {
+  let equipment = nUnit.equipment?.map(({ id, count, onHand }) => {
+    const { name } = scnState.equipmentMap[id];
+    return { name, count, onHand };
+  });
+  if (equipment?.length === 0) equipment = undefined;
+  let personnel = nUnit.personnel?.map(({ id, count, onHand }) => {
+    const { name } = scnState.personnelMap[id];
+    return { name, count, onHand };
+  });
+  if (personnel?.length === 0) personnel = undefined;
+
+  let supplies = nUnit.supplies?.map(({ id, count, onHand }) => {
+    const { name } = scnState.supplyCategoryMap[id];
+    return { name, count, onHand };
+  });
+  if (supplies?.length === 0) supplies = undefined;
+
+  return { equipment, personnel, supplies };
+}
+
+function serializeState(s: NState, scnState: ScenarioState) {
+  let diffEquipment, diffPersonnel, diffSupplies;
+  const c = klona(s) as State;
+
+  if (s.diff) {
+    if (s.diff.equipment) {
+      diffEquipment = s.diff.equipment.map(({ id, count, onHand }) => {
+        return { name: scnState.equipmentMap[id]?.name ?? id, count, onHand };
+      });
+    }
+
+    if (s.diff?.personnel) {
+      diffPersonnel = s.diff.personnel.map(({ id, count, onHand }) => {
+        return { name: scnState.personnelMap[id]?.name ?? id, count, onHand };
+      });
+    }
+
+    if (s.diff?.supplies) {
+      diffSupplies = s.diff.supplies.map(({ id, count, onHand }) => {
+        return {
+          name: scnState.supplyCategoryMap[id]?.name ?? id,
+          count,
+          onHand,
+        };
+      });
+    }
+    c.diff = {
+      equipment: diffEquipment,
+      personnel: diffPersonnel,
+      supplies: diffSupplies,
+    };
+  }
+
+  if (s.update) {
+    let updateEquipment, updatePersonnel, updateSupplies;
+
+    if (s.update.equipment) {
+      updateEquipment = s.update.equipment.map(({ id, count, onHand }) => {
+        return { name: scnState.equipmentMap[id]?.name ?? id, count, onHand };
+      });
+    }
+    if (s.update.personnel) {
+      updatePersonnel = s.update.personnel.map(({ id, count, onHand }) => {
+        return { name: scnState.personnelMap[id]?.name ?? id, count, onHand };
+      });
+    }
+
+    if (s.update.supplies) {
+      updateSupplies = s.update.supplies.map(({ id, count, onHand }) => {
+        return {
+          name: scnState.supplyCategoryMap[id]?.name ?? id,
+          count,
+          onHand,
+        };
+      });
+    }
+    c.update = {
+      equipment: updateEquipment,
+      personnel: updatePersonnel,
+      supplies: updateSupplies,
+    };
+  }
+
+  if (s.status) {
+    c.status = scnState.unitStatusMap[s.status]?.name;
+  }
+  return c;
 }
 
 function getLayers(state: ScenarioState): ScenarioLayer[] {
