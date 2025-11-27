@@ -6,3 +6,4 @@ dist-ssr
 .idea
 stats.html
 cache
+package-lock.json
