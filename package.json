@@ -118,6 +118,7 @@
     "@types/markdown-it-container": "^2.0.10",
     "@types/node": "^22.18.10",
     "@types/nprogress": "^0.2.3",
+    "@types/xast": "^2.0.4",
     "@vitejs/plugin-vue": "^5.2.4",
     "inter-ui": "^4.1.1",
     "jsdom": "^26.1.0",
