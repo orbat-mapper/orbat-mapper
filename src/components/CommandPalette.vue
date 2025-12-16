@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch, watchEffect } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import {
@@ -9,6 +9,7 @@ import {
   DialogPortal,
   DialogRoot,
   ListboxContent,
+  ListboxFilter,
   ListboxGroup,
   ListboxGroupLabel,
   ListboxItem,
@@ -89,7 +90,6 @@ const groupedHits = ref<
 const mapCenter = ref<number[] | null | undefined>();
 
 const hitCount = ref(0);
-const searchInputRef = ref<HTMLInputElement | null>(null);
 const highlightedItem = ref<SearchResultItem | null>(null);
 
 watch(open, (isOpen) => {
@@ -100,10 +100,6 @@ watch(open, (isOpen) => {
     } else {
       mapCenter.value = null;
     }
-    // Focus the search input when the dialog opens
-    nextTick(() => {
-      searchInputRef.value?.focus();
-    });
   } else {
     // Reset state when dialog closes
     rawQuery.value = "";
@@ -137,8 +133,28 @@ watch([() => isActionSearch.value, () => query.value.trim()], async ([isa, q]) =
   hitCount.value = filteredActions.length;
 });
 
-function onSelect(value: unknown) {
-  const item = value as SearchResultItem;
+function handleSelect(value: unknown) {
+  if (!value) return;
+  onSelect(
+    value as
+      | UnitSearchResult
+      | LayerFeatureSearchResult
+      | EventSearchResult
+      | ExtendedPhotonSearchResult
+      | ActionSearchResult
+      | MapLayerSearchResult,
+  );
+}
+
+function onSelect(
+  item:
+    | UnitSearchResult
+    | LayerFeatureSearchResult
+    | EventSearchResult
+    | ExtendedPhotonSearchResult
+    | ActionSearchResult
+    | MapLayerSearchResult,
+) {
   if (item.category === "Units") emit("select-unit", item.id);
   else if (item.category === "Features") {
     if (item.type === "layer") {
@@ -173,10 +189,6 @@ function onHighlight(payload: { ref: HTMLElement; value: unknown } | undefined) 
 function isItemHighlighted(item: SearchResultItem): boolean {
   if (!highlightedItem.value) return false;
   return highlightedItem.value.id === item.id;
-}
-
-function handleSearchInput(event: Event) {
-  rawQuery.value = (event.target as HTMLInputElement).value;
 }
 </script>
 
@@ -215,7 +227,7 @@ function handleSearchInput(event: Event) {
             <DialogClose class="sr-only">Close</DialogClose>
             <ListboxRoot
               highlight-on-hover
-              @update:model-value="onSelect"
+              @update:model-value="handleSelect"
               @highlight="onHighlight"
             >
               <div class="relative">
@@ -223,12 +235,11 @@ function handleSearchInput(event: Event) {
                   class="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-gray-400"
                   aria-hidden="true"
                 />
-                <input
-                  ref="searchInputRef"
+                <ListboxFilter
+                  v-model="rawQuery"
+                  auto-focus
                   class="h-12 w-full border-0 bg-transparent pr-4 pl-11 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
                   placeholder="Search..."
-                  :value="rawQuery"
-                  @input="handleSearchInput"
                 />
               </div>
 
