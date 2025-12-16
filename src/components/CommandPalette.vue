@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect } from "vue";
+import { computed, nextTick, ref, watch, watchEffect } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import {
-  Combobox,
-  ComboboxInput,
-  ComboboxOption,
-  ComboboxOptions,
-  Dialog,
-  DialogPanel,
-  TransitionChild,
-  TransitionRoot,
-} from "@headlessui/vue";
+  DialogClose,
+  DialogContent,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  ListboxContent,
+  ListboxGroup,
+  ListboxGroupLabel,
+  ListboxItem,
+  ListboxRoot,
+} from "reka-ui";
 import CommandPaletteFooter from "@/components/CommandPaletteFooter.vue";
 import CommandPaletteHelp from "@/components/CommandPaletteHelp.vue";
 import { useDebounce, useVModel } from "@vueuse/core";
@@ -33,6 +35,14 @@ import CommandPalettePlaceItem from "@/components/CommandPalettePlaceItem.vue";
 import { useUiStore } from "@/stores/uiStore";
 import CommandPaletteActionItem from "@/components/CommandPaletteActionItem.vue";
 import CommandPaletteImageLayerItem from "@/components/CommandPaletteImageLayerItem.vue";
+
+type SearchResultItem =
+  | UnitSearchResult
+  | LayerFeatureSearchResult
+  | EventSearchResult
+  | ExtendedPhotonSearchResult
+  | ActionSearchResult
+  | MapLayerSearchResult;
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits([
@@ -79,6 +89,8 @@ const groupedHits = ref<
 const mapCenter = ref<number[] | null | undefined>();
 
 const hitCount = ref(0);
+const searchInputRef = ref<HTMLInputElement | null>(null);
+const highlightedItem = ref<SearchResultItem | null>(null);
 
 watch(open, (isOpen) => {
   if (isOpen) {
@@ -88,6 +100,14 @@ watch(open, (isOpen) => {
     } else {
       mapCenter.value = null;
     }
+    // Focus the search input when the dialog opens
+    nextTick(() => {
+      searchInputRef.value?.focus();
+    });
+  } else {
+    // Reset state when dialog closes
+    rawQuery.value = "";
+    highlightedItem.value = null;
   }
 });
 
@@ -117,15 +137,8 @@ watch([() => isActionSearch.value, () => query.value.trim()], async ([isa, q]) =
   hitCount.value = filteredActions.length;
 });
 
-function onSelect(
-  item:
-    | UnitSearchResult
-    | LayerFeatureSearchResult
-    | EventSearchResult
-    | ExtendedPhotonSearchResult
-    | ActionSearchResult
-    | MapLayerSearchResult,
-) {
+function onSelect(value: unknown) {
+  const item = value as SearchResultItem;
   if (item.category === "Units") emit("select-unit", item.id);
   else if (item.category === "Features") {
     if (item.type === "layer") {
@@ -144,102 +157,136 @@ function onSelect(
   }
   open.value = false;
 }
+
+function onHighlight(payload: { ref: HTMLElement; value: unknown } | undefined) {
+  if (!payload?.value) {
+    highlightedItem.value = null;
+    return;
+  }
+  // Basic type guard - check for required category property
+  const item = payload.value as Record<string, unknown>;
+  if (typeof item === "object" && item !== null && "category" in item) {
+    highlightedItem.value = payload.value as SearchResultItem;
+  }
+}
+
+function isItemHighlighted(item: SearchResultItem): boolean {
+  if (!highlightedItem.value) return false;
+  return highlightedItem.value.id === item.id;
+}
+
+function handleSearchInput(event: Event) {
+  rawQuery.value = (event.target as HTMLInputElement).value;
+}
 </script>
 
 <template>
-  <TransitionRoot :show="open" as="template" @after-leave="" appear>
-    <Dialog as="div" class="relative z-10" @close="open = false">
-      <TransitionChild
-        as="template"
-        enter="ease-out duration-300"
-        enter-from="opacity-0"
-        enter-to="opacity-100"
-        leave="ease-in duration-200"
-        leave-from="opacity-100"
-        leave-to="opacity-0"
+  <DialogRoot v-model:open="open">
+    <DialogPortal>
+      <Transition
+        enter-active-class="ease-out duration-300"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="ease-in duration-200"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
       >
-        <div class="fixed inset-0 bg-gray-500/50 transition-opacity" />
-      </TransitionChild>
+        <DialogOverlay
+          v-if="open"
+          class="fixed inset-0 bg-gray-500/50 transition-opacity"
+        />
+      </Transition>
 
-      <div class="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 md:p-20">
-        <TransitionChild
-          as="template"
-          enter="ease-out duration-300"
-          enter-from="opacity-0 scale-95"
-          enter-to="opacity-100 scale-100"
-          leave="ease-in duration-200"
-          leave-from="opacity-100 scale-100"
-          leave-to="opacity-0 scale-95"
+      <div v-if="open" class="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 md:p-20">
+        <Transition
+          enter-active-class="ease-out duration-300"
+          enter-from-class="opacity-0 scale-95"
+          enter-to-class="opacity-100 scale-100"
+          leave-active-class="ease-in duration-200"
+          leave-from-class="opacity-100 scale-100"
+          leave-to-class="opacity-0 scale-95"
         >
-          <DialogPanel
+          <DialogContent
+            v-if="open"
             class="ring-opacity-5 mx-auto max-w-xl transform divide-y divide-gray-100 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black transition-all"
             :class="isGeoSearch && 'bg-red-500'"
+            @interact-outside.prevent
           >
-            <Combobox @update:modelValue="onSelect">
+            <DialogClose class="sr-only">Close</DialogClose>
+            <ListboxRoot
+              highlight-on-hover
+              @update:model-value="onSelect"
+              @highlight="onHighlight"
+            >
               <div class="relative">
                 <MagnifyingGlassIcon
                   class="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-gray-400"
                   aria-hidden="true"
                 />
-                <ComboboxInput
+                <input
+                  ref="searchInputRef"
                   class="h-12 w-full border-0 bg-transparent pr-4 pl-11 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
                   placeholder="Search..."
-                  @change="rawQuery = $event.target.value"
+                  :value="rawQuery"
+                  @input="handleSearchInput"
                 />
               </div>
 
-              <ComboboxOptions
+              <ListboxContent
                 v-if="groupedHits && hitCount > 0"
-                static
                 class="max-h-80 scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto p-4 pb-2 sm:max-h-[60vh]"
               >
-                <li v-for="[source, hits] in groupedHits">
-                  <h2 class="text-xs font-semibold text-gray-900">{{ source }}</h2>
+                <ListboxGroup
+                  v-for="[source, hits] in groupedHits"
+                  :key="source"
+                  class="list-none"
+                >
+                  <ListboxGroupLabel class="text-xs font-semibold text-gray-900">
+                    {{ source }}
+                  </ListboxGroupLabel>
                   <ul class="-mx-4 mt-2 text-sm font-medium text-gray-700">
-                    <ComboboxOption
+                    <ListboxItem
                       v-for="item in hits"
                       :key="item.id"
                       :value="item"
-                      as="template"
-                      v-slot="{ active }"
+                      as-child
                     >
                       <CommandPaletteUnitItem
                         v-if="item.category === 'Units'"
                         :item="item"
-                        :active="active"
-                        class=""
+                        :active="isItemHighlighted(item)"
                       />
                       <CommandPaletteLayerFeatureItem
                         v-else-if="item.category === 'Features'"
-                        :active="active"
+                        :active="isItemHighlighted(item)"
                         :item="item"
                       />
                       <CommandPaletteImageLayerItem
                         v-else-if="item.category === 'Map layers'"
-                        :active="active"
+                        :active="isItemHighlighted(item)"
                         :item="item"
                       />
                       <CommandPaletteEventItem
                         v-else-if="item.category === 'Events'"
-                        :active="active"
+                        :active="isItemHighlighted(item)"
                         :item="item"
                       />
                       <CommandPalettePlaceItem
                         :item="item"
                         v-else-if="item.category === 'Places'"
-                        :active="active"
+                        :active="isItemHighlighted(item)"
                         :center="mapCenter"
                       />
                       <CommandPaletteActionItem
                         v-else-if="item.category === 'Actions'"
-                        :active="active"
+                        :active="isItemHighlighted(item)"
                         :item="item"
                       />
                       <p v-else>{{ item }}</p>
-                    </ComboboxOption>
+                    </ListboxItem>
                   </ul>
-                </li>
-              </ComboboxOptions>
+                </ListboxGroup>
+              </ListboxContent>
 
               <CommandPaletteHelp v-if="showHelp" />
 
@@ -257,10 +304,10 @@ function onSelect(
                 :raw-query="rawQuery"
                 @click-actions="rawQuery = '>'"
               />
-            </Combobox>
-          </DialogPanel>
-        </TransitionChild>
+            </ListboxRoot>
+          </DialogContent>
+        </Transition>
       </div>
-    </Dialog>
-  </TransitionRoot>
+    </DialogPortal>
+  </DialogRoot>
 </template>
