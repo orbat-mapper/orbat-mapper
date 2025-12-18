@@ -144,7 +144,8 @@ export interface PersonnelOptions {
 }
 
 export interface OrbChartOptions
-  extends FontOptions,
+  extends
+    FontOptions,
     ConnectorOptions,
     LabelOptions,
     EquipmentOptions,

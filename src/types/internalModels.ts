@@ -32,18 +32,10 @@ import type {
 import type { Optional } from "@/types/helpers";
 import type { SymbolFillColor } from "@/config/colors.ts";
 
-export interface NUnit
-  extends Omit<
-    Unit,
-    | "subUnits"
-    | "_pid"
-    | "_gid"
-    | "_sid"
-    | "personnel"
-    | "equipment"
-    | "state"
-    | "supplies"
-  > {
+export interface NUnit extends Omit<
+  Unit,
+  "subUnits" | "_pid" | "_gid" | "_sid" | "personnel" | "equipment" | "state" | "supplies"
+> {
   subUnits: EntityId[];
   equipment?: NUnitEquipment[];
   personnel?: NUnitPersonnel[];
@@ -104,8 +96,10 @@ export interface EUnitPersonnel extends UnitPersonnel {
 
 export interface NUnitAdd extends Optional<NUnit, "id" | "_pid" | "_gid" | "_sid"> {}
 
-export interface OlUnitProps
-  extends Pick<NUnit, "id" | "sidc" | "name" | "shortName" | "symbolOptions"> {
+export interface OlUnitProps extends Pick<
+  NUnit,
+  "id" | "sidc" | "name" | "shortName" | "symbolOptions"
+> {
   stateType: CurrentStateType;
 }
 
@@ -131,17 +125,21 @@ export interface NScenarioFeature extends ScenarioFeature {
   _pid: FeatureId;
 }
 
-export interface ScenarioFeatureUpdate
-  extends Partial<Omit<NScenarioFeature, "id" | "meta">> {
+export interface ScenarioFeatureUpdate extends Partial<
+  Omit<NScenarioFeature, "id" | "meta">
+> {
   meta?: Partial<ScenarioFeatureMeta>;
 }
-export interface ScenarioLayerUpdate
-  extends Partial<Omit<NScenarioLayer, "id" | "features">> {}
+export interface ScenarioLayerUpdate extends Partial<
+  Omit<NScenarioLayer, "id" | "features">
+> {}
 
-export interface ScenarioImageLayerUpdate
-  extends Partial<Omit<ScenarioImageLayer, "id">> {}
-export interface ScenarioTileJSONLayerUpdate
-  extends Partial<Omit<ScenarioTileJSONLayer, "id">> {}
+export interface ScenarioImageLayerUpdate extends Partial<
+  Omit<ScenarioImageLayer, "id">
+> {}
+export interface ScenarioTileJSONLayerUpdate extends Partial<
+  Omit<ScenarioTileJSONLayer, "id">
+> {}
 export interface ScenarioXYZLayerUpdate extends Partial<Omit<ScenarioXYZLayer, "id">> {}
 export interface ScenarioKMLLayerUpdate extends Partial<Omit<ScenarioKMLLayer, "id">> {}
 

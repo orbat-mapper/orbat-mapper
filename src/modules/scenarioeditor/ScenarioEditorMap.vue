@@ -212,10 +212,10 @@ const toggleLeftPanel = useToggle(showLeftPanel);
 const showDetailsPanel = computed(() => {
   return Boolean(
     selectedFeatureIds.value.size ||
-      selectedUnitIds.value.size ||
-      activeScenarioEventId.value ||
-      activeMapLayerId.value ||
-      showScenarioInfo.value,
+    selectedUnitIds.value.size ||
+    activeScenarioEventId.value ||
+    activeMapLayerId.value ||
+    showScenarioInfo.value,
   );
 });
 

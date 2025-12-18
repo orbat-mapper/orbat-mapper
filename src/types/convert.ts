@@ -81,7 +81,8 @@ export interface KmlKmzExportSettings {
 }
 
 export interface ExportSettings
-  extends XlsxSettings,
+  extends
+    XlsxSettings,
     UnitGeneratorSettings,
     GeoJsonSettings,
     OrbatMapperExportSettings,

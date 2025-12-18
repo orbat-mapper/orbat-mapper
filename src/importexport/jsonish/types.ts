@@ -11,8 +11,9 @@ export interface GeoJsonSymbolProperties {
   additionalInformation?: string;
 }
 
-export interface TacticalJsonProperties
-  extends Partial<Omit<Record<TextAmpValue, string>, "direction">> {
+export interface TacticalJsonProperties extends Partial<
+  Omit<Record<TextAmpValue, string>, "direction">
+> {
   sidc: string;
   direction?: number;
 }
@@ -35,8 +36,10 @@ export interface OrbatMapperGeoJsonCollection extends FeatureCollection {
   features: OrbatMapperGeoJsonFeature[];
 }
 
-export interface OrbatMapperGeoJsonFeature
-  extends Feature<Point | LineString, MilSymbolProperties> {
+export interface OrbatMapperGeoJsonFeature extends Feature<
+  Point | LineString,
+  MilSymbolProperties
+> {
   id: string | number;
 }
 
@@ -56,8 +59,10 @@ export interface ImportGeoJsonProperties {
   convertedProperties: ConvertedProperties;
 }
 
-export interface ImportGeoJsonFeature
-  extends Feature<Point | LineString, ImportGeoJsonProperties> {
+export interface ImportGeoJsonFeature extends Feature<
+  Point | LineString,
+  ImportGeoJsonProperties
+> {
   id: string;
 }
 

@@ -26,8 +26,7 @@ export type ScenarioFeatureType =
   | "GeometryCollection";
 
 export interface ScenarioFeatureProperties
-  extends Partial<SimpleStyleSpec>,
-    Partial<VisibilityInfo> {
+  extends Partial<SimpleStyleSpec>, Partial<VisibilityInfo> {
   type: ScenarioFeatureType;
   name?: string;
   description?: string;

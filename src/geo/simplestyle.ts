@@ -62,7 +62,8 @@ export interface VisibilityStyleSpec {
 }
 
 export interface SimpleStyleSpec
-  extends StrokeStyleSpec,
+  extends
+    StrokeStyleSpec,
     FillStyleSpec,
     MarkerStyleSpec,
     TextStyleSpec,
