@@ -33,23 +33,23 @@ Navigate to project root:
 
 Install dependencies:
 
-    $ npm install
+    $ pnpm install
 
 To start a development server run:
 
-    $ npm run dev
+    $ pnpm run dev
 
 ORBAT mapper is now running on http://localhost:5173/. Any changes made to the source code will be instantly
 available in the browser thanks to Vite's lightning fast hot module replacement.
 
 For an optimized and minified build run:
 
-    $ npm run build
+    $ pnpm run build
 
 The above command will output the optimized build to the `dist` directory. You can then serve the optimized build
 locally by running:
 
-    $ npm run preview
+    $ pnpm run preview
 
 See https://vitejs.dev/guide/static-deploy.html for various deploy options.
 

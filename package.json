@@ -30,7 +30,29 @@
     "@tanstack/vue-table": "^8.21.3",
     "@tanstack/vue-virtual": "^3.13.12",
     "@tmcw/togeojson": "^5.8.1",
+    "@turf/along": "^7.2.0",
+    "@turf/bbox": "^7.2.0",
+    "@turf/bbox-polygon": "^7.2.0",
+    "@turf/bezier-spline": "^7.2.0",
+    "@turf/buffer": "^7.2.0",
+    "@turf/center": "^7.2.0",
+    "@turf/center-of-mass": "^7.2.0",
+    "@turf/centroid": "^7.2.0",
+    "@turf/circle": "^7.2.0",
+    "@turf/clusters": "^7.2.0",
+    "@turf/convex": "^7.2.0",
+    "@turf/destination": "^7.2.0",
+    "@turf/envelope": "^7.2.0",
+    "@turf/explode": "^7.2.0",
+    "@turf/great-circle": "^7.2.0",
+    "@turf/helpers": "^7.2.0",
+    "@turf/length": "^7.2.0",
+    "@turf/meta": "^7.2.0",
+    "@turf/polygon-smooth": "^7.2.0",
+    "@turf/simplify": "^7.2.0",
+    "@turf/truncate": "^7.2.0",
     "@turf/turf": "^7.2.0",
+    "@turf/union": "^7.2.0",
     "@types/d3-time": "^3.0.4",
     "@types/d3-time-format": "^4.0.3",
     "@vue/tsconfig": "^0.7.0",
@@ -91,6 +113,7 @@
     "@types/d3-scale-chromatic": "^3.1.0",
     "@types/d3-selection": "^3.0.11",
     "@types/geojson": "^7946.0.16",
+    "@types/xast": "^1.0.7",
     "@types/jsdom": "^21.1.7",
     "@types/markdown-it": "^13.0.9",
     "@types/markdown-it-container": "^2.0.10",
@@ -114,6 +137,7 @@
   },
   "engines": {
     "node": ">= 20.10.0",
-    "npm": ">= 10.2.0"
-  }
+    "pnpm": ">= 10.25.0"
+  },
+  "packageManager": "pnpm@10.25.0"
 }
