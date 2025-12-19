@@ -224,10 +224,10 @@ const toggleOpen = () => {
     <header
       ref="dropRef"
       :id="`os-${side.id}`"
-      class="group relative -ml-4 flex items-center justify-between border-t-2 border-b-2 border-gray-300 bg-gray-200 py-0 pl-4 dark:border-gray-600 dark:bg-gray-700"
+      class="group border-border bg-muted relative -ml-4 flex items-center justify-between border-t-2 border-b-2 py-0 pl-4"
     >
       <IconDrag
-        class="size-6 flex-none cursor-move text-gray-500 group-focus-within:opacity-100 group-hover:opacity-100 sm:-ml-3 sm:opacity-0"
+        class="text-muted-foreground size-6 flex-none cursor-move group-focus-within:opacity-100 group-hover:opacity-100 sm:-ml-3 sm:opacity-0"
         ref="dragRef"
       />
 
@@ -235,17 +235,17 @@ const toggleOpen = () => {
         @click="toggleOpen"
         class="flex w-full items-center justify-between text-left"
       >
-        <span class="text-sm font-medium text-gray-900 dark:text-gray-200">
+        <span class="text-foreground text-sm font-medium">
           {{ side.name }}
         </span>
         <ChevronUpIcon
           :class="isOpen ? 'rotate-180 transform' : ''"
-          class="size-5 text-gray-400 group-hover:text-gray-900"
+          class="text-muted-foreground group-hover:text-foreground size-5"
         />
       </button>
       <button
         type="button"
-        class="ml-1 flex-none text-gray-400 hover:text-gray-700"
+        class="text-muted-foreground hover:text-foreground ml-1 flex-none"
         title="Toggle visibility"
         @click="onSideAction(isHidden ? SideActions.Show : SideActions.Hide)"
       >
@@ -257,13 +257,13 @@ const toggleOpen = () => {
         v-model="showFilter"
         v-slot="{ pressed }"
         title="Toggle ORBAT filter"
-        class="ml-1 text-gray-400 hover:text-gray-900"
+        class="text-muted-foreground hover:text-foreground ml-1"
       >
         <span class="sr-only">Toggle ORBAT filter</span>
         <IconFilterVariantPlus v-if="pressed" class="h-5 w-5" aria-hidden="true" />
         <IconFilterVariant v-else class="h-5 w-5" aria-hidden="true" />
       </Toggle>
-      <IconLockOutline v-if="isLocked" class="size-6 text-gray-400" />
+      <IconLockOutline v-if="isLocked" class="text-muted-foreground size-6" />
 
       <SideDropdownMenu
         @action="onSideAction"

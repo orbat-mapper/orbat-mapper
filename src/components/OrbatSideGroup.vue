@@ -212,7 +212,7 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
       :id="`osg-${group.id}`"
     >
       <IconDrag
-        class="h-6 w-6 cursor-move text-gray-400 group-focus-within:opacity-100 group-hover:opacity-100 sm:-ml-3 sm:opacity-0"
+        class="text-muted-foreground h-6 w-6 cursor-move group-focus-within:opacity-100 group-hover:opacity-100 sm:-ml-3 sm:opacity-0"
         ref="dragRef"
       />
       <div class="flex flex-auto items-center">
@@ -220,26 +220,24 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
           @click="toggleOpen"
           class="flex w-full items-center justify-between text-left"
         >
-          <span
-            class="text-sm font-medium text-gray-800 hover:text-gray-900 dark:text-gray-300"
-          >
+          <span class="text-heading hover:text-foreground text-sm font-medium">
             {{ group.name || "Units" }}
           </span>
           <ChevronUpIcon
             :class="isOpen ? 'rotate-180 transform' : ''"
-            class="size-5 text-gray-400 group-hover:text-gray-900"
+            class="text-muted-foreground group-hover:text-foreground size-5"
           />
         </button>
       </div>
       <IconLockOutline
         v-if="isLocked"
-        class="size-5 text-gray-400"
+        class="text-muted-foreground size-5"
         :class="isSideLocked ? 'opacity-40' : ''"
       />
       <button
         v-if="isHidden"
         type="button"
-        class="ml-1 text-gray-400 hover:text-gray-700"
+        class="text-muted-foreground hover:text-foreground ml-1"
         :class="isSideHidden ? 'opacity-40' : ''"
         title="Toggle visibility"
         @click="onSideGroupAction(group, isHidden ? SideActions.Show : SideActions.Hide)"
@@ -282,7 +280,7 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
       />
       <div
         v-if="!group.subUnits.length"
-        class="mr-4 flex justify-center border-2 border-dashed border-gray-300 p-8"
+        class="border-border mr-4 flex justify-center border-2 border-dashed p-8"
       >
         <SecondaryButton @click="addGroupUnit(group)">Add root unit</SecondaryButton>
       </div>

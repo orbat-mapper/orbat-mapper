@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, onMounted, onUnmounted, ref, render } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import {
   draggable,
   dropTargetForElements,
@@ -11,7 +11,7 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import { ChevronRightIcon, StarIcon } from "@heroicons/vue/20/solid";
+import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { IconLockOutline } from "@iconify-prerendered/vue-mdi";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { type UnitAction } from "@/types/constants";
@@ -29,9 +29,6 @@ import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import { getUnitDragItem, isUnitDragItem } from "@/types/draggables";
 import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
-import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
-import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview";
-import UnitSymbol from "@/components/UnitSymbol.vue";
 
 interface Props {
   item: NOrbatItemData;
@@ -161,7 +158,7 @@ onMounted(() => {
           !selectedUnitIds.value.has(props.item.unit.id)
         );
       },
-      onDragEnter: ({ self }) => {
+      onDragEnter: () => {
         isDragOver.value = true;
       },
       onDrag: (args) => {
@@ -184,7 +181,7 @@ onMounted(() => {
         instruction.value = null;
         stopOpenTimeout();
       },
-      onDrop: (args) => {
+      onDrop: () => {
         isDragOver.value = false;
         instruction.value = null;
         stopOpenTimeout();
@@ -211,33 +208,33 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
 </script>
 
 <template>
-  <li :id="'ou-' + unit.id" class="relative text-gray-900 dark:text-gray-400">
+  <li :id="'ou-' + unit.id" class="text-foreground relative">
     <div
       ref="itemRef"
-      class="group relative flex items-center justify-between border-l-2 py-1 pl-2 hover:bg-gray-200 sm:pl-0 dark:hover:bg-gray-700"
+      class="group relative flex items-center justify-between border-l-2 py-1 pl-2 sm:pl-0"
       @dblclick="isOpen = !isOpen"
       @click="onUnitClick(unit, $event)"
       :class="[
         selectedUnitIds.has(unit.id) && selectedUnitIds.size > 1
-          ? 'bg-yellow-100 hover:bg-yellow-200'
+          ? 'bg-primary/10 hover:bg-sidebar-accent/60'
           : '',
-        isActiveParent ? 'border-red-800 bg-red-50' : 'border-transparent',
+        isActiveParent ? 'border-primary bg-primary/10' : 'border-transparent',
       ]"
     >
       <div class="flex items-center space-x-1">
         <div class="h-6 w-6">
           <button v-if="isParent" @click.stop="isOpen = !isOpen" class="">
             <ChevronRightIcon
-              class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+              class="text-muted-foreground group-hover:text-foreground h-6 w-6 transform transition-transform"
               :class="{
                 'rotate-90': isOpen,
-                'text-red-600': hasActiveChildren,
+                'text-primary': hasActiveChildren,
               }"
             />
           </button>
         </div>
         <button class="flex items-center space-x-1 text-sm">
-          <div class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
+          <span class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
             <div
               class="relative flex cursor-move justify-center"
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
@@ -273,13 +270,15 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
               }"
               >{{ unitLabel }}</span
             >
-            <span v-if="unit._state?.location" class="text-red-700">&deg;</span>
-          </div>
+            <span v-if="unit._state?.location" class="text-destructive-foreground"
+              >&deg;</span
+            >
+          </span>
         </button>
       </div>
 
       <div class="flex items-center">
-        <IconLockOutline v-if="unit.locked" class="h-5 w-5 text-gray-400" />
+        <IconLockOutline v-if="unit.locked" class="text-muted-foreground h-5 w-5" />
         <DotsMenu
           class="shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           :items="menuItems"
