@@ -60,20 +60,20 @@ onMounted(() => {
   <TabGroup :selected-index="tabIndex" @change="changeTab" class="-mx-4 mt-2" as="div">
     <div class="relative h-10 overflow-hidden border-b-2">
       <button
-        class="bg-mpanel absolute inset-y-0 left-0 hover:text-gray-800 disabled:pointer-events-none disabled:opacity-0"
+        class="bg-muted hover:text-foreground absolute inset-y-0 left-0 disabled:pointer-events-none disabled:opacity-0"
         :disabled="startMarkerIsVisible"
         aria-label="Scroll left"
         @click="x -= 100"
       >
-        <ChevronLeftIcon class="mx-2 h-6 w-6 text-gray-600" />
+        <ChevronLeftIcon class="text-muted-foreground mx-2 h-6 w-6" />
       </button>
       <button
-        class="bg-mpanel absolute inset-y-0 right-0 disabled:pointer-events-none disabled:opacity-0"
+        class="bg-muted hover:text-foreground absolute inset-y-0 right-0 disabled:pointer-events-none disabled:opacity-0"
         :disabled="endMarkerIsVisible"
         aria-label="Scroll right"
         @click="x += 100"
       >
-        <ChevronRightIcon class="mx-2 h-6 w-6 text-gray-600 hover:text-gray-800" />
+        <ChevronRightIcon class="text-muted-foreground mx-2 h-6 w-6" />
       </button>
 
       <div class="h-20 overflow-x-auto" ref="scrollRef">
@@ -86,8 +86,8 @@ onMounted(() => {
             :key="i"
             :class="[
               selectedIndex === i
-                ? 'border-army text-army dark:text-indigo-400'
-                : 'border-transparent',
+                ? 'border-accent-foreground text-accent-foreground'
+                : 'text-muted-foreground border-transparent',
               'flex-none border-b-2 px-1 py-2 text-sm font-medium',
             ]"
             >{{ label }}

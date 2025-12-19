@@ -77,15 +77,15 @@ function updateAverageSpeed(data: UnitPropertyUpdate) {
 }
 </script>
 <template>
-  <section class="prose mt-4">
-    <table class="w-full divide-y divide-gray-300">
+  <section class="prose text-foreground mt-4">
+    <table class="divide-border w-full divide-y">
       <thead>
         <tr>
           <th>Unit property</th>
           <th class="w-36">Value</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-200 bg-white">
+      <tbody class="divide-border divide-y">
         <tr>
           <td>Average speed</td>
           <td

@@ -1,5 +1,5 @@
 <template>
-  <h3 class="mt-6 font-medium text-gray-900">Unit state</h3>
+  <h3 class="text-foreground mt-6 font-medium">Unit state</h3>
   <div class="flex items-center justify-between">
     <span class="text-sm">Change</span>
     <div class="flex items-center gap-1">
@@ -8,10 +8,10 @@
     </div>
   </div>
 
-  <ul class="mt-2 divide-y divide-gray-200 border-t border-b border-gray-200">
+  <ul class="divide-border border-border mt-2 divide-y border-t border-b">
     <li v-if="unit.location" class="relative flex items-center py-4">
       <div class="flex min-w-0 flex-auto flex-col text-sm">
-        <span class="font-medium text-gray-500">Initial position</span>
+        <span class="text-muted-foreground font-medium">Initial position</span>
         <CoordinateInput
           v-if="editInitialPosition"
           v-model="newPosition"
@@ -22,7 +22,7 @@
           @keyup.esc="cancelEdit()"
           autofocus
         />
-        <p v-else class="text-gray-700" @dblclick="startEditInitialPosition()">
+        <p v-else class="text-foreground" @dblclick="startEditInitialPosition()">
           {{ formatPosition(unit.location) }}
         </p>
       </div>
@@ -34,13 +34,15 @@
       v-for="(s, index) in state"
       class="relative flex items-center py-4"
       :key="s.id"
-      :class="selectedWaypointIds.has(s.id) ? 'bg-yellow-200' : ''"
+      :class="selectedWaypointIds.has(s.id) ? 'bg-accent/10' : ''"
     >
       <div class="flex min-w-0 flex-auto flex-col text-sm">
         <button
           class="flex"
           :class="
-            isActive(s, index) ? 'font-bold text-gray-900' : 'font-medium text-gray-500'
+            isActive(s, index)
+              ? 'text-foreground font-bold'
+              : 'text-muted-foreground font-medium'
           "
           @click="onStateClick($event, s)"
         >
@@ -57,7 +59,7 @@
         />
         <p
           v-else-if="s.title"
-          class="my-1 leading-tight font-medium text-gray-900"
+          class="text-foreground my-1 leading-tight font-medium"
           @dblclick="editTitle(s)"
         >
           {{ s.title }}
@@ -72,22 +74,26 @@
           @keyup.esc="cancelEdit()"
           autofocus
         />
-        <p class="mt-1 text-gray-700" v-else-if="s.location" @dblclick="editPosition(s)">
+        <p
+          class="text-foreground mt-1"
+          v-else-if="s.location"
+          @dblclick="editPosition(s)"
+        >
           {{ formatPosition(s.location) }}
         </p>
         <IconMapMarkerOffOutline
           v-if="s.location === null"
-          class="h-5 w-5 text-gray-600"
+          class="text-muted-foreground h-5 w-5"
         />
         <div class="mt-1 flex gap-1">
           <span
             v-if="s.sidc"
-            class="w-12 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"
+            class="bg-accent/10 text-accent-foreground w-12 rounded-full px-2.5 py-0.5 text-xs font-medium"
             >sidc</span
           >
           <span
             v-if="s.status"
-            class="w-auto rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800"
+            class="bg-muted/10 text-muted-foreground w-auto rounded-full px-2.5 py-0.5 text-xs font-medium"
             >{{ unitStatusMap[s.status]?.name }}</span
           >
           <span v-if="s.update?.equipment" class="badge">Equipment</span>
@@ -110,14 +116,14 @@
         class="absolute -top-3 left-1/2"
       >
         <div
-          class="relative -left-1/2 flex items-center rounded-full border bg-white px-4 py-0.5"
+          class="border-border bg-muted relative -left-1/2 flex items-center rounded-full border px-4 py-0.5"
         >
-          <IconMapMarkerPath v-if="s.via?.length" class="h-5 w-5 text-gray-500" />
+          <IconMapMarkerPath v-if="s.via?.length" class="text-muted-foreground h-5 w-5" />
           <IconMapMarkerAlert
             v-else-if="s.interpolate === false"
-            class="h-5 w-5 text-gray-500"
+            class="text-muted-foreground h-5 w-5"
           />
-          <span v-if="s.viaStartTime" class="ml-2 text-xs text-gray-600">{{
+          <span v-if="s.viaStartTime" class="text-muted-foreground ml-2 text-xs">{{
             formatDateString(s.viaStartTime, store.state.info.timeZone)
           }}</span>
         </div>
