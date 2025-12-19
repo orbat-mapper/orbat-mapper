@@ -7,6 +7,7 @@ import {
   ListboxItem,
   ListboxRoot,
 } from "reka-ui";
+import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import { useDebounce } from "@vueuse/core";
 import { useActionSearch, useScenarioSearch } from "@/composables/searching.ts";
 import CommandPaletteUnitItem from "@/components/commandPalette/CommandPaletteUnitItem.vue";
@@ -28,6 +29,7 @@ import CommandPaletteActionItem from "@/components/commandPalette/CommandPalette
 import CommandPaletteImageLayerItem from "@/components/commandPalette/CommandPaletteImageLayerItem.vue";
 import CommandPaletteDialog from "@/components/commandPalette/CommandPaletteDialog.vue";
 import CommandPaletteInput from "@/components/commandPalette/CommandPaletteInput.vue";
+import CommandPaletteFooter from "@/components/commandPalette/CommandPaletteFooter.vue";
 
 const emit = defineEmits([
   "select-unit",
@@ -194,5 +196,16 @@ function onSelect(
         </div>
       </ListboxContent>
     </ListboxRoot>
+    <div
+      v-if="geoDebouncedQuery !== '' && rawQuery !== '?' && hitCount === 0"
+      class="px-6 py-14 text-center text-sm sm:px-14"
+    >
+      <ExclamationTriangleIcon
+        class="text-muted-foreground mx-auto size-6"
+        aria-hidden="true"
+      />
+      <p class="mt-4">No results found</p>
+    </div>
+    <CommandPaletteFooter :raw-query="rawQuery" @click-actions="rawQuery = '>'" />
   </CommandPaletteDialog>
 </template>
