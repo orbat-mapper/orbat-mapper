@@ -220,7 +220,7 @@ import {
 } from "@/router/names";
 import { useFileDropZone } from "@/composables/filedragdrop";
 import { useTabStore } from "@/stores/tabStore";
-import CommandPalette from "@/components/CommandPalette.vue";
+import CommandPalette from "@/components/commandPalette/CommandPalette.vue";
 import type { PhotonSearchResult } from "@/composables/geosearching";
 import { useSelectedItems } from "@/stores/selectedStore";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";

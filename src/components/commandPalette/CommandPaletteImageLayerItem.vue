@@ -15,10 +15,10 @@
   </li>
 </template>
 <script setup lang="ts">
-import { type MapLayerSearchResult } from "@/components/types";
-import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
+import { type MapLayerSearchResult } from "@/components/types.ts";
+import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers.ts";
 import { computed } from "vue";
-import { type ScenarioMapLayer } from "@/types/scenarioGeoModels";
+import { type ScenarioMapLayer } from "@/types/scenarioGeoModels.ts";
 
 const props = defineProps<{ item: MapLayerSearchResult; active?: boolean }>();
 const icon = computed(() => getMapLayerIcon(props.item as unknown as ScenarioMapLayer));

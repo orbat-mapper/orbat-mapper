@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type UnitSearchResult } from "@/components/types";
+import { type UnitSearchResult } from "@/components/types.ts";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 
 const props = defineProps<{ item: UnitSearchResult; active?: boolean }>();

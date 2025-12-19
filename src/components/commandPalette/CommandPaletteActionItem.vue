@@ -15,7 +15,7 @@
   </li>
 </template>
 <script setup lang="ts">
-import { type ActionSearchResult } from "@/components/types";
+import { type ActionSearchResult } from "@/components/types.ts";
 import {
   IconAddCircleOutline,
   IconContentSaveOutline,

@@ -34,12 +34,12 @@
 </template>
 <script setup lang="ts">
 import { IconMapMarker, IconVectorSquare } from "@iconify-prerendered/vue-mdi";
-import { formatLength } from "@/geo/utils";
-import { type PhotonSearchResult } from "@/composables/geosearching";
+import { formatLength } from "@/geo/utils.ts";
+import { type PhotonSearchResult } from "@/composables/geosearching.ts";
 import type { Feature, Point } from "geojson";
-import { type GeoSearchProperties } from "@/types/search";
+import { type GeoSearchProperties } from "@/types/search.ts";
 import { getDistance } from "ol/sphere";
-import { useMeasurementsStore } from "@/stores/geoStore";
+import { useMeasurementsStore } from "@/stores/geoStore.ts";
 
 const measurementsStore = useMeasurementsStore();
 const props = defineProps<{

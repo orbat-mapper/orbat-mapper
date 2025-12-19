@@ -12,27 +12,27 @@ import {
   TransitionChild,
   TransitionRoot,
 } from "@headlessui/vue";
-import CommandPaletteFooter from "@/components/CommandPaletteFooter.vue";
-import CommandPaletteHelp from "@/components/CommandPaletteHelp.vue";
+import CommandPaletteFooter from "@/components/commandPalette/CommandPaletteFooter.vue";
+import CommandPaletteHelp from "@/components/commandPalette/CommandPaletteHelp.vue";
 import { useDebounce, useVModel } from "@vueuse/core";
-import { useActionSearch, useScenarioSearch } from "@/composables/searching";
-import CommandPaletteUnitItem from "@/components/CommandPaletteUnitItem.vue";
-import CommandPaletteLayerFeatureItem from "@/components/CommandPaletteLayerFeatureItem.vue";
+import { useActionSearch, useScenarioSearch } from "@/composables/searching.ts";
+import CommandPaletteUnitItem from "@/components/commandPalette/CommandPaletteUnitItem.vue";
+import CommandPaletteLayerFeatureItem from "@/components/commandPalette/CommandPaletteLayerFeatureItem.vue";
 import type {
   ActionSearchResult,
   EventSearchResult,
   LayerFeatureSearchResult,
   MapLayerSearchResult,
   UnitSearchResult,
-} from "@/components/types";
-import CommandPaletteEventItem from "@/components/CommandPaletteEventItem.vue";
-import { useGeoStore } from "@/stores/geoStore";
+} from "@/components/types.ts";
+import CommandPaletteEventItem from "@/components/commandPalette/CommandPaletteEventItem.vue";
+import { useGeoStore } from "@/stores/geoStore.ts";
 import { toLonLat } from "ol/proj";
-import { type PhotonSearchResult, useGeoSearch } from "@/composables/geosearching";
-import CommandPalettePlaceItem from "@/components/CommandPalettePlaceItem.vue";
-import { useUiStore } from "@/stores/uiStore";
-import CommandPaletteActionItem from "@/components/CommandPaletteActionItem.vue";
-import CommandPaletteImageLayerItem from "@/components/CommandPaletteImageLayerItem.vue";
+import { type PhotonSearchResult, useGeoSearch } from "@/composables/geosearching.ts";
+import CommandPalettePlaceItem from "@/components/commandPalette/CommandPalettePlaceItem.vue";
+import { useUiStore } from "@/stores/uiStore.ts";
+import CommandPaletteActionItem from "@/components/commandPalette/CommandPaletteActionItem.vue";
+import CommandPaletteImageLayerItem from "@/components/commandPalette/CommandPaletteImageLayerItem.vue";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits([
