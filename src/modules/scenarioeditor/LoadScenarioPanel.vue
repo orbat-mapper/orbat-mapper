@@ -1,8 +1,8 @@
 <template>
   <div
     ref="dropZoneRef"
-    class="relative w-full rounded-lg border-2 border-dashed border-slate-300 p-4 ring-offset-2 focus-within:ring-2 hover:border-gray-500 dark:border-slate-600"
-    :class="isOverDropZone ? 'cursor-crosshair border-green-500' : ''"
+    class="border-border hover:border-border/80 relative w-full rounded-lg border-2 border-dashed p-4 ring-offset-2 focus-within:ring-2"
+    :class="isOverDropZone ? 'border-primary cursor-crosshair' : ''"
   >
     <input
       type="file"
@@ -12,7 +12,7 @@
     />
     <label
       for="file"
-      class="flex h-full w-full cursor-pointer flex-col items-center justify-center text-sm font-medium text-gray-900 hover:text-gray-700"
+      class="text-foreground hover:text-muted-foreground flex h-full w-full cursor-pointer flex-col items-center justify-center text-sm font-medium"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -20,7 +20,7 @@
         viewBox="0 0 24 24"
         stroke-width="1"
         stroke="currentColor"
-        class="h-12 w-12 text-slate-400 dark:text-slate-600"
+        class="text-muted-foreground h-12 w-12"
       >
         <path
           stroke-linecap="round"
@@ -29,12 +29,14 @@
         />
       </svg>
 
-      <p class="mt-2 text-center">Drag a file here or click to select local file</p>
+      <span class="mt-2 block text-center"
+        >Drag a file here or click to select local file</span
+      >
     </label>
 
     <p
       v-if="isError"
-      class="absolute bottom-2 left-0 w-full text-center text-base text-red-900"
+      class="text-destructive-foreground absolute bottom-2 left-0 w-full text-center text-base"
     >
       Please select a valid scenario file.
     </p>

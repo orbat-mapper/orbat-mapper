@@ -1,21 +1,21 @@
 <template>
   <div
-    class="relative w-full rounded-lg border-2 border-dashed border-gray-300 p-4 ring-offset-2 focus-within:ring-2 hover:border-gray-500"
+    class="border-border focus-within:ring-ring hover:border-border/80 relative w-full rounded-lg border-2 border-dashed p-4 ring-offset-2 focus-within:ring-2"
     @dragover.prevent
     @drop.prevent="onDrop"
   >
     <button
-      class="flex h-full w-full cursor-pointer flex-col items-center justify-center text-sm font-medium text-gray-900 hover:text-gray-700"
+      class="text-foreground hover:text-muted-foreground flex h-full w-full cursor-pointer flex-col items-center justify-center text-sm font-medium"
       @click="toggleModal()"
     >
-      <IconWebPlus class="h-10 w-10 text-gray-500" />
+      <IconWebPlus class="text-muted-foreground h-10 w-10" />
 
-      <p class="mt-2 text-center">Load from URL</p>
+      <span class="mt-2 block text-center">Load from URL</span>
     </button>
 
     <p
       v-if="isError"
-      class="absolute bottom-2 left-0 w-full text-center text-base text-red-900"
+      class="text-destructive-foreground absolute bottom-2 left-0 w-full text-center text-base"
     >
       Please select a valid scenario file.
     </p>
@@ -34,7 +34,6 @@ import { useToggle } from "@vueuse/core";
 import { type Scenario } from "@/types/scenarioModels";
 import { isUrl } from "@/utils";
 import { IconWebPlus } from "@iconify-prerendered/vue-mdi";
-import SimpleModal from "@/components/SimpleModal.vue";
 import LoadScenarioUrlForm from "@/modules/scenarioeditor/LoadScenarioUrlForm.vue";
 import { useRoute } from "vue-router";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";

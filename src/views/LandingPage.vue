@@ -1,12 +1,10 @@
 <template>
-  <div class="flex h-full flex-col bg-gray-100 dark:bg-slate-900">
+  <div class="bg-background flex h-full flex-col">
     <header>
-      <p
-        class="relative top-0 right-0 left-0 bg-gray-300 p-1 text-center text-slate-900 dark:bg-slate-800 dark:text-slate-300"
-      >
+      <p class="bg-accent/90 relative top-0 right-0 left-0 p-1 text-center">
         This is a work in progress prototype. Follow the
         <a href="https://github.com/orbat-mapper/orbat-mapper" class="underline"
-          >development on GitHub <GithubIcon class="inline h-6 w-6 sm:h-10 sm:w-10" /> </a
+          >development on GitHub <GithubIcon class="inline size-6 sm:size-10" /> </a
         >.
       </p>
       <nav>
@@ -22,12 +20,13 @@
               class="text-heading text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl"
             >
               <span class="text-red-900 dark:text-red-900/90">ORBAT</span>
-              Mapper<span class="absolute text-sm tracking-normal text-gray-500 uppercase"
+              Mapper<span
+                class="text-muted-foreground absolute text-sm tracking-normal uppercase"
                 >beta</span
               >
             </h1>
             <p
-              class="mx-auto mt-3 max-w-md text-base text-gray-700 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl dark:text-slate-400"
+              class="text-muted-foreground mx-auto mt-3 max-w-md text-base sm:text-lg md:mt-5 md:max-w-3xl md:text-xl"
             >
               Recreate historic battles and military scenarios in your browser
             </p>
@@ -48,11 +47,11 @@
         <LandingPageScenarios class="mt-16" />
       </section>
 
-      <section id="features" class="bg-white dark:bg-slate-900">
+      <section id="features" class="">
         <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div class="mx-auto max-w-3xl text-center">
             <h2 class="text-heading text-3xl font-bold tracking-tight">Features</h2>
-            <p class="mt-4 text-lg text-gray-500 dark:text-slate-400">
+            <p class="text-muted-foreground mt-4 text-lg">
               Some of the things you can do with ORBAT mapper
             </p>
           </div>
@@ -61,12 +60,15 @@
           >
             <div v-for="feature in features" :key="feature.name" class="relative">
               <dt>
-                <CheckIcon class="absolute h-6 w-6 text-green-500" aria-hidden="true" />
+                <CheckIcon
+                  class="text-accent-foreground absolute h-6 w-6"
+                  aria-hidden="true"
+                />
                 <p class="text-heading ml-9 text-lg leading-6 font-medium">
                   {{ feature.name }}
                 </p>
               </dt>
-              <dd class="mt-2 ml-9 text-base text-gray-500 dark:text-slate-400">
+              <dd class="text-muted-foreground mt-2 ml-9 text-base">
                 {{ feature.description }}
               </dd>
             </div>
@@ -74,7 +76,7 @@
         </div>
       </section>
 
-      <section id="links" class="bg-gray-100 dark:bg-slate-900">
+      <section id="links" class="bg-accent/50">
         <ProseSection class="">
           <p class="text-center">Links to work in progress components and experiments</p>
           <div class="grid grid-cols-2 place-items-center gap-4">
@@ -100,7 +102,7 @@
         </ProseSection>
       </section>
     </main>
-    <footer class="bg-white dark:bg-slate-950">
+    <footer class="">
       <div class="mx-auto max-w-7xl overflow-hidden px-6 py-20 sm:py-24 lg:px-8">
         <nav
           class="-mb-6 columns-2 sm:flex sm:justify-center sm:space-x-12"
@@ -109,7 +111,7 @@
           <div class="pb-6">
             <a
               href="https://docs.orbat-mapper.app/guide/about-orbat-mapper"
-              class="text-sm leading-6 text-gray-600 hover:text-gray-900"
+              class="text-muted-foreground hover:text-foreground text-sm leading-6"
               >About</a
             >
           </div>
@@ -117,7 +119,7 @@
           <div class="pb-6">
             <a
               href="https://docs.orbat-mapper.app/guide/getting-started"
-              class="text-sm leading-6 text-gray-600 hover:text-gray-900"
+              class="text-muted-foreground hover:text-foreground text-sm leading-6"
               >Getting started</a
             >
           </div>
@@ -125,7 +127,7 @@
           <div class="pb-6">
             <a
               href="https://docs.orbat-mapper.app/resources/tools"
-              class="text-sm leading-6 text-gray-600 hover:text-gray-900"
+              class="text-muted-foreground hover:text-foreground text-sm leading-6"
               >Resources</a
             >
           </div>
@@ -133,7 +135,7 @@
           <div class="pb-6">
             <a
               href="https://docs.orbat-mapper.app/support"
-              class="text-sm leading-6 text-gray-600 hover:text-gray-900"
+              class="text-muted-foreground hover:text-foreground text-sm leading-6"
               >Support</a
             >
           </div>
@@ -141,7 +143,7 @@
         <div class="mt-10 flex justify-center space-x-10">
           <a
             href="https://github.com/orbat-mapper/orbat-mapper"
-            class="text-gray-400 hover:text-gray-500"
+            class="text-muted-foreground hover:text-foreground"
           >
             <span class="sr-only">GitHub</span>
             <svg
