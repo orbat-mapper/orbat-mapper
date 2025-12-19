@@ -18,11 +18,11 @@
   </li>
 </template>
 <script setup lang="ts">
-import type { EventSearchResult } from "@/components/types";
+import type { EventSearchResult } from "@/components/types.ts";
 import { IconCalendarClock } from "@iconify-prerendered/vue-mdi";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
-import { formatDateString } from "@/geo/utils";
+import { activeScenarioKey } from "@/components/injects.ts";
+import { formatDateString } from "@/geo/utils.ts";
 const {
   time: { timeZone },
 } = injectStrict(activeScenarioKey);

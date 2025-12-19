@@ -54,7 +54,7 @@
 </template>
 <script setup lang="ts">
 import ToggleField from "@/components/ToggleField.vue";
-import { useUiStore } from "@/stores/uiStore";
+import { useUiStore } from "@/stores/uiStore.ts";
 
 const emit = defineEmits(["click-actions"]);
 const uiStore = useUiStore();
