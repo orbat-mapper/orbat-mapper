@@ -57,8 +57,10 @@ async function onAction(action: ScenarioEventAction, eventId: string) {
 
 function addEvent() {
   const day = new Date(t.value).getDate();
-  const eventId = addScenarioEvent({ title: `Event ${day}`, startTime: t.value });
-  activeScenarioEventId.value = eventId;
+  activeScenarioEventId.value = addScenarioEvent({
+    title: `Event ${day}`,
+    startTime: t.value,
+  });
 }
 </script>
 <template>
@@ -71,28 +73,28 @@ function addEvent() {
           <div class="relative flex-auto pb-4">
             <span
               v-if="eventIdx !== events.length - 1"
-              class="absolute top-2 left-2 -ml-px h-full w-0.5 bg-gray-200"
+              class="bg-muted-foreground/30 absolute top-2 left-2 -ml-px h-full w-0.5"
               aria-hidden="true"
             />
             <div class="relative flex space-x-4">
               <button
                 @click="onEventClick(event)"
-                class="mt-1 flex h-4 w-4 items-center justify-center rounded-full ring-4 ring-white"
+                class="ring-ring mt-1 flex size-4 items-center justify-center rounded-full ring-4"
                 :class="{
-                  'bg-amber-500': event.startTime > t,
-                  'bg-gray-300': event.startTime < t,
-                  'bg-red-900': event.startTime === t,
+                  'bg-muted': event.startTime > t,
+                  // 'bg-muted': event.startTime < t,
+                  'bg-accent-foreground': event.startTime === t,
                 }"
               ></button>
               <div
                 class="min-w-0 flex-1 cursor-pointer text-sm"
                 @click="onEventClick(event)"
               >
-                <p class="text-xs font-medium text-red-900">
+                <p class="text-muted-foreground text-xs font-medium">
                   {{ fmt.scenarioDateFormatter.format(event.startTime) }}
                 </p>
                 <p class="font-medium">{{ event.title }}</p>
-                <p v-if="event.subTitle" class="text-gray-700">
+                <p v-if="event.subTitle" class="text-muted-foreground">
                   {{ event.subTitle }}
                 </p>
               </div>
@@ -111,7 +113,7 @@ function addEvent() {
     <Button
       v-if="!selectOnly"
       size="sm"
-      variant="outline"
+      variant="secondary"
       @click="addEvent()"
       class="mt-4"
       >Add scenario event</Button
