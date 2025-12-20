@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ToggleField from "@/components/ToggleField.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
-import type { RadioGroupItem } from "@/components/types";
+import type { RadioGroupItemData } from "@/components/types";
 import type { CoordinateFormatType } from "@/composables/geoShowLocation";
 import RadioGroupList from "@/components/RadioGroupList.vue";
 import { useUiStore } from "@/stores/uiStore";
@@ -17,13 +17,13 @@ const settings = useMapSettingsStore();
 const measurementStore = useMeasurementsStore();
 const uiSettings = useUiStore();
 
-const coordinateFormatItems: RadioGroupItem<CoordinateFormatType>[] = [
+const coordinateFormatItems: RadioGroupItemData<CoordinateFormatType>[] = [
   { name: "DG", description: "Decimal degrees", value: "DecimalDegrees" },
   { name: "DMS", description: "Degree Minutes Seconds", value: "DegreeMinuteSeconds" },
   { name: "MGRS", description: "Military grid reference system", value: "MGRS" },
 ];
 
-const measurementItems: RadioGroupItem<MeasurementUnit>[] = [
+const measurementItems: RadioGroupItemData<MeasurementUnit>[] = [
   { name: "Metric", value: "metric" },
   { name: "Imperial", value: "imperial" },
   { name: "Nautical", value: "nautical" },

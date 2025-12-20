@@ -5,7 +5,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { formatDateString, formatDTG } from "@/geo/utils";
 import type { TScenario } from "@/scenariostore";
-import type { RadioGroupItem } from "@/components/types";
+import type { RadioGroupItemData } from "@/components/types";
 
 export type TimeFormat = "iso" | "local" | "military" | "custom";
 
@@ -16,7 +16,7 @@ export interface TimeFormatSettings {
   timeStyle: Intl.DateTimeFormatOptions["timeStyle"];
 }
 
-export const timeFormatItems: RadioGroupItem<TimeFormat>[] = [
+export const timeFormatItems: RadioGroupItemData<TimeFormat>[] = [
   { name: "ISO 8601", value: "iso" },
   { name: "Localized", value: "local" },
   { name: "Military DTG", value: "military" },

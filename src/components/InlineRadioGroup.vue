@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { type RadioGroupItem } from "@/components/types";
+import { type RadioGroupItemData } from "@/components/types";
 
-const props = defineProps<{ items: RadioGroupItem<string>[] }>();
+const props = defineProps<{ items: RadioGroupItemData<string>[] }>();
 const choice = defineModel<string>({ required: true });
 </script>
 <template>

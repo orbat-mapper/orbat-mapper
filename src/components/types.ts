@@ -11,7 +11,7 @@ export interface ButtonGroupItem {
   disabled?: boolean;
 }
 
-export interface RadioGroupItem<T = string> {
+export interface RadioGroupItemData<T = string> {
   name: string;
   description?: string;
   value: T;
