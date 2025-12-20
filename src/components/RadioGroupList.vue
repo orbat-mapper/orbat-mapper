@@ -1,6 +1,6 @@
 <template>
   <FieldGroup>
-    <RadioGroup v-model="selected">
+    <RadioGroup v-model="selected" class="gap-1">
       <FieldLabel v-for="item in items" :key="item.value" :for="item.value">
         <Field orientation="horizontal">
           <RadioGroupItem :id="item.value" :value="item.value" />

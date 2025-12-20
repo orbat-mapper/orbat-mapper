@@ -7,9 +7,7 @@ import RadioGroupList from "@/components/RadioGroupList.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import { type MeasurementUnit } from "@/composables/geoMeasurement";
-import PanelSection from "@/components/PanelSection.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
-import PanelHeading from "@/components/PanelHeading.vue";
 import SimpleDivider from "@/components/SimpleDivider.vue";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
 
@@ -60,7 +58,7 @@ const measurementItems: RadioGroupItemData<MeasurementUnit>[] = [
 
     <SimpleDivider class="mt-8" />
     <section>
-      <p class="text-base leading-loose font-medium text-gray-900">Coordinate format</p>
+      <p class="text-base leading-loose font-medium">Coordinate format</p>
       <RadioGroupList
         v-model="settings.coordinateFormat"
         :items="coordinateFormatItems"
@@ -68,7 +66,7 @@ const measurementItems: RadioGroupItemData<MeasurementUnit>[] = [
     </section>
 
     <section>
-      <p class="text-base leading-loose font-medium text-gray-900">Measurement unit</p>
+      <p class="text-base leading-loose font-medium">Measurement unit</p>
       <RadioGroupList
         v-model="measurementStore.measurementUnit"
         :items="measurementItems"

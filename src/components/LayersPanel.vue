@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p class="text-xs font-medium tracking-wider text-gray-500 uppercase">Base layers</p>
+    <p class="text-xs font-medium tracking-wider uppercase">Base layers</p>
 
     <BaseLayerSwitcher
       class="mt-4"
@@ -9,12 +9,10 @@
       @update:layer-opacity="updateOpacity"
     />
 
-    <p class="mt-4 text-xs font-medium tracking-wider text-gray-500 uppercase">
-      Other layers
-    </p>
+    <p class="mt-4 text-xs font-medium tracking-wider uppercase">Other layers</p>
 
-    <div class="mt-4 overflow-hidden rounded-md bg-white shadow-sm">
-      <ul class="divide-y divide-gray-200">
+    <div class="bg-card mt-4 overflow-hidden rounded-md shadow-sm">
+      <ul class="divide-y">
         <li v-for="layer in vectorLayers" :key="layer.id" class="px-6 py-4">
           <div class="flex items-center justify-between">
             <p class="flex-auto truncate text-sm">{{ layer.title }}</p>
@@ -23,7 +21,10 @@
                 :model-value="layer.opacity"
                 @update:model-value="updateOpacity(layer, $event)"
               />
-              <button class="ml-4 h-5 w-5 text-gray-500" @click="toggleLayer(layer)">
+              <button
+                class="text-muted-foreground ml-4 h-5 w-5"
+                @click="toggleLayer(layer)"
+              >
                 <EyeIcon v-if="layer.visible" />
                 <EyeSlashIcon v-else />
               </button>
