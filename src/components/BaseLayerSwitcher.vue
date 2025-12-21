@@ -24,7 +24,9 @@ const nsettings = computed(() => [...props.settings]);
 <template>
   <RadioGroup v-model="selected">
     <RadioGroupLabel class="sr-only">Select base map layer</RadioGroupLabel>
-    <div class="-space-y-px rounded-md bg-white">
+    <div
+      class="divide-border border-border bg-card divide-y overflow-hidden rounded-md border"
+    >
       <RadioGroupOption
         as="template"
         v-for="(setting, settingIdx) in nsettings"
@@ -34,36 +36,36 @@ const nsettings = computed(() => [...props.settings]);
       >
         <div
           :class="[
-            settingIdx === 0 ? 'rounded-tl-md rounded-tr-md' : '',
-            settingIdx === settings.length - 1 ? 'rounded-br-md rounded-bl-md' : '',
-            checked ? 'z-10 border-indigo-200 bg-indigo-50' : 'border-gray-200',
-            'relative flex cursor-pointer border p-4 focus:outline-hidden',
+            checked ? 'bg-primary/10' : 'bg-transparent',
+            active ? 'ring-ring ring-offset-background ring-2 ring-offset-2' : '',
+            'focus-visible:ring-ring focus-visible:ring-offset-background relative flex cursor-pointer items-start gap-3 p-4 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+            settingIdx === 0 ? 'rounded-t-md' : '',
+            settingIdx === nsettings.length - 1 ? 'rounded-b-md' : '',
           ]"
         >
           <span
-            class="shrink-0"
+            class="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition"
             :class="[
-              checked ? 'border-transparent bg-indigo-600' : 'border-gray-300 bg-white',
-              active ? 'ring-2 ring-indigo-500 ring-offset-2' : '',
-              'mt-0.5 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border',
+              checked ? 'border-primary bg-primary' : 'border-input bg-background',
+              active ? 'ring-ring ring-offset-background ring-2 ring-offset-1' : '',
             ]"
             aria-hidden="true"
           >
-            <span class="h-1.5 w-1.5 rounded-full bg-white" />
+            <span
+              class="h-1.5 w-1.5 rounded-full transition"
+              :class="checked ? 'bg-primary-foreground' : 'bg-transparent'"
+            />
           </span>
-          <div class="ml-3 flex min-w-0 flex-auto flex-col">
+          <div class="flex min-w-0 flex-auto flex-col">
             <RadioGroupLabel
               as="div"
-              :class="[
-                checked ? 'text-indigo-900' : 'text-gray-900',
-                'flex items-center justify-between text-sm font-medium',
-              ]"
+              :class="['flex items-center justify-between text-sm font-medium']"
             >
-              <div class="">
+              <div>
                 <span class="flex-auto truncate">{{ setting.title }}</span>
                 <span
                   v-if="defaultLayerName && setting.id === defaultLayerName"
-                  class="ml-1 inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600"
+                  class="border-border/60 bg-muted ml-1 inline-flex items-center rounded-full border px-1.5 py-0.5 text-xs font-medium"
                   >Default</span
                 >
               </div>
@@ -72,12 +74,15 @@ const nsettings = computed(() => [...props.settings]);
                 v-else
                 :model-value="setting.opacity"
                 @update:model-value="$emit('update:layerOpacity', setting, $event)"
-                class="shrink-0"
+                class="text-foreground shrink-0"
               />
             </RadioGroupLabel>
             <RadioGroupDescription
               as="span"
-              :class="[checked ? 'text-indigo-700' : 'text-gray-500', 'block text-sm']"
+              :class="[
+                checked ? 'text-foreground/80' : 'text-muted-foreground',
+                'block text-sm',
+              ]"
             >
               {{ setting.description || "" }}
             </RadioGroupDescription>
