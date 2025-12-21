@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import LayersPanel from "./LayersPanel.vue";
-import { useDark, useVModel } from "@vueuse/core";
+import { useVModel } from "@vueuse/core";
 import SlideOver from "./SlideOver.vue";
 import TabView from "./TabView.vue";
 import TabItem from "./TabItem.vue";
@@ -19,7 +19,6 @@ const settings = useSettingsStore();
 const mapSettings = useMapSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
 const uiSettings = useUiStore();
-const isDarkMode = useDark({ initialValue: "light" });
 </script>
 
 <template>
@@ -47,9 +46,6 @@ const isDarkMode = useDark({ initialValue: "light" });
           </ToggleField>
 
           <ToggleField v-model="uiSettings.debugMode">Debug mode</ToggleField>
-          <ToggleField v-if="uiSettings.debugMode" v-model="isDarkMode"
-            >Dark mode
-          </ToggleField>
         </div>
       </TabItem>
       <TabItem label="Time and date">

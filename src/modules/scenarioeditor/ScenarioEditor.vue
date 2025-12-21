@@ -83,6 +83,17 @@
         >
           <IconKeyboard class="block h-6 w-6" />
         </button>
+        <UseDark v-slot="{ isDark, toggleDark }">
+          <Button
+            variant="ghost"
+            size="icon"
+            @click="toggleDark()"
+            title="Toggle dark mode"
+            class="hidden sm:inline-flex"
+          >
+            <SunIcon v-if="isDark" /><MoonStarIcon v-else />
+          </Button>
+        </UseDark>
 
         <button
           class="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
@@ -228,6 +239,9 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import DebugInfo from "@/components/DebugInfo.vue";
+import { MoonStarIcon, SunIcon } from "lucide-vue-next";
+import { UseDark } from "@vueuse/components";
+import { Button } from "@/components/ui/button";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 
