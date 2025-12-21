@@ -13,8 +13,7 @@ import {
 import Modify, { ModifyEvent } from "ol/interaction/Modify";
 import { LineString, Point } from "ol/geom";
 import { Feature, MapBrowserEvent } from "ol";
-import type { MaybeRef } from "@vueuse/core";
-import { ref, watch } from "vue";
+import { type MaybeRef, ref, watch } from "vue";
 
 import { useSelectedItems } from "@/stores/selectedStore";
 import { altKeyOnly, click, singleClick } from "ol/events/condition";

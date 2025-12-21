@@ -1,6 +1,15 @@
 import { createUnitFeatureAt, createUnitLayer } from "@/geo/layers";
 // import Fade from "ol-ext/featureanimation/Fade";
-import { computed, onMounted, onUnmounted, ref, type Ref, unref, watch } from "vue";
+import {
+  computed,
+  type MaybeRef,
+  onMounted,
+  onUnmounted,
+  ref,
+  type Ref,
+  unref,
+  watch,
+} from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import { fromLonLat, toLonLat } from "ol/proj";
@@ -8,7 +17,7 @@ import { Point } from "ol/geom";
 import { DragBox, Modify, Select } from "ol/interaction";
 import { ModifyEvent } from "ol/interaction/Modify";
 import { Feature } from "ol";
-import { type MaybeRef } from "@vueuse/core";
+
 import {
   clearUnitStyleCache,
   createUnitLabelData,

@@ -16,7 +16,7 @@ import { fromLonLat, type ProjectionLike } from "ol/proj";
 import LineString from "ol/geom/LineString";
 import type { Feature as GeoJsonFeature, Point } from "geojson";
 import destination from "@turf/destination";
-import { onUnmounted, ref, watch } from "vue";
+import { type MaybeRef, onUnmounted, ref, watch } from "vue";
 import { unByKey } from "ol/Observable";
 import { type EventsKey } from "ol/events";
 import {
@@ -29,7 +29,6 @@ import {
 } from "@iconify-prerendered/vue-mdi";
 import type { ScenarioFeatureActions } from "@/types/constants";
 import Select, { SelectEvent } from "ol/interaction/Select";
-import { type MaybeRef } from "@vueuse/core";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
 import type { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import type { TScenario } from "@/scenariostore";
