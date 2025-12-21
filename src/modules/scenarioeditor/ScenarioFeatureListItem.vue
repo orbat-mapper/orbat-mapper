@@ -117,7 +117,7 @@ onUnmounted(() => {
       @dblclick="emit('feature-double-click', $event)"
       class="flex flex-auto items-center py-2.5 sm:py-2"
     >
-      <component :is="getGeometryIcon(feature)" class="text-muted-foreground h-5 w-5" />
+      <component :is="getGeometryIcon(feature)" class="text-muted-foreground size-5" />
       <span
         class="group-hover:text-accent-foreground text-foreground ml-2 text-left text-sm"
         :class="{ 'font-bold': active, 'opacity-50': hidden }"

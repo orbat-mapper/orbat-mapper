@@ -392,20 +392,23 @@ onUnmounted(() => {
       <ul class="-mt-6">
         <li
           v-for="layer in mapLayers"
-          class="group hover:bg-background/40 flex items-center justify-between border-l pl-1"
+          class="group hover:bg-accent relative flex items-center justify-between border-l select-none"
           :key="layer.id"
           @dblclick="onImageLayerDoubleClick(layer)"
           @click="onImageLayerClick(layer, $event)"
           :class="
             selectedMapLayerIds.has(layer.id)
-              ? 'border-yellow-500 bg-yellow-100'
+              ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900'
               : 'border-transparent'
           "
         >
           <button class="flex flex-auto items-center py-2.5 sm:py-2">
-            <component :is="getMapLayerIcon(layer)" class="h-5 w-5 text-gray-400" />
+            <component
+              :is="getMapLayerIcon(layer)"
+              class="text-muted-foreground size-5"
+            />
             <span
-              class="ml-2 text-left text-sm group-hover:text-gray-900"
+              class="group-hover:text-accent-foreground text-foreground ml-2 text-left text-sm"
               :class="{
                 'font-bold': activeMapLayerId === layer.id,
                 'opacity-50': layer.isHidden,
