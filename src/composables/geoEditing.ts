@@ -1,8 +1,7 @@
 import OLMap from "ol/Map";
-import { type MaybeRef } from "@vueuse/core";
 import type VectorLayer from "ol/layer/Vector";
 import type VectorSource from "ol/source/Vector";
-import { onUnmounted, ref, unref, watch } from "vue";
+import { type MaybeRef, onUnmounted, ref, unref, watch } from "vue";
 import Draw, { DrawEvent } from "ol/interaction/Draw";
 import Translate from "ol/interaction/Translate";
 import Snap from "ol/interaction/Snap";

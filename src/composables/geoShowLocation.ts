@@ -1,8 +1,8 @@
 import OLMap from "ol/Map";
 import MousePosition from "ol/control/MousePosition";
 import { type CoordinateFormat } from "ol/coordinate";
-import { type MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
-import { ref, watch } from "vue";
+import { tryOnBeforeUnmount } from "@vueuse/core";
+import { type MaybeRef, ref, watch } from "vue";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 
 export type CoordinateFormatType =

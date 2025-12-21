@@ -1,6 +1,6 @@
 import OLMap from "ol/Map";
-import { type MaybeRef, tryOnBeforeUnmount } from "@vueuse/core";
-import { ref, watch } from "vue";
+import { tryOnBeforeUnmount } from "@vueuse/core";
+import { type MaybeRef, ref, watch } from "vue";
 import { ScaleLine } from "ol/control";
 import type { MeasurementUnit } from "@/composables/geoMeasurement";
 

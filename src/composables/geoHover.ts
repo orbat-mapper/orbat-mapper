@@ -1,6 +1,5 @@
 import type OLMap from "ol/Map";
-import { type MaybeRef } from "@vueuse/core";
-import { ref, watch } from "vue";
+import { type MaybeRef, ref, watch } from "vue";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { unByKey } from "ol/Observable";
 
