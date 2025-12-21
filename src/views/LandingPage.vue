@@ -1,15 +1,24 @@
 <template>
   <div class="bg-background flex h-full flex-col">
-    <header>
-      <p class="bg-accent/90 relative top-0 right-0 left-0 p-1 text-center">
+    <header
+      class="bg-sidebar relative top-0 right-0 left-0 flex items-center justify-center gap-8 p-1 text-center"
+    >
+      <p>
         This is a work in progress prototype. Follow the
         <a href="https://github.com/orbat-mapper/orbat-mapper" class="underline"
-          >development on GitHub <GithubIcon class="inline size-6 sm:size-10" /> </a
-        >.
+          >development on GitHub <GithubIcon class="inline size-6 sm:size-10" />
+        </a>
       </p>
-      <nav>
-        <div></div>
-      </nav>
+      <UseDark v-slot="{ isDark, toggleDark }">
+        <Button
+          variant="ghost"
+          size="icon"
+          @click="toggleDark()"
+          title="Toggle dark mode"
+        >
+          <SunIcon v-if="isDark" /><MoonStarIcon v-else />
+        </Button>
+      </UseDark>
     </header>
 
     <main>
@@ -166,12 +175,14 @@
 </template>
 
 <script setup lang="ts">
+import { MoonStarIcon, SunIcon } from "lucide-vue-next";
 import ProseSection from "../components/ProseSection.vue";
 import LandingPageScenarios from "./LandingPageScenarios.vue";
 import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
 import { ORBAT_CHART_ROUTE } from "@/router/names";
 import { CheckIcon } from "@heroicons/vue/24/outline";
 import { Button } from "@/components/ui/button";
+import { UseDark } from "@vueuse/components";
 
 const features = [
   {
