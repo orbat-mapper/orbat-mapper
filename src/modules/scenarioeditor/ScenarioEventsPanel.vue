@@ -82,7 +82,7 @@ function addEvent() {
                 class="ring-ring mt-1 flex size-4 items-center justify-center rounded-full ring-4"
                 :class="{
                   'bg-muted': event.startTime > t,
-                  // 'bg-muted': event.startTime < t,
+                  'bg-background': event.startTime < t,
                   'bg-accent-foreground': event.startTime === t,
                 }"
               ></button>

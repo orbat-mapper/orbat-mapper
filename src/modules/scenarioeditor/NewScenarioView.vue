@@ -149,8 +149,10 @@
           />
         </FormCard>
         <div class="flex justify-end space-x-3 px-4 sm:px-0">
-          <BaseButton primary type="submit">Create scenario</BaseButton>
-          <BaseButton @click="cancel()">Cancel</BaseButton>
+          <Button type="submit">Create scenario</Button>
+          <Button asChild variant="secondary"
+            ><RouterLink to="/">Cancel</RouterLink></Button
+          >
         </div>
       </form>
     </div>
@@ -295,10 +297,6 @@ async function create() {
   const scenarioId = await addScenario(scenario.value.io.serializeToObject());
 
   await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
-}
-
-function cancel() {
-  router.back();
 }
 
 const icons: SymbolValue[] = [

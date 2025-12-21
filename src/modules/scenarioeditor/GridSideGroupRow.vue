@@ -27,15 +27,15 @@ function toggleOpen() {
 }
 </script>
 <template>
-  <tr class="bg-gray-100">
+  <tr class="bg-muted/40">
     <td class="relative">
-      <div v-if="isActive" class="absolute inset-y-0 right-0 w-0.5 bg-indigo-600"></div>
+      <div v-if="isActive" class="bg-primary absolute inset-y-0 right-0 w-0.5"></div>
     </td>
     <td class="hover:cursor-pointer" @click="emit('toggle', sideGroup)">
       <div
         :id="`cell-${itemIndex}-0`"
         tabindex="0"
-        class="flex h-12 items-center border-2 border-gray-100 bg-gray-100 py-2 pr-3 text-sm font-medium whitespace-nowrap text-gray-900 focus-within:border-red-800"
+        class="border-card bg-card/80 text-foreground focus-within:border-ring flex h-12 items-center border-2 py-2 pr-3 text-sm font-medium whitespace-nowrap"
         @click.self="toggleOpen()"
         @keydown.enter.exact="toggleOpen()"
       >
@@ -45,13 +45,15 @@ function toggleOpen() {
           class="ml-0 flex items-center"
         >
           <ChevronRightIcon
-            class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+            class="text-muted-foreground group-hover:text-foreground h-6 w-6 transform transition-transform"
             :class="{
               'rotate-90': sgOpen.get(sideGroup) ?? true,
             }"
           />
         </button>
-        <button class="ml-2 hover:underline">{{ sideGroup.name }}</button>
+        <button class="ml-2 text-sm font-semibold hover:underline">
+          {{ sideGroup.name }}
+        </button>
       </div>
     </td>
     <td class="">
@@ -66,10 +68,10 @@ function toggleOpen() {
     </td>
     <td :colspan="columns.length - 1" class="">
       <div
-        class="flex h-12 items-center py-2 pr-3 text-sm font-medium whitespace-nowrap text-gray-900"
+        class="text-muted-foreground flex h-12 items-center py-2 pr-3 text-sm font-medium whitespace-nowrap"
       >
-        <BaseButton small class="ml-2" @click="emit('expand', sideGroup)"
-          >Expand/collapse
+        <BaseButton small class="ml-2" @click="emit('expand', sideGroup)">
+          Expand/collapse
         </BaseButton>
       </div>
     </td>

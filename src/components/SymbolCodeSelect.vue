@@ -32,7 +32,7 @@ const selected = computed(() =>
   <div>
     <Select v-model="selectedValue">
       <Label :for="controlId">{{ label }}</Label>
-      <SelectTrigger class="mt-2 w-full" size="lg" :id="controlId">
+      <SelectTrigger class="mt-2 w-full" :id="controlId">
         <SelectValue>
           <template v-if="selected"
             ><NewMilitarySymbol

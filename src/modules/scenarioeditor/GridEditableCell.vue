@@ -72,7 +72,7 @@ function onEditBlur() {
   if (iValue.value !== valueCopy) emit("update", iValue.value);
 }
 
-function onClick(e: any) {
+function onClick() {
   if (!justFocused) {
     if (externalEdit.value) {
       handleExternalEdit();
@@ -97,7 +97,7 @@ function handleExternalEdit() {
 <template>
   <div
     ref="root"
-    class="editable-cell truncate border-2 border-white px-3 py-3 text-sm whitespace-nowrap text-gray-500 outline-0 focus-within:border-red-800"
+    class="editable-cell border-card text-muted-foreground focus-within:border-ring truncate border-2 px-3 py-3 text-sm whitespace-nowrap outline-0"
     tabindex="0"
     :id="`cell-${rowIndex}-${colIndex}`"
     @keydown="onKeydown"
@@ -110,13 +110,15 @@ function handleExternalEdit() {
     <form v-if="editMode" @submit.prevent="">
       <input
         type="text"
-        class="m-0 -my-3 w-full border-none p-0 focus:ring-0"
+        class="text-foreground m-0 -my-3 w-full border-none bg-transparent p-0 focus:ring-0"
         v-model="iValue"
         @vue:mounted="doFocus"
         @focus="selected = true"
         @blur="onEditBlur"
       />
     </form>
-    <span v-else :class="{ 'cursor-pointer': externalEdit }">{{ value }}&nbsp;</span>
+    <span v-else :class="[{ 'cursor-pointer': externalEdit }, 'text-foreground']">
+      {{ value }}&nbsp;
+    </span>
   </div>
 </template>

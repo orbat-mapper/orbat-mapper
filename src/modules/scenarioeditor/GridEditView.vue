@@ -13,10 +13,10 @@
   >
     <div
       ref="target"
-      class="flex h-full w-full flex-col overflow-hidden bg-gray-50 shadow-sm sm:rounded-lg"
+      class="border-border bg-card text-foreground flex h-full w-full flex-col overflow-hidden border shadow-sm sm:rounded-lg"
     >
       <header
-        class="flex shrink-0 items-center justify-between border-b border-gray-300 px-4 py-3 sm:px-6"
+        class="border-border bg-muted/60 flex shrink-0 items-center justify-between border-b px-4 py-3 sm:px-6"
       >
         <div class="flex w-full items-center space-x-2 overflow-x-auto sm:w-auto">
           <FilterQueryInput class="" v-model="filterQuery" />
@@ -32,9 +32,9 @@
         >
       </header>
       <div class="relative max-w-none min-w-0 flex-auto overflow-auto pb-7">
-        <table class="w-full table-fixed">
+        <table class="text-foreground w-full table-fixed text-sm">
           <GridHeader :columns="columns" />
-          <tbody class="divide-y divide-gray-200 bg-white">
+          <tbody class="divide-border bg-card divide-y">
             <template v-for="(item, itemIndex) in items" :key="item.id">
               <GridUnitRow
                 v-if="item.type === 'unit'"
@@ -77,7 +77,7 @@
           </tbody>
         </table>
       </div>
-      <footer class="h-12 shrink-0 border-t border-gray-300 bg-gray-200"></footer>
+      <footer class="border-border bg-muted/60 h-12 shrink-0 border-t"></footer>
     </div>
   </div>
 </template>

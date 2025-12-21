@@ -2,19 +2,19 @@
   <NewSimpleModal v-model="open" dialog-title="Keyboard shortcuts">
     <div class="mt-4">
       <div v-for="category in shortcuts">
-        <h4 class="border-b-2 border-gray-300 pb-1 text-base font-medium text-gray-900">
+        <h4 class="border-b-2 pb-1 text-base font-medium">
           {{ category.label }}
         </h4>
-        <ul class="divide-y divide-gray-200 text-sm text-gray-900">
+        <ul class="divide-y text-sm">
           <li
             v-for="entry in category.shortcuts"
             class="flex items-center justify-between py-2"
           >
-            <p class="text-sm text-gray-700">{{ entry.description }}</p>
+            <p class="text-sm">{{ entry.description }}</p>
             <div>
-              <ul class="flex divide-x-2 divide-gray-300">
-                <li v-for="i in entry.shortcut" class="px-2 py-0.5">
-                  <kbd v-for="s in i" class="kbd-shortcut">{{ s }}</kbd>
+              <ul class="divide-muted-foreground/50 flex divide-x-2">
+                <li v-for="i in entry.shortcut" class="flex gap-0.5 px-2 py-0.5">
+                  <Kbd v-for="s in i">{{ s }}</Kbd>
                 </li>
               </ul>
             </div>
@@ -38,6 +38,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { GRID_EDIT_ROUTE, MAP_EDIT_MODE_ROUTE, OLD_MAP_ROUTE } from "@/router/names";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
+import { Kbd } from "@/components/ui/kbd";
 const route = useRoute();
 
 const props = defineProps({

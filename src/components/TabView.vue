@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col">
     <header class="shrink-0">
-      <div class="border-b border-gray-300 dark:border-gray-400" :class="extraClass">
+      <div class="border-border bg-background border-b" :class="extraClass">
         <div class="flex justify-between">
           <nav class="-mb-px flex" :class="gap" aria-label="Tabs">
             <button
@@ -10,23 +10,23 @@
               @click="selectTab(index)"
               :class="[
                 index === state.selectedIndex
-                  ? 'border-army text-army dark:border-amber-600 dark:text-amber-600'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400',
-                'border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap',
+                  ? 'border-primary text-primary dark:border-primary dark:text-primary'
+                  : 'text-muted-foreground hover:border-border hover:text-foreground border-transparent',
+                'border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors',
               ]"
               :aria-current="index === state.selectedIndex ? 'page' : undefined"
             >
               {{ tab.label }}
             </button>
           </nav>
-          <div class="">
+          <div>
             <slot name="extra" />
           </div>
         </div>
       </div>
     </header>
-    <div class="flex-auto overflow-y-auto">
-      <slot class="" />
+    <div class="bg-background text-foreground flex-auto overflow-y-auto">
+      <slot />
     </div>
   </div>
 </template>

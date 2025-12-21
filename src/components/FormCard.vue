@@ -1,9 +1,13 @@
+<script setup lang="ts">
+defineProps<{ label: String; description?: string }>();
+</script>
+
 <template>
-  <div class="bg-white px-4 py-5 shadow-sm sm:rounded-lg sm:p-6 dark:bg-slate-800/30">
+  <div class="bg-card text-card-foreground rounded-lg border p-6 shadow-sm">
     <div class="md:grid md:grid-cols-3 md:gap-6">
       <div class="md:col-span-1">
-        <h3 class="text-heading text-lg leading-6 font-medium">{{ label }}</h3>
-        <div class="mt-1 text-sm text-gray-500 dark:text-slate-400">
+        <h3 class="text-lg leading-6 font-semibold">{{ label }}</h3>
+        <div class="text-muted-foreground mt-1 text-sm">
           <slot name="description">
             <p v-if="description">{{ description }}</p>
           </slot>
@@ -17,12 +21,3 @@
     </div>
   </div>
 </template>
-<script>
-export default {
-  name: "FormCard",
-  props: {
-    label: String,
-    description: String,
-  },
-};
-</script>
