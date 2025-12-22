@@ -13,6 +13,7 @@ export interface ImportedFileInfo {
   isZipped: boolean;
   objectUrl: string;
   fileName: string;
+  fileSize: number;
   dataAsArrayBuffer?: ArrayBuffer;
 }
 
@@ -37,6 +38,7 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     errors: [],
     objectUrl: "",
     fileName: file.name,
+    fileSize: file.size,
   };
 
   if (hasZippedFileType(file)) {

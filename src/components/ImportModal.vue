@@ -1,6 +1,5 @@
 <!--suppress JSDeprecatedSymbols -->
 <script setup lang="ts">
-import { useVModel } from "@vueuse/core";
 import ImportLoadStep from "@/components/ImportLoadStep.vue";
 import { defineAsyncComponent, ref, shallowRef } from "vue";
 import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
@@ -50,10 +49,9 @@ type ImportState =
 const importState = ref<ImportState>("select");
 const loadedData = shallowRef<any>([]);
 const fileInfo = shallowRef<ImportedFileInfo>();
-const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
-const emit = defineEmits(["update:modelValue", "cancel"]);
+const emit = defineEmits(["cancel"]);
 
-const open = useVModel(props, "modelValue", emit);
+const open = defineModel<boolean>({ default: false });
 
 function onLoaded(nextState: ImportState, data: any, info: ImportedFileInfo) {
   loadedData.value = data;
@@ -83,8 +81,11 @@ function onCancel() {
     class="sm:max-w-xl md:max-w-4xl"
   >
     <div class="-mx-6 overflow-x-hidden px-6">
-      <p class="flex items-center justify-between text-sm leading-6 text-gray-500">
-        <span>Import data for use in your scenario</span>
+      <p
+        class="text-muted-foreground flex items-center justify-between text-sm leading-6"
+      >
+        <span v-if="importState === 'select'">Import data for use in your scenario</span
+        ><span v-else />
         <DocLink href="https://docs.orbat-mapper.app/guide/import-data" />
       </p>
       <ImportLoadStep

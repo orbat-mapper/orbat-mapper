@@ -3,12 +3,18 @@ import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { ref } from "vue";
 import type { ImportedFileInfo } from "@/importexport/fileHandling";
-import InputGroup from "@/components/InputGroup.vue";
 import { stripFileExtension } from "@/utils/files";
-import InputCheckbox from "@/components/InputCheckbox.vue";
 import AlertWarning from "@/components/AlertWarning.vue";
-import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
 import { Button } from "@/components/ui/button";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   objectUrl: string;
@@ -48,45 +54,27 @@ function onCancel() {
 
 <template>
   <div class="">
-    <RadioGroup v-model="inputOption" class="mt-4 flex items-center gap-x-8">
-      <RadioGroupLabel class="text-sm font-medium text-gray-700"
-        >Import KML as:
-      </RadioGroupLabel>
-      <RadioGroupOption
-        v-for="{ label, value } in [{ label: 'Vector image layer', value: 'imageLayer' }]"
-        v-slot="{ checked }"
-        :key="value"
-        :value="value"
-      >
-        <span
-          :class="[
-            checked
-              ? 'bg-indigo-100 text-indigo-700'
-              : 'text-gray-500 hover:text-gray-700',
-            'cursor-pointer rounded-md px-3 py-2 text-sm font-medium',
-          ]"
-          >{{ label }}</span
-        >
-      </RadioGroupOption>
-    </RadioGroup>
-
     <form @submit.prevent="onLoad" class="flex max-h-[80vh] flex-col">
-      <div v-if="inputOption === 'imageLayer'">
-        <section class="my-4 space-y-4">
-          <InputGroup label="Vector layer name" v-model="form.layerName" />
-          <InputCheckbox label="Extract KML styles" v-model="form.extractStyles" />
-        </section>
+      <FieldGroup>
+        <FieldSet>
+          <FieldLegend>KML import</FieldLegend>
+          <FieldDescription>You have loaded a KML file.</FieldDescription>
+          <Field>
+            <FieldLabel for="layerName">Vector layer name</FieldLabel>
+            <Input id="layerName" v-model="form.layerName" />
+          </Field>
 
-        <AlertWarning title="Warning"
-          >KML layers are currently only visible while the scenario is open. They are not
-          saved as part of the scenario.
-        </AlertWarning>
-      </div>
+          <AlertWarning title="Warning"
+            >KML layers are currently only visible while the scenario is open. They are
+            not saved as part of the scenario.
+          </AlertWarning>
 
-      <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
-        <Button type="submit" size="sm">Import</Button>
-        <Button variant="outline" size="sm" @click="onCancel">Cancel</Button>
-      </footer>
+          <Field orientation="horizontal" class="justify-end">
+            <Button type="submit"> Import</Button>
+            <Button variant="outline" type="button" @click="onCancel"> Cancel</Button>
+          </Field>
+        </FieldSet></FieldGroup
+      >
     </form>
   </div>
 </template>
