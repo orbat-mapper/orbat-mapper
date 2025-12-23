@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { ExportFormat, ImportFormat } from "@/types/convert";
+import type { ExportFormat, ImportFormat } from "@/types/importExport.ts";
 import { useLocalStorage } from "@vueuse/core";
 
 export interface ImportState {

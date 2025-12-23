@@ -1,4 +1,4 @@
-import type { KmlKmzExportSettings } from "@/types/convert";
+import type { KmlKmzExportSettings } from "@/types/importExport.ts";
 import type { Folder, Root } from "@tmcw/togeojson";
 import type { NUnit } from "@/types/internalModels";
 import { saveBlobToLocalFile } from "@/utils/files";

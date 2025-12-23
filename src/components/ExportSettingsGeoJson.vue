@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ExportFormat, GeoJsonSettings } from "@/types/convert";
+import type { ExportFormat, GeoJsonSettings } from "@/types/importExport.ts";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import { useVModel } from "@vueuse/core";
 import { type Ref } from "vue";

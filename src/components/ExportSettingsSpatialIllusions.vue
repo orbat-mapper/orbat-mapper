@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ExportFormat, UnitGeneratorSettings } from "@/types/convert";
+import type { ExportFormat, UnitGeneratorSettings } from "@/types/importExport.ts";
 import { useVModel } from "@vueuse/core";
 import { ref, type Ref } from "vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";

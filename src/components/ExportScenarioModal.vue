@@ -3,7 +3,7 @@ import SimpleSelect from "@/components/SimpleSelect.vue";
 import { type SelectItem } from "@/components/types";
 import { computed } from "vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";
-import type { ExportFormat, ExportSettings } from "@/types/convert";
+import type { ExportFormat, ExportSettings } from "@/types/importExport.ts";
 import { useScenarioExport } from "@/importexport/export/scenarioExport.ts";
 import { useNotifications } from "@/composables/notifications";
 import NProgress from "nprogress";

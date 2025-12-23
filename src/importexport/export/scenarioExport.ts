@@ -8,7 +8,7 @@ import type {
   GeoJsonSettings,
   OrbatMapperExportSettings,
   UnitGeneratorSettings,
-} from "@/types/convert";
+} from "@/types/importExport.ts";
 import { INTERNAL_NAMES, type NUnit } from "@/types/internalModels";
 import type { Unit } from "@/types/scenarioModels";
 import {
