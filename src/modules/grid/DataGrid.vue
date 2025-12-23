@@ -62,8 +62,7 @@ const selectColumn: ColumnDef<any, any> = {
       type: "checkbox",
       checked: table.getIsAllRowsSelected(),
       indeterminate: table.getIsSomeRowsSelected(),
-      // use shadcn tokens for form inputs so they adapt to dark mode
-      class: "m-2 rounded border-input text-primary focus:ring-primary sm:left-6",
+      class: "m-2 rounded border-input accent-primary focus:ring-primary sm:left-6",
       onChange: table.getToggleAllRowsSelectedHandler(),
     });
   },
@@ -73,7 +72,7 @@ const selectColumn: ColumnDef<any, any> = {
       checked: row.getIsSelected(),
       disabled: !row.getCanSelect(),
       indeterminate: !props.noIndeterminate ? row.getIsSomeSelected() : undefined,
-      class: "m-2 rounded border-input text-primary focus:ring-primary sm:left-6",
+      class: "m-2 rounded border-input accent-primary focus:ring-primary sm:left-6",
       onChange: row.getToggleSelectedHandler(),
     });
   },
