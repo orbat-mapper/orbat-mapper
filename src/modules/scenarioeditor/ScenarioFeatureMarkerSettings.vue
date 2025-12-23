@@ -77,10 +77,10 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number | boole
       >
         <div
           :class="[
-            active ? 'ring-2 ring-indigo-600 ring-offset-2' : '',
+            active ? 'ring-ring ring-2 ring-offset-2' : '',
             checked
-              ? 'bg-indigo-600 text-white hover:bg-indigo-500'
-              : 'bg-white text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50',
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'bg-muted text-foreground border-border hover:bg-muted/90 border',
             'flex cursor-pointer items-center justify-center rounded-md px-5 py-3 text-sm font-semibold uppercase',
           ]"
         >
@@ -108,10 +108,10 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number | boole
       >
         <div
           :class="[
-            active ? 'ring-2 ring-indigo-600 ring-offset-2' : '',
+            active ? 'ring-ring ring-2 ring-offset-2' : '',
             checked
-              ? 'bg-indigo-300 text-white hover:bg-indigo-500'
-              : 'bg-white text-gray-900 ring-0 ring-inset hover:bg-gray-50',
+              ? 'bg-primary/80 text-primary-foreground hover:bg-primary'
+              : 'bg-muted text-foreground hover:bg-muted/90',
             'flex cursor-pointer items-center justify-center rounded-md px-2 py-2 text-sm font-semibold uppercase',
           ]"
         >

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
-import { useVModel } from "@vueuse/core";
 import { computed, triggerRef } from "vue";
 import { defaultColors, extraColors, isValidHexColor } from "@/components/colors";
 import { useUiStore } from "@/stores/uiStore";
@@ -113,46 +111,28 @@ function onOpen(isOpen: boolean) {
     </PopoverTrigger>
     <PopoverContent class="relative" :avoidCollisions="true">
       <header class="text-sm font-bold">Color</header>
-      <RadioGroup v-model="selectedColor">
-        <RadioGroupLabel
-          v-if="label || $slots.label"
-          class="mb-4 block text-sm leading-6 font-medium text-gray-900"
+      <div class="mt-6 flex flex-wrap items-center gap-3">
+        <div
+          v-for="color in $colors"
+          :key="color.name"
+          class="flex rounded-full outline -outline-offset-1 outline-black/10"
         >
-          <slot name="label">{{ label }}</slot>
-        </RadioGroupLabel>
-        <div class="mt-4 flex flex-wrap items-center gap-2">
-          <RadioGroupOption
-            as="template"
-            v-for="color in $colors"
-            :key="color.name"
+          <input
+            :aria-label="color.name"
+            type="radio"
+            name="color"
             :value="color.value"
-            v-slot="{ active, checked }"
-          >
-            <div
-              :class="[
-                color.selectedColor,
-                active && checked ? 'ring-3 ring-offset-1' : '',
-                !active && checked ? 'ring-2' : '',
-                'relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 focus:outline-hidden',
-              ]"
-            >
-              <RadioGroupLabel as="span" class="sr-only">{{
-                color.name
-              }}</RadioGroupLabel>
-              <div
-                aria-hidden="true"
-                :class="[
-                  color.bgColor,
-                  'border-opacity-10 flex h-7 w-7 items-center justify-center rounded-full border border-black',
-                ]"
-                :style="{ backgroundColor: color.value }"
-              >
-                <span v-if="!color.value">x</span>
-              </div>
-            </div>
-          </RadioGroupOption>
+            :checked="selectedColor === color.value"
+            v-model="selectedColor"
+            class="size-6 appearance-none rounded-full forced-color-adjust-none checked:outline-2 checked:outline-offset-2 focus-visible:outline-3 focus-visible:outline-offset-3"
+            :style="{
+              backgroundColor: color.value,
+              outlineColor: selectedColor === color.value ? color.value : 'transparent',
+            }"
+          />
         </div>
-      </RadioGroup>
+      </div>
+
       <div class="mt-4 flex items-center gap-2">
         <label for="color-picker" class="cursor-pointer text-sm font-medium"
           >Custom color</label
