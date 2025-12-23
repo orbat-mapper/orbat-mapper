@@ -230,6 +230,9 @@ importers:
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
+      pretty-bytes:
+        specifier: ^7.1.0
+        version: 7.1.0
       reka-ui:
         specifier: ^2.6.1
         version: 2.6.1(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
@@ -2727,6 +2730,10 @@ packages:
     resolution: {integrity: sha512-v6UNi1+3hSlVvv8fSaoUbggEM5VErKmmpGA7Pl3HF8V6uKY7rvClBOJlH6yNwQtfTueNkGVpOv/mtWL9L4bgRA==}
     engines: {node: '>=14'}
     hasBin: true
+
+  pretty-bytes@7.1.0:
+    resolution: {integrity: sha512-nODzvTiYVRGRqAOvE84Vk5JDPyyxsVk0/fbA/bq7RqlnhksGpset09XTxbpvLTIjoaF7K8Z8DG8yHtKGTPSYRw==}
+    engines: {node: '>=20'}
 
   pretty-ms@9.3.0:
     resolution: {integrity: sha512-gjVS5hOP+M3wMm5nmNOucbIrqudzs9v/57bWRHQWLYklXqoXKrVfYW2W9+glfGsqtPgpiz5WwyEEB+ksXIx3gQ==}
@@ -6344,6 +6351,8 @@ snapshots:
       prettier: 3.7.4
 
   prettier@3.7.4: {}
+
+  pretty-bytes@7.1.0: {}
 
   pretty-ms@9.3.0:
     dependencies:

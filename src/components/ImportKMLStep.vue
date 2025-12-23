@@ -18,7 +18,6 @@ import ImportedFileList from "@/components/ImportedFileList.vue";
 import type { KmlImportData } from "@/types/importExport.ts";
 
 interface Props {
-  objectUrl: string;
   loadedData: KmlImportData;
 }
 
@@ -62,18 +61,18 @@ function onCancel() {
         <FieldSet>
           <FieldLegend>KML import</FieldLegend>
           <ImportedFileList :importData="loadedData" />
-          <Field v-for="(name, index) in form.layerNames" :key="index">
-            <FieldLabel for="layerName">Vector layer name</FieldLabel>
-            <Input id="layerName" v-model="form.layerNames[index]" />
-            <FieldDescription>{{
-              loadedData.fileInfo[index]?.fileName
-            }}</FieldDescription>
-          </Field>
-
           <AlertWarning title="Warning"
             >KML layers are currently only visible while the scenario is open. They are
             not saved as part of the scenario.
           </AlertWarning>
+
+          <FieldLabel for="layerName-0">Vector layer name</FieldLabel>
+          <Field v-for="(name, index) in form.layerNames" :key="index">
+            <Input :id="`layerName-${index}`" v-model="form.layerNames[index]" />
+            <FieldDescription>{{
+              loadedData.fileInfo[index]?.fileName
+            }}</FieldDescription>
+          </Field>
 
           <Field orientation="horizontal" class="justify-end">
             <Button type="submit"> Import</Button>

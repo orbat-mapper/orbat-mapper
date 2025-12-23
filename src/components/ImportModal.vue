@@ -143,7 +143,6 @@ function onCancel() {
       />
       <ImportKMLStep
         v-else-if="loadedImportData?.format === 'kml'"
-        :object-url="loadedData"
         :loadedData="loadedImportData"
         @cancel="onCancel"
         @loaded="onImport"
