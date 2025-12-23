@@ -4,7 +4,6 @@ import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { NScenarioFeature, NUnit } from "@/types/internalModels";
 import type { Feature as GeoJSONFeature, FeatureCollection, Point } from "geojson";
-import type { SymbolItem } from "@/types/constants";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
@@ -19,6 +18,7 @@ import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import AlertWarning from "@/components/AlertWarning.vue";
 import { Button } from "@/components/ui/button";
 import { useRootUnits } from "@/composables/scenarioUtils.ts";
+import { Field } from "@/components/ui/field";
 
 interface Props {
   data: GeoJSONFeature | FeatureCollection;
@@ -272,10 +272,10 @@ function loadAsFeatures() {
         </section>
       </div>
 
-      <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
-        <Button type="submit" size="sm">Import</Button>
-        <Button size="sm" variant="outline" @click="emit('cancel')">Cancel</Button>
-      </footer>
+      <Field orientation="horizontal" class="justify-end">
+        <Button type="submit"> Import</Button>
+        <Button variant="outline" type="button" @click="emit('cancel')"> Cancel</Button>
+      </Field>
     </form>
   </div>
 </template>
