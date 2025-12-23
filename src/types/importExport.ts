@@ -1,4 +1,6 @@
 import { type EntityId } from "@/types/base";
+import type { ImportedFileInfo } from "@/importexport/fileHandling.ts";
+import type { FeatureCollection } from "geojson";
 
 export type ExportFormat =
   | "orbatmapper"
@@ -14,12 +16,12 @@ export type ImportFormat =
   | "orbatmapper"
   | "geojson"
   | "milx"
-  | "msdl"
   | "unitgenerator"
   | "orbatgenerator"
   | "image"
   | "kml"
   | "xlsx";
+// | "msdl" // not implemented
 
 export type GuessedImportFormat = "unknown" | ImportFormat;
 
@@ -101,3 +103,14 @@ export interface ImportSettings {
   embedIcons: boolean;
   useShortName: boolean;
 }
+
+interface GenericImportData<T extends ImportFormat, TData> {
+  format: T;
+  data: TData[];
+  fileInfo: ImportedFileInfo[];
+}
+
+export type KmlImportData = GenericImportData<"kml", string>;
+type GeoJsonImportData = GenericImportData<"geojson", FeatureCollection>;
+
+export type ImportData = KmlImportData | GeoJsonImportData;
