@@ -275,6 +275,7 @@ onMounted(() => {
         <input
           type="file"
           id="file"
+          multiple
           @change="onFileLoad"
           class="absolute inset-0 opacity-0"
         />
