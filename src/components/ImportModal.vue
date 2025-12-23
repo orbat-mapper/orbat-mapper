@@ -9,6 +9,8 @@ import ImportImageStep from "@/components/ImportImageStep.vue";
 import type { ImportedFileInfo } from "@/importexport/fileHandling";
 import DocLink from "@/components/DocLink.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
+import type { ImportData } from "@/types/importExport.ts";
+import ImportedFileList from "@/components/ImportedFileList.vue";
 
 const ImportGeojsonStep = defineAsyncComponent(
   () => import("@/components/ImportGeojsonStep.vue"),
@@ -48,15 +50,21 @@ type ImportState =
   | "orbatmapper";
 const importState = ref<ImportState>("select");
 const loadedData = shallowRef<any>([]);
+const loadedImportData = shallowRef<ImportData>();
 const fileInfo = shallowRef<ImportedFileInfo>();
 const emit = defineEmits(["cancel"]);
 
 const open = defineModel<boolean>({ default: false });
 
-function onLoaded(nextState: ImportState, data: any, info: ImportedFileInfo) {
+function onLoaded(nextState: ImportState, data: any, info: ImportedFileInfo | undefined) {
   loadedData.value = data;
   importState.value = nextState;
   fileInfo.value = info;
+}
+
+function onLod(importData: ImportData) {
+  loadedImportData.value = importData;
+  importState.value = importData.format;
 }
 
 function onImport() {
@@ -69,6 +77,14 @@ function onCancel() {
   if (objectUrlStates.includes(importState.value) && loadedData.value !== undefined) {
     URL.revokeObjectURL(loadedData.value);
   }
+  // clean up loadedImportData
+  loadedImportData.value?.data.forEach((d) => {
+    if (d instanceof String && d.startsWith("blob:")) {
+      URL.revokeObjectURL(d as string);
+    }
+  });
+  loadedImportData.value = undefined;
+
   emit("cancel");
 }
 </script>
@@ -92,6 +108,7 @@ function onCancel() {
         v-if="importState === 'select'"
         @cancel="onCancel"
         @loaded="onLoaded"
+        @lod="onLod"
       />
       <ImportMilxStep
         v-else-if="importState === 'milx'"
@@ -125,9 +142,9 @@ function onCancel() {
         @loaded="onImport"
       />
       <ImportKMLStep
-        v-else-if="importState === 'kml' && fileInfo"
+        v-else-if="loadedImportData?.format === 'kml'"
         :object-url="loadedData"
-        :file-info="fileInfo"
+        :loadedData="loadedImportData"
         @cancel="onCancel"
         @loaded="onImport"
       />

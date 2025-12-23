@@ -5,6 +5,7 @@ import SimpleSelect from "@/components/SimpleSelect.vue";
 import { type SelectItem } from "@/components/types";
 import type {
   GuessedImportFormat,
+  ImportData,
   ImportFormat,
   ImportSettings,
 } from "@/types/importExport.ts";
@@ -35,7 +36,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
-const emit = defineEmits(["cancel", "loaded"]);
+const emit = defineEmits<{
+  cancel: [];
+  loaded: [format: ImportFormat, data: any, info: ImportedFileInfo | undefined];
+  lod: [importData: ImportData];
+}>();
 
 const formatItems: SelectItem<ImportFormat>[] = [
   { label: "MilX", value: "milx" },
@@ -58,6 +63,7 @@ const urlSource = ref("");
 const currentFilename = ref("");
 const objectUrl = ref("");
 const fileInfo = shallowRef<ImportedFileInfo>();
+const fileInfos = shallowRef<ImportedFileInfo[]>([]);
 const isError = ref(false);
 const errorMessage = ref("");
 
@@ -116,19 +122,24 @@ async function onLoad() {
     const data = await importMilxString(stringSource.value);
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
-    emit("loaded", "milx", data, fileInfo.value);
+    emit("loaded", "milx", data, fileInfo.value!);
   }
 
   if (format === "kml" && stringSource.value) {
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
-    emit("loaded", "kml", objectUrl.value, fileInfo.value);
+    const kmls = fileInfos.value.filter((f) => f.format === "kml");
+    emit("lod", {
+      format: "kml",
+      data: kmls.map((d) => d.objectUrl),
+      fileInfo: fileInfos.value,
+    });
   }
 
   if (format === "image" && objectUrl.value) {
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
-    emit("loaded", "image", objectUrl.value, fileInfo.value);
+    emit("loaded", "image", objectUrl.value, fileInfo.value!);
   }
 
   if (format === "geojson" && stringSource.value) {
@@ -150,7 +161,7 @@ async function onLoad() {
     const data = importJsonString<OrbatGeneratorOrbat>(stringSource.value);
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
-    emit("loaded", "orbatgenerator", data, fileInfo.value);
+    emit("loaded", "orbatgenerator", data, fileInfo.value!);
   }
 
   if (format === "orbatmapper" && stringSource.value) {
@@ -178,8 +189,7 @@ function onDrop(files: File[] | null) {
 const onFileLoad = (e: Event) => {
   const target = <HTMLInputElement>e.target;
   if (!target?.files?.length) return;
-  const files = Array.from(target.files);
-  handleFiles(files);
+  handleFiles(Array.from(target.files));
 };
 
 const onUrlLoad = async () => {
@@ -206,10 +216,14 @@ const onUrlLoad = async () => {
 };
 
 async function handleFiles(files: File[]) {
+  fileInfos.value = [];
+  for (const f of files) {
+    fileInfos.value.push(await guessImportFormat(f));
+  }
+  const info = fileInfos.value[0];
   const file = files[0];
 
   currentFilename.value = file.name;
-  const info = await guessImportFormat(file);
   fileInfo.value = info;
   if (info.isInvalid) {
     info.errors.forEach((message) => send({ message }));
@@ -219,6 +233,7 @@ async function handleFiles(files: File[]) {
   stringSource.value = info.dataAsString;
   objectUrl.value = info.objectUrl;
   guessedFormat.value = info.format;
+
   if (info.format !== "unknown") {
     form.value.format = info.format;
     await onLoad();
