@@ -15,10 +15,10 @@ const emit = defineEmits(["toggle"]);
 
 <template>
   <div class="flex items-center gap-2" :style="{ paddingLeft: level * 1.5 + 'rem' }">
-    <div class="h-6 w-6">
+    <div class="size-6">
       <button v-if="canExpand" @click="emit('toggle')" type="button">
         <ChevronRightIcon
-          class="h-6 w-6 transform text-gray-500 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+          class="text-muted-foreground group-hover:text-foreground size-6 transform transition-transform"
           :class="{
             'rotate-90': expanded,
           }"
@@ -30,7 +30,11 @@ const emit = defineEmits(["toggle"]);
       :sidc="sidc"
       class="max-h-8"
       :size="20"
-      :options="symbolOptions"
+      :options="{
+        outlineWidth: 8,
+        outlineColor: 'rgba(255,255,255,0.80)',
+        ...symbolOptions,
+      }"
     />
     <span :class="{ 'font-bold': sidc === undefined }">{{ value }}</span>
   </div>

@@ -62,8 +62,8 @@ const selectColumn: ColumnDef<any, any> = {
       type: "checkbox",
       checked: table.getIsAllRowsSelected(),
       indeterminate: table.getIsSomeRowsSelected(),
-      class:
-        "m-2 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6",
+      // use shadcn tokens for form inputs so they adapt to dark mode
+      class: "m-2 rounded border-input text-primary focus:ring-primary sm:left-6",
       onChange: table.getToggleAllRowsSelectedHandler(),
     });
   },
@@ -73,8 +73,7 @@ const selectColumn: ColumnDef<any, any> = {
       checked: row.getIsSelected(),
       disabled: !row.getCanSelect(),
       indeterminate: !props.noIndeterminate ? row.getIsSomeSelected() : undefined,
-      class:
-        "m-2 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6",
+      class: "m-2 rounded border-input text-primary focus:ring-primary sm:left-6",
       onChange: row.getToggleSelectedHandler(),
     });
   },
@@ -188,7 +187,7 @@ const filteredRowCount = computed(() => {
           <tr
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"
-            class="flex divide-x divide-gray-200"
+            class="divide-border flex divide-x"
           >
             <th
               v-for="header in headerGroup.headers"
@@ -197,7 +196,7 @@ const filteredRowCount = computed(() => {
                 width: `${header.getSize()}px`,
               }"
               role="columnheader"
-              class="relative flex items-center justify-between overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold text-gray-900 select-none"
+              class="bg-muted text-foreground relative flex items-center justify-between overflow-hidden border-b px-4 py-3.5 text-left text-sm font-semibold select-none"
               :class="{ 'cursor-pointer': header.column.getCanSort() }"
               @click="header.column.getToggleSortingHandler()?.($event)"
             >
@@ -216,7 +215,7 @@ const filteredRowCount = computed(() => {
                 <!--                </button>-->
                 <span
                   v-if="header.column.getCanSort() && header.column.getIsSorted()"
-                  class="flex-none rounded text-gray-700 group-hover:bg-gray-300"
+                  class="text-muted-foreground group-hover:bg-muted flex-none rounded"
                 >
                   <ArrowSmallDownIcon
                     v-if="header.column.getIsSorted() === 'asc'"
@@ -247,7 +246,7 @@ const filteredRowCount = computed(() => {
             v-for="row in virtualRows"
             :key="row.key as string"
             :style="{ transform: `translateY(${row.start}px)` }"
-            class="group absolute flex h-10 w-full divide-x divide-gray-200 text-sm hover:bg-gray-50"
+            class="group divide-border hover:bg-muted absolute flex h-10 w-full divide-x text-sm"
             :data-index="row.index"
           >
             <td
@@ -267,7 +266,7 @@ const filteredRowCount = computed(() => {
                 class="flex items-center"
               >
                 <ChevronRightIcon
-                  class="h-6 w-6 text-red-800 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+                  class="text-muted-foreground group-hover:text-foreground h-6 w-6 transition-transform"
                   :class="{
                     'rotate-90': cell.row.getIsExpanded(),
                   }"
