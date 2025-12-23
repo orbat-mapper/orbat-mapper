@@ -1,6 +1,6 @@
 import type { TScenario } from "@/scenariostore";
 import type { NUnit } from "@/types/internalModels";
-import type { GeoJsonSettings } from "@/types/convert";
+import type { GeoJsonSettings } from "@/types/importExport.ts";
 import { featureCollection, point } from "@turf/helpers";
 import type {
   MilSymbolProperties,

@@ -3,7 +3,11 @@ import { computed, onMounted, ref, shallowRef } from "vue";
 import { AlertCircleIcon } from "lucide-vue-next";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { type SelectItem } from "@/components/types";
-import type { GuessedImportFormat, ImportFormat, ImportSettings } from "@/types/convert";
+import type {
+  GuessedImportFormat,
+  ImportFormat,
+  ImportSettings,
+} from "@/types/importExport.ts";
 import { useNotifications } from "@/composables/notifications";
 import NProgress from "nprogress";
 import { useDropZone } from "@vueuse/core";

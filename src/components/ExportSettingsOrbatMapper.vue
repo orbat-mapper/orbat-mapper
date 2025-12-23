@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type OrbatMapperExportSettings } from "@/types/convert";
+import { type OrbatMapperExportSettings } from "@/types/importExport.ts";
 import { computed } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
