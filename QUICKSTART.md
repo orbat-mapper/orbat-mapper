@@ -51,17 +51,14 @@ pnpm run lint -- --max-warnings 0
 - Updated to `@tsconfig/node24`
 
 ### Editor Configuration
-- `.editorconfig` for cross-editor consistency
-- `.gitattributes` for line ending normalization
 
 ## 📝 New Scripts
 
 | Command | Description |
 |---------|-------------|
 | `pnpm run lint` | Run ESLint with auto-fix |
-| `pnpm run format` | Format code with Prettier (experimental CLI) |
 
-All other scripts remain unchanged.
+All other scripts remain unchanged including `format`.
 
 ## 📁 What Changed
 

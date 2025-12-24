@@ -97,7 +97,8 @@ The project has been updated to match the modern Vue 3 + Vite + TypeScript proje
 #### Scripts
 **Added:**
 - `lint`: ESLint with auto-fix and caching
-- `format`: Updated to use `--experimental-cli` flag for better performance
+
+**Note:** The `format` script remains unchanged from the original project.
 
 #### Dev Dependencies - Version Updates
 - `@vitejs/plugin-vue`: ^5.2.4 → ^6.0.2
@@ -182,12 +183,7 @@ Ensures consistent line endings:
    - App code uses `tsconfig.app.json`
    - Root `tsconfig.json` is just project references
 
-3. **Format command updated**
-   - New: `pnpm run format` uses `--experimental-cli` flag
-   - This is faster but might behave slightly differently
-   - If issues occur, remove the flag temporarily
-
-4. **Node.js version requirements**
+3. **Node.js version requirements**
    - Minimum: Node 20.19.0
    - Recommended: Node 22.12.0+
    - Update your Node version if needed

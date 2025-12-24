@@ -69,10 +69,10 @@ else
     errors=$((errors + 1))
 fi
 
-if grep -q '"format": "prettier --write --experimental-cli' package.json; then
-    echo -e "${GREEN}✓${NC} format script updated"
+if grep -q '"format": "prettier --write' package.json; then
+    echo -e "${GREEN}✓${NC} format script exists"
 else
-    echo -e "${YELLOW}⚠${NC} format script may not be updated"
+    echo -e "${YELLOW}⚠${NC} format script may not be configured"
     warnings=$((warnings + 1))
 fi
 
