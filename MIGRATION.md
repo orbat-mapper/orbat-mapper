@@ -144,20 +144,7 @@ Standardizes editor settings across the team:
 Ensures consistent line endings:
 - Forces LF line endings for all text files
 
-#### `.vscode/extensions.json` (NEW)
-Recommends essential VSCode extensions:
-- Vue.volar (Vue language features)
-- vitest.explorer (test runner integration)
-- dbaeumer.vscode-eslint (ESLint integration)
-- EditorConfig.EditorConfig (editor config support)
-- esbenp.prettier-vscode (Prettier integration)
-
-#### `.vscode/settings.json` (NEW)
-Configures VSCode workspace settings:
-- File nesting patterns for cleaner explorer
-- Format on save
-- Auto-fix on save
-- Prettier as default formatter
+**Note:** `.vscode/` directory was not included per project requirements.
 
 ### 8. Git & Prettier Configuration
 
@@ -169,7 +156,7 @@ Configures VSCode workspace settings:
 - `.eslintcache`
 - Cypress artifacts
 - Vitest screenshots
-- VSCode configuration (with exceptions)
+- Editor directories (.vscode, .idea, etc.)
 
 #### `.prettierrc` → `.prettierrc.json`
 **Changes:**

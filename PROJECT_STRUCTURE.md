@@ -61,9 +61,6 @@ orbat-mapper/
 ├── .nvmrc
 ├── .prettierignore
 ├── .prettierrc.json              # ✅ UPDATED - JSON format (was .prettierrc)
-├── .vscode/                      # ✨ NEW - VSCode configuration
-│   ├── extensions.json           # ✨ NEW - Extension recommendations
-│   └── settings.json             # ✨ NEW - Workspace settings
 ├── CHANGELOG.md
 ├── LICENSE
 ├── MIGRATION.md                  # ✨ NEW - This migration guide
@@ -116,14 +113,9 @@ Legend:
 ## Key Directory Structure Changes
 
 ### Root Level
-- **Added 8 new files**: Configuration and documentation
+- **Added 7 new files**: Configuration and documentation
 - **Modified 6 files**: Core configs updated
 - **Removed 1 file**: Old Prettier config (replaced with JSON version)
-
-### .vscode/ Directory (NEW)
-IDE-specific configuration for better developer experience:
-- `extensions.json`: Recommends essential extensions
-- `settings.json`: Auto-format, auto-fix, file nesting
 
 ### Source Directory (src/)
 - **Removed**: `shims-vue.d.ts` (now handled by Volar + root `env.d.ts`)
@@ -155,7 +147,7 @@ IDE-specific configuration for better developer experience:
 |------|-------------|-------------|
 | `package.json` | Modified | Added 7 ESLint packages, updated 15+ versions, new lint script |
 
-### Editor & Git (6 files)
+### Editor & Git (4 files)
 
 | File | Change Type | Purpose |
 |------|-------------|---------|
@@ -163,8 +155,6 @@ IDE-specific configuration for better developer experience:
 | `.gitattributes` | **NEW** | Line ending normalization |
 | `.gitignore` | Modified | Comprehensive patterns |
 | `.prettierrc.json` | **NEW** | JSON format with schema |
-| `.vscode/extensions.json` | **NEW** | Extension recommendations |
-| `.vscode/settings.json` | **NEW** | Workspace behavior |
 
 ### Documentation (2 files)
 
@@ -177,10 +167,10 @@ IDE-specific configuration for better developer experience:
 
 | Category | Before | After | Change |
 |----------|--------|-------|--------|
-| Config files (root) | 10 | 17 | +7 |
+| Config files (root) | 10 | 15 | +5 |
 | TypeScript configs | 3 | 4 | +1 |
 | Source files | ~200+ | ~200+ | 0 |
-| Total tracked files | ~210+ | ~220+ | +10 |
+| Total tracked files | ~210+ | ~215+ | +5 |
 
 ## Impact by File Type
 
@@ -235,13 +225,11 @@ IDE-specific configuration for better developer experience:
 - `env.d.ts`: ~250 B
 - `.editorconfig`: ~220 B
 - `.gitattributes`: ~20 B
-- `.vscode/extensions.json`: ~170 B
-- `.vscode/settings.json`: ~520 B
 - `MIGRATION.md`: ~9.5 KB
 - `PROJECT_STRUCTURE.md`: ~5 KB (this file)
 
-**Total new files**: ~17.5 KB (excluding documentation)
-**Total with docs**: ~32 KB
+**Total new files**: ~11.5 KB (excluding documentation)
+**Total with docs**: ~26 KB
 
 ### Modified Files
 - Configuration changes only
