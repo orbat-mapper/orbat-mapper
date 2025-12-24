@@ -119,7 +119,7 @@ Uses Prettier with Tailwind CSS plugin. Configuration in `.prettierrc`.
 ## Important Conventions
 
 1. **Immutability**: Use Immer for state updates in stores
-2. **Accessibility**: Ensure UI components are keyboard navigable and screen-reader friendly
+2. **Accessibility**: Ensure UI components are keyboard navigable and screen reader friendly
 3. **Performance**: Consider map performance when adding features (large datasets, rendering)
 4. **Type Safety**: Avoid `any` types, use proper TypeScript types
 5. **Composition**: Prefer composition over inheritance
