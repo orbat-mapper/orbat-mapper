@@ -103,9 +103,8 @@ Uses Prettier with Tailwind CSS plugin. Configuration in `.prettierrc`.
 - Turf.js (`@turf/*`) - Geospatial analysis
 
 ### UI Components
-- Headless UI Vue - Unstyled, accessible components
-- Heroicons - Icon library
-- Reka UI - Component primitives
+- shadcn-vue - Component library built on Reka UI primitives
+- Tailwind CSS - Utility-first CSS framework
 - Lucide Vue - Icon library
 
 ### Data Handling
