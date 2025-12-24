@@ -114,7 +114,7 @@ Uses Prettier with Tailwind CSS plugin. Configuration in `.prettierrc`.
 - fflate - Compression
 
 ### Symbology
-- MilSymbol - Military symbol generation
+- milsymbol - Military symbol generation
 
 ## Important Conventions
 
