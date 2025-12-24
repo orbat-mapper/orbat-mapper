@@ -104,8 +104,8 @@ else
     errors=$((errors + 1))
 fi
 
-if grep -q '@tsconfig/node24' package.json; then
-    echo -e "${GREEN}✓${NC} Using @tsconfig/node24"
+if grep -q '@tsconfig/node22' package.json; then
+    echo -e "${GREEN}✓${NC} Using @tsconfig/node22"
 else
     echo -e "${YELLOW}⚠${NC} Still using older node tsconfig"
     warnings=$((warnings + 1))

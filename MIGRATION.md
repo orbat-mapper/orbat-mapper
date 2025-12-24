@@ -30,26 +30,24 @@ The project has been updated to match the modern Vue 3 + Vite + TypeScript proje
 
 #### `tsconfig.json`
 **Changes:**
-- Removed `baseUrl` and `paths` from root config
 - Added reference to `tsconfig.vitest.json`
-- Simplified to only contain project references
+- Kept `baseUrl` and `paths` for proper path resolution
 
-**Reasoning:** The scaffold pattern moves path resolution to the app-specific config, keeping the root minimal.
+**Reasoning:** The root config needs baseUrl and paths for TypeScript to properly resolve @ imports across all referenced projects.
 
 #### `tsconfig.app.json`
 **Changes:**
-- Removed explicit `lib` field
-- Inherits library configuration from `@vue/tsconfig/tsconfig.dom.json`
+- Kept explicit `lib` field for proper type resolution
+- Inherits base configuration from `@vue/tsconfig/tsconfig.dom.json`
 
-**Reasoning:** Reduces duplication; the base config already specifies appropriate libs.
+**Reasoning:** The lib field ensures ES2021 and DOM types are available for the application code.
 
 #### `tsconfig.node.json`
 **Changes:**
-- Updated from `@tsconfig/node22` to `@tsconfig/node24`
 - Removed explicit `lib` field
 - Removed unnecessary library overrides
 
-**Reasoning:** Aligns with latest Node.js LTS and reduces configuration noise.
+**Reasoning:** Node configuration files shouldn't need DOM libraries.
 
 #### `tsconfig.vitest.json` (NEW)
 **Added:** Dedicated configuration for Vitest test files

@@ -48,7 +48,7 @@ pnpm run lint -- --max-warnings 0
 ### Enhanced TypeScript
 - Dedicated test configuration (`tsconfig.vitest.json`)
 - Modern TypeScript setup with project references
-- Updated to `@tsconfig/node24`
+- Restored essential lib fields for proper type resolution
 
 ### Editor Configuration
 
@@ -77,7 +77,7 @@ All other scripts remain unchanged including `format`.
 - `package.json` - New ESLint deps, updated versions
 - `tsconfig.json` - Project references only
 - `tsconfig.app.json` - Removed lib field
-- `tsconfig.node.json` - Updated to node24
+- `tsconfig.node.json` - Removed unnecessary lib field
 - `vite.config.ts` - Formatting
 - `.gitignore` - More patterns
 

@@ -99,7 +99,7 @@ orbat-mapper/
 │   └── views/
 ├── tsconfig.app.json             # ✅ UPDATED - Removed lib field
 ├── tsconfig.json                 # ✅ UPDATED - Removed baseUrl/paths
-├── tsconfig.node.json            # ✅ UPDATED - node24, no lib field
+├── tsconfig.node.json            # ✅ UPDATED - Removed lib field
 ├── tsconfig.vitest.json          # ✨ NEW - Test configuration
 ├── vite.config.ts                # ✅ UPDATED - Formatting
 └── vitest.config.ts              # ✨ NEW - Test runner config
@@ -130,7 +130,7 @@ Legend:
 |------|-------------|-------------|
 | `tsconfig.json` | Modified | Removed baseUrl/paths, added vitest reference |
 | `tsconfig.app.json` | Modified | Removed lib field |
-| `tsconfig.node.json` | Modified | Updated to node24, removed lib |
+| `tsconfig.node.json` | Modified | Removed lib field |
 | `tsconfig.vitest.json` | **NEW** | Test-specific config |
 
 ### Build & Dev Tools (3 files)
