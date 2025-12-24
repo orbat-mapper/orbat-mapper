@@ -118,19 +118,19 @@ if [ $errors -eq 0 ] && [ $warnings -eq 0 ]; then
     echo -e "${GREEN}✅ All checks passed!${NC}"
     echo ""
     echo "Next steps:"
-    echo "1. Run: npm install"
-    echo "2. Run: npm run type-check"
-    echo "3. Run: npm run lint"
-    echo "4. Run: npm run build"
-    echo "5. Run: npm run test:unit"
+    echo "1. Run: pnpm install"
+    echo "2. Run: pnpm run type-check"
+    echo "3. Run: pnpm run lint"
+    echo "4. Run: pnpm run build"
+    echo "5. Run: pnpm run test:unit"
     exit 0
 elif [ $errors -eq 0 ]; then
     echo -e "${YELLOW}⚠️  Verification completed with $warnings warnings${NC}"
     echo ""
     echo "Review the warnings above. The migration might be incomplete."
     echo "Then proceed with:"
-    echo "1. Run: npm install"
-    echo "2. Run: npm run type-check"
+    echo "1. Run: pnpm install"
+    echo "2. Run: pnpm run type-check"
     exit 0
 else
     echo -e "${RED}❌ Verification failed with $errors errors and $warnings warnings${NC}"

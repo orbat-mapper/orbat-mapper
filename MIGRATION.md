@@ -24,7 +24,7 @@ The project has been updated to match the modern Vue 3 + Vite + TypeScript proje
 - `@vitest/eslint-plugin`: ^1.5.0
 - `jiti`: ^2.6.1 (required for TS config loading)
 
-**New script:** `npm run lint` - Runs ESLint with auto-fix and caching
+**New script:** `pnpm run lint` - Runs ESLint with auto-fix and caching
 
 ### 2. TypeScript Configuration Updates
 
@@ -125,10 +125,9 @@ The project has been updated to match the modern Vue 3 + Vite + TypeScript proje
 #### Engines
 **Changed:**
 - Old: `"node": ">= 20.10.0", "pnpm": ">= 10.25.0"`
-- New: `"node": "^20.19.0 || >=22.12.0"`
-- Removed explicit pnpm requirement (handled by packageManager field)
+- New: `"node": "^20.19.0 || >=22.12.0", "pnpm": ">=10.25.0"`
 
-**Reasoning:** Aligns with scaffold's more specific Node version requirements.
+**Reasoning:** Aligns with scaffold's more specific Node version requirements while maintaining pnpm requirement.
 
 ### 7. Editor Configuration
 
@@ -173,8 +172,8 @@ Ensures consistent line endings:
 ### For Developers
 
 1. **ESLint is now required**
-   - Run `npm install` to get new ESLint dependencies
-   - Run `npm run lint` before committing
+   - Run `pnpm install` to get new ESLint dependencies
+   - Run `pnpm run lint` before committing
    - ESLint will auto-fix many issues with the `--fix` flag
 
 2. **TypeScript configuration is split**
@@ -184,7 +183,7 @@ Ensures consistent line endings:
    - Root `tsconfig.json` is just project references
 
 3. **Format command updated**
-   - New: `npm run format` uses `--experimental-cli` flag
+   - New: `pnpm run format` uses `--experimental-cli` flag
    - This is faster but might behave slightly differently
    - If issues occur, remove the flag temporarily
 
@@ -199,25 +198,25 @@ After pulling these changes:
 
 ```bash
 # Install new dependencies
-npm install
+pnpm install
 
 # Verify TypeScript compilation
-npm run type-check
+pnpm run type-check
 
 # Run linter
-npm run lint
+pnpm run lint
 
 # Format code
-npm run format
+pnpm run format
 
 # Build project
-npm run build
+pnpm run build
 
 # Run tests
-npm run test:unit
+pnpm run test:unit
 
 # Start dev server
-npm run dev
+pnpm run dev
 ```
 
 ## Files Added
@@ -263,7 +262,7 @@ npm run dev
 - ✅ Backward compatible with existing workflows
 - ✅ Preserves all custom dependencies and configurations
 - ⚠️ Requires Node.js 20.19.0+ (or 22.12.0+)
-- ⚠️ Requires running `npm install` after pulling
+- ⚠️ Requires running `pnpm install` after pulling
 
 ## Future Improvements (Not Included)
 
@@ -279,7 +278,7 @@ These align with scaffold defaults but weren't strictly required:
 
 If you encounter any issues after this migration:
 
-1. Ensure you've run `npm install`
+1. Ensure you've run `pnpm install`
 2. Clear any cached build artifacts: `rm -rf node_modules/.tmp dist`
 3. Check Node.js version: `node --version`
 4. Verify all new config files are present

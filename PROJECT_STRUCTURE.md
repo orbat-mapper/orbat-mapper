@@ -73,7 +73,7 @@ orbat-mapper/
 ├── images/
 ├── index.html
 ├── package.json                  # ✅ UPDATED - ESLint deps, new scripts
-├── pnpm-lock.yaml                # Will be updated after npm install
+├── pnpm-lock.yaml                # Will be updated after pnpm install
 ├── pnpm-workspace.yaml
 ├── public/
 ├── src/
@@ -242,7 +242,7 @@ Legend:
 
 **Total removed**: ~500 B
 
-### Node Modules Impact (after npm install)
+### Node Modules Impact (after pnpm install)
 - ESLint and related: ~15 MB
 - Updated dependencies: Variable (likely similar size)
 - Build cache (`node_modules/.tmp`): Managed by tools
@@ -255,7 +255,7 @@ After pulling these changes, verify:
 - [ ] `src/shims-vue.d.ts` removed
 - [ ] `.prettierrc` removed (replaced by `.prettierrc.json`)
 - [ ] `.vscode/` directory exists with 2 files
-- [ ] Run `npm install` successfully
+- [ ] Run `pnpm install` successfully
 - [ ] `eslint.config.ts` present
 - [ ] TypeScript configs updated
 - [ ] Package.json has lint script
@@ -280,13 +280,13 @@ Key commits to revert (in order):
 ## Next Steps After Migration
 
 1. ✅ Pull changes
-2. ✅ Run `npm install`
-3. ✅ Run `npm run lint` to check for linting issues
-4. ✅ Run `npm run format` to format code
-5. ✅ Run `npm run type-check` to verify TypeScript
-6. ✅ Run `npm run build` to ensure build works
-7. ✅ Run `npm run test:unit` to ensure tests pass
-8. ✅ Run `npm run dev` to start development
+2. ✅ Run `pnpm install`
+3. ✅ Run `pnpm run lint` to check for linting issues
+4. ✅ Run `pnpm run format` to format code
+5. ✅ Run `pnpm run type-check` to verify TypeScript
+6. ✅ Run `pnpm run build` to ensure build works
+7. ✅ Run `pnpm run test:unit` to ensure tests pass
+8. ✅ Run `pnpm run dev` to start development
 
 ## Support
 
