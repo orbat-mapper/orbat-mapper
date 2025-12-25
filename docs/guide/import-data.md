@@ -78,4 +78,3 @@ structure.
   include it in the unit's TO&E.
 - **Include personnel**. If this option is enabled, ORBAT Mapper will import personnel from the unit templates and
   include it in the unit's TO&E.
-
