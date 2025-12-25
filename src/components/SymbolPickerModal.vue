@@ -266,11 +266,7 @@ watch(currentTab, async (v) => {
       </header>
 
       <TabView class="flex-auto" v-model:current-tab="currentTab">
-        <TabItem
-          label="Select"
-          v-slot="{ isActive }"
-          class="max-h-[50vh] overflow-auto sm:max-h-[60vh]"
-        >
+        <TabItem label="Select" class="max-h-[50vh] overflow-auto sm:max-h-[60vh]">
           <Combobox @update:modelValue="onSelect">
             <div class="relative">
               <div class="relative">

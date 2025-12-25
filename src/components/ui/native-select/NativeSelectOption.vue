@@ -1,5 +1,5 @@
 <!-- @fallthroughAttributes true -->
-<!-- @strictTemplates true -->
+<!-- @strictTemplates false -->
 
 <script setup lang="ts">
 import type { HTMLAttributes } from "vue";

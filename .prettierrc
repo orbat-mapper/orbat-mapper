@@ -1,5 +1,8 @@
 {
+  "$schema": "https://json.schemastore.org/prettierrc",
   "printWidth": 90,
+  "singleQuote": false,
+  "semi": true,
   "quoteProps": "as-needed",
   "plugins": ["prettier-plugin-tailwindcss"]
 }

@@ -1,15 +1,15 @@
 <template>
   <div v-show="isActive" class="mt-6" :class="tabs.tabClass">
-    <slot :is-active="isActive"></slot>
+    <slot :isActive="isActive"></slot>
   </div>
 </template>
-<script>
+<script lang="ts">
 export default {
   name: "TabItem",
 };
 </script>
 
-<script setup>
+<script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from "vue";
 import { tabsProviderKey } from "@/components/types";
 import { injectStrict } from "@/utils/index";

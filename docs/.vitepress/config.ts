@@ -1,5 +1,5 @@
 import { DefaultTheme, defineConfig } from "vitepress";
-import Tailwind from '@tailwindcss/vite'
+import Tailwind from "@tailwindcss/vite";
 
 export default defineConfig({
   cleanUrls: true,
@@ -7,9 +7,7 @@ export default defineConfig({
   description: "",
   head: [["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }]],
   vite: {
-    plugins: [
-      Tailwind()
-    ],
+    plugins: [Tailwind()],
     ssr: {
       noExternal: ["milsymbol"],
     },
@@ -62,7 +60,7 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
         // { text: "Grid edit mode", link: "grid-edit-mode" },
         // { text: "Chart edit mode", link: "chart-edit-mode" },
         { text: "Map layers", link: "map-layers" },
-        {text: "Custom symbols", link: "custom-symbols" },
+        { text: "Custom symbols", link: "custom-symbols" },
       ],
     },
     {

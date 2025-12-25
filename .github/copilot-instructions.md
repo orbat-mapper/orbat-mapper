@@ -19,42 +19,53 @@ ORBAT Mapper is a client-side web application for building order of battles (ORB
 ## Development Setup
 
 ### Installing Dependencies
+
 ```bash
 pnpm install
 ```
 
 ### Running Development Server
+
 ```bash
 pnpm run dev
 ```
+
 Development server runs on http://localhost:5173/
 
 ### Building the Project
+
 ```bash
 pnpm run build
 ```
+
 This runs type checking and builds the project.
 
 ### Type Checking
+
 ```bash
 pnpm run type-check
 ```
 
 ### Running Tests
+
 ```bash
 pnpm run test:unit
 ```
+
 Tests use Vitest framework.
 
 ### Code Formatting
+
 ```bash
 pnpm run format
 ```
+
 Uses Prettier with Tailwind CSS plugin. Configuration in `.prettierrc`.
 
 ## Code Standards
 
 ### TypeScript
+
 - Always use TypeScript for new files
 - Prefer type inference where possible
 - Use interfaces for object shapes
@@ -62,18 +73,21 @@ Uses Prettier with Tailwind CSS plugin. Configuration in `.prettierrc`.
 - Path alias `@/` maps to `./src/`
 
 ### Vue.js
+
 - Use Composition API with `<script setup>` syntax
 - Prefer `ref` and `reactive` for reactive state
 - Use composables for reusable logic
 - Place composables in `src/composables/`
 
 ### Code Style
+
 - Prettier handles formatting automatically
 - Print width: 90 characters
 - Use Prettier plugin for Tailwind CSS class sorting
 - Run `pnpm run format` before committing
 
 ### File Organization
+
 - `src/components/` - Reusable Vue components
 - `src/views/` - Page-level components
 - `src/composables/` - Composition API composables
@@ -85,6 +99,7 @@ Uses Prettier with Tailwind CSS plugin. Configuration in `.prettierrc`.
 - `src/modules/` - Feature modules
 
 ### Testing
+
 - Write tests using Vitest
 - Test files use `.test.ts` extension
 - Place tests alongside the code they test
@@ -92,6 +107,7 @@ Uses Prettier with Tailwind CSS plugin. Configuration in `.prettierrc`.
 - Mock external dependencies when necessary
 
 ### Imports
+
 - Use `@/` alias for absolute imports from src directory
 - Example: `import { Sidc } from "@/symbology/sidc"`
 - Group imports: external libraries first, then internal modules
@@ -99,20 +115,24 @@ Uses Prettier with Tailwind CSS plugin. Configuration in `.prettierrc`.
 ## Key Dependencies
 
 ### Mapping
+
 - OpenLayers (`ol`) - Core mapping library
 - Turf.js (`@turf/*`) - Geospatial analysis
 
 ### UI Components
+
 - shadcn-vue - Component library built on Reka UI primitives
 - Tailwind CSS - Utility-first CSS framework
 - Lucide Vue - Icon library
 
 ### Data Handling
+
 - Immer - Immutable state updates
 - IDB - IndexedDB wrapper
 - fflate - Compression
 
 ### Symbology
+
 - milsymbol - Military symbol generation
 
 ## Important Conventions
@@ -142,18 +162,21 @@ Uses Prettier with Tailwind CSS plugin. Configuration in `.prettierrc`.
 ## Common Patterns
 
 ### Creating a New Component
+
 - Use `<script setup lang="ts">`
 - Define props using `defineProps<>()`
 - Define emits using `defineEmits<>()`
 - Keep components small and focused
 
 ### Creating a New Store
+
 - Use Pinia with Composition API style
 - Define store in `src/stores/`
 - Export using `defineStore`
 - Use Immer for complex state updates
 
 ### Adding Tests
+
 - Create `.test.ts` file alongside code
 - Import from Vitest: `import { describe, it, expect } from "vitest"`
 - Test core logic and edge cases
