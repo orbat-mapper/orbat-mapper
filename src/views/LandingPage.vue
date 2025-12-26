@@ -1,7 +1,7 @@
 <template>
   <div class="bg-background flex h-full flex-col">
     <header
-      class="bg-sidebar relative top-0 right-0 left-0 flex items-center justify-center gap-8 p-1 text-center"
+      class="bg-muted relative top-0 right-0 left-0 flex items-center justify-center gap-8 p-1 text-center"
     >
       <p>
         This is a work in progress prototype. Follow the
@@ -56,7 +56,7 @@
         <LandingPageScenarios class="mt-16" />
       </section>
 
-      <section id="features" class="">
+      <section id="features" class="bg-muted/40 dark:bg-muted/20">
         <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div class="mx-auto max-w-3xl text-center">
             <h2 class="text-heading text-3xl font-bold tracking-tight">Features</h2>
@@ -85,7 +85,7 @@
         </div>
       </section>
 
-      <section id="links" class="bg-accent/50">
+      <section id="links" class="">
         <ProseSection class="">
           <p class="text-center">Links to work in progress components and experiments</p>
           <div class="grid grid-cols-2 place-items-center gap-4">
@@ -111,10 +111,10 @@
         </ProseSection>
       </section>
     </main>
-    <footer class="">
+    <footer class="bg-muted/40">
       <div class="mx-auto max-w-7xl overflow-hidden px-6 py-20 sm:py-24 lg:px-8">
         <nav
-          class="-mb-6 columns-2 sm:flex sm:justify-center sm:space-x-12"
+          class="-mb-6 columns-2 font-medium sm:flex sm:justify-center sm:space-x-12"
           aria-label="Footer"
         >
           <div class="pb-6">
