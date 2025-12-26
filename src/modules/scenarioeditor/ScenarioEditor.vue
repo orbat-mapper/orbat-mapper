@@ -1,7 +1,7 @@
 <template>
   <div class="bg-background flex h-dvh flex-col overflow-hidden" ref="dropZoneRef">
     <nav
-      class="flex shrink-0 items-center justify-between bg-slate-900 py-1 pr-4 pl-6 text-gray-200 print:hidden"
+      class="dark:bg-background dark:text-muted-foreground flex shrink-0 items-center justify-between bg-slate-900 py-1 pr-4 pl-6 text-gray-200 print:hidden"
     >
       <div class="flex min-w-0 flex-auto items-center">
         <div class="flex min-w-0 flex-auto items-center">

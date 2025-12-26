@@ -50,7 +50,7 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
 
 <template>
   <DropdownMenu>
-    <DropdownMenuTrigger as="div" class="bg-opacity-50 relative bg-gray-900">
+    <DropdownMenuTrigger as="div" class="relative">
       <button class="group flex items-center">
         <svg
           class="block h-7 w-auto shrink-0 fill-gray-700 stroke-gray-300"

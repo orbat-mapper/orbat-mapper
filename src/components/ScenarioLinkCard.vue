@@ -1,39 +1,3 @@
-<template>
-  <div
-    class="relative flex flex-col rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-xs focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400 dark:border-slate-600 dark:bg-slate-800"
-  >
-    <div class="relative flex-1">
-      <component
-        :is="noLink ? 'button' : 'router-link'"
-        v-bind="
-          noLink
-            ? { type: 'button' }
-            : { to: { name: routeName, params: { scenarioId: data.id } } }
-        "
-        v-on="noLink ? { click: () => emit('action', 'open') } : {}"
-        class="text-left focus:outline-hidden"
-        draggable="false"
-      >
-        <span class="absolute inset-0" aria-hidden="true" />
-        <p class="text-heading text-sm font-medium">{{ data.name }}</p>
-        <p class="mt-2 line-clamp-3 text-sm text-gray-500 dark:text-slate-400">
-          {{ data.description }}
-        </p>
-      </component>
-    </div>
-    <footer class="-mr-2 flex flex-none items-center justify-between pt-4">
-      <div>
-        <p class="truncate text-sm text-gray-500 dark:text-slate-500">
-          Modified {{ formatTimeAgo(data.modified) }}
-        </p>
-        <p class="truncate text-sm dark:text-slate-500">
-          Created {{ formatTimeAgo(data.created) }}
-        </p>
-      </div>
-      <DotsMenu :items="menuItems" @action="emit('action', $event)" />
-    </footer>
-  </div>
-</template>
 <script setup lang="ts">
 import { type ScenarioMetadata } from "@/scenariostore/localdb";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
@@ -41,8 +5,9 @@ import { formatTimeAgo } from "@vueuse/core";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { type MenuItemData } from "@/components/types";
 import { type StoredScenarioAction } from "@/types/constants";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
-const props = withDefaults(
+withDefaults(
   defineProps<{ data: ScenarioMetadata; noLink?: boolean; routeName?: string }>(),
   {
     noLink: false,
@@ -57,3 +22,33 @@ const menuItems: MenuItemData<StoredScenarioAction>[] = [
   { label: "Duplicate", action: "duplicate" },
 ];
 </script>
+
+<template>
+  <Card class="hover:bg-card-foreground/5 ring-ring relative focus-within:ring-2">
+    <component
+      :is="noLink ? 'button' : 'router-link'"
+      v-bind="
+        noLink
+          ? { type: 'button' }
+          : { to: { name: routeName, params: { scenarioId: data.id } } }
+      "
+      v-on="noLink ? { click: () => emit('action', 'open') } : {}"
+      draggable="false"
+      class="absolute inset-0 outline-none"
+    />
+
+    <CardContent class="flex-auto">
+      <p class="text-sm font-medium">{{ data.name }}</p>
+      <p class="text-muted-foreground mt-2 line-clamp-4 text-sm">
+        {{ data.description }}
+      </p>
+    </CardContent>
+    <CardFooter class="flex items-center justify-between">
+      <div class="text-muted-foreground text-sm">
+        <p>Modified {{ formatTimeAgo(data.modified) }}</p>
+        <p>Created {{ formatTimeAgo(data.created) }}</p>
+      </div>
+      <DotsMenu :items="menuItems" @action="emit('action', $event)" class="z-10" />
+    </CardFooter>
+  </Card>
+</template>

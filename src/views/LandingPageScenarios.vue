@@ -3,9 +3,6 @@
     <div class="mx-auto max-w-3xl p-4 text-center">
       <h2 class="text-heading text-3xl font-bold tracking-tight">Scenarios</h2>
     </div>
-    <p class="absolute top-2 right-6 z-10">
-      <WipBadge />
-    </p>
     <section v-if="storedScenarios.length > 0" class="mx-auto max-w-7xl p-6">
       <header
         class="border-border border-b pb-5 sm:flex sm:items-center sm:justify-between"
