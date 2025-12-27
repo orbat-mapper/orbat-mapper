@@ -20,7 +20,7 @@ const fmt = useTimeFormatStore();
   >
   <AccordionPanel label="Scenario datetime format">
     <template #closedContent>
-      <span class="text-sm leading-7 text-gray-600">
+      <span class="text-muted-foreground text-sm leading-7">
         {{ fmt.scenarioFormatter.format(currentTime) }}
       </span>
     </template>
@@ -31,7 +31,7 @@ const fmt = useTimeFormatStore();
   </AccordionPanel>
   <AccordionPanel label="Map format">
     <template #closedContent>
-      <span class="text-sm leading-7 text-gray-600">
+      <span class="text-muted-foreground text-sm leading-7">
         {{ fmt.trackFormatter.format(currentTime) }}
       </span>
     </template>

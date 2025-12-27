@@ -1,12 +1,10 @@
 <script setup lang="ts">
+import { NativeSelect } from "@/components/ui/native-select";
+
 const model = defineModel({ default: "" });
 </script>
 <template>
-  <select
-    id="locale"
-    v-model="model"
-    class="block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base focus:border-indigo-500 focus:ring-indigo-500 focus:outline-hidden sm:text-sm"
-  >
+  <NativeSelect id="locale" v-model="model">
     <option value="">Default locale</option>
     <option value="af">Afrikaans</option>
     <option value="sq">Albanian - shqip</option>
@@ -150,5 +148,5 @@ const model = defineModel({ default: "" });
     <option value="yi">Yiddish</option>
     <option value="yo">Yoruba - Èdè Yorùbá</option>
     <option value="zu">Zulu - isiZulu</option>
-  </select>
+  </NativeSelect>
 </template>
