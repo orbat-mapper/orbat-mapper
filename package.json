@@ -22,6 +22,7 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
+    "@fontsource-variable/inter": "^5.2.8",
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
     "@iconify-prerendered/vue-mdi": "^0.23.1718880438",
@@ -128,7 +129,6 @@
     "@vue/tsconfig": "^0.8.1",
     "eslint": "^9.39.2",
     "eslint-plugin-vue": "~10.5.1",
-    "inter-ui": "^4.1.1",
     "jiti": "^2.6.1",
     "jsdom": "^27.3.0",
     "npm-run-all2": "^8.0.4",

@@ -71,7 +71,7 @@ calculateZoomToResolution(new View());
 const unitLabelStyle = new Style({
   text: new Text({
     textAlign: "center",
-    font: '12px "InterVariable"',
+    font: '12px "Inter Variable"',
     // fill: new Fill({ color: "#aa3300" }),
     fill: new Fill({ color: "black" }),
     stroke: new Stroke({ color: "rgba(255,255,255,0.9)", width: 4 }),
@@ -82,7 +82,7 @@ const unitLabelStyle = new Style({
 const selectedUnitLabelStyle = new Style({
   text: new Text({
     textAlign: "center",
-    font: '12px "InterVariable"',
+    font: '12px "Inter Variable"',
     // fill: new Fill({ color: "#aa3300" }),
     fill: new Fill({ color: "black" }),
     stroke: new Stroke({ color: "rgb(232,230,7)", width: 3 }),
@@ -128,8 +128,8 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
   watch(
     () => mapSettings.mapLabelSize,
     (v) => {
-      unitLabelStyle.getText()?.setFont(`${v}px "InterVariable"`);
-      selectedUnitLabelStyle.getText()?.setFont(`${v}px "InterVariable"`);
+      unitLabelStyle.getText()?.setFont(`${v}px "Inter Variable"`);
+      selectedUnitLabelStyle.getText()?.setFont(`${v}px "Inter Variable"`);
     },
     { immediate: true },
   );

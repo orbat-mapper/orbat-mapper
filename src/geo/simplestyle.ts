@@ -170,7 +170,7 @@ export const defaultSimplestyleFill = new Fill({
   color: [0x55, 0x55, 0x55, defaultFillOpacity],
 });
 export const defaultSimpleStyleText = new Text({
-  font: 'bold 13px "InterVariable"',
+  font: 'bold 13px "Inter Variable"',
   textAlign: "left",
   textBaseline: "middle",
   fill: new Fill({
@@ -231,7 +231,7 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
     opts["text-offset-y"] !== undefined
   ) {
     text = new Text({
-      font: 'bold 13px "InterVariable"',
+      font: 'bold 13px "Inter Variable"',
       placement: opts["text-placement"],
       textAlign: opts["text-align"] ?? "left",
       textBaseline: "middle",

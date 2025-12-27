@@ -59,7 +59,7 @@ const lineBackgroundStyle = new Style({
 
 const labelStyle = new Style({
   text: new Text({
-    font: '14px "InterVariable", sans-serif',
+    font: '14px "Inter Variable", sans-serif',
     fill: new Fill({
       color: "rgba(255, 255, 255, 1)",
     }),
@@ -83,7 +83,7 @@ const labelStyle = new Style({
 
 const tipStyle = new Style({
   text: new Text({
-    font: "12px InterVariable, sans-serif",
+    font: "12px Inter Variable, sans-serif",
     fill: new Fill({
       color: "rgba(255, 255, 255, 1)",
     }),
@@ -108,7 +108,7 @@ const modifyStyle = new Style({
   }),
   text: new Text({
     text: "Drag to modify",
-    font: '12px "InterVariable", sans-serif',
+    font: '12px "Inter Variable", sans-serif',
     fill: new Fill({
       color: "rgba(255, 255, 255, 1)",
     }),
@@ -123,7 +123,7 @@ const modifyStyle = new Style({
 
 const segmentStyle = new Style({
   text: new Text({
-    font: '12px "InterVariable", sans-serif',
+    font: '12px "Inter Variable", sans-serif',
     fill: new Fill({
       color: "rgba(255, 255, 255, 1)",
     }),

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@fontsource-variable/inter";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/forms";
@@ -82,7 +83,7 @@
 }
 
 @theme {
-  --font-sans: InterVariable, sans-serif;
+  --font-sans: Inter Variable, sans-serif;
   --color-army: #4b5320;
   --color-army2: #a5b646;
 }
