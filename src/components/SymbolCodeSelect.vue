@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/select";
 import { type NullableSymbolItem } from "@/types/constants";
 import { type UnitSymbolOptions } from "@/types/scenarioModels";
-import { Label } from "@/components/ui/label";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
+import { Field, FieldLabel } from "@/components/ui/field";
 
 interface Props {
   label?: string;
@@ -29,11 +29,11 @@ const selected = computed(() =>
 );
 </script>
 <template>
-  <div>
+  <Field>
+    <FieldLabel :for="controlId">{{ label }}</FieldLabel>
     <Select v-model="selectedValue">
-      <Label :for="controlId">{{ label }}</Label>
-      <SelectTrigger class="mt-2 w-full" :id="controlId">
-        <SelectValue>
+      <SelectTrigger class="w-full data-[size=default]:h-10" :id="controlId">
+        <SelectValue class="">
           <template v-if="selected"
             ><NewMilitarySymbol
               class="size-8"
@@ -76,5 +76,5 @@ const selected = computed(() =>
         </SelectGroup>
       </SelectContent>
     </Select>
-  </div>
+  </Field>
 </template>

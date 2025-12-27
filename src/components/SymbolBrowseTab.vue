@@ -1,21 +1,22 @@
 <template>
   <div class="flex px-0.5">
     <aside class="hidden w-60 flex-none pr-2 md:block">
-      <p class="text-sm leading-7 font-bold text-gray-900">Entity type</p>
-      <ul class="space-y-1.5 text-sm font-medium text-gray-600">
+      <p class="text-sm leading-7 font-bold">Entity type</p>
+      <ul class="dark:text-muted-foreground space-y-1.5 text-sm font-medium">
         <li
           v-for="[entity, entityIcons] in filteredIconsByEntity"
-          class="hover:text-gray-800"
+          :key="entity"
+          class="hover:text-muted-foreground/80"
         >
           <a href="#" type="button" @click="goTo(entityIcons[0].code)">{{ entity }}</a>
         </li>
       </ul>
-      <p class="mt-4 text-sm leading-7 font-bold text-gray-900">Modifiers</p>
-      <ul class="space-y-1.5 text-sm font-medium text-gray-600">
-        <li v-if="filteredMod1Items.length" class="hover:text-gray-800">
+      <p class="mt-4 text-sm leading-7 font-bold">Modifiers</p>
+      <ul class="text-muted-foreground space-y-1.5 text-sm font-medium">
+        <li v-if="filteredMod1Items.length" class="hover:text-muted-foreground/80">
           <a href="#" type="button" @click="goTo('mod1')">Modifier 1</a>
         </li>
-        <li v-if="filteredMod2Items.length" class="hover:text-gray-800">
+        <li v-if="filteredMod2Items.length" class="hover:text-muted-foreground/80">
           <a href="#" type="button" @click="goTo('mod2')">Modifier 2</a>
         </li>
       </ul>
@@ -23,12 +24,12 @@
     <div class="flex-auto">
       <div class="relative">
         <MagnifyingGlassIcon
-          class="pointer-events-none absolute top-3.5 left-0 h-5 w-5 text-gray-400"
+          class="text-muted-foreground pointer-events-none absolute top-3.5 left-0 h-5 w-5"
           aria-hidden="true"
         />
         <input
           type="text"
-          class="h-12 w-full border-0 bg-transparent pr-4 pl-7 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+          class="placeholder:text-muted-foreground h-12 w-full border-0 bg-transparent pr-4 pl-7 focus:ring-0 sm:text-sm"
           placeholder="Search symbol set..."
           @keydown.esc="onEsc"
           v-model="searchQuery"
@@ -43,9 +44,13 @@
       />
 
       <div class="mt-4 max-h-[40vh] overflow-auto">
-        <div v-for="[entity, entityIcons] in filteredIconsByEntity" class="relative">
+        <div
+          v-for="[entity, entityIcons] in filteredIconsByEntity"
+          class="relative"
+          :key="entity"
+        >
           <h3
-            class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
+            class="bg-popover border-border sticky top-0 border-t border-b p-2 px-4 text-sm font-medium"
             :id="entity"
           >
             {{ entity }}
@@ -62,13 +67,13 @@
               <MilSymbol :size="symbolSize" :sidc="sidc" :modifiers="symbolOptions" />
               <p
                 v-if="entitySubtype && entityType"
-                class="mt-1 max-w-full truncate overflow-hidden text-center text-sm text-gray-500"
+                class="text-muted-foreground mt-1 max-w-full truncate overflow-hidden text-center text-sm"
               >
                 {{ entityType }}
               </p>
               <p
-                class="mt-1 max-w-full overflow-hidden text-center text-sm font-medium break-words"
-                :class="code === iconValue ? 'text-red-900' : 'text-gray-900'"
+                class="mt-1 max-w-full overflow-hidden text-center text-sm font-medium wrap-break-word"
+                :class="code === iconValue ? 'bg-muted-foreground text-muted px-1' : ''"
               >
                 {{ entitySubtype || entityType || entity }}
               </p>
@@ -76,7 +81,7 @@
           </div>
         </div>
         <h3
-          class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
+          class="border-border bg-muted sticky top-0 border-t border-b p-2 px-4 text-sm font-medium"
         >
           Modifier 1
         </h3>
@@ -93,14 +98,14 @@
           >
             <MilSymbol :size="symbolSize" :sidc="sidc" :modifiers="symbolOptions" />
             <p
-              class="mt-1 max-w-full overflow-hidden text-center text-sm break-words text-gray-900"
+              class="mt-1 max-w-full overflow-hidden text-center text-sm wrap-break-word text-gray-900"
             >
               {{ text }}
             </p>
           </button>
         </div>
         <h3
-          class="sticky top-0 border-t border-b border-gray-200 bg-gray-50 p-2 px-4 text-sm font-medium text-gray-600"
+          class="bg-muted border-border sticky top-0 border-t border-b p-2 px-4 text-sm font-medium"
         >
           Modifier 2
         </h3>
@@ -117,7 +122,7 @@
           >
             <MilSymbol :size="symbolSize" :sidc="sidc" :modifiers="symbolOptions" />
             <p
-              class="mt-1 max-w-full overflow-hidden text-center text-sm break-words text-gray-900"
+              class="mt-1 max-w-full overflow-hidden text-center text-sm wrap-break-word"
             >
               {{ text }}
             </p>
@@ -128,7 +133,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import MilSymbol from "./MilSymbol.vue";
+import MilSymbol from "./NewMilitarySymbol.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
 import { computed, nextTick, onActivated, ref, watch } from "vue";
 import { groupBy } from "@/utils";

@@ -104,6 +104,7 @@ const internalSymbolOptions = ref<UnitSymbolOptions>({
 });
 
 const combinedSymbolOptions = computed(() => ({
+  ...{ outlineWidth: 8, outlineColor: "rgba(255,255,255,0.80)" },
   ...(props.inheritedSymbolOptions || {}),
   ...cleanObject(internalSymbolOptions.value || {}),
 }));
@@ -275,7 +276,7 @@ watch(currentTab, async (v) => {
                   aria-hidden="true"
                 />
                 <ComboboxInput
-                  class="h-12 w-full border-0 bg-transparent pr-4 pl-11 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+                  class="placeholder:text-muted-foreground h-12 w-full border-0 bg-transparent pr-4 pl-11 focus:ring-0 sm:text-sm"
                   placeholder="Search..."
                   @change="searchQuery = $event.target.value"
                   ref="searchInputRef"
@@ -284,11 +285,11 @@ watch(currentTab, async (v) => {
               </div>
               <ComboboxOptions
                 v-if="groupedHits && hitCount > 0"
-                class="absolute z-50 max-h-80 w-full scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto rounded border border-gray-400 bg-white p-4 pb-2 shadow-lg"
+                class="border-border bg-popover absolute z-50 max-h-80 w-full scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto rounded border p-4 pb-2 shadow-lg"
               >
                 <li v-for="[source, hits] in groupedHits">
-                  <h2 class="text-xs font-semibold text-gray-900">{{ source }}</h2>
-                  <ul class="-mx-4 mt-2 text-sm font-medium text-gray-700">
+                  <h2 class="text-xs font-semibold">{{ source }}</h2>
+                  <ul class="-mx-4 mt-2 text-sm font-medium">
                     <ComboboxOption
                       v-for="item in hits"
                       :key="item.sidc"
@@ -299,7 +300,7 @@ watch(currentTab, async (v) => {
                       <li
                         :class="[
                           'flex cursor-default items-center px-4 py-2 select-none',
-                          active ? 'bg-army text-white' : 'even:bg-gray-100',
+                          active ? 'bg-army text-white' : 'even:bg-muted/40',
                         ]"
                       >
                         <div class="relative flex w-12 justify-center">
@@ -341,7 +342,7 @@ watch(currentTab, async (v) => {
                 :symbol-options="combinedSymbolOptions"
               />
               <div class="mr-1 hidden flex-none sm:block">
-                <BaseButton class="py-4" @click="currentTab = 1">Browse</BaseButton>
+                <BaseButton class="h-10" @click="currentTab = 1">Browse</BaseButton>
               </div>
             </div>
 

@@ -4,10 +4,10 @@ import { Sidc } from "@/symbology/sidc";
 import { useClipboard, useToggle } from "@vueuse/core";
 import IconButton from "@/components/IconButton.vue";
 import {
-  IconPencil as EditIcon,
   IconCheck,
-  IconClose,
   IconClipboardTextMultiple as CopyIcon,
+  IconClose,
+  IconPencil as EditIcon,
 } from "@iconify-prerendered/vue-mdi";
 import InputGroup from "@/components/InputGroup.vue";
 import { useNotifications } from "@/composables/notifications";
@@ -60,7 +60,7 @@ async function onCopy() {
   <div class="flex items-center">
     <template v-if="!isEditMode">
       <div
-        class="rounded border border-transparent p-1 font-mono text-base text-gray-700 hover:border-gray-200"
+        class="hover:border-muted-foreground rounded border border-transparent p-1 font-mono text-base"
       >
         <span
           v-for="[key, part] in parts"
