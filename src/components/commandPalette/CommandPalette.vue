@@ -206,6 +206,10 @@ function onSelect(
       />
       <p class="mt-4">No results found</p>
     </div>
-    <CommandPaletteFooter :raw-query="rawQuery" @click-actions="rawQuery = '>'" />
+    <CommandPaletteFooter
+      :raw-query="rawQuery"
+      @click-actions="rawQuery = '>'"
+      class="border-border border-t"
+    />
   </CommandPaletteDialog>
 </template>

@@ -17,9 +17,9 @@
         >
           <div
             :class="[
-              checked ? 'border-transparent' : 'border-gray-300',
-              active ? 'border-indigo-500 ring-2 ring-indigo-500' : '',
-              'relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-xs focus:outline-hidden dark:bg-slate-900',
+              checked ? 'border-primary' : 'border-border',
+              active ? 'border-primary ring-primary ring-2' : 'border-border',
+              'dark:bg-input/30 border-input relative flex cursor-pointer rounded-lg border bg-transparent p-4 shadow-xs focus:outline-hidden',
             ]"
           >
             <span class="flex flex-1">
@@ -40,14 +40,14 @@
             <CheckCircleIcon
               :class="[
                 !checked ? 'invisible' : '',
-                'absolute top-1 right-1 h-5 w-5 text-indigo-600',
+                'text-primary absolute top-1 right-1 h-5 w-5',
               ]"
               aria-hidden="true"
             />
             <span
               :class="[
                 active ? 'border' : 'border-2',
-                checked ? 'border-indigo-500' : 'border-transparent',
+                checked ? 'border-primary' : 'border-transparent',
                 'pointer-events-none absolute -inset-px rounded-lg',
               ]"
               aria-hidden="true"

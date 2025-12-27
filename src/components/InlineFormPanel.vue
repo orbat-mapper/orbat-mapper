@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-panel overflow-hidden shadow-sm">
+  <div class="overflow-hidden shadow-sm">
     <div class="relative px-4 py-5 sm:p-6">
       <p v-if="title" class="-mt-2 mb-4 text-sm text-gray-500">{{ title }}</p>
       <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">

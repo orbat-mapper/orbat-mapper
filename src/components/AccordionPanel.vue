@@ -7,15 +7,11 @@ const emit = defineEmits(["opened", "closed"]);
 </script>
 
 <template>
-  <Disclosure
-    as="div"
-    class="border-b border-gray-200 py-6 dark:border-gray-700"
-    v-slot="{ open }"
-  >
+  <Disclosure as="div" class="border-border border-b py-6" v-slot="{ open }">
     <h3 class="-my-3 flow-root">
       <DisclosureButton
         @click="open ? emit('closed') : emit('opened')"
-        class="group flex w-full items-center justify-between py-3 text-sm text-gray-400"
+        class="group flex w-full items-center justify-between py-3 text-sm"
       >
         <span class="text-heading font-bold">
           <slot name="label">{{ label }}</slot>
@@ -24,12 +20,12 @@ const emit = defineEmits(["opened", "closed"]);
           <slot name="right"></slot>
           <PlusSmallIcon
             v-if="!open"
-            class="dark:group-hover:text-heading h-5 w-5 group-hover:text-gray-500"
+            class="group-hover:text-muted-foreground size-5"
             aria-hidden="true"
           />
           <MinusSmallIcon
             v-else
-            class="dark:group-hover:text-heading h-5 w-5 group-hover:text-gray-500"
+            class="group-hover:text-muted-foreground size-5"
             aria-hidden="true"
           />
         </span>

@@ -1,106 +1,120 @@
 <template>
   <div class="bg-background flex h-dvh flex-col overflow-hidden" ref="dropZoneRef">
-    <nav
-      class="dark:bg-background dark:text-muted-foreground flex shrink-0 items-center justify-between bg-slate-900 py-1 pr-4 pl-6 text-gray-200 print:hidden"
-    >
+    <nav class="flex shrink-0 items-center justify-between py-1 pr-4 pl-6 print:hidden">
       <div class="flex min-w-0 flex-auto items-center">
         <div class="flex min-w-0 flex-auto items-center">
           <MainMenu @action="onScenarioAction" @ui-action="onUiAction" />
-          <button
+          <Button
+            variant="ghost"
             type="button"
-            class="hidden truncate pl-3 text-gray-400 sm:block"
+            class="hidden truncate font-medium sm:inline-flex"
             @click="showInfo()"
           >
             {{ activeScenario.store.state.info.name }}
-          </button>
+          </Button>
         </div>
       </div>
       <div class="flex shrink-0 items-center space-x-1 overflow-clip sm:space-x-2">
         <PlaybackMenu v-if="route.name === MAP_EDIT_MODE_ROUTE" />
-        <a
-          :href="
-            route.meta.helpUrl || 'https://docs.orbat-mapper.app/guide/about-orbat-mapper'
-          "
-          target="_blank"
-          class="hidden items-center justify-center rounded-md p-2 font-medium text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset sm:inline-flex"
+        <Button variant="ghost" asChild
+          ><a
+            :href="
+              route.meta.helpUrl ||
+              'https://docs.orbat-mapper.app/guide/about-orbat-mapper'
+            "
+            target="_blank"
+            class="hidden sm:inline-flex"
+          >
+            Help
+          </a></Button
         >
-          Help
-        </a>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           @click="showSearch = true"
-          class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+          class="text-foreground/70"
         >
-          <SearchIcon class="block h-6 w-6" />
-        </button>
-        <div class="flex items-center rounded-lg bg-slate-800 px-1">
+          <SearchIcon class="size-6" />
+        </Button>
+        <div
+          class="bg-foreground/15 text-muted-foreground/80 flex items-center rounded-lg px-1"
+        >
           <router-link
             :to="{ name: MAP_EDIT_MODE_ROUTE }"
             title="Map edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+            class="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
           >
-            <GlobeAltIcon class="h-6 w-6" />
+            <GlobeAltIcon class="size-6" />
           </router-link>
           <router-link
             :to="{ name: GRID_EDIT_ROUTE }"
             title="Grid edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+            class="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
           >
-            <TableIcon class="h-6 w-6" />
+            <TableIcon class="size-6" />
           </router-link>
           <router-link
             :to="{ name: CHART_EDIT_MODE_ROUTE }"
             title="Chart edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+            class="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
           >
-            <IconSitemap class="h-6 w-6" />
+            <IconSitemap class="size-6" />
           </router-link>
         </div>
         <div class="flex items-center">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             @click="undo()"
-            class="hidden items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
+            class="text-foreground/70 hidden sm:inline-flex"
             title="Undo action (ctrl+z)"
             :disabled="!canUndo"
           >
-            <IconUndo class="block h-6 w-6" />
-          </button>
-          <button
+            <IconUndo class="size-6" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             @click="redo()"
-            class="hidden items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
+            class="text-foreground/70 hidden sm:inline-flex"
             title="Redo action"
             :disabled="!canRedo"
           >
-            <IconRedo class="block h-6 w-6" />
-          </button>
+            <IconRedo class="size-6" />
+          </Button>
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           @click="showKeyboardShortcuts"
-          class="hidden items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset sm:block"
+          class="text-foreground/70 hidden sm:inline-flex"
           title="Show keyboard shortcuts"
         >
-          <IconKeyboard class="block h-6 w-6" />
-        </button>
+          <IconKeyboard class="size-6" />
+        </Button>
         <UseDark v-slot="{ isDark, toggleDark }">
           <Button
             variant="ghost"
             size="icon"
             @click="toggleDark()"
             title="Toggle dark mode"
-            class="hidden sm:inline-flex"
+            class="text-foreground/70 hidden sm:inline-flex"
           >
-            <SunIcon v-if="isDark" /><MoonStarIcon v-else />
+            <SunIcon v-if="isDark" class="size-5" /><MoonStarIcon v-else class="size-5" />
           </Button>
         </UseDark>
 
-        <button
-          class="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+        <Button
+          variant="ghost"
+          size="icon"
           @click="isOpen = !isOpen"
+          class="text-foreground/70"
         >
-          <MenuIcon class="block h-6 w-6" />
-        </button>
+          <MenuIcon class="size-6" />
+        </Button>
       </div>
     </nav>
     <router-view v-slot="{ Component }">

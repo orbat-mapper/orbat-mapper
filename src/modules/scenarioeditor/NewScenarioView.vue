@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100 py-10 dark:bg-slate-900">
+  <div class="min-h-screen py-10">
     <header>
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h1 class="text-heading text-3xl leading-tight font-bold">Create new scenario</h1>
@@ -16,8 +16,8 @@
         <div class="flex items-center justify-between space-x-3 px-4 sm:px-0">
           <Button as-child variant="link"
             ><a href="https://docs.orbat-mapper.app/guide/getting-started" target="_blank"
-              >View documentation →</a
-            >
+              >View documentation <ExternalLinkIcon />
+            </a>
           </Button>
           <BaseButton primary type="submit">Create scenario</BaseButton>
         </div>
@@ -44,7 +44,8 @@
           <template v-if="!noInitialOrbat">
             <div
               v-for="(sideData, idx) in form.sides"
-              class="relative rounded-md border bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-800/20"
+              :key="idx"
+              class="relative rounded-md border p-4"
             >
               <div class="grid gap-4 md:grid-cols-2">
                 <InputGroup v-model="sideData.name" label="Side name" />
@@ -55,7 +56,7 @@
               />
               <SimpleDivider class="mt-4 mb-4">Root units</SimpleDivider>
               <div class="space-y-6">
-                <template v-for="(unit, i) in sideData.units">
+                <template v-for="(unit, i) in sideData.units" :key="i">
                   <div class="flex items-end gap-4 md:grid md:grid-cols-2">
                     <InputGroup label="Root unit name" v-model="unit.rootUnitName" />
                     <NewMilitarySymbol
@@ -161,6 +162,7 @@
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
+import { ExternalLinkIcon } from "lucide-vue-next";
 import FormCard from "@/components/FormCard.vue";
 import InputGroup from "@/components/InputGroup.vue";
 import SimpleMarkdownInput from "@/components/SimpleMarkdownInput.vue";

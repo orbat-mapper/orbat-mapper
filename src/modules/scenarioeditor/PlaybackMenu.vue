@@ -21,6 +21,7 @@ import { usePlaybackStore } from "@/stores/playbackStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
+import { Button } from "@/components/ui/button";
 
 const { store } = injectStrict(activeScenarioKey);
 const tm = useTimeFormatStore();
@@ -29,19 +30,20 @@ const playback = usePlaybackStore();
 </script>
 
 <template>
-  <div class="items-center rounded-lg bg-gray-800 px-1 sm:flex">
-    <button
-      class="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
+  <div class="bg-muted-foreground/30 items-center rounded-lg px-1 sm:flex">
+    <Button
+      variant="ghost"
+      size="icon"
       title="Undo action (ctrl+z)"
       @click="playback.togglePlayback()"
     >
-      <IconPause v-if="playback.playbackRunning" class="block h-6 w-6" />
-      <IconPlay v-else class="block h-6 w-6" />
-    </button>
+      <IconPause v-if="playback.playbackRunning" class="size-6" />
+      <IconPlay v-else class="size-6" />
+    </Button>
     <DropdownMenu>
       <DropdownMenuTrigger
         class="items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
-        ><IconChevronDown class="block h-6 w-6"
+        ><IconChevronDown class="block size-6"
       /></DropdownMenuTrigger>
       <DropdownMenuContent :side-offset="10">
         <DropdownMenuItem @select.prevent="playback.togglePlayback()">

@@ -44,9 +44,9 @@
                 ><a
                   href="https://docs.orbat-mapper.app/guide/about-orbat-mapper"
                   target="_blank"
-                  >View documentation →</a
-                ></Button
-              >
+                  >View documentation
+                  <ExternalLinkIcon class="text-muted-foreground -ml-1" /></a
+              ></Button>
             </p>
           </div>
         </div>
@@ -175,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { MoonStarIcon, SunIcon } from "lucide-vue-next";
+import { ExternalLinkIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
 import ProseSection from "../components/ProseSection.vue";
 import LandingPageScenarios from "./LandingPageScenarios.vue";
 import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";

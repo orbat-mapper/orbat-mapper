@@ -53,17 +53,19 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
     <DropdownMenuTrigger as="div" class="relative">
       <button class="group flex items-center">
         <svg
-          class="block h-7 w-auto shrink-0 fill-gray-700 stroke-gray-300"
+          class="block h-7 w-auto shrink-0 fill-[#aab074]/90 stroke-gray-900 dark:fill-gray-700 dark:stroke-gray-300"
           stroke="currentColor"
           viewBox="41 41 118 118"
         >
           <path d="m100 45 55 25v60l-55 25-55-25V70z" stroke-width="6" />
           <path d="m45 70 110 60m-110 0 110-60" stroke-width="6" />
-          <circle cx="100" cy="70" r="10" class="fill-gray-300" />
+          <circle cx="100" cy="70" r="10" class="fill-gray-900 dark:fill-gray-300" />
         </svg>
-        <span class="ml-2 hidden font-medium tracking-tight sm:block">ORBAT-Mapper</span>
+        <span class="ml-2 hidden font-medium tracking-tight sm:inline-flex"
+          >ORBAT-Mapper</span
+        >
         <ChevronDownIcon
-          class="ml-1 h-5 w-5 text-gray-400 group-hover:text-gray-200"
+          class="text-muted-foreground group-hover:text-muted-foreground/80 ml-1 h-5 w-5"
           aria-hidden="true"
         />
       </button>

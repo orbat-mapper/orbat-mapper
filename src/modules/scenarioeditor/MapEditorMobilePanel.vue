@@ -1,5 +1,5 @@
 <template>
-  <main class="overflow-auto bg-white" :class="[showBottomPanel ? 'h-1/2' : 'h-12']">
+  <main class="overflow-auto" :class="[showBottomPanel ? 'h-1/2' : 'h-12']">
     <div v-show="!showBottomPanel" class="flex h-full items-center" ref="swipeUpEl">
       <div
         class="relative flex flex-1 items-center justify-center"
@@ -28,7 +28,7 @@
       :selected-index="activeTabIndex"
       @change="changeTab"
     >
-      <TabList class="flex flex-0 justify-between border-b border-gray-500">
+      <TabList class="border-accent-foreground/50 flex flex-0 justify-between border-b">
         <div ref="swipeDownEl" class="flex flex-auto items-center justify-evenly">
           <Tab
             as="template"
@@ -39,8 +39,8 @@
             <button
               :class="[
                 selected
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                  ? 'border-primary text-primary'
+                  : 'text-muted-foreground border-transparent hover:border-gray-300 hover:text-gray-700',
                 'w-1/2 border-b-2 px-1 py-4 text-center text-sm font-medium',
               ]"
             >
