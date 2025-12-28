@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useId } from "vue";
-import { Label } from "@/components/ui/label";
 import {
   NumberField,
   NumberFieldContent,
@@ -8,10 +7,10 @@ import {
   NumberFieldIncrement,
   NumberFieldInput,
 } from "@/components/ui/number-field";
+import { Field, FieldLabel } from "@/components/ui/field";
 
 type NumberInputGroupProps = {
   label?: string;
-  value?: number;
   description?: string;
   min?: number;
   max?: number;
@@ -19,19 +18,21 @@ type NumberInputGroupProps = {
   disabled?: boolean;
 };
 
-const props = defineProps<NumberInputGroupProps>();
+defineProps<NumberInputGroupProps>();
 const value = defineModel<number>();
 
 const inputId = useId();
 </script>
 
 <template>
-  <NumberField :id="inputId" v-model="value" :min :max :step :disabled>
-    <Label :for="inputId">{{ label }}</Label>
-    <NumberFieldContent>
-      <NumberFieldDecrement />
-      <NumberFieldInput :id="inputId" />
-      <NumberFieldIncrement />
-    </NumberFieldContent>
-  </NumberField>
+  <Field>
+    <FieldLabel :for="inputId">{{ label }}</FieldLabel>
+    <NumberField :id="inputId" v-model="value" :min :max :step :disabled>
+      <NumberFieldContent>
+        <NumberFieldDecrement />
+        <NumberFieldInput :id="inputId" />
+        <NumberFieldIncrement />
+      </NumberFieldContent>
+    </NumberField>
+  </Field>
 </template>

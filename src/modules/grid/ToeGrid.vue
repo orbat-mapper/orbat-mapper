@@ -168,21 +168,6 @@ watch([rowSelection, debouncedQuery], () => {
   selected.value = sel;
 });
 
-function onEsc(e: KeyboardEvent) {
-  if (query.value.length) {
-    e.stopPropagation();
-    query.value = "";
-  }
-}
-
-const filteredRowCount = computed(() => {
-  const isGrouped = table.getState().grouping.length > 0;
-  if (isGrouped) {
-    return table.getRowCount() - table.getGroupedRowModel().rows.length;
-  }
-  return table.getRowCount();
-});
-
 function onDblClick(row: any, e: MouseEvent) {
   if (props.isLocked) return;
   editMode.value = true;
@@ -204,10 +189,10 @@ watch(
     <div class="-mx-4 max-h-96 overflow-x-auto whitespace-nowrap">
       <div class="inline-block min-w-full align-middle">
         <table
-          class="w-full border-separate border-spacing-0 text-left text-sm/6 text-slate-950 dark:text-white"
+          class="w-full border-separate border-spacing-0 text-left text-sm/6"
           tabindex="0"
         >
-          <thead class="cursor-pointer text-slate-900 dark:text-slate-400">
+          <thead class="bg-muted cursor-pointer">
             <tr
               v-for="headerGroup in table.getHeaderGroups()"
               :key="headerGroup.id"
@@ -217,7 +202,7 @@ watch(
                 v-for="header in headerGroup.headers"
                 :key="header.id"
                 role="columnheader"
-                class="bg-mpanel sticky top-0 z-10 max-w-0 min-w-0 truncate border-b border-b-slate-950/10 px-4 py-2 font-medium first:border-l-0 first:pl-(--gutter,--spacing(4)) last:pr-(--gutter,--spacing(4)) dark:border-b-white/10"
+                class="bg-muted sticky top-0 z-10 max-w-0 min-w-0 truncate border-b border-b-slate-950/10 px-4 py-2 font-medium first:border-l-0 first:pl-(--gutter,--spacing(4)) last:pr-(--gutter,--spacing(4)) dark:border-b-white/10"
                 @click="header.column.getToggleSortingHandler()?.($event)"
                 :style="{
                   width: `${header.getSize()}px`,
@@ -257,7 +242,7 @@ watch(
                 </template>
               </th>
               <th
-                class="bg-mpanel sticky top-0 right-0 z-10 truncate border-b border-b-slate-950/10 px-4 py-2 text-right font-medium first:border-l-0 first:pl-(--gutter,--spacing(4)) last:pr-(--gutter,--spacing(4)) dark:border-b-white/10"
+                class="bg-muted sticky top-0 right-0 z-10 truncate border-b border-b-slate-950/10 px-4 py-2 text-right font-medium first:border-l-0 first:pl-(--gutter,--spacing(4)) last:pr-(--gutter,--spacing(4)) dark:border-b-white/10"
               >
                 <ToeGridTableMenu :table="table" />
               </th>
@@ -298,7 +283,7 @@ watch(
                     :props="cell.getContext()"
                   />
                 </td>
-                <td class="sticky right-0">
+                <td class="bg-card sticky right-0">
                   <div v-if="editMode" class="flex grow-0 items-center justify-end pr-4">
                     <Button
                       variant="outline"

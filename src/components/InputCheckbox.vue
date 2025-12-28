@@ -2,7 +2,7 @@
 import { computed, useId } from "vue";
 import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Checkbox } from "@/components/ui/checkbox";
-import { type AcceptableValue, CheckboxGroupRoot } from "reka-ui";
+import { CheckboxGroupRoot } from "reka-ui";
 
 interface Props {
   id?: string;

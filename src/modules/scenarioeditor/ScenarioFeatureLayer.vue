@@ -42,6 +42,7 @@ import {
   extractClosestEdge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import DropIndicator from "@/components/DropIndicator.vue";
+import { Button } from "@/components/ui/button";
 
 const props = defineProps<{ layer: NScenarioLayer; features: NScenarioFeature[] }>();
 const emit = defineEmits<{
@@ -192,7 +193,7 @@ onUnmounted(() => {
         @dblclick="activeLayerId = layer.id"
         :class="[
           layer.isHidden ? 'opacity-50' : '',
-          layer.id === activeLayerId ? 'text-red-900' : '',
+          layer.id === activeLayerId ? 'dark:text-army2 text-red-800' : '',
         ]"
       >
         {{ layer.name }}
@@ -211,30 +212,34 @@ onUnmounted(() => {
     </template>
     <template #right>
       <div class="flex items-center">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           type="button"
           @click="activeLayerId = layer.id"
           @keydown.stop
-          class="text-muted-foreground hover:text-primary-foreground opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           title="Set as active layer"
         >
-          <IconStar v-if="activeLayerId === layer.id" class="h-5 w-5" />
-          <IconStarOutline class="h-5 w-5" v-else />
-        </button>
-        <button
+          <IconStar v-if="activeLayerId === layer.id" class="size-5" />
+          <IconStarOutline class="size-5" v-else />
+        </Button>
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           @click="toggleFeatureLayerVisibility(layer)"
           @keydown.stop
-          class="text-muted-foreground hover:text-primary-foreground ml-1 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           title="Toggle layer visibility"
         >
-          <IconEyeOff v-if="layer.isHidden" class="h-5 w-5" />
-          <IconEye class="h-5 w-5" v-else />
-        </button>
+          <IconEyeOff v-if="layer.isHidden" class="size-5" />
+          <IconEye class="size-5" v-else />
+        </Button>
 
         <IconClockOutline
           v-if="layer.visibleFromT || layer.visibleUntilT"
-          class="text-muted-foreground h-5 w-5"
+          class="text-muted-foreground size-5"
         />
         <DotsMenu
           class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"

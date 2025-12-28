@@ -206,16 +206,13 @@ function deleteTransformation(index: number) {
         @delete="deleteTransformation(i)"
       />
     </div>
-    <div class="mt-4 flex items-center justify-between">
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        class=""
-        @click="addTransformation()"
+    <div class="mt-4 flex w-full items-center justify-between">
+      <Button type="button" variant="outline" size="sm" @click="addTransformation()"
         ><PlusIcon />Add</Button
       >
-      <InputCheckbox v-model="showPreview" label="Show preview" />
+      <div>
+        <InputCheckbox v-model="showPreview" label="Show preview" class="" />
+      </div>
     </div>
     <Tabs defaultValue="add" class="border-border mt-4 border-t pt-4">
       <TabsList class="w-full">

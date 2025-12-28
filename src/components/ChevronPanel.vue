@@ -51,13 +51,13 @@ const panelId = nanoid(5);
         <slot name="left" />
         <button
           type="button"
-          class="group relative flex min-w-0 flex-auto items-center text-sm text-gray-400"
+          class="group text-muted-foreground relative flex min-w-0 flex-auto items-center text-sm"
           @click="toggleOpen()"
           :aria-expanded="isOpen"
           :aria-controls="panelId"
         >
           <ChevronRightIcon
-            class="h-5 w-5 flex-none transform text-gray-500 transition-transform group-hover:text-gray-900"
+            class="text-muted-foreground group-hover:text-foreground size-5 flex-none transform transition-transform"
             :class="{
               'rotate-90': isOpen,
             }"
