@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, useId } from "vue";
-import { nanoid } from "nanoid";
+import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
+import { type AcceptableValue, CheckboxGroupRoot } from "reka-ui";
 
 interface Props {
   id?: string;
@@ -8,32 +10,30 @@ interface Props {
   description?: string;
 }
 const props = withDefaults(defineProps<Props>(), {});
-const localValue = defineModel<boolean | any[]>({
+const localValue = defineModel<boolean | unknown[]>({
   required: false,
 });
+
+const isArrayValue = computed(() => Array.isArray(localValue.value));
 
 const _id = props.id || useId();
 </script>
 <template>
-  <div class="relative flex items-start">
-    <div class="flex h-5 items-center">
-      <input
-        type="checkbox"
-        v-model="localValue"
-        :id="_id"
-        class="border-border focus-visible:outline-ring dark:bg-input appearance-none rounded border bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
-        v-bind="$attrs"
-      />
-    </div>
-    <div class="ml-3 text-sm">
-      <label :for="_id" class="font-medium text-slate-700 dark:text-slate-300">
+  <Field class="relative" orientation="horizontal">
+    <CheckboxGroupRoot v-if="isArrayValue" v-model="localValue as any">
+      <Checkbox :id="_id" v-bind="$attrs"
+    /></CheckboxGroupRoot>
+    <Checkbox v-else v-model="localValue as any" :id="_id" v-bind="$attrs" />
+    <FieldContent>
+      <FieldLabel :for="_id">
         <slot name="label">{{ label }}</slot>
-      </label>
-      <p v-if="description || $slots.description" class="text-gray-500">
+      </FieldLabel>
+
+      <FieldDescription v-if="description || $slots.description">
         <slot name="description">{{ description }}</slot>
-      </p>
-    </div>
-  </div>
+      </FieldDescription>
+    </FieldContent>
+  </Field>
 </template>
 
 <script lang="ts">

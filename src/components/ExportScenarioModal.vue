@@ -126,7 +126,7 @@ function onCancel() {
     @cancel="onCancel"
     class="sm:max-w-xl md:max-w-4xl"
   >
-    <p class="mt-1 text-sm text-gray-500">
+    <p class="text-muted-foreground mt-1 text-sm">
       Export scenario data for use with other software applications and tools
     </p>
     <form @submit.prevent="onExport" class="mt-4 space-y-6">
@@ -139,7 +139,7 @@ function onCancel() {
           <DocLink href="https://docs.orbat-mapper.app/guide/export-data" />
         </template>
       </SimpleSelect>
-      <div class="text-sm text-gray-700">
+      <div class="text-muted-foreground text-sm">
         <p v-if="isKml">
           KML is a file format used to display data in an Earth browser such as Google
           Earth. Use KMZ if you want to include unit icons.
@@ -188,12 +188,12 @@ function onCancel() {
         </fieldset>
       </template>
 
-      <p v-if="isKmz || isKml" class="text-sm text-gray-700">
+      <p v-if="isKmz || isKml" class="text-sm">
         Please note that the export functionality is experimental. Scenario feature export
         is currently limited to geometries (no styles).
       </p>
 
-      <p v-if="isMilx" class="text-sm text-gray-700">
+      <p v-if="isMilx" class="text-sm">
         Please note that the MilX export is experimental. It is currently limited and has
         several bugs.
       </p>
