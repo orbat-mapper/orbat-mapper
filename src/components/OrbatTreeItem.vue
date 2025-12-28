@@ -218,7 +218,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
         selectedUnitIds.has(unit.id) && selectedUnitIds.size > 1
           ? 'bg-primary/10 hover:bg-sidebar-accent/60'
           : '',
-        isActiveParent ? 'border-primary bg-primary/10' : 'border-transparent',
+        isActiveUnit ? 'border-primary bg-primary/10' : 'border-transparent',
       ]"
     >
       <div class="flex items-center space-x-1">
