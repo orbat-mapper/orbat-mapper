@@ -3,7 +3,6 @@ import { type NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed, ref, watch } from "vue";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { Sidc } from "@/symbology/sidc";
 import { Dimension, symbolSetToDimension } from "@/symbology/values";
 import TextAmpInput from "@/modules/scenarioeditor/TextAmpInput.vue";
@@ -14,6 +13,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { Button } from "@/components/ui/button";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
+import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 
 interface Props {
   unit: NUnit;
@@ -186,10 +186,14 @@ function setTextAmpValue(field: TextAmpKey, value: string | number | undefined) 
           <div
             class="col-start-2 row-span-3 row-start-2 items-center justify-self-center pt-2"
           >
-            <MilitarySymbol
+            <NewMilitarySymbol
               :sidc="displaySymbol"
+              class="stroke-muted-foreground"
               :size="75"
-              :modifiers="{ frame: true, monoColor: '#7a7575', outlineWidth: 4 }"
+              :modifiers="{
+                frame: true,
+                monoColor: 'inherit',
+              }"
             />
           </div>
         </div>

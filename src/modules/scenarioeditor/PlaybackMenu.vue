@@ -30,7 +30,9 @@ const playback = usePlaybackStore();
 </script>
 
 <template>
-  <div class="bg-muted-foreground/30 items-center rounded-lg px-1 sm:flex">
+  <div
+    class="bg-muted-foreground/20 dark:bg-muted-foreground/30 items-center rounded-lg px-1 sm:flex"
+  >
     <Button
       variant="ghost"
       size="icon"

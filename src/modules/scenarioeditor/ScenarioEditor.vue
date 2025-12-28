@@ -37,7 +37,7 @@
           <SearchIcon class="size-6" />
         </Button>
         <div
-          class="bg-foreground/15 text-muted-foreground/80 flex items-center rounded-lg px-1"
+          class="bg-muted-foreground/20 dark:bg-foreground/15 text-muted-foreground/80 flex items-center rounded-lg px-1"
         >
           <router-link
             :to="{ name: MAP_EDIT_MODE_ROUTE }"
