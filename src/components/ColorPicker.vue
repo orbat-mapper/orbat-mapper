@@ -2,7 +2,7 @@
   <RadioGroup v-model="selectedColor">
     <RadioGroupLabel
       v-if="label || $slots.label"
-      class="mb-4 block text-sm leading-6 font-medium text-gray-900"
+      class="mb-4 block text-sm leading-6 font-medium"
     >
       <slot name="label">{{ label }}</slot>
     </RadioGroupLabel>

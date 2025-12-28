@@ -6,8 +6,6 @@ import {
   useTemplateRef,
   watch,
   watchEffect,
-  render,
-  h,
 } from "vue";
 import {
   IconCrosshairsGps,
@@ -37,7 +35,6 @@ import { useGetMapLocation } from "@/composables/geoMapLocation";
 import OLMap from "ol/Map";
 import { useUiStore } from "@/stores/uiStore";
 import { CUSTOM_SYMBOL_SID_INDEX, SID_INDEX } from "@/symbology/sidc";
-import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { TabPanel } from "@headlessui/vue";
 import EditableLabel from "@/components/EditableLabel.vue";
@@ -56,11 +53,9 @@ import UnitDetailsSymbol from "@/modules/scenarioeditor/UnitDetailsSymbol.vue";
 import { Button } from "@/components/ui/button";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { getUnitDragItem } from "@/types/draggables.ts";
-import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview";
-import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
-import MilSymbol from "@/components/MilSymbol.vue";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
+import { Badge } from "@/components/ui/badge";
 
 const FeatureTransformations = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/FeatureTransformations.vue"),
@@ -430,16 +425,13 @@ function locateInOrbat() {
             class="relative -top-4"
             v-model="shortName"
             @update-value="updateUnit(unitId, { shortName: $event })"
-            text-class="text-sm text-gray-500 dark:text-slate-300"
+            text-class="text-sm text-muted-foreground"
             :disabled="isLocked"
           />
         </div>
-        <IconLockOutline v-if="isLocked" class="size-5 text-gray-400" />
+        <IconLockOutline v-if="isLocked" class="text-muted-foreground size-5" />
         <div v-if="unitStatus">
-          <span
-            class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-gray-500/10 ring-inset"
-            >{{ unitStatus }}</span
-          >
+          <Badge>{{ unitStatus }}</Badge>
         </div>
       </div>
       <div v-else>
@@ -462,7 +454,7 @@ function locateInOrbat() {
           <li v-if="isTruncated">
             <button
               type="button"
-              class="bg-opacity-80 absolute right-0 bottom-0 left-0 border bg-white p-2 text-center text-gray-600"
+              class="bg-opacity-80 bg-muted text-muted-foreground absolute right-0 bottom-0 left-0 border p-2 text-center"
               @click="truncateUnits = !truncateUnits"
             >
               +{{ selectedUnits.length - visibleSelectedUnits.length }}
