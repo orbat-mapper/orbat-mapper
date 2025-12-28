@@ -1,17 +1,23 @@
 <script setup lang="ts">
-import { useId } from "vue";
-import { Label } from "@/components/ui/label";
+import { type HTMLAttributes, useId } from "vue";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { cn } from "@/lib/utils";
 
-const props = defineProps<{ label?: string; description?: string; hint?: string }>();
+const props = defineProps<{
+  label?: string;
+  description?: string;
+  hint?: string;
+  class?: HTMLAttributes["class"];
+}>();
 
 const id = useId();
 </script>
 <template>
-  <div>
+  <Field :class="cn(props.class)">
     <div class="flex justify-between">
-      <Label :for="id">
+      <FieldLabel :for="id">
         <slot name="label">{{ label }}</slot>
-      </Label>
+      </FieldLabel>
       <div v-if="hint || $slots.hint">
         <slot name="hint">
           <span class="text-muted-foreground text-sm leading-6">
@@ -20,14 +26,9 @@ const id = useId();
         </slot>
       </div>
     </div>
-    <div class="mt-1">
-      <slot :id="id"></slot>
-    </div>
-    <p
-      v-if="description || $slots.description"
-      class="text-muted-foreground mt-2 text-sm"
-    >
+    <slot :id="id"></slot>
+    <FieldDescription v-if="description || $slots.description">
       <slot name="description">{{ description }}</slot>
-    </p>
-  </div>
+    </FieldDescription>
+  </Field>
 </template>

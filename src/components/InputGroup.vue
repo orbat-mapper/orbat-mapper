@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type HTMLAttributes, onMounted, useId } from "vue";
-import { Label } from "@/components/ui/label";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils.ts";
 
@@ -28,25 +28,19 @@ onMounted(() => {
 });
 </script>
 <template>
-  <div :class="cn('group', props.class)" :data-disabled="disabled">
-    <Label v-if="label || $slots.label" :for="inputId" class="text-sm">
+  <Field :class="cn('group', props.class)" :data-disabled="disabled">
+    <FieldLabel v-if="label || $slots.label" :for="inputId">
       <slot name="label">{{ label }}</slot>
-    </Label>
-    <div class="mt-1">
-      <Input
-        type="text"
-        v-model="inputValue"
-        :id="inputId"
-        class="block"
-        v-bind="$attrs"
-        :disabled
-      />
-    </div>
-    <p
-      v-if="description || $slots.description"
-      class="text-muted-foreground mt-2 text-sm"
-    >
+    </FieldLabel>
+    <Input
+      type="text"
+      v-model="inputValue"
+      :id="inputId"
+      v-bind="$attrs"
+      :disabled="disabled"
+    />
+    <FieldDescription v-if="description || $slots.description">
       <slot name="description">{{ description }}</slot>
-    </p>
-  </div>
+    </FieldDescription>
+  </Field>
 </template>
