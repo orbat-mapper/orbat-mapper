@@ -28,14 +28,16 @@
         <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
           <MapEditorDesktopPanel v-if="showLeftPanel" @close="toggleLeftPanel()" />
           <div v-else>
-            <button
+            <Button
               type="button"
+              size="icon"
+              variant="secondary"
               @click="toggleLeftPanel()"
               title="Show panel"
-              class="bg-opacity-70 pointer-events-auto absolute -my-12 rounded bg-white p-1 text-gray-600 hover:text-gray-900"
+              class="pointer-events-auto absolute -my-12"
             >
-              <ShowPanelIcon class="h-7 w-7" />
-            </button>
+              <ShowPanelIcon class="size-7" />
+            </Button>
           </div>
           <MapEditorDetailsPanel v-if="showDetailsPanel" @close="onCloseDetailsPanel()">
             <ScenarioFeatureDetails
@@ -126,7 +128,7 @@ import {
   activeScenarioKey,
   timeModalKey,
 } from "@/components/injects";
-import { IconChevronRightBoxOutline as ShowPanelIcon } from "@iconify-prerendered/vue-mdi";
+import { PanelLeftOpenIcon as ShowPanelIcon } from "lucide-vue-next";
 import { injectStrict } from "@/utils";
 import MapTimeController from "@/components/MapTimeController.vue";
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
@@ -158,6 +160,7 @@ import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTra
 import { storeToRefs } from "pinia";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import UnitBreadcrumbs from "@/modules/scenarioeditor/UnitBreadcrumbs.vue";
+import { Button } from "@/components/ui/button";
 
 const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
 const activeScenario = injectStrict(activeScenarioKey);
