@@ -19,13 +19,9 @@ const name = inject("radioGroupName", "name");
       type="radio"
       v-model="v"
       :name="name"
-      class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+      class="border-border text-primary focus:ring-primary-foreground size-4"
       :disabled="disabled"
     />
-    <label
-      :for="_id"
-      class="ml-3 block text-sm leading-6 font-medium text-gray-900 dark:text-gray-300"
-      ><slot
-    /></label>
+    <label :for="_id" class="ml-3 block text-sm leading-6 font-medium"><slot /></label>
   </div>
 </template>
