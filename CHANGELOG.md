@@ -10,7 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 December 2025
 
-- Added dark mode toggle.
+- Added support for selecting which KML/KMZ folders to load.
+- Added support for loading multiple KML/KMZ files simultaneously.
+- Added a dark mode toggle.
 
 November 2025
 
