@@ -109,6 +109,7 @@ export interface ScenarioKMLLayer extends ScenarioMapLayerBase {
   type: "KMLLayer";
   url: string;
   extractStyles?: boolean;
+  showPointNames?: boolean;
 }
 
 export interface ScenarioXYZLayer extends ScenarioMapLayerBase {

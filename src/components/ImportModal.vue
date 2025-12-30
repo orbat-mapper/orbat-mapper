@@ -10,7 +10,6 @@ import type { ImportedFileInfo } from "@/importexport/fileHandling";
 import DocLink from "@/components/DocLink.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import type { ImportData } from "@/types/importExport.ts";
-import ImportedFileList from "@/components/ImportedFileList.vue";
 
 const ImportGeojsonStep = defineAsyncComponent(
   () => import("@/components/ImportGeojsonStep.vue"),

@@ -136,6 +136,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
 
     const format = new KMLZ({
       extractStyles: data.extractStyles ?? false,
+      showPointNames: data.showPointNames ?? true,
       crossOrigin: "anonymous",
       iconUrlFunction: (href: string) => {
         const index = window.location.href.lastIndexOf("/");
