@@ -10,7 +10,7 @@ interface Props {
   description?: string;
 }
 const props = withDefaults(defineProps<Props>(), {});
-const localValue = defineModel<boolean | unknown[]>({
+const localValue = defineModel<boolean | unknown[] | "indeterminate">({
   required: false,
 });
 
