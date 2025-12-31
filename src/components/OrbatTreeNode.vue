@@ -1,7 +1,11 @@
 <template>
   <li>
     <div class="hover:bg-muted/50 flex items-center gap-2 rounded px-2 py-1">
-      <MilSymbol :sidc="unit.sidc" :size="24" />
+      <MilSymbol
+        :sidc="unit.sidc"
+        :size="24"
+        :options="{ outlineColor: 'white', outlineWidth: 8 }"
+      />
       <span class="text-sm">{{ unit.name }}</span>
       <span class="text-muted-foreground text-xs">({{ echelonLabel }})</span>
     </div>
@@ -13,7 +17,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import MilSymbol from "@/components/MilSymbol.vue";
+import MilSymbol from "@/components/NewMilitarySymbol.vue";
 
 interface ParsedUnit {
   id: string;
