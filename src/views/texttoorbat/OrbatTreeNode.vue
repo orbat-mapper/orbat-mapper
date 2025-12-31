@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import MilSymbol from "@/components/NewMilitarySymbol.vue";
+import {
+  ECHELON_CODE_TO_NAME,
+  ICON_CODE_TO_NAME,
+} from "@/views/texttoorbat/textToOrbat.ts";
 
 interface ParsedUnit {
   id: string;
@@ -12,6 +16,7 @@ interface ParsedUnit {
 
 const props = defineProps<{
   unit: ParsedUnit;
+  showDebug?: boolean;
 }>();
 
 // Map echelon codes (from SIDC positions 8-9) to labels
@@ -33,10 +38,19 @@ const echelonCodeLabels: Record<string, string> = {
   "26": "Command",
 };
 
+const echelonCode = computed(() => props.unit.sidc.substring(8, 10));
+const entityCode = computed(() => props.unit.sidc.substring(10, 20));
+
 const echelonLabel = computed(() => {
-  // Extract echelon code from SIDC (positions 8-9, 0-indexed)
-  const echelonCode = props.unit.sidc.substring(8, 10);
-  return echelonCodeLabels[echelonCode] ?? "Unit";
+  return echelonCodeLabels[echelonCode.value] ?? "Unit";
+});
+
+const echelonVarName = computed(() => {
+  return ECHELON_CODE_TO_NAME[echelonCode.value] ?? echelonCode.value;
+});
+
+const entityVarName = computed(() => {
+  return ICON_CODE_TO_NAME[entityCode.value] ?? entityCode.value;
 });
 </script>
 
@@ -49,10 +63,17 @@ const echelonLabel = computed(() => {
         :options="{ outlineColor: 'white', outlineWidth: 8 }"
       />
       <span class="text-sm">{{ unit.name }}</span>
-      <span class="text-muted-foreground text-xs">({{ echelonLabel }})</span>
+      <span v-if="showDebug" class="font-mono text-xs text-amber-600 dark:text-amber-400">
+        [{{ echelonVarName }} | {{ entityVarName }}]
+      </span>
     </div>
     <ul v-if="unit.children.length > 0" class="mt-1 ml-6 space-y-1 border-l pl-2">
-      <OrbatTreeNode v-for="child in unit.children" :key="child.id" :unit="child" />
+      <OrbatTreeNode
+        v-for="child in unit.children"
+        :key="child.id"
+        :unit="child"
+        :show-debug="showDebug"
+      />
     </ul>
   </li>
 </template>

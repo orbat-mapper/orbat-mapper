@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { UseDark } from "@vueuse/components";
 import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
+import ToggleField from "@/components/ToggleField.vue";
 
 import { parseTextToUnits, INDENT_SIZE } from "@/views/texttoorbat/textToOrbat.ts";
+
+const showDebug = ref(false);
 
 const inputText = ref(
   "1st Infantry Division\n" +
@@ -189,18 +192,26 @@ const parsedUnits = computed(() => parseTextToUnits(inputText.value));
 
       <!-- Right side: ORBAT display -->
       <div class="flex w-1/2 flex-col overflow-hidden">
-        <div class="bg-muted/50 border-b px-4 py-2">
-          <h2 class="text-muted-foreground text-sm font-medium">Generated ORBAT</h2>
-          <p class="text-muted-foreground mt-1 text-xs">
-            {{ parsedUnits.length }} top-level unit(s)
-          </p>
+        <div class="bg-muted/50 flex items-center justify-between border-b px-4 py-2">
+          <div>
+            <h2 class="text-muted-foreground text-sm font-medium">Generated ORBAT</h2>
+            <p class="text-muted-foreground mt-1 text-xs">
+              {{ parsedUnits.length }} top-level unit(s)
+            </p>
+          </div>
+          <ToggleField v-model="showDebug">Debug info</ToggleField>
         </div>
         <div class="flex-1 overflow-y-auto p-4">
           <div v-if="parsedUnits.length === 0" class="text-muted-foreground text-center">
             <p>Enter text on the left to generate an ORBAT</p>
           </div>
           <ul v-else class="space-y-2">
-            <OrbatTreeNode v-for="unit in parsedUnits" :key="unit.id" :unit="unit" />
+            <OrbatTreeNode
+              v-for="unit in parsedUnits"
+              :key="unit.id"
+              :unit="unit"
+              :show-debug="showDebug"
+            />
           </ul>
         </div>
       </div>
