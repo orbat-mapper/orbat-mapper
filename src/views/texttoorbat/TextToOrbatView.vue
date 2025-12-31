@@ -4,10 +4,19 @@ import { ArrowLeftIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { UseDark } from "@vueuse/components";
+import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
 import ToggleField from "@/components/ToggleField.vue";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 import { parseTextToUnits, INDENT_SIZE } from "@/views/texttoorbat/textToOrbat.ts";
+
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smallerOrEqual("sm");
 
 const showDebug = ref(false);
 
@@ -163,20 +172,22 @@ const parsedUnits = computed(() => parseTextToUnits(inputText.value));
       </UseDark>
     </header>
 
-    <main class="flex flex-1 overflow-hidden">
-      <!-- Left side: Text input -->
-      <div class="flex w-1/2 flex-col border-r">
-        <div class="bg-muted/50 border-b px-4 py-2">
-          <h2 class="text-muted-foreground text-sm font-medium">Text Input</h2>
-          <p class="text-muted-foreground mt-1 text-xs">
-            Enter unit hierarchy using indentation. Each line is a unit name. Use tabs or
-            spaces to indicate parent-child relationships.
-          </p>
-        </div>
-        <Textarea
-          v-model="inputText"
-          class="flex-1 resize-none rounded-none border-0 font-mono text-sm focus-visible:ring-0"
-          placeholder="1st Infantry Division
+    <!-- Resizable panels - vertical on mobile, horizontal on desktop -->
+    <ResizablePanelGroup :direction="isMobile ? 'vertical' : 'horizontal'" class="flex-1">
+      <!-- Left/Top: Text input -->
+      <ResizablePanel :default-size="50" :min-size="20">
+        <div class="flex h-full flex-col">
+          <div class="bg-muted/50 border-b px-4 py-2">
+            <h2 class="text-muted-foreground text-sm font-medium">Text Input</h2>
+            <p class="text-muted-foreground mt-1 text-xs">
+              Enter unit hierarchy using indentation. Each line is a unit name. Use tabs
+              or spaces to indicate parent-child relationships.
+            </p>
+          </div>
+          <Textarea
+            v-model="inputText"
+            class="flex-1 resize-none rounded-none border-0 font-mono text-sm focus-visible:ring-0"
+            placeholder="1st Infantry Division
   1st Brigade
     1st Battalion
     2nd Battalion
@@ -184,37 +195,45 @@ const parsedUnits = computed(() => parseTextToUnits(inputText.value));
     3rd Battalion
     4th Battalion
   Artillery Regiment"
-          @keydown.tab.prevent="handleTab"
-          @keydown.shift.tab.prevent="handleShiftTab"
-          @keydown.enter.prevent="handleEnter"
-        />
-      </div>
+            @keydown.tab.prevent="handleTab"
+            @keydown.shift.tab.prevent="handleShiftTab"
+            @keydown.enter.prevent="handleEnter"
+          />
+        </div>
+      </ResizablePanel>
 
-      <!-- Right side: ORBAT display -->
-      <div class="flex w-1/2 flex-col overflow-hidden">
-        <div class="bg-muted/50 flex items-center justify-between border-b px-4 py-2">
-          <div>
-            <h2 class="text-muted-foreground text-sm font-medium">Generated ORBAT</h2>
-            <p class="text-muted-foreground mt-1 text-xs">
-              {{ parsedUnits.length }} top-level unit(s)
-            </p>
+      <ResizableHandle with-handle />
+
+      <!-- Right/Bottom: ORBAT display -->
+      <ResizablePanel :default-size="50" :min-size="20">
+        <div class="flex h-full flex-col overflow-hidden">
+          <div class="bg-muted/50 flex items-center justify-between border-b px-4 py-2">
+            <div>
+              <h2 class="text-muted-foreground text-sm font-medium">Generated ORBAT</h2>
+              <p class="text-muted-foreground mt-1 text-xs">
+                {{ parsedUnits.length }} top-level unit(s)
+              </p>
+            </div>
+            <ToggleField v-model="showDebug">Debug info</ToggleField>
           </div>
-          <ToggleField v-model="showDebug">Debug info</ToggleField>
-        </div>
-        <div class="flex-1 overflow-y-auto p-4">
-          <div v-if="parsedUnits.length === 0" class="text-muted-foreground text-center">
-            <p>Enter text on the left to generate an ORBAT</p>
+          <div class="flex-1 overflow-y-auto p-4">
+            <div
+              v-if="parsedUnits.length === 0"
+              class="text-muted-foreground text-center"
+            >
+              <p>Enter text on the left to generate an ORBAT</p>
+            </div>
+            <ul v-else class="space-y-2">
+              <OrbatTreeNode
+                v-for="unit in parsedUnits"
+                :key="unit.id"
+                :unit="unit"
+                :show-debug="showDebug"
+              />
+            </ul>
           </div>
-          <ul v-else class="space-y-2">
-            <OrbatTreeNode
-              v-for="unit in parsedUnits"
-              :key="unit.id"
-              :unit="unit"
-              :show-debug="showDebug"
-            />
-          </ul>
         </div>
-      </div>
-    </main>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   </div>
 </template>
