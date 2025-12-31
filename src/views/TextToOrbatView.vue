@@ -78,15 +78,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { UseDark } from "@vueuse/components";
 import OrbatTreeNode from "@/components/OrbatTreeNode.vue";
-import { nanoid } from "nanoid";
 
-interface ParsedUnit {
-  id: string;
-  name: string;
-  sidc: string;
-  children: ParsedUnit[];
-  level: number;
-}
+import { parseTextToUnits, INDENT_SIZE } from "@/utils/textToOrbat";
 
 const inputText = ref(
   "1st Infantry Division\n" +
@@ -99,8 +92,7 @@ const inputText = ref(
     "  Artillery Regiment",
 );
 
-// Indentation configuration: number of spaces to insert for a tab
-const INDENT_SIZE = 2;
+// Indentation configuration: number of spaces to insert for a tab (from utils)
 const INDENT = " ".repeat(INDENT_SIZE);
 
 function handleTab(event: KeyboardEvent) {
@@ -144,7 +136,7 @@ function handleEnter(event: KeyboardEvent) {
   });
 }
 
-// Remove one indentation level (tab or up to indentSize spaces) from selected lines or current line
+// Remove one indentation level (tab or up to INDENT_SIZE spaces) from selected lines or current line
 function handleShiftTab(event: KeyboardEvent) {
   const textarea = event.target as HTMLTextAreaElement;
   const start = textarea.selectionStart;
@@ -211,160 +203,6 @@ function handleShiftTab(event: KeyboardEvent) {
     textarea.selectionStart = newStart;
     textarea.selectionEnd = newEnd;
   });
-}
-
-// Standard identity for friendly units
-const FRIENDLY_SI = "3";
-// Symbol set for land units
-const UNIT_SYMBOL_SET = "10";
-
-// Echelon codes mapped to common unit type keywords
-const ECHELON_PATTERNS: { pattern: RegExp; code: string }[] = [
-  // Army Group / Front
-  { pattern: /\b(army\s*group|front|theater)\b/i, code: "24" },
-  // Army
-  { pattern: /\b(army)\b/i, code: "23" },
-  // Corps
-  { pattern: /\b(corps|mef)\b/i, code: "22" },
-  // Division
-  { pattern: /\b(division|div)\b/i, code: "21" },
-  // Brigade
-  { pattern: /\b(brigade|bde|bgde)\b/i, code: "18" },
-  // Regiment / Group
-  { pattern: /\b(regiment|regt|rgmt|group|grp)\b/i, code: "17" },
-  // Battalion / Squadron
-  { pattern: /\b(battalion|btn|bn|squadron|sqdn|sqn)\b/i, code: "16" },
-  // Company / Battery / Troop
-  { pattern: /\b(company|coy|co|battery|btry|bty|troop|trp)\b/i, code: "15" },
-  // Platoon / Detachment
-  { pattern: /\b(platoon|plt|pl|detachment|det)\b/i, code: "14" },
-  // Section
-  { pattern: /\b(section|sect|sec)\b/i, code: "13" },
-  // Squad
-  { pattern: /\b(squad|sqd)\b/i, code: "12" },
-  // Team / Crew
-  { pattern: /\b(team|tm|crew)\b/i, code: "11" },
-];
-
-// Echelon hierarchy for inferring child echelons (from largest to smallest)
-const ECHELON_HIERARCHY = [
-  "24", // Army Group
-  "23", // Army
-  "22", // Corps
-  "21", // Division
-  "18", // Brigade
-  "17", // Regiment
-  "16", // Battalion
-  "15", // Company
-  "14", // Platoon
-  "13", // Section
-  "12", // Squad
-  "11", // Team
-];
-
-function getNextLowerEchelon(parentEchelon: string): string {
-  const idx = ECHELON_HIERARCHY.indexOf(parentEchelon);
-  if (idx === -1 || idx >= ECHELON_HIERARCHY.length - 1) {
-    return "00"; // Unspecified
-  }
-  return ECHELON_HIERARCHY[idx + 1];
-}
-
-function getEchelonCodeFromName(name: string): string {
-  for (const { pattern, code } of ECHELON_PATTERNS) {
-    if (pattern.test(name)) {
-      return code;
-    }
-  }
-  // Default: unspecified echelon
-  return "00";
-}
-
-function getEchelonCode(level: number): string {
-  // Map hierarchy level to echelon (simplified) - used as fallback
-  if (level < ECHELON_HIERARCHY.length) {
-    return ECHELON_HIERARCHY[level];
-  }
-  return ECHELON_HIERARCHY[ECHELON_HIERARCHY.length - 1];
-}
-
-function buildSidc(level: number, name: string, parentEchelon?: string): string {
-  // Build a 2525D SIDC: 10 (version) + 0 (context) + 3 (friendly) + 10 (land unit)
-  // + 0 (status) + 0 (HQ/TF) + echelon + 000000 (entity) + 00 (modifiers)
-  const version = "10";
-  const context = "0";
-  const si = FRIENDLY_SI;
-  const symbolSet = UNIT_SYMBOL_SET;
-  const status = "0";
-  const hqtfd = "0";
-
-  // Try to detect echelon from name first
-  let echelon = getEchelonCodeFromName(name);
-
-  // If not detected from name, infer from parent echelon
-  if (echelon === "00" && parentEchelon && parentEchelon !== "00") {
-    echelon = getNextLowerEchelon(parentEchelon);
-  }
-
-  // If still not determined, fall back to level-based
-  if (echelon === "00") {
-    echelon = getEchelonCode(level);
-  }
-
-  const entity = "000000";
-  const modifiers = "0000";
-
-  return (
-    version + context + si + symbolSet + status + hqtfd + echelon + entity + modifiers
-  );
-}
-
-function parseTextToUnits(text: string): ParsedUnit[] {
-  const lines = text.split("\n").filter((line) => line.trim().length > 0);
-  const result: ParsedUnit[] = [];
-  const stack: { unit: ParsedUnit; indent: number; echelon: string }[] = [];
-
-  for (const line of lines) {
-    const trimmed = line.trimStart();
-    const indent = line.length - trimmed.length;
-    const name = trimmed.trim();
-
-    if (!name) continue;
-
-    // Determine the level based on indentation
-    let level = 0;
-    if (stack.length > 0) {
-      // Find parent based on indentation
-      while (stack.length > 0 && stack[stack.length - 1].indent >= indent) {
-        stack.pop();
-      }
-      level = stack.length;
-    }
-
-    // Get parent's echelon if available
-    const parentEchelon = stack.length > 0 ? stack[stack.length - 1].echelon : undefined;
-    const sidc = buildSidc(level, name, parentEchelon);
-    // Extract the echelon code from the generated SIDC (positions 8-9)
-    const unitEchelon = sidc.substring(8, 10);
-
-    const unit: ParsedUnit = {
-      id: nanoid(),
-      name,
-      sidc,
-      children: [],
-      level,
-    };
-
-    if (stack.length === 0) {
-      result.push(unit);
-    } else {
-      stack[stack.length - 1].unit.children.push(unit);
-    }
-
-    stack.push({ unit, indent, echelon: unitEchelon });
-  }
-
-  return result;
 }
 
 const parsedUnits = computed(() => parseTextToUnits(inputText.value));
