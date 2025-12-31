@@ -1,85 +1,12 @@
-<template>
-  <div class="bg-background flex h-screen flex-col">
-    <header class="bg-muted flex items-center justify-between border-b px-4 py-2">
-      <div class="flex items-center gap-4">
-        <router-link to="/" class="text-muted-foreground hover:text-foreground">
-          <ArrowLeftIcon class="size-5" />
-        </router-link>
-        <h1 class="text-lg font-semibold">Text to ORBAT</h1>
-        <span
-          class="rounded bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400"
-          >Experimental</span
-        >
-      </div>
-      <UseDark v-slot="{ isDark, toggleDark }">
-        <Button
-          variant="ghost"
-          size="icon"
-          @click="toggleDark()"
-          title="Toggle dark mode"
-        >
-          <SunIcon v-if="isDark" /><MoonStarIcon v-else />
-        </Button>
-      </UseDark>
-    </header>
-
-    <main class="flex flex-1 overflow-hidden">
-      <!-- Left side: Text input -->
-      <div class="flex w-1/2 flex-col border-r">
-        <div class="bg-muted/50 border-b px-4 py-2">
-          <h2 class="text-muted-foreground text-sm font-medium">Text Input</h2>
-          <p class="text-muted-foreground mt-1 text-xs">
-            Enter unit hierarchy using indentation. Each line is a unit name. Use tabs or
-            spaces to indicate parent-child relationships.
-          </p>
-        </div>
-        <Textarea
-          v-model="inputText"
-          class="flex-1 resize-none rounded-none border-0 font-mono text-sm focus-visible:ring-0"
-          placeholder="1st Infantry Division
-  1st Brigade
-    1st Battalion
-    2nd Battalion
-  2nd Brigade
-    3rd Battalion
-    4th Battalion
-  Artillery Regiment"
-          @keydown.tab.prevent="handleTab"
-          @keydown.shift.tab.prevent="handleShiftTab"
-          @keydown.enter.prevent="handleEnter"
-        />
-      </div>
-
-      <!-- Right side: ORBAT display -->
-      <div class="flex w-1/2 flex-col overflow-hidden">
-        <div class="bg-muted/50 border-b px-4 py-2">
-          <h2 class="text-muted-foreground text-sm font-medium">Generated ORBAT</h2>
-          <p class="text-muted-foreground mt-1 text-xs">
-            {{ parsedUnits.length }} top-level unit(s)
-          </p>
-        </div>
-        <div class="flex-1 overflow-y-auto p-4">
-          <div v-if="parsedUnits.length === 0" class="text-muted-foreground text-center">
-            <p>Enter text on the left to generate an ORBAT</p>
-          </div>
-          <ul v-else class="space-y-2">
-            <OrbatTreeNode v-for="unit in parsedUnits" :key="unit.id" :unit="unit" />
-          </ul>
-        </div>
-      </div>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, computed, nextTick } from "vue";
 import { ArrowLeftIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { UseDark } from "@vueuse/components";
-import OrbatTreeNode from "@/components/OrbatTreeNode.vue";
+import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
 
-import { parseTextToUnits, INDENT_SIZE } from "@/utils/textToOrbat";
+import { parseTextToUnits, INDENT_SIZE } from "@/views/texttoorbat/textToOrbat.ts";
 
 const inputText = ref(
   "1st Infantry Division\n" +
@@ -207,3 +134,76 @@ function handleShiftTab(event: KeyboardEvent) {
 
 const parsedUnits = computed(() => parseTextToUnits(inputText.value));
 </script>
+
+<template>
+  <div class="bg-background flex h-screen flex-col">
+    <header class="bg-muted flex items-center justify-between border-b px-4 py-2">
+      <div class="flex items-center gap-4">
+        <router-link to="/" class="text-muted-foreground hover:text-foreground">
+          <ArrowLeftIcon class="size-5" />
+        </router-link>
+        <h1 class="text-lg font-semibold">Text to ORBAT</h1>
+        <span
+          class="rounded bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400"
+          >Experimental</span
+        >
+      </div>
+      <UseDark v-slot="{ isDark, toggleDark }">
+        <Button
+          variant="ghost"
+          size="icon"
+          @click="toggleDark()"
+          title="Toggle dark mode"
+        >
+          <SunIcon v-if="isDark" /><MoonStarIcon v-else />
+        </Button>
+      </UseDark>
+    </header>
+
+    <main class="flex flex-1 overflow-hidden">
+      <!-- Left side: Text input -->
+      <div class="flex w-1/2 flex-col border-r">
+        <div class="bg-muted/50 border-b px-4 py-2">
+          <h2 class="text-muted-foreground text-sm font-medium">Text Input</h2>
+          <p class="text-muted-foreground mt-1 text-xs">
+            Enter unit hierarchy using indentation. Each line is a unit name. Use tabs or
+            spaces to indicate parent-child relationships.
+          </p>
+        </div>
+        <Textarea
+          v-model="inputText"
+          class="flex-1 resize-none rounded-none border-0 font-mono text-sm focus-visible:ring-0"
+          placeholder="1st Infantry Division
+  1st Brigade
+    1st Battalion
+    2nd Battalion
+  2nd Brigade
+    3rd Battalion
+    4th Battalion
+  Artillery Regiment"
+          @keydown.tab.prevent="handleTab"
+          @keydown.shift.tab.prevent="handleShiftTab"
+          @keydown.enter.prevent="handleEnter"
+        />
+      </div>
+
+      <!-- Right side: ORBAT display -->
+      <div class="flex w-1/2 flex-col overflow-hidden">
+        <div class="bg-muted/50 border-b px-4 py-2">
+          <h2 class="text-muted-foreground text-sm font-medium">Generated ORBAT</h2>
+          <p class="text-muted-foreground mt-1 text-xs">
+            {{ parsedUnits.length }} top-level unit(s)
+          </p>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4">
+          <div v-if="parsedUnits.length === 0" class="text-muted-foreground text-center">
+            <p>Enter text on the left to generate an ORBAT</p>
+          </div>
+          <ul v-else class="space-y-2">
+            <OrbatTreeNode v-for="unit in parsedUnits" :key="unit.id" :unit="unit" />
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>

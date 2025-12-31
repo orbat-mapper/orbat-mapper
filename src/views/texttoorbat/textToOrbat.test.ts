@@ -6,7 +6,7 @@ import {
   getEchelonCode,
   getNextLowerEchelon,
   getEchelonFromSidc,
-} from "./textToOrbat";
+} from "./textToOrbat.ts";
 
 describe("getEchelonCodeFromName", () => {
   it("detects Division from full word", () => {

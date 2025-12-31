@@ -1,20 +1,3 @@
-<template>
-  <li>
-    <div class="hover:bg-muted/50 flex items-center gap-2 rounded px-2 py-1">
-      <MilSymbol
-        :sidc="unit.sidc"
-        :size="24"
-        :options="{ outlineColor: 'white', outlineWidth: 8 }"
-      />
-      <span class="text-sm">{{ unit.name }}</span>
-      <span class="text-muted-foreground text-xs">({{ echelonLabel }})</span>
-    </div>
-    <ul v-if="unit.children.length > 0" class="mt-1 ml-6 space-y-1 border-l pl-2">
-      <OrbatTreeNode v-for="child in unit.children" :key="child.id" :unit="child" />
-    </ul>
-  </li>
-</template>
-
 <script setup lang="ts">
 import { computed } from "vue";
 import MilSymbol from "@/components/NewMilitarySymbol.vue";
@@ -56,3 +39,20 @@ const echelonLabel = computed(() => {
   return echelonCodeLabels[echelonCode] ?? "Unit";
 });
 </script>
+
+<template>
+  <li>
+    <div class="hover:bg-muted/50 flex items-center gap-2 rounded px-2 py-1">
+      <MilSymbol
+        :sidc="unit.sidc"
+        :size="24"
+        :options="{ outlineColor: 'white', outlineWidth: 8 }"
+      />
+      <span class="text-sm">{{ unit.name }}</span>
+      <span class="text-muted-foreground text-xs">({{ echelonLabel }})</span>
+    </div>
+    <ul v-if="unit.children.length > 0" class="mt-1 ml-6 space-y-1 border-l pl-2">
+      <OrbatTreeNode v-for="child in unit.children" :key="child.id" :unit="child" />
+    </ul>
+  </li>
+</template>

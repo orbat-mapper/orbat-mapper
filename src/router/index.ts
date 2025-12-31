@@ -29,7 +29,7 @@ const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
 const GeoTestView = () => import("../views/GeoTestView.vue");
 const GridTestView = () => import("@/modules/grid/GridTestView.vue");
 const TanstackGridTestView = () => import("@/modules/grid/TanstackGridTestView.vue");
-const TextToOrbatView = () => import("@/views/TextToOrbatView.vue");
+const TextToOrbatView = () => import("@/views/texttoorbat/TextToOrbatView.vue");
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
 const ScenarioEditorMap = () => import("@/modules/scenarioeditor/ScenarioEditorMap.vue");
