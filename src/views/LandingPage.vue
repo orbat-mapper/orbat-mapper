@@ -103,6 +103,9 @@
               <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="shrink-0"
                 >Orbat chart test
               </router-link>
+              <router-link :to="{ name: TEXT_TO_ORBAT_ROUTE }" class="shrink-0"
+                >Text to ORBAT
+              </router-link>
               <router-link to="/storymode" class="">Story mode test</router-link>
               <router-link to="/testgrid" class="">Test grid</router-link>
               <router-link to="/testgrid2" class="">Tanstack Table Test grid</router-link>
@@ -179,7 +182,7 @@ import { ExternalLinkIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
 import ProseSection from "../components/ProseSection.vue";
 import LandingPageScenarios from "./LandingPageScenarios.vue";
 import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
-import { ORBAT_CHART_ROUTE } from "@/router/names";
+import { ORBAT_CHART_ROUTE, TEXT_TO_ORBAT_ROUTE } from "@/router/names";
 import { CheckIcon } from "@heroicons/vue/24/outline";
 import { Button } from "@/components/ui/button";
 import { UseDark } from "@vueuse/components";
