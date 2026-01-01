@@ -1,55 +1,55 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  parseTextToUnits,
   buildSidc,
-  getEchelonCodeFromName,
   getEchelonCode,
-  getNextLowerEchelon,
+  getEchelonCodeFromName,
   getEchelonFromSidc,
   getIconCodeFromName,
-  ICON_INFANTRY,
-  ICON_MECHANIZED_INFANTRY,
-  ICON_MOTORIZED_INFANTRY,
-  ICON_LIGHT_INFANTRY,
-  ICON_AIRBORNE_INFANTRY,
+  getNextLowerEchelon,
   ICON_AIR_ASSAULT_INFANTRY,
-  ICON_MOUNTAIN_INFANTRY,
-  ICON_MARINE_INFANTRY,
-  ICON_ARMOR,
-  ICON_LIGHT_ARMOR,
-  ICON_CAVALRY,
-  ICON_RECONNAISSANCE,
-  ICON_ARTILLERY,
-  ICON_SELF_PROPELLED_ARTILLERY,
-  ICON_ROCKET_ARTILLERY,
   ICON_AIR_DEFENSE,
-  ICON_AVIATION,
-  ICON_ATTACK_HELICOPTER,
-  ICON_ENGINEER,
-  ICON_COMBAT_ENGINEER,
-  ICON_SIGNAL,
-  ICON_SUPPLY,
-  ICON_MAINTENANCE,
-  ICON_MEDICAL,
-  ICON_MILITARY_POLICE,
-  ICON_SPECIAL_FORCES,
-  ICON_MORTAR,
-  ICON_MISSILE,
-  ICON_ANTITANK,
-  ICON_TRANSPORTATION,
-  ICON_HEADQUARTERS,
-  ICON_CHEMICAL,
-  ICON_ELECTRONIC_WARFARE,
-  ICON_MILITARY_INTELLIGENCE,
-  ICON_CIVIL_AFFAIRS,
-  ICON_PSYCHOLOGICAL_OPS,
-  ICON_SECURITY,
-  ICON_PARACHUTE,
-  ICON_AMPHIBIOUS,
-  ICON_SNIPER,
-  ICON_NAVAL,
   ICON_AIR_FORCE,
+  ICON_AIRBORNE_INFANTRY,
+  ICON_AMPHIBIOUS,
+  ICON_ANTITANK,
+  ICON_ARMOR,
+  ICON_ARTILLERY,
+  ICON_ATTACK_HELICOPTER,
+  ICON_AVIATION,
+  ICON_CAVALRY,
+  ICON_CHEMICAL,
+  ICON_CIVIL_AFFAIRS,
+  ICON_COMBAT_ENGINEER,
+  ICON_ELECTRONIC_WARFARE,
+  ICON_ENGINEER,
+  ICON_HEADQUARTERS,
+  ICON_INFANTRY,
+  ICON_LIGHT_ARMOR,
+  ICON_LIGHT_INFANTRY,
+  ICON_MAINTENANCE,
+  ICON_MARINE_INFANTRY,
+  ICON_MECHANIZED_INFANTRY,
+  ICON_MEDICAL,
+  ICON_MILITARY_INTELLIGENCE,
+  ICON_MILITARY_POLICE,
+  ICON_MISSILE,
+  ICON_MORTAR,
+  ICON_MOTORIZED_INFANTRY,
+  ICON_MOUNTAIN_INFANTRY,
+  ICON_NAVAL,
+  ICON_PARACHUTE,
+  ICON_PSYCHOLOGICAL_OPS,
+  ICON_RECONNAISSANCE,
+  ICON_ROCKET_ARTILLERY,
+  ICON_SECURITY,
+  ICON_SELF_PROPELLED_ARTILLERY,
+  ICON_SIGNAL,
+  ICON_SNIPER,
+  ICON_SPECIAL_FORCES,
+  ICON_SUPPLY,
+  ICON_TRANSPORTATION,
   ICON_UNSPECIFIED,
+  parseTextToUnits,
 } from "./textToOrbat.ts";
 
 describe("getEchelonCodeFromName", () => {
@@ -546,6 +546,10 @@ describe("getIconCodeFromName", () => {
       expect(getIconCodeFromName("Howitzer Battery")).toBe(ICON_ARTILLERY);
       expect(getIconCodeFromName("Cannon Company")).toBe(ICON_ARTILLERY);
       expect(getIconCodeFromName("1st Art Bn")).toBe(ICON_ARTILLERY);
+      // shorthand 'RA' (e.g., "29 Cdo RA") should map to artillery
+      expect(getIconCodeFromName("29 Cdo RA")).toBe(ICON_ARTILLERY);
+      expect(getIconCodeFromName("29 Cdo R.A.")).toBe(ICON_ARTILLERY);
+      expect(getIconCodeFromName("RA Battery")).toBe(ICON_ARTILLERY);
     });
 
     it("detects self-propelled artillery", () => {
@@ -671,7 +675,7 @@ describe("getIconCodeFromName", () => {
 
     it("detects security units", () => {
       expect(getIconCodeFromName("Security Battalion")).toBe(ICON_SECURITY);
-      expect(getIconCodeFromName("Guard Company")).toBe(ICON_SECURITY);
+      expect(getIconCodeFromName("Guard Company")).toBe(ICON_INFANTRY);
       expect(getIconCodeFromName("Force Protection Platoon")).toBe(ICON_SECURITY);
     });
   });

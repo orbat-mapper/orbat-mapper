@@ -122,7 +122,7 @@ export const ICON_MOTORIZED_INFANTRY = "1211040000";
 export const ICON_LIGHT_INFANTRY = "1211000019";
 export const ICON_AIRBORNE_INFANTRY = "1211004700";
 export const ICON_AIR_ASSAULT_INFANTRY = "1211000100";
-export const ICON_MOUNTAIN_INFANTRY = "1211005200";
+export const ICON_MOUNTAIN_INFANTRY = "1211000027";
 export const ICON_MARINE_INFANTRY = "1211004600";
 export const ICON_ARMOR = "1205000000";
 export const ICON_LIGHT_ARMOR = "1205010000";
@@ -133,27 +133,27 @@ export const ICON_SELF_PROPELLED_ARTILLERY = "1303010000";
 export const ICON_ROCKET_ARTILLERY = "1303020000";
 export const ICON_AIR_DEFENSE = "1301000000";
 export const ICON_AVIATION = "1206000000";
-export const ICON_ATTACK_HELICOPTER = "1206020000";
+export const ICON_ATTACK_HELICOPTER = "1206000300";
 export const ICON_ENGINEER = "1407000000";
 export const ICON_COMBAT_ENGINEER = "1407010000";
 export const ICON_SIGNAL = "1110000000";
 export const ICON_SUPPLY = "1634000000";
 export const ICON_MAINTENANCE = "1611000000";
 export const ICON_MEDICAL = "1613000000";
-export const ICON_MILITARY_POLICE = "1414000000";
+export const ICON_MILITARY_POLICE = "1412000000";
 export const ICON_SPECIAL_FORCES = "1217000000";
 export const ICON_MISSILE = "1307000000";
 export const ICON_MORTAR = "1308000000";
 export const ICON_ANTITANK = "1204000000";
 export const ICON_TRANSPORTATION = "1636000000";
-export const ICON_HEADQUARTERS = "1100000000";
-export const ICON_CHEMICAL = "1403000000";
+export const ICON_HEADQUARTERS = "1800009800";
+export const ICON_CHEMICAL = "1401000000";
 export const ICON_NBC = "1403000000";
 export const ICON_ELECTRONIC_WARFARE = "1505000000";
 export const ICON_MILITARY_INTELLIGENCE = "1510000000";
 export const ICON_CIVIL_AFFAIRS = "1102000000";
 export const ICON_PSYCHOLOGICAL_OPS = "1106000000";
-export const ICON_NAVAL = "1500000000";
+export const ICON_NAVAL = "1701000000";
 export const ICON_AIR_FORCE = "1101000000";
 export const ICON_SNIPER = "1215000000";
 export const ICON_AMPHIBIOUS = "1202000000";
@@ -228,9 +228,15 @@ export const ICON_PATTERNS: { pattern: RegExp; code: string; label: string }[] =
     code: ICON_PARACHUTE,
     label: "Airborne/Parachute",
   },
+  // Treat 'RA' (R.A., Royal Artillery) as artillery even when abbreviated (e.g., "29 Cdo RA")
+  {
+    pattern: /\b(ra|R\.?A\.?|royal\s+artillery)\b/i,
+    code: ICON_ARTILLERY,
+    label: "Royal Artillery (RA)",
+  },
   {
     pattern:
-      /\b(marine\s*infantry|marines?|usmc|naval\s*infantry|seebataillon|marineinfanterie|royal\s*marines?)\b/i,
+      /\b(marine\s*infantry|marines?|usmc|naval\s*infantry|cdo|seebataillon|marineinfanterie|royal\s*marines?)\b/i,
     code: ICON_MARINE_INFANTRY,
     label: "Marine Infantry",
   },
@@ -399,6 +405,11 @@ export const ICON_PATTERNS: { pattern: RegExp; code: string; label: string }[] =
       /\b(military\s*police|mp|feldjäger|feldjaeger|gendarmerie|carabinieri|provost|pm)\b/i,
     code: ICON_MILITARY_POLICE,
     label: "Military Police",
+  },
+  {
+    pattern: /\b(guard|guards?)\b/i,
+    code: ICON_INFANTRY,
+    label: "Guards",
   },
   {
     pattern: /\b(security|guards?|wach|protection|force\s*protection|sec)\b/i,
