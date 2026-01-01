@@ -100,15 +100,23 @@
               />
             </div>
             <ul class="flex flex-col gap-4">
-              <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="shrink-0"
-                >Orbat chart test
-              </router-link>
               <router-link :to="{ name: TEXT_TO_ORBAT_ROUTE }" class="shrink-0"
                 >Text to ORBAT
               </router-link>
-              <router-link to="/storymode" class="">Story mode test</router-link>
-              <router-link to="/testgrid" class="">Test grid</router-link>
-              <router-link to="/testgrid2" class="">Tanstack Table Test grid</router-link>
+
+              <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="text-muted-foreground"
+                >Orbat chart test
+              </router-link>
+
+              <router-link to="/storymode" class="text-muted-foreground"
+                >Story mode test</router-link
+              >
+              <router-link to="/testgrid" class="text-muted-foreground"
+                >Test grid</router-link
+              >
+              <router-link to="/testgrid2" class="text-muted-foreground"
+                >Tanstack Table Test grid</router-link
+              >
             </ul>
           </div>
         </ProseSection>

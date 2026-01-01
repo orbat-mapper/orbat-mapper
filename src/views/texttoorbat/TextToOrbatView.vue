@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from "vue";
+import { computed, nextTick, onUnmounted, ref } from "vue";
 import {
   ArrowLeftIcon,
   BookOpenIcon,
@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { UseDark } from "@vueuse/components";
-import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
+import { breakpointsTailwind, useBreakpoints, useTitle } from "@vueuse/core";
 import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import IconBrowserModal from "@/views/texttoorbat/IconBrowserModal.vue";
@@ -22,6 +22,9 @@ import {
 } from "@/components/ui/resizable";
 
 import { INDENT_SIZE, parseTextToUnits } from "@/views/texttoorbat/textToOrbat.ts";
+
+const originalTitle = useTitle().value;
+useTitle("Text to ORBAT");
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("sm");
@@ -155,6 +158,10 @@ function handleShiftTab(event: KeyboardEvent) {
 }
 
 const parsedUnits = computed(() => parseTextToUnits(inputText.value));
+
+onUnmounted(() => {
+  useTitle(originalTitle);
+});
 </script>
 
 <template>
