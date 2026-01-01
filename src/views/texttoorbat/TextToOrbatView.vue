@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, nextTick } from "vue";
+import { computed, nextTick, ref } from "vue";
 import {
   ArrowLeftIcon,
-  MoonStarIcon,
-  SunIcon,
   BookOpenIcon,
   MapIcon,
+  MoonStarIcon,
+  SunIcon,
 } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,7 +21,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 
-import { parseTextToUnits, INDENT_SIZE } from "@/views/texttoorbat/textToOrbat.ts";
+import { INDENT_SIZE, parseTextToUnits } from "@/views/texttoorbat/textToOrbat.ts";
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("sm");
