@@ -10,51 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
-import {
-  ICON_AIR_ASSAULT_INFANTRY,
-  ICON_AIR_DEFENSE,
-  ICON_AIR_FORCE,
-  ICON_AIRBORNE_INFANTRY,
-  ICON_AMPHIBIOUS,
-  ICON_ANTITANK,
-  ICON_ARMOR,
-  ICON_ARTILLERY,
-  ICON_ATTACK_HELICOPTER,
-  ICON_AVIATION,
-  ICON_CAVALRY,
-  ICON_CHEMICAL,
-  ICON_CIVIL_AFFAIRS,
-  ICON_COMBAT_ENGINEER,
-  ICON_ELECTRONIC_WARFARE,
-  ICON_ENGINEER,
-  ICON_HEADQUARTERS,
-  ICON_INFANTRY,
-  ICON_LIGHT_ARMOR,
-  ICON_LIGHT_INFANTRY,
-  ICON_MAINTENANCE,
-  ICON_MARINE_INFANTRY,
-  ICON_MECHANIZED_INFANTRY,
-  ICON_MEDICAL,
-  ICON_MILITARY_INTELLIGENCE,
-  ICON_MILITARY_POLICE,
-  ICON_MISSILE,
-  ICON_MORTAR,
-  ICON_MOTORIZED_INFANTRY,
-  ICON_MOUNTAIN_INFANTRY,
-  ICON_NAVAL,
-  ICON_NBC,
-  ICON_PARACHUTE,
-  ICON_PSYCHOLOGICAL_OPS,
-  ICON_RECONNAISSANCE,
-  ICON_ROCKET_ARTILLERY,
-  ICON_SELF_PROPELLED_ARTILLERY,
-  ICON_SIGNAL,
-  ICON_SNIPER,
-  ICON_SPECIAL_FORCES,
-  ICON_SUPPLY,
-  ICON_TRANSPORTATION,
-  ICON_UNSPECIFIED,
-} from "@/views/texttoorbat/textToOrbat";
+import { ICON_CODE_TO_NAME, ICON_PATTERNS } from "@/views/texttoorbat/textToOrbat";
 
 const open = defineModel<boolean>({ default: false });
 const searchQuery = ref("");
@@ -65,134 +21,28 @@ interface IconEntry {
   sidc: string;
 }
 
-// Build SIDC from entity code
+// Build SIDC from entity code (same compact form used previously in this component)
 function buildSidc(entityCode: string): string {
-  // Format: [standard_identity][symbol_set][status][hq_task_force_dummy][echelon][entity_code_with_modifiers]
-  // 03 = friendly, 10 = land unit symbol set, 0 = present, 0 = not HQ/TF, 00 = unspecified echelon
+  // Format: version(2) context(1) standard_identity(1) symbol_set(2) status(1) hq/TF(1) echelon(2) entity(10)
+  // Use friendly standard identity and land unit symbol set with unspecified echelon
   return `1003${10}0000${entityCode}`;
 }
 
-const icons: IconEntry[] = [
-  { name: "Unspecified", code: "ICON_UNSPECIFIED", sidc: buildSidc(ICON_UNSPECIFIED) },
-  { name: "Infantry", code: "ICON_INFANTRY", sidc: buildSidc(ICON_INFANTRY) },
-  {
-    name: "Mechanized Infantry",
-    code: "ICON_MECHANIZED_INFANTRY",
-    sidc: buildSidc(ICON_MECHANIZED_INFANTRY),
-  },
-  {
-    name: "Motorized Infantry",
-    code: "ICON_MOTORIZED_INFANTRY",
-    sidc: buildSidc(ICON_MOTORIZED_INFANTRY),
-  },
-  {
-    name: "Light Infantry",
-    code: "ICON_LIGHT_INFANTRY",
-    sidc: buildSidc(ICON_LIGHT_INFANTRY),
-  },
-  {
-    name: "Airborne Infantry",
-    code: "ICON_AIRBORNE_INFANTRY",
-    sidc: buildSidc(ICON_AIRBORNE_INFANTRY),
-  },
-  {
-    name: "Air Assault Infantry",
-    code: "ICON_AIR_ASSAULT_INFANTRY",
-    sidc: buildSidc(ICON_AIR_ASSAULT_INFANTRY),
-  },
-  {
-    name: "Mountain Infantry",
-    code: "ICON_MOUNTAIN_INFANTRY",
-    sidc: buildSidc(ICON_MOUNTAIN_INFANTRY),
-  },
-  {
-    name: "Marine Infantry",
-    code: "ICON_MARINE_INFANTRY",
-    sidc: buildSidc(ICON_MARINE_INFANTRY),
-  },
-  { name: "Armor", code: "ICON_ARMOR", sidc: buildSidc(ICON_ARMOR) },
-  { name: "Light Armor", code: "ICON_LIGHT_ARMOR", sidc: buildSidc(ICON_LIGHT_ARMOR) },
-  { name: "Cavalry", code: "ICON_CAVALRY", sidc: buildSidc(ICON_CAVALRY) },
-  {
-    name: "Reconnaissance",
-    code: "ICON_RECONNAISSANCE",
-    sidc: buildSidc(ICON_RECONNAISSANCE),
-  },
-  { name: "Artillery", code: "ICON_ARTILLERY", sidc: buildSidc(ICON_ARTILLERY) },
-  {
-    name: "Self-Propelled Artillery",
-    code: "ICON_SELF_PROPELLED_ARTILLERY",
-    sidc: buildSidc(ICON_SELF_PROPELLED_ARTILLERY),
-  },
-  {
-    name: "Rocket Artillery",
-    code: "ICON_ROCKET_ARTILLERY",
-    sidc: buildSidc(ICON_ROCKET_ARTILLERY),
-  },
-  { name: "Air Defense", code: "ICON_AIR_DEFENSE", sidc: buildSidc(ICON_AIR_DEFENSE) },
-  { name: "Aviation", code: "ICON_AVIATION", sidc: buildSidc(ICON_AVIATION) },
-  {
-    name: "Attack Helicopter",
-    code: "ICON_ATTACK_HELICOPTER",
-    sidc: buildSidc(ICON_ATTACK_HELICOPTER),
-  },
-  { name: "Engineer", code: "ICON_ENGINEER", sidc: buildSidc(ICON_ENGINEER) },
-  {
-    name: "Combat Engineer",
-    code: "ICON_COMBAT_ENGINEER",
-    sidc: buildSidc(ICON_COMBAT_ENGINEER),
-  },
-  { name: "Signal", code: "ICON_SIGNAL", sidc: buildSidc(ICON_SIGNAL) },
-  { name: "Supply", code: "ICON_SUPPLY", sidc: buildSidc(ICON_SUPPLY) },
-  { name: "Maintenance", code: "ICON_MAINTENANCE", sidc: buildSidc(ICON_MAINTENANCE) },
-  { name: "Medical", code: "ICON_MEDICAL", sidc: buildSidc(ICON_MEDICAL) },
-  {
-    name: "Military Police",
-    code: "ICON_MILITARY_POLICE",
-    sidc: buildSidc(ICON_MILITARY_POLICE),
-  },
-  {
-    name: "Special Forces",
-    code: "ICON_SPECIAL_FORCES",
-    sidc: buildSidc(ICON_SPECIAL_FORCES),
-  },
-  { name: "Missile", code: "ICON_MISSILE", sidc: buildSidc(ICON_MISSILE) },
-  { name: "Mortar", code: "ICON_MORTAR", sidc: buildSidc(ICON_MORTAR) },
-  { name: "Antitank", code: "ICON_ANTITANK", sidc: buildSidc(ICON_ANTITANK) },
-  {
-    name: "Transportation",
-    code: "ICON_TRANSPORTATION",
-    sidc: buildSidc(ICON_TRANSPORTATION),
-  },
-  { name: "Headquarters", code: "ICON_HEADQUARTERS", sidc: buildSidc(ICON_HEADQUARTERS) },
-  { name: "Chemical", code: "ICON_CHEMICAL", sidc: buildSidc(ICON_CHEMICAL) },
-  { name: "NBC", code: "ICON_NBC", sidc: buildSidc(ICON_NBC) },
-  {
-    name: "Electronic Warfare",
-    code: "ICON_ELECTRONIC_WARFARE",
-    sidc: buildSidc(ICON_ELECTRONIC_WARFARE),
-  },
-  {
-    name: "Military Intelligence",
-    code: "ICON_MILITARY_INTELLIGENCE",
-    sidc: buildSidc(ICON_MILITARY_INTELLIGENCE),
-  },
-  {
-    name: "Civil Affairs",
-    code: "ICON_CIVIL_AFFAIRS",
-    sidc: buildSidc(ICON_CIVIL_AFFAIRS),
-  },
-  {
-    name: "Psychological Operations",
-    code: "ICON_PSYCHOLOGICAL_OPS",
-    sidc: buildSidc(ICON_PSYCHOLOGICAL_OPS),
-  },
-  { name: "Naval", code: "ICON_NAVAL", sidc: buildSidc(ICON_NAVAL) },
-  { name: "Air Force", code: "ICON_AIR_FORCE", sidc: buildSidc(ICON_AIR_FORCE) },
-  { name: "Sniper", code: "ICON_SNIPER", sidc: buildSidc(ICON_SNIPER) },
-  { name: "Amphibious", code: "ICON_AMPHIBIOUS", sidc: buildSidc(ICON_AMPHIBIOUS) },
-  { name: "Parachute", code: "ICON_PARACHUTE", sidc: buildSidc(ICON_PARACHUTE) },
-];
+function friendlyNameFromVar(varName: string) {
+  return varName
+    .replace(/^ICON_/, "")
+    .split("_")
+    .map((w) => w[0] + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
+const icons: IconEntry[] = Object.entries(ICON_CODE_TO_NAME)
+  .map(([entityCode, varName]) => {
+    const patternLabel = ICON_PATTERNS.find((p) => p.code === entityCode)?.label;
+    const name = patternLabel ?? friendlyNameFromVar(varName);
+    return { name, code: varName, sidc: buildSidc(entityCode) } as IconEntry;
+  })
+  .sort((a, b) => a.name.localeCompare(b.name));
 
 const filteredIcons = computed(() => {
   const query = searchQuery.value.toLowerCase().trim();

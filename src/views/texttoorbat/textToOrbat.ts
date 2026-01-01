@@ -1,4 +1,9 @@
 import { nanoid } from "nanoid";
+import {
+  makeSpatialIllusionsNode,
+  type SpatialIllusionsOrbat,
+} from "@/types/externalModels";
+import type { Scenario, Side, SideGroup, Unit } from "@/types/scenarioModels";
 
 export interface ParsedUnit {
   id: string;
@@ -650,4 +655,79 @@ export function parseTextToUnits(text: string): ParsedUnit[] {
   }
 
   return result;
+}
+
+export function convertParsedUnitToSpatialIllusions(
+  unit: ParsedUnit,
+): SpatialIllusionsOrbat {
+  const subOrganizations = unit.children.map((child) =>
+    convertParsedUnitToSpatialIllusions(child),
+  );
+  return makeSpatialIllusionsNode(
+    {
+      uniqueDesignation: unit.name,
+      sidc: unit.sidc,
+    },
+    subOrganizations,
+  );
+}
+
+export function convertParsedUnitsToSpatialIllusions(
+  units: ParsedUnit[],
+): SpatialIllusionsOrbat {
+  if (units.length === 0) {
+    return makeSpatialIllusionsNode({
+      uniqueDesignation: "ORBAT",
+      sidc: "10031000001211000000",
+    });
+  }
+
+  // Spatial Illusions only supports a single root unit
+  return convertParsedUnitToSpatialIllusions(units[0]);
+}
+
+function convertParsedUnitToOrbatMapperUnit(unit: ParsedUnit): Unit {
+  return {
+    id: unit.id,
+    name: unit.name,
+    sidc: unit.sidc,
+    subUnits: unit.children.map((child) => convertParsedUnitToOrbatMapperUnit(child)),
+  };
+}
+
+export function convertParsedUnitsToOrbatMapperScenario(units: ParsedUnit[]): Scenario {
+  const scenarioId = nanoid();
+  const now = new Date().toISOString();
+
+  const subUnits = units.map((unit) => convertParsedUnitToOrbatMapperUnit(unit));
+
+  const friendlyGroup: SideGroup = {
+    id: nanoid(),
+    name: "Units",
+    subUnits,
+  };
+
+  const friendlySide: Side = {
+    id: nanoid(),
+    name: "Friendly",
+    standardIdentity: "3",
+    groups: [friendlyGroup],
+  };
+
+  const scenario: Scenario = {
+    type: "ORBAT-mapper",
+    id: scenarioId,
+    version: "2.0.0",
+    meta: {
+      createdDate: now,
+      lastModifiedDate: now,
+    },
+    name: "Text to ORBAT Scenario",
+    sides: [friendlySide],
+    events: [],
+    layers: [],
+    mapLayers: [],
+  };
+
+  return scenario;
 }

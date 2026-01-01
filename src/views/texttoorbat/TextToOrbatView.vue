@@ -1,14 +1,23 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import {
   ArrowLeftIcon,
   BookOpenIcon,
+  DownloadIcon,
+  ExternalLinkIcon,
   MapIcon,
   MoonStarIcon,
   SunIcon,
 } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { UseDark } from "@vueuse/components";
 import { breakpointsTailwind, useBreakpoints, useTitle } from "@vueuse/core";
 import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
@@ -21,7 +30,17 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 
-import { INDENT_SIZE, parseTextToUnits } from "@/views/texttoorbat/textToOrbat.ts";
+import {
+  convertParsedUnitsToOrbatMapperScenario,
+  convertParsedUnitsToSpatialIllusions,
+  INDENT_SIZE,
+  parseTextToUnits,
+} from "@/views/texttoorbat/textToOrbat.ts";
+import { useNotifications } from "@/composables/notifications";
+import { saveBlobToLocalFile } from "@/utils/files";
+import { useScenario } from "@/scenariostore";
+import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
+import { useIndexedDb } from "@/scenariostore/localdb";
 
 const originalTitle = useTitle().value;
 useTitle("Text to ORBAT");
@@ -32,6 +51,7 @@ const isMobile = breakpoints.smallerOrEqual("sm");
 const showDebug = ref(false);
 const showIconBrowser = ref(false);
 const showPatternMapping = ref(false);
+const isOpeningScenario = ref(false);
 
 const inputText = ref(
   "1st Infantry Division\n" +
@@ -158,6 +178,92 @@ function handleShiftTab(event: KeyboardEvent) {
 }
 
 const parsedUnits = computed(() => parseTextToUnits(inputText.value));
+const spatialIllusionsOrbat = computed(() =>
+  convertParsedUnitsToSpatialIllusions(parsedUnits.value),
+);
+const orbatMapperScenario = computed(() =>
+  convertParsedUnitsToOrbatMapperScenario(parsedUnits.value),
+);
+const { send: sendNotification } = useNotifications();
+const router = useRouter();
+const { scenario } = useScenario();
+
+async function handleDownloadSpatialIllusions() {
+  if (parsedUnits.value.length === 0) {
+    return;
+  }
+
+  try {
+    const payload = spatialIllusionsOrbat.value;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    await saveBlobToLocalFile(blob, "spatial-illusions-orbat.json", {
+      mimeTypes: ["application/json"],
+      extensions: [".json"],
+    });
+    sendNotification({ message: "Spatial Illusions JSON ready for download" });
+  } catch (error) {
+    sendNotification({
+      message: "Failed to download Spatial Illusions JSON",
+      type: "error",
+    });
+    console.error(error);
+  }
+}
+
+async function handleDownloadOrbatMapperScenario() {
+  if (parsedUnits.value.length === 0) {
+    return;
+  }
+
+  try {
+    const payload = orbatMapperScenario.value;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    await saveBlobToLocalFile(blob, "orbat-mapper-scenario.json", {
+      mimeTypes: ["application/json"],
+      extensions: [".json"],
+    });
+    sendNotification({ message: "ORBAT Mapper scenario ready for download" });
+  } catch (error) {
+    sendNotification({
+      message: "Failed to download ORBAT Mapper scenario",
+      type: "error",
+    });
+    console.error(error);
+  }
+}
+
+async function handleOpenScenario() {
+  if (parsedUnits.value.length === 0 || isOpeningScenario.value) {
+    return;
+  }
+
+  isOpeningScenario.value = true;
+
+  try {
+    const payload = orbatMapperScenario.value;
+    scenario.value.io.loadFromObject(payload);
+    scenario.value.store.clearUndoRedoStack?.();
+
+    const { addScenario } = await useIndexedDb();
+    const storedScenario = scenario.value.io.serializeToObject();
+    const scenarioId = await addScenario(storedScenario, storedScenario.id);
+
+    await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
+    sendNotification({ message: "Scenario opened in editor" });
+  } catch (error) {
+    sendNotification({
+      message: "Failed to open scenario",
+      type: "error",
+    });
+    console.error(error);
+  } finally {
+    isOpeningScenario.value = false;
+  }
+}
 
 onUnmounted(() => {
   useTitle(originalTitle);
@@ -197,9 +303,32 @@ onUnmounted(() => {
           <div class="bg-muted/50 border-b px-4 py-2">
             <h2 class="text-muted-foreground text-sm font-medium">Text Input</h2>
             <p class="text-muted-foreground mt-1 text-xs">
-              Enter unit hierarchy using indentation. Each line is a unit name. Use tabs
-              or spaces to indicate parent-child relationships.
+              Enter unit hierarchy using indentation.
+              <span class="hidden sm:inline"
+                >Each line is a unit name. Use tabs or spaces to indicate parent-child
+                relationships</span
+              >.
             </p>
+            <div class="mt-2 flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                @click="showPatternMapping = true"
+                title="View pattern mappings"
+              >
+                <MapIcon class="mr-1 size-4" />
+                Patterns
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                @click="showIconBrowser = true"
+                title="Browse icon codes"
+              >
+                <BookOpenIcon class="mr-1 size-4" />
+                Icons
+              </Button>
+            </div>
           </div>
           <Textarea
             v-model="inputText"
@@ -233,23 +362,36 @@ onUnmounted(() => {
             </div>
             <div class="flex items-center gap-2">
               <Button
-                variant="ghost"
                 size="sm"
-                @click="showPatternMapping = true"
-                title="View pattern mappings"
+                :disabled="parsedUnits.length === 0 || isOpeningScenario"
+                @click="handleOpenScenario"
+                title="Open in Scenario Editor"
               >
-                <MapIcon class="mr-1 size-4" />
-                Patterns
+                <ExternalLinkIcon class="mr-1 size-4" />
+                Open
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                @click="showIconBrowser = true"
-                title="Browse icon codes"
-              >
-                <BookOpenIcon class="mr-1 size-4" />
-                Icons
-              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    :disabled="parsedUnits.length === 0"
+                    title="Download ORBAT formats"
+                  >
+                    <DownloadIcon class="mr-1 size-4" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem @click="handleDownloadSpatialIllusions">
+                    Battle Staff Tools JSON
+                  </DropdownMenuItem>
+                  <DropdownMenuItem @click="handleDownloadOrbatMapperScenario">
+                    ORBAT Mapper Scenario
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <ToggleField v-model="showDebug">Debug info</ToggleField>
             </div>
           </div>

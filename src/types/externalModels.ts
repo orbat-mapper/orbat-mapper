@@ -33,3 +33,14 @@ export const reinforcedStatus2SpatialIllusions = {
   ReinforcedReduced: "(±)",
   None: undefined,
 };
+
+export function makeSpatialIllusionsNode(
+  options: SpatialIllusionsOptions,
+  subOrganizations: SpatialIllusionsOrbat[] = [],
+): SpatialIllusionsOrbat {
+  const node: SpatialIllusionsOrbat = { options };
+  if (subOrganizations.length > 0) {
+    node.subOrganizations = subOrganizations;
+  }
+  return node;
+}
