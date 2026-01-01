@@ -11,10 +11,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
-import { ECHELON_PATTERNS, ICON_PATTERNS } from "@/views/texttoorbat/textToOrbat";
+import {
+  ECHELON_PATTERNS,
+  ICON_CODE_TO_NAME,
+  ICON_PATTERNS,
+} from "@/views/texttoorbat/textToOrbat";
+import ToggleField from "@/components/ToggleField.vue";
 
 const open = defineModel<boolean>({ default: false });
 const searchQuery = ref("");
+const showDebug = ref(false);
 
 // Build SIDC for icon patterns (using battalion echelon for display)
 function buildIconSidc(entityCode: string): string {
@@ -55,6 +61,8 @@ interface PatternEntry {
   keywords: string[];
   sidc: string;
   originalPattern: string;
+  constantName?: string;
+  code?: string;
 }
 
 const echelonEntries = computed<PatternEntry[]>(() => {
@@ -72,6 +80,8 @@ const iconEntries = computed<PatternEntry[]>(() => {
     keywords: extractKeywords(p.pattern),
     sidc: buildIconSidc(p.code),
     originalPattern: p.pattern.source,
+    constantName: ICON_CODE_TO_NAME[p.code],
+    code: p.code,
   }));
 });
 
@@ -107,12 +117,15 @@ const filteredIconEntries = computed(() => {
       </DialogHeader>
 
       <div class="space-y-4">
-        <Input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search patterns..."
-          class="w-full"
-        />
+        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <Input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search patterns..."
+            class="w-full md:max-w-sm"
+          />
+          <ToggleField v-model="showDebug">Show debug details</ToggleField>
+        </div>
 
         <Tabs default-value="icons" class="w-full">
           <TabsList class="grid w-full grid-cols-2">
@@ -149,7 +162,25 @@ const filteredIconEntries = computed(() => {
                         />
                       </div>
                     </td>
-                    <td class="p-2">{{ entry.label }}</td>
+                    <td class="p-2">
+                      <div class="flex flex-col gap-0.5">
+                        <span>{{ entry.label }}</span>
+                        <template v-if="showDebug">
+                          <span
+                            v-if="entry.constantName"
+                            class="text-muted-foreground text-sm"
+                          >
+                            {{ entry.constantName }}
+                          </span>
+                          <span
+                            v-if="entry.code"
+                            class="text-muted-foreground font-mono text-sm tracking-wider"
+                          >
+                            {{ entry.code }}
+                          </span>
+                        </template>
+                      </div>
+                    </td>
                     <td class="p-2">
                       <div class="flex flex-wrap gap-1">
                         <span
@@ -188,7 +219,7 @@ const filteredIconEntries = computed(() => {
                         <NewMilitarySymbol
                           :sidc="entry.sidc"
                           :size="35"
-                          :options="{ outlineWidth: 6, outlineColor: 'white' }"
+                          :options="{ outlineWidth: 8, outlineColor: 'white' }"
                         />
                       </div>
                     </td>
