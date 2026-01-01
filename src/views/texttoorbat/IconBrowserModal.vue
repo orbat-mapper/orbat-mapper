@@ -209,7 +209,7 @@ const filteredIcons = computed(() => {
 
 <template>
   <Dialog v-model:open="open">
-    <DialogContent class="max-w-3xl">
+    <DialogContent class="md:max-w-3xl">
       <DialogHeader>
         <DialogTitle>Icon mappings</DialogTitle>
         <DialogDescription>
@@ -225,7 +225,7 @@ const filteredIcons = computed(() => {
           class="w-full"
         />
 
-        <div class="grid max-h-96 grid-cols-2 gap-4 overflow-y-auto md:grid-cols-2">
+        <div class="grid max-h-[60vh] grid-cols-2 gap-4 overflow-y-auto md:grid-cols-3">
           <div
             v-for="icon in filteredIcons"
             :key="icon.code"
