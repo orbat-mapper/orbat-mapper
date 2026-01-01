@@ -138,8 +138,8 @@ const filteredIconEntries = computed(() => {
           </TabsList>
 
           <TabsContent value="icons" class="mt-4">
-            <div class="max-h-[60vh] overflow-y-auto">
-              <table class="w-full text-sm">
+            <div class="max-h-[45vh] overflow-y-auto sm:max-h-[60vh]">
+              <table class="w-full table-fixed text-sm md:table-auto">
                 <thead class="bg-muted sticky top-0">
                   <tr>
                     <th class="p-2 text-left font-medium">Symbol</th>
@@ -162,19 +162,19 @@ const filteredIconEntries = computed(() => {
                         />
                       </div>
                     </td>
-                    <td class="p-2">
+                    <td class="min-w-0 p-2">
                       <div class="flex flex-col gap-0.5">
                         <span>{{ entry.label }}</span>
                         <template v-if="showDebug">
                           <span
                             v-if="entry.constantName"
-                            class="text-muted-foreground text-sm"
+                            class="text-muted-foreground text-xs wrap-break-word whitespace-normal"
                           >
                             {{ entry.constantName }}
                           </span>
                           <span
                             v-if="entry.code"
-                            class="text-muted-foreground font-mono text-sm tracking-wider"
+                            class="text-muted-foreground font-mono text-xs tracking-wider break-all whitespace-normal"
                           >
                             {{ entry.code }}
                           </span>
@@ -199,12 +199,12 @@ const filteredIconEntries = computed(() => {
           </TabsContent>
 
           <TabsContent value="echelons" class="mt-4">
-            <div class="max-h-96 overflow-y-auto">
-              <table class="w-full text-sm">
+            <div class="max-h-96 overflow-x-auto overflow-y-auto">
+              <table class="w-full table-fixed text-sm">
                 <thead class="bg-muted sticky top-0">
                   <tr>
                     <th class="p-2 text-left font-medium">Symbol</th>
-                    <th class="p-2 text-left font-medium">Echelon</th>
+                    <th class="w-1/3 p-2 text-left font-medium">Echelon</th>
                     <th class="p-2 text-left font-medium">Recognized Keywords</th>
                   </tr>
                 </thead>
@@ -223,7 +223,7 @@ const filteredIconEntries = computed(() => {
                         />
                       </div>
                     </td>
-                    <td class="p-2">{{ entry.label }}</td>
+                    <td class="min-w-0 p-2">{{ entry.label }}</td>
                     <td class="p-2">
                       <div class="flex flex-wrap gap-1">
                         <span
