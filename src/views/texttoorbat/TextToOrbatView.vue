@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from "vue";
-import { ArrowLeftIcon, MoonStarIcon, SunIcon, BookOpenIcon } from "lucide-vue-next";
+import {
+  ArrowLeftIcon,
+  MoonStarIcon,
+  SunIcon,
+  BookOpenIcon,
+  MapIcon,
+} from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { UseDark } from "@vueuse/components";
@@ -8,6 +14,7 @@ import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import IconBrowserModal from "@/views/texttoorbat/IconBrowserModal.vue";
+import PatternMappingModal from "@/views/texttoorbat/PatternMappingModal.vue";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -21,6 +28,7 @@ const isMobile = breakpoints.smallerOrEqual("sm");
 
 const showDebug = ref(false);
 const showIconBrowser = ref(false);
+const showPatternMapping = ref(false);
 
 const inputText = ref(
   "1st Infantry Division\n" +
@@ -220,6 +228,15 @@ const parsedUnits = computed(() => parseTextToUnits(inputText.value));
               <Button
                 variant="ghost"
                 size="sm"
+                @click="showPatternMapping = true"
+                title="View pattern mappings"
+              >
+                <MapIcon class="mr-1 size-4" />
+                Patterns
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 @click="showIconBrowser = true"
                 title="Browse icon codes"
               >
@@ -251,4 +268,5 @@ const parsedUnits = computed(() => parseTextToUnits(inputText.value));
   </div>
 
   <IconBrowserModal v-model="showIconBrowser" />
+  <PatternMappingModal v-model="showPatternMapping" />
 </template>
