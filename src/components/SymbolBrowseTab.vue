@@ -98,7 +98,7 @@
           >
             <MilSymbol :size="symbolSize" :sidc="sidc" :modifiers="symbolOptions" />
             <p
-              class="mt-1 max-w-full overflow-hidden text-center text-sm wrap-break-word text-gray-900"
+              class="mt-1 max-w-full overflow-hidden text-center text-sm wrap-break-word"
             >
               {{ text }}
             </p>
