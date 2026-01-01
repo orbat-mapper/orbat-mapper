@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from "vue";
-import { ArrowLeftIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
+import { ArrowLeftIcon, MoonStarIcon, SunIcon, BookOpenIcon } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { UseDark } from "@vueuse/components";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
 import ToggleField from "@/components/ToggleField.vue";
+import IconBrowserModal from "@/views/texttoorbat/IconBrowserModal.vue";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -19,6 +20,7 @@ const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("sm");
 
 const showDebug = ref(false);
+const showIconBrowser = ref(false);
 
 const inputText = ref(
   "1st Infantry Division\n" +
@@ -214,7 +216,18 @@ const parsedUnits = computed(() => parseTextToUnits(inputText.value));
                 {{ parsedUnits.length }} top-level unit(s)
               </p>
             </div>
-            <ToggleField v-model="showDebug">Debug info</ToggleField>
+            <div class="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                @click="showIconBrowser = true"
+                title="Browse icon codes"
+              >
+                <BookOpenIcon class="mr-1 size-4" />
+                Icons
+              </Button>
+              <ToggleField v-model="showDebug">Debug info</ToggleField>
+            </div>
           </div>
           <div class="flex-1 overflow-y-auto p-4">
             <div
@@ -236,4 +249,6 @@ const parsedUnits = computed(() => parseTextToUnits(inputText.value));
       </ResizablePanel>
     </ResizablePanelGroup>
   </div>
+
+  <IconBrowserModal v-model="showIconBrowser" />
 </template>
