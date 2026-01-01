@@ -33,12 +33,12 @@ const showPatternMapping = ref(false);
 const inputText = ref(
   "1st Infantry Division\n" +
     "  1st Brigade\n" +
-    "    1st Battalion\n" +
-    "    2nd Battalion\n" +
-    "  2nd Brigade\n" +
-    "    3rd Battalion\n" +
-    "    4th Battalion\n" +
-    "  Artillery Regiment",
+    "    1st Tank Battalion\n" +
+    "    2nd Art Battalion\n" +
+    "  2nd Cdo Btn\n" +
+    "    3rd RA\n" +
+    "    4th Eng \n" +
+    "  Artillery Coy",
 );
 
 // Indentation configuration: number of spaces to insert for a tab (from utils)
