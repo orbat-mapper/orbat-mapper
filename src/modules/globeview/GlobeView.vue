@@ -7,15 +7,18 @@ import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
 import { useIndexedDb } from "@/scenariostore/localdb.ts";
 import { Button } from "@/components/ui/button";
 import { GLOBE_ROUTE } from "@/router/names.ts";
-import { useFps } from "@vueuse/core";
+import { ArrowLeftIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
+import { UseDark } from "@vueuse/components";
+import ToggleField from "@/components/ToggleField.vue";
+import FpsDisplay from "@/components/FpsDisplay.vue";
 
 const LoadScenarioDialog = defineAsyncComponent(
   () => import("../scenarioeditor/LoadScenarioDialog.vue"),
 );
 
 const props = defineProps<{ scenarioId: string }>();
-const fps = useFps();
 const { scenario, isReady } = useScenario();
+const showDebug = ref(false);
 const showLoadScenarioDialog = ref(false);
 const localReady = ref(false);
 const mlMap = shallowRef<MlMap>();
@@ -60,17 +63,36 @@ watch(isReady, (newVal) => {
 });
 </script>
 <template>
-  <div class="flex h-full w-full flex-col">
-    <header class="bg-background flex shrink-0 items-center gap-2">
-      <h1 class="p-2 text-base font-bold">Globe View (experiment)</h1>
-      <Button @click="showLoadScenarioDialog = true" variant="outline"
-        >Load scenario</Button
-      >
-      <Button variant="link" asChild><router-link to="/">Back</router-link></Button>
+  <div class="bg-background flex h-full w-full flex-col">
+    <header class="bg-muted flex items-center justify-between border-b px-4 py-2">
+      <div class="flex items-center gap-4">
+        <router-link to="/" class="text-muted-foreground hover:text-foreground">
+          <ArrowLeftIcon class="size-5" />
+        </router-link>
+        <h1 class="text-lg font-semibold">Globe View</h1>
+        <span
+          class="rounded bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400"
+          >Experimental</span
+        >
+        <Button @click="showLoadScenarioDialog = true" variant="outline"
+          >Load Scenario</Button
+        >
+      </div>
+      <div class="flex items-center gap-4">
+        <FpsDisplay v-if="showDebug" />
+        <div id="globetoolbar"></div>
+        <ToggleField v-model="showDebug">Debug</ToggleField>
 
-      <!-- FPS indicator, placed to the right -->
-      <div class="text-muted-foreground text-sm" title="Frames per second">
-        FPS: {{ fps }}
+        <UseDark v-slot="{ isDark, toggleDark }">
+          <Button
+            variant="ghost"
+            size="icon"
+            @click="toggleDark()"
+            title="Toggle dark mode"
+          >
+            <SunIcon v-if="isDark" /><MoonStarIcon v-else />
+          </Button>
+        </UseDark>
       </div>
     </header>
     <div class="relative flex-auto">
