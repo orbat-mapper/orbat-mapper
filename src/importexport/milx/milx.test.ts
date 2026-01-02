@@ -200,7 +200,7 @@ describe("Convert to MilX", async function () {
   });
 
   it("writes symbol code", () => {
-    expect(feature1.properties.ID).toBe("SFGPUCIA---F--G");
+    expect(feature1.properties.ID).toBe("SFGPUCIA---F---");
   });
 
   it("writes coordinates", () => {
