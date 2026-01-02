@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { type GeoJSONSource, type Map as MlMap } from "maplibre-gl";
+import { type GeoJSONSource, type MapStyleImageMissingEvent, type Map as MlMap } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
-import { onMounted, onUnmounted, provide, watch } from "vue";
+import { onUnmounted, provide, watch } from "vue";
 import type { Feature } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
@@ -22,9 +22,9 @@ provide(activeScenarioKey, activeScenario);
 const { unitActions } = activeScenario;
 
 const symbolCache: Map<string, Record<string, any>> = new Map();
+const usedImageIds = new Set<string>();
 
 const playback = usePlaybackStore();
-
 function setupMapLayers() {
   !mlMap.getSource("unitSource") &&
     mlMap.addSource("unitSource", {
@@ -55,29 +55,33 @@ function setupMapLayers() {
         "text-field": ["get", "label"],
       },
     });
-  mlMap.on("styleimagemissing", function (e) {
-    const isSelected = e.id.startsWith("sel-");
-    const symbolCode = isSelected ? e.id.slice(4) : e.id;
 
-    const { sidc = "xxxxxxx", symbolOptions = {} } = symbolCache.get(symbolCode) ?? {};
+  mlMap.on("styleimagemissing", styleImageMissing);
+}
 
-    const options = isSelected
-      ? { outlineWidth: 20, outlineColor: "yellow" }
-      : { outlineWidth: 7, outlineColor: "white" };
-    const symb = symbolGenerator(sidc, {
-      size: 25,
-      ...options,
-      ...symbolOptions,
-    });
-    const { width, height } = symb.getSize();
-    const data = symb
-      .asCanvas(2)
-      ?.getContext("2d")
-      ?.getImageData(0, 0, 2 * width, 2 * height);
-    if (data && !mlMap.hasImage(e.id)) {
-      mlMap.addImage(e.id, data, { pixelRatio: 2 });
-    }
+function styleImageMissing(e: MapStyleImageMissingEvent) {
+  const isSelected = e.id.startsWith("sel-");
+  const symbolCode = isSelected ? e.id.slice(4) : e.id;
+
+  const { sidc = "xxxxxxx", symbolOptions = {} } = symbolCache.get(symbolCode) ?? {};
+
+  const options = isSelected
+    ? { outlineWidth: 20, outlineColor: "yellow" }
+    : { outlineWidth: 7, outlineColor: "white" };
+  const symb = symbolGenerator(sidc, {
+    size: 25,
+    ...options,
+    ...symbolOptions,
   });
+  const { width, height } = symb.getSize();
+  const data = symb
+    .asCanvas(2)
+    ?.getContext("2d")
+    ?.getImageData(0, 0, 2 * width, 2 * height);
+  if (data) {
+    mlMap.addImage(e.id, data, { pixelRatio: 2 });
+    usedImageIds.add(e.id);
+  }
 }
 
 setupMapLayers();
@@ -132,20 +136,9 @@ function addUnits(initial = false) {
   source.setData(features);
 }
 
-onMounted(() => {
-  console.log("Loaded with ", activeScenario.store.state.info.name);
-});
-
 onUnmounted(() => {
-  // if (!mlMap) return;
-  // const layer = mlMap?.getLayer("unitLayer");
-  // if (layer) {
-  //   mlMap.removeLayer("unitLayer");
-  // }
-  // const source = mlMap?.getSource("unitSource") as GeoJSONSource;
-  // if (source) {
-  //   mlMap.removeSource("unitSource");
-  // }
+  if (!mlMap) return;
+  mlMap.off("styleimagemissing", styleImageMissing);
 });
 
 const { pause, resume, isActive } = useRafFn(

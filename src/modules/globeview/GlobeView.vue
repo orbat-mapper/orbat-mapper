@@ -2,13 +2,14 @@
 import MaplibreMap from "@/modules/globeview/MaplibreMap.vue";
 import { useScenario } from "@/scenariostore";
 import type { Map as MlMap } from "maplibre-gl";
-import { defineAsyncComponent, ref, shallowRef, watch } from "vue";
+import { defineAsyncComponent, ref, shallowRef, watch, onUnmounted } from "vue";
 import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
 import { useIndexedDb } from "@/scenariostore/localdb.ts";
 import { Button } from "@/components/ui/button";
 import { GLOBE_ROUTE } from "@/router/names.ts";
 import { ArrowLeftIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
 import { UseDark } from "@vueuse/components";
+import { useTitle } from "@vueuse/core";
 import ToggleField from "@/components/ToggleField.vue";
 import FpsDisplay from "@/components/FpsDisplay.vue";
 
@@ -18,6 +19,8 @@ const LoadScenarioDialog = defineAsyncComponent(
 
 const props = defineProps<{ scenarioId: string }>();
 const { scenario, isReady } = useScenario();
+const originalTitle = useTitle().value;
+useTitle("Globe View");
 const showDebug = ref(false);
 const showLoadScenarioDialog = ref(false);
 const localReady = ref(false);
@@ -56,10 +59,14 @@ function isDemoScenario(scenarioId: string) {
 
 watch(isReady, (newVal) => {
   if (newVal) {
-    console.log("Scenario is ready:", scenario.value);
+    console.log("Scenario is ready" );
   } else {
     console.log("Scenario is not ready yet");
   }
+});
+
+onUnmounted(() => {
+  useTitle(originalTitle);
 });
 </script>
 <template>
