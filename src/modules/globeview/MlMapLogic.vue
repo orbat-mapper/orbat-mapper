@@ -180,5 +180,5 @@ watch(
 );
 </script>
 <template>
-  <div class="fixed top-0 right-0"><PlaybackMenu /></div>
+  <Teleport to="#globetoolbar"><PlaybackMenu /></Teleport>
 </template>
