@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { computed, defineComponent } from "vue";
 import { nanoid } from "nanoid";
 import { Textarea } from "@/components/ui/textarea/index.js";

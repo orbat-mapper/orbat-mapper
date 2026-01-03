@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { XIcon } from "lucide-vue-next";
 import { Button } from "@/components/ui/button/index";
 </script>
