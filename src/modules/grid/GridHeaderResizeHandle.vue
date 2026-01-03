@@ -1,16 +1,3 @@
-<template>
-  <div
-    ref="el"
-    role="separator"
-    class="absolute top-0 right-0 h-full w-4 cursor-col-resize hover:bg-red-100 sm:w-2"
-    :class="{ border: isDragging }"
-    @click.stop
-    @pointerdown="onPointerDown"
-    @pointerup="onPointerUp"
-    @pointermove="throttledOnPointerMove"
-  ></div>
-</template>
-
 <script setup lang="ts">
 import { ref, unref } from "vue";
 import { useThrottleFn } from "@vueuse/core";
@@ -45,3 +32,16 @@ function onPointerMove(evt: PointerEvent) {
 
 const throttledOnPointerMove = useThrottleFn(onPointerMove, 10);
 </script>
+
+<template>
+  <div
+    ref="el"
+    role="separator"
+    class="absolute top-0 right-0 h-full w-4 cursor-col-resize hover:bg-red-100 sm:w-2"
+    :class="{ border: isDragging }"
+    @click.stop
+    @pointerdown="onPointerDown"
+    @pointerup="onPointerUp"
+    @pointermove="throttledOnPointerMove"
+  ></div>
+</template>

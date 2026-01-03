@@ -1,73 +1,3 @@
-<template>
-  <div class="relative flex min-h-0 flex-auto">
-    <ResizablePanel
-      v-model:width="panelWidth"
-      class="relative z-10 flex h-full flex-col justify-between overflow-auto overflow-visible border-r-2 bg-gray-100 dark:bg-gray-900 print:hidden"
-    >
-      <TabGroup :selected-index="selectedTab" @change="changeTab">
-        <TabList class="-mb-px flex border-b border-gray-200">
-          <Tab
-            as="template"
-            v-for="tab in ['ORBAT', 'Chart settings']"
-            :key="tab"
-            v-slot="{ selected }"
-          >
-            <button
-              :class="[
-                selected
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                'w-1/2 border-b-2 px-1 py-4 text-center text-sm font-medium',
-              ]"
-            >
-              {{ tab }}
-            </button>
-          </Tab>
-        </TabList>
-        <TabPanels class="min-h-0 flex-auto overflow-auto">
-          <TabPanel :unmount="false">
-            <OrbatPanel class="space-y-1" hide-filter>
-              <template #header></template>
-            </OrbatPanel>
-          </TabPanel>
-          <TabPanel :unmount="false">
-            <OrbatChartSettings chart-mode :tab="currentTab" />
-          </TabPanel>
-        </TabPanels>
-      </TabGroup>
-    </ResizablePanel>
-    <main class="relative h-full flex-auto bg-gray-50">
-      <SimpleBreadcrumbs
-        class="bg-opacity-80 absolute top-2 left-2 z-10 bg-gray-50 print:hidden"
-        :items="breadcrumbItems"
-      />
-      <nav class="absolute top-2 right-4 z-10 rounded-full bg-white print:hidden">
-        <DotsMenu :items="menuItems" />
-      </nav>
-
-      <ToggleField class="absolute right-2 bottom-2 z-10 print:hidden" v-model="debug"
-        >Debug mode</ToggleField
-      >
-      <p v-if="!activeUnit" class="p-8 text-center">Select a root unit in the sidebar</p>
-      <OrbatChart
-        :unit="activeUnit"
-        :width="width"
-        :height="height"
-        :symbol-generator="symbolGenerator"
-        chart-id="chartId"
-        :options="options.$state"
-        :specific-options="specificOptions.$state"
-        enable-pan-zoom
-        :interactive="isInteractive"
-        @unitclick="onUnitClick"
-        @levelclick="onLevelClick"
-        @branchclick="onBranchClick"
-        :debug="debug"
-      />
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, nextTick, ref } from "vue";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
@@ -237,3 +167,73 @@ const menuItems: MenuItemData<Function>[] = [
   { label: "Download as PNG", action: doPNGDownload },
 ];
 </script>
+
+<template>
+  <div class="relative flex min-h-0 flex-auto">
+    <ResizablePanel
+      v-model:width="panelWidth"
+      class="relative z-10 flex h-full flex-col justify-between overflow-auto overflow-visible border-r-2 bg-gray-100 dark:bg-gray-900 print:hidden"
+    >
+      <TabGroup :selected-index="selectedTab" @change="changeTab">
+        <TabList class="-mb-px flex border-b border-gray-200">
+          <Tab
+            as="template"
+            v-for="tab in ['ORBAT', 'Chart settings']"
+            :key="tab"
+            v-slot="{ selected }"
+          >
+            <button
+              :class="[
+                selected
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                'w-1/2 border-b-2 px-1 py-4 text-center text-sm font-medium',
+              ]"
+            >
+              {{ tab }}
+            </button>
+          </Tab>
+        </TabList>
+        <TabPanels class="min-h-0 flex-auto overflow-auto">
+          <TabPanel :unmount="false">
+            <OrbatPanel class="space-y-1" hide-filter>
+              <template #header></template>
+            </OrbatPanel>
+          </TabPanel>
+          <TabPanel :unmount="false">
+            <OrbatChartSettings chart-mode :tab="currentTab" />
+          </TabPanel>
+        </TabPanels>
+      </TabGroup>
+    </ResizablePanel>
+    <main class="relative h-full flex-auto bg-gray-50">
+      <SimpleBreadcrumbs
+        class="bg-opacity-80 absolute top-2 left-2 z-10 bg-gray-50 print:hidden"
+        :items="breadcrumbItems"
+      />
+      <nav class="absolute top-2 right-4 z-10 rounded-full bg-white print:hidden">
+        <DotsMenu :items="menuItems" />
+      </nav>
+
+      <ToggleField class="absolute right-2 bottom-2 z-10 print:hidden" v-model="debug"
+        >Debug mode</ToggleField
+      >
+      <p v-if="!activeUnit" class="p-8 text-center">Select a root unit in the sidebar</p>
+      <OrbatChart
+        :unit="activeUnit"
+        :width="width"
+        :height="height"
+        :symbol-generator="symbolGenerator"
+        chart-id="chartId"
+        :options="options.$state"
+        :specific-options="specificOptions.$state"
+        enable-pan-zoom
+        :interactive="isInteractive"
+        @unitclick="onUnitClick"
+        @levelclick="onLevelClick"
+        @branchclick="onBranchClick"
+        :debug="debug"
+      />
+    </main>
+  </div>
+</template>

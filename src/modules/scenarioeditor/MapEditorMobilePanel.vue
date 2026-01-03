@@ -1,3 +1,74 @@
+<script setup lang="ts">
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
+import { IconChevronDoubleUp } from "@iconify-prerendered/vue-mdi";
+import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
+import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
+import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
+import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
+import CloseButton from "@/components/CloseButton.vue";
+import IconButton from "@/components/IconButton.vue";
+import { defineAsyncComponent, ref, watch } from "vue";
+import { useSwipe, useToggle } from "@vueuse/core";
+import MapTimeController from "@/components/MapTimeController.vue";
+import { useUiStore } from "@/stores/uiStore";
+import { storeToRefs } from "pinia";
+import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
+import { useSelectedItems } from "@/stores/selectedStore";
+import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
+import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
+import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
+import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
+
+const ScenarioFiltersTabPanel = defineAsyncComponent(
+  () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
+);
+
+const emit = defineEmits([
+  "open-time-modal",
+  "inc-day",
+  "dec-day",
+  "next-event",
+  "prev-event",
+  "show-settings",
+]);
+
+const {
+  selectedFeatureIds,
+  selectedUnitIds,
+  activeUnitId,
+  activeScenarioEventId,
+  activeMapLayerId,
+  activeDetailsPanel,
+} = useSelectedItems();
+const { mobilePanelOpen: showBottomPanel } = storeToRefs(useUiStore());
+
+const toggleBottomPanel = useToggle(showBottomPanel);
+
+const { activeTabIndex } = storeToRefs(useUiStore());
+
+function changeTab(index: number) {
+  activeTabIndex.value = index;
+}
+
+const swipeUpEl = ref<HTMLElement | null>(null);
+const swipeDownEl = ref<HTMLElement | null>(null);
+
+const { isSwiping, direction } = useSwipe(swipeUpEl);
+const { isSwiping: isSwipingDown, direction: downDirection } = useSwipe(swipeDownEl);
+
+watch(isSwiping, (swiping) => {
+  if (swiping && direction.value === "up") {
+    showBottomPanel.value = true;
+  }
+});
+
+watch(isSwipingDown, (swiping) => {
+  if (swiping && downDirection.value === "down") {
+    showBottomPanel.value = false;
+  }
+});
+</script>
+
 <template>
   <main class="overflow-auto" :class="[showBottomPanel ? 'h-1/2' : 'h-12']">
     <div v-show="!showBottomPanel" class="flex h-full items-center" ref="swipeUpEl">
@@ -93,73 +164,3 @@
     </TabGroup>
   </main>
 </template>
-<script setup lang="ts">
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
-import { IconChevronDoubleUp } from "@iconify-prerendered/vue-mdi";
-import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
-import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
-import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
-import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
-import CloseButton from "@/components/CloseButton.vue";
-import IconButton from "@/components/IconButton.vue";
-import { defineAsyncComponent, ref, watch } from "vue";
-import { useSwipe, useToggle } from "@vueuse/core";
-import MapTimeController from "@/components/MapTimeController.vue";
-import { useUiStore } from "@/stores/uiStore";
-import { storeToRefs } from "pinia";
-import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
-import { useSelectedItems } from "@/stores/selectedStore";
-import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
-import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
-import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
-import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
-
-const ScenarioFiltersTabPanel = defineAsyncComponent(
-  () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
-);
-
-const emit = defineEmits([
-  "open-time-modal",
-  "inc-day",
-  "dec-day",
-  "next-event",
-  "prev-event",
-  "show-settings",
-]);
-
-const {
-  selectedFeatureIds,
-  selectedUnitIds,
-  activeUnitId,
-  activeScenarioEventId,
-  activeMapLayerId,
-  activeDetailsPanel,
-} = useSelectedItems();
-const { mobilePanelOpen: showBottomPanel } = storeToRefs(useUiStore());
-
-const toggleBottomPanel = useToggle(showBottomPanel);
-
-const { activeTabIndex } = storeToRefs(useUiStore());
-
-function changeTab(index: number) {
-  activeTabIndex.value = index;
-}
-
-const swipeUpEl = ref<HTMLElement | null>(null);
-const swipeDownEl = ref<HTMLElement | null>(null);
-
-const { isSwiping, direction } = useSwipe(swipeUpEl);
-const { isSwiping: isSwipingDown, direction: downDirection } = useSwipe(swipeDownEl);
-
-watch(isSwiping, (swiping) => {
-  if (swiping && direction.value === "up") {
-    showBottomPanel.value = true;
-  }
-});
-
-watch(isSwipingDown, (swiping) => {
-  if (swiping && downDirection.value === "down") {
-    showBottomPanel.value = false;
-  }
-});
-</script>

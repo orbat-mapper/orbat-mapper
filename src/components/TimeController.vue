@@ -1,3 +1,39 @@
+<script setup lang="ts">
+import { CalendarIcon } from "@heroicons/vue/24/solid";
+
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconSkipNext,
+  IconSkipPrevious,
+} from "@iconify-prerendered/vue-mdi";
+import { GlobalEvents } from "vue-global-events";
+import { useUiStore } from "@/stores/uiStore";
+import { inputEventFilter } from "./helpers";
+import BaseToolbar from "./BaseToolbar.vue";
+import ToolbarButton from "./ToolbarButton.vue";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey, timeModalKey } from "@/components/injects";
+
+const {
+  store: { state },
+  time: { scenarioTime, setCurrentTime, add, subtract, jumpToNextEvent, jumpToPrevEvent },
+} = injectStrict(activeScenarioKey);
+
+const { getModalTimestamp } = injectStrict(timeModalKey);
+
+const uiStore = useUiStore();
+
+const openTimeDialog = async () => {
+  const newTimestamp = await getModalTimestamp(state.currentTime, {
+    timeZone: state.info.timeZone,
+  });
+  if (newTimestamp !== undefined) {
+    setCurrentTime(newTimestamp);
+  }
+};
+</script>
+
 <template>
   <div class="flex w-full items-center justify-between p-4">
     <div>
@@ -39,39 +75,3 @@
     />
   </div>
 </template>
-
-<script setup lang="ts">
-import { CalendarIcon } from "@heroicons/vue/24/solid";
-
-import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconSkipNext,
-  IconSkipPrevious,
-} from "@iconify-prerendered/vue-mdi";
-import { GlobalEvents } from "vue-global-events";
-import { useUiStore } from "@/stores/uiStore";
-import { inputEventFilter } from "./helpers";
-import BaseToolbar from "./BaseToolbar.vue";
-import ToolbarButton from "./ToolbarButton.vue";
-import { injectStrict } from "@/utils";
-import { activeScenarioKey, timeModalKey } from "@/components/injects";
-
-const {
-  store: { state },
-  time: { scenarioTime, setCurrentTime, add, subtract, jumpToNextEvent, jumpToPrevEvent },
-} = injectStrict(activeScenarioKey);
-
-const { getModalTimestamp } = injectStrict(timeModalKey);
-
-const uiStore = useUiStore();
-
-const openTimeDialog = async () => {
-  const newTimestamp = await getModalTimestamp(state.currentTime, {
-    timeZone: state.info.timeZone,
-  });
-  if (newTimestamp !== undefined) {
-    setCurrentTime(newTimestamp);
-  }
-};
-</script>

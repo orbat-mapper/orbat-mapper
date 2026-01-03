@@ -1,56 +1,3 @@
-<template>
-  <aside
-    class="pointer-events-auto relative -mt-12 hidden max-h-[80vh] overflow-auto rounded-md border-t border-b border-l border-gray-300 shadow-sm md:block dark:border-slate-700"
-    :style="{ width: orbatPanelWidth + 'px' }"
-  >
-    <TabGroup
-      as="div"
-      class="hover-none:mr-3 bg-sidebar text-sidebar-foreground mr-1.5 flex h-full flex-auto flex-col"
-      :class="{ hidden: !showBottomPanel }"
-      :selected-index="activeTabIndex"
-      @change="changeTab"
-    >
-      <TabList class="flex flex-0 justify-between border-b border-gray-500">
-        <div class="flex flex-auto items-center justify-evenly">
-          <Tab
-            as="template"
-            v-for="tab in ['ORBAT', 'Events', 'Layers', 'Settings', 'Filters']"
-            :key="tab"
-            v-slot="{ selected }"
-          >
-            <button
-              :class="[
-                selected
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400',
-                'w-1/2 border-b-2 px-1 py-3 text-center text-sm font-medium',
-              ]"
-            >
-              {{ tab }}
-            </button>
-          </Tab>
-        </div>
-        <CloseButton @click="emit('close')" class="mt-1 mr-1" />
-      </TabList>
-      <TabPanels class="flex-auto overflow-y-auto">
-        <TabPanel :unmount="false" class="pb-10">
-          <OrbatPanel />
-        </TabPanel>
-        <TabPanel class="p-4 pb-10">
-          <ScenarioEventsPanel @event-click="onEventClick" />
-        </TabPanel>
-        <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
-        <TabPanel class="p-4 pb-10" :unmount="false"> <ScenarioSettingsPanel /></TabPanel>
-        <TabPanel :unmount="false"><ScenarioFiltersTabPanel /></TabPanel>
-      </TabPanels>
-    </TabGroup>
-    <PanelResizeHandle
-      :width="orbatPanelWidth"
-      @update="orbatPanelWidth = $event"
-      @reset="widthStore.resetOrbatPanelWidth()"
-    />
-  </aside>
-</template>
 <script setup lang="ts">
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
@@ -105,3 +52,57 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
   activeScenarioEventId.value = scenarioEvent.id;
 }
 </script>
+
+<template>
+  <aside
+    class="pointer-events-auto relative -mt-12 hidden max-h-[80vh] overflow-auto rounded-md border-t border-b border-l border-gray-300 shadow-sm md:block dark:border-slate-700"
+    :style="{ width: orbatPanelWidth + 'px' }"
+  >
+    <TabGroup
+      as="div"
+      class="hover-none:mr-3 bg-sidebar text-sidebar-foreground mr-1.5 flex h-full flex-auto flex-col"
+      :class="{ hidden: !showBottomPanel }"
+      :selected-index="activeTabIndex"
+      @change="changeTab"
+    >
+      <TabList class="flex flex-0 justify-between border-b border-gray-500">
+        <div class="flex flex-auto items-center justify-evenly">
+          <Tab
+            as="template"
+            v-for="tab in ['ORBAT', 'Events', 'Layers', 'Settings', 'Filters']"
+            :key="tab"
+            v-slot="{ selected }"
+          >
+            <button
+              :class="[
+                selected
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400',
+                'w-1/2 border-b-2 px-1 py-3 text-center text-sm font-medium',
+              ]"
+            >
+              {{ tab }}
+            </button>
+          </Tab>
+        </div>
+        <CloseButton @click="emit('close')" class="mt-1 mr-1" />
+      </TabList>
+      <TabPanels class="flex-auto overflow-y-auto">
+        <TabPanel :unmount="false" class="pb-10">
+          <OrbatPanel />
+        </TabPanel>
+        <TabPanel class="p-4 pb-10">
+          <ScenarioEventsPanel @event-click="onEventClick" />
+        </TabPanel>
+        <TabPanel class="p-4 pb-10"><ScenarioLayersTabPanel /></TabPanel>
+        <TabPanel class="p-4 pb-10" :unmount="false"> <ScenarioSettingsPanel /></TabPanel>
+        <TabPanel :unmount="false"><ScenarioFiltersTabPanel /></TabPanel>
+      </TabPanels>
+    </TabGroup>
+    <PanelResizeHandle
+      :width="orbatPanelWidth"
+      @update="orbatPanelWidth = $event"
+      @reset="widthStore.resetOrbatPanelWidth()"
+    />
+  </aside>
+</template>

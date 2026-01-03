@@ -1,29 +1,3 @@
-<template>
-  <div class="w-full space-y-4 p-1 pb-8">
-    <p>Convert from and to legacy letter based symbol identification codes</p>
-    <div class="grid grid-cols-4 content-center items-center gap-8">
-      <p class="col-span-3">
-        <InputGroup
-          label="Letter based SIDC"
-          v-model="letterSidcInput"
-          ref="letterTarget"
-          id="letterSIDC"
-        />
-      </p>
-      <MilSymbol :sidc="letterSidc" :size="30" />
-      <p class="col-span-3">
-        <InputGroup
-          label="Number based SIDC"
-          v-model="numberSidcInput"
-          class=""
-          ref="numberTarget"
-        />
-      </p>
-      <MilSymbol :sidc="numberSidc" :size="30" />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import InputGroup from "@/components/InputGroup.vue";
 import { onMounted, ref, watch } from "vue";
@@ -67,3 +41,29 @@ watch(numberSidcInput, (v) => {
 
 onMounted(() => document.getElementById("letterSIDC")?.focus());
 </script>
+
+<template>
+  <div class="w-full space-y-4 p-1 pb-8">
+    <p>Convert from and to legacy letter based symbol identification codes</p>
+    <div class="grid grid-cols-4 content-center items-center gap-8">
+      <p class="col-span-3">
+        <InputGroup
+          label="Letter based SIDC"
+          v-model="letterSidcInput"
+          ref="letterTarget"
+          id="letterSIDC"
+        />
+      </p>
+      <MilSymbol :sidc="letterSidc" :size="30" />
+      <p class="col-span-3">
+        <InputGroup
+          label="Number based SIDC"
+          v-model="numberSidcInput"
+          class=""
+          ref="numberTarget"
+        />
+      </p>
+      <MilSymbol :sidc="numberSidc" :size="30" />
+    </div>
+  </div>
+</template>

@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import { type Media } from "@/types/scenarioModels";
+
+const props = defineProps<{ media: Media }>();
+</script>
+
 <template>
   <div v-if="media" class="group @-lg:aspect-16/5 relative -mx-4 -mt-4 aspect-16/9">
     <img
@@ -15,8 +21,3 @@
     </p>
   </div>
 </template>
-<script setup lang="ts">
-import { type Media } from "@/types/scenarioModels";
-
-const props = defineProps<{ media: Media }>();
-</script>

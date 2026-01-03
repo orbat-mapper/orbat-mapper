@@ -1,3 +1,13 @@
+<script setup lang="ts">
+import { type PropType } from "vue";
+import type { ButtonGroupItem } from "./types";
+
+const props = defineProps({
+  items: { type: Array as PropType<ButtonGroupItem[]>, required: true },
+  small: { type: Boolean, default: false },
+});
+</script>
+
 <template>
   <span class="relative z-0 inline-flex rounded-md shadow-xs">
     <button
@@ -18,13 +28,3 @@
     </button>
   </span>
 </template>
-
-<script setup lang="ts">
-import { type PropType } from "vue";
-import type { ButtonGroupItem } from "./types";
-
-const props = defineProps({
-  items: { type: Array as PropType<ButtonGroupItem[]>, required: true },
-  small: { type: Boolean, default: false },
-});
-</script>

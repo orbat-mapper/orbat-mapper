@@ -1,43 +1,3 @@
-<template>
-  <div class="pt-4 md:flex md:h-screen md:flex-col">
-    <p
-      class="absolute inset-x-0 top-0 h-4 border-b bg-amber-200 text-center text-xs text-amber-700"
-    >
-      Test
-    </p>
-    <header class="relative w-full bg-gray-100 p-4 md:shrink-0">
-      <h1>{{ state.info.name }}</h1>
-      <button
-        type="button"
-        @click="toggleSidebar()"
-        class="bg-opacity-75 fixed top-2 right-4 z-20 inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
-      >
-        <span class="sr-only">Open main menu</span>
-        <MenuIcon v-if="!sidebarIsOpen" class="block h-6 w-6" aria-hidden="true" />
-        <XIcon v-else class="block h-6 w-6" aria-hidden="true" />
-      </button>
-    </header>
-    <div class="md:flex md:min-h-0 md:flex-auto">
-      <section
-        class="relative sticky top-0 z-10 h-[45vh] w-full bg-white shadow-md md:static md:h-full md:shadow-none"
-      >
-        <MapContainer @ready="onMapReady" />
-        <MeasurementToolbar
-          v-if="mapRef"
-          :ol-map="mapRef"
-          class="absolute bottom-2 left-2"
-        />
-      </section>
-      <section class="w-full overflow-auto border bg-gray-50 md:max-w-sm lg:max-w-lg">
-        <StoryModeContent @update-state="onUpdateState" />
-      </section>
-    </div>
-    <SlideOver v-model="sidebarIsOpen" title="Settings">
-      <NumberInputGroup label="Symbol size" v-model="settingsStore.mapIconSize" />
-    </SlideOver>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, provide, ref, shallowRef, watch } from "vue";
 import MapContainer from "@/components/MapContainer.vue";
@@ -158,3 +118,43 @@ watch(settingsStore, () => {
   drawUnits();
 });
 </script>
+
+<template>
+  <div class="pt-4 md:flex md:h-screen md:flex-col">
+    <p
+      class="absolute inset-x-0 top-0 h-4 border-b bg-amber-200 text-center text-xs text-amber-700"
+    >
+      Test
+    </p>
+    <header class="relative w-full bg-gray-100 p-4 md:shrink-0">
+      <h1>{{ state.info.name }}</h1>
+      <button
+        type="button"
+        @click="toggleSidebar()"
+        class="bg-opacity-75 fixed top-2 right-4 z-20 inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+      >
+        <span class="sr-only">Open main menu</span>
+        <MenuIcon v-if="!sidebarIsOpen" class="block h-6 w-6" aria-hidden="true" />
+        <XIcon v-else class="block h-6 w-6" aria-hidden="true" />
+      </button>
+    </header>
+    <div class="md:flex md:min-h-0 md:flex-auto">
+      <section
+        class="relative sticky top-0 z-10 h-[45vh] w-full bg-white shadow-md md:static md:h-full md:shadow-none"
+      >
+        <MapContainer @ready="onMapReady" />
+        <MeasurementToolbar
+          v-if="mapRef"
+          :ol-map="mapRef"
+          class="absolute bottom-2 left-2"
+        />
+      </section>
+      <section class="w-full overflow-auto border bg-gray-50 md:max-w-sm lg:max-w-lg">
+        <StoryModeContent @update-state="onUpdateState" />
+      </section>
+    </div>
+    <SlideOver v-model="sidebarIsOpen" title="Settings">
+      <NumberInputGroup label="Symbol size" v-model="settingsStore.mapIconSize" />
+    </SlideOver>
+  </div>
+</template>

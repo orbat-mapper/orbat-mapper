@@ -1,3 +1,14 @@
+<script setup lang="ts">
+import { type ChartItemType } from "./orbatchart";
+import { useChartSettings } from "./composables";
+import InputGroup from "@/components/InputGroup.vue";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
+
+const props = defineProps<{ itemType: ChartItemType }>();
+
+const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
+</script>
+
 <template>
   <div class="space-y-6">
     <NumberInputGroup
@@ -22,14 +33,3 @@
     />
   </div>
 </template>
-
-<script setup lang="ts">
-import { type ChartItemType } from "./orbatchart";
-import { useChartSettings } from "./composables";
-import InputGroup from "@/components/InputGroup.vue";
-import NumberInputGroup from "@/components/NumberInputGroup.vue";
-
-const props = defineProps<{ itemType: ChartItemType }>();
-
-const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
-</script>

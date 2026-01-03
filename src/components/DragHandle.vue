@@ -1,35 +1,3 @@
-<template>
-  <div
-    class="absolute flex items-center justify-center border bg-gray-300 hover:border-red-900 hover:bg-red-900"
-    :class="[
-      horizontal
-        ? 'inset-x-0 bottom-0 h-1 cursor-row-resize'
-        : 'inset-y-0 w-1 cursor-col-resize',
-      !horizontal && left ? 'left-0' : '',
-      !horizontal && !left ? 'right-0' : '',
-    ]"
-    @mousedown="onButtonDown"
-    @touchstart="onButtonDown"
-  >
-    <div
-      class="z-10 flex h-8 flex-none items-center justify-center rounded bg-white shadow-sm"
-      :class="{ 'rotate-90 transform': horizontal }"
-      style="width: 0.9375rem"
-    >
-      <svg
-        viewBox="0 0 14 24"
-        fill="none"
-        stroke-width="2"
-        stroke="currentColor"
-        class="h-3 flex-none text-red-700"
-        style="width: 0.4375rem"
-      >
-        <path d="M 1 0 V 24 M 7 0 V 24 M 13 0 V 24"></path>
-      </svg>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from "vue";
 import { isClient } from "@/utils";
@@ -99,3 +67,35 @@ function onDragEnd(event: any) {
   }
 }
 </script>
+
+<template>
+  <div
+    class="absolute flex items-center justify-center border bg-gray-300 hover:border-red-900 hover:bg-red-900"
+    :class="[
+      horizontal
+        ? 'inset-x-0 bottom-0 h-1 cursor-row-resize'
+        : 'inset-y-0 w-1 cursor-col-resize',
+      !horizontal && left ? 'left-0' : '',
+      !horizontal && !left ? 'right-0' : '',
+    ]"
+    @mousedown="onButtonDown"
+    @touchstart="onButtonDown"
+  >
+    <div
+      class="z-10 flex h-8 flex-none items-center justify-center rounded bg-white shadow-sm"
+      :class="{ 'rotate-90 transform': horizontal }"
+      style="width: 0.9375rem"
+    >
+      <svg
+        viewBox="0 0 14 24"
+        fill="none"
+        stroke-width="2"
+        stroke="currentColor"
+        class="h-3 flex-none text-red-700"
+        style="width: 0.4375rem"
+      >
+        <path d="M 1 0 V 24 M 7 0 V 24 M 13 0 V 24"></path>
+      </svg>
+    </div>
+  </div>
+</template>

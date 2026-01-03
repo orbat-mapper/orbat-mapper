@@ -1,36 +1,3 @@
-<template>
-  <div class="">
-    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] min-h-100 flex-col">
-      <FieldGroup>
-        <FieldSet>
-          <FieldLegend>Image import </FieldLegend>
-
-          <AlertWarning v-if="isBlob" title="Warning"
-            >This image is a local file and will not be saved with the scenario. It will
-            only be visible while the scenario is open.
-          </AlertWarning>
-
-          <div class="flex-auto overflow-auto p-0.5">
-            <img :src="objectUrl" @load="onImageLoad" />
-            <p v-if="imageWidth" class="text-muted-foreground mt-2 text-sm">
-              Image dimensions {{ imageWidth }}x{{ imageHeight }}
-            </p>
-          </div>
-          <Field>
-            <FieldLabel for="layerName">Image layer name</FieldLabel>
-            <Input id="layerName" v-model="form.layerName" />
-          </Field>
-
-          <Field orientation="horizontal" class="justify-end">
-            <Button type="submit"> Import</Button>
-            <Button variant="outline" type="button" @click="onCancel"> Cancel</Button>
-          </Field>
-        </FieldSet>
-      </FieldGroup>
-    </form>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey, searchActionsKey } from "@/components/injects";
@@ -93,3 +60,36 @@ function onImageLoad(e: Event) {
   imageHeight.value = target.naturalHeight;
 }
 </script>
+
+<template>
+  <div class="">
+    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] min-h-100 flex-col">
+      <FieldGroup>
+        <FieldSet>
+          <FieldLegend>Image import </FieldLegend>
+
+          <AlertWarning v-if="isBlob" title="Warning"
+            >This image is a local file and will not be saved with the scenario. It will
+            only be visible while the scenario is open.
+          </AlertWarning>
+
+          <div class="flex-auto overflow-auto p-0.5">
+            <img :src="objectUrl" @load="onImageLoad" />
+            <p v-if="imageWidth" class="text-muted-foreground mt-2 text-sm">
+              Image dimensions {{ imageWidth }}x{{ imageHeight }}
+            </p>
+          </div>
+          <Field>
+            <FieldLabel for="layerName">Image layer name</FieldLabel>
+            <Input id="layerName" v-model="form.layerName" />
+          </Field>
+
+          <Field orientation="horizontal" class="justify-end">
+            <Button type="submit"> Import</Button>
+            <Button variant="outline" type="button" @click="onCancel"> Cancel</Button>
+          </Field>
+        </FieldSet>
+      </FieldGroup>
+    </form>
+  </div>
+</template>

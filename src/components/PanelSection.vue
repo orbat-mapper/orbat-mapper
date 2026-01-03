@@ -1,3 +1,7 @@
+<script setup lang="ts">
+const props = defineProps<{ label?: string }>();
+</script>
+
 <template>
   <div
     class="last-of-type:border-b-none relative flex flex-col border-b border-gray-300 pb-2"
@@ -11,6 +15,3 @@
     <div class="px-2"><slot /></div>
   </div>
 </template>
-<script setup lang="ts">
-const props = defineProps<{ label?: string }>();
-</script>

@@ -1,39 +1,3 @@
-<template>
-  <div class="">
-    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] min-h-[25rem] flex-col">
-      <div class="flex-auto overflow-auto">
-        <div class="prose prose-sm"></div>
-        <section class="p-1.5">
-          <SymbolCodeSelect
-            label="Parent unit"
-            :items="rootUnitItems"
-            v-model="parentUnitId"
-          />
-        </section>
-        <section class="mt-4">
-          <DataGrid
-            :data="[props.data]"
-            :columns="computedColumns"
-            :row-height="40"
-            class="max-h-[40vh]"
-            :initial-state="{ expanded: true }"
-            :get-sub-rows="(row) => row.subOrganizations"
-          />
-        </section>
-        <section class="mt-4 flex gap-4 p-1">
-          <InputCheckbox v-model="useFillColor" label="Use custom fill color" />
-          <InputCheckbox v-model="expandedStackedUnits" label="Expand stacked units" />
-        </section>
-      </div>
-
-      <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
-        <BaseButton type="submit" primary small>Import</BaseButton>
-        <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
-      </footer>
-    </form>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, h, ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
@@ -160,3 +124,39 @@ async function onLoad(e: Event) {
   emit("loaded");
 }
 </script>
+
+<template>
+  <div class="">
+    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] min-h-[25rem] flex-col">
+      <div class="flex-auto overflow-auto">
+        <div class="prose prose-sm"></div>
+        <section class="p-1.5">
+          <SymbolCodeSelect
+            label="Parent unit"
+            :items="rootUnitItems"
+            v-model="parentUnitId"
+          />
+        </section>
+        <section class="mt-4">
+          <DataGrid
+            :data="[props.data]"
+            :columns="computedColumns"
+            :row-height="40"
+            class="max-h-[40vh]"
+            :initial-state="{ expanded: true }"
+            :get-sub-rows="(row) => row.subOrganizations"
+          />
+        </section>
+        <section class="mt-4 flex gap-4 p-1">
+          <InputCheckbox v-model="useFillColor" label="Use custom fill color" />
+          <InputCheckbox v-model="expandedStackedUnits" label="Expand stacked units" />
+        </section>
+      </div>
+
+      <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
+        <BaseButton type="submit" primary small>Import</BaseButton>
+        <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
+      </footer>
+    </form>
+  </div>
+</template>

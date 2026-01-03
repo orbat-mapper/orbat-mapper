@@ -1,3 +1,14 @@
+<script setup lang="ts">
+import { ChevronRightIcon, HomeIcon } from "@heroicons/vue/20/solid";
+import { type BreadcrumbItem } from "@/components/types";
+
+interface Props {
+  items: BreadcrumbItem[];
+}
+
+const props = defineProps<Props>();
+</script>
+
 <template>
   <nav class="flex" aria-label="Breadcrumb">
     <ol role="list" class="flex items-center space-x-2">
@@ -31,14 +42,3 @@
     </ol>
   </nav>
 </template>
-
-<script setup lang="ts">
-import { ChevronRightIcon, HomeIcon } from "@heroicons/vue/20/solid";
-import { type BreadcrumbItem } from "@/components/types";
-
-interface Props {
-  items: BreadcrumbItem[];
-}
-
-const props = defineProps<Props>();
-</script>

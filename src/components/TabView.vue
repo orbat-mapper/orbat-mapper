@@ -1,36 +1,3 @@
-<template>
-  <div class="flex h-full flex-col">
-    <header class="shrink-0">
-      <div class="border-border bg-background border-b" :class="extraClass">
-        <div class="flex justify-between">
-          <nav class="-mb-px flex" :class="gap" aria-label="Tabs">
-            <button
-              v-for="(tab, index) in tabsInfo"
-              :key="index"
-              @click="selectTab(index)"
-              :class="[
-                index === state.selectedIndex
-                  ? 'border-primary text-primary dark:border-primary dark:text-primary'
-                  : 'text-muted-foreground hover:border-border hover:text-foreground border-transparent',
-                'border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors',
-              ]"
-              :aria-current="index === state.selectedIndex ? 'page' : undefined"
-            >
-              {{ tab.label }}
-            </button>
-          </nav>
-          <div>
-            <slot name="extra" />
-          </div>
-        </div>
-      </div>
-    </header>
-    <div class="bg-background text-foreground flex-auto overflow-y-auto">
-      <slot />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, onMounted, provide, reactive, useSlots, watch } from "vue";
 import { tabsProviderKey, type TabsState } from "@/components/types";
@@ -83,3 +50,36 @@ const tabsInfo = computed(() => {
   return [];
 });
 </script>
+
+<template>
+  <div class="flex h-full flex-col">
+    <header class="shrink-0">
+      <div class="border-border bg-background border-b" :class="extraClass">
+        <div class="flex justify-between">
+          <nav class="-mb-px flex" :class="gap" aria-label="Tabs">
+            <button
+              v-for="(tab, index) in tabsInfo"
+              :key="index"
+              @click="selectTab(index)"
+              :class="[
+                index === state.selectedIndex
+                  ? 'border-primary text-primary dark:border-primary dark:text-primary'
+                  : 'text-muted-foreground hover:border-border hover:text-foreground border-transparent',
+                'border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors',
+              ]"
+              :aria-current="index === state.selectedIndex ? 'page' : undefined"
+            >
+              {{ tab.label }}
+            </button>
+          </nav>
+          <div>
+            <slot name="extra" />
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="bg-background text-foreground flex-auto overflow-y-auto">
+      <slot />
+    </div>
+  </div>
+</template>

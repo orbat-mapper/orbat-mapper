@@ -1,3 +1,25 @@
+<script setup lang="ts">
+import { useVModel } from "@vueuse/core";
+import TabView from "@/components/TabView.vue";
+import TabItem from "@/components/TabItem.vue";
+import OrbatChartSettingsUnit from "./OrbatChartSettingsUnit.vue";
+import OrbatChartSettingsLevel from "./OrbatChartSettingsLevel.vue";
+import OrbatChartSettingsChart from "./OrbatChartSettingsChart.vue";
+import OrbatChartSettingsBranch from "./OrbatChartSettingsBranch.vue";
+import { type ChartTab, ChartTabs } from "@/modules/charteditor/constants";
+
+interface Props {
+  tab?: ChartTab;
+  chartMode?: boolean;
+}
+const props = withDefaults(defineProps<Props>(), {
+  tab: ChartTabs.Chart,
+  chartMode: false,
+});
+const emit = defineEmits(["update:tab"]);
+const currentTab = useVModel(props, "tab", emit);
+</script>
+
 <template>
   <div class="flex w-full flex-col">
     <h3 v-if="!chartMode" class="hidden px-4 font-medium text-gray-900 lg:block lg:p-4">
@@ -24,25 +46,3 @@
     </TabView>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useVModel } from "@vueuse/core";
-import TabView from "@/components/TabView.vue";
-import TabItem from "@/components/TabItem.vue";
-import OrbatChartSettingsUnit from "./OrbatChartSettingsUnit.vue";
-import OrbatChartSettingsLevel from "./OrbatChartSettingsLevel.vue";
-import OrbatChartSettingsChart from "./OrbatChartSettingsChart.vue";
-import OrbatChartSettingsBranch from "./OrbatChartSettingsBranch.vue";
-import { type ChartTab, ChartTabs } from "@/modules/charteditor/constants";
-
-interface Props {
-  tab?: ChartTab;
-  chartMode?: boolean;
-}
-const props = withDefaults(defineProps<Props>(), {
-  tab: ChartTabs.Chart,
-  chartMode: false,
-});
-const emit = defineEmits(["update:tab"]);
-const currentTab = useVModel(props, "tab", emit);
-</script>

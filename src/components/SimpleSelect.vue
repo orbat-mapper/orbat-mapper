@@ -1,25 +1,3 @@
-<template>
-  <Field>
-    <FieldLabel
-      ><slot name="label">{{ label }}</slot></FieldLabel
-    >
-    <NativeSelect v-model="selectedValue">
-      <NativeSelectOption v-if="addNone" :value="null">None</NativeSelectOption>
-      <NativeSelectOption
-        v-for="val in computedValues"
-        :value="val.value"
-        :key="val.value"
-      >
-        {{ val.label }}
-      </NativeSelectOption>
-    </NativeSelect>
-
-    <FieldDescription v-if="description || $slots.description">
-      <slot name="description">{{ description }}</slot>
-    </FieldDescription>
-  </Field>
-</template>
-
 <script setup lang="ts">
 import { computed } from "vue";
 import { type SelectItem } from "./types";
@@ -47,3 +25,25 @@ const computedValues = computed(() => {
   }));
 });
 </script>
+
+<template>
+  <Field>
+    <FieldLabel
+      ><slot name="label">{{ label }}</slot></FieldLabel
+    >
+    <NativeSelect v-model="selectedValue">
+      <NativeSelectOption v-if="addNone" :value="null">None</NativeSelectOption>
+      <NativeSelectOption
+        v-for="val in computedValues"
+        :value="val.value"
+        :key="val.value"
+      >
+        {{ val.label }}
+      </NativeSelectOption>
+    </NativeSelect>
+
+    <FieldDescription v-if="description || $slots.description">
+      <slot name="description">{{ description }}</slot>
+    </FieldDescription>
+  </Field>
+</template>

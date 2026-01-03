@@ -1,3 +1,49 @@
+<script setup lang="ts">
+import { ExternalLinkIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
+import ProseSection from "../components/ProseSection.vue";
+import LandingPageScenarios from "./LandingPageScenarios.vue";
+import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
+import { ORBAT_CHART_ROUTE, TEXT_TO_ORBAT_ROUTE } from "@/router/names";
+import { CheckIcon } from "@heroicons/vue/24/outline";
+import { Button } from "@/components/ui/button";
+import { UseDark } from "@vueuse/components";
+
+const features = [
+  {
+    name: "Create ORBATs",
+    description: "Quickly build ORBATs.",
+  },
+  {
+    name: "Draw features",
+    description: "",
+  },
+  {
+    name: "Client side only",
+    description: "Everything is stored on your computer.",
+  },
+  {
+    name: "Grid edit moe",
+    description: "Efficient editing.",
+  },
+  {
+    name: "Export to KML/KMZ",
+    description: "View your scenario in 3D with Google Earth.",
+  },
+  {
+    name: "Export as GeoJSON",
+    description: "",
+  },
+  {
+    name: "Import MilX",
+    description: "Import military map overlays from map.army.",
+  },
+  {
+    name: "Import GeoJSON",
+    description: "",
+  },
+];
+</script>
+
 <template>
   <div class="bg-background flex h-full flex-col">
     <header
@@ -184,49 +230,3 @@
     </footer>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ExternalLinkIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
-import ProseSection from "../components/ProseSection.vue";
-import LandingPageScenarios from "./LandingPageScenarios.vue";
-import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
-import { ORBAT_CHART_ROUTE, TEXT_TO_ORBAT_ROUTE } from "@/router/names";
-import { CheckIcon } from "@heroicons/vue/24/outline";
-import { Button } from "@/components/ui/button";
-import { UseDark } from "@vueuse/components";
-
-const features = [
-  {
-    name: "Create ORBATs",
-    description: "Quickly build ORBATs.",
-  },
-  {
-    name: "Draw features",
-    description: "",
-  },
-  {
-    name: "Client side only",
-    description: "Everything is stored on your computer.",
-  },
-  {
-    name: "Grid edit moe",
-    description: "Efficient editing.",
-  },
-  {
-    name: "Export to KML/KMZ",
-    description: "View your scenario in 3D with Google Earth.",
-  },
-  {
-    name: "Export as GeoJSON",
-    description: "",
-  },
-  {
-    name: "Import MilX",
-    description: "Import military map overlays from map.army.",
-  },
-  {
-    name: "Import GeoJSON",
-    description: "",
-  },
-];
-</script>

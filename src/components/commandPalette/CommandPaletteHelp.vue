@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import { LifebuoyIcon } from "@heroicons/vue/20/solid";
+</script>
+
 <template>
   <div class="px-6 py-14 text-center text-sm sm:px-14">
     <LifebuoyIcon class="mx-auto h-6 w-6 text-gray-400" aria-hidden="true" />
@@ -8,6 +12,3 @@
     </p>
   </div>
 </template>
-<script setup lang="ts">
-import { LifebuoyIcon } from "@heroicons/vue/20/solid";
-</script>

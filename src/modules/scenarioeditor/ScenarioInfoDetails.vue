@@ -1,46 +1,3 @@
-<template>
-  <div>
-    <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="space-y-4">
-      <SimpleMarkdownInput
-        label="Description"
-        v-model="form.description"
-        description="Use markdown syntax for formatting"
-      />
-      <DescriptionItem label="Start time"
-        >{{ computedStartTime.format() }}
-        <PlainButton @click="openTimeModal()" class="ml-2">Change</PlainButton>
-      </DescriptionItem>
-      <TimezoneSelect label="Time zone" v-model="form.timeZone" />
-      <RadioGroupList :items="standardSettings" v-model="form.symbologyStandard" />
-      <div class="flex justify-end space-x-2">
-        <PrimaryButton type="submit">Update</PrimaryButton>
-        <PlainButton type="button" @click="toggleEditMode()">Cancel</PlainButton>
-      </div>
-    </form>
-    <div v-else class="space-y-4 p-0">
-      <DescriptionItem label="Description">
-        <div class="prose-sm prose dark:prose-invert" v-html="hDescription"></div>
-      </DescriptionItem>
-
-      <DescriptionItem label="Start time"
-        >{{ computedStartTime.format() }}
-      </DescriptionItem>
-      <DescriptionItem label="Time zone name">{{ state.info.timeZone }}</DescriptionItem>
-      <DescriptionItem label="Symbology standard"
-        >{{ state.info.symbologyStandard }}
-      </DescriptionItem>
-
-      <DescriptionItem label="Number of units"
-        >{{ Object.keys(state.unitMap).length }}
-      </DescriptionItem>
-
-      <div class="flex items-center space-x-2">
-        <PlainButton @click="toggleEditMode()">Edit</PlainButton>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, watch } from "vue";
 import DescriptionItem from "@/components/DescriptionItem.vue";
@@ -162,3 +119,46 @@ async function openTimeModal() {
   }
 }
 </script>
+
+<template>
+  <div>
+    <form v-if="isEditMode" @submit.prevent="onFormSubmit" class="space-y-4">
+      <SimpleMarkdownInput
+        label="Description"
+        v-model="form.description"
+        description="Use markdown syntax for formatting"
+      />
+      <DescriptionItem label="Start time"
+        >{{ computedStartTime.format() }}
+        <PlainButton @click="openTimeModal()" class="ml-2">Change</PlainButton>
+      </DescriptionItem>
+      <TimezoneSelect label="Time zone" v-model="form.timeZone" />
+      <RadioGroupList :items="standardSettings" v-model="form.symbologyStandard" />
+      <div class="flex justify-end space-x-2">
+        <PrimaryButton type="submit">Update</PrimaryButton>
+        <PlainButton type="button" @click="toggleEditMode()">Cancel</PlainButton>
+      </div>
+    </form>
+    <div v-else class="space-y-4 p-0">
+      <DescriptionItem label="Description">
+        <div class="prose-sm prose dark:prose-invert" v-html="hDescription"></div>
+      </DescriptionItem>
+
+      <DescriptionItem label="Start time"
+        >{{ computedStartTime.format() }}
+      </DescriptionItem>
+      <DescriptionItem label="Time zone name">{{ state.info.timeZone }}</DescriptionItem>
+      <DescriptionItem label="Symbology standard"
+        >{{ state.info.symbologyStandard }}
+      </DescriptionItem>
+
+      <DescriptionItem label="Number of units"
+        >{{ Object.keys(state.unitMap).length }}
+      </DescriptionItem>
+
+      <div class="flex items-center space-x-2">
+        <PlainButton @click="toggleEditMode()">Edit</PlainButton>
+      </div>
+    </div>
+  </div>
+</template>

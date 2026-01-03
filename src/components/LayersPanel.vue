@@ -1,46 +1,3 @@
-<template>
-  <div>
-    <p class="text-xs font-medium tracking-wider uppercase">Base layers</p>
-
-    <BaseLayerSwitcher
-      class="mt-4"
-      :settings="baseLayers"
-      v-model="activeBaseLayer"
-      @update:layer-opacity="updateOpacity"
-    />
-
-    <p class="mt-4 text-xs font-medium tracking-wider uppercase">Other layers</p>
-
-    <div class="bg-card mt-4 overflow-hidden rounded-md shadow-sm">
-      <ul class="divide-y">
-        <li v-for="layer in vectorLayers" :key="layer.id" class="px-6 py-4">
-          <div class="flex items-center justify-between">
-            <p class="flex-auto truncate text-sm">{{ layer.title }}</p>
-            <div class="ml-2 flex shrink-0 items-center">
-              <OpacityInput
-                :model-value="layer.opacity"
-                @update:model-value="updateOpacity(layer, $event)"
-              />
-              <button
-                class="text-muted-foreground ml-4 h-5 w-5"
-                @click="toggleLayer(layer)"
-              >
-                <EyeIcon v-if="layer.visible" />
-                <EyeSlashIcon v-else />
-              </button>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <div class="mt-4">
-      <p>For debugging:</p>
-      <pre class="text-sm">{{ mapView }}</pre>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, markRaw, ref, shallowRef, watch } from "vue";
 import { useGeoStore } from "@/stores/geoStore";
@@ -171,3 +128,46 @@ function updateOpacity(l: LayerInfo<any>, opacity: number) {
   l.layer.setOpacity(opacity);
 }
 </script>
+
+<template>
+  <div>
+    <p class="text-xs font-medium tracking-wider uppercase">Base layers</p>
+
+    <BaseLayerSwitcher
+      class="mt-4"
+      :settings="baseLayers"
+      v-model="activeBaseLayer"
+      @update:layer-opacity="updateOpacity"
+    />
+
+    <p class="mt-4 text-xs font-medium tracking-wider uppercase">Other layers</p>
+
+    <div class="bg-card mt-4 overflow-hidden rounded-md shadow-sm">
+      <ul class="divide-y">
+        <li v-for="layer in vectorLayers" :key="layer.id" class="px-6 py-4">
+          <div class="flex items-center justify-between">
+            <p class="flex-auto truncate text-sm">{{ layer.title }}</p>
+            <div class="ml-2 flex shrink-0 items-center">
+              <OpacityInput
+                :model-value="layer.opacity"
+                @update:model-value="updateOpacity(layer, $event)"
+              />
+              <button
+                class="text-muted-foreground ml-4 h-5 w-5"
+                @click="toggleLayer(layer)"
+              >
+                <EyeIcon v-if="layer.visible" />
+                <EyeSlashIcon v-else />
+              </button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="mt-4">
+      <p>For debugging:</p>
+      <pre class="text-sm">{{ mapView }}</pre>
+    </div>
+  </div>
+</template>

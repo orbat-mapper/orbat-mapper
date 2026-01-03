@@ -1,3 +1,15 @@
+<script setup lang="ts">
+import ToggleField from "@/components/ToggleField.vue";
+import { useUiStore } from "@/stores/uiStore.ts";
+import { Kbd } from "@/components/ui/kbd";
+
+const emit = defineEmits(["click-actions"]);
+const uiStore = useUiStore();
+const props = defineProps<{
+  rawQuery: string;
+}>();
+</script>
+
 <template>
   <div
     class="text-muted-foreground flex flex-wrap items-center justify-between px-4 py-2.5 text-xs"
@@ -19,14 +31,3 @@
     <div><ToggleField v-model="uiStore.searchGeoMode">Place mode</ToggleField></div>
   </div>
 </template>
-<script setup lang="ts">
-import ToggleField from "@/components/ToggleField.vue";
-import { useUiStore } from "@/stores/uiStore.ts";
-import { Kbd } from "@/components/ui/kbd";
-
-const emit = defineEmits(["click-actions"]);
-const uiStore = useUiStore();
-const props = defineProps<{
-  rawQuery: string;
-}>();
-</script>

@@ -1,3 +1,20 @@
+<script setup lang="ts">
+import { useSelectedChartElementStore } from "./chartSettingsStore";
+import { computed } from "vue";
+import PlainButton from "../../components/PlainButton.vue";
+import { ChartItemTypes } from "./orbatchart";
+import { useChartSettings } from "./composables";
+import SettingsUnit from "./SettingsUnit.vue";
+import AccordionPanel from "../../components/AccordionPanel.vue";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
+import SettingsToe from "@/modules/charteditor/SettingsToe.vue";
+
+const currentUnitNode = useSelectedChartElementStore();
+const { clearSpecificOptions } = useChartSettings(ChartItemTypes.Unit);
+
+const currentUnit = computed(() => currentUnitNode.node?.unit);
+</script>
+
 <template>
   <div class="space-y-4 pb-4">
     <p class="text-sm text-gray-600">Unit specific options.</p>
@@ -25,20 +42,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useSelectedChartElementStore } from "./chartSettingsStore";
-import { computed } from "vue";
-import PlainButton from "../../components/PlainButton.vue";
-import { ChartItemTypes } from "./orbatchart";
-import { useChartSettings } from "./composables";
-import SettingsUnit from "./SettingsUnit.vue";
-import AccordionPanel from "../../components/AccordionPanel.vue";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
-import SettingsToe from "@/modules/charteditor/SettingsToe.vue";
-
-const currentUnitNode = useSelectedChartElementStore();
-const { clearSpecificOptions } = useChartSettings(ChartItemTypes.Unit);
-
-const currentUnit = computed(() => currentUnitNode.node?.unit);
-</script>

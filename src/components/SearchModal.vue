@@ -1,37 +1,3 @@
-<template>
-  <SimpleModal v-model="open">
-    <SearchModalInput v-model="query" />
-    <ToggleField class="my-4" v-model="limitToPosition"
-      >Show only units with a position
-    </ToggleField>
-    <main class="space-y-4">
-      <section v-for="[source, hits] in groupedHits">
-        <p class="font-medium text-gray-700">{{ source }}</p>
-        <ul class="space-y-1.5">
-          <li v-for="hit in hits">
-            <button
-              type="button"
-              class="hover:border-army flex w-full items-center rounded border border-transparent p-2 hover:border hover:bg-red-100 focus:ring-3"
-              :class="hit.index === currentHitIndex ? 'bg-blue-200' : 'bg-gray-100'"
-              @click="onSelect(hit.index)"
-            >
-              <SearchUnitHit v-if="hit.category === 'Units'" :unit="hit" />
-              <SearchFeatureHit v-else-if="hit.category === 'Features'" :feature="hit" />
-            </button>
-          </li>
-        </ul>
-      </section>
-    </main>
-    <GlobalEvents
-      v-if="open"
-      @keydown.arrow-down="doKbd('down')"
-      @keydown.arrow-up="doKbd('up')"
-      @keydown.enter.prevent="onSelect()"
-    >
-    </GlobalEvents>
-  </SimpleModal>
-</template>
-
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { GlobalEvents } from "vue-global-events";
@@ -163,3 +129,37 @@ function onSelect(index?: number) {
   open.value = false;
 }
 </script>
+
+<template>
+  <SimpleModal v-model="open">
+    <SearchModalInput v-model="query" />
+    <ToggleField class="my-4" v-model="limitToPosition"
+      >Show only units with a position
+    </ToggleField>
+    <main class="space-y-4">
+      <section v-for="[source, hits] in groupedHits">
+        <p class="font-medium text-gray-700">{{ source }}</p>
+        <ul class="space-y-1.5">
+          <li v-for="hit in hits">
+            <button
+              type="button"
+              class="hover:border-army flex w-full items-center rounded border border-transparent p-2 hover:border hover:bg-red-100 focus:ring-3"
+              :class="hit.index === currentHitIndex ? 'bg-blue-200' : 'bg-gray-100'"
+              @click="onSelect(hit.index)"
+            >
+              <SearchUnitHit v-if="hit.category === 'Units'" :unit="hit" />
+              <SearchFeatureHit v-else-if="hit.category === 'Features'" :feature="hit" />
+            </button>
+          </li>
+        </ul>
+      </section>
+    </main>
+    <GlobalEvents
+      v-if="open"
+      @keydown.arrow-down="doKbd('down')"
+      @keydown.arrow-up="doKbd('up')"
+      @keydown.enter.prevent="onSelect()"
+    >
+    </GlobalEvents>
+  </SimpleModal>
+</template>

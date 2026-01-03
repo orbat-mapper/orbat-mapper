@@ -1,3 +1,47 @@
+<script setup lang="ts">
+import { ArrowSmallDownIcon, ArrowSmallUpIcon } from "@heroicons/vue/20/solid";
+import type {
+  CheckedState,
+  ColumnWidths,
+  RuntimeColumnProperties,
+} from "@/modules/grid/gridTypes";
+import GridHeaderResizeHandle from "@/modules/grid/GridHeaderResizeHandle.vue";
+import { useVModel } from "@vueuse/core";
+
+interface Props {
+  columnDefs: RuntimeColumnProperties[];
+  rowHeight?: number;
+  select?: boolean;
+  checkedState?: CheckedState;
+  columnWidths: ColumnWidths;
+}
+
+const props = withDefaults(defineProps<Props>(), { select: false, checkedState: false });
+const emit = defineEmits(["toggleSelect", "update:columnWidths", "sort", "dragging"]);
+
+const widths = useVModel(props, "columnWidths", emit);
+
+function toggleSelectAll(event: Event) {
+  const isChecked = (<HTMLInputElement>event.target).checked;
+  emit("toggleSelect", isChecked);
+}
+
+function updateWidth(columnId: string, newWidth: number) {
+  widths.value[columnId] = newWidth;
+}
+
+function resetWidth(columnId: string) {
+  widths.value[columnId] =
+    props.columnDefs.filter((c) => c.id === columnId)[0]?.width || 300;
+}
+
+function onColumnClick(column: RuntimeColumnProperties) {
+  if (column.sortable) {
+    emit("sort", column);
+  }
+}
+</script>
+
 <template>
   <header class="sticky top-0 z-10">
     <div class="flex divide-x divide-gray-200">
@@ -50,47 +94,3 @@
     </div>
   </header>
 </template>
-
-<script setup lang="ts">
-import { ArrowSmallDownIcon, ArrowSmallUpIcon } from "@heroicons/vue/20/solid";
-import type {
-  CheckedState,
-  ColumnWidths,
-  RuntimeColumnProperties,
-} from "@/modules/grid/gridTypes";
-import GridHeaderResizeHandle from "@/modules/grid/GridHeaderResizeHandle.vue";
-import { useVModel } from "@vueuse/core";
-
-interface Props {
-  columnDefs: RuntimeColumnProperties[];
-  rowHeight?: number;
-  select?: boolean;
-  checkedState?: CheckedState;
-  columnWidths: ColumnWidths;
-}
-
-const props = withDefaults(defineProps<Props>(), { select: false, checkedState: false });
-const emit = defineEmits(["toggleSelect", "update:columnWidths", "sort", "dragging"]);
-
-const widths = useVModel(props, "columnWidths", emit);
-
-function toggleSelectAll(event: Event) {
-  const isChecked = (<HTMLInputElement>event.target).checked;
-  emit("toggleSelect", isChecked);
-}
-
-function updateWidth(columnId: string, newWidth: number) {
-  widths.value[columnId] = newWidth;
-}
-
-function resetWidth(columnId: string) {
-  widths.value[columnId] =
-    props.columnDefs.filter((c) => c.id === columnId)[0]?.width || 300;
-}
-
-function onColumnClick(column: RuntimeColumnProperties) {
-  if (column.sortable) {
-    emit("sort", column);
-  }
-}
-</script>

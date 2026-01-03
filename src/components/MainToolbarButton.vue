@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import { Button } from "@/components/ui/button";
+
+const props = withDefaults(defineProps<{ active?: boolean }>(), { active: false });
+</script>
+
 <template>
   <Button
     type="button"
@@ -9,8 +15,3 @@
     <slot />
   </Button>
 </template>
-<script setup lang="ts">
-import { Button } from "@/components/ui/button";
-
-const props = withDefaults(defineProps<{ active?: boolean }>(), { active: false });
-</script>

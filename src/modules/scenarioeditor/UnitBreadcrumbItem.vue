@@ -1,26 +1,3 @@
-<template>
-  <div class="flex h-7 items-center overflow-clip">
-    <div ref="dragItemRef" class="relative flex shrink-0 cursor-move">
-      <UnitSymbol
-        v-if="item.sidc"
-        :sidc="item.sidc"
-        :options="item.symbolOptions ?? {}"
-        :modifiers="{ outlineWidth: 8 }"
-        :size="15"
-        class="w-7"
-        :class="{ 'opacity-20': isDragged }"
-      />
-    </div>
-    <span
-      class="ml-1 select-none"
-      :class="[
-        item.symbolOptions?.reinforcedReduced ? 'ml-2' : '',
-        item.location ? 'text-accent-foreground underline' : '',
-      ]"
-      >{{ item.name }}</span
-    >
-  </div>
-</template>
 <script setup lang="ts">
 import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
@@ -63,3 +40,27 @@ onUnmounted(() => {
   dndCleanup();
 });
 </script>
+
+<template>
+  <div class="flex h-7 items-center overflow-clip">
+    <div ref="dragItemRef" class="relative flex shrink-0 cursor-move">
+      <UnitSymbol
+        v-if="item.sidc"
+        :sidc="item.sidc"
+        :options="item.symbolOptions ?? {}"
+        :modifiers="{ outlineWidth: 8 }"
+        :size="15"
+        class="w-7"
+        :class="{ 'opacity-20': isDragged }"
+      />
+    </div>
+    <span
+      class="ml-1 select-none"
+      :class="[
+        item.symbolOptions?.reinforcedReduced ? 'ml-2' : '',
+        item.location ? 'text-accent-foreground underline' : '',
+      ]"
+      >{{ item.name }}</span
+    >
+  </div>
+</template>

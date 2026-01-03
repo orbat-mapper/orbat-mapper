@@ -1,21 +1,3 @@
-<template>
-  <InlineFormPanel @close="$emit('close')" title="Edit group info">
-    <form @submit.prevent="onFormSubmit" class="space-y-4">
-      <InputGroup label="Group name" v-model="form.name" :id="focusId" />
-      <SymbolFillColorSelect
-        v-model="form.symbolOptions.fillColor"
-        :default-fill-color="side?.symbolOptions?.fillColor"
-        :sid="side?.standardIdentity"
-      />
-
-      <div class="flex justify-end space-x-2">
-        <PrimaryButton type="submit">Save</PrimaryButton>
-        <PlainButton @click="$emit('close')">Cancel</PlainButton>
-      </div>
-    </form>
-  </InlineFormPanel>
-</template>
-
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import InputGroup from "./InputGroup.vue";
@@ -65,3 +47,21 @@ const onFormSubmit = () => {
 
 const { focusId } = useFocusOnMount();
 </script>
+
+<template>
+  <InlineFormPanel @close="$emit('close')" title="Edit group info">
+    <form @submit.prevent="onFormSubmit" class="space-y-4">
+      <InputGroup label="Group name" v-model="form.name" :id="focusId" />
+      <SymbolFillColorSelect
+        v-model="form.symbolOptions.fillColor"
+        :default-fill-color="side?.symbolOptions?.fillColor"
+        :sid="side?.standardIdentity"
+      />
+
+      <div class="flex justify-end space-x-2">
+        <PrimaryButton type="submit">Save</PrimaryButton>
+        <PlainButton @click="$emit('close')">Cancel</PlainButton>
+      </div>
+    </form>
+  </InlineFormPanel>
+</template>

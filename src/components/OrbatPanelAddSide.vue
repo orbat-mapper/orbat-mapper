@@ -1,3 +1,10 @@
+<script setup lang="ts">
+import { PlusIcon } from "@heroicons/vue/24/solid";
+import { Button } from "@/components/ui/button";
+const props = withDefaults(defineProps<{ simple?: boolean }>(), { simple: false });
+const emit = defineEmits(["add"]);
+</script>
+
 <template>
   <div class="text-center">
     <template v-if="!simple">
@@ -27,10 +34,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { PlusIcon } from "@heroicons/vue/24/solid";
-import { Button } from "@/components/ui/button";
-const props = withDefaults(defineProps<{ simple?: boolean }>(), { simple: false });
-const emit = defineEmits(["add"]);
-</script>

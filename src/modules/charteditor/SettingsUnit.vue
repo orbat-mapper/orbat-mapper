@@ -1,3 +1,28 @@
+<script setup lang="ts">
+import InputGroup from "@/components/InputGroup.vue";
+import SimpleSelect from "@/components/SimpleSelect.vue";
+import ToggleField from "@/components/ToggleField.vue";
+import { enum2Items } from "@/utils";
+import {
+  type ChartItemType,
+  FontStyles,
+  FontWeights,
+  LabelPlacements,
+} from "./orbatchart";
+import { useChartSettings } from "./composables";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
+
+interface Props {
+  itemType: ChartItemType;
+}
+const props = defineProps<Props>();
+const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
+
+const fontWeightItems = enum2Items(FontWeights);
+const fontStyleItems = enum2Items(FontStyles);
+const labelPlacementItems = enum2Items(LabelPlacements);
+</script>
+
 <template>
   <div class="space-y-6">
     <NumberInputGroup
@@ -62,28 +87,3 @@
     </ToggleField>
   </div>
 </template>
-
-<script setup lang="ts">
-import InputGroup from "@/components/InputGroup.vue";
-import SimpleSelect from "@/components/SimpleSelect.vue";
-import ToggleField from "@/components/ToggleField.vue";
-import { enum2Items } from "@/utils";
-import {
-  type ChartItemType,
-  FontStyles,
-  FontWeights,
-  LabelPlacements,
-} from "./orbatchart";
-import { useChartSettings } from "./composables";
-import NumberInputGroup from "@/components/NumberInputGroup.vue";
-
-interface Props {
-  itemType: ChartItemType;
-}
-const props = defineProps<Props>();
-const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
-
-const fontWeightItems = enum2Items(FontWeights);
-const fontStyleItems = enum2Items(FontStyles);
-const labelPlacementItems = enum2Items(LabelPlacements);
-</script>

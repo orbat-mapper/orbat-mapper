@@ -1,3 +1,10 @@
+<script setup lang="ts">
+import MilSymbol from "./MilSymbol.vue";
+import { type UnitSearchResult } from "./types";
+
+const props = defineProps<{ unit: UnitSearchResult }>();
+</script>
+
 <template>
   <div class="flex w-full items-center justify-between">
     <div class="flex items-center">
@@ -25,10 +32,3 @@
     </p>
   </div>
 </template>
-
-<script setup lang="ts">
-import MilSymbol from "./MilSymbol.vue";
-import { type UnitSearchResult } from "./types";
-
-const props = defineProps<{ unit: UnitSearchResult }>();
-</script>

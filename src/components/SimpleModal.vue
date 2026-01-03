@@ -1,3 +1,55 @@
+<script setup lang="ts">
+import { onUnmounted, ref, watch } from "vue";
+import {
+  Dialog,
+  DialogOverlay,
+  DialogTitle,
+  TransitionChild,
+  TransitionRoot,
+} from "@headlessui/vue";
+import { XMarkIcon } from "@heroicons/vue/24/outline";
+import { promiseTimeout } from "@vueuse/core";
+import { useUiStore } from "@/stores/uiStore";
+
+interface Props {
+  modelValue?: boolean;
+  dialogTitle?: string;
+  initialFocus?: HTMLElement;
+  maxWidth?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: false,
+  maxWidth: "sm:max-w-xl",
+});
+const emit = defineEmits(["update:modelValue", "cancel"]);
+
+const uiStore = useUiStore();
+const open = ref(false);
+watch(
+  () => props.modelValue,
+  async (v) => {
+    await promiseTimeout(100);
+    open.value = v;
+  },
+  { immediate: true },
+);
+
+uiStore.modalOpen = open.value;
+watch(open, async (v) => {
+  uiStore.modalOpen = v;
+  await promiseTimeout(300);
+  emit("update:modelValue", v);
+});
+
+function doClose() {
+  emit("cancel");
+  open.value = false;
+}
+
+onUnmounted(() => (uiStore.modalOpen = false));
+</script>
+
 <template>
   <TransitionRoot as="template" :show="open" :appear="true">
     <Dialog
@@ -62,55 +114,3 @@
     </Dialog>
   </TransitionRoot>
 </template>
-
-<script setup lang="ts">
-import { onUnmounted, ref, watch } from "vue";
-import {
-  Dialog,
-  DialogOverlay,
-  DialogTitle,
-  TransitionChild,
-  TransitionRoot,
-} from "@headlessui/vue";
-import { XMarkIcon } from "@heroicons/vue/24/outline";
-import { promiseTimeout } from "@vueuse/core";
-import { useUiStore } from "@/stores/uiStore";
-
-interface Props {
-  modelValue?: boolean;
-  dialogTitle?: string;
-  initialFocus?: HTMLElement;
-  maxWidth?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  modelValue: false,
-  maxWidth: "sm:max-w-xl",
-});
-const emit = defineEmits(["update:modelValue", "cancel"]);
-
-const uiStore = useUiStore();
-const open = ref(false);
-watch(
-  () => props.modelValue,
-  async (v) => {
-    await promiseTimeout(100);
-    open.value = v;
-  },
-  { immediate: true },
-);
-
-uiStore.modalOpen = open.value;
-watch(open, async (v) => {
-  uiStore.modalOpen = v;
-  await promiseTimeout(300);
-  emit("update:modelValue", v);
-});
-
-function doClose() {
-  emit("cancel");
-  open.value = false;
-}
-
-onUnmounted(() => (uiStore.modalOpen = false));
-</script>

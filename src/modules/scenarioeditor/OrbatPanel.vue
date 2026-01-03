@@ -1,40 +1,3 @@
-<template>
-  <div class="space-y-1 pt-2">
-    <slot name="header" />
-    <OrbatSide
-      v-for="side in sides"
-      :key="side.id"
-      :side="side"
-      @unit-action="onUnitAction"
-      @unit-click="onUnitClick"
-      @side-action="onSideAction"
-      :hide-filter="hideFilter"
-    />
-    <OrbatPanelAddSide
-      v-if="sides.length < 2"
-      :simple="sides.length >= 1"
-      class="mt-8"
-      @add="addSide()"
-    />
-  </div>
-  <div
-    v-if="isDragging && isCopying"
-    class="bg-opacity-50 border-border bg-background/50 text-foreground fixed top-2 right-1/2 z-50 rounded border p-2 text-center text-sm"
-  >
-    <p>Dragging copy mode <span v-if="isCopyingState">(including state)</span></p>
-  </div>
-  <div
-    v-if="isDraggingUnit && selectedUnitIds.size > 1"
-    class="bg-opacity-50 border-border bg-background/50 text-foreground fixed top-2 right-1/2 z-50 rounded border p-2 text-center text-sm"
-  >
-    <p>
-      Dragging
-      <span class="bg-muted rounded-full border px-1">{{ selectedUnitIds.size }}</span>
-      units
-    </p>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import OrbatPanelAddSide from "@/components/OrbatPanelAddSide.vue";
@@ -356,3 +319,40 @@ function onPaste(e: ClipboardEvent) {
   e.preventDefault();
 }
 </script>
+
+<template>
+  <div class="space-y-1 pt-2">
+    <slot name="header" />
+    <OrbatSide
+      v-for="side in sides"
+      :key="side.id"
+      :side="side"
+      @unit-action="onUnitAction"
+      @unit-click="onUnitClick"
+      @side-action="onSideAction"
+      :hide-filter="hideFilter"
+    />
+    <OrbatPanelAddSide
+      v-if="sides.length < 2"
+      :simple="sides.length >= 1"
+      class="mt-8"
+      @add="addSide()"
+    />
+  </div>
+  <div
+    v-if="isDragging && isCopying"
+    class="bg-opacity-50 border-border bg-background/50 text-foreground fixed top-2 right-1/2 z-50 rounded border p-2 text-center text-sm"
+  >
+    <p>Dragging copy mode <span v-if="isCopyingState">(including state)</span></p>
+  </div>
+  <div
+    v-if="isDraggingUnit && selectedUnitIds.size > 1"
+    class="bg-opacity-50 border-border bg-background/50 text-foreground fixed top-2 right-1/2 z-50 rounded border p-2 text-center text-sm"
+  >
+    <p>
+      Dragging
+      <span class="bg-muted rounded-full border px-1">{{ selectedUnitIds.size }}</span>
+      units
+    </p>
+  </div>
+</template>

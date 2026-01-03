@@ -1,18 +1,3 @@
-<template>
-  <DropIndicator v-if="instruction.type === 'reorder-above'" edge="top" />
-  <DropIndicator v-else-if="instruction.type === 'reorder-below'" edge="bottom" />
-  <div
-    v-else-if="instruction.type === 'make-child'"
-    :class="[outlineStyles]"
-    :style="style"
-  ></div>
-  <div
-    v-else-if="instruction.type === 'reparent'"
-    :class="[lineStyles, lineAboveStyles]"
-    :style="reparentStyle"
-  ></div>
-</template>
-
 <script lang="ts" setup>
 import { computed, toRaw } from "vue";
 
@@ -64,3 +49,18 @@ const lineAboveStyles =
 const outlineStyles =
   "absolute top-0 right-0 left-0 bottom-0 pointer-events-none border-[2px] border-blue-700 rounded-[3px]";
 </script>
+
+<template>
+  <DropIndicator v-if="instruction.type === 'reorder-above'" edge="top" />
+  <DropIndicator v-else-if="instruction.type === 'reorder-below'" edge="bottom" />
+  <div
+    v-else-if="instruction.type === 'make-child'"
+    :class="[outlineStyles]"
+    :style="style"
+  ></div>
+  <div
+    v-else-if="instruction.type === 'reparent'"
+    :class="[lineStyles, lineAboveStyles]"
+    :style="reparentStyle"
+  ></div>
+</template>

@@ -1,54 +1,3 @@
-<template>
-  <FloatingPanel class="pointer-events-auto flex items-center space-x-0.5 rounded-md p-1">
-    <p class="text-muted-foreground px-2 text-sm font-medium">Measure</p>
-    <MainToolbarButton
-      title="Length"
-      @click="measurementType = 'LineString'"
-      :active="measurementType === 'LineString'"
-    >
-      <LengthIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      title="Area"
-      @click="measurementType = 'Polygon'"
-      :active="measurementType === 'Polygon'"
-    >
-      <AreaIcon class="size-5" />
-    </MainToolbarButton>
-    <div class="h-5 border-l border-gray-300" />
-    <MainToolbarButton
-      title="Show segment lengths"
-      @click="showSegments = !showSegments"
-      :active="showSegments"
-    >
-      <ShowSegmentsIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      title="Show multiple measurements"
-      @click="clearPrevious = !clearPrevious"
-      :active="!clearPrevious"
-    >
-      <ShowMultipleIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      title="Show range circle"
-      @click="showCircle = !showCircle"
-      :active="showCircle"
-    >
-      <ShowCircleIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton title="Toggle snapping" @click="snap = !snap" :active="snap">
-      <SnapIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton title="Clear measurements" @click="clear()">
-      <TrashIcon class="size-5" />
-    </MainToolbarButton>
-
-    <MainToolbarButton title="Toggle toolbar" @click="store.clearToolbar()">
-      <CloseIcon class="size-5" />
-    </MainToolbarButton>
-  </FloatingPanel>
-</template>
 <script setup lang="ts">
 import {
   IconClose as CloseIcon,
@@ -102,3 +51,55 @@ onUnmounted(() => {
   selectStore.featureSelectEnabled = true;
 });
 </script>
+
+<template>
+  <FloatingPanel class="pointer-events-auto flex items-center space-x-0.5 rounded-md p-1">
+    <p class="text-muted-foreground px-2 text-sm font-medium">Measure</p>
+    <MainToolbarButton
+      title="Length"
+      @click="measurementType = 'LineString'"
+      :active="measurementType === 'LineString'"
+    >
+      <LengthIcon class="size-5" />
+    </MainToolbarButton>
+    <MainToolbarButton
+      title="Area"
+      @click="measurementType = 'Polygon'"
+      :active="measurementType === 'Polygon'"
+    >
+      <AreaIcon class="size-5" />
+    </MainToolbarButton>
+    <div class="h-5 border-l border-gray-300" />
+    <MainToolbarButton
+      title="Show segment lengths"
+      @click="showSegments = !showSegments"
+      :active="showSegments"
+    >
+      <ShowSegmentsIcon class="size-5" />
+    </MainToolbarButton>
+    <MainToolbarButton
+      title="Show multiple measurements"
+      @click="clearPrevious = !clearPrevious"
+      :active="!clearPrevious"
+    >
+      <ShowMultipleIcon class="size-5" />
+    </MainToolbarButton>
+    <MainToolbarButton
+      title="Show range circle"
+      @click="showCircle = !showCircle"
+      :active="showCircle"
+    >
+      <ShowCircleIcon class="size-5" />
+    </MainToolbarButton>
+    <MainToolbarButton title="Toggle snapping" @click="snap = !snap" :active="snap">
+      <SnapIcon class="size-5" />
+    </MainToolbarButton>
+    <MainToolbarButton title="Clear measurements" @click="clear()">
+      <TrashIcon class="size-5" />
+    </MainToolbarButton>
+
+    <MainToolbarButton title="Toggle toolbar" @click="store.clearToolbar()">
+      <CloseIcon class="size-5" />
+    </MainToolbarButton>
+  </FloatingPanel>
+</template>

@@ -1,165 +1,3 @@
-<template>
-  <div class="min-h-screen py-10">
-    <header>
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h1 class="text-heading text-3xl leading-tight font-bold">Create new scenario</h1>
-        <div class="prose dark:prose-invert mt-4">
-          <p>
-            Here you can provide some initial data for your scenario if you want. You can
-            always change these settings later.
-          </p>
-        </div>
-      </div>
-    </header>
-    <div class="mx-auto my-10 max-w-7xl sm:px-6 lg:px-8">
-      <form class="mt-6 space-y-6" @submit.prevent="create()">
-        <div class="flex items-center justify-between space-x-3 px-4 sm:px-0">
-          <Button as-child variant="link"
-            ><a href="https://docs.orbat-mapper.app/guide/getting-started" target="_blank"
-              >View documentation <ExternalLinkIcon />
-            </a>
-          </Button>
-          <BaseButton primary type="submit">Create scenario</BaseButton>
-        </div>
-        <FormCard
-          class=""
-          label="Basic scenario info"
-          description="Provide a name and description for your scenario."
-        >
-          <InputGroup label="Name" v-model="form.name" id="name-input" autofocus />
-
-          <SimpleMarkdownInput
-            label="Description"
-            v-model="form.description"
-            description="Use markdown syntax for formatting"
-          />
-        </FormCard>
-        <FormCard label="Initial ORBAT">
-          <template #description> Sides and root units.</template>
-          <div>
-            <ToggleField v-model="noInitialOrbat"
-              >Add sides and root units later
-            </ToggleField>
-          </div>
-          <template v-if="!noInitialOrbat">
-            <div
-              v-for="(sideData, idx) in form.sides"
-              :key="idx"
-              class="relative rounded-md border p-4"
-            >
-              <div class="grid gap-4 md:grid-cols-2">
-                <InputGroup v-model="sideData.name" label="Side name" />
-              </div>
-              <StandardIdentitySelect
-                v-model="sideData.standardIdentity"
-                v-model:fill-color="sideData.symbolOptions.fillColor"
-              />
-              <SimpleDivider class="mt-4 mb-4">Root units</SimpleDivider>
-              <div class="space-y-6">
-                <template v-for="(unit, i) in sideData.units" :key="i">
-                  <div class="flex items-end gap-4 md:grid md:grid-cols-2">
-                    <InputGroup label="Root unit name" v-model="unit.rootUnitName" />
-                    <NewMilitarySymbol
-                      :size="32"
-                      :sidc="unitSidc(unit, sideData)"
-                      :options="{ ...sideData.symbolOptions, outlineWidth: 8 }"
-                    />
-                  </div>
-                  <div class="mt-4 grid gap-4 md:grid-cols-2">
-                    <SymbolCodeSelect
-                      class=""
-                      label="Main icon"
-                      v-model="unit.rootUnitIcon"
-                      :items="iconItems(sideData.standardIdentity)"
-                      :symbol-options="sideData.symbolOptions"
-                    />
-                    <SymbolCodeSelect
-                      class="w-full"
-                      label="Echelon"
-                      v-model="unit.rootUnitEchelon"
-                      :items="echelonItems(sideData.standardIdentity)"
-                      :symbol-options="sideData.symbolOptions"
-                    />
-                  </div>
-                  <p class="text-muted-foreground text-sm">
-                    Don't worry if you can't find the right icon. You can change it later.
-                  </p>
-                  <SimpleDivider v-if="i < sideData.units.length - 1" />
-                </template>
-              </div>
-              <footer class="mt-6 flex justify-end gap-x-2">
-                <Button
-                  variant="link"
-                  type="button"
-                  size="sm"
-                  :disabled="!sideData.units.length"
-                  @click="removeUnit(sideData, sideData.units[sideData.units.length - 1])"
-                >
-                  Remove unit
-                </Button>
-                <span class="text-gray-300">|</span>
-                <Button
-                  type="button"
-                  variant="link"
-                  size="sm"
-                  @click="addRootUnit(sideData)"
-                >
-                  + Add root unit
-                </Button>
-              </footer>
-              <Button
-                variant="link"
-                size="sm"
-                v-if="idx === form.sides.length - 1"
-                @click="form.sides.pop()"
-              >
-                Remove side
-              </Button>
-            </div>
-            <footer class="mt-6 flex justify-end">
-              <Button type="button" variant="link" size="sm" @click="addSide()">
-                + Add side
-              </Button>
-            </footer>
-          </template>
-        </FormCard>
-        <FormCard label="Scenario start time">
-          <template #description>
-            <p>Select a start time and time zone.</p>
-          </template>
-          <TimezoneSelect label="Time zone" v-model="timeZone" />
-
-          <div class="grid grid-cols-3 gap-6">
-            <InputGroup label="Year" type="number" v-model="year" />
-            <InputGroup label="Month" type="number" v-model="month" />
-            <InputGroup label="Day" type="number" v-model="day" />
-          </div>
-          <div class="grid grid-cols-2 gap-6">
-            <InputGroup label="Hour" v-model="hour" type="number" min="0" max="23" />
-            <InputGroup label="Minute" v-model="minute" type="number" min="0" max="59" />
-          </div>
-          <p class="text-muted-foreground font-mono">{{ resDateTime.format() }}</p>
-        </FormCard>
-        <FormCard
-          label="Symbology standard"
-          description="Select the symbology standard you prefer to use."
-        >
-          <RadioGroupList
-            :items="standardSettings"
-            v-model="newScenario.symbologyStandard"
-          />
-        </FormCard>
-        <div class="flex justify-end space-x-3 px-4 sm:px-0">
-          <Button type="submit">Create scenario</Button>
-          <Button asChild variant="secondary"
-            ><RouterLink to="/">Cancel</RouterLink></Button
-          >
-        </div>
-      </form>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { ExternalLinkIcon } from "lucide-vue-next";
@@ -347,3 +185,165 @@ function removeUnit(side: InitialSideData, unit: RootUnit) {
   if (idx >= 0) side.units.splice(idx, 1);
 }
 </script>
+
+<template>
+  <div class="min-h-screen py-10">
+    <header>
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <h1 class="text-heading text-3xl leading-tight font-bold">Create new scenario</h1>
+        <div class="prose dark:prose-invert mt-4">
+          <p>
+            Here you can provide some initial data for your scenario if you want. You can
+            always change these settings later.
+          </p>
+        </div>
+      </div>
+    </header>
+    <div class="mx-auto my-10 max-w-7xl sm:px-6 lg:px-8">
+      <form class="mt-6 space-y-6" @submit.prevent="create()">
+        <div class="flex items-center justify-between space-x-3 px-4 sm:px-0">
+          <Button as-child variant="link"
+            ><a href="https://docs.orbat-mapper.app/guide/getting-started" target="_blank"
+              >View documentation <ExternalLinkIcon />
+            </a>
+          </Button>
+          <BaseButton primary type="submit">Create scenario</BaseButton>
+        </div>
+        <FormCard
+          class=""
+          label="Basic scenario info"
+          description="Provide a name and description for your scenario."
+        >
+          <InputGroup label="Name" v-model="form.name" id="name-input" autofocus />
+
+          <SimpleMarkdownInput
+            label="Description"
+            v-model="form.description"
+            description="Use markdown syntax for formatting"
+          />
+        </FormCard>
+        <FormCard label="Initial ORBAT">
+          <template #description> Sides and root units.</template>
+          <div>
+            <ToggleField v-model="noInitialOrbat"
+              >Add sides and root units later
+            </ToggleField>
+          </div>
+          <template v-if="!noInitialOrbat">
+            <div
+              v-for="(sideData, idx) in form.sides"
+              :key="idx"
+              class="relative rounded-md border p-4"
+            >
+              <div class="grid gap-4 md:grid-cols-2">
+                <InputGroup v-model="sideData.name" label="Side name" />
+              </div>
+              <StandardIdentitySelect
+                v-model="sideData.standardIdentity"
+                v-model:fill-color="sideData.symbolOptions.fillColor"
+              />
+              <SimpleDivider class="mt-4 mb-4">Root units</SimpleDivider>
+              <div class="space-y-6">
+                <template v-for="(unit, i) in sideData.units" :key="i">
+                  <div class="flex items-end gap-4 md:grid md:grid-cols-2">
+                    <InputGroup label="Root unit name" v-model="unit.rootUnitName" />
+                    <NewMilitarySymbol
+                      :size="32"
+                      :sidc="unitSidc(unit, sideData)"
+                      :options="{ ...sideData.symbolOptions, outlineWidth: 8 }"
+                    />
+                  </div>
+                  <div class="mt-4 grid gap-4 md:grid-cols-2">
+                    <SymbolCodeSelect
+                      class=""
+                      label="Main icon"
+                      v-model="unit.rootUnitIcon"
+                      :items="iconItems(sideData.standardIdentity)"
+                      :symbol-options="sideData.symbolOptions"
+                    />
+                    <SymbolCodeSelect
+                      class="w-full"
+                      label="Echelon"
+                      v-model="unit.rootUnitEchelon"
+                      :items="echelonItems(sideData.standardIdentity)"
+                      :symbol-options="sideData.symbolOptions"
+                    />
+                  </div>
+                  <p class="text-muted-foreground text-sm">
+                    Don't worry if you can't find the right icon. You can change it later.
+                  </p>
+                  <SimpleDivider v-if="i < sideData.units.length - 1" />
+                </template>
+              </div>
+              <footer class="mt-6 flex justify-end gap-x-2">
+                <Button
+                  variant="link"
+                  type="button"
+                  size="sm"
+                  :disabled="!sideData.units.length"
+                  @click="removeUnit(sideData, sideData.units[sideData.units.length - 1])"
+                >
+                  Remove unit
+                </Button>
+                <span class="text-gray-300">|</span>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  @click="addRootUnit(sideData)"
+                >
+                  + Add root unit
+                </Button>
+              </footer>
+              <Button
+                variant="link"
+                size="sm"
+                v-if="idx === form.sides.length - 1"
+                @click="form.sides.pop()"
+              >
+                Remove side
+              </Button>
+            </div>
+            <footer class="mt-6 flex justify-end">
+              <Button type="button" variant="link" size="sm" @click="addSide()">
+                + Add side
+              </Button>
+            </footer>
+          </template>
+        </FormCard>
+        <FormCard label="Scenario start time">
+          <template #description>
+            <p>Select a start time and time zone.</p>
+          </template>
+          <TimezoneSelect label="Time zone" v-model="timeZone" />
+
+          <div class="grid grid-cols-3 gap-6">
+            <InputGroup label="Year" type="number" v-model="year" />
+            <InputGroup label="Month" type="number" v-model="month" />
+            <InputGroup label="Day" type="number" v-model="day" />
+          </div>
+          <div class="grid grid-cols-2 gap-6">
+            <InputGroup label="Hour" v-model="hour" type="number" min="0" max="23" />
+            <InputGroup label="Minute" v-model="minute" type="number" min="0" max="59" />
+          </div>
+          <p class="text-muted-foreground font-mono">{{ resDateTime.format() }}</p>
+        </FormCard>
+        <FormCard
+          label="Symbology standard"
+          description="Select the symbology standard you prefer to use."
+        >
+          <RadioGroupList
+            :items="standardSettings"
+            v-model="newScenario.symbologyStandard"
+          />
+        </FormCard>
+        <div class="flex justify-end space-x-3 px-4 sm:px-0">
+          <Button type="submit">Create scenario</Button>
+          <Button asChild variant="secondary"
+            ><RouterLink to="/">Cancel</RouterLink></Button
+          >
+        </div>
+      </form>
+    </div>
+  </div>
+</template>

@@ -1,25 +1,3 @@
-<template>
-  <InputGroupTemplate :label="label" :description="description">
-    <template v-slot:default="{ id }">
-      <Select v-model="selectedValue" :size :id="id">
-        <SelectTrigger class="w-full"><SelectValue :placeholder /></SelectTrigger>
-        <SelectContent class="border-border">
-          <SelectItem v-if="addNone" :value="null">None</SelectItem>
-          <SelectItem
-            v-for="{ value, label, disabled } in computedValues"
-            :value="value"
-            :key="value"
-            :disabled
-          >
-            {{ label }}</SelectItem
-          >
-        </SelectContent>
-      </Select>
-    </template>
-    <template #hint><slot name="hint" /></template>
-  </InputGroupTemplate>
-</template>
-
 <script setup lang="ts">
 import InputGroupTemplate from "./InputGroupTemplate.vue";
 import { computed } from "vue";
@@ -56,3 +34,25 @@ const computedValues = computed(() => {
   }));
 });
 </script>
+
+<template>
+  <InputGroupTemplate :label="label" :description="description">
+    <template v-slot:default="{ id }">
+      <Select v-model="selectedValue" :size :id="id">
+        <SelectTrigger class="w-full"><SelectValue :placeholder /></SelectTrigger>
+        <SelectContent class="border-border">
+          <SelectItem v-if="addNone" :value="null">None</SelectItem>
+          <SelectItem
+            v-for="{ value, label, disabled } in computedValues"
+            :value="value"
+            :key="value"
+            :disabled
+          >
+            {{ label }}</SelectItem
+          >
+        </SelectContent>
+      </Select>
+    </template>
+    <template #hint><slot name="hint" /></template>
+  </InputGroupTemplate>
+</template>

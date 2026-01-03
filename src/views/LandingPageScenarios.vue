@@ -1,3 +1,30 @@
+<script setup lang="ts">
+import { useRouter } from "vue-router";
+
+import WipBadge from "../components/WipBadge.vue";
+import { MAP_EDIT_MODE_ROUTE, NEW_SCENARIO_ROUTE } from "@/router/names";
+import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
+import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromUrlPanel.vue";
+import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
+import SortDropdown from "@/components/SortDropdown.vue";
+import { DEMO_SCENARIOS, useBrowserScenarios } from "@/composables/browserScenarios";
+import { Button } from "@/components/ui/button";
+
+const { storedScenarios, sortOptions, onAction, loadScenario } = useBrowserScenarios();
+
+const router = useRouter();
+const getScenarioTo = (scenarioId: string) => {
+  return {
+    name: MAP_EDIT_MODE_ROUTE,
+    params: { scenarioId: `demo-${scenarioId}` },
+  };
+};
+
+const newScenario = () => {
+  router.push({ name: NEW_SCENARIO_ROUTE });
+};
+</script>
+
 <template>
   <div class="bg-background relative py-5">
     <div class="mx-auto max-w-3xl p-4 text-center">
@@ -108,30 +135,3 @@
     </section>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useRouter } from "vue-router";
-
-import WipBadge from "../components/WipBadge.vue";
-import { MAP_EDIT_MODE_ROUTE, NEW_SCENARIO_ROUTE } from "@/router/names";
-import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
-import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromUrlPanel.vue";
-import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
-import SortDropdown from "@/components/SortDropdown.vue";
-import { DEMO_SCENARIOS, useBrowserScenarios } from "@/composables/browserScenarios";
-import { Button } from "@/components/ui/button";
-
-const { storedScenarios, sortOptions, onAction, loadScenario } = useBrowserScenarios();
-
-const router = useRouter();
-const getScenarioTo = (scenarioId: string) => {
-  return {
-    name: MAP_EDIT_MODE_ROUTE,
-    params: { scenarioId: `demo-${scenarioId}` },
-  };
-};
-
-const newScenario = () => {
-  router.push({ name: NEW_SCENARIO_ROUTE });
-};
-</script>

@@ -1,13 +1,14 @@
-<template>
-  <div v-show="isActive" class="mt-6" :class="tabs.tabClass">
-    <slot :isActive="isActive"></slot>
-  </div>
-</template>
 <script lang="ts">
 export default {
   name: "TabItem",
 };
 </script>
+
+<template>
+  <div v-show="isActive" class="mt-6" :class="tabs.tabClass">
+    <slot :isActive="isActive"></slot>
+  </div>
+</template>
 
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from "vue";

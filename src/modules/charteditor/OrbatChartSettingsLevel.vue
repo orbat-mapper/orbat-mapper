@@ -1,31 +1,3 @@
-<template>
-  <div class="pb-4">
-    <div class="flex items-center justify-between">
-      <p class="text-sm text-gray-600">Level specific options.</p>
-      <PlainButton :disabled="usedOptions.size === 0" @click="clearSpecificOptions()"
-        >Clear settings</PlainButton
-      >
-    </div>
-    <div class="mt-4">
-      <SimpleSelect label="Level" :items="levelItems" v-model="test"></SimpleSelect>
-      <AccordionPanel label="Unit settings" default-open>
-        <SettingsUnit :item-type="ChartItemTypes.Level" />
-      </AccordionPanel>
-      <AccordionPanel label="Layout and spacing">
-        <NumberInputGroup
-          label="Level padding"
-          :model-value="mergedOptions.levelPadding"
-          @update:model-value="setValue('levelPadding', $event)"
-          :class="!usedOptions.has('levelPadding') && 'sepia-[50%]'"
-        />
-      </AccordionPanel>
-      <AccordionPanel label="Connectors">
-        <SettingConnectors :item-type="ChartItemTypes.Level" />
-      </AccordionPanel>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import {
   useSelectedChartElementStore,
@@ -70,3 +42,31 @@ const levelItems = computed((): SelectItem[] => {
 
 if (selectedElement.level === null) test.value = 0;
 </script>
+
+<template>
+  <div class="pb-4">
+    <div class="flex items-center justify-between">
+      <p class="text-sm text-gray-600">Level specific options.</p>
+      <PlainButton :disabled="usedOptions.size === 0" @click="clearSpecificOptions()"
+        >Clear settings</PlainButton
+      >
+    </div>
+    <div class="mt-4">
+      <SimpleSelect label="Level" :items="levelItems" v-model="test"></SimpleSelect>
+      <AccordionPanel label="Unit settings" default-open>
+        <SettingsUnit :item-type="ChartItemTypes.Level" />
+      </AccordionPanel>
+      <AccordionPanel label="Layout and spacing">
+        <NumberInputGroup
+          label="Level padding"
+          :model-value="mergedOptions.levelPadding"
+          @update:model-value="setValue('levelPadding', $event)"
+          :class="!usedOptions.has('levelPadding') && 'sepia-[50%]'"
+        />
+      </AccordionPanel>
+      <AccordionPanel label="Connectors">
+        <SettingConnectors :item-type="ChartItemTypes.Level" />
+      </AccordionPanel>
+    </div>
+  </div>
+</template>

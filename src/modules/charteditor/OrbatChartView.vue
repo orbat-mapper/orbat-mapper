@@ -1,46 +1,3 @@
-<template>
-  <div class="relative flex h-full w-screen overflow-hidden">
-    <aside
-      class="hidden bg-gray-50 lg:flex lg:w-[20rem] lg:shrink-0 lg:border-r lg:border-gray-200 print:hidden"
-    >
-      <OrbatChartSettings v-model:tab="currentTab" class="print:hidden" />
-    </aside>
-    <SlideOver v-model="isMenuOpen" left title="Chart layout settings">
-      <OrbatChartSettings v-if="isMenuOpen" v-model:tab="currentTab" />
-    </SlideOver>
-    <main class="relative min-w-0 flex-auto print:block">
-      <OrbatChart
-        :unit="rootUnitStore.unit"
-        :debug="debug"
-        :width="width"
-        :height="height"
-        :symbol-generator="symbolGenerator"
-        @unitclick="onUnitClick"
-        @levelclick="onLevelClick"
-        @branchclick="onBranchClick"
-        :interactive="isInteractive"
-        :chart-id="chartId"
-        :options="options.$state"
-        :specific-options="specificOptions.$state"
-        enable-pan-zoom
-      />
-      <div class="absolute top-4 left-4 flex items-center space-x-4 print:hidden">
-        <button
-          type="button"
-          @click="isMenuOpen = true"
-          class="border-r border-gray-200 p-4 text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden focus:ring-inset lg:hidden"
-        >
-          <span class="sr-only">Open sidebar</span>
-          <MenuAlt2Icon class="h-6 w-6" aria-hidden="true" />
-        </button>
-        <ToggleField v-model="debug">Debug mode</ToggleField>
-        <ToggleField v-model="isInteractive">Interactive</ToggleField>
-        <DotsMenu :items="menuItems" />
-      </div>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, nextTick, provide, ref } from "vue";
 import OrbatChart from "./OrbatChart.vue";
@@ -175,3 +132,46 @@ function downloadElementAsSVG(elementId: string) {
   );
 }
 </script>
+
+<template>
+  <div class="relative flex h-full w-screen overflow-hidden">
+    <aside
+      class="hidden bg-gray-50 lg:flex lg:w-[20rem] lg:shrink-0 lg:border-r lg:border-gray-200 print:hidden"
+    >
+      <OrbatChartSettings v-model:tab="currentTab" class="print:hidden" />
+    </aside>
+    <SlideOver v-model="isMenuOpen" left title="Chart layout settings">
+      <OrbatChartSettings v-if="isMenuOpen" v-model:tab="currentTab" />
+    </SlideOver>
+    <main class="relative min-w-0 flex-auto print:block">
+      <OrbatChart
+        :unit="rootUnitStore.unit"
+        :debug="debug"
+        :width="width"
+        :height="height"
+        :symbol-generator="symbolGenerator"
+        @unitclick="onUnitClick"
+        @levelclick="onLevelClick"
+        @branchclick="onBranchClick"
+        :interactive="isInteractive"
+        :chart-id="chartId"
+        :options="options.$state"
+        :specific-options="specificOptions.$state"
+        enable-pan-zoom
+      />
+      <div class="absolute top-4 left-4 flex items-center space-x-4 print:hidden">
+        <button
+          type="button"
+          @click="isMenuOpen = true"
+          class="border-r border-gray-200 p-4 text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden focus:ring-inset lg:hidden"
+        >
+          <span class="sr-only">Open sidebar</span>
+          <MenuAlt2Icon class="h-6 w-6" aria-hidden="true" />
+        </button>
+        <ToggleField v-model="debug">Debug mode</ToggleField>
+        <ToggleField v-model="isInteractive">Interactive</ToggleField>
+        <DotsMenu :items="menuItems" />
+      </div>
+    </main>
+  </div>
+</template>

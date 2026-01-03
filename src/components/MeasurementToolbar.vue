@@ -1,49 +1,3 @@
-<template>
-  <div>
-    <BaseToolbar class="shadow-sm">
-      <ToolbarButton
-        start
-        :end="!enableMeasurements"
-        title="Toggle measurements"
-        @click="toggleMeasurements()"
-      >
-        <IconRuler class="h-5 w-5" :class="enableMeasurements && 'text-gray-900'" />
-      </ToolbarButton>
-      <template v-if="enableMeasurements">
-        <ToolbarButton
-          @click="measurementType = 'LineString'"
-          :active="measurementType === 'LineString'"
-        >
-          <IconVectorPolyline class="h-5 w-5" />
-        </ToolbarButton>
-        <ToolbarButton
-          @click="measurementType = 'Polygon'"
-          :active="measurementType === 'Polygon'"
-        >
-          <IconVectorPolygon class="h-5 w-5" />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Clear previous measurements"
-          @click="clearPrevious = !clearPrevious"
-          :active="!clearPrevious"
-        >
-          <IconSelectionMultiple class="h-5 w-5" />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Show segment lengths"
-          @click="showSegments = !showSegments"
-          :active="showSegments"
-        >
-          <IconMapMarkerPath class="h-5 w-5" />
-        </ToolbarButton>
-        <ToolbarButton end @click="clear()">
-          <TrashIcon class="h-5 w-5" />
-        </ToolbarButton>
-      </template>
-    </BaseToolbar>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { TrashIcon } from "@heroicons/vue/24/solid";
 
@@ -93,3 +47,49 @@ watch(enableMeasurements, (enabled) => {
   }
 });
 </script>
+
+<template>
+  <div>
+    <BaseToolbar class="shadow-sm">
+      <ToolbarButton
+        start
+        :end="!enableMeasurements"
+        title="Toggle measurements"
+        @click="toggleMeasurements()"
+      >
+        <IconRuler class="h-5 w-5" :class="enableMeasurements && 'text-gray-900'" />
+      </ToolbarButton>
+      <template v-if="enableMeasurements">
+        <ToolbarButton
+          @click="measurementType = 'LineString'"
+          :active="measurementType === 'LineString'"
+        >
+          <IconVectorPolyline class="h-5 w-5" />
+        </ToolbarButton>
+        <ToolbarButton
+          @click="measurementType = 'Polygon'"
+          :active="measurementType === 'Polygon'"
+        >
+          <IconVectorPolygon class="h-5 w-5" />
+        </ToolbarButton>
+        <ToolbarButton
+          title="Clear previous measurements"
+          @click="clearPrevious = !clearPrevious"
+          :active="!clearPrevious"
+        >
+          <IconSelectionMultiple class="h-5 w-5" />
+        </ToolbarButton>
+        <ToolbarButton
+          title="Show segment lengths"
+          @click="showSegments = !showSegments"
+          :active="showSegments"
+        >
+          <IconMapMarkerPath class="h-5 w-5" />
+        </ToolbarButton>
+        <ToolbarButton end @click="clear()">
+          <TrashIcon class="h-5 w-5" />
+        </ToolbarButton>
+      </template>
+    </BaseToolbar>
+  </div>
+</template>

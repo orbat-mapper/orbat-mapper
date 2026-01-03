@@ -1,3 +1,16 @@
+<script setup lang="ts">
+import ToggleField from "@/components/ToggleField.vue";
+import { type ChartItemType } from "./orbatchart";
+import { useChartSettings } from "./composables";
+
+interface Props {
+  itemType: ChartItemType;
+}
+const props = defineProps<Props>();
+const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
+console.log(usedOptions);
+</script>
+
 <template>
   <div class="space-y-6">
     <ToggleField
@@ -14,16 +27,3 @@
     </ToggleField>
   </div>
 </template>
-
-<script setup lang="ts">
-import ToggleField from "@/components/ToggleField.vue";
-import { type ChartItemType } from "./orbatchart";
-import { useChartSettings } from "./composables";
-
-interface Props {
-  itemType: ChartItemType;
-}
-const props = defineProps<Props>();
-const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
-console.log(usedOptions);
-</script>

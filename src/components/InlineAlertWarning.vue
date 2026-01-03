@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import { ExclamationTriangleIcon } from "@heroicons/vue/20/solid";
+</script>
+
 <template>
   <div class="border-l-4 border-yellow-400 bg-yellow-50 p-4">
     <div class="flex">
@@ -12,7 +16,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ExclamationTriangleIcon } from "@heroicons/vue/20/solid";
-</script>

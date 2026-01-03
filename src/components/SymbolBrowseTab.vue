@@ -1,3 +1,101 @@
+<script setup lang="ts">
+import MilSymbol from "./NewMilitarySymbol.vue";
+import SymbolCodeSelect from "./SymbolCodeSelect.vue";
+import { computed, nextTick, onActivated, ref, watch } from "vue";
+import { groupBy } from "@/utils";
+import { useSymbolItems } from "@/composables/symbolData";
+import { type UnitSymbolOptions } from "@/types/scenarioModels";
+import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
+import { breakpointsTailwind, useBreakpoints, useDebounce } from "@vueuse/core";
+
+interface Props {
+  initialSidc: string;
+  symbolSize?: number;
+  symbolOptions?: UnitSymbolOptions;
+}
+
+const props = withDefaults(defineProps<Props>(), { symbolSize: 32 });
+const searchQuery = ref("");
+const debouncedQuery = useDebounce(searchQuery, 100);
+const inputRef = ref();
+
+const {
+  mod1Items,
+  mod2Items,
+  mod1Value,
+  mod2Value,
+  symbolSets,
+  symbolSetValue,
+  icons,
+  iconValue,
+  csidc,
+  isLoaded,
+  loadData,
+} = useSymbolItems(computed(() => props.initialSidc));
+
+if (!isLoaded.value) loadData();
+
+const emit = defineEmits(["update-sidc"]);
+
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smallerOrEqual("md");
+
+const filteredIconsByEntity = computed(() => {
+  if (!debouncedQuery.value.trim()) return groupBy(icons.value, "entity");
+  const query = debouncedQuery.value.toLowerCase();
+  const filtered = icons.value.filter((icon) => {
+    return (
+      icon.entityType?.toLowerCase().includes(query) ||
+      icon.entitySubtype?.toLowerCase().includes(query)
+    );
+  });
+  return groupBy(filtered, "entity");
+});
+
+const filteredMod1Items = computed(() => {
+  if (!debouncedQuery.value.trim()) return mod1Items.value;
+  const query = debouncedQuery.value.toLowerCase();
+  return mod1Items.value.filter((item) => item.text.toLowerCase().includes(query));
+});
+
+const filteredMod2Items = computed(() => {
+  if (!debouncedQuery.value.trim()) return mod2Items.value;
+  const query = debouncedQuery.value.toLowerCase();
+  return mod2Items.value.filter((item) => item.text.toLowerCase().includes(query));
+});
+
+watch([mod1Value, mod2Value, iconValue], (value, oldValue) => {
+  emit("update-sidc", csidc.value);
+});
+
+function goTo(sidc: string) {
+  const el = document.getElementById(`scode-${sidc}`);
+  if (el) {
+    el.scrollIntoView(true);
+  }
+}
+
+onActivated(() => {
+  searchQuery.value = "";
+  nextTick(() => {
+    if (!isMobile.value) {
+      inputRef.value.focus();
+    }
+    const el = document.getElementById(`scode-${iconValue.value}`);
+    if (el) {
+      el.scrollIntoView({ block: "center" });
+    }
+  });
+});
+
+function onEsc(e: KeyboardEvent) {
+  if (searchQuery.value.length) {
+    e.stopPropagation();
+    searchQuery.value = "";
+  }
+}
+</script>
+
 <template>
   <div class="flex px-0.5">
     <aside class="hidden w-60 flex-none pr-2 md:block">
@@ -132,100 +230,3 @@
     </div>
   </div>
 </template>
-<script setup lang="ts">
-import MilSymbol from "./NewMilitarySymbol.vue";
-import SymbolCodeSelect from "./SymbolCodeSelect.vue";
-import { computed, nextTick, onActivated, ref, watch } from "vue";
-import { groupBy } from "@/utils";
-import { useSymbolItems } from "@/composables/symbolData";
-import { type UnitSymbolOptions } from "@/types/scenarioModels";
-import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
-import { breakpointsTailwind, useBreakpoints, useDebounce } from "@vueuse/core";
-
-interface Props {
-  initialSidc: string;
-  symbolSize?: number;
-  symbolOptions?: UnitSymbolOptions;
-}
-
-const props = withDefaults(defineProps<Props>(), { symbolSize: 32 });
-const searchQuery = ref("");
-const debouncedQuery = useDebounce(searchQuery, 100);
-const inputRef = ref();
-
-const {
-  mod1Items,
-  mod2Items,
-  mod1Value,
-  mod2Value,
-  symbolSets,
-  symbolSetValue,
-  icons,
-  iconValue,
-  csidc,
-  isLoaded,
-  loadData,
-} = useSymbolItems(computed(() => props.initialSidc));
-
-if (!isLoaded.value) loadData();
-
-const emit = defineEmits(["update-sidc"]);
-
-const breakpoints = useBreakpoints(breakpointsTailwind);
-const isMobile = breakpoints.smallerOrEqual("md");
-
-const filteredIconsByEntity = computed(() => {
-  if (!debouncedQuery.value.trim()) return groupBy(icons.value, "entity");
-  const query = debouncedQuery.value.toLowerCase();
-  const filtered = icons.value.filter((icon) => {
-    return (
-      icon.entityType?.toLowerCase().includes(query) ||
-      icon.entitySubtype?.toLowerCase().includes(query)
-    );
-  });
-  return groupBy(filtered, "entity");
-});
-
-const filteredMod1Items = computed(() => {
-  if (!debouncedQuery.value.trim()) return mod1Items.value;
-  const query = debouncedQuery.value.toLowerCase();
-  return mod1Items.value.filter((item) => item.text.toLowerCase().includes(query));
-});
-
-const filteredMod2Items = computed(() => {
-  if (!debouncedQuery.value.trim()) return mod2Items.value;
-  const query = debouncedQuery.value.toLowerCase();
-  return mod2Items.value.filter((item) => item.text.toLowerCase().includes(query));
-});
-
-watch([mod1Value, mod2Value, iconValue], (value, oldValue) => {
-  emit("update-sidc", csidc.value);
-});
-
-function goTo(sidc: string) {
-  const el = document.getElementById(`scode-${sidc}`);
-  if (el) {
-    el.scrollIntoView(true);
-  }
-}
-
-onActivated(() => {
-  searchQuery.value = "";
-  nextTick(() => {
-    if (!isMobile.value) {
-      inputRef.value.focus();
-    }
-    const el = document.getElementById(`scode-${iconValue.value}`);
-    if (el) {
-      el.scrollIntoView({ block: "center" });
-    }
-  });
-});
-
-function onEsc(e: KeyboardEvent) {
-  if (searchQuery.value.length) {
-    e.stopPropagation();
-    searchQuery.value = "";
-  }
-}
-</script>

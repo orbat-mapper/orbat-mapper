@@ -1,20 +1,3 @@
-<template>
-  <div>
-    <Label :for="id || computedId" class="">
-      <slot name="label">{{ label }}</slot>
-    </Label>
-    <div class="mt-1">
-      <Textarea v-model="localValue" :id="id || computedId" v-bind="$attrs" />
-    </div>
-    <p
-      v-if="description || $slots.description"
-      class="text-muted-foreground mt-2 text-sm"
-    >
-      <slot name="description">{{ description }}</slot>
-    </p>
-  </div>
-</template>
-
 <script>
 import { computed, defineComponent } from "vue";
 import { nanoid } from "nanoid";
@@ -45,3 +28,20 @@ export default defineComponent({
   },
 });
 </script>
+
+<template>
+  <div>
+    <Label :for="id || computedId" class="">
+      <slot name="label">{{ label }}</slot>
+    </Label>
+    <div class="mt-1">
+      <Textarea v-model="localValue" :id="id || computedId" v-bind="$attrs" />
+    </div>
+    <p
+      v-if="description || $slots.description"
+      class="text-muted-foreground mt-2 text-sm"
+    >
+      <slot name="description">{{ description }}</slot>
+    </p>
+  </div>
+</template>

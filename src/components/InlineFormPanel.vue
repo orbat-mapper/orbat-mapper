@@ -1,3 +1,10 @@
+<script setup lang="ts">
+import { XMarkIcon } from "@heroicons/vue/24/outline";
+
+const props = defineProps<{ title?: string }>();
+const emit = defineEmits(["close"]);
+</script>
+
 <template>
   <div class="overflow-hidden shadow-sm">
     <div class="relative px-4 py-5 sm:p-6">
@@ -16,10 +23,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { XMarkIcon } from "@heroicons/vue/24/outline";
-
-const props = defineProps<{ title?: string }>();
-const emit = defineEmits(["close"]);
-</script>

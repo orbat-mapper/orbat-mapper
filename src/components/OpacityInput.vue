@@ -1,3 +1,23 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import { IconOpacity as OpacityIcon } from "@iconify-prerendered/vue-mdi";
+import { useToggle, useVModel } from "@vueuse/core";
+
+interface Props {
+  modelValue?: number;
+  visible?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: 1,
+  visible: false,
+});
+
+const opacity = useVModel(props, "modelValue");
+const [showRange, toggleRange] = useToggle(props.visible);
+const opacityAsPercent = computed(() => (opacity.value * 100).toFixed(0));
+</script>
+
 <template>
   <div class="flex items-center">
     <input
@@ -21,23 +41,3 @@
     </button>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed } from "vue";
-import { IconOpacity as OpacityIcon } from "@iconify-prerendered/vue-mdi";
-import { useToggle, useVModel } from "@vueuse/core";
-
-interface Props {
-  modelValue?: number;
-  visible?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  modelValue: 1,
-  visible: false,
-});
-
-const opacity = useVModel(props, "modelValue");
-const [showRange, toggleRange] = useToggle(props.visible);
-const opacityAsPercent = computed(() => (opacity.value * 100).toFixed(0));
-</script>

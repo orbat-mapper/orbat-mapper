@@ -1,33 +1,3 @@
-<template>
-  <div
-    class="border-border focus-within:ring-ring hover:border-border/80 relative w-full rounded-lg border-2 border-dashed p-4 ring-offset-2 focus-within:ring-2"
-    @dragover.prevent
-    @drop.prevent="onDrop"
-  >
-    <button
-      class="text-foreground hover:text-muted-foreground flex h-full w-full cursor-pointer flex-col items-center justify-center text-sm font-medium"
-      @click="toggleModal()"
-    >
-      <IconWebPlus class="text-muted-foreground h-10 w-10" />
-
-      <span class="mt-2 block text-center">Load from URL</span>
-    </button>
-
-    <p
-      v-if="isError"
-      class="text-destructive-foreground absolute bottom-2 left-0 w-full text-center text-base"
-    >
-      Please select a valid scenario file.
-    </p>
-    <NewSimpleModal v-model="showModal" dialog-title="Load scenario from URL">
-      <LoadScenarioUrlForm
-        class="mt-4"
-        @loaded="emit('loaded', $event)"
-        :url="initialUrl"
-      />
-    </NewSimpleModal>
-  </div>
-</template>
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useToggle } from "@vueuse/core";
@@ -76,3 +46,34 @@ async function onDrop(e: DragEvent) {
   }
 }
 </script>
+
+<template>
+  <div
+    class="border-border focus-within:ring-ring hover:border-border/80 relative w-full rounded-lg border-2 border-dashed p-4 ring-offset-2 focus-within:ring-2"
+    @dragover.prevent
+    @drop.prevent="onDrop"
+  >
+    <button
+      class="text-foreground hover:text-muted-foreground flex h-full w-full cursor-pointer flex-col items-center justify-center text-sm font-medium"
+      @click="toggleModal()"
+    >
+      <IconWebPlus class="text-muted-foreground h-10 w-10" />
+
+      <span class="mt-2 block text-center">Load from URL</span>
+    </button>
+
+    <p
+      v-if="isError"
+      class="text-destructive-foreground absolute bottom-2 left-0 w-full text-center text-base"
+    >
+      Please select a valid scenario file.
+    </p>
+    <NewSimpleModal v-model="showModal" dialog-title="Load scenario from URL">
+      <LoadScenarioUrlForm
+        class="mt-4"
+        @loaded="emit('loaded', $event)"
+        :url="initialUrl"
+      />
+    </NewSimpleModal>
+  </div>
+</template>

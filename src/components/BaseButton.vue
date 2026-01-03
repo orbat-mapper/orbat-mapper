@@ -1,12 +1,3 @@
-<template>
-  <Button
-    :variant="primary ? 'default' : secondary ? 'secondary' : 'outline'"
-    :size="small ? 'sm' : large ? 'lg' : huge ? 'lg' : undefined"
-  >
-    <slot />
-  </Button>
-</template>
-
 <script setup lang="ts">
 import { Button } from "@/components/ui/button/index.js";
 const props = withDefaults(
@@ -26,3 +17,12 @@ const props = withDefaults(
   },
 );
 </script>
+
+<template>
+  <Button
+    :variant="primary ? 'default' : secondary ? 'secondary' : 'outline'"
+    :size="small ? 'sm' : large ? 'lg' : huge ? 'lg' : undefined"
+  >
+    <slot />
+  </Button>
+</template>

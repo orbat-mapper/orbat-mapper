@@ -1,3 +1,74 @@
+<script setup lang="ts">
+import BaseButton from "@/components/BaseButton.vue";
+import FormCard from "@/components/FormCard.vue";
+import { ref } from "vue";
+import { IconEarth } from "@iconify-prerendered/vue-mdi";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
+import InputGroup from "@/components/InputGroup.vue";
+import SimpleCombo from "@/components/SimpleCombo.vue";
+import AccordionPanel from "@/components/AccordionPanel.vue";
+import ChevronPanel from "@/components/ChevronPanel.vue";
+import SettingsPanel from "@/components/SettingsPanel.vue";
+import ToggleField from "@/components/ToggleField.vue";
+import CheckboxDropdown from "@/components/CheckboxDropdown.vue";
+import DotsMenu from "@/components/DotsMenu.vue";
+import type { ButtonGroupItem, MenuItemData } from "@/components/types";
+import type { ScenarioActions } from "@/types/constants";
+import LinkButton from "@/components/LinkButton.vue";
+import TestCoordinateInput from "@/views/TestCoordinateInput.vue";
+import SplitButton from "@/components/SplitButton.vue";
+
+const num = ref(1);
+const v = ref("Test");
+const v2 = ref(1);
+const values = ["Hello", "Test", "Another"];
+const items = [
+  { label: "Hello", value: 1 },
+  { label: "Test", value: 2 },
+  { label: "Another", value: 3 },
+];
+
+const sel = ref([]);
+
+const toggle = ref(true);
+
+const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
+  { label: "Add new side", action: "addSide" },
+  { label: "Save to local storage", action: "save" },
+  { label: "Load from local storage", action: "load" },
+  { label: "Load scenario", action: "loadNew" },
+  { label: "Download as JSON", action: "exportJson" },
+  { label: "Copy to clipboard", action: "exportToClipboard" },
+  { label: "Export scenario", action: "export" },
+  { label: "Import", action: "import" },
+];
+
+const mapLayerButtonItems: ButtonGroupItem[] = [
+  {
+    label: "Add feature layer",
+    onClick: () => {
+      console.log("Add feature layer");
+    },
+  },
+  {
+    label: "Add image layer",
+    onClick: () => console.log("Add image layer"),
+  },
+  {
+    label: "Add XYZ tile layer",
+    onClick: () => console.log("Add XYZ tile layer"),
+  },
+  {
+    label: "Add TileJSON layer",
+    onClick: () => console.log("Add TileJSON layer"),
+  },
+];
+
+function onClick(e: Event) {
+  console.log(e.target);
+}
+</script>
+
 <template>
   <div class="min-h-full">
     <div class="py-10">
@@ -141,74 +212,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import BaseButton from "@/components/BaseButton.vue";
-import FormCard from "@/components/FormCard.vue";
-import { ref } from "vue";
-import { IconEarth } from "@iconify-prerendered/vue-mdi";
-import NumberInputGroup from "@/components/NumberInputGroup.vue";
-import InputGroup from "@/components/InputGroup.vue";
-import SimpleCombo from "@/components/SimpleCombo.vue";
-import AccordionPanel from "@/components/AccordionPanel.vue";
-import ChevronPanel from "@/components/ChevronPanel.vue";
-import SettingsPanel from "@/components/SettingsPanel.vue";
-import ToggleField from "@/components/ToggleField.vue";
-import CheckboxDropdown from "@/components/CheckboxDropdown.vue";
-import DotsMenu from "@/components/DotsMenu.vue";
-import type { ButtonGroupItem, MenuItemData } from "@/components/types";
-import type { ScenarioActions } from "@/types/constants";
-import LinkButton from "@/components/LinkButton.vue";
-import TestCoordinateInput from "@/views/TestCoordinateInput.vue";
-import SplitButton from "@/components/SplitButton.vue";
-
-const num = ref(1);
-const v = ref("Test");
-const v2 = ref(1);
-const values = ["Hello", "Test", "Another"];
-const items = [
-  { label: "Hello", value: 1 },
-  { label: "Test", value: 2 },
-  { label: "Another", value: 3 },
-];
-
-const sel = ref([]);
-
-const toggle = ref(true);
-
-const scenarioMenuItems: MenuItemData<ScenarioActions>[] = [
-  { label: "Add new side", action: "addSide" },
-  { label: "Save to local storage", action: "save" },
-  { label: "Load from local storage", action: "load" },
-  { label: "Load scenario", action: "loadNew" },
-  { label: "Download as JSON", action: "exportJson" },
-  { label: "Copy to clipboard", action: "exportToClipboard" },
-  { label: "Export scenario", action: "export" },
-  { label: "Import", action: "import" },
-];
-
-const mapLayerButtonItems: ButtonGroupItem[] = [
-  {
-    label: "Add feature layer",
-    onClick: () => {
-      console.log("Add feature layer");
-    },
-  },
-  {
-    label: "Add image layer",
-    onClick: () => console.log("Add image layer"),
-  },
-  {
-    label: "Add XYZ tile layer",
-    onClick: () => console.log("Add XYZ tile layer"),
-  },
-  {
-    label: "Add TileJSON layer",
-    onClick: () => console.log("Add TileJSON layer"),
-  },
-];
-
-function onClick(e: Event) {
-  console.log(e.target);
-}
-</script>

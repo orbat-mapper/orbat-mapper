@@ -1,17 +1,3 @@
-<template>
-  <div class="">
-    <header class="pr-4">
-      <EditableLabel
-        v-model="scenarioName"
-        @update-value="updateScenarioInfo({ name: $event })"
-      />
-    </header>
-    <TabWrapper :tab-list="['Details']" v-model="panelStore.tabIndex">
-      <TabPanel><ScenarioInfoDetails class="pt-4" /></TabPanel>
-    </TabWrapper>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { type ScenarioInfo } from "@/types/scenarioModels";
@@ -42,3 +28,17 @@ function updateScenarioInfo(data: Partial<ScenarioInfo>) {
   });
 }
 </script>
+
+<template>
+  <div class="">
+    <header class="pr-4">
+      <EditableLabel
+        v-model="scenarioName"
+        @update-value="updateScenarioInfo({ name: $event })"
+      />
+    </header>
+    <TabWrapper :tab-list="['Details']" v-model="panelStore.tabIndex">
+      <TabPanel><ScenarioInfoDetails class="pt-4" /></TabPanel>
+    </TabWrapper>
+  </div>
+</template>

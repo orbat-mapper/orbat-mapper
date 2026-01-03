@@ -1,87 +1,3 @@
-<template>
-  <div
-    class="relative flex min-h-0 flex-auto"
-    @keydown.down="doArrows('down', $event)"
-    @keydown.up="doArrows('up', $event)"
-    @keydown.left="doArrows('left', $event)"
-    @keydown.right="doArrows('right', $event)"
-    @keydown.delete="doDelete"
-    @keydown.shift.enter="duplicateItem"
-    @keydown.alt.enter="createNewItem"
-    @keydown.ctrl.e="toggleExpandItem"
-    @keydown.alt.x="toggleOpenItem"
-  >
-    <div
-      ref="target"
-      class="border-border bg-card text-foreground flex h-full w-full flex-col overflow-hidden border shadow-sm sm:rounded-lg"
-    >
-      <header
-        class="border-border bg-muted/60 flex shrink-0 items-center justify-between border-b px-4 py-3 sm:px-6"
-      >
-        <div class="flex w-full items-center space-x-2 overflow-x-auto sm:w-auto">
-          <FilterQueryInput class="" v-model="filterQuery" />
-          <BaseButton @click="toggleSides()" small>Toggle sides</BaseButton>
-          <BaseButton small @click="createNewItem">Create subordinate</BaseButton>
-          <BaseButton small @click="duplicateItem">Duplicate unit</BaseButton>
-          <BaseButton small @click="deleteItem" :disabled="!activeItem"
-            >Delete item</BaseButton
-          >
-        </div>
-        <CheckboxDropdown :options="availableColumns" v-model="selectedColumns"
-          >Columns</CheckboxDropdown
-        >
-      </header>
-      <div class="relative max-w-none min-w-0 flex-auto overflow-auto pb-7">
-        <table class="text-foreground w-full table-fixed text-sm">
-          <GridHeader :columns="columns" />
-          <tbody class="divide-border bg-card divide-y">
-            <template v-for="(item, itemIndex) in items" :key="item.id">
-              <GridUnitRow
-                v-if="item.type === 'unit'"
-                :unit="item.unit"
-                :columns="columns"
-                :level="item.level"
-                :item-index="itemIndex"
-                @update-unit="updateUnit"
-                @next-cell="nextCell"
-                @active-item="onActiveItem(item, $event)"
-                :is-active="activeItem?.id === item.id"
-                @edit="onUnitEdit"
-              />
-              <GridSideRow
-                v-else-if="item.type === 'side'"
-                :side="item.side"
-                :columns="columns"
-                :side-open="sideOpen"
-                @toggle="toggleSide"
-                :item-index="itemIndex"
-                @next-cell="nextCell"
-                @update-side="updateSide"
-                @active-item="onActiveItem(item, $event)"
-                :is-active="activeItem?.id === item.id"
-              />
-              <GridSideGroupRow
-                v-else-if="item.type === 'sidegroup'"
-                :side-group="item.sideGroup"
-                :columns="columns"
-                :sg-open="sgOpen"
-                @toggle="toggleSideGroup"
-                @expand="expandSideGroup"
-                :item-index="itemIndex"
-                @next-cell="nextCell"
-                @update-side-group="updateSideGroup"
-                @active-item="onActiveItem(item, $event)"
-                :is-active="activeItem?.id === item.id"
-              />
-            </template>
-          </tbody>
-        </table>
-      </div>
-      <footer class="border-border bg-muted/60 h-12 shrink-0 border-t"></footer>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useDebounce, useEventListener, useStorage } from "@vueuse/core";
 import { useRouter } from "vue-router";
@@ -483,3 +399,87 @@ async function onUnitEdit(unit: NUnit, b: ColumnField, c: string) {
   }
 }
 </script>
+
+<template>
+  <div
+    class="relative flex min-h-0 flex-auto"
+    @keydown.down="doArrows('down', $event)"
+    @keydown.up="doArrows('up', $event)"
+    @keydown.left="doArrows('left', $event)"
+    @keydown.right="doArrows('right', $event)"
+    @keydown.delete="doDelete"
+    @keydown.shift.enter="duplicateItem"
+    @keydown.alt.enter="createNewItem"
+    @keydown.ctrl.e="toggleExpandItem"
+    @keydown.alt.x="toggleOpenItem"
+  >
+    <div
+      ref="target"
+      class="border-border bg-card text-foreground flex h-full w-full flex-col overflow-hidden border shadow-sm sm:rounded-lg"
+    >
+      <header
+        class="border-border bg-muted/60 flex shrink-0 items-center justify-between border-b px-4 py-3 sm:px-6"
+      >
+        <div class="flex w-full items-center space-x-2 overflow-x-auto sm:w-auto">
+          <FilterQueryInput class="" v-model="filterQuery" />
+          <BaseButton @click="toggleSides()" small>Toggle sides</BaseButton>
+          <BaseButton small @click="createNewItem">Create subordinate</BaseButton>
+          <BaseButton small @click="duplicateItem">Duplicate unit</BaseButton>
+          <BaseButton small @click="deleteItem" :disabled="!activeItem"
+            >Delete item</BaseButton
+          >
+        </div>
+        <CheckboxDropdown :options="availableColumns" v-model="selectedColumns"
+          >Columns</CheckboxDropdown
+        >
+      </header>
+      <div class="relative max-w-none min-w-0 flex-auto overflow-auto pb-7">
+        <table class="text-foreground w-full table-fixed text-sm">
+          <GridHeader :columns="columns" />
+          <tbody class="divide-border bg-card divide-y">
+            <template v-for="(item, itemIndex) in items" :key="item.id">
+              <GridUnitRow
+                v-if="item.type === 'unit'"
+                :unit="item.unit"
+                :columns="columns"
+                :level="item.level"
+                :item-index="itemIndex"
+                @update-unit="updateUnit"
+                @next-cell="nextCell"
+                @active-item="onActiveItem(item, $event)"
+                :is-active="activeItem?.id === item.id"
+                @edit="onUnitEdit"
+              />
+              <GridSideRow
+                v-else-if="item.type === 'side'"
+                :side="item.side"
+                :columns="columns"
+                :side-open="sideOpen"
+                @toggle="toggleSide"
+                :item-index="itemIndex"
+                @next-cell="nextCell"
+                @update-side="updateSide"
+                @active-item="onActiveItem(item, $event)"
+                :is-active="activeItem?.id === item.id"
+              />
+              <GridSideGroupRow
+                v-else-if="item.type === 'sidegroup'"
+                :side-group="item.sideGroup"
+                :columns="columns"
+                :sg-open="sgOpen"
+                @toggle="toggleSideGroup"
+                @expand="expandSideGroup"
+                :item-index="itemIndex"
+                @next-cell="nextCell"
+                @update-side-group="updateSideGroup"
+                @active-item="onActiveItem(item, $event)"
+                :is-active="activeItem?.id === item.id"
+              />
+            </template>
+          </tbody>
+        </table>
+      </div>
+      <footer class="border-border bg-muted/60 h-12 shrink-0 border-t"></footer>
+    </div>
+  </div>
+</template>

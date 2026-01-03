@@ -1,22 +1,3 @@
-<template>
-  <section class="">
-    <header class="flex items-center justify-end border-b border-gray-200 pb-5">
-      <div class="mt-3 flex items-center sm:mt-0 sm:ml-4">
-        <SortDropdown class="mr-4" :options="sortOptions" />
-      </div>
-    </header>
-    <ul class="mt-4 grid grid-cols-1 gap-6 p-1 sm:grid-cols-3">
-      <ScenarioLinkCard
-        no-link
-        v-for="info in storedScenarios"
-        :key="info.id"
-        :data="info"
-        @action="handleAction($event, info)"
-      />
-    </ul>
-  </section>
-</template>
-
 <script setup lang="ts">
 import { useBrowserScenarios } from "@/composables/browserScenarios";
 import SortDropdown from "@/components/SortDropdown.vue";
@@ -35,3 +16,22 @@ async function handleAction(action: StoredScenarioAction, info: ScenarioMetadata
   }
 }
 </script>
+
+<template>
+  <section class="">
+    <header class="flex items-center justify-end border-b border-gray-200 pb-5">
+      <div class="mt-3 flex items-center sm:mt-0 sm:ml-4">
+        <SortDropdown class="mr-4" :options="sortOptions" />
+      </div>
+    </header>
+    <ul class="mt-4 grid grid-cols-1 gap-6 p-1 sm:grid-cols-3">
+      <ScenarioLinkCard
+        no-link
+        v-for="info in storedScenarios"
+        :key="info.id"
+        :data="info"
+        @action="handleAction($event, info)"
+      />
+    </ul>
+  </section>
+</template>

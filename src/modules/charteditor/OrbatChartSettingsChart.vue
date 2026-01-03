@@ -1,3 +1,51 @@
+<script setup lang="ts">
+import InputGroup from "@/components/InputGroup.vue";
+import { useChartSettingsStore, useRootUnitStore } from "./chartSettingsStore";
+import SimpleSelect from "@/components/SimpleSelect.vue";
+import {
+  FontStyles,
+  FontWeights,
+  LabelPlacements,
+  LevelLayouts,
+  UnitLevelDistances,
+} from "./orbatchart";
+import ToggleField from "@/components/ToggleField.vue";
+import { enum2Items, injectStrict } from "@/utils";
+import { defineAsyncComponent, ref } from "vue";
+import MilSymbol from "@/components/MilSymbol.vue";
+import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
+import IconButton from "@/components/IconButton.vue";
+import { MagnifyingGlassIcon as SearchIcon } from "@heroicons/vue/24/solid";
+import CreateEmtpyDashed from "@/components/CreateEmtpyDashed.vue";
+import { canvasSizeItems } from "./orbatchart/sizes";
+import AccordionPanel from "@/components/AccordionPanel.vue";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
+import { activeScenarioKey } from "@/components/injects";
+import SettingsToe from "@/modules/charteditor/SettingsToe.vue";
+
+const props = defineProps({ chartMode: { type: Boolean, default: false } });
+
+const SearchModal = defineAsyncComponent(() => import("@/components/SearchModal.vue"));
+
+const {
+  unitActions: { expandUnitWithSymbolOptions, getUnitById },
+} = injectStrict(activeScenarioKey);
+
+const options = useChartSettingsStore();
+const levelItems = enum2Items(LevelLayouts);
+const spacingItems = enum2Items(UnitLevelDistances);
+const fontWeightItems = enum2Items(FontWeights);
+const fontStyleItems = enum2Items(FontStyles);
+const labelPlacementItems = enum2Items(LabelPlacements);
+const rootUnitStore = useRootUnitStore();
+const showSearch = ref(false);
+
+const onUnitSelect = (unitId: string) => {
+  const unit = expandUnitWithSymbolOptions(getUnitById(unitId));
+  if (unit) rootUnitStore.unit = unit;
+};
+</script>
+
 <template>
   <div>
     <p class="text-sm text-gray-600">Settings that affect the whole chart.</p>
@@ -94,51 +142,3 @@
     <SearchModal v-model="showSearch" @select-unit="onUnitSelect" />
   </div>
 </template>
-
-<script setup lang="ts">
-import InputGroup from "@/components/InputGroup.vue";
-import { useChartSettingsStore, useRootUnitStore } from "./chartSettingsStore";
-import SimpleSelect from "@/components/SimpleSelect.vue";
-import {
-  FontStyles,
-  FontWeights,
-  LabelPlacements,
-  LevelLayouts,
-  UnitLevelDistances,
-} from "./orbatchart";
-import ToggleField from "@/components/ToggleField.vue";
-import { enum2Items, injectStrict } from "@/utils";
-import { defineAsyncComponent, ref } from "vue";
-import MilSymbol from "@/components/MilSymbol.vue";
-import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
-import IconButton from "@/components/IconButton.vue";
-import { MagnifyingGlassIcon as SearchIcon } from "@heroicons/vue/24/solid";
-import CreateEmtpyDashed from "@/components/CreateEmtpyDashed.vue";
-import { canvasSizeItems } from "./orbatchart/sizes";
-import AccordionPanel from "@/components/AccordionPanel.vue";
-import NumberInputGroup from "@/components/NumberInputGroup.vue";
-import { activeScenarioKey } from "@/components/injects";
-import SettingsToe from "@/modules/charteditor/SettingsToe.vue";
-
-const props = defineProps({ chartMode: { type: Boolean, default: false } });
-
-const SearchModal = defineAsyncComponent(() => import("@/components/SearchModal.vue"));
-
-const {
-  unitActions: { expandUnitWithSymbolOptions, getUnitById },
-} = injectStrict(activeScenarioKey);
-
-const options = useChartSettingsStore();
-const levelItems = enum2Items(LevelLayouts);
-const spacingItems = enum2Items(UnitLevelDistances);
-const fontWeightItems = enum2Items(FontWeights);
-const fontStyleItems = enum2Items(FontStyles);
-const labelPlacementItems = enum2Items(LabelPlacements);
-const rootUnitStore = useRootUnitStore();
-const showSearch = ref(false);
-
-const onUnitSelect = (unitId: string) => {
-  const unit = expandUnitWithSymbolOptions(getUnitById(unitId));
-  if (unit) rootUnitStore.unit = unit;
-};
-</script>

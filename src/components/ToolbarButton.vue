@@ -1,3 +1,16 @@
+<script>
+export default {
+  name: "ToolbarButton",
+  props: {
+    start: { type: Boolean, default: false },
+    end: { type: Boolean, default: false },
+    top: { type: Boolean, default: false },
+    bottom: { type: Boolean, default: false },
+    active: { type: Boolean, default: false },
+  },
+};
+</script>
+
 <template>
   <button
     type="button"
@@ -15,16 +28,3 @@
     <slot />
   </button>
 </template>
-
-<script>
-export default {
-  name: "ToolbarButton",
-  props: {
-    start: { type: Boolean, default: false },
-    end: { type: Boolean, default: false },
-    top: { type: Boolean, default: false },
-    bottom: { type: Boolean, default: false },
-    active: { type: Boolean, default: false },
-  },
-};
-</script>

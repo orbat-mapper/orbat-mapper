@@ -1,3 +1,18 @@
+<script setup lang="ts">
+import { type RuntimeColumnProperties } from "@/modules/grid/gridTypes";
+import DotsMenu from "@/components/DotsMenu.vue";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
+
+interface Props {
+  columnDefs: RuntimeColumnProperties[];
+  data: any;
+  select?: boolean;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits(["action"]);
+</script>
+
 <template>
   <div class="group flex divide-x divide-gray-200 hover:bg-gray-50">
     <div
@@ -33,18 +48,3 @@
     <div class=""></div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { type RuntimeColumnProperties } from "@/modules/grid/gridTypes";
-import DotsMenu from "@/components/DotsMenu.vue";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
-
-interface Props {
-  columnDefs: RuntimeColumnProperties[];
-  data: any;
-  select?: boolean;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits(["action"]);
-</script>

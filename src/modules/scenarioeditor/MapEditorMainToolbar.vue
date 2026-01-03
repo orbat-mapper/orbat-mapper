@@ -1,134 +1,3 @@
-<template>
-  <nav
-    class="bg-sidebar border-border pointer-events-auto flex w-full items-center justify-between border p-1 text-sm shadow-sm sm:rounded-xl sm:p-2 md:w-auto"
-  >
-    <section class="flex items-center justify-between">
-      <MainToolbarButton
-        title="Keep selected tool active after drawing"
-        @click="toggleAddMultiple()"
-        class="hidden sm:flex"
-      >
-        <IconLockOutline v-if="addMultiple" class="size-5" />
-        <IconLockOpenVariantOutline v-else class="size-6" />
-      </MainToolbarButton>
-      <MainToolbarButton @click="toggleMoveUnit(false)" :active="!moveUnitEnabled">
-        <SelectIcon class="size-6" />
-      </MainToolbarButton>
-      <MainToolbarButton
-        :active="moveUnitEnabled"
-        @click="toggleMoveUnit(true)"
-        title="Move unit"
-      >
-        <MoveIcon class="size-6" />
-      </MainToolbarButton>
-      <MainToolbarButton
-        @click="emit('show-settings')"
-        title="Show settings"
-        class="hidden md:flex"
-      >
-        <SettingsIcon class="size-6" />
-      </MainToolbarButton>
-      <div class="border-border h-7 border-l-2 sm:mx-1" />
-      <MainToolbarButton
-        :active="store.currentToolbar === 'measurements'"
-        @click="store.toggleToolbar('measurements')"
-        title="Measurements"
-      >
-        <MeasurementIcon class="size-6" />
-      </MainToolbarButton>
-      <MainToolbarButton
-        :active="store.currentToolbar === 'draw'"
-        @click="store.toggleToolbar('draw')"
-        title="Draw"
-      >
-        <DrawIcon class="size-6" />
-      </MainToolbarButton>
-      <MainToolbarButton
-        title="Unit track"
-        :active="store.currentToolbar === 'track'"
-        @click="store.toggleToolbar('track')"
-      >
-        <IconMapMarkerPath class="size-6" />
-      </MainToolbarButton>
-      <div class="border-border h-7 border-l-2 sm:mx-1" />
-      <div class="ml-2 flex items-center">
-        <EchelonPickerPopover
-          :symbol-options="symbolOptions"
-          :select-echelon="selectEchelon"
-        />
-        <PanelSymbolButton
-          :size="22"
-          :sidc="computedSidc"
-          class="group relative ml-2 sm:ml-5"
-          :symbol-options="symbolOptions"
-          @click="addUnit(activeSidc)"
-          title="Add unit"
-          :disabled="!activeParentId || unitActions.isUnitLocked(activeParentId)"
-        >
-          <AddSymbolIcon
-            class="bg-opacity-70 absolute -right-2 bottom-0 h-4 w-4 rounded-full bg-white text-gray-600 group-hover:text-gray-900"
-          />
-        </PanelSymbolButton>
-        <SymbolPickerPopover :symbol-options="symbolOptions" :add-unit="addUnit" />
-      </div>
-    </section>
-    <section class="flex items-center">
-      <div class="border-border -mx-1 h-7 border-l-2 sm:mx-1" />
-      <MainToolbarButton title="Undo" @click="undo()" :disabled="!canUndo">
-        <UndoIcon class="size-6" />
-      </MainToolbarButton>
-      <MainToolbarButton title="Redo" @click="redo()" :disabled="!canRedo">
-        <RedoIcon class="size-6" />
-      </MainToolbarButton>
-      <div class="border-border mx-1 hidden h-7 border-l-2 sm:block" />
-      <MainToolbarButton
-        title="Select Time and Date"
-        class="hidden sm:flex"
-        @click="emit('open-time-modal')"
-      >
-        <span class="sr-only">Select Time and Date</span>
-        <CalendarIcon class="size-5" aria-hidden="true" />
-      </MainToolbarButton>
-      <MainToolbarButton
-        title="Previous Day"
-        class="hidden sm:flex"
-        @click="emit('dec-day')"
-      >
-        <span class="sr-only">Previous Day</span>
-        <IconChevronLeft class="size-5" aria-hidden="true" />
-      </MainToolbarButton>
-      <MainToolbarButton title="Next Day" class="hidden sm:flex" @click="emit('inc-day')">
-        <span class="sr-only">Next Day</span>
-        <IconChevronRight class="size-5" aria-hidden="true" />
-      </MainToolbarButton>
-      <MainToolbarButton
-        title="Previous Event"
-        class="hidden sm:flex"
-        @click="emit('prev-event')"
-      >
-        <span class="sr-only">Previous Event</span>
-        <IconSkipPrevious class="size-5" aria-hidden="true" />
-      </MainToolbarButton>
-      <MainToolbarButton
-        title="Next Event"
-        class="hidden sm:flex"
-        @click="emit('next-event')"
-      >
-        <span class="sr-only">Next Event</span>
-        <IconSkipNext class="size-5 w-5" aria-hidden="true" />
-      </MainToolbarButton>
-    </section>
-    <FloatingPanel
-      v-if="isGetLocationActive"
-      class="bg-opacity-75 absolute bottom-14 overflow-visible p-2 px-4 text-sm sm:bottom-16 sm:left-1/2 sm:-translate-x-1/2"
-    >
-      Click on map or ORBAT to place unit.
-      <Button type="button" variant="link" size="sm" @click="cancelGetLocation()">
-        Cancel
-      </Button>
-    </FloatingPanel>
-  </nav>
-</template>
 <script setup lang="ts">
 import {
   IconChevronLeft,
@@ -304,3 +173,135 @@ function selectEchelon(sidc: string) {
   currentEchelon.value = new Sidc(sidc).emt;
 }
 </script>
+
+<template>
+  <nav
+    class="bg-sidebar border-border pointer-events-auto flex w-full items-center justify-between border p-1 text-sm shadow-sm sm:rounded-xl sm:p-2 md:w-auto"
+  >
+    <section class="flex items-center justify-between">
+      <MainToolbarButton
+        title="Keep selected tool active after drawing"
+        @click="toggleAddMultiple()"
+        class="hidden sm:flex"
+      >
+        <IconLockOutline v-if="addMultiple" class="size-5" />
+        <IconLockOpenVariantOutline v-else class="size-6" />
+      </MainToolbarButton>
+      <MainToolbarButton @click="toggleMoveUnit(false)" :active="!moveUnitEnabled">
+        <SelectIcon class="size-6" />
+      </MainToolbarButton>
+      <MainToolbarButton
+        :active="moveUnitEnabled"
+        @click="toggleMoveUnit(true)"
+        title="Move unit"
+      >
+        <MoveIcon class="size-6" />
+      </MainToolbarButton>
+      <MainToolbarButton
+        @click="emit('show-settings')"
+        title="Show settings"
+        class="hidden md:flex"
+      >
+        <SettingsIcon class="size-6" />
+      </MainToolbarButton>
+      <div class="border-border h-7 border-l-2 sm:mx-1" />
+      <MainToolbarButton
+        :active="store.currentToolbar === 'measurements'"
+        @click="store.toggleToolbar('measurements')"
+        title="Measurements"
+      >
+        <MeasurementIcon class="size-6" />
+      </MainToolbarButton>
+      <MainToolbarButton
+        :active="store.currentToolbar === 'draw'"
+        @click="store.toggleToolbar('draw')"
+        title="Draw"
+      >
+        <DrawIcon class="size-6" />
+      </MainToolbarButton>
+      <MainToolbarButton
+        title="Unit track"
+        :active="store.currentToolbar === 'track'"
+        @click="store.toggleToolbar('track')"
+      >
+        <IconMapMarkerPath class="size-6" />
+      </MainToolbarButton>
+      <div class="border-border h-7 border-l-2 sm:mx-1" />
+      <div class="ml-2 flex items-center">
+        <EchelonPickerPopover
+          :symbol-options="symbolOptions"
+          :select-echelon="selectEchelon"
+        />
+        <PanelSymbolButton
+          :size="22"
+          :sidc="computedSidc"
+          class="group relative ml-2 sm:ml-5"
+          :symbol-options="symbolOptions"
+          @click="addUnit(activeSidc)"
+          title="Add unit"
+          :disabled="!activeParentId || unitActions.isUnitLocked(activeParentId)"
+        >
+          <AddSymbolIcon
+            class="bg-opacity-70 absolute -right-2 bottom-0 h-4 w-4 rounded-full bg-white text-gray-600 group-hover:text-gray-900"
+          />
+        </PanelSymbolButton>
+        <SymbolPickerPopover :symbol-options="symbolOptions" :add-unit="addUnit" />
+      </div>
+    </section>
+    <section class="flex items-center">
+      <div class="border-border -mx-1 h-7 border-l-2 sm:mx-1" />
+      <MainToolbarButton title="Undo" @click="undo()" :disabled="!canUndo">
+        <UndoIcon class="size-6" />
+      </MainToolbarButton>
+      <MainToolbarButton title="Redo" @click="redo()" :disabled="!canRedo">
+        <RedoIcon class="size-6" />
+      </MainToolbarButton>
+      <div class="border-border mx-1 hidden h-7 border-l-2 sm:block" />
+      <MainToolbarButton
+        title="Select Time and Date"
+        class="hidden sm:flex"
+        @click="emit('open-time-modal')"
+      >
+        <span class="sr-only">Select Time and Date</span>
+        <CalendarIcon class="size-5" aria-hidden="true" />
+      </MainToolbarButton>
+      <MainToolbarButton
+        title="Previous Day"
+        class="hidden sm:flex"
+        @click="emit('dec-day')"
+      >
+        <span class="sr-only">Previous Day</span>
+        <IconChevronLeft class="size-5" aria-hidden="true" />
+      </MainToolbarButton>
+      <MainToolbarButton title="Next Day" class="hidden sm:flex" @click="emit('inc-day')">
+        <span class="sr-only">Next Day</span>
+        <IconChevronRight class="size-5" aria-hidden="true" />
+      </MainToolbarButton>
+      <MainToolbarButton
+        title="Previous Event"
+        class="hidden sm:flex"
+        @click="emit('prev-event')"
+      >
+        <span class="sr-only">Previous Event</span>
+        <IconSkipPrevious class="size-5" aria-hidden="true" />
+      </MainToolbarButton>
+      <MainToolbarButton
+        title="Next Event"
+        class="hidden sm:flex"
+        @click="emit('next-event')"
+      >
+        <span class="sr-only">Next Event</span>
+        <IconSkipNext class="size-5 w-5" aria-hidden="true" />
+      </MainToolbarButton>
+    </section>
+    <FloatingPanel
+      v-if="isGetLocationActive"
+      class="bg-opacity-75 absolute bottom-14 overflow-visible p-2 px-4 text-sm sm:bottom-16 sm:left-1/2 sm:-translate-x-1/2"
+    >
+      Click on map or ORBAT to place unit.
+      <Button type="button" variant="link" size="sm" @click="cancelGetLocation()">
+        Cancel
+      </Button>
+    </FloatingPanel>
+  </nav>
+</template>

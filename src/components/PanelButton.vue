@@ -1,3 +1,7 @@
+<script setup lang="ts">
+const props = withDefaults(defineProps<{ active?: boolean }>(), { active: false });
+</script>
+
 <template>
   <button
     type="button"
@@ -7,6 +11,3 @@
     <slot />
   </button>
 </template>
-<script setup lang="ts">
-const props = withDefaults(defineProps<{ active?: boolean }>(), { active: false });
-</script>

@@ -1,116 +1,3 @@
-<template>
-  <div class="relative flex min-h-0 flex-auto flex-col">
-    <div class="relative flex flex-auto flex-col">
-      <NewScenarioMap class="flex-auto" @mapReady="onMapReady" />
-      <main
-        v-if="mapRef"
-        class="pointer-events-none absolute inset-0 flex flex-col justify-between"
-      >
-        <header class="flex flex-none items-center justify-end p-2">
-          <MapTimeController
-            class="pointer-events-auto"
-            :show-controls="isMobile ? ui.mobilePanelOpen : false"
-            @open-time-modal="openTimeDialog()"
-            @show-settings="emit('show-settings')"
-            @inc-day="onIncDay()"
-            @dec-day="onDecDay()"
-            @next-event="goToNextScenarioEvent()"
-            @prev-event="goToPrevScenarioEvent()"
-          />
-          <IconButton
-            @click.stop="onShowPlaceSearch"
-            class="pointer-events-auto ml-2"
-            title="Search"
-          >
-            <MagnifyingGlassIcon class="h-5 w-5 text-gray-500" />
-          </IconButton>
-        </header>
-        <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
-          <MapEditorDesktopPanel v-if="showLeftPanel" @close="toggleLeftPanel()" />
-          <div v-else>
-            <Button
-              type="button"
-              size="icon"
-              variant="secondary"
-              @click="toggleLeftPanel()"
-              title="Show panel"
-              class="pointer-events-auto absolute -my-12"
-            >
-              <ShowPanelIcon class="size-7" />
-            </Button>
-          </div>
-          <MapEditorDetailsPanel v-if="showDetailsPanel" @close="onCloseDetailsPanel()">
-            <ScenarioFeatureDetails
-              v-if="activeDetailsPanel === 'feature'"
-              :selected-ids="selectedFeatureIds"
-            />
-            <UnitDetails
-              v-else-if="activeDetailsPanel === 'unit'"
-              :unit-id="activeUnitId || [...selectedUnitIds][0]"
-            />
-            <ScenarioEventDetails
-              v-else-if="activeDetailsPanel === 'event'"
-              :event-id="activeScenarioEventId!"
-            />
-            <ScenarioMapLayerDetails
-              v-else-if="activeDetailsPanel === 'mapLayer'"
-              :layer-id="activeMapLayerId!"
-            />
-            <ScenarioInfoPanel v-else-if="activeDetailsPanel === 'scenario'" />
-          </MapEditorDetailsPanel>
-          <div v-else></div>
-        </section>
-      </main>
-      <footer
-        v-if="mapRef && ui.showToolbar"
-        class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
-      >
-        <MapEditorMainToolbar
-          @open-time-modal="openTimeDialog()"
-          @inc-day="onIncDay()"
-          @dec-day="onDecDay()"
-          @next-event="goToNextScenarioEvent()"
-          @prev-event="goToPrevScenarioEvent()"
-          @show-settings="emit('show-settings')"
-        />
-        <MapEditorMeasurementToolbar
-          class="absolute bottom-14 sm:bottom-16"
-          v-if="toolbarStore.currentToolbar === 'measurements'"
-        />
-        <MapEditorDrawToolbar
-          class="absolute bottom-14 sm:bottom-16"
-          v-if="toolbarStore.currentToolbar === 'draw'"
-        />
-        <MapEditorUnitTrackToolbar
-          class="absolute bottom-14 sm:bottom-16"
-          v-if="toolbarStore.currentToolbar === 'track'"
-        />
-      </footer>
-    </div>
-    <template v-if="isMobile">
-      <UnitBreadcrumbs v-if="ui.showOrbatBreadcrumbs" />
-      <MapEditorMobilePanel
-        @open-time-modal="openTimeDialog()"
-        @inc-day="onIncDay()"
-        @dec-day="onDecDay()"
-        @next-event="goToNextScenarioEvent()"
-        @prev-event="goToPrevScenarioEvent()"
-        @show-settings="emit('show-settings')"
-      />
-    </template>
-    <KeyboardScenarioActions v-if="mapRef" />
-    <SearchScenarioActions v-if="mapRef" />
-    <GlobalEvents
-      v-if="ui.shortcutsEnabled"
-      :filter="inputEventFilter"
-      @keyup.t="openTimeDialog"
-      @keyup.s="ui.showSearch = true"
-    />
-    <UnitBreadcrumbs v-if="ui.showOrbatBreadcrumbs && !isMobile" />
-    <ScenarioTimeline v-if="ui.showTimeline" />
-  </div>
-</template>
-
 <script setup lang="ts">
 import {
   computed,
@@ -289,3 +176,116 @@ watch(
   { immediate: true },
 );
 </script>
+
+<template>
+  <div class="relative flex min-h-0 flex-auto flex-col">
+    <div class="relative flex flex-auto flex-col">
+      <NewScenarioMap class="flex-auto" @mapReady="onMapReady" />
+      <main
+        v-if="mapRef"
+        class="pointer-events-none absolute inset-0 flex flex-col justify-between"
+      >
+        <header class="flex flex-none items-center justify-end p-2">
+          <MapTimeController
+            class="pointer-events-auto"
+            :show-controls="isMobile ? ui.mobilePanelOpen : false"
+            @open-time-modal="openTimeDialog()"
+            @show-settings="emit('show-settings')"
+            @inc-day="onIncDay()"
+            @dec-day="onDecDay()"
+            @next-event="goToNextScenarioEvent()"
+            @prev-event="goToPrevScenarioEvent()"
+          />
+          <IconButton
+            @click.stop="onShowPlaceSearch"
+            class="pointer-events-auto ml-2"
+            title="Search"
+          >
+            <MagnifyingGlassIcon class="h-5 w-5 text-gray-500" />
+          </IconButton>
+        </header>
+        <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
+          <MapEditorDesktopPanel v-if="showLeftPanel" @close="toggleLeftPanel()" />
+          <div v-else>
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              @click="toggleLeftPanel()"
+              title="Show panel"
+              class="pointer-events-auto absolute -my-12"
+            >
+              <ShowPanelIcon class="size-7" />
+            </Button>
+          </div>
+          <MapEditorDetailsPanel v-if="showDetailsPanel" @close="onCloseDetailsPanel()">
+            <ScenarioFeatureDetails
+              v-if="activeDetailsPanel === 'feature'"
+              :selected-ids="selectedFeatureIds"
+            />
+            <UnitDetails
+              v-else-if="activeDetailsPanel === 'unit'"
+              :unit-id="activeUnitId || [...selectedUnitIds][0]"
+            />
+            <ScenarioEventDetails
+              v-else-if="activeDetailsPanel === 'event'"
+              :event-id="activeScenarioEventId!"
+            />
+            <ScenarioMapLayerDetails
+              v-else-if="activeDetailsPanel === 'mapLayer'"
+              :layer-id="activeMapLayerId!"
+            />
+            <ScenarioInfoPanel v-else-if="activeDetailsPanel === 'scenario'" />
+          </MapEditorDetailsPanel>
+          <div v-else></div>
+        </section>
+      </main>
+      <footer
+        v-if="mapRef && ui.showToolbar"
+        class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
+      >
+        <MapEditorMainToolbar
+          @open-time-modal="openTimeDialog()"
+          @inc-day="onIncDay()"
+          @dec-day="onDecDay()"
+          @next-event="goToNextScenarioEvent()"
+          @prev-event="goToPrevScenarioEvent()"
+          @show-settings="emit('show-settings')"
+        />
+        <MapEditorMeasurementToolbar
+          class="absolute bottom-14 sm:bottom-16"
+          v-if="toolbarStore.currentToolbar === 'measurements'"
+        />
+        <MapEditorDrawToolbar
+          class="absolute bottom-14 sm:bottom-16"
+          v-if="toolbarStore.currentToolbar === 'draw'"
+        />
+        <MapEditorUnitTrackToolbar
+          class="absolute bottom-14 sm:bottom-16"
+          v-if="toolbarStore.currentToolbar === 'track'"
+        />
+      </footer>
+    </div>
+    <template v-if="isMobile">
+      <UnitBreadcrumbs v-if="ui.showOrbatBreadcrumbs" />
+      <MapEditorMobilePanel
+        @open-time-modal="openTimeDialog()"
+        @inc-day="onIncDay()"
+        @dec-day="onDecDay()"
+        @next-event="goToNextScenarioEvent()"
+        @prev-event="goToPrevScenarioEvent()"
+        @show-settings="emit('show-settings')"
+      />
+    </template>
+    <KeyboardScenarioActions v-if="mapRef" />
+    <SearchScenarioActions v-if="mapRef" />
+    <GlobalEvents
+      v-if="ui.shortcutsEnabled"
+      :filter="inputEventFilter"
+      @keyup.t="openTimeDialog"
+      @keyup.s="ui.showSearch = true"
+    />
+    <UnitBreadcrumbs v-if="ui.showOrbatBreadcrumbs && !isMobile" />
+    <ScenarioTimeline v-if="ui.showTimeline" />
+  </div>
+</template>

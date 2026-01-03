@@ -1,3 +1,10 @@
+<script>
+export default {
+  props: ["icon"],
+  name: "CreateEmtpyDashed",
+};
+</script>
+
 <template>
   <button
     type="button"
@@ -9,10 +16,3 @@
     </span>
   </button>
 </template>
-
-<script>
-export default {
-  props: ["icon"],
-  name: "CreateEmtpyDashed",
-};
-</script>

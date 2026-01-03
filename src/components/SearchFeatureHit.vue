@@ -1,3 +1,10 @@
+<script setup lang="ts">
+import { type LayerFeatureSearchResult } from "./types";
+import { getItemsIcon } from "@/modules/scenarioeditor/featureLayerUtils";
+
+const props = defineProps<{ feature: LayerFeatureSearchResult }>();
+</script>
+
 <template>
   <div class="flex w-full items-center justify-between">
     <div class="flex items-center">
@@ -9,10 +16,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { type LayerFeatureSearchResult } from "./types";
-import { getItemsIcon } from "@/modules/scenarioeditor/featureLayerUtils";
-
-const props = defineProps<{ feature: LayerFeatureSearchResult }>();
-</script>
