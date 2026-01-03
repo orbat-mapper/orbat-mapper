@@ -1,45 +1,36 @@
 <template>
-  <RadioGroup v-model="selectedColor">
-    <RadioGroupLabel
-      v-if="label || $slots.label"
-      class="mb-4 block text-sm leading-6 font-medium"
-    >
+  <RadioGroupRoot v-model="selectedColor">
+    <Label v-if="label || $slots.label" class="mb-4 block text-sm leading-6 font-medium">
       <slot name="label">{{ label }}</slot>
-    </RadioGroupLabel>
+    </Label>
     <div class="flex flex-wrap items-center gap-2">
-      <RadioGroupOption
-        as="template"
+      <RadioGroupItem
         v-for="color in $colors"
         :key="color.name"
         :value="color.value"
-        v-slot="{ active, checked }"
+        :class="[
+          color.selectedColor,
+          'relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 focus:outline-hidden',
+          'data-[state=checked]:ring-2 focus:data-[state=checked]:ring-3 focus:data-[state=checked]:ring-offset-1',
+        ]"
       >
+        <span class="sr-only">{{ color.name }}</span>
         <div
+          aria-hidden="true"
           :class="[
-            color.selectedColor,
-            active && checked ? 'ring-3 ring-offset-1' : '',
-            !active && checked ? 'ring-2' : '',
-            'relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 focus:outline-hidden',
+            color.bgColor,
+            'border-opacity-10 flex h-7 w-7 items-center justify-center rounded-full border border-black',
           ]"
         >
-          <RadioGroupLabel as="span" class="sr-only">{{ color.name }}</RadioGroupLabel>
-          <div
-            aria-hidden="true"
-            :class="[
-              color.bgColor,
-              'border-opacity-10 flex h-7 w-7 items-center justify-center rounded-full border border-black',
-            ]"
-          >
-            <span v-if="!color.value">x</span>
-          </div>
+          <span v-if="!color.value">x</span>
         </div>
-      </RadioGroupOption>
+      </RadioGroupItem>
     </div>
-  </RadioGroup>
+  </RadioGroupRoot>
 </template>
 
 <script setup lang="ts">
-import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
+import { RadioGroupRoot, RadioGroupItem, Label } from "reka-ui";
 import { useVModel } from "@vueuse/core";
 import { computed } from "vue";
 import { defaultColors as colors } from "./colors";
