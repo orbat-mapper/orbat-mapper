@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-
-import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
+import { RadioGroupRoot, RadioGroupItem, Label } from "reka-ui";
 import type { MarkerStyleSpec, MarkerSymbol, SimpleStyleSpec } from "@/geo/simplestyle";
 import type { ScenarioFeature } from "@/types/scenarioGeoModels";
 import type { SelectItem } from "@/components/types";
@@ -61,66 +60,53 @@ function updateValue(name: keyof MarkerStyleSpec, value: string | number | boole
     @update:model-value="updateValue('marker-color', $event)"
   />
   <div class="self-center">Size</div>
-  <RadioGroup
+  <RadioGroupRoot
     :model-value="marker['marker-size']"
     @update:model-value="updateValue('marker-size', $event)"
     class=""
   >
-    <RadioGroupLabel class="sr-only">Select marker size</RadioGroupLabel>
+    <Label class="sr-only">Select marker size</Label>
     <div class="flex flex-wrap items-center gap-2">
-      <RadioGroupOption
-        as="template"
+      <RadioGroupItem
         v-for="option in sizeOptions"
         :key="option.name"
         :value="option.value"
-        v-slot="{ active, checked }"
+        :class="[
+          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2',
+          'data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:hover:bg-primary/90',
+          'bg-muted text-foreground border-border hover:bg-muted/90 border',
+          'flex cursor-pointer items-center justify-center rounded-md px-5 py-3 text-sm font-semibold uppercase focus:outline-hidden',
+        ]"
       >
-        <div
-          :class="[
-            active ? 'ring-ring ring-2 ring-offset-2' : '',
-            checked
-              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-              : 'bg-muted text-foreground border-border hover:bg-muted/90 border',
-            'flex cursor-pointer items-center justify-center rounded-md px-5 py-3 text-sm font-semibold uppercase',
-          ]"
-        >
-          <RadioGroupLabel as="span">{{ option.name }}</RadioGroupLabel>
-        </div>
-      </RadioGroupOption>
+        <span>{{ option.name }}</span>
+      </RadioGroupItem>
     </div>
-  </RadioGroup>
+  </RadioGroupRoot>
 
   <div class="self-center">Shape</div>
 
-  <RadioGroup
+  <RadioGroupRoot
     :model-value="marker['marker-symbol']"
     @update:model-value="updateValue('marker-symbol', $event)"
     class="mt-2"
   >
-    <RadioGroupLabel class="sr-only">Select marker size</RadioGroupLabel>
     <div class="flex flex-wrap items-center gap-1">
-      <RadioGroupOption
-        as="template"
+      <RadioGroupItem
         v-for="option in markerItems"
         :key="option.value"
         :value="option.value"
-        v-slot="{ active, checked }"
+        :class="[
+          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2',
+          'data-[state=checked]:bg-primary/80 data-[state=checked]:text-primary-foreground data-[state=checked]:hover:bg-primary',
+          'bg-muted text-foreground hover:bg-muted/90',
+          'flex cursor-pointer items-center justify-center rounded-md px-2 py-2 text-sm font-semibold uppercase focus:outline-hidden',
+        ]"
       >
-        <div
-          :class="[
-            active ? 'ring-ring ring-2 ring-offset-2' : '',
-            checked
-              ? 'bg-primary/80 text-primary-foreground hover:bg-primary'
-              : 'bg-muted text-foreground hover:bg-muted/90',
-            'flex cursor-pointer items-center justify-center rounded-md px-2 py-2 text-sm font-semibold uppercase',
-          ]"
-        >
-          <RadioGroupLabel as="span" class="sr-only">{{ option.label }}</RadioGroupLabel>
-          <span aria-hidden="true"
-            ><DrawMarker :marker="option.value" :color="marker['marker-color']"
-          /></span>
-        </div>
-      </RadioGroupOption>
+        <span class="sr-only">{{ option.label }}</span>
+        <span aria-hidden="true"
+          ><DrawMarker :marker="option.value" :color="marker['marker-color']"
+        /></span>
+      </RadioGroupItem>
     </div>
-  </RadioGroup>
+  </RadioGroupRoot>
 </template>
