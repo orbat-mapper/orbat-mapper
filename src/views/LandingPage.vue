@@ -151,6 +151,7 @@ const features = [
               <router-link :to="{ name: TEXT_TO_ORBAT_ROUTE }" class="shrink-0"
                 >Text to ORBAT
               </router-link>
+              <router-link to="/globe/demo-falkland82" class="">Globe view</router-link>
 
               <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="text-muted-foreground"
                 >Orbat chart test
@@ -165,7 +166,6 @@ const features = [
               <router-link to="/testgrid2" class="text-muted-foreground"
                 >Tanstack Table Test grid</router-link
               >
-              <router-link to="/globe/demo-falkland82" class="">Globe view</router-link>
             </ul>
           </div>
         </ProseSection>
