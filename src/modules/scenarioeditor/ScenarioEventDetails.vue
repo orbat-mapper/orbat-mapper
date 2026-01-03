@@ -11,7 +11,7 @@ import type { ScenarioEventAction } from "@/types/constants";
 import { useSelectedItems } from "@/stores/selectedStore";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import TabWrapper from "@/components/TabWrapper.vue";
-import { TabPanel } from "@headlessui/vue";
+import { TabsContent } from "@/components/ui/tabs";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import { useToggle } from "@vueuse/core";
@@ -124,7 +124,7 @@ const onFormSubmit = (eventUpdate: ScenarioEventUpdate) => {
       </nav>
     </header>
     <TabWrapper :tabList="tabList">
-      <TabPanel>
+      <TabsContent value="0">
         <EditMetaForm
           class="mt-4"
           v-if="isEditMode"
@@ -157,10 +157,10 @@ const onFormSubmit = (eventUpdate: ScenarioEventUpdate) => {
             ></DescriptionItem
           >
         </div>
-      </TabPanel>
-      <TabPanel v-if="ui.debugMode">
+      </TabsContent>
+      <TabsContent value="1" v-if="ui.debugMode">
         <pre v-if="ui.debugMode">{{ scenarioEvent }}</pre>
-      </TabPanel>
+      </TabsContent>
     </TabWrapper>
   </div>
 </template>

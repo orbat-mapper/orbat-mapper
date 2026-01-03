@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { IconChevronDoubleUp } from "@iconify-prerendered/vue-mdi";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
 import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
@@ -7,7 +7,7 @@ import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDeta
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import CloseButton from "@/components/CloseButton.vue";
 import IconButton from "@/components/IconButton.vue";
-import { defineAsyncComponent, ref, watch } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
 import { useSwipe, useToggle } from "@vueuse/core";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useUiStore } from "@/stores/uiStore";
@@ -45,6 +45,11 @@ const { mobilePanelOpen: showBottomPanel } = storeToRefs(useUiStore());
 const toggleBottomPanel = useToggle(showBottomPanel);
 
 const { activeTabIndex } = storeToRefs(useUiStore());
+
+const activeTabIndexString = computed({
+  get: () => activeTabIndex.value.toString(),
+  set: (v) => (activeTabIndex.value = parseInt(v)),
+});
 
 function changeTab(index: number) {
   activeTabIndex.value = index;
@@ -92,52 +97,51 @@ watch(isSwipingDown, (swiping) => {
         @prev-event="emit('prev-event')"
       />
     </div>
-    <TabGroup
+    <Tabs
+      v-model="activeTabIndexString"
       as="div"
-      class="flex h-full flex-col"
+      class="flex h-full w-full flex-col"
       :class="{ hidden: !showBottomPanel }"
-      :selected-index="activeTabIndex"
-      @change="changeTab"
     >
-      <TabList class="border-accent-foreground/50 flex flex-0 justify-between border-b">
-        <div ref="swipeDownEl" class="flex flex-auto items-center justify-evenly">
-          <Tab
-            as="template"
-            v-for="tab in ['ORBAT', 'Events', 'Layers', 'Settings', 'Filter', 'Details']"
+      <TabsList
+        class="border-accent-foreground/50 flex h-12 w-full flex-0 justify-between rounded-none border-b bg-transparent p-0"
+      >
+        <div ref="swipeDownEl" class="flex w-full flex-auto items-center justify-evenly">
+          <TabsTrigger
+            v-for="(tab, index) in [
+              'ORBAT',
+              'Events',
+              'Layers',
+              'Settings',
+              'Filter',
+              'Details',
+            ]"
             :key="tab"
-            v-slot="{ selected }"
+            :value="index.toString()"
+            class="data-[state=active]:border-b-primary data-[state=active]:text-primary text-muted-foreground h-12 w-1/2 rounded-none border-b-2 border-transparent bg-transparent px-1 py-4 text-center text-sm font-medium shadow-none transition-none hover:border-gray-300 hover:text-gray-700 focus-visible:ring-0 data-[state=active]:shadow-none"
           >
-            <button
-              :class="[
-                selected
-                  ? 'border-primary text-primary'
-                  : 'text-muted-foreground border-transparent hover:border-gray-300 hover:text-gray-700',
-                'w-1/2 border-b-2 px-1 py-4 text-center text-sm font-medium',
-              ]"
-            >
-              {{ tab }}
-            </button>
-          </Tab>
+            {{ tab }}
+          </TabsTrigger>
         </div>
         <CloseButton @click="toggleBottomPanel()" class="px-4" />
-      </TabList>
-      <TabPanels class="flex-auto overflow-y-auto">
-        <TabPanel :unmount="false" class="pb-10">
+      </TabsList>
+      <div class="flex-auto overflow-y-auto">
+        <TabsContent value="0" class="mt-0 h-full pb-10">
           <OrbatPanel />
-        </TabPanel>
-        <TabPanel class="p-4 pb-10">
+        </TabsContent>
+        <TabsContent value="1" class="mt-0 p-4 pb-10">
           <ScenarioEventsPanel />
-        </TabPanel>
-        <TabPanel class="p-4 pb-10">
+        </TabsContent>
+        <TabsContent value="2" class="mt-0 p-4 pb-10">
           <ScenarioLayersTabPanel />
-        </TabPanel>
-        <TabPanel class="p-4 pb-10">
+        </TabsContent>
+        <TabsContent value="3" class="mt-0 p-4 pb-10">
           <ScenarioSettingsPanel />
-        </TabPanel>
-        <TabPanel>
+        </TabsContent>
+        <TabsContent value="4" class="mt-0">
           <ScenarioFiltersTabPanel />
-        </TabPanel>
-        <TabPanel class="pb-10">
+        </TabsContent>
+        <TabsContent value="5" class="mt-0 pb-10">
           <UnitDetails
             v-if="activeDetailsPanel === 'unit'"
             :unit-id="activeUnitId || [...selectedUnitIds][0]"
@@ -159,8 +163,8 @@ watch(isSwipingDown, (swiping) => {
             class="p-4"
           />
           <ScenarioInfoPanel v-else-if="activeDetailsPanel === 'scenario'" class="p-4" />
-        </TabPanel>
-      </TabPanels>
-    </TabGroup>
+        </TabsContent>
+      </div>
+    </Tabs>
   </main>
 </template>

@@ -1,27 +1,22 @@
 <script lang="ts">
 import { computed, defineComponent, type PropType, ref } from "vue";
 import { CheckIcon, ChevronUpDownIcon as SelectorIcon } from "@heroicons/vue/24/solid";
-import {
-  Combobox,
-  ComboboxButton,
-  ComboboxInput,
-  ComboboxLabel,
-  ComboboxOption,
-  ComboboxOptions,
-} from "@headlessui/vue";
 import { type SelectItem } from "./types";
 import { useVModel } from "@vueuse/core";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export default defineComponent({
   components: {
     CheckIcon,
-    Combobox,
-    ComboboxButton,
-    ComboboxInput,
-    ComboboxLabel,
-    ComboboxOption,
-    ComboboxOptions,
     SelectorIcon,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+    Button,
+    Input,
   },
   props: {
     label: String,
@@ -34,6 +29,7 @@ export default defineComponent({
   emits: ["update:modelValue"],
   setup(props, { emit }) {
     const query = ref("");
+    const open = ref(false);
     const selectedValue = useVModel(props, "modelValue", emit);
     const computedValues = computed(() => {
       if (props.items) return props.items;
@@ -51,68 +47,85 @@ export default defineComponent({
           }),
     );
 
+    const selectedLabel = computed(() => {
+      const found = computedValues.value.find((i) => i.value === selectedValue.value);
+      return found ? found.label : "";
+    });
+
+    const handleSelect = (value: string | number) => {
+      selectedValue.value = value;
+      open.value = false;
+    };
+
     return {
       query,
       selectedValue,
       filteredValues,
       computedValues,
+      open,
+      cn,
+      selectedLabel,
+      handleSelect,
     };
   },
 });
 </script>
 
 <template>
-  <Combobox as="div" v-model="selectedValue">
-    <ComboboxLabel class="block text-sm font-medium text-gray-700"
-      >{{ label }}
-    </ComboboxLabel>
-    <div class="relative mt-1">
-      <ComboboxInput
-        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 shadow-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden sm:text-sm"
-        @change="query = $event.target.value"
-        :display-value="
-          (item) => String(computedValues.find((i) => i.value === item)?.label || '')
-        "
-      />
-      <ComboboxButton
-        class="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-hidden"
-      >
-        <SelectorIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
-      </ComboboxButton>
-
-      <ComboboxOptions
-        v-if="filteredValues.length > 0"
-        class="ring-opacity-5 absolute z-10 z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black focus:outline-hidden sm:text-sm"
-      >
-        <ComboboxOption
-          v-for="item in filteredValues"
-          :key="item.value"
-          :value="item.value"
-          as="template"
-          v-slot="{ active, selected }"
+  <div class="flex flex-col gap-1.5">
+    <label
+      v-if="label"
+      class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+      >{{ label }}</label
+    >
+    <Popover v-model:open="open">
+      <PopoverTrigger as-child>
+        <Button
+          variant="outline"
+          role="combobox"
+          :aria-expanded="open"
+          class="w-full justify-between"
+          :class="extraClass"
         >
-          <li
-            :class="[
-              'relative cursor-default py-2 pr-9 pl-3 select-none',
-              active ? 'bg-indigo-600 text-white' : 'text-gray-900',
-            ]"
+          {{ selectedLabel || "Select..." }}
+          <SelectorIcon class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent class="w-[200px] p-0" align="start">
+        <div class="flex items-center border-b px-3" cmk-input-wrapper>
+          <Input
+            v-model="query"
+            class="placeholder:text-muted-foreground flex h-11 w-full rounded-md border-none bg-transparent py-3 text-sm outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder="Search..."
+          />
+        </div>
+        <div class="max-h-[300px] overflow-x-hidden overflow-y-auto">
+          <div v-if="filteredValues.length === 0" class="py-6 text-center text-sm">
+            No value found.
+          </div>
+          <div
+            v-for="item in filteredValues"
+            :key="item.value"
+            @click="handleSelect(item.value)"
+            :class="
+              cn(
+                'hover:bg-accent hover:text-accent-foreground relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm transition-colors outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+                selectedValue === item.value ? 'bg-accent text-accent-foreground' : '',
+              )
+            "
           >
-            <span :class="['block truncate', selected && 'font-semibold']">
-              {{ item.label }}
-            </span>
-
-            <span
-              v-if="selected"
-              :class="[
-                'absolute inset-y-0 right-0 flex items-center pr-4',
-                active ? 'text-white' : 'text-indigo-600',
-              ]"
-            >
-              <CheckIcon class="h-5 w-5" aria-hidden="true" />
-            </span>
-          </li>
-        </ComboboxOption>
-      </ComboboxOptions>
-    </div>
-  </Combobox>
+            <CheckIcon
+              :class="
+                cn(
+                  'mr-2 h-4 w-4',
+                  selectedValue === item.value ? 'opacity-100' : 'opacity-0',
+                )
+              "
+            />
+            {{ item.label }}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  </div>
 </template>

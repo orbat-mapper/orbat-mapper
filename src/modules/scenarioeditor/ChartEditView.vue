@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from "vue";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/vue";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import {
@@ -68,6 +68,11 @@ const ORBAT_TAB = 0;
 const SETTINGS_TAB = 1;
 
 const selectedTab = ref(ORBAT_TAB);
+const selectedTabString = computed({
+  get: () => selectedTab.value.toString(),
+  set: (v) => (selectedTab.value = parseInt(v)),
+});
+
 const isInteractive = ref(true);
 
 function changeTab(index: number) {
@@ -174,37 +179,30 @@ const menuItems: MenuItemData<Function>[] = [
       v-model:width="panelWidth"
       class="relative z-10 flex h-full flex-col justify-between overflow-auto overflow-visible border-r-2 bg-gray-100 dark:bg-gray-900 print:hidden"
     >
-      <TabGroup :selected-index="selectedTab" @change="changeTab">
-        <TabList class="-mb-px flex border-b border-gray-200">
-          <Tab
-            as="template"
-            v-for="tab in ['ORBAT', 'Chart settings']"
+      <Tabs v-model="selectedTabString" class="flex h-full flex-col">
+        <TabsList
+          class="flex w-full rounded-none border-b border-gray-200 bg-transparent p-0"
+        >
+          <TabsTrigger
+            v-for="(tab, index) in ['ORBAT', 'Chart settings']"
             :key="tab"
-            v-slot="{ selected }"
+            :value="index.toString()"
+            class="flex-1 rounded-none border-b-2 border-transparent bg-transparent px-1 py-4 text-center text-sm font-medium text-gray-500 shadow-none transition-none hover:border-gray-300 hover:text-gray-700 focus-visible:ring-0 data-[state=active]:border-indigo-500 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 data-[state=active]:shadow-none"
           >
-            <button
-              :class="[
-                selected
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                'w-1/2 border-b-2 px-1 py-4 text-center text-sm font-medium',
-              ]"
-            >
-              {{ tab }}
-            </button>
-          </Tab>
-        </TabList>
-        <TabPanels class="min-h-0 flex-auto overflow-auto">
-          <TabPanel :unmount="false">
+            {{ tab }}
+          </TabsTrigger>
+        </TabsList>
+        <div class="min-h-0 flex-auto overflow-auto">
+          <TabsContent value="0" class="mt-0 h-full">
             <OrbatPanel class="space-y-1" hide-filter>
               <template #header></template>
             </OrbatPanel>
-          </TabPanel>
-          <TabPanel :unmount="false">
+          </TabsContent>
+          <TabsContent value="1" class="mt-0 h-full">
             <OrbatChartSettings chart-mode :tab="currentTab" />
-          </TabPanel>
-        </TabPanels>
-      </TabGroup>
+          </TabsContent>
+        </div>
+      </Tabs>
     </ResizablePanel>
     <main class="relative h-full flex-auto bg-gray-50">
       <SimpleBreadcrumbs

@@ -3,7 +3,7 @@ import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
 import { type Scenario } from "@/types/scenarioModels";
 import LoadScenarioUrlForm from "@/modules/scenarioeditor/LoadScenarioUrlForm.vue";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
-import { RadioGroup, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ref } from "vue";
 import { NEW_SCENARIO_ROUTE } from "@/router/names";
 import SortDropdown from "@/components/SortDropdown.vue";
@@ -28,51 +28,47 @@ function onLoaded(scenario: Scenario) {
     dialog-title="Load scenario"
     class="sm:max-w-xl md:max-w-4xl"
   >
-    <RadioGroup v-model="inputSource" class="mt-4 flex items-center gap-x-4">
-      <RadioGroupLabel class="text-muted-foreground text-sm font-medium"
-        >Source</RadioGroupLabel
-      >
-      <RadioGroupOption
-        v-for="{ label, value } in [
-          { label: 'Browser', value: 'browser' },
-          { label: 'Local file / URL', value: 'external' },
-        ]"
-        v-slot="{ checked }"
-        :key="value"
-        :value="value"
-      >
-        <span
-          :class="[
-            checked
-              ? 'bg-indigo-100 text-indigo-700'
-              : 'text-gray-500 hover:text-gray-700',
-            'cursor-pointer rounded-md px-3 py-2 text-sm font-medium',
-          ]"
-          >{{ label }}</span
-        >
-      </RadioGroupOption>
-    </RadioGroup>
-    <section v-if="inputSource === 'browser'" class="mt-4">
-      <header class="flex items-center justify-end border-b border-gray-200 pb-5">
-        <div class="mt-3 flex items-center sm:mt-0 sm:ml-4">
-          <SortDropdown class="mr-4" :options="sortOptions" />
-          <Button as-child variant="secondary">
-            <router-link :to="{ name: NEW_SCENARIO_ROUTE }"> Create new </router-link>
-          </Button>
-        </div>
-      </header>
-      <ul class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <ScenarioLinkCard
-          v-for="info in storedScenarios"
-          :key="info.id"
-          :data="info"
-          @action="onAction($event, info)"
-        />
-      </ul>
-    </section>
-    <div v-if="inputSource === 'external'" class="mt-6">
-      <LoadScenarioPanel class="h-40" @loaded="onLoaded" />
-      <LoadScenarioUrlForm class="mt-4" @loaded="onLoaded" />
-    </div>
+    <Tabs v-model="inputSource" class="mt-4">
+      <div class="flex items-center gap-x-4">
+        <span class="text-muted-foreground text-sm font-medium">Source</span>
+        <TabsList class="bg-transparent p-0">
+          <TabsTrigger
+            value="browser"
+            class="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-500 shadow-none transition-none hover:text-gray-700 data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none"
+          >
+            Browser
+          </TabsTrigger>
+          <TabsTrigger
+            value="external"
+            class="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-500 shadow-none transition-none hover:text-gray-700 data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none"
+          >
+            Local file / URL
+          </TabsTrigger>
+        </TabsList>
+      </div>
+
+      <TabsContent value="browser" class="mt-4">
+        <header class="flex items-center justify-end border-b border-gray-200 pb-5">
+          <div class="mt-3 flex items-center sm:mt-0 sm:ml-4">
+            <SortDropdown class="mr-4" :options="sortOptions" />
+            <Button as-child variant="secondary">
+              <router-link :to="{ name: NEW_SCENARIO_ROUTE }"> Create new </router-link>
+            </Button>
+          </div>
+        </header>
+        <ul class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <ScenarioLinkCard
+            v-for="info in storedScenarios"
+            :key="info.id"
+            :data="info"
+            @action="onAction($event, info)"
+          />
+        </ul>
+      </TabsContent>
+      <TabsContent value="external" class="mt-6">
+        <LoadScenarioPanel class="h-40" @loaded="onLoaded" />
+        <LoadScenarioUrlForm class="mt-4" @loaded="onLoaded" />
+      </TabsContent>
+    </Tabs>
   </NewSimpleModal>
 </template>

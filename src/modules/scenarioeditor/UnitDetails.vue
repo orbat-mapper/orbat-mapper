@@ -36,7 +36,7 @@ import OLMap from "ol/Map";
 import { useUiStore } from "@/stores/uiStore";
 import { CUSTOM_SYMBOL_SID_INDEX, SID_INDEX } from "@/symbology/sidc";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { TabPanel } from "@headlessui/vue";
+import { TabsContent } from "@/components/ui/tabs";
 import EditableLabel from "@/components/EditableLabel.vue";
 import UnitDetailsMapDisplay from "@/modules/scenarioeditor/UnitDetailsMapDisplay.vue";
 import { useTabStore } from "@/stores/tabStore";
@@ -509,7 +509,7 @@ function locateInOrbat() {
       </nav>
     </header>
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
-      <TabPanel class="pt-4">
+      <TabsContent value="0" class="pt-4">
         <section class="relative" v-if="!isMultiMode">
           <EditMetaForm
             v-if="isEditMode"
@@ -555,40 +555,40 @@ function locateInOrbat() {
           </div>
         </section>
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
-      </TabPanel>
-      <TabPanel>
+      </TabsContent>
+      <TabsContent value="1">
         <UnitDetailsSymbol
           :unit="unit"
           :key="unit.id"
           :is-multi-mode="isMultiMode"
           :is-locked="isLocked"
         />
-      </TabPanel>
-      <TabPanel>
+      </TabsContent>
+      <TabsContent value="2">
         <UnitPanelState v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
-      </TabPanel>
-      <TabPanel>
+      </TabsContent>
+      <TabsContent value="3">
         <UnitDetailsToe :unit="unit" :is-locked="isLocked" />
-      </TabPanel>
-      <TabPanel>
+      </TabsContent>
+      <TabsContent value="4">
         <UnitDetailsMapDisplay
           :unit="unit"
           :is-multi-mode="isMultiMode"
           :is-locked="isLocked"
         />
-      </TabPanel>
-      <TabPanel>
+      </TabsContent>
+      <TabsContent value="5">
         <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
         <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
-      </TabPanel>
-      <TabPanel>
+      </TabsContent>
+      <TabsContent value="6">
         <FeatureTransformations class="mt-4" unitMode />
-      </TabPanel>
+      </TabsContent>
 
-      <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
+      <TabsContent value="7" v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
         <pre>{{ unit }}</pre>
-      </TabPanel>
+      </TabsContent>
     </TabWrapper>
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"

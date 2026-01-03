@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import {
-  RadioGroup,
-  RadioGroupDescription,
-  RadioGroupLabel,
-  RadioGroupOption,
-} from "@headlessui/vue";
+import { RadioGroupRoot, RadioGroupItem } from "reka-ui";
 import { CheckCircleIcon } from "@heroicons/vue/20/solid";
 import type { SymbolItem, SymbolValue } from "@/types/constants";
 import MilSymbol from "@/components/MilSymbol.vue";
 import { useToggle, useVModel } from "@vueuse/core";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 interface Props {
   modelValue: string;
@@ -78,62 +74,44 @@ const items = computed(() =>
 
 <template>
   <div class="mt-4">
-    <RadioGroup v-model="data">
-      <RadioGroupLabel class="text-heading text-sm font-medium"
-        >Standard identity
-      </RadioGroupLabel>
+    <RadioGroupRoot v-model="data">
+      <Label class="text-heading text-sm font-medium">Standard identity </Label>
       <div
         class="mt-1 grid gap-x-4 gap-y-4"
         :class="compact ? 'grid-cols-2' : 'sm:grid-cols-4'"
       >
-        <RadioGroupOption
-          as="template"
+        <RadioGroupItem
           v-for="sid in items"
           :key="sid.code"
           :value="sid.code"
-          v-slot="{ checked, active }"
+          as="template"
         >
           <div
-            :class="[
-              checked ? 'border-primary' : 'border-border',
-              active ? 'border-primary ring-primary ring-2' : 'border-border',
-              'dark:bg-input/30 border-input relative flex cursor-pointer rounded-lg border bg-transparent p-4 shadow-xs focus:outline-hidden',
-            ]"
+            class="data-[state=checked]:border-primary data-[state=checked]:ring-primary dark:bg-input/30 border-input relative flex cursor-pointer rounded-lg border bg-transparent p-4 shadow-xs focus:outline-hidden data-[state=checked]:ring-2"
           >
             <span class="flex flex-1">
               <span class="flex w-full flex-col items-center">
-                <RadioGroupLabel
-                  as="span"
-                  class="text-heading block text-sm font-medium"
-                  >{{ sid.text }}</RadioGroupLabel
-                >
-                <RadioGroupDescription as="span" class="mt-2 flex"
+                <span class="text-heading block text-sm font-medium">{{ sid.text }}</span>
+                <span class="mt-2 flex"
                   ><MilSymbol
                     :sidc="sid.sidc"
                     :size="32"
                     :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
-                /></RadioGroupDescription>
+                /></span>
               </span>
             </span>
             <CheckCircleIcon
-              :class="[
-                !checked ? 'invisible' : '',
-                'text-primary absolute top-1 right-1 h-5 w-5',
-              ]"
+              class="text-primary invisible absolute top-1 right-1 h-5 w-5 data-[state=checked]:visible"
               aria-hidden="true"
             />
             <span
-              :class="[
-                active ? 'border' : 'border-2',
-                checked ? 'border-primary' : 'border-transparent',
-                'pointer-events-none absolute -inset-px rounded-lg',
-              ]"
+              class="data-[state=checked]:border-primary pointer-events-none absolute -inset-px rounded-lg border-2 border-transparent"
               aria-hidden="true"
             />
           </div>
-        </RadioGroupOption>
+        </RadioGroupItem>
       </div>
-    </RadioGroup>
+    </RadioGroupRoot>
     <div class="mt-2 flex justify-end">
       <Button type="button" variant="link" @click="toggleShowAll()" size="sm">
         <template v-if="showAll"><span aria-hidden="true"> ←</span> View less</template>

@@ -23,7 +23,7 @@ import ScenarioFeatureFillSettings from "@/modules/scenarioeditor/ScenarioFeatur
 import EditableLabel from "@/components/EditableLabel.vue";
 import { type SelectedScenarioFeatures, useSelectedItems } from "@/stores/selectedStore";
 import IconButton from "@/components/IconButton.vue";
-import { TabPanel } from "@headlessui/vue";
+import { TabsContent } from "@/components/ui/tabs";
 import TabWrapper from "@/components/TabWrapper.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useTabStore } from "@/stores/tabStore";
@@ -229,7 +229,7 @@ function onAction(action: ScenarioFeatureActions) {
       </nav>
     </header>
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
-      <TabPanel>
+      <TabsContent value="0">
         <PanelDataGrid class="mt-4">
           <ScenarioFeatureVisibilitySettings
             v-if="feature"
@@ -260,8 +260,8 @@ function onAction(action: ScenarioFeatureActions) {
             @update="doUpdateFeature"
           />
         </PanelDataGrid>
-      </TabPanel>
-      <TabPanel>
+      </TabsContent>
+      <TabsContent value="1">
         <div v-if="!isEditing" class="prose mt-4">
           <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
         </div>
@@ -279,14 +279,16 @@ function onAction(action: ScenarioFeatureActions) {
             @update="updateMedia"
           />
         </div>
-      </TabPanel>
-      <TabPanel><ScenarioFeatureState v-if="feature" :feature="feature" /></TabPanel>
-      <TabPanel>
+      </TabsContent>
+      <TabsContent value="2"
+        ><ScenarioFeatureState v-if="feature" :feature="feature"
+      /></TabsContent>
+      <TabsContent value="3">
         <FeatureTransformations class="mt-4" />
-      </TabPanel>
-      <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
+      </TabsContent>
+      <TabsContent value="4" v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
         <pre>{{ feature }}</pre>
-      </TabPanel>
+      </TabsContent>
     </TabWrapper>
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"

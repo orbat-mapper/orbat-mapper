@@ -6,7 +6,7 @@ import { activeScenarioKey } from "@/components/injects";
 import EditableLabel from "@/components/EditableLabel.vue";
 import ScenarioInfoDetails from "@/modules/scenarioeditor/ScenarioInfoDetails.vue";
 import TabWrapper from "@/components/TabWrapper.vue";
-import { TabPanel } from "@headlessui/vue";
+import { TabsContent } from "@/components/ui/tabs";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 
 const { store } = injectStrict(activeScenarioKey);
@@ -38,7 +38,7 @@ function updateScenarioInfo(data: Partial<ScenarioInfo>) {
       />
     </header>
     <TabWrapper :tab-list="['Details']" v-model="panelStore.tabIndex">
-      <TabPanel><ScenarioInfoDetails class="pt-4" /></TabPanel>
+      <TabsContent value="0"><ScenarioInfoDetails class="pt-4" /></TabsContent>
     </TabWrapper>
   </div>
 </template>

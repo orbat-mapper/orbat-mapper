@@ -18,7 +18,7 @@ import { type MenuItemData } from "@/components/types";
 import { type ScenarioMapLayerAction } from "@/types/constants";
 import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { TabPanel } from "@headlessui/vue";
+import { TabsContent } from "@/components/ui/tabs";
 import ImageMapLayerSettings from "@/modules/scenarioeditor/ImageMapLayerSettings.vue";
 import TileJSONMapLayerSettings from "@/modules/scenarioeditor/TileMapLayerSettings.vue";
 import { type LayerUpdateOptions } from "@/composables/geoMapLayers";
@@ -138,10 +138,10 @@ function toggleLayerVisibility() {
       </div>
     </header>
     <TabWrapper :tab-list="tabList" v-model="selectedTab">
-      <TabPanel
+      <TabsContent value="0"
         ><MapLayerMetaSettings :layer="mapLayer" @update="updateLayer"
-      /></TabPanel>
-      <TabPanel>
+      /></TabsContent>
+      <TabsContent value="1">
         <ImageMapLayerSettings
           v-if="mapLayer.type === 'ImageLayer'"
           :layer="mapLayer"
@@ -154,10 +154,10 @@ function toggleLayerVisibility() {
           @update="updateLayer"
           @action="onImageLayerAction"
         />
-      </TabPanel>
-      <TabPanel v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
+      </TabsContent>
+      <TabsContent value="2" v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
         <pre>{{ mapLayer }}</pre>
-      </TabPanel>
+      </TabsContent>
     </TabWrapper>
   </div>
 </template>
