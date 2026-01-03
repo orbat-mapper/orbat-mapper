@@ -108,3 +108,4 @@ export interface TabsState {
 export const tabsProviderKey = Symbol("TabsProvider") as InjectionKey<TabsState>;
 
 export type TabItem = string | { label: string; title?: string };
+export type MyTabItem = string | { label: string; value: string; disabled?: boolean };
