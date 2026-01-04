@@ -7,10 +7,11 @@ import {
   TabsTrigger,
   useForwardPropsEmits,
 } from "reka-ui";
-import { computed, type HTMLAttributes } from "vue";
-import { reactiveOmit } from "@vueuse/core";
+import { computed, type HTMLAttributes, useTemplateRef } from "vue";
+import { reactiveOmit, useElementVisibility, useScroll } from "@vueuse/core";
 import { cn } from "@/lib/utils.ts";
 import type { MyTabItem } from "@/components/types.ts";
+import { ChevronLeft, ChevronRight } from "lucide-vue-next";
 
 const props = defineProps<
   TabsRootProps & { class?: HTMLAttributes["class"] } & { items: MyTabItem[] }
@@ -36,6 +37,13 @@ const tabItems = computed(() => {
       };
   });
 });
+
+const scrollRef = useTemplateRef("scrollRef");
+const { x } = useScroll(scrollRef, { behavior: "smooth" });
+const startTarget = useTemplateRef("startTarget");
+const startMarkerIsVisible = useElementVisibility(startTarget);
+const endTarget = useTemplateRef("endTarget");
+const endMarkerIsVisible = useElementVisibility(endTarget);
 </script>
 
 <template>
@@ -45,18 +53,43 @@ const tabItems = computed(() => {
     v-bind="forwarded"
     :class="cn('flex h-full flex-col', props.class)"
   >
-    <div class="border-b-primary/20 flex flex-0 items-center justify-between border-b">
-      <TabsList class="no-scrollbar flex gap-0 overflow-x-auto">
-        <TabsTrigger
-          v-for="{ value, label, disabled } in tabItems"
-          :key="value"
-          :value
-          class="data-[state=active]:text-primary hover:text-primary/90 text-muted-foreground data-[state=active]:border-b-primary border-b-2 border-transparent px-3 py-4 text-sm font-medium whitespace-nowrap focus-visible:outline-1 focus-visible:outline-dashed disabled:pointer-events-none disabled:opacity-50 sm:py-3.5"
-          :disabled
+    <div class="border-b-primary/20 flex shrink-0 items-center justify-between border-b">
+      <div class="relative flex min-w-0 flex-1 overflow-hidden">
+        <button
+          class="hover:text-foreground bg-muted/80 absolute inset-y-0 left-0 z-10 flex cursor-pointer items-center justify-center px-1 disabled:pointer-events-none disabled:opacity-0"
+          :disabled="startMarkerIsVisible"
+          aria-label="Scroll left"
+          @click="x -= 120"
         >
-          {{ label }}
-        </TabsTrigger>
-      </TabsList>
+          <ChevronLeft class="text-muted-foreground size-6" />
+        </button>
+
+        <div class="no-scrollbar flex-1 overflow-x-auto" ref="scrollRef">
+          <TabsList class="relative flex w-max gap-0 px-2">
+            <div ref="startTarget" class="absolute top-0 bottom-0 left-0 w-px" />
+            <TabsTrigger
+              v-for="{ value, label, disabled } in tabItems"
+              :key="value"
+              :value
+              class="data-[state=active]:text-primary hover:text-primary/90 text-muted-foreground data-[state=active]:border-b-primary border-b-2 border-transparent px-3 py-4 text-sm font-medium whitespace-nowrap focus-visible:outline-1 focus-visible:outline-dashed disabled:pointer-events-none disabled:opacity-50 sm:py-3.5"
+              :disabled
+            >
+              {{ label }}
+            </TabsTrigger>
+            <div ref="endTarget" class="w-4 flex-none" />
+          </TabsList>
+        </div>
+
+        <button
+          class="hover:text-foreground bg-muted/80 absolute inset-y-0 right-0 z-10 flex cursor-pointer items-center justify-center px-1 disabled:pointer-events-none disabled:opacity-0"
+          :disabled="endMarkerIsVisible"
+          aria-label="Scroll right"
+          @click="x += 120"
+        >
+          <ChevronRight class="text-muted-foreground size-6" />
+        </button>
+      </div>
+
       <slot name="right" />
     </div>
     <div class="flex-auto overflow-y-auto">
