@@ -20,9 +20,6 @@ importers:
       '@fontsource-variable/inter':
         specifier: ^5.2.8
         version: 5.2.8
-      '@headlessui/vue':
-        specifier: ^1.7.23
-        version: 1.7.23(vue@3.5.26(typescript@5.9.3))
       '@heroicons/vue':
         specifier: ^2.2.0
         version: 2.2.0(vue@3.5.26(typescript@5.9.3))
@@ -885,12 +882,6 @@ packages:
 
   '@fontsource-variable/inter@5.2.8':
     resolution: {integrity: sha512-kOfP2D+ykbcX/P3IFnokOhVRNoTozo5/JxhAIVYLpea/UBmCQ/YWPBfWIDuBImXX/15KH+eKh4xpEUyS2sQQGQ==}
-
-  '@headlessui/vue@1.7.23':
-    resolution: {integrity: sha512-JzdCNqurrtuu0YW6QaDtR2PIYCKPUWq28csDyMvN4zmGccmE7lz40Is6hc3LA4HFeCI7sekZ/PQMTNmn9I/4Wg==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      vue: ^3.2.0
 
   '@heroicons/vue@2.2.0':
     resolution: {integrity: sha512-G3dbSxoeEKqbi/DFalhRxJU4mTXJn7GwZ7ae8NuEQzd1bqdd0jAbdaBZlHPcvPD2xI1iGzNVB4k20Un2AguYPw==}
@@ -4512,11 +4503,6 @@ snapshots:
       - vue
 
   '@fontsource-variable/inter@5.2.8': {}
-
-  '@headlessui/vue@1.7.23(vue@3.5.26(typescript@5.9.3))':
-    dependencies:
-      '@tanstack/vue-virtual': 3.13.13(vue@3.5.26(typescript@5.9.3))
-      vue: 3.5.26(typescript@5.9.3)
 
   '@heroicons/vue@2.2.0(vue@3.5.26(typescript@5.9.3))':
     dependencies:

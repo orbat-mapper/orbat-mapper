@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, ref, watch, watchEffect } from "vue";
 import {
-  Combobox,
+  ComboboxContent,
+  ComboboxGroup,
   ComboboxInput,
-  ComboboxOption,
-  ComboboxOptions,
-} from "@headlessui/vue";
+  ComboboxItem,
+  ComboboxLabel,
+  ComboboxRoot,
+} from "reka-ui";
 
 import PrimaryButton from "./PrimaryButton.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
@@ -39,7 +41,6 @@ import {
   useSymbologySearch,
 } from "@/composables/symbolSearching";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
-import { doFocus } from "@/composables/utils";
 import BaseButton from "@/components/BaseButton.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Button } from "@/components/ui/button";
@@ -195,9 +196,12 @@ const onSubmit = () => {
   open.value = false;
 };
 
-function onSelect(
-  hit: MainIconSearchResult | ModifierOneSearchResult | ModifierTwoSearchResult,
-) {
+function onSelect(value: unknown) {
+  if (!value || typeof value !== "object" || !("sidc" in value)) return;
+  const hit = value as
+    | MainIconSearchResult
+    | ModifierOneSearchResult
+    | ModifierTwoSearchResult;
   const newSidc = new Sidc(hit.sidc);
   symbolSetValue.value = newSidc.symbolSet;
   if (hit.category === "Main icon") {
@@ -280,7 +284,11 @@ watch(currentTab, async (v) => {
         :unmountOnHide="false"
       >
         <TabsContent value="0" class="mt-6 max-h-[50vh] overflow-auto sm:max-h-[60vh]">
-          <Combobox @update:modelValue="onSelect">
+          <ComboboxRoot
+            :ignore-filter="true"
+            :open="hitCount > 0"
+            @update:modelValue="onSelect"
+          >
             <div class="relative">
               <div class="relative">
                 <MagnifyingGlassIcon
@@ -288,55 +296,51 @@ watch(currentTab, async (v) => {
                   aria-hidden="true"
                 />
                 <ComboboxInput
+                  v-model="searchQuery"
                   class="placeholder:text-muted-foreground h-12 w-full border-0 bg-transparent pr-4 pl-11 focus:ring-0 sm:text-sm"
                   placeholder="Search..."
-                  @change="searchQuery = $event.target.value"
                   ref="searchInputRef"
-                  @vue:mounted="doFocus"
+                  :auto-focus="true"
                 />
               </div>
-              <ComboboxOptions
+              <ComboboxContent
                 v-if="groupedHits && hitCount > 0"
                 class="border-border bg-popover absolute z-50 max-h-80 w-full scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto rounded border p-4 pb-2 shadow-lg"
+                :disable-outside-pointer-events="false"
               >
-                <li v-for="[source, hits] in groupedHits" :key="source">
-                  <h2 class="text-xs font-semibold">{{ source }}</h2>
-                  <ul class="-mx-4 mt-2 text-sm font-medium">
-                    <ComboboxOption
+                <ComboboxGroup v-for="[source, hits] in groupedHits" :key="source">
+                  <ComboboxLabel class="text-xs font-semibold">{{
+                    source
+                  }}</ComboboxLabel>
+                  <div class="-mx-4 mt-2 text-sm font-medium">
+                    <ComboboxItem
                       v-for="item in hits"
                       :key="item.sidc"
                       :value="item"
-                      as="template"
-                      v-slot="{ active }"
+                      class="even:bg-muted/40 data-[highlighted]:bg-army flex cursor-default items-center px-4 py-2 select-none data-[highlighted]:text-white"
                     >
-                      <li
-                        :class="[
-                          'flex cursor-default items-center px-4 py-2 select-none',
-                          active ? 'bg-army text-white' : 'even:bg-muted/40',
-                        ]"
-                      >
-                        <div class="relative flex w-12 justify-center">
-                          <MilitarySymbol
-                            :sidc="item.sidc"
-                            :size="30"
-                            aria-hidden="true"
-                            :options="{
-                              ...combinedSymbolOptions,
-                              outlineColor: 'white',
-                              outlineWidth: 4,
-                            }"
-                          />
-                        </div>
-                        <p
-                          class="ml-3 flex-auto truncate"
-                          v-html="item.highlight ? item.highlight : item.text"
+                      <div class="relative flex w-12 justify-center">
+                        <MilitarySymbol
+                          :sidc="item.sidc"
+                          :size="30"
+                          aria-hidden="true"
+                          :options="{
+                            ...combinedSymbolOptions,
+                            outlineColor: 'white',
+                            outlineWidth: 4,
+                          }"
                         />
-                      </li>
-                    </ComboboxOption>
-                  </ul>
-                </li>
-              </ComboboxOptions></div
-          ></Combobox>
+                      </div>
+                      <p
+                        class="ml-3 flex-auto truncate"
+                        v-html="item.highlight ? item.highlight : item.text"
+                      />
+                    </ComboboxItem>
+                  </div>
+                </ComboboxGroup>
+              </ComboboxContent>
+            </div>
+          </ComboboxRoot>
 
           <form
             class="space-y-4 p-0.5"
