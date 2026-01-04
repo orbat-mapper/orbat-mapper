@@ -24,7 +24,7 @@ import TileJSONMapLayerSettings from "@/modules/scenarioeditor/TileMapLayerSetti
 import { type LayerUpdateOptions } from "@/composables/geoMapLayers";
 import { useUiStore } from "@/stores/uiStore";
 import MapLayerMetaSettings from "@/modules/scenarioeditor/MapLayerMetaSettings.vue";
-import TabWrapper from "@/components/TabWrapper.vue";
+import MyTabs from "@/components/MyTabs.vue";
 
 interface Props {
   layerId: FeatureId;
@@ -67,9 +67,23 @@ watch(
   { immediate: true },
 );
 
-const tabList = computed(() =>
-  uiStore.debugMode ? ["Details", "Settings", "Debug"] : ["Details", "Settings"],
-);
+const tabList = computed(() => {
+  const base = [
+    { label: "Details", value: "0" },
+    { label: "Settings", value: "1" },
+  ];
+  if (uiStore.debugMode) {
+    base.push({ label: "Debug", value: "2" });
+  }
+  return base;
+});
+
+const selectedTabString = computed({
+  get: () => selectedTab.value.toString(),
+  set: (v) => {
+    selectedTab.value = Number(v);
+  },
+});
 
 function updateValue(name: string, value: string) {
   mapLayer.value && geo.updateMapLayer(mapLayer.value.id, { [name]: value });
@@ -137,27 +151,33 @@ function toggleLayerVisibility() {
         </div>
       </div>
     </header>
-    <TabWrapper :tab-list="tabList" v-model="selectedTab">
-      <TabsContent value="0"
-        ><MapLayerMetaSettings :layer="mapLayer" @update="updateLayer"
-      /></TabsContent>
-      <TabsContent value="1">
-        <ImageMapLayerSettings
-          v-if="mapLayer.type === 'ImageLayer'"
-          :layer="mapLayer"
-          :key="mapLayer.id"
-          @update="updateLayer"
-        />
-        <TileJSONMapLayerSettings
-          v-else-if="mapLayer.type === 'TileJSONLayer' || mapLayer.type === 'XYZLayer'"
-          :layer="mapLayer"
-          @update="updateLayer"
-          @action="onImageLayerAction"
-        />
-      </TabsContent>
-      <TabsContent value="2" v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
-        <pre>{{ mapLayer }}</pre>
-      </TabsContent>
-    </TabWrapper>
+    <div class="-mx-4">
+      <MyTabs :items="tabList" v-model="selectedTabString">
+        <TabsContent value="0" class="mx-4 pt-4"
+          ><MapLayerMetaSettings :layer="mapLayer" @update="updateLayer"
+        /></TabsContent>
+        <TabsContent value="1" class="mx-4">
+          <ImageMapLayerSettings
+            v-if="mapLayer.type === 'ImageLayer'"
+            :layer="mapLayer"
+            :key="mapLayer.id"
+            @update="updateLayer"
+          />
+          <TileJSONMapLayerSettings
+            v-else-if="mapLayer.type === 'TileJSONLayer' || mapLayer.type === 'XYZLayer'"
+            :layer="mapLayer"
+            @update="updateLayer"
+            @action="onImageLayerAction"
+          />
+        </TabsContent>
+        <TabsContent
+          value="2"
+          v-if="uiStore.debugMode"
+          class="prose prose-sm mx-4 max-w-none"
+        >
+          <pre>{{ mapLayer }}</pre>
+        </TabsContent>
+      </MyTabs>
+    </div>
   </div>
 </template>
