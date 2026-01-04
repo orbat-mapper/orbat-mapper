@@ -24,7 +24,7 @@ import EditableLabel from "@/components/EditableLabel.vue";
 import { type SelectedScenarioFeatures, useSelectedItems } from "@/stores/selectedStore";
 import IconButton from "@/components/IconButton.vue";
 import { TabsContent } from "@/components/ui/tabs";
-import TabWrapper from "@/components/TabWrapper.vue";
+import MyTabs from "@/components/MyTabs.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useTabStore } from "@/stores/tabStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
@@ -125,11 +125,25 @@ const hasFill = computed(
 
 const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
-const tabList = computed(() =>
-  uiStore.debugMode
-    ? ["Style", "Details", "State", "Transform", "Debug"]
-    : ["Style", "Details", "State", "Transform"],
-);
+const tabList = computed(() => {
+  const base = [
+    { label: "Style", value: "0" },
+    { label: "Details", value: "1" },
+    { label: "State", value: "2" },
+    { label: "Transform", value: "3" },
+  ];
+  if (uiStore.debugMode) {
+    base.push({ label: "Debug", value: "4" });
+  }
+  return base;
+});
+
+const selectedTabString = computed({
+  get: () => selectedTab.value.toString(),
+  set: (v) => {
+    selectedTab.value = Number(v);
+  },
+});
 
 const isEditing = computed(() => isEditMode.value || isEditMediaMode.value);
 const media = computed(() => {
@@ -228,68 +242,74 @@ function onAction(action: ScenarioFeatureActions) {
         </div>
       </nav>
     </header>
-    <TabWrapper :tab-list="tabList" v-model="selectedTab">
-      <TabsContent value="0">
-        <PanelDataGrid class="mt-4">
-          <ScenarioFeatureVisibilitySettings
-            v-if="feature"
-            :feature="feature"
-            @update="doUpdateFeature"
-          />
-          <ScenarioFeatureMarkerSettings
-            v-if="
-              feature &&
-              (geometryType === 'Point' || geometryType === 'GeometryCollection')
-            "
-            :feature="feature"
-            @update="doUpdateFeature"
-          />
-          <ScenarioFeatureStrokeSettings
-            v-if="feature && hasStroke"
-            :feature="feature"
-            @update="doUpdateFeature"
-          />
-          <ScenarioFeatureFillSettings
-            v-if="feature && hasFill"
-            :feature="feature"
-            @update="doUpdateFeature"
-          />
-          <ScenarioFeatureTextSettings
-            v-if="feature && geometryType !== 'Circle'"
-            :feature="feature"
-            @update="doUpdateFeature"
-          />
-        </PanelDataGrid>
-      </TabsContent>
-      <TabsContent value="1">
-        <div v-if="!isEditing" class="prose mt-4">
-          <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
-        </div>
-        <div v-else-if="isEditMode" class="mt-4">
-          <EditMetaForm
-            :item="feature"
-            @update="doMetaUpdate"
-            @cancel="toggleEditMode()"
-          />
-        </div>
-        <div v-else-if="isEditMediaMode" class="mt-4">
-          <EditMediaForm
-            :media="media"
-            @cancel="toggleEditMediaMode()"
-            @update="updateMedia"
-          />
-        </div>
-      </TabsContent>
-      <TabsContent value="2"
-        ><ScenarioFeatureState v-if="feature" :feature="feature"
-      /></TabsContent>
-      <TabsContent value="3">
-        <FeatureTransformations class="mt-4" />
-      </TabsContent>
-      <TabsContent value="4" v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
-        <pre>{{ feature }}</pre>
-      </TabsContent>
-    </TabWrapper>
+    <div class="-mx-4">
+      <MyTabs :items="tabList" v-model="selectedTabString">
+        <TabsContent value="0" class="mx-4">
+          <PanelDataGrid class="mt-4">
+            <ScenarioFeatureVisibilitySettings
+              v-if="feature"
+              :feature="feature"
+              @update="doUpdateFeature"
+            />
+            <ScenarioFeatureMarkerSettings
+              v-if="
+                feature &&
+                (geometryType === 'Point' || geometryType === 'GeometryCollection')
+              "
+              :feature="feature"
+              @update="doUpdateFeature"
+            />
+            <ScenarioFeatureStrokeSettings
+              v-if="feature && hasStroke"
+              :feature="feature"
+              @update="doUpdateFeature"
+            />
+            <ScenarioFeatureFillSettings
+              v-if="feature && hasFill"
+              :feature="feature"
+              @update="doUpdateFeature"
+            />
+            <ScenarioFeatureTextSettings
+              v-if="feature && geometryType !== 'Circle'"
+              :feature="feature"
+              @update="doUpdateFeature"
+            />
+          </PanelDataGrid>
+        </TabsContent>
+        <TabsContent value="1" class="mx-4">
+          <div v-if="!isEditing" class="prose mt-4">
+            <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
+          </div>
+          <div v-else-if="isEditMode" class="mt-4">
+            <EditMetaForm
+              :item="feature"
+              @update="doMetaUpdate"
+              @cancel="toggleEditMode()"
+            />
+          </div>
+          <div v-else-if="isEditMediaMode" class="mt-4">
+            <EditMediaForm
+              :media="media"
+              @cancel="toggleEditMediaMode()"
+              @update="updateMedia"
+            />
+          </div>
+        </TabsContent>
+        <TabsContent value="2" class="mx-4"
+          ><ScenarioFeatureState v-if="feature" :feature="feature"
+        /></TabsContent>
+        <TabsContent value="3" class="mx-4">
+          <FeatureTransformations class="mt-4" />
+        </TabsContent>
+        <TabsContent
+          value="4"
+          v-if="uiStore.debugMode"
+          class="prose prose-sm mx-4 max-w-none"
+        >
+          <pre>{{ feature }}</pre>
+        </TabsContent>
+      </MyTabs>
+    </div>
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"
       :filter="inputEventFilter"

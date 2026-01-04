@@ -42,7 +42,7 @@ import UnitDetailsMapDisplay from "@/modules/scenarioeditor/UnitDetailsMapDispla
 import { useTabStore } from "@/stores/tabStore";
 import { storeToRefs } from "pinia";
 import UnitDetailsToe from "@/modules/scenarioeditor/UnitDetailsToe.vue";
-import TabWrapper from "@/components/TabWrapper.vue";
+import MyTabs from "@/components/MyTabs.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { type MenuItemData } from "@/components/types";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
@@ -89,28 +89,28 @@ const truncateUnits = ref(true);
 const isDragged = ref(false);
 const elRef = useTemplateRef("elRef");
 
-const tabList = computed(() =>
-  uiStore.debugMode
-    ? [
-        "Details",
-        "Map symbol",
-        "Unit state",
-        { label: "TO&E/S", title: "Table of organization, equipment and supplies" },
-        "Map display",
-        "Properties",
-        "Transform",
-        "Debug",
-      ]
-    : [
-        "Details",
-        "Map symbol",
-        "Unit state",
-        { label: "TO&E/S", title: "Table of organization, equipment and supplies" },
-        "Map display",
-        "Properties",
-        "Transform",
-      ],
-);
+const tabList = computed(() => {
+  const base = [
+    { label: "Details", value: "0" },
+    { label: "Map symbol", value: "1" },
+    { label: "Unit state", value: "2" },
+    { label: "TO&E/S", value: "3" },
+    { label: "Map display", value: "4" },
+    { label: "Properties", value: "5" },
+    { label: "Transform", value: "6" },
+  ];
+  if (uiStore.debugMode) {
+    base.push({ label: "Debug", value: "7" });
+  }
+  return base;
+});
+
+const selectedTabString = computed({
+  get: () => selectedTab.value.toString(),
+  set: (v) => {
+    selectedTab.value = Number(v);
+  },
+});
 
 const unit = computed(() => {
   return getUnitById(props.unitId);
@@ -508,88 +508,94 @@ function locateInOrbat() {
         </div>
       </nav>
     </header>
-    <TabWrapper :tab-list="tabList" v-model="selectedTab">
-      <TabsContent value="0" class="pt-4">
-        <section class="relative" v-if="!isMultiMode">
-          <EditMetaForm
-            v-if="isEditMode"
-            :item="unit"
-            @update="onFormSubmit"
-            @cancel="toggleEditMode()"
-          />
-          <EditMediaForm
-            v-else-if="isEditMediaMode"
-            :media="media"
-            @cancel="toggleEditMediaMode()"
-            @update="updateMedia"
-          />
-          <div v-else-if="!isMultiMode" class="mb-4 space-y-4">
-            <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
-            <DescriptionItem v-if="unit.shortName" label="Short name"
-              >{{ unit.shortName }}
-            </DescriptionItem>
-            <DescriptionItem
-              v-if="unit.externalUrl"
-              label="External URL"
-              dd-class="truncate"
-              ><a
-                target="_blank"
-                draggable="false"
-                class="underline"
-                :href="unit.externalUrl"
-                >{{ unit.externalUrl }}</a
-              ></DescriptionItem
-            >
-            <DescriptionItem v-if="unit.description" label="Description">
-              <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
-            </DescriptionItem>
+    <div class="-mx-4">
+      <MyTabs :items="tabList" v-model="selectedTabString" class="">
+        <TabsContent value="0" class="mx-4 pt-4">
+          <section class="relative" v-if="!isMultiMode">
+            <EditMetaForm
+              v-if="isEditMode"
+              :item="unit"
+              @update="onFormSubmit"
+              @cancel="toggleEditMode()"
+            />
+            <EditMediaForm
+              v-else-if="isEditMediaMode"
+              :media="media"
+              @cancel="toggleEditMediaMode()"
+              @update="updateMedia"
+            />
+            <div v-else-if="!isMultiMode" class="mb-4 space-y-4">
+              <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
+              <DescriptionItem v-if="unit.shortName" label="Short name"
+                >{{ unit.shortName }}
+              </DescriptionItem>
+              <DescriptionItem
+                v-if="unit.externalUrl"
+                label="External URL"
+                dd-class="truncate"
+                ><a
+                  target="_blank"
+                  draggable="false"
+                  class="underline"
+                  :href="unit.externalUrl"
+                  >{{ unit.externalUrl }}</a
+                ></DescriptionItem
+              >
+              <DescriptionItem v-if="unit.description" label="Description">
+                <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
+              </DescriptionItem>
 
-            <DescriptionItem v-if="unit.location" label="Initial location">
-              <div class="flex items-center justify-between">
-                <p>{{ formatPosition(unit.location) }}</p>
-                <IconButton @click="geoStore.panToLocation(unit.location)">
-                  <IconCrosshairsGps class="h-5 w-5" />
-                </IconButton>
-              </div>
-            </DescriptionItem>
-          </div>
-        </section>
-        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
-      </TabsContent>
-      <TabsContent value="1">
-        <UnitDetailsSymbol
-          :unit="unit"
-          :key="unit.id"
-          :is-multi-mode="isMultiMode"
-          :is-locked="isLocked"
-        />
-      </TabsContent>
-      <TabsContent value="2">
-        <UnitPanelState v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
-        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
-      </TabsContent>
-      <TabsContent value="3">
-        <UnitDetailsToe :unit="unit" :is-locked="isLocked" />
-      </TabsContent>
-      <TabsContent value="4">
-        <UnitDetailsMapDisplay
-          :unit="unit"
-          :is-multi-mode="isMultiMode"
-          :is-locked="isLocked"
-        />
-      </TabsContent>
-      <TabsContent value="5">
-        <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
-        <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
-      </TabsContent>
-      <TabsContent value="6">
-        <FeatureTransformations class="mt-4" unitMode />
-      </TabsContent>
+              <DescriptionItem v-if="unit.location" label="Initial location">
+                <div class="flex items-center justify-between">
+                  <p>{{ formatPosition(unit.location) }}</p>
+                  <IconButton @click="geoStore.panToLocation(unit.location)">
+                    <IconCrosshairsGps class="h-5 w-5" />
+                  </IconButton>
+                </div>
+              </DescriptionItem>
+            </div>
+          </section>
+          <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
+        </TabsContent>
+        <TabsContent value="1" class="mx-4">
+          <UnitDetailsSymbol
+            :unit="unit"
+            :key="unit.id"
+            :is-multi-mode="isMultiMode"
+            :is-locked="isLocked"
+          />
+        </TabsContent>
+        <TabsContent value="2" class="mx-4">
+          <UnitPanelState v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
+          <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
+        </TabsContent>
+        <TabsContent value="3" class="mx-4">
+          <UnitDetailsToe :unit="unit" :is-locked="isLocked" />
+        </TabsContent>
+        <TabsContent value="4" class="mx-4">
+          <UnitDetailsMapDisplay
+            :unit="unit"
+            :is-multi-mode="isMultiMode"
+            :is-locked="isLocked"
+          />
+        </TabsContent>
+        <TabsContent value="5" class="mx-4">
+          <UnitDetailsProperties v-if="!isMultiMode" :unit="unit" :is-locked="isLocked" />
+          <p v-else class="p-2 pt-4 text-sm">Multi edit mode not supported yet.</p>
+        </TabsContent>
+        <TabsContent value="6" class="mx-4">
+          <FeatureTransformations class="mt-4" unitMode />
+        </TabsContent>
 
-      <TabsContent value="7" v-if="uiStore.debugMode" class="prose prose-sm max-w-none">
-        <pre>{{ unit }}</pre>
-      </TabsContent>
-    </TabWrapper>
+        <TabsContent
+          value="7"
+          v-if="uiStore.debugMode"
+          class="prose prose-sm mx-4 max-w-none"
+        >
+          <pre>{{ unit }}</pre>
+        </TabsContent>
+      </MyTabs>
+    </div>
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"
       :filter="inputEventFilter"

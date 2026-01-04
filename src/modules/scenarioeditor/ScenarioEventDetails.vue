@@ -10,7 +10,7 @@ import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { ScenarioEventAction } from "@/types/constants";
 import { useSelectedItems } from "@/stores/selectedStore";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
-import TabWrapper from "@/components/TabWrapper.vue";
+import MyTabs from "@/components/MyTabs.vue";
 import { TabsContent } from "@/components/ui/tabs";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
@@ -52,7 +52,15 @@ const media = computed(() => {
   return scenarioEvent.value?.media?.[0];
 });
 
-const tabList = computed(() => (ui.debugMode ? ["Details", "Debug"] : ["Details"]));
+const tabList = computed(() => {
+  const base = [{ label: "Details", value: "0" }];
+  if (ui.debugMode) {
+    base.push({ label: "Debug", value: "1" });
+  }
+  return base;
+});
+
+const selectedTab = ref("0");
 
 watch(
   () => props.eventId,
@@ -123,44 +131,45 @@ const onFormSubmit = (eventUpdate: ScenarioEventUpdate) => {
         <ScenarioEventDropdownMenu @action="onAction" />
       </nav>
     </header>
-    <TabWrapper :tabList="tabList">
-      <TabsContent value="0">
-        <EditMetaForm
-          class="mt-4"
-          v-if="isEditMode"
-          :item="scenarioEvent"
-          @update="onFormSubmit"
-          @cancel="toggleEditMode()"
-        />
-        <EditMediaForm
-          v-else-if="isEditMediaMode"
-          :media="media"
-          @cancel="toggleEditMediaMode()"
-          @update="updateMedia"
-          class="mt-4"
-        />
-        <div v-else class="mt-4">
-          <div v-if="scenarioEvent.description">
-            <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
+    <div class="-mx-4">
+      <MyTabs :items="tabList" v-model="selectedTab">
+        <TabsContent value="0" class="mx-4 pt-4">
+          <EditMetaForm
+            v-if="isEditMode"
+            :item="scenarioEvent"
+            @update="onFormSubmit"
+            @cancel="toggleEditMode()"
+          />
+          <EditMediaForm
+            v-else-if="isEditMediaMode"
+            :media="media"
+            @cancel="toggleEditMediaMode()"
+            @update="updateMedia"
+            class=""
+          />
+          <div v-else class="">
+            <div v-if="scenarioEvent.description">
+              <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
+            </div>
+            <DescriptionItem
+              v-if="scenarioEvent.externalUrl"
+              label="External URL"
+              dd-class="truncate"
+              class="mt-4"
+              ><a
+                target="_blank"
+                draggable="false"
+                class="underline"
+                :href="scenarioEvent.externalUrl"
+                >{{ scenarioEvent.externalUrl }}</a
+              ></DescriptionItem
+            >
           </div>
-          <DescriptionItem
-            v-if="scenarioEvent.externalUrl"
-            label="External URL"
-            dd-class="truncate"
-            class="mt-4"
-            ><a
-              target="_blank"
-              draggable="false"
-              class="underline"
-              :href="scenarioEvent.externalUrl"
-              >{{ scenarioEvent.externalUrl }}</a
-            ></DescriptionItem
-          >
-        </div>
-      </TabsContent>
-      <TabsContent value="1" v-if="ui.debugMode">
-        <pre v-if="ui.debugMode">{{ scenarioEvent }}</pre>
-      </TabsContent>
-    </TabWrapper>
+        </TabsContent>
+        <TabsContent value="1" v-if="ui.debugMode" class="mx-4">
+          <pre v-if="ui.debugMode">{{ scenarioEvent }}</pre>
+        </TabsContent>
+      </MyTabs>
+    </div>
   </div>
 </template>

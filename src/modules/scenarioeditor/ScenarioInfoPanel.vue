@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { type ScenarioInfo } from "@/types/scenarioModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import EditableLabel from "@/components/EditableLabel.vue";
 import ScenarioInfoDetails from "@/modules/scenarioeditor/ScenarioInfoDetails.vue";
-import TabWrapper from "@/components/TabWrapper.vue";
+import MyTabs from "@/components/MyTabs.vue";
 import { TabsContent } from "@/components/ui/tabs";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 
@@ -22,6 +22,15 @@ watch(
   { immediate: true },
 );
 
+const tabList = [{ label: "Details", value: "0" }];
+
+const selectedTabString = computed({
+  get: () => panelStore.tabIndex.toString(),
+  set: (v) => {
+    panelStore.tabIndex = Number(v);
+  },
+});
+
 function updateScenarioInfo(data: Partial<ScenarioInfo>) {
   store.update((s) => {
     Object.assign(s.info, { ...data });
@@ -37,8 +46,12 @@ function updateScenarioInfo(data: Partial<ScenarioInfo>) {
         @update-value="updateScenarioInfo({ name: $event })"
       />
     </header>
-    <TabWrapper :tab-list="['Details']" v-model="panelStore.tabIndex">
-      <TabsContent value="0"><ScenarioInfoDetails class="pt-4" /></TabsContent>
-    </TabWrapper>
+    <div class="-mx-4">
+      <MyTabs :items="tabList" v-model="selectedTabString">
+        <TabsContent value="0" class="mx-4 pt-4"
+          ><ScenarioInfoDetails class=""
+        /></TabsContent>
+      </MyTabs>
+    </div>
   </div>
 </template>
