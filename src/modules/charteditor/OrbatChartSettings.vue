@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { useVModel } from "@vueuse/core";
-import TabView from "@/components/TabView.vue";
-import TabItem from "@/components/TabItem.vue";
+import MyTabs from "@/components/MyTabs.vue";
+import TabsContent from "@/components/ui/tabs/TabsContent.vue";
 import OrbatChartSettingsUnit from "./OrbatChartSettingsUnit.vue";
 import OrbatChartSettingsLevel from "./OrbatChartSettingsLevel.vue";
 import OrbatChartSettingsChart from "./OrbatChartSettingsChart.vue";
@@ -13,11 +14,17 @@ interface Props {
   chartMode?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
-  tab: ChartTabs.Chart,
   chartMode: false,
 });
-const emit = defineEmits(["update:tab"]);
-const currentTab = useVModel(props, "tab", emit);
+
+const currentTab = defineModel<ChartTab>("tab");
+
+const tabItems = [
+  { label: "Chart", value: ChartTabs.Chart.toString() },
+  { label: "Level", value: ChartTabs.Level.toString() },
+  { label: "Branch", value: ChartTabs.Branch.toString() },
+  { label: "Unitss", value: ChartTabs.Unit.toString() },
+];
 </script>
 
 <template>
@@ -25,24 +32,27 @@ const currentTab = useVModel(props, "tab", emit);
     <h3 v-if="!chartMode" class="hidden px-4 font-medium text-gray-900 lg:block lg:p-4">
       Chart layout settings
     </h3>
-    <TabView
-      v-model:current-tab="currentTab"
-      extra-class="px-4 -mx-4 lg:mx-0"
-      tab-class="mx-2 lg:mx-4"
+    <MyTabs
+      v-model="currentTab"
+      :items="tabItems"
+      :unmount-on-hide="false"
       class="min-h-0 flex-auto"
     >
-      <TabItem label="Chart" class="mx-4">
-        <OrbatChartSettingsChart :chart-mode="chartMode" />
-      </TabItem>
-      <TabItem label="Level" class="mx-4">
+      <TabsContent :value="ChartTabs.Chart" class="mt-6 px-4">
+        <OrbatChartSettingsChart
+          v-if="currentTab === ChartTabs.Chart"
+          :chart-mode="chartMode"
+        />
+      </TabsContent>
+      <TabsContent :value="ChartTabs.Level" class="mt-6 px-4">
         <OrbatChartSettingsLevel />
-      </TabItem>
-      <TabItem label="Branch" class="mx-4">
+      </TabsContent>
+      <TabsContent :value="ChartTabs.Branch" class="mt-6 px-4">
         <OrbatChartSettingsBranch />
-      </TabItem>
-      <TabItem label="Unit" class="mx-4">
+      </TabsContent>
+      <TabsContent :value="ChartTabs.Unit" class="mt-6 px-4">
         <OrbatChartSettingsUnit />
-      </TabItem>
-    </TabView>
+      </TabsContent>
+    </MyTabs>
   </div>
 </template>
