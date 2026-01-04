@@ -41,9 +41,9 @@ const tabItems = computed(() => {
 const scrollRef = useTemplateRef("scrollRef");
 const { x } = useScroll(scrollRef, { behavior: "smooth" });
 const startTarget = useTemplateRef("startTarget");
-const startMarkerIsVisible = useElementVisibility(startTarget);
+const startMarkerIsVisible = useElementVisibility(startTarget, { initialValue: true });
 const endTarget = useTemplateRef("endTarget");
-const endMarkerIsVisible = useElementVisibility(endTarget);
+const endMarkerIsVisible = useElementVisibility(endTarget, { initialValue: true });
 
 watch(
   () => props.modelValue,
