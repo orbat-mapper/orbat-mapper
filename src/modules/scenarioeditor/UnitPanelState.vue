@@ -25,6 +25,7 @@ import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import { useLocalStorage } from "@vueuse/core";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   unit: NUnit;
@@ -312,7 +313,7 @@ function setUnitStatus(newStatus?: string | null) {
         >
           {{ fmt.scenarioFormatter.format(s.t) }}
         </button>
-        <input
+        <Input
           v-if="s === editedTitle"
           type="text"
           v-model="newTitle"

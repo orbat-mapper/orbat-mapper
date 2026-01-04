@@ -13,7 +13,7 @@ export interface CoordinateInputProps {
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
-import { MapPinIcon } from "@heroicons/vue/20/solid";
+import { MapPin } from "lucide-vue-next";
 
 import * as mgrsLib from "mgrs";
 import type { Position } from "geojson";
@@ -45,7 +45,7 @@ watch(modelValue, (v) => {
   localValue.value = convertToLocalValue(v);
 });
 
-watch([localValue, inputFormat], ([v, inpFormat], [oldV, oldInpFormat]) => {
+watch([localValue, inputFormat], ([v, inpFormat], [_oldV, oldInpFormat]) => {
   if (isInternal) {
     isInternal = false;
     return;
@@ -120,14 +120,14 @@ onMounted(() => {
   <div :class="outerClass" @blur.capture="onOuterBlur">
     <div class="relative rounded-sm shadow-xs">
       <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-        <MapPinIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
+        <MapPin class="text-muted-foreground h-4 w-4" aria-hidden="true" />
       </div>
       <input
         type="text"
         ref="inputRef"
         :class="
           cn(
-            'block w-full rounded-md border-0 py-1.5 pr-24 pl-10 text-gray-900 ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-600 focus:ring-inset data-invalid:bg-red-200 sm:text-sm sm:leading-6',
+            'text-foreground bg-input ring-input placeholder:text-muted-foreground focus:ring-ring data-invalid:bg-destructive/20 block w-full rounded-md border-0 py-1.5 pr-24 pl-10 ring-1 ring-inset focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6',
             props.class,
           )
         "
@@ -139,7 +139,7 @@ onMounted(() => {
         <label for="coordinate-format" class="sr-only">Coordinate format</label>
         <select
           id="coordinate-format"
-          class="h-full rounded-md border-0 bg-transparent py-0 pr-7 pl-2 text-gray-500 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm"
+          class="text-muted-foreground focus:ring-ring h-full rounded-md border-0 bg-transparent py-0 pr-7 pl-2 focus:ring-2 focus:ring-inset sm:text-sm"
           v-model="inputFormat"
           ref="selectRef"
         >
