@@ -7,7 +7,7 @@ import {
   TabsTrigger,
   useForwardPropsEmits,
 } from "reka-ui";
-import { computed, type HTMLAttributes, useTemplateRef } from "vue";
+import { computed, type HTMLAttributes, nextTick, useTemplateRef, watch } from "vue";
 import { reactiveOmit, useElementVisibility, useScroll } from "@vueuse/core";
 import { cn } from "@/lib/utils.ts";
 import type { MyTabItem } from "@/components/types.ts";
@@ -44,6 +44,33 @@ const startTarget = useTemplateRef("startTarget");
 const startMarkerIsVisible = useElementVisibility(startTarget);
 const endTarget = useTemplateRef("endTarget");
 const endMarkerIsVisible = useElementVisibility(endTarget);
+
+watch(
+  () => props.modelValue,
+  async () => {
+    await nextTick();
+    const activeTab = scrollRef.value?.querySelector(
+      '[data-state="active"]',
+    ) as HTMLElement;
+    if (!activeTab || !scrollRef.value) return;
+
+    const container = scrollRef.value;
+    const containerWidth = container.offsetWidth;
+    const scrollLeft = container.scrollLeft;
+
+    const leftBuffer = 40;
+    const rightBuffer = 40;
+
+    const tabLeft = activeTab.offsetLeft;
+    const tabRight = tabLeft + activeTab.offsetWidth;
+
+    if (tabLeft < scrollLeft + leftBuffer) {
+      x.value = tabLeft - leftBuffer;
+    } else if (tabRight > scrollLeft + containerWidth - rightBuffer) {
+      x.value = tabRight - containerWidth + rightBuffer;
+    }
+  },
+);
 </script>
 
 <template>
