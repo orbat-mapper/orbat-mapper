@@ -2,8 +2,8 @@
 import LayersPanel from "./LayersPanel.vue";
 import { useVModel } from "@vueuse/core";
 import SlideOver from "./SlideOver.vue";
-import TabView from "./TabView.vue";
-import TabItem from "./TabItem.vue";
+import MyTabs from "@/components/MyTabs.vue";
+import TabsContent from "@/components/ui/tabs/TabsContent.vue";
 import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import NumberInputGroup from "./NumberInputGroup.vue";
 import MapSettingsPanel from "@/components/MapSettingsPanel.vue";
@@ -19,18 +19,20 @@ const settings = useSettingsStore();
 const mapSettings = useMapSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
 const uiSettings = useUiStore();
+
+const tabItems = ["Map view", "Map layers", "ORBAT", "Time and date"];
 </script>
 
 <template>
   <SlideOver v-model="open" title="Settings">
-    <TabView gap="gap-x-2">
-      <TabItem label="Map view">
+    <MyTabs :items="tabItems" default-value="0">
+      <TabsContent value="0" class="px-4 py-6">
         <MapSettingsPanel />
-      </TabItem>
-      <TabItem label="Map layers">
+      </TabsContent>
+      <TabsContent value="1" class="px-4 py-6">
         <LayersPanel />
-      </TabItem>
-      <TabItem label="ORBAT">
+      </TabsContent>
+      <TabsContent value="2" class="px-4 py-6">
         <div class="space-y-4 p-1">
           <NumberInputGroup
             InputGroup
@@ -47,10 +49,10 @@ const uiSettings = useUiStore();
 
           <ToggleField v-model="uiSettings.debugMode">Debug mode</ToggleField>
         </div>
-      </TabItem>
-      <TabItem label="Time and date">
+      </TabsContent>
+      <TabsContent value="3" class="px-4 py-6">
         <TimeDateSettingsPanel />
-      </TabItem>
-    </TabView>
+      </TabsContent>
+    </MyTabs>
   </SlideOver>
 </template>

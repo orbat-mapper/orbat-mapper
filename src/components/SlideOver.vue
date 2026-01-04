@@ -17,7 +17,7 @@ const isOpen = defineModel<boolean>();
           <slot name="title">{{ title }}</slot>
         </SheetTitle>
       </SheetHeader>
-      <div class="px-4">
+      <div class="">
         <slot />
       </div>
     </SheetContent>
