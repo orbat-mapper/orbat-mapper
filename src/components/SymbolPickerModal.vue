@@ -19,8 +19,8 @@ import {
 import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
 import { useSymbolItems } from "@/composables/symbolData";
 import NProgress from "nprogress";
-import TabView from "./TabView.vue";
-import TabItem from "./TabItem.vue";
+import MyTabs from "./MyTabs.vue";
+import TabsContent from "@/components/ui/tabs/TabsContent.vue";
 import SymbolBrowseTab from "./SymbolBrowseTab.vue";
 import SecondaryButton from "./SecondaryButton.vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
@@ -93,7 +93,14 @@ const searchInputRef = ref();
 const open = useVModel(props, "isVisible");
 const searchQuery = ref("");
 const debouncedQuery = useDebounce(searchQuery, 100);
-const currentTab = ref(props.initialTab ?? 0);
+const currentTab = ref((props.initialTab ?? 0).toString());
+
+const tabItems = computed(() => {
+  const items = ["Select", "Browse"];
+  if (!props.hideCustomSymbols) items.push("Custom symbol");
+  items.push("Legacy convert");
+  return items;
+});
 
 const groupedHits = ref<ReturnType<typeof search>["groups"]>();
 
@@ -234,7 +241,7 @@ function updateFromSidcInput(sidc: string) {
 }
 
 watch(currentTab, async (v) => {
-  if (v === 0 && !isMobile.value) {
+  if (v === "0" && !isMobile.value) {
     await nextTick();
     searchInputRef.value?.el.focus();
   }
@@ -266,13 +273,18 @@ watch(currentTab, async (v) => {
         />
       </header>
 
-      <TabView class="flex-auto" v-model:current-tab="currentTab">
-        <TabItem label="Select" class="max-h-[50vh] overflow-auto sm:max-h-[60vh]">
+      <MyTabs
+        class="flex-auto"
+        v-model="currentTab"
+        :items="tabItems"
+        :unmountOnHide="false"
+      >
+        <TabsContent value="0" class="mt-6 max-h-[50vh] overflow-auto sm:max-h-[60vh]">
           <Combobox @update:modelValue="onSelect">
             <div class="relative">
               <div class="relative">
                 <MagnifyingGlassIcon
-                  class="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-gray-400"
+                  class="text-muted-foreground absolute top-3.5 left-4 h-5 w-5"
                   aria-hidden="true"
                 />
                 <ComboboxInput
@@ -287,7 +299,7 @@ watch(currentTab, async (v) => {
                 v-if="groupedHits && hitCount > 0"
                 class="border-border bg-popover absolute z-50 max-h-80 w-full scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto rounded border p-4 pb-2 shadow-lg"
               >
-                <li v-for="[source, hits] in groupedHits">
+                <li v-for="[source, hits] in groupedHits" :key="source">
                   <h2 class="text-xs font-semibold">{{ source }}</h2>
                   <ul class="-mx-4 mt-2 text-sm font-medium">
                     <ComboboxOption
@@ -342,7 +354,9 @@ watch(currentTab, async (v) => {
                 :symbol-options="combinedSymbolOptions"
               />
               <div class="mr-1 hidden flex-none sm:block">
-                <BaseButton class="h-10" @click="currentTab = 1">Browse</BaseButton>
+                <BaseButton type="button" class="h-10" @click="currentTab = '1'"
+                  >Browse</BaseButton
+                >
               </div>
             </div>
 
@@ -421,32 +435,28 @@ watch(currentTab, async (v) => {
               >
             </div>
           </form>
-        </TabItem>
-        <TabItem
-          label="Browse"
-          v-slot="{ isActive }"
-          class="max-h-[50vh] sm:max-h-[60vh]"
-        >
+        </TabsContent>
+        <TabsContent value="1" class="mt-6 max-h-[50vh] sm:max-h-[60vh]">
           <keep-alive>
             <SymbolBrowseTab
-              v-if="isActive"
+              v-if="currentTab === '1'"
               :initial-sidc="csidc"
               @update-sidc="updateFromBrowseTab"
               :symbol-options="combinedSymbolOptions"
             />
           </keep-alive>
-        </TabItem>
-        <TabItem v-if="!hideCustomSymbols" label="Custom symbol"
+        </TabsContent>
+        <TabsContent v-if="!hideCustomSymbols" value="2" class="px-4 py-6"
           ><SymbolPickerCustomSymbol
             :initialSidc="customSymbolId"
             @update-sidc="updateFromCustomSymbol"
-        /></TabItem>
-        <TabItem label="Legacy convert" v-slot="{ isActive }">
+        /></TabsContent>
+        <TabsContent :value="!hideCustomSymbols ? '3' : '2'" class="mt-6">
           <keep-alive>
-            <LegacyConverter v-if="isActive" />
+            <LegacyConverter v-if="currentTab === (!hideCustomSymbols ? '3' : '2')" />
           </keep-alive>
-        </TabItem>
-      </TabView>
+        </TabsContent>
+      </MyTabs>
       <div class="flex shrink-0 justify-end space-x-2 pt-4">
         <SecondaryButton type="button" @click="clearModifiers()" class=""
           >Clear modifiers
