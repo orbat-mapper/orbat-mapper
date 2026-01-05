@@ -299,14 +299,13 @@ if (state.layers.length > 0) {
       </div>
       <div class="flex shrink-0 items-center space-x-1 overflow-clip sm:space-x-2">
         <PlaybackMenu v-if="route.name === MAP_EDIT_MODE_ROUTE" />
-        <Button variant="ghost" asChild
+        <Button variant="ghost" class="hidden sm:inline-flex" asChild
           ><a
             :href="
               route.meta.helpUrl ||
               'https://docs.orbat-mapper.app/guide/about-orbat-mapper'
             "
             target="_blank"
-            class="hidden sm:inline-flex"
           >
             Help
           </a></Button
