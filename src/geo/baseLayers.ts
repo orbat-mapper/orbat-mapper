@@ -4,39 +4,10 @@ import OSM from "ol/source/OSM";
 import XYZ from "ol/source/XYZ";
 import { transformExtent } from "ol/proj";
 import { klona } from "klona";
-import type { LayerConfigFile } from "@/geo/layerConfigTypes";
+import type { LayerConfig, LayerConfigFile } from "@/geo/layerConfigTypes";
 
-function createFallbackLayers() {
-  return [
-    new TileLayer({
-      source: new OSM({ crossOrigin: "anonymous" }),
-      visible: true,
-      preload: Infinity,
-      properties: {
-        title: "OSM",
-        name: "osm",
-        layerType: "baselayer",
-      },
-    }),
-  ];
-}
-
-export async function createBaseLayers(view: View, currentBaseLayerName = "osm") {
-  let layers;
-  try {
-    const res = await fetch("/config/mapConfig.json");
-    layers = (await res.json()) as LayerConfigFile;
-  } catch (e) {
-    console.error("Failed to fetch mapConfig.json", e);
-    return createFallbackLayers();
-  }
-
-  if (!layers || !layers.length) {
-    console.warn("No layers found in mapConfig.json");
-    return createFallbackLayers();
-  }
-
-  const baseLayers = layers.map((layerConfig) => {
+export function createBaseLayerInstances(layers: LayerConfigFile, view: View) {
+  return layers.map((layerConfig) => {
     const {
       layerSourceType,
       layerType = "baselayer",
@@ -62,18 +33,15 @@ export async function createBaseLayers(view: View, currentBaseLayerName = "osm")
       source = new XYZ(layerConfig.sourceOptions);
     }
 
-    return new TileLayer({
+    const layer = new TileLayer({
       source,
       properties,
-      visible: currentBaseLayerName === layerConfig.name,
+      visible: false, // We will control visibility via store/watcher
       preload: Infinity,
       ...tileLayerOptions,
     });
+    layer.set("name", name);
+    layer.set("title", title);
+    return layer;
   });
-
-  // ensure that at least one is visible
-  if (!baseLayers.some((l) => l.getVisible())) {
-    baseLayers[0]?.setVisible(true);
-  }
-  return baseLayers;
 }

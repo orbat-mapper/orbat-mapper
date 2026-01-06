@@ -15,6 +15,7 @@ import { getUid } from "ol";
 import { type LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import ImageLayer from "ol/layer/Image";
+import { useBaseLayersStore } from "@/stores/baseLayersStore";
 
 export interface LayerInfo<T extends BaseLayer = BaseLayer> {
   id: string;
@@ -31,18 +32,35 @@ export interface LayerInfo<T extends BaseLayer = BaseLayer> {
 
 const geoStore = useGeoStore();
 const mapSettings = useMapSettingsStore();
-let tileLayers = ref<LayerInfo<TileLayer<TileSource>>[]>([]);
-let vectorLayers = ref<LayerInfo<AnyVectorLayer>[]>([]);
-let activeBaseLayer = shallowRef<LayerInfo<TileLayer<TileSource>>>();
+const baseLayersStore = useBaseLayersStore();
 
-const noneLayer = { title: "None", id: null, description: "", opacity: -1, name: "None" };
+let vectorLayers = ref<LayerInfo<AnyVectorLayer>[]>([]);
+
+// Adapt store layers to the format expected by BaseLayerSwitcher
+// BaseLayerSwitcher expects LayerInfo<any>[] but mostly cares about id, title, description
 const baseLayers = computed(() => {
-  const l = tileLayers.value
-    .map((l) => ({ ...l, name: l.title, description: "" }))
-    .filter((l) => l.layerType === "baselayer");
-  // @ts-ignore
-  l.push(noneLayer);
-  return l;
+  return baseLayersStore.layers.map((l) => ({
+    id: l.name,
+    name: l.name,
+    title: l.title,
+    visible: baseLayersStore.activeLayerName === l.name,
+    zIndex: 0,
+    opacity: l.opacity,
+    layer: null as any, // We don't need the OL layer instance here for the switcher anymore
+    description: "",
+    layerType: "baselayer" as const,
+  }));
+});
+
+// We need a writable computed or something to handle v-model from BaseLayerSwitcher
+const activeBaseLayer = computed({
+  get: () => baseLayers.value.find((l) => l.name === baseLayersStore.activeLayerName),
+  set: (layerInfo) => {
+    if (layerInfo) {
+      baseLayersStore.selectLayer(layerInfo.name);
+      mapSettings.baseLayerName = layerInfo.name;
+    }
+  },
 });
 
 const mapView = computed(() => {
@@ -59,17 +77,6 @@ watch(
   (v) => v && updateLayers(),
   { immediate: true },
 );
-
-watch(activeBaseLayer, (layerInfo) => {
-  if (!layerInfo) return;
-  mapSettings.baseLayerName = layerInfo.layer?.get("name") || "None";
-  baseLayers.value.forEach((l) => {
-    const isVisible = l.name === layerInfo.name;
-    //l.layer.setOpacity(layerInfo.opacity);
-    l.visible = isVisible;
-    if (l.layer) l.layer.setVisible(isVisible);
-  });
-});
 
 function updateLayers() {
   if (!geoStore.olMap) return;
@@ -101,19 +108,15 @@ function updateLayers() {
     .filter((l) => l.get("title"))
     .map(transformLayer);
 
-  tileLayers.value = mappedLayers.filter(
-    ({ layer }) => layer instanceof TileLayer,
-  ) as LayerInfo<AnyTileLayer>[];
-
-  activeBaseLayer.value = baseLayers.value.filter(
-    (l) => l.visible,
-  )[0] as LayerInfo<AnyTileLayer>;
+  // We filter out baserlayers from here, as they are now managed by baseLayersStore
+  // Now we only want vector/other layers here.
 
   vectorLayers.value = mappedLayers.filter(
-    ({ layer }) =>
-      layer instanceof VectorLayer ||
-      layer instanceof LayerGroup ||
-      layer instanceof ImageLayer,
+    ({ layer, layerType }) =>
+      (layer instanceof VectorLayer ||
+        layer instanceof LayerGroup ||
+        layer instanceof ImageLayer) &&
+      layerType !== "baselayer",
   ) as LayerInfo<AnyVectorLayer>[];
 }
 
@@ -124,8 +127,12 @@ const toggleLayer = (l: LayerInfo<any>) => {
 };
 
 function updateOpacity(l: LayerInfo<any>, opacity: number) {
-  l.opacity = opacity;
-  l.layer.setOpacity(opacity);
+  if (l.layerType === "baselayer") {
+    baseLayersStore.setLayerOpacity(l.name, opacity);
+  } else {
+    l.opacity = opacity;
+    l.layer.setOpacity(opacity);
+  }
 }
 </script>
 
