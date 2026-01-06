@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 
 import MapEvent from "ol/MapEvent";
 import OLMap from "ol/Map";
@@ -9,7 +9,9 @@ import "ol/ol.css";
 import { type Coordinate } from "ol/coordinate";
 import { fromLonLat } from "ol/proj";
 import { useOlEvent } from "@/composables/openlayersHelpers";
-import { createBaseLayers } from "@/geo/baseLayers";
+import { createBaseLayerInstances } from "@/geo/baseLayers";
+import { useBaseLayersStore } from "@/stores/baseLayersStore";
+import type { LayerConfigFile } from "@/geo/layerConfigTypes";
 
 interface Props {
   center?: Coordinate;
@@ -26,6 +28,8 @@ const emit = defineEmits(["ready", "moveend"]);
 
 const mapRoot = ref();
 let olMap: OLMap;
+const baseLayersStore = useBaseLayersStore();
+
 const moveendHandler = (evt: MapEvent) => {
   emit("moveend", { view: evt.map.getView() });
 };
@@ -36,10 +40,11 @@ onMounted(async () => {
     center: fromLonLat(props.center),
     showFullExtent: true,
   });
+
   olMap = new OLMap({
     target: mapRoot.value,
     maxTilesLoading: 200,
-    layers: await createBaseLayers(view, props.baseLayerName),
+    layers: [],
     view,
     controls: defaultControls({
       attributionOptions: {
@@ -47,6 +52,54 @@ onMounted(async () => {
       },
     }),
   });
+
+  await baseLayersStore.initialize();
+
+  // Set initial active layer from props if provided and valid, otherwise keep store default
+  if (
+    props.baseLayerName &&
+    baseLayersStore.layers.some((l) => l.name === props.baseLayerName)
+  ) {
+    baseLayersStore.selectLayer(props.baseLayerName);
+  }
+
+  const layers = createBaseLayerInstances(
+    baseLayersStore.layers as unknown as LayerConfigFile,
+    view,
+  );
+  layers.forEach((layer) => {
+    olMap.addLayer(layer);
+    const storeLayer = baseLayersStore.layers.find((l) => l.name === layer.get("name"));
+    if (storeLayer) {
+      layer.setOpacity(storeLayer.opacity);
+    }
+  });
+
+  // Sync visibility with store
+  watch(
+    () => baseLayersStore.activeLayerName,
+    (name) => {
+      layers.forEach((l) => {
+        l.setVisible(l.get("name") === name);
+      });
+    },
+    { immediate: true },
+  );
+
+  // Sync opacity with store
+  watch(
+    () => baseLayersStore.layers,
+    (newLayers) => {
+      newLayers.forEach((l) => {
+        const layer = layers.find((olLayer) => olLayer.get("name") === l.name);
+        if (layer) {
+          layer.setOpacity(l.opacity);
+        }
+      });
+    },
+    { deep: true },
+  );
+
   useOlEvent(olMap.on("moveend", moveendHandler));
   emit("ready", olMap);
 });

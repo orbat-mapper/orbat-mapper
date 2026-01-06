@@ -26,7 +26,7 @@ const opacityAsPercent = computed(() => (opacity.value * 100).toFixed(0));
       min="0"
       max="1"
       step="0.01"
-      v-model.number.lazy="opacity"
+      v-model.number="opacity"
       class="w-24"
     />
     <button
