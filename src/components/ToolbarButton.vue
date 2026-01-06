@@ -14,15 +14,15 @@ export default {
 <template>
   <button
     type="button"
-    class="relative inline-flex items-center border border-gray-300 px-3 py-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden disabled:text-gray-300 sm:px-2"
+    class="border-input focus-visible:border-ring focus-visible:ring-ring/50 disabled:text-muted-foreground relative inline-flex items-center border px-3 py-2 text-sm font-medium transition-all outline-none focus:z-10 focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 sm:px-2"
     :class="[
       start && 'rounded-l-md',
       end && 'rounded-r-md',
       top && 'rounded-t-md',
       bottom && 'rounded-b-md',
       active
-        ? 'bg-army2 text-gray-100 hover:text-gray-200'
-        : 'bg-white text-gray-700 hover:bg-gray-50',
+        ? 'bg-army2 text-primary-foreground hover:bg-army2/90'
+        : 'bg-background text-foreground hover:bg-accent hover:text-accent-foreground',
     ]"
   >
     <slot />
