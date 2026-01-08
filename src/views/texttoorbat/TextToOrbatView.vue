@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, nextTick, onUnmounted, ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import {
   ArrowLeftIcon,
   BookOpenIcon,
   DownloadIcon,
   ExternalLinkIcon,
+  LinkIcon,
   MapIcon,
   MoonStarIcon,
   SunIcon,
@@ -19,7 +20,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UseDark } from "@vueuse/components";
-import { breakpointsTailwind, useBreakpoints, useTitle } from "@vueuse/core";
+import {
+  breakpointsTailwind,
+  useBreakpoints,
+  useTitle,
+  useClipboard,
+} from "@vueuse/core";
+import { strFromU8, strToU8, zlibSync, unzlibSync } from "fflate";
 import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import IconBrowserModal from "@/views/texttoorbat/IconBrowserModal.vue";
@@ -47,6 +54,8 @@ useTitle("Text to ORBAT");
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("sm");
+const route = useRoute();
+const { copy, copied } = useClipboard();
 
 const showDebug = ref(false);
 const showIconBrowser = ref(false);
@@ -212,6 +221,31 @@ async function handleDownloadSpatialIllusions() {
   }
 }
 
+function encodeData(text: string): string {
+  const data = strToU8(text);
+  const compressed = zlibSync(data, { level: 9 });
+  const binary = String.fromCharCode(...compressed);
+  return btoa(binary);
+}
+
+function decodeData(encoded: string): string {
+  const binary = atob(encoded);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  const decompressed = unzlibSync(bytes);
+  return strFromU8(decompressed);
+}
+
+function handleCopyLink() {
+  const encoded = encodeData(inputText.value);
+  const url = new URL(window.location.href);
+  url.searchParams.set("data", encoded);
+  copy(url.toString());
+  sendNotification({ message: "Link copied to clipboard" });
+}
+
 async function handleDownloadOrbatMapperScenario() {
   if (parsedUnits.value.length === 0) {
     return;
@@ -268,6 +302,19 @@ async function handleOpenScenario() {
 onUnmounted(() => {
   useTitle(originalTitle);
 });
+
+onMounted(() => {
+  const data = route.query.data as string;
+  if (data) {
+    try {
+      inputText.value = decodeData(data);
+      sendNotification({ message: "ORBAT loaded from URL" });
+    } catch (e) {
+      console.error("Failed to decode URL data", e);
+      sendNotification({ message: "Failed to load ORBAT from URL", type: "error" });
+    }
+  }
+});
 </script>
 
 <template>
@@ -318,6 +365,15 @@ onUnmounted(() => {
               >
                 <MapIcon class="mr-1 size-4" />
                 Patterns
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                @click="handleCopyLink"
+                title="Copy link to this ORBAT"
+              >
+                <LinkIcon class="mr-1 size-4" />
+                {{ copied ? "Copied!" : "Copy Link" }}
               </Button>
               <Button
                 variant="ghost"
