@@ -40,19 +40,19 @@ const panelId = nanoid(5);
     <h3 class="-my-3 flex w-full items-center justify-between py-3">
       <button
         type="button"
-        class="group flex min-w-0 flex-auto items-center text-sm text-gray-400"
+        class="group text-muted-foreground flex min-w-0 flex-auto items-center text-sm"
         @click="toggleOpen()"
         :aria-expanded="isOpen"
         :aria-controls="panelId"
       >
-        <span class="min-w-0 flex-auto truncate text-left font-bold text-gray-900">
+        <span class="text-foreground min-w-0 flex-auto truncate text-left font-bold">
           <slot name="label" :open="isOpen">{{ label }}</slot>
         </span>
       </button>
       <span class="relative ml-6 flex shrink-0 items-center">
         <slot name="right" :open="isOpen"></slot>
         <ChevronDownIcon
-          class="ml-2 h-6 w-6 flex-none rotate-180 transform text-gray-500 transition-transform group-hover:text-gray-900"
+          class="text-muted-foreground group-hover:text-foreground ml-2 h-6 w-6 flex-none rotate-180 transform transition-transform"
           :class="{
             'rotate-0': isOpen,
           }"

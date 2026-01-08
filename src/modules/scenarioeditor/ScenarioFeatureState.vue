@@ -58,7 +58,9 @@ function clearState() {
           <button
             class="flex"
             :class="
-              isActive(s, index) ? 'font-bold text-gray-900' : 'font-medium text-gray-500'
+              isActive(s, index)
+                ? 'text-foreground font-bold'
+                : 'text-muted-foreground font-medium'
             "
           >
             {{ fmt.scenarioFormatter.format(s.t) }}
@@ -68,7 +70,7 @@ function clearState() {
           <IconButton
             title="Goto Time and Place"
             @click="changeToState(s)"
-            class="bg-gray-50"
+            class="bg-muted/50"
           >
             <IconCrosshairsGps class="h-5 w-5" aria-hidden="true" />
           </IconButton>

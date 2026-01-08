@@ -265,7 +265,7 @@ const computedColumns = computed((): (ColumnDef<Unit> | false)[] => {
           [
             h(ChevronRightIcon, {
               class: [
-                "size-6 transform transition-transform text-gray-500",
+                "size-6 transform transition-transform text-muted-foreground",
                 table.getIsAllRowsExpanded() ? "rotate-90" : "",
               ],
             }),
@@ -751,7 +751,7 @@ function doGroupImport(importedGroupId: string) {
                 value="state-only"
                 >State (only for existing units)
               </InputRadio>
-              <span v-else class="text-sm text-gray-500"
+              <span v-else class="text-muted-foreground text-sm"
                 >There are no source units that exists in the target scenario.</span
               >
             </MRadioGroup>

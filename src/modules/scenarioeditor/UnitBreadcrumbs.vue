@@ -181,7 +181,7 @@ onUnmounted(() => {
 <template>
   <ScrollArea
     class="relative flex border-b p-4 sm:p-3"
-    :class="isDragged ? 'bg-gray-200' : 'bg-sidebar'"
+    :class="isDragged ? 'bg-muted' : 'bg-sidebar'"
   >
     <CloseButton
       @click="uiSettings.showOrbatBreadcrumbs = false"

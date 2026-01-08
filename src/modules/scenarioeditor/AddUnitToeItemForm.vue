@@ -81,7 +81,7 @@ watch(
       <InputGroup label="Initial value" type="number" v-model="form.count" />
     </section>
     <section v-else class="mt-4">
-      <p class="text-sm text-gray-500">No items to add</p>
+      <p class="text-muted-foreground text-sm">No items to add</p>
     </section>
     <FormFooter @cancel="emit('cancel')" submitLabel="Add" />
   </form>

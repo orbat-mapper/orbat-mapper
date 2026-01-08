@@ -126,12 +126,12 @@ watch(settingsStore, () => {
     >
       Test
     </p>
-    <header class="relative w-full bg-gray-100 p-4 md:shrink-0">
+    <header class="bg-muted relative w-full p-4 md:shrink-0">
       <h1>{{ state.info.name }}</h1>
       <button
         type="button"
         @click="toggleSidebar()"
-        class="bg-opacity-75 fixed top-2 right-4 z-20 inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+        class="bg-opacity-75 text-muted-foreground hover:text-muted-foreground focus:ring-ring bg-background hover:bg-muted fixed top-2 right-4 z-20 inline-flex items-center justify-center rounded-md p-2 focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
       >
         <span class="sr-only">Open main menu</span>
         <MenuIcon v-if="!sidebarIsOpen" class="block h-6 w-6" aria-hidden="true" />
@@ -140,7 +140,7 @@ watch(settingsStore, () => {
     </header>
     <div class="md:flex md:min-h-0 md:flex-auto">
       <section
-        class="relative sticky top-0 z-10 h-[45vh] w-full bg-white shadow-md md:static md:h-full md:shadow-none"
+        class="bg-background relative sticky top-0 z-10 h-[45vh] w-full shadow-md md:static md:h-full md:shadow-none"
       >
         <MapContainer @ready="onMapReady" />
         <MeasurementToolbar
@@ -149,7 +149,7 @@ watch(settingsStore, () => {
           class="absolute bottom-2 left-2"
         />
       </section>
-      <section class="w-full overflow-auto border bg-gray-50 md:max-w-sm lg:max-w-lg">
+      <section class="bg-muted/50 w-full overflow-auto border md:max-w-sm lg:max-w-lg">
         <StoryModeContent @update-state="onUpdateState" />
       </section>
     </div>

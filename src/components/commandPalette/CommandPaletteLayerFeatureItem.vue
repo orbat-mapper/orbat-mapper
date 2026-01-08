@@ -7,7 +7,7 @@ const props = defineProps<{ item: LayerFeatureSearchResult }>();
 
 <template>
   <div class="flex w-7 justify-center">
-    <component :is="getItemsIcon(item.type)" class="size-6 text-gray-400" />
+    <component :is="getItemsIcon(item.type)" class="text-muted-foreground size-6" />
   </div>
   <p
     class="ml-3 flex-auto truncate"

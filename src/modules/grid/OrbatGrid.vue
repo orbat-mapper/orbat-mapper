@@ -202,18 +202,18 @@ function toggleGroupSelect(item: any, event: Event) {
           :style="{
             height: `${rowHeight}px`,
           }"
-          class="group flex w-full divide-x divide-gray-200 hover:bg-gray-50"
+          class="group hover:bg-muted/50 flex w-full divide-x divide-gray-200"
         >
           <div
             v-if="select"
-            class="flex w-10 shrink-0 items-center justify-center overflow-hidden border-b px-4 py-3.5 text-gray-900"
+            class="text-foreground flex w-10 shrink-0 items-center justify-center overflow-hidden border-b px-4 py-3.5"
           >
             <input
               type="checkbox"
               :id="item.id"
               :value="item"
               v-model="selectedRows"
-              class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6"
+              class="text-primary focus:ring-ring rounded border-gray-300 sm:left-6"
             />
           </div>
           <div
@@ -236,7 +236,7 @@ function toggleGroupSelect(item: any, event: Event) {
             />
             <span
               v-else-if="column.type === 'text'"
-              class="truncate text-sm whitespace-nowrap text-gray-500"
+              class="text-muted-foreground truncate text-sm whitespace-nowrap"
               >{{ getValue(item, column.objectPath) }}</span
             >
           </div>

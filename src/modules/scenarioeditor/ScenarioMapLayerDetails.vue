@@ -125,7 +125,10 @@ function toggleLayerVisibility() {
       <EditableLabel v-model="layerName" @update-value="updateValue('name', $event)" />
       <div class="flex">
         <div class="flex flex-auto items-center">
-          <component :is="getMapLayerIcon(mapLayer)" class="mr-2 h-7 w-7 text-gray-500" />
+          <component
+            :is="getMapLayerIcon(mapLayer)"
+            class="text-muted-foreground mr-2 h-7 w-7"
+          />
           <input
             v-model.number="opacity"
             type="range"

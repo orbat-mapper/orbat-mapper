@@ -14,7 +14,7 @@ const props = defineProps<Props>();
     <ol role="list" class="flex items-center space-x-2">
       <li>
         <div>
-          <p class="text-gray-400">
+          <p class="text-muted-foreground">
             <HomeIcon class="h-5 w-5 shrink-0" aria-hidden="true" />
             <span class="sr-only">Root</span>
           </p>
@@ -22,18 +22,21 @@ const props = defineProps<Props>();
       </li>
       <li v-for="item in items" :key="item.name">
         <div class="flex items-center">
-          <ChevronRightIcon class="h-5 w-5 shrink-0 text-gray-400" aria-hidden="true" />
+          <ChevronRightIcon
+            class="text-muted-foreground h-5 w-5 shrink-0"
+            aria-hidden="true"
+          />
           <span
             v-if="item.static"
             type="button"
-            class="ml-2 text-sm font-medium text-gray-600"
+            class="text-muted-foreground ml-2 text-sm font-medium"
           >
             {{ item.name }}
           </span>
           <button
             v-else
             type="button"
-            class="ml-2 text-sm font-medium text-gray-600 hover:text-gray-700"
+            class="text-muted-foreground hover:text-muted-foreground ml-2 text-sm font-medium"
           >
             {{ item.name }}
           </button>

@@ -29,7 +29,7 @@ const tabItems = [
 
 <template>
   <div class="flex w-full flex-col">
-    <h3 v-if="!chartMode" class="hidden px-4 font-medium text-gray-900 lg:block lg:p-4">
+    <h3 v-if="!chartMode" class="text-foreground hidden px-4 font-medium lg:block lg:p-4">
       Chart layout settings
     </h3>
     <MyTabs

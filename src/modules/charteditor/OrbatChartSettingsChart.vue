@@ -48,7 +48,7 @@ const onUnitSelect = (unitId: string) => {
 
 <template>
   <div>
-    <p class="text-sm text-gray-600">Settings that affect the whole chart.</p>
+    <p class="text-muted-foreground text-sm">Settings that affect the whole chart.</p>
     <template v-if="!chartMode">
       <InputGroupTemplate label="Root unit" v-if="rootUnitStore.unit" class="my-4">
         <div class="flex items-start">
@@ -60,10 +60,10 @@ const onUnitSelect = (unitId: string) => {
             />
           </div>
           <div class="min-w-0 flex-auto">
-            <p class="truncate pt-2 text-sm font-medium text-gray-700">
+            <p class="text-muted-foreground truncate pt-2 text-sm font-medium">
               {{ rootUnitStore.unit.name }}
             </p>
-            <p class="truncate text-sm text-gray-500">
+            <p class="text-muted-foreground truncate text-sm">
               {{ rootUnitStore.unit.shortName }}
             </p>
           </div>

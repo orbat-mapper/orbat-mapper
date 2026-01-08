@@ -138,13 +138,13 @@ function onSelect(index?: number) {
     </ToggleField>
     <main class="space-y-4">
       <section v-for="[source, hits] in groupedHits">
-        <p class="font-medium text-gray-700">{{ source }}</p>
+        <p class="text-muted-foreground font-medium">{{ source }}</p>
         <ul class="space-y-1.5">
           <li v-for="hit in hits">
             <button
               type="button"
               class="hover:border-army flex w-full items-center rounded border border-transparent p-2 hover:border hover:bg-red-100 focus:ring-3"
-              :class="hit.index === currentHitIndex ? 'bg-blue-200' : 'bg-gray-100'"
+              :class="hit.index === currentHitIndex ? 'bg-blue-200' : 'bg-muted'"
               @click="onSelect(hit.index)"
             >
               <SearchUnitHit v-if="hit.category === 'Units'" :unit="hit" />

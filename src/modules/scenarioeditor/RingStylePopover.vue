@@ -65,7 +65,7 @@ function onOpen(isOpen: boolean) {
   <Popover @update:open="onOpen">
     <PopoverTrigger
       title="Change style"
-      class="hover:bg-gray-100 disabled:opacity-50"
+      class="hover:bg-muted disabled:opacity-50"
       :disabled="disabled"
     >
       <DrawRangeRingMarker :styling="rStyle" />

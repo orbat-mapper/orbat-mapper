@@ -70,7 +70,7 @@ const selectColumn: ColumnDef<any, any> = {
       type: "checkbox",
       checked: table.getIsAllRowsSelected(),
       indeterminate: selected.value.length,
-      class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500",
+      class: "rounded border-gray-300 text-primary focus:ring-ring",
       onChange: table.getToggleAllRowsSelectedHandler(),
     });
   },
@@ -80,7 +80,7 @@ const selectColumn: ColumnDef<any, any> = {
       checked: row.getIsSelected(),
       disabled: !row.getCanSelect(),
       indeterminate: !props.noIndeterminate ? row.getIsSomeSelected() : undefined,
-      class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500",
+      class: "rounded border-gray-300 text-primary focus:ring-ring",
       onChange: row.getToggleSelectedHandler(),
     });
   },
@@ -224,7 +224,7 @@ watch(
                     /></span>
                     <span
                       v-if="header.column.getCanSort() && header.column.getIsSorted()"
-                      class="flex-none px-1 text-gray-700 group-hover:bg-gray-300 dark:text-gray-400"
+                      class="text-muted-foreground dark:text-muted-foreground group-hover:bg-muted flex-none px-1"
                     >
                       {{ header.column.getIsSorted() === "asc" ? "&darr;" : "&uarr;" }}
                     </span>
@@ -253,7 +253,7 @@ watch(
               v-for="row in rows"
               :key="row.id"
               :data-index="row.index"
-              class="even:bg-zinc-950/[2.5%] dark:even:bg-white/[2.5%]"
+              class="dark:even:bg-foreground/[2.5%] even:bg-zinc-950/[2.5%]"
               @dblclick="onDblClick(row, $event)"
             >
               <template v-if="row.original.id === editedId">

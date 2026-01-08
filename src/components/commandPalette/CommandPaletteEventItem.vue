@@ -12,7 +12,7 @@ const props = defineProps<{ item: EventSearchResult }>();
 
 <template>
   <div class="flex w-7 justify-center">
-    <IconCalendarClock class="size-6 text-gray-400" />
+    <IconCalendarClock class="text-muted-foreground size-6" />
   </div>
   <p
     class="ml-3 flex-auto truncate"

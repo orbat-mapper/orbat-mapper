@@ -57,7 +57,7 @@ watch(enableMeasurements, (enabled) => {
         title="Toggle measurements"
         @click="toggleMeasurements()"
       >
-        <IconRuler class="h-5 w-5" :class="enableMeasurements && 'text-gray-900'" />
+        <IconRuler class="h-5 w-5" :class="enableMeasurements && 'text-foreground'" />
       </ToolbarButton>
       <template v-if="enableMeasurements">
         <ToolbarButton

@@ -17,7 +17,7 @@ const currentUnit = computed(() => currentUnitNode.node?.unit);
 
 <template>
   <div class="space-y-4 pb-4">
-    <p class="text-sm text-gray-600">Unit specific options.</p>
+    <p class="text-muted-foreground text-sm">Unit specific options.</p>
     <div v-if="currentUnit" class="s">
       <header class="flex items-start">
         <div class="h-20 w-16 shrink-0">
@@ -28,8 +28,8 @@ const currentUnit = computed(() => currentUnitNode.node?.unit);
           />
         </div>
         <div>
-          <p class="pt-2 font-medium text-gray-700">{{ currentUnit.name }}</p>
-          <p class="text-sm text-gray-500">{{ currentUnit.shortName }}</p>
+          <p class="text-muted-foreground pt-2 font-medium">{{ currentUnit.name }}</p>
+          <p class="text-muted-foreground text-sm">{{ currentUnit.shortName }}</p>
         </div>
       </header>
       <PlainButton @click="clearSpecificOptions()">Clear settings</PlainButton>

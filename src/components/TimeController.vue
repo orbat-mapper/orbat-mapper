@@ -37,10 +37,10 @@ const openTimeDialog = async () => {
 <template>
   <div class="flex w-full items-center justify-between p-4">
     <div>
-      <p class="text-sm font-medium text-gray-700">
+      <p class="text-muted-foreground text-sm font-medium">
         {{ scenarioTime.format("YYYY-MM-DD") }}
       </p>
-      <p class="text-sm font-medium text-gray-900">
+      <p class="text-foreground text-sm font-medium">
         {{ scenarioTime.format("HH:mmZ") }}
       </p>
     </div>

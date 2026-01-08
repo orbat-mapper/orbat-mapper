@@ -87,7 +87,9 @@ function doGetLocation() {
         @click="nn?.start()"
         >Get location</BaseButton
       >
-      <p class="bg-opacity-70 fixed bottom-5 left-20 rounded border bg-white p-1 px-2">
+      <p
+        class="bg-opacity-70 bg-background fixed bottom-5 left-20 rounded border p-1 px-2"
+      >
         {{ loc }}
       </p></template
     >

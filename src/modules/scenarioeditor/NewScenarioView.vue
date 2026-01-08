@@ -285,7 +285,7 @@ function removeUnit(side: InitialSideData, unit: RootUnit) {
                 >
                   Remove unit
                 </Button>
-                <span class="text-gray-300">|</span>
+                <span class="text-border">|</span>
                 <Button
                   type="button"
                   variant="link"

@@ -8,11 +8,11 @@ const emit = defineEmits(["close"]);
 <template>
   <div class="overflow-hidden shadow-sm">
     <div class="relative px-4 py-5 sm:p-6">
-      <p v-if="title" class="-mt-2 mb-4 text-sm text-gray-500">{{ title }}</p>
+      <p v-if="title" class="text-muted-foreground -mt-2 mb-4 text-sm">{{ title }}</p>
       <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
         <button
           type="button"
-          class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+          class="text-muted-foreground hover:text-foreground focus:ring-ring bg-background rounded-md focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
           @click="$emit('close')"
         >
           <span class="sr-only">Close</span>

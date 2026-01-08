@@ -66,7 +66,7 @@ const columns: ColumnDef<Unit, any>[] = [
         [
           h(ChevronRightIcon, {
             class: [
-              "size-6 transform transition-transform text-gray-500",
+              "size-6 transform transition-transform text-muted-foreground",
               table.getIsAllRowsExpanded() ? "rotate-90" : "",
             ],
           }),

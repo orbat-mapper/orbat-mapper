@@ -177,7 +177,7 @@ const menuItems: MenuItemData<Function>[] = [
   <div class="relative flex min-h-0 flex-auto">
     <ResizablePanel
       v-model:width="panelWidth"
-      class="relative z-10 flex h-full flex-col justify-between overflow-auto overflow-visible border-r-2 bg-gray-100 dark:bg-gray-900 print:hidden"
+      class="bg-muted dark:bg-background relative z-10 flex h-full flex-col justify-between overflow-auto overflow-visible border-r-2 print:hidden"
     >
       <Tabs v-model="selectedTabString" class="flex h-full flex-col">
         <TabsList
@@ -187,7 +187,7 @@ const menuItems: MenuItemData<Function>[] = [
             v-for="(tab, index) in ['ORBAT', 'Chart settings']"
             :key="tab"
             :value="index.toString()"
-            class="flex-1 rounded-none border-b-2 border-transparent bg-transparent px-1 py-4 text-center text-sm font-medium text-gray-500 shadow-none transition-none hover:border-gray-300 hover:text-gray-700 focus-visible:ring-0 data-[state=active]:border-indigo-500 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 data-[state=active]:shadow-none"
+            class="text-muted-foreground hover:text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary flex-1 rounded-none border-b-2 border-transparent bg-transparent px-1 py-4 text-center text-sm font-medium shadow-none transition-none hover:border-gray-300 focus-visible:ring-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
             {{ tab }}
           </TabsTrigger>
@@ -204,12 +204,12 @@ const menuItems: MenuItemData<Function>[] = [
         </div>
       </Tabs>
     </ResizablePanel>
-    <main class="relative h-full flex-auto bg-gray-50">
+    <main class="bg-muted/50 relative h-full flex-auto">
       <SimpleBreadcrumbs
-        class="bg-opacity-80 absolute top-2 left-2 z-10 bg-gray-50 print:hidden"
+        class="bg-opacity-80 bg-background absolute top-2 left-2 z-10 print:hidden"
         :items="breadcrumbItems"
       />
-      <nav class="absolute top-2 right-4 z-10 rounded-full bg-white print:hidden">
+      <nav class="bg-background absolute top-2 right-4 z-10 rounded-full print:hidden">
         <DotsMenu :items="menuItems" />
       </nav>
 

@@ -74,7 +74,9 @@ function onClick(e: Event) {
     <div class="py-10">
       <header>
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 class="text-3xl leading-tight font-bold text-gray-900">Test components</h1>
+          <h1 class="text-foreground text-3xl leading-tight font-bold">
+            Test components
+          </h1>
         </div>
       </header>
       <main class="mt-4">

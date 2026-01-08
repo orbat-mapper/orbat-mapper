@@ -70,7 +70,7 @@ function onDragEnd(event: any) {
 
 <template>
   <div
-    class="absolute flex items-center justify-center border bg-gray-300 hover:border-red-900 hover:bg-red-900"
+    class="bg-muted absolute flex items-center justify-center border hover:border-red-900 hover:bg-red-900"
     :class="[
       horizontal
         ? 'inset-x-0 bottom-0 h-1 cursor-row-resize'
@@ -82,7 +82,7 @@ function onDragEnd(event: any) {
     @touchstart="onButtonDown"
   >
     <div
-      class="z-10 flex h-8 flex-none items-center justify-center rounded bg-white shadow-sm"
+      class="bg-background z-10 flex h-8 flex-none items-center justify-center rounded shadow-sm"
       :class="{ 'rotate-90 transform': horizontal }"
       style="width: 0.9375rem"
     >

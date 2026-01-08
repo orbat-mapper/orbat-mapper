@@ -29,7 +29,10 @@ const props = defineProps<{ item: ActionSearchResult }>();
 
 <template>
   <div class="flex w-7 justify-center">
-    <component :is="iconMap[item.icon || 'default']" class="size-8 text-gray-400" />
+    <component
+      :is="iconMap[item.icon || 'default']"
+      class="text-muted-foreground size-8"
+    />
   </div>
   <p
     class="ml-3 flex-auto truncate"

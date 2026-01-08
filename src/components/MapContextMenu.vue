@@ -255,7 +255,7 @@ function onAddPoint() {
       <ContextMenuSub v-if="clickedUnits.length > 0">
         <ContextMenuSubTrigger inset
           ><span>Units</span>&nbsp;
-          <span class="font-medium text-gray-500"
+          <span class="text-muted-foreground font-medium"
             >({{ clickedUnits.length }})</span
           ></ContextMenuSubTrigger
         >
@@ -283,7 +283,7 @@ function onAddPoint() {
       <ContextMenuSub v-if="clickedFeatures.length > 0">
         <ContextMenuSubTrigger inset
           ><span>Features</span>&nbsp;
-          <span class="font-medium text-gray-500"
+          <span class="text-muted-foreground font-medium"
             >({{ clickedFeatures.length }})</span
           ></ContextMenuSubTrigger
         >
@@ -297,7 +297,7 @@ function onAddPoint() {
             <div class="flex items-center">
               <component
                 :is="getGeometryIcon(feature)"
-                class="mr-1 h-5 w-5 text-gray-400"
+                class="text-muted-foreground mr-1 h-5 w-5"
               />
               <span
                 :class="[selectedFeatureIds.has(feature.id) ? 'font-semibold' : '']"

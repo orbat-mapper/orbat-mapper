@@ -81,7 +81,7 @@ function updateData(formData: ScenarioImageLayerUpdate) {
         <BaseButton small type="button" @click="editMode = true">Edit</BaseButton>
       </footer>
     </div>
-    <p v-if="!isInitialized" class="mt-2 text-sm text-gray-500">
+    <p v-if="!isInitialized" class="text-muted-foreground mt-2 text-sm">
       This layer has not been initialized yet.
     </p>
     <p v-if="status === 'error'" class="mt-2 text-sm text-red-600">
