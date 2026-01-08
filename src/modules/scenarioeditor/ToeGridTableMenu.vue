@@ -25,7 +25,7 @@ const cols = computed(() => props.table.getAllLeafColumns());
       <div class="z-10">
         <button
           type="button"
-          class="text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground rounded-full p-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden"
+          class="text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground focus:ring-ring rounded-full p-2 focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden"
         >
           <span class="sr-only">Open options</span>
           <EllipsisVerticalIcon class="size-5" aria-hidden="true" />

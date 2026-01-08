@@ -1,7 +1,9 @@
 <template>
-  <main class="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
+  <main
+    class="bg-background grid min-h-full place-items-center px-6 py-24 sm:py-32 lg:px-8"
+  >
     <div class="text-center">
-      <p class="text-base font-semibold text-indigo-600">404</p>
+      <p class="text-primary text-base font-semibold">404</p>
       <h1 class="text-foreground mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
         Scenario not found
       </h1>
@@ -10,7 +12,7 @@
         deleted or it does not exists in this browser.
       </p>
       <div class="mt-10 flex items-center justify-center gap-x-8">
-        <router-link to="/" class="text-sm font-semibold text-indigo-600"
+        <router-link to="/" class="text-primary text-sm font-semibold"
           ><span aria-hidden="true">&larr;</span> Back to home
         </router-link>
         <a

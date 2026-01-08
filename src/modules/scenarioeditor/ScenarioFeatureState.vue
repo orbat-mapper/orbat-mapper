@@ -70,7 +70,7 @@ function clearState() {
           <IconButton
             title="Goto Time and Place"
             @click="changeToState(s)"
-            class="bg-gray-50"
+            class="bg-muted/50"
           >
             <IconCrosshairsGps class="h-5 w-5" aria-hidden="true" />
           </IconButton>

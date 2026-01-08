@@ -51,7 +51,7 @@ function onColumnClick(column: RuntimeColumnProperties) {
       >
         <input
           type="checkbox"
-          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6"
+          class="text-primary focus:ring-ring rounded border-gray-300 sm:left-6"
           @change="toggleSelectAll"
           :checked="checkedState === 'checked' || checkedState === 'indeterminate'"
           :indeterminate="checkedState === 'indeterminate'"

@@ -147,7 +147,7 @@
 }
 
 .location-control {
-  @apply text-foreground absolute bottom-2 left-3 rounded bg-white/50 px-1 text-base tracking-tighter tabular-nums;
+  @apply text-foreground bg-background/50 absolute bottom-2 left-3 rounded px-1 text-base tracking-tighter tabular-nums;
 }
 
 .badge {
@@ -155,7 +155,7 @@
 }
 
 .muted-badge {
-  @apply text-muted-foreground inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium ring-1 ring-gray-500/10 ring-inset;
+  @apply text-muted-foreground bg-muted/50 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-gray-500/10 ring-inset;
 }
 
 ::-webkit-scrollbar {

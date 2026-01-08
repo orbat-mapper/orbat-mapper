@@ -23,7 +23,7 @@ const $colors = computed(() =>
         {
           name: "None",
           value: null as unknown as undefined,
-          bgColor: "bg-white",
+          bgColor: "bg-background",
           selectedColor: "ring-black",
         },
         ...colors,

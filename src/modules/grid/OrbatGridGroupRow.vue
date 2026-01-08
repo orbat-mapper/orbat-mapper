@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<Props>(), { select: false, open: true });
 const emit = defineEmits(["toggle", "change"]);
 </script>
 <template>
-  <div class="group flex divide-x divide-gray-200 bg-gray-50 hover:bg-gray-100">
+  <div class="group bg-muted/50 hover:bg-muted flex divide-x divide-gray-200">
     <div
       v-if="select"
       class="text-foreground flex w-10 flex-0 items-center justify-center overflow-hidden border-b px-4 py-3.5"
@@ -22,7 +22,7 @@ const emit = defineEmits(["toggle", "change"]);
         :id="item"
         :checked="checked"
         :indeterminate="indeterminate"
-        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6"
+        class="text-primary focus:ring-ring rounded border-gray-300 sm:left-6"
         @change="emit('change', $event)"
       />
     </div>

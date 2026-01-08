@@ -325,7 +325,7 @@ if (state.layers.length > 0) {
             :to="{ name: MAP_EDIT_MODE_ROUTE }"
             title="Map edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+            class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
           >
             <GlobeAltIcon class="size-6" />
           </router-link>
@@ -333,7 +333,7 @@ if (state.layers.length > 0) {
             :to="{ name: GRID_EDIT_ROUTE }"
             title="Grid edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+            class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
           >
             <TableIcon class="size-6" />
           </router-link>
@@ -341,7 +341,7 @@ if (state.layers.length > 0) {
             :to="{ name: CHART_EDIT_MODE_ROUTE }"
             title="Chart edit mode"
             exact-active-class="text-green-500"
-            class="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+            class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
           >
             <IconSitemap class="size-6" />
           </router-link>
@@ -466,9 +466,9 @@ if (state.layers.length > 0) {
     <ImportModal v-if="showImportModal" v-model="showImportModal" />
     <div
       v-if="isOverDropZone"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/80"
+      class="bg-background/80 fixed inset-0 z-50 flex items-center justify-center"
     >
-      <p class="text-foreground rounded border bg-white/40 p-4">
+      <p class="text-foreground bg-background/40 rounded border p-4">
         Drop file to import data
       </p>
     </div>

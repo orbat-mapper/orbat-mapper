@@ -37,7 +37,7 @@ function onMoveEnd({ view }: { view: View }) {
 }
 </script>
 <template>
-  <div class="relative bg-white dark:bg-gray-900">
+  <div class="bg-background relative">
     <MapContextMenu :map-ref="mapRef" v-slot="{ onContextMenu }">
       <MapContainer
         @ready="onMapReady"

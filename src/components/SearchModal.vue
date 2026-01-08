@@ -144,7 +144,7 @@ function onSelect(index?: number) {
             <button
               type="button"
               class="hover:border-army flex w-full items-center rounded border border-transparent p-2 hover:border hover:bg-red-100 focus:ring-3"
-              :class="hit.index === currentHitIndex ? 'bg-blue-200' : 'bg-gray-100'"
+              :class="hit.index === currentHitIndex ? 'bg-blue-200' : 'bg-muted'"
               @click="onSelect(hit.index)"
             >
               <SearchUnitHit v-if="hit.category === 'Units'" :unit="hit" />

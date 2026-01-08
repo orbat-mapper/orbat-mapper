@@ -100,7 +100,7 @@ onUnmounted(() => {
     :data-feature-id="feature.id"
     :class="[
       itemState.type === 'drag-over'
-        ? 'bg-gray-100'
+        ? 'bg-muted'
         : selected
           ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900'
           : 'border-transparent',

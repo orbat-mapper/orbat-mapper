@@ -12,7 +12,7 @@ const emit = defineEmits(["close"]);
       <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
         <button
           type="button"
-          class="text-muted-foreground hover:text-foreground rounded-md bg-white focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+          class="text-muted-foreground hover:text-foreground focus:ring-ring bg-background rounded-md focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
           @click="$emit('close')"
         >
           <span class="sr-only">Close</span>

@@ -58,13 +58,13 @@ const updateValue = (event: Event) => {
       :value="localValue"
       @input="updateValue"
       type="text"
-      class="block w-full rounded-md border-gray-300 pr-10 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700"
+      class="focus:border-primary focus:ring-ring dark:bg-muted/20 block w-full rounded-md border-gray-300 pr-10 pl-10 sm:text-sm"
       placeholder="Filter"
       v-bind="$attrs"
     />
     <div class="absolute inset-y-0 right-0 flex items-center pr-3">
       <button
-        class="text-muted-foreground hover:text-muted-foreground rounded-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+        class="text-muted-foreground hover:text-muted-foreground focus:ring-ring rounded-md focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
         type="button"
         @click="localValue = ''"
       >
@@ -74,7 +74,7 @@ const updateValue = (event: Event) => {
         v-model="hasLocationFilter"
         title="Toggle location filter"
         @click="hasLocationFilter = !hasLocationFilter"
-        class="text-muted-foreground hover:text-muted-foreground rounded-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+        class="text-muted-foreground hover:text-muted-foreground focus:ring-ring rounded-md focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
       >
         <IconCrosshairsOff v-if="hasLocationFilter" class="h-5 w-5" aria-hidden="true" />
         <IconCrosshairsGps v-else class="h-5 w-5" aria-hidden="true" />

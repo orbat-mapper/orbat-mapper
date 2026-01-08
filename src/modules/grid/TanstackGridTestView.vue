@@ -61,8 +61,7 @@ const columns = ref<ColumnDef<ExtendedUnit, any>[]>([
         type: "checkbox",
         checked: table.getIsAllRowsSelected(),
         indeterminate: table.getIsSomeRowsSelected(),
-        class:
-          "m-2 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6",
+        class: "m-2 rounded border-gray-300 text-primary focus:ring-ring sm:left-6",
         onChange: table.getToggleAllRowsSelectedHandler(),
       });
     },
@@ -72,8 +71,7 @@ const columns = ref<ColumnDef<ExtendedUnit, any>[]>([
         checked: row.getIsSelected(),
         disabled: !row.getCanSelect(),
 
-        class:
-          "m-2 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6",
+        class: "m-2 rounded border-gray-300 text-primary focus:ring-ring sm:left-6",
         onChange: row.getToggleSelectedHandler(),
       });
     },
@@ -250,7 +248,7 @@ watch(rowSelection, () => {
                 width: `${header.getSize()}px`,
               }"
               role="columnheader"
-              class="text-foreground relative flex items-center justify-between overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold select-none"
+              class="text-foreground bg-muted relative flex items-center justify-between overflow-hidden border-b px-4 py-3.5 text-left text-sm font-semibold select-none"
               :class="{ 'cursor-pointer': header.column.getCanSort() }"
               @click="header.column.getToggleSortingHandler()?.($event)"
             >
@@ -268,7 +266,7 @@ watch(rowSelection, () => {
                 </button>
                 <span
                   v-if="header.column.getCanSort() && header.column.getIsSorted()"
-                  class="text-muted-foreground flex-none rounded group-hover:bg-gray-300"
+                  class="text-muted-foreground group-hover:bg-muted flex-none rounded"
                 >
                   <ArrowSmallDownIcon
                     v-if="header.column.getIsSorted() === 'asc'"
@@ -299,7 +297,7 @@ watch(rowSelection, () => {
             v-for="row in virtualRows"
             :key="row.key as string"
             :style="{ transform: `translateY(${row.start}px)` }"
-            class="group absolute flex h-10 w-full divide-x divide-gray-200 hover:bg-gray-50"
+            class="group hover:bg-muted/50 absolute flex h-10 w-full divide-x divide-gray-200"
             :data-index="row.index"
           >
             <td

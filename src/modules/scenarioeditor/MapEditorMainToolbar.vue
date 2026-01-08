@@ -242,7 +242,7 @@ function selectEchelon(sidc: string) {
           :disabled="!activeParentId || unitActions.isUnitLocked(activeParentId)"
         >
           <AddSymbolIcon
-            class="bg-opacity-70 text-muted-foreground group-hover:text-foreground absolute -right-2 bottom-0 h-4 w-4 rounded-full bg-white"
+            class="bg-opacity-70 text-muted-foreground group-hover:text-foreground bg-background absolute -right-2 bottom-0 h-4 w-4 rounded-full"
           />
         </PanelSymbolButton>
         <SymbolPickerPopover :symbol-options="symbolOptions" :add-unit="addUnit" />

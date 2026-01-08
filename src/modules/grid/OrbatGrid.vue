@@ -202,7 +202,7 @@ function toggleGroupSelect(item: any, event: Event) {
           :style="{
             height: `${rowHeight}px`,
           }"
-          class="group flex w-full divide-x divide-gray-200 hover:bg-gray-50"
+          class="group hover:bg-muted/50 flex w-full divide-x divide-gray-200"
         >
           <div
             v-if="select"
@@ -213,7 +213,7 @@ function toggleGroupSelect(item: any, event: Event) {
               :id="item.id"
               :value="item"
               v-model="selectedRows"
-              class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6"
+              class="text-primary focus:ring-ring rounded border-gray-300 sm:left-6"
             />
           </div>
           <div
