@@ -241,9 +241,22 @@ function decodeData(encoded: string): string {
 function handleCopyLink() {
   const encoded = encodeData(inputText.value);
   const url = new URL(window.location.href);
+  url.searchParams.delete("text");
   url.searchParams.set("data", encoded);
   copy(url.toString());
-  sendNotification({ message: "Link copied to clipboard" });
+  sendNotification({
+    message: `Link copied to clipboard (${url.toString().length} chars)`,
+  });
+}
+
+function handleCopyLinkUncompressed() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("data");
+  url.searchParams.set("text", inputText.value);
+  copy(url.toString());
+  sendNotification({
+    message: `Uncompressed link copied to clipboard (${url.toString().length} chars)`,
+  });
 }
 
 async function handleDownloadOrbatMapperScenario() {
@@ -305,6 +318,7 @@ onUnmounted(() => {
 
 onMounted(() => {
   const data = route.query.data as string;
+  const text = route.query.text as string;
   if (data) {
     try {
       inputText.value = decodeData(data);
@@ -313,6 +327,9 @@ onMounted(() => {
       console.error("Failed to decode URL data", e);
       sendNotification({ message: "Failed to load ORBAT from URL", type: "error" });
     }
+  } else if (text) {
+    inputText.value = text;
+    sendNotification({ message: "ORBAT loaded from URL" });
   }
 });
 </script>
@@ -374,6 +391,15 @@ onMounted(() => {
               >
                 <LinkIcon class="mr-1 size-4" />
                 {{ copied ? "Copied!" : "Copy Link" }}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                @click="handleCopyLinkUncompressed"
+                title="Copy uncompressed link"
+              >
+                <LinkIcon class="mr-1 size-4" />
+                Copy Link (Raw)
               </Button>
               <Button
                 variant="ghost"
