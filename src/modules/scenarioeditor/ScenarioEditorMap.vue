@@ -201,7 +201,7 @@ watch(
             class="pointer-events-auto ml-2"
             title="Search"
           >
-            <MagnifyingGlassIcon class="h-5 w-5 text-gray-500" />
+            <MagnifyingGlassIcon class="text-muted-foreground h-5 w-5" />
           </IconButton>
         </header>
         <section v-if="!isMobile" class="flex flex-auto justify-between p-2">

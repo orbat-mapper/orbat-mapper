@@ -22,7 +22,7 @@ function getFromCenter(f: Feature<Point, GeoSearchProperties>) {
   <div>
     <component
       :is="item.properties.extent ? IconVectorSquare : IconMapMarker"
-      class="h-5 w-5 text-gray-400"
+      class="text-muted-foreground h-5 w-5"
       aria-hidden="true"
     />
   </div>
@@ -32,7 +32,7 @@ function getFromCenter(f: Feature<Point, GeoSearchProperties>) {
     </p>
     <div :class="['flex justify-between text-sm']">
       <div class="space-x-1">
-        <span class="text-xs text-gray-400 uppercase">{{
+        <span class="text-muted-foreground text-xs uppercase">{{
           item.properties.category
         }}</span>
         <span>{{ item.properties.city }}</span>

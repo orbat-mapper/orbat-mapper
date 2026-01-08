@@ -276,25 +276,25 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
       <tr>
         <th
           scope="col"
-          class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold whitespace-nowrap text-gray-900 sm:pl-0"
+          class="text-foreground py-3.5 pr-3 pl-4 text-left text-sm font-semibold whitespace-nowrap sm:pl-0"
         >
           Name
         </th>
         <th
           scope="col"
-          class="px-2 py-3.5 text-left text-sm font-semibold whitespace-nowrap text-gray-900"
+          class="text-foreground px-2 py-3.5 text-left text-sm font-semibold whitespace-nowrap"
         >
           Range
         </th>
         <th
           scope="col"
-          class="w-20 px-2 py-3.5 text-left text-sm font-semibold whitespace-nowrap text-gray-900"
+          class="text-foreground w-20 px-2 py-3.5 text-left text-sm font-semibold whitespace-nowrap"
         >
           Visible
         </th>
         <th
           scope="col"
-          class="w-20 px-2 py-3.5 text-left text-sm font-semibold whitespace-nowrap text-gray-900"
+          class="text-foreground w-20 px-2 py-3.5 text-left text-sm font-semibold whitespace-nowrap"
         >
           Group
         </th>
@@ -326,7 +326,7 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
                   <input
                     type="text"
                     :id="id"
-                    class="block w-full rounded-md border-0 py-1.5 pr-20 text-gray-900 ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm sm:leading-6"
+                    class="text-foreground placeholder:text-muted-foreground block w-full rounded-md border-0 py-1.5 pr-20 ring-1 ring-gray-300 ring-inset focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm sm:leading-6"
                     v-model="editedRangeRing.range"
                   />
                   <div class="absolute inset-y-0 right-0 flex items-center">
@@ -335,7 +335,7 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
                       id="range"
                       name="range"
                       v-model="editedRangeRing.uom"
-                      class="h-full rounded-md border-0 bg-transparent py-0 pr-7 pl-2 text-gray-500 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm"
+                      class="text-muted-foreground h-full rounded-md border-0 bg-transparent py-0 pr-7 pl-2 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm"
                     >
                       <option>m</option>
                       <option>km</option>
@@ -378,12 +378,14 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
           </td>
         </template>
         <template v-else>
-          <td class="py-2 pr-3 pl-4 text-sm whitespace-nowrap text-gray-900 sm:pl-0">
+          <td class="text-foreground py-2 pr-3 pl-4 text-sm whitespace-nowrap sm:pl-0">
             {{ ring.name }}
-            <span v-if="ring._counter" class="text-gray-500">({{ ring._counter }})</span>
+            <span v-if="ring._counter" class="text-muted-foreground"
+              >({{ ring._counter }})</span
+            >
           </td>
-          <td class="px-2 py-2 text-sm font-medium whitespace-nowrap text-gray-900">
-            {{ ring.range }} <span class="text-gray-800">{{ ring.uom || "km" }}</span>
+          <td class="text-foreground px-2 py-2 text-sm font-medium whitespace-nowrap">
+            {{ ring.range }} <span class="text-foreground">{{ ring.uom || "km" }}</span>
           </td>
           <td class="relative">
             <input

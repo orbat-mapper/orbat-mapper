@@ -8,7 +8,7 @@ defineProps<{
 <template>
   <div class="flex items-center">
     <div class="flex-auto">
-      <h4 v-if="title" class="text-base leading-6 font-semibold text-gray-900">
+      <h4 v-if="title" class="text-foreground text-base leading-6 font-semibold">
         {{ title }}
       </h4>
       <p class="text-muted-foreground mt-2 text-sm">

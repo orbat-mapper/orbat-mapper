@@ -109,7 +109,7 @@ onUnmounted(() => {
   >
     <span ref="handleRef">
       <IconDrag
-        class="h-6 w-6 cursor-move text-gray-400 group-focus-within:opacity-100 group-hover:opacity-100 sm:opacity-0"
+        class="text-muted-foreground h-6 w-6 cursor-move group-focus-within:opacity-100 group-hover:opacity-100 sm:opacity-0"
       />
     </span>
     <button
@@ -128,7 +128,7 @@ onUnmounted(() => {
     <div class="relative flex items-center">
       <IconClockOutline
         v-if="feature.meta.visibleFromT || feature.meta.visibleUntilT"
-        class="h-5 w-5 text-gray-400"
+        class="text-muted-foreground h-5 w-5"
       />
       <DotsMenu
         :items="featureMenuItems"

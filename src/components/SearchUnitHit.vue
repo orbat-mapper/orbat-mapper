@@ -21,7 +21,7 @@ const props = defineProps<{ unit: UnitSearchResult }>();
       <!--      <p class="ml-2 text-xs">{{ unit.score }}</p>-->
     </div>
 
-    <p v-if="unit.parent" class="flex self-start text-xs text-gray-600">
+    <p v-if="unit.parent" class="text-muted-foreground flex self-start text-xs">
       <MilSymbol
         :size="12"
         :sidc="unit.parent.sidc"

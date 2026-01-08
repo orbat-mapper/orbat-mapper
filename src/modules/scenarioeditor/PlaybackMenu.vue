@@ -44,7 +44,7 @@ const playback = usePlaybackStore();
     </Button>
     <DropdownMenu>
       <DropdownMenuTrigger
-        class="items-center justify-center rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
+        class="text-muted-foreground items-center justify-center rounded-md p-1.5 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
         ><IconChevronDown class="block size-6"
       /></DropdownMenuTrigger>
       <DropdownMenuContent :side-offset="10">

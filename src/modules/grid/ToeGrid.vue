@@ -224,7 +224,7 @@ watch(
                     /></span>
                     <span
                       v-if="header.column.getCanSort() && header.column.getIsSorted()"
-                      class="flex-none px-1 text-gray-700 group-hover:bg-gray-300 dark:text-gray-400"
+                      class="text-muted-foreground dark:text-muted-foreground flex-none px-1 group-hover:bg-gray-300"
                     >
                       {{ header.column.getIsSorted() === "asc" ? "&darr;" : "&uarr;" }}
                     </span>

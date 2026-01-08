@@ -210,7 +210,7 @@ function loadAsFeatures() {
   <div class="">
     <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
       <fieldset class="flex items-center gap-x-10">
-        <p class="flex-none text-sm leading-6 font-semibold text-gray-900">
+        <p class="text-foreground flex-none text-sm leading-6 font-semibold">
           Import GeoJSON as
         </p>
         <MRadioGroup class="flex w-full gap-10">
@@ -219,7 +219,7 @@ function loadAsFeatures() {
         </MRadioGroup>
       </fieldset>
       <div class="">
-        <p class="mt-4 text-sm leading-6 text-gray-600">
+        <p class="text-muted-foreground mt-4 text-sm leading-6">
           Select which features you want to import
         </p>
         <section class="mt-4">

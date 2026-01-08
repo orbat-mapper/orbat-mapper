@@ -250,7 +250,7 @@ watch(rowSelection, () => {
                 width: `${header.getSize()}px`,
               }"
               role="columnheader"
-              class="relative flex items-center justify-between overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold text-gray-900 select-none"
+              class="text-foreground relative flex items-center justify-between overflow-hidden border-b bg-gray-100 px-4 py-3.5 text-left text-sm font-semibold select-none"
               :class="{ 'cursor-pointer': header.column.getCanSort() }"
               @click="header.column.getToggleSortingHandler()?.($event)"
             >
@@ -268,7 +268,7 @@ watch(rowSelection, () => {
                 </button>
                 <span
                   v-if="header.column.getCanSort() && header.column.getIsSorted()"
-                  class="flex-none rounded text-gray-700 group-hover:bg-gray-300"
+                  class="text-muted-foreground flex-none rounded group-hover:bg-gray-300"
                 >
                   <ArrowSmallDownIcon
                     v-if="header.column.getIsSorted() === 'asc'"
@@ -318,7 +318,7 @@ watch(rowSelection, () => {
                 class="flex items-center"
               >
                 <ChevronRightIcon
-                  class="h-6 w-6 text-red-800 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+                  class="group-hover:text-foreground dark:text-muted-foreground dark:group-hover:text-foreground h-6 w-6 text-red-800 transition-transform"
                   :class="{
                     'rotate-90': cell.row.getIsExpanded(),
                   }"

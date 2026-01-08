@@ -163,7 +163,7 @@ function downloadElementAsSVG(elementId: string) {
         <button
           type="button"
           @click="isMenuOpen = true"
-          class="border-r border-gray-200 p-4 text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden focus:ring-inset lg:hidden"
+          class="text-muted-foreground border-r border-gray-200 p-4 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden focus:ring-inset lg:hidden"
         >
           <span class="sr-only">Open sidebar</span>
           <MenuAlt2Icon class="h-6 w-6" aria-hidden="true" />

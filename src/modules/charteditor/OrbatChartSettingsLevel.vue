@@ -46,7 +46,7 @@ if (selectedElement.level === null) test.value = 0;
 <template>
   <div class="pb-4">
     <div class="flex items-center justify-between">
-      <p class="text-sm text-gray-600">Level specific options.</p>
+      <p class="text-muted-foreground text-sm">Level specific options.</p>
       <PlainButton :disabled="usedOptions.size === 0" @click="clearSpecificOptions()"
         >Clear settings</PlainButton
       >

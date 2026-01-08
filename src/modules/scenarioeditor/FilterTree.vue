@@ -48,7 +48,7 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
       <template v-if="item.hasChildren">
         <button type="button" tabindex="-1" @click.stop="handleToggle" class="">
           <ChevronRightIcon
-            class="h-6 w-6 text-gray-500 transition hover:font-medium hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+            class="text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:group-hover:text-foreground h-6 w-6 transition hover:font-medium"
             :class="{
               'rotate-90': isExpanded,
             }"
@@ -88,7 +88,7 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
           title="Exclude"
         >
           <IconMinusCircleOutline
-            class="group-hover:text-muted-foreground group-focus:text-muted-foreground h-5 w-5 text-gray-200"
+            class="group-hover:text-muted-foreground group-focus:text-muted-foreground text-muted-foreground h-5 w-5"
           />
         </button>
         <button

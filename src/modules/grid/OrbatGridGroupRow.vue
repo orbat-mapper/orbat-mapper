@@ -15,7 +15,7 @@ const emit = defineEmits(["toggle", "change"]);
   <div class="group flex divide-x divide-gray-200 bg-gray-50 hover:bg-gray-100">
     <div
       v-if="select"
-      class="flex w-10 flex-0 items-center justify-center overflow-hidden border-b px-4 py-3.5 text-gray-900"
+      class="text-foreground flex w-10 flex-0 items-center justify-center overflow-hidden border-b px-4 py-3.5"
     >
       <input
         type="checkbox"
@@ -32,7 +32,7 @@ const emit = defineEmits(["toggle", "change"]);
     >
       <button @click.stop="emit('toggle', !open)" class="ml-0">
         <ChevronRightIcon
-          class="h-6 w-6 text-red-800 transition-transform group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+          class="group-hover:text-foreground dark:text-muted-foreground dark:group-hover:text-foreground h-6 w-6 text-red-800 transition-transform"
           :class="{
             'rotate-90': open,
           }"

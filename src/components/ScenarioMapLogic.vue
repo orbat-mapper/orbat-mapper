@@ -223,7 +223,7 @@ onScenarioAction(async (e) => {
     class="pointer-events-none absolute inset-0 border-4 border-dashed border-blue-700"
   >
     <p
-      class="absolute bottom-1 left-2 rounded bg-white px-1 text-base tracking-tighter text-gray-800 tabular-nums"
+      class="text-foreground absolute bottom-1 left-2 rounded bg-white px-1 text-base tracking-tighter tabular-nums"
     >
       {{ formattedPosition }}
     </p>

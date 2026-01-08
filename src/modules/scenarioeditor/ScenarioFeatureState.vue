@@ -58,7 +58,9 @@ function clearState() {
           <button
             class="flex"
             :class="
-              isActive(s, index) ? 'font-bold text-gray-900' : 'font-medium text-gray-500'
+              isActive(s, index)
+                ? 'text-foreground font-bold'
+                : 'text-muted-foreground font-medium'
             "
           >
             {{ fmt.scenarioFormatter.format(s.t) }}

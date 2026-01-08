@@ -73,7 +73,7 @@ watch(
       <InputGroup label="Initial value" type="number" v-model="form.count" />
     </section>
     <section v-else class="mt-4">
-      <p class="text-sm text-gray-500">No more supplies to add</p>
+      <p class="text-muted-foreground text-sm">No more supplies to add</p>
     </section>
     <FormFooter @cancel="emit('cancel')" submitLabel="Add" />
   </form>

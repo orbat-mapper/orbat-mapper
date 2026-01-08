@@ -50,7 +50,7 @@ export default defineComponent({
       <div class="p-4">
         <div class="flex items-start">
           <div class="flex w-0 flex-1 justify-between">
-            <p class="w-0 flex-1 text-sm font-medium text-gray-900">
+            <p class="text-foreground w-0 flex-1 text-sm font-medium">
               {{ message }}
             </p>
           </div>
@@ -58,7 +58,7 @@ export default defineComponent({
           <div class="ml-4 flex shrink-0">
             <button
               @click="close()"
-              class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+              class="text-muted-foreground hover:text-foreground inline-flex rounded-md bg-white focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
             >
               <span class="sr-only">Close</span>
               <XIcon class="h-5 w-5" aria-hidden="true" />

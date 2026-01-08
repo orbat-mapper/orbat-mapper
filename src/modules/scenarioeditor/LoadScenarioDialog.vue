@@ -34,13 +34,13 @@ function onLoaded(scenario: Scenario) {
         <TabsList class="bg-transparent p-0">
           <TabsTrigger
             value="browser"
-            class="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-500 shadow-none transition-none hover:text-gray-700 data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none"
+            class="text-muted-foreground hover:text-muted-foreground cursor-pointer rounded-md px-3 py-2 text-sm font-medium shadow-none transition-none data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none"
           >
             Browser
           </TabsTrigger>
           <TabsTrigger
             value="external"
-            class="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-500 shadow-none transition-none hover:text-gray-700 data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none"
+            class="text-muted-foreground hover:text-muted-foreground cursor-pointer rounded-md px-3 py-2 text-sm font-medium shadow-none transition-none data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none"
           >
             Local file / URL
           </TabsTrigger>

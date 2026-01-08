@@ -251,7 +251,7 @@ function deleteTransformation(index: number) {
       </TabsContent>
     </Tabs>
   </div>
-  <div v-else class="text-center text-sm text-gray-500">
+  <div v-else class="text-muted-foreground text-center text-sm">
     Please select a feature to transform
   </div>
 </template>

@@ -468,7 +468,9 @@ if (state.layers.length > 0) {
       v-if="isOverDropZone"
       class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/80"
     >
-      <p class="rounded border bg-white/40 p-4 text-gray-900">Drop file to import data</p>
+      <p class="text-foreground rounded border bg-white/40 p-4">
+        Drop file to import data
+      </p>
     </div>
     <DebugInfo v-if="uiStore.debugMode" />
   </div>

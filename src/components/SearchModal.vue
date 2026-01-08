@@ -138,7 +138,7 @@ function onSelect(index?: number) {
     </ToggleField>
     <main class="space-y-4">
       <section v-for="[source, hits] in groupedHits">
-        <p class="font-medium text-gray-700">{{ source }}</p>
+        <p class="text-muted-foreground font-medium">{{ source }}</p>
         <ul class="space-y-1.5">
           <li v-for="hit in hits">
             <button

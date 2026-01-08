@@ -131,7 +131,7 @@ watch(settingsStore, () => {
       <button
         type="button"
         @click="toggleSidebar()"
-        class="bg-opacity-75 fixed top-2 right-4 z-20 inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+        class="bg-opacity-75 text-muted-foreground hover:text-muted-foreground fixed top-2 right-4 z-20 inline-flex items-center justify-center rounded-md bg-white p-2 hover:bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
       >
         <span class="sr-only">Open main menu</span>
         <MenuIcon v-if="!sidebarIsOpen" class="block h-6 w-6" aria-hidden="true" />

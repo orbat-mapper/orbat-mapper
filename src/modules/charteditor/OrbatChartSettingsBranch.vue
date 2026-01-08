@@ -15,7 +15,7 @@ const currentBranch = computed(() => selectedElement.branch?.parent || null);
 
 <template>
   <div class="pb-4">
-    <p class="text-sm text-gray-600">Branch specific options.</p>
+    <p class="text-muted-foreground text-sm">Branch specific options.</p>
     <div v-if="currentBranch !== null" class="mt-4">
       <PlainButton @click="clearSpecificOptions()">Clear settings</PlainButton>
       <AccordionPanel label="Unit settings" default-open>

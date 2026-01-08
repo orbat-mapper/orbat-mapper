@@ -70,7 +70,9 @@ function onEventClick(event: ScenarioEvent) {
           </div>
 
           <p class="flex items-center justify-between">
-            <span class="font-mono text-gray-700">{{ resDateTime.format() }}</span>
+            <span class="text-muted-foreground font-mono">{{
+              resDateTime.format()
+            }}</span>
             <PrimaryButton type="submit" class="">Update time</PrimaryButton>
           </p>
         </form>

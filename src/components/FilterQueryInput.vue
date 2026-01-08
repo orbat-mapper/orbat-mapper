@@ -45,10 +45,14 @@ const updateValue = (event: Event) => {
     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
       <IconFilterVariantPlus
         v-if="hasFilter"
-        class="h-5 w-5 text-gray-400"
+        class="text-muted-foreground h-5 w-5"
         aria-hidden="true"
       />
-      <IconFilterVariant v-else class="h-5 w-5 text-gray-400" aria-hidden="true" />
+      <IconFilterVariant
+        v-else
+        class="text-muted-foreground h-5 w-5"
+        aria-hidden="true"
+      />
     </div>
     <input
       :value="localValue"
@@ -60,7 +64,7 @@ const updateValue = (event: Event) => {
     />
     <div class="absolute inset-y-0 right-0 flex items-center pr-3">
       <button
-        class="rounded-md text-gray-400 hover:text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+        class="text-muted-foreground hover:text-muted-foreground rounded-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
         type="button"
         @click="localValue = ''"
       >
@@ -70,7 +74,7 @@ const updateValue = (event: Event) => {
         v-model="hasLocationFilter"
         title="Toggle location filter"
         @click="hasLocationFilter = !hasLocationFilter"
-        class="rounded-md text-gray-400 hover:text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+        class="text-muted-foreground hover:text-muted-foreground rounded-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
       >
         <IconCrosshairsOff v-if="hasLocationFilter" class="h-5 w-5" aria-hidden="true" />
         <IconCrosshairsGps v-else class="h-5 w-5" aria-hidden="true" />

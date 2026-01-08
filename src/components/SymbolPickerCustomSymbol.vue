@@ -50,12 +50,12 @@ function onEsc(e: KeyboardEvent) {
     <div v-if="filteredIcons.length" class="flex-auto">
       <div class="relative">
         <MagnifyingGlassIcon
-          class="pointer-events-none absolute top-3.5 left-0 h-5 w-5 text-gray-400"
+          class="text-muted-foreground pointer-events-none absolute top-3.5 left-0 h-5 w-5"
           aria-hidden="true"
         />
         <input
           type="text"
-          class="h-12 w-full border-0 bg-transparent pr-4 pl-7 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+          class="text-foreground placeholder:text-muted-foreground h-12 w-full border-0 bg-transparent pr-4 pl-7 focus:ring-0 sm:text-sm"
           placeholder="Search custom symbol..."
           @keydown.esc="onEsc"
           v-model="searchQuery"
@@ -83,7 +83,7 @@ function onEsc(e: KeyboardEvent) {
               :class="
                 id === initialSidc?.slice(CUSTOM_SYMBOL_SLICE)
                   ? 'text-red-900'
-                  : 'text-gray-900'
+                  : 'text-foreground'
               "
             >
               {{ name }}
