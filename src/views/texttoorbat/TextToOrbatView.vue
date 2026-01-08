@@ -48,6 +48,7 @@ import { saveBlobToLocalFile } from "@/utils/files";
 import { useScenario } from "@/scenariostore";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { useIndexedDb } from "@/scenariostore/localdb";
+import AppNotifications from "@/components/AppNotifications.vue";
 
 const originalTitle = useTitle().value;
 useTitle("Text to ORBAT");
@@ -322,14 +323,18 @@ onMounted(() => {
   if (data) {
     try {
       inputText.value = decodeData(data);
-      sendNotification({ message: "ORBAT loaded from URL" });
+      sendNotification({
+        message: `ORBAT loaded from URL (${window.location.href.length} chars)`,
+      });
     } catch (e) {
       console.error("Failed to decode URL data", e);
       sendNotification({ message: "Failed to load ORBAT from URL", type: "error" });
     }
   } else if (text) {
     inputText.value = text;
-    sendNotification({ message: "ORBAT loaded from URL" });
+    sendNotification({
+      message: `ORBAT loaded from URL (${window.location.href.length} chars)`,
+    });
   }
 });
 </script>
@@ -500,4 +505,5 @@ onMounted(() => {
 
   <IconBrowserModal v-model="showIconBrowser" />
   <PatternMappingModal v-model="showPatternMapping" />
+  <AppNotifications />
 </template>
