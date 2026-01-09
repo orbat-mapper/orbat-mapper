@@ -28,6 +28,7 @@ import {
 import { computed, ref } from "vue";
 import type OLMap from "ol/Map";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { useBaseLayersStore } from "@/stores/baseLayersStore";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import { toLonLat } from "ol/proj";
 import { storeToRefs } from "pinia";
@@ -82,6 +83,7 @@ const { coordinateFormat, showLocation, showScaleLine, showDayNightTerminator } 
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
 const uiSettings = useUiStore();
 const mapSettings = useMapSettingsStore();
+const baseLayersStore = useBaseLayersStore();
 
 const { send } = useNotifications();
 const { copy: copyToClipboard } = useClipboard();
@@ -233,6 +235,17 @@ function onAddPoint() {
   };
   geo.addFeature(newFeature, activeLayer.id);
 }
+
+const baseMapId = computed({
+  get: () => store.state.mapSettings.baseMapId,
+  set: (value: string) => {
+    store.update((s) => {
+      s.mapSettings.baseMapId = value;
+      mapSettings.baseLayerName = value;
+    });
+    baseLayersStore.selectLayer(value);
+  },
+});
 </script>
 <template>
   <ContextMenu @update:open="onContextMenuUpdate">
@@ -329,6 +342,24 @@ function onAddPoint() {
         <ContextMenuSubTrigger inset><span>Export</span></ContextMenuSubTrigger>
         <ContextMenuSubContent>
           <ContextMenuItem @select="onExport()">Map as image</ContextMenuItem>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+      <ContextMenuSub>
+        <ContextMenuSubTrigger inset>Map base layer</ContextMenuSubTrigger>
+        <ContextMenuSubContent>
+          <ContextMenuRadioGroup v-model="baseMapId">
+            <ContextMenuRadioItem
+              v-for="layer in baseLayersStore.layers"
+              :key="layer.name"
+              :value="layer.name"
+              @select.prevent
+            >
+              {{ layer.title }}
+            </ContextMenuRadioItem>
+            <ContextMenuRadioItem value="None" @select.prevent>
+              No base map
+            </ContextMenuRadioItem>
+          </ContextMenuRadioGroup>
         </ContextMenuSubContent>
       </ContextMenuSub>
       <ContextMenuSub>
