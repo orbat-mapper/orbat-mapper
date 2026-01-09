@@ -1,23 +1,20 @@
 <script setup lang="ts">
-import { useRouter, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 import { onMounted } from "vue";
 import { useScenarioShare } from "@/composables/scenarioShare";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
-import { useIndexedDb } from "@/scenariostore/localdb";
 import { useScenario } from "@/scenariostore";
-import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
+import { ORBAT_CHART_ROUTE, TEXT_TO_ORBAT_ROUTE } from "@/router/names";
 
 // ... existing imports
 import { ExternalLinkIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
 import ProseSection from "../components/ProseSection.vue";
 import LandingPageScenarios from "./LandingPageScenarios.vue";
 import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
-import { ORBAT_CHART_ROUTE, TEXT_TO_ORBAT_ROUTE } from "@/router/names";
 import { CheckIcon } from "@heroicons/vue/24/outline";
 import { Button } from "@/components/ui/button";
 import { UseDark } from "@vueuse/components";
 
-const router = useRouter();
 const route = useRoute();
 const { loadScenarioFromUrlParam } = useScenarioShare();
 const { loadScenario } = useBrowserScenarios();
