@@ -72,7 +72,8 @@ export type ScenarioActions =
   | "decreaseSpeed"
   | "browseSymbols"
   | "undo"
-  | "redo";
+  | "redo"
+  | "shareAsUrl";
 
 export type ScenarioFeatureActions =
   | "delete"

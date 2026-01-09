@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import { useRouter, useRoute } from "vue-router";
+import { onMounted } from "vue";
+import { useScenarioShare } from "@/composables/scenarioShare";
+import { useBrowserScenarios } from "@/composables/browserScenarios";
+import { useIndexedDb } from "@/scenariostore/localdb";
+import { useScenario } from "@/scenariostore";
+import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
+
+// ... existing imports
 import { ExternalLinkIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
 import ProseSection from "../components/ProseSection.vue";
 import LandingPageScenarios from "./LandingPageScenarios.vue";
@@ -7,6 +16,24 @@ import { ORBAT_CHART_ROUTE, TEXT_TO_ORBAT_ROUTE } from "@/router/names";
 import { CheckIcon } from "@heroicons/vue/24/outline";
 import { Button } from "@/components/ui/button";
 import { UseDark } from "@vueuse/components";
+
+const router = useRouter();
+const route = useRoute();
+const { loadScenarioFromUrlParam } = useScenarioShare();
+const { loadScenario } = useBrowserScenarios();
+const { scenario } = useScenario();
+
+onMounted(async () => {
+  if (route.query.data) {
+    try {
+      const scenarioData = await loadScenarioFromUrlParam(route.query.data as string);
+      scenario.value.io.loadFromObject(scenarioData);
+      await loadScenario(scenarioData);
+    } catch (e) {
+      console.error("Failed to load scenario from URL", e);
+    }
+  }
+});
 
 const features = [
   {

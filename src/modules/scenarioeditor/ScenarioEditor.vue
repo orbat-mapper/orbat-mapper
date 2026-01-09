@@ -199,6 +199,10 @@ const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
   onFeatureSelectHook.trigger({ featureId, layerId });
 };
 
+import { useScenarioShare } from "@/composables/scenarioShare";
+
+const { shareScenario } = useScenarioShare();
+
 async function onScenarioAction(action: ScenarioActions) {
   if (action === "addSide") {
     unitActions.addSide();
@@ -220,6 +224,10 @@ async function onScenarioAction(action: ScenarioActions) {
   } else if (action === "exportToClipboard") {
     await copyToClipboard(io.stringifyScenario());
     if (copied.value) send({ message: "Scenario copied to clipboard" });
+  } else if (action === "shareAsUrl") {
+    const url = await shareScenario(props.activeScenario);
+    await copyToClipboard(url);
+    if (copied.value) send({ message: "Scenario URL copied to clipboard" });
   } else if (action === "export") {
     showExportModal.value = true;
   } else if (action === "import") {
