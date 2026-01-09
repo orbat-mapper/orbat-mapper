@@ -18,7 +18,7 @@ import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDe
 import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
-import MyTabs from "@/components/MyTabs.vue";
+import ScrollTabs from "@/components/ScrollTabs.vue";
 
 const ScenarioFiltersTabPanel = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
@@ -94,7 +94,7 @@ watch(isSwipingDown, (swiping) => {
         @prev-event="emit('prev-event')"
       />
     </div>
-    <MyTabs
+    <ScrollTabs
       v-model="activeTabIndexString"
       :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Filter', 'Details']"
       :class="{ hidden: !showBottomPanel }"
@@ -140,6 +140,6 @@ watch(isSwipingDown, (swiping) => {
         />
         <ScenarioInfoPanel v-else-if="activeDetailsPanel === 'scenario'" class="p-4" />
       </TabsContent>
-    </MyTabs>
+    </ScrollTabs>
   </main>
 </template>

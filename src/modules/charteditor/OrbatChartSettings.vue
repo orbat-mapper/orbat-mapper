@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useVModel } from "@vueuse/core";
-import MyTabs from "@/components/MyTabs.vue";
+import ScrollTabs from "@/components/ScrollTabs.vue";
 import TabsContent from "@/components/ui/tabs/TabsContent.vue";
 import OrbatChartSettingsUnit from "./OrbatChartSettingsUnit.vue";
 import OrbatChartSettingsLevel from "./OrbatChartSettingsLevel.vue";
@@ -32,7 +32,7 @@ const tabItems = [
     <h3 v-if="!chartMode" class="text-foreground hidden px-4 font-medium lg:block lg:p-4">
       Chart layout settings
     </h3>
-    <MyTabs
+    <ScrollTabs
       v-model="currentTab"
       :items="tabItems"
       :unmount-on-hide="false"
@@ -53,6 +53,6 @@ const tabItems = [
       <TabsContent :value="ChartTabs.Unit" class="mt-6 px-4">
         <OrbatChartSettingsUnit />
       </TabsContent>
-    </MyTabs>
+    </ScrollTabs>
   </div>
 </template>

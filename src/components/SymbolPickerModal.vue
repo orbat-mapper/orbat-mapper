@@ -21,7 +21,7 @@ import {
 import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
 import { useSymbolItems } from "@/composables/symbolData";
 import NProgress from "nprogress";
-import MyTabs from "./MyTabs.vue";
+import ScrollTabs from "./ScrollTabs.vue";
 import TabsContent from "@/components/ui/tabs/TabsContent.vue";
 import SymbolBrowseTab from "./SymbolBrowseTab.vue";
 import SecondaryButton from "./SecondaryButton.vue";
@@ -277,7 +277,7 @@ watch(currentTab, async (v) => {
         />
       </header>
 
-      <MyTabs
+      <ScrollTabs
         class="flex-auto"
         v-model="currentTab"
         :items="tabItems"
@@ -460,7 +460,7 @@ watch(currentTab, async (v) => {
             <LegacyConverter v-if="currentTab === (!hideCustomSymbols ? '3' : '2')" />
           </keep-alive>
         </TabsContent>
-      </MyTabs>
+      </ScrollTabs>
       <div class="flex shrink-0 justify-end space-x-2 pt-4">
         <SecondaryButton type="button" @click="clearModifiers()" class=""
           >Clear modifiers

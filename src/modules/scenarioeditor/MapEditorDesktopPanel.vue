@@ -14,7 +14,7 @@ import { type ScenarioEvent } from "@/types/scenarioModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
 import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
-import MyTabs from "@/components/MyTabs.vue";
+import ScrollTabs from "@/components/ScrollTabs.vue";
 
 const ScenarioFiltersTabPanel = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
@@ -60,7 +60,7 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
     class="pointer-events-auto relative -mt-12 hidden max-h-[80vh] overflow-auto rounded-md border-t border-b border-l border-gray-300 shadow-sm md:block dark:border-slate-700"
     :style="{ width: orbatPanelWidth + 'px' }"
   >
-    <MyTabs
+    <ScrollTabs
       v-model="activeTabIndexString"
       :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Filters']"
       as="div"
@@ -79,7 +79,7 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
       <TabsContent value="2" class="p-4 pb-10"><ScenarioLayersTabPanel /></TabsContent>
       <TabsContent value="3" class="p-4 pb-10"> <ScenarioSettingsPanel /></TabsContent>
       <TabsContent value="4" class=""> <ScenarioFiltersTabPanel /></TabsContent>
-    </MyTabs>
+    </ScrollTabs>
     <PanelResizeHandle
       :width="orbatPanelWidth"
       @update="orbatPanelWidth = $event"

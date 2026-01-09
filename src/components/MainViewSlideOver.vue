@@ -2,7 +2,7 @@
 import LayersPanel from "./LayersPanel.vue";
 import { useVModel } from "@vueuse/core";
 import SlideOver from "./SlideOver.vue";
-import MyTabs from "@/components/MyTabs.vue";
+import ScrollTabs from "@/components/ScrollTabs.vue";
 import TabsContent from "@/components/ui/tabs/TabsContent.vue";
 import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore";
 import NumberInputGroup from "./NumberInputGroup.vue";
@@ -25,7 +25,7 @@ const tabItems = ["Map view", "Map layers", "ORBAT", "Time and date"];
 
 <template>
   <SlideOver v-model="open" title="Settings">
-    <MyTabs :items="tabItems" default-value="0">
+    <ScrollTabs :items="tabItems" default-value="0">
       <TabsContent value="0" class="px-4 py-6">
         <MapSettingsPanel />
       </TabsContent>
@@ -53,6 +53,6 @@ const tabItems = ["Map view", "Map layers", "ORBAT", "Time and date"];
       <TabsContent value="3" class="px-4 py-6">
         <TimeDateSettingsPanel />
       </TabsContent>
-    </MyTabs>
+    </ScrollTabs>
   </SlideOver>
 </template>

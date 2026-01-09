@@ -42,7 +42,7 @@ import UnitDetailsMapDisplay from "@/modules/scenarioeditor/UnitDetailsMapDispla
 import { useTabStore } from "@/stores/tabStore";
 import { storeToRefs } from "pinia";
 import UnitDetailsToe from "@/modules/scenarioeditor/UnitDetailsToe.vue";
-import MyTabs from "@/components/MyTabs.vue";
+import ScrollTabs from "@/components/ScrollTabs.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { type MenuItemData } from "@/components/types";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
@@ -509,7 +509,7 @@ function locateInOrbat() {
       </nav>
     </header>
     <div class="-mx-4">
-      <MyTabs :items="tabList" v-model="selectedTabString" class="">
+      <ScrollTabs :items="tabList" v-model="selectedTabString" class="">
         <TabsContent value="0" class="mx-4 pt-4">
           <section class="relative" v-if="!isMultiMode">
             <EditMetaForm
@@ -594,7 +594,7 @@ function locateInOrbat() {
         >
           <pre>{{ unit }}</pre>
         </TabsContent>
-      </MyTabs>
+      </ScrollTabs>
     </div>
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"

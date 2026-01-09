@@ -24,7 +24,7 @@ import EditableLabel from "@/components/EditableLabel.vue";
 import { type SelectedScenarioFeatures, useSelectedItems } from "@/stores/selectedStore";
 import IconButton from "@/components/IconButton.vue";
 import { TabsContent } from "@/components/ui/tabs";
-import MyTabs from "@/components/MyTabs.vue";
+import ScrollTabs from "@/components/ScrollTabs.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useTabStore } from "@/stores/tabStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
@@ -243,7 +243,7 @@ function onAction(action: ScenarioFeatureActions) {
       </nav>
     </header>
     <div class="-mx-4">
-      <MyTabs :items="tabList" v-model="selectedTabString">
+      <ScrollTabs :items="tabList" v-model="selectedTabString">
         <TabsContent value="0" class="mx-4">
           <PanelDataGrid class="mt-4">
             <ScenarioFeatureVisibilitySettings
@@ -308,7 +308,7 @@ function onAction(action: ScenarioFeatureActions) {
         >
           <pre>{{ feature }}</pre>
         </TabsContent>
-      </MyTabs>
+      </ScrollTabs>
     </div>
     <GlobalEvents
       v-if="uiStore.shortcutsEnabled"

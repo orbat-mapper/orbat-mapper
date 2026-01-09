@@ -24,7 +24,7 @@ import TileJSONMapLayerSettings from "@/modules/scenarioeditor/TileMapLayerSetti
 import { type LayerUpdateOptions } from "@/composables/geoMapLayers";
 import { useUiStore } from "@/stores/uiStore";
 import MapLayerMetaSettings from "@/modules/scenarioeditor/MapLayerMetaSettings.vue";
-import MyTabs from "@/components/MyTabs.vue";
+import ScrollTabs from "@/components/ScrollTabs.vue";
 
 interface Props {
   layerId: FeatureId;
@@ -155,7 +155,7 @@ function toggleLayerVisibility() {
       </div>
     </header>
     <div class="-mx-4">
-      <MyTabs :items="tabList" v-model="selectedTabString">
+      <ScrollTabs :items="tabList" v-model="selectedTabString">
         <TabsContent value="0" class="mx-4 pt-4"
           ><MapLayerMetaSettings :layer="mapLayer" @update="updateLayer"
         /></TabsContent>
@@ -180,7 +180,7 @@ function toggleLayerVisibility() {
         >
           <pre>{{ mapLayer }}</pre>
         </TabsContent>
-      </MyTabs>
+      </ScrollTabs>
     </div>
   </div>
 </template>

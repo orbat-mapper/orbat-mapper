@@ -5,7 +5,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import EditableLabel from "@/components/EditableLabel.vue";
 import ScenarioInfoDetails from "@/modules/scenarioeditor/ScenarioInfoDetails.vue";
-import MyTabs from "@/components/MyTabs.vue";
+import ScrollTabs from "@/components/ScrollTabs.vue";
 import { TabsContent } from "@/components/ui/tabs";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 
@@ -47,11 +47,11 @@ function updateScenarioInfo(data: Partial<ScenarioInfo>) {
       />
     </header>
     <div class="-mx-4">
-      <MyTabs :items="tabList" v-model="selectedTabString">
+      <ScrollTabs :items="tabList" v-model="selectedTabString">
         <TabsContent value="0" class="mx-4 pt-4"
           ><ScenarioInfoDetails class=""
         /></TabsContent>
-      </MyTabs>
+      </ScrollTabs>
     </div>
   </div>
 </template>

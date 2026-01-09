@@ -10,7 +10,7 @@ import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import type { ScenarioEventAction } from "@/types/constants";
 import { useSelectedItems } from "@/stores/selectedStore";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
-import MyTabs from "@/components/MyTabs.vue";
+import ScrollTabs from "@/components/ScrollTabs.vue";
 import { TabsContent } from "@/components/ui/tabs";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
@@ -132,7 +132,7 @@ const onFormSubmit = (eventUpdate: ScenarioEventUpdate) => {
       </nav>
     </header>
     <div class="-mx-4">
-      <MyTabs :items="tabList" v-model="selectedTab">
+      <ScrollTabs :items="tabList" v-model="selectedTab">
         <TabsContent value="0" class="mx-4 pt-4">
           <EditMetaForm
             v-if="isEditMode"
@@ -169,7 +169,7 @@ const onFormSubmit = (eventUpdate: ScenarioEventUpdate) => {
         <TabsContent value="1" v-if="ui.debugMode" class="mx-4">
           <pre v-if="ui.debugMode">{{ scenarioEvent }}</pre>
         </TabsContent>
-      </MyTabs>
+      </ScrollTabs>
     </div>
   </div>
 </template>
