@@ -225,9 +225,15 @@ async function onScenarioAction(action: ScenarioActions) {
     await copyToClipboard(io.stringifyScenario());
     if (copied.value) send({ message: "Scenario copied to clipboard" });
   } else if (action === "shareAsUrl") {
-    const url = await shareScenario(props.activeScenario);
+    const { url, warning } = await shareScenario(props.activeScenario);
     await copyToClipboard(url);
-    if (copied.value) send({ message: "Scenario URL copied to clipboard" });
+    if (copied.value) {
+      if (warning) {
+        send({ message: `URL copied. ${warning}`, type: "warning" });
+      } else {
+        send({ message: "Scenario URL copied to clipboard" });
+      }
+    }
   } else if (action === "export") {
     showExportModal.value = true;
   } else if (action === "import") {

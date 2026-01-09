@@ -12,7 +12,12 @@ export function useScenarioShare() {
     url.pathname = "/";
     url.hash = "";
     url.searchParams.set("data", base64);
-    return url.toString();
+    const urlStr = url.toString();
+    const result = { url: urlStr, warning: "" };
+    if (urlStr.length > 2048) {
+      result.warning = `The generated URL is very long (${urlStr.length} chars). It might not work in some browsers or chat apps.`;
+    }
+    return result;
   }
 
   async function loadScenarioFromUrlParam(param: string): Promise<Scenario> {
