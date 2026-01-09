@@ -123,4 +123,54 @@ onUnmounted(() => {
 .ol-zoom {
   @apply top-[unset] right-2 bottom-12 left-[unset] sm:bottom-10;
 }
+
+.dark .ol-control {
+  background-color: color-mix(in srgb, var(--color-card), transparent 10%);
+  border: 1px solid var(--color-border);
+}
+
+.dark .ol-control:hover {
+  background-color: var(--color-card);
+}
+
+.dark .ol-control button {
+  color: var(--color-foreground);
+  background-color: transparent;
+}
+
+.dark .ol-control button:hover {
+  color: var(--color-primary);
+  background-color: color-mix(in srgb, var(--color-primary), transparent 90%);
+}
+
+.dark .ol-control button:focus {
+  box-shadow: inset 0 0 0 1px var(--color-ring);
+  outline: none;
+}
+
+.dark .ol-attribution {
+  background-color: color-mix(in srgb, var(--color-card), transparent 10%);
+  color: var(--color-muted-foreground);
+  box-shadow: none;
+}
+
+.dark .ol-attribution li {
+  color: var(--color-foreground);
+  text-shadow: none;
+}
+
+.dark .ol-attribution button {
+  color: var(--color-muted-foreground);
+}
+
+.dark .ol-scale-line {
+  background-color: var(--color-card);
+  color: var(--color-foreground);
+  border: 1px solid var(--color-border);
+  font-weight: 500;
+}
+
+.dark .ol-scale-line-inner {
+  color: var(--color-foreground);
+}
 </style>
