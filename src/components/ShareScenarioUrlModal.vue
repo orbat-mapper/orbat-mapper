@@ -8,6 +8,7 @@ import { activeScenarioKey } from "@/components/injects";
 import InputGroup from "@/components/InputGroup.vue";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ClipboardCopyIcon, TriangleAlertIcon } from "lucide-vue-next";
+import DocLink from "@/components/DocLink.vue";
 
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue"]);
@@ -40,8 +41,10 @@ function onCopy() {
 <template>
   <NewSimpleModal v-model="open" dialog-title="Share scenario as URL" class="sm:max-w-xl">
     <template #description
-      >Share this scenario by copying the URL below. The URL contains all scenario
-      data.</template
+      >Share this scenario by copying the URL below. The URL contains all scenario data.
+      <DocLink href="https://docs.orbat-mapper.app/guide/share-scenario"
+        >Learn more.</DocLink
+      ></template
     >
     <div class="space-y-4">
       <Alert>
@@ -64,7 +67,7 @@ function onCopy() {
             @click="($event.target as HTMLInputElement).select()"
           />
           <Button @click="onCopy" class="mb-0.5">
-            {{ copied ? "Copied!" : "Copy" }}
+            {{ copied ? "Copied!" : "Copy URL" }}
             <ClipboardCopyIcon class="" />
           </Button>
         </div>
