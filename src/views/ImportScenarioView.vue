@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertTriangleIcon,
+  ExternalLinkIcon,
   FileWarningIcon,
   LoaderCircleIcon,
   MoonStarIcon,
@@ -44,6 +45,9 @@ onMounted(async () => {
 
   try {
     scenarioData.value = await loadScenarioFromUrlParam(dataParam);
+
+    // Remove the data from the URL so it's not stored in history
+    // await router.replace({ query: {} });
 
     // Check if scenario with same ID exists
     const { getScenarioInfo } = await useIndexedDb();
@@ -90,7 +94,7 @@ async function handleLoad() {
   const { addScenario } = await useIndexedDb();
   const plainScenario = toRaw(scenarioData.value);
   const scenarioId = await addScenario(plainScenario);
-  await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
+  await router.replace({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
 }
 
 async function handleOverwrite() {
@@ -100,7 +104,7 @@ async function handleOverwrite() {
   const plainScenario = toRaw(scenarioData.value);
   const scenarioWithId = { ...plainScenario, id: plainScenario.id ?? nanoid() };
   const scenarioId = await putScenario(scenarioWithId);
-  await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
+  await router.replace({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
 }
 
 async function handleCreateCopy() {
@@ -109,9 +113,14 @@ async function handleCreateCopy() {
   const { addScenario } = await useIndexedDb();
   const plainScenario = toRaw(scenarioData.value);
   const newId = nanoid();
-  const scenarioCopy = { ...plainScenario, id: newId };
+  // Create a copy with the new ID and updated name
+  const scenarioCopy = {
+    ...plainScenario,
+    id: newId,
+    name: `${plainScenario.name} (copy)`,
+  };
   const scenarioId = await addScenario(scenarioCopy, newId);
-  await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
+  await router.replace({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
 }
 </script>
 
@@ -124,6 +133,10 @@ async function handleCreateCopy() {
         This is a work in progress prototype. Follow the
         <a href="https://github.com/orbat-mapper/orbat-mapper" class="underline"
           >development on GitHub <GithubIcon class="inline size-6 sm:size-8" />
+        </a>
+        |
+        <a href="https://docs.orbat-mapper.app" class="underline" target="_blank"
+          >Documentation <ExternalLinkIcon class="inline size-4" />
         </a>
       </p>
       <UseDark v-slot="{ isDark, toggleDark }">
