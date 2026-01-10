@@ -78,6 +78,9 @@ const ExportScenarioModal = defineAsyncComponent(
 );
 
 const ImportModal = defineAsyncComponent(() => import("@/components/ImportModal.vue"));
+const ShareScenarioUrlModal = defineAsyncComponent(
+  () => import("@/components/ShareScenarioUrlModal.vue"),
+);
 
 const dropZoneRef = ref<HTMLDivElement>();
 const activeParentId = ref<EntityId | undefined | null>(null);
@@ -129,6 +132,7 @@ const showLoadModal = ref(false);
 const shortcutsModalVisible = ref(false);
 const showExportModal = ref(false);
 const showImportModal = ref(false);
+const showShareUrlModal = ref(false);
 
 useTimeFormatterProvider({ activeScenario: props.activeScenario });
 
@@ -199,6 +203,10 @@ const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
   onFeatureSelectHook.trigger({ featureId, layerId });
 };
 
+import { useScenarioShare } from "@/composables/scenarioShare";
+
+const { shareScenario } = useScenarioShare();
+
 async function onScenarioAction(action: ScenarioActions) {
   if (action === "addSide") {
     unitActions.addSide();
@@ -220,6 +228,8 @@ async function onScenarioAction(action: ScenarioActions) {
   } else if (action === "exportToClipboard") {
     await copyToClipboard(io.stringifyScenario());
     if (copied.value) send({ message: "Scenario copied to clipboard" });
+  } else if (action === "shareAsUrl") {
+    showShareUrlModal.value = true;
   } else if (action === "export") {
     showExportModal.value = true;
   } else if (action === "import") {
@@ -464,6 +474,7 @@ if (state.layers.length > 0) {
     />
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
     <ImportModal v-if="showImportModal" v-model="showImportModal" />
+    <ShareScenarioUrlModal v-if="showShareUrlModal" v-model="showShareUrlModal" />
     <div
       v-if="isOverDropZone"
       class="bg-background/80 fixed inset-0 z-50 flex items-center justify-center"

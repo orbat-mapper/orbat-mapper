@@ -68,6 +68,7 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
       items: [
         { text: "Import data", link: "import-data" },
         { text: "Export data", link: "export-data" },
+        { text: "Share by URL", link: "share-scenario" },
       ],
     },
   ];

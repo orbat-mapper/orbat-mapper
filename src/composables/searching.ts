@@ -209,6 +209,7 @@ const actionItems: ActionItem[] = [
   { action: "stopPlayback", label: "Pause playback", icon: "pause" },
   { action: "increaseSpeed", label: "Speed up playback", icon: "increaseSpeed" },
   { action: "decreaseSpeed", label: "slow down playback", icon: "decreaseSpeed" },
+  { action: "shareAsUrl", label: "Share scenario as URL", icon: "share" },
 ];
 
 export function useActionSearch() {

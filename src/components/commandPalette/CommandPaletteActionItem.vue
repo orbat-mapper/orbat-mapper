@@ -8,6 +8,7 @@ import {
   IconHexagonOutline,
   IconPause,
   IconPlay,
+  IconShareVariant,
   IconSpeedometer,
   IconSpeedometerSlow,
 } from "@iconify-prerendered/vue-mdi";
@@ -22,6 +23,7 @@ const iconMap: Record<string, any> = {
   pause: IconPause,
   increaseSpeed: IconSpeedometer,
   decreaseSpeed: IconSpeedometerSlow,
+  share: IconShareVariant,
 };
 
 const props = defineProps<{ item: ActionSearchResult }>();
