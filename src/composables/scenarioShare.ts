@@ -9,7 +9,7 @@ export function useScenarioShare() {
     const compressed = zlibSync(strToU8(jsonString), { level: 9 });
     const base64 = btoa(strFromU8(compressed, true));
     const url = new URL(window.location.href);
-    url.pathname = "/";
+    url.pathname = "/import";
     url.hash = "";
     url.searchParams.set("data", base64);
     const urlStr = url.toString();
