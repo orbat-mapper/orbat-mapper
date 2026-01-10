@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import { useVModel, useClipboard } from "@vueuse/core";
+import { useClipboard, useVModel } from "@vueuse/core";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Button } from "@/components/ui/button";
 import { useScenarioShare } from "@/composables/scenarioShare";
 import { inject, onMounted, ref } from "vue";
 import { activeScenarioKey } from "@/components/injects";
 import InputGroup from "@/components/InputGroup.vue";
-import {
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-} from "@heroicons/vue/24/outline";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ClipboardCopyIcon, TriangleAlertIcon } from "lucide-vue-next";
 
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue"]);
@@ -40,11 +38,19 @@ function onCopy() {
 </script>
 
 <template>
-  <NewSimpleModal v-model="open" dialog-title="Share as URL" class="sm:max-w-xl">
+  <NewSimpleModal v-model="open" dialog-title="Share scenario as URL" class="sm:max-w-xl">
+    <template #description
+      >Share this scenario by copying the URL below. The URL contains all scenario
+      data.</template
+    >
     <div class="space-y-4">
-      <p class="text-muted-foreground text-sm">
-        Share this scenario by copying the URL below. The URL contains all scenario data.
-      </p>
+      <Alert>
+        <TriangleAlertIcon />
+        <AlertDescription>
+          Only use this feature for small to medium scenarios. Browsers and servers have
+          limits on URL lengths. Always try the generated URL before sharing it.
+        </AlertDescription>
+      </Alert>
 
       <div v-if="isLoading" class="flex justify-center py-4">Generating URL...</div>
 
@@ -57,8 +63,9 @@ function onCopy() {
             readonly
             @click="($event.target as HTMLInputElement).select()"
           />
-          <Button @click="onCopy" class="mb-[2px]">
+          <Button @click="onCopy" class="mb-0.5">
             {{ copied ? "Copied!" : "Copy" }}
+            <ClipboardCopyIcon class="" />
           </Button>
         </div>
 
@@ -67,24 +74,12 @@ function onCopy() {
           {{ generatedUrl.length }} characters
         </div>
 
-        <div
-          v-if="urlWarning"
-          class="flex items-start gap-2 rounded-md bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200"
-        >
-          <ExclamationTriangleIcon class="h-5 w-5 shrink-0" />
-          <p>{{ urlWarning }}</p>
-        </div>
-
-        <div
-          class="flex items-start gap-2 rounded-md bg-blue-50 p-3 text-sm text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
-        >
-          <InformationCircleIcon class="h-5 w-5 shrink-0" />
-          <p>
-            Some browsers and chat applications may truncate very long URLs. If the URL
-            doesn't work, try using a URL shortener or exporting the scenario as a file
-            instead.
-          </p>
-        </div>
+        <Alert v-if="urlWarning" variant="destructive">
+          <TriangleAlertIcon class="size-4" />
+          <AlertDescription>
+            {{ urlWarning }}
+          </AlertDescription>
+        </Alert>
       </div>
 
       <div class="flex justify-end">
