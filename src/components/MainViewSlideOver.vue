@@ -48,6 +48,9 @@ const tabItems = ["Map view", "Map layers", "ORBAT", "Time and date"];
           </ToggleField>
 
           <ToggleField v-model="uiSettings.debugMode">Debug mode</ToggleField>
+          <ToggleField v-if="uiSettings.debugMode" v-model="uiSettings.showFps"
+            >Show FPS
+          </ToggleField>
         </div>
       </TabsContent>
       <TabsContent value="3" class="px-4 py-6">

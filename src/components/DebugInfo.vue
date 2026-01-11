@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useFps } from "@vueuse/core";
+import { useUiStore } from "@/stores/uiStore";
 
 const fps = useFps();
+const ui = useUiStore();
 </script>
 <template>
   <div
@@ -17,7 +19,6 @@ const fps = useFps();
       <span class="3xl:inline 4xl:hidden hidden">3xl</span>
       <span class="4xl:inline hidden">4xl+</span>
     </p>
-
-    <p class="w-16"><span class="">FPS:</span> {{ fps }}</p>
+    <p v-if="ui.showFps" class="w-16 p-2"><span class="">FPS:</span> {{ fps }}</p>
   </div>
 </template>
