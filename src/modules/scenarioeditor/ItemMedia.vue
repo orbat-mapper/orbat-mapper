@@ -13,9 +13,14 @@ const props = defineProps<{ media: Media }>();
       :alt="media.caption"
     />
     <p
-      class="prose prose-sm bg-opacity-75 bg-background absolute right-0 bottom-0 left-0 hidden p-2 text-sm group-hover:block"
+      class="bg-background/75 text-foreground absolute right-0 bottom-0 left-0 hidden px-2 py-1 text-xs group-hover:block"
     >
-      <a v-if="media.creditsUrl" :href="media.creditsUrl" target="_blank">
+      <a
+        v-if="media.creditsUrl"
+        :href="media.creditsUrl"
+        target="_blank"
+        class="hover:underline"
+      >
         {{ media.credits }} </a
       ><span v-else>{{ media.credits }}</span>
     </p>
