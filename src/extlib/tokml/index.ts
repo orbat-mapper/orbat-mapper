@@ -21,7 +21,15 @@ type Literal = typeof BR;
  * kmlWithFolders method: a tree of folders and features,
  * starting with a root element.
  */
-export function foldersToKML(root: Root, styles: StyleSettings[] = []): string {
+export type KMLOptions = {
+  listStyle?: "radioFolder" | "check" | "checkHideChildren" | "checkOffOnly";
+};
+
+export function foldersToKML(
+  root: Root,
+  styles: StyleSettings[] = [],
+  options: KMLOptions = {},
+): string {
   return toXml(
     u("root", [
       x(
@@ -30,7 +38,9 @@ export function foldersToKML(root: Root, styles: StyleSettings[] = []): string {
         x(
           "Document",
           styles.flatMap((style) => convertStyle(style)),
+          options.listStyle ? convertListStyle(options.listStyle) : [],
           root.children.flatMap((child) => convertChild(child)),
+          options.listStyle ? x("styleUrl", [u("text", `#${options.listStyle}`)]) : [],
         ),
       ),
     ]),
@@ -70,6 +80,15 @@ function convertStyle({
       x("LabelStyle", [
         labelScale !== 1 ? x("scale", [u("text", `${labelScale}`)]) : undefined,
       ]), // Add this line for small labels
+    ]),
+  ];
+}
+
+function convertListStyle(listStyle: string) {
+  return [
+    BR,
+    x("Style", { id: listStyle }, [
+      x("ListStyle", [x("listItemType", [u("text", listStyle)])]),
     ]),
   ];
 }

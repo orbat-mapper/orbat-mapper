@@ -155,11 +155,19 @@ function toggleAllEvents() {
         v-model="form.exportEventId"
       />
       <div v-else-if="form.timeMode === 'multiple'" class="mt-4 space-y-2">
-        <Button type="button" variant="outline" size="sm" @click="toggleAllEvents()"
-          >Toggle all</Button
-        >
+        <div class="flex items-center gap-4">
+          <Button type="button" variant="outline" size="sm" @click="toggleAllEvents()"
+            >Toggle all</Button
+          >
+          <InputCheckbox
+            label="Use radio folder"
+            v-model="form.useRadioFolder"
+            description="Only one event visible at a time"
+          />
+        </div>
         <InputCheckbox
           v-for="e in events"
+          :key="e.value"
           :label="e.label"
           :value="e.value"
           v-model="form.exportEventIds"

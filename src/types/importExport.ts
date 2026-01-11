@@ -80,6 +80,7 @@ export interface KmlKmzExportSettings {
   timeMode: TimeMode;
   exportEventId?: EntityId;
   exportEventIds: EntityId[];
+  useRadioFolder: boolean;
 }
 
 export interface ExportSettings
