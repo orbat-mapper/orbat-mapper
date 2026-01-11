@@ -31,8 +31,8 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
       class="grid place-content-center text-current transition-none"
     >
       <slot v-bind="slotProps">
-        <Check v-if="slotProps.modelValue === true" class="size-3.5" />
-        <Minus v-else-if="slotProps.modelValue === 'indeterminate'" class="size-3.5" />
+        <Minus v-if="slotProps.modelValue === 'indeterminate'" class="size-3.5" />
+        <Check v-else class="size-3.5" />
       </slot>
     </CheckboxIndicator>
   </CheckboxRoot>

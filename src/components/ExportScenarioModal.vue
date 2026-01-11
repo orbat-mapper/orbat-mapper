@@ -76,6 +76,7 @@ const form = useLocalStorage(
     timeMode: "current",
     exportEventId: "",
     exportEventIds: [],
+    useRadioFolder: true,
   } as Form,
   { writeDefaults: true },
 );
