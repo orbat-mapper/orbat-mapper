@@ -103,6 +103,9 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           <DropdownMenuItem @select="emit('action', 'shareAsUrl')">
             Share as URL
           </DropdownMenuItem>
+          <DropdownMenuItem @select="emit('action', 'share')">
+            Share scenario
+          </DropdownMenuItem>
 
           <DropdownMenuItem @select="emit('action', 'export')">
             Export scenario data...

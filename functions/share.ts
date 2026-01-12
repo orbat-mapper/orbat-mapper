@@ -1,13 +1,7 @@
-import {
-  KVNamespace,
-  R2Bucket,
-  PagesFunction,
-  Headers,
-  Response,
-} from "@cloudflare/workers-types";
+import { KVNamespace, R2Bucket, PagesFunction } from "@cloudflare/workers-types";
 
 interface Env {
-  ORBAT_BUCKET: R2Bucket;
+  ORBAT_SCENARIO_BUCKET: R2Bucket;
   LIMITER_KV: KVNamespace;
   UPLOAD_SECRET: string;
 }
@@ -19,7 +13,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const ip = request.headers.get("cf-connecting-ip") || "unknown";
 
   const corsHeaders = {
-    "Access-Control-Allow-Origin": "https://orbat-mapper.app",
+    "Access-Control-Allow-Origin": "https://feature-scenario-sharing.orbat-mapper.app",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, X-ORBAT-SECRET",
   };
@@ -31,7 +25,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   // 2. GET: Load Scenario
   if (request.method === "GET" && id) {
-    const object = await env.ORBAT_BUCKET.get(id);
+    const object = await env.ORBAT_SCENARIO_BUCKET.get(id);
 
     if (!object) {
       return new Response(JSON.stringify({ error: "Map Not Found" }), {
@@ -54,7 +48,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const secret = request.headers.get("X-ORBAT-SECRET");
 
     // Security Verification: Origin & Shared Secret
-    if (origin !== "https://orbat-mapper.app") {
+    if (origin !== "https://feature-scenario-sharing.orbat-mapper.app") {
       return new Response("Forbidden: Invalid Origin", { status: 403 });
     }
     if (secret !== env.UPLOAD_SECRET) {
@@ -66,7 +60,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const usageStr = await env.LIMITER_KV.get(ratelimitKey);
     const usage = parseInt(usageStr || "0");
 
-    if (usage >= 20) {
+    if (usage >= 10) {
       return new Response(JSON.stringify({ error: "Hourly upload limit reached." }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -93,7 +87,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       const uniqueId = crypto.randomUUID();
 
       // Store in R2
-      await env.ORBAT_BUCKET.put(uniqueId, bodyString, {
+      await env.ORBAT_SCENARIO_BUCKET.put(uniqueId, bodyString, {
         httpMetadata: { contentType: "application/json" },
       });
 
