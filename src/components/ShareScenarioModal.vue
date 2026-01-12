@@ -2,12 +2,11 @@
 import { useClipboard, useVModel } from "@vueuse/core";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Button } from "@/components/ui/button";
-import { inject, onMounted, ref } from "vue";
+import { inject, ref } from "vue";
 import { activeScenarioKey } from "@/components/injects";
 import InputGroup from "@/components/InputGroup.vue";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ClipboardCopyIcon, TriangleAlertIcon } from "lucide-vue-next";
-import DocLink from "@/components/DocLink.vue";
 
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue"]);
