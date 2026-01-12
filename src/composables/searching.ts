@@ -210,6 +210,7 @@ const actionItems: ActionItem[] = [
   { action: "increaseSpeed", label: "Speed up playback", icon: "increaseSpeed" },
   { action: "decreaseSpeed", label: "slow down playback", icon: "decreaseSpeed" },
   { action: "shareAsUrl", label: "Share scenario as URL", icon: "share" },
+  { action: "share", label: "Share scenario online", icon: "share" },
 ];
 
 export function useActionSearch() {
