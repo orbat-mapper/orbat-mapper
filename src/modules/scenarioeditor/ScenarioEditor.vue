@@ -82,6 +82,10 @@ const ShareScenarioUrlModal = defineAsyncComponent(
   () => import("@/components/ShareScenarioUrlModal.vue"),
 );
 
+const ShareScenarioModal = defineAsyncComponent(
+  () => import("@/components/ShareScenarioModal.vue"),
+);
+
 const dropZoneRef = ref<HTMLDivElement>();
 const activeParentId = ref<EntityId | undefined | null>(null);
 const activeLayerId = ref<FeatureId | undefined | null>(null);
@@ -133,6 +137,7 @@ const shortcutsModalVisible = ref(false);
 const showExportModal = ref(false);
 const showImportModal = ref(false);
 const showShareUrlModal = ref(false);
+const showShareModal = ref(false);
 
 useTimeFormatterProvider({ activeScenario: props.activeScenario });
 
@@ -230,6 +235,8 @@ async function onScenarioAction(action: ScenarioActions) {
     if (copied.value) send({ message: "Scenario copied to clipboard" });
   } else if (action === "shareAsUrl") {
     showShareUrlModal.value = true;
+  } else if (action === "share") {
+    showShareModal.value = true;
   } else if (action === "export") {
     showExportModal.value = true;
   } else if (action === "import") {
@@ -475,6 +482,7 @@ if (state.layers.length > 0) {
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
     <ImportModal v-if="showImportModal" v-model="showImportModal" />
     <ShareScenarioUrlModal v-if="showShareUrlModal" v-model="showShareUrlModal" />
+    <ShareScenarioModal v-if="showShareModal" v-model="showShareModal" />
     <div
       v-if="isOverDropZone"
       class="bg-background/80 fixed inset-0 z-50 flex items-center justify-center"

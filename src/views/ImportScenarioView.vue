@@ -37,25 +37,39 @@ const hasConflict = ref(false);
 
 onMounted(async () => {
   const dataParam = route.query.data as string;
-  if (!dataParam) {
+  const idParam = route.query.id as string;
+
+  if (!dataParam && !idParam) {
     error.value = "No scenario data provided in the URL.";
     isLoading.value = false;
     return;
   }
 
   try {
-    scenarioData.value = await loadScenarioFromUrlParam(dataParam);
+    if (idParam) {
+      const response = await fetch(`/share?id=${idParam}`);
+      if (!response.ok) {
+        if (response.status === 404) throw new Error("Scenario not found.");
+        throw new Error("Failed to load scenario.");
+      }
+      scenarioData.value = await response.json();
+    } else {
+      scenarioData.value = await loadScenarioFromUrlParam(dataParam);
+    }
 
     // Remove the data from the URL so it's not stored in history
     // await router.replace({ query: {} });
 
     // Check if scenario with same ID exists
-    const { getScenarioInfo } = await useIndexedDb();
-    const existingInfo = await getScenarioInfo(scenarioData.value.id ?? "");
-    hasConflict.value = !!existingInfo;
-  } catch (e) {
-    console.error("Failed to decode scenario from URL", e);
-    error.value = "Failed to decode the scenario. The URL may be corrupted or invalid.";
+    if (scenarioData.value && scenarioData.value.id) {
+      const { getScenarioInfo } = await useIndexedDb();
+      const existingInfo = await getScenarioInfo(scenarioData.value.id);
+      hasConflict.value = !!existingInfo;
+    }
+  } catch (e: any) {
+    console.error("Failed to load scenario", e);
+    error.value =
+      e.message || "Failed to decode the scenario. The URL may be corrupted or invalid.";
   } finally {
     isLoading.value = false;
   }
@@ -171,7 +185,11 @@ async function handleCreateCopy() {
           <!-- Loading State -->
           <div v-if="isLoading" class="flex flex-col items-center gap-4 py-8">
             <LoaderCircleIcon class="text-muted-foreground size-8 animate-spin" />
-            <p class="text-muted-foreground">Decoding scenario data...</p>
+            <p class="text-muted-foreground">
+              {{
+                route.query.id ? "Downloading scenario..." : "Decoding scenario data..."
+              }}
+            </p>
           </div>
 
           <!-- Error State -->

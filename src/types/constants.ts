@@ -73,7 +73,8 @@ export type ScenarioActions =
   | "browseSymbols"
   | "undo"
   | "redo"
-  | "shareAsUrl";
+  | "shareAsUrl"
+  | "share";
 
 export type ScenarioFeatureActions =
   | "delete"
