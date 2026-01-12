@@ -116,7 +116,8 @@ function onCopy() {
         <Alert>
           <TriangleAlertIcon class="size-4" />
           <AlertDescription>
-            Anyone with the link can view this scenario.
+            Clicking will upload your scenario to the cloud. Anyone with the link can view
+            this scenario.
           </AlertDescription>
         </Alert>
         <p>
