@@ -30,7 +30,9 @@ async function generateLink() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-ORBAT-SECRET": import.meta.env.VITE_ORBAT_SECRET || "",
+        "X-ORBAT-SECRET":
+          import.meta.env.VITE_ORBAT_SECRET ||
+          "I9ZJ4z4FDtLFXpvHKIT2TALl7k9BUDRYr5Jj3IBF7A7Jp8KJDOR",
       },
       body: JSON.stringify(scenarioData),
     });
