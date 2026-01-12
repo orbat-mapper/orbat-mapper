@@ -113,6 +113,12 @@ function onCopy() {
       </div>
 
       <div v-else class="space-y-4">
+        <Alert>
+          <TriangleAlertIcon class="size-4" />
+          <AlertDescription>
+            Anyone with the link can view this scenario.
+          </AlertDescription>
+        </Alert>
         <p>
           Click the button below to upload the scenario and generate a shareable link.
         </p>
