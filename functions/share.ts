@@ -13,7 +13,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const ip = request.headers.get("cf-connecting-ip") || "unknown";
 
   const corsHeaders = {
-    "Access-Control-Allow-Origin": "https://feature-scenario-sharing.orbat-mapper.app",
+    "Access-Control-Allow-Origin":
+      "https://feature-scenario-sharing.orbat-mapper.pages.dev",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, X-ORBAT-SECRET",
   };
@@ -48,7 +49,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const secret = request.headers.get("X-ORBAT-SECRET");
 
     // Security Verification: Origin & Shared Secret
-    if (origin !== "https://feature-scenario-sharing.orbat-mapper.app") {
+    if (origin !== "https://feature-scenario-sharing.orbat-mapper.pages.dev") {
       return new Response("Forbidden: Invalid Origin", { status: 403 });
     }
     if (secret !== env.UPLOAD_SECRET) {
