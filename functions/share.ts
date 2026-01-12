@@ -13,8 +13,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const ip = request.headers.get("cf-connecting-ip") || "unknown";
 
   const corsHeaders = {
-    "Access-Control-Allow-Origin":
-      "https://feature-scenario-sharing.orbat-mapper.pages.dev",
+    "Access-Control-Allow-Origin": "https://orbat-mapper.app",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, X-ORBAT-SECRET",
   };
@@ -49,7 +48,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const secret = request.headers.get("X-ORBAT-SECRET");
 
     // Security Verification: Origin & Shared Secret
-    if (origin !== "https://feature-scenario-sharing.orbat-mapper.pages.dev") {
+    if (origin !== "https://orbat-mapper.app") {
       return new Response("Forbidden: Invalid Origin", { status: 403 });
     }
     if (secret !== env.UPLOAD_SECRET) {
@@ -61,7 +60,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const usageStr = await env.LIMITER_KV.get(ratelimitKey);
     const usage = parseInt(usageStr || "0");
 
-    if (usage >= 10) {
+    if (usage >= 20) {
       return new Response(JSON.stringify({ error: "Hourly upload limit reached." }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -6,7 +6,7 @@ import { inject, ref } from "vue";
 import { activeScenarioKey } from "@/components/injects";
 import InputGroup from "@/components/InputGroup.vue";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ClipboardCopyIcon, TriangleAlertIcon } from "lucide-vue-next";
+import { ClipboardCopyIcon, LoaderCircleIcon, TriangleAlertIcon } from "lucide-vue-next";
 
 const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
 const emit = defineEmits(["update:modelValue"]);
@@ -69,7 +69,11 @@ function onCopy() {
       days.
     </template>
     <div class="space-y-4">
-      <div v-if="isLoading" class="text-muted-foreground flex justify-center py-8">
+      <div
+        v-if="isLoading"
+        class="text-muted-foreground flex items-center justify-center gap-2 py-8"
+      >
+        <LoaderCircleIcon class="animate-spin" />
         Generating Link...
       </div>
 
@@ -118,8 +122,8 @@ function onCopy() {
         <Alert>
           <TriangleAlertIcon class="size-4" />
           <AlertDescription>
-            Clicking will upload your scenario to the cloud. Anyone with the link can view
-            this scenario.
+            WARNING. Clicking the "upload" button will upload your scenario to the cloud.
+            Anyone with the link can view the scenario.
           </AlertDescription>
         </Alert>
         <p>
@@ -127,7 +131,7 @@ function onCopy() {
         </p>
         <div class="flex justify-end gap-2">
           <Button variant="secondary" @click="open = false">Cancel</Button>
-          <Button @click="generateLink">Generate Link</Button>
+          <Button @click="generateLink">Upload and generate Link</Button>
         </div>
       </div>
     </div>
