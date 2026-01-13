@@ -6,14 +6,32 @@ interface Env {
   UPLOAD_SECRET: string;
 }
 
+/**
+ * Checks if the given origin is allowed for CORS and uploads.
+ * Allowed origins:
+ * - https://orbat-mapper.app (production)
+ * - https://*.orbat-mapper.pages.dev (Cloudflare Pages previews)
+ */
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return false;
+  if (origin === "https://orbat-mapper.app") return true;
+  // Match *.orbat-mapper.pages.dev subdomains
+  const pagesDevPattern = /^https:\/\/[a-z0-9-]+\.orbat-mapper\.pages\.dev$/;
+  return pagesDevPattern.test(origin);
+}
+
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
   const ip = request.headers.get("cf-connecting-ip") || "unknown";
+  const origin = request.headers.get("Origin");
+
+  // Determine allowed origin for CORS headers
+  const allowedOrigin = isAllowedOrigin(origin) ? origin : "https://orbat-mapper.app";
 
   const corsHeaders = {
-    "Access-Control-Allow-Origin": "https://orbat-mapper.app",
+    "Access-Control-Allow-Origin": allowedOrigin!,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, X-ORBAT-SECRET",
   };
@@ -44,11 +62,10 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   // 3. POST: Secure Upload & Rate Limiting
   if (request.method === "POST") {
-    const origin = request.headers.get("Origin");
     const secret = request.headers.get("X-ORBAT-SECRET");
 
     // Security Verification: Origin & Shared Secret
-    if (origin !== "https://orbat-mapper.app") {
+    if (!isAllowedOrigin(origin)) {
       return new Response("Forbidden: Invalid Origin", { status: 403 });
     }
     if (secret !== env.UPLOAD_SECRET) {
