@@ -22,6 +22,7 @@ import {
   LoaderCircleIcon,
   MoonStarIcon,
   SunIcon,
+  Download as DownloadIcon,
 } from "lucide-vue-next";
 import { UseDark } from "@vueuse/components";
 import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
@@ -34,6 +35,7 @@ const isLoading = ref(true);
 const error = ref<string | null>(null);
 const scenarioData = ref<Scenario | null>(null);
 const hasConflict = ref(false);
+const isWaitingForDownload = ref(false);
 
 onMounted(async () => {
   const dataParam = route.query.data as string;
@@ -44,6 +46,16 @@ onMounted(async () => {
     isLoading.value = false;
     return;
   }
+
+  isWaitingForDownload.value = true;
+  isLoading.value = false;
+});
+
+async function handleDownload() {
+  isWaitingForDownload.value = false;
+  isLoading.value = true;
+  const dataParam = route.query.data as string;
+  const idParam = route.query.id as string;
 
   try {
     if (idParam) {
@@ -73,7 +85,7 @@ onMounted(async () => {
   } finally {
     isLoading.value = false;
   }
-});
+}
 
 const scenarioName = computed(() => scenarioData.value?.name ?? "Unnamed Scenario");
 const scenarioDescription = computed(() => scenarioData.value?.description ?? "");
@@ -182,8 +194,25 @@ async function handleCreateCopy() {
         </CardHeader>
 
         <CardContent class="space-y-6">
+          <!-- Waiting for Download State -->
+          <div
+            v-if="isWaitingForDownload"
+            class="flex flex-col items-center gap-4 py-8 text-center"
+          >
+            <div class="bg-muted rounded-full p-4">
+              <DownloadIcon class="text-primary size-8" />
+            </div>
+            <div class="space-y-2">
+              <h3 class="text-lg font-semibold">Ready to Import</h3>
+              <p class="text-muted-foreground text-sm">
+                Click the button below to download and preview the shared scenario.
+              </p>
+            </div>
+            <Button @click="handleDownload">Download Scenario</Button>
+          </div>
+
           <!-- Loading State -->
-          <div v-if="isLoading" class="flex flex-col items-center gap-4 py-8">
+          <div v-else-if="isLoading" class="flex flex-col items-center gap-4 py-8">
             <LoaderCircleIcon class="text-muted-foreground size-8 animate-spin" />
             <p class="text-muted-foreground">
               {{
