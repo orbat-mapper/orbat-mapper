@@ -63,7 +63,7 @@ function onCopy() {
 <template>
   <NewSimpleModal v-model="open" dialog-title="Share scenario" class="sm:max-w-xl">
     <template #description
-      >Share this scenario by copying the link below. The link will remain valid for 7
+      >Share this scenario by copying the link below. The link will remain valid for 30
       days.
     </template>
     <div class="space-y-4">
@@ -129,7 +129,7 @@ function onCopy() {
         </p>
         <div class="flex justify-end gap-2">
           <Button variant="secondary" @click="open = false">Cancel</Button>
-          <Button @click="generateLink">Upload and generate Link</Button>
+          <Button @click="generateLink">Upload and generate link</Button>
         </div>
       </div>
     </div>
