@@ -7,10 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-    
+
 January 2026
 
 - Added `radioFolder` list style option for KML/KMZ export in "multiple events" time mode.
+- Added "Share scenario online" feature.
+- Added "Share scenario as URL" feature.
+- Added a map base layer switcher to the map context menu.
+- Improved tab navigation with scrollable tabs.
 
 December 2025
 
