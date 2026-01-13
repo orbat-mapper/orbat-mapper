@@ -1,29 +1,31 @@
-<script lang="ts">
-import { defineComponent } from "vue";
-import { useVModel } from "@vueuse/core";
-import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
+<script setup lang="ts">
 import { useFocusOnMount } from "./helpers";
+import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 
-export default defineComponent({
+defineOptions({
   name: "SearchModalInput",
-  props: {
-    modelValue: String,
-    placeholder: { type: String, default: "Search for anything" },
-    inputId: { type: String, default: "searchField" },
-    focus: { type: Boolean, default: false },
-  },
-  emits: ["update:modelValue"],
-  components: { MagnifyingGlassIcon },
   inheritAttrs: false,
-  setup(props) {
-    const inputValue = useVModel(props, "modelValue");
-    const updateValue = (event: Event) => {
-      inputValue.value = (<HTMLInputElement>event.target).value;
-    };
-    useFocusOnMount(props.inputId);
-    return { inputValue, updateValue };
-  },
 });
+
+const props = withDefaults(
+  defineProps<{
+    placeholder?: string;
+    inputId?: string;
+    focus?: boolean;
+  }>(),
+  {
+    placeholder: "Search for anything",
+    inputId: "searchField",
+    focus: false,
+  },
+);
+
+const inputValue = defineModel<string>();
+
+const updateValue = (event: Event) => {
+  inputValue.value = (<HTMLInputElement>event.target).value;
+};
+useFocusOnMount(props.inputId);
 </script>
 
 <template>

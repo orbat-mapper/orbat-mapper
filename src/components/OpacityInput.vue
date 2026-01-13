@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { IconOpacity as OpacityIcon } from "@iconify-prerendered/vue-mdi";
-import { useToggle, useVModel } from "@vueuse/core";
+import { useToggle } from "@vueuse/core";
 
 interface Props {
-  modelValue?: number;
   visible?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: 1,
   visible: false,
 });
 
-const opacity = useVModel(props, "modelValue");
+const opacity = defineModel<number>({ default: 1 });
 const [showRange, toggleRange] = useToggle(props.visible);
 const opacityAsPercent = computed(() => (opacity.value * 100).toFixed(0));
 </script>

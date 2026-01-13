@@ -7,19 +7,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { SelectItem } from "@/components/types";
-import { useVModel } from "@vueuse/core";
 import { computed } from "vue";
 
 interface Props {
   options: SelectItem[];
-  modelValue: (string | number)[];
   label?: string;
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["update:modelValue"]);
 
-const selectedItems = useVModel(props, "modelValue", emit);
+const selectedItems = defineModel<(string | number)[]>({ required: true });
 
 // Create a reactive checked state for each option that syncs with selectedItems array
 function createCheckedModel(value: string | number) {

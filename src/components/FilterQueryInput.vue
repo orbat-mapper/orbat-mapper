@@ -11,26 +11,18 @@ import {
   IconFilterVariant,
   IconFilterVariantPlus,
 } from "@iconify-prerendered/vue-mdi";
-import { useVModel } from "@vueuse/core";
 import { Toggle } from "reka-ui";
 
 interface Props {
   id?: string;
   label?: string;
   description?: string;
-  modelValue?: string | number;
-  locationFilter?: boolean;
 }
 
 const props = defineProps<Props>();
 
-const emit = defineEmits(["update:modelValue", "update:locationFilter"]);
-
-const localValue = computed({
-  get: () => props.modelValue,
-  set: (value) => emit("update:modelValue", value),
-});
-const hasLocationFilter = useVModel(props, "locationFilter");
+const localValue = defineModel<string | number>();
+const hasLocationFilter = defineModel<boolean>("locationFilter");
 const hasFilter = computed(() => {
   return !!(hasLocationFilter.value || localValue.value);
 });

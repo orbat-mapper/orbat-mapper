@@ -7,7 +7,7 @@ import type { ExportFormat, ExportSettings } from "@/types/importExport.ts";
 import { useScenarioExport } from "@/importexport/export/scenarioExport.ts";
 import { useNotifications } from "@/composables/notifications";
 import NProgress from "nprogress";
-import { useLocalStorage, useVModel } from "@vueuse/core";
+import { useLocalStorage } from "@vueuse/core";
 import ExportSettingsXlsx from "@/components/ExportSettingsXlsx.vue";
 import ExportSettingsSpatialIllusions from "@/components/ExportSettingsSpatialIllusions.vue";
 import ExportSettingsGeoJson from "@/components/ExportSettingsGeoJson.vue";
@@ -20,8 +20,8 @@ import { useExportStore } from "@/stores/importExportStore";
 import { Button } from "@/components/ui/button";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 
-const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
-const emit = defineEmits(["update:modelValue", "cancel"]);
+const open = defineModel<boolean>({ default: false });
+const emit = defineEmits(["cancel"]);
 const {
   downloadAsGeoJSON,
   downloadAsKML,
@@ -31,7 +31,6 @@ const {
   downloadAsSpatialIllusions,
   downloadAsOrbatMapper,
 } = useScenarioExport();
-const open = useVModel(props, "modelValue", emit);
 const store = useExportStore();
 const formatItems: SelectItem<ExportFormat>[] = [
   { label: "ORBAT Mapper", value: "orbatmapper" },

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useClipboard, useVModel } from "@vueuse/core";
+import { useClipboard } from "@vueuse/core";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Button } from "@/components/ui/button";
 import { useScenarioShare } from "@/composables/scenarioShare";
@@ -10,9 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ClipboardCopyIcon, TriangleAlertIcon } from "lucide-vue-next";
 import DocLink from "@/components/DocLink.vue";
 
-const props = withDefaults(defineProps<{ modelValue: boolean }>(), { modelValue: false });
-const emit = defineEmits(["update:modelValue"]);
-const open = useVModel(props, "modelValue", emit);
+const open = defineModel<boolean>({ default: false });
 
 const activeScenario = inject(activeScenarioKey)!;
 const { shareScenario } = useScenarioShare();

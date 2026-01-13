@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { ExportFormat, UnitGeneratorSettings } from "@/types/importExport.ts";
-import { useVModel } from "@vueuse/core";
-import { ref, type Ref } from "vue";
+import { ref } from "vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import type { SelectItem } from "@/components/types";
 import type { EntityId } from "@/types/base";
@@ -10,13 +9,11 @@ import { activeScenarioKey } from "@/components/injects";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 
 interface Props {
-  modelValue: UnitGeneratorSettings;
   format: ExportFormat;
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["update:modelValue"]);
-const settings = useVModel(props, "modelValue", emit) as Ref<UnitGeneratorSettings>;
+const settings = defineModel<UnitGeneratorSettings>({ required: true });
 const {
   unitActions,
   store: { state },

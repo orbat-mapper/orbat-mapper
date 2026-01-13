@@ -4,25 +4,20 @@ import { RadioGroupRoot, RadioGroupItem } from "reka-ui";
 import { CheckCircleIcon } from "@heroicons/vue/20/solid";
 import type { SymbolItem, SymbolValue } from "@/types/constants";
 import MilSymbol from "@/components/MilSymbol.vue";
-import { useToggle, useVModel } from "@vueuse/core";
+import { useToggle } from "@vueuse/core";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 interface Props {
-  modelValue: string;
   compact?: boolean;
-  fillColor?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: "3",
   compact: false,
-  fillColor: "",
 });
-const emit = defineEmits(["update:modelValue", "update:fillColor"]);
 
-const data = useVModel(props, "modelValue", emit);
+const data = defineModel<string>({ default: "3" });
 const fillColorValue = defineModel<string | null>("fillColor");
 
 const sidItems = [

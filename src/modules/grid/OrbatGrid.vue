@@ -9,7 +9,7 @@ import type {
 import { computed, onMounted, ref } from "vue";
 import { groupBy, nanoid } from "@/utils";
 import OrbatGridHeader from "@/modules/grid/OrbatGridHeader.vue";
-import { useVirtualList, useVModel } from "@vueuse/core";
+import { useVirtualList } from "@vueuse/core";
 import DotsMenu from "@/components/DotsMenu.vue";
 import OrbatGridGroupRow from "@/modules/grid/OrbatGridGroupRow.vue";
 import { getValue } from "./helpers";
@@ -20,20 +20,17 @@ interface Props {
   data: any[];
   rowHeight?: number;
   select?: boolean;
-  selected?: any[];
   selectAll?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   rowHeight: 48,
   select: false,
-  selected: () => [],
   selectAll: false,
 });
 
-const emit = defineEmits(["action", "update:selected"]);
-
-const selectedRows = useVModel(props, "selected", emit);
+const selectedRows = defineModel<any[]>("selected", { default: () => [] });
+const emit = defineEmits(["action"]);
 const sortDirection = ref<SortDirection>("asc");
 const sortField = ref<string | null>(null);
 const isDragging = ref(false);

@@ -11,13 +11,7 @@ import {
 
 import PrimaryButton from "./PrimaryButton.vue";
 import SymbolCodeSelect from "./SymbolCodeSelect.vue";
-import {
-  breakpointsTailwind,
-  useBreakpoints,
-  useDebounce,
-  useVModel,
-  whenever,
-} from "@vueuse/core";
+import { breakpointsTailwind, useBreakpoints, useDebounce, whenever } from "@vueuse/core";
 import SymbolCodeMultilineSelect from "./SymbolCodeMultilineSelect.vue";
 import { useSymbolItems } from "@/composables/symbolData";
 import NProgress from "nprogress";
@@ -56,7 +50,6 @@ const LegacyConverter = defineAsyncComponent(
 );
 
 interface Props {
-  isVisible?: boolean;
   initialSidc?: string;
   dialogTitle?: string;
   hideModifiers?: boolean;
@@ -69,12 +62,12 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  isVisible: true,
   dialogTitle: "Symbol picker",
   hideModifiers: false,
   hideSymbolColor: false,
 });
-const emit = defineEmits(["update:isVisible", "update:sidc", "cancel"]);
+const open = defineModel<boolean>("isVisible", { default: true });
+const emit = defineEmits(["update:sidc", "cancel"]);
 const scn = injectStrict(activeScenarioKey);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
@@ -91,7 +84,6 @@ const customSymbol = computed(() => {
 });
 
 const searchInputRef = ref();
-const open = useVModel(props, "isVisible");
 const searchQuery = ref("");
 const debouncedQuery = useDebounce(searchQuery, 100);
 const currentTab = ref((props.initialTab ?? 0).toString());

@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import DragHandle from "@/components/DragHandle.vue";
-import { useVModel } from "@vueuse/core";
 
 interface Props {
-  width: number;
   left?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), { left: false });
-const emit = defineEmits(["resizeend", "update:width"]);
+const emit = defineEmits(["resizeend"]);
 
 const panelRef = ref();
-const initialWidth = ref(props.width);
-const panelWidth = useVModel(props, "width", emit);
+const panelWidth = defineModel<number>("width", { required: true });
+const initialWidth = ref(panelWidth.value);
 </script>
 <template>
   <aside

@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { useTextareaAutosize, useVModel } from "@vueuse/core";
+import { useTextareaAutosize } from "@vueuse/core";
 import { ref } from "vue";
 
 const props = withDefaults(
   defineProps<{
-    modelValue: string;
     textClass?: string;
   }>(),
   { textClass: "text-base font-semibold leading-6 text-foreground dark:text-foreground" },
 );
 
-const emit = defineEmits(["update:modelValue", "update-value"]);
-
-const value = useVModel(props, "modelValue", emit);
+const value = defineModel<string>({ required: true });
+const emit = defineEmits(["update-value"]);
 const { textarea, input } = useTextareaAutosize({ input: value });
 
 const spellcheck = ref(false);

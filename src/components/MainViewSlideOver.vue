@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import LayersPanel from "./LayersPanel.vue";
-import { useVModel } from "@vueuse/core";
 import SlideOver from "./SlideOver.vue";
 import ScrollTabs from "@/components/ScrollTabs.vue";
 import TabsContent from "@/components/ui/tabs/TabsContent.vue";
@@ -12,9 +11,7 @@ import { useUiStore } from "@/stores/uiStore";
 import TimeDateSettingsPanel from "@/components/TimeDateSettingsPanel.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore.ts";
 
-const props = defineProps({ modelValue: Boolean });
-
-const open = useVModel(props, "modelValue");
+const open = defineModel<boolean>();
 const settings = useSettingsStore();
 const mapSettings = useMapSettingsStore();
 const symbolSettings = useSymbolSettingsStore();

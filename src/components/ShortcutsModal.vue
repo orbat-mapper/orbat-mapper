@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import SimpleModal from "./SimpleModal.vue";
-import { useVModel } from "@vueuse/core";
 import {
   defaultShortcuts,
   gridEditModeShortcuts,
@@ -14,12 +13,8 @@ import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Kbd } from "@/components/ui/kbd";
 const route = useRoute();
 
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
-});
-const emit = defineEmits(["update:modelValue"]);
+const open = defineModel<boolean>({ default: false });
 
-const open = useVModel(props, "modelValue");
 const shortcuts = computed((): KeyboardCategory[] => {
   if (route.name === OLD_MAP_ROUTE || route.name === MAP_EDIT_MODE_ROUTE)
     return mapEditModeShortcuts;

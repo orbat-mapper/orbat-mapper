@@ -1,74 +1,49 @@
-<script lang="ts">
-import { computed, defineComponent, type PropType, ref } from "vue";
+<script setup lang="ts">
+import { computed, type PropType, ref } from "vue";
 import { CheckIcon, ChevronUpDownIcon as SelectorIcon } from "@heroicons/vue/24/solid";
 import { type SelectItem } from "./types";
-import { useVModel } from "@vueuse/core";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
-export default defineComponent({
-  components: {
-    CheckIcon,
-    SelectorIcon,
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-    Button,
-    Input,
-  },
-  props: {
-    label: String,
-    description: String,
-    modelValue: [String, Number],
-    items: { type: Array as PropType<SelectItem[]> },
-    values: { type: Array as PropType<(string | number)[]> },
-    extraClass: [String, Array, Object, Function, Boolean],
-  },
-  emits: ["update:modelValue"],
-  setup(props, { emit }) {
-    const query = ref("");
-    const open = ref(false);
-    const selectedValue = useVModel(props, "modelValue", emit);
-    const computedValues = computed(() => {
-      if (props.items) return props.items;
-
-      return (props.values || []).map((i) => ({
-        label: i,
-        value: i,
-      }));
-    });
-    const filteredValues = computed(() =>
-      query.value === ""
-        ? computedValues.value
-        : computedValues.value.filter((item) => {
-            return String(item.label).toLowerCase().includes(query.value.toLowerCase());
-          }),
-    );
-
-    const selectedLabel = computed(() => {
-      const found = computedValues.value.find((i) => i.value === selectedValue.value);
-      return found ? found.label : "";
-    });
-
-    const handleSelect = (value: string | number) => {
-      selectedValue.value = value;
-      open.value = false;
-    };
-
-    return {
-      query,
-      selectedValue,
-      filteredValues,
-      computedValues,
-      open,
-      cn,
-      selectedLabel,
-      handleSelect,
-    };
-  },
+const props = defineProps({
+  label: String,
+  description: String,
+  items: { type: Array as PropType<SelectItem[]> },
+  values: { type: Array as PropType<(string | number)[]> },
+  extraClass: [String, Array, Object, Function, Boolean],
 });
+
+const selectedValue = defineModel<string | number>();
+
+const query = ref("");
+const open = ref(false);
+const computedValues = computed(() => {
+  if (props.items) return props.items;
+
+  return (props.values || []).map((i) => ({
+    label: i,
+    value: i,
+  }));
+});
+const filteredValues = computed(() =>
+  query.value === ""
+    ? computedValues.value
+    : computedValues.value.filter((item) => {
+        return String(item.label).toLowerCase().includes(query.value.toLowerCase());
+      }),
+);
+
+const selectedLabel = computed(() => {
+  const found = computedValues.value.find((i) => i.value === selectedValue.value);
+  return found ? found.label : "";
+});
+
+const handleSelect = (value: string | number) => {
+  selectedValue.value = value;
+  open.value = false;
+};
 </script>
 
 <template>

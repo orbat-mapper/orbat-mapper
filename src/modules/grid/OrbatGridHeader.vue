@@ -6,20 +6,18 @@ import type {
   RuntimeColumnProperties,
 } from "@/modules/grid/gridTypes";
 import GridHeaderResizeHandle from "@/modules/grid/GridHeaderResizeHandle.vue";
-import { useVModel } from "@vueuse/core";
 
 interface Props {
   columnDefs: RuntimeColumnProperties[];
   rowHeight?: number;
   select?: boolean;
   checkedState?: CheckedState;
-  columnWidths: ColumnWidths;
 }
 
 const props = withDefaults(defineProps<Props>(), { select: false, checkedState: false });
-const emit = defineEmits(["toggleSelect", "update:columnWidths", "sort", "dragging"]);
+const emit = defineEmits(["toggleSelect", "sort", "dragging"]);
 
-const widths = useVModel(props, "columnWidths", emit);
+const widths = defineModel<ColumnWidths>("columnWidths", { required: true });
 
 function toggleSelectAll(event: Event) {
   const isChecked = (<HTMLInputElement>event.target).checked;

@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { GlobalEvents } from "vue-global-events";
 import SimpleModal from "./SimpleModal.vue";
-import { useDebounce, useVModel } from "@vueuse/core";
+import { useDebounce } from "@vueuse/core";
 import SearchModalInput from "./SearchModalInput.vue";
 import SearchUnitHit from "./SearchUnitHit.vue";
 import ToggleField from "./ToggleField.vue";
@@ -13,13 +13,8 @@ import * as fuzzysort from "fuzzysort";
 import { activeScenarioKey } from "@/components/injects";
 import { type NUnit } from "@/types/internalModels";
 
-const props = defineProps<{ modelValue: boolean }>();
-const emit = defineEmits([
-  "update:modelValue",
-  "select-unit",
-  "select-layer",
-  "select-feature",
-]);
+const open = defineModel<boolean>({ default: false });
+const emit = defineEmits(["select-unit", "select-layer", "select-feature"]);
 
 const {
   unitActions,
@@ -27,7 +22,6 @@ const {
   helpers: { getUnitById },
 } = injectStrict(activeScenarioKey);
 
-const open = useVModel(props, "modelValue");
 const query = ref("");
 const debouncedQuery = useDebounce(query, 200);
 const currentHitIndex = ref(0);

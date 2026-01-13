@@ -9,24 +9,20 @@ import {
 } from "@/components/ui/dialog";
 import { useUiStore } from "@/stores/uiStore";
 import { cn } from "@/lib/utils";
-import { useVModel } from "@vueuse/core";
 
 interface Props {
-  modelValue?: boolean;
   dialogTitle?: string;
   initialFocus?: HTMLElement;
   maxWidth?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: false,
   maxWidth: "sm:max-w-xl",
 });
 
-const emit = defineEmits(["update:modelValue", "cancel"]);
+const open = defineModel<boolean>({ default: false });
+const emit = defineEmits(["cancel"]);
 const uiStore = useUiStore();
-
-const open = useVModel(props, "modelValue", emit);
 
 watch(
   open,

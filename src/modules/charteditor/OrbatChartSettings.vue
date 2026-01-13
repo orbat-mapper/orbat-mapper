@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useVModel } from "@vueuse/core";
 import ScrollTabs from "@/components/ScrollTabs.vue";
 import TabsContent from "@/components/ui/tabs/TabsContent.vue";
 import OrbatChartSettingsUnit from "./OrbatChartSettingsUnit.vue";

@@ -1,22 +1,18 @@
 <script setup lang="ts">
 import { RadioGroupRoot, RadioGroupItem, Label } from "reka-ui";
-import { useVModel } from "@vueuse/core";
 import { computed } from "vue";
 import { defaultColors as colors } from "./colors";
 
 interface Props {
-  modelValue?: string;
   label?: string;
   showNone?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: colors[1].selectedColor,
   showNone: false,
 });
-const emit = defineEmits(["update:modelValue"]);
 
-const selectedColor = useVModel(props, "modelValue", emit);
+const selectedColor = defineModel<string>({ default: colors[1].selectedColor });
 const $colors = computed(() =>
   props.showNone
     ? [

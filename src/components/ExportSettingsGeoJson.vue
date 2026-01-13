@@ -1,18 +1,13 @@
 <script setup lang="ts">
 import type { ExportFormat, GeoJsonSettings } from "@/types/importExport.ts";
 import InputCheckbox from "@/components/InputCheckbox.vue";
-import { useVModel } from "@vueuse/core";
-import { type Ref } from "vue";
 
 interface Props {
-  modelValue: GeoJsonSettings;
   format: ExportFormat;
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["update:modelValue"]);
-// Adding a typecast here because PyCharm does not infer the correct type automatically
-const settings = useVModel(props, "modelValue", emit) as Ref<GeoJsonSettings>;
+const settings = defineModel<GeoJsonSettings>({ required: true });
 </script>
 
 <template>
