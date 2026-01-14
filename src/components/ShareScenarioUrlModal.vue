@@ -40,7 +40,7 @@ function onCopy() {
   <NewSimpleModal v-model="open" dialog-title="Share scenario as URL" class="sm:max-w-xl">
     <template #description
       >Share this scenario by copying the URL below. The URL contains all scenario data.
-      <DocLink href="https://docs.orbat-mapper.app/guide/share-scenario"
+      <DocLink href="https://docs.orbat-mapper.app/guide/sharing-scenarios"
         >Learn more.</DocLink
       ></template
     >
