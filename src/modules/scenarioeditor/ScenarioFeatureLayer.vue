@@ -97,6 +97,10 @@ const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ];
 
+function toggleFeatureVisibility(feature: NScenarioFeature) {
+  geo.updateFeature(feature.id, { meta: { isHidden: !feature.meta.isHidden } });
+}
+
 function toggleFeatureLayerVisibility(layer: NScenarioLayer) {
   geo.updateLayer(layer.id, { isHidden: !layer.isHidden });
 }
@@ -266,6 +270,7 @@ onUnmounted(() => {
         @feature-click="emit('feature-click', feature, layer, $event)"
         @feature-double-click="emit('feature-double-click', feature, layer, $event)"
         @feature-action="emit('feature-action', feature.id, $event)"
+        @toggle-visibility="toggleFeatureVisibility(feature)"
       />
     </ul>
   </ChevronPanel>

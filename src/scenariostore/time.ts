@@ -189,7 +189,10 @@ export function useScenarioTime(store: NewScenarioStore) {
         const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
         const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
         if (!feature) return;
-        feature._hidden = timestamp <= visibleFromT || timestamp >= visibleUntilT;
+        feature._hidden =
+          timestamp <= visibleFromT ||
+          timestamp >= visibleUntilT ||
+          !!feature.meta.isHidden;
         if (feature.state?.length) {
           let currentState = createInitialFeatureState(feature);
           for (const s of feature.state) {

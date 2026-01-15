@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import { IconClockOutline, IconDrag } from "@iconify-prerendered/vue-mdi";
+import {
+  IconClockOutline,
+  IconDrag,
+  IconEye,
+  IconEyeOff,
+} from "@iconify-prerendered/vue-mdi";
 import DotsMenu from "@/components/DotsMenu.vue";
 import {
   featureMenuItems,
@@ -38,12 +43,13 @@ const emit = defineEmits<{
   (e: "feature-click", data: MouseEvent): void;
   (e: "feature-double-click", data: MouseEvent): void;
   (e: "feature-action", data: ScenarioFeatureActions): void;
+  (e: "toggle-visibility"): void;
 }>();
 
 const elRef = ref<HTMLElement | null>(null);
 const handleRef = ref<HTMLElement | null>(null);
 const itemState = ref<ItemState>(idle);
-const hidden = computed(() => props.layer.isHidden);
+const hidden = computed(() => props.layer.isHidden || props.feature._hidden);
 
 let dndCleanup: CleanupFn = () => {};
 
@@ -126,6 +132,16 @@ onUnmounted(() => {
       </span>
     </button>
     <div class="relative flex items-center">
+      <button
+        type="button"
+        @click.stop="emit('toggle-visibility')"
+        class="text-muted-foreground hover:text-foreground mr-1 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+        title="Toggle visibility"
+      >
+        <IconEyeOff v-if="feature.meta.isHidden" class="size-5" />
+        <IconEye v-else class="size-5" />
+      </button>
+
       <IconClockOutline
         v-if="feature.meta.visibleFromT || feature.meta.visibleUntilT"
         class="text-muted-foreground h-5 w-5"

@@ -43,6 +43,7 @@ export interface ScenarioFeatureMeta extends Partial<VisibilityInfo> {
   locked?: boolean;
   // internal runtime only state
   _zIndex?: number;
+  isHidden?: boolean;
 }
 
 export interface ScenarioFeatureState extends Partial<ScenarioEventDescription> {

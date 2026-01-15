@@ -468,6 +468,14 @@ export function useGeo(store: NewScenarioStore) {
 
           if (state) feature.state = state;
           if (media) feature.media = media;
+          // if (data._hidden !== undefined) feature._hidden = data._hidden;
+
+          const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
+          const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
+          const timeHidden =
+            s.currentTime <= visibleFromT || s.currentTime >= visibleUntilT;
+
+          feature._hidden = timeHidden || feature.meta.isHidden;
         },
         {
           label: isGeometry ? "updateFeatureGeometry" : "updateFeature",
