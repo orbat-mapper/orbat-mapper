@@ -3,7 +3,7 @@ import { computed, onMounted, ref, toRaw } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useScenarioShare } from "@/composables/scenarioShare";
 import { useIndexedDb } from "@/scenariostore/localdb";
-import { MAP_EDIT_MODE_ROUTE, LANDING_PAGE_ROUTE } from "@/router/names";
+import { LANDING_PAGE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { nanoid } from "@/utils";
 import type { Scenario, Unit } from "@/types/scenarioModels";
 import {
@@ -17,15 +17,16 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertTriangleIcon,
+  Download as DownloadIcon,
   ExternalLinkIcon,
   FileWarningIcon,
   LoaderCircleIcon,
   MoonStarIcon,
   SunIcon,
-  Download as DownloadIcon,
 } from "lucide-vue-next";
 import { UseDark } from "@vueuse/components";
 import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
+import { Separator } from "@/components/ui/separator";
 
 const route = useRoute();
 const router = useRouter();
@@ -109,6 +110,23 @@ const unitCount = computed(() => {
 });
 
 const sideCount = computed(() => scenarioData.value?.sides.length ?? 0);
+
+const createdDate = computed(() => {
+  const date = scenarioData.value?.meta?.createdDate;
+  return date ? new Date(date) : null;
+});
+
+const lastModifiedDate = computed(() => {
+  const date = scenarioData.value?.meta?.lastModifiedDate;
+  return date ? new Date(date) : null;
+});
+
+const formatDate = (date: Date) => {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+};
 
 async function handleCancel() {
   await router.push({ name: LANDING_PAGE_ROUTE });
@@ -241,9 +259,19 @@ async function handleCreateCopy() {
               <p v-if="scenarioDescription" class="text-muted-foreground text-sm">
                 {{ scenarioDescription }}
               </p>
+              <Separator />
               <p class="text-muted-foreground text-sm font-medium">
                 Sides: {{ sideCount }} | Units: {{ unitCount }}
               </p>
+              <div
+                v-if="createdDate || lastModifiedDate"
+                class="text-muted-foreground space-y-0.5 text-sm"
+              >
+                <p v-if="createdDate">Created: {{ formatDate(createdDate) }}</p>
+                <p v-if="lastModifiedDate">
+                  Last modified: {{ formatDate(lastModifiedDate) }}
+                </p>
+              </div>
             </div>
 
             <!-- Conflict Warning -->
