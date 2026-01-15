@@ -129,6 +129,7 @@ export interface ScenarioFeatureUpdate extends Partial<
   Omit<NScenarioFeature, "id" | "meta">
 > {
   meta?: Partial<ScenarioFeatureMeta>;
+  _hidden?: boolean;
 }
 export interface ScenarioLayerUpdate extends Partial<
   Omit<NScenarioLayer, "id" | "features">

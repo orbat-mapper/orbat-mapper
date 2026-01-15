@@ -63,6 +63,11 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
         olUpdateLayer(event.id, event.data);
         break;
       case "updateFeature":
+        olDeleteFeature(event.id);
+        const { feature } = scn.geo.getFeatureById(event.id);
+        if (feature && !feature._hidden) {
+          olAddFeature(event.id);
+        }
         invalidateStyle(event.id);
         olFeatureLayersGroup.getLayers().forEach((layer) => layer.changed());
         break;
@@ -103,6 +108,11 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
     } else if (label === "moveFeature") {
       initializeFeatureLayersFromStore({ doClearCache: true, filterVisible: false });
     } else if (label === "updateFeature") {
+      olDeleteFeature(layerOrFeatureId);
+      const { feature } = scn.geo.getFeatureById(layerOrFeatureId);
+      if (feature && !feature._hidden) {
+        olAddFeature(layerOrFeatureId);
+      }
       invalidateStyle(layerOrFeatureId);
       olFeatureLayersGroup.getLayers().forEach((layer) => layer.changed());
     } else if (label === "deleteFeature") {

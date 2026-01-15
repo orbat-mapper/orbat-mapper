@@ -51,6 +51,7 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           externalUrl,
           radius,
           _zIndex,
+          isHidden: false,
         };
 
         const style: Omit<Required<SimpleStyleSpec>, "_fill" | "_stroke"> = {
