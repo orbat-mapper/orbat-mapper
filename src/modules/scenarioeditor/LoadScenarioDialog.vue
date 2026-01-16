@@ -10,15 +10,35 @@ import SortDropdown from "@/components/SortDropdown.vue";
 import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Button } from "@/components/ui/button";
+import { defineAsyncComponent } from "vue";
+import type { EncryptedScenario } from "@/types/scenarioModels";
+
+const DecryptScenarioModal = defineAsyncComponent(
+  () => import("@/components/DecryptScenarioModal.vue"),
+);
 
 const open = defineModel({ default: false });
 const inputSource = ref<"external" | "browser">("browser");
+const showDecryptModal = ref(false);
+const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
 
 const { loadScenario, storedScenarios, sortOptions, onAction } = useBrowserScenarios();
 
-function onLoaded(scenario: Scenario) {
+function onLoaded(scenario: Scenario | EncryptedScenario) {
+  if (scenario.type === "ORBAT-mapper-encrypted") {
+    currentEncryptedScenario.value = scenario as EncryptedScenario;
+    showDecryptModal.value = true;
+    return;
+  }
+  loadScenario(scenario as Scenario);
+  open.value = false;
+}
+
+function onDecrypted(scenario: Scenario) {
   loadScenario(scenario);
   open.value = false;
+  showDecryptModal.value = false;
+  currentEncryptedScenario.value = null;
 }
 </script>
 
@@ -71,4 +91,10 @@ function onLoaded(scenario: Scenario) {
       </TabsContent>
     </Tabs>
   </NewSimpleModal>
+  <DecryptScenarioModal
+    v-if="showDecryptModal && currentEncryptedScenario"
+    v-model="showDecryptModal"
+    :encrypted-scenario="currentEncryptedScenario"
+    @decrypted="onDecrypted"
+  />
 </template>

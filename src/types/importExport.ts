@@ -13,14 +13,15 @@ export type ExportFormat =
   | "unitgenerator";
 
 export type ImportFormat =
-  | "orbatmapper"
-  | "geojson"
   | "milx"
+  | "geojson"
   | "unitgenerator"
   | "orbatgenerator"
   | "image"
   | "kml"
-  | "xlsx";
+  | "xlsx"
+  | "orbatmapper"
+  | "orbatmapper-encrypted";
 // | "msdl" // not implemented
 
 export type GuessedImportFormat = "unknown" | ImportFormat;

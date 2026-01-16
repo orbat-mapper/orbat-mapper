@@ -170,6 +170,12 @@ async function onLoad() {
     emit("loaded", "orbatmapper", data, fileInfo.value);
   }
 
+  if (format === "orbatmapper-encrypted" && stringSource.value) {
+    const data = importJsonString<any>(stringSource.value);
+    NProgress.done();
+    emit("loaded", "orbatmapper-encrypted", data, fileInfo.value);
+  }
+
   if (format === "xlsx" && stringSource.value) {
     send({ message: `Loaded data as ${format}` });
 

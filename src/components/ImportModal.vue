@@ -15,6 +15,10 @@ const ImportGeojsonStep = defineAsyncComponent(
   () => import("@/components/ImportGeojsonStep.vue"),
 );
 
+const DecryptScenarioModal = defineAsyncComponent(
+  () => import("@/components/DecryptScenarioModal.vue"),
+);
+
 const ImportSpatialIllusionsStep = defineAsyncComponent(
   () => import("@/components/ImportSpatialIllusionsStep.vue"),
 );
@@ -46,7 +50,8 @@ type ImportState =
   | "image"
   | "kml"
   | "xlsx"
-  | "orbatmapper";
+  | "orbatmapper"
+  | "orbatmapper-encrypted";
 const importState = ref<ImportState>("select");
 const loadedData = shallowRef<any>([]);
 const loadedImportData = shallowRef<ImportData>();
@@ -54,11 +59,22 @@ const fileInfo = shallowRef<ImportedFileInfo>();
 const emit = defineEmits(["cancel"]);
 
 const open = defineModel<boolean>({ default: false });
+const showDecryptModal = ref(false);
 
 function onLoaded(nextState: ImportState, data: any, info: ImportedFileInfo | undefined) {
   loadedData.value = data;
+  if (nextState === "orbatmapper-encrypted") {
+    showDecryptModal.value = true;
+    return;
+  }
   importState.value = nextState;
   fileInfo.value = info;
+}
+
+function onDecrypted(scenario: any) {
+  showDecryptModal.value = false;
+  loadedData.value = scenario;
+  importState.value = "orbatmapper";
 }
 
 function onLod(importData: ImportData) {
@@ -160,4 +176,10 @@ function onCancel() {
       />
     </div>
   </NewSimpleModal>
+  <DecryptScenarioModal
+    v-if="showDecryptModal && loadedData"
+    v-model="showDecryptModal"
+    :encrypted-scenario="loadedData"
+    @decrypted="onDecrypted"
+  />
 </template>

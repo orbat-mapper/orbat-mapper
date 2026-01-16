@@ -9,6 +9,12 @@ import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
 import SortDropdown from "@/components/SortDropdown.vue";
 import { DEMO_SCENARIOS, useBrowserScenarios } from "@/composables/browserScenarios";
 import { Button } from "@/components/ui/button";
+import { defineAsyncComponent, ref } from "vue";
+import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
+
+const DecryptScenarioModal = defineAsyncComponent(
+  () => import("@/components/DecryptScenarioModal.vue"),
+);
 
 const { storedScenarios, sortOptions, onAction, loadScenario } = useBrowserScenarios();
 
@@ -23,6 +29,24 @@ const getScenarioTo = (scenarioId: string) => {
 const newScenario = () => {
   router.push({ name: NEW_SCENARIO_ROUTE });
 };
+
+const showDecryptModal = ref(false);
+const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
+
+function onLoaded(scenario: Scenario | EncryptedScenario) {
+  if (scenario.type === "ORBAT-mapper-encrypted") {
+    currentEncryptedScenario.value = scenario as EncryptedScenario;
+    showDecryptModal.value = true;
+    return;
+  }
+  loadScenario(scenario as Scenario);
+}
+
+function onDecrypted(scenario: Scenario) {
+  loadScenario(scenario);
+  showDecryptModal.value = false;
+  currentEncryptedScenario.value = null;
+}
 </script>
 
 <template>
@@ -126,12 +150,18 @@ const newScenario = () => {
           </button>
         </li>
         <li class="col-span-1 flex">
-          <LoadScenarioPanel @loaded="loadScenario" />
+          <LoadScenarioPanel @loaded="onLoaded" />
         </li>
         <li class="col-span-1 flex">
-          <LoadScenarioFromUrlPanel @loaded="loadScenario" />
+          <LoadScenarioFromUrlPanel @loaded="onLoaded" />
         </li>
       </ul>
     </section>
   </div>
+  <DecryptScenarioModal
+    v-if="showDecryptModal && currentEncryptedScenario"
+    v-model="showDecryptModal"
+    :encrypted-scenario="currentEncryptedScenario"
+    @decrypted="onDecrypted"
+  />
 </template>
