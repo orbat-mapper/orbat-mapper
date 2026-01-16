@@ -3,6 +3,7 @@ import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { inject, ref } from "vue";
 import { activeScenarioKey } from "@/components/injects";
 import InputGroup from "@/components/InputGroup.vue";
+import InputCheckbox from "@/components/InputCheckbox.vue";
 import { Button } from "@/components/ui/button";
 import { useScenarioIO } from "@/scenariostore/io";
 import { encryptScenario } from "@/utils/crypto";
@@ -16,6 +17,7 @@ const { io } = activeScenario;
 const { send } = useNotifications();
 
 const password = ref("");
+const showPassword = ref(false);
 const isEncrypting = ref(false);
 
 async function onDownload() {
@@ -55,7 +57,7 @@ async function onDownload() {
     dialog-title="Download encrypted scenario"
     class="sm:max-w-md"
   >
-    <div class="space-y-4">
+    <form class="space-y-4" @submit.prevent="onDownload">
       <p class="text-muted-foreground text-sm">
         Enter a password to encrypt the scenario. You will need this password to open the
         scenario later.
@@ -64,18 +66,19 @@ async function onDownload() {
       <InputGroup
         v-model="password"
         label="Password"
-        type="password"
+        :type="showPassword ? 'text' : 'password'"
         autofocus
         placeholder="Enter password"
-        @keyup.enter="onDownload"
       />
 
+      <InputCheckbox v-model="showPassword" label="Show password" />
+
       <div class="flex justify-end gap-2 pt-2">
-        <Button variant="ghost" @click="open = false">Cancel</Button>
-        <Button @click="onDownload" :disabled="!password || isEncrypting">
+        <Button variant="ghost" type="button" @click="open = false">Cancel</Button>
+        <Button type="submit" :disabled="!password || isEncrypting">
           {{ isEncrypting ? "Encrypting..." : "Download Encrypted" }}
         </Button>
       </div>
-    </div>
+    </form>
   </NewSimpleModal>
 </template>
