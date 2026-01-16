@@ -61,6 +61,14 @@ function onCancel() {
         This scenario is encrypted. Please enter the password to open it.
       </p>
 
+      <div
+        v-if="encryptedScenario.header?.description"
+        class="bg-secondary text-secondary-foreground rounded-md p-3 text-sm"
+      >
+        <span class="font-medium">Description:</span>
+        {{ encryptedScenario.header.description }}
+      </div>
+
       <InputGroup
         v-model="password"
         label="Password"

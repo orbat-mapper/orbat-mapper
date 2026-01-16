@@ -17,6 +17,7 @@ const { io } = activeScenario;
 const { send } = useNotifications();
 
 const password = ref("");
+const description = ref("");
 const showPassword = ref(false);
 const isEncrypting = ref(false);
 
@@ -26,7 +27,9 @@ async function onDownload() {
   isEncrypting.value = true;
   try {
     const scenario = io.serializeToObject();
-    const encrypted = await encryptScenario(scenario, password.value);
+    const encrypted = await encryptScenario(scenario, password.value, {
+      header: { description: description.value },
+    });
 
     // @ts-ignore
     const { default: filenamify } = await import("filenamify/browser");
@@ -72,6 +75,17 @@ async function onDownload() {
       />
 
       <InputCheckbox v-model="showPassword" label="Show password" />
+
+      <div>
+        <InputGroup
+          v-model="description"
+          label="Description (optional)"
+          placeholder="Description"
+        />
+        <p class="mt-1 text-xs text-yellow-600 dark:text-yellow-500">
+          Warning: This description is visible without the password.
+        </p>
+      </div>
 
       <div class="flex justify-end gap-2 pt-2">
         <Button variant="ghost" type="button" @click="open = false">Cancel</Button>
