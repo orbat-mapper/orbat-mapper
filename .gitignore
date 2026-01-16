@@ -39,3 +39,4 @@ __screenshots__/
 stats.html
 cache
 /.wrangler/
+.agent
