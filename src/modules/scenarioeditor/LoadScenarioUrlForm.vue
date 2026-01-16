@@ -31,7 +31,10 @@ async function fetchScenario() {
   try {
     const response = await fetch(url);
     const jsonData = (await response.json()) as Scenario;
-    if (jsonData?.type === "ORBAT-mapper") {
+    if (
+      jsonData?.type === "ORBAT-mapper" ||
+      jsonData?.type === "ORBAT-mapper-encrypted"
+    ) {
       emit("loaded", jsonData);
     } else {
       isError.value = true;

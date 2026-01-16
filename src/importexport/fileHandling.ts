@@ -111,6 +111,8 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     guess.dataAsString = text;
     if (isOrbatMapperScenario(json)) {
       guess.format = "orbatmapper";
+    } else if (isOrbatMapperEncryptedScenario(json)) {
+      guess.format = "orbatmapper-encrypted";
     } else if (isFeatureCollection(json)) {
       guess.format = "geojson";
       const geojsonProps = json.features[0]?.properties ?? {};
@@ -148,6 +150,10 @@ function isOrbatMapperScenario(json: any): boolean {
     }
   }
   return false;
+}
+
+function isOrbatMapperEncryptedScenario(json: any): boolean {
+  return json.type && json.type === "ORBAT-mapper-encrypted";
 }
 
 function hasZippedFileType(file: File): boolean {

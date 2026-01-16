@@ -18,7 +18,10 @@ function readFile(file: File) {
 
     try {
       const scenarioData = JSON.parse(content) as Scenario;
-      if (scenarioData?.type === "ORBAT-mapper") {
+      if (
+        scenarioData?.type === "ORBAT-mapper" ||
+        scenarioData?.type === "ORBAT-mapper-encrypted"
+      ) {
         emit("loaded", scenarioData);
       } else {
         console.error("Failed to load", file.name);
