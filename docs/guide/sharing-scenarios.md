@@ -16,15 +16,35 @@ The "Share scenario online" feature uploads your scenario to an ORBAT Mapper clo
 
 You can now paste this link into emails, chat apps, or documents.
 
+### Encrypting Scenarios
+
+You can optionally encrypt your scenario before sharing it. This ensures that only people with the password can view the scenario content.
+
+1. Toggle the **Encrypt scenario** switch.
+2. Enter a strong **Password**.
+3. Optionally, add a **Description**.
+   ::: warning
+   The description is **not encrypted** and will be visible to anyone with the link. Do not put sensitive information in the description.
+   :::
+4. Click **Upload and generate link**.
+
+#### Security Details
+
+ORBAT Mapper uses robust client-side encryption. The server only receives encrypted data and never sees your password or the unencrypted scenario.
+
+- **Algorithm**: AES-GCM (256-bit key)
+- **Key Derivation**: PBKDF2 (SHA-256)
+- **Data Integrity**: The encryption includes an integrity check to prevent tampering.
+
 ### Important Notes
 
 - **Link expiration**: Generated links are valid for **30 days** from creation.
-- **Privacy**: Anyone with the link can view the scenario. Be careful when sharing sensitive or private scenarios.
+- **Privacy**: Anyone with the link can view the scenario (unless encrypted). Be careful when sharing sensitive or private scenarios.
 - **Upload limits**: There is an hourly upload limit to prevent abuse. If you encounter rate limiting, wait and try again later.
 - **Size limits**: Very large scenarios may exceed the maximum upload size. In such cases, consider exporting the scenario as a JSON file.
 
 ::: warning
-The scenario is uploaded to the cloud and stored temporarily. Anyone with the link can access the full scenario data. Do not share sensitive or confidential information using this feature.
+The scenario is uploaded to the cloud and stored temporarily. Anyone with the link can access the full scenario data. Do not share sensitive or confidential information using this feature unless you use the encryption option.
 :::
 
 ---
@@ -66,6 +86,8 @@ When a recipient opens a shared link (from either sharing method), they will be 
 
 - **Scenario Name & Description**: Preview of what's being imported.
 - **Unit & Side Count**: Quick summary of the scenario size.
+
+If the scenario is **encrypted**, you will see the description (if provided) and a prompt to enter the password. You must enter the correct password to decrypt and view the scenario details.
 
 ### Import Actions
 
