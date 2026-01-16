@@ -382,6 +382,26 @@ export interface OrbatItemData {
   children: OrbatItemData[];
 }
 
+export type EncryptedScenarioVersion = "1.0.0";
+
+export interface EncryptedScenario {
+  type: "ORBAT-mapper-encrypted";
+  version: EncryptedScenarioVersion;
+  ciphertext: string;
+  crypto: {
+    algorithm: "AES-GCM";
+    iv: string;
+    salt: string;
+    iterations: number;
+    keySize: 256;
+  };
+  header?: EncryptedScenarioHeader;
+}
+
+export type EncryptedScenarioHeader = {
+  description: string;
+};
+
 const exampleData: UnitOfMeasure[] = [
   {
     name: "Kilogram",
