@@ -89,6 +89,9 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           <DropdownMenuItem @select="emit('action', 'exportJson')"
             >Download scenario
           </DropdownMenuItem>
+          <DropdownMenuItem @select="emit('action', 'exportEncrypted')"
+            >Download encrypted scenario...
+          </DropdownMenuItem>
           <DropdownMenuItem @select="emit('action', 'save')">
             Save scenario
           </DropdownMenuItem>

@@ -86,6 +86,10 @@ const ShareScenarioModal = defineAsyncComponent(
   () => import("@/components/ShareScenarioModal.vue"),
 );
 
+const EncryptScenarioModal = defineAsyncComponent(
+  () => import("@/components/EncryptScenarioModal.vue"),
+);
+
 const dropZoneRef = ref<HTMLDivElement>();
 const activeParentId = ref<EntityId | undefined | null>(null);
 const activeLayerId = ref<FeatureId | undefined | null>(null);
@@ -138,6 +142,7 @@ const showExportModal = ref(false);
 const showImportModal = ref(false);
 const showShareUrlModal = ref(false);
 const showShareModal = ref(false);
+const showEncryptModal = ref(false);
 
 useTimeFormatterProvider({ activeScenario: props.activeScenario });
 
@@ -239,6 +244,8 @@ async function onScenarioAction(action: ScenarioActions) {
     showShareModal.value = true;
   } else if (action === "export") {
     showExportModal.value = true;
+  } else if (action === "exportEncrypted") {
+    showEncryptModal.value = true;
   } else if (action === "import") {
     showImportModal.value = true;
   } else if (action === "showInfo") {
@@ -483,6 +490,7 @@ if (state.layers.length > 0) {
     <ImportModal v-if="showImportModal" v-model="showImportModal" />
     <ShareScenarioUrlModal v-if="showShareUrlModal" v-model="showShareUrlModal" />
     <ShareScenarioModal v-if="showShareModal" v-model="showShareModal" />
+    <EncryptScenarioModal v-if="showEncryptModal" v-model="showEncryptModal" />
     <div
       v-if="isOverDropZone"
       class="bg-background/80 fixed inset-0 z-50 flex items-center justify-center"

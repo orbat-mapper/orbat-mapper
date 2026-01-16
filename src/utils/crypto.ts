@@ -35,12 +35,14 @@ export async function encryptScenario(
   const plaintext = encoder.encode(JSON.stringify(scenario));
 
   // 1. Prepare the AAD (Additional Authenticated Data)
-  // We bind the version and the header to the encryption. 
+  // We bind the version and the header to the encryption.
   // If these are modified later, decryption will throw an error.
-  const aad = encoder.encode(JSON.stringify({ 
-    version: ENCRYPTION_VERSION, 
-    header: header 
-  }));
+  const aad = encoder.encode(
+    JSON.stringify({
+      version: ENCRYPTION_VERSION,
+      header: header,
+    }),
+  );
 
   const ciphertextBuffer = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv, additionalData: aad },
@@ -83,24 +85,27 @@ export async function decryptScenario(
   // 2. Reconstruct the AAD
   // We must recreate the exact same byte sequence used during encryption.
   const encoder = new TextEncoder();
-  const aad = encoder.encode(JSON.stringify({ 
-    version: encrypted.version, 
-    header: encrypted.header 
-  }));
+  const aad = encoder.encode(
+    JSON.stringify({
+      version: encrypted.version,
+      header: encrypted.header,
+    }),
+  );
   try {
     const plaintextBuffer = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv, additionalData: aad },
-    key,
-    ciphertext,
-  );
+      { name: "AES-GCM", iv, additionalData: aad },
+      key,
+      ciphertext,
+    );
 
-  const decoder = new TextDecoder();
-  const json = decoder.decode(plaintextBuffer);
-  return JSON.parse(json) as Scenario;
-    
+    const decoder = new TextDecoder();
+    const json = decoder.decode(plaintextBuffer);
+    return JSON.parse(json) as Scenario;
   } catch (error) {
     // If this fails, it means either the password is wrong OR the header was tampered with.
-    throw new Error("Decryption failed. Invalid password or data integrity check failed.");
+    throw new Error(
+      "Decryption failed. Invalid password or data integrity check failed.",
+    );
   }
 }
 
