@@ -2,6 +2,7 @@
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { ref } from "vue";
 import InputGroup from "@/components/InputGroup.vue";
+import InputCheckbox from "@/components/InputCheckbox.vue";
 import { Button } from "@/components/ui/button";
 import { decryptScenario } from "@/utils/crypto";
 
@@ -21,6 +22,7 @@ const emit = defineEmits<{
 const open = defineModel<boolean>({ default: false });
 
 const password = ref("");
+const showPassword = ref(false);
 const isDecrypting = ref(false);
 const error = ref("");
 
@@ -54,7 +56,7 @@ function onCancel() {
     class="sm:max-w-md"
     @cancel="onCancel"
   >
-    <div class="space-y-4">
+    <form class="space-y-4" @submit.prevent="onDecrypt">
       <p class="text-muted-foreground text-sm">
         This scenario is encrypted. Please enter the password to open it.
       </p>
@@ -62,11 +64,12 @@ function onCancel() {
       <InputGroup
         v-model="password"
         label="Password"
-        type="password"
+        :type="showPassword ? 'text' : 'password'"
         autofocus
         placeholder="Enter password"
-        @keyup.enter="onDecrypt"
       />
+
+      <InputCheckbox v-model="showPassword" label="Show password" />
 
       <Alert v-if="error" variant="destructive">
         <AlertCircleIcon class="h-4 w-4" />
@@ -77,11 +80,11 @@ function onCancel() {
       </Alert>
 
       <div class="flex justify-end gap-2 pt-2">
-        <Button variant="ghost" @click="onCancel">Cancel</Button>
-        <Button @click="onDecrypt" :disabled="!password || isDecrypting">
+        <Button variant="ghost" type="button" @click="onCancel">Cancel</Button>
+        <Button type="submit" :disabled="!password || isDecrypting">
           {{ isDecrypting ? "Decrypting..." : "Open" }}
         </Button>
       </div>
-    </div>
+    </form>
   </NewSimpleModal>
 </template>
