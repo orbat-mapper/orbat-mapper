@@ -5,7 +5,8 @@ import { useScenarioShare } from "@/composables/scenarioShare";
 import { useIndexedDb } from "@/scenariostore/localdb";
 import { LANDING_PAGE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { nanoid } from "@/utils";
-import type { Scenario, Unit } from "@/types/scenarioModels";
+import type { EncryptedScenario, Scenario, Unit } from "@/types/scenarioModels";
+import DecryptScenarioModal from "@/components/DecryptScenarioModal.vue";
 import {
   Card,
   CardContent,
@@ -37,6 +38,8 @@ const error = ref<string | null>(null);
 const scenarioData = ref<Scenario | null>(null);
 const hasConflict = ref(false);
 const isWaitingForDownload = ref(false);
+const showDecryptModal = ref(false);
+const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
 
 onMounted(async () => {
   const dataParam = route.query.data as string;
@@ -59,33 +62,50 @@ async function handleDownload() {
   const idParam = route.query.id as string;
 
   try {
+    let loadedScenario: any;
     if (idParam) {
       const response = await fetch(`/share?id=${idParam}`);
       if (!response.ok) {
         if (response.status === 404) throw new Error("Scenario not found.");
         throw new Error("Failed to load scenario.");
       }
-      scenarioData.value = await response.json();
+      loadedScenario = await response.json();
     } else {
-      scenarioData.value = await loadScenarioFromUrlParam(dataParam);
+      loadedScenario = await loadScenarioFromUrlParam(dataParam);
     }
 
-    // Remove the data from the URL so it's not stored in history
-    // await router.replace({ query: {} });
-
-    // Check if scenario with same ID exists
-    if (scenarioData.value && scenarioData.value.id) {
-      const { getScenarioInfo } = await useIndexedDb();
-      const existingInfo = await getScenarioInfo(scenarioData.value.id);
-      hasConflict.value = !!existingInfo;
+    if (loadedScenario.type === "ORBAT-mapper-encrypted") {
+      isLoading.value = false;
+      currentEncryptedScenario.value = loadedScenario as EncryptedScenario;
+      showDecryptModal.value = true;
+      return;
     }
+
+    await processLoadedScenario(loadedScenario);
   } catch (e: any) {
     console.error("Failed to load scenario", e);
     error.value =
       e.message || "Failed to decode the scenario. The URL may be corrupted or invalid.";
   } finally {
-    isLoading.value = false;
+    if (!showDecryptModal.value) {
+      isLoading.value = false;
+    }
   }
+}
+
+async function processLoadedScenario(scenario: Scenario) {
+  scenarioData.value = scenario;
+
+  // Check if scenario with same ID exists
+  if (scenarioData.value && scenarioData.value.id) {
+    const { getScenarioInfo } = await useIndexedDb();
+    const existingInfo = await getScenarioInfo(scenarioData.value.id);
+    hasConflict.value = !!existingInfo;
+  }
+}
+
+async function onDecrypted(scenario: Scenario) {
+  await processLoadedScenario(scenario);
 }
 
 const scenarioName = computed(() => scenarioData.value?.name ?? "Unnamed Scenario");
@@ -300,5 +320,12 @@ async function handleCreateCopy() {
         </CardContent>
       </Card>
     </main>
+
+    <DecryptScenarioModal
+      v-if="currentEncryptedScenario"
+      v-model="showDecryptModal"
+      :encrypted-scenario="currentEncryptedScenario"
+      @decrypted="onDecrypted"
+    />
   </div>
 </template>
