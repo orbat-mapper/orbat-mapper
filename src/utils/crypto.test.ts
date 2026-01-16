@@ -103,7 +103,10 @@ describe("crypto utils", () => {
     const encrypted = await encryptScenario(mockScenario, password);
 
     // Tamper with the version
-    const tamperedEncrypted = { ...encrypted, version: "9.9.9" } as unknown as EncryptedScenario;
+    const tamperedEncrypted = {
+      ...encrypted,
+      version: "9.9.9",
+    } as unknown as EncryptedScenario;
 
     await expect(decryptScenario(tamperedEncrypted, password)).rejects.toThrow();
   });

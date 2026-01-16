@@ -74,7 +74,8 @@ export type ScenarioActions =
   | "undo"
   | "redo"
   | "shareAsUrl"
-  | "share";
+  | "share"
+  | "exportEncrypted";
 
 export type ScenarioFeatureActions =
   | "delete"
