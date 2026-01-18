@@ -29,6 +29,9 @@ importers:
       '@orbat-mapper/convert-symbology':
         specifier: ^1.0.2
         version: 1.0.2
+      '@orbat-mapper/msdllib':
+        specifier: ^1.3.1
+        version: 1.3.1
       '@panzoom/panzoom':
         specifier: ^4.6.1
         version: 4.6.1
@@ -976,6 +979,9 @@ packages:
 
   '@orbat-mapper/convert-symbology@1.0.2':
     resolution: {integrity: sha512-FpnPXS16/C+ay7FVPLhTkRH2NmREKxhJ+pifqcW9NpsbORH94S14qU8Eyl2ofMP7upxQYNvw2qpTok5I3P4QKw==}
+
+  '@orbat-mapper/msdllib@1.3.1':
+    resolution: {integrity: sha512-ysUpJjJm0iAFl2cSx7A/r1NXm5x+j1pN5VJ/FN2cDx7n4Sx38YkyUxMOKguSgJeZCX7qEt/e/pEfOFo6e4JNOA==}
 
   '@oxc-parser/binding-android-arm64@0.97.0':
     resolution: {integrity: sha512-oLCGuX+1zqTIUjTfCxiZO/Ad4p4wo2MksBSpjdgOC7htyfIg/Se9PK2xU2jzSXlIyzBivwK6AJFqJpcbzJlmsQ==}
@@ -2466,6 +2472,9 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
+  ecef-projector@1.0.1:
+    resolution: {integrity: sha512-PPU78M7RST2AKJ9yC05jwFjAckylvuZYEOVsvJ0FZbzsBGZzd/YwsO1Q74cAhAbcKn+xUmlKLJn/o+2JjmgB1g==}
+
   editorconfig@1.0.4:
     resolution: {integrity: sha512-L9Qe08KWTlqYMVvMcTIvMAdl1cDUubzRNYL+WfA4bLDMHe4nemKkpmYzkznE1FwLKu0EEmy6obgQKzMJrg4x9Q==}
     engines: {node: '>=14'}
@@ -3682,6 +3691,13 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
+  utm@1.1.1:
+    resolution: {integrity: sha512-rJIv6i1u86OVy91Burh/6oRFfE8zOCd6Unc8fvA0N7fjQT43ogqhVeUp5NByaZPe278QyiA5wMMEaAU9Jx6QRA==}
+
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   vfile-message@4.0.3:
     resolution: {integrity: sha512-QTHzsGd1EhbZs4AsQ20JX1rC3cOlt/IWJruk893DfLRr57lcnOeMaWG4K0JrRta4mIJZKth2Au3mM3u03/JWKw==}
 
@@ -3893,6 +3909,9 @@ packages:
   webidl-conversions@8.0.1:
     resolution: {integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==}
     engines: {node: '>=20'}
+
+  wgs84@0.0.0:
+    resolution: {integrity: sha512-ANHlY4Rb5kHw40D0NJ6moaVfOCMrp9Gpd1R/AIQYg2ko4/jzcJ+TVXYYF6kXJqQwITvEZP4yEthjM7U6rYlljQ==}
 
   whatwg-mimetype@4.0.0:
     resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
@@ -4617,6 +4636,16 @@ snapshots:
   '@one-ini/wasm@0.1.1': {}
 
   '@orbat-mapper/convert-symbology@1.0.2': {}
+
+  '@orbat-mapper/msdllib@1.3.1':
+    dependencies:
+      '@turf/bbox-polygon': 7.3.1
+      '@turf/helpers': 7.3.1
+      '@turf/truncate': 7.3.1
+      ecef-projector: 1.0.1
+      mgrs: 2.1.0
+      utm: 1.1.1
+      uuid: 11.1.0
 
   '@oxc-parser/binding-android-arm64@0.97.0':
     optional: true
@@ -6774,6 +6803,10 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
+  ecef-projector@1.0.1:
+    dependencies:
+      wgs84: 0.0.0
+
   editorconfig@1.0.4:
     dependencies:
       '@one-ini/wasm': 0.1.1
@@ -7948,6 +7981,10 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
+  utm@1.1.1: {}
+
+  uuid@11.1.0: {}
+
   vfile-message@4.0.3:
     dependencies:
       '@types/unist': 3.0.3
@@ -8176,6 +8213,8 @@ snapshots:
   web-worker@1.5.0: {}
 
   webidl-conversions@8.0.1: {}
+
+  wgs84@0.0.0: {}
 
   whatwg-mimetype@4.0.0: {}
 
