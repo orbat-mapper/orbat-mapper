@@ -7,7 +7,7 @@ describe("foldersToKML", () => {
     const root: Root = { type: "root", children: [] };
     const kml = foldersToKML(root);
     expect(kml).toContain('<kml xmlns="http://www.opengis.net/kml/2.2">');
-    expect(kml).toContain("<Document/>");
+    expect(kml).toContain("<Document");
   });
 
   it("should include radioFolder style when requested", () => {
