@@ -39,7 +39,7 @@ if (!settings.value.rootUnit) {
 </script>
 
 <template>
-  <section class="prose prose-sm">
+  <section class="prose prose-sm dark:prose-invert">
     <p>
       Export a unit hierarchy for use with the
       <a href="https://spatialillusions.com/unitgenerator/" target="_blank"

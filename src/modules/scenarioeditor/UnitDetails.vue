@@ -590,7 +590,7 @@ function locateInOrbat() {
         <TabsContent
           value="7"
           v-if="uiStore.debugMode"
-          class="prose prose-sm mx-4 max-w-none"
+          class="prose prose-sm dark:prose-invert mx-4 max-w-none"
         >
           <pre>{{ unit }}</pre>
         </TabsContent>

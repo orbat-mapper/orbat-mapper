@@ -58,6 +58,6 @@ export default defineComponent({
 <template>
   <div>
     <p class="bg-background fixed right-2 bottom-2 z-40 border p-2">{{ sIndex }}</p>
-    <div class="prose prose-sm p-4" v-html="renderedContent"></div>
+    <div class="prose prose-sm dark:prose-invert p-4" v-html="renderedContent"></div>
   </div>
 </template>

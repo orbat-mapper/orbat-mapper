@@ -340,7 +340,7 @@ onMounted(() => {
           <DocLink href="https://docs.orbat-mapper.app/guide/import-data" />
         </template>
       </SimpleSelect>
-      <div class="prose prose-sm">
+      <div class="prose prose-sm dark:prose-invert">
         <p v-if="isMilx">
           Basic support for importing MilX layers from
           <a href="https://www.map.army/">map.army</a>
@@ -359,7 +359,7 @@ onMounted(() => {
           >.
         </p>
       </div>
-      <p v-if="isMilx" class="prose prose-sm">
+      <p v-if="isMilx" class="prose prose-sm dark:prose-invert">
         Please note that the import functionality is experimental.
       </p>
     </div>

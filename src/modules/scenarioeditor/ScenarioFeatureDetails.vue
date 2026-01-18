@@ -277,7 +277,7 @@ function onAction(action: ScenarioFeatureActions) {
           </PanelDataGrid>
         </TabsContent>
         <TabsContent value="1" class="mx-4">
-          <div v-if="!isEditing" class="prose mt-4">
+          <div v-if="!isEditing" class="prose dark:prose-invert mt-4">
             <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
           </div>
           <div v-else-if="isEditMode" class="mt-4">
@@ -304,7 +304,7 @@ function onAction(action: ScenarioFeatureActions) {
         <TabsContent
           value="4"
           v-if="uiStore.debugMode"
-          class="prose prose-sm mx-4 max-w-none"
+          class="prose prose-sm dark:prose-invert mx-4 max-w-none"
         >
           <pre>{{ feature }}</pre>
         </TabsContent>

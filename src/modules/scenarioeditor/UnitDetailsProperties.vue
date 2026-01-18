@@ -77,7 +77,7 @@ function updateAverageSpeed(data: UnitPropertyUpdate) {
 }
 </script>
 <template>
-  <section class="prose text-foreground mt-4">
+  <section class="prose text-foreground dark:prose-invert mt-4">
     <table class="divide-border w-full divide-y">
       <thead>
         <tr>

@@ -180,7 +180,7 @@ async function onLoad(e: Event) {
   <div class="">
     <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
       <div class="flex-auto overflow-auto">
-        <div class="prose prose-sm">
+        <div class="prose prose-sm dark:prose-invert">
           <p>
             Basic support for importing MilX layers from
             <a href="https://www.map.army/">map.army</a>

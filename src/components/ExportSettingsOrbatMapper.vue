@@ -30,7 +30,7 @@ function toggleSide(sideId: string) {
 </script>
 
 <template>
-  <section class="prose prose-sm">
+  <section class="prose prose-sm dark:prose-invert">
     <p>Export partial scenario</p>
   </section>
   <fieldset class="flex flex-col gap-4">

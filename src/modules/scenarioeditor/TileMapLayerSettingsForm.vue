@@ -128,7 +128,7 @@ function loadAdvanced() {
             v-model="advancedSettings"
             description="Paste map settings from Map-georeferencer here."
           />
-          <div class="prose prose-sm mt-4">
+          <div class="prose prose-sm dark:prose-invert mt-4">
             <p>
               <a target="_blank" href="http://viglino.github.io/Map-georeferencer/"
                 >Map-georeferencer</a

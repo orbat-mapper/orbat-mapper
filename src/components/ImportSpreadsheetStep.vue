@@ -129,7 +129,7 @@ async function onLoad(e: Event) {
   <div class="">
     <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
       <div class="shrink-0 overflow-auto">
-        <div class="prose prose-sm max-w-none">
+        <div class="prose prose-sm dark:prose-invert max-w-none">
           <p>
             Import units exported from
             <a

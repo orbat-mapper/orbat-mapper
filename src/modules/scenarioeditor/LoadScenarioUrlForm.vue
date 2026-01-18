@@ -66,7 +66,7 @@ function createSharableUrl() {
     <p v-if="isError" class="text-sm text-red-600">
       {{ errorMessage }}
     </p>
-    <div v-if="sharableUrl" class="prose prose-sm">
+    <div v-if="sharableUrl" class="prose prose-sm dark:prose-invert">
       <a :href="sharableUrl" target="_blank">{{ sharableUrl }}</a>
       <Button class="ml-2" variant="outline" size="sm" @click="copy(sharableUrl)"
         >Copy to clipboard
