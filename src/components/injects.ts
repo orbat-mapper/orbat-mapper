@@ -50,3 +50,5 @@ export const activeMapKey = Symbol("Active map") as InjectionKey<ShallowRef<OLMa
 export const activeFeatureSelectInteractionKey = Symbol(
   "Active feature select",
 ) as InjectionKey<ShallowRef<Select>>;
+
+export const readonlyKey = Symbol("Readonly") as InjectionKey<Ref<boolean>>;

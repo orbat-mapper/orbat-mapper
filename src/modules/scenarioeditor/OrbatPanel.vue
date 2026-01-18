@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, inject, nextTick, onMounted, onUnmounted, ref } from "vue";
 import OrbatPanelAddSide from "@/components/OrbatPanelAddSide.vue";
 import { injectStrict, triggerPostMoveFlash } from "@/utils";
-import { activeParentKey, activeScenarioKey } from "@/components/injects";
+import { activeParentKey, activeScenarioKey, readonlyKey } from "@/components/injects";
 import OrbatSide from "@/components/OrbatSide.vue";
 import type { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import { type SideAction, SideActions } from "@/types/constants";
@@ -35,6 +35,7 @@ const props = withDefaults(defineProps<Props>(), { hideFilter: false });
 const activeScenario = injectStrict(activeScenarioKey);
 const { store, unitActions, io, time } = activeScenario;
 const activeParentId = injectStrict(activeParentKey);
+const isReadonly = inject(readonlyKey, ref(false));
 
 const isDragging = ref(false);
 const isDraggingUnit = ref(false);
@@ -45,8 +46,11 @@ const { state, groupUpdate } = store;
 const { changeUnitParent, addSide } = unitActions;
 const bus = useEventBus(orbatUnitClick);
 
-useEventListener(document, "paste", onPaste);
-useEventListener(document, "copy", onCopy);
+if (!isReadonly.value) {
+  useEventListener(document, "paste", onPaste);
+  useEventListener(document, "copy", onCopy);
+}
+
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
 });
@@ -56,6 +60,7 @@ const { selectedUnitIds, activeUnitId } = useSelectedItems();
 
 let dndCleanup: () => void = () => {};
 onMounted(() => {
+  if (isReadonly.value) return;
   dndCleanup = monitorForElements({
     canMonitor: ({ source }) =>
       isUnitDragItem(source.data) ||
@@ -333,7 +338,7 @@ function onPaste(e: ClipboardEvent) {
       :hide-filter="hideFilter"
     />
     <OrbatPanelAddSide
-      v-if="sides.length < 2"
+      v-if="sides.length < 2 && !isReadonly"
       :simple="sides.length >= 1"
       class="mt-8"
       @add="addSide()"

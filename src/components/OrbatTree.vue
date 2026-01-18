@@ -59,7 +59,7 @@ const filteredUnits = computed(() => {
       v-for="(orbatItem, index) in filteredUnits"
       :key="orbatItem.unit.id"
       @unit-action="onUnitAction"
-      @unit-click="(unit, event) => emit('unit-click', unit, event)"
+      @unit-click="(unit: NUnit, event: MouseEvent) => emit('unit-click', unit, event)"
       :symbolOptions="symbolOptions"
       :last-in-group="index === filteredUnits.length - 1"
     />

@@ -12,8 +12,9 @@ import {
   activeFeatureSelectInteractionKey,
   activeMapKey,
   activeScenarioKey,
+  readonlyKey,
 } from "@/components/injects";
-import { computed, defineAsyncComponent, ref, watch } from "vue";
+import { computed, defineAsyncComponent, inject, ref, watch } from "vue";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import { type ScenarioFeatureMeta } from "@/types/scenarioGeoModels";
 import { useDebounceFn } from "@vueuse/core";
@@ -60,6 +61,7 @@ const {
 } = injectStrict(activeScenarioKey);
 const olMapRef = injectStrict(activeMapKey);
 const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
+const isReadonly = inject(readonlyKey, ref(false));
 
 const featureActions = useScenarioFeatureActions();
 const { selectedFeatureIds, clear: clearSelection } = useSelectedItems();
@@ -127,11 +129,15 @@ const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
 const tabList = computed(() => {
   const base = [
-    { label: "Style", value: "0" },
     { label: "Details", value: "1" },
     { label: "State", value: "2" },
-    { label: "Transform", value: "3" },
   ];
+
+  if (!isReadonly.value) {
+    base.unshift({ label: "Style", value: "0" });
+    base.push({ label: "Transform", value: "3" });
+  }
+
   if (uiStore.debugMode) {
     base.push({ label: "Debug", value: "4" });
   }
@@ -215,7 +221,11 @@ function onAction(action: ScenarioFeatureActions) {
         </Button>
       </div>
       <div v-if="feature" class="">
-        <EditableLabel v-model="featureName" @update-value="updateValue" />
+        <EditableLabel
+          v-model="featureName"
+          @update-value="updateValue"
+          :disabled="isReadonly"
+        />
       </div>
 
       <nav class="flex items-center justify-between">
@@ -227,17 +237,19 @@ function onAction(action: ScenarioFeatureActions) {
           <IconButton @click="doZoom()" title="Zoom to feature">
             <ZoomIcon class="size-5" />
           </IconButton>
-          <IconButton @click="showStylePanel()" title="Change feature style">
-            <StyleIcon class="size-5" />
-          </IconButton>
-          <IconButton title="Edit feature data" @click="toggleEditMode()">
-            <EditIcon class="size-5" />
-          </IconButton>
-          <IconButton title="Add/modify image" @click="toggleEditMediaMode()">
-            <ImageIcon class="size-5" />
-          </IconButton>
+          <template v-if="!isReadonly">
+            <IconButton @click="showStylePanel()" title="Change feature style">
+              <StyleIcon class="size-5" />
+            </IconButton>
+            <IconButton title="Edit feature data" @click="toggleEditMode()">
+              <EditIcon class="size-5" />
+            </IconButton>
+            <IconButton title="Add/modify image" @click="toggleEditMediaMode()">
+              <ImageIcon class="size-5" />
+            </IconButton>
+          </template>
         </div>
-        <div>
+        <div v-if="!isReadonly">
           <ScenarioFeatureDropdownMenu @action="onAction" />
         </div>
       </nav>

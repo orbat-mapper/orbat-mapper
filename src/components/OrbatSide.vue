@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, inject, onMounted, onUnmounted, ref } from "vue";
 import { Toggle } from "reka-ui";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
 import {
@@ -17,7 +17,7 @@ import EditSideForm from "./EditSideForm.vue";
 import OrbatSideGroup from "./OrbatSideGroup.vue";
 import type { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import type { DropTarget } from "./types";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, readonlyKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import {
   attachInstruction,
@@ -65,6 +65,7 @@ interface Emits {
 const emit = defineEmits<Emits>();
 
 const { store, unitActions } = injectStrict(activeScenarioKey);
+const isReadonly = inject(readonlyKey, ref(false));
 
 const isOpen = ref(true);
 const dropRef = ref<HTMLElement | null>(null);
@@ -89,7 +90,7 @@ const filterQuery = ref("");
 
 const showFilter = ref(false);
 const debouncedFilterQuery = useDebounce(filterQuery, 100);
-const isLocked = computed(() => !!props.side.locked);
+const isLocked = computed(() => !!props.side.locked || isReadonly.value);
 const isHidden = computed(() => props.side.isHidden);
 
 const sideGroups = computed(() =>
@@ -100,6 +101,7 @@ const showEditSideForm = ref(false);
 let dndCleanup: CleanupFn = () => {};
 
 onMounted(() => {
+  if (isReadonly.value) return;
   if (!dropRef.value) {
     return;
   }
@@ -229,6 +231,7 @@ const toggleOpen = () => {
       <IconDrag
         class="text-muted-foreground size-6 flex-none cursor-move group-focus-within:opacity-100 group-hover:opacity-100 sm:-ml-3 sm:opacity-0"
         ref="dragRef"
+        v-if="!isReadonly"
       />
 
       <button
@@ -269,6 +272,7 @@ const toggleOpen = () => {
         @action="onSideAction"
         :is-locked="isLocked"
         :is-hidden="isHidden"
+        v-if="!isReadonly"
       />
       <TreeDropIndicator v-if="instruction" :instruction="instruction" class="z-10" />
     </header>
@@ -293,7 +297,9 @@ const toggleOpen = () => {
           :filter-query="filterQuery"
           :location-filter="hasLocationFilter"
           @unit-action="onUnitAction"
-          @unit-click="(unit, event) => emit('unit-click', unit, event)"
+          @unit-click="
+            (unit: NUnit, event: MouseEvent) => emit('unit-click', unit, event)
+          "
           :symbol-options="{ ...side.symbolOptions }"
         />
       </div>
@@ -303,7 +309,9 @@ const toggleOpen = () => {
           :filter-query="debouncedFilterQuery"
           :has-location-filter="hasLocationFilter"
           @unit-action="onUnitAction"
-          @unit-click="(unit, event) => emit('unit-click', unit, event)"
+          @unit-click="
+            (unit: NUnit, event: MouseEvent) => emit('unit-click', unit, event)
+          "
           @sidegroup-action="onSideGroupAction"
         >
         </OrbatSideGroup>

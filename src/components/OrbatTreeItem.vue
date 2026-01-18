@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, inject, onMounted, onUnmounted, ref } from "vue";
 import {
   draggable,
   dropTargetForElements,
@@ -18,7 +18,7 @@ import { type UnitAction } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "@/composables/scenarioActions";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { activeParentKey, activeScenarioKey } from "./injects";
+import { activeParentKey, activeScenarioKey, readonlyKey } from "./injects";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { type SymbolOptions } from "milsymbol";
@@ -50,6 +50,7 @@ const {
   unitActions: { isUnitLocked },
   store: { state },
 } = injectStrict(activeScenarioKey);
+const isReadonly = inject(readonlyKey, ref(false));
 
 const combinedOptions = computed(() => ({
   ...(props.symbolOptions || {}),
@@ -74,7 +75,7 @@ const isOpen = computed({
   },
 });
 
-const isLocked = computed(() => isUnitLocked(props.item.unit.id));
+const isLocked = computed(() => isUnitLocked(props.item.unit.id) || isReadonly.value);
 const isSideGroupLocked = computed(() =>
   isUnitLocked(props.item.unit.id, { excludeUnit: true }),
 );
@@ -121,6 +122,7 @@ let dndCleanup: CleanupFn = () => {};
 const instruction = ref<Instruction | null>(null);
 
 onMounted(() => {
+  if (isReadonly.value) return;
   if (!itemRef.value || !dragItemRef.value) return;
   dndCleanup = combine(
     draggable({
@@ -236,7 +238,8 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
         <button class="flex items-center space-x-1 text-sm">
           <span class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
             <div
-              class="relative flex cursor-move justify-center"
+              class="relative flex justify-center"
+              :class="{ 'cursor-move': !isReadonly }"
               :style="{ width: settingsStore.orbatIconSize + 'pt' }"
               ref="dragItemRef"
             >
@@ -280,6 +283,7 @@ const onUnitClick = (unit: NUnit, event: MouseEvent) => {
       <div class="flex items-center">
         <IconLockOutline v-if="unit.locked" class="text-muted-foreground h-5 w-5" />
         <DotsMenu
+          v-if="!isReadonly"
           class="shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           :items="menuItems"
           @action="onUnitMenuAction(unit, $event)"

@@ -5,8 +5,8 @@ import {
   IconMagnifyExpand as ZoomIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
-import { computed, ref, watch } from "vue";
+import { activeScenarioKey, readonlyKey } from "@/components/injects";
+import { computed, inject, ref, watch } from "vue";
 import type { FeatureId, ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import EditableLabel from "@/components/EditableLabel.vue";
 import type { ScenarioMapLayerUpdate } from "@/types/internalModels";
@@ -38,6 +38,7 @@ const {
   geo,
   store: { groupUpdate },
 } = injectStrict(activeScenarioKey);
+const isReadonly = inject(readonlyKey, ref(false));
 
 const { clear } = useSelectedItems();
 
@@ -68,10 +69,10 @@ watch(
 );
 
 const tabList = computed(() => {
-  const base = [
-    { label: "Details", value: "0" },
-    { label: "Settings", value: "1" },
-  ];
+  const base = [{ label: "Details", value: "0" }];
+  if (!isReadonly.value) {
+    base.push({ label: "Settings", value: "1" });
+  }
   if (uiStore.debugMode) {
     base.push({ label: "Debug", value: "2" });
   }
@@ -102,10 +103,15 @@ function updateLayer(data: ScenarioMapLayerUpdate, options: LayerUpdateOptions =
 }
 const opacityAsPercent = computed(() => (opacity.value! * 100).toFixed(0));
 
-const imageLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
-  { label: "Zoom to", action: "zoom" },
-  { label: "Delete", action: "delete" },
-];
+const imageLayerMenuItems = computed((): MenuItemData<ScenarioMapLayerAction>[] => {
+  const items: MenuItemData<ScenarioMapLayerAction>[] = [
+    { label: "Zoom to", action: "zoom" },
+  ];
+  if (!isReadonly.value) {
+    items.push({ label: "Delete", action: "delete" });
+  }
+  return items;
+});
 
 function onImageLayerAction(action: ScenarioMapLayerAction) {
   if (action === "zoom") imageBus.emit({ action, id: mapLayer.value.id });
@@ -122,7 +128,11 @@ function toggleLayerVisibility() {
 <template>
   <div v-if="mapLayer">
     <header>
-      <EditableLabel v-model="layerName" @update-value="updateValue('name', $event)" />
+      <EditableLabel
+        v-model="layerName"
+        @update-value="updateValue('name', $event)"
+        :disabled="isReadonly"
+      />
       <div class="flex">
         <div class="flex flex-auto items-center">
           <component

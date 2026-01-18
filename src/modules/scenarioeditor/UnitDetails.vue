@@ -2,6 +2,7 @@
 import {
   computed,
   defineAsyncComponent,
+  inject,
   ref,
   useTemplateRef,
   watch,
@@ -27,7 +28,12 @@ import { type UnitAction, UnitActions } from "@/types/constants";
 import SplitButton from "@/components/SplitButton.vue";
 import { type EntityId } from "@/types/base";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, searchActionsKey, sidcModalKey } from "@/components/injects";
+import {
+  activeScenarioKey,
+  searchActionsKey,
+  sidcModalKey,
+  readonlyKey,
+} from "@/components/injects";
 import type { MediaUpdate, UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
@@ -77,6 +83,7 @@ const {
 } = activeScenario;
 
 const { onUnitSelectHook } = injectStrict(searchActionsKey);
+const isReadonly = inject(readonlyKey, ref(false));
 
 const {
   state: { unitStatusMap },
@@ -121,7 +128,7 @@ const unitStatus = computed(() => {
   return status ? unitStatusMap[status]?.name : undefined;
 });
 
-const isLocked = computed(() => isUnitLocked(props.unitId));
+const isLocked = computed(() => isUnitLocked(props.unitId) || isReadonly.value);
 
 const geoStore = useGeoStore();
 const unitSettings = useUnitSettingsStore();
@@ -144,12 +151,12 @@ const unitMenuItems = computed((): MenuItemData[] => [
     ? {
         label: "Unlock unit",
         action: () => setLocked(false),
-        disabled: isUnitLocked(props.unitId, { excludeUnit: true }),
+        disabled: isUnitLocked(props.unitId, { excludeUnit: true }) || isReadonly.value,
       }
     : {
         label: "Lock unit",
         action: () => setLocked(true),
-        disabled: isUnitLocked(props.unitId, { excludeUnit: true }),
+        disabled: isUnitLocked(props.unitId, { excludeUnit: true }) || isReadonly.value,
       },
 ]);
 

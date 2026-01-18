@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, inject, onMounted, onUnmounted, ref } from "vue";
 import OrbatTree from "./OrbatTree.vue";
 import { ChevronUpIcon } from "@heroicons/vue/24/solid";
 import {
@@ -18,7 +18,7 @@ import SecondaryButton from "./SecondaryButton.vue";
 import EditSideGroupForm from "./EditSideGroupForm.vue";
 import type { NSideGroup, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, readonlyKey } from "@/components/injects";
 
 import {
   getSideGroupDragItem,
@@ -65,6 +65,7 @@ const instruction = ref<Instruction | null>(null);
 const {
   store: { state },
 } = injectStrict(activeScenarioKey);
+const isReadonly = inject(readonlyKey, ref(false));
 
 const isDragOver = ref(false);
 const isOpen = ref(true);
@@ -82,7 +83,8 @@ const {
 );
 
 const isLocked = computed(
-  () => !!(props.group.locked || state.sideMap[props.group._pid!].locked),
+  () =>
+    !!(props.group.locked || state.sideMap[props.group._pid!].locked || isReadonly.value),
 );
 
 const isHidden = computed(
@@ -110,6 +112,7 @@ if (props.group._isNew) {
 let dndCleanup: CleanupFn = () => {};
 
 onMounted(() => {
+  if (isReadonly.value) return;
   if (!dropRef.value) {
     return;
   }
@@ -214,6 +217,7 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
       <IconDrag
         class="text-muted-foreground h-6 w-6 cursor-move group-focus-within:opacity-100 group-hover:opacity-100 sm:-ml-3 sm:opacity-0"
         ref="dragRef"
+        v-if="!isReadonly"
       />
       <div class="flex flex-auto items-center">
         <button
@@ -253,6 +257,7 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
         :is-side-hidden="isSideHidden"
         :is-side-group-hidden="isSideGroupHidden"
         @action="onSideGroupAction(group, $event)"
+        v-if="!isReadonly"
       />
       <TreeDropIndicator
         v-if="instruction"
@@ -279,7 +284,7 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
         :symbol-options="combinedSymbolOptions"
       />
       <div
-        v-if="!group.subUnits.length"
+        v-if="!group.subUnits.length && !isReadonly"
         class="border-border mr-4 flex justify-center border-2 border-dashed p-8"
       >
         <SecondaryButton @click="addGroupUnit(group)">Add root unit</SecondaryButton>

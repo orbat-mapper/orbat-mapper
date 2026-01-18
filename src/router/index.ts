@@ -21,6 +21,8 @@ declare module "vue-router" {
   }
 }
 
+const ScenarioReadOnlyWrapper = () =>
+  import("../modules/scenarioeditor/ScenarioReadOnlyWrapper.vue");
 const ScenarioEditorWrapper = () =>
   import("../modules/scenarioeditor/ScenarioEditorWrapper.vue");
 const NewScenarioView = () => import("../modules/scenarioeditor/NewScenarioView.vue");
@@ -36,6 +38,14 @@ const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
 const ScenarioEditorMap = () => import("@/modules/scenarioeditor/ScenarioEditorMap.vue");
 const routes = [
+  {
+    path: "/view/:scenarioId",
+    props: true,
+    component: ScenarioReadOnlyWrapper,
+    beforeEnter: (to, from) => {
+      NProgress.start();
+    },
+  },
   {
     path: "/scenario/:scenarioId",
     props: true,

@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { injectStrict, nanoid, triggerPostMoveFlash } from "@/utils";
-import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
+import {
+  activeLayerKey,
+  activeMapKey,
+  activeScenarioKey,
+  readonlyKey,
+} from "@/components/injects";
 import {
   useFeatureLayerUtils,
   useScenarioLayerSync,
 } from "@/modules/scenarioeditor/featureLayerUtils";
 import ChevronPanel from "@/components/ChevronPanel.vue";
-import { nextTick, onMounted, onUnmounted, ref } from "vue";
+import { inject, nextTick, onMounted, onUnmounted, ref } from "vue";
 import type { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import type {
   FeatureId,
@@ -49,6 +54,7 @@ const {
   geo,
   store: { groupUpdate, state },
 } = injectStrict(activeScenarioKey);
+const isReadonly = inject(readonlyKey, ref(false));
 
 const { mapLayers } = geo;
 uiStore.layersPanelActive = true;
@@ -305,6 +311,7 @@ function onLayerDrop(layer: NScenarioLayer, feature: NScenarioFeature) {
 
 let dndCleanup: () => void = () => {};
 onMounted(() => {
+  if (isReadonly.value) return;
   dndCleanup = monitorForElements({
     canMonitor: ({ source }) =>
       isScenarioFeatureDragItem(source.data) ||
@@ -384,6 +391,7 @@ onUnmounted(() => {
       <template #right>
         <div class="flex items-center">
           <DotsMenu
+            v-if="!isReadonly"
             class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
             :items="mapLayersMenuItems"
           />
@@ -435,6 +443,7 @@ onUnmounted(() => {
               <IconEye class="h-5 w-5" v-else />
             </button>
             <DotsMenu
+              v-if="!isReadonly"
               :items="mapLayerMenuItems"
               @action="onMapLayerAction(layer, $event)"
               class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
@@ -456,7 +465,7 @@ onUnmounted(() => {
       @layer-action="onLayerAction"
     />
 
-    <footer class="my-8 text-right">
+    <footer class="my-8 text-right" v-if="!isReadonly">
       <SplitButton :items="mapLayerButtonItems" />
     </footer>
   </div>

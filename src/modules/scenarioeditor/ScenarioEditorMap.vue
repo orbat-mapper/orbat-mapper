@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import {
   computed,
+  inject,
   onActivated,
   onUnmounted,
   provide,
+  ref,
   type ShallowRef,
   shallowRef,
   watch,
@@ -69,6 +71,9 @@ provide(
   activeFeatureSelectInteractionKey,
   featureSelectInteractionRef as ShallowRef<Select>,
 );
+
+import { readonlyKey } from "@/components/injects";
+const isReadonly = inject(readonlyKey, ref(false));
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 
@@ -277,7 +282,7 @@ watch(
         @show-settings="emit('show-settings')"
       />
     </template>
-    <KeyboardScenarioActions v-if="mapRef" />
+    <KeyboardScenarioActions v-if="mapRef && !isReadonly" />
     <SearchScenarioActions v-if="mapRef" />
     <GlobalEvents
       v-if="ui.shortcutsEnabled"
