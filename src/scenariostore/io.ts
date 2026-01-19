@@ -30,6 +30,7 @@ import {
   TIMESTAMP_NAMES,
 } from "@/types/internalModels";
 import dayjs from "dayjs";
+import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import type {
   RangeRingGroup,
   ScenarioLayer,
@@ -371,7 +372,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     if (INTERNAL_NAMES.includes(name)) return undefined;
     if (TIMESTAMP_NAMES.includes(name)) {
       return dayjs(val)
-        .tz(store.value.state.info.timeZone || "UTC")
+        .tz(resolveTimeZone(store.value.state.info.timeZone || "UTC"))
         .format();
     }
     return val;
