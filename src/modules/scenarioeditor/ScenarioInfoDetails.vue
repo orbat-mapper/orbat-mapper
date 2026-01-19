@@ -12,6 +12,7 @@ import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import { useNotifications } from "@/composables/notifications";
+import { resolveTimeZone } from "@/utils/militaryTimeZones";
 
 const { send } = useNotifications();
 
@@ -73,7 +74,7 @@ watch(
 
 const computedStartTime = computed(() => {
   try {
-    return dayjs(form.value.startTime).tz(form.value.timeZone);
+    return dayjs(form.value.startTime).tz(resolveTimeZone(form.value.timeZone || "UTC"));
   } catch (e) {
     return dayjs(form.value.startTime);
   }

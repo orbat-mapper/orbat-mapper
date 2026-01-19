@@ -17,6 +17,7 @@ import { createEventHook } from "@vueuse/core";
 import { invalidateUnitStyle } from "@/geo/unitStyles";
 import type { CurrentScenarioFeatureState } from "@/types/scenarioGeoModels";
 import { nanoid } from "@/utils";
+import { resolveTimeZone } from "@/utils/militaryTimeZones";
 
 export type GoToScenarioEventOptions = {
   silent?: boolean;
@@ -211,14 +212,20 @@ export function useScenarioTime(store: NewScenarioStore) {
 
   function add(amount: number, unit: ManipulateType, normalize = false) {
     const newTime = normalize
-      ? dayjs(state.currentTime).add(amount, unit).tz(timeZone.value).hour(12)
+      ? dayjs(state.currentTime)
+          .add(amount, unit)
+          .tz(resolveTimeZone(timeZone.value || "UTC"))
+          .hour(12)
       : dayjs(state.currentTime).add(amount, unit);
     setCurrentTime(newTime.valueOf());
   }
 
   function subtract(amount: number, unit: ManipulateType, normalize = false) {
     const newTime = normalize
-      ? dayjs(state.currentTime).subtract(amount, unit).tz(timeZone.value).hour(12)
+      ? dayjs(state.currentTime)
+          .subtract(amount, unit)
+          .tz(resolveTimeZone(timeZone.value || "UTC"))
+          .hour(12)
       : dayjs(state.currentTime).subtract(amount, unit);
     setCurrentTime(newTime.valueOf());
   }
@@ -322,7 +329,7 @@ export function useScenarioTime(store: NewScenarioStore) {
   });
 
   const scenarioTime = computed(() => {
-    return dayjs(state.currentTime).tz(state.info.timeZone || "UTC");
+    return dayjs(state.currentTime).tz(resolveTimeZone(state.info.timeZone || "UTC"));
   });
 
   const timeZone = computed(() => {

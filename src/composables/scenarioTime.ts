@@ -1,5 +1,6 @@
 import { computed, type MaybeRef, ref, unref, watch } from "vue";
 import dayjs from "dayjs";
+import { resolveTimeZone } from "@/utils/militaryTimeZones";
 
 export function useDateElements({
   timestamp,
@@ -16,7 +17,7 @@ export function useDateElements({
 
   const inputDateTime = computed(() => {
     return unref(isLocal)
-      ? dayjs.utc(unref(timestamp)).tz(unref(timeZone))
+      ? dayjs.utc(unref(timestamp)).tz(resolveTimeZone(unref(timeZone)))
       : dayjs.utc(unref(timestamp));
   });
   watch(
@@ -32,7 +33,10 @@ export function useDateElements({
   const resDateTime = computed(() => {
     try {
       if (unref(isLocal))
-        return dayjs.tz(`${date.value} ${hour.value}:${minute.value}`, unref(timeZone));
+        return dayjs.tz(
+          `${date.value} ${hour.value}:${minute.value}`,
+          resolveTimeZone(unref(timeZone)),
+        );
       return dayjs.utc(`${date.value} ${hour.value}:${minute.value}`);
     } catch (e) {
       return dayjs(0);
@@ -58,7 +62,7 @@ export function useYMDElements({
 
   const inputDateTime = computed(() => {
     return unref(isLocal)
-      ? dayjs.utc(unref(timestamp)).tz(unref(timeZone))
+      ? dayjs.utc(unref(timestamp)).tz(resolveTimeZone(unref(timeZone)))
       : dayjs.utc(unref(timestamp));
   });
   watch(
@@ -78,7 +82,7 @@ export function useYMDElements({
       if (unref(isLocal))
         return dayjs.tz(
           `${year.value}-${month.value}-${day.value} ${hour.value}:${minute.value}`,
-          unref(timeZone),
+          resolveTimeZone(unref(timeZone)),
         );
       return dayjs.utc(`${year.value}-${month.value}-${day.value}`);
     } catch (e) {

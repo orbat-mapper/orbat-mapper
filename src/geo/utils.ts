@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { toStringHDMS } from "ol/coordinate";
 import { formatDecimalDegrees, formatMGRS, type MGRSPrecision } from "@/utils/geoConvert";
@@ -40,14 +41,14 @@ export const UTC2MILITARY: Record<string, string> = {
 
 export function formatDateString(value?: number, timeZone?: string, template?: string) {
   if (value === undefined || value === null) return "";
-  if (timeZone) return dayjs(value).tz(timeZone).format(template);
+  if (timeZone) return dayjs(value).tz(resolveTimeZone(timeZone)).format(template);
 
   return dayjs.utc(value).format(template);
 }
 
 export function formatDTG(value: number, timeZone: string) {
   if (value === undefined || value === null) return "";
-  const date = dayjs(value).tz(timeZone);
+  const date = dayjs(value).tz(resolveTimeZone(timeZone));
   const offset = Math.round(date.utcOffset() / 60).toString();
   const letter = UTC2MILITARY[offset] ?? "Z";
   return date.format(`DDHHmm[${letter}]MMMYY`).toUpperCase();
