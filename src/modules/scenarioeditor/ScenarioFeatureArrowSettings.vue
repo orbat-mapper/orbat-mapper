@@ -17,6 +17,7 @@ const arrowTypeOptions: { label: string; value: ArrowType }[] = [
   { label: "Arrow (open)", value: "arrow-open" },
   { label: "Arrow (curved)", value: "arrow-curved" },
   { label: "Arrow (stealth)", value: "arrow-stealth" },
+  { label: "Arrow (double)", value: "arrow-double" },
   { label: "Dot", value: "dot" },
   { label: "Square", value: "square" },
   { label: "Diamond", value: "diamond" },
@@ -31,15 +32,17 @@ const arrowSettings = computed(() => {
   };
 });
 
-function updateValue(name: keyof ArrowStyleSpec, value: string) {
-  // If setting color back to stroke color, remove the override
+function updateValue(name: keyof ArrowStyleSpec, value: string | null | undefined) {
+  // If setting color back to stroke color or setting to null, remove the override
   if (
     name === "arrow-color" &&
-    value === (props.feature.style.stroke ?? defaultStrokeColor)
+    (value === null ||
+      value === undefined ||
+      value === (props.feature.style.stroke ?? defaultStrokeColor))
   ) {
     emit("update", { style: { "arrow-color": undefined } });
   } else {
-    emit("update", { style: { [name]: value } });
+    emit("update", { style: { [name]: value as any } });
   }
 }
 
@@ -72,8 +75,10 @@ const showColorPicker = computed(() => {
   <template v-if="showColorPicker">
     <div class="self-center">Color</div>
     <PopoverColorPicker
+      class="col-span-1"
       :model-value="arrowSettings['arrow-color']"
       @update:model-value="updateValue('arrow-color', $event)"
+      show-none
     />
   </template>
 </template>

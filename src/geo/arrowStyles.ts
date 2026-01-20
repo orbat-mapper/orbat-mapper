@@ -98,6 +98,16 @@ export function createArrowMarkerImage(
       });
     }
 
+    case "arrow-double": {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,2 L12,12 L2,22 Z M10,2 L20,12 L10,22 Z" /></svg>`;
+      return new Icon({
+        src: "data:image/svg+xml;base64," + btoa(svg),
+        rotation: -rotation,
+        scale: scale * 0.8,
+        anchor: [0.5, 0.5],
+      });
+    }
+
     case "dot":
       return new CircleStyle({
         fill,
@@ -111,7 +121,7 @@ export function createArrowMarkerImage(
         stroke: new Stroke({ color: "#fff", width: 1 }),
         points: 4,
         radius: size * 0.7,
-        rotation: Math.PI / 4,
+        rotation: -rotation + Math.PI / 4,
         angle: 0,
       });
 
@@ -121,7 +131,7 @@ export function createArrowMarkerImage(
         stroke: new Stroke({ color: "#fff", width: 1 }),
         points: 4,
         radius: size * 0.7,
-        rotation: 0,
+        rotation: -rotation,
         angle: 0,
       });
 

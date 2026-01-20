@@ -100,6 +100,11 @@ describe("createArrowMarkerImage", () => {
     expect(image).toBeInstanceOf(Icon);
   });
 
+  it("creates an Icon for 'arrow-double' type", () => {
+    const image = createArrowMarkerImage("arrow-double", "#ff0000", 0);
+    expect(image).toBeInstanceOf(Icon);
+  });
+
   it("respects scale parameter", () => {
     const scale1 = createArrowMarkerImage("arrow", "#000", 0, 1) as RegularShape;
     const scale2 = createArrowMarkerImage("arrow", "#000", 0, 2) as RegularShape;
