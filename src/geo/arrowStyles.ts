@@ -11,6 +11,7 @@ import RegularShape from "ol/style/RegularShape";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
+import Icon from "ol/style/Icon";
 import type { ArrowType, ArrowStyleSpec } from "./simplestyle";
 
 /**
@@ -50,7 +51,7 @@ export function createArrowMarkerImage(
   color: string,
   rotation: number,
   scale: number = 1,
-): RegularShape | CircleStyle | null {
+): RegularShape | CircleStyle | Icon | null {
   if (arrowType === "none") return null;
 
   const fill = new Fill({ color });
@@ -76,6 +77,26 @@ export function createArrowMarkerImage(
         rotation: -rotation + Math.PI / 2,
         angle: 0,
       });
+
+    case "arrow-curved": {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,12 Q6,12 10,4 L22,12 L10,20 Q6,12 2,12 Z" /></svg>`;
+      return new Icon({
+        src: "data:image/svg+xml;base64," + btoa(svg),
+        rotation: -rotation,
+        scale: scale * 0.8,
+        anchor: [0.5, 0.5],
+      });
+    }
+
+    case "arrow-stealth": {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,2 L22,12 L2,22 L6,12 Z" /></svg>`;
+      return new Icon({
+        src: "data:image/svg+xml;base64," + btoa(svg),
+        rotation: -rotation,
+        scale: scale * 0.8,
+        anchor: [0.5, 0.5],
+      });
+    }
 
     case "dot":
       return new CircleStyle({

@@ -15,6 +15,8 @@ const arrowTypeOptions: { label: string; value: ArrowType }[] = [
   { label: "None", value: "none" },
   { label: "Arrow", value: "arrow" },
   { label: "Arrow (open)", value: "arrow-open" },
+  { label: "Arrow (curved)", value: "arrow-curved" },
+  { label: "Arrow (stealth)", value: "arrow-stealth" },
   { label: "Dot", value: "dot" },
   { label: "Square", value: "square" },
   { label: "Diamond", value: "diamond" },

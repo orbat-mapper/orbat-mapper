@@ -4,6 +4,7 @@ import { LineString, Point, Polygon } from "ol/geom";
 import Style from "ol/style/Style";
 import RegularShape from "ol/style/RegularShape";
 import CircleStyle from "ol/style/Circle";
+import Icon from "ol/style/Icon";
 
 describe("getLineAngle", () => {
   it("returns 0 for a horizontal line pointing right", () => {
@@ -87,6 +88,16 @@ describe("createArrowMarkerImage", () => {
   it("creates a RegularShape for 'diamond' type", () => {
     const image = createArrowMarkerImage("diamond", "#ff0000", 0);
     expect(image).toBeInstanceOf(RegularShape);
+  });
+
+  it("creates an Icon for 'arrow-curved' type", () => {
+    const image = createArrowMarkerImage("arrow-curved", "#ff0000", 0);
+    expect(image).toBeInstanceOf(Icon);
+  });
+
+  it("creates an Icon for 'arrow-stealth' type", () => {
+    const image = createArrowMarkerImage("arrow-stealth", "#ff0000", 0);
+    expect(image).toBeInstanceOf(Icon);
   });
 
   it("respects scale parameter", () => {

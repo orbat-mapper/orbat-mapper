@@ -61,7 +61,15 @@ export interface VisibilityStyleSpec {
   maxZoom: number;
 }
 
-export type ArrowType = "none" | "arrow" | "arrow-open" | "dot" | "square" | "diamond";
+export type ArrowType =
+  | "none"
+  | "arrow"
+  | "arrow-open"
+  | "arrow-curved"
+  | "arrow-stealth"
+  | "dot"
+  | "square"
+  | "diamond";
 
 export interface ArrowStyleSpec {
   /** Arrow marker at the start of the line (first coordinate) */
