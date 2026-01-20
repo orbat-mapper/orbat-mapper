@@ -108,6 +108,42 @@ export function createArrowMarkerImage(
       });
     }
 
+    case "arrow-hand-drawn": {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+          d="M 12 10 C 18 16 34 22 44 24 C 34 26 18 32 12 38" />
+        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          d="M 14 14 C 20 18 30 22 40 24 C 30 26 20 30 14 34" />
+      </svg>`;
+      return new Icon({
+        src: "data:image/svg+xml;base64," + btoa(svg),
+        rotation: -rotation,
+        scale: scale * 0.4,
+        anchor: [0.5, 0.5],
+      });
+    }
+
+    case "arrow-double-hand-drawn": {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+        <!-- First arrow -->
+        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+          d="M 4 10 C 10 16 26 22 36 24 C 26 26 10 32 4 38" />
+        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          d="M 6 14 C 12 18 22 22 32 24 C 22 26 12 30 6 34" />
+        <!-- Second arrow -->
+        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+          d="M 12 10 C 18 16 34 22 44 24 C 34 26 18 32 12 38" />
+        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          d="M 14 14 C 20 18 30 22 40 24 C 30 26 20 30 14 34" />
+      </svg>`;
+      return new Icon({
+        src: "data:image/svg+xml;base64," + btoa(svg),
+        rotation: -rotation,
+        scale: scale * 0.4,
+        anchor: [0.5, 0.5],
+      });
+    }
+
     case "dot":
       return new CircleStyle({
         fill,

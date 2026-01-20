@@ -18,6 +18,8 @@ const arrowTypeOptions: { label: string; value: ArrowType }[] = [
   { label: "Arrow (curved)", value: "arrow-curved" },
   { label: "Arrow (stealth)", value: "arrow-stealth" },
   { label: "Arrow (double)", value: "arrow-double" },
+  { label: "Hand drawn", value: "arrow-hand-drawn" },
+  { label: "Hand drawn (double)", value: "arrow-double-hand-drawn" },
   { label: "Dot", value: "dot" },
   { label: "Square", value: "square" },
   { label: "Diamond", value: "diamond" },

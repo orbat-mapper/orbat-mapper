@@ -68,6 +68,8 @@ export type ArrowType =
   | "arrow-curved"
   | "arrow-stealth"
   | "arrow-double"
+  | "arrow-hand-drawn"
+  | "arrow-double-hand-drawn"
   | "dot"
   | "square"
   | "diamond";
