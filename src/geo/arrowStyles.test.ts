@@ -190,6 +190,21 @@ describe("createArrowStyles", () => {
     expect(styles).toHaveLength(1);
   });
 
+  it("scales arrow markers with strokeWidth", () => {
+    const line = new LineString([
+      [0, 0],
+      [10, 10],
+    ]);
+    const stylesWidth2 = createArrowStyles(line, { "arrow-end": "arrow" }, "#000", 2);
+    const stylesWidth4 = createArrowStyles(line, { "arrow-end": "arrow" }, "#000", 4);
+
+    const image2 = stylesWidth2[0].getImage() as RegularShape;
+    const image4 = stylesWidth4[0].getImage() as RegularShape;
+
+    // Radius should be larger for larger strokeWidth
+    expect(image4.getRadius()).toBeGreaterThan(image2.getRadius());
+  });
+
   it("returns empty for lines with too few coordinates", () => {
     const line = new LineString([[0, 0]]);
     const styles = createArrowStyles(line, { "arrow-end": "arrow" });

@@ -145,6 +145,7 @@ export function createArrowStyles(
   geometry: Geometry,
   opts: Partial<ArrowStyleSpec>,
   strokeColor: string = "#555555",
+  strokeWidth: number = 2,
 ): Style[] {
   if (!(geometry instanceof LineString)) return [];
 
@@ -153,6 +154,7 @@ export function createArrowStyles(
   if (coords.length < 2) return [];
 
   const arrowColor = opts["arrow-color"] || strokeColor;
+  const scale = Math.max(0.4, strokeWidth / 2.5);
 
   // Start arrow
   if (opts["arrow-start"] && opts["arrow-start"] !== "none") {
@@ -161,6 +163,7 @@ export function createArrowStyles(
       opts["arrow-start"],
       arrowColor,
       angle + Math.PI, // Point backward from start
+      scale,
     );
     if (image) {
       styles.push(
@@ -175,7 +178,7 @@ export function createArrowStyles(
   // End arrow
   if (opts["arrow-end"] && opts["arrow-end"] !== "none") {
     const angle = getLineAngle(coords, "end");
-    const image = createArrowMarkerImage(opts["arrow-end"], arrowColor, angle);
+    const image = createArrowMarkerImage(opts["arrow-end"], arrowColor, angle, scale);
     if (image) {
       styles.push(
         new Style({

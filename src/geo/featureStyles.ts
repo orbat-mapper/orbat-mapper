@@ -95,6 +95,7 @@ export function useFeatureStyles(geo: TGeo) {
         geometry,
         featureStyle,
         featureStyle.stroke || defaultStrokeColor,
+        featureStyle["stroke-width"] || 2,
       );
       if (arrowStyles.length > 0) {
         arrowStyles.forEach((s) => s.setZIndex((_zIndex ?? 0) + 1));
