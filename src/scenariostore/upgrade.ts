@@ -54,7 +54,10 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           isHidden: false,
         };
 
-        const style: Omit<Required<SimpleStyleSpec>, "_fill" | "_stroke"> = {
+        const style: Omit<
+          Required<SimpleStyleSpec>,
+          "_fill" | "_stroke" | "arrow-color"
+        > = {
           fill,
           "fill-opacity": fillOpacity,
           "stroke-opacity": strokeOpacity,
@@ -75,6 +78,8 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           maxZoom,
           textMinZoom,
           textMaxZoom,
+          "arrow-start": "none",
+          "arrow-end": "none",
         };
         upgradedFeature.meta = meta;
         upgradedFeature.style = style;

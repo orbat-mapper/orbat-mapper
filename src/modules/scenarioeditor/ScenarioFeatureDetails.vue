@@ -19,6 +19,7 @@ import { type ScenarioFeatureMeta } from "@/types/scenarioGeoModels";
 import { useDebounceFn } from "@vueuse/core";
 import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeatureMarkerSettings.vue";
 import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeatureStrokeSettings.vue";
+import ScenarioFeatureArrowSettings from "@/modules/scenarioeditor/ScenarioFeatureArrowSettings.vue";
 import ScenarioFeatureFillSettings from "@/modules/scenarioeditor/ScenarioFeatureFillSettings.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import { type SelectedScenarioFeatures, useSelectedItems } from "@/stores/selectedStore";
@@ -119,6 +120,7 @@ watch(
 
 const geometryType = computed(() => feature.value?.meta.type);
 const hasStroke = computed(() => geometryType.value !== "Point");
+const hasArrows = computed(() => geometryType.value === "LineString");
 const hasFill = computed(
   () => !["Point", "LineString"].includes(geometryType.value || ""),
 );
@@ -261,6 +263,11 @@ function onAction(action: ScenarioFeatureActions) {
             />
             <ScenarioFeatureStrokeSettings
               v-if="feature && hasStroke"
+              :feature="feature"
+              @update="doUpdateFeature"
+            />
+            <ScenarioFeatureArrowSettings
+              v-if="feature && hasArrows"
               :feature="feature"
               @update="doUpdateFeature"
             />

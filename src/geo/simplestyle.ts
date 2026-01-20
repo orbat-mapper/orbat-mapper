@@ -61,13 +61,25 @@ export interface VisibilityStyleSpec {
   maxZoom: number;
 }
 
+export type ArrowType = "none" | "arrow" | "arrow-open" | "dot" | "square" | "diamond";
+
+export interface ArrowStyleSpec {
+  /** Arrow marker at the start of the line (first coordinate) */
+  "arrow-start": ArrowType;
+  /** Arrow marker at the end of the line (last coordinate) */
+  "arrow-end": ArrowType;
+  /** Optional color override for arrow markers (defaults to stroke color) */
+  "arrow-color"?: string;
+}
+
 export interface SimpleStyleSpec
   extends
     StrokeStyleSpec,
     FillStyleSpec,
     MarkerStyleSpec,
     TextStyleSpec,
-    VisibilityStyleSpec {
+    VisibilityStyleSpec,
+    ArrowStyleSpec {
   title: string;
 }
 

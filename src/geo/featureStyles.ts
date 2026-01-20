@@ -4,11 +4,14 @@ import {
   createSimpleStyle,
   defaultSimplestyleFill,
   defaultSimplestyleStroke,
+  defaultStrokeColor,
 } from "./simplestyle";
+import { createArrowStyles } from "./arrowStyles";
 import type { FeatureLike } from "ol/Feature";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { TGeo } from "@/scenariostore";
 import View from "ol/View";
+import Geometry from "ol/geom/Geometry";
 
 let zoomResolutions: number[] = [];
 
@@ -80,6 +83,25 @@ export function useFeatureStyles(geo: TGeo) {
     } else {
       style.getText()?.setText(undefined);
     }
+
+    // Create arrow styles if applicable
+    const geometry = feature.getGeometry();
+    const featureStyle = scenarioFeature.style;
+    if (
+      geometry instanceof Geometry &&
+      (featureStyle["arrow-start"] || featureStyle["arrow-end"])
+    ) {
+      const arrowStyles = createArrowStyles(
+        geometry,
+        featureStyle,
+        featureStyle.stroke || defaultStrokeColor,
+      );
+      if (arrowStyles.length > 0) {
+        arrowStyles.forEach((s) => s.setZIndex((_zIndex ?? 0) + 1));
+        return [style, ...arrowStyles];
+      }
+    }
+
     return style;
   }
 
