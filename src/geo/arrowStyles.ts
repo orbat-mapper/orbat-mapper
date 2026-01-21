@@ -44,6 +44,57 @@ export function getLineAngle(coordinates: number[][], position: "start" | "end")
 }
 
 /**
+ * Get the SVG data URI for an arrow type, for use in direct canvas rendering.
+ * Returns null for shape-based arrow types (which use RegularShape/CircleStyle).
+ *
+ * @param arrowType - The type of arrow marker
+ * @param color - Fill/stroke color for the marker
+ * @returns Base64-encoded SVG data URI, or null for non-SVG types
+ */
+export function getArrowSvgDataUri(arrowType: ArrowType, color: string): string | null {
+  switch (arrowType) {
+    case "arrow-curved": {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,12 Q6,12 10,4 L22,12 L10,20 Q6,12 2,12 Z" /></svg>`;
+      return "data:image/svg+xml;base64," + btoa(svg);
+    }
+    case "arrow-stealth": {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,2 L22,12 L2,22 L6,12 Z" /></svg>`;
+      return "data:image/svg+xml;base64," + btoa(svg);
+    }
+    case "arrow-double": {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,2 L12,12 L2,22 Z M10,2 L20,12 L10,22 Z" /></svg>`;
+      return "data:image/svg+xml;base64," + btoa(svg);
+    }
+    case "arrow-hand-drawn": {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+          d="M 12 10 C 18 16 34 22 44 24 C 34 26 18 32 12 38" />
+        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          d="M 14 14 C 20 18 30 22 40 24 C 30 26 20 30 14 34" />
+      </svg>`;
+      return "data:image/svg+xml;base64," + btoa(svg);
+    }
+    case "arrow-double-hand-drawn": {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+        <!-- First arrow -->
+        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+          d="M 4 10 C 10 16 26 22 36 24 C 26 26 10 32 4 38" />
+        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          d="M 6 14 C 12 18 22 22 32 24 C 22 26 12 30 6 34" />
+        <!-- Second arrow -->
+        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+          d="M 12 10 C 18 16 34 22 44 24 C 34 26 18 32 12 38" />
+        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          d="M 14 14 C 20 18 30 22 40 24 C 30 26 20 30 14 34" />
+      </svg>`;
+      return "data:image/svg+xml;base64," + btoa(svg);
+    }
+    default:
+      return null;
+  }
+}
+
+/**
  * Create an arrow marker image (RegularShape or CircleStyle) for a specific arrow type.
  *
  * @param arrowType - The type of arrow marker to create
