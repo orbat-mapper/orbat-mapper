@@ -96,6 +96,7 @@ export function useFeatureStyles(geo: TGeo) {
         featureStyle,
         featureStyle.stroke || defaultStrokeColor,
         featureStyle["stroke-width"] || 2,
+        featureStyle["stroke-opacity"] ?? 1,
       );
       if (arrowStyles.length > 0) {
         arrowStyles.forEach((s) => s.setZIndex((_zIndex ?? 0) + 1));

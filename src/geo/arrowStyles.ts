@@ -12,6 +12,7 @@ import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
 import Icon from "ol/style/Icon";
+import * as olColor from "ol/color";
 import type { ArrowType, ArrowStyleSpec } from "./simplestyle";
 
 /**
@@ -184,7 +185,9 @@ export function createArrowMarkerImage(
  *
  * @param geometry - The feature geometry (only LineString is supported)
  * @param opts - Arrow style options
- * @param strokeColor - Fallback color if arrow-color is not specified
+ * @param strokeColor - Color for the arrow markers
+ * @param strokeWidth - Width of the stroke
+ * @param strokeOpacity - Opacity of the stroke
  * @returns Array of Style objects for the arrow markers
  */
 export function createArrowStyles(
@@ -192,6 +195,7 @@ export function createArrowStyles(
   opts: Partial<ArrowStyleSpec>,
   strokeColor: string = "#555555",
   strokeWidth: number = 2,
+  strokeOpacity: number = 1,
 ): Style[] {
   if (!(geometry instanceof LineString)) return [];
 
@@ -199,7 +203,9 @@ export function createArrowStyles(
   const coords = geometry.getCoordinates();
   if (coords.length < 2) return [];
 
-  const arrowColor = opts["arrow-color"] || strokeColor;
+  const color = [...olColor.fromString(strokeColor)];
+  color[3] = strokeOpacity;
+  const rgbaColor = olColor.asString(color);
   const scale = Math.max(0.4, strokeWidth / 2.5);
 
   // Start arrow
@@ -207,7 +213,7 @@ export function createArrowStyles(
     const angle = getLineAngle(coords, "start");
     const image = createArrowMarkerImage(
       opts["arrow-start"],
-      arrowColor,
+      rgbaColor,
       angle + Math.PI, // Point backward from start
       scale,
     );
@@ -224,7 +230,7 @@ export function createArrowStyles(
   // End arrow
   if (opts["arrow-end"] && opts["arrow-end"] !== "none") {
     const angle = getLineAngle(coords, "end");
-    const image = createArrowMarkerImage(opts["arrow-end"], arrowColor, angle, scale);
+    const image = createArrowMarkerImage(opts["arrow-end"], rgbaColor, angle, scale);
     if (image) {
       styles.push(
         new Style({

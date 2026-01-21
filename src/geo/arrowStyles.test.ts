@@ -181,21 +181,7 @@ describe("createArrowStyles", () => {
     expect(styles).toHaveLength(2);
   });
 
-  it("uses arrow-color when specified", () => {
-    const line = new LineString([
-      [0, 0],
-      [10, 10],
-    ]);
-    const customColor = "#ff00ff";
-    const styles = createArrowStyles(line, {
-      "arrow-end": "dot",
-      "arrow-color": customColor,
-    });
-    expect(styles).toHaveLength(1);
-    // The style has the arrow marker; we verify indirectly that it was created
-  });
-
-  it("falls back to strokeColor when arrow-color not specified", () => {
+  it("uses strokeColor for arrow markers", () => {
     const line = new LineString([
       [0, 0],
       [10, 10],
@@ -203,6 +189,25 @@ describe("createArrowStyles", () => {
     const strokeColor = "#00ff00";
     const styles = createArrowStyles(line, { "arrow-end": "arrow" }, strokeColor);
     expect(styles).toHaveLength(1);
+  });
+
+  it("uses strokeOpacity for arrow markers", () => {
+    const line = new LineString([
+      [0, 0],
+      [10, 10],
+    ]);
+    const strokeColor = "#ff0000";
+    const strokeOpacity = 0.5;
+    const styles = createArrowStyles(
+      line,
+      { "arrow-end": "arrow" },
+      strokeColor,
+      2,
+      strokeOpacity,
+    );
+    expect(styles).toHaveLength(1);
+    const image = styles[0].getImage() as RegularShape;
+    expect(image.getFill()?.getColor()).toBe("rgba(255,0,0,0.5)");
   });
 
   it("scales arrow markers with strokeWidth", () => {

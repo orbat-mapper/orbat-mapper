@@ -54,10 +54,7 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           isHidden: false,
         };
 
-        const style: Omit<
-          Required<SimpleStyleSpec>,
-          "_fill" | "_stroke" | "arrow-color"
-        > = {
+        const style: Omit<Required<SimpleStyleSpec>, "_fill" | "_stroke"> = {
           fill,
           "fill-opacity": fillOpacity,
           "stroke-opacity": strokeOpacity,

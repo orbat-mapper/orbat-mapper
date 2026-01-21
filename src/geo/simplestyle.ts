@@ -79,8 +79,6 @@ export interface ArrowStyleSpec {
   "arrow-start": ArrowType;
   /** Arrow marker at the end of the line (last coordinate) */
   "arrow-end": ArrowType;
-  /** Optional color override for arrow markers (defaults to stroke color) */
-  "arrow-color"?: string;
 }
 
 export interface SimpleStyleSpec
