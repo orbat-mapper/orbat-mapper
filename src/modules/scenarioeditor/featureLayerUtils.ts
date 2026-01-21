@@ -169,15 +169,20 @@ export function useScenarioFeatureSelect(
     hitTolerance: 20,
     layers: scenarioLayersOl.getArray(),
     style: (feature: FeatureLike, res: number): Style | Style[] => {
-      const s = scenarioFeatureStyle(feature, res, true)!;
+      const styleOrStyles = scenarioFeatureStyle(feature, res, true)!;
+      // scenarioFeatureStyle may return an array when arrows are present
+      const baseStyle = Array.isArray(styleOrStyles) ? styleOrStyles[0] : styleOrStyles;
       let activeSelectStyle: Style;
       if (feature.getGeometry()?.getType() === "Point") {
         activeSelectStyle = selectMarkerStyle;
       } else {
-        selectStyle.getStroke()?.setWidth((s.getStroke()?.getWidth() || 0) + 8);
+        selectStyle.getStroke()?.setWidth((baseStyle.getStroke()?.getWidth() || 0) + 8);
         activeSelectStyle = selectStyle;
       }
-      return [activeSelectStyle, s];
+      if (Array.isArray(styleOrStyles)) {
+        return [activeSelectStyle, ...styleOrStyles];
+      }
+      return [activeSelectStyle, baseStyle];
     },
   });
   const selectedFeatures = selectInteraction.getFeatures();

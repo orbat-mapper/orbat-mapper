@@ -75,6 +75,8 @@ export function upgradeScenarioIfNecessary(scenario: Scenario): Scenario {
           maxZoom,
           textMinZoom,
           textMaxZoom,
+          "arrow-start": "none",
+          "arrow-end": "none",
         };
         upgradedFeature.meta = meta;
         upgradedFeature.style = style;

@@ -61,13 +61,35 @@ export interface VisibilityStyleSpec {
   maxZoom: number;
 }
 
+export type ArrowType =
+  | "none"
+  | "arrow"
+  | "arrow-open"
+  | "arrow-curved"
+  | "arrow-stealth"
+  | "arrow-double"
+  | "arrow-hand-drawn"
+  | "arrow-double-hand-drawn"
+  | "dot"
+  | "square"
+  | "diamond"
+  | "bar";
+
+export interface ArrowStyleSpec {
+  /** Arrow marker at the start of the line (first coordinate) */
+  "arrow-start": ArrowType;
+  /** Arrow marker at the end of the line (last coordinate) */
+  "arrow-end": ArrowType;
+}
+
 export interface SimpleStyleSpec
   extends
     StrokeStyleSpec,
     FillStyleSpec,
     MarkerStyleSpec,
     TextStyleSpec,
-    VisibilityStyleSpec {
+    VisibilityStyleSpec,
+    ArrowStyleSpec {
   title: string;
 }
 
