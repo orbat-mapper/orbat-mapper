@@ -90,6 +90,11 @@ describe("createArrowMarkerImage", () => {
     expect(image).toBeInstanceOf(RegularShape);
   });
 
+  it("creates a RegularShape for 'bar' type", () => {
+    const image = createArrowMarkerImage("bar", "#ff0000", 0);
+    expect(image).toBeInstanceOf(RegularShape);
+  });
+
   it("creates an Icon for 'arrow-curved' type", () => {
     const image = createArrowMarkerImage("arrow-curved", "#ff0000", 0);
     expect(image).toBeInstanceOf(Icon);
@@ -187,7 +192,7 @@ describe("createArrowStyles", () => {
       [10, 10],
     ]);
     const strokeColor = "#00ff00";
-    const styles = createArrowStyles(line, { "arrow-end": "arrow" }, strokeColor);
+    const styles = createArrowStyles(line, { "arrow-end": "arrow", stroke: strokeColor });
     expect(styles).toHaveLength(1);
   });
 
@@ -198,13 +203,11 @@ describe("createArrowStyles", () => {
     ]);
     const strokeColor = "#ff0000";
     const strokeOpacity = 0.5;
-    const styles = createArrowStyles(
-      line,
-      { "arrow-end": "arrow" },
-      strokeColor,
-      2,
-      strokeOpacity,
-    );
+    const styles = createArrowStyles(line, {
+      "arrow-end": "arrow",
+      stroke: strokeColor,
+      "stroke-opacity": strokeOpacity,
+    });
     expect(styles).toHaveLength(1);
     const image = styles[0].getImage() as RegularShape;
     expect(image.getFill()?.getColor()).toBe("rgba(255,0,0,0.5)");
@@ -215,8 +218,16 @@ describe("createArrowStyles", () => {
       [0, 0],
       [10, 10],
     ]);
-    const stylesWidth2 = createArrowStyles(line, { "arrow-end": "arrow" }, "#000", 2);
-    const stylesWidth4 = createArrowStyles(line, { "arrow-end": "arrow" }, "#000", 4);
+    const stylesWidth2 = createArrowStyles(line, {
+      "arrow-end": "arrow",
+      stroke: "#000",
+      "stroke-width": 2,
+    });
+    const stylesWidth4 = createArrowStyles(line, {
+      "arrow-end": "arrow",
+      stroke: "#000",
+      "stroke-width": 4,
+    });
 
     const image2 = stylesWidth2[0].getImage() as RegularShape;
     const image4 = stylesWidth4[0].getImage() as RegularShape;

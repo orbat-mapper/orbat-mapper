@@ -21,6 +21,7 @@ const arrowTypeOptions: { label: string; value: ArrowType }[] = [
   { label: "Dot", value: "dot" },
   { label: "Square", value: "square" },
   { label: "Diamond", value: "diamond" },
+  { label: "Bar", value: "bar" },
 ];
 
 const arrowSettings = computed(() => {

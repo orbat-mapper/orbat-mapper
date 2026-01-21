@@ -13,7 +13,12 @@ import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
 import Icon from "ol/style/Icon";
 import * as olColor from "ol/color";
-import type { ArrowType, ArrowStyleSpec } from "./simplestyle";
+import type { ArrowType, SimpleStyleSpec } from "./simplestyle";
+import {
+  defaultStrokeColor,
+  defaultStrokeOpacity,
+  defaultStrokeWidth,
+} from "./simplestyle";
 
 /**
  * Calculate the angle of a line segment at the start or end of a line.
@@ -54,16 +59,17 @@ export function createArrowMarkerImage(
   scale: number = 1,
 ): RegularShape | CircleStyle | Icon | null {
   if (arrowType === "none") return null;
-
-  const fill = new Fill({ color });
-  const stroke = new Stroke({ color, width: 2 });
   const size = 10 * scale;
+
+  // Helper functions to create fill/stroke on demand
+  const createFill = () => new Fill({ color });
+  const createStroke = () => new Stroke({ color, width: 2 });
 
   switch (arrowType) {
     case "arrow":
       return new RegularShape({
-        fill,
-        stroke,
+        fill: createFill(),
+        stroke: createStroke(),
         points: 3,
         radius: size,
         rotation: -rotation + Math.PI / 2,
@@ -72,7 +78,7 @@ export function createArrowMarkerImage(
 
     case "arrow-open":
       return new RegularShape({
-        stroke,
+        stroke: createStroke(),
         points: 3,
         radius: size,
         rotation: -rotation + Math.PI / 2,
@@ -147,15 +153,13 @@ export function createArrowMarkerImage(
 
     case "dot":
       return new CircleStyle({
-        fill,
-        stroke: new Stroke({ color: "#fff", width: 1 }),
+        fill: createFill(),
         radius: size / 2,
       });
 
     case "square":
       return new RegularShape({
-        fill,
-        stroke: new Stroke({ color: "#fff", width: 1 }),
+        fill: createFill(),
         points: 4,
         radius: size * 0.7,
         rotation: -rotation + Math.PI / 4,
@@ -164,10 +168,18 @@ export function createArrowMarkerImage(
 
     case "diamond":
       return new RegularShape({
-        fill,
-        stroke: new Stroke({ color: "#fff", width: 1 }),
+        fill: createFill(),
         points: 4,
         radius: size * 0.7,
+        rotation: -rotation,
+        angle: 0,
+      });
+
+    case "bar":
+      return new RegularShape({
+        stroke: new Stroke({ color, width: 2 + 4 * scale }),
+        points: 2,
+        radius: size,
         rotation: -rotation,
         angle: 0,
       });
@@ -184,24 +196,22 @@ export function createArrowMarkerImage(
  * Each style renders an arrow marker at the appropriate position with correct rotation.
  *
  * @param geometry - The feature geometry (only LineString is supported)
- * @param opts - Arrow style options
- * @param strokeColor - Color for the arrow markers
- * @param strokeWidth - Width of the stroke
- * @param strokeOpacity - Opacity of the stroke
+ * @param opts - Style options (including arrows, stroke, etc.)
  * @returns Array of Style objects for the arrow markers
  */
 export function createArrowStyles(
   geometry: Geometry,
-  opts: Partial<ArrowStyleSpec>,
-  strokeColor: string = "#555555",
-  strokeWidth: number = 2,
-  strokeOpacity: number = 1,
+  opts: Partial<SimpleStyleSpec>,
 ): Style[] {
   if (!(geometry instanceof LineString)) return [];
 
   const styles: Style[] = [];
   const coords = geometry.getCoordinates();
   if (coords.length < 2) return [];
+
+  const strokeColor = opts.stroke || defaultStrokeColor;
+  const strokeWidth = opts["stroke-width"] || defaultStrokeWidth;
+  const strokeOpacity = opts["stroke-opacity"] ?? defaultStrokeOpacity;
 
   const color = [...olColor.fromString(strokeColor)];
   color[3] = strokeOpacity;

@@ -91,13 +91,7 @@ export function useFeatureStyles(geo: TGeo) {
       geometry instanceof Geometry &&
       (featureStyle["arrow-start"] || featureStyle["arrow-end"])
     ) {
-      const arrowStyles = createArrowStyles(
-        geometry,
-        featureStyle,
-        featureStyle.stroke || defaultStrokeColor,
-        featureStyle["stroke-width"] || 2,
-        featureStyle["stroke-opacity"] ?? 1,
-      );
+      const arrowStyles = createArrowStyles(geometry, featureStyle);
       if (arrowStyles.length > 0) {
         arrowStyles.forEach((s) => s.setZIndex((_zIndex ?? 0) + 1));
         return [style, ...arrowStyles];

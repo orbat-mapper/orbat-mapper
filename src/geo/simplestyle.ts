@@ -72,7 +72,8 @@ export type ArrowType =
   | "arrow-double-hand-drawn"
   | "dot"
   | "square"
-  | "diamond";
+  | "diamond"
+  | "bar";
 
 export interface ArrowStyleSpec {
   /** Arrow marker at the start of the line (first coordinate) */
