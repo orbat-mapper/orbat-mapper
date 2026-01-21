@@ -259,6 +259,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "2.2.0"
   | "2.1.0"
   | "2.0.0"
   | "1.1.0"
