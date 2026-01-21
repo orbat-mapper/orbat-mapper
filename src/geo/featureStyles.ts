@@ -4,7 +4,6 @@ import {
   createSimpleStyle,
   defaultSimplestyleFill,
   defaultSimplestyleStroke,
-  defaultStrokeColor,
 } from "./simplestyle";
 import { createArrowStyles } from "./arrowStyles";
 import type { FeatureLike } from "ol/Feature";
@@ -35,7 +34,7 @@ const defaultStyle = new Style({
 });
 
 export function useFeatureStyles(geo: TGeo) {
-  const styleCache = new Map<any, Style>();
+  const styleCache = new Map<any, Style | Style[]>();
 
   function clearCache() {
     styleCache.clear();
@@ -47,8 +46,10 @@ export function useFeatureStyles(geo: TGeo) {
     overrideLimitVisibility = false,
   ) {
     const featureId = feature.getId() as FeatureId;
-    let style = styleCache.get(featureId);
+    let cachedStyle = styleCache.get(featureId);
     const { feature: scenarioFeature } = geo.getFeatureById(featureId);
+    if (!scenarioFeature) return;
+
     const {
       meta: { name: label, _zIndex },
       style: {
@@ -60,12 +61,31 @@ export function useFeatureStyles(geo: TGeo) {
         textMaxZoom = 24,
       },
     } = scenarioFeature;
-    if (!style) {
-      style = createSimpleStyle(scenarioFeature.style || {}) || defaultStyle;
+
+    if (!cachedStyle) {
+      const baseStyle = createSimpleStyle(scenarioFeature.style || {}) || defaultStyle;
       // @ts-ignore
       feature.set("_zIndex", scenarioFeature.meta._zIndex, true);
-      styleCache.set(featureId, style);
+
+      // Create arrow styles if applicable
+      const geometry = feature.getGeometry();
+      const featureStyle = scenarioFeature.style;
+      if (
+        geometry instanceof Geometry &&
+        (featureStyle["arrow-start"] || featureStyle["arrow-end"])
+      ) {
+        const arrowStyles = createArrowStyles(geometry, featureStyle);
+        if (arrowStyles.length > 0) {
+          cachedStyle = [baseStyle, ...arrowStyles];
+        } else {
+          cachedStyle = baseStyle;
+        }
+      } else {
+        cachedStyle = baseStyle;
+      }
+      styleCache.set(featureId, cachedStyle);
     }
+
     if (
       limitVisibility &&
       !overrideLimitVisibility &&
@@ -73,32 +93,27 @@ export function useFeatureStyles(geo: TGeo) {
     ) {
       return;
     }
-    style.setZIndex(_zIndex ?? 0);
+
+    const stylesArray = Array.isArray(cachedStyle) ? cachedStyle : [cachedStyle];
+    const baseStyle = stylesArray[0];
+
+    baseStyle.setZIndex(_zIndex ?? 0);
     if (
       showLabel &&
       resolution < zoomResolutions[textMinZoom] &&
       resolution > zoomResolutions[textMaxZoom]
     ) {
-      style.getText()?.setText(label);
+      baseStyle.getText()?.setText(label);
     } else {
-      style.getText()?.setText(undefined);
+      baseStyle.getText()?.setText(undefined);
     }
 
-    // Create arrow styles if applicable
-    const geometry = feature.getGeometry();
-    const featureStyle = scenarioFeature.style;
-    if (
-      geometry instanceof Geometry &&
-      (featureStyle["arrow-start"] || featureStyle["arrow-end"])
-    ) {
-      const arrowStyles = createArrowStyles(geometry, featureStyle);
-      if (arrowStyles.length > 0) {
-        arrowStyles.forEach((s) => s.setZIndex((_zIndex ?? 0) + 1));
-        return [style, ...arrowStyles];
-      }
+    // Update arrow z-index
+    for (let i = 1; i < stylesArray.length; i++) {
+      stylesArray[i].setZIndex((_zIndex ?? 0) + 1);
     }
 
-    return style;
+    return cachedStyle;
   }
 
   function invalidateStyle(featureId: FeatureId) {
