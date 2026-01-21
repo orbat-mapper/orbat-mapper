@@ -34,7 +34,7 @@ const defaultStyle = new Style({
 });
 
 export function useFeatureStyles(geo: TGeo) {
-  const styleCache = new Map<any, Style | Style[]>();
+  const styleCache = new Map<any, { style: Style | Style[]; revision: number }>();
 
   function clearCache() {
     styleCache.clear();
@@ -46,7 +46,15 @@ export function useFeatureStyles(geo: TGeo) {
     overrideLimitVisibility = false,
   ) {
     const featureId = feature.getId() as FeatureId;
-    let cachedStyle = styleCache.get(featureId);
+    const geometry = feature.getGeometry();
+    const revision = (geometry as any)?.getRevision?.() ?? 0;
+
+    let cachedItem = styleCache.get(featureId);
+    if (cachedItem && cachedItem.revision !== revision) {
+      cachedItem = undefined;
+    }
+    let cachedStyle = cachedItem?.style;
+
     const { feature: scenarioFeature } = geo.getFeatureById(featureId);
     if (!scenarioFeature) return;
 
@@ -83,7 +91,7 @@ export function useFeatureStyles(geo: TGeo) {
       } else {
         cachedStyle = baseStyle;
       }
-      styleCache.set(featureId, cachedStyle);
+      styleCache.set(featureId, { style: cachedStyle, revision });
     }
 
     if (
