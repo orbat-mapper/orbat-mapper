@@ -113,7 +113,12 @@ export const RangeRingActions = {
 } as const;
 
 export type RangeRingAction = (typeof RangeRingActions)[keyof typeof RangeRingActions];
-export type StoredScenarioAction = "delete" | "duplicate" | "download" | "open";
+export type StoredScenarioAction =
+  | "delete"
+  | "duplicate"
+  | "download"
+  | "open"
+  | "copyToClipboard";
 
 export interface SymbolValue {
   code: string;
@@ -132,7 +137,7 @@ export interface NullableSymbolItem extends Omit<SymbolItem, "code"> {
   code: string | null;
 }
 
-const stateActions = [
+export const stateActions = [
   "delete",
   "changeTime",
   "duplicate",

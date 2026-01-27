@@ -23,7 +23,6 @@ import {
 import { createEventHook, useClipboard, useTitle, watchOnce } from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import { type ScenarioActions, TAB_LAYERS, type UiAction } from "@/types/constants";
-import AppNotifications from "@/components/AppNotifications.vue";
 import { useNotifications } from "@/composables/notifications";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import NProgress from "nprogress";
@@ -215,7 +214,7 @@ const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
 
 import { useScenarioShare } from "@/composables/scenarioShare";
 
-const { shareScenario } = useScenarioShare();
+useScenarioShare();
 
 async function onScenarioAction(action: ScenarioActions) {
   if (action === "addSide") {
@@ -237,7 +236,7 @@ async function onScenarioAction(action: ScenarioActions) {
     showLoadModal.value = true;
   } else if (action === "exportToClipboard") {
     await copyToClipboard(io.stringifyScenario());
-    if (copied.value) send({ message: "Scenario copied to clipboard" });
+    if (copied.value) send({ message: "Scenario copied to clipboard", type: "success" });
   } else if (action === "shareAsUrl") {
     showShareUrlModal.value = true;
   } else if (action === "share") {
@@ -461,7 +460,6 @@ if (state.layers.length > 0) {
       @select-place="onPlaceSelectHook.trigger($event)"
       @select-action="onScenarioAction"
     />
-    <AppNotifications />
     <LoadScenarioDialog v-if="showLoadModal" v-model="showLoadModal" />
     <InputDateModal
       v-if="showDateModal"

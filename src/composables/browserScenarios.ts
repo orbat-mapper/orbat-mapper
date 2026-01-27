@@ -6,6 +6,8 @@ import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import type { Scenario } from "@/types/scenarioModels";
 import { nanoid } from "@/utils";
 import { useRouter } from "vue-router";
+import { useClipboard } from "@vueuse/core";
+import { useNotifications } from "@/composables/notifications";
 
 export const DEMO_SCENARIOS = [
   {
@@ -28,6 +30,8 @@ export const DEMO_SCENARIOS = [
 
 export function useBrowserScenarios() {
   const router = useRouter();
+  const { copy: copyToClipboard } = useClipboard();
+  const { send } = useNotifications();
   const storedScenarios = ref<ScenarioMetadata[]>([]);
   const activeSort = ref("lastModified");
 
@@ -59,8 +63,13 @@ export function useBrowserScenarios() {
   ]);
 
   async function onAction(action: StoredScenarioAction, scenario: ScenarioMetadata) {
-    const { deleteScenario, listScenarios, duplicateScenario, downloadAsJson } =
-      await useIndexedDb();
+    const {
+      deleteScenario,
+      listScenarios,
+      duplicateScenario,
+      downloadAsJson,
+      loadScenario: loadScenarioFromDb,
+    } = await useIndexedDb();
     switch (action) {
       case "open":
         await router.push({
@@ -83,6 +92,14 @@ export function useBrowserScenarios() {
       case "duplicate":
         await duplicateScenario(scenario.id);
         break;
+      case "copyToClipboard": {
+        const scenarioBlob = await loadScenarioFromDb(scenario.id);
+        if (scenarioBlob) {
+          await copyToClipboard(JSON.stringify(scenarioBlob, null, 2));
+          send({ message: "Scenario copied to clipboard", type: "success" });
+        }
+        break;
+      }
     }
 
     await reloadScenarios();

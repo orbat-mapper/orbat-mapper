@@ -20,6 +20,7 @@ const menuItems: MenuItemData<StoredScenarioAction>[] = [
   { label: "Delete ...", action: "delete" },
   { label: "Download", action: "download" },
   { label: "Duplicate", action: "duplicate" },
+  { label: "Copy to clipboard", action: "copyToClipboard" },
 ];
 </script>
 

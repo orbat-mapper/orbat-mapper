@@ -18,11 +18,12 @@ onUnmounted(() => {
   >
     <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
       <NotificationItem
-        v-for="({ title, message, duration, id, type }, idx) in notificationsReversed"
+        v-for="{ title, message, duration, id, type } in notificationsReversed"
         :key="id"
         :title="title"
         :message="message"
         :duration="duration"
+        :type="type"
         @close="deleteNotification(id)"
       />
     </div>

@@ -1,19 +1,20 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import { InboxIcon } from "@heroicons/vue/24/outline";
+import { CheckCircleIcon } from "@heroicons/vue/24/outline";
 import { XMarkIcon as XIcon } from "@heroicons/vue/24/solid";
 import { useTimer } from "../composables/timing";
 
 export default defineComponent({
   name: "NotificationItem",
   components: {
-    InboxIcon,
+    CheckCircleIcon,
     XIcon,
   },
   props: {
     title: { type: String, default: "Title" },
     message: { type: String, default: "Message" },
     duration: { type: Number, default: 4000 },
+    type: { type: String, default: undefined },
   },
   emits: ["close"],
   setup(props, { emit }) {
@@ -49,6 +50,9 @@ export default defineComponent({
     >
       <div class="p-4">
         <div class="flex items-start">
+          <div v-if="type === 'success'" class="mr-3 shrink-0">
+            <CheckCircleIcon class="h-6 w-6 text-green-400" aria-hidden="true" />
+          </div>
           <div class="flex w-0 flex-1 justify-between">
             <p class="text-foreground w-0 flex-1 text-sm font-medium">
               {{ message }}
