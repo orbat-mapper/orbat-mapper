@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 January 2026
 
+- Added "Paste scenario from clipboard" feature to the landing page and map editor (includes button and keyboard shortcut detection).
 - Added options to include start and end arrowheads on lines.
 - Added support for password-protected and encrypted scenarios (export, import, and online sharing).
 - Added ability to hide individual scenario features.

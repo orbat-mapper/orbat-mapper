@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import {
   computed,
+  defineAsyncComponent,
   onActivated,
   onUnmounted,
   provide,
   type ShallowRef,
   shallowRef,
   watch,
+  ref,
 } from "vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import {
@@ -15,6 +17,7 @@ import {
   activeScenarioKey,
   timeModalKey,
 } from "@/components/injects";
+import { useBrowserScenarios } from "@/composables/browserScenarios";
 import { PanelLeftOpenIcon as ShowPanelIcon } from "lucide-vue-next";
 import { injectStrict } from "@/utils";
 import MapTimeController from "@/components/MapTimeController.vue";
@@ -25,7 +28,13 @@ import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/ScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
-import { breakpointsTailwind, useBreakpoints, useRafFn, useToggle } from "@vueuse/core";
+import {
+  breakpointsTailwind,
+  useBreakpoints,
+  useEventListener,
+  useRafFn,
+  useToggle,
+} from "@vueuse/core";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
@@ -48,12 +57,17 @@ import { storeToRefs } from "pinia";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import UnitBreadcrumbs from "@/modules/scenarioeditor/UnitBreadcrumbs.vue";
 import { Button } from "@/components/ui/button";
+import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
+
+const DecryptScenarioModal = defineAsyncComponent(
+  () => import("@/components/DecryptScenarioModal.vue"),
+);
 
 const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
 const activeScenario = injectStrict(activeScenarioKey);
 
 const { getModalTimestamp } = injectStrict(timeModalKey);
-const { state, update } = activeScenario.store;
+const { state } = activeScenario.store;
 const {
   time: { setCurrentTime, add, subtract, goToNextScenarioEvent, goToPrevScenarioEvent },
 } = activeScenario;
@@ -145,8 +159,8 @@ function onShowPlaceSearch() {
   ui.showSearch = true;
 }
 
-const { pause, resume, isActive } = useRafFn(
-  ({ delta }) => {
+const { pause, resume } = useRafFn(
+  () => {
     if (
       playback.playbackLooping &&
       playback.endMarker !== undefined &&
@@ -175,6 +189,39 @@ watch(
   },
   { immediate: true },
 );
+
+const showDecryptModal = ref(false);
+const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
+
+const { loadScenario: browserLoadScenario } = useBrowserScenarios();
+
+function onDecrypted(scenario: Scenario) {
+  browserLoadScenario(scenario);
+  showDecryptModal.value = false;
+  currentEncryptedScenario.value = null;
+}
+
+useEventListener(document, "paste", (e: ClipboardEvent) => {
+  if (!inputEventFilter(e)) return;
+  if (e.clipboardData?.types.includes("application/orbat")) return;
+
+  const text = e.clipboardData?.getData("text/plain");
+  if (!text) return;
+
+  try {
+    const scenarioData = JSON.parse(text) as Scenario | EncryptedScenario;
+    if (scenarioData?.type === "ORBAT-mapper") {
+      browserLoadScenario(scenarioData as Scenario);
+      e.preventDefault();
+    } else if (scenarioData?.type === "ORBAT-mapper-encrypted") {
+      currentEncryptedScenario.value = scenarioData as EncryptedScenario;
+      showDecryptModal.value = true;
+      e.preventDefault();
+    }
+  } catch {
+    // Not a valid JSON or not a scenario, ignore
+  }
+});
 </script>
 
 <template>
@@ -287,5 +334,11 @@ watch(
     />
     <UnitBreadcrumbs v-if="ui.showOrbatBreadcrumbs && !isMobile" />
     <ScenarioTimeline v-if="ui.showTimeline" />
+    <DecryptScenarioModal
+      v-if="showDecryptModal && currentEncryptedScenario"
+      v-model="showDecryptModal"
+      :encrypted-scenario="currentEncryptedScenario"
+      @decrypted="onDecrypted"
+    />
   </div>
 </template>
