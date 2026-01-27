@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 
-import WipBadge from "../components/WipBadge.vue";
 import { MAP_EDIT_MODE_ROUTE, NEW_SCENARIO_ROUTE } from "@/router/names";
 import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
 import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromUrlPanel.vue";
@@ -10,7 +9,9 @@ import SortDropdown from "@/components/SortDropdown.vue";
 import { DEMO_SCENARIOS, useBrowserScenarios } from "@/composables/browserScenarios";
 import { Button } from "@/components/ui/button";
 import { defineAsyncComponent, ref } from "vue";
+import { useEventListener } from "@vueuse/core";
 import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
+import LoadScenarioFromClipboardPanel from "@/modules/scenarioeditor/LoadScenarioFromClipboardPanel.vue";
 
 const DecryptScenarioModal = defineAsyncComponent(
   () => import("@/components/DecryptScenarioModal.vue"),
@@ -47,6 +48,25 @@ function onDecrypted(scenario: Scenario) {
   showDecryptModal.value = false;
   currentEncryptedScenario.value = null;
 }
+
+const clipboardPanelRef = ref<InstanceType<typeof LoadScenarioFromClipboardPanel> | null>(
+  null,
+);
+
+useEventListener("paste", (event: ClipboardEvent) => {
+  const target = event.target as HTMLElement;
+  if (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.isContentEditable
+  ) {
+    return;
+  }
+  const text = event.clipboardData?.getData("text");
+  if (text) {
+    clipboardPanelRef.value?.processContent(text);
+  }
+});
 </script>
 
 <template>
@@ -154,6 +174,9 @@ function onDecrypted(scenario: Scenario) {
         </li>
         <li class="col-span-1 flex">
           <LoadScenarioFromUrlPanel @loaded="onLoaded" />
+        </li>
+        <li class="col-span-1 flex">
+          <LoadScenarioFromClipboardPanel ref="clipboardPanelRef" @loaded="onLoaded" />
         </li>
       </ul>
     </section>
