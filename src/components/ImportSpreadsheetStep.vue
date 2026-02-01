@@ -93,7 +93,9 @@ const initialTableState: InitialTableState = {
 
 const { send } = useNotifications();
 
-const workbook = readSpreadsheet(props.fileInfo.dataAsArrayBuffer);
+const workbook = readSpreadsheet(
+  props.fileInfo.dataAsArrayBuffer || props.fileInfo.dataAsString,
+);
 const dialect = detectSpreadsheetDialect(workbook);
 const importedUnits = shallowRef<Unit[]>([]);
 const rowMapTest = shallowRef<Map<number, OdinUnitInfoRow>>();

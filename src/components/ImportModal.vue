@@ -50,6 +50,8 @@ type ImportState =
   | "image"
   | "kml"
   | "xlsx"
+  | "csv"
+  | "tsv"
   | "orbatmapper"
   | "orbatmapper-encrypted";
 const importState = ref<ImportState>("select");
@@ -163,7 +165,10 @@ function onCancel() {
         @loaded="onImport"
       />
       <ImportSpreadsheetStep
-        v-else-if="importState === 'xlsx' && fileInfo"
+        v-else-if="
+          (importState === 'xlsx' || importState === 'csv' || importState === 'tsv') &&
+          fileInfo
+        "
         :file-info="fileInfo"
         @cancel="onCancel"
         @loaded="onImport"

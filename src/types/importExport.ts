@@ -20,6 +20,8 @@ export type ImportFormat =
   | "image"
   | "kml"
   | "xlsx"
+  | "csv"
+  | "tsv"
   | "orbatmapper"
   | "orbatmapper-encrypted";
 // | "msdl" // not implemented
@@ -28,7 +30,7 @@ export type GuessedImportFormat = "unknown" | ImportFormat;
 
 export type FormatDialect = "geojson-plain" | "geojson-unitgenerator";
 export type GuessedFormatDialect = "unknown" | FormatDialect;
-export interface ColumnMapping<TData = Record<string, any>> {
+export interface ColumnMapping<TData = Record<string, unknown>> {
   label: string;
   field: keyof TData | string;
 }
