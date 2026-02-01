@@ -180,6 +180,7 @@ const filteredRowCount = computed(() => {
     <section
       class="border-border relative overflow-auto rounded-lg border shadow-sm"
       ref="parentRef"
+      tabindex="0"
     >
       <table class="grid">
         <thead class="sticky top-0 z-10">
