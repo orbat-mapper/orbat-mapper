@@ -8,6 +8,7 @@ import {
   Bars3Icon as MenuIcon,
   GlobeAltIcon,
   MagnifyingGlassIcon as SearchIcon,
+  ShareIcon,
   TableCellsIcon as TableIcon,
 } from "@heroicons/vue/24/outline";
 import { inputEventFilter } from "@/components/helpers";
@@ -333,6 +334,15 @@ if (state.layers.length > 0) {
             Help
           </a></Button
         >
+        <Button
+          variant="ghost"
+          size="icon"
+          @click="showShareModal = true"
+          class="hidden sm:inline-flex"
+          title="Share scenario"
+        >
+          <ShareIcon class="size-6" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
