@@ -37,9 +37,9 @@ const includePersonnel = ref(true);
 const { rootUnitItems } = useRootUnits();
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
-function renderExpandCell({ getValue, row }: CellContext<Unit, string>) {
+function renderExpandCell({ getValue, row }: CellContext<Unit, string | undefined>) {
   return h(OrbatCellRenderer, {
-    value: getValue(),
+    value: getValue() ?? "",
     sidc: row.original.sidc,
     expanded: row.getIsExpanded(),
     level: row.depth,
@@ -49,12 +49,12 @@ function renderExpandCell({ getValue, row }: CellContext<Unit, string>) {
   });
 }
 
-const columns: ColumnDef<Unit, any>[] = [
+const columns: ColumnDef<Unit, string | undefined>[] = [
   {
     accessorFn: (f) => f.name,
     id: "name",
     cell: renderExpandCell,
-    header: ({ table, column }) => {
+    header: ({ table }) => {
       return h(
         "button",
         {
@@ -106,7 +106,7 @@ if (dialect === "ODIN_DRAGON") {
   rowMapTest.value = rowMap;
 }
 
-async function onLoad(e: Event) {
+async function onLoad() {
   if (!(dialect === "ODIN_DRAGON")) {
     send({
       message: "Invalid file format",
