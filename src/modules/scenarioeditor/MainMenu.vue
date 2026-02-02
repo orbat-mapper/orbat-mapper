@@ -120,21 +120,23 @@ const { history: shareHistory, clearHistory: clearShareHistory } = useShareHisto
           </DropdownMenuItem>
           <DropdownMenuSub v-if="shareHistory.length > 0">
             <DropdownMenuSubTrigger>Recently shared</DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
+            <DropdownMenuSubContent class="w-80">
               <DropdownMenuItem v-for="item in shareHistory" :key="item.id" as-child>
                 <a
                   :href="item.url"
                   target="_blank"
-                  class="flex flex-col items-start gap-1"
+                  class="flex flex-col items-start gap-1 overflow-hidden"
                 >
-                  <div class="flex items-center gap-2">
-                    <LockIcon v-if="item.encrypted" class="h-3 w-3" />
-                    <span>{{ item.name }}</span>
-                    <span class="text-muted-foreground ml-auto text-xs"
+                  <div class="flex w-full items-center gap-2">
+                    <LockIcon v-if="item.encrypted" class="h-3 w-3 shrink-0" />
+                    <span class="truncate">{{ item.name }}</span>
+                    <span class="text-muted-foreground ml-auto shrink-0 text-xs"
                       >{{ dayjs(item.timestamp).fromNow() }}
                     </span>
                   </div>
-                  <span class="text-muted-foreground text-xs">{{ item.url }}</span>
+                  <span class="text-muted-foreground w-full truncate text-xs">{{
+                    item.url
+                  }}</span>
                 </a>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
