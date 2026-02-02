@@ -9,17 +9,24 @@ import BaseButton from "@/components/BaseButton.vue";
 import NewSelect from "@/components/NewSelect.vue";
 import type { ColumnDef } from "@tanstack/vue-table";
 import { useNotifications } from "@/composables/notifications";
-import { FieldGroup, FieldLabel, FieldLegend, FieldSet } from "./ui/field";
+import { FieldGroup, FieldLabel, FieldSet } from "./ui/field";
 import { Field } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import InputCheckbox from "@/components/InputCheckbox.vue";
-import { ChevronRightIcon } from "lucide-vue-next";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
+import { InfoIcon } from "lucide-vue-next";
 import {
   buildSidc,
   getEchelonCodeFromName,
   getIconCodeFromName,
 } from "@/views/texttoorbat/textToOrbat";
+
+interface FieldDefinition {
+  label: string;
+  value: string;
+  aliases: string[];
+  helpText: string;
+  essential?: boolean;
+}
 
 interface Props {
   workbook: WorkBook;
@@ -34,44 +41,66 @@ const activeSheet = ref(sheetNames[0]);
 const importMode = ref<"add-units" | "update-units">("add-units");
 const idField = ref<string | null>(null);
 const showPreview = ref(true);
+const showMapping = ref(true);
+const showSourceData = ref(true);
 const guessSidc = ref(false);
 
-const commonFields = [
-  { label: "Name", value: "name", aliases: ["unit name", "label", "title"] },
+const commonFields: FieldDefinition[] = [
+  {
+    label: "Name",
+    value: "name",
+    aliases: ["unit name", "label", "title"],
+    helpText: "The display name for the unit (required)",
+    essential: true,
+  },
   {
     label: "Short name",
     value: "shortName",
     aliases: ["abbr", "abbreviation", "short"],
+    helpText: "Abbreviated unit name for compact displays",
+    essential: false,
   },
   {
     label: "SIDC",
     value: "sidc",
     aliases: ["symbol", "unit symbol", "mil-std-2525", "2525"],
-  },
-  {
-    label: "Description",
-    value: "description",
-    aliases: ["remarks", "notes", "comments"],
-  },
-  {
-    label: "External URL",
-    value: "externalUrl",
-    aliases: ["url", "link", "external link"],
-  },
-  {
-    label: "Parent ID",
-    value: "parentId",
-    aliases: ["parent", "parent unit", "superior", "reports to", "p_id"],
+    helpText: "MIL-STD-2525 symbol identification code",
+    essential: true,
   },
   {
     label: "Icon",
     value: "icon",
     aliases: ["icon", "symbol code", "function", "role"],
+    helpText: "Unit icon/function (used to construct SIDC if SIDC not provided)",
+    essential: true,
   },
   {
     label: "Echelon",
     value: "echelon",
     aliases: ["echelon", "level", "size", "rank"],
+    helpText: "Command level (used to construct SIDC if SIDC not provided)",
+    essential: true,
+  },
+  {
+    label: "Parent ID",
+    value: "parentId",
+    aliases: ["parent", "parent unit", "superior", "reports to", "p_id"],
+    helpText: "ID of the parent unit in the hierarchy",
+    essential: false,
+  },
+  {
+    label: "Description",
+    value: "description",
+    aliases: ["remarks", "notes", "comments"],
+    helpText: "Additional information about the unit",
+    essential: false,
+  },
+  {
+    label: "External URL",
+    value: "externalUrl",
+    aliases: ["url", "link", "external link"],
+    helpText: "Link to external documentation or resources",
+    essential: false,
   },
 ];
 const idAliases = ["id", "unit id", "identifier", "uid", "entityid"];
@@ -126,7 +155,8 @@ watch(
         }
       });
 
-      fieldMappings.value[field.value] = bestScore > -1000 ? bestMatch : null;
+      const mappedValue = bestScore > -1000 ? bestMatch : null;
+      fieldMappings.value[field.value] = mappedValue;
     });
   },
   { immediate: true },
@@ -231,6 +261,29 @@ const mappedData = computed(() => {
   });
 });
 
+// Validation and quality metrics
+const validRowCount = computed(() => {
+  return mappedData.value.filter((u) => u.name && u.sidc).length;
+});
+
+const canImport = computed(() => {
+  // Must have at least name field mapped
+  if (!fieldMappings.value.name) return false;
+
+  // Must have SIDC or icon/echelon for symbol generation
+  const hasSidc = !!fieldMappings.value.sidc;
+  const hasIconOrEchelon = !!fieldMappings.value.icon || !!fieldMappings.value.echelon;
+  if (!hasSidc && !hasIconOrEchelon) return false;
+
+  // Update mode requires ID field
+  if (importMode.value === "update-units" && !idField.value) return false;
+
+  // Must have at least one valid row
+  if (validRowCount.value === 0) return false;
+
+  return true;
+});
+
 function onImport() {
   send({
     message: "Generic import is not yet fully implemented. Mapping required.",
@@ -242,12 +295,22 @@ function onImport() {
 </script>
 
 <template>
-  <FieldGroup class="flex h-full flex-col gap-2">
-    <h3 class="text-md font-semibold">Tabular data import</h3>
+  <FieldGroup class="flex h-full flex-col gap-4">
+    <!-- Header -->
+    <div>
+      <h3 class="text-lg font-semibold">Import Units from Spreadsheet</h3>
+      <p class="text-muted-foreground text-sm">
+        Map your spreadsheet columns to unit properties
+      </p>
+    </div>
 
+    <!-- Import Mode Selection -->
     <FieldSet>
       <FieldLabel>Import mode</FieldLabel>
-      <RadioGroup class="grid grid-cols-3" v-model="importMode">
+      <p class="text-muted-foreground mb-2 text-sm">
+        Choose whether to add new units or update existing ones by ID
+      </p>
+      <RadioGroup class="grid grid-cols-2" v-model="importMode">
         <Field orientation="horizontal">
           <RadioGroupItem id="add" value="add-units" />
           <FieldLabel for="add">Add units</FieldLabel>
@@ -259,74 +322,100 @@ function onImport() {
       </RadioGroup>
     </FieldSet>
 
-    <FieldSet v-if="importMode === 'add-units'">
-      <FieldLegend>Field mapping</FieldLegend>
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <NewSelect v-model="idField" :values="headers" label="ID field" add-none />
+    <!-- Update Mode Configuration -->
+    <div
+      v-if="importMode === 'update-units'"
+      class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
+    >
+      <div class="flex gap-2">
+        <InfoIcon class="h-5 w-5 shrink-0 text-blue-500" />
+        <div class="text-sm">
+          <p class="font-medium text-blue-900 dark:text-blue-100">
+            Update Mode Configuration
+          </p>
+          <p class="mt-1 text-blue-700 dark:text-blue-300">
+            Update mode requires an ID field to match existing units. Mapped fields will
+            overwrite existing values.
+          </p>
+        </div>
+      </div>
+      <div class="mt-3">
         <NewSelect
-          v-for="field in commonFields"
-          :key="field.value"
-          v-model="fieldMappings[field.value]"
+          v-model="idField"
           :values="headers"
-          :label="field.label"
+          label="ID field (required)"
           add-none
         />
       </div>
-    </FieldSet>
-
-    <div v-if="importMode === 'add-units'" class="flex items-center justify-end">
-      <InputCheckbox v-model="showPreview" label="Show mapped preview" />
     </div>
 
+    <!-- Field Mapping -->
+    <NewAccordionPanel v-if="importMode === 'add-units'" label="Field mapping">
+      <div class="grid grid-cols-1 gap-4 p-2 sm:grid-cols-2 lg:grid-cols-3">
+        <NewSelect v-model="idField" :values="headers" label="ID field" add-none />
+        <div v-for="field in commonFields" :key="field.value" class="space-y-1">
+          <div class="flex items-center gap-2">
+            <NewSelect
+              v-model="fieldMappings[field.value]"
+              :values="headers"
+              :label="field.label"
+              add-none
+              class="flex-1"
+            />
+          </div>
+          <p class="text-muted-foreground text-xs">{{ field.helpText }}</p>
+        </div>
+      </div>
+    </NewAccordionPanel>
+
+    <!-- Preview Section -->
     <div class="flex-auto overflow-auto">
       <div v-if="data.length > 0" class="flex flex-col gap-4">
-        <Collapsible default-open class="rounded-md border">
-          <CollapsibleTrigger as-child>
-            <div
-              class="bg-muted/20 hover:bg-muted/30 group flex cursor-pointer items-center justify-between p-2"
-            >
-              <span class="text-sm font-semibold">Source data ({{ activeSheet }})</span>
-              <ChevronRightIcon
-                class="h-4 w-4 transition-transform group-data-[state=open]:rotate-90"
-              />
-            </div>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div class="space-y-2 border-t p-2">
-              <NewSelect
-                v-if="sheetNames.length > 1"
-                v-model="activeSheet"
-                :values="sheetNames"
-                label="Select sheet"
-              />
-              <DataGrid
-                :data="data"
-                :columns="columns"
-                :row-count="data.length"
-                class="max-h-[30vh]"
-              />
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-
-        <div v-if="showPreview" class="rounded-md border">
-          <div class="bg-muted/20 border-b p-2">
-            <h4 class="text-xs font-semibold tracking-wider uppercase">Mapped Preview</h4>
+        <!-- Source Data -->
+        <NewAccordionPanel
+          :label="`Source data (${activeSheet})`"
+          v-model="showSourceData"
+        >
+          <div class="space-y-2 p-2">
+            <NewSelect
+              v-if="sheetNames.length > 1"
+              v-model="activeSheet"
+              :values="sheetNames"
+              label="Select sheet"
+            />
+            <DataGrid
+              :data="data"
+              :columns="columns"
+              :row-count="data.length"
+              class="max-h-[30vh]"
+            />
           </div>
+        </NewAccordionPanel>
+
+        <NewAccordionPanel
+          v-if="importMode === 'add-units'"
+          label="Mapped Preview"
+          v-model="showPreview"
+        >
           <DataGrid
             :data="mappedData"
             :columns="previewColumns"
             :row-count="mappedData.length"
             class="max-h-[30vh]"
           />
-        </div>
+        </NewAccordionPanel>
       </div>
-      <div v-else class="p-8 text-center text-gray-500">No data found in this sheet.</div>
+      <div v-else class="text-muted-foreground p-8 text-center">
+        No data found in this sheet.
+      </div>
     </div>
 
-    <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
-      <BaseButton type="submit" primary small @click="onImport">Import</BaseButton>
+    <!-- Footer -->
+    <footer class="flex shrink-0 items-center justify-between space-x-2 border-t pt-4">
       <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
+      <BaseButton type="submit" primary small :disabled="!canImport" @click="onImport">
+        Import {{ validRowCount }} {{ validRowCount === 1 ? "unit" : "units" }}
+      </BaseButton>
     </footer>
   </FieldGroup>
 </template>
