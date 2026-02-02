@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+February 2026
+
+- Added "Recently shared" submenu to the File menu, providing quick access to the history of shared scenario links.
+- Added a share scenario button to the main toolbar.
+
 January 2026
 
 - Added "Paste scenario from clipboard" feature to the landing page and map editor (includes button and keyboard shortcut detection).
