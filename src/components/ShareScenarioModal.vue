@@ -3,6 +3,7 @@ import { useClipboard } from "@vueuse/core";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Button } from "@/components/ui/button";
 import { inject, ref } from "vue";
+import { useShareHistory } from "@/composables/scenarioShare";
 import { activeScenarioKey } from "@/components/injects";
 import InputGroup from "@/components/InputGroup.vue";
 import ToggleField from "@/components/ToggleField.vue";
@@ -14,6 +15,7 @@ const open = defineModel<boolean>({ default: false });
 
 const activeScenario = inject(activeScenarioKey)!;
 const { copy, copied } = useClipboard();
+const { addToHistory } = useShareHistory();
 
 const generatedUrl = ref("");
 const error = ref("");
@@ -63,6 +65,12 @@ async function generateLink() {
 
     const { id } = await response.json();
     generatedUrl.value = `${window.location.origin}/import?id=${id}`;
+    addToHistory({
+      id,
+      name: activeScenario.store.state.info.name || "Unnamed scenario",
+      url: generatedUrl.value,
+      encrypted: useEncryption.value,
+    });
   } catch (e: any) {
     console.error(e);
     error.value = e.message || "An unexpected error occurred.";
