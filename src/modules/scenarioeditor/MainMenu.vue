@@ -25,6 +25,12 @@ import { useMeasurementsStore } from "@/stores/geoStore";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
+import { useShareHistory } from "@/composables/scenarioShare";
+import { LockIcon } from "lucide-vue-next";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
@@ -46,6 +52,8 @@ const { coordinateFormat, showLocation, showScaleLine, showDayNightTerminator } 
   storeToRefs(useMapSettingsStore());
 
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
+
+const { history: shareHistory, clearHistory: clearShareHistory } = useShareHistory();
 </script>
 
 <template>
@@ -110,6 +118,31 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
           <DropdownMenuItem @select="emit('action', 'shareAsUrl')">
             Share scenario as URL...
           </DropdownMenuItem>
+          <DropdownMenuSub v-if="shareHistory.length > 0">
+            <DropdownMenuSubTrigger>Recently shared</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem v-for="item in shareHistory" :key="item.id" as-child>
+                <a
+                  :href="item.url"
+                  target="_blank"
+                  class="flex flex-col items-start gap-1"
+                >
+                  <div class="flex items-center gap-2">
+                    <LockIcon v-if="item.encrypted" class="h-3 w-3" />
+                    <span>{{ item.name }}</span>
+                    <span class="text-muted-foreground ml-auto text-xs"
+                      >{{ dayjs(item.timestamp).fromNow() }}
+                    </span>
+                  </div>
+                  <span class="text-muted-foreground text-xs">{{ item.url }}</span>
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem @select="clearShareHistory"
+                >Clear history</DropdownMenuItem
+              >
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
 
           <DropdownMenuItem @select="emit('action', 'export')">
             Export scenario data...
