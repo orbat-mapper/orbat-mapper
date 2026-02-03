@@ -10,7 +10,10 @@ import type { ColumnDef, InitialTableState } from "@tanstack/vue-table";
 import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { useNotifications } from "@/composables/notifications";
-import { nanoid } from "@/utils";
+import { injectStrict, nanoid } from "@/utils";
+import { activeScenarioKey } from "@/components/injects";
+import { addUnitHierarchy } from "@/importexport/convertUtils";
+import type { Unit } from "@/types/scenarioModels";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { useRootUnits } from "@/composables/scenarioUtils";
 import {
@@ -52,6 +55,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 const { send } = useNotifications();
+const scenario = injectStrict(activeScenarioKey);
 
 const sheetNames = props.workbook.SheetNames;
 const activeSheet = ref(sheetNames[0]);
@@ -441,12 +445,61 @@ const canImport = computed(() => {
 });
 
 function onImport() {
-  send({
-    message: "Generic import is not yet fully implemented. Mapping required.",
-    type: "warning",
+  const hasHierarchy = !!fieldMappings.value.parentId && hierarchyData.value.length > 0;
+
+  // Convert mapped data or hierarchy data to Unit objects
+  function convertToUnit(item: HierarchyUnit): Unit {
+    const unit: Unit = {
+      id: String(item.id),
+      name: String(item.name || ""),
+      sidc: String(item.sidc || ""),
+      subUnits: [],
+    };
+
+    // Add optional fields if present
+    if (item.shortName) unit.shortName = String(item.shortName);
+    if (item.description) unit.description = String(item.description);
+    if (item.externalUrl) unit.externalUrl = String(item.externalUrl);
+
+    // Recursively process subUnits if hierarchy exists
+    if (item.subUnits && item.subUnits.length > 0) {
+      unit.subUnits = item.subUnits.map(convertToUnit);
+    }
+
+    return unit;
+  }
+
+  let unitsToImport: Unit[];
+
+  if (hasHierarchy) {
+    // Use hierarchical data
+    unitsToImport = hierarchyData.value.map(convertToUnit);
+  } else {
+    // Flat data - each mapped item becomes a root unit
+    unitsToImport = (mappedData.value as HierarchyUnit[]).map(convertToUnit);
+  }
+
+  // Validate we have valid units
+  const validUnits = unitsToImport.filter((u) => u.name && u.sidc);
+  if (validUnits.length === 0) {
+    send({
+      message: "No valid units to import. Ensure name and symbol fields are mapped.",
+      type: "error",
+    });
+    return;
+  }
+
+  // Import each root unit
+  validUnits.forEach((unit) => {
+    addUnitHierarchy(unit, parentUnitId.value, scenario);
   });
-  // In the future, we would map columns to Unit properties here
-  // and emit 'loaded'
+
+  send({
+    message: `Successfully imported ${validRowCount.value} units.`,
+    type: "success",
+  });
+
+  emit("loaded");
 }
 </script>
 
@@ -454,10 +507,10 @@ function onImport() {
   <FieldGroup class="flex h-full flex-col gap-4">
     <!-- Header -->
     <div>
-      <h3 class="text-lg font-semibold">Import Units from Spreadsheet</h3>
-      <p class="text-muted-foreground text-sm">
-        Map your spreadsheet columns to unit properties
-      </p>
+      <h3 class="text-lg font-semibold">
+        Import units from tabular data (work in progress)
+      </h3>
+      <p class="text-muted-foreground text-sm">Map your columns to unit properties</p>
     </div>
 
     <!-- Import Mode Selection -->
