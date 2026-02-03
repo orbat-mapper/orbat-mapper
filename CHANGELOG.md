@@ -10,7 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 February 2026
 
-- Added "Recently shared" submenu to the File menu, providing quick access to the history of shared scenario links.
+- Added support for generic unit spreadsheet import (CSV/TSV) with custom field mapping.
+- Added a "Recently shared" submenu to the File menu, providing quick access to the history of shared scenario links.
 - Added a share scenario button to the main toolbar.
 
 January 2026
@@ -24,6 +25,8 @@ January 2026
 - Added "Share scenario as URL" feature.
 - Added a map base layer switcher to the map context menu.
 - Improved tab navigation with scrollable tabs.
+- Added military time zone support.
+
 
 December 2025
 

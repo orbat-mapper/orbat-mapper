@@ -20,7 +20,7 @@ export interface ImportedFileInfo {
 export const imageCache = new Map<string, string>();
 
 export function clearCache() {
-  imageCache.forEach((value, key) => {
+  imageCache.forEach((value) => {
     URL.revokeObjectURL(value);
   });
   imageCache.clear();
@@ -130,30 +130,98 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     } else if (Array.isArray(json) && Array.isArray(json[0]) && json[0].length >= 6) {
       guess.format = "orbatgenerator";
     }
-  } catch (e) {}
+  } catch {
+    // ignore
+  }
+
+  if (guess.isJson) return guess;
+
+  const delimiter = detectDelimiter(text);
+  if (delimiter === "\t") {
+    guess.format = "tsv";
+    guess.dataAsString = text;
+    return guess;
+  } else if (delimiter === ",") {
+    guess.format = "csv";
+    guess.dataAsString = text;
+    return guess;
+  }
+
+  // Fallback to extension check if delimiter detection is inconclusive
+  if (isCsvFileType(file)) {
+    guess.format = "csv";
+    guess.dataAsString = text;
+    return guess;
+  }
+
+  if (isTsvFileType(file)) {
+    guess.format = "tsv";
+    guess.dataAsString = text;
+    return guess;
+  }
 
   return guess;
 }
 
-function isGeoJsonFeature(json: any): json is Feature {
-  return json.type && json.type === "Feature";
+function detectDelimiter(text: string): "," | "\t" | null {
+  const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
+  if (lines.length === 0) return null;
+
+  const sampleSize = Math.min(lines.length, 10);
+  let commaScore = 0;
+  let tabScore = 0;
+
+  for (let i = 0; i < sampleSize; i++) {
+    const line = lines[i];
+    const commas = (line.match(/,/g) || []).length;
+    const tabs = (line.match(/\t/g) || []).length;
+
+    if (commas > tabs && commas > 0) commaScore++;
+    if (tabs > commas && tabs > 0) tabScore++;
+  }
+
+  if (tabScore > commaScore) return "\t";
+  if (commaScore > tabScore) return ",";
+
+  return null;
 }
 
-function isFeatureCollection(json: any): json is FeatureCollection {
-  return json.type && json.type === "FeatureCollection";
+function isGeoJsonFeature(json: unknown): json is Feature {
+  return (
+    typeof json === "object" && json !== null && "type" in json && json.type === "Feature"
+  );
 }
 
-function isOrbatMapperScenario(json: any): boolean {
-  if (json.type && json.type === "ORBAT-mapper") {
-    if (Array.isArray(json.sides)) {
+function isFeatureCollection(json: unknown): json is FeatureCollection {
+  return (
+    typeof json === "object" &&
+    json !== null &&
+    "type" in json &&
+    json.type === "FeatureCollection"
+  );
+}
+
+function isOrbatMapperScenario(json: unknown): boolean {
+  if (
+    typeof json === "object" &&
+    json !== null &&
+    "type" in json &&
+    json.type === "ORBAT-mapper"
+  ) {
+    if ("sides" in json && Array.isArray(json.sides)) {
       return true;
     }
   }
   return false;
 }
 
-function isOrbatMapperEncryptedScenario(json: any): boolean {
-  return json.type && json.type === "ORBAT-mapper-encrypted";
+function isOrbatMapperEncryptedScenario(json: unknown): boolean {
+  return (
+    typeof json === "object" &&
+    json !== null &&
+    "type" in json &&
+    json.type === "ORBAT-mapper-encrypted"
+  );
 }
 
 function hasZippedFileType(file: File): boolean {
@@ -180,11 +248,19 @@ function isSpreadsheetFileType(file: File): boolean {
   return file.name.endsWith(".xlsx");
 }
 
+function isCsvFileType(file: File): boolean {
+  return file.type === "text/csv" || file.name.endsWith(".csv");
+}
+
+function isTsvFileType(file: File): boolean {
+  return file.type === "text/tab-separated-values" || file.name.endsWith(".tsv");
+}
+
 export function arrayBufferToString(
   arrayBuffer: ArrayBuffer | Uint8Array,
   decoderType = "utf-8",
 ) {
-  let decoder = new TextDecoder(decoderType);
+  const decoder = new TextDecoder(decoderType);
   return decoder.decode(arrayBuffer);
 }
 
@@ -201,15 +277,4 @@ export async function unzip(file: ArrayBuffer) {
 async function readZippedFile(file: File): Promise<Unzipped> {
   const data = await file.arrayBuffer();
   return unzip(data);
-}
-
-function readFileAsync(file: File): Promise<ArrayBuffer | null | string> {
-  return new Promise((resolve, reject) => {
-    let reader = new FileReader();
-    reader.onload = () => {
-      resolve(reader.result);
-    };
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(file);
-  });
 }

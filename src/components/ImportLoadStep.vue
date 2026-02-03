@@ -182,6 +182,18 @@ async function onLoad() {
     emit("loaded", "xlsx", stringSource.value, fileInfo.value);
   }
 
+  if (format === "csv" && stringSource.value) {
+    send({ message: `Loaded data as ${format}` });
+    NProgress.done();
+    emit("loaded", "csv", stringSource.value, fileInfo.value);
+  }
+
+  if (format === "tsv" && stringSource.value) {
+    send({ message: `Loaded data as ${format}` });
+    NProgress.done();
+    emit("loaded", "tsv", stringSource.value, fileInfo.value);
+  }
+
   NProgress.done();
 }
 

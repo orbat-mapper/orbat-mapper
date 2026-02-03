@@ -11,7 +11,11 @@ const isOpen = defineModel<boolean>({ default: true });
 </script>
 
 <template>
-  <Collapsible v-model="isOpen" class="border-border relative border-b" v-slot="{ open }">
+  <Collapsible
+    v-model:open="isOpen"
+    class="border-border relative border-b"
+    v-slot="{ open }"
+  >
     <CollapsibleTrigger class="group flex w-full items-center justify-between py-3">
       <h3 class="flex items-center gap-2 text-sm font-semibold">
         {{ label }}
