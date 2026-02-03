@@ -6,7 +6,7 @@ import { xlsxUtils } from "@/extlib/xlsx-lazy";
 import fuzzysort from "fuzzysort";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import type { CellContext, ColumnDef, InitialTableState } from "@tanstack/vue-table";
+import type { ColumnDef, InitialTableState } from "@tanstack/vue-table";
 import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { useNotifications } from "@/composables/notifications";
@@ -194,9 +194,56 @@ const columns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
 
 const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
   const cols: ColumnDef<Record<string, unknown>>[] = [];
+  const hasHierarchy = !!fieldMappings.value.parentId && hierarchyData.value.length > 0;
+
+  // Name column - with expand/collapse when hierarchy is available
+  if (fieldMappings.value.name) {
+    if (hasHierarchy) {
+      cols.push({
+        accessorKey: "name",
+        id: "name",
+        cell: ({ getValue, row }) => {
+          return h(OrbatCellRenderer, {
+            value: (getValue() as string) ?? "",
+            sidc: row.original.sidc as string | undefined,
+            expanded: row.getIsExpanded(),
+            level: row.depth,
+            canExpand: row.getCanExpand(),
+            onToggle: row.getToggleExpandedHandler(),
+            symbolOptions: {},
+          });
+        },
+        header: ({ table }) => {
+          return h(
+            "button",
+            {
+              type: "button",
+              title: "Expand/collapse all",
+              onClick: table.getToggleAllRowsExpandedHandler(),
+              class: "flex items-center gap-2",
+            },
+            [
+              h(ChevronRightIcon, {
+                class: [
+                  "size-6 transform transition-transform text-muted-foreground",
+                  table.getIsAllRowsExpanded() ? "rotate-90" : "",
+                ],
+              }),
+              "Name",
+            ],
+          );
+        },
+        enableGlobalFilter: true,
+        size: 350,
+        enableSorting: false,
+      });
+    } else {
+      cols.push({ accessorKey: "name", header: "Name" });
+    }
+  }
 
   if (idMode.value === "autogenerate" || (idMode.value === "mapped" && idField.value)) {
-    cols.push({ accessorKey: "id", header: "ID" });
+    cols.push({ accessorKey: "id", header: "ID", size: 120 });
   }
 
   if (guessSidc.value || fieldMappings.value["icon"] || fieldMappings.value["echelon"]) {
@@ -219,9 +266,16 @@ const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
     });
   }
 
+  // Add other mapped fields (excluding name which is already added, and icon/echelon which are in SIDC)
   commonFields.forEach((field) => {
     const isMapped = !!fieldMappings.value[field.value];
-    if (isMapped && field.value !== "icon" && field.value !== "echelon") {
+    if (
+      isMapped &&
+      field.value !== "name" &&
+      field.value !== "icon" &&
+      field.value !== "echelon" &&
+      field.value !== "parentId"
+    ) {
       cols.push({ accessorKey: field.value, header: field.label });
     }
   });
@@ -356,63 +410,6 @@ const hierarchyData = computed<HierarchyUnit[]>(() => {
   return rootUnits;
 });
 
-// Render cell with expand/collapse for hierarchy
-function renderExpandCell({
-  getValue,
-  row,
-}: CellContext<HierarchyUnit, string | undefined>) {
-  return h(OrbatCellRenderer, {
-    value: getValue() ?? "",
-    sidc: row.original.sidc,
-    expanded: row.getIsExpanded(),
-    level: row.depth,
-    canExpand: row.getCanExpand(),
-    onToggle: row.getToggleExpandedHandler(),
-    symbolOptions: {},
-  });
-}
-
-// Columns for hierarchy preview
-const hierarchyColumns = computed<ColumnDef<HierarchyUnit, string | undefined>[]>(() => {
-  const cols: ColumnDef<HierarchyUnit, string | undefined>[] = [
-    {
-      accessorFn: (f) => f.name,
-      id: "name",
-      cell: renderExpandCell,
-      header: ({ table }) => {
-        return h(
-          "button",
-          {
-            type: "button",
-            title: "Expand/collapse all",
-            onClick: table.getToggleAllRowsExpandedHandler(),
-            class: "flex items-center gap-2",
-          },
-          [
-            h(ChevronRightIcon, {
-              class: [
-                "size-6 transform transition-transform text-muted-foreground",
-                table.getIsAllRowsExpanded() ? "rotate-90" : "",
-              ],
-            }),
-            "Unit",
-          ],
-        );
-      },
-      enableGlobalFilter: true,
-      size: 400,
-      enableSorting: false,
-    },
-  ];
-
-  // Add ID column if available
-  if (idMode.value === "autogenerate" || (idMode.value === "mapped" && idField.value)) {
-    cols.push({ accessorKey: "id", header: "ID", size: 120 });
-  }
-
-  return cols;
-});
-
 const hierarchyTableState: InitialTableState = {
   expanded: true,
 };
@@ -470,7 +467,7 @@ function onImport() {
           <FieldLabel for="add">Add units</FieldLabel>
         </Field>
         <Field orientation="horizontal">
-          <RadioGroupItem id="update" value="update-units" />
+          <RadioGroupItem disabled id="update" value="update-units" />
           <FieldLabel for="update">Update existing units</FieldLabel>
         </Field>
       </RadioGroup>
@@ -570,6 +567,32 @@ function onImport() {
         </FieldSet>
 
         <FieldSet class="gap-3 rounded-md border p-3">
+          <FieldLegend variant="label">Symbol fields</FieldLegend>
+          <FieldDescription class="">
+            Map icon and echelon to construct the unit symbol (SIDC). If SIDC is missing,
+            it will be auto generated based on these fields.
+          </FieldDescription>
+          <div
+            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          >
+            <Field v-for="field in symbolFields" :key="field.value">
+              <FieldLabel>{{ field.label }}</FieldLabel>
+              <Select v-model="fieldMappings[field.value]">
+                <SelectTrigger>
+                  <SelectValue :placeholder="field.label" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem :value="null">None</SelectItem>
+                  <SelectItem v-for="h in headers" :key="h" :value="h">
+                    {{ h }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldDescription>{{ field.helpText }}</FieldDescription>
+            </Field>
+          </div>
+        </FieldSet>
+        <FieldSet class="gap-3 rounded-md border p-3">
           <FieldLegend variant="label">Hierarchy</FieldLegend>
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field
@@ -607,33 +630,6 @@ function onImport() {
               <FieldDescription>
                 Select the column used to match the parent references.
               </FieldDescription>
-            </Field>
-          </div>
-        </FieldSet>
-
-        <FieldSet class="gap-3 rounded-md border p-3">
-          <FieldLegend variant="label">Symbol fields</FieldLegend>
-          <FieldDescription class="">
-            Map icon and echelon to construct the unit symbol (SIDC). If SIDC is missing,
-            it will be auto generated based on these fields.
-          </FieldDescription>
-          <div
-            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          >
-            <Field v-for="field in symbolFields" :key="field.value">
-              <FieldLabel>{{ field.label }}</FieldLabel>
-              <Select v-model="fieldMappings[field.value]">
-                <SelectTrigger>
-                  <SelectValue :placeholder="field.label" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem :value="null">None</SelectItem>
-                  <SelectItem v-for="h in headers" :key="h" :value="h">
-                    {{ h }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldDescription>{{ field.helpText }}</FieldDescription>
             </Field>
           </div>
         </FieldSet>
@@ -678,26 +674,17 @@ function onImport() {
           v-model="showPreview"
         >
           <DataGrid
-            :data="mappedData"
+            :data="
+              fieldMappings.parentId && hierarchyData.length > 0
+                ? hierarchyData
+                : mappedData
+            "
             :columns="previewColumns"
-            :row-count="mappedData.length"
-            class="max-h-[30vh]"
-          />
-        </NewAccordionPanel>
-
-        <NewAccordionPanel
-          v-if="importMode === 'add-units' && fieldMappings.parentId && hierarchyData.length > 0"
-          label="Hierarchy preview"
-        >
-          <DataGrid
-            :data="hierarchyData"
-            :columns="hierarchyColumns"
             :row-count="mappedData.length"
             :row-height="40"
             class="max-h-[40vh]"
-            show-global-filter
             :initial-state="hierarchyTableState"
-            :get-sub-rows="(row) => row.subUnits"
+            :get-sub-rows="fieldMappings.parentId ? (row) => row.subUnits : undefined"
           />
         </NewAccordionPanel>
       </div>
