@@ -41,7 +41,6 @@ const activeSheet = ref(sheetNames[0]);
 const importMode = ref<"add-units" | "update-units">("add-units");
 const idField = ref<string | null>(null);
 const showPreview = ref(true);
-const showMapping = ref(true);
 const showSourceData = ref(true);
 const guessSidc = ref(false);
 
@@ -350,8 +349,10 @@ function onImport() {
     </div>
 
     <!-- Field Mapping -->
-    <NewAccordionPanel v-if="importMode === 'add-units'" label="Field mapping">
-      <div class="grid grid-cols-1 gap-4 p-2 sm:grid-cols-2 lg:grid-cols-3">
+    <NewAccordionPanel v-if="importMode === 'add-units'" label="Column mappings">
+      <div
+        class="grid grid-cols-1 gap-4 p-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      >
         <NewSelect v-model="idField" :values="headers" label="ID field" add-none />
         <div v-for="field in commonFields" :key="field.value" class="space-y-1">
           <div class="flex items-center gap-2">
@@ -394,7 +395,7 @@ function onImport() {
 
         <NewAccordionPanel
           v-if="importMode === 'add-units'"
-          label="Mapped Preview"
+          label="Preview"
           v-model="showPreview"
         >
           <DataGrid
