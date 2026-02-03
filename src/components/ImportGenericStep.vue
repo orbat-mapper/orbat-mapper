@@ -76,15 +76,15 @@ const commonFields: FieldDefinition[] = [
   {
     label: "Icon",
     value: "icon",
-    aliases: ["icon", "symbol code", "function", "role"],
-    helpText: "Unit icon/function (used to construct SIDC if SIDC not provided)",
+    aliases: ["icon", "symbol code", "function", "role", "name"],
+    helpText: "Unit icon/function",
     essential: true,
   },
   {
     label: "Echelon",
     value: "echelon",
-    aliases: ["echelon", "level", "size", "rank"],
-    helpText: "Command level (used to construct SIDC if SIDC not provided)",
+    aliases: ["echelon", "level", "size", "rank", "name"],
+    helpText: "Command level",
     essential: true,
   },
   {
@@ -368,10 +368,10 @@ function onImport() {
         </div>
       </div>
       <div class="mt-3">
-        <Field>
+        <Field class="items-start">
           <FieldLabel>ID field (required)</FieldLabel>
           <Select v-model="idField">
-            <SelectTrigger>
+            <SelectTrigger class="!w-sm">
               <SelectValue placeholder="Select ID field" />
             </SelectTrigger>
             <SelectContent>
@@ -387,64 +387,67 @@ function onImport() {
     <!-- Field Mapping -->
     <NewAccordionPanel v-if="importMode === 'add-units'" label="Column mappings">
       <div class="flex flex-col gap-4">
-        <FieldSet class="flex flex-col gap-3 rounded-md border p-3">
-          <FieldLegend variant="label">Unit Identification</FieldLegend>
-          <RadioGroup v-model="idMode" class="flex w-sm gap-4">
-            <Field orientation="horizontal">
-              <RadioGroupItem id="id-auto" value="autogenerate" />
-              <FieldLabel for="id-auto">Autogenerate IDs</FieldLabel>
-            </Field>
-            <Field orientation="horizontal">
-              <RadioGroupItem id="id-mapped" value="mapped" />
-              <FieldLabel for="id-mapped">Map ID from column</FieldLabel>
-            </Field>
-          </RadioGroup>
-
-          <div v-if="idMode === 'mapped'" class="mt-2">
-            <Field>
-              <FieldLabel>ID field (recommended)</FieldLabel>
-              <Select v-model="idField">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select ID field" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="h in headers" :key="h" :value="h">
-                    {{ h }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldDescription>
-                Select a column that uniquely identifies each unit.
-              </FieldDescription>
-            </Field>
-          </div>
-        </FieldSet>
         <FieldSet class="gap-3 rounded-md border p-3">
-          <div
-            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          >
-            <Field v-for="field in otherFields" :key="field.value">
-              <FieldLabel>{{ field.label }}</FieldLabel>
-              <Select v-model="fieldMappings[field.value]">
-                <SelectTrigger>
-                  <SelectValue :placeholder="field.label" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem :value="null">None</SelectItem>
-                  <SelectItem v-for="h in headers" :key="h" :value="h">
-                    {{ h }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldDescription>{{ field.helpText }}</FieldDescription>
-            </Field>
+          <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-3">
+              <RadioGroup v-model="idMode" class="flex w-sm gap-4">
+                <Field orientation="horizontal">
+                  <RadioGroupItem id="id-auto" value="autogenerate" />
+                  <FieldLabel for="id-auto">Autogenerate IDs</FieldLabel>
+                </Field>
+                <Field orientation="horizontal">
+                  <RadioGroupItem id="id-mapped" value="mapped" />
+                  <FieldLabel for="id-mapped">Map ID from column</FieldLabel>
+                </Field>
+              </RadioGroup>
+
+              <div v-if="idMode === 'mapped'" class="mt-2">
+                <Field class="items-start">
+                  <FieldLabel>ID field</FieldLabel>
+                  <Select v-model="idField">
+                    <SelectTrigger class="!w-sm">
+                      <SelectValue placeholder="Select ID field" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem v-for="h in headers" :key="h" :value="h">
+                        {{ h }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FieldDescription>
+                    Select a column that uniquely identifies each unit.
+                  </FieldDescription>
+                </Field>
+              </div>
+            </div>
+
+            <div
+              class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            >
+              <Field v-for="field in otherFields" :key="field.value">
+                <FieldLabel>{{ field.label }}</FieldLabel>
+                <Select v-model="fieldMappings[field.value]">
+                  <SelectTrigger>
+                    <SelectValue :placeholder="field.label" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem :value="null">None</SelectItem>
+                    <SelectItem v-for="h in headers" :key="h" :value="h">
+                      {{ h }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FieldDescription>{{ field.helpText }}</FieldDescription>
+              </Field>
+            </div>
           </div>
         </FieldSet>
 
         <FieldSet class="gap-3 rounded-md border p-3">
           <FieldLegend variant="label">Symbol fields</FieldLegend>
-          <FieldDescription class="text-xs">
-            Map icon and echelon to construct the unit symbol (SIDC).
+          <FieldDescription class="">
+            Map icon and echelon to construct the unit symbol (SIDC). If SIDC is missing,
+            it will be auto generated based on these fields.
           </FieldDescription>
           <div
             class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
@@ -478,10 +481,10 @@ function onImport() {
           v-model="showSourceData"
         >
           <div class="space-y-2 py-2">
-            <Field v-if="sheetNames.length > 1">
+            <Field v-if="sheetNames.length > 1" class="items-start">
               <FieldLabel>Select sheet</FieldLabel>
               <Select v-model="activeSheet">
-                <SelectTrigger>
+                <SelectTrigger class="!w-sm">
                   <SelectValue placeholder="Select sheet" />
                 </SelectTrigger>
                 <SelectContent>
