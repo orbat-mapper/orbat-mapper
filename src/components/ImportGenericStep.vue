@@ -74,13 +74,6 @@ const commonFields: FieldDefinition[] = [
     essential: false,
   },
   {
-    label: "SIDC",
-    value: "sidc",
-    aliases: ["symbol", "unit symbol", "mil-std-2525", "2525"],
-    helpText: "MIL-STD-2525 symbol identification code",
-    essential: true,
-  },
-  {
     label: "Icon",
     value: "icon",
     aliases: ["icon", "symbol code", "function", "role"],
@@ -118,7 +111,7 @@ const commonFields: FieldDefinition[] = [
 ];
 const idAliases = ["id", "unit id", "identifier", "uid", "entityid"];
 
-const symbolFieldValues = new Set(["sidc", "icon", "echelon"]);
+const symbolFieldValues = new Set(["icon", "echelon"]);
 const symbolFields = commonFields.filter((field) => symbolFieldValues.has(field.value));
 const otherFields = commonFields.filter((field) => !symbolFieldValues.has(field.value));
 
@@ -195,37 +188,42 @@ const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
     cols.push({ accessorKey: "id", header: "ID" });
   }
 
+  if (guessSidc.value || fieldMappings.value["icon"] || fieldMappings.value["echelon"]) {
+    cols.push({
+      accessorKey: "sidc",
+      header: "SIDC",
+      cell: ({ row }) => {
+        const sidc = row.original.sidc as string | undefined;
+        if (!sidc) return "";
+        return h("div", { class: "flex items-center gap-2" }, [
+          h(UnitSymbol, {
+            sidc,
+            size: 24,
+            class: "shrink-0",
+            options: { outlineWidth: 6, outlineColor: "white" },
+          }),
+          h("span", sidc),
+        ]);
+      },
+    });
+  }
+
   commonFields.forEach((field) => {
     const isMapped = !!fieldMappings.value[field.value];
-    const isSidc = field.value === "sidc";
-    const isConstructedSidc =
-      isSidc &&
-      (guessSidc.value || fieldMappings.value["icon"] || fieldMappings.value["echelon"]);
-
-    if (isSidc && (isMapped || isConstructedSidc)) {
-      cols.push({
-        accessorKey: field.value,
-        header: field.label,
-        cell: ({ row }) => {
-          const sidc = row.original.sidc as string | undefined;
-          if (!sidc) return "";
-          return h("div", { class: "flex items-center gap-2" }, [
-            h(UnitSymbol, {
-              sidc,
-              size: 24,
-              class: "shrink-0",
-              options: { outlineWidth: 6, outlineColor: "white" },
-            }),
-            h("span", sidc),
-          ]);
-        },
-      });
-    } else if (isMapped && field.value !== "icon" && field.value !== "echelon") {
+    if (isMapped && field.value !== "icon" && field.value !== "echelon") {
       cols.push({ accessorKey: field.value, header: field.label });
     }
   });
   return cols;
 });
+
+function isNumericSidc(value: string) {
+  return /^\d{10}(\d{5})?(\d{5})?$/.test(value);
+}
+
+function isCharacterSidc(value: string) {
+  return /^[A-Z\-]{15}$/.test(value);
+}
 
 const mappedData = computed(() => {
   if (!data.value.length) return [];
@@ -257,20 +255,28 @@ const mappedData = computed(() => {
       const echelonValue = echelonHeader ? (r[echelonHeader] as string) : undefined;
 
       if (iconValue || echelonValue) {
-        const derivedIcon = iconValue
-          ? getIconCodeFromName(iconValue) || "0000000000"
-          : "0000000000";
-        // If getInputCodeFromName returns "0000000000" (ICON_UNSPECIFIED) it might mean it didn't match,
-        // but maybe the user provided a raw code? getIconCodeFromName returns UNSPECIFIED if no match.
-        // Let's assume for now we use the helper. If the helper returns UNSPECIFIED, maybe check if the value itself looks like a code?
-        // For simplicity sticking to the helper as per plan.
+        if (iconValue && (isNumericSidc(iconValue) || isCharacterSidc(iconValue))) {
+          if (iconValue.length >= 15) {
+            unit.sidc = iconValue;
+          } else {
+            // Partial SIDC (10 digits)
+            const derivedEchelon = echelonValue
+              ? getEchelonCodeFromName(echelonValue) || "00"
+              : "00";
+            unit.sidc = "10031000" + derivedEchelon + iconValue;
+          }
+        } else {
+          const derivedIcon = iconValue
+            ? getIconCodeFromName(iconValue) || "0000000000"
+            : "0000000000";
 
-        const derivedEchelon = echelonValue
-          ? getEchelonCodeFromName(echelonValue) || "00"
-          : "00";
+          const derivedEchelon = echelonValue
+            ? getEchelonCodeFromName(echelonValue) || "00"
+            : "00";
 
-        // Standard Identity 3 (Friendly), SymbolSet 10 (Land Unit), Status 0, HQTFD 0
-        unit.sidc = "10031000" + derivedEchelon + derivedIcon;
+          // Standard Identity 3 (Friendly), SymbolSet 10 (Land Unit), Status 0, HQTFD 0
+          unit.sidc = "10031000" + derivedEchelon + derivedIcon;
+        }
       } else if (guessSidc.value && unit.name) {
         unit.sidc = buildSidc(0, unit.name as string);
       }
@@ -289,10 +295,9 @@ const canImport = computed(() => {
   // Must have at least name field mapped
   if (!fieldMappings.value.name) return false;
 
-  // Must have SIDC or icon/echelon for symbol generation
-  const hasSidc = !!fieldMappings.value.sidc;
+  // Must have icon/echelon for symbol generation
   const hasIconOrEchelon = !!fieldMappings.value.icon || !!fieldMappings.value.echelon;
-  if (!hasSidc && !hasIconOrEchelon) return false;
+  if (!hasIconOrEchelon) return false;
 
   // ID must be either autogenerated or mapped
   if (
@@ -414,16 +419,11 @@ function onImport() {
             </Field>
           </div>
         </FieldSet>
-
         <FieldSet class="gap-3 rounded-md border p-3">
-          <FieldLegend variant="label">Symbol fields</FieldLegend>
-          <FieldDescription class="text-xs">
-            Provide SIDC directly, or map icon and echelon to construct one.
-          </FieldDescription>
           <div
             class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           >
-            <Field v-for="field in symbolFields" :key="field.value">
+            <Field v-for="field in otherFields" :key="field.value">
               <FieldLabel>{{ field.label }}</FieldLabel>
               <Select v-model="fieldMappings[field.value]">
                 <SelectTrigger>
@@ -442,11 +442,14 @@ function onImport() {
         </FieldSet>
 
         <FieldSet class="gap-3 rounded-md border p-3">
-          <FieldLegend variant="label">Other fields</FieldLegend>
+          <FieldLegend variant="label">Symbol fields</FieldLegend>
+          <FieldDescription class="text-xs">
+            Map icon and echelon to construct the unit symbol (SIDC).
+          </FieldDescription>
           <div
             class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           >
-            <Field v-for="field in otherFields" :key="field.value">
+            <Field v-for="field in symbolFields" :key="field.value">
               <FieldLabel>{{ field.label }}</FieldLabel>
               <Select v-model="fieldMappings[field.value]">
                 <SelectTrigger>
