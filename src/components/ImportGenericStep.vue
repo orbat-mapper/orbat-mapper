@@ -11,6 +11,8 @@ import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { useNotifications } from "@/composables/notifications";
 import { nanoid } from "@/utils";
+import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
+import { useRootUnits } from "@/composables/scenarioUtils";
 import {
   FieldDescription,
   FieldGroup,
@@ -60,6 +62,9 @@ const showPreview = ref(true);
 const showSourceData = ref(true);
 const guessSidc = ref(false);
 const parentMatchField = ref<string | null>(null);
+
+const { rootUnitItems } = useRootUnits();
+const parentUnitId = ref(rootUnitItems.value[0]?.code as string);
 
 const commonFields: FieldDefinition[] = [
   {
@@ -667,6 +672,14 @@ function onImport() {
             />
           </div>
         </NewAccordionPanel>
+
+        <section class="px-1" v-if="importMode === 'add-units'">
+          <SymbolCodeSelect
+            label="Select parent unit"
+            :items="rootUnitItems"
+            v-model="parentUnitId"
+          />
+        </section>
 
         <NewAccordionPanel
           v-if="importMode === 'add-units'"
