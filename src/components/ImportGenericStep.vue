@@ -57,6 +57,7 @@ const idField = ref<string | null>(null);
 const showPreview = ref(true);
 const showSourceData = ref(true);
 const guessSidc = ref(false);
+const parentMatchField = ref<string | null>(null);
 
 const commonFields: FieldDefinition[] = [
   {
@@ -112,8 +113,15 @@ const commonFields: FieldDefinition[] = [
 const idAliases = ["id", "unit id", "identifier", "uid", "entityid"];
 
 const symbolFieldValues = new Set(["icon", "echelon"]);
+const hierarchyFieldValues = new Set(["parentId"]);
 const symbolFields = commonFields.filter((field) => symbolFieldValues.has(field.value));
-const otherFields = commonFields.filter((field) => !symbolFieldValues.has(field.value));
+const hierarchyFields = commonFields.filter((field) =>
+  hierarchyFieldValues.has(field.value),
+);
+const otherFields = commonFields.filter(
+  (field) =>
+    !symbolFieldValues.has(field.value) && !hierarchyFieldValues.has(field.value),
+);
 
 const fieldMappings = ref<Record<string, string | null>>({});
 
@@ -150,6 +158,7 @@ watch(
     });
 
     idField.value = idBestScore > -1000 ? idBestMatch : null;
+    parentMatchField.value = idField.value;
 
     // Guess other fields
     commonFields.forEach((field) => {
@@ -440,6 +449,48 @@ function onImport() {
                 <FieldDescription>{{ field.helpText }}</FieldDescription>
               </Field>
             </div>
+          </div>
+        </FieldSet>
+
+        <FieldSet class="gap-3 rounded-md border p-3">
+          <FieldLegend variant="label">Hierarchy</FieldLegend>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field
+              v-for="field in hierarchyFields"
+              :key="field.value"
+              class="items-start"
+            >
+              <FieldLabel>{{ field.label }}</FieldLabel>
+              <Select v-model="fieldMappings[field.value]">
+                <SelectTrigger class="!w-sm">
+                  <SelectValue :placeholder="`Select ${field.label.toLowerCase()}`" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem :value="null">None</SelectItem>
+                  <SelectItem v-for="h in headers" :key="h" :value="h">
+                    {{ h }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldDescription>{{ field.helpText }}</FieldDescription>
+            </Field>
+
+            <Field v-if="fieldMappings.parentId" class="items-start">
+              <FieldLabel>Identify parents by</FieldLabel>
+              <Select v-model="parentMatchField">
+                <SelectTrigger class="!w-sm">
+                  <SelectValue placeholder="Match parent by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="h in headers" :key="h" :value="h">
+                    {{ h }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldDescription>
+                Select the column used to match the parent references.
+              </FieldDescription>
+            </Field>
           </div>
         </FieldSet>
 
