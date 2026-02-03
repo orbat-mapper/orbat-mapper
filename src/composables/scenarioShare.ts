@@ -1,5 +1,15 @@
 import type { TScenario } from "@/scenariostore";
 import { type Scenario } from "@/types/scenarioModels";
+import { useLocalStorage } from "@vueuse/core";
+import { SHARE_HISTORY_LOCALSTORAGE_KEY } from "@/config/constants";
+
+export interface ShareHistoryItem {
+  id: string;
+  name: string;
+  url: string;
+  encrypted?: boolean;
+  timestamp: number;
+}
 
 export function useScenarioShare() {
   async function shareScenario(scenario: TScenario) {
@@ -31,5 +41,31 @@ export function useScenarioShare() {
   return {
     shareScenario,
     loadScenarioFromUrlParam,
+  };
+}
+
+export function useShareHistory() {
+  const history = useLocalStorage<ShareHistoryItem[]>(SHARE_HISTORY_LOCALSTORAGE_KEY, []);
+
+  function addToHistory(item: Omit<ShareHistoryItem, "timestamp">) {
+    const newItem = { ...item, timestamp: Date.now() };
+    const index = history.value.findIndex((i) => i.id === item.id);
+    if (index !== -1) {
+      history.value.splice(index, 1);
+    }
+    history.value.unshift(newItem);
+    if (history.value.length > 10) {
+      history.value.pop();
+    }
+  }
+
+  function clearHistory() {
+    history.value = [];
+  }
+
+  return {
+    history,
+    addToHistory,
+    clearHistory,
   };
 }
