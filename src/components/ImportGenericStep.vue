@@ -6,7 +6,9 @@ import { xlsxUtils } from "@/extlib/xlsx-lazy";
 import fuzzysort from "fuzzysort";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import type { ColumnDef } from "@tanstack/vue-table";
+import type { CellContext, ColumnDef, InitialTableState } from "@tanstack/vue-table";
+import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
+import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { useNotifications } from "@/composables/notifications";
 import { nanoid } from "@/utils";
 import {
@@ -300,6 +302,121 @@ const validRowCount = computed(() => {
   return mappedData.value.filter((u) => u.name && u.sidc).length;
 });
 
+// Unit type for hierarchy
+interface HierarchyUnit extends Record<string, unknown> {
+  id: string;
+  name: string;
+  sidc?: string;
+  subUnits?: HierarchyUnit[];
+}
+
+// Build hierarchy from flat data when parentId is mapped
+const hierarchyData = computed<HierarchyUnit[]>(() => {
+  if (!fieldMappings.value.parentId || !parentMatchField.value) {
+    return [];
+  }
+
+  const sourceData = data.value as Record<string, unknown>[];
+  const flatData = mappedData.value as HierarchyUnit[];
+  if (!flatData.length || !sourceData.length) return [];
+
+  const parentIdHeader = fieldMappings.value.parentId;
+  const matchFieldHeader = parentMatchField.value;
+
+  // Create a map from the parentMatchField column value to the hierarchy unit
+  // parentMatchField is a column header in the SOURCE data
+  const unitMap = new Map<string, HierarchyUnit>();
+  sourceData.forEach((sourceRow, index) => {
+    const matchValue = String(sourceRow[matchFieldHeader] ?? "");
+    if (matchValue && flatData[index]) {
+      unitMap.set(matchValue, { ...flatData[index], subUnits: [] });
+    }
+  });
+
+  // Build the hierarchy
+  const rootUnits: HierarchyUnit[] = [];
+
+  sourceData.forEach((sourceRow) => {
+    const matchValue = String(sourceRow[matchFieldHeader] ?? "");
+    const hierarchyUnit = unitMap.get(matchValue);
+    if (!hierarchyUnit) return;
+
+    // Get the parent reference from the source data's parentId column
+    const parentIdValue = String(sourceRow[parentIdHeader!] ?? "");
+    const parentUnit = parentIdValue ? unitMap.get(parentIdValue) : null;
+
+    if (parentUnit && parentUnit !== hierarchyUnit) {
+      if (!parentUnit.subUnits) parentUnit.subUnits = [];
+      parentUnit.subUnits.push(hierarchyUnit);
+    } else {
+      rootUnits.push(hierarchyUnit);
+    }
+  });
+
+  return rootUnits;
+});
+
+// Render cell with expand/collapse for hierarchy
+function renderExpandCell({
+  getValue,
+  row,
+}: CellContext<HierarchyUnit, string | undefined>) {
+  return h(OrbatCellRenderer, {
+    value: getValue() ?? "",
+    sidc: row.original.sidc,
+    expanded: row.getIsExpanded(),
+    level: row.depth,
+    canExpand: row.getCanExpand(),
+    onToggle: row.getToggleExpandedHandler(),
+    symbolOptions: {},
+  });
+}
+
+// Columns for hierarchy preview
+const hierarchyColumns = computed<ColumnDef<HierarchyUnit, string | undefined>[]>(() => {
+  const cols: ColumnDef<HierarchyUnit, string | undefined>[] = [
+    {
+      accessorFn: (f) => f.name,
+      id: "name",
+      cell: renderExpandCell,
+      header: ({ table }) => {
+        return h(
+          "button",
+          {
+            type: "button",
+            title: "Expand/collapse all",
+            onClick: table.getToggleAllRowsExpandedHandler(),
+            class: "flex items-center gap-2",
+          },
+          [
+            h(ChevronRightIcon, {
+              class: [
+                "size-6 transform transition-transform text-muted-foreground",
+                table.getIsAllRowsExpanded() ? "rotate-90" : "",
+              ],
+            }),
+            "Unit",
+          ],
+        );
+      },
+      enableGlobalFilter: true,
+      size: 400,
+      enableSorting: false,
+    },
+  ];
+
+  // Add ID column if available
+  if (idMode.value === "autogenerate" || (idMode.value === "mapped" && idField.value)) {
+    cols.push({ accessorKey: "id", header: "ID", size: 120 });
+  }
+
+  return cols;
+});
+
+const hierarchyTableState: InitialTableState = {
+  expanded: true,
+};
+
 const canImport = computed(() => {
   // Must have at least name field mapped
   if (!fieldMappings.value.name) return false;
@@ -565,6 +682,22 @@ function onImport() {
             :columns="previewColumns"
             :row-count="mappedData.length"
             class="max-h-[30vh]"
+          />
+        </NewAccordionPanel>
+
+        <NewAccordionPanel
+          v-if="importMode === 'add-units' && fieldMappings.parentId && hierarchyData.length > 0"
+          label="Hierarchy preview"
+        >
+          <DataGrid
+            :data="hierarchyData"
+            :columns="hierarchyColumns"
+            :row-count="mappedData.length"
+            :row-height="40"
+            class="max-h-[40vh]"
+            show-global-filter
+            :initial-state="hierarchyTableState"
+            :get-sub-rows="(row) => row.subUnits"
           />
         </NewAccordionPanel>
       </div>
