@@ -6,7 +6,6 @@ import { xlsxUtils } from "@/extlib/xlsx-lazy";
 import fuzzysort from "fuzzysort";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import NewSelect from "@/components/NewSelect.vue";
 import type { ColumnDef } from "@tanstack/vue-table";
 import { useNotifications } from "@/composables/notifications";
 import { nanoid } from "@/utils";
@@ -19,6 +18,13 @@ import {
 } from "./ui/field";
 import { Field } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
 import { InfoIcon } from "lucide-vue-next";
 import {
@@ -342,7 +348,7 @@ function onImport() {
     <!-- Update Mode Configuration -->
     <div
       v-if="importMode === 'update-units'"
-      class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
+      class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950"
     >
       <div class="flex gap-2">
         <InfoIcon class="h-5 w-5 shrink-0 text-blue-500" />
@@ -357,12 +363,19 @@ function onImport() {
         </div>
       </div>
       <div class="mt-3">
-        <NewSelect
-          v-model="idField"
-          :values="headers"
-          label="ID field (required)"
-          add-none
-        />
+        <Field>
+          <FieldLabel>ID field (required)</FieldLabel>
+          <Select v-model="idField">
+            <SelectTrigger>
+              <SelectValue placeholder="Select ID field" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="h in headers" :key="h" :value="h">
+                {{ h }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
       </div>
     </div>
 
@@ -370,7 +383,7 @@ function onImport() {
     <NewAccordionPanel v-if="importMode === 'add-units'" label="Column mappings">
       <div class="flex flex-col gap-4">
         <FieldSet class="flex flex-col gap-3 rounded-md border p-3">
-          <FieldLegend>Unit Identification</FieldLegend>
+          <FieldLegend variant="label">Unit Identification</FieldLegend>
           <RadioGroup v-model="idMode" class="flex w-sm gap-4">
             <Field orientation="horizontal">
               <RadioGroupItem id="id-auto" value="autogenerate" />
@@ -383,62 +396,73 @@ function onImport() {
           </RadioGroup>
 
           <div v-if="idMode === 'mapped'" class="mt-2">
-            <NewSelect
-              v-model="idField"
-              :values="headers"
-              label="ID field (recommended)"
-              add-none
-            />
-            <FieldDescription>
-              Select a column that uniquely identifies each unit.
-            </FieldDescription>
+            <Field>
+              <FieldLabel>ID field (recommended)</FieldLabel>
+              <Select v-model="idField">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select ID field" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="h in headers" :key="h" :value="h">
+                    {{ h }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldDescription>
+                Select a column that uniquely identifies each unit.
+              </FieldDescription>
+            </Field>
           </div>
         </FieldSet>
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <FieldSet class="col-span-full gap-3 rounded-md border p-3">
-            <FieldLegend>Symbol fields</FieldLegend>
-            <FieldDescription class="text-xs">
-              Provide SIDC directly, or map icon and echelon to construct one.
-            </FieldDescription>
-            <div
-              class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            >
-              <div v-for="field in symbolFields" :key="field.value" class="space-y-1">
-                <div class="flex items-center gap-2">
-                  <NewSelect
-                    v-model="fieldMappings[field.value]"
-                    :values="headers"
-                    :label="field.label"
-                    add-none
-                    class="flex-1"
-                  />
-                </div>
-                <p class="text-muted-foreground text-xs">{{ field.helpText }}</p>
-              </div>
-            </div>
-          </FieldSet>
+        <FieldSet class="gap-3 rounded-md border p-3">
+          <FieldLegend variant="label">Symbol fields</FieldLegend>
+          <FieldDescription class="text-xs">
+            Provide SIDC directly, or map icon and echelon to construct one.
+          </FieldDescription>
+          <div
+            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          >
+            <Field v-for="field in symbolFields" :key="field.value">
+              <FieldLabel>{{ field.label }}</FieldLabel>
+              <Select v-model="fieldMappings[field.value]">
+                <SelectTrigger>
+                  <SelectValue :placeholder="field.label" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem :value="null">None</SelectItem>
+                  <SelectItem v-for="h in headers" :key="h" :value="h">
+                    {{ h }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldDescription>{{ field.helpText }}</FieldDescription>
+            </Field>
+          </div>
+        </FieldSet>
 
-          <FieldSet class="col-span-full gap-3 rounded-md border p-3">
-            <FieldLegend>Other fields</FieldLegend>
-            <div
-              class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            >
-              <div v-for="field in otherFields" :key="field.value" class="space-y-1">
-                <div class="flex items-center gap-2">
-                  <NewSelect
-                    v-model="fieldMappings[field.value]"
-                    :values="headers"
-                    :label="field.label"
-                    add-none
-                    class="flex-1"
-                  />
-                </div>
-                <p class="text-muted-foreground text-xs">{{ field.helpText }}</p>
-              </div>
-            </div>
-          </FieldSet>
-        </div>
+        <FieldSet class="gap-3 rounded-md border p-3">
+          <FieldLegend variant="label">Other fields</FieldLegend>
+          <div
+            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          >
+            <Field v-for="field in otherFields" :key="field.value">
+              <FieldLabel>{{ field.label }}</FieldLabel>
+              <Select v-model="fieldMappings[field.value]">
+                <SelectTrigger>
+                  <SelectValue :placeholder="field.label" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem :value="null">None</SelectItem>
+                  <SelectItem v-for="h in headers" :key="h" :value="h">
+                    {{ h }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldDescription>{{ field.helpText }}</FieldDescription>
+            </Field>
+          </div>
+        </FieldSet>
       </div>
     </NewAccordionPanel>
 
@@ -450,13 +474,21 @@ function onImport() {
           :label="`Source data (${activeSheet})`"
           v-model="showSourceData"
         >
-          <div class="space-y-2 p-2">
-            <NewSelect
-              v-if="sheetNames.length > 1"
-              v-model="activeSheet"
-              :values="sheetNames"
-              label="Select sheet"
-            />
+          <div class="space-y-2 py-2">
+            <Field v-if="sheetNames.length > 1">
+              <FieldLabel>Select sheet</FieldLabel>
+              <Select v-model="activeSheet">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sheet" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="sheet in sheetNames" :key="sheet" :value="sheet">
+                    {{ sheet }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+
             <DataGrid
               :data="data"
               :columns="columns"
