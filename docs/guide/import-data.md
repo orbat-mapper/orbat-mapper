@@ -78,3 +78,30 @@ structure.
   include it in the unit's TO&E.
 - **Include personnel**. If this option is enabled, ORBAT Mapper will import personnel from the unit templates and
   include it in the unit's TO&E.
+
+## Tabular Data (Excel/CSV)
+
+You can import units from Excel (`.xlsx`) or CSV files. This allows you to bring in data from spreadsheets or other tools.
+
+### Column Mapping
+
+When you import a tabular file, you will be presented with a column mapping screen where you associate the columns in your file with unit properties.
+
+**Essential fields:**
+
+- **Name**: The name of the unit (required).
+- **Icon**: The unit function or symbol code. If you have a full SIDC (15, 20 or 30 characters), map it here. If you have a human readable name (e.g. "Infantry"), map it here.
+- **Echelon**: The command level of the unit (e.g. "Platoon", "Company").
+
+**Validation:**
+
+The importer will try to generate a valid SIDC based on the mapped **Icon** and **Echelon** columns. If a valid SIDC cannot be generated, or if the Name is missing, the unit will be excluded from the import.
+
+### Creating a Hierarchy
+
+You can recreate a unit hierarchy by mapping the **Parent ID** field.
+
+1. **ID field**: Select the column that contains the unique identifier for each unit.
+2. **Parent ID**: Select the column that contains the ID of the parent unit.
+
+ORBAT Mapper will use these two fields to rebuild the tree structure.
