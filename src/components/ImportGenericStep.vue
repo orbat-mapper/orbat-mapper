@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch, h } from "vue";
+import { computed, ref, h } from "vue";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import type { WorkBook } from "xlsx";
-import { xlsxUtils } from "@/extlib/xlsx-lazy";
-import fuzzysort from "fuzzysort";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import type { ColumnDef, InitialTableState } from "@tanstack/vue-table";
@@ -13,7 +11,7 @@ import { useNotifications } from "@/composables/notifications";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { addUnitHierarchy } from "@/importexport/convertUtils";
-import type { Unit } from "@/types/scenarioModels";
+import type { Unit, State } from "@/types/scenarioModels";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { useRootUnits } from "@/composables/scenarioUtils";
 import {
@@ -34,19 +32,14 @@ import {
 } from "@/components/ui/select";
 import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
 import { InfoIcon } from "lucide-vue-next";
-import {
-  buildSidc,
-  getEchelonCodeFromName,
-  getIconCodeFromName,
-} from "@/views/texttoorbat/textToOrbat";
-
-interface FieldDefinition {
-  label: string;
-  value: string;
-  aliases: string[];
-  helpText: string;
-  essential?: boolean;
-}
+import { formatPosition } from "@/geo/utils";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
+import SimpleSelect from "@/components/SimpleSelect.vue";
+import type { Position } from "geojson";
+import { commonFields, useColumnMapping } from "@/composables/import/useColumnMapping";
+import { useSheetData } from "@/composables/import/useSheetData";
+import { useMappedData, type HierarchyUnit } from "@/composables/import/useMappedData";
+import type { PositionTimeMode } from "./import/types";
 
 interface Props {
   workbook: WorkBook;
@@ -57,72 +50,57 @@ const emit = defineEmits(["cancel", "loaded"]);
 const { send } = useNotifications();
 const scenario = injectStrict(activeScenarioKey);
 
-const sheetNames = props.workbook.SheetNames;
-const activeSheet = ref(sheetNames[0]);
+// Data loading
+const { sheetNames, activeSheet, data, headers } = useSheetData(props.workbook);
+
 const importMode = ref<"add-units" | "update-units">("add-units");
 const idMode = ref<"mapped" | "autogenerate">("autogenerate");
-const idField = ref<string | null>(null);
 const showPreview = ref(true);
 const showSourceData = ref(true);
 const guessSidc = ref(false);
-const parentMatchField = ref<string | null>(null);
 
 const { rootUnitItems } = useRootUnits();
 const parentUnitId = ref(rootUnitItems.value[0]?.code as string);
 
-const commonFields: FieldDefinition[] = [
-  {
-    label: "Name",
-    value: "name",
-    aliases: ["unit name", "label", "title"],
-    helpText: "The display name for the unit (required)",
-    essential: true,
-  },
-  {
-    label: "Short name",
-    value: "shortName",
-    aliases: ["abbr", "abbreviation", "short"],
-    helpText: "Abbreviated unit name for compact displays",
-    essential: false,
-  },
-  {
-    label: "Icon",
-    value: "icon",
-    aliases: ["icon", "symbol code", "function", "role", "name"],
-    helpText: "Unit icon/function",
-    essential: true,
-  },
-  {
-    label: "Echelon",
-    value: "echelon",
-    aliases: ["echelon", "level", "size", "rank", "name"],
-    helpText: "Command level",
-    essential: true,
-  },
-  {
-    label: "Parent ID",
-    value: "parentId",
-    aliases: ["parent", "parent unit", "superior", "reports to", "p_id"],
-    helpText: "ID of the parent unit in the hierarchy",
-    essential: false,
-  },
-  {
-    label: "Description",
-    value: "description",
-    aliases: ["remarks", "notes", "comments"],
-    helpText: "Additional information about the unit",
-    essential: false,
-  },
-  {
-    label: "External URL",
-    value: "externalUrl",
-    aliases: ["url", "link", "external link"],
-    helpText: "Link to external documentation or resources",
-    essential: false,
-  },
-];
-const idAliases = ["id", "unit id", "identifier", "uid", "entityid"];
+// Column mapping logic
+const {
+  fieldMappings,
+  idField,
+  parentMatchField,
+  coordinateMode,
+  combinedCoordinateFormat,
+  latitudeField,
+  longitudeField,
+  positionField,
+} = useColumnMapping(headers, data);
 
+const positionTimeMode = ref<PositionTimeMode>("current");
+const positionEventId = ref<string | null>(null);
+
+// Time formatting and events
+const fmt = useTimeFormatStore();
+const { store, time } = injectStrict(activeScenarioKey);
+
+const formattedCurrentTime = computed(() =>
+  fmt.scenarioFormatter.format(+time.scenarioTime.value),
+);
+
+const events = computed(() => {
+  return store.state.events
+    .map((e) => store.state.eventMap[e])
+    .sort((a, b) => (a.startTime < b.startTime ? -1 : 1))
+    .map((e) => ({
+      label: `${fmt.scenarioFormatter.format(e.startTime)} - ${e.title}`,
+      value: e.id,
+    }));
+});
+
+// Initialize event ID if available
+if (events.value.length > 0 && !positionEventId.value) {
+  positionEventId.value = events.value[0]?.value ?? null;
+}
+
+// Helper for UI referencing
 const symbolFieldValues = new Set(["icon", "echelon"]);
 const hierarchyFieldValues = new Set(["parentId"]);
 const symbolFields = commonFields.filter((field) => symbolFieldValues.has(field.value));
@@ -134,71 +112,26 @@ const otherFields = commonFields.filter(
     !symbolFieldValues.has(field.value) && !hierarchyFieldValues.has(field.value),
 );
 
-const fieldMappings = ref<Record<string, string | null>>({});
-
-const data = computed(() => {
-  const sheet = props.workbook.Sheets[activeSheet.value];
-  if (!sheet || !sheet["!ref"]) return [];
-
-  // // Limit to 100 rows for preview performance
-  // const range = xlsxUtils.decode_range(sheet["!ref"]);
-  // range.e.r = Math.min(range.e.r, range.s.r + 99);
-  //
-  // return xlsxUtils.sheet_to_json(sheet, { range });
-  return xlsxUtils.sheet_to_json(sheet);
-});
-
-const headers = computed(() => {
-  if (data.value.length === 0) return [];
-  return Object.keys(data.value[0] as object);
-});
-
-watch(
-  headers,
-  (newHeaders) => {
-    // Guess ID field
-    let idBestScore = -Infinity;
-    let idBestMatch = "";
-
-    idAliases.forEach((alias) => {
-      const results = fuzzysort.go(alias, newHeaders);
-      if (results.length > 0 && results[0].score > idBestScore) {
-        idBestScore = results[0].score;
-        idBestMatch = results[0].target;
-      }
-    });
-
-    idField.value = idBestScore > -1000 ? idBestMatch : null;
-    parentMatchField.value = idField.value;
-
-    // Guess other fields
-    commonFields.forEach((field) => {
-      const searchTerms = [field.value, field.label, ...field.aliases];
-      let bestScore = -Infinity;
-      let bestMatch = "";
-
-      searchTerms.forEach((term) => {
-        const results = fuzzysort.go(term, newHeaders);
-        if (results.length > 0 && results[0].score > bestScore) {
-          bestScore = results[0].score;
-          bestMatch = results[0].target;
-        }
-      });
-
-      const mappedValue = bestScore > -1000 ? bestMatch : null;
-      fieldMappings.value[field.value] = mappedValue;
-    });
-  },
-  { immediate: true },
-);
-
-// console.log("Generic import data preview:", data.value);
-
 const columns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
   return headers.value.map((header) => ({
     accessorKey: header,
     header: header,
   }));
+});
+
+// Mapped data transformation
+const { mappedData, hierarchyData } = useMappedData({
+  data,
+  fieldMappings,
+  idField,
+  idMode,
+  parentMatchField,
+  coordinateMode,
+  latitudeField,
+  longitudeField,
+  positionField,
+  combinedCoordinateFormat,
+  guessSidc,
 });
 
 const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
@@ -288,135 +221,34 @@ const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
       cols.push({ accessorKey: field.value, header: field.label });
     }
   });
+
+  // Add position column if coordinates are being mapped
+  if (coordinateMode.value !== "none") {
+    cols.push({
+      accessorKey: "_position",
+      header: "Position",
+      cell: ({ row }) => {
+        const pos = row.original._position as Position | undefined;
+        if (!pos || pos.length < 2) return "";
+        return formatPosition(pos);
+      },
+      size: 200,
+    });
+  }
+
   return cols;
 });
 
-function isNumericSidc(value: string) {
-  return /^\d{10}(\d{5})?(\d{5})?$/.test(value);
+interface MappedUnit {
+  name?: string;
+  sidc?: string;
+  [key: string]: unknown;
 }
-
-function isCharacterSidc(value: string) {
-  return /^[A-Z\-]{15}$/.test(value);
-}
-
-const mappedData = computed(() => {
-  if (!data.value.length) return [];
-
-  return data.value.map((row) => {
-    const r = row as Record<string, unknown>;
-    const unit: Record<string, unknown> = {};
-
-    // Map ID
-    if (idMode.value === "mapped" && idField.value && r[idField.value] !== undefined) {
-      unit.id = r[idField.value];
-    } else if (idMode.value === "autogenerate") {
-      unit.id = nanoid();
-    }
-
-    // Map other fields
-    commonFields.forEach((field) => {
-      const mappedHeader = fieldMappings.value[field.value];
-      if (mappedHeader && r[mappedHeader] !== undefined) {
-        unit[field.value] = r[mappedHeader];
-      }
-    });
-
-    // Try to construct SIDC from specific icon/echelon fields if SIDC is missing
-    if (!unit.sidc) {
-      const iconHeader = fieldMappings.value["icon"];
-      const echelonHeader = fieldMappings.value["echelon"];
-      const iconValue = iconHeader ? (r[iconHeader] as string) : undefined;
-      const echelonValue = echelonHeader ? (r[echelonHeader] as string) : undefined;
-
-      if (iconValue || echelonValue) {
-        if (iconValue && (isNumericSidc(iconValue) || isCharacterSidc(iconValue))) {
-          if (iconValue.length >= 15) {
-            unit.sidc = iconValue;
-          } else {
-            // Partial SIDC (10 digits)
-            const derivedEchelon = echelonValue
-              ? getEchelonCodeFromName(echelonValue) || "00"
-              : "00";
-            unit.sidc = "10031000" + derivedEchelon + iconValue;
-          }
-        } else {
-          const derivedIcon = iconValue
-            ? getIconCodeFromName(iconValue) || "0000000000"
-            : "0000000000";
-
-          const derivedEchelon = echelonValue
-            ? getEchelonCodeFromName(echelonValue) || "00"
-            : "00";
-
-          // Standard Identity 3 (Friendly), SymbolSet 10 (Land Unit), Status 0, HQTFD 0
-          unit.sidc = "10031000" + derivedEchelon + derivedIcon;
-        }
-      } else if (guessSidc.value && unit.name) {
-        unit.sidc = buildSidc(0, unit.name as string);
-      }
-    }
-
-    return unit;
-  });
-});
 
 // Validation and quality metrics
 const validRowCount = computed(() => {
-  return mappedData.value.filter((u) => u.name && u.sidc).length;
-});
-
-// Unit type for hierarchy
-interface HierarchyUnit extends Record<string, unknown> {
-  id: string;
-  name: string;
-  sidc?: string;
-  subUnits?: HierarchyUnit[];
-}
-
-// Build hierarchy from flat data when parentId is mapped
-const hierarchyData = computed<HierarchyUnit[]>(() => {
-  if (!fieldMappings.value.parentId || !parentMatchField.value) {
-    return [];
-  }
-
-  const sourceData = data.value as Record<string, unknown>[];
-  const flatData = mappedData.value as HierarchyUnit[];
-  if (!flatData.length || !sourceData.length) return [];
-
-  const parentIdHeader = fieldMappings.value.parentId;
-  const matchFieldHeader = parentMatchField.value;
-
-  // Create a map from the parentMatchField column value to the hierarchy unit
-  // parentMatchField is a column header in the SOURCE data
-  const unitMap = new Map<string, HierarchyUnit>();
-  sourceData.forEach((sourceRow, index) => {
-    const matchValue = String(sourceRow[matchFieldHeader] ?? "");
-    if (matchValue && flatData[index]) {
-      unitMap.set(matchValue, { ...flatData[index], subUnits: [] });
-    }
-  });
-
-  // Build the hierarchy
-  const rootUnits: HierarchyUnit[] = [];
-
-  sourceData.forEach((sourceRow) => {
-    const matchValue = String(sourceRow[matchFieldHeader] ?? "");
-    const hierarchyUnit = unitMap.get(matchValue);
-    if (!hierarchyUnit) return;
-
-    // Get the parent reference from the source data's parentId column
-    const parentIdValue = String(sourceRow[parentIdHeader!] ?? "");
-    const parentUnit = parentIdValue ? unitMap.get(parentIdValue) : null;
-
-    if (parentUnit && parentUnit !== hierarchyUnit) {
-      if (!parentUnit.subUnits) parentUnit.subUnits = [];
-      parentUnit.subUnits.push(hierarchyUnit);
-    } else {
-      rootUnits.push(hierarchyUnit);
-    }
-  });
-
-  return rootUnits;
+  return mappedData.value.filter((u) => (u as MappedUnit).name && (u as MappedUnit).sidc)
+    .length;
 });
 
 const hierarchyTableState: InitialTableState = {
@@ -461,6 +293,38 @@ function onImport() {
     if (item.description) unit.description = String(item.description);
     if (item.externalUrl) unit.externalUrl = String(item.externalUrl);
 
+    // Handle position based on time mode
+    if (item._position) {
+      if (positionTimeMode.value === "current") {
+        // Set position as state at current scenario time
+        const state: State = {
+          id: nanoid(),
+          t: +time.scenarioTime.value,
+          location: item._position,
+        };
+        unit.state = [state];
+      } else if (positionTimeMode.value === "event" && positionEventId.value) {
+        // Set position as state at the selected event's time
+        const event = store.state.eventMap[positionEventId.value];
+        if (event) {
+          const state: State = {
+            id: nanoid(),
+            t: event.startTime,
+            location: item._position,
+          };
+          unit.state = [state];
+        } else {
+          // Fallback to current time if event not found
+          const state: State = {
+            id: nanoid(),
+            t: +time.scenarioTime.value,
+            location: item._position,
+          };
+          unit.state = [state];
+        }
+      }
+    }
+
     // Recursively process subUnits if hierarchy exists
     if (item.subUnits && item.subUnits.length > 0) {
       unit.subUnits = item.subUnits.map(convertToUnit);
@@ -490,9 +354,18 @@ function onImport() {
   }
 
   // Import each root unit
+  const hasPositions = coordinateMode.value !== "none";
   validUnits.forEach((unit) => {
-    addUnitHierarchy(unit, parentUnitId.value, scenario);
+    addUnitHierarchy(unit, parentUnitId.value, scenario, {
+      includeState: hasPositions,
+    });
   });
+
+  // Refresh unit states so imported units with positions are visible on the map
+  if (hasPositions) {
+    time.setCurrentTime(+time.scenarioTime.value);
+    scenario.store.state.unitStateCounter++;
+  }
 
   send({
     message: `Successfully imported ${validRowCount.value} units.`,
@@ -689,6 +562,124 @@ function onImport() {
                 Select the column used to match the parent references.
               </FieldDescription>
             </Field>
+          </div>
+        </FieldSet>
+        <FieldSet class="gap-3 rounded-md border p-3">
+          <FieldLegend variant="label">Position</FieldLegend>
+          <FieldDescription>
+            Map coordinate columns to set unit positions on the map.
+          </FieldDescription>
+          <RadioGroup v-model="coordinateMode" class="mb-4 flex flex-wrap gap-4">
+            <Field orientation="horizontal">
+              <RadioGroupItem id="coord-none" value="none" />
+              <FieldLabel for="coord-none">No position</FieldLabel>
+            </Field>
+            <Field orientation="horizontal">
+              <RadioGroupItem id="coord-separate" value="separate" />
+              <FieldLabel for="coord-separate">Separate lat/lon columns</FieldLabel>
+            </Field>
+            <Field orientation="horizontal">
+              <RadioGroupItem id="coord-combined" value="combined" />
+              <FieldLabel for="coord-combined">Combined coordinate column</FieldLabel>
+            </Field>
+          </RadioGroup>
+
+          <!-- Separate lat/lon fields -->
+          <div
+            v-if="coordinateMode === 'separate'"
+            class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+          >
+            <Field class="items-start">
+              <FieldLabel>Latitude</FieldLabel>
+              <Select v-model="latitudeField">
+                <SelectTrigger class="!w-sm">
+                  <SelectValue placeholder="Select latitude column" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem :value="null">None</SelectItem>
+                  <SelectItem v-for="h in headers" :key="h" :value="h">
+                    {{ h }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldDescription>Column with latitude values</FieldDescription>
+            </Field>
+            <Field class="items-start">
+              <FieldLabel>Longitude</FieldLabel>
+              <Select v-model="longitudeField">
+                <SelectTrigger class="!w-sm">
+                  <SelectValue placeholder="Select longitude column" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem :value="null">None</SelectItem>
+                  <SelectItem v-for="h in headers" :key="h" :value="h">
+                    {{ h }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldDescription>Column with longitude values</FieldDescription>
+            </Field>
+          </div>
+
+          <!-- Combined coordinate field -->
+          <div
+            v-if="coordinateMode === 'combined'"
+            class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+          >
+            <Field class="items-start">
+              <FieldLabel>Coordinate column</FieldLabel>
+              <Select v-model="positionField">
+                <SelectTrigger class="!w-sm">
+                  <SelectValue placeholder="Select coordinate column" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem :value="null">None</SelectItem>
+                  <SelectItem v-for="h in headers" :key="h" :value="h">
+                    {{ h }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldDescription>Column with coordinate values</FieldDescription>
+            </Field>
+            <Field class="items-start">
+              <FieldLabel>Coordinate format</FieldLabel>
+              <Select v-model="combinedCoordinateFormat">
+                <SelectTrigger class="!w-sm">
+                  <SelectValue placeholder="Select format" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="LatLon">Lat, Lon (decimal)</SelectItem>
+                  <SelectItem value="LonLat">Lon, Lat (decimal)</SelectItem>
+                  <SelectItem value="MGRS">MGRS</SelectItem>
+                  <SelectItem value="DMS">Degrees Minutes Seconds</SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldDescription>Format of coordinate values</FieldDescription>
+            </Field>
+          </div>
+
+          <!-- Position time mode -->
+          <div v-if="coordinateMode !== 'none'" class="mt-4 border-t pt-4">
+            <FieldLabel class="mb-2">Apply position at</FieldLabel>
+            <RadioGroup v-model="positionTimeMode" class="flex flex-wrap gap-4">
+              <Field orientation="horizontal">
+                <RadioGroupItem id="time-current" value="current" />
+                <FieldLabel for="time-current"
+                  >Current scenario time ({{ formattedCurrentTime }})</FieldLabel
+                >
+              </Field>
+              <Field orientation="horizontal">
+                <RadioGroupItem id="time-event" value="event" />
+                <FieldLabel for="time-event">Scenario event</FieldLabel>
+              </Field>
+            </RadioGroup>
+            <SimpleSelect
+              v-if="positionTimeMode === 'event'"
+              class="mt-2"
+              label="Select event"
+              :items="events"
+              v-model="positionEventId"
+            />
           </div>
         </FieldSet>
       </div>
