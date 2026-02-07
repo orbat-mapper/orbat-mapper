@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { type NullableSymbolItem, type SymbolGroup } from "@/types/constants";
 import { type UnitSymbolOptions } from "@/types/scenarioModels";
-import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
+import UnitSymbol from "@/components/UnitSymbol.vue";
 import { Field, FieldLabel } from "@/components/ui/field";
 
 interface Props {
@@ -44,10 +44,9 @@ const selected = computed(() => {
       <SelectTrigger class="w-full data-[size=default]:h-10" :id="controlId">
         <SelectValue class="">
           <template v-if="selected"
-            ><NewMilitarySymbol
+            ><UnitSymbol
               class="size-8"
               :sidc="selected?.sidc || ''"
-              alt=""
               :size="20"
               :options="{
                 outlineWidth: 8,
@@ -72,7 +71,7 @@ const selected = computed(() => {
               :value="item.code"
               class="data-[state=checked]:font-semibold"
             >
-              <NewMilitarySymbol
+              <UnitSymbol
                 :size="20"
                 class="size-8"
                 :sidc="item.sidc"
@@ -93,7 +92,7 @@ const selected = computed(() => {
             :value="item.code"
             class="data-[state=checked]:font-semibold"
           >
-            <NewMilitarySymbol
+            <UnitSymbol
               :size="20"
               class="size-8"
               :sidc="item.sidc"
