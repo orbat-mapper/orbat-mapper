@@ -120,8 +120,10 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
 
   async function downloadAsXlsx(opts: ExportSettings) {
     const { writeFileXLSX, xlsxUtils } = await import("@/extlib/xlsx-lazy");
+    const { formatLocation } = await import("@/importexport/export/locationFormat");
     const workbook = xlsxUtils.book_new();
     let unitData: any[] = [];
+    const formatLoc = (loc: any) => formatLocation(loc, opts.locationFormat);
     if (opts.oneSheetPerSide) {
       Object.keys(sideMap).forEach((sideId) => {
         unitData = [];
@@ -129,7 +131,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
           unitData.push({
             ...unit,
-            location: unit._state?.location || unit.location,
+            location: formatLoc(unit._state?.location || unit.location),
             sideId: side.id,
             sideName: side?.name,
           });
@@ -142,7 +144,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
           unitData.push({
             ...unit,
-            location: unit._state?.location || unit.location,
+            location: formatLoc(unit._state?.location || unit.location),
             sideId: side.id,
             sideName: side?.name,
           });

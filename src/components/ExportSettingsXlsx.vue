@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import type { ExportFormat, XlsxSettings } from "@/types/importExport.ts";
+import type {
+  ExportFormat,
+  LocationExportFormat,
+  XlsxSettings,
+} from "@/types/importExport.ts";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
+import SimpleSelect from "@/components/SimpleSelect.vue";
 
 interface Props {
   format: ExportFormat;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 const settings = defineModel<XlsxSettings>({ required: true });
 
 const attributes: (string | { field: string; label: string })[] = [
@@ -23,6 +28,15 @@ const attributes: (string | { field: string; label: string })[] = [
   { label: "side name", field: "sideName" },
 ];
 
+const locationFormatOptions: { label: string; value: LocationExportFormat }[] = [
+  { label: "JSON array [lon, lat]", value: "json" },
+  { label: "Lat, Lon", value: "latlon" },
+  { label: "Lon, Lat", value: "lonlat" },
+  { label: "MGRS", value: "mgrs" },
+  { label: "Degrees Minutes Seconds", value: "dms" },
+  { label: "Decimal Degrees", value: "dd" },
+];
+
 function mapFieldLabel(
   items: ({ field: string; label: string } | string)[],
 ): { label: string; field: string }[] {
@@ -33,6 +47,9 @@ function mapFieldLabel(
 
 const mappedAttributes = mapFieldLabel(attributes);
 settings.value.columns = [...mappedAttributes];
+if (!settings.value.locationFormat) {
+  settings.value.locationFormat = "json";
+}
 </script>
 
 <template>
@@ -42,11 +59,17 @@ settings.value.columns = [...mappedAttributes];
       <div class="mt-4 grid grid-cols-4 gap-4">
         <InputCheckbox
           v-for="v in mappedAttributes"
+          :key="v.field"
           :label="v.label"
           :value="v"
           v-model="settings.columns"
         />
       </div>
     </InputGroupTemplate>
+    <SimpleSelect
+      v-model="settings.locationFormat"
+      :items="locationFormatOptions"
+      label="Location format"
+    />
   </fieldset>
 </template>

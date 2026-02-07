@@ -40,9 +40,12 @@ export interface BaseExportSettings {
   fileName: string;
 }
 
+export type LocationExportFormat = "json" | "latlon" | "lonlat" | "mgrs" | "dms" | "dd";
+
 export interface XlsxSettings extends BaseExportSettings {
   oneSheetPerSide: boolean;
   columns: ColumnMapping[];
+  locationFormat: LocationExportFormat;
 }
 
 export interface UnitGeneratorSettings extends BaseExportSettings {

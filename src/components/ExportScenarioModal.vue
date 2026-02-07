@@ -59,6 +59,7 @@ const form = useLocalStorage(
     useShortName: true,
     oneSheetPerSide: true,
     columns: [],
+    locationFormat: "json",
     oneFolderPerSide: true,
     folderMode: "side",
     customColors: true,
