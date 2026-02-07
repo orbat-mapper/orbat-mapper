@@ -30,6 +30,7 @@ export interface MappedDataOptions {
   guessSidc: Ref<boolean>;
   parentSidc: Ref<string | undefined>;
   parentSymbolOptions: Ref<UnitSymbolOptions | undefined>;
+  parentSideIdentifier?: Ref<string | undefined>;
 }
 
 // Unit type for hierarchy
@@ -64,6 +65,7 @@ export function useMappedData(options: MappedDataOptions) {
     guessSidc,
     parentSidc,
     parentSymbolOptions,
+    parentSideIdentifier,
   } = options;
 
   const generatedIds = new WeakMap<object, string>();
@@ -72,7 +74,15 @@ export function useMappedData(options: MappedDataOptions) {
     if (!data.value.length) return [];
     const pSidc = unref(parentSidc);
     const pSymbolOptions = unref(parentSymbolOptions);
-    const parentIdentity = pSidc ? pSidc[3] : "3";
+    const pSideId = unref(parentSideIdentifier);
+    let parentIdentity = "3";
+    if (pSidc) {
+      if (pSidc.startsWith("custom")) {
+        parentIdentity = pSideId || "3";
+      } else {
+        parentIdentity = pSidc[3];
+      }
+    }
 
     return data.value.map((row) => {
       const r = row as Record<string, unknown>;

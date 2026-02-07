@@ -59,6 +59,12 @@ const parentSidc = computed(() => {
   return unit?.sidc;
 });
 
+const parentSide = computed(() => {
+  if (!parentUnitId.value) return undefined;
+  const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
+  return side;
+});
+
 const parentSymbolOptions = computed(() => {
   const unit = rootUnitItems.value.find((u) => u.code === parentUnitId.value);
   return unit?.symbolOptions;
@@ -81,7 +87,7 @@ const positionEventId = ref<string | null>(null);
 
 // Time formatting and events
 const fmt = useTimeFormatStore();
-const { store, time } = injectStrict(activeScenarioKey);
+const { store, time, unitActions } = injectStrict(activeScenarioKey);
 
 const events = computed(() => {
   return store.state.events
@@ -124,6 +130,7 @@ const { mappedData, hierarchyData } = useMappedData({
   guessSidc,
   parentSidc,
   parentSymbolOptions,
+  parentSideIdentifier: computed(() => parentSide.value?.standardIdentity),
 });
 
 const columns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
