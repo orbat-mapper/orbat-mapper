@@ -47,6 +47,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import FieldSelect from "@/components/FieldSelect.vue";
 import ImportStepLayout from "@/components/ImportStepLayout.vue";
 
@@ -75,7 +76,9 @@ const importMode = ref<
   | "supplyCategories"
   | "customSymbols"
 >("side");
-const unitImportMode = ref<"units-only" | "units-and-state" | "state-only">("state-only");
+const unitImportMode = ref<"units-only" | "units-and-state" | "state-only">(
+  "units-and-state",
+);
 const stateMergeMode = ref<"replace" | "add_new">("replace");
 const sideMergeMode = ref<"replace" | "add_new">("replace");
 const groupMergeMode = ref<"replace" | "add_new">("add_new");
@@ -144,7 +147,11 @@ const targetSides = computed((): SelectItem[] => {
 });
 
 const importedSideGroups = computed(() => {
-  return importedState.value.sideMap[selectedSourceSideId.value].groups
+  const sideId = selectedSourceSideId.value;
+  if (!sideId) return [];
+  const side = importedState.value.sideMap[sideId];
+  if (!side) return [];
+  return side.groups
     .map((id) => importedState.value.sideGroupMap[id])
     .map((sideGroup) => {
       return {
@@ -154,9 +161,9 @@ const importedSideGroups = computed(() => {
     });
 });
 
-const selectedSourceSideId = ref(importedSides.value[0].value as string);
-const selectedTargetSideId = ref(targetSides.value[0].value as string);
-const selectedSourceSideGroupId = ref(importedSideGroups.value[0].value as string);
+const selectedSourceSideId = ref(importedSides.value[0]?.value as string);
+const selectedTargetSideId = ref(targetSides.value[0]?.value as string);
+const selectedSourceSideGroupId = ref(importedSideGroups.value[0]?.value as string);
 
 const selectedSourceSide = computed(() => {
   return props.data.sides.find((s) => s.id === selectedSourceSideId.value);
@@ -166,7 +173,7 @@ const currentData = computed(() => {
   const s = props.data.sides.find((s) => s.id === selectedSourceSideId.value);
 
   if (importMode.value === "side") {
-    return s?.groups ?? [];
+    return [...(s?.groups ?? []), ...(s?.subUnits ?? [])];
   }
 
   const sg = s?.groups.find((g) => g.id === selectedSourceSideGroupId.value);
@@ -238,6 +245,12 @@ const sources = [
 watch(selectedSourceSideId, (newSide) => {
   const side = importedState.value.sideMap[newSide];
   selectedSourceSideGroupId.value = side.groups[0];
+});
+
+watch(hasExistingUnits, (exists) => {
+  if (!exists && unitImportMode.value === "state-only") {
+    unitImportMode.value = "units-and-state";
+  }
 });
 
 function renderExpandCell({ getValue, row }: CellContext<Unit, string>) {
@@ -440,9 +453,9 @@ async function onFormSubmit() {
     doCustomSymbolImport(selectedCustomSymbols.value);
   } else if (unitImportMode.value === "state-only") {
     doStateOnlyImport(selectedUnitIds);
-  } else if (importMode.value === "side") {
+  } else if (importMode.value === "side" && selectedSourceSideId.value) {
     doSideImport(selectedSourceSideId.value);
-  } else if (importMode.value === "group") {
+  } else if (importMode.value === "group" && selectedSourceSideGroupId.value) {
     doGroupImport(selectedSourceSideGroupId.value);
   }
   time.setCurrentTime(targetState.currentTime);
@@ -592,8 +605,16 @@ function doSideImport(importedSideId: string) {
       const nextSideId = targetState.sides[deletedSideIndex + 1];
       if (nextSideId) unitActions.moveSide(addedSideId, nextSideId, "above");
     }
-    for (const group of currentData.value) {
-      const groupId = group.id;
+    for (const item of currentData.value) {
+      if (isUnit(item)) {
+        addUnitHierarchy(item, addedSideId, activeScenario, {
+          newIds: createNewId,
+          includeState: unitImportMode.value === "units-and-state",
+          sourceState: importedState.value,
+        });
+        continue;
+      }
+      const groupId = item.id;
       const importedGroup = importedState.value.sideGroupMap[groupId];
       const addedGroupId = unitActions.addSideGroup(
         addedSideId,
@@ -602,8 +623,8 @@ function doSideImport(importedSideId: string) {
           newId: createNewId,
         },
       );
-      if (!group.subUnits || !addedGroupId) continue;
-      for (const unit of group.subUnits) {
+      if (!item.subUnits || !addedGroupId) continue;
+      for (const unit of item.subUnits) {
         addUnitHierarchy(unit, addedGroupId, activeScenario, {
           newIds: createNewId,
           includeState: unitImportMode.value === "units-and-state",
