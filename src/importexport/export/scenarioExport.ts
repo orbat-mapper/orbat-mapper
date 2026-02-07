@@ -127,7 +127,12 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
         unitData = [];
         const sideName = sideMap[sideId].name;
         unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
-          unitData.push({ ...unit, sideId: side.id, sideName: side?.name });
+          unitData.push({
+            ...unit,
+            location: unit._state?.location || unit.location,
+            sideId: side.id,
+            sideName: side?.name,
+          });
         });
         const ws = xlsxUtils.json_to_sheet(columnMapper(unitData, opts.columns));
         xlsxUtils.book_append_sheet(workbook, ws, sideName);
@@ -135,7 +140,12 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     } else {
       Object.keys(sideMap).forEach((sideId) =>
         unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
-          unitData.push({ ...unit, sideId: side.id, sideName: side?.name });
+          unitData.push({
+            ...unit,
+            location: unit._state?.location || unit.location,
+            sideId: side.id,
+            sideName: side?.name,
+          });
         }),
       );
       const ws = xlsxUtils.json_to_sheet(columnMapper(unitData, opts.columns));

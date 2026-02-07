@@ -13,6 +13,7 @@ const settings = defineModel<XlsxSettings>({ required: true });
 const attributes: (string | { field: string; label: string })[] = [
   "id",
   "name",
+  "sidc",
   "shortName",
   "description",
   "url",
