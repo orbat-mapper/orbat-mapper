@@ -133,6 +133,11 @@ export interface SymbolItem extends SymbolValue {
   symbolOptions?: UnitSymbolOptions;
 }
 
+export interface SymbolGroup {
+  name: string;
+  items: SymbolItem[];
+}
+
 export interface NullableSymbolItem extends Omit<SymbolItem, "code"> {
   code: string | null;
 }

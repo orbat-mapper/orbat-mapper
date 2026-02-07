@@ -16,9 +16,9 @@ import DataGrid from "@/modules/grid/DataGrid.vue";
 import type { ColumnDef } from "@tanstack/vue-table";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import AlertWarning from "@/components/AlertWarning.vue";
-import { Button } from "@/components/ui/button";
 import { useRootUnits } from "@/composables/scenarioUtils.ts";
-import { Field } from "@/components/ui/field";
+import ImportStepLayout from "@/components/ImportStepLayout.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 interface Props {
   data: GeoJSONFeature | FeatureCollection;
@@ -26,8 +26,9 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
+
 const { unitActions, store: scnStore, geo } = injectStrict(activeScenarioKey);
-const { state } = scnStore;
+
 type GeoJsonImportMode = "units" | "features";
 
 const importMode = ref<GeoJsonImportMode>("features");
@@ -39,7 +40,7 @@ const propertyNames = computed(() =>
   propReduce(
     props.data,
     (acc, properties) => {
-      properties && Object.keys(properties).forEach((key) => acc.add(key));
+      if (properties) Object.keys(properties).forEach((key) => acc.add(key));
       return acc;
     },
     new Set<string>(),
@@ -66,7 +67,7 @@ const computedColumns = computed((): (ColumnDef<GeoJSONFeature, any> | false)[] 
       accessorFn: (f) =>
         f.properties?.[symbolColumn.value]?.trim() || "10031000000000000000",
       id: "sidc",
-      cell: ({ row, getValue, cell }) => {
+      cell: ({ getValue }) => {
         return h(MilitarySymbol, {
           sidc: getValue(),
           size: 20,
@@ -152,7 +153,7 @@ const nameColumn = ref(findLikelyNameColumn([...propertyNames.value]));
 const symbolColumn = ref(findLikelySymbolColumn([...propertyNames.value]));
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
-async function onLoad(e: Event) {
+async function onLoad() {
   if (importMode.value === "units") {
     loadAsUnits();
   } else {
@@ -207,75 +208,82 @@ function loadAsFeatures() {
 }
 </script>
 <template>
-  <div class="">
-    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
-      <fieldset class="flex items-center gap-x-10">
-        <p class="text-foreground flex-none text-sm leading-6 font-semibold">
-          Import GeoJSON as
-        </p>
-        <MRadioGroup class="flex w-full gap-10">
+  <ImportStepLayout
+    title="Import GeoJSON"
+    subtitle="Import units and features from GeoJSON"
+    help-url="https://docs.orbat-mapper.app/guide/import-data"
+    has-sidebar
+  >
+    <template #actions>
+      <BaseButton small @click="emit('cancel')" class="flex-1 sm:flex-none"
+        >Cancel</BaseButton
+      >
+      <BaseButton type="submit" primary small @click="onLoad" class="flex-1 sm:flex-none"
+        >Import</BaseButton
+      >
+    </template>
+
+    <template #sidebar>
+      <fieldset class="space-y-3">
+        <p class="text-foreground text-sm leading-6 font-semibold">Import GeoJSON as</p>
+        <MRadioGroup class="flex flex-col gap-2">
           <InputRadio v-model="importMode" value="features">Scenario features</InputRadio>
           <InputRadio v-model="importMode" value="units">Units</InputRadio>
         </MRadioGroup>
       </fieldset>
-      <div class="">
-        <p class="text-muted-foreground mt-4 text-sm leading-6">
-          Select which features you want to import
-        </p>
-        <section class="mt-4">
-          <DataGrid
-            :data="isFeatureMode ? geoJSONFeatures : geoJSONPointFeatures"
-            :columns="computedColumns"
-            :row-height="40"
-            select
-            select-all
-            show-global-filter
-            v-model:selected="selectedFeatures"
-            class="max-h-[40vh]"
-          />
-          <AlertWarning
-            v-if="!isFeatureMode && geoJSONPointFeatures.length === 0"
-            title="No point geometries found"
-            class="mt-4"
-          >
-            A unit must have a point geometry to be imported.
-          </AlertWarning>
-        </section>
-        <section class="mt-4 grid gap-4 sm:grid-cols-2">
-          <SimpleSelect
-            label="Name column"
-            :items="propertyNameItems"
-            v-model="nameColumn"
-          />
-          <SimpleSelect
-            v-if="!isFeatureMode"
-            label="Symbol column"
-            :items="propertyNameItems"
-            v-model="symbolColumn"
-          />
-        </section>
 
-        <section class="mt-4 grid gap-4 sm:grid-cols-2">
-          <SimpleSelect
-            v-if="isFeatureMode"
-            label="Layer"
-            description="Which layer should the features be added to?"
-            :items="existingLayers"
-            v-model="activeLayer"
-          />
-          <SymbolCodeSelect
-            v-else
-            label="Parent unit"
-            :items="rootUnitItems"
-            v-model="parentUnitId"
-          />
-        </section>
-      </div>
+      <section class="space-y-4">
+        <SimpleSelect
+          label="Name column"
+          :items="propertyNameItems"
+          v-model="nameColumn"
+        />
+        <SimpleSelect
+          v-if="!isFeatureMode"
+          label="Symbol column"
+          :items="propertyNameItems"
+          v-model="symbolColumn"
+        />
+      </section>
 
-      <Field orientation="horizontal" class="justify-end">
-        <Button type="submit"> Import</Button>
-        <Button variant="outline" type="button" @click="emit('cancel')"> Cancel</Button>
-      </Field>
-    </form>
-  </div>
+      <section class="space-y-4">
+        <SimpleSelect
+          v-if="isFeatureMode"
+          label="Layer"
+          description="Which layer should the features be added to?"
+          :items="existingLayers"
+          v-model="activeLayer"
+        />
+        <SymbolCodeSelect
+          v-else
+          label="Parent unit"
+          :items="rootUnitItems"
+          v-model="parentUnitId"
+        />
+      </section>
+    </template>
+
+    <div class="flex h-full min-h-0 flex-col p-6">
+      <p class="text-muted-foreground mb-4 shrink-0 text-sm leading-6">
+        Select which features you want to import
+      </p>
+      <DataGrid
+        :data="isFeatureMode ? geoJSONFeatures : geoJSONPointFeatures"
+        :columns="computedColumns"
+        :row-height="40"
+        select
+        select-all
+        show-global-filter
+        v-model:selected="selectedFeatures"
+        class="flex-1"
+      />
+      <AlertWarning
+        v-if="!isFeatureMode && geoJSONPointFeatures.length === 0"
+        title="No point geometries found"
+        class="mt-4 shrink-0"
+      >
+        A unit must have a point geometry to be imported.
+      </AlertWarning>
+    </div>
+  </ImportStepLayout>
 </template>

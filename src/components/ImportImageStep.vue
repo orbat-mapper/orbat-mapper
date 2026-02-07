@@ -5,15 +5,10 @@ import { computed, ref } from "vue";
 import { type ImportedFileInfo } from "@/importexport/fileHandling";
 import { stripFileExtension } from "@/utils/files";
 import AlertWarning from "@/components/AlertWarning.vue";
-import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import ImportStepLayout from "@/components/ImportStepLayout.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 interface Props {
   objectUrl: string;
@@ -36,7 +31,7 @@ const isBlob = computed(() => {
   return props.objectUrl.startsWith("blob:");
 });
 
-async function onLoad(e: Event) {
+async function onLoad() {
   const newLayer = geo.addMapLayer({
     url: props.objectUrl,
     name: form.value.layerName,
@@ -62,34 +57,37 @@ function onImageLoad(e: Event) {
 </script>
 
 <template>
-  <div class="">
-    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] min-h-100 flex-col">
-      <FieldGroup>
-        <FieldSet>
-          <FieldLegend>Image import </FieldLegend>
+  <ImportStepLayout
+    title="Import Image"
+    help-url="https://docs.orbat-mapper.app/guide/import-data"
+    has-sidebar
+  >
+    <template #actions>
+      <BaseButton small @click="onCancel" class="flex-1 sm:flex-none">Cancel</BaseButton>
+      <BaseButton primary small @click="onLoad" class="flex-1 sm:flex-none"
+        >Import</BaseButton
+      >
+    </template>
 
-          <AlertWarning v-if="isBlob" title="Warning"
-            >This image is a local file and will not be saved with the scenario. It will
-            only be visible while the scenario is open.
-          </AlertWarning>
+    <template #sidebar>
+      <Field>
+        <FieldLabel for="layerName">Image layer name</FieldLabel>
+        <Input id="layerName" v-model="form.layerName" />
+      </Field>
+    </template>
 
-          <div class="flex-auto overflow-auto p-0.5">
-            <img :src="objectUrl" @load="onImageLoad" />
-            <p v-if="imageWidth" class="text-muted-foreground mt-2 text-sm">
-              Image dimensions {{ imageWidth }}x{{ imageHeight }}
-            </p>
-          </div>
-          <Field>
-            <FieldLabel for="layerName">Image layer name</FieldLabel>
-            <Input id="layerName" v-model="form.layerName" />
-          </Field>
+    <div class="space-y-4 p-6">
+      <AlertWarning v-if="isBlob" title="Warning"
+        >This image is a local file and will not be saved with the scenario. It will only
+        be visible while the scenario is open.
+      </AlertWarning>
 
-          <Field orientation="horizontal" class="justify-end">
-            <Button type="submit"> Import</Button>
-            <Button variant="outline" type="button" @click="onCancel"> Cancel</Button>
-          </Field>
-        </FieldSet>
-      </FieldGroup>
-    </form>
-  </div>
+      <div class="flex-auto overflow-auto p-0.5">
+        <img :src="objectUrl" @load="onImageLoad" />
+        <p v-if="imageWidth" class="text-muted-foreground mt-2 text-sm">
+          Image dimensions {{ imageWidth }}x{{ imageHeight }}
+        </p>
+      </div>
+    </div>
+  </ImportStepLayout>
 </template>

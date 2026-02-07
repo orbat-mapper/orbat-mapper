@@ -21,20 +21,21 @@ const dialect = detectSpreadsheetDialect(workbook);
 </script>
 
 <template>
-  <div class="">
-    <ImportOdinStep
-      v-if="dialect === 'ODIN_DRAGON'"
-      :workbook="workbook"
-      @cancel="emit('cancel')"
-      @loaded="emit('loaded')"
-    />
+  <div class="h-full">
+    <div v-if="dialect === 'ODIN_DRAGON'" class="h-full overflow-y-auto px-6">
+      <ImportOdinStep
+        :workbook="workbook"
+        @cancel="emit('cancel')"
+        @loaded="emit('loaded')"
+      />
+    </div>
     <ImportGenericStep
       v-else-if="dialect === 'generic'"
       :workbook="workbook"
       @cancel="emit('cancel')"
       @loaded="emit('loaded')"
     />
-    <div v-else class="p-4 text-center">
+    <div v-else class="p-6 text-center">
       <p class="text-red-500">Unsupported spreadsheet format.</p>
     </div>
   </div>

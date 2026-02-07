@@ -17,7 +17,6 @@ import { useScenarioImport } from "@/composables/scenarioImport";
 import { guessImportFormat, type ImportedFileInfo } from "@/importexport/fileHandling";
 import { useDragStore } from "@/stores/dragStore";
 import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
-import DocLink from "@/components/DocLink.vue";
 import { isUrl } from "@/utils";
 import type { FeatureCollection } from "geojson";
 import ImportLoadStepBrowser from "@/modules/scenarioeditor/ImportLoadStepBrowser.vue";
@@ -25,16 +24,18 @@ import { type Scenario } from "@/types/scenarioModels";
 import { Button } from "@/components/ui/button";
 import {
   Field,
+  FieldContent,
   FieldDescription,
-  FieldGroup,
   FieldLabel,
-  FieldSeparator,
   FieldSet,
+  FieldTitle,
 } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import ImportStepLayout from "@/components/ImportStepLayout.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 const emit = defineEmits<{
   cancel: [];
@@ -51,11 +52,11 @@ const formatItems: SelectItem<ImportFormat>[] = [
   { label: "XLSX", value: "xlsx" },
 ];
 
-const sourceItems: SelectItem<string>[] = [
-  { label: "Local file", value: "file" },
-  { label: "URL", value: "url" },
-  { label: "Browser", value: "browser" },
-  { label: "Paste text", value: "string" },
+const sourceItems = [
+  { label: "Local file", value: "file", description: "Upload from your computer" },
+  { label: "URL", value: "url", description: "Load from a web address" },
+  { label: "Browser", value: "browser", description: "Open a saved scenario" },
+  { label: "Paste text", value: "string", description: "Paste raw data directly" },
 ];
 
 const stringSource = ref("");
@@ -264,59 +265,121 @@ onMounted(() => {
 </script>
 
 <template>
-  <form @submit.prevent="onLoad" class="mt-4 space-y-6" ref="dropZoneRef">
-    <FieldGroup class="">
-      <SimpleSelect
-        class="sm:hidden"
-        label="Input source"
-        :items="sourceItems"
-        v-model="store.inputSource"
+  <ImportStepLayout
+    title="Import data"
+    subtitle="Import data for use in your scenario"
+    help-url="https://docs.orbat-mapper.app/guide/import-data"
+    has-sidebar
+  >
+    <template #actions>
+      <BaseButton small @click="emit('cancel')" class="flex-1 sm:flex-none"
+        >Cancel</BaseButton
       >
-      </SimpleSelect>
-      <FieldSet class="hidden sm:flex">
-        <FieldLabel>Input source</FieldLabel>
-        <RadioGroup v-model="store.inputSource" class="flex">
-          <Field v-for="item in sourceItems" orientation="horizontal" :key="item.value">
-            <RadioGroupItem :id="item.value" :value="item.value" />
-            <FieldLabel :for="item.value" class="font-normal">
-              {{ item.label }}
-            </FieldLabel>
-          </Field>
+      <BaseButton
+        type="submit"
+        primary
+        small
+        :disabled="!stringSource"
+        @click="onLoad"
+        class="flex-1 sm:flex-none"
+      >
+        Load
+      </BaseButton>
+    </template>
+
+    <template #sidebar>
+      <!-- Input Source Selection -->
+      <FieldSet>
+        <FieldLabel>Input Source</FieldLabel>
+        <FieldDescription>Select where to load your data from</FieldDescription>
+        <RadioGroup v-model="store.inputSource" class="mt-3 flex flex-col gap-2">
+          <FieldLabel v-for="item in sourceItems" :key="item.value" :for="item.value">
+            <Field orientation="horizontal">
+              <FieldContent>
+                <FieldTitle>{{ item.label }}</FieldTitle>
+                <FieldDescription>{{ item.description }}</FieldDescription>
+              </FieldContent>
+              <RadioGroupItem :id="item.value" :value="item.value" />
+            </Field>
+          </FieldLabel>
         </RadioGroup>
       </FieldSet>
-      <FieldSeparator />
-      <div
-        v-if="store.inputSource === 'file'"
-        class="hover:border-muted-foreground relative h-24 w-full rounded-lg border-2 border-dashed p-4 ring-offset-2 focus-within:ring-2"
-        :class="isOverDropZone ? 'cursor-crosshair border-green-500' : ''"
-      >
-        <input
-          type="file"
-          id="file"
-          multiple
-          @change="onFileLoad"
-          class="absolute inset-0 opacity-0"
+
+      <!-- Format Selection (when data is loaded) -->
+      <FieldSet v-if="stringSource" class="space-y-3">
+        <FieldLabel>Import Format</FieldLabel>
+        <p v-if="guessedFormat" class="text-muted-foreground text-sm">
+          Detected format:
+          <span class="text-accent-foreground font-medium">{{ guessedFormat }}</span>
+        </p>
+        <SimpleSelect
+          label="Override format"
+          :items="formatItems"
+          v-model="form.format"
         />
-        <label
-          for="file"
-          class="hover:text-accent-foreground flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2"
+        <div class="prose prose-sm dark:prose-invert">
+          <p v-if="isMilx">
+            Basic support for importing MilX layers from
+            <a href="https://www.map.army/">map.army</a>
+          </p>
+          <p v-else-if="isGeojson">Import units and features.</p>
+          <p v-else-if="isUnitGenerator">
+            Import ORBAT generated with
+            <a href="https://spatialillusions.com/unitgenerator2/" target="_blank"
+              >Spatial Illusions Orbat builder</a
+            >.
+          </p>
+          <p v-else-if="isOrbatGenerator">
+            Import ORBAT generated with
+            <a href="https://www.orbatgenerator.com/" target="_blank"
+              >Order of Battle Generator</a
+            >.
+          </p>
+        </div>
+        <p v-if="isMilx" class="text-muted-foreground text-sm">
+          Please note that the import functionality is experimental.
+        </p>
+      </FieldSet>
+    </template>
+
+    <!-- Main Content: File Loading Area -->
+    <!-- Main Content: File Loading Area -->
+    <div class="flex h-full min-h-0 flex-col" ref="dropZoneRef">
+      <div v-if="store.inputSource === 'file'" class="shrink-0 p-6">
+        <div
+          class="hover:border-muted-foreground relative flex h-48 w-full items-center justify-center rounded-lg border-2 border-dashed p-4 ring-offset-2 focus-within:ring-2"
+          :class="isOverDropZone ? 'cursor-crosshair border-green-500' : ''"
         >
-          <span class="text-base">Drag a file here or click to select local file</span>
-          <span v-if="currentFilename" class="text-sm">
-            Current file
-            <span class="text-accent-foreground font-mono">{{ currentFilename }}</span>
-          </span>
-        </label>
+          <input
+            type="file"
+            id="file"
+            multiple
+            @change="onFileLoad"
+            class="absolute inset-0 opacity-0"
+          />
+          <label
+            for="file"
+            class="hover:text-accent-foreground flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2"
+          >
+            <span class="text-base">Drag a file here or click to select local file</span>
+            <span v-if="currentFilename" class="text-sm">
+              Current file
+              <span class="text-accent-foreground font-mono">{{ currentFilename }}</span>
+            </span>
+          </label>
+        </div>
       </div>
-      <Field v-else-if="store.inputSource === 'string'">
+
+      <Field v-else-if="store.inputSource === 'string'" class="min-h-0 flex-1 p-6">
         <FieldLabel for="rawText">Raw text</FieldLabel>
-        <Textarea id="rawText" :rows="4" />
+        <Textarea id="rawText" class="min-h-0 flex-1" />
         <FieldDescription
           >Paste any of the supported text based sources into the text
           field</FieldDescription
         >
       </Field>
-      <Field v-else-if="store.inputSource === 'url'">
+
+      <Field v-else-if="store.inputSource === 'url'" class="p-6">
         <FieldLabel for="urlSource">URL</FieldLabel>
         <div class="flex gap-2">
           <Input id="urlSource" v-model="urlSource" type="text" />
@@ -329,56 +392,23 @@ onMounted(() => {
           requests.</FieldDescription
         >
       </Field>
-      <div v-else-if="store.inputSource === 'browser'" class="">
+
+      <div
+        v-else-if="store.inputSource === 'browser'"
+        class="min-h-0 flex-1 overflow-y-auto"
+      >
         <ImportLoadStepBrowser @loaded="onBrowserLoad" />
       </div>
-    </FieldGroup>
-    <Alert v-if="isError && errorMessage" variant="destructive" class="mt-2">
-      <AlertCircleIcon />
-      <AlertTitle>Error</AlertTitle>
-      <AlertDescription>{{ errorMessage }}</AlertDescription>
-    </Alert>
-    <div v-if="stringSource" class="space-y-4">
-      <p v-if="guessedFormat" class="text-sm">
-        The format seems to be
-        <span class="text-accent-foreground">{{ guessedFormat }}.</span>
-      </p>
-      <SimpleSelect
-        label="Select import format"
-        :items="formatItems"
-        v-model="form.format"
-      >
-        <template #hint>
-          <DocLink href="https://docs.orbat-mapper.app/guide/import-data" />
-        </template>
-      </SimpleSelect>
-      <div class="prose prose-sm dark:prose-invert">
-        <p v-if="isMilx">
-          Basic support for importing MilX layers from
-          <a href="https://www.map.army/">map.army</a>
-        </p>
-        <p v-else-if="isGeojson">Import units and features.</p>
-        <p v-else-if="isUnitGenerator">
-          Import ORBAT generated with
-          <a href="https://spatialillusions.com/unitgenerator2/" target="_blank"
-            >Spatial Illusions Orbat builder</a
-          >.
-        </p>
-        <p v-else-if="isOrbatGenerator">
-          Import ORBAT generated with
-          <a href="https://www.orbatgenerator.com/" target="_blank"
-            >Order of Battle Generator</a
-          >.
-        </p>
+
+      <div v-if="(isError && errorMessage) || objectUrl" class="px-6 pb-6">
+        <Alert v-if="isError && errorMessage" variant="destructive">
+          <AlertCircleIcon />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{{ errorMessage }}</AlertDescription>
+        </Alert>
+
+        <img v-if="objectUrl" :src="objectUrl" alt="Loaded image" class="mt-4 max-h-64" />
       </div>
-      <p v-if="isMilx" class="prose prose-sm dark:prose-invert">
-        Please note that the import functionality is experimental.
-      </p>
     </div>
-    <img v-if="objectUrl" :src="objectUrl" alt="Loaded image" />
-    <Field orientation="horizontal" class="justify-end">
-      <Button type="submit"> Load </Button>
-      <Button variant="outline" type="button" @click="emit('cancel')"> Cancel </Button>
-    </Field>
-  </form>
+  </ImportStepLayout>
 </template>

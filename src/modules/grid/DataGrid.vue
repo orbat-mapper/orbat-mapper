@@ -166,7 +166,7 @@ const filteredRowCount = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col">
+  <div class="flex h-full min-h-0 flex-col">
     <header
       v-if="showGlobalFilter"
       class="flex flex-none items-center justify-between pb-2"
@@ -178,7 +178,7 @@ const filteredRowCount = computed(() => {
       >
     </header>
     <section
-      class="border-border relative overflow-auto rounded-lg border shadow-sm"
+      class="border-border relative min-h-0 flex-1 overflow-auto rounded-lg border shadow-sm"
       ref="parentRef"
       tabindex="0"
     >

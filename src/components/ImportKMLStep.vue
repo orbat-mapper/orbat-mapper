@@ -10,16 +10,15 @@ import {
   Field,
   FieldContent,
   FieldDescription,
-  FieldGroup,
   FieldLabel,
-  FieldLegend,
   FieldSeparator,
-  FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import ImportedFileList from "@/components/ImportedFileList.vue";
 import type { KmlImportData } from "@/types/importExport.ts";
 import { Spinner } from "@/components/ui/spinner";
+import ImportStepLayout from "@/components/ImportStepLayout.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import {
   getAllChildFoldersFromElement,
   getKmlAsDom,
@@ -70,7 +69,7 @@ const form = ref<ImportKmlForm>({
   showPointNames: true,
 });
 
-async function onLoad(e: Event) {
+async function onLoad() {
   for (const blobUrl of loadedData.data) {
     const index = loadedData.data.indexOf(blobUrl);
     const { layerName, selectedFolders, indeterminateFolders } =
@@ -184,103 +183,103 @@ function updateSelectedFolders(
 </script>
 
 <template>
-  <div class="">
-    <form @submit.prevent="onLoad" class="flex max-h-[80vh] flex-col">
-      <FieldGroup>
-        <FieldSet>
-          <FieldLegend>KML import</FieldLegend>
-          <ImportedFileList :importData="loadedData" />
-          <AlertWarning title="Warning"
-            >KML layers are currently only visible while the scenario is open. They are
-            not saved as part of the scenario.
-          </AlertWarning>
+  <ImportStepLayout
+    title="Import KML"
+    help-url="https://docs.orbat-mapper.app/guide/import-data"
+    has-sidebar
+  >
+    <template #actions>
+      <div
+        v-if="isProcessing"
+        class="text-muted-foreground flex items-center gap-2 text-sm"
+      >
+        <Spinner /> Processing data
+      </div>
+      <BaseButton small @click="onCancel" class="flex-1 sm:flex-none">Cancel</BaseButton>
+      <BaseButton primary small @click="onLoad" class="flex-1 sm:flex-none"
+        >Import</BaseButton
+      >
+    </template>
 
-          <FieldGroup v-if="!isProcessing">
-            <template v-for="(fileFormData, index) in form.fileOptions" :key="index">
-              <Field>
-                <FieldLabel for="layerName-0">Vector layer name</FieldLabel>
-                <Input :id="`layerName-${index}`" v-model="fileFormData.layerName" />
-                <FieldDescription
-                  >{{ loadedData.fileInfo[index]?.fileName }}
-                </FieldDescription>
-                <Collapsible v-slot="{ open }">
-                  <div class="flex items-center gap-2">
-                    <CollapsibleTrigger asChild class="group">
-                      <Button type="button" variant="outline" size="sm"
-                        >Select/toggle folders to import
-                        <ChevronRightIcon
-                          class="transition-transform group-data-[state=open]:rotate-90"
-                        />
-                      </Button>
-                    </CollapsibleTrigger>
-                    <Button
-                      v-if="open"
-                      @click="toggleSelectedFolders(fileFormData)"
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      >Toggle all</Button
-                    >
-                  </div>
-                  <CollapsibleContent class="mt-4 grid grid-cols-1 gap-2">
-                    <InputCheckbox
-                      v-for="([k, v], i) in parsedDataMap.get(loadedData.data[index])
-                        ?.folders"
-                      :label="v"
-                      :key="i"
-                      :modelValue="
-                        fileFormData.indeterminateFolders.has(k)
-                          ? 'indeterminate'
-                          : fileFormData.selectedFolders.has(k)
-                      "
-                      @update:modelValue="
-                        (val) => {
-                          updateSelectedFolders(k, fileFormData, val!);
-                        }
-                      "
+    <template #sidebar>
+      <div v-if="!isProcessing" class="space-y-6">
+        <template v-for="(fileFormData, index) in form.fileOptions" :key="index">
+          <Field>
+            <FieldLabel for="layerName-0">Vector layer name</FieldLabel>
+            <Input :id="`layerName-${index}`" v-model="fileFormData.layerName" />
+            <FieldDescription
+              >{{ loadedData.fileInfo[index]?.fileName }}
+            </FieldDescription>
+            <Collapsible v-slot="{ open }">
+              <div class="flex items-center gap-2">
+                <CollapsibleTrigger asChild class="group">
+                  <Button type="button" variant="outline" size="sm"
+                    >Select/toggle folders to import
+                    <ChevronRightIcon
+                      class="transition-transform group-data-[state=open]:rotate-90"
                     />
-                  </CollapsibleContent>
-                </Collapsible>
-              </Field>
-              <FieldSeparator />
-            </template>
-          </FieldGroup>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2">
-            <Field orientation="horizontal" class="">
-              <Checkbox v-model="form.extractStyles" id="extractStyles" />
-              <FieldContent>
-                <FieldLabel for="extractStyles">Extract styles from KML</FieldLabel>
-                <FieldDescription>Apply KML styling to features</FieldDescription>
-              </FieldContent>
-            </Field>
-            <Field orientation="horizontal" class="">
-              <Checkbox v-model="form.showPointNames" id="showPointNames" />
-              <FieldContent>
-                <FieldLabel for="showPointNames">Show names as labels</FieldLabel>
-                <FieldDescription
-                  >Show names as labels for placemarks which contain
-                  points.</FieldDescription
+                  </Button>
+                </CollapsibleTrigger>
+                <Button
+                  v-if="open"
+                  @click="toggleSelectedFolders(fileFormData)"
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  >Toggle all</Button
                 >
-              </FieldContent>
-            </Field>
-          </div>
-
-          <Field orientation="horizontal" class="justify-between">
-            <div
-              v-if="isProcessing"
-              class="text-muted-foreground flex items-center gap-2 text-sm"
-            >
-              <Spinner v-if="isProcessing" /> Processing data
-            </div>
-            <div v-else />
-            <div class="flex items-center gap-2">
-              <Button type="submit"> Import</Button>
-              <Button variant="outline" type="button" @click="onCancel"> Cancel</Button>
-            </div>
+              </div>
+              <CollapsibleContent class="mt-4 grid grid-cols-1 gap-2">
+                <InputCheckbox
+                  v-for="([k, v], i) in parsedDataMap.get(loadedData.data[index])
+                    ?.folders"
+                  :label="v"
+                  :key="i"
+                  :modelValue="
+                    fileFormData.indeterminateFolders.has(k)
+                      ? 'indeterminate'
+                      : fileFormData.selectedFolders.has(k)
+                  "
+                  @update:modelValue="
+                    (val) => {
+                      updateSelectedFolders(k, fileFormData, val!);
+                    }
+                  "
+                />
+              </CollapsibleContent>
+            </Collapsible>
           </Field>
-        </FieldSet>
-      </FieldGroup>
-    </form>
-  </div>
+          <FieldSeparator />
+        </template>
+
+        <div class="space-y-4">
+          <Field orientation="horizontal" class="">
+            <Checkbox v-model="form.extractStyles" id="extractStyles" />
+            <FieldContent>
+              <FieldLabel for="extractStyles">Extract styles from KML</FieldLabel>
+              <FieldDescription>Apply KML styling to features</FieldDescription>
+            </FieldContent>
+          </Field>
+          <Field orientation="horizontal" class="">
+            <Checkbox v-model="form.showPointNames" id="showPointNames" />
+            <FieldContent>
+              <FieldLabel for="showPointNames">Show names as labels</FieldLabel>
+              <FieldDescription
+                >Show names as labels for placemarks which contain
+                points.</FieldDescription
+              >
+            </FieldContent>
+          </Field>
+        </div>
+      </div>
+    </template>
+
+    <div class="space-y-4 p-6">
+      <ImportedFileList :importData="loadedData" />
+      <AlertWarning title="Warning"
+        >KML layers are currently only visible while the scenario is open. They are not
+        saved as part of the scenario.
+      </AlertWarning>
+    </div>
+  </ImportStepLayout>
 </template>

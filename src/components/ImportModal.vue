@@ -7,7 +7,6 @@ import type { FeatureCollection } from "geojson";
 import type { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportImageStep from "@/components/ImportImageStep.vue";
 import type { ImportedFileInfo } from "@/importexport/fileHandling";
-import DocLink from "@/components/DocLink.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import type { ImportData } from "@/types/importExport.ts";
 
@@ -109,76 +108,71 @@ function onCancel() {
 <template>
   <NewSimpleModal
     v-model="open"
-    dialog-title="Import data"
+    fixed-height
     @cancel="onCancel"
-    class="sm:max-w-xl md:max-w-4xl lg:max-w-7xl"
+    class="grid h-[90vh] grid-rows-[auto_1fr] sm:max-w-xl md:max-w-4xl lg:max-w-[95vw]"
   >
-    <div class="-mx-6 overflow-x-hidden px-6">
-      <p
-        class="text-muted-foreground flex items-center justify-between text-sm leading-6"
-      >
-        <span v-if="importState === 'select'">Import data for use in your scenario</span
-        ><span v-else />
-        <DocLink href="https://docs.orbat-mapper.app/guide/import-data" />
-      </p>
-      <ImportLoadStep
-        v-if="importState === 'select'"
-        @cancel="onCancel"
-        @loaded="onLoaded"
-        @lod="onLod"
-      />
-      <ImportMilxStep
-        v-else-if="importState === 'milx'"
-        @cancel="onCancel"
-        :data="loadedData as MilxImportedLayer[]"
-        @loaded="onImport"
-      />
-      <ImportGeojsonStep
-        v-else-if="importState === 'geojson'"
-        @cancel="onCancel"
-        :data="loadedData as FeatureCollection"
-        @loaded="onImport"
-      />
-      <ImportSpatialIllusionsStep
-        v-else-if="importState === 'unitgenerator'"
-        @cancel="onCancel"
-        :data="loadedData as SpatialIllusionsOrbat"
-        @loaded="onImport"
-      />
-      <ImportOrbatGeneratorStep
-        v-else-if="importState === 'orbatgenerator'"
-        @cancel="onCancel"
-        :data="loadedData as OrbatGeneratorOrbat"
-        @loaded="onImport"
-      />
-      <ImportImageStep
-        v-else-if="importState === 'image' && fileInfo"
-        :object-url="loadedData as string"
-        :file-info="fileInfo"
-        @cancel="onCancel"
-        @loaded="onImport"
-      />
-      <ImportKMLStep
-        v-else-if="loadedImportData?.format === 'kml'"
-        :loadedData="loadedImportData"
-        @cancel="onCancel"
-        @loaded="onImport"
-      />
-      <ImportSpreadsheetStep
-        v-else-if="
-          (importState === 'xlsx' || importState === 'csv' || importState === 'tsv') &&
-          fileInfo
-        "
-        :file-info="fileInfo"
-        @cancel="onCancel"
-        @loaded="onImport"
-      />
-      <ImportOrbatMapperStep
-        v-else-if="importState === 'orbatmapper'"
-        :data="loadedData"
-        @cancel="onCancel"
-        @loaded="onImport"
-      />
+    <div class="-mx-6 flex h-full flex-col overflow-hidden px-0">
+      <div class="min-h-0 flex-1 overflow-hidden">
+        <ImportLoadStep
+          v-if="importState === 'select'"
+          @cancel="onCancel"
+          @loaded="onLoaded"
+          @lod="onLod"
+        />
+        <ImportMilxStep
+          v-else-if="importState === 'milx'"
+          @cancel="onCancel"
+          :data="loadedData as MilxImportedLayer[]"
+          @loaded="onImport"
+        />
+        <ImportGeojsonStep
+          v-else-if="importState === 'geojson'"
+          @cancel="onCancel"
+          :data="loadedData as FeatureCollection"
+          @loaded="onImport"
+        />
+        <ImportSpatialIllusionsStep
+          v-else-if="importState === 'unitgenerator'"
+          @cancel="onCancel"
+          :data="loadedData as SpatialIllusionsOrbat"
+          @loaded="onImport"
+        />
+        <ImportOrbatGeneratorStep
+          v-else-if="importState === 'orbatgenerator'"
+          @cancel="onCancel"
+          :data="loadedData as OrbatGeneratorOrbat"
+          @loaded="onImport"
+        />
+        <ImportImageStep
+          v-else-if="importState === 'image' && fileInfo"
+          :object-url="loadedData as string"
+          :file-info="fileInfo"
+          @cancel="onCancel"
+          @loaded="onImport"
+        />
+        <ImportKMLStep
+          v-else-if="loadedImportData?.format === 'kml'"
+          :loadedData="loadedImportData"
+          @cancel="onCancel"
+          @loaded="onImport"
+        />
+        <ImportSpreadsheetStep
+          v-else-if="
+            (importState === 'xlsx' || importState === 'csv' || importState === 'tsv') &&
+            fileInfo
+          "
+          :file-info="fileInfo"
+          @cancel="onCancel"
+          @loaded="onImport"
+        />
+        <ImportOrbatMapperStep
+          v-else-if="importState === 'orbatmapper'"
+          :data="loadedData"
+          @cancel="onCancel"
+          @loaded="onImport"
+        />
+      </div>
     </div>
   </NewSimpleModal>
   <DecryptScenarioModal

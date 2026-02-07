@@ -1,5 +1,6 @@
-import { computed, type Ref } from "vue";
+import { computed, type Ref, unref } from "vue";
 import { nanoid } from "@/utils";
+import { setCharAt } from "@/components/helpers";
 import type { Position } from "geojson";
 import {
   buildSidc,
@@ -13,6 +14,7 @@ import {
 } from "@/geo/utils";
 import { commonFields } from "./useColumnMapping";
 import type { CoordinateMode } from "@/components/import/types";
+import type { UnitSymbolOptions } from "@/types/scenarioModels";
 
 export interface MappedDataOptions {
   data: Ref<any[]>;
@@ -26,6 +28,8 @@ export interface MappedDataOptions {
   positionField: Ref<string | null>;
   combinedCoordinateFormat: Ref<CombinedCoordinateFormat>;
   guessSidc: Ref<boolean>;
+  parentSidc: Ref<string | undefined>;
+  parentSymbolOptions: Ref<UnitSymbolOptions | undefined>;
 }
 
 // Unit type for hierarchy
@@ -58,10 +62,17 @@ export function useMappedData(options: MappedDataOptions) {
     positionField,
     combinedCoordinateFormat,
     guessSidc,
+    parentSidc,
+    parentSymbolOptions,
   } = options;
+
+  const generatedIds = new WeakMap<object, string>();
 
   const mappedData = computed(() => {
     if (!data.value.length) return [];
+    const pSidc = unref(parentSidc);
+    const pSymbolOptions = unref(parentSymbolOptions);
+    const parentIdentity = pSidc ? pSidc[3] : "3";
 
     return data.value.map((row) => {
       const r = row as Record<string, unknown>;
@@ -71,7 +82,12 @@ export function useMappedData(options: MappedDataOptions) {
       if (idMode.value === "mapped" && idField.value && r[idField.value] !== undefined) {
         unit.id = r[idField.value];
       } else if (idMode.value === "autogenerate") {
-        unit.id = nanoid();
+        let id = generatedIds.get(r);
+        if (!id) {
+          id = nanoid();
+          generatedIds.set(r, id);
+        }
+        unit.id = id;
       }
 
       // Map other fields
@@ -92,13 +108,14 @@ export function useMappedData(options: MappedDataOptions) {
         if (iconValue || echelonValue) {
           if (iconValue && (isNumericSidc(iconValue) || isCharacterSidc(iconValue))) {
             if (iconValue.length >= 15) {
-              unit.sidc = iconValue;
+              unit.sidc = setCharAt(iconValue, 3, parentIdentity);
             } else {
-              // Partial SIDC (10 digits)
+              // Partial SIDC (10 digits) - assume it contains entity/type/subtype/mod
+              // We construct full SIDC: 10 + context + identity + set + status + hq + amp + iconValue
               const derivedEchelon = echelonValue
                 ? getEchelonCodeFromName(echelonValue) || "00"
                 : "00";
-              unit.sidc = "10031000" + derivedEchelon + iconValue;
+              unit.sidc = "100" + parentIdentity + "1000" + derivedEchelon + iconValue;
             }
           } else {
             const derivedIcon = iconValue
@@ -110,10 +127,11 @@ export function useMappedData(options: MappedDataOptions) {
               : "00";
 
             // Standard Identity 3 (Friendly), SymbolSet 10 (Land Unit), Status 0, HQTFD 0
-            unit.sidc = "10031000" + derivedEchelon + derivedIcon;
+            unit.sidc = "100" + parentIdentity + "1000" + derivedEchelon + derivedIcon;
           }
         } else if (guessSidc.value && unit.name) {
-          unit.sidc = buildSidc(0, unit.name as string);
+          const sidc = buildSidc(0, unit.name as string);
+          unit.sidc = setCharAt(sidc, 3, parentIdentity);
         }
       }
 
@@ -137,6 +155,10 @@ export function useMappedData(options: MappedDataOptions) {
             unit._position = pos;
           }
         }
+      }
+
+      if (pSymbolOptions) {
+        unit.symbolOptions = pSymbolOptions;
       }
 
       return unit;

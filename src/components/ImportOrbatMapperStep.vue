@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import {
   Field,
+  FieldContent,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSeparator,
   FieldSet,
+  FieldTitle,
 } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { computed, h, ref, watch } from "vue";
@@ -31,19 +31,15 @@ import type { CellContext, ColumnDef } from "@tanstack/vue-table";
 import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import ToggleField from "@/components/ToggleField.vue";
-import { useImportStore } from "@/stores/importExportStore";
 import type { NSideGroup, NSupplyCategory, NUnit } from "@/types/internalModels";
-import PanelSubHeading from "@/components/PanelSubHeading.vue";
-import InputRadio from "@/components/InputRadio.vue";
-import MRadioGroup from "@/components/MRadioGroup.vue";
 import { useNotifications } from "@/composables/notifications";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
+import { useImportStore } from "@/stores/importExportStore";
 import { addUnitHierarchy } from "@/importexport/convertUtils";
 import dayjs from "dayjs";
 import InlineAlertWarning from "@/components/InlineAlertWarning.vue";
 import { getSupplyClass, getUom } from "@/scenariostore/supplyManipulations";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -52,6 +48,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import FieldSelect from "@/components/FieldSelect.vue";
+import ImportStepLayout from "@/components/ImportStepLayout.vue";
 
 interface Props {
   data: Scenario;
@@ -82,7 +79,6 @@ const unitImportMode = ref<"units-only" | "units-and-state" | "state-only">("sta
 const stateMergeMode = ref<"replace" | "add_new">("replace");
 const sideMergeMode = ref<"replace" | "add_new">("replace");
 const groupMergeMode = ref<"replace" | "add_new">("add_new");
-const selectUnits = ref(false);
 const selectedItems = ref<(Unit | SideGroup)[]>([]);
 const selectedEquipment = ref<UnitEquipment[]>([]);
 const selectedPersonnel = ref<UnitPersonnel[]>([]);
@@ -161,6 +157,11 @@ const importedSideGroups = computed(() => {
 const selectedSourceSideId = ref(importedSides.value[0].value as string);
 const selectedTargetSideId = ref(targetSides.value[0].value as string);
 const selectedSourceSideGroupId = ref(importedSideGroups.value[0].value as string);
+
+const selectedSourceSide = computed(() => {
+  return props.data.sides.find((s) => s.id === selectedSourceSideId.value);
+});
+
 const currentData = computed(() => {
   const s = props.data.sides.find((s) => s.id === selectedSourceSideId.value);
 
@@ -215,14 +216,23 @@ const wantsToImportState = computed(
     unitImportMode.value === "units-and-state" || unitImportMode.value === "state-only",
 );
 
-const sources: SelectItem[] = [
+const sources = [
   { value: "side", label: "Side" },
-  { value: "group", label: "Group" },
-  { value: "equipment", label: "Equipment categories" },
-  { value: "personnel", label: "Personnel categories" },
-  { value: "statuses", label: "Unit statuses" },
-  { value: "supplyCategories", label: "Supply Categories" },
-  { value: "customSymbols", label: "Custom symbols" },
+  {
+    value: "group",
+    label: "Group",
+  },
+  { value: "equipment", label: "Equipment" },
+  { value: "personnel", label: "Personnel" },
+  { value: "statuses", label: "Statuses" },
+  {
+    value: "supplyCategories",
+    label: "Supply",
+  },
+  {
+    value: "customSymbols",
+    label: "Symbols",
+  },
 ];
 
 watch(selectedSourceSideId, (newSide) => {
@@ -231,9 +241,8 @@ watch(selectedSourceSideId, (newSide) => {
 });
 
 function renderExpandCell({ getValue, row }: CellContext<Unit, string>) {
-  let symbolOptions: Record<string, any> = getCombinedSymbolOptions(
-    importedState.value.unitMap[row.original.id],
-  );
+  const symbolOptions: UnitSymbolOptions & { customSymbolMap?: Record<string, unknown> } =
+    getCombinedSymbolOptions(importedState.value.unitMap[row.original.id]);
   symbolOptions.customSymbolMap = importedState.value.customSymbolMap ?? {};
 
   return h(OrbatCellRenderer, {
@@ -253,7 +262,7 @@ const computedColumns = computed((): (ColumnDef<Unit> | false)[] => {
       accessorFn: (f) => f.name,
       id: "name",
       cell: renderExpandCell,
-      header: ({ table, column }) => {
+      header: ({ table }) => {
         return h(
           "button",
           {
@@ -392,7 +401,7 @@ const customIconColumns: ColumnDef<CustomSymbol>[] = [
     header: "Icon",
     accessorKey: "src",
     enableSorting: false,
-    cell: ({ row, getValue, cell }) => {
+    cell: ({ getValue }) => {
       return h("img", {
         width: 32,
         height: 32,
@@ -416,7 +425,7 @@ function isUnit(item: Unit | SideGroup): item is Unit {
   return "sidc" in item;
 }
 
-async function onFormSubmit(e: Event) {
+async function onFormSubmit() {
   const selectedUnitIds = new Set(selectedItems.value.filter(isUnit).map((u) => u.id));
   console.log("import mode", importMode.value);
   if (importMode.value === "equipment") {
@@ -565,7 +574,7 @@ function doSideImport(importedSideId: string) {
   const sideAlreadyExists = hasExistingSide.value;
 
   const importedSide = importedState.value.sideMap[importedSideId];
-  let createNewId = sideAlreadyExists && sideMergeMode.value === "add_new";
+  const createNewId = sideAlreadyExists && sideMergeMode.value === "add_new";
 
   scnStore.groupUpdate(() => {
     let deletedSideIndex = -1;
@@ -581,7 +590,7 @@ function doSideImport(importedSideId: string) {
     });
     if (deletedSideIndex !== -1) {
       const nextSideId = targetState.sides[deletedSideIndex + 1];
-      nextSideId && unitActions.moveSide(addedSideId, nextSideId, "above");
+      if (nextSideId) unitActions.moveSide(addedSideId, nextSideId, "above");
     }
     for (const group of currentData.value) {
       const groupId = group.id;
@@ -648,251 +657,290 @@ function doGroupImport(importedGroupId: string) {
 }
 </script>
 <template>
-  <div class="">
-    <form @submit.prevent="onFormSubmit" class="mt-4 flex max-h-[80vh] flex-col">
+  <ImportStepLayout
+    title="Import scenario data"
+    subtitle="Import data from another Orbat Mapper scenario"
+    help-url="https://docs.orbat-mapper.app/guide/import-data"
+    has-sidebar
+  >
+    <template #actions>
+      <ToggleField v-model="store.keepOpen" class="mr-4">Keep dialog open</ToggleField>
+      <BaseButton small @click="emit('cancel')" class="flex-1 sm:flex-none"
+        >Cancel</BaseButton
+      >
+      <BaseButton primary small @click="onFormSubmit" class="flex-1 sm:flex-none"
+        >Import</BaseButton
+      >
+    </template>
+
+    <template #sidebar>
+      <!-- Source Scenario Section -->
+      <Card>
+        <CardHeader class="py-3">
+          <CardTitle class="text-sm">{{ data.name }}</CardTitle>
+          <CardDescription v-if="data.description" class="text-xs">{{
+            data.description
+          }}</CardDescription>
+        </CardHeader>
+        <CardContent class="flex items-center justify-between gap-2 py-2">
+          <span class="text-muted-foreground text-xs">{{ stats.units }} units</span>
+          <Button
+            type="button"
+            variant="link"
+            size="sm"
+            @click="loadScenario(data)"
+            class="h-auto p-0 text-xs"
+            >Open as new scenario</Button
+          >
+        </CardContent>
+      </Card>
+
+      <!-- Import Type Selection -->
       <FieldGroup>
         <FieldSet>
-          <FieldLegend>Import scenario data</FieldLegend>
-          <div class="flex items-center gap-4">
-            <FieldDescription>
-              Select which parts of the loaded scenario you want to import into the
-              current scenario.
-            </FieldDescription>
-            <Button type="button" variant="outline" @click="loadScenario(data)"
-              >Load as new scenario instead</Button
-            >
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{{ data.name }}</CardTitle>
-              <CardDescription>{{ data.description }}</CardDescription>
-            </CardHeader>
-            <CardContent class="text-sm">Units: {{ stats.units }}</CardContent>
-          </Card>
+          <FieldLabel>Import type</FieldLabel>
+          <FieldDescription>Select the type of data to import.</FieldDescription>
+          <RadioGroup v-model="importMode" class="mt-2 grid grid-cols-2 gap-2">
+            <FieldLabel v-for="{ value, label } in sources" :key="value">
+              <Field orientation="horizontal">
+                <RadioGroupItem :id="value" :value="value" class="mt-1" />
+                <FieldContent>
+                  <FieldTitle>{{ label }}</FieldTitle>
+                </FieldContent>
+              </Field>
+            </FieldLabel>
+          </RadioGroup>
         </FieldSet>
-        <FieldSeparator> Source </FieldSeparator>
+      </FieldGroup>
+
+      <!-- Source Selection (for unit imports) -->
+      <template v-if="!isSettingsImport">
+        <!-- Import Content Options -->
         <FieldSet>
-          <FieldLabel>Which parts of the scenario do you want to import?</FieldLabel>
-          <RadioGroup v-model="importMode" class="grid gap-y-3 sm:grid-cols-4">
-            <Field
-              v-for="{ value, label } in sources"
-              :key="value"
-              orientation="horizontal"
-            >
-              <RadioGroupItem :id="value.toString()" :value />
-              <FieldLabel :for="value" class="font-normal">
-                {{ label }}
-              </FieldLabel>
-            </Field>
+          <FieldLabel>Content to import</FieldLabel>
+          <RadioGroup v-model="unitImportMode" class="mt-2 flex flex-col gap-2">
+            <FieldLabel for="units-only">
+              <Field orientation="horizontal">
+                <RadioGroupItem id="units-only" value="units-only" />
+                <FieldContent>
+                  <FieldTitle>Units only</FieldTitle>
+                </FieldContent>
+              </Field>
+            </FieldLabel>
+            <FieldLabel for="units-and-state">
+              <Field orientation="horizontal">
+                <RadioGroupItem id="units-and-state" value="units-and-state" />
+                <FieldContent>
+                  <FieldTitle>Units with state</FieldTitle>
+                </FieldContent>
+              </Field>
+            </FieldLabel>
+            <FieldLabel v-if="hasExistingUnits" for="state-only">
+              <Field orientation="horizontal">
+                <RadioGroupItem id="state-only" value="state-only" />
+                <FieldContent>
+                  <FieldTitle>State only (update existing)</FieldTitle>
+                </FieldContent>
+              </Field>
+            </FieldLabel>
           </RadioGroup>
         </FieldSet>
 
-        <template v-if="!isSettingsImport">
-          <div class="grid grid-cols-2 gap-4">
-            <FieldSelect
-              label="Side"
-              :items="importedSides"
-              v-model="selectedSourceSideId"
-            />
-            <FieldSelect
-              v-if="importMode === 'group' || importMode === 'units'"
-              label="Side group"
-              v-model="selectedSourceSideGroupId"
-              :items="importedSideGroups"
-            />
-          </div>
-          <FieldDescription v-if="hasExistingSide"
-            >This side exists in the target scenario</FieldDescription
-          >
-        </template>
+        <!-- Conflict Resolution Section -->
+        <FieldSet v-if="hasExistingSide || hasExistingSideGroup || hasExistingUnits">
+          <FieldLabel>Conflict resolution</FieldLabel>
 
-        <div class="mt-2 flex items-center justify-between">
-          <ToggleField
-            v-if="importMode === 'units'"
-            v-model="selectUnits"
-            class="flex-0 shrink-0"
-            disabled
-            >Select individual units</ToggleField
-          >
-        </div>
-        <template v-if="!isSettingsImport">
-          <DataGrid
-            :key="selectedSourceSideGroupId"
-            :data="currentData"
-            :columns="computedColumns"
-            :row-height="40"
-            class="mt-4 max-h-[40vh]"
-            :get-sub-rows="(row) => row.subUnits ?? row.groups"
-            :select="selectUnits"
-            select-all
-            v-model:selected="selectedItems"
-            no-indeterminate
-          />
-
-          <fieldset>
-            <InlineAlertWarning v-if="hasExistingUnits"
-              >There are units in the source scenario that exists in the target scenario.
-            </InlineAlertWarning>
-            <InlineAlertWarning v-if="importMode === 'group' && hasExistingSideGroup"
-              >The selected group exists in the target scenario.
-            </InlineAlertWarning>
-            <PanelSubHeading class="mt-4">What do you want to import?</PanelSubHeading>
-            <MRadioGroup class="mt-2 flex w-full items-center gap-5">
-              <InputRadio v-model="unitImportMode" :value="'units-only'"
-                >Only units
-              </InputRadio>
-              <InputRadio v-model="unitImportMode" value="units-and-state"
-                >Units and state
-              </InputRadio>
-              <InputRadio
-                v-if="hasExistingUnits"
-                v-model="unitImportMode"
-                value="state-only"
-                >State (only for existing units)
-              </InputRadio>
-              <span v-else class="text-muted-foreground text-sm"
-                >There are no source units that exists in the target scenario.</span
-              >
-            </MRadioGroup>
-          </fieldset>
-
-          <FieldSeparator> Target </FieldSeparator>
-          <fieldset
+          <!-- Side conflict -->
+          <div
             v-if="
               hasExistingSide && importMode === 'side' && unitImportMode !== 'state-only'
             "
+            class="space-y-2"
           >
-            <PanelSubHeading class="mt-4"
-              >The side you want to import already exists. What do you want to do?
-            </PanelSubHeading>
-            <MRadioGroup class="mt-2 flex w-full gap-5">
-              <InputRadio v-model="sideMergeMode" value="replace"
-                >Overwrite existing side
-              </InputRadio>
-              <InputRadio v-model="sideMergeMode" value="add_new"
-                >Import as new side
-              </InputRadio>
-            </MRadioGroup>
-          </fieldset>
-          <fieldset
+            <InlineAlertWarning class="text-xs"
+              >Side "{{ selectedSourceSide?.name }}" already exists.</InlineAlertWarning
+            >
+            <RadioGroup v-model="sideMergeMode" class="flex flex-col gap-2">
+              <FieldLabel for="side-replace">
+                <Field orientation="horizontal">
+                  <RadioGroupItem id="side-replace" value="replace" />
+                  <FieldContent>
+                    <FieldTitle>Replace existing</FieldTitle>
+                  </FieldContent>
+                </Field>
+              </FieldLabel>
+              <FieldLabel for="side-add_new">
+                <Field orientation="horizontal">
+                  <RadioGroupItem id="side-add_new" value="add_new" />
+                  <FieldContent>
+                    <FieldTitle>Create new side</FieldTitle>
+                  </FieldContent>
+                </Field>
+              </FieldLabel>
+            </RadioGroup>
+          </div>
+
+          <!-- Group conflict -->
+          <div
             v-if="
               hasExistingSideGroup &&
               importMode === 'group' &&
               unitImportMode !== 'state-only'
             "
+            class="space-y-2"
           >
-            <PanelSubHeading class="mt-4"
-              >The group you want to import already exists. What do you want to do?
-            </PanelSubHeading>
-            <MRadioGroup class="mt-2 flex w-full gap-5">
-              <InputRadio v-model="groupMergeMode" value="replace"
-                >Overwrite existing group
-              </InputRadio>
-              <InputRadio v-model="groupMergeMode" value="add_new"
-                >Import as new group
-              </InputRadio>
-            </MRadioGroup>
-          </fieldset>
-          <FieldSelect
-            v-if="
-              importMode === 'group' &&
-              unitImportMode !== 'state-only' &&
-              groupMergeMode !== 'replace'
-            "
-            label="Target side"
-            :items="targetSides"
-            v-model="selectedTargetSideId"
-          >
-          </FieldSelect>
-          <template
+            <InlineAlertWarning class="text-xs"
+              >Group already exists in target scenario.</InlineAlertWarning
+            >
+            <RadioGroup v-model="groupMergeMode" class="flex flex-col gap-2">
+              <FieldLabel for="group-replace">
+                <Field orientation="horizontal">
+                  <RadioGroupItem id="group-replace" value="replace" />
+                  <FieldContent>
+                    <FieldTitle>Replace existing</FieldTitle>
+                  </FieldContent>
+                </Field>
+              </FieldLabel>
+              <FieldLabel for="group-add_new">
+                <Field orientation="horizontal">
+                  <RadioGroupItem id="group-add_new" value="add_new" />
+                  <FieldContent>
+                    <FieldTitle>Create new group</FieldTitle>
+                  </FieldContent>
+                </Field>
+              </FieldLabel>
+            </RadioGroup>
+            <FieldSelect
+              v-if="groupMergeMode !== 'replace'"
+              label="Target side"
+              :items="targetSides"
+              v-model="selectedTargetSideId"
+            />
+          </div>
+
+          <!-- Unit conflicts (state import) -->
+          <div
             v-if="
               hasExistingUnits && wantsToImportState && unitImportMode == 'state-only'
             "
+            class="space-y-2"
           >
-            <PanelSubHeading class="mt-4"
-              >State import options for existing units
-            </PanelSubHeading>
-            <MRadioGroup class="mt-2 flex w-full gap-5">
-              <InputRadio v-model="stateMergeMode" value="replace"
-                >Overwrite existing state
-              </InputRadio>
-              <InputRadio v-model="stateMergeMode" value="add_new"
-                >Add only new state
-              </InputRadio>
-            </MRadioGroup>
-          </template>
-        </template>
-        <template v-else-if="importMode === 'equipment'">
-          <PanelSubHeading class="mt-4">Equipment categories</PanelSubHeading>
-          <DataGrid
-            :data="currentEquipment"
-            :columns="equipmentColumns"
-            :row-height="40"
-            v-model:selected="selectedEquipment"
-            select
-            select-all
-            class="mt-4 max-h-[40vh]"
+            <InlineAlertWarning class="text-xs"
+              >Some units exist in both scenarios.</InlineAlertWarning
+            >
+            <RadioGroup v-model="stateMergeMode" class="flex flex-col gap-2">
+              <FieldLabel for="state-replace">
+                <Field orientation="horizontal">
+                  <RadioGroupItem id="state-replace" value="replace" />
+                  <FieldContent>
+                    <FieldTitle>Replace existing state</FieldTitle>
+                  </FieldContent>
+                </Field>
+              </FieldLabel>
+              <FieldLabel for="state-add_new">
+                <Field orientation="horizontal">
+                  <RadioGroupItem id="state-add_new" value="add_new" />
+                  <FieldContent>
+                    <FieldTitle>Add new state only</FieldTitle>
+                  </FieldContent>
+                </Field>
+              </FieldLabel>
+            </RadioGroup>
+          </div>
+        </FieldSet>
+      </template>
+    </template>
+
+    <!-- Main content: Data grids -->
+    <div class="flex h-full min-h-0 flex-col p-6">
+      <template v-if="!isSettingsImport">
+        <div class="mb-4 flex gap-4">
+          <FieldSelect
+            class="w-64"
+            label="Side"
+            :items="importedSides"
+            v-model="selectedSourceSideId"
           />
-        </template>
-        <template v-else-if="importMode === 'personnel'">
-          <PanelSubHeading class="mt-4">Personnel categories</PanelSubHeading>
-          <DataGrid
-            :data="currentPersonnel"
-            :columns="personnelColumns"
-            :row-height="40"
-            v-model:selected="selectedPersonnel"
-            select
-            select-all
-            class="mt-4 max-h-[40vh]"
+          <FieldSelect
+            v-if="importMode === 'group' || importMode === 'units'"
+            class="w-64"
+            label="Group"
+            v-model="selectedSourceSideGroupId"
+            :items="importedSideGroups"
           />
-        </template>
-        <template v-else-if="importMode === 'statuses'">
-          <PanelSubHeading class="mt-4">Unit statuses</PanelSubHeading>
-          <DataGrid
-            :data="currentUnitStatuses"
-            :columns="statusColumns"
-            :row-height="40"
-            v-model:selected="selectedStatuses"
-            select
-            select-all
-            class="mt-4 max-h-[40vh]"
-          />
-        </template>
-        <template v-else-if="importMode === 'supplyCategories'">
-          <PanelSubHeading class="mt-4">Supply categories</PanelSubHeading>
-          <DataGrid
-            :data="currentSupplyCategories"
-            :columns="supplyCategoryColumns"
-            :row-height="40"
-            v-model:selected="selectedSupplyCategories"
-            select
-            select-all
-            class="mt-4 max-h-[40vh]"
-          />
-        </template>
-        <Field v-else-if="importMode === 'customSymbols'">
-          <FieldLabel>Custom symbols</FieldLabel>
-          <DataGrid
-            :data="currentCustomIcons"
-            :columns="customIconColumns"
-            :row-height="40"
-            v-model:selected="selectedCustomSymbols"
-            select
-            select-all
-            class="max-h-[40vh]"
-          />
-        </Field>
-      </FieldGroup>
-      <footer
-        class="flex shrink-0 flex-col justify-between gap-3 pt-4 sm:flex-row sm:items-center"
-      >
-        <ToggleField v-model="store.keepOpen">Keep dialog open</ToggleField>
-        <div class="flex items-center gap-2">
-          <BaseButton type="submit" primary small>Import</BaseButton>
-          <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
         </div>
-      </footer>
-    </form>
-  </div>
+        <DataGrid
+          :key="selectedSourceSideGroupId"
+          :data="currentData"
+          :columns="computedColumns"
+          :row-height="40"
+          class="flex-1"
+          :get-sub-rows="(row) => row.subUnits ?? row.groups"
+          select-all
+          v-model:selected="selectedItems"
+          no-indeterminate
+        />
+      </template>
+
+      <template v-else-if="importMode === 'equipment'">
+        <DataGrid
+          :data="currentEquipment"
+          :columns="equipmentColumns"
+          :row-height="40"
+          v-model:selected="selectedEquipment"
+          select
+          select-all
+          class="flex-1"
+        />
+      </template>
+
+      <template v-else-if="importMode === 'personnel'">
+        <DataGrid
+          :data="currentPersonnel"
+          :columns="personnelColumns"
+          :row-height="40"
+          v-model:selected="selectedPersonnel"
+          select
+          select-all
+          class="flex-1"
+        />
+      </template>
+
+      <template v-else-if="importMode === 'statuses'">
+        <DataGrid
+          :data="currentUnitStatuses"
+          :columns="statusColumns"
+          :row-height="40"
+          v-model:selected="selectedStatuses"
+          select
+          select-all
+          class="flex-1"
+        />
+      </template>
+
+      <template v-else-if="importMode === 'supplyCategories'">
+        <DataGrid
+          :data="currentSupplyCategories"
+          :columns="supplyCategoryColumns"
+          :row-height="40"
+          v-model:selected="selectedSupplyCategories"
+          select
+          select-all
+          class="flex-1"
+        />
+      </template>
+
+      <template v-else-if="importMode === 'customSymbols'">
+        <DataGrid
+          :data="currentCustomIcons"
+          :columns="customIconColumns"
+          :row-height="40"
+          v-model:selected="selectedCustomSymbols"
+          select
+          select-all
+          class="flex-1"
+        />
+      </template>
+    </div>
+  </ImportStepLayout>
 </template>

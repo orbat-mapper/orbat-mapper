@@ -14,15 +14,8 @@ import { addUnitHierarchy } from "@/importexport/convertUtils";
 import type { Unit, State } from "@/types/scenarioModels";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { useRootUnits } from "@/composables/scenarioUtils";
-import {
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from "./ui/field";
-import { Field } from "@/components/ui/field";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Field, FieldContent, FieldLabel, FieldTitle } from "@/components/ui/field";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -30,11 +23,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
-import { InfoIcon } from "lucide-vue-next";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatPosition } from "@/geo/utils";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import SimpleSelect from "@/components/SimpleSelect.vue";
+import ImportStepLayout from "@/components/ImportStepLayout.vue";
 import type { Position } from "geojson";
 import { commonFields, useColumnMapping } from "@/composables/import/useColumnMapping";
 import { useSheetData } from "@/composables/import/useSheetData";
@@ -55,12 +49,20 @@ const { sheetNames, activeSheet, data, headers } = useSheetData(props.workbook);
 
 const importMode = ref<"add-units" | "update-units">("add-units");
 const idMode = ref<"mapped" | "autogenerate">("autogenerate");
-const showPreview = ref(true);
-const showSourceData = ref(true);
-const guessSidc = ref(false);
+const guessSidc = ref(false); // Used in useMappedData
 
-const { rootUnitItems } = useRootUnits();
+const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
 const parentUnitId = ref(rootUnitItems.value[0]?.code as string);
+
+const parentSidc = computed(() => {
+  const unit = rootUnitItems.value.find((u) => u.code === parentUnitId.value);
+  return unit?.sidc;
+});
+
+const parentSymbolOptions = computed(() => {
+  const unit = rootUnitItems.value.find((u) => u.code === parentUnitId.value);
+  return unit?.symbolOptions;
+});
 
 // Column mapping logic
 const {
@@ -81,10 +83,6 @@ const positionEventId = ref<string | null>(null);
 const fmt = useTimeFormatStore();
 const { store, time } = injectStrict(activeScenarioKey);
 
-const formattedCurrentTime = computed(() =>
-  fmt.scenarioFormatter.format(+time.scenarioTime.value),
-);
-
 const events = computed(() => {
   return store.state.events
     .map((e) => store.state.eventMap[e])
@@ -104,20 +102,12 @@ if (events.value.length > 0 && !positionEventId.value) {
 const symbolFieldValues = new Set(["icon", "echelon"]);
 const hierarchyFieldValues = new Set(["parentId"]);
 const symbolFields = commonFields.filter((field) => symbolFieldValues.has(field.value));
-const hierarchyFields = commonFields.filter((field) =>
-  hierarchyFieldValues.has(field.value),
-);
 const otherFields = commonFields.filter(
   (field) =>
-    !symbolFieldValues.has(field.value) && !hierarchyFieldValues.has(field.value),
+    !symbolFieldValues.has(field.value) &&
+    !hierarchyFieldValues.has(field.value) &&
+    field.value !== "name",
 );
-
-const columns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
-  return headers.value.map((header) => ({
-    accessorKey: header,
-    header: header,
-  }));
-});
 
 // Mapped data transformation
 const { mappedData, hierarchyData } = useMappedData({
@@ -132,6 +122,15 @@ const { mappedData, hierarchyData } = useMappedData({
   positionField,
   combinedCoordinateFormat,
   guessSidc,
+  parentSidc,
+  parentSymbolOptions,
+});
+
+const columns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
+  return headers.value.map((header) => ({
+    accessorKey: header,
+    header: header,
+  }));
 });
 
 const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
@@ -152,7 +151,7 @@ const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
             level: row.depth,
             canExpand: row.getCanExpand(),
             onToggle: row.getToggleExpandedHandler(),
-            symbolOptions: {},
+            symbolOptions: row.original.symbolOptions as any,
           });
         },
         header: ({ table }) => {
@@ -200,7 +199,11 @@ const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
             sidc,
             size: 24,
             class: "shrink-0",
-            options: { outlineWidth: 6, outlineColor: "white" },
+            options: {
+              outlineWidth: 6,
+              outlineColor: "white",
+              ...(row.original.symbolOptions as any),
+            },
           }),
           h("span", sidc),
         ]);
@@ -377,112 +380,188 @@ function onImport() {
 </script>
 
 <template>
-  <FieldGroup class="flex h-full flex-col gap-4">
-    <!-- Header -->
-    <div>
-      <h3 class="text-lg font-semibold">
-        Import units from tabular data (work in progress)
-      </h3>
-      <p class="text-muted-foreground text-sm">Map your columns to unit properties</p>
-    </div>
+  <ImportStepLayout
+    title="Import units from tabular data"
+    subtitle="Map your columns to unit properties"
+    help-url="https://docs.orbat-mapper.app/guide/import-data"
+    has-sidebar
+  >
+    <template #actions>
+      <BaseButton small @click="emit('cancel')" class="flex-1 sm:flex-none"
+        >Cancel</BaseButton
+      >
+      <BaseButton
+        type="submit"
+        primary
+        small
+        :disabled="!canImport"
+        @click="onImport"
+        class="flex-1 sm:flex-none"
+      >
+        Import {{ validRowCount }} {{ validRowCount === 1 ? "unit" : "units" }}
+      </BaseButton>
+    </template>
 
-    <!-- Import Mode Selection -->
-    <FieldSet>
-      <FieldLabel>Import mode</FieldLabel>
-      <p class="text-muted-foreground mb-2 text-sm">
-        Choose whether to add new units or update existing ones by ID
-      </p>
-      <RadioGroup class="grid grid-cols-2" v-model="importMode">
-        <Field orientation="horizontal">
-          <RadioGroupItem id="add" value="add-units" />
-          <FieldLabel for="add">Add units</FieldLabel>
-        </Field>
-        <Field orientation="horizontal">
-          <RadioGroupItem disabled id="update" value="update-units" />
-          <FieldLabel for="update">Update existing units</FieldLabel>
-        </Field>
-      </RadioGroup>
-    </FieldSet>
+    <template #sidebar>
+      <!-- Import Mode -->
+      <section class="space-y-3">
+        <FieldLabel>Import Mode</FieldLabel>
+        <RadioGroup class="grid grid-cols-2 gap-4" v-model="importMode">
+          <FieldLabel for="add">
+            <Field orientation="horizontal">
+              <FieldContent>
+                <FieldTitle>Add units</FieldTitle>
+              </FieldContent>
+              <RadioGroupItem id="add" value="add-units" />
+            </Field>
+          </FieldLabel>
+          <FieldLabel
+            for="update"
+            class="cursor-not-allowed opacity-50"
+            title="Not implemented yet"
+          >
+            <Field orientation="horizontal">
+              <FieldContent>
+                <FieldTitle>Update existing</FieldTitle>
+              </FieldContent>
+              <RadioGroupItem disabled id="update" value="update-units" />
+            </Field>
+          </FieldLabel>
+        </RadioGroup>
+      </section>
 
-    <!-- Update Mode Configuration -->
-    <div
-      v-if="importMode === 'update-units'"
-      class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950"
-    >
-      <div class="flex gap-2">
-        <InfoIcon class="h-5 w-5 shrink-0 text-blue-500" />
-        <div class="text-sm">
-          <p class="font-medium text-blue-900 dark:text-blue-100">
-            Update Mode Configuration
-          </p>
-          <p class="mt-1 text-blue-700 dark:text-blue-300">
-            Update mode requires an ID field to match existing units. Mapped fields will
-            overwrite existing values.
-          </p>
+      <section v-if="importMode === 'add-units'" class="space-y-3">
+        <SymbolCodeSelect
+          label="Parent unit"
+          :items="rootUnitItems"
+          :groups="groupedRootUnitItems"
+          v-model="parentUnitId"
+        />
+      </section>
+
+      <!-- Column Mappings -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="font-medium">Column Mappings</h4>
         </div>
-      </div>
-      <div class="mt-3">
-        <Field class="items-start">
-          <FieldLabel>ID field (required)</FieldLabel>
-          <Select v-model="idField">
-            <SelectTrigger class="!w-sm">
-              <SelectValue placeholder="Select ID field" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="h in headers" :key="h" :value="h">
-                {{ h }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-      </div>
-    </div>
 
-    <!-- Field Mapping -->
-    <NewAccordionPanel v-if="importMode === 'add-units'" label="Column mappings">
-      <div class="flex flex-col gap-4">
-        <FieldSet class="gap-3 rounded-md border p-3">
-          <div class="flex flex-col gap-4">
-            <div class="flex flex-col gap-3">
-              <RadioGroup v-model="idMode" class="flex w-sm gap-4">
-                <Field orientation="horizontal">
-                  <RadioGroupItem id="id-auto" value="autogenerate" />
-                  <FieldLabel for="id-auto">Autogenerate IDs</FieldLabel>
-                </Field>
-                <Field orientation="horizontal">
-                  <RadioGroupItem id="id-mapped" value="mapped" />
-                  <FieldLabel for="id-mapped">Map ID from column</FieldLabel>
-                </Field>
-              </RadioGroup>
+        <Tabs default-value="core" class="w-full">
+          <TabsList class="grid w-full grid-cols-3">
+            <TabsTrigger value="core">Core</TabsTrigger>
+            <TabsTrigger value="hierarchy">Hierarchy</TabsTrigger>
+            <TabsTrigger value="geo">Location</TabsTrigger>
+          </TabsList>
 
-              <div v-if="idMode === 'mapped'" class="mt-2">
-                <Field class="items-start">
-                  <FieldLabel>ID field</FieldLabel>
-                  <Select v-model="idField">
-                    <SelectTrigger class="!w-sm">
-                      <SelectValue placeholder="Select ID field" />
+          <!-- Core Tab -->
+          <TabsContent value="core" class="space-y-4 py-4">
+            <div class="space-y-4">
+              <div class="space-y-3">
+                <Label class="text-muted-foreground text-xs font-semibold uppercase"
+                  >Unit Identification</Label
+                >
+
+                <Field class="gap-1.5">
+                  <FieldLabel>Name Column</FieldLabel>
+                  <Select v-model="fieldMappings.name">
+                    <SelectTrigger class="w-full">
+                      <SelectValue placeholder="Select column" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem :value="null">None</SelectItem>
                       <SelectItem v-for="h in headers" :key="h" :value="h">
                         {{ h }}
                       </SelectItem>
                     </SelectContent>
                   </Select>
-                  <FieldDescription>
-                    Select a column that uniquely identifies each unit.
-                  </FieldDescription>
+                  <p class="text-muted-foreground text-[0.8rem]">
+                    Required. Display name of the unit.
+                  </p>
+                </Field>
+
+                <Field class="gap-1.5">
+                  <FieldLabel>Unit ID</FieldLabel>
+                  <div class="flex flex-col gap-3">
+                    <RadioGroup v-model="idMode" class="flex gap-4">
+                      <div class="flex items-center space-x-2">
+                        <RadioGroupItem id="id-auto" value="autogenerate" />
+                        <Label for="id-auto" class="font-normal">Auto</Label>
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <RadioGroupItem id="id-mapped" value="mapped" />
+                        <Label for="id-mapped" class="font-normal">From column</Label>
+                      </div>
+                    </RadioGroup>
+
+                    <Select v-if="idMode === 'mapped'" v-model="idField">
+                      <SelectTrigger class="w-full">
+                        <SelectValue placeholder="Select ID column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem v-for="h in headers" :key="h" :value="h">
+                          {{ h }}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </Field>
+              </div>
+
+              <div class="space-y-3">
+                <Label class="text-muted-foreground text-xs font-semibold uppercase"
+                  >Symbology</Label
+                >
+                <p class="text-muted-foreground text-sm">
+                  Map columns to construct the SIDC (Symbol ID Code).
+                </p>
+                <Field v-for="field in symbolFields" :key="field.value" class="gap-1.5">
+                  <FieldLabel>{{ field.label }}</FieldLabel>
+                  <Select v-model="fieldMappings[field.value]">
+                    <SelectTrigger class="w-full">
+                      <SelectValue placeholder="Select column" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem :value="null">None</SelectItem>
+                      <SelectItem v-for="h in headers" :key="h" :value="h">
+                        {{ h }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p class="text-muted-foreground text-[0.8rem]">
+                    {{ field.helpText }}
+                  </p>
+                </Field>
+              </div>
+
+              <div class="space-y-3">
+                <Label class="text-muted-foreground text-xs font-semibold uppercase"
+                  >Other Fields</Label
+                >
+                <Field v-for="field in otherFields" :key="field.value" class="gap-1.5">
+                  <FieldLabel>{{ field.label }}</FieldLabel>
+                  <Select v-model="fieldMappings[field.value]">
+                    <SelectTrigger class="w-full">
+                      <SelectValue placeholder="Select column" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem :value="null">None</SelectItem>
+                      <SelectItem v-for="h in headers" :key="h" :value="h">
+                        {{ h }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </Field>
               </div>
             </div>
+          </TabsContent>
 
-            <div
-              class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            >
-              <Field v-for="field in otherFields" :key="field.value">
-                <FieldLabel>{{ field.label }}</FieldLabel>
-                <Select v-model="fieldMappings[field.value]">
-                  <SelectTrigger>
-                    <SelectValue :placeholder="field.label" />
+          <!-- Hierarchy Tab -->
+          <TabsContent value="hierarchy" class="space-y-4 py-4">
+            <div class="space-y-4">
+              <Field class="gap-1.5">
+                <FieldLabel>Parent ID Column</FieldLabel>
+                <Select v-model="fieldMappings.parentId">
+                  <SelectTrigger class="w-full">
+                    <SelectValue placeholder="Select column" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem :value="null">None</SelectItem>
@@ -491,245 +570,164 @@ function onImport() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                <FieldDescription>{{ field.helpText }}</FieldDescription>
+              </Field>
+
+              <Field v-if="fieldMappings.parentId" class="gap-1.5">
+                <FieldLabel>Match Parent By</FieldLabel>
+                <Select v-model="parentMatchField">
+                  <SelectTrigger class="w-full">
+                    <SelectValue placeholder="Select ID column" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="h in headers" :key="h" :value="h">
+                      {{ h }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p class="text-muted-foreground text-[0.8rem]">
+                  Column in this sheet that matches the Parent ID
+                </p>
               </Field>
             </div>
-          </div>
-        </FieldSet>
+          </TabsContent>
 
-        <FieldSet class="gap-3 rounded-md border p-3">
-          <FieldLegend variant="label">Symbol fields</FieldLegend>
-          <FieldDescription class="">
-            Map icon and echelon to construct the unit symbol (SIDC). If SIDC is missing,
-            it will be auto generated based on these fields.
-          </FieldDescription>
-          <div
-            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          >
-            <Field v-for="field in symbolFields" :key="field.value">
-              <FieldLabel>{{ field.label }}</FieldLabel>
-              <Select v-model="fieldMappings[field.value]">
-                <SelectTrigger>
-                  <SelectValue :placeholder="field.label" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem :value="null">None</SelectItem>
-                  <SelectItem v-for="h in headers" :key="h" :value="h">
-                    {{ h }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldDescription>{{ field.helpText }}</FieldDescription>
-            </Field>
-          </div>
-        </FieldSet>
-        <FieldSet class="gap-3 rounded-md border p-3">
-          <FieldLegend variant="label">Hierarchy</FieldLegend>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field
-              v-for="field in hierarchyFields"
-              :key="field.value"
-              class="items-start"
-            >
-              <FieldLabel>{{ field.label }}</FieldLabel>
-              <Select v-model="fieldMappings[field.value]">
-                <SelectTrigger class="!w-sm">
-                  <SelectValue :placeholder="`Select ${field.label.toLowerCase()}`" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem :value="null">None</SelectItem>
-                  <SelectItem v-for="h in headers" :key="h" :value="h">
-                    {{ h }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldDescription>{{ field.helpText }}</FieldDescription>
-            </Field>
-
-            <Field v-if="fieldMappings.parentId" class="items-start">
-              <FieldLabel>Identify parents by</FieldLabel>
-              <Select v-model="parentMatchField">
-                <SelectTrigger class="!w-sm">
-                  <SelectValue placeholder="Match parent by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="h in headers" :key="h" :value="h">
-                    {{ h }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldDescription>
-                Select the column used to match the parent references.
-              </FieldDescription>
-            </Field>
-          </div>
-        </FieldSet>
-        <FieldSet class="gap-3 rounded-md border p-3">
-          <FieldLegend variant="label">Position</FieldLegend>
-          <FieldDescription>
-            Map coordinate columns to set unit positions on the map.
-          </FieldDescription>
-          <RadioGroup v-model="coordinateMode" class="mb-4 flex flex-wrap gap-4">
-            <Field orientation="horizontal">
-              <RadioGroupItem id="coord-none" value="none" />
-              <FieldLabel for="coord-none">No position</FieldLabel>
-            </Field>
-            <Field orientation="horizontal">
-              <RadioGroupItem id="coord-separate" value="separate" />
-              <FieldLabel for="coord-separate">Separate lat/lon columns</FieldLabel>
-            </Field>
-            <Field orientation="horizontal">
-              <RadioGroupItem id="coord-combined" value="combined" />
-              <FieldLabel for="coord-combined">Combined coordinate column</FieldLabel>
-            </Field>
-          </RadioGroup>
-
-          <!-- Separate lat/lon fields -->
-          <div
-            v-if="coordinateMode === 'separate'"
-            class="grid grid-cols-1 gap-4 sm:grid-cols-2"
-          >
-            <Field class="items-start">
-              <FieldLabel>Latitude</FieldLabel>
-              <Select v-model="latitudeField">
-                <SelectTrigger class="!w-sm">
-                  <SelectValue placeholder="Select latitude column" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem :value="null">None</SelectItem>
-                  <SelectItem v-for="h in headers" :key="h" :value="h">
-                    {{ h }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldDescription>Column with latitude values</FieldDescription>
-            </Field>
-            <Field class="items-start">
-              <FieldLabel>Longitude</FieldLabel>
-              <Select v-model="longitudeField">
-                <SelectTrigger class="!w-sm">
-                  <SelectValue placeholder="Select longitude column" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem :value="null">None</SelectItem>
-                  <SelectItem v-for="h in headers" :key="h" :value="h">
-                    {{ h }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldDescription>Column with longitude values</FieldDescription>
-            </Field>
-          </div>
-
-          <!-- Combined coordinate field -->
-          <div
-            v-if="coordinateMode === 'combined'"
-            class="grid grid-cols-1 gap-4 sm:grid-cols-2"
-          >
-            <Field class="items-start">
-              <FieldLabel>Coordinate column</FieldLabel>
-              <Select v-model="positionField">
-                <SelectTrigger class="!w-sm">
-                  <SelectValue placeholder="Select coordinate column" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem :value="null">None</SelectItem>
-                  <SelectItem v-for="h in headers" :key="h" :value="h">
-                    {{ h }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldDescription>Column with coordinate values</FieldDescription>
-            </Field>
-            <Field class="items-start">
-              <FieldLabel>Coordinate format</FieldLabel>
-              <Select v-model="combinedCoordinateFormat">
-                <SelectTrigger class="!w-sm">
-                  <SelectValue placeholder="Select format" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="LatLon">Lat, Lon (decimal)</SelectItem>
-                  <SelectItem value="LonLat">Lon, Lat (decimal)</SelectItem>
-                  <SelectItem value="MGRS">MGRS</SelectItem>
-                  <SelectItem value="DMS">Degrees Minutes Seconds</SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldDescription>Format of coordinate values</FieldDescription>
-            </Field>
-          </div>
-
-          <!-- Position time mode -->
-          <div v-if="coordinateMode !== 'none'" class="mt-4 border-t pt-4">
-            <FieldLabel class="mb-2">Apply position at</FieldLabel>
-            <RadioGroup v-model="positionTimeMode" class="flex flex-wrap gap-4">
-              <Field orientation="horizontal">
-                <RadioGroupItem id="time-current" value="current" />
-                <FieldLabel for="time-current"
-                  >Current scenario time ({{ formattedCurrentTime }})</FieldLabel
+          <!-- Location Tab -->
+          <TabsContent value="geo" class="space-y-4 py-4">
+            <div class="space-y-4">
+              <div class="space-y-3">
+                <Label class="text-muted-foreground text-xs font-semibold uppercase"
+                  >Coordinate Format</Label
                 >
-              </Field>
-              <Field orientation="horizontal">
-                <RadioGroupItem id="time-event" value="event" />
-                <FieldLabel for="time-event">Scenario event</FieldLabel>
-              </Field>
-            </RadioGroup>
-            <SimpleSelect
-              v-if="positionTimeMode === 'event'"
-              class="mt-2"
-              label="Select event"
-              :items="events"
-              v-model="positionEventId"
-            />
-          </div>
-        </FieldSet>
+                <RadioGroup v-model="coordinateMode" class="flex flex-col gap-2">
+                  <div class="flex items-center space-x-2">
+                    <RadioGroupItem id="coord-none" value="none" />
+                    <Label for="coord-none">No position</Label>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <RadioGroupItem id="coord-separate" value="separate" />
+                    <Label for="coord-separate">Lat/Lon columns</Label>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <RadioGroupItem id="coord-combined" value="combined" />
+                    <Label for="coord-combined">Single column</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div v-if="coordinateMode === 'separate'" class="space-y-4">
+                <Field class="gap-1.5">
+                  <FieldLabel>Latitude</FieldLabel>
+                  <Select v-model="latitudeField">
+                    <SelectTrigger class="w-full">
+                      <SelectValue placeholder="Select column" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem :value="null">None</SelectItem>
+                      <SelectItem v-for="h in headers" :key="h" :value="h">
+                        {{ h }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field class="gap-1.5">
+                  <FieldLabel>Longitude</FieldLabel>
+                  <Select v-model="longitudeField">
+                    <SelectTrigger class="w-full">
+                      <SelectValue placeholder="Select column" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem :value="null">None</SelectItem>
+                      <SelectItem v-for="h in headers" :key="h" :value="h">
+                        {{ h }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </div>
+
+              <div v-if="coordinateMode === 'combined'" class="space-y-4">
+                <Field class="gap-1.5">
+                  <FieldLabel>Coordinate Column</FieldLabel>
+                  <Select v-model="positionField">
+                    <SelectTrigger class="w-full">
+                      <SelectValue placeholder="Select column" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem :value="null">None</SelectItem>
+                      <SelectItem v-for="h in headers" :key="h" :value="h">
+                        {{ h }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field class="gap-1.5">
+                  <FieldLabel>Format</FieldLabel>
+                  <Select v-model="combinedCoordinateFormat">
+                    <SelectTrigger class="w-full">
+                      <SelectValue placeholder="Select format" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LatLon">Lat, Lon</SelectItem>
+                      <SelectItem value="LonLat">Lon, Lat</SelectItem>
+                      <SelectItem value="MGRS">MGRS</SelectItem>
+                      <SelectItem value="DMS">DMS</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </div>
+
+              <div v-if="coordinateMode !== 'none'" class="space-y-3 border-t pt-4">
+                <Label class="text-muted-foreground text-xs font-semibold uppercase"
+                  >Time</Label
+                >
+                <RadioGroup v-model="positionTimeMode" class="flex flex-col gap-2">
+                  <div class="flex items-center space-x-2">
+                    <RadioGroupItem id="time-current" value="current" />
+                    <Label for="time-current">Current time</Label>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <RadioGroupItem id="time-event" value="event" />
+                    <Label for="time-event">Use event</Label>
+                  </div>
+                </RadioGroup>
+
+                <SimpleSelect
+                  v-if="positionTimeMode === 'event'"
+                  label="Select event"
+                  :items="events"
+                  v-model="positionEventId"
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </section>
+    </template>
+
+    <!-- Main content: Preview -->
+    <Tabs default-value="preview" class="flex h-full min-h-0 flex-col">
+      <div
+        class="bg-background flex shrink-0 items-center justify-between border-b px-6 py-2"
+      >
+        <TabsList class="grid w-full grid-cols-2 lg:w-[25rem]">
+          <TabsTrigger value="preview">Unit Preview</TabsTrigger>
+          <TabsTrigger value="source">Source Data</TabsTrigger>
+        </TabsList>
+        <div class="flex items-center space-x-2">
+          <div class="text-muted-foreground text-xs">{{ data.length }} rows found</div>
+        </div>
       </div>
-    </NewAccordionPanel>
 
-    <!-- Preview Section -->
-    <div class="flex-auto overflow-auto">
-      <div v-if="data.length > 0" class="flex flex-col gap-4">
-        <!-- Source Data -->
-        <NewAccordionPanel
-          :label="`Source data (${activeSheet})`"
-          v-model="showSourceData"
+      <TabsContent value="preview" class="mt-0 min-h-0 flex-1 overflow-hidden p-6">
+        <div
+          class="bg-background flex h-full flex-col overflow-hidden rounded-md border shadow-sm"
         >
-          <div class="space-y-2 py-2">
-            <Field v-if="sheetNames.length > 1" class="items-start">
-              <FieldLabel>Select sheet</FieldLabel>
-              <Select v-model="activeSheet">
-                <SelectTrigger class="!w-sm">
-                  <SelectValue placeholder="Select sheet" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="sheet in sheetNames" :key="sheet" :value="sheet">
-                    {{ sheet }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <DataGrid
-              :data="data"
-              :columns="columns"
-              :row-count="data.length"
-              class="max-h-[30vh]"
-            />
+          <div class="flex items-center justify-between border-b px-4 py-2">
+            <h4 class="text-sm font-medium">Mapped Units</h4>
+            <div class="text-muted-foreground text-xs">
+              Showing top {{ mappedData.length }} rows
+            </div>
           </div>
-        </NewAccordionPanel>
-
-        <section class="px-1" v-if="importMode === 'add-units'">
-          <SymbolCodeSelect
-            label="Select parent unit"
-            :items="rootUnitItems"
-            v-model="parentUnitId"
-          />
-        </section>
-
-        <NewAccordionPanel
-          v-if="importMode === 'add-units'"
-          label="Preview"
-          v-model="showPreview"
-        >
           <DataGrid
             :data="
               fieldMappings.parentId && hierarchyData.length > 0
@@ -739,23 +737,41 @@ function onImport() {
             :columns="previewColumns"
             :row-count="mappedData.length"
             :row-height="40"
-            class="max-h-[40vh]"
+            class="flex-1"
             :initial-state="hierarchyTableState"
             :get-sub-rows="fieldMappings.parentId ? (row) => row.subUnits : undefined"
           />
-        </NewAccordionPanel>
-      </div>
-      <div v-else class="text-muted-foreground p-8 text-center">
-        No data found in this sheet.
-      </div>
-    </div>
+        </div>
+      </TabsContent>
 
-    <!-- Footer -->
-    <footer class="flex shrink-0 items-center justify-between space-x-2 border-t pt-4">
-      <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
-      <BaseButton type="submit" primary small :disabled="!canImport" @click="onImport">
-        Import {{ validRowCount }} {{ validRowCount === 1 ? "unit" : "units" }}
-      </BaseButton>
-    </footer>
-  </FieldGroup>
+      <TabsContent value="source" class="mt-0 min-h-0 flex-1 overflow-hidden p-6">
+        <div
+          class="bg-background flex h-full flex-col overflow-hidden rounded-md border shadow-sm"
+        >
+          <div class="flex items-center justify-between border-b px-4 py-2">
+            <h4 class="text-sm font-medium">Raw Source Data</h4>
+            <div class="flex items-center gap-2">
+              <span class="text-muted-foreground text-xs">Sheet:</span>
+              <Select v-model="activeSheet">
+                <SelectTrigger class="h-8 w-[12.5rem]">
+                  <SelectValue placeholder="Select sheet" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="sheet in sheetNames" :key="sheet" :value="sheet">
+                    {{ sheet }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DataGrid
+            :data="data"
+            :columns="columns"
+            :row-count="data.length"
+            class="flex-1"
+          />
+        </div>
+      </TabsContent>
+    </Tabs>
+  </ImportStepLayout>
 </template>

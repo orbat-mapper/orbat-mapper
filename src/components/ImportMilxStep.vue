@@ -10,7 +10,6 @@ import type { Point } from "geojson";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
-import ToggleField from "@/components/ToggleField.vue";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import type { ColumnDef, InitialTableState } from "@tanstack/vue-table";
 import type { ImportGeoJsonFeature } from "@/importexport/jsonish/types";
@@ -18,8 +17,9 @@ import DataGrid from "@/modules/grid/DataGrid.vue";
 import { propReduce } from "@turf/meta";
 import { featureCollection } from "@turf/helpers";
 import { pick } from "es-toolkit";
-import { Button } from "@/components/ui/button";
 import { useRootUnits } from "@/composables/scenarioUtils.ts";
+import ImportStepLayout from "@/components/ImportStepLayout.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 interface Props {
   data: MilxImportedLayer[];
@@ -27,13 +27,13 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
-const { unitActions, store: scnStore, time } = injectStrict(activeScenarioKey);
+const { unitActions, store: scnStore } = injectStrict(activeScenarioKey);
 const store = useImportStore();
 
 const selectedUnits = ref<FlatItem[]>([]);
 
-const { rootUnitItems } = useRootUnits();
-const parentUnitId = ref(rootUnitItems.value[0].code as string);
+const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
+const parentUnitId = ref(rootUnitItems.value[0]?.code as string);
 
 interface FlatItem extends ImportGeoJsonFeature {
   layerName: string;
@@ -54,8 +54,9 @@ const propertyNames = computed(() =>
   propReduce(
     featureCollection(data.value),
     (acc, properties) => {
-      properties &&
+      if (properties) {
         Object.keys(properties.originalProperties).forEach((key) => acc.add(key));
+      }
       return acc;
     },
     new Set<string>(),
@@ -66,8 +67,9 @@ const convertedPropertyNames = computed(() => {
   const names = propReduce(
     featureCollection(data.value),
     (acc, properties) => {
-      properties &&
+      if (properties) {
         Object.keys(properties.convertedProperties).forEach((key) => acc.add(key));
+      }
       return acc;
     },
     new Set<string>(),
@@ -102,7 +104,7 @@ const computedColumns = computed((): ColumnDef<FlatItem, any>[] => {
           header: "Symbol",
           id: "sidc",
           size: 85,
-          cell: ({ row, getValue, cell }) => {
+          cell: ({ getValue }) => {
             return h(MilitarySymbol, {
               sidc: getValue(),
               size: 20,
@@ -134,8 +136,7 @@ const initialTableState: InitialTableState = {
   expanded: true,
 };
 
-async function onLoad(e: Event) {
-  const features = props.data.map((l) => l.features).flat();
+async function onLoad() {
   const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
 
   const units: NUnit[] = selectedUnits.value.map((f) => {
@@ -177,44 +178,49 @@ async function onLoad(e: Event) {
 }
 </script>
 <template>
-  <div class="">
-    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
-      <div class="flex-auto overflow-auto">
-        <div class="prose prose-sm dark:prose-invert">
-          <p>
-            Basic support for importing MilX layers from
-            <a href="https://www.map.army/">map.army</a>
-          </p>
-        </div>
-        <section class="p-1.5">
-          <SymbolCodeSelect
-            label="Parent unit"
-            :items="rootUnitItems"
-            v-model="parentUnitId"
-          />
-        </section>
-        <section class="mt-4">
-          <DataGrid
-            :data="data"
-            :columns="computedColumns"
-            :initial-state="initialTableState"
-            :row-height="40"
-            select
-            select-all
-            show-global-filter
-            class="max-h-[40vh]"
-            v-model:selected="selectedUnits"
-          />
-        </section>
+  <ImportStepLayout
+    title="Import MilX"
+    subtitle="Import units from MilX layers"
+    help-url="https://docs.orbat-mapper.app/guide/import-data"
+    has-sidebar
+  >
+    <template #actions>
+      <BaseButton small @click="emit('cancel')" class="flex-1 sm:flex-none"
+        >Cancel</BaseButton
+      >
+      <BaseButton primary small @click="onLoad" class="flex-1 sm:flex-none"
+        >Import</BaseButton
+      >
+    </template>
+
+    <template #sidebar>
+      <div class="prose prose-sm dark:prose-invert">
+        <p>
+          Basic support for importing MilX layers from
+          <a href="https://www.map.army/">map.army</a>
+        </p>
       </div>
 
-      <footer class="flex shrink-0 items-center justify-between pt-4">
-        <ToggleField v-model="store.keepOpen">Keep dialog open on import</ToggleField>
-        <div class="flex items-center space-x-2">
-          <Button type="submit" size="sm">Import</Button>
-          <Button variant="outline" size="sm" @click="emit('cancel')">Cancel</Button>
-        </div>
-      </footer>
-    </form>
-  </div>
+      <SymbolCodeSelect
+        label="Parent unit"
+        :items="rootUnitItems"
+        :groups="groupedRootUnitItems"
+        v-model="parentUnitId"
+      />
+    </template>
+
+    <div class="flex h-full min-h-0 flex-col p-6">
+      <DataGrid
+        :data="data"
+        :columns="computedColumns"
+        :initial-state="initialTableState"
+        :row-height="40"
+        select
+        select-all
+        show-global-filter
+        class="flex-1"
+        v-model:selected="selectedUnits"
+      />
+    </div>
+  </ImportStepLayout>
 </template>

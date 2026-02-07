@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { useNotifications } from "@/composables/notifications";
-import { useImportStore } from "@/stores/importExportStore";
 import { injectStrict, sortBy } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { NUnit, NUnitAdd } from "@/types/internalModels";
@@ -12,6 +10,7 @@ import { SID_INDEX } from "@/symbology/sidc";
 import type { OrbatGeneratorOrbat } from "@/types/externalModels";
 import type { EntityId } from "@/types/base";
 import { useRootUnits } from "@/composables/scenarioUtils.ts";
+import ImportStepLayout from "@/components/ImportStepLayout.vue";
 
 interface Props {
   data: OrbatGeneratorOrbat;
@@ -19,14 +18,12 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
-const { unitActions, store: scnStore, time } = injectStrict(activeScenarioKey);
-
-const { send } = useNotifications();
+const { unitActions, store: scnStore } = injectStrict(activeScenarioKey);
 
 const { rootUnitItems } = useRootUnits();
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
-async function onLoad(e: Event) {
+async function onLoad() {
   const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
   const oob = sortBy(
     props.data.map((u) => {
@@ -48,7 +45,7 @@ async function onLoad(e: Event) {
 
   scnStore.groupUpdate(() => {
     oob.forEach((u) => {
-      const { sidc, level, xPosition, name, subTitle: description, color, sortKey } = u;
+      const { sidc, xPosition, name, subTitle: description, color, sortKey } = u;
       const newUnit: NUnitAdd = {
         name,
         description,
@@ -72,24 +69,38 @@ async function onLoad(e: Event) {
 </script>
 
 <template>
-  <div class="">
-    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] min-h-[25rem] flex-col">
-      <div class="flex-auto overflow-auto">
-        <div class="prose prose-sm dark:prose-invert"></div>
-        <section class="p-1.5">
-          <SymbolCodeSelect
-            label="Parent unit"
-            :items="rootUnitItems"
-            v-model="parentUnitId"
-          />
-        </section>
-        <section class="mt-4"></section>
-      </div>
+  <ImportStepLayout
+    title="Import from Orbat Generator"
+    help-url="https://docs.orbat-mapper.app/guide/import-data"
+    has-sidebar
+  >
+    <template #actions>
+      <BaseButton small @click="emit('cancel')" class="flex-1 sm:flex-none"
+        >Cancel</BaseButton
+      >
+      <BaseButton primary small @click="onLoad" class="flex-1 sm:flex-none"
+        >Import</BaseButton
+      >
+    </template>
 
-      <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
-        <BaseButton type="submit" primary small>Import</BaseButton>
-        <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
-      </footer>
-    </form>
-  </div>
+    <template #sidebar>
+      <SymbolCodeSelect
+        label="Parent unit"
+        :items="rootUnitItems"
+        v-model="parentUnitId"
+      />
+    </template>
+
+    <div class="p-6">
+      <p class="text-muted-foreground text-sm">
+        Import ORBAT generated with
+        <a
+          href="https://www.orbatgenerator.com/"
+          target="_blank"
+          class="text-accent-foreground underline"
+          >Order of Battle Generator</a
+        >.
+      </p>
+    </div>
+  </ImportStepLayout>
 </template>

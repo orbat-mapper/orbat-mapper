@@ -17,6 +17,7 @@ import DataGrid from "@/modules/grid/DataGrid.vue";
 import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import { useRootUnits } from "@/composables/scenarioUtils.ts";
+import ImportStepLayout from "@/components/ImportStepLayout.vue";
 
 interface Props {
   data: SpatialIllusionsOrbat;
@@ -24,7 +25,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
-const { unitActions, store: scnStore, time } = injectStrict(activeScenarioKey);
+const { unitActions, store: scnStore } = injectStrict(activeScenarioKey);
 
 const useFillColor = ref(true);
 const expandedStackedUnits = ref(true);
@@ -33,7 +34,7 @@ const { rootUnitItems } = useRootUnits();
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
 function renderExpandCell({ getValue, row }: CellContext<SpatialIllusionsOrbat, string>) {
-  let symbolOptions: Record<string, any> = {};
+  const symbolOptions: Record<string, any> = {};
   if (useFillColor.value && row.original.options.fillColor) {
     symbolOptions["fillColor"] = row.original.options.fillColor;
   }
@@ -87,7 +88,7 @@ const computedColumns = computed((): (ColumnDef<SpatialIllusionsOrbat> | false)[
   ];
 });
 
-async function onLoad(e: Event) {
+async function onLoad() {
   const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
   const oob = props.data;
 
@@ -126,37 +127,42 @@ async function onLoad(e: Event) {
 </script>
 
 <template>
-  <div class="">
-    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] min-h-[25rem] flex-col">
-      <div class="flex-auto overflow-auto">
-        <div class="prose prose-sm dark:prose-invert"></div>
-        <section class="p-1.5">
-          <SymbolCodeSelect
-            label="Parent unit"
-            :items="rootUnitItems"
-            v-model="parentUnitId"
-          />
-        </section>
-        <section class="mt-4">
-          <DataGrid
-            :data="[props.data]"
-            :columns="computedColumns"
-            :row-height="40"
-            class="max-h-[40vh]"
-            :initial-state="{ expanded: true }"
-            :get-sub-rows="(row) => row.subOrganizations"
-          />
-        </section>
-        <section class="mt-4 flex gap-4 p-1">
-          <InputCheckbox v-model="useFillColor" label="Use custom fill color" />
-          <InputCheckbox v-model="expandedStackedUnits" label="Expand stacked units" />
-        </section>
-      </div>
+  <ImportStepLayout
+    title="Import from Spatial Illusions"
+    help-url="https://docs.orbat-mapper.app/guide/import-data"
+    has-sidebar
+  >
+    <template #actions>
+      <BaseButton small @click="emit('cancel')" class="flex-1 sm:flex-none"
+        >Cancel</BaseButton
+      >
+      <BaseButton primary small @click="onLoad" class="flex-1 sm:flex-none"
+        >Import</BaseButton
+      >
+    </template>
 
-      <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
-        <BaseButton type="submit" primary small>Import</BaseButton>
-        <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
-      </footer>
-    </form>
-  </div>
+    <template #sidebar>
+      <SymbolCodeSelect
+        label="Parent unit"
+        :items="rootUnitItems"
+        v-model="parentUnitId"
+      />
+
+      <section class="space-y-3">
+        <InputCheckbox v-model="useFillColor" label="Use custom fill color" />
+        <InputCheckbox v-model="expandedStackedUnits" label="Expand stacked units" />
+      </section>
+    </template>
+
+    <div class="flex h-full min-h-0 flex-col p-6">
+      <DataGrid
+        :data="[props.data]"
+        :columns="computedColumns"
+        :row-height="40"
+        class="flex-1"
+        :initial-state="{ expanded: true }"
+        :get-sub-rows="(row) => row.subOrganizations"
+      />
+    </div>
+  </ImportStepLayout>
 </template>

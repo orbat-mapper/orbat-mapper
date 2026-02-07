@@ -17,6 +17,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { WorkBook } from "xlsx";
 import BaseButton from "@/components/BaseButton.vue";
+import ImportStepLayout from "@/components/ImportStepLayout.vue";
 
 interface Props {
   workbook: WorkBook;
@@ -30,8 +31,8 @@ const expandTemplates = ref(true);
 const includeEquipment = ref(true);
 const includePersonnel = ref(true);
 
-const { rootUnitItems } = useRootUnits();
-const parentUnitId = ref(rootUnitItems.value[0].code as string);
+const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
+const parentUnitId = ref(rootUnitItems.value[0]?.code as string);
 
 function renderExpandCell({ getValue, row }: CellContext<Unit, string | undefined>) {
   return h(OrbatCellRenderer, {
@@ -110,65 +111,73 @@ async function onLoad() {
 }
 </script>
 <template>
-  <div class="">
-    <form @submit.prevent="onLoad" class="mt-4 flex max-h-[80vh] flex-col">
-      <div class="shrink-0 overflow-auto">
-        <div class="prose prose-sm dark:prose-invert max-w-none">
-          <p>
-            Import units exported from
-            <a
-              href="https://odin.tradoc.army.mil/DATEWORLD"
-              target="_blank"
-              rel="noopener noreferrer"
-              >https://odin.tradoc.army.mil/DATEWORLD</a
-            >. Only the DRAGON Excel export format is currently supported.
-          </p>
-        </div>
+  <ImportStepLayout
+    title="Import units from ODIN"
+    subtitle="Import units from ODIN DRAGON export"
+    help-url="https://docs.orbat-mapper.app/guide/import-data"
+    has-sidebar
+  >
+    <template #actions>
+      <BaseButton small @click="emit('cancel')" class="flex-1 sm:flex-none"
+        >Cancel</BaseButton
+      >
+      <BaseButton primary small @click="onLoad" class="flex-1 sm:flex-none"
+        >Import</BaseButton
+      >
+    </template>
 
-        <section class="mt-4 space-y-4 px-1">
-          <div class="grid gap-4 sm:grid-cols-3">
-            <InputCheckbox
-              label="Expand unit templates"
-              description="This will create a lot of units!"
-              v-model="expandTemplates"
-            />
-            <template v-if="expandTemplates">
-              <InputCheckbox
-                label="Include equipment"
-                v-model="includeEquipment"
-                :disabled="!expandTemplates"
-              />
-              <InputCheckbox
-                label="Include personnel"
-                v-model="includePersonnel"
-                :disabled="!expandTemplates"
-              />
-            </template>
-          </div>
-          <SymbolCodeSelect
-            label="Select parent unit"
-            :items="rootUnitItems"
-            v-model="parentUnitId"
-          />
-        </section>
+    <template #sidebar>
+      <div class="prose prose-sm dark:prose-invert max-w-none">
+        <p>
+          Import units exported from
+          <a
+            href="https://odin.tradoc.army.mil/DATEWORLD"
+            target="_blank"
+            rel="noopener noreferrer"
+            >https://odin.tradoc.army.mil/DATEWORLD</a
+          >. Only the DRAGON Excel export format is currently supported.
+        </p>
       </div>
-      <section class="mt-2 flex-auto">
-        <DataGrid
-          :data="importedUnits"
-          :columns="columns"
-          :row-count="rowMapTest?.size"
-          :row-height="40"
-          class="max-h-[40vh]"
-          show-global-filter
-          :initial-state="initialTableState"
-          :get-sub-rows="(row) => row.subUnits"
+
+      <section class="space-y-4">
+        <InputCheckbox
+          label="Expand unit templates"
+          description="This will create a lot of units!"
+          v-model="expandTemplates"
         />
+        <template v-if="expandTemplates">
+          <InputCheckbox
+            label="Include equipment"
+            v-model="includeEquipment"
+            :disabled="!expandTemplates"
+          />
+          <InputCheckbox
+            label="Include personnel"
+            v-model="includePersonnel"
+            :disabled="!expandTemplates"
+          />
+        </template>
       </section>
 
-      <footer class="flex shrink-0 items-center justify-end space-x-2 pt-4">
-        <BaseButton type="submit" primary small>Import</BaseButton>
-        <BaseButton small @click="emit('cancel')">Cancel</BaseButton>
-      </footer>
-    </form>
-  </div>
+      <SymbolCodeSelect
+        label="Select parent unit"
+        :items="rootUnitItems"
+        :groups="groupedRootUnitItems"
+        v-model="parentUnitId"
+      />
+    </template>
+
+    <div class="flex h-full min-h-0 flex-col p-6">
+      <DataGrid
+        :data="importedUnits"
+        :columns="columns"
+        :row-count="rowMapTest?.size"
+        :row-height="40"
+        class="flex-1"
+        show-global-filter
+        :initial-state="initialTableState"
+        :get-sub-rows="(row) => row.subUnits"
+      />
+    </div>
+  </ImportStepLayout>
 </template>
