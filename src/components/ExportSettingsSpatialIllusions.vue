@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import type { ExportFormat, UnitGeneratorSettings } from "@/types/importExport.ts";
-import { ref } from "vue";
-import SimpleSelect from "@/components/SimpleSelect.vue";
-import type { SelectItem } from "@/components/types";
-import type { EntityId } from "@/types/base";
-import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
+import { useRootUnits } from "@/composables/scenarioUtils";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 
 interface Props {
@@ -14,27 +10,11 @@ interface Props {
 
 const props = defineProps<Props>();
 const settings = defineModel<UnitGeneratorSettings>({ required: true });
-const {
-  unitActions,
-  store: { state },
-} = injectStrict(activeScenarioKey);
 
-const rootUnitItems = ref<SelectItem<EntityId>[]>([]);
-state.sides.forEach((sideId) => {
-  unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
-    if (unit.subUnits.length === 0) return;
-    //html space
+const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
 
-    const indent = "..".repeat(level);
-    rootUnitItems.value.push({
-      label: side.name + " " + indent + " " + unit.name,
-      value: unit.id,
-    });
-  });
-});
-
-if (!settings.value.rootUnit) {
-  settings.value.rootUnit = rootUnitItems.value[0].value;
+if (!settings.value.rootUnit && rootUnitItems.value.length > 0) {
+  settings.value.rootUnit = rootUnitItems.value[0].code;
 }
 </script>
 
@@ -48,7 +28,12 @@ if (!settings.value.rootUnit) {
     </p>
   </section>
   <fieldset class="space-y-4">
-    <SimpleSelect :items="rootUnitItems" v-model="settings.rootUnit" label="Root unit" />
+    <SymbolCodeSelect
+      :items="rootUnitItems"
+      :groups="groupedRootUnitItems"
+      v-model="settings.rootUnit"
+      label="Root unit"
+    />
 
     <NumberInputGroup
       v-model="settings.maxLevels"
