@@ -84,7 +84,7 @@ const computedColumns = computed((): (ColumnDef<GeoJSONFeature, any> | false)[] 
   ];
 });
 
-const { rootUnitItems } = useRootUnits();
+const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
 
 const geoJSONFeatures = computed((): GeoJSONFeature[] => {
   const extractedFeatures: GeoJSONFeature[] = [];
@@ -258,6 +258,7 @@ function loadAsFeatures() {
           v-else
           label="Parent unit"
           :items="rootUnitItems"
+          :groups="groupedRootUnitItems"
           v-model="parentUnitId"
         />
       </section>

@@ -30,7 +30,7 @@ const { unitActions, store: scnStore } = injectStrict(activeScenarioKey);
 const useFillColor = ref(true);
 const expandedStackedUnits = ref(true);
 
-const { rootUnitItems } = useRootUnits();
+const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
 function renderExpandCell({ getValue, row }: CellContext<SpatialIllusionsOrbat, string>) {
@@ -145,6 +145,7 @@ async function onLoad() {
       <SymbolCodeSelect
         label="Parent unit"
         :items="rootUnitItems"
+        :groups="groupedRootUnitItems"
         v-model="parentUnitId"
       />
 

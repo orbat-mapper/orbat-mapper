@@ -20,7 +20,7 @@ const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 const { unitActions, store: scnStore } = injectStrict(activeScenarioKey);
 
-const { rootUnitItems } = useRootUnits();
+const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
 const parentUnitId = ref(rootUnitItems.value[0].code as string);
 
 async function onLoad() {
@@ -87,6 +87,7 @@ async function onLoad() {
       <SymbolCodeSelect
         label="Parent unit"
         :items="rootUnitItems"
+        :groups="groupedRootUnitItems"
         v-model="parentUnitId"
       />
     </template>
