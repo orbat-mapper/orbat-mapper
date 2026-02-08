@@ -16,23 +16,23 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 flex-col overflow-y-auto lg:overflow-hidden">
+  <div class="flex h-full min-h-0 flex-col lg:overflow-hidden">
     <!-- Header -->
     <header
-      class="flex shrink-0 flex-col gap-3 border-b px-6 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2"
+      class="flex shrink-0 flex-col gap-3 border-b px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-2"
     >
       <div class="flex min-w-0 items-center justify-between gap-4 sm:justify-start">
-        <div class="min-w-0">
-          <h3 class="text-base leading-tight font-semibold sm:text-lg">
+        <div class="flex min-w-0 flex-col gap-1.5">
+          <h3 class="text-lg leading-none font-semibold">
             {{ title }}
           </h3>
-          <p v-if="subtitle" class="text-muted-foreground truncate text-xs leading-none">
+          <p v-if="subtitle" class="text-muted-foreground text-sm">
             {{ subtitle }}
           </p>
         </div>
-        <DocLink v-if="helpUrl" :href="helpUrl" class="shrink-0" />
       </div>
       <div class="flex items-center gap-2">
+        <DocLink v-if="helpUrl" :href="helpUrl" class="shrink-0" />
         <slot name="actions" />
       </div>
     </header>
@@ -48,16 +48,14 @@ withDefaults(defineProps<Props>(), {
         :class="sidebarWidth"
       >
         <div class="flex-1 overflow-y-auto">
-          <div class="space-y-6 p-6">
+          <div class="space-y-8 p-6">
             <slot name="sidebar" />
           </div>
         </div>
       </aside>
 
       <!-- Right Content -->
-      <main
-        class="bg-muted/10 flex h-[32rem] min-w-0 flex-col lg:h-auto lg:min-h-0 lg:flex-1"
-      >
+      <main class="bg-muted/10 flex min-h-0 min-w-0 flex-1 flex-col">
         <slot />
       </main>
     </div>

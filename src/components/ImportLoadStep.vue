@@ -345,9 +345,9 @@ onMounted(() => {
     <!-- Main Content: File Loading Area -->
     <!-- Main Content: File Loading Area -->
     <div class="flex h-full min-h-0 flex-col" ref="dropZoneRef">
-      <div v-if="store.inputSource === 'file'" class="shrink-0 p-6">
+      <div v-if="store.inputSource === 'file'" class="flex min-h-0 flex-1 flex-col p-6">
         <div
-          class="hover:border-muted-foreground relative flex h-48 w-full items-center justify-center rounded-lg border-2 border-dashed p-4 ring-offset-2 focus-within:ring-2"
+          class="hover:border-muted-foreground relative flex h-full w-full items-center justify-center rounded-lg border-2 border-dashed p-4 ring-offset-2 focus-within:ring-2"
           :class="isOverDropZone ? 'cursor-crosshair border-green-500' : ''"
         >
           <input
@@ -379,7 +379,7 @@ onMounted(() => {
         >
       </Field>
 
-      <Field v-else-if="store.inputSource === 'url'" class="p-6">
+      <Field v-else-if="store.inputSource === 'url'" class="flex-1 p-6">
         <FieldLabel for="urlSource">URL</FieldLabel>
         <div class="flex gap-2">
           <Input id="urlSource" v-model="urlSource" type="text" />

@@ -11,7 +11,7 @@ import { useNotifications } from "@/composables/notifications";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { addUnitHierarchy } from "@/importexport/convertUtils";
-import type { Unit, State } from "@/types/scenarioModels";
+import type { Unit, State, UnitSymbolOptions } from "@/types/scenarioModels";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { useRootUnits } from "@/composables/scenarioUtils";
 import { Field, FieldContent, FieldLabel, FieldTitle } from "@/components/ui/field";
@@ -33,6 +33,7 @@ import type { Position } from "geojson";
 import { commonFields, useColumnMapping } from "@/composables/import/useColumnMapping";
 import { useSheetData } from "@/composables/import/useSheetData";
 import { useMappedData, type HierarchyUnit } from "@/composables/import/useMappedData";
+import SimpleDivider from "@/components/SimpleDivider.vue";
 import {
   useUpdateMatching,
   type MatchMode,
@@ -266,7 +267,7 @@ const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
             level: row.depth,
             canExpand: row.getCanExpand(),
             onToggle: row.getToggleExpandedHandler(),
-            symbolOptions: row.original.symbolOptions as any,
+            symbolOptions: row.original.symbolOptions as UnitSymbolOptions,
           });
         },
         header: ({ table }) => {
@@ -317,7 +318,7 @@ const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
             options: {
               outlineWidth: 6,
               outlineColor: "white",
-              ...(row.original.symbolOptions as any),
+              ...(row.original.symbolOptions as UnitSymbolOptions),
             },
           }),
           h("span", sidc),
@@ -717,10 +718,10 @@ function onAddImport() {
 
     <template #sidebar>
       <!-- Import Mode -->
-      <section class="space-y-3">
+      <section class="space-y-4">
         <FieldLabel>Import Mode</FieldLabel>
         <RadioGroup class="grid grid-cols-2 gap-4" v-model="importMode">
-          <FieldLabel for="add">
+          <FieldLabel for="add" class="cursor-pointer">
             <Field orientation="horizontal">
               <FieldContent>
                 <FieldTitle>Add units</FieldTitle>
@@ -728,7 +729,7 @@ function onAddImport() {
               <RadioGroupItem id="add" value="add-units" />
             </Field>
           </FieldLabel>
-          <FieldLabel for="update">
+          <FieldLabel for="update" class="cursor-pointer">
             <Field orientation="horizontal">
               <FieldContent>
                 <FieldTitle>Update existing</FieldTitle>
@@ -739,7 +740,9 @@ function onAddImport() {
         </RadioGroup>
       </section>
 
-      <section v-if="importMode === 'add-units'" class="space-y-3">
+      <SimpleDivider />
+
+      <section v-if="importMode === 'add-units'" class="space-y-4">
         <SymbolCodeSelect
           label="Parent unit"
           :items="rootUnitItems"
@@ -749,7 +752,7 @@ function onAddImport() {
       </section>
 
       <!-- Update Mode Settings -->
-      <section v-if="importMode === 'update-units'" class="space-y-4">
+      <section v-if="importMode === 'update-units'" class="space-y-6">
         <div class="space-y-3">
           <Label class="text-muted-foreground text-xs font-semibold uppercase"
             >Match By</Label
@@ -799,10 +802,12 @@ function onAddImport() {
         </div>
       </section>
 
+      <SimpleDivider />
+
       <!-- Column Mappings -->
-      <section class="space-y-3">
+      <section class="space-y-4">
         <div class="flex items-center justify-between">
-          <h4 class="font-medium">Column Mappings</h4>
+          <h4 class="font-bold tracking-tight">Column Mappings</h4>
         </div>
 
         <Tabs default-value="core" class="w-full">
