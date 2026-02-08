@@ -157,11 +157,7 @@ function onCancel() {
         </p>
       </div>
       <ExportSettingsXlsx v-if="format === 'xlsx'" :format="format" v-model="form" />
-      <ExportSettingsCsv
-        v-else-if="format === 'csv'"
-        :format="format"
-        v-model="form"
-      />
+      <ExportSettingsCsv v-else-if="format === 'csv'" :format="format" v-model="form" />
       <ExportSettingsSpatialIllusions
         v-else-if="format === 'unitgenerator'"
         :format="format"
