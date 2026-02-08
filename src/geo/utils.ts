@@ -181,8 +181,9 @@ export function parseDMS(value: string): Position | null {
 
   // Pattern to match DMS components
   // Supports various quote styles: ' " ′ ″ ʹ ʺ and Unicode degree symbol
+  // Supports optional minutes and seconds
   const dmsPattern =
-    /([NSEW])?\s*(\d+)[°\s]+(\d+)[′'ʹ\s]+(\d+(?:\.\d+)?)[″"ʺ\s]*([NSEW])?/gi;
+    /([NSEW])?\s*(\d+(?:\.\d+)?)[°\s]*(?:(\d+(?:\.\d+)?)[′'ʹ\s]*)?(?:(\d+(?:\.\d+)?)[″"ʺ\s]*)?([NSEW])?/gi;
   const matches = [...trimmed.matchAll(dmsPattern)];
 
   if (matches.length < 2) return null;
@@ -195,10 +196,10 @@ export function parseDMS(value: string): Position | null {
     const direction = prefix || suffix;
 
     const degrees = parseFloat(match[2]);
-    const minutes = parseFloat(match[3]);
-    const seconds = parseFloat(match[4]);
+    const minutes = match[3] ? parseFloat(match[3]) : 0;
+    const seconds = match[4] ? parseFloat(match[4]) : 0;
 
-    if (isNaN(degrees) || isNaN(minutes) || isNaN(seconds)) continue;
+    if (isNaN(degrees)) continue;
 
     let decimal = degrees + minutes / 60 + seconds / 3600;
 

@@ -13,8 +13,10 @@ export function useSheetData(workbook: WorkBook) {
   });
 
   const headers = computed<string[]>(() => {
-    if (data.value.length === 0) return [];
-    return Object.keys(data.value[0] as object);
+    const sheet = workbook.Sheets[activeSheet.value];
+    if (!sheet || !sheet["!ref"]) return [];
+    const rows = xlsxUtils.sheet_to_json(sheet, { header: 1 }) as string[][];
+    return (rows[0] || []).filter((h) => typeof h === "string" && h.trim().length > 0);
   });
 
   return {

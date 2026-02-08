@@ -12,6 +12,8 @@ describe("detectCoordinateFormat", () => {
       `40°26'46"N 79°58'56"W`,
       `41°26'46"N 80°58'56"W`,
       `N40°26'46" W79°58'56"`,
+      `40.592957° N 73.883698° W`,
+      `40° 35′ 22″ N 73° 53′ 48″ W`,
     ];
     expect(detectCoordinateFormat(samples)).toBe("DMS");
   });
@@ -111,6 +113,13 @@ describe("parseCoordinateString", () => {
   it("should parse DMS format", () => {
     const result = parseCoordinateString(`40°26'46"N 79°58'56"W`, "DMS");
     expect(result).toEqual([-79.982222, 40.446111]);
+
+    const result2 = parseCoordinateString("40.592957° N 73.883698° W", "DMS");
+    expect(result2).toEqual([-73.883698, 40.592957]);
+
+    const result3 = parseCoordinateString("40° 35′ 22″ N 73° 53′ 48″ W", "DMS");
+    expect(result3![1]).toBeCloseTo(40.589444, 5);
+    expect(result3![0]).toBeCloseTo(-73.896666, 5);
   });
 
   it("should parse LatLon format", () => {
