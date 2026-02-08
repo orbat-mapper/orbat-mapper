@@ -180,7 +180,9 @@ export function parseDMS(value: string): Position | null {
   if (!trimmed) return null;
 
   // Pattern to match DMS components
-  const dmsPattern = /([NSEW])?\s*(\d+)[°\s]+(\d+)['\s]+(\d+(?:\.\d+)?)["\s]*([NSEW])?/gi;
+  // Supports various quote styles: ' " ′ ″ ʹ ʺ and Unicode degree symbol
+  const dmsPattern =
+    /([NSEW])?\s*(\d+)[°\s]+(\d+)[′'ʹ\s]+(\d+(?:\.\d+)?)[″"ʺ\s]*([NSEW])?/gi;
   const matches = [...trimmed.matchAll(dmsPattern)];
 
   if (matches.length < 2) return null;

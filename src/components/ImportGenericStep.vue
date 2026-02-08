@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, h } from "vue";
+import { computed, ref, h, watch, type ComputedRef } from "vue";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import type { WorkBook } from "xlsx";
 import DataGrid from "@/modules/grid/DataGrid.vue";
@@ -33,6 +33,10 @@ import type { Position } from "geojson";
 import { commonFields, useColumnMapping } from "@/composables/import/useColumnMapping";
 import { useSheetData } from "@/composables/import/useSheetData";
 import { useMappedData, type HierarchyUnit } from "@/composables/import/useMappedData";
+import {
+  useUpdateMatching,
+  type MatchMode,
+} from "@/composables/import/useUpdateMatching";
 import type { PositionTimeMode } from "./import/types";
 
 interface Props {
@@ -50,6 +54,10 @@ const { sheetNames, activeSheet, data, headers } = useSheetData(props.workbook);
 const importMode = ref<"add-units" | "update-units">("add-units");
 const idMode = ref<"mapped" | "autogenerate">("autogenerate");
 const guessSidc = ref(false); // Used in useMappedData
+
+// Update mode state
+const matchMode = ref<MatchMode>("id");
+const updateMatchField = ref<string | null>(null);
 
 const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
 const parentUnitId = ref(rootUnitItems.value[0]?.code as string);
@@ -81,6 +89,73 @@ const {
   longitudeField,
   positionField,
 } = useColumnMapping(headers, data);
+
+// Auto-select match field based on mode (must be after useColumnMapping)
+watch(
+  [
+    () => importMode.value,
+    () => matchMode.value,
+    () => headers.value,
+    () => idField.value,
+  ],
+  () => {
+    if (importMode.value === "update-units") {
+      if (matchMode.value === "id" && idField.value) {
+        updateMatchField.value = idField.value;
+      } else if (matchMode.value === "name" && fieldMappings.value.name) {
+        updateMatchField.value = fieldMappings.value.name;
+      }
+    }
+  },
+  { immediate: true },
+);
+
+// Store separate mappings for add and update modes
+const savedAddMappings = ref<Record<string, string | null>>({});
+const savedAddCoordinateMode = ref<"none" | "separate" | "combined">("none");
+const savedUpdateMappings = ref<Record<string, string | null>>({});
+const savedUpdateCoordinateMode = ref<"none" | "separate" | "combined">("none");
+
+// Save and restore field mappings when switching between modes
+watch(importMode, (newMode, oldMode) => {
+  if (!oldMode) return; // Initial load, don't save
+
+  // Save current mappings for the old mode
+  if (oldMode === "add-units") {
+    savedAddMappings.value = { ...fieldMappings.value };
+    savedAddCoordinateMode.value = coordinateMode.value;
+  } else if (oldMode === "update-units") {
+    savedUpdateMappings.value = { ...fieldMappings.value };
+    savedUpdateCoordinateMode.value = coordinateMode.value;
+  }
+
+  // Restore mappings for the new mode
+  if (newMode === "add-units") {
+    if (Object.keys(savedAddMappings.value).length > 0) {
+      // Restore saved add mode mappings
+      Object.keys(fieldMappings.value).forEach((key) => {
+        fieldMappings.value[key] =
+          savedAddMappings.value[key] ?? fieldMappings.value[key];
+      });
+      coordinateMode.value = savedAddCoordinateMode.value;
+    }
+    // If no saved mappings, keep the current auto-detected ones
+  } else if (newMode === "update-units") {
+    if (Object.keys(savedUpdateMappings.value).length > 0) {
+      // Restore saved update mode mappings
+      Object.keys(fieldMappings.value).forEach((key) => {
+        fieldMappings.value[key] = savedUpdateMappings.value[key] ?? null;
+      });
+      coordinateMode.value = savedUpdateCoordinateMode.value;
+    } else {
+      // First time entering update mode - reset all mappings to null
+      Object.keys(fieldMappings.value).forEach((key) => {
+        fieldMappings.value[key] = null;
+      });
+      coordinateMode.value = "none";
+    }
+  }
+});
 
 const positionTimeMode = ref<PositionTimeMode>("current");
 const positionEventId = ref<string | null>(null);
@@ -131,6 +206,33 @@ const { mappedData, hierarchyData } = useMappedData({
   parentSidc,
   parentSymbolOptions,
   parentSideIdentifier: computed(() => parentSide.value?.standardIdentity),
+});
+
+// Update matching (for update mode)
+// Derive updateFields from fieldMappings - mapped columns will be updated
+const updateFields = computed(() => {
+  const fields: string[] = [];
+  const updatableKeys = ["name", "shortName", "sidc", "description", "externalUrl"];
+  for (const key of updatableKeys) {
+    if (fieldMappings.value[key]) {
+      fields.push(key);
+    }
+  }
+  // Add location if coordinates are being mapped
+  if (coordinateMode.value !== "none") {
+    fields.push("location");
+  }
+  return fields;
+});
+
+const { matchedResults, matchedCount, changesCount } = useUpdateMatching({
+  data: data as ComputedRef<Record<string, unknown>[]>,
+  mappedData: mappedData as unknown as ComputedRef<Record<string, unknown>[]>,
+  matchMode,
+  matchField: updateMatchField,
+  updateFields,
+  units: unitActions.units,
+  unitMap: store.state.unitMap,
 });
 
 const columns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
@@ -249,6 +351,100 @@ const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
   return cols;
 });
 
+// Update mode preview columns
+const updatePreviewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
+  const cols: ColumnDef<Record<string, unknown>>[] = [];
+
+  // Existing unit with symbol
+  cols.push({
+    accessorKey: "_existingName",
+    header: "Existing Unit",
+    cell: ({ row }) => {
+      const name = row.original._existingName as string | undefined;
+      const sidc = row.original._existingSidc as string | undefined;
+      if (!name) return "—";
+      if (sidc) {
+        return h("div", { class: "flex items-center gap-2" }, [
+          h(UnitSymbol, { sidc, size: 24, class: "max-h-8" }),
+          h("span", name),
+        ]);
+      }
+      return name;
+    },
+    size: 200,
+  });
+
+  // Add a column for each field being updated
+  const updatableKeys = ["name", "shortName", "sidc", "description", "externalUrl"];
+  for (const key of updatableKeys) {
+    if (fieldMappings.value[key]) {
+      const fieldLabel = commonFields.find((f) => f.value === key)?.label || key;
+      cols.push({
+        accessorKey: `_change_${key}`,
+        header: fieldLabel,
+        cell: ({ row }) => {
+          const changes = row.original._changes as Record<
+            string,
+            { old: unknown; new: unknown }
+          >;
+          if (!changes || !changes[key]) {
+            return "—";
+          }
+          const { old: oldVal, new: newVal } = changes[key];
+          return `"${oldVal ?? ""}" → "${newVal}"`;
+        },
+        size: 180,
+      });
+    }
+  }
+
+  // Add location column if coordinates are being mapped
+  if (coordinateMode.value !== "none") {
+    // Get the time that will be used for updates
+    const updateTime =
+      positionTimeMode.value === "event" && positionEventId.value
+        ? (store.state.eventMap[positionEventId.value]?.startTime ??
+          +time.scenarioTime.value)
+        : +time.scenarioTime.value;
+    const formattedTime = fmt.scenarioFormatter.format(updateTime);
+
+    cols.push({
+      accessorKey: "_change_location",
+      header: `Location (${formattedTime})`,
+      cell: ({ row }) => {
+        const changes = row.original._changes as Record<
+          string,
+          { old: unknown; new: unknown }
+        >;
+        if (!changes || !changes.location) {
+          return "—";
+        }
+        const { old: oldVal, new: newVal } = changes.location;
+        return `${oldVal || "(none)"} → ${newVal}`;
+      },
+      size: 280,
+    });
+  }
+
+  return cols;
+});
+
+// Update mode preview data - only units with changes
+const updatePreviewData = computed(() => {
+  return matchedResults.value
+    .filter((result) => Object.keys(result.changes).length > 0)
+    .map((result) => ({
+      _matched: result.matched,
+      _matchValue: result.matchValue,
+      _existingName: result.existingUnit?.name,
+      _existingSidc: result.existingUnit?.sidc,
+      _existingId: result.existingUnit?.id,
+      _changes: result.changes,
+      _hasChanges: Object.keys(result.changes).length > 0,
+      ...result.row,
+    }));
+});
+
 interface MappedUnit {
   name?: string;
   sidc?: string;
@@ -266,6 +462,16 @@ const hierarchyTableState: InitialTableState = {
 };
 
 const canImport = computed(() => {
+  if (importMode.value === "update-units") {
+    // Update mode validation
+    if (!updateMatchField.value) return false;
+    if (updateFields.value.length === 0) return false;
+    if (matchedCount.value === 0) return false;
+    if (changesCount.value === 0) return false;
+    return true;
+  }
+
+  // Add mode validation
   // Must have at least name field mapped
   if (!fieldMappings.value.name) return false;
 
@@ -274,11 +480,7 @@ const canImport = computed(() => {
   if (!hasIconOrEchelon) return false;
 
   // ID must be either autogenerated or mapped
-  if (
-    !idField.value &&
-    (importMode.value === "update-units" || idMode.value === "mapped")
-  )
-    return false;
+  if (!idField.value && idMode.value === "mapped") return false;
 
   // Must have at least one valid row
   if (validRowCount.value === 0) return false;
@@ -287,6 +489,82 @@ const canImport = computed(() => {
 });
 
 function onImport() {
+  if (importMode.value === "update-units") {
+    onUpdateImport();
+    return;
+  }
+  onAddImport();
+}
+
+function onUpdateImport() {
+  const resultsWithChanges = matchedResults.value.filter(
+    (r) => Object.keys(r.changes).length > 0,
+  );
+
+  if (resultsWithChanges.length === 0) {
+    send({
+      message: "No changes to apply.",
+      type: "warning",
+    });
+    return;
+  }
+
+  let updatedCount = 0;
+
+  // Wrap all updates in groupUpdate so they can be undone as a single action
+  store.groupUpdate(() => {
+    resultsWithChanges.forEach((result) => {
+      if (!result.existingUnit) return;
+
+      // Build update payload from selected fields (excluding location which is handled separately)
+      const updateData: Record<string, unknown> = {};
+      for (const field of updateFields.value) {
+        if (field === "location") continue; // Location is handled via state entries, not as an attribute
+        if (result.changes[field]) {
+          updateData[field] = result.changes[field].new;
+        }
+      }
+
+      // Handle position separately if coordinates are mapped
+      if (
+        result.mappedData._position &&
+        coordinateMode.value !== "none" &&
+        updateFields.value.includes("location")
+      ) {
+        // Update unit location via state
+        unitActions.addUnitStateEntry(result.existingUnit.id, {
+          id: nanoid(),
+          t:
+            positionTimeMode.value === "event" && positionEventId.value
+              ? (store.state.eventMap[positionEventId.value]?.startTime ??
+                +time.scenarioTime.value)
+              : +time.scenarioTime.value,
+          location: result.mappedData._position,
+        });
+      }
+
+      if (Object.keys(updateData).length > 0) {
+        unitActions.updateUnit(result.existingUnit.id, updateData, {
+          doUpdateUnitState: true,
+        });
+        updatedCount++;
+      }
+    });
+  });
+
+  // Refresh unit states
+  time.setCurrentTime(+time.scenarioTime.value);
+  scenario.store.state.unitStateCounter++;
+
+  send({
+    message: `Successfully updated ${updatedCount} units.`,
+    type: "success",
+  });
+
+  emit("loaded");
+}
+
+function onAddImport() {
   const hasHierarchy = !!fieldMappings.value.parentId && hierarchyData.value.length > 0;
 
   // Convert mapped data or hierarchy data to Unit objects
@@ -405,7 +683,12 @@ function onImport() {
         @click="onImport"
         class="flex-1 sm:flex-none"
       >
-        Import {{ validRowCount }} {{ validRowCount === 1 ? "unit" : "units" }}
+        <template v-if="importMode === 'update-units'">
+          Update {{ changesCount }} {{ changesCount === 1 ? "unit" : "units" }}
+        </template>
+        <template v-else>
+          Import {{ validRowCount }} {{ validRowCount === 1 ? "unit" : "units" }}
+        </template>
       </BaseButton>
     </template>
 
@@ -422,16 +705,12 @@ function onImport() {
               <RadioGroupItem id="add" value="add-units" />
             </Field>
           </FieldLabel>
-          <FieldLabel
-            for="update"
-            class="cursor-not-allowed opacity-50"
-            title="Not implemented yet"
-          >
+          <FieldLabel for="update">
             <Field orientation="horizontal">
               <FieldContent>
                 <FieldTitle>Update existing</FieldTitle>
               </FieldContent>
-              <RadioGroupItem disabled id="update" value="update-units" />
+              <RadioGroupItem id="update" value="update-units" />
             </Field>
           </FieldLabel>
         </RadioGroup>
@@ -446,6 +725,57 @@ function onImport() {
         />
       </section>
 
+      <!-- Update Mode Settings -->
+      <section v-if="importMode === 'update-units'" class="space-y-4">
+        <div class="space-y-3">
+          <Label class="text-muted-foreground text-xs font-semibold uppercase"
+            >Match By</Label
+          >
+          <RadioGroup v-model="matchMode" class="flex gap-4">
+            <div class="flex items-center space-x-2">
+              <RadioGroupItem id="match-id" value="id" />
+              <Label for="match-id" class="font-normal">Unit ID</Label>
+            </div>
+            <div class="flex items-center space-x-2">
+              <RadioGroupItem id="match-name" value="name" />
+              <Label for="match-name" class="font-normal">Unit Name</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        <Field class="gap-1.5">
+          <FieldLabel>Match Column</FieldLabel>
+          <Select v-model="updateMatchField">
+            <SelectTrigger class="w-full">
+              <SelectValue placeholder="Select column to match" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="h in headers" :key="h" :value="h">
+                {{ h }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p class="text-muted-foreground text-[0.8rem]">
+            Column containing {{ matchMode === "id" ? "unit IDs" : "unit names" }} to
+            match
+          </p>
+        </Field>
+
+        <div
+          class="bg-muted/50 flex items-center justify-between rounded-md border p-3 text-sm"
+        >
+          <span class="text-muted-foreground">Matched units:</span>
+          <span class="font-medium">{{ matchedCount }} / {{ data.length }}</span>
+        </div>
+        <div
+          v-if="changesCount > 0"
+          class="flex items-center justify-between text-sm text-green-600"
+        >
+          <span>With changes:</span>
+          <span class="font-medium">{{ changesCount }}</span>
+        </div>
+      </section>
+
       <!-- Column Mappings -->
       <section class="space-y-3">
         <div class="flex items-center justify-between">
@@ -453,9 +783,17 @@ function onImport() {
         </div>
 
         <Tabs default-value="core" class="w-full">
-          <TabsList class="grid w-full grid-cols-3">
+          <TabsList
+            :class="
+              importMode === 'update-units'
+                ? 'grid w-full grid-cols-2'
+                : 'grid w-full grid-cols-3'
+            "
+          >
             <TabsTrigger value="core">Core</TabsTrigger>
-            <TabsTrigger value="hierarchy">Hierarchy</TabsTrigger>
+            <TabsTrigger v-if="importMode !== 'update-units'" value="hierarchy"
+              >Hierarchy</TabsTrigger
+            >
             <TabsTrigger value="geo">Location</TabsTrigger>
           </TabsList>
 
@@ -485,7 +823,7 @@ function onImport() {
                   </p>
                 </Field>
 
-                <Field class="gap-1.5">
+                <Field v-if="importMode !== 'update-units'" class="gap-1.5">
                   <FieldLabel>Unit ID</FieldLabel>
                   <div class="flex flex-col gap-3">
                     <RadioGroup v-model="idMode" class="flex gap-4">
@@ -690,7 +1028,11 @@ function onImport() {
                 <RadioGroup v-model="positionTimeMode" class="flex flex-col gap-2">
                   <div class="flex items-center space-x-2">
                     <RadioGroupItem id="time-current" value="current" />
-                    <Label for="time-current">Current time</Label>
+                    <Label for="time-current"
+                      >Current time ({{
+                        fmt.scenarioFormatter.format(+time.scenarioTime.value)
+                      }})</Label
+                    >
                   </div>
                   <div class="flex items-center space-x-2">
                     <RadioGroupItem id="time-event" value="event" />
@@ -726,7 +1068,28 @@ function onImport() {
       </div>
 
       <TabsContent value="preview" class="mt-0 min-h-0 flex-1 overflow-hidden p-6">
+        <!-- Update mode preview -->
         <div
+          v-if="importMode === 'update-units'"
+          class="bg-background flex h-full flex-col overflow-hidden rounded-md border shadow-sm"
+        >
+          <div class="flex items-center justify-between border-b px-4 py-2">
+            <h4 class="text-sm font-medium">Update Preview</h4>
+            <div class="text-muted-foreground text-xs">
+              {{ matchedCount }} matched, {{ changesCount }} with changes
+            </div>
+          </div>
+          <DataGrid
+            :data="updatePreviewData"
+            :columns="updatePreviewColumns"
+            :row-count="updatePreviewData.length"
+            :row-height="40"
+            class="flex-1"
+          />
+        </div>
+        <!-- Add mode preview -->
+        <div
+          v-else
           class="bg-background flex h-full flex-col overflow-hidden rounded-md border shadow-sm"
         >
           <div class="flex items-center justify-between border-b px-4 py-2">
