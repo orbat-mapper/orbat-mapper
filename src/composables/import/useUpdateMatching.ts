@@ -130,8 +130,10 @@ export function useUpdateMatching(options: UpdateMatchingOptions) {
 
                 // If new SIDC has '00' echelon (unspecified) and old SIDC has a specific echelon
                 if (newEchelon === "00" && oldEchelon !== "00") {
-                  newValue = setCharAt(newValue, 8, oldEchelon.charAt(0));
-                  newValue = setCharAt(newValue, 9, oldEchelon.charAt(1));
+                  let currentSidc = newValue;
+                  currentSidc = setCharAt(currentSidc, 8, oldEchelon.charAt(0));
+                  currentSidc = setCharAt(currentSidc, 9, oldEchelon.charAt(1));
+                  newValue = currentSidc;
                 }
               }
             }
