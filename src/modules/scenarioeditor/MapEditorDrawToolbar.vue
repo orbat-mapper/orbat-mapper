@@ -11,6 +11,7 @@ import {
   IconVectorLine as LineStringIcon,
   IconVectorSquare as PolygonIcon,
   IconClockEditOutline as IconClockEdit,
+  IconGesture as FreehandIcon,
 } from "@iconify-prerendered/vue-mdi";
 import FloatingPanel from "@/components/FloatingPanel.vue";
 
@@ -50,8 +51,9 @@ const { addMultiple, currentDrawStyle } = storeToRefs(useMainToolbarStore());
 const [snap, toggleSnap] = useToggle(true);
 const [translate, toggleTranslate] = useToggle(false);
 const [modifyHistory, toggleModifyHistory] = useToggle(false);
+const [freehand, toggleFreehand] = useToggle(false);
 
-let layer = ref<any>();
+const layer = ref<any>();
 
 watch(
   activeLayerIdRef,
@@ -121,6 +123,7 @@ const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawi
     },
     snap,
     translate,
+    freehand,
   });
 
 const store = useMainToolbarStore();
@@ -205,6 +208,9 @@ onKeyStroke("Escape", (event) => {
     <div class="flex items-center">
       <MainToolbarButton title="Snap to grid" @click="toggleSnap()" :active="snap">
         <SnapIcon class="size-5" />
+      </MainToolbarButton>
+      <MainToolbarButton title="Freehand" @click="toggleFreehand()" :active="freehand">
+        <FreehandIcon class="size-5" />
       </MainToolbarButton>
       <MainToolbarButton title="Edit" @click="startModify()" :active="isModifying">
         <EditIcon class="size-5" />

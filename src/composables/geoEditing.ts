@@ -28,6 +28,7 @@ export interface GeoEditingOptions {
   modifyHandler?: (features: Feature[]) => void;
   snap?: MaybeRef<boolean>;
   translate?: MaybeRef<boolean>;
+  freehand?: MaybeRef<boolean>;
 }
 
 export function useEditingInteraction(
@@ -41,27 +42,59 @@ export function useEditingInteraction(
   const layerRef = ref(vectorLayer);
   const snapRef = ref(options.snap ?? true);
   const translateRef = ref(options.translate ?? false);
-  let currentDrawInteraction: Draw | null | undefined;
   const source = layerRef.value.getSource()!;
-  const { lineDraw, polygonDraw, pointDraw, circleDraw } =
-    initializeDrawInteractions(source);
+  const addMultiple = ref<MaybeRef<boolean>>(options.addMultiple ?? false);
+  const freehandRef = ref(options.freehand ?? false);
+  let currentDrawInteraction: Draw | null | undefined;
+
+  let { lineDraw, polygonDraw, pointDraw, circleDraw } = initializeDrawInteractions(
+    source,
+    !!unref(freehandRef),
+  );
 
   const currentDrawType = ref<DrawType | null>(null);
   const isModifying = ref(false);
   const isDrawing = ref(false);
 
   const emit = options.emit;
-  const addMultiple = ref<MaybeRef<boolean>>(options.addMultiple ?? false);
 
-  olMap.addInteraction(lineDraw);
-  olMap.addInteraction(polygonDraw);
-  olMap.addInteraction(pointDraw);
-  olMap.addInteraction(circleDraw);
+  function addInteractions() {
+    olMap.addInteraction(lineDraw);
+    olMap.addInteraction(polygonDraw);
+    olMap.addInteraction(pointDraw);
+    olMap.addInteraction(circleDraw);
 
-  useOlEvent(lineDraw.on("drawend", onDrawEnd));
-  useOlEvent(polygonDraw.on("drawend", onDrawEnd));
-  useOlEvent(pointDraw.on("drawend", onDrawEnd));
-  useOlEvent(circleDraw.on("drawend", onDrawEnd));
+    useOlEvent(lineDraw.on("drawend", onDrawEnd));
+    useOlEvent(polygonDraw.on("drawend", onDrawEnd));
+    useOlEvent(pointDraw.on("drawend", onDrawEnd));
+    useOlEvent(circleDraw.on("drawend", onDrawEnd));
+  }
+
+  function removeInteractions() {
+    olMap.removeInteraction(lineDraw);
+    olMap.removeInteraction(polygonDraw);
+    olMap.removeInteraction(pointDraw);
+    olMap.removeInteraction(circleDraw);
+  }
+
+  addInteractions();
+
+  watch(freehandRef, () => {
+    const active = currentDrawInteraction?.getActive();
+    removeInteractions();
+    ({ lineDraw, polygonDraw, pointDraw, circleDraw } = initializeDrawInteractions(
+      source,
+      !!unref(freehandRef),
+    ));
+    addInteractions();
+    if (active) {
+      if (currentDrawType.value === "LineString") currentDrawInteraction = lineDraw;
+      else if (currentDrawType.value === "Polygon") currentDrawInteraction = polygonDraw;
+      else if (currentDrawType.value === "Point") currentDrawInteraction = pointDraw;
+      else if (currentDrawType.value === "Circle") currentDrawInteraction = circleDraw;
+      currentDrawInteraction?.setActive(true);
+    }
+  });
 
   const select =
     options.select ??
@@ -203,11 +236,11 @@ export function useEditingInteraction(
   return { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing };
 }
 
-function initializeDrawInteractions(source: VectorSource<any>) {
-  const lineDraw = new Draw({ type: "LineString", source });
+function initializeDrawInteractions(source: VectorSource<any>, freehand = false) {
+  const lineDraw = new Draw({ type: "LineString", source, freehand });
   lineDraw.setActive(false);
 
-  const polygonDraw = new Draw({ type: "Polygon", source });
+  const polygonDraw = new Draw({ type: "Polygon", source, freehand });
   polygonDraw.setActive(false);
 
   const pointDraw = new Draw({ type: "Point", source });
