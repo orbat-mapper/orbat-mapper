@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import OLMap from "ol/Map";
 import type { Unit } from "@/types/scenarioModels";
-import { fromLonLat } from "ol/proj";
+import { fromLonLat, transformExtent } from "ol/proj";
 import type { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement";
 import type { NUnit } from "@/types/internalModels";
 import type { Position } from "geojson";
@@ -12,10 +12,12 @@ import turfEnvelope from "@turf/envelope";
 import Feature from "ol/Feature";
 import { shallowRef, ref } from "vue";
 import { useLocalStorage } from "@vueuse/core";
+import SimpleGeometry from "ol/geom/SimpleGeometry";
 
 export interface ZoomOptions {
   maxZoom?: number;
   duration?: number;
+  padding?: number[];
 }
 
 export const useGeoStore = defineStore("geo", () => {
@@ -36,8 +38,10 @@ export const useGeoStore = defineStore("geo", () => {
   function zoomToUnits(units: NUnit[], options: ZoomOptions = {}) {
     const { duration = 900, maxZoom = 15 } = options;
     const points = units
-      .filter((u) => u._state?.location)
-      .map((u) => turfPoint(u._state?.location!));
+      .map((u) => u._state?.location)
+      .filter((loc): loc is Position => !!loc)
+      .map((loc) => turfPoint(loc));
+
     if (!points.length) return;
     const c = featureCollection(points);
     zoomToGeometry(c, { duration, maxZoom });
@@ -45,13 +49,16 @@ export const useGeoStore = defineStore("geo", () => {
 
   function zoomToGeometry(geometry: AllGeoJSON, options: ZoomOptions = {}) {
     if (!olMap.value) return;
-    const { duration = 900, maxZoom = 15 } = options;
+    const { duration = 900, maxZoom = 15, padding } = options;
     const bb = new GeoJSON().readFeature(turfEnvelope(geometry), {
       featureProjection: "EPSG:3857",
       dataProjection: "EPSG:4326",
-    }) as Feature<any>;
+    }) as Feature;
     if (!bb) return;
-    olMap.value.getView().fit(bb.getGeometry(), { maxZoom, duration });
+    const geom = bb.getGeometry();
+    if (geom instanceof SimpleGeometry) {
+      olMap.value.getView().fit(geom, { maxZoom, duration, padding });
+    }
   }
 
   function zoomToLocation(location?: Position, duration = 900) {
@@ -90,6 +97,23 @@ export const useGeoStore = defineStore("geo", () => {
     olMap.value?.updateSize();
   }
 
+  function getMapViewBbox(): [number, number, number, number] | undefined {
+    if (!olMap.value) return;
+    const view = olMap.value.getView();
+    const extent = view.calculateExtent(olMap.value.getSize());
+    if (!extent) return;
+    // Convert from EPSG:3857 to EPSG:4326 (lon/lat)
+    const bbox = transformExtent(extent, "EPSG:3857", "EPSG:4326");
+    return bbox as [number, number, number, number];
+  }
+
+  function zoomToBbox(bbox: [number, number, number, number], options: ZoomOptions = {}) {
+    if (!olMap.value) return;
+    const { duration = 900, maxZoom = 15, padding } = options;
+    const extent = transformExtent(bbox, "EPSG:4326", "EPSG:3857");
+    olMap.value.getView().fit(extent, { maxZoom, duration, padding });
+  }
+
   return {
     olMap,
     zoomToUnit,
@@ -99,6 +123,8 @@ export const useGeoStore = defineStore("geo", () => {
     panToUnit,
     panToLocation,
     updateMapSize,
+    getMapViewBbox,
+    zoomToBbox,
   };
 });
 

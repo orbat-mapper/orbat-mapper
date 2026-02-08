@@ -17,6 +17,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import ScenarioSymbolColorSettings from "@/modules/scenarioeditor/ScenarioSymbolColorSettings.vue";
 import ScenarioCustomSymbolSettings from "@/modules/scenarioeditor/ScenarioCustomSymbolSettings.vue";
+import ScenarioBoundingBox from "@/modules/scenarioeditor/ScenarioBoundingBox.vue";
 
 const {
   store: { onUndoRedo, state },
@@ -87,6 +88,9 @@ function showScenarioInfo() {
     </AccordionPanel>
     <AccordionPanel label="Map settings">
       <ScenarioMapSettings />
+    </AccordionPanel>
+    <AccordionPanel label="Bounding box">
+      <ScenarioBoundingBox />
     </AccordionPanel>
     <AccordionPanel label="Symbol fill colors">
       <ScenarioSymbolColorSettings />
