@@ -4,6 +4,7 @@ import { activeScenarioKey } from "@/components/injects";
 import type { TScenario } from "@/scenariostore";
 import type {
   ColumnMapping,
+  CsvSettings,
   ExportSettings,
   GeoJsonSettings,
   OrbatMapperExportSettings,
@@ -47,6 +48,25 @@ function columnMapper(data: any[], columnMap: ColumnMapping[]): Record<string, a
 function mapField(field: any): string | number | Date {
   if (Array.isArray(field)) return JSON.stringify(field);
   return field;
+}
+
+function escapeCsvField(value: any, separator: string): string {
+  if (value == null) return "";
+  const str = String(value);
+  if (str.includes(separator) || str.includes('"') || str.includes("\n")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+export function toCsv(data: Record<string, any>[], separator: string): string {
+  if (data.length === 0) return "";
+  const headers = Object.keys(data[0]);
+  const headerLine = headers.map((h) => escapeCsvField(h, separator)).join(separator);
+  const lines = data.map((row) =>
+    headers.map((h) => escapeCsvField(row[h], separator)).join(separator),
+  );
+  return [headerLine, ...lines].join("\n");
 }
 
 export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {}) {
@@ -157,6 +177,35 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     writeFileXLSX(workbook, "scenario.xlsx");
   }
 
+  async function downloadAsCsv(opts: CsvSettings & ExportSettings) {
+    const { formatLocation } = await import("@/importexport/export/locationFormat");
+    const formatLoc = (loc: any) => formatLocation(loc, opts.locationFormat);
+    const separator = opts.separator || ",";
+
+    const unitData: any[] = [];
+    Object.keys(sideMap).forEach((sideId) =>
+      unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
+        unitData.push({
+          ...unit,
+          location: formatLoc(unit._state?.location || unit.location),
+          sideId: side.id,
+          sideName: side?.name,
+        });
+      }),
+    );
+
+    const mappedData = columnMapper(unitData, opts.columns);
+    const csvContent = toCsv(mappedData, separator);
+    const extension = separator === "\t" ? ".tsv" : ".csv";
+    const mimeType = separator === "\t" ? "text/tab-separated-values" : "text/csv";
+
+    await saveBlobToLocalFile(
+      new Blob([csvContent], { type: mimeType }),
+      `scenario${extension}`,
+      { mimeTypes: [mimeType], extensions: [extension] },
+    );
+  }
+
   async function downloadAsSpatialIllusions(opts: UnitGeneratorSettings) {
     const { rootUnit } = opts;
     const hierarchy = unitActions.expandUnitWithSymbolOptions(getUnitById(rootUnit));
@@ -222,6 +271,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     downloadAsKML,
     downloadAsKMZ,
     downloadAsXlsx,
+    downloadAsCsv,
     downloadAsMilx,
     downloadAsSpatialIllusions,
     downloadAsOrbatMapper,

@@ -9,6 +9,7 @@ export type ExportFormat =
   | "kmz"
   | "msdl"
   | "xlsx"
+  | "csv"
   | "milx"
   | "unitgenerator";
 
@@ -46,6 +47,14 @@ export interface XlsxSettings extends BaseExportSettings {
   oneSheetPerSide: boolean;
   columns: ColumnMapping[];
   locationFormat: LocationExportFormat;
+}
+
+export type CsvSeparator = "," | "\t" | ";";
+
+export interface CsvSettings extends BaseExportSettings {
+  columns: ColumnMapping[];
+  locationFormat: LocationExportFormat;
+  separator: CsvSeparator;
 }
 
 export interface UnitGeneratorSettings extends BaseExportSettings {
@@ -92,6 +101,7 @@ export interface KmlKmzExportSettings {
 export interface ExportSettings
   extends
     XlsxSettings,
+    CsvSettings,
     UnitGeneratorSettings,
     GeoJsonSettings,
     OrbatMapperExportSettings,

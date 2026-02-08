@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TabsTrigger = exports.TabsList = exports.TabsContent = exports.Tabs = void 0;
+var Tabs_vue_1 = require("./Tabs.vue");
+Object.defineProperty(exports, "Tabs", { enumerable: true, get: function () { return Tabs_vue_1.default; } });
+var TabsContent_vue_1 = require("./TabsContent.vue");
+Object.defineProperty(exports, "TabsContent", { enumerable: true, get: function () { return TabsContent_vue_1.default; } });
+var TabsList_vue_1 = require("./TabsList.vue");
+Object.defineProperty(exports, "TabsList", { enumerable: true, get: function () { return TabsList_vue_1.default; } });
+var TabsTrigger_vue_1 = require("./TabsTrigger.vue");
+Object.defineProperty(exports, "TabsTrigger", { enumerable: true, get: function () { return TabsTrigger_vue_1.default; } });

@@ -9,6 +9,7 @@ import { useNotifications } from "@/composables/notifications";
 import NProgress from "nprogress";
 import { useLocalStorage } from "@vueuse/core";
 import ExportSettingsXlsx from "@/components/ExportSettingsXlsx.vue";
+import ExportSettingsCsv from "@/components/ExportSettingsCsv.vue";
 import ExportSettingsSpatialIllusions from "@/components/ExportSettingsSpatialIllusions.vue";
 import ExportSettingsGeoJson from "@/components/ExportSettingsGeoJson.vue";
 import DocLink from "@/components/DocLink.vue";
@@ -27,6 +28,7 @@ const {
   downloadAsKML,
   downloadAsKMZ,
   downloadAsXlsx,
+  downloadAsCsv,
   downloadAsMilx,
   downloadAsSpatialIllusions,
   downloadAsOrbatMapper,
@@ -38,6 +40,7 @@ const formatItems: SelectItem<ExportFormat>[] = [
   { label: "KML", value: "kml" },
   { label: "KMZ", value: "kmz" },
   { label: "XLSX", value: "xlsx" },
+  { label: "CSV/TSV", value: "csv" },
   { label: "MilX", value: "milx" },
   { label: "Spatial Illusions ORBAT builder", value: "unitgenerator" },
 ];
@@ -60,6 +63,7 @@ const form = useLocalStorage(
     oneSheetPerSide: true,
     columns: [],
     locationFormat: "json",
+    separator: ",",
     oneFolderPerSide: true,
     folderMode: "side",
     customColors: true,
@@ -100,6 +104,8 @@ async function onExport(e: Event) {
     await downloadAsKMZ(form.value);
   } else if (format === "xlsx") {
     await downloadAsXlsx(form.value);
+  } else if (format === "csv") {
+    await downloadAsCsv(form.value);
   } else if (format === "milx") {
     await downloadAsMilx(form.value);
   } else if (format === "unitgenerator") {
@@ -151,6 +157,11 @@ function onCancel() {
         </p>
       </div>
       <ExportSettingsXlsx v-if="format === 'xlsx'" :format="format" v-model="form" />
+      <ExportSettingsCsv
+        v-else-if="format === 'csv'"
+        :format="format"
+        v-model="form"
+      />
       <ExportSettingsSpatialIllusions
         v-else-if="format === 'unitgenerator'"
         :format="format"
