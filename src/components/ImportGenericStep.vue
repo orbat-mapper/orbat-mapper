@@ -1016,6 +1016,7 @@ function onAddImport() {
                       <SelectItem value="LonLat">Lon, Lat</SelectItem>
                       <SelectItem value="MGRS">MGRS</SelectItem>
                       <SelectItem value="DMS">DMS</SelectItem>
+                      <SelectItem value="JSON">JSON array [lon, lat]</SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>

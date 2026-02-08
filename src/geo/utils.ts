@@ -242,12 +242,34 @@ export function parseLatLonPair(
 }
 
 /**
+ * Parse JSON array string [lon, lat] to position.
+ */
+export function parseJSON(value: string): Position | null {
+  if (!value || typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) return null;
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (Array.isArray(parsed) && parsed.length >= 2) {
+      const [lon, lat] = parsed;
+      if (typeof lon === "number" && typeof lat === "number") {
+        return truncatePosition([lon, lat]);
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+/**
  * Parse a combined coordinate string in various formats.
- * Supports: MGRS, decimal degrees (lat,lon or lon,lat), DMS.
+ * Supports: MGRS, decimal degrees (lat,lon or lon,lat), DMS, JSON array.
  */
 export function parseCoordinateString(
   value: string,
-  format: "MGRS" | "LatLon" | "LonLat" | "DMS",
+  format: "MGRS" | "LatLon" | "LonLat" | "DMS" | "JSON",
 ): Position | null {
   if (!value || typeof value !== "string") return null;
   const trimmed = value.trim();
@@ -259,6 +281,10 @@ export function parseCoordinateString(
 
   if (format === "DMS") {
     return parseDMS(trimmed);
+  }
+
+  if (format === "JSON") {
+    return parseJSON(trimmed);
   }
 
   // Decimal degrees - split on comma, semicolon, or whitespace
@@ -278,7 +304,7 @@ export function parseCoordinateString(
   }
 }
 
-export type CombinedCoordinateFormat = "MGRS" | "LatLon" | "LonLat" | "DMS";
+export type CombinedCoordinateFormat = "MGRS" | "LatLon" | "LonLat" | "DMS" | "JSON";
 
 export function detectCoordinateFormat(
   samples: string[],
@@ -289,9 +315,13 @@ export function detectCoordinateFormat(
   let dmsCount = 0;
   let latLonCount = 0;
   let lonLatCount = 0;
+  let jsonCount = 0;
 
   for (const sample of samples) {
     if (!sample || typeof sample !== "string" || sample.trim().length === 0) continue;
+
+    // Check JSON
+    if (parseJSON(sample)) jsonCount++;
 
     // Check MGRS
     if (parseMGRS(sample)) mgrsCount++;
@@ -324,6 +354,7 @@ export function detectCoordinateFormat(
   }
 
   // Decision logic
+  if (jsonCount > samples.length / 2) return "JSON";
   if (mgrsCount > samples.length / 2) return "MGRS";
   if (dmsCount > samples.length / 2) return "DMS";
   if (lonLatCount > latLonCount) return "LonLat";
