@@ -16,6 +16,7 @@ import type {
   UnitOfMeasure,
   UnitStatus,
 } from "@/types/scenarioModels";
+import type { BBox } from "geojson";
 import dayjs from "dayjs";
 import { nanoid } from "@/utils";
 import { walkSide } from "@/stores/scenarioStore";
@@ -82,6 +83,7 @@ export interface ScenarioState {
   mapSettings: MapSettings;
   symbolFillColorMap: Record<string, NSymbolFillColor>;
   customSymbolMap: Record<string, CustomSymbol>;
+  boundingBox: BBox | null;
 }
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
@@ -491,6 +493,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     mapSettings,
     symbolFillColorMap,
     customSymbolMap,
+    boundingBox: scenario.settings?.boundingBox ?? null,
   };
 }
 

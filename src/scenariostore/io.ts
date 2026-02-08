@@ -355,6 +355,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
         map: state.mapSettings,
         symbolFillColors: getSymbolFillColors(state),
         customSymbols: getCustomSymbols(state),
+        boundingBox: state.boundingBox ?? undefined,
       },
     };
   }

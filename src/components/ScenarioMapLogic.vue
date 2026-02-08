@@ -4,7 +4,8 @@ import { computed, onUnmounted, shallowRef, watch } from "vue";
 import Select from "ol/interaction/Select";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { useUiStore } from "@/stores/uiStore";
+import { useUiStore, useWidthStore } from "@/stores/uiStore";
+import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 import {
   useGeoStore,
   useMeasurementsStore,
@@ -58,6 +59,30 @@ const {
 const mapRef = shallowRef<OLMap>();
 
 const uiStore = useUiStore();
+const widthStore = useWidthStore();
+const { orbatPanelWidth, detailsWidth } = storeToRefs(widthStore);
+const { showLeftPanel } = storeToRefs(uiStore);
+
+const {
+  selectedFeatureIds,
+  selectedUnitIds,
+  activeScenarioEventId,
+  activeMapLayerId,
+  showScenarioInfo,
+} = useSelectedItems();
+
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smallerOrEqual("md");
+
+const showDetailsPanel = computed(() => {
+  return Boolean(
+    selectedFeatureIds.value.size ||
+    selectedUnitIds.value.size ||
+    activeScenarioEventId.value ||
+    activeMapLayerId.value ||
+    showScenarioInfo.value,
+  );
+});
 const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
 const unitSettingsStore = useUnitSettingsStore();
 const mapSettingsStore = useMapSettingsStore();
@@ -118,8 +143,6 @@ const {
   enable: unitSelectEnabled,
 });
 
-const { selectedFeatureIds } = useSelectedItems();
-
 // Order of select interactions is important. The interaction that is added last
 // will be the one that receives the select event first and can stop the propagation.
 olMap.addInteraction(unitSelectInteraction);
@@ -162,9 +185,22 @@ loadMapLayers();
 initializeFeatureLayersFromStore();
 //loadScenarioLayers();
 
-const extent = unitLayer.getSource()?.getExtent();
-if (extent && !unitLayer.getSource()?.isEmpty())
-  olMap.getView().fit(extent, { padding: [100, 100, 150, 100], maxZoom: 16 });
+// Set initial view: prioritize bounding box, then fall back to unit extent
+if (state.boundingBox && state.boundingBox.length === 4) {
+  const leftPadding = !isMobile.value && showLeftPanel.value ? orbatPanelWidth.value : 0;
+  const rightPadding = !isMobile.value && showDetailsPanel.value ? detailsWidth.value : 0;
+  const padding = [20, rightPadding + 20, 20, leftPadding + 20];
+
+  geoStore.zoomToBbox(state.boundingBox as [number, number, number, number], {
+    duration: 0,
+    maxZoom: 16,
+    padding,
+  });
+} else {
+  const extent = unitLayer.getSource()?.getExtent();
+  if (extent && !unitLayer.getSource()?.isEmpty())
+    olMap.getView().fit(extent, { padding: [100, 100, 150, 100], maxZoom: 16 });
+}
 
 function toggleMoveUnitInteraction(event: ObjectEvent) {
   const isUnitLayerVisible = !event.oldValue;
