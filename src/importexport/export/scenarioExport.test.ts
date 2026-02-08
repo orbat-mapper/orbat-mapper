@@ -15,8 +15,8 @@ describe("toCsv", () => {
     const lines = result.split("\n");
     expect(lines).toHaveLength(3);
     expect(lines[0]).toBe("name,sidc,location");
-    expect(lines[1]).toBe("Unit A,10031000001211000000,\"12.5, 45.3\"");
-    expect(lines[2]).toBe("Unit B,10031000001211000001,\"13.0, 46.0\"");
+    expect(lines[1]).toBe('Unit A,10031000001211000000,"12.5, 45.3"');
+    expect(lines[2]).toBe('Unit B,10031000001211000001,"13.0, 46.0"');
   });
 
   it("should generate TSV with tab separator", () => {
