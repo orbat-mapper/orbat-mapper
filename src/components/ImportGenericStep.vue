@@ -218,6 +218,12 @@ const updateFields = computed(() => {
       fields.push(key);
     }
   }
+
+  // Also update SIDC if icon is mapped (even if SIDC is not directly mapped)
+  if (fieldMappings.value["icon"] && !fields.includes("sidc")) {
+    fields.push("sidc");
+  }
+
   // Add location if coordinates are being mapped
   if (coordinateMode.value !== "none") {
     fields.push("location");
@@ -307,7 +313,7 @@ const previewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() => {
           h(UnitSymbol, {
             sidc,
             size: 24,
-            class: "shrink-0",
+            class: "shrink-0 max-h-8 w-auto",
             options: {
               outlineWidth: 6,
               outlineColor: "white",
@@ -377,7 +383,7 @@ const updatePreviewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() =
   // Add a column for each field being updated
   const updatableKeys = ["name", "shortName", "sidc", "description", "externalUrl"];
   for (const key of updatableKeys) {
-    if (fieldMappings.value[key]) {
+    if (fieldMappings.value[key] || (key === "sidc" && fieldMappings.value["icon"])) {
       const fieldLabel = commonFields.find((f) => f.value === key)?.label || key;
       cols.push({
         accessorKey: `_change_${key}`,
@@ -391,6 +397,23 @@ const updatePreviewColumns = computed<ColumnDef<Record<string, unknown>>[]>(() =
             return "—";
           }
           const { old: oldVal, new: newVal } = changes[key];
+
+          if (key === "sidc") {
+            return h("div", { class: "flex items-center gap-2" }, [
+              h(UnitSymbol, {
+                sidc: oldVal as string,
+                size: 24,
+                class: "shrink-0 max-h-8 w-auto",
+              }),
+              h("span", { class: "text-muted-foreground" }, "→"),
+              h(UnitSymbol, {
+                sidc: newVal as string,
+                size: 24,
+                class: "shrink-0 max-h-8 w-auto",
+              }),
+            ]);
+          }
+
           return `"${oldVal ?? ""}" → "${newVal}"`;
         },
         size: 180,

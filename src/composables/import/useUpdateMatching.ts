@@ -4,6 +4,8 @@ import type { Position } from "geojson";
 import type { UnitSymbolOptions } from "@/types/scenarioModels";
 import { formatPosition } from "@/geo/utils";
 
+import { setCharAt } from "@/components/helpers";
+
 export type MatchMode = "id" | "name";
 
 export interface MatchResult {
@@ -110,7 +112,30 @@ export function useUpdateMatching(options: UpdateMatchingOptions) {
               };
             }
           } else {
-            const newValue = mapped[field];
+            let newValue = mapped[field];
+
+            // Special handling for SIDC to preserve hierarchy/echelon if not specified in new value
+            if (field === "sidc" && typeof newValue === "string") {
+              const oldSidc = existingUnit.sidc;
+              // Check if we have a valid 20-char SIDC to work with
+              if (
+                newValue.length === 20 &&
+                oldSidc &&
+                oldSidc.length === 20 &&
+                /^\d+$/.test(newValue) &&
+                /^\d+$/.test(oldSidc)
+              ) {
+                const newEchelon = newValue.substring(8, 10);
+                const oldEchelon = oldSidc.substring(8, 10);
+
+                // If new SIDC has '00' echelon (unspecified) and old SIDC has a specific echelon
+                if (newEchelon === "00" && oldEchelon !== "00") {
+                  newValue = setCharAt(newValue, 8, oldEchelon.charAt(0));
+                  newValue = setCharAt(newValue, 9, oldEchelon.charAt(1));
+                }
+              }
+            }
+
             if (newValue !== undefined && newValue !== null) {
               const oldValue = existingUnit[field as keyof typeof existingUnit];
               if (oldValue !== newValue) {
