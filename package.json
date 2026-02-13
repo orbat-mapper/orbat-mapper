@@ -83,7 +83,7 @@
     "immer": "^10.2.0",
     "klona": "^2.0.6",
     "lucide-vue-next": "^0.563.0",
-    "markdown-it": "^14.1.0",
+    "markdown-it": "^14.1.1",
     "markdown-it-container": "^4.0.0",
     "mgrs": "^2.1.0",
     "milsymbol": "^3.0.3",
