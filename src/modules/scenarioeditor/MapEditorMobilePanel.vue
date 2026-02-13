@@ -72,7 +72,7 @@ watch(isSwipingDown, (swiping) => {
 </script>
 
 <template>
-  <main class="overflow-auto" :class="[showBottomPanel ? 'h-1/2' : 'h-12']">
+  <main class="overflow-auto map-mobile-panel" :class="[showBottomPanel ? 'h-1/2' : 'h-12']">
     <div v-show="!showBottomPanel" class="flex h-full items-center" ref="swipeUpEl">
       <div
         class="relative flex flex-1 items-center justify-center"

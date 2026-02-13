@@ -171,7 +171,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
     mapLayersGroup.getLayers().push(newLayer);
     newLayer.getSource()?.once("featuresloadend", () => {
       console.log("Loaded KML layer");
-      const layerExtent = fixExtent(source.getExtent());
+      const layerExtent = fixExtent(source.getExtent() ?? undefined);
       console.log("layerExtent", layerExtent);
       layerExtent && !isEmpty(layerExtent) && olMap.getView().fit(layerExtent);
     });
