@@ -21,7 +21,7 @@ import { useBrowserScenarios } from "@/composables/browserScenarios";
 import { PanelLeftOpenIcon as ShowPanelIcon } from "lucide-vue-next";
 import { injectStrict } from "@/utils";
 import MapTimeController from "@/components/MapTimeController.vue";
-import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
+import ModernMapEditorToolbar from "@/components/ModernMapEditorToolbar.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import OLMap from "ol/Map";
@@ -291,12 +291,8 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
         v-if="mapRef && ui.showToolbar"
         class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
       >
-        <MapEditorMainToolbar
+        <ModernMapEditorToolbar
           @open-time-modal="openTimeDialog()"
-          @inc-day="onIncDay()"
-          @dec-day="onDecDay()"
-          @next-event="goToNextScenarioEvent()"
-          @prev-event="goToPrevScenarioEvent()"
           @show-settings="emit('show-settings')"
         />
         <MapEditorMeasurementToolbar

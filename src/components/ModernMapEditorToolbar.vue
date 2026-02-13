@@ -53,14 +53,24 @@
             <div class="border-border h-5 border-l" />
 
             <!-- Symbol Selection -->
-            <EchelonPickerPopover
-              :symbol-options="symbolOptions"
-              :select-echelon="selectEchelon"
-            />
-            <SymbolPickerPopover
-              :symbol-options="symbolOptions"
-              :add-unit="addUnit"
-            />
+            <div class="flex items-center gap-1">
+              <EchelonPickerPopover
+                :symbol-options="symbolOptions"
+                :select-echelon="selectEchelon"
+              />
+              <PanelSymbolButton
+                :size="22"
+                :sidc="computedSidc"
+                class="group relative"
+                :symbol-options="symbolOptions"
+                @click="addUnit(activeSidc)"
+                title="Add unit"
+                :disabled="!activeParentId || unitActions.isUnitLocked(activeParentId)"
+              >
+                <AddSymbolIcon class="size-5" />
+              </PanelSymbolButton>
+              <SymbolPickerPopover :symbol-options="symbolOptions" :add-unit="addUnit" />
+            </div>
 
             <div class="border-border h-5 border-l" />
 
@@ -78,6 +88,18 @@
               :disabled="!canRedo"
             >
               <IconRedoVariant class="size-5" />
+            </MainToolbarButton>
+
+            <div class="border-border h-5 border-l" />
+
+            <!-- Time Controls -->
+            <MainToolbarButton
+              title="Calendar"
+              @click="emit('open-time-modal')"
+            >
+              <svg class="size-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-1V1h-2v3H9V1H7v3H6zm0 6h12V4H6v4z" />
+              </svg>
             </MainToolbarButton>
 
             <div class="border-border h-5 border-l" />
@@ -200,6 +222,21 @@
         </div>
 
         <div>
+          <h3 class="text-sm font-semibold mb-2">Timeline</h3>
+          <div class="grid grid-cols-1 gap-2">
+            <button
+              @click="emit('open-time-modal'); mobileMenuOpen = false"
+              class="bg-muted p-3 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <svg class="size-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-1V1h-2v3H9V1H7v3H6zm0 6h12V4H6v4z" />
+              </svg>
+              <span class="text-sm">Select Time</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
           <h3 class="text-sm font-semibold mb-2">Settings</h3>
           <button
             @click="emit('show-settings'); mobileMenuOpen = false"
@@ -216,29 +253,54 @@
 
 <script setup lang="ts">
 import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconCogOutline as SettingsIcon,
+  IconCursorDefaultOutline as SelectIcon,
+  IconCursorMove as MoveIcon,
+  IconLockOpenVariantOutline,
+  IconLockOutline,
+  IconMapMarkerPath,
+  IconPencil as DrawIcon,
+  IconPlus as AddSymbolIcon,
+  IconRedoVariant as RedoIcon,
+  IconRulerSquareCompass as MeasurementIcon,
+  IconSkipNext,
+  IconSkipPrevious,
+  IconUndoVariant as UndoIcon,
   IconCursorDefaultOutline,
   IconCursorMove,
   IconRulerSquareCompass,
   IconPencil,
-  IconMapMarkerPath,
+  IconCogOutline,
   IconUndoVariant,
   IconRedoVariant,
-  IconCogOutline,
 } from "@iconify-prerendered/vue-mdi";
+import { CalendarIcon } from "@heroicons/vue/24/solid";
+
 import FloatingWindow from "@/components/FloatingWindow.vue";
 import BottomSheetMenu from "@/components/BottomSheetMenu.vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
+import PanelSymbolButton from "@/components/PanelSymbolButton.vue";
 import SymbolPickerPopover from "@/modules/scenarioeditor/SymbolPickerPopover.vue";
 import EchelonPickerPopover from "@/modules/scenarioeditor/EchelonPickerPopover.vue";
 
-import { ref, computed, onMounted, inject } from "vue";
-import { useBreakpoints, breakpointsTailwind, useToggle } from "@vueuse/core";
+import { ref, computed, onMounted, type Ref } from "vue";
+import { useBreakpoints, breakpointsTailwind, useToggle, useEventBus } from "@vueuse/core";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useFloatingWindows } from "@/composables/useFloatingWindows";
 import { useKeyboardShortcuts, DEFAULT_SHORTCUTS } from "@/composables/useKeyboardShortcuts";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, activeMapKey } from "@/components/injects";
+import { storeToRefs } from "pinia";
+import { useGetMapLocation } from "@/composables/geoMapLocation";
+import { useMapSelectStore } from "@/stores/mapSelectStore";
+import { useToolbarUnitSymbolData } from "@/composables/mainToolbarData";
+import { useActiveUnitStore } from "@/stores/dragStore";
+import { orbatUnitClick } from "@/components/eventKeys";
+import { Sidc, SID_INDEX } from "@/symbology/sidc";
+import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 
 const emit = defineEmits<{
   (e: "open-time-modal"): void;
@@ -251,11 +313,23 @@ const mobileMenuOpen = ref(false);
 
 const store = useMainToolbarStore();
 const unitSettings = useUnitSettingsStore();
-const { moveUnitEnabled } = unitSettings;
+const { moveUnitEnabled } = storeToRefs(unitSettings);
 
 const {
-  store: { undo: undoAction, redo: redoAction, canRedo, canUndo },
+  store: { undo: undoAction, redo: redoAction, canRedo, canUndo, groupUpdate, state },
+  unitActions,
+  geo: { addUnitPosition },
+  helpers: { getSideById },
 } = injectStrict(activeScenarioKey);
+
+const mapRef = injectStrict(activeMapKey);
+const selectStore = useMapSelectStore();
+const bus = useEventBus(orbatUnitClick);
+const { activeUnitId, resetActiveParent, activeParent, activeParentId } = useActiveUnitStore();
+const { currentSid, currentEchelon, activeSidc } = useToolbarUnitSymbolData();
+
+const { addMultiple } = storeToRefs(store);
+const [, toggleMoveUnit] = useToggle(moveUnitEnabled.value);
 
 const {
   windows,
@@ -266,18 +340,49 @@ const {
 } = useFloatingWindows();
 
 const { addShortcut } = useKeyboardShortcuts();
-const [, toggleMoveUnit] = useToggle(moveUnitEnabled);
 
-const symbolOptions = computed(() => ({}));
+const {
+  start: startGetLocation,
+  isActive: isGetLocationActive,
+  cancel: cancelGetLocation,
+  onGetLocation,
+  onCancel,
+  onStart,
+} = useGetMapLocation(mapRef.value, {
+  cancelOnClickOutside: false,
+  stopPropagationOnClickOutside: false,
+});
+
+const computedSidc = computed(() => {
+  const computedActiveSidc = activeSidc.value.startsWith(CUSTOM_SYMBOL_PREFIX)
+    ? "10031000141211000000"
+    : activeSidc.value;
+  const parsedSidc = new Sidc(computedActiveSidc);
+  parsedSidc.standardIdentity = currentSid.value;
+  parsedSidc.emt = "00";
+  parsedSidc.hqtfd = "0";
+  return parsedSidc.toString();
+});
+
+const symbolOptions = computed(() =>
+  activeParent.value
+    ? {
+        ...unitActions.getCombinedSymbolOptions(activeParent.value, true),
+        outlineWidth: 5,
+      }
+    : {},
+);
 
 onMounted(() => {
+  if (!activeParentId.value) resetActiveParent();
+
   // Criar janela principal se for desktop
   if (!isMobile.value && windows.value.length === 0) {
     createWindow("main-toolbar", "Map Editor Toolbar", {
       x: 50,
       y: 50,
-      width: 900,
-      height: 100,
+      width: 1000,
+      height: 120,
     });
   }
 
@@ -303,6 +408,61 @@ onMounted(() => {
   });
 });
 
+onCancel(() => {
+  selectStore.hoverEnabled = true;
+});
+
+onStart(() => {
+  selectStore.hoverEnabled = false;
+  store.clearToolbar();
+});
+
+onGetLocation((location) => {
+  selectStore.hoverEnabled = true;
+  groupUpdate(() => {
+    if (!activeParentId.value || unitActions.isUnitLocked(activeParentId.value)) return;
+    const name = `${(activeParent.value?.subUnits?.length ?? 0) + 1}`;
+    const sidc = new Sidc(activeSidc.value!);
+    sidc.emt = currentEchelon.value;
+    sidc.standardIdentity = currentSid.value;
+    const unitId = unitActions.createSubordinateUnit(activeParentId.value, {
+      sidc: sidc.toString(),
+      name,
+    });
+    unitId && addUnitPosition(unitId, location);
+  });
+  if (addMultiple.value && activeSidc.value) {
+    addUnit(activeSidc.value);
+  }
+});
+
+bus.on((unit) => {
+  if (isGetLocationActive.value) {
+    if (!(addMultiple.value && activeSidc.value)) {
+      cancelGetLocation();
+    }
+    const name = `${(activeParent.value?.subUnits?.length ?? 0) + 1}`;
+    const sidc = new Sidc(activeSidc.value!);
+    sidc.emt = currentEchelon.value;
+    sidc.standardIdentity = unit.sidc[SID_INDEX];
+    const unitId = unitActions.createSubordinateUnit(unit.id, {
+      sidc: sidc.toString(),
+      name,
+    });
+    if (unitId && unit.location) addUnitPosition(unitId, unit.location);
+  }
+});
+
+function addUnit(sidc: string, closePopover?: (ref?: Ref | HTMLElement) => void) {
+  activeSidc.value = sidc;
+  closePopover && closePopover();
+  startGetLocation();
+}
+
+function selectEchelon(echelon: string) {
+  currentEchelon.value = echelon;
+}
+
 function handleSelectMode() {
   store.clearToolbar();
 }
@@ -318,13 +478,5 @@ function undo() {
 
 function redo() {
   redoAction();
-}
-
-function selectEchelon(echelon: string) {
-  // Handle echelon selection
-}
-
-function addUnit(sidc: string) {
-  // Handle unit addition
 }
 </script>
