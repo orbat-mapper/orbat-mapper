@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, toRaw } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useScenarioShare } from "@/composables/scenarioShare";
-import { useIndexedDb } from "@/scenariostore/localdb";
+import { type ScenarioMetadata, useIndexedDb } from "@/scenariostore/localdb";
 import { LANDING_PAGE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { nanoid } from "@/utils";
 import type { EncryptedScenario, Scenario, Unit } from "@/types/scenarioModels";
@@ -40,6 +40,7 @@ const hasConflict = ref(false);
 const isWaitingForDownload = ref(false);
 const showDecryptModal = ref(false);
 const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
+const existingScenario = ref<ScenarioMetadata | null>(null);
 
 onMounted(async () => {
   const dataParam = route.query.data as string;
@@ -101,6 +102,7 @@ async function processLoadedScenario(scenario: Scenario) {
     const { getScenarioInfo } = await useIndexedDb();
     const existingInfo = await getScenarioInfo(scenarioData.value.id);
     hasConflict.value = !!existingInfo;
+    existingScenario.value = existingInfo || null;
   }
 }
 
@@ -298,9 +300,25 @@ async function handleCreateCopy() {
             <Alert v-if="hasConflict">
               <AlertTriangleIcon class="size-4" />
               <AlertTitle>Scenario Already Exists</AlertTitle>
-              <AlertDescription>
-                A scenario with the same ID is already stored in your browser. You can
-                overwrite it or create a copy.
+              <AlertDescription class="space-y-2">
+                <p>
+                  A scenario with the same ID is already stored in your browser. You can
+                  overwrite it or create a copy.
+                </p>
+                <div
+                  v-if="existingScenario"
+                  class="bg-muted/50 mt-2 space-y-1 rounded-md p-3 text-xs"
+                >
+                  <p class="font-bold">Existing scenario:</p>
+                  <p class="font-medium">{{ existingScenario.name }}</p>
+                  <p v-if="existingScenario.description" class="line-clamp-2">
+                    {{ existingScenario.description }}
+                  </p>
+                  <div class="text-muted-foreground mt-1 flex gap-4">
+                    <span>Created: {{ formatDate(existingScenario.created) }}</span>
+                    <span>Modified: {{ formatDate(existingScenario.modified) }}</span>
+                  </div>
+                </div>
               </AlertDescription>
             </Alert>
 
