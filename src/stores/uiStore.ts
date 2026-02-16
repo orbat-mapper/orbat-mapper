@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 import { TAB_ORBAT } from "@/types/constants";
 
-export let prevToeIncludeSubordinates: boolean | undefined = undefined;
+export const prevToeIncludeSubordinates: boolean | undefined = undefined;
 
 export const useUiStore = defineStore("ui", {
   state: () => ({
@@ -15,6 +15,7 @@ export const useUiStore = defineStore("ui", {
     debugMode: useLocalStorage("debugMode", false),
     showFps: useLocalStorage("showFps", false),
     mobilePanelOpen: false,
+    mobilePanelHeight: useLocalStorage("mobilePanelHeight", 360),
     layersPanelActive: false,
     activeTabIndex: TAB_ORBAT,
     showSearch: false,

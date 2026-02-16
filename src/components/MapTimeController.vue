@@ -42,7 +42,7 @@ const uiStore = useUiStore();
 </script>
 
 <template>
-  <div class="flex items-center space-x-2">
+  <div class="flex flex-col items-center">
     <p
       v-if="!hideTime"
       class="pointer-events-none font-mono text-xl font-bold sm:text-2xl"

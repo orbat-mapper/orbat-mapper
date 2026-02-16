@@ -8,7 +8,7 @@ import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import CloseButton from "@/components/CloseButton.vue";
 import IconButton from "@/components/IconButton.vue";
 import { computed, defineAsyncComponent, ref, watch } from "vue";
-import { useSwipe, useToggle } from "@vueuse/core";
+import { useSwipe, useThrottleFn, useToggle, useWindowSize } from "@vueuse/core";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { storeToRefs } from "pinia";
@@ -19,6 +19,7 @@ import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
 import ScrollTabs from "@/components/ScrollTabs.vue";
+import { GripHorizontal } from "lucide-vue-next";
 
 const ScenarioFiltersTabPanel = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
@@ -41,11 +42,15 @@ const {
   activeMapLayerId,
   activeDetailsPanel,
 } = useSelectedItems();
-const { mobilePanelOpen: showBottomPanel } = storeToRefs(useUiStore());
+const uiStore = useUiStore();
+const {
+  mobilePanelOpen: showBottomPanel,
+  mobilePanelHeight,
+  activeTabIndex,
+} = storeToRefs(uiStore);
 
 const toggleBottomPanel = useToggle(showBottomPanel);
-
-const { activeTabIndex } = storeToRefs(useUiStore());
+const { height: windowHeight } = useWindowSize();
 
 const activeTabIndexString = computed({
   get: () => activeTabIndex.value.toString(),
@@ -69,10 +74,68 @@ watch(isSwipingDown, (swiping) => {
     showBottomPanel.value = false;
   }
 });
+
+const MIN_PANEL_HEIGHT = 120;
+const MAX_PANEL_HEIGHT_PADDING = 120;
+
+const maxPanelHeight = computed(() =>
+  Math.max(MIN_PANEL_HEIGHT, windowHeight.value - MAX_PANEL_HEIGHT_PADDING),
+);
+
+const clampPanelHeight = (value: number) =>
+  Math.round(Math.min(maxPanelHeight.value, Math.max(MIN_PANEL_HEIGHT, value)));
+
+watch(
+  maxPanelHeight,
+  () => {
+    mobilePanelHeight.value = clampPanelHeight(mobilePanelHeight.value);
+  },
+  { immediate: true },
+);
+
+const panelStyle = computed(() =>
+  showBottomPanel.value
+    ? {
+        height: `${clampPanelHeight(mobilePanelHeight.value)}px`,
+      }
+    : undefined,
+);
+
+const resizeHandleRef = ref<HTMLButtonElement | null>(null);
+const isResizing = ref(false);
+let startY = 0;
+let startHeight = 0;
+
+function onResizePointerDown(event: PointerEvent) {
+  startY = event.clientY;
+  startHeight = clampPanelHeight(mobilePanelHeight.value);
+  resizeHandleRef.value?.setPointerCapture(event.pointerId);
+  isResizing.value = true;
+}
+
+function onResizePointerUp(event: PointerEvent) {
+  if (!isResizing.value) return;
+  if (resizeHandleRef.value?.hasPointerCapture(event.pointerId)) {
+    resizeHandleRef.value.releasePointerCapture(event.pointerId);
+  }
+  isResizing.value = false;
+}
+
+function onResizePointerMove(event: PointerEvent) {
+  if (!isResizing.value) return;
+  const deltaY = startY - event.clientY;
+  mobilePanelHeight.value = clampPanelHeight(startHeight + deltaY);
+}
+
+const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
 </script>
 
 <template>
-  <main class="overflow-auto" :class="[showBottomPanel ? 'h-1/2' : 'h-12']">
+  <main
+    class="bg-background overflow-hidden"
+    :class="[showBottomPanel ? '' : 'h-12']"
+    :style="panelStyle"
+  >
     <div v-show="!showBottomPanel" class="flex h-full items-center" ref="swipeUpEl">
       <div
         class="relative flex flex-1 items-center justify-center"
@@ -94,6 +157,25 @@ watch(isSwipingDown, (swiping) => {
         @prev-event="emit('prev-event')"
       />
     </div>
+    <button
+      v-show="showBottomPanel"
+      ref="resizeHandleRef"
+      type="button"
+      role="separator"
+      aria-label="Resize panel"
+      aria-orientation="horizontal"
+      class="active:bg-muted/40 flex h-10 w-full cursor-row-resize touch-none items-center justify-center"
+      @pointerdown="onResizePointerDown"
+      @pointerup="onResizePointerUp"
+      @pointercancel="onResizePointerUp"
+      @pointermove="throttledResizePointerMove"
+    >
+      <span
+        class="bg-muted text-foreground ring-border/70 inline-flex items-center justify-center rounded-full px-3 py-1 shadow-sm ring-1"
+      >
+        <GripHorizontal class="h-5 w-5" />
+      </span>
+    </button>
     <ScrollTabs
       v-model="activeTabIndexString"
       :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Filter', 'Details']"
