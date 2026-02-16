@@ -45,6 +45,7 @@ const {
   activeUnitId,
   activeScenarioEventId,
   activeMapLayerId,
+  orbatRevealUnitId,
 } = useSelectedItems();
 const { onUnitAction } = useUnitActions();
 const toeActions = useToeActions();
@@ -56,13 +57,14 @@ onUnitSelect(({ unitId, options }) => {
   selectedUnitIds.value.clear();
   selectedUnitIds.value.add(unitId);
   const unit = activeScenario.unitActions.getUnitById(unitId);
-  const { parents } = activeScenario.unitActions.getUnitHierarchy(unitId);
+  const { side, sideGroup, parents } =
+    activeScenario.unitActions.getUnitHierarchy(unitId);
+  if (side) side._isOpen = true;
+  if (sideGroup) sideGroup._isOpen = true;
   parents.forEach((p) => (p._isOpen = true));
+  orbatRevealUnitId.value = unitId;
+
   nextTick(() => {
-    const el = document.getElementById(`ou-${unitId}`);
-    if (el) {
-      el.scrollIntoView();
-    }
     if (doZoom) {
       onUnitAction(unit, UnitActions.Zoom);
     }

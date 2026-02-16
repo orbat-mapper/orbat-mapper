@@ -7,6 +7,7 @@ export type SelectedScenarioFeatures = Set<FeatureId>;
 
 const selectedUnitIds = ref<Set<EntityId>>(new Set());
 const activeUnitIdRef = ref<EntityId | undefined | null>();
+const orbatRevealUnitId = ref<EntityId | null>(null);
 const selectedFeatureIds = ref<SelectedScenarioFeatures>(new Set());
 const activeFeatureIdRef = ref<FeatureId | undefined | null>();
 const activeMapLayerIdRef = ref<FeatureId | undefined | null>();
@@ -101,6 +102,7 @@ function clear() {
   if (selectedFeatureIds.value.size > 0) selectedFeatureIds.value.clear();
   if (selectedScenarioEventIds.value.size > 0) selectedScenarioEventIds.value.clear();
   if (selectedMapLayerIds.value.size > 0) selectedMapLayerIds.value.clear();
+  orbatRevealUnitId.value = null;
   showScenarioInfo.value = false;
 }
 
@@ -128,6 +130,7 @@ export function useSelectedItems() {
   return {
     selectedUnitIds,
     activeUnitId,
+    orbatRevealUnitId,
     selectedFeatureIds,
     activeFeatureId,
     activeScenarioEventId,

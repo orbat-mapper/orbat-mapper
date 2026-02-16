@@ -278,7 +278,7 @@ function onSideAction(side: NSide, action: SideAction) {
 }
 
 function getUnitIdFromElement(element: Element | null | undefined): string | undefined {
-  if (element?.tagName == "LI" && element?.id.startsWith("ou-")) {
+  if (element?.id.startsWith("ou-")) {
     return element.id.slice(3);
   }
 }
@@ -287,7 +287,7 @@ function onCopy(c: ClipboardEvent) {
   if (!inputEventFilter(c)) return;
 
   const target = document.activeElement as HTMLElement;
-  const unitId = getUnitIdFromElement(target.closest('li[id^="ou-"]'));
+  const unitId = getUnitIdFromElement(target.closest('[id^="ou-"]'));
 
   // only copy if an ORBAT item has focus
   if (!unitId) return;
@@ -307,7 +307,7 @@ function onPaste(e: ClipboardEvent) {
   if (!inputEventFilter(e)) return;
   const target = document.activeElement as HTMLElement;
 
-  const parentId = getUnitIdFromElement(target.closest('li[id^="ou-"]'));
+  const parentId = getUnitIdFromElement(target.closest('[id^="ou-"]'));
   // only paste if an ORBAT item has focus
   if (!parentId || !e.clipboardData?.types.includes("application/orbat")) return;
   const pastedOrbat = parseApplicationOrbat(
@@ -321,7 +321,7 @@ function onPaste(e: ClipboardEvent) {
 </script>
 
 <template>
-  <div class="space-y-1 pt-2">
+  <div class="space-y-1 pt-2" data-orbat-nav="panel-root">
     <slot name="header" />
     <OrbatSide
       v-for="side in sides"
@@ -330,7 +330,7 @@ function onPaste(e: ClipboardEvent) {
       @unit-action="onUnitAction"
       @unit-click="onUnitClick"
       @side-action="onSideAction"
-      :hide-filter="hideFilter"
+      :hide-filter="props.hideFilter"
     />
     <OrbatPanelAddSide
       v-if="sides.length < 2"

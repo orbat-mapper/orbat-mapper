@@ -39,6 +39,11 @@ import {
 import { useTimeoutFn } from "@vueuse/core";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import SideGroupDropdownMenu from "@/modules/scenarioeditor/SideGroupDropdownMenu.vue";
+import {
+  collectOrbatNavTargets,
+  getOrbatNavRoot,
+  moveFocusToNearestOrbatNavTarget,
+} from "@/modules/scenarioeditor/orbatNav";
 
 interface Props {
   group: NSideGroup;
@@ -65,9 +70,15 @@ const instruction = ref<Instruction | null>(null);
 const {
   store: { state },
 } = injectStrict(activeScenarioKey);
+const sideGroupItem = computed(() => state.sideGroupMap[props.group.id] ?? props.group);
 
 const isDragOver = ref(false);
-const isOpen = ref(true);
+const isOpen = computed({
+  get: () => sideGroupItem.value._isOpen !== false,
+  set: (value: boolean) => {
+    sideGroupItem.value._isOpen = value;
+  },
+});
 
 const {
   isPending,
@@ -149,7 +160,7 @@ onMounted(() => {
               source.data.sideGroup.id !== props.group.id))
         );
       },
-      onDragEnter: ({ self }) => {
+      onDragEnter: () => {
         isDragOver.value = true;
       },
       onDrag: (args) => {
@@ -202,6 +213,50 @@ const addGroupUnit = (group: NSideGroup) => {
 const onUnitAction = (unit: NUnit, action: UnitAction) => {
   emit("unit-action", unit, action);
 };
+
+const onHeaderKeydown = (event: KeyboardEvent) => {
+  const key = event.key;
+  const header = event.currentTarget as HTMLElement | null;
+  if (!header) return;
+  const navRoot = getOrbatNavRoot(header);
+
+  if (key === "ArrowUp" || key === "ArrowDown") {
+    if (
+      moveFocusToNearestOrbatNavTarget(
+        header,
+        key === "ArrowDown" ? "down" : "up",
+        navRoot,
+      )
+    ) {
+      event.preventDefault();
+      return;
+    }
+  }
+
+  if (["Home", "End"].includes(key)) {
+    const headers = collectOrbatNavTargets(navRoot, '[data-orbat-nav="section-toggle"]');
+    const currentIndex = headers.indexOf(header);
+    if (currentIndex === -1) return;
+
+    let nextIndex = currentIndex;
+    if (key === "Home") nextIndex = 0;
+    if (key === "End") nextIndex = headers.length - 1;
+
+    if (nextIndex !== currentIndex) {
+      event.preventDefault();
+      headers[nextIndex]?.focus();
+      return;
+    }
+  }
+
+  if (key === "ArrowRight" && !isOpen.value) {
+    event.preventDefault();
+    isOpen.value = true;
+  } else if (key === "ArrowLeft" && isOpen.value) {
+    event.preventDefault();
+    isOpen.value = false;
+  }
+};
 </script>
 <template>
   <div>
@@ -218,6 +273,9 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
       <div class="flex flex-auto items-center">
         <button
           @click="toggleOpen"
+          @keydown="onHeaderKeydown"
+          data-orbat-nav="section-toggle"
+          type="button"
           class="flex w-full items-center justify-between text-left"
         >
           <span class="text-heading hover:text-foreground text-sm font-medium">
