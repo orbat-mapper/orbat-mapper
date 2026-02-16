@@ -39,6 +39,11 @@ import {
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import SideDropdownMenu from "@/modules/scenarioeditor/SideDropdownMenu.vue";
 import OrbatTree from "@/components/OrbatTree.vue";
+import {
+  collectOrbatNavTargets,
+  getOrbatNavRoot,
+  moveFocusToNearestOrbatNavTarget,
+} from "@/modules/scenarioeditor/orbatNav";
 
 interface Props {
   side: NSide;
@@ -65,8 +70,14 @@ interface Emits {
 const emit = defineEmits<Emits>();
 
 const { store, unitActions } = injectStrict(activeScenarioKey);
+const sideItem = computed(() => store.state.sideMap[props.side.id] ?? props.side);
 
-const isOpen = ref(true);
+const isOpen = computed({
+  get: () => sideItem.value._isOpen !== false,
+  set: (value: boolean) => {
+    sideItem.value._isOpen = value;
+  },
+});
 const dropRef = ref<HTMLElement | null>(null);
 const dragRef = ref<HTMLElement | null>(null);
 const isDragging = ref(false);
@@ -139,7 +150,7 @@ onMounted(() => {
           (isSideDragItem(source.data) && source.data.side.id !== props.side.id)
         );
       },
-      onDragEnter: ({ self }) => {
+      onDragEnter: () => {
         isDragOver.value = true;
       },
       onDrag: (args) => {
@@ -218,6 +229,50 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
 const toggleOpen = () => {
   isOpen.value = !isOpen.value;
 };
+
+const onHeaderKeydown = (event: KeyboardEvent) => {
+  const key = event.key;
+  const header = event.currentTarget as HTMLElement | null;
+  if (!header) return;
+  const navRoot = getOrbatNavRoot(header);
+
+  if (key === "ArrowUp" || key === "ArrowDown") {
+    if (
+      moveFocusToNearestOrbatNavTarget(
+        header,
+        key === "ArrowDown" ? "down" : "up",
+        navRoot,
+      )
+    ) {
+      event.preventDefault();
+      return;
+    }
+  }
+
+  if (["Home", "End"].includes(key)) {
+    const headers = collectOrbatNavTargets(navRoot, '[data-orbat-nav="section-toggle"]');
+    const currentIndex = headers.indexOf(header);
+    if (currentIndex === -1) return;
+
+    let nextIndex = currentIndex;
+    if (key === "Home") nextIndex = 0;
+    if (key === "End") nextIndex = headers.length - 1;
+
+    if (nextIndex !== currentIndex) {
+      event.preventDefault();
+      headers[nextIndex]?.focus();
+      return;
+    }
+  }
+
+  if (key === "ArrowRight" && !isOpen.value) {
+    event.preventDefault();
+    isOpen.value = true;
+  } else if (key === "ArrowLeft" && isOpen.value) {
+    event.preventDefault();
+    isOpen.value = false;
+  }
+};
 </script>
 <template>
   <div class="pl-4">
@@ -233,6 +288,9 @@ const toggleOpen = () => {
 
       <button
         @click="toggleOpen"
+        @keydown="onHeaderKeydown"
+        data-orbat-nav="section-toggle"
+        type="button"
         class="flex w-full items-center justify-between text-left"
       >
         <span class="text-foreground text-sm font-medium">

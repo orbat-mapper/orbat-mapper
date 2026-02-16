@@ -18,7 +18,7 @@ import { type UnitAction } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
 import { useUnitMenu } from "@/composables/scenarioActions";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { activeParentKey, activeScenarioKey } from "./injects";
+import { activeScenarioKey } from "./injects";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { type SymbolOptions } from "milsymbol";
@@ -33,8 +33,12 @@ import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts
 interface Props {
   item: NOrbatItemData;
   symbolOptions?: SymbolOptions;
-  level?: number;
-  lastInGroup?: boolean;
+  level: number;
+  isExpanded: boolean;
+  hasChildren: boolean;
+  lastInGroup: boolean;
+  onToggle?: () => void;
+  onSetExpanded?: (value: boolean) => void;
 }
 
 interface Emits {
@@ -45,7 +49,6 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const activeParentId = injectStrict(activeParentKey);
 const {
   unitActions: { isUnitLocked },
   store: { state },
@@ -57,22 +60,12 @@ const combinedOptions = computed(() => ({
   outlineWidth: 8,
 }));
 
-let subTree = ref<HTMLElement | null>(null);
 const itemRef = ref<HTMLElement | null>(null);
 const dragItemRef = ref<HTMLElement | null>(null);
 
-let isDragged = ref(false);
-const isDragOver = ref(false);
+const isDragged = ref(false);
 
 const unit = computed(() => props.item.unit);
-const isOpen = computed({
-  get(): boolean {
-    return !!props.item.unit._isOpen;
-  },
-  set(v: boolean) {
-    props.item.unit._isOpen = v;
-  },
-});
 
 const isLocked = computed(() => isUnitLocked(props.item.unit.id));
 const isSideGroupLocked = computed(() =>
@@ -84,7 +77,7 @@ const {
   stop: stopOpenTimeout,
 } = useTimeoutFn(
   () => {
-    isOpen.value = true;
+    props.onSetExpanded?.(true);
   },
   500,
   { immediate: false },
@@ -104,12 +97,12 @@ const customSidc = computed(() => {
   if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
     return sidc.slice(CUSTOM_SYMBOL_SLICE);
   }
+  return undefined;
 });
 
 const activeUnitStore = useActiveUnitStore();
 
 const isActiveUnit = computed(() => activeUnitId.value === props.item.unit.id);
-const isActiveParent = computed(() => activeParentId.value === props.item.unit.id);
 
 const hasActiveChildren = computed(() =>
   activeUnitStore.activeUnitParentIds.value.includes(props.item.unit.id),
@@ -138,11 +131,11 @@ onMounted(() => {
         return attachInstruction(data, {
           input,
           element,
-          currentLevel: props.level ?? 0,
+          currentLevel: props.level,
           indentPerLevel: 20,
           block: ["reparent"],
           mode:
-            isParent.value && isOpen.value
+            props.hasChildren && props.isExpanded
               ? "expanded"
               : props.lastInGroup
                 ? "last-in-group"
@@ -158,15 +151,12 @@ onMounted(() => {
           !selectedUnitIds.value.has(props.item.unit.id)
         );
       },
-      onDragEnter: () => {
-        isDragOver.value = true;
-      },
       onDrag: (args) => {
         instruction.value = extractInstruction(args.self.data);
         if (
           instruction.value?.type === "make-child" &&
-          isParent.value &&
-          !isOpen.value &&
+          props.hasChildren &&
+          !props.isExpanded &&
           !isPending.value
         ) {
           startOpenTimeout();
@@ -177,12 +167,10 @@ onMounted(() => {
         }
       },
       onDragLeave: () => {
-        isDragOver.value = false;
         instruction.value = null;
         stopOpenTimeout();
       },
       onDrop: () => {
-        isDragOver.value = false;
         instruction.value = null;
         stopOpenTimeout();
       },
@@ -194,10 +182,6 @@ onUnmounted(() => {
   dndCleanup();
 });
 
-const isParent = computed(() =>
-  Boolean(props.item.children && props.item.children.length),
-);
-
 const onUnitMenuAction = (unit: NUnit, action: UnitAction) => {
   emit("unit-action", unit, action);
 };
@@ -205,99 +189,90 @@ const onUnitMenuAction = (unit: NUnit, action: UnitAction) => {
 const onUnitClick = (unit: NUnit, event: MouseEvent) => {
   emit("unit-click", unit, event);
 };
+
+const toggleOpen = () => {
+  if (!props.hasChildren) return;
+  props.onToggle?.();
+};
 </script>
 
 <template>
-  <li :id="'ou-' + unit.id" class="text-foreground relative">
-    <div
-      ref="itemRef"
-      class="group relative flex items-center justify-between border-l-2 py-1 pl-2 sm:pl-0"
-      @dblclick="isOpen = !isOpen"
-      @click="onUnitClick(unit, $event)"
-      :class="[
-        selectedUnitIds.has(unit.id) && selectedUnitIds.size > 1
-          ? 'bg-primary/10 hover:bg-sidebar-accent/60'
-          : '',
-        isActiveUnit ? 'border-primary bg-primary/10' : 'border-transparent',
-      ]"
-    >
-      <div class="flex items-center space-x-1">
-        <div class="h-6 w-6">
-          <button v-if="isParent" @click.stop="isOpen = !isOpen" class="">
-            <ChevronRightIcon
-              class="text-muted-foreground group-hover:text-foreground h-6 w-6 transform transition-transform"
-              :class="{
-                'rotate-90': isOpen,
-                'text-primary': hasActiveChildren,
-              }"
-            />
-          </button>
-        </div>
-        <button class="flex items-center space-x-1 text-sm">
-          <span class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
-            <div
-              class="relative flex cursor-move justify-center"
-              :style="{ width: settingsStore.orbatIconSize + 'pt' }"
-              ref="dragItemRef"
-            >
-              <img
-                v-if="customSidc"
-                :src="state.customSymbolMap[customSidc]?.src ?? ''"
-                :alt="unitLabel"
-                :style="{ width: settingsStore.orbatIconSize * 1.2 + 'px' }"
-                draggable="false"
-              />
-              <template v-else>
-                <MilitarySymbol
-                  :sidc="unit._state?.sidc || unit.sidc"
-                  :size="settingsStore.orbatIconSize"
-                  :options="combinedOptions"
-                />
-                <span
-                  v-if="unit.reinforcedStatus"
-                  class="absolute -top-2 -right-2.5 text-xs font-medium"
-                  >{{
-                    mapReinforcedStatus2Field(unit.reinforcedStatus, { compact: true })
-                  }}</span
-                >
-              </template>
-            </div>
-
-            <span
-              class="flex-auto pl-1 text-left"
-              :class="{
-                'font-medium': isActiveUnit,
-              }"
-              >{{ unitLabel }}</span
-            >
-            <span v-if="unit._state?.location" class="text-destructive-foreground"
-              >&deg;</span
-            >
-          </span>
+  <div
+    ref="itemRef"
+    class="text-foreground group relative flex items-center justify-between border-l-2 py-1 pl-2 sm:pl-0"
+    @dblclick="toggleOpen"
+    @click="onUnitClick(unit, $event)"
+    :class="[
+      selectedUnitIds.has(unit.id) && selectedUnitIds.size > 1
+        ? 'bg-primary/10 hover:bg-sidebar-accent/60'
+        : '',
+      isActiveUnit ? 'border-primary bg-primary/10' : 'border-transparent',
+    ]"
+  >
+    <div class="flex items-center space-x-1">
+      <div class="h-6 w-6">
+        <button v-if="hasChildren" @click.stop="toggleOpen" tabindex="-1" type="button">
+          <ChevronRightIcon
+            class="text-muted-foreground group-hover:text-foreground h-6 w-6 transform transition-transform"
+            :class="{
+              'rotate-90': isExpanded,
+              'text-primary': hasActiveChildren,
+            }"
+          />
         </button>
       </div>
+      <div class="flex items-center space-x-1 text-sm">
+        <span class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
+          <div
+            class="relative flex cursor-move justify-center"
+            :style="{ width: settingsStore.orbatIconSize + 'pt' }"
+            ref="dragItemRef"
+          >
+            <img
+              v-if="customSidc"
+              :src="state.customSymbolMap[customSidc]?.src ?? ''"
+              :alt="unitLabel"
+              :style="{ width: settingsStore.orbatIconSize * 1.2 + 'px' }"
+              draggable="false"
+            />
+            <template v-else>
+              <MilitarySymbol
+                :sidc="unit._state?.sidc || unit.sidc"
+                :size="settingsStore.orbatIconSize"
+                :options="combinedOptions"
+              />
+              <span
+                v-if="unit.reinforcedStatus"
+                class="absolute -top-2 -right-2.5 text-xs font-medium"
+                >{{
+                  mapReinforcedStatus2Field(unit.reinforcedStatus, { compact: true })
+                }}</span
+              >
+            </template>
+          </div>
 
-      <div class="flex items-center">
-        <IconLockOutline v-if="unit.locked" class="text-muted-foreground h-5 w-5" />
-        <DotsMenu
-          class="shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-          :items="menuItems"
-          @action="onUnitMenuAction(unit, $event)"
-        />
+          <span
+            class="flex-auto pl-1 text-left"
+            :class="{
+              'font-medium': isActiveUnit,
+            }"
+            >{{ unitLabel }}</span
+          >
+          <span v-if="unit._state?.location" class="text-destructive-foreground"
+            >&deg;</span
+          >
+        </span>
       </div>
-      <TreeDropIndicator v-if="instruction" :instruction="instruction" />
     </div>
-    <ul v-if="isOpen" class="ml-6 pb-1" ref="subTree">
-      <OrbatTreeItem
-        :item="subUnit"
-        :level="props.level ? props.level + 1 : 1"
-        v-for="(subUnit, index) in item.children"
-        :key="subUnit.unit.id"
-        @unit-action="onUnitMenuAction"
-        @unit-click="onUnitClick"
-        :symbolOptions="symbolOptions"
-        :last-in-group="index === item.children.length - 1"
+
+    <div class="flex items-center">
+      <IconLockOutline v-if="unit.locked" class="text-muted-foreground h-5 w-5" />
+      <DotsMenu
+        class="shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+        :items="menuItems"
+        @action="onUnitMenuAction(unit, $event)"
       />
-    </ul>
-  </li>
+    </div>
+    <TreeDropIndicator v-if="instruction" :instruction="instruction" />
+  </div>
 </template>
