@@ -317,7 +317,7 @@ watch(
       v-bind="flattenItem.bind"
       :id="`ou-${flattenItem.value.unit.id}`"
       :style="{ paddingLeft: `${(flattenItem.level - 1) * 1.5}rem` }"
-      class="block"
+      class="group/orbat-item block"
       @toggle="
         (event) => {
           if (event.detail?.originalEvent?.type === 'click') event.preventDefault();

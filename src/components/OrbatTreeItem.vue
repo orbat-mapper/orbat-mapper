@@ -268,7 +268,7 @@ const toggleOpen = () => {
     <div class="flex items-center">
       <IconLockOutline v-if="unit.locked" class="text-muted-foreground h-5 w-5" />
       <DotsMenu
-        class="shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+        class="shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 group-focus/orbat-item:opacity-100"
         :items="menuItems"
         @action="onUnitMenuAction(unit, $event)"
       />
