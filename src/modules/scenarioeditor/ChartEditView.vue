@@ -124,7 +124,7 @@ const doPNGDownload = async () => {
 };
 
 function downloadSvgAsPng(elementId: string, width: number, height: number) {
-  let svgElement = document.getElementById(elementId);
+  const svgElement = document.getElementById(elementId);
   if (!svgElement) return;
   // need this for Firefox (https://stackoverflow.com/questions/28690643/firefox-error-rendering-an-svg-image-to-html5-canvas-with-drawimage)
   const savedWidth = svgElement.getAttribute("width") || "";
@@ -157,7 +157,7 @@ function downloadSvgAsPng(elementId: string, width: number, height: number) {
 }
 
 async function downloadElementAsSVG(elementId: string) {
-  let svgElement = document.getElementById(elementId);
+  const svgElement = document.getElementById(elementId);
   if (!svgElement) return;
   await saveBlobToLocalFile(
     new Blob([new XMLSerializer().serializeToString(svgElement)], {

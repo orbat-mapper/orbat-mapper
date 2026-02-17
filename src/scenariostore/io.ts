@@ -147,7 +147,7 @@ export function serializeUnit(
 ): Unit {
   const { newId = false, includeSubUnits = true } = options;
   const nUnit = scnState.unitMap[unitId];
-  let { equipment, personnel, supplies } = serializeToeStuff(nUnit, scnState);
+  const { equipment, personnel, supplies } = serializeToeStuff(nUnit, scnState);
   let rangeRings = nUnit.rangeRings?.map(({ group, ...rest }) => {
     return group ? { group: scnState.rangeRingGroupMap[group].name, ...rest } : rest;
   });

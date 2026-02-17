@@ -351,7 +351,7 @@ onMounted(() => {
         isScenarioFeatureLayerDragItem(source.data) &&
         isScenarioFeatureLayerDragItem(destination.data)
       ) {
-        let fromIndex = geo.getLayerIndex(source.data.layer.id);
+        const fromIndex = geo.getLayerIndex(source.data.layer.id);
         let toIndex = geo.getLayerIndex(destination.data.layer.id);
         if (closestEdgeOfTarget === "bottom") toIndex++;
         if (fromIndex < toIndex) toIndex--;

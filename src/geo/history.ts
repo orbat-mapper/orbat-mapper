@@ -251,8 +251,8 @@ export function createUnitPathFeatures(
 function createGreatCircleArcFeature(leg: Position[]) {
   const coords: Position[] = [];
   for (let i = 0; i < leg.length - 1; i++) {
-    let from = leg[i];
-    let to = leg[i + 1];
+    const from = leg[i];
+    const to = leg[i + 1];
     const distance = getDistance(from, to);
     if (distance > 100000) {
       const arcLine = greatCircle(from, to, {

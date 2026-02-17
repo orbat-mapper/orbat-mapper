@@ -219,7 +219,7 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
     opts["stroke-opacity"] ||
     opts["stroke-style"]
   ) {
-    let strokeColor = [...olColor.fromString(opts.stroke || "#555555")];
+    const strokeColor = [...olColor.fromString(opts.stroke || "#555555")];
     if (opts["stroke-opacity"]) strokeColor[3] = opts["stroke-opacity"];
 
     stroke = new Stroke({
@@ -238,7 +238,7 @@ export function createSimpleStyle(opts: Partial<SimpleStyleSpec>) {
   if (opts["stroke-opacity"] === 0) stroke = undefined;
 
   if (opts.fill || opts["fill-opacity"] !== undefined) {
-    let fillColor = [...olColor.fromString(opts.fill || defaultFillColor)];
+    const fillColor = [...olColor.fromString(opts.fill || defaultFillColor)];
     fillColor[3] = opts["fill-opacity"] ?? 0.5;
     fill = new Fill({ color: fillColor });
   } else if (opts.fill === null) {

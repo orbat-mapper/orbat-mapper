@@ -15,7 +15,7 @@ const defaultRender =
 
 md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
   // If you are sure other plugins can't add `target` - drop check below
-  var aIndex = tokens[idx].attrIndex("target");
+  const aIndex = tokens[idx].attrIndex("target");
 
   if (aIndex < 0) {
     tokens[idx].attrPush(["target", "_blank"]); // add new attribute

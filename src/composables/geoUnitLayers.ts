@@ -15,8 +15,10 @@ import VectorLayer from "ol/layer/Vector";
 import { fromLonLat, toLonLat } from "ol/proj";
 import { Point } from "ol/geom";
 import { DragBox, Modify, Select } from "ol/interaction";
+import PointerInteraction from "ol/interaction/Pointer";
 import { ModifyEvent } from "ol/interaction/Modify";
 import { Feature } from "ol";
+import type { MapBrowserEvent } from "ol";
 
 import {
   clearUnitStyleCache,
@@ -58,6 +60,38 @@ import Style from "ol/style/Style";
 import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils.ts";
 
 let zoomResolutions: number[] = [];
+const ROTATION_EPSILON = 1e-6;
+
+function normalizeRotation(rotation: number): number {
+  const normalized = rotation % 360;
+  return normalized < 0 ? normalized + 360 : normalized;
+}
+
+function toHeadingFromNorthDegrees(center: Coordinate, point: Coordinate): number {
+  const dx = point[0] - center[0];
+  const dy = point[1] - center[1];
+  const angleFromEast = (Math.atan2(dy, dx) * 180) / Math.PI;
+  return normalizeRotation(90 - angleFromEast);
+}
+
+function shortestRotationDelta(nextAngle: number, prevAngle: number) {
+  let delta = normalizeRotation(nextAngle - prevAngle);
+  if (delta > 180) delta -= 360;
+  return delta;
+}
+
+function setMapCursor(mapRef: OLMap, cursor: string) {
+  const targetElement = mapRef.getTargetElement();
+  if (!targetElement) return;
+  targetElement.style.cursor = cursor;
+}
+
+function getFeatureRotationRadians(feature: FeatureLike, fallbackDegrees = 0): number {
+  const temporaryRotation = feature.get("_symbolRotation");
+  const symbolRotationDeg =
+    typeof temporaryRotation === "number" ? temporaryRotation : fallbackDegrees;
+  return (normalizeRotation(symbolRotationDeg) * Math.PI) / 180;
+}
 
 export function calculateZoomToResolution(view: View) {
   zoomResolutions = [];
@@ -93,7 +127,7 @@ const selectedUnitLabelStyle = new Style({
 export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
   const scenario = activeScenario || injectStrict(activeScenarioKey);
   const {
-    store: { state, onUndoRedo, groupUpdate },
+    store: { state, onUndoRedo },
     geo,
     unitActions: { getCombinedSymbolOptions },
     helpers: { getUnitById },
@@ -149,6 +183,19 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       return;
     }
 
+    const temporaryRotation = feature.get("_symbolRotation");
+    if (typeof temporaryRotation === "number") {
+      const symbolOptions = getCombinedSymbolOptions(unit);
+      const { style } = createUnitStyle(
+        unit,
+        symbolOptions,
+        scenario,
+        undefined,
+        temporaryRotation,
+      );
+      return style;
+    }
+
     let unitStyle = unitStyleCache.get(unit._ikey ?? unitId);
     if (!unitStyle) {
       const symbolOptions = getCombinedSymbolOptions(unit);
@@ -192,6 +239,9 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     const textStyle = unitLabelStyle.getText()!;
     textStyle.setText(labelData.text);
     textStyle.setOffsetY(labelData.yOffset);
+    textStyle.setRotation(
+      getFeatureRotationRadians(feature, unit._state?.symbolRotation ?? 0),
+    );
     return unitLabelStyle;
   }
 
@@ -224,7 +274,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
 
 export function useMapDrop(
   mapRef: MaybeRef<OLMap | null | undefined>,
-  unitLayer: MaybeRef<VectorLayer<any>>,
+  unitLayer: MaybeRef<VectorLayer>,
 ) {
   const {
     geo,
@@ -279,7 +329,9 @@ export function useMapDrop(
                 existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
               } else {
                 const unit = getUnitById(unitId);
-                unit && unitSource?.addFeature(createUnitFeatureAt(dropPosition, unit));
+                if (unit) {
+                  unitSource?.addFeature(createUnitFeatureAt(dropPosition, unit));
+                }
               }
             }
           });
@@ -312,7 +364,6 @@ export function useMoveInteraction(
   const {
     geo,
     unitActions: { isUnitLocked },
-    store: { state },
   } = injectStrict(activeScenarioKey);
   const modifyInteraction = new Modify({
     hitDetection: unitLayer,
@@ -320,8 +371,7 @@ export function useMoveInteraction(
   });
 
   modifyInteraction.on(["modifystart", "modifyend"], (evt) => {
-    mapRef.getTargetElement().style.cursor =
-      evt.type === "modifystart" ? "grabbing" : "pointer";
+    setMapCursor(mapRef, evt.type === "modifystart" ? "grabbing" : "pointer");
     if (evt.type === "modifystart") {
       (evt as ModifyEvent).features.forEach((f) => {
         const unitId = f.getId() as string;
@@ -349,15 +399,158 @@ export function useMoveInteraction(
   });
   const overlaySource = modifyInteraction.getOverlay().getSource();
   overlaySource?.on(["addfeature", "removefeature"], function (evt: Event | BaseEvent) {
-    mapRef.getTargetElement().style.cursor = evt.type === "addfeature" ? "pointer" : "";
+    setMapCursor(mapRef, evt.type === "addfeature" ? "pointer" : "");
   });
 
   watch(enabled, (v) => modifyInteraction.setActive(v), { immediate: true });
   return { moveInteraction: modifyInteraction };
 }
 
+export function useRotateInteraction(
+  mapRef: OLMap,
+  unitLayer: VectorLayer,
+  enabled: Ref<boolean>,
+) {
+  const {
+    unitActions: { addUnitStateEntry, getUnitById, isUnitLocked },
+    store: { state, groupUpdate },
+  } = injectStrict(activeScenarioKey);
+  const { selectedUnitIds } = useSelectedItems();
+
+  let anchor: Coordinate | null = null;
+  let startHeading = 0;
+  let isRotating = false;
+  const previewUnitIds = new Set<EntityId>();
+  let targets: { id: EntityId; initialRotation: number; rotation: number }[] = [];
+
+  function getUnitFeatureAtEvent(
+    event: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>,
+  ): Feature<Point> | undefined {
+    return mapRef.forEachFeatureAtPixel(
+      event.pixel,
+      (feature, layer) => {
+        if (layer !== unitLayer) return undefined;
+        return feature as Feature<Point>;
+      },
+      { hitTolerance: 4 },
+    );
+  }
+
+  function setPreviewRotation(unitId: EntityId, rotation: number) {
+    const feature = unitLayer.getSource()?.getFeatureById(unitId);
+    if (!feature) return;
+    feature.set("_symbolRotation", rotation);
+    previewUnitIds.add(unitId);
+  }
+
+  function clearPreviewRotation() {
+    for (const unitId of previewUnitIds) {
+      const feature = unitLayer.getSource()?.getFeatureById(unitId);
+      feature?.unset("_symbolRotation");
+    }
+    previewUnitIds.clear();
+  }
+
+  function cancelRotation() {
+    isRotating = false;
+    anchor = null;
+    targets = [];
+    clearPreviewRotation();
+    setMapCursor(mapRef, "");
+  }
+
+  const rotateInteraction = new PointerInteraction({
+    handleDownEvent: (event) => {
+      if (!enabled.value) return false;
+      if ((event.originalEvent as PointerEvent).button !== 0) return false;
+      const clickedFeature = getUnitFeatureAtEvent(event);
+      const clickedUnitId = clickedFeature?.getId() as EntityId | undefined;
+      if (!clickedUnitId) return false;
+
+      const candidateIds = selectedUnitIds.value.has(clickedUnitId)
+        ? [...selectedUnitIds.value]
+        : [clickedUnitId];
+      const selectedTargets = candidateIds
+        .map((id) => getUnitById(id))
+        .filter((u) => !!u && !isUnitLocked(u.id) && !!u._state?.location);
+      if (!selectedTargets.length) return false;
+
+      const anchorCoordinates = selectedTargets
+        .map((u) => unitLayer.getSource()?.getFeatureById(u.id))
+        .map((f) => (f as Feature<Point> | undefined)?.getGeometry()?.getCoordinates())
+        .filter((c): c is Coordinate => !!c);
+      if (!anchorCoordinates.length) return false;
+
+      const anchorX =
+        anchorCoordinates.reduce((sum, c) => sum + c[0], 0) / anchorCoordinates.length;
+      const anchorY =
+        anchorCoordinates.reduce((sum, c) => sum + c[1], 0) / anchorCoordinates.length;
+      anchor = [anchorX, anchorY];
+
+      startHeading = toHeadingFromNorthDegrees(anchor, event.coordinate);
+      targets = selectedTargets.map((unit) => {
+        const rotation = normalizeRotation(unit._state?.symbolRotation ?? 0);
+        setPreviewRotation(unit.id, rotation);
+        return { id: unit.id, initialRotation: rotation, rotation };
+      });
+      isRotating = true;
+      setMapCursor(mapRef, "grabbing");
+      return true;
+    },
+    handleDragEvent: (event) => {
+      if (!isRotating || !anchor) return;
+      const currentHeading = toHeadingFromNorthDegrees(anchor, event.coordinate);
+      const delta = shortestRotationDelta(currentHeading, startHeading);
+      targets.forEach((target) => {
+        target.rotation = normalizeRotation(target.initialRotation + delta);
+        setPreviewRotation(target.id, target.rotation);
+      });
+    },
+    handleMoveEvent: (event) => {
+      if (!enabled.value || isRotating) return;
+      const hovered = getUnitFeatureAtEvent(event);
+      setMapCursor(mapRef, hovered ? "grab" : "");
+    },
+    handleUpEvent: () => {
+      if (!isRotating) return false;
+      const changedTargets = targets.filter(
+        (target) => Math.abs(target.rotation - target.initialRotation) > ROTATION_EPSILON,
+      );
+      if (changedTargets.length) {
+        groupUpdate(() => {
+          changedTargets.forEach((target) => {
+            addUnitStateEntry(
+              target.id,
+              { t: state.currentTime, symbolRotation: target.rotation },
+              true,
+            );
+          });
+        });
+      }
+      cancelRotation();
+      return false;
+    },
+    stopDown: (handled) => handled,
+  });
+
+  watch(
+    enabled,
+    (v) => {
+      rotateInteraction.setActive(v);
+      if (!v) cancelRotation();
+    },
+    { immediate: true },
+  );
+
+  onUnmounted(() => {
+    cancelRotation();
+  });
+
+  return { rotateInteraction };
+}
+
 export function useUnitSelectInteraction(
-  layers: VectorLayer<any>[],
+  layers: VectorLayer[],
   olMap: OLMap,
   options: Partial<{
     enable: MaybeRef<boolean>;
@@ -379,7 +572,7 @@ export function useUnitSelectInteraction(
 
   const unitSelectInteraction = new Select({
     layers,
-    style: selectedUnitStyleFunction as any,
+    style: selectedUnitStyleFunction,
     condition: clickCondition,
     removeCondition: altKeyOnly,
   });
@@ -398,11 +591,15 @@ export function useUnitSelectInteraction(
     ) {
       return;
     }
-    let unitStyle = selectedUnitStyleCache.get(unit._ikey ?? unitId);
+    const temporaryRotation = feature.get("_symbolRotation");
+    let unitStyle =
+      typeof temporaryRotation === "number"
+        ? undefined
+        : selectedUnitStyleCache.get(unit._ikey ?? unitId);
 
     if (!unitStyle) {
       const symbolOptions = getCombinedSymbolOptions(unit);
-      const { style, cacheKey } = createUnitStyle(
+      const { style } = createUnitStyle(
         unit,
         {
           ...symbolOptions,
@@ -413,14 +610,17 @@ export function useUnitSelectInteraction(
         },
         activeScenario,
         "yellow",
+        typeof temporaryRotation === "number" ? temporaryRotation : undefined,
       )!;
       unitStyle = style;
-      selectedUnitStyleCache.set(unit._ikey ?? unitId, unitStyle);
+      if (typeof temporaryRotation !== "number") {
+        selectedUnitStyleCache.set(unit._ikey ?? unitId, unitStyle);
+      }
     }
 
     if (!mapSettings.mapUnitLabelBelow) return unitStyle;
 
-    let labelData =
+    const labelData =
       labelStyleCache.get(unitId) ??
       createUnitLabelData(unit, unitStyle, {
         wrapLabels: mapSettings.mapWrapUnitLabels,
@@ -431,6 +631,9 @@ export function useUnitSelectInteraction(
       const textStyle = selectedUnitLabelStyle.getText()!;
       textStyle.setText(labelData.text);
       textStyle.setOffsetY(labelData.yOffset);
+      textStyle.setRotation(
+        getFeatureRotationRadians(feature, unit._state?.symbolRotation ?? 0),
+      );
       return [unitStyle, selectedUnitLabelStyle];
     }
 

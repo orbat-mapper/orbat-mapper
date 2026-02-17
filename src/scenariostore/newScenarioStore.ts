@@ -132,9 +132,9 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     baseMapId: DEFAULT_BASEMAP_ID,
   };
 
-  let unitStateCounter = 0;
-  let featureStateCounter = 0;
-  let settingsStateCounter = 0;
+  const unitStateCounter = 0;
+  const featureStateCounter = 0;
+  const settingsStateCounter = 0;
 
   scenario.events.forEach((e) => {
     const nEvent: NScenarioEvent = {
@@ -521,6 +521,12 @@ export function useNewScenarioStore(data: Scenario) {
   const inputState = prepareScenario(data);
   const store = useImmerStore<ScenarioState, ActionLabel>(inputState);
 
-  useScenarioTime(store).setCurrentTime(store.state.currentTime);
+  const scenarioTime = useScenarioTime(store);
+  scenarioTime.setCurrentTime(store.state.currentTime);
+  // Unit/feature runtime state (_state) is derived from timeline entries.
+  // Recompute after undo/redo so map rendering matches restored history state.
+  store.onUndoRedo(() => {
+    scenarioTime.setCurrentTime(store.state.currentTime);
+  });
   return store;
 }

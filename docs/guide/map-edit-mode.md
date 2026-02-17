@@ -40,4 +40,7 @@ You also have easy access to various settings and tools.
 
 ## Map toolbar
 
+The map toolbar includes select, move, and rotate modes for units. Rotate mode lets you
+drag on a unit (or selected units) to adjust symbol rotation at the current scenario time.
+
 ## Timeline

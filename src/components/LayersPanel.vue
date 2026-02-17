@@ -34,7 +34,7 @@ const geoStore = useGeoStore();
 const mapSettings = useMapSettingsStore();
 const baseLayersStore = useBaseLayersStore();
 
-let vectorLayers = ref<LayerInfo<AnyVectorLayer>[]>([]);
+const vectorLayers = ref<LayerInfo<AnyVectorLayer>[]>([]);
 
 // Adapt store layers to the format expected by BaseLayerSwitcher
 // BaseLayerSwitcher expects LayerInfo<any>[] but mostly cares about id, title, description

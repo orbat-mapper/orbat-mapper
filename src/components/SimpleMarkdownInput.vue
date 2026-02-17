@@ -21,7 +21,7 @@ const currentTab = ref(0);
 const isPreview = computed(() => currentTab.value === 1);
 
 const renderedMarkdown = computed(() => {
-  if (!isPreview) return "";
+  if (!isPreview.value) return "";
   return renderMarkdown(localValue.value || "");
 });
 

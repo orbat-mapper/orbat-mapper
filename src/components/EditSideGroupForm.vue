@@ -23,7 +23,7 @@ interface Form {
   name: string;
   symbolOptions: UnitSymbolOptions;
 }
-let form = ref<Form>({ name: "Units", symbolOptions: {} });
+const form = ref<Form>({ name: "Units", symbolOptions: {} });
 const sideGroup = computed(() =>
   props.sideGroupId ? store?.state.sideGroupMap[props.sideGroupId] : undefined,
 );

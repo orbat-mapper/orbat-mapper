@@ -6,6 +6,7 @@ import {
   IconMapMarkerOffOutline,
   IconMapMarkerPath,
 } from "@iconify-prerendered/vue-mdi";
+import { RotateCwIcon } from "lucide-vue-next";
 import type { StateAdd } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
@@ -90,6 +91,12 @@ const coordinateInputFormat = useLocalStorage<CoordinateInputFormat>(
 const editedTitle = ref<NState | null>();
 const editedPosition = ref<NState | null>();
 const editInitialPosition = ref(false);
+
+function formatRotation(rotation: number) {
+  const normalized = rotation % 360;
+  const normalizedPositive = normalized < 0 ? normalized + 360 : normalized;
+  return `${Math.trunc(normalizedPositive)}\u00b0`;
+}
 
 const deleteState = (index: number) => {
   unitActions.deleteUnitStateEntry(props.unit.id, index);
@@ -355,6 +362,11 @@ function setUnitStatus(newStatus?: string | null) {
             v-if="s.sidc"
             class="bg-accent/10 text-accent-foreground w-12 rounded-full px-2.5 py-0.5 text-xs font-medium"
             >sidc</span
+          >
+          <span
+            v-if="s.symbolRotation !== undefined"
+            class="bg-accent/10 text-accent-foreground inline-flex w-auto items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium"
+            ><RotateCwIcon class="size-3" />{{ formatRotation(s.symbolRotation) }}</span
           >
           <span
             v-if="s.status"

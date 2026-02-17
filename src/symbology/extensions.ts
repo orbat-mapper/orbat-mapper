@@ -1,11 +1,11 @@
 // @ts-nocheck
 //sigint and reinforced addons to base geometries ####################################
 export function testExtension(ms) {
-  let drawArray1 = [];
-  let drawArray2 = [];
-  let bbox_org = ms.BBox(this.bbox);
-  let this_bbox = ms.BBox(this.bbox);
-  let frameColor = this.colors.frameColor[this.metadata.affiliation];
+  const drawArray1 = [];
+  const drawArray2 = [];
+  const bbox_org = ms.BBox(this.bbox);
+  const this_bbox = ms.BBox(this.bbox);
+  const frameColor = this.colors.frameColor[this.metadata.affiliation];
   //If we don't have a geometry we shouldn't add anything.
   if (this.metadata.baseGeometry.g && frameColor) {
     let spacing = 18;
@@ -54,15 +54,15 @@ export function testExtension(ms) {
       this.options.specialheadquarter != ""
     ) {
       let size = 42;
-      let fontFamily = this.style.fontfamily;
-      let fontColor =
+      const fontFamily = this.style.fontfamily;
+      const fontColor =
         (typeof this.style.infoColor === "object"
           ? this.style.infoColor[this.metadata.affiliation]
           : this.style.infoColor) ||
         this.colors.iconColor[this.metadata.affiliation] ||
         this.colors.iconColor["Friend"];
       let y = 115;
-      let str = this.options.specialheadquarter;
+      const str = this.options.specialheadquarter;
       if (str.length == 1) {
         size = 45;
         y = 115;

@@ -191,7 +191,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     { noUndo = false } = {},
   ) {
     if (noUndo) {
-      let side = state.sideMap[sideId!];
+      const side = state.sideMap[sideId!];
       if (!side) return;
       const updateSid =
         sideData.standardIdentity ?? side.standardIdentity !== sideData.standardIdentity;
@@ -211,7 +211,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       return;
     }
     update((s) => {
-      let side = s.sideMap[sideId!];
+      const side = s.sideMap[sideId!];
       if (!side) return;
       const updateSid =
         sideData.standardIdentity ?? side.standardIdentity !== sideData.standardIdentity;
@@ -269,7 +269,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       if (sideGroup) Object.assign(sideGroup, { ...sideGroupData, _isNew: false });
     } else {
       update((s) => {
-        let sideGroup = s.sideGroupMap[sideGroupId];
+        const sideGroup = s.sideGroupMap[sideGroupId];
         if (sideGroup) Object.assign(sideGroup, { ...sideGroupData, _isNew: false });
       });
     }
@@ -354,7 +354,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     data: UnitUpdate,
     { doUpdateUnitState = false, ignoreLocked = false, s = state, noUndo = false } = {},
   ) {
-    let unit = s.unitMap[unitId];
+    const unit = s.unitMap[unitId];
     if (!unit) return;
     if (!ignoreLocked && isUnitLocked(unitId)) return;
     invalidateUnitStyle(unitId);
@@ -369,7 +369,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       s.unitMap[unitId] = klona(unit);
     } else {
       update((s) => {
-        let unit = s.unitMap[unitId];
+        const unit = s.unitMap[unitId];
         if (!unit) return;
         Object.assign(unit, { ...data });
         s.unitMap[unitId] = klona(unit);
@@ -435,7 +435,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     propertyUpdate: Partial<UnitProperties>,
   ) {
     update((s) => {
-      let unit = s.unitMap[unitId];
+      const unit = s.unitMap[unitId];
       if (!unit) return;
       const properties = klona(unit.properties || {});
       unit.properties = { ...properties, ...propertyUpdate };
@@ -710,7 +710,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     }
     if (noUndo) {
       s.unitMap[unit.id] = unit;
-      let parent = getUnitOrSideGroupOrSide(unit._pid!, s);
+      const parent = getUnitOrSideGroupOrSide(unit._pid!, s);
       if (!parent) return unit.id;
       if (index === undefined) {
         parent.subUnits.push(unit.id);
@@ -720,7 +720,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     } else {
       update((s) => {
         s.unitMap[unit.id] = unit;
-        let parent = getUnitOrSideGroupOrSide(unit._pid!, s);
+        const parent = getUnitOrSideGroupOrSide(unit._pid!, s);
         if (!parent) return;
         if (index === undefined) {
           parent.subUnits.push(unit.id);
@@ -779,7 +779,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
   ) {
     const unit = state.unitMap[unitId];
     if (!unit) return;
-    let newUnit = {
+    const newUnit = {
       ...unit,
       name: modifyName ? unit.name + counter++ : unit.name,
       id: nanoid(),
@@ -788,7 +788,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       subUnits: [],
     };
 
-    let parent = getUnitOrSideGroup(unit._pid);
+    const parent = getUnitOrSideGroup(unit._pid);
     let idx: number | undefined;
     if (target !== "end" && parent) {
       idx = parent.subUnits.findIndex((id) => id === unitId);

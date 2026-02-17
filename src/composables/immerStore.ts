@@ -59,10 +59,10 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     updates();
     const diff = past.length - preLength;
     if (diff <= 0) return;
-    let elems: UndoEntry<M>[] = [];
+    const elems: UndoEntry<M>[] = [];
     for (let i = 0; i < diff; i++) elems.push(past.pop()!);
-    let mergedPatches: Patch[] = [];
-    let mergedInversePatches: Patch[] = [];
+    const mergedPatches: Patch[] = [];
+    const mergedInversePatches: Patch[] = [];
     elems.forEach(({ patches, inversePatches }) => {
       mergedPatches.push(...patches);
       mergedInversePatches.push(...inversePatches);

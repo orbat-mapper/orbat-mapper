@@ -14,7 +14,7 @@ const { scenario, isReady } = useScenario();
 const localReady = ref(false);
 const scenarioNotFound = ref(false);
 
-let currentDemo = "";
+const currentDemo = "";
 const selectedItems = useSelectedItems();
 
 watch(

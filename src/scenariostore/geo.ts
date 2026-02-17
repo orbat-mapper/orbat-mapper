@@ -528,7 +528,7 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   const itemsInfo = computed<LayerFeatureItem[]>(() => {
-    let items: LayerFeatureItem[] = [];
+    const items: LayerFeatureItem[] = [];
     layers.value.forEach((layer) => {
       items.push({ id: layer.id, type: "layer", name: layer.name });
       const mappedFeatures: LayerFeatureItem[] = layer.features.map((feature) => {

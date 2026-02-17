@@ -2,7 +2,7 @@ import { u } from "unist-builder";
 import { x } from "xastscript";
 
 export function createFromString(xmlString: string): Document {
-  let parser = new DOMParser();
+  const parser = new DOMParser();
   return parser.parseFromString(xmlString, "text/xml");
 }
 

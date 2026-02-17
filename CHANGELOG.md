@@ -12,6 +12,7 @@ February 2026
 
 - Added a resizable mobile panel.
 - Added a new "Map visibility" section in the unit filters panel.
+- Added timeline-aware unit symbol rotation with panel controls and a dedicated rotate map mode.
 - Added freehand drawing mode for scenario features.
 - Added UI for setting the scenario bounding box.
 - Added support for generic unit spreadsheet import (CSV/TSV) with custom field mapping.

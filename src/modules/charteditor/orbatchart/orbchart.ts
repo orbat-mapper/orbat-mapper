@@ -107,7 +107,7 @@ class OrbatChart {
   ): SVGElement {
     this.width = width;
     this.height = height;
-    let renderedChart = this._createSvgRootElement(parentElement, elementId);
+    const renderedChart = this._createSvgRootElement(parentElement, elementId);
     const chartGroup = createGroupElement(this.wrapperGroup, "o-chart");
     addFontAttributes(chartGroup, this.options);
 
@@ -156,8 +156,8 @@ class OrbatChart {
     const groupElement = select(`#o-level-${levelNumber}`) as GElementSelection;
     const bbox = groupElement.node()?.getBBox();
     if (!bbox) return;
-    let offset = 20;
-    let tmp = backgroundLayer
+    const offset = 20;
+    const tmp = backgroundLayer
       .append("rect")
       .attr("x", bbox.x - offset * 2)
       .attr("y", bbox.y - offset)
@@ -176,8 +176,8 @@ class OrbatChart {
     const backgroundLayer = select("#o-highlight-layer");
     const groupElement = renderedBranch.groupElement;
     const bbox = groupElement.node()!.getBBox();
-    let offset = 10;
-    let tmp = backgroundLayer
+    const offset = 10;
+    const tmp = backgroundLayer
       .append("rect")
       .attr("x", bbox.x - offset * 2)
       .attr("y", bbox.y - offset)
@@ -229,7 +229,7 @@ class OrbatChart {
   }
 
   private _computeOrbatInfo(rootNode: ChartUnit) {
-    let levels: BasicUnitNode[][] = [];
+    const levels: BasicUnitNode[][] = [];
     const nodeMap: Record<string, BasicUnitNode> = {};
 
     walkTree(rootNode, (unit, levelIdx, parent) => {
@@ -246,7 +246,7 @@ class OrbatChart {
     this.groupedLevels = groupLevelsByParent();
 
     function groupLevelsByParent(): BasicUnitNode[][][] {
-      let groupedLevels: BasicUnitNode[][][] = [];
+      const groupedLevels: BasicUnitNode[][][] = [];
       levels.forEach((level, yIdx) => {
         groupedLevels[yIdx] = level.reduce(
           (accumulator: BasicUnitNode[][], currentValue, currentIndex, array) => {
@@ -331,10 +331,10 @@ class OrbatChart {
       let prevX = -padding / 2;
 
       renderedLevel.branches.forEach((unitBranch, groupIdx) => {
-        let branchOptions = { ...levelOptions, ...unitBranch.options };
+        const branchOptions = { ...levelOptions, ...unitBranch.options };
         for (const unitNode of unitBranch.units) {
           let x;
-          let unitOptions = { ...branchOptions, ...unitNode.options };
+          const unitOptions = { ...branchOptions, ...unitNode.options };
           if (unitOptions.unitLevelDistance === UnitLevelDistances.EqualPadding) {
             x = prevX + unitNode.boundingBox.width / 2 + padding;
           } else {
@@ -358,10 +358,10 @@ class OrbatChart {
     function _doTreeLayout() {
       const groupsOnLevel = renderedLevel.branches.length;
       renderedLevel.branches.forEach((unitBranch, groupIdx) => {
-        let branchOptions = { ...levelOptions, ...unitBranch.options };
+        const branchOptions = { ...levelOptions, ...unitBranch.options };
         let prevY = y;
         for (const [yIdx, unitNode] of unitBranch.units.entries()) {
-          let unitOptions = { ...branchOptions, ...unitNode.options };
+          const unitOptions = { ...branchOptions, ...unitNode.options };
           let x = unitNode.parent
             ? unitNode.parent.x
             : ((groupIdx + 1) * chartWidth) / (groupsOnLevel + 1);
@@ -388,10 +388,10 @@ class OrbatChart {
     function _doStackedLayout(layout: LevelLayout) {
       const groupsOnLevel = renderedLevel.branches.length;
       renderedLevel.branches.forEach((unitBranch, groupIdx) => {
-        let branchOptions = { ...levelOptions, ...unitBranch.options };
+        const branchOptions = { ...levelOptions, ...unitBranch.options };
         let prevY = y;
         for (const [yIdx, unitNode] of unitBranch.units.entries()) {
-          let unitOptions = { ...branchOptions, ...unitNode.options };
+          const unitOptions = { ...branchOptions, ...unitNode.options };
           let x = unitNode.parent
             ? unitNode.parent.x
             : ((groupIdx + 1) * chartWidth) / (groupsOnLevel + 1);
@@ -418,7 +418,7 @@ class OrbatChart {
   private _drawConnectors(renderedChart: RenderedChart) {
     const nLevels = this.options.maxLevels || renderedChart.levels.length;
     renderedChart.levels.forEach((renderedLevel, yIdx) => {
-      let levelOptions = { ...this.options, ...renderedLevel.options };
+      const levelOptions = { ...this.options, ...renderedLevel.options };
       const currentLevelGElement =
         yIdx > 0
           ? createGroupElement(this.connectorGroup, "", `o-connectors-level-${yIdx}`)
@@ -428,9 +428,9 @@ class OrbatChart {
         addConnectorAttributes(currentLevelGElement, levelOptions);
       renderedLevel.branches.forEach((branch, groupIdx) => {
         const parent = branch.units[0].parent;
-        let currentLevelLayout =
+        const currentLevelLayout =
           yIdx === nLevels - 1 ? this.options.lastLevelLayout : LevelLayouts.Horizontal;
-        let branchOptions = { ...levelOptions, ...branch.options };
+        const branchOptions = { ...levelOptions, ...branch.options };
         if (!currentLevelGElement) return;
 
         const branchId = `o-connectors-group-${parent ? parent.unit.id : 0}`;
@@ -441,7 +441,7 @@ class OrbatChart {
         );
         addConnectorAttributes(currentBranchElement, branchOptions);
         branch.units.forEach((unitNode, idx) => {
-          let unitOptions = { ...branchOptions, ...unitNode.options };
+          const unitOptions = { ...branchOptions, ...unitNode.options };
           if (currentLevelLayout === LevelLayouts.Stacked && idx > 0) return;
           if (isLeftRightLayout(currentLevelLayout)) return;
           if (currentLevelLayout === LevelLayouts.Tree) return;

@@ -42,7 +42,7 @@ const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 const uiSettings = useUiStore();
 
-let isDragged = ref(false);
+const isDragged = ref(false);
 
 const sides = computed(() => {
   return state.sides.map((side) => getSideById(side));

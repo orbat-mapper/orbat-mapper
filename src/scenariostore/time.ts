@@ -39,6 +39,7 @@ export function createInitialState(unit: NUnit): CurrentState | null {
       location: unit.location,
       type: "initial",
       sidc: unit.sidc,
+      symbolRotation: 0,
       equipment: klona(unit.equipment),
       personnel: klona(unit.personnel),
       supplies: klona(unit.supplies),
@@ -156,7 +157,10 @@ export function updateCurrentUnitState(unit: NUnit, timestamp: number) {
       break;
     }
   }
-  if (currentState?.sidc !== unit._state?.sidc) {
+  if (
+    currentState?.sidc !== unit._state?.sidc ||
+    currentState?.symbolRotation !== unit._state?.symbolRotation
+  ) {
     unit._ikey = undefined;
     invalidateUnitStyle(unit.id);
   }
@@ -341,7 +345,7 @@ export function useScenarioTime(store: NewScenarioStore) {
   }
 
   function addScenarioEvent(event: NScenarioEvent | ScenarioEvent) {
-    let newEvent = klona(event) as NScenarioEvent;
+    const newEvent = klona(event) as NScenarioEvent;
     if (!newEvent.id) newEvent.id = nanoid();
     if (!newEvent._type) newEvent._type = "scenario";
     update((s) => {
