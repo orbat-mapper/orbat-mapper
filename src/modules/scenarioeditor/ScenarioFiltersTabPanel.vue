@@ -24,6 +24,12 @@ import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
 import { Badge } from "@/components/ui/badge";
 import { getFullUnitSidc } from "@/symbology/helpers.ts";
 
+const VISIBILITY_INITIAL_LOCATION_KEY = "visibility-initial-location";
+const VISIBILITY_CURRENT_LOCATION_KEY = "visibility-current-location";
+const VISIBILITY_HAS_LOCATIONS_KEY = "visibility-has-locations";
+const VISIBILITY_NO_LOCATIONS_KEY = "visibility-no-locations";
+const GENERIC_FILTER_SIDC = "10031000100000000000";
+
 const {
   store: { state },
 } = injectStrict(activeScenarioKey);
@@ -34,6 +40,7 @@ const iconTree = ref<NestedUnitStatItem[]>([]);
 const modifierTree = ref<NestedUnitStatItem[]>([]);
 const statusTree = ref<NestedUnitStatItem[]>([]);
 const sidTree = ref<NestedUnitStatItem[]>([]);
+const visibilityTree = ref<NestedUnitStatItem[]>([]);
 const { selectedUnitIds } = useSelectedItems();
 
 const excludedKeys = ref<Set<string>>(new Set());
@@ -222,6 +229,32 @@ watchEffect(() => {
   });
 
   flatStats.value = stats;
+  visibilityTree.value = [
+    {
+      key: VISIBILITY_CURRENT_LOCATION_KEY,
+      label: "Has location at current time",
+      sidc: GENERIC_FILTER_SIDC,
+    },
+    {
+      key: VISIBILITY_HAS_LOCATIONS_KEY,
+      label: "Has locations",
+      sidc: GENERIC_FILTER_SIDC,
+    },
+    {
+      key: VISIBILITY_NO_LOCATIONS_KEY,
+      label: "No locations at all",
+      sidc: GENERIC_FILTER_SIDC,
+    },
+    {
+      key: VISIBILITY_INITIAL_LOCATION_KEY,
+      label: "Has initial location",
+      sidc: GENERIC_FILTER_SIDC,
+    },
+  ];
+  stats[VISIBILITY_INITIAL_LOCATION_KEY] = stats[VISIBILITY_INITIAL_LOCATION_KEY] || 0;
+  stats[VISIBILITY_CURRENT_LOCATION_KEY] = stats[VISIBILITY_CURRENT_LOCATION_KEY] || 0;
+  stats[VISIBILITY_HAS_LOCATIONS_KEY] = stats[VISIBILITY_HAS_LOCATIONS_KEY] || 0;
+  stats[VISIBILITY_NO_LOCATIONS_KEY] = stats[VISIBILITY_NO_LOCATIONS_KEY] || 0;
   sideTree.value = sortBy(sideStatItems, "label");
   emtTree.value = sortBy(emtStatItems, "label");
   iconTree.value = sortBy(iconStatItems, "label");
@@ -258,6 +291,10 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
     statusKey,
     hqtfdKey,
     sidKey,
+    initialLocationKey,
+    currentLocationKey,
+    hasLocationsKey,
+    noLocationsKey,
   } = keys;
   stats[symbolSetKey] = (stats[symbolSetKey] || 0) + 1;
   stats[entityKey] = (stats[entityKey] || 0) + 1;
@@ -268,6 +305,12 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
   stats[modSymbolSetKey] = (stats[modSymbolSetKey] || 0) + 1;
   stats[statusKey] = (stats[statusKey] || 0) + 1;
   stats[sidKey] = (stats[sidKey] || 0) + 1;
+  if (initialLocationKey)
+    stats[initialLocationKey] = (stats[initialLocationKey] || 0) + 1;
+  if (currentLocationKey)
+    stats[currentLocationKey] = (stats[currentLocationKey] || 0) + 1;
+  if (hasLocationsKey) stats[hasLocationsKey] = (stats[hasLocationsKey] || 0) + 1;
+  if (noLocationsKey) stats[noLocationsKey] = (stats[noLocationsKey] || 0) + 1;
   if (!hqtfdKey.endsWith("0")) stats[hqtfdKey] = (stats[hqtfdKey] || 0) + 1;
   if (!mod1Key.endsWith("00")) stats[mod1Key] = (stats[mod1Key] || 0) + 1;
   if (!mod2Key.endsWith("00")) stats[mod2Key] = (stats[mod2Key] || 0) + 1;
@@ -288,6 +331,19 @@ function createKeys(unit: NUnit) {
   const mod2Key = `mod2-${symbolSetKey}-${sidc.modifierTwo}`;
   const statusKey = `status-${sidc.status}`;
   const hqtfdKey = `hqtfd-${sidc.hqtfd}`;
+  const hasInitialLocation = Boolean(unit.location);
+  const hasCurrentLocation = Boolean(unit._state?.location);
+  const hasAnyStateLocation = Boolean(unit.state?.some((s) => !!s.location));
+  const hasLocations = hasInitialLocation || hasAnyStateLocation;
+  const hasNoLocations = !hasLocations;
+  const initialLocationKey = hasInitialLocation
+    ? VISIBILITY_INITIAL_LOCATION_KEY
+    : undefined;
+  const currentLocationKey = hasCurrentLocation
+    ? VISIBILITY_CURRENT_LOCATION_KEY
+    : undefined;
+  const hasLocationsKey = hasLocations ? VISIBILITY_HAS_LOCATIONS_KEY : undefined;
+  const noLocationsKey = hasNoLocations ? VISIBILITY_NO_LOCATIONS_KEY : undefined;
   return {
     sidKey,
     symbolSetKey,
@@ -301,6 +357,10 @@ function createKeys(unit: NUnit) {
     mod2Key,
     statusKey,
     hqtfdKey,
+    initialLocationKey,
+    currentLocationKey,
+    hasLocationsKey,
+    noLocationsKey,
   };
 }
 
@@ -319,6 +379,10 @@ function selectByKey(key: string) {
       statusKey,
       hqtfdKey,
       sidKey,
+      initialLocationKey,
+      currentLocationKey,
+      hasLocationsKey,
+      noLocationsKey,
     } = createKeys(unit);
 
     if (
@@ -333,7 +397,11 @@ function selectByKey(key: string) {
       excludedKeys.value.has(mod2Key) ||
       excludedKeys.value.has(statusKey) ||
       excludedKeys.value.has(hqtfdKey) ||
-      excludedKeys.value.has(sidKey)
+      excludedKeys.value.has(sidKey) ||
+      (!!initialLocationKey && excludedKeys.value.has(initialLocationKey)) ||
+      (!!currentLocationKey && excludedKeys.value.has(currentLocationKey)) ||
+      (!!hasLocationsKey && excludedKeys.value.has(hasLocationsKey)) ||
+      (!!noLocationsKey && excludedKeys.value.has(noLocationsKey))
     ) {
       return;
     }
@@ -361,6 +429,14 @@ function selectByKey(key: string) {
       selectedUnitIds.value.add(unit.id);
     } else if (key === sidKey) {
       selectedUnitIds.value.add(unit.id);
+    } else if (key === initialLocationKey) {
+      selectedUnitIds.value.add(unit.id);
+    } else if (key === currentLocationKey) {
+      selectedUnitIds.value.add(unit.id);
+    } else if (key === hasLocationsKey) {
+      selectedUnitIds.value.add(unit.id);
+    } else if (key === noLocationsKey) {
+      selectedUnitIds.value.add(unit.id);
     }
   });
 }
@@ -381,6 +457,10 @@ function clearByKey(key: string) {
       statusKey,
       hqtfdKey,
       sidKey,
+      initialLocationKey,
+      currentLocationKey,
+      hasLocationsKey,
+      noLocationsKey,
     } = createKeys(unit);
     if (key === symbolSetKey) {
       selectedUnitIds.value.delete(unit.id);
@@ -405,6 +485,14 @@ function clearByKey(key: string) {
     } else if (key === hqtfdKey) {
       selectedUnitIds.value.delete(unit.id);
     } else if (key === sidKey) {
+      selectedUnitIds.value.delete(unit.id);
+    } else if (key === initialLocationKey) {
+      selectedUnitIds.value.delete(unit.id);
+    } else if (key === currentLocationKey) {
+      selectedUnitIds.value.delete(unit.id);
+    } else if (key === hasLocationsKey) {
+      selectedUnitIds.value.delete(unit.id);
+    } else if (key === noLocationsKey) {
       selectedUnitIds.value.delete(unit.id);
     }
   });
@@ -455,7 +543,7 @@ function getSideGroupLabel(sideGroupId: string) {
 }
 
 function getIconLabel({ symbolSet, entity, entityType }: IconData) {
-  let label = symbolSet ?? entity ?? entityType ?? "Unknown";
+  const label = symbolSet ?? entity ?? entityType ?? "Unknown";
   if (symbolSet === undefined) {
     return label;
   }
@@ -477,7 +565,7 @@ function getIconLabel({ symbolSet, entity, entityType }: IconData) {
 }
 
 function getModifierLabel({ symbolSet, mod1, mod2 }: ModifierData) {
-  let label = symbolSet ?? mod1 ?? mod2 ?? "Unknown";
+  const label = symbolSet ?? mod1 ?? mod2 ?? "Unknown";
   if (symbolSet === undefined) {
     return label;
   }
@@ -495,7 +583,7 @@ function getModifierLabel({ symbolSet, mod1, mod2 }: ModifierData) {
   return label;
 }
 
-function onSelect(event: any) {
+function onSelect(event: CustomEvent<{ value: { key: string } }>) {
   const key = event.detail.value.key as string;
 
   if (selectedStats.value[key]) {
@@ -573,6 +661,19 @@ function expandAllIcons() {
     <NewAccordionPanel label="Side">
       <FilterTree
         :tree="sideTree"
+        v-model:expandedKeys="expandedKeys"
+        :stats="flatStats"
+        :selectedStats="selectedStats"
+        :excludedKeys="excludedKeys"
+        @select="onSelect"
+        @clear="clearByKey"
+        @exclude="excludedKeys.add($event)"
+        @clearExclude="excludedKeys.delete($event)"
+      />
+    </NewAccordionPanel>
+    <NewAccordionPanel label="Map visibility">
+      <FilterTree
+        :tree="visibilityTree"
         v-model:expandedKeys="expandedKeys"
         :stats="flatStats"
         :selectedStats="selectedStats"
