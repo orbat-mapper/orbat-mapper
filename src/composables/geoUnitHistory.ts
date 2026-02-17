@@ -338,11 +338,12 @@ export function useUnitHistory(
     arcLayer.setOpacity(editHistoryRef.value ? 0.4 : 1);
     historyLayerSource.clear();
     waypointLayerSource.clear();
+    viaLayerSource.clear();
     arcLayerSource.clear();
     if (!showHistoryRef.value) return;
     selectedUnitIds.value.forEach((unitId) => {
       const unit = getUnitById(unitId);
-      if (!unit) return;
+      if (!unit?._state?.location) return;
 
       const { legFeatures, waypointFeatures, viaPointFeatures, arcFeatures } =
         createUnitPathFeatures(unit, {
