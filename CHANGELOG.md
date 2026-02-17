@@ -10,11 +10,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 February 2026
 
+- Added a resizable mobile panel.
+- Added a new "Map visibility" section in the unit filters panel.
 - Added freehand drawing mode for scenario features.
 - Added UI for setting the scenario bounding box.
 - Added support for generic unit spreadsheet import (CSV/TSV) with custom field mapping.
 - Added a "Recently shared" submenu to the File menu, providing quick access to the history of shared scenario links.
 - Added a share scenario button to the main toolbar.
+- Added CSV/TSV export option with configurable separator.
 
 January 2026
 
