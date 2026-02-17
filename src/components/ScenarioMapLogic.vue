@@ -17,6 +17,7 @@ import {
   calculateZoomToResolution,
   useMapDrop,
   useMoveInteraction,
+  useRotateInteraction,
   useUnitLayer,
   useUnitSelectInteraction,
 } from "@/composables/geoUnitLayers";
@@ -89,7 +90,7 @@ const mapSettingsStore = useMapSettingsStore();
 const geoStore = useGeoStore();
 const settingsStore = useSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
-const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
+const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
 const { unitLayer, drawUnits, labelLayer } = useUnitLayer();
 
@@ -160,9 +161,11 @@ const { moveInteraction: moveUnitInteraction } = useMoveInteraction(
   unitLayer,
   moveUnitEnabled,
 );
+const { rotateInteraction } = useRotateInteraction(olMap, unitLayer, rotateUnitEnabled);
 
-useOlEvent(unitLayerGroup.on("change:visible", toggleMoveUnitInteraction));
+useOlEvent(unitLayerGroup.on("change:visible", toggleUnitInteractions));
 olMap.addInteraction(moveUnitInteraction);
+olMap.addInteraction(rotateInteraction);
 
 const { showLocation, coordinateFormat, showScaleLine } =
   storeToRefs(useMapSettingsStore());
@@ -202,9 +205,10 @@ if (state.boundingBox && state.boundingBox.length === 4) {
     olMap.getView().fit(extent, { padding: [100, 100, 150, 100], maxZoom: 16 });
 }
 
-function toggleMoveUnitInteraction(event: ObjectEvent) {
+function toggleUnitInteractions(event: ObjectEvent) {
   const isUnitLayerVisible = !event.oldValue;
   moveUnitInteraction.setActive(isUnitLayerVisible && moveUnitEnabled.value);
+  rotateInteraction.setActive(isUnitLayerVisible && rotateUnitEnabled.value);
 }
 
 emit("map-ready", { olMap, featureSelectInteraction, unitSelectInteraction });

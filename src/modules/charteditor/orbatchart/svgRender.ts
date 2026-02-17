@@ -74,7 +74,7 @@ function convertBasicUnitNode2UnitNodeInfo(
         // {uniqueDesignation: node.shortName || node.name},
       );
 
-  let unitNodeInfo = basicUnitNode as UnitNodeInfo;
+  const unitNodeInfo = basicUnitNode as UnitNodeInfo;
   unitNodeInfo.symbolBoxSize = symb.getSize();
   unitNodeInfo.anchor = symb.getAnchor();
   unitNodeInfo.octagonAnchor = symb.getOctagonAnchor();
@@ -94,42 +94,42 @@ export function createInitialNodeStructure(
   options: OrbChartOptions,
   specificOptions: SpecificOptions,
 ): RenderedLevel[] {
-  let renderedLevels: RenderedLevel[] = [];
+  const renderedLevels: RenderedLevel[] = [];
   for (const [levelNumber, currentLevel] of groupedLevels.entries()) {
     if (options.maxLevels && levelNumber >= options.maxLevels) break;
-    let levelSpecificOptions = specificOptions.level?.[levelNumber] || {};
-    let levelGElement = createGroupElement(
+    const levelSpecificOptions = specificOptions.level?.[levelNumber] || {};
+    const levelGElement = createGroupElement(
       parentElement,
       "o-level",
       `o-level-${levelNumber}`,
     );
     addFontAttributes(levelGElement, levelSpecificOptions);
 
-    let renderedLevel: RenderedLevel = {
+    const renderedLevel: RenderedLevel = {
       groupElement: levelGElement,
       branches: [],
       options: levelSpecificOptions,
     };
 
     renderedLevels.push(renderedLevel);
-    let levelOptions = { ...options, ...levelSpecificOptions };
+    const levelOptions = { ...options, ...levelSpecificOptions };
 
     currentLevel.forEach((branch, groupIdx) => {
-      let parent = branch[0].parent;
+      const parent = branch[0].parent;
       let branchSpecificOptions = {};
       if (parent) {
         branchSpecificOptions = specificOptions.branch?.[parent.unit.id] || {};
       }
-      let branchOptions = { ...levelOptions, ...branchSpecificOptions };
-      let branchId = `o-branch-${parent ? parent.unit.id : 0}`;
-      let branchGElement = createGroupElement(levelGElement, "o-branch", branchId);
+      const branchOptions = { ...levelOptions, ...branchSpecificOptions };
+      const branchId = `o-branch-${parent ? parent.unit.id : 0}`;
+      const branchGElement = createGroupElement(levelGElement, "o-branch", branchId);
       addFontAttributes(branchGElement, branchSpecificOptions);
 
       const units = branch.map((unitNode) => {
-        let unitSpecificOptions = specificOptions.unit?.[unitNode.unit.id] || {};
+        const unitSpecificOptions = specificOptions.unit?.[unitNode.unit.id] || {};
 
-        let unitOptions = { ...branchOptions, ...unitSpecificOptions };
-        let renderedUnitNode = createUnitGroup(
+        const unitOptions = { ...branchOptions, ...unitSpecificOptions };
+        const renderedUnitNode = createUnitGroup(
           branchGElement,
           convertBasicUnitNode2UnitNodeInfo(unitNode, unitOptions),
           unitOptions,
@@ -168,7 +168,7 @@ export function createGroupElement(
   className: string,
   id = "",
 ): GElementSelection {
-  let el = parentElement.append("g").attr("class", className);
+  const el = parentElement.append("g").attr("class", className);
   if (id) {
     el.attr("id", id);
   }
@@ -285,7 +285,7 @@ export function createUnitGroup(
     drawDebugRect(g);
   }
 
-  let renderedUnitNode = unitNode as RenderedUnitNode;
+  const renderedUnitNode = unitNode as RenderedUnitNode;
   renderedUnitNode.groupElement = g;
   renderedUnitNode.boundingBox = g.node()!.getBBox();
   renderedUnitNode.level = level;
@@ -362,10 +362,10 @@ export function drawUnitLevelConnectorPath(
   unitBranch: RenderedUnitNode[],
   options: OrbChartOptions,
 ) {
-  let firstUnitInGroup = unitBranch[0];
-  let parentUnit = firstUnitInGroup.parent;
+  const firstUnitInGroup = unitBranch[0];
+  const parentUnit = firstUnitInGroup.parent;
   if (!parentUnit) return;
-  let lastUnitInGroup = unitBranch[unitBranch.length - 1];
+  const lastUnitInGroup = unitBranch[unitBranch.length - 1];
 
   const dy = firstUnitInGroup.y - (firstUnitInGroup.y - parentUnit.y) / 2;
   const d1 = `M ${parentUnit.x}, ${parentUnit.ly + options.connectorOffset} V ${dy}`;
@@ -381,8 +381,8 @@ export function drawUnitBranchTreeLeftRightConnectorPath(
   levelLayout: LevelLayout,
   options: OrbChartOptions,
 ) {
-  let lastUnitInGroup = unitBranch[unitBranch.length - 1];
-  let parentUnit = lastUnitInGroup.parent as RenderedUnitNode;
+  const lastUnitInGroup = unitBranch[unitBranch.length - 1];
+  const parentUnit = lastUnitInGroup.parent as RenderedUnitNode;
   if (!parentUnit) return;
 
   const d1 = `M ${parentUnit.x}, ${parentUnit.ly + options.connectorOffset} V ${
@@ -391,7 +391,7 @@ export function drawUnitBranchTreeLeftRightConnectorPath(
   g.append("path").attr("d", d1).classed("o-line", true);
 
   // find the widest node
-  let maxWidth = Math.max(...unitBranch.map((u) => u.boundingBox.width));
+  const maxWidth = Math.max(...unitBranch.map((u) => u.boundingBox.width));
   for (const [yIdx, unit] of unitBranch.entries()) {
     let d1;
     // const delta = Math.abs(unit.boundingBox.width / 2 - maxWidth / 2);

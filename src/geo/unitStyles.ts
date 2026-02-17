@@ -29,7 +29,7 @@ export function invalidateUnitStyle(cacheKey: string) {
   labelStyleCache.delete(cacheKey);
 }
 
-function createMilSymbolStyle(milSymbol: MilSymbol) {
+function createMilSymbolStyle(milSymbol: MilSymbol, rotation: number) {
   const { x, y } = milSymbol.getAnchor();
   const image = new Icon({
     scale: 1 / (window.devicePixelRatio || 1),
@@ -37,6 +37,7 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
     anchorXUnits: "pixels",
     anchorYUnits: "pixels",
     img: milSymbol.asCanvas(),
+    rotation,
   });
   return new Style({
     image,
@@ -46,6 +47,7 @@ function createMilSymbolStyle(milSymbol: MilSymbol) {
 function createCustomSymbolStyle(
   customSymbol: CustomSymbol,
   size: number,
+  rotation: number,
   color?: string,
 ): Style {
   const image = new Icon({
@@ -54,6 +56,7 @@ function createCustomSymbolStyle(
     width: size,
     crossOrigin: "anonymous",
     color,
+    rotation,
   });
   return new Style({
     image,
@@ -65,9 +68,12 @@ export function createUnitStyle(
   symbolOptions: UnitSymbolOptions,
   scenario: TScenario,
   color?: string,
+  rotationOverrideDeg?: number,
 ): { style: Style; cacheKey: string } {
   const { name = "", shortName = "" } = unit;
   const sidc = unit._state?.sidc || unit.sidc;
+  const symbolRotationDeg = rotationOverrideDeg ?? unit._state?.symbolRotation ?? 0;
+  const symbolRotationRad = (symbolRotationDeg * Math.PI) / 180;
 
   const mapSettingsStore = useMapSettingsStore();
   const symbolSettings = useSymbolSettingsStore();
@@ -77,13 +83,14 @@ export function createUnitStyle(
 
   if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
     const customSymbolId = sidc.slice(CUSTOM_SYMBOL_SLICE);
-    const cacheKey = customSymbolId;
+    const cacheKey = customSymbolId + hashObject({ symbolRotationDeg, color });
     const customSymbol = scenario.store.state.customSymbolMap[customSymbolId];
     return {
       style: customSymbol
         ? createCustomSymbolStyle(
             customSymbol,
             mapSettingsStore.mapIconSize * (mapSettingsStore.mapCustomIconScale || 1.7),
+            symbolRotationRad,
             color,
           )
         : new Style(),
@@ -102,8 +109,8 @@ export function createUnitStyle(
 
   const milSymbol = symbolGenerator(sidc, options);
   return {
-    style: createMilSymbolStyle(milSymbol),
-    cacheKey: sidc + hashObject(options),
+    style: createMilSymbolStyle(milSymbol, symbolRotationRad),
+    cacheKey: sidc + hashObject({ ...options, _symbolRotation: symbolRotationDeg }),
   };
 }
 

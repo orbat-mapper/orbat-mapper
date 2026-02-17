@@ -61,7 +61,7 @@ function handleEscape(e: KeyboardEvent) {
 }
 
 function isRekaComponent(e: KeyboardEvent) {
-  let target = e.target as HTMLElement;
+  const target = e.target as HTMLElement;
   if (!target) return false;
   return (
     isTargetReka(target) || (target.parentElement && isTargetReka(target.parentElement))

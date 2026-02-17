@@ -18,7 +18,7 @@ const {
 } = injectStrict(activeScenarioKey);
 
 const dragItemRef = ref<HTMLElement | null>(null);
-let isDragged = ref(false);
+const isDragged = ref(false);
 
 let dndCleanup: CleanupFn = () => {};
 onMounted(() => {

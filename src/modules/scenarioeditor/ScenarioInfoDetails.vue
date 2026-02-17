@@ -48,7 +48,7 @@ const toggleEditMode = useToggle(isEditMode);
 
 const hDescription = computed(() => renderMarkdown(state.info.description || ""));
 
-let form = ref<ScenarioInfo>({
+const form = ref<ScenarioInfo>({
   name: "",
   description: "",
   startTime: 0,

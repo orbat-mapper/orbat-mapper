@@ -16,6 +16,7 @@ import {
   IconSkipPrevious,
   IconUndoVariant as UndoIcon,
 } from "@iconify-prerendered/vue-mdi";
+import { RotateCwIcon } from "lucide-vue-next";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { injectStrict } from "@/utils";
@@ -57,7 +58,7 @@ const mapRef = injectStrict(activeMapKey);
 
 const store = useMainToolbarStore();
 const { addMultiple } = storeToRefs(store);
-const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
+const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const selectStore = useMapSelectStore();
 const toggleAddMultiple = useToggle(addMultiple);
 const bus = useEventBus(orbatUnitClick);
@@ -76,8 +77,6 @@ const computedSidc = computed(() => {
   parsedSidc.hqtfd = "0";
   return parsedSidc.toString();
 });
-
-const toggleMoveUnit = useToggle(moveUnitEnabled);
 
 const symbolOptions = computed(() =>
   activeParent.value
@@ -172,6 +171,21 @@ watch(activeParent, (unitOrSideGroup) => {
 function selectEchelon(sidc: string) {
   currentEchelon.value = new Sidc(sidc).emt;
 }
+
+function setSelectMode() {
+  moveUnitEnabled.value = false;
+  rotateUnitEnabled.value = false;
+}
+
+function setMoveMode() {
+  moveUnitEnabled.value = true;
+  rotateUnitEnabled.value = false;
+}
+
+function setRotateMode() {
+  rotateUnitEnabled.value = true;
+  moveUnitEnabled.value = false;
+}
 </script>
 
 <template>
@@ -187,15 +201,26 @@ function selectEchelon(sidc: string) {
         <IconLockOutline v-if="addMultiple" class="size-5" />
         <IconLockOpenVariantOutline v-else class="size-6" />
       </MainToolbarButton>
-      <MainToolbarButton @click="toggleMoveUnit(false)" :active="!moveUnitEnabled">
+      <MainToolbarButton
+        @click="setSelectMode()"
+        :active="!moveUnitEnabled && !rotateUnitEnabled"
+        title="Select unit"
+      >
         <SelectIcon class="size-6" />
       </MainToolbarButton>
       <MainToolbarButton
-        :active="moveUnitEnabled"
-        @click="toggleMoveUnit(true)"
+        :active="moveUnitEnabled && !rotateUnitEnabled"
+        @click="setMoveMode()"
         title="Move unit"
       >
         <MoveIcon class="size-6" />
+      </MainToolbarButton>
+      <MainToolbarButton
+        :active="rotateUnitEnabled"
+        @click="setRotateMode()"
+        title="Rotate unit"
+      >
+        <RotateCwIcon class="size-5" />
       </MainToolbarButton>
       <MainToolbarButton
         @click="emit('show-settings')"

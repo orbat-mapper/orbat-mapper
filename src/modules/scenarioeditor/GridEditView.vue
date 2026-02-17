@@ -119,7 +119,7 @@ const filteredOrbat = computed(() => {
         sideList.push({ side, children: sideGroupList });
       }
     });
-  if (queryHasChanged) {
+  if (queryHasChanged.value) {
     sgOpen.value.clear();
     sideOpen.value.clear();
   }

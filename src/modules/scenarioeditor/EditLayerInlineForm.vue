@@ -23,7 +23,7 @@ const {
 
 const { getModalTimestamp } = injectStrict(timeModalKey);
 
-let form = ref<Partial<NScenarioLayer>>({
+const form = ref<Partial<NScenarioLayer>>({
   name: props.layer.name,
   visibleFromT: props.layer.visibleFromT,
   visibleUntilT: props.layer.visibleUntilT,

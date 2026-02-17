@@ -202,7 +202,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
       { noEmit: true, undoable: false },
     );
 
-    let key = source.on("change", function () {
+    const key = source.on("change", function () {
       if (source.getState() == "ready") {
         unByKey(key);
         const tileJson = source.getTileJSON();

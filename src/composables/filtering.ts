@@ -13,13 +13,13 @@ export function filterUnits(
   locationFilter = false,
   resetOpen = true,
 ): NOrbatItemData[] {
-  let filteredUnits: NOrbatItemData[] = [];
-  let re = new RegExp(query, "i");
+  const filteredUnits: NOrbatItemData[] = [];
+  const re = new RegExp(query, "i");
 
   function helper(currentUnitId: EntityId, parentMatched: boolean) {
     const currentUnit = unitMap[currentUnitId] as NUnit;
     if (!currentUnit) return [];
-    let oi: NOrbatItemData = {
+    const oi: NOrbatItemData = {
       unit: currentUnit,
       children: [],
     };
@@ -27,7 +27,7 @@ export function filterUnits(
     let matched = false;
     let childMatched = false;
     const hasPosition = Boolean(currentUnit?._state?.location);
-    let children = [];
+    const children = [];
     if (currentUnit.name.search(re) >= 0) {
       matched = locationFilter ? hasPosition : true;
     } else if (parentMatched && resetOpen) {
@@ -35,7 +35,7 @@ export function filterUnits(
     }
     if (currentUnit.subUnits?.length) {
       for (const subUnit of currentUnit.subUnits) {
-        let su = helper(subUnit, matched || parentMatched);
+        const su = helper(subUnit, matched || parentMatched);
         if (su.length) {
           childMatched = true;
           oi.children.push(...su);

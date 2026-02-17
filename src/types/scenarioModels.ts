@@ -27,6 +27,7 @@ export interface State extends Partial<ScenarioEventDescription> {
   t: ScenarioTime;
   location?: Position | null;
   sidc?: string;
+  symbolRotation?: number;
   via?: Position[];
   symbolOptions?: UnitSymbolOptions;
   textAmplifiers?: TextAmplifiers;
@@ -259,6 +260,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "2.3.0"
   | "2.2.0"
   | "2.1.0"
   | "2.0.0"

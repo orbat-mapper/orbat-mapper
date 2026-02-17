@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 
 import type { NUnit } from "@/types/internalModels";
 import type { RangeRing, RangeRingStyle } from "@/types/scenarioGeoModels";
@@ -17,11 +17,12 @@ import { useToeActions } from "@/composables/scenarioActions";
 import { useSelectedItems } from "@/stores/selectedStore";
 import PanelHeading from "@/components/PanelHeading.vue";
 import ToggleField from "@/components/ToggleField.vue";
-import { useMapViewStore } from "@/stores/mapViewStore";
 import ZoomSelector from "@/components/ZoomSelector.vue";
 import { type VisibilityStyleSpec } from "@/geo/simplestyle";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import NumberInputGroup from "@/components/NumberInputGroup.vue";
 
 interface Props {
   unit: NUnit;
@@ -39,7 +40,6 @@ const {
 } = activeScenario;
 const toeActions = useToeActions();
 const { selectedUnitIds } = useSelectedItems();
-const mapView = useMapViewStore();
 
 const editedRangeRing = ref<RangeRing>({
   name: "",
@@ -70,6 +70,113 @@ const range = computed({
 const limitVisibility = computed({
   get: () => marker.value.limitVisibility,
   set: (v) => updateVisibilityStyle({ limitVisibility: v }),
+});
+
+function normalizeRotation(rotation: number) {
+  const normalized = rotation % 360;
+  return normalized < 0 ? normalized + 360 : normalized;
+}
+
+const rotationUnits = computed(() => {
+  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
+    return [...selectedUnitIds.value]
+      .map((unitId) => getUnitById(unitId))
+      .filter((unit): unit is NUnit => !!unit);
+  }
+  return [props.unit];
+});
+
+const currentRotation = computed(() => {
+  const unit = rotationUnits.value[0];
+  return normalizeRotation(unit?._state?.symbolRotation ?? 0);
+});
+
+const hasMixedRotation = computed(() => {
+  if (rotationUnits.value.length < 2) return false;
+  const values = new Set(
+    rotationUnits.value.map((unit) =>
+      normalizeRotation(unit._state?.symbolRotation ?? 0),
+    ),
+  );
+  return values.size > 1;
+});
+
+const rotationDraft = ref(0);
+const isSyncingRotationDraft = ref(false);
+let rotationCommitTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(
+  [currentRotation, () => store.state.currentTime, () => props.unit.id, selectedUnitIds],
+  () => {
+    isSyncingRotationDraft.value = true;
+    rotationDraft.value = currentRotation.value;
+    isSyncingRotationDraft.value = false;
+  },
+  { immediate: true },
+);
+
+const rotationSliderValue = computed({
+  get: (): [number] => [rotationDraft.value],
+  set: ([value]) => {
+    rotationDraft.value = normalizeRotation(value);
+  },
+});
+
+function getRotationTargetIds() {
+  const ids =
+    props.isMultiMode && selectedUnitIds.value.size > 1
+      ? [...selectedUnitIds.value]
+      : [props.unit.id];
+  return ids.filter((id) => !unitActions.isUnitLocked(id));
+}
+
+function applyRotation() {
+  const rotation = normalizeRotation(rotationDraft.value);
+  const targetIds = getRotationTargetIds();
+  if (!targetIds.length) return;
+  store.groupUpdate(() => {
+    targetIds.forEach((unitId) => {
+      unitActions.addUnitStateEntry(
+        unitId,
+        { t: store.state.currentTime, symbolRotation: rotation },
+        true,
+      );
+    });
+  });
+}
+
+function cancelScheduledRotationApply() {
+  if (rotationCommitTimeout !== null) {
+    clearTimeout(rotationCommitTimeout);
+    rotationCommitTimeout = null;
+  }
+}
+
+function scheduleApplyRotation() {
+  cancelScheduledRotationApply();
+  rotationCommitTimeout = setTimeout(() => {
+    rotationCommitTimeout = null;
+    applyRotation();
+  }, 120);
+}
+
+watch(rotationDraft, (next, prev) => {
+  if (isSyncingRotationDraft.value || props.isLocked) return;
+  const normalizedNext = normalizeRotation(next);
+  const normalizedPrev = normalizeRotation(prev);
+  if (Math.abs(normalizedNext - normalizedPrev) < 1e-6) return;
+  // Skip when draft already matches effective rotation (e.g. undo/redo sync).
+  if (Math.abs(normalizedNext - currentRotation.value) < 1e-6) return;
+  scheduleApplyRotation();
+});
+
+function resetRotationDraft() {
+  cancelScheduledRotationApply();
+  rotationDraft.value = 0;
+  applyRotation();
+}
+
+onBeforeUnmount(() => {
+  cancelScheduledRotationApply();
 });
 
 const rangeRings = computed(() => {
@@ -261,6 +368,43 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
       <div>Zoom levels</div>
       <ZoomSelector v-model="range" class="mt-4 flex-auto" />
     </template>
+  </PanelDataGrid>
+  <PanelDataGrid class="mt-6">
+    <div class="col-span-2 mt-2 font-semibold">Rotation</div>
+    <div class="leading-tight">Angle (deg)</div>
+    <div>
+      <NumberInputGroup
+        v-model="rotationDraft"
+        :min="0"
+        :max="360"
+        :step="1"
+        :disabled="isLocked"
+      />
+    </div>
+    <div>Adjust</div>
+    <div class="pt-3">
+      <Slider
+        v-model="rotationSliderValue"
+        :min="0"
+        :max="360"
+        :step="1"
+        :disabled="isLocked"
+      />
+    </div>
+    <div v-if="hasMixedRotation" class="col-span-2 text-xs text-amber-700">
+      Mixed values in current selection.
+    </div>
+    <div class="col-span-2 flex justify-end">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        :disabled="isLocked"
+        @click="resetRotationDraft"
+      >
+        Reset
+      </Button>
+    </div>
   </PanelDataGrid>
   <div class="mt-4 flex items-center justify-between">
     <PanelHeading>Range rings</PanelHeading>

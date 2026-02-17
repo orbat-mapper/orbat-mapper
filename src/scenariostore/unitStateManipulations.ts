@@ -51,6 +51,7 @@ function isNotEmptyState(state: NState) {
     state.diff ||
     state.location ||
     state.sidc ||
+    state.symbolRotation !== undefined ||
     state.symbolOptions ||
     state.textAmplifiers ||
     state.status ||

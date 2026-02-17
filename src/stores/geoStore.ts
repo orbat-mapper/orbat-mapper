@@ -150,12 +150,14 @@ export const useUnitSettingsStore = defineStore("unitSettings", () => {
   const showHistory = useLocalStorage("showHistory", true);
   const editHistory = ref(false);
   const moveUnitEnabled = ref(false);
+  const rotateUnitEnabled = ref(false);
   const showWaypointTimestamps = useLocalStorage("showWaypointTimestamps", false);
 
   return {
     showHistory,
     editHistory,
     moveUnitEnabled,
+    rotateUnitEnabled,
     showWaypointTimestamps,
   };
 });

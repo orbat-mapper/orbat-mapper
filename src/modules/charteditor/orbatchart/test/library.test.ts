@@ -21,28 +21,28 @@ describe("OrbatChart class", () => {
   });
 
   it("renders", () => {
-    let o = new OrbatChart(ORBAT1);
-    let svg = o.toSVG(document.body);
+    const o = new OrbatChart(ORBAT1);
+    const svg = o.toSVG(document.body);
     expect(svg.getAttribute("width")).toBe("100%");
   });
 });
 
 describe("OrbatChart SVG rendering", () => {
   it("renders", () => {
-    let o = new OrbatChart(ORBAT1);
-    let svg = o.toSVG(document.body);
+    const o = new OrbatChart(ORBAT1);
+    const svg = o.toSVG(document.body);
     expect(svg.getAttribute("width")).toBe("100%");
   });
 
   it("has empty ID by default", () => {
-    let o = new OrbatChart(ORBAT1);
-    let svg = o.toSVG(document.body);
+    const o = new OrbatChart(ORBAT1);
+    const svg = o.toSVG(document.body);
     expect(svg.id).toBe("");
   });
 
   it("allows a custom ID", () => {
-    let o = new OrbatChart(ORBAT1);
-    let svg = o.toSVG(document.body, { elementId: "CustomID" });
+    const o = new OrbatChart(ORBAT1);
+    const svg = o.toSVG(document.body, { elementId: "CustomID" });
     expect(svg.id).toBe("CustomID");
   });
 });
@@ -57,7 +57,7 @@ const DUMMY_UNIT: ChartUnit = {
 
 describe("OrbatChart options", () => {
   it("has default values", () => {
-    let ob = new OrbatChart(DUMMY_UNIT);
+    const ob = new OrbatChart(DUMMY_UNIT);
     expect(ob.options).toBeDefined();
     expect(ob.options.symbolSize).toBe(DEFAULT_OPTIONS.symbolSize);
     expect(ob.options.connectorOffset).toBe(DEFAULT_OPTIONS.connectorOffset);
@@ -67,7 +67,7 @@ describe("OrbatChart options", () => {
   });
 
   it("overrides default values", () => {
-    let ob = new OrbatChart(DUMMY_UNIT, { symbolSize: 13, maxLevels: 4 });
+    const ob = new OrbatChart(DUMMY_UNIT, { symbolSize: 13, maxLevels: 4 });
     expect(ob.options.symbolSize).toBe(13);
     expect(ob.options.connectorOffset).toBe(DEFAULT_OPTIONS.connectorOffset);
     expect(ob.options.maxLevels).toBe(4);
@@ -76,26 +76,26 @@ describe("OrbatChart options", () => {
 
 describe("Symbol generator", () => {
   it("is undefined by default", () => {
-    let ob = new OrbatChart(DUMMY_UNIT);
+    const ob = new OrbatChart(DUMMY_UNIT);
     expect(ob.options.symbolGenerator).toBeUndefined();
   });
 
   it("can be set", () => {
-    let customGenerator: SymbolGenerator = (sidc, options) =>
+    const customGenerator: SymbolGenerator = (sidc, options) =>
       new ms.Symbol(sidc, options);
-    let ob = new OrbatChart(DUMMY_UNIT, { symbolGenerator: customGenerator });
+    const ob = new OrbatChart(DUMMY_UNIT, { symbolGenerator: customGenerator });
     expect(ob.options.symbolGenerator).toBe(customGenerator);
   });
 });
 
 describe("OrbatChart orientation", () => {
   it("has default value 'TOP'", () => {
-    let ob = new OrbatChart(DUMMY_UNIT);
+    const ob = new OrbatChart(DUMMY_UNIT);
     expect(ob.options.orientation).toBe(ChartOrientations.Top);
   });
 
   it("can be changed", () => {
-    let ob = new OrbatChart(DUMMY_UNIT, {
+    const ob = new OrbatChart(DUMMY_UNIT, {
       orientation: ChartOrientations.Bottom,
     });
     expect(ob.options.orientation).toBe(ChartOrientations.Bottom);
@@ -103,8 +103,8 @@ describe("OrbatChart orientation", () => {
 });
 
 function createChartSvgString(options?: PartialOrbChartOptions) {
-  let o = new OrbatChart(DUMMY_UNIT, options);
-  let svg = o.toSVG(document.body);
+  const o = new OrbatChart(DUMMY_UNIT, options);
+  const svg = o.toSVG(document.body);
   return svg.innerHTML;
 }
 

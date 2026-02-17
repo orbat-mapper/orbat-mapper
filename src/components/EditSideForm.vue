@@ -20,7 +20,7 @@ interface Form {
     fillColor?: string;
   };
 }
-let form = ref<Form>({ name: "New side", standardIdentity: "3", symbolOptions: {} });
+const form = ref<Form>({ name: "New side", standardIdentity: "3", symbolOptions: {} });
 
 const side = computed(() => store?.state.sideMap[props.sideId]);
 watch(

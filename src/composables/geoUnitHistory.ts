@@ -230,7 +230,7 @@ export function useUnitHistory(
         geometryType === "LineString" ? <LineString>f.getGeometry()?.clone() : undefined;
     } else if (evt.type === "modifyend") {
       if (geometryType === "LineString") {
-        let { postGeometry, action, preCoords, postCoords, elementIndex, isVia } =
+        const { postGeometry, action, preCoords, postCoords, elementIndex, isVia } =
           handleLineString(f as Feature<LineString>, evt as ModifyEvent);
 
         if (elementIndex === -1) {

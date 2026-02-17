@@ -131,7 +131,7 @@ export function createScenarioLayerFeatures(
         fromLonLat(feature.geometry.coordinates as number[]),
         newRadius,
       );
-      let f = new Feature({
+      const f = new Feature({
         geometry: circle,
         ...feature.properties,
       });
