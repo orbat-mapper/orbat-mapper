@@ -6,9 +6,15 @@ import type { EntityId } from "@/types/base";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { filterUnits } from "@/composables/filtering";
 import { type UnitSymbolOptions } from "@/types/scenarioModels";
-import { TreeItem, TreeRoot } from "reka-ui";
+import { TreeItem, TreeRoot, TreeVirtualizer } from "reka-ui";
 import { moveFocusToNearestOrbatNavTarget } from "@/modules/scenarioeditor/orbatNav";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useLocalStorage } from "@vueuse/core";
+import {
+  flattenVisibleTreeIds,
+  getVisibleTreeIndexByUnitId,
+  shouldVirtualizeTree,
+} from "@/components/orbatTreeVirtualization";
 
 interface Props {
   units: EntityId[];
@@ -16,11 +22,19 @@ interface Props {
   filterQuery?: string;
   locationFilter?: boolean;
   symbolOptions?: UnitSymbolOptions;
+  virtualizationThreshold?: number;
+  virtualEstimateSize?: number;
+  virtualOverscan?: number;
+  virtualViewportClass?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   filterQuery: "",
   locationFilter: false,
+  virtualizationThreshold: 150,
+  virtualEstimateSize: 40,
+  virtualOverscan: 12,
+  virtualViewportClass: "max-h-[45vh] md:max-h-[55vh] overflow-y-auto overscroll-contain",
 });
 
 interface Emits {
@@ -81,6 +95,8 @@ const expandedKeys = ref<EntityId[]>([]);
 const expandableUnitsById = ref(new Map<EntityId, NUnit>());
 let previousExpandedSet = new Set<EntityId>();
 const { orbatRevealUnitId } = useSelectedItems();
+const orbatIconSize = useLocalStorage("orbatIconSize", 20);
+const treeViewportRef = ref<HTMLElement | null>(null);
 
 function collectExpandedKeys(items: NOrbatItemData[]): EntityId[] {
   const keys: EntityId[] = [];
@@ -264,6 +280,69 @@ const lastInGroupMap = computed(() => {
   return map;
 });
 
+const visibleFlattenedUnitIds = computed(() =>
+  flattenVisibleTreeIds(filteredUnits.value, expandedKeys.value),
+);
+
+const visibleItemCount = computed(() => visibleFlattenedUnitIds.value.length);
+
+const isVirtualized = computed(() =>
+  shouldVirtualizeTree(visibleItemCount.value, props.virtualizationThreshold),
+);
+
+const resolvedVirtualEstimateSize = computed(() => {
+  if (typeof props.virtualEstimateSize === "number") return props.virtualEstimateSize;
+  const symbolSizePx = orbatIconSize.value * (4 / 3);
+  return Math.max(32, Math.ceil(symbolSizePx + 12));
+});
+
+function getFocusedTreeUnitId(): EntityId | null {
+  const active = document.activeElement as HTMLElement | null;
+  if (!active?.id?.startsWith("ou-")) return null;
+  return active.id.slice(3);
+}
+
+function restoreFocusToUnit(unitId: EntityId | null) {
+  if (!unitId) return;
+  const el = document.getElementById(`ou-${unitId}`);
+  if (el instanceof HTMLElement) {
+    el.focus();
+  }
+}
+
+function getVirtualTextContent(item: Record<string, unknown>) {
+  const value = item as unknown as NOrbatItemData;
+  const text = value.unit.shortName || value.unit.name || "";
+  return text.toLowerCase();
+}
+
+function toOrbatItemData(item: Record<string, any>): NOrbatItemData {
+  return item as unknown as NOrbatItemData;
+}
+
+function preScrollVirtualizedTree(unitId: EntityId) {
+  if (!isVirtualized.value) return;
+  const viewport = treeViewportRef.value;
+  if (!viewport) return;
+
+  const index = getVisibleTreeIndexByUnitId(visibleFlattenedUnitIds.value, unitId);
+  if (index < 0) return;
+
+  const targetTop =
+    index * resolvedVirtualEstimateSize.value -
+    viewport.clientHeight / 2 +
+    resolvedVirtualEstimateSize.value / 2;
+  viewport.scrollTop = Math.max(0, targetTop);
+}
+
+watch(isVirtualized, (next, prev) => {
+  if (next === prev) return;
+  const focusedUnitId = getFocusedTreeUnitId();
+  void nextTick(() => {
+    restoreFocusToUnit(focusedUnitId);
+  });
+});
+
 watch(
   filteredUnits,
   (items) => {
@@ -293,6 +372,7 @@ watch(
     if (!expandPathToUnit(unitId)) return;
     orbatRevealUnitId.value = null;
     void nextTick(() => {
+      preScrollVirtualizedTree(unitId);
       scrollToUnitWhenReady(unitId);
     });
   },
@@ -303,41 +383,83 @@ watch(
 <template>
   <TreeRoot
     v-slot="{ flattenItems }"
+    as="div"
     :items="filteredUnits"
     :get-key="getTreeKey"
     :get-children="getTreeChildren"
     v-model:expanded="expandedKeys"
-    class="list-none select-none"
+    class="select-none"
     data-orbat-nav="tree-root"
   >
-    <TreeItem
-      v-for="(flattenItem, index) in flattenItems"
-      v-slot="{ isExpanded, handleToggle }"
-      :key="flattenItem._id"
-      v-bind="flattenItem.bind"
-      :id="`ou-${flattenItem.value.unit.id}`"
-      :style="{ paddingLeft: `${(flattenItem.level - 1) * 1.5}rem` }"
-      class="group/orbat-item block"
-      @toggle="
-        (event) => {
-          if (event.detail?.originalEvent?.type === 'click') event.preventDefault();
-        }
-      "
-      @select="onTreeItemSelect(flattenItem.value, $event)"
-      @keydown="onTreeItemKeydown($event, index, flattenItems.length)"
-    >
-      <OrbatTreeItem
-        :item="flattenItem.value"
-        :symbolOptions="symbolOptions"
-        :level="flattenItem.level - 1"
-        :is-expanded="isExpanded"
-        :has-children="flattenItem.hasChildren"
-        :last-in-group="lastInGroupMap.get(flattenItem.value.unit.id) ?? true"
-        :on-toggle="handleToggle"
-        :on-set-expanded="(value) => setExpanded(flattenItem.value.unit.id, value)"
-        @unit-action="onUnitAction"
-        @unit-click="(unit, event) => emit('unit-click', unit, event)"
-      />
-    </TreeItem>
+    <div v-if="isVirtualized" ref="treeViewportRef" :class="virtualViewportClass">
+      <TreeVirtualizer
+        :estimate-size="resolvedVirtualEstimateSize"
+        :overscan="virtualOverscan"
+        :text-content="getVirtualTextContent"
+        v-slot="{ item: flattenItem, virtualItem }"
+      >
+        <TreeItem
+          as="div"
+          v-slot="{ isExpanded, handleToggle }"
+          :key="flattenItem._id"
+          v-bind="flattenItem.bind"
+          :id="`ou-${flattenItem.value.unit.id}`"
+          :style="{ paddingLeft: `${(flattenItem.level - 1) * 1.5}rem` }"
+          class="group/orbat-item focus-visible:ring-ring block w-full focus-visible:ring-1 focus-visible:outline-none focus-visible:ring-inset"
+          @toggle="
+            (event) => {
+              if (event.detail?.originalEvent?.type === 'click') event.preventDefault();
+            }
+          "
+          @select="onTreeItemSelect(toOrbatItemData(flattenItem.value), $event)"
+          @keydown="onTreeItemKeydown($event, virtualItem.index, flattenItems.length)"
+        >
+          <OrbatTreeItem
+            :item="toOrbatItemData(flattenItem.value)"
+            :symbolOptions="symbolOptions"
+            :level="flattenItem.level - 1"
+            :is-expanded="isExpanded"
+            :has-children="flattenItem.hasChildren"
+            :last-in-group="lastInGroupMap.get(flattenItem.value.unit.id) ?? true"
+            :on-toggle="handleToggle"
+            :on-set-expanded="(value) => setExpanded(flattenItem.value.unit.id, value)"
+            @unit-action="onUnitAction"
+            @unit-click="(unit, event) => emit('unit-click', unit, event)"
+          />
+        </TreeItem>
+      </TreeVirtualizer>
+    </div>
+    <template v-else>
+      <TreeItem
+        v-for="(flattenItem, index) in flattenItems"
+        as="div"
+        v-slot="{ isExpanded, handleToggle }"
+        :key="flattenItem._id"
+        v-bind="flattenItem.bind"
+        :id="`ou-${flattenItem.value.unit.id}`"
+        :style="{ paddingLeft: `${(flattenItem.level - 1) * 1.5}rem` }"
+        class="group/orbat-item focus-visible:ring-ring block w-full focus-visible:ring-1 focus-visible:outline-none focus-visible:ring-inset"
+        @toggle="
+          (event) => {
+            if (event.detail?.originalEvent?.type === 'click') event.preventDefault();
+          }
+        "
+        @select="onTreeItemSelect(flattenItem.value, $event)"
+        @keydown="onTreeItemKeydown($event, index, flattenItems.length)"
+      >
+        <OrbatTreeItem
+          :item="flattenItem.value"
+          :symbolOptions="symbolOptions"
+          :level="flattenItem.level - 1"
+          :is-expanded="isExpanded"
+          :has-children="flattenItem.hasChildren"
+          :last-in-group="lastInGroupMap.get(flattenItem.value.unit.id) ?? true"
+          :on-toggle="handleToggle"
+          :on-set-expanded="(value) => setExpanded(flattenItem.value.unit.id, value)"
+          @unit-action="onUnitAction"
+          @unit-click="(unit, event) => emit('unit-click', unit, event)"
+        />
+      </TreeItem>
+    </template>
   </TreeRoot>
 </template>
