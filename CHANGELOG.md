@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 February 2026
 
+- Added virtualization to the ORBAT panel for improved performance with huge ORBATs.
 - Added a resizable mobile panel.
 - Added a new "Map visibility" section in the unit filters panel.
 - Added timeline-aware unit symbol rotation with panel controls and a dedicated rotate map mode.
