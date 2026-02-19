@@ -34,7 +34,12 @@ vi.mock("@tanstack/vue-virtual", async () => {
         const start = Math.max(0, startIndex.value - overscan);
         const end = Math.min(count, startIndex.value + viewportRows + overscan);
 
-        const virtualItems = [];
+        const virtualItems: Array<{
+          key: number;
+          index: number;
+          start: number;
+          end: number;
+        }> = [];
         for (let index = start; index < end; index += 1) {
           virtualItems.push({
             key: index,
@@ -194,6 +199,7 @@ function makeScenario(unitCount: number) {
     id: "side-1",
     name: "Blue side",
     shortName: "BLUE",
+    standardIdentity: "3",
     groups: ["sg-1"],
     subUnits: [],
   } as NSide;
@@ -222,7 +228,7 @@ function makeScenario(unitCount: number) {
       _sid: side.id,
       _isOpen: true,
       symbolOptions: {},
-      reinforcedStatus: "none",
+      reinforcedStatus: "None",
     } as NUnit;
   }
 
