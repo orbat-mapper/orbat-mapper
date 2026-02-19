@@ -10,13 +10,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 February 2026
 
+- Added virtualization to the Grid Edit view for improved performance with large unit lists.
+- Added "Collapse" option to the unit context menu to quickly collapse its children.
+- Added scenario details to the conflict alert in the import view.
 - Added virtualization to the ORBAT panel for improved performance with huge ORBATs.
 - Added a resizable mobile panel.
 - Added a new "Map visibility" section in the unit filters panel.
 - Added timeline-aware unit symbol rotation with panel controls and a dedicated rotate map mode.
 - Added freehand drawing mode for scenario features.
 - Added UI for setting the scenario bounding box.
-- Added support for generic unit spreadsheet import (CSV/TSV) with custom field mapping.
+- Added support for generic unit spreadsheet import (CSV/TSV) with custom field mapping and update mode functionality.
 - Added a "Recently shared" submenu to the File menu, providing quick access to the history of shared scenario links.
 - Added a share scenario button to the main toolbar.
 - Added CSV/TSV export option with configurable separator.
