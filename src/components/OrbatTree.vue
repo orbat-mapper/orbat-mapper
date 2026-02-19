@@ -56,6 +56,9 @@ const onUnitAction = (unit: NUnit, action: UnitAction) => {
   if (action === UnitActions.Expand) {
     expandSubtree(unit.id);
   }
+  if (action === UnitActions.Collapse) {
+    collapseSubtree(unit.id);
+  }
   emit("unit-action", unit, action);
 };
 
@@ -223,6 +226,22 @@ function expandSubtree(unitId: EntityId) {
     const unit = props.unitMap[id];
     if (!unit?.subUnits?.length) continue;
     next.add(id);
+    for (const childId of unit.subUnits) {
+      if (props.unitMap[childId]) stack.push(childId);
+    }
+  }
+  expandedKeys.value = [...next];
+}
+
+function collapseSubtree(unitId: EntityId) {
+  if (!isUnitInCurrentTree(unitId)) return;
+  const next = new Set(expandedKeys.value);
+  const stack = [unitId];
+  while (stack.length) {
+    const id = stack.pop()!;
+    const unit = props.unitMap[id];
+    if (!unit?.subUnits?.length) continue;
+    next.delete(id);
     for (const childId of unit.subUnits) {
       if (props.unitMap[childId]) stack.push(childId);
     }

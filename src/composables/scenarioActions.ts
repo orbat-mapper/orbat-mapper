@@ -10,6 +10,7 @@ import { multiPoint } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
 import { GeoJSON } from "ol/format";
 import Feature from "ol/Feature";
+import SimpleGeometry from "ol/geom/SimpleGeometry";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import OLMap from "ol/Map";
@@ -47,6 +48,15 @@ export function useUnitActions(
         { includeParent: true },
       );
     }
+    if (action === UnitActions.Collapse) {
+      unitActions.walkSubUnits(
+        unit.id,
+        (unit1) => {
+          unit1._isOpen = false;
+        },
+        { includeParent: true },
+      );
+    }
 
     if (action === UnitActions.Zoom) {
       if (unit._state?.location) {
@@ -60,17 +70,20 @@ export function useUnitActions(
           },
           {},
         );
-        const locations = subUnits
-          .filter((u) => u._state?.location)
-          .map((u) => u._state?.location!);
+        const locations = subUnits.flatMap((u) =>
+          u._state?.location ? [u._state.location] : [],
+        );
 
         if (locations.length === 0) return;
         const bb = new GeoJSON().readFeature(turfEnvelope(multiPoint(locations)), {
           featureProjection: "EPSG:3857",
           dataProjection: "EPSG:4326",
-        }) as Feature<any>;
+        }) as Feature;
         if (!bb) return;
-        geoStore.olMap?.getView().fit(bb.getGeometry(), { maxZoom: 17 });
+        const geometry = bb.getGeometry();
+        if (!geometry) return;
+        if (!(geometry instanceof SimpleGeometry)) return;
+        geoStore.olMap?.getView().fit(geometry, { maxZoom: 17 });
       }
     }
     if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);
@@ -93,15 +106,27 @@ export function useUnitActions(
       selectedUnitIds.value.add(unit.id);
     }
 
-    action === UnitActions.Clone && unitActions.cloneUnit(unit.id);
-    action === UnitActions.CloneWithState &&
+    if (action === UnitActions.Clone) {
+      unitActions.cloneUnit(unit.id);
+    }
+    if (action === UnitActions.CloneWithState) {
       unitActions.cloneUnit(unit.id, { includeState: true });
-    action === UnitActions.CloneWithSubordinates &&
+    }
+    if (action === UnitActions.CloneWithSubordinates) {
       unitActions.cloneUnit(unit.id, { includeSubordinates: true });
-    action === UnitActions.CloneWithSubordinatesAndState &&
-      unitActions.cloneUnit(unit.id, { includeSubordinates: true, includeState: true });
-    action === UnitActions.MoveUp && unitActions.reorderUnit(unit.id, "up");
-    action === UnitActions.MoveDown && unitActions.reorderUnit(unit.id, "down");
+    }
+    if (action === UnitActions.CloneWithSubordinatesAndState) {
+      unitActions.cloneUnit(unit.id, {
+        includeSubordinates: true,
+        includeState: true,
+      });
+    }
+    if (action === UnitActions.MoveUp) {
+      unitActions.reorderUnit(unit.id, "up");
+    }
+    if (action === UnitActions.MoveDown) {
+      unitActions.reorderUnit(unit.id, "down");
+    }
 
     if (
       action === UnitActions.Delete ||
@@ -149,8 +174,6 @@ export function useUnitMenu(
   isSideGroupLocked: ComputedRef<boolean>,
 ) {
   const unit = "unit" in item ? item.unit : item;
-  // todo: item.children is not reactive
-  const children = "unit" in item ? item.children : item.subUnits;
 
   const hasChildren = computed(() => {
     return Boolean(unit.subUnits && unit.subUnits.length);
@@ -167,8 +190,13 @@ export function useUnitMenu(
       { label: "Clear state", action: UnitActions.ClearState, disabled: isLocked.value },
       { label: "Edit", action: UnitActions.Edit, disabled: isLocked.value },
       {
-        label: "Expand",
+        label: "Expand branch",
         action: UnitActions.Expand,
+        disabled: !hasChildren.value,
+      },
+      {
+        label: "Collapse branch",
+        action: UnitActions.Collapse,
         disabled: !hasChildren.value,
       },
       {
@@ -277,5 +305,5 @@ export function useToeActions() {
     scenarioInfoPanelStore.showAddGroup = true;
   }
 
-  return { goToAddEquipment, goToAddPersonnel, goToAddGroup };
+  return { goToAddEquipment, goToAddPersonnel, goToAddSupplies, goToAddGroup };
 }

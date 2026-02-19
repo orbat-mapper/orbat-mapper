@@ -9,6 +9,7 @@ export const UnitActions = {
   Delete: "Delete",
   AddSubordinate: "AddSubordinate",
   Expand: "Expand",
+  Collapse: "Collapse",
   Zoom: "Zoom",
   Edit: "Edit",
   Copy: "Copy",
