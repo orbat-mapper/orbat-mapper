@@ -34,14 +34,14 @@ function toggleOpen() {
 }
 </script>
 <template>
-  <tr :id="`item-${unit.id}`" class="divide-border hover:bg-muted/50 divide-x">
+  <tr :id="`item-${unit.id}`" class="divide-border hover:bg-muted/50 h-12 divide-x">
     <td class="relative">
       <div v-if="isActive" class="bg-primary absolute inset-y-0 right-0 w-0.5"></div>
     </td>
     <td>
       <div
         :id="`cell-${itemIndex}-0`"
-        class="border-card text-foreground focus-within:border-ring flex items-center border-2 py-3 text-sm whitespace-nowrap outline-0"
+        class="border-card text-foreground focus-within:border-ring flex h-12 items-center border-2 py-3 text-sm whitespace-nowrap outline-0"
         :style="`padding-left: ${level + 1}rem`"
         tabindex="0"
         @keydown.enter.exact="toggleOpen()"

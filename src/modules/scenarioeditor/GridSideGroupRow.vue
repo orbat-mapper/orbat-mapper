@@ -27,7 +27,7 @@ function toggleOpen() {
 }
 </script>
 <template>
-  <tr class="bg-muted/40">
+  <tr class="bg-muted/40 h-12">
     <td class="relative">
       <div v-if="isActive" class="bg-primary absolute inset-y-0 right-0 w-0.5"></div>
     </td>

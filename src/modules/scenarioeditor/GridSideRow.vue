@@ -17,7 +17,7 @@ const props = defineProps<Props>();
 const emit = defineEmits(["toggle", "expand", "updateSide", "nextCell", "activeItem"]);
 </script>
 <template>
-  <tr class="divide-border bg-muted/50 divide-x">
+  <tr class="divide-border bg-muted/50 h-12 divide-x">
     <td class="relative">
       <div v-if="isActive" class="bg-primary absolute inset-y-0 right-0 w-0.5"></div>
     </td>
