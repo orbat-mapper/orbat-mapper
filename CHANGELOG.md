@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 February 2026
 
+- Added support for dragging and dropping ORBAT units between different browser tabs and windows.
 - Added custom icon support to KMZ export.
 - Added virtualization to the Grid Edit view for improved performance with large unit lists.
 - Added "Collapse" option to the unit context menu to quickly collapse its children.
@@ -37,7 +38,6 @@ January 2026
 - Added a map base layer switcher to the map context menu.
 - Improved tab navigation with scrollable tabs.
 - Added military time zone support.
-
 
 December 2025
 

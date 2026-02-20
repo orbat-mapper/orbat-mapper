@@ -19,6 +19,7 @@ import {
 } from "@/importexport/convertUtils";
 import { type EntityId } from "@/types/base";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { monitorForExternal } from "@atlaskit/pragmatic-drag-and-drop/external/adapter";
 import { isSideDragItem, isSideGroupDragItem, isUnitDragItem } from "@/types/draggables";
 
 import {
@@ -54,6 +55,7 @@ const { onUnitAction } = useUnitActions();
 const { selectedUnitIds, activeUnitId } = useSelectedItems();
 
 let dndCleanup: () => void = () => {};
+let externalCleanup: () => void = () => {};
 onMounted(() => {
   dndCleanup = monitorForElements({
     canMonitor: ({ source }) =>
@@ -171,10 +173,82 @@ onMounted(() => {
       }
     },
   });
+
+  externalCleanup = monitorForExternal({
+    canMonitor: ({ source }) => source.types.includes("application/orbat"),
+    onDrop: ({ location, source }) => {
+      const destination = location.current.dropTargets[0];
+      if (!destination) return;
+
+      const instruction = extractInstruction(destination.data);
+      if (!instruction) return;
+
+      const orbatData = source.getStringData("application/orbat");
+      if (!orbatData) return;
+
+      const pastedOrbat = parseApplicationOrbat(orbatData);
+      if (!pastedOrbat) return;
+
+      const targetUnitId = isUnitDragItem(destination.data)
+        ? destination.data.unit.id
+        : undefined;
+
+      const handleDroppedUnits = (
+        units: ReturnType<typeof parseApplicationOrbat>,
+        parentId: EntityId,
+        dropTarget: DropTarget,
+      ) => {
+        if (!units) return;
+        units.forEach((unit) => {
+          groupUpdate(() => {
+            addUnitHierarchy(unit, parentId, activeScenario);
+            changeUnitParent(unit.id, parentId, dropTarget);
+          });
+        });
+      };
+
+      if (!targetUnitId) {
+        // Fallback: If dropped on side or sidegroup, add to side/group
+        if (isSideGroupDragItem(destination.data)) {
+          handleDroppedUnits(pastedOrbat, destination.data.sideGroup.id, "on");
+        } else if (isSideDragItem(destination.data)) {
+          handleDroppedUnits(pastedOrbat, destination.data.side.id, "on");
+        }
+        return;
+      }
+
+      const dropTarget = mapInstructionToTarget(instruction);
+
+      // We need to resolve the effective parent based on whether the instruction is
+      // 'above', 'below', or 'on' (make-child). addUnitHierarchy requires the parent ID.
+      let effectiveParentId = targetUnitId;
+      if (dropTarget === "above" || dropTarget === "below") {
+        const destUnit = state.unitMap[targetUnitId];
+        effectiveParentId = destUnit._pid;
+      }
+
+      if (pastedOrbat) {
+        pastedOrbat.forEach((unit) => {
+          groupUpdate(() => {
+            // addUnitHierarchy registers the unit and its subordinates into the store
+            addUnitHierarchy(unit, effectiveParentId, activeScenario);
+
+            // Then we re-parent/order it correctly based on the drop target
+            changeUnitParent(unit.id, targetUnitId, dropTarget);
+          });
+        });
+      }
+
+      if (instruction.type === "make-child" && isUnitDragItem(destination.data)) {
+        destination.data.unit._isOpen = true;
+      }
+    },
+  });
 });
 
 onUnmounted(() => {
   dndCleanup();
+  externalCleanup();
 });
 
 function mapInstructionToTarget(instruction: Instruction): DropTarget {
