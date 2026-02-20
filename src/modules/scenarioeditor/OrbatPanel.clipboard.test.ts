@@ -15,22 +15,18 @@ type UnitLike = {
   subUnits: UnitLike[];
 };
 
-const {
-  addUnitHierarchySpy,
-  serializeUnitSpy,
-  monitorForElementsSpy,
-  onUnitActionSpy,
-} = vi.hoisted(() => ({
-  addUnitHierarchySpy: vi.fn(),
-  serializeUnitSpy: vi.fn((id: string) => ({
-    id,
-    name: `Unit ${id}`,
-    sidc: TEST_SIDC,
-    subUnits: [],
-  })),
-  monitorForElementsSpy: vi.fn(() => () => {}),
-  onUnitActionSpy: vi.fn(),
-}));
+const { addUnitHierarchySpy, serializeUnitSpy, monitorForElementsSpy, onUnitActionSpy } =
+  vi.hoisted(() => ({
+    addUnitHierarchySpy: vi.fn(),
+    serializeUnitSpy: vi.fn((id: string) => ({
+      id,
+      name: `Unit ${id}`,
+      sidc: TEST_SIDC,
+      subUnits: [],
+    })),
+    monitorForElementsSpy: vi.fn(() => () => {}),
+    onUnitActionSpy: vi.fn(),
+  }));
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
   monitorForElements: monitorForElementsSpy,
@@ -294,7 +290,7 @@ describe("OrbatPanel clipboard handling", () => {
 
     const { event } = createClipboardEvent("paste", {
       applicationOrbat: "",
-      textPlain: "{\"bad\":true}",
+      textPlain: '{"bad":true}',
     });
     document.dispatchEvent(event);
 

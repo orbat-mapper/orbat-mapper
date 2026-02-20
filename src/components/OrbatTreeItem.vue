@@ -4,6 +4,7 @@ import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { dropTargetForExternal } from "@atlaskit/pragmatic-drag-and-drop/external/adapter";
 import {
   attachInstruction,
   extractInstruction,
@@ -23,6 +24,7 @@ import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { type SymbolOptions } from "milsymbol";
 import { injectStrict } from "@/utils";
+import { serializeUnit } from "@/scenariostore/io";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useTimeoutFn } from "@vueuse/core";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
@@ -120,8 +122,63 @@ onMounted(() => {
       element: dragItemRef.value,
       canDrag: () => !isUnitLocked(props.item.unit.id),
       getInitialData: () => getUnitDragItem({ unit: props.item.unit }),
+      // Set the dragged unit data as application/orbat JSON so it can cross tabs
+      getInitialDataForExternal: () => {
+        const serializedUnit = serializeUnit(props.item.unit.id, state, { newId: true });
+        return {
+          "application/orbat": JSON.stringify([serializedUnit]),
+        };
+      },
       onDragStart: () => (isDragged.value = true),
       onDrop: () => (isDragged.value = false),
+    }),
+
+    dropTargetForExternal({
+      element: itemRef.value,
+      canDrop: ({ source }) => {
+        return (
+          !isUnitLocked(props.item.unit.id) && source.types.includes("application/orbat")
+        );
+      },
+      getData: ({ input, element }) => {
+        const data = getUnitDragItem({ unit: props.item.unit });
+        return attachInstruction(data, {
+          input,
+          element,
+          currentLevel: props.level,
+          indentPerLevel: 20,
+          block: ["reparent"],
+          mode:
+            props.hasChildren && props.isExpanded
+              ? "expanded"
+              : props.lastInGroup
+                ? "last-in-group"
+                : "standard",
+        });
+      },
+      onDrag: (args) => {
+        instruction.value = extractInstruction(args.self.data);
+        if (
+          instruction.value?.type === "make-child" &&
+          props.hasChildren &&
+          !props.isExpanded &&
+          !isPending.value
+        ) {
+          startOpenTimeout();
+        }
+
+        if (instruction.value?.type !== "make-child" && isPending.value) {
+          stopOpenTimeout();
+        }
+      },
+      onDragLeave: () => {
+        instruction.value = null;
+        stopOpenTimeout();
+      },
+      onDrop: () => {
+        instruction.value = null;
+        stopOpenTimeout();
+      },
     }),
 
     dropTargetForElements({
