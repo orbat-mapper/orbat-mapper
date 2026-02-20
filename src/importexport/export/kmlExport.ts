@@ -314,6 +314,42 @@ export function useKmlExport(scenario: TScenario) {
     });
   }
 
+  function dataUrlToBlob(dataUrl: string): Blob {
+    const [header, base64Data] = dataUrl.split(",");
+    if (!header || !base64Data) {
+      throw new Error("Invalid data URL");
+    }
+    const mimeMatch = header.match(/data:([^;]+);base64/);
+    const mimeType = mimeMatch?.[1] || "image/png";
+    const binary = atob(base64Data);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: mimeType });
+  }
+
+  async function canvasToPngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/png"),
+    );
+    if (blob) return blob;
+    return dataUrlToBlob(canvas.toDataURL("image/png"));
+  }
+
+  async function blobToUint8Array(blob: Blob): Promise<Uint8Array> {
+    if ("arrayBuffer" in blob && typeof blob.arrayBuffer === "function") {
+      return new Uint8Array(await blob.arrayBuffer());
+    }
+    const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = () => reject(new Error("Failed to read blob"));
+      reader.readAsArrayBuffer(blob);
+    });
+    return new Uint8Array(buffer);
+  }
+
   async function renderCustomSymbolBlob(
     customSymbol: CustomSymbol,
     options: {
@@ -405,12 +441,7 @@ export function useKmlExport(scenario: TScenario) {
       }
     }
 
-    const blob: Blob | null = await new Promise((resolve) =>
-      canvas.toBlob(resolve, "image/png"),
-    );
-    if (!blob) {
-      throw new Error("Failed to convert custom symbol to PNG");
-    }
+    const blob = await canvasToPngBlob(canvas);
     return { blob, canvasWidth, iconWidth, iconHeight, iconX };
   }
 
@@ -479,11 +510,11 @@ export function useKmlExport(scenario: TScenario) {
             opts,
           );
           hotspotCache.set(cacheKey, hotspot);
-          blob = await new Promise((resolve) => symb.asCanvas().toBlob(resolve));
+          blob = await canvasToPngBlob(symb.asCanvas());
         }
 
         if (blob) {
-          data[`icons/${cacheKey}.png`] = new Uint8Array(await blob.arrayBuffer());
+          data[`icons/${cacheKey}.png`] = await blobToUint8Array(blob);
         }
       }
     }

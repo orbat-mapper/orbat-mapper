@@ -144,6 +144,38 @@ function createScenario(
   } as any;
 }
 
+function createMilScenario() {
+  const sidc = "10031000000000000000";
+  const unit = {
+    id: "unit-mil-1",
+    name: "MIL Unit 1",
+    sidc,
+    _state: { sidc, location: [11, 60] },
+    textAmplifiers: {},
+  };
+  return {
+    geo: { everyVisibleUnit: { value: [unit] } },
+    store: {
+      state: {
+        sideMap: {},
+        customSymbolMap: {},
+        currentTime: 0,
+        events: [],
+        eventMap: {},
+      },
+    },
+    helpers: {
+      getUnitById: (id: string) => (id === unit.id ? unit : null),
+    },
+    unitActions: {
+      getCombinedSymbolOptions: () => ({}),
+      walkSide: () => {},
+      walkItem: () => {},
+    },
+    time: { setCurrentTime: () => {} },
+  } as any;
+}
+
 function createKmzOptions(overrides: Record<string, unknown> = {}) {
   return {
     includeUnits: true,
@@ -371,5 +403,26 @@ describe("downloadAsKMZ custom symbols", () => {
 
     // Wrapped labels should render on multiple lines when wrap width is small.
     expect(fillTextMock.mock.calls.length).toBeGreaterThan(1);
+  });
+
+  it("embeds ordinary symbol icon when canvas toBlob returns null", async () => {
+    const scenario = createMilScenario();
+    const { downloadAsKMZ } = useKmlExport(scenario);
+
+    const toDataURLSpy = vi
+      .spyOn(HTMLCanvasElement.prototype, "toDataURL")
+      .mockReturnValue("data:image/png;base64,AAAA");
+
+    vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation(function (cb) {
+      cb?.(null);
+    });
+
+    const result = await downloadAsKMZ(createKmzOptions());
+
+    expect(result.warnings).toHaveLength(0);
+    expect(symbolGeneratorMock).toHaveBeenCalledTimes(1);
+    expect(toDataURLSpy).toHaveBeenCalledTimes(1);
+    const zipData = zipSyncMock.mock.calls[0][0] as Record<string, Uint8Array>;
+    expect(Object.keys(zipData).some((k) => k.startsWith("icons/"))).toBe(true);
   });
 });
