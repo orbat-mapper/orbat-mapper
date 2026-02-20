@@ -11,7 +11,6 @@ import { useUnitActions } from "@/composables/scenarioActions";
 import { useEventBus, useEventListener } from "@vueuse/core";
 import { orbatUnitClick } from "@/components/eventKeys";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { inputEventFilter } from "@/components/helpers";
 import { serializeUnit } from "@/scenariostore/io";
 import {
   addUnitHierarchy,
@@ -283,16 +282,33 @@ function getUnitIdFromElement(element: Element | null | undefined): string | und
   }
 }
 
+function resolveClipboardUnitId(): EntityId | undefined {
+  const target = document.activeElement as HTMLElement | null;
+  const focusedUnitId = getUnitIdFromElement(target?.closest('[id^="ou-"]'));
+  if (focusedUnitId) return focusedUnitId;
+  if (activeUnitId.value) return activeUnitId.value;
+  if (selectedUnitIds.value.size === 1) return [...selectedUnitIds.value][0];
+}
+
+function clipboardEventFilter(event: Event) {
+  const target = event.target as HTMLElement | null;
+  return !(
+    ["INPUT", "TEXTAREA"].includes(target?.tagName ?? "") || target?.isContentEditable
+  );
+}
+
 function onCopy(c: ClipboardEvent) {
-  if (!inputEventFilter(c)) return;
+  if (!clipboardEventFilter(c)) return;
 
-  const target = document.activeElement as HTMLElement;
-  const unitId = getUnitIdFromElement(target.closest('[id^="ou-"]'));
+  const fallbackUnitId = resolveClipboardUnitId();
+  const sourceUnitIds = selectedUnitIds.value.size
+    ? [...selectedUnitIds.value]
+    : fallbackUnitId
+      ? [fallbackUnitId]
+      : [];
 
-  // only copy if an ORBAT item has focus
-  if (!unitId) return;
-
-  const serializedUnits = [...selectedUnitIds.value].map((id) =>
+  if (!sourceUnitIds.length) return;
+  const serializedUnits = sourceUnitIds.map((id) =>
     serializeUnit(id, state, { newId: true }),
   );
   c.clipboardData?.setData("application/orbat", io.stringifyObject(serializedUnits));
@@ -304,15 +320,13 @@ function onCopy(c: ClipboardEvent) {
 }
 
 function onPaste(e: ClipboardEvent) {
-  if (!inputEventFilter(e)) return;
-  const target = document.activeElement as HTMLElement;
-
-  const parentId = getUnitIdFromElement(target.closest('[id^="ou-"]'));
-  // only paste if an ORBAT item has focus
-  if (!parentId || !e.clipboardData?.types.includes("application/orbat")) return;
-  const pastedOrbat = parseApplicationOrbat(
-    e.clipboardData?.getData("application/orbat"),
-  );
+  if (!clipboardEventFilter(e)) return;
+  const parentId = resolveClipboardUnitId();
+  if (!parentId) return;
+  const pastedOrbat =
+    parseApplicationOrbat(e.clipboardData?.getData("application/orbat") ?? "") ||
+    parseApplicationOrbat(e.clipboardData?.getData("text/plain") ?? "");
+  if (!pastedOrbat) return;
   pastedOrbat?.forEach((unit) => addUnitHierarchy(unit, parentId, activeScenario));
   unitActions.getUnitById(parentId)._isOpen = true;
 
