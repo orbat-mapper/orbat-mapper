@@ -27,4 +27,21 @@ describe("foldersToKML", () => {
     const kml = foldersToKML(root);
     expect(kml).not.toContain("radioFolder");
   });
+
+  it("should include hotspot with fraction units when provided", () => {
+    const root: Root = { type: "root", children: [] };
+    const kml = foldersToKML(root, [
+      {
+        sidc: "test-style",
+        xOffset: 0.5,
+        yOffset: 0.75,
+        xUnits: "fraction",
+        yUnits: "fraction",
+      },
+    ]);
+
+    expect(kml).toContain(
+      '<hotSpot x="0.5" y="0.75" xunits="fraction" yunits="fraction">',
+    );
+  });
 });

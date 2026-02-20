@@ -77,6 +77,7 @@ const form = useLocalStorage(
     outlineColor: "rgba(255,255,255,0.8)",
     outlineWidth: 8,
     renderAmplifiers: false,
+    renderCustomIconLabels: false,
     timeMode: "current",
     exportEventId: "",
     exportEventIds: [],
@@ -95,13 +96,15 @@ const isMilx = computed(() => form.value.format === "milx");
 
 async function onExport(e: Event) {
   const { format } = form.value;
+  let kmzWarnings: string[] = [];
   NProgress.start();
   if (format === "geojson") {
     await downloadAsGeoJSON(form.value);
   } else if (format === "kml") {
     await downloadAsKML(form.value);
   } else if (format === "kmz") {
-    await downloadAsKMZ(form.value);
+    const result = await downloadAsKMZ(form.value);
+    kmzWarnings = result?.warnings ?? [];
   } else if (format === "xlsx") {
     await downloadAsXlsx(form.value);
   } else if (format === "csv") {
@@ -117,6 +120,16 @@ async function onExport(e: Event) {
   if (!store.keepOpen) open.value = false;
   store.currentFormat = format;
   send({ message: `Exported scenario as ${format}` });
+  if (kmzWarnings.length) {
+    const warningExamples = kmzWarnings.slice(0, 2).join(" ");
+    const andMore = kmzWarnings.length > 2 ? ` (+${kmzWarnings.length - 2} more)` : "";
+    send({
+      type: "warning",
+      title: "Some custom icons used fallback",
+      message: `${kmzWarnings.length} icon(s) could not be embedded. ${warningExamples}${andMore}`,
+      duration: 10000,
+    });
+  }
 }
 
 function onCancel() {

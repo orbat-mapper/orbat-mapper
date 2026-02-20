@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 February 2026
 
+- Added custom icon support to KMZ export.
 - Added virtualization to the Grid Edit view for improved performance with large unit lists.
 - Added "Collapse" option to the unit context menu to quickly collapse its children.
 - Added scenario details to the conflict alert in the import view.

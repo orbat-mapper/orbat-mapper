@@ -92,6 +92,7 @@ export interface KmlKmzExportSettings {
   outlineColor: string;
   outlineWidth: number;
   renderAmplifiers: boolean;
+  renderCustomIconLabels: boolean;
   timeMode: TimeMode;
   exportEventId?: EntityId;
   exportEventIds: EntityId[];

@@ -180,7 +180,8 @@ const virtualItems = computed<VirtualGridRow[]>(() => {
     const item = items.value[virtualRow.index];
     if (!item) continue;
     rows.push({
-      key: typeof virtualRow.key === "bigint" ? virtualRow.key.toString() : virtualRow.key,
+      key:
+        typeof virtualRow.key === "bigint" ? virtualRow.key.toString() : virtualRow.key,
       index: virtualRow.index,
       item,
     });

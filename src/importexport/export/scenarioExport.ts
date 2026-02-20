@@ -100,7 +100,11 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
-  const { downloadAsKML, downloadAsKMZ } = useKmlExport(scenario);
+  const { downloadAsKML, downloadAsKMZ: exportAsKMZ } = useKmlExport(scenario);
+
+  async function downloadAsKMZ(opts: ExportSettings) {
+    return exportAsKMZ(opts);
+  }
 
   async function downloadAsMilx(opts: ExportSettings) {
     const { toMilx } = await import("@/importexport/milx");

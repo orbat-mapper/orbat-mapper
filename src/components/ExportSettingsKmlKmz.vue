@@ -187,6 +187,11 @@ function toggleAllEvents() {
           v-model="form.renderAmplifiers"
           description="Warning: will increase file size"
         />
+        <InputCheckbox
+          label="Render custom icon labels"
+          v-model="form.renderCustomIconLabels"
+          description="Draw unit labels into custom icon images"
+        />
       </div>
     </NewAccordionPanel>
   </fieldset>

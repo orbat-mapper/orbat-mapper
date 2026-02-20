@@ -53,6 +53,8 @@ type StyleSettings = {
   labelScale?: number;
   xOffset?: number;
   yOffset?: number;
+  xUnits?: "insetPixels" | "pixels" | "fraction";
+  yUnits?: "insetPixels" | "pixels" | "fraction";
 };
 function convertStyle({
   sidc,
@@ -60,6 +62,8 @@ function convertStyle({
   labelScale = 1,
   xOffset,
   yOffset,
+  xUnits = "insetPixels",
+  yUnits = "insetPixels",
 }: StyleSettings) {
   const hasOffset = xOffset !== undefined && yOffset !== undefined;
   return [
@@ -72,8 +76,8 @@ function convertStyle({
           ? x("hotSpot", {
               x: `${xOffset}`,
               y: `${yOffset}`,
-              xunits: "insetPixels",
-              yunits: "insetPixels",
+              xunits: xUnits,
+              yunits: yUnits,
             })
           : undefined,
       ]),
