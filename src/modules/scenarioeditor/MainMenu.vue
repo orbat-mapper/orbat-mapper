@@ -69,7 +69,7 @@ const { history: shareHistory, clearHistory: clearShareHistory } = useShareHisto
           <path d="m45 70 110 60m-110 0 110-60" stroke-width="6" />
           <circle cx="100" cy="70" r="10" class="fill-gray-900 dark:fill-gray-300" />
         </svg>
-        <span class="ml-2 hidden font-medium tracking-tight sm:inline-flex"
+        <span class="ml-2 hidden font-medium tracking-tight lg:inline-flex"
           >ORBAT-Mapper</span
         >
         <ChevronDownIcon

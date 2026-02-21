@@ -405,7 +405,7 @@ if (state.layers.length > 0) {
           variant="ghost"
           size="icon"
           @click="showKeyboardShortcuts"
-          class="text-foreground/70 hidden sm:inline-flex"
+          class="text-foreground/70 hidden lg:inline-flex"
           title="Show keyboard shortcuts"
         >
           <IconKeyboard class="size-6" />
