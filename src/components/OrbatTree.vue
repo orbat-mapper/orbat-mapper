@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch, watchEffect } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import OrbatTreeItem from "./OrbatTreeItem.vue";
 import { type UnitAction, UnitActions } from "@/types/constants";
 import type { EntityId } from "@/types/base";
@@ -44,13 +44,6 @@ interface Emits {
 }
 
 const emit = defineEmits<Emits>();
-
-const queryHasChanged = ref(true);
-
-watch(
-  () => props.filterQuery,
-  () => (queryHasChanged.value = true),
-);
 
 const onUnitAction = (unit: NUnit, action: UnitAction) => {
   if (action === UnitActions.Expand) {
@@ -272,17 +265,21 @@ function getTreeChildren(item: NOrbatItemData): NOrbatItemData[] | undefined {
 
 const filteredUnits = ref<NOrbatItemData[]>([]);
 
-watchEffect(() => {
-  const resetOpen = queryHasChanged.value;
-  queryHasChanged.value = false;
-  filteredUnits.value = filterUnits(
-    props.units,
-    props.unitMap,
-    props.filterQuery,
-    props.locationFilter,
-    resetOpen,
-  );
-});
+watch(
+  [() => props.units, () => props.unitMap, () => props.filterQuery, () => props.locationFilter],
+  ([units, unitMap, filterQuery, locationFilter], oldValues) => {
+    const [, , oldFilterQuery] = oldValues || [];
+    const resetOpen = filterQuery !== oldFilterQuery;
+    filteredUnits.value = filterUnits(
+      units,
+      unitMap,
+      filterQuery,
+      locationFilter,
+      resetOpen,
+    );
+  },
+  { immediate: true },
+);
 
 const lastInGroupMap = computed(() => {
   const map = new Map<EntityId, boolean>();
