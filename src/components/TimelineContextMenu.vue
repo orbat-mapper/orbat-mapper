@@ -1,30 +1,24 @@
 <script setup lang="ts">
 import {
   ContextMenu,
-  ContextMenuCheckboxItem,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuLabel,
-  ContextMenuRadioGroup,
-  ContextMenuRadioItem,
   ContextMenuSeparator,
-  ContextMenuShortcut,
-  ContextMenuSub,
-  ContextMenuSubContent,
-  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
+  IconAddCircleOutline as AddEventIcon,
   IconClockOutline,
   IconZoomInOutline,
   IconZoomOutOutline,
-  IconAddCircleOutline as AddEventIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { useUiStore } from "@/stores/uiStore";
 
 const props = defineProps<{ formattedHoveredDate: string }>();
+type TimelineContextAction = "zoomIn" | "zoomOut" | "addScenarioEvent";
 const emit = defineEmits<{
-  action: [value: string];
+  action: [value: TimelineContextAction];
 }>();
 
 const uiSettings = useUiStore();

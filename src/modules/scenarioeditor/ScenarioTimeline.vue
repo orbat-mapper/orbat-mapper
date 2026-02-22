@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IconTriangleDown } from "@iconify-prerendered/vue-mdi";
-import { computed, ref, unref, watch, watchEffect } from "vue";
+import { computed, ref, unref, watch } from "vue";
 import { useElementSize, useThrottleFn } from "@vueuse/core";
 import { utcDay, utcHour } from "d3-time";
 import { utcFormat } from "d3-time-format";
@@ -11,15 +11,26 @@ import { type NScenarioEvent } from "@/types/internalModels";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import TimelineContextMenu from "@/components/TimelineContextMenu.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { MS_PER_DAY, MS_PER_HOUR } from "@/utils/time";
+import {
+  buildTimelineRenderData,
+  calculatePixelDateFromViewport,
+  getMsPerPixel,
+  roundToNearestQuarterHour,
+  toLocalX,
+  type BinWithX,
+  type EventWithX,
+  type HistogramBin,
+  type TimelineAction,
+  type TimelineRenderInputs,
+} from "./scenarioTimelineMath";
 
-const MS_PER_HOUR = 3600 * 1000;
-const MS_PER_DAY = 24 * MS_PER_HOUR;
+const HOURS_PER_DAY = MS_PER_DAY / MS_PER_HOUR;
 
 const {
   time: {
     scenarioTime,
     setCurrentTime,
-    timeZone,
     computeTimeHistogram,
     goToScenarioEvent,
     addScenarioEvent,
@@ -38,7 +49,7 @@ const tzOffset = scenarioTime.value.utcOffset();
 const hourFormatter = utcFormat("%H");
 function getMinorFormatter(majorWidth: number) {
   if (majorWidth < 50) {
-    return (d: Date) => "";
+    return () => "";
   }
   return hourFormatter;
 }
@@ -53,16 +64,6 @@ function getMajorFormatter(majorWidth: number) {
 interface Tick {
   label: string;
   timestamp: number;
-}
-
-interface EventWithX {
-  x: number;
-  event: NScenarioEvent;
-}
-
-interface BinWithX {
-  x: number;
-  count: number;
 }
 
 const hoveredDate = ref<Date | null>(null);
@@ -91,9 +92,9 @@ const minorStep = computed(() => {
 });
 
 let maxCount = 1;
-let histogram: { t: number; count: number }[] = [];
+let histogram: HistogramBin[] = [];
 
-const minorWidth = computed(() => majorWidth.value / (24 / minorStep.value));
+const minorWidth = computed(() => majorWidth.value / (HOURS_PER_DAY / minorStep.value));
 const currentTimestamp = ref(0);
 const animate = ref(false);
 const hoveredX = ref(0);
@@ -138,19 +139,44 @@ function updateTicks(
   return { minDate: start, maxDate: end };
 }
 
-function calculatePixelDate(x: number) {
-  const center = width.value / 2;
-  const msPerPixel = (MS_PER_HOUR * 24) / majorWidth.value;
-  const diff = x - center;
-  const newDate = centerTimeStamp.value + diff * msPerPixel;
-  const date = new Date(newDate);
-  date.setUTCSeconds(0, 0);
-  return { date, diff };
+function getLocalX(clientX: number) {
+  const host = unref(el);
+  if (!host) return clientX;
+  const rect = host.getBoundingClientRect();
+  return toLocalX(clientX, rect.left);
+}
+
+function calculatePixelDate(localX: number) {
+  return calculatePixelDateFromViewport(localX, {
+    centerTimestamp: centerTimeStamp.value,
+    viewportWidth: width.value,
+    majorWidth: majorWidth.value,
+  });
 }
 
 let startX = 0;
 let accumulatedDrag = 0;
 let startTimestamp = 0;
+
+function recomputeTimelineLayout(currentScenarioTimestamp: number) {
+  if (!width.value) return;
+  const tt = new Date(currentScenarioTimestamp);
+
+  centerTimeStamp.value = currentScenarioTimestamp;
+  animate.value = false;
+  xOffset.value =
+    (tt.getUTCHours() * 60 + tt.getUTCMinutes() + tzOffset + tt.getUTCSeconds() / 60) *
+    (majorWidth.value / (HOURS_PER_DAY * 60)) *
+    -1;
+
+  const { minDate, maxDate } = updateTicks(
+    tt,
+    width.value,
+    majorWidth.value,
+    minorStep.value,
+  );
+  updateEvents(minDate, maxDate);
+}
 
 function onPointerDown(evt: PointerEvent) {
   const e = unref(el)!;
@@ -162,20 +188,25 @@ function onPointerDown(evt: PointerEvent) {
 }
 
 function onPointerUp(evt: PointerEvent) {
+  const wasDragging = isDragging.value;
+
   if (!isDragging.value && evt.button !== 2) {
-    const { date, diff } = calculatePixelDate(evt.clientX);
+    const { date, diff } = calculatePixelDate(getLocalX(evt.clientX));
     animate.value = true;
     draggedDiff.value = -diff;
-    // round to the nearest 15 minutes
-    date.setUTCMinutes(Math.round(date.getUTCMinutes() / 15) * 15);
-    setCurrentTime(date.valueOf());
+    setCurrentTime(roundToNearestQuarterHour(date).valueOf());
   } else {
     animate.value = false;
     draggedDiff.value = 0;
   }
+
   isPointerInteraction.value = false;
   isDragging.value = false;
   accumulatedDrag = 0;
+
+  if (wasDragging) {
+    recomputeTimelineLayout(store.state.currentTime);
+  }
 }
 
 function onPointerMove(evt: PointerEvent) {
@@ -185,12 +216,13 @@ function onPointerMove(evt: PointerEvent) {
     if (accumulatedDrag < 5) {
       isDragging.value = false;
       return;
-    } else {
-      isDragging.value = true;
     }
+
+    isDragging.value = true;
     draggedDiff.value = diff;
-    const msPerPixel = (MS_PER_HOUR * 24) / majorWidth.value;
-    currentTimestamp.value = Math.floor(startTimestamp - diff * msPerPixel);
+    currentTimestamp.value = Math.floor(
+      startTimestamp - diff * getMsPerPixel(majorWidth.value),
+    );
     throttledTimeUpdate(currentTimestamp.value);
   }
 }
@@ -198,60 +230,64 @@ function onPointerMove(evt: PointerEvent) {
 const throttledTimeUpdate = useThrottleFn(setCurrentTime, 0);
 
 function onHover(e: MouseEvent) {
-  const { date } = calculatePixelDate(e.clientX);
-  // round to the nearest 15 minutes
-  date.setUTCMinutes(Math.round(date.getUTCMinutes() / 15) * 15);
-  hoveredX.value = e.clientX;
-  hoveredDate.value = date;
+  updateHoverFromClientX(e.clientX);
+}
+
+function updateHoverFromClientX(clientX: number) {
+  const localX = getLocalX(clientX);
+  const { date } = calculatePixelDate(localX);
+  hoveredX.value = localX;
+  hoveredDate.value = roundToNearestQuarterHour(date);
+}
+
+function onContextMenuOpen(event: MouseEvent, onContextMenu: (event: MouseEvent) => void) {
+  updateHoverFromClientX(event.clientX);
+  onContextMenu(event);
 }
 
 const formattedHoveredDate = computed(() => {
-  return fmt.scenarioFormatter.format(+hoveredDate.value!);
+  if (!hoveredDate.value) return "";
+  return fmt.scenarioFormatter.format(+hoveredDate.value);
 });
+
+function zoomIn() {
+  majorWidth.value += 40;
+}
+
+function zoomOut() {
+  majorWidth.value = Math.max(majorWidth.value - 40, 55);
+}
 
 function onWheel(e: WheelEvent) {
   if (e.deltaY > 0) {
-    majorWidth.value = Math.max(majorWidth.value - 40, 55);
+    zoomOut();
   } else {
-    majorWidth.value += 40;
+    zoomIn();
   }
 }
 
 const events = computed(() => {
   return store.state.events.map((id) => store.state.eventMap[id]);
-  // if (store.state.info.startTime)
-  //   scenarioEvents.push({
-  //     id: "xx",
-  //     title: "Scenario start time",
-  //     _type: "scenario",
-  //     startTime: store.state.info.startTime,
-  //   });
 });
 
 function updateEvents(minDate: Date, maxDate: Date) {
-  const minTs = +minDate;
-  const maxTs = +maxDate;
-  const msPerPixel = majorWidth.value / (MS_PER_HOUR * 24);
-  eventsWithX.value = events.value
-    .filter((e) => {
-      return e.startTime >= minTs && e.startTime <= maxTs;
-    })
-    .map((event) => {
-      return { x: (event.startTime - minTs + tzOffset * 60 * 1000) * msPerPixel, event };
-    });
-  binsWithX.value = histogram
-    .filter((bin) => {
-      return bin.t >= minTs && bin.t <= maxTs;
-    })
-    .map((event) => ({
-      x: (event.t - minTs + tzOffset * 60 * 1000) * msPerPixel,
-      count: event.count,
-    }));
+  const renderInputs: TimelineRenderInputs = {
+    events: events.value,
+    histogram,
+    minTimestamp: +minDate,
+    maxTimestamp: +maxDate,
+    majorWidth: majorWidth.value,
+    tzOffsetMinutes: tzOffset,
+  };
+  const { eventsWithX: renderEvents, binsWithX: renderBins } =
+    buildTimelineRenderData(renderInputs);
+  eventsWithX.value = renderEvents;
+  binsWithX.value = renderBins;
 }
 
 watch(
   [() => store.state.unitStateCounter, () => store.state.featureStateCounter],
-  (a, b) => {
+  () => {
     const { histogram: hg, max: mc } = computeTimeHistogram();
     histogram = hg;
     maxCount = mc;
@@ -260,52 +296,48 @@ watch(
   { immediate: true },
 );
 
-watchEffect(() => {
+watch(events, () => {
   if (!width.value) return;
-  const currentScenarioTimestamp = store.state.currentTime;
-  redrawCounter.value;
-  const tt = new Date(currentScenarioTimestamp);
-  let redrawTimeline = false;
-  if (isDragging.value) {
-  } else if (animate.value === true) {
-    setTimeout(() => {
-      animate.value = false;
-      draggedDiff.value = 0;
-    }, 100);
-  } else {
-    redrawTimeline = true;
-  }
-  if (redrawTimeline) {
-    centerTimeStamp.value = currentScenarioTimestamp;
-    animate.value = false;
-    xOffset.value =
-      (tt.getUTCHours() * 60 + tt.getUTCMinutes() + tzOffset + tt.getUTCSeconds() / 60) *
-      (majorWidth.value / (24 * 60)) *
-      -1;
-    const { minDate, maxDate } = updateTicks(
-      tt,
-      width.value,
-      majorWidth.value,
-      minorStep.value,
-    );
-    updateEvents(minDate, maxDate);
-  }
+  if (isDragging.value) return;
+  recomputeTimelineLayout(store.state.currentTime);
 });
+
+watch(
+  [width, () => store.state.currentTime, majorWidth, redrawCounter],
+  ([currentWidth, currentScenarioTimestamp]) => {
+    if (!currentWidth) return;
+    if (isDragging.value) return;
+
+    if (animate.value === true) {
+      setTimeout(() => {
+        animate.value = false;
+        draggedDiff.value = 0;
+        recomputeTimelineLayout(store.state.currentTime);
+      }, 100);
+      return;
+    }
+
+    recomputeTimelineLayout(currentScenarioTimestamp);
+  },
+  { immediate: true },
+);
 
 function onEventClick(event: NScenarioEvent) {
   goToScenarioEvent(event);
 }
 
-function onContextMenuAction(action: string, options?: Record<string, any>) {
+function onContextMenuAction(action: TimelineAction) {
   if (action === "zoomIn") {
-    majorWidth.value += 40;
+    zoomIn();
   } else if (action === "zoomOut") {
-    majorWidth.value = Math.max(majorWidth.value - 40, 55);
+    zoomOut();
   } else if (action === "addScenarioEvent") {
-    const day = hoveredDate.value!.getDate();
+    const hovered = hoveredDate.value;
+    if (!hovered) return;
+    const day = hovered.getDate();
     const eventId = addScenarioEvent({
       title: `Event ${day}`,
-      startTime: +hoveredDate.value!,
+      startTime: +hovered,
     });
     activeScenarioEventId.value = eventId;
   }
@@ -319,6 +351,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
   >
     <div
       ref="el"
+      data-testid="scenario-timeline"
       class="bg-sidebar border-border relative mb-2 w-full transform overflow-x-hidden border-t text-sm transition-all select-none"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
@@ -327,7 +360,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
       @mousemove="onHover"
       @mouseenter="showHoverMarker = true"
       @mouseleave="showHoverMarker = false"
-      @contextmenu="onContextMenu"
+      @contextmenu="onContextMenuOpen($event, onContextMenu)"
     >
       <div class="bg-sidebar flex h-3.5 items-center justify-center overflow-clip">
         <IconTriangleDown class="h-4 w-4 scale-x-150 transform text-red-900" />
@@ -357,6 +390,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
               v-for="{ x, event } in eventsWithX"
               type="button"
               :key="event.id"
+              data-testid="scenario-event-marker"
               class="absolute h-4 w-4 -translate-x-1/2 rounded-full border border-gray-500 bg-amber-500 hover:bg-red-900"
               :style="`left: ${x}px;`"
               @mousemove.stop
@@ -375,6 +409,7 @@ function onContextMenuAction(action: string, options?: Record<string, any>) {
           <div
             v-for="tick in majorTicks"
             :key="tick.timestamp"
+            data-testid="major-tick"
             class="border-muted-foreground flex-none border-r border-b pl-0.5"
             :style="`width: ${majorWidth}px`"
           >
