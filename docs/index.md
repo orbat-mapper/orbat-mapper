@@ -7,7 +7,6 @@ titleTemplate: Recreate historic battles and military scenarios
 hero:
   name: ORBAT Mapper
   text: Recreate historic battles and military scenarios in your browser
-  tagline: ORBAT mapper is currently under development. You can follow the development on GitHub and try a work in progress preview.
   image:
     src: /images/screenshot.png
     alt: VitePress
@@ -19,7 +18,7 @@ hero:
     #  text: Tutorial
     #  link: /tutorial/introduction
     - theme: alt
-      text: Try preview
+      text: Open app
       link: https://orbat-mapper.app/
 
 features:

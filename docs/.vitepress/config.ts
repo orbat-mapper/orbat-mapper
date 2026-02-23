@@ -3,7 +3,7 @@ import Tailwind from "@tailwindcss/vite";
 
 export default defineConfig({
   cleanUrls: true,
-  title: "ORBAT Mapper (beta)",
+  title: "ORBAT Mapper",
   description: "",
   head: [["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }]],
   vite: {
