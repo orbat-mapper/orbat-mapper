@@ -52,7 +52,7 @@ const features = [
       class="bg-muted relative top-0 right-0 left-0 flex items-center justify-center gap-8 p-1 text-center"
     >
       <p>
-        This is a work in progress prototype. Follow the
+        This is a work in progress. Follow the
         <a href="https://github.com/orbat-mapper/orbat-mapper" class="underline"
           >development on GitHub <GithubIcon class="inline size-6 sm:size-10" />
         </a>
@@ -77,10 +77,7 @@ const features = [
               class="text-heading text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl"
             >
               <span class="text-red-900 dark:text-red-900/90">ORBAT</span>
-              Mapper<span
-                class="text-muted-foreground absolute text-sm tracking-normal uppercase"
-                >beta</span
-              >
+              Mapper
             </h1>
             <p
               class="text-muted-foreground mx-auto mt-3 max-w-md text-base sm:text-lg md:mt-5 md:max-w-3xl md:text-xl"
