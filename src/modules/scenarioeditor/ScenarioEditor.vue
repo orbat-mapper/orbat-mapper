@@ -470,7 +470,7 @@ if (state.layers.length > 0) {
             size="icon"
             @click="toggleDark()"
             title="Toggle dark mode"
-            class="text-foreground/70 hidden sm:inline-flex"
+            class="text-foreground/70"
           >
             <SunIcon v-if="isDark" class="size-5" /><MoonStarIcon v-else class="size-5" />
           </Button>

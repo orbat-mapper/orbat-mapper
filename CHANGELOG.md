@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## February 2026
 
 ### Added
+
 - Added support for dragging and dropping ORBAT units between different browser tabs and windows.
 - Added custom icon support for KMZ export.
 - Added virtualization to the Grid Edit view to improve performance with large unit lists.
@@ -23,8 +24,10 @@ All notable changes to this project will be documented in this file.
 - Added a CSV/TSV export option with a configurable separator.
 
 ### Changed
+
 - Removed the **"beta"** label from the application name.
 - Switched to a dropdown menu for selecting the scenario edit mode on mobile devices.
+- Added a dark mode toggle to the main toolbar on mobile devices.
 
 ## January 2026
 
