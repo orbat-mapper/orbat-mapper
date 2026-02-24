@@ -62,6 +62,13 @@ import DebugInfo from "@/components/DebugInfo.vue";
 import { MoonStarIcon, SunIcon } from "lucide-vue-next";
 import { UseDark } from "@vueuse/components";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 
@@ -134,6 +141,36 @@ const {
 const route = useRoute();
 const router = useRouter();
 const { copy: copyToClipboard, copied } = useClipboard();
+
+const selectedModeRoute = computed({
+  get() {
+    if (
+      route.name === MAP_EDIT_MODE_ROUTE ||
+      route.name === GRID_EDIT_ROUTE ||
+      route.name === CHART_EDIT_MODE_ROUTE
+    ) {
+      return route.name;
+    }
+    return MAP_EDIT_MODE_ROUTE;
+  },
+  set(modeRouteName: string) {
+    if (route.name !== modeRouteName) {
+      void router.push({ name: modeRouteName });
+    }
+  },
+});
+
+const modeOptions = [
+  { value: MAP_EDIT_MODE_ROUTE, label: "Map", icon: GlobeAltIcon },
+  { value: GRID_EDIT_ROUTE, label: "Grid", icon: TableIcon },
+  { value: CHART_EDIT_MODE_ROUTE, label: "Chart", icon: IconSitemap },
+] as const;
+
+const activeModeOption = computed(
+  () =>
+    modeOptions.find((option) => option.value === selectedModeRoute.value) ??
+    modeOptions[0],
+);
 
 const isOpen = ref(false);
 const showLoadModal = ref(false);
@@ -351,8 +388,25 @@ if (state.layers.length > 0) {
         >
           <SearchIcon class="size-6" />
         </Button>
+        <Select v-model="selectedModeRoute">
+          <SelectTrigger
+            class="bg-muted-foreground/20 border-0 sm:hidden"
+            aria-label="Edit mode"
+          >
+            <SelectValue>
+              <component :is="activeModeOption.icon" class="size-6 text-green-500" />
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent class="">
+            <SelectItem v-for="mode in modeOptions" :key="mode.value" :value="mode.value">
+              <component :is="mode.icon" class="size-5" />
+              <span>{{ mode.label }}</span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
         <div
-          class="bg-muted-foreground/20 dark:bg-foreground/15 text-muted-foreground/80 flex items-center rounded-lg px-1"
+          id="mode-switcher"
+          class="bg-muted-foreground/20 dark:bg-foreground/15 text-muted-foreground/80 hidden items-center rounded-lg px-1 sm:flex"
         >
           <router-link
             :to="{ name: MAP_EDIT_MODE_ROUTE }"
