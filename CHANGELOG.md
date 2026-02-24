@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Added custom icon support for KMZ export.
 - Added virtualization to the Grid Edit view to improve performance with large unit lists.
 - Added a **"Collapse"** option to the unit context menu to quickly collapse child units.
+- Added **"Expand units"** and **"Collapse units"** actions to side and side-group dropdown menus in the ORBAT panel.
 - Added scenario details to the conflict alert in the Import view.
 - Added virtualization to the ORBAT panel to improve performance with large ORBATs.
 - Added a resizable mobile panel.

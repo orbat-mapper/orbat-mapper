@@ -211,6 +211,33 @@ describe("OrbatTree reactivity", () => {
     expect(wrapper.text()).toContain("beta match");
   });
 
+  it("updates visible rows when _isOpen is mutated externally", async () => {
+    const { units, unitMap } = makeNestedTree();
+    const WrapperComponent = defineComponent({
+      components: { OrbatTree },
+      setup() {
+        const reactiveUnits = ref(units);
+        const reactiveUnitMap = ref(unitMap);
+        return { reactiveUnits, reactiveUnitMap };
+      },
+      template: `<OrbatTree :units="reactiveUnits" :unit-map="reactiveUnitMap" :virtualization-threshold="999" />`,
+    });
+
+    const wrapper = mount(WrapperComponent, {
+      global: { stubs: { OrbatTreeItem: OrbatTreeItemStub } },
+    });
+    await nextTick();
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(2);
+
+    wrapper.vm.reactiveUnitMap["u-parent"]._isOpen = false;
+    await nextTick();
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(1);
+
+    wrapper.vm.reactiveUnitMap["u-parent"]._isOpen = true;
+    await nextTick();
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(2);
+  });
+
   it("updates location-filtered results when unit location state is mutated in place", async () => {
     const { units, unitMap } = makeFlatTree(1);
     unitMap["u-0"].name = "alpha";

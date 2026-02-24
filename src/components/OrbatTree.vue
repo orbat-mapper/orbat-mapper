@@ -396,12 +396,16 @@ watch(
   filteredUnits,
   (items) => {
     expandableUnitsById.value = collectExpandableUnits(items);
+  },
+  { immediate: true },
+);
 
-    const externalExpandedKeys = collectExpandedKeys(items);
+watch(
+  () => collectExpandedKeys(filteredUnits.value),
+  (externalExpandedKeys) => {
     if (!hasSameKeys(externalExpandedKeys, expandedKeys.value)) {
       expandedKeys.value = externalExpandedKeys;
     }
-
     syncOpenStateFromExpanded(new Set(expandedKeys.value), true);
   },
   { immediate: true },

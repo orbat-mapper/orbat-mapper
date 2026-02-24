@@ -34,6 +34,7 @@ export const SideActions = {
   Delete: "Delete",
   AddSubordinate: "AddSubordinate",
   Expand: "Expand",
+  Collapse: "Collapse",
   AddGroup: "AddGroup",
   Edit: "Edit",
   Add: "Add",
