@@ -5,21 +5,26 @@ All notable changes to this project will be documented in this file.
 
 ## February 2026
 
+### Added
 - Added support for dragging and dropping ORBAT units between different browser tabs and windows.
-- Added custom icon support to KMZ export.
-- Added virtualization to the Grid Edit view for improved performance with large unit lists.
-- Added "Collapse" option to the unit context menu to quickly collapse its children.
-- Added scenario details to the conflict alert in the import view.
-- Added virtualization to the ORBAT panel for improved performance with huge ORBATs.
+- Added custom icon support for KMZ export.
+- Added virtualization to the Grid Edit view to improve performance with large unit lists.
+- Added a **"Collapse"** option to the unit context menu to quickly collapse child units.
+- Added scenario details to the conflict alert in the Import view.
+- Added virtualization to the ORBAT panel to improve performance with large ORBATs.
 - Added a resizable mobile panel.
-- Added a new "Map visibility" section in the unit filters panel.
-- Added timeline-aware unit symbol rotation with panel controls and a dedicated rotate map mode.
-- Added freehand drawing mode for scenario features.
-- Added UI for setting the scenario bounding box.
-- Added support for generic unit spreadsheet import (CSV/TSV) with custom field mapping and update mode functionality.
-- Added a "Recently shared" submenu to the File menu, providing quick access to the history of shared scenario links.
-- Added a share scenario button to the main toolbar.
-- Added CSV/TSV export option with configurable separator.
+- Added a new **"Map Visibility"** section to the unit filters panel.
+- Added timeline-aware unit symbol rotation with panel controls and a dedicated map rotation mode.
+- Added a freehand drawing mode for scenario features.
+- Added a UI for setting the scenario bounding box.
+- Added support for generic unit spreadsheet imports (CSV/TSV), including custom field mapping and update mode functionality.
+- Added a **"Recently Shared"** submenu to the File menu, providing quick access to the history of shared scenario links.
+- Added a "Share Scenario" button to the main toolbar.
+- Added a CSV/TSV export option with a configurable separator.
+
+### Changed
+- Removed the **"beta"** label from the application name.
+- Switched to a dropdown menu for selecting the scenario edit mode on mobile devices.
 
 ## January 2026
 

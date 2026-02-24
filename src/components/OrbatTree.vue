@@ -266,7 +266,12 @@ function getTreeChildren(item: NOrbatItemData): NOrbatItemData[] | undefined {
 const filteredUnits = ref<NOrbatItemData[]>([]);
 
 watch(
-  [() => props.units, () => props.unitMap, () => props.filterQuery, () => props.locationFilter],
+  [
+    () => props.units,
+    () => props.unitMap,
+    () => props.filterQuery,
+    () => props.locationFilter,
+  ],
   ([units, unitMap, filterQuery, locationFilter], oldValues) => {
     const [, , oldFilterQuery] = oldValues || [];
     const resetOpen = filterQuery !== oldFilterQuery;

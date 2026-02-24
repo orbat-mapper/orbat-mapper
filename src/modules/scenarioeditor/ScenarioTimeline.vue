@@ -240,7 +240,10 @@ function updateHoverFromClientX(clientX: number) {
   hoveredDate.value = roundToNearestQuarterHour(date);
 }
 
-function onContextMenuOpen(event: MouseEvent, onContextMenu: (event: MouseEvent) => void) {
+function onContextMenuOpen(
+  event: MouseEvent,
+  onContextMenu: (event: MouseEvent) => void,
+) {
   updateHoverFromClientX(event.clientX);
   onContextMenu(event);
 }

@@ -64,7 +64,9 @@ function makeScenarioFixture() {
     const id = `evt-${state.events.length + 1}`;
     state.eventMap[id] = { id, _type: "scenario", ...event };
     state.events.push(id);
-    state.events.sort((a, b) => state.eventMap[a].startTime - state.eventMap[b].startTime);
+    state.events.sort(
+      (a, b) => state.eventMap[a].startTime - state.eventMap[b].startTime,
+    );
     return id;
   });
 
