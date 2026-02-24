@@ -48,6 +48,8 @@ const sideGroupMenuItems = computed((): MenuItemData<SideAction>[] => [
   props.isSideGroupHidden
     ? { label: "Show group", action: SideActions.Show, disabled: props.isSideHidden }
     : { label: "Hide group", action: SideActions.Hide, disabled: props.isSideHidden },
+  { label: "Expand units", action: SideActions.Expand, disabled: props.isLocked },
+  { label: "Collapse units", action: SideActions.Collapse, disabled: props.isLocked },
 ]);
 </script>
 

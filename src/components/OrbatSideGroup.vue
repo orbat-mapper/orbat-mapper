@@ -69,6 +69,7 @@ const instruction = ref<Instruction | null>(null);
 
 const {
   store: { state },
+  unitActions,
 } = injectStrict(activeScenarioKey);
 const sideGroupItem = computed(() => state.sideGroupMap[props.group.id] ?? props.group);
 
@@ -197,6 +198,19 @@ const toggleOpen = () => {
 
 const onSideGroupAction = (group: NSideGroup, action: SideAction) => {
   if (action === SideActions.Expand) {
+    isOpen.value = true;
+    group.subUnits.forEach((unitId) => {
+      unitActions.walkSubUnits(unitId, (unit) => (unit._isOpen = true), {
+        includeParent: true,
+      });
+    });
+  } else if (action === SideActions.Collapse) {
+    group.subUnits.forEach((unitId) => {
+      unitActions.walkSubUnits(unitId, (unit) => (unit._isOpen = false), {
+        includeParent: true,
+      });
+    });
+    isOpen.value = false;
   } else if (action === SideActions.AddSubordinate) {
     emit("unit-action", group as unknown as NUnit, UnitActions.AddSubordinate);
   } else if (action === SideActions.Edit) {

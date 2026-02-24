@@ -41,6 +41,8 @@ const sideMenuItems = computed(() => {
     props.isHidden
       ? { label: "Show side", action: SideActions.Show }
       : { label: "Hide side", action: SideActions.Hide },
+    { label: "Expand units", action: SideActions.Expand, disabled: props.isLocked },
+    { label: "Collapse units", action: SideActions.Collapse, disabled: props.isLocked },
 
     { separator: true },
     { label: "Add side", action: SideActions.Add, disabled: props.isLocked },

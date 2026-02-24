@@ -189,6 +189,23 @@ if (props.side._isNew) showEditSideForm.value = true;
 
 const onSideAction = (action: SideAction) => {
   if (action === SideActions.Expand) {
+    isOpen.value = true;
+    for (const sideGroupId of props.side.groups) {
+      const sideGroup = store.state.sideGroupMap[sideGroupId];
+      if (sideGroup) sideGroup._isOpen = true;
+    }
+    unitActions.walkSide(props.side.id, (unit) => {
+      unit._isOpen = true;
+    });
+  } else if (action === SideActions.Collapse) {
+    unitActions.walkSide(props.side.id, (unit) => {
+      unit._isOpen = false;
+    });
+    for (const sideGroupId of props.side.groups) {
+      const sideGroup = store.state.sideGroupMap[sideGroupId];
+      if (sideGroup) sideGroup._isOpen = false;
+    }
+    isOpen.value = false;
   } else if (action === SideActions.AddSubordinate) {
     unitActions.createSubordinateUnit(props.side.id);
   } else if (action === SideActions.AddGroup) {
