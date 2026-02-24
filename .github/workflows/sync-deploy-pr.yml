@@ -1,0 +1,41 @@
+name: Sync main → deploy PR
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-deploy-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create or update deploy PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if an open PR from main → deploy already exists
+          EXISTING_PR=$(gh pr list \
+            --base deploy \
+            --head main \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Deploy PR #$EXISTING_PR already exists — it will automatically include the latest commits on main."
+          else
+            gh pr create \
+              --base deploy \
+              --head main \
+              --title "chore: sync main → deploy" \
+              --body "Merging this PR will trigger a production deployment via Cloudflare Pages.
+
+          This PR was automatically created by the **sync-deploy-pr** workflow." \
+              --label deploy || true
+          fi
