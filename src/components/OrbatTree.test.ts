@@ -43,6 +43,26 @@ function makeFlatTree(count: number): {
   return { units, unitMap };
 }
 
+function makeNestedTree(): {
+  units: EntityId[];
+  unitMap: Record<EntityId, NUnit>;
+} {
+  const parent = makeUnit("u-parent");
+  parent._isOpen = true;
+  parent.subUnits = ["u-child-a"];
+
+  const childA = makeUnit("u-child-a");
+  childA._pid = "u-parent";
+
+  return {
+    units: [parent.id],
+    unitMap: {
+      [parent.id]: parent,
+      [childA.id]: childA,
+    },
+  };
+}
+
 const OrbatTreeItemStub = defineComponent({
   name: "OrbatTreeItem",
   props: {
@@ -124,6 +144,98 @@ describe("OrbatTree reactivity", () => {
 
     expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(2);
     expect(wrapper.text()).not.toContain("u-1");
+  });
+
+  it("updates when nested subUnits are mutated in place", async () => {
+    const { units, unitMap } = makeNestedTree();
+    const WrapperComponent = defineComponent({
+      components: { OrbatTree },
+      setup() {
+        const reactiveUnits = ref(units);
+        const reactiveUnitMap = ref(unitMap);
+        return { reactiveUnits, reactiveUnitMap };
+      },
+      template: `<OrbatTree :units="reactiveUnits" :unit-map="reactiveUnitMap" :virtualization-threshold="999" />`,
+    });
+
+    const wrapper = mount(WrapperComponent, {
+      global: { stubs: { OrbatTreeItem: OrbatTreeItemStub } },
+    });
+    await nextTick();
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(2);
+
+    const childB = makeUnit("u-child-b");
+    childB._pid = "u-parent";
+    wrapper.vm.reactiveUnitMap["u-child-b"] = childB;
+    wrapper.vm.reactiveUnitMap["u-parent"].subUnits.push("u-child-b");
+    await nextTick();
+
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(3);
+    expect(wrapper.text()).toContain("u-child-b");
+
+    delete wrapper.vm.reactiveUnitMap["u-child-a"];
+    const childAIndex =
+      wrapper.vm.reactiveUnitMap["u-parent"].subUnits.indexOf("u-child-a");
+    wrapper.vm.reactiveUnitMap["u-parent"].subUnits.splice(childAIndex, 1);
+    await nextTick();
+
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(2);
+    expect(wrapper.text()).not.toContain("u-child-a");
+  });
+
+  it("updates filtered results when unit names are mutated in place", async () => {
+    const { units, unitMap } = makeFlatTree(2);
+    unitMap["u-0"].name = "alpha";
+    unitMap["u-1"].name = "bravo";
+    const WrapperComponent = defineComponent({
+      components: { OrbatTree },
+      setup() {
+        const reactiveUnits = ref(units);
+        const reactiveUnitMap = ref(unitMap);
+        const filterQuery = ref("match");
+        return { reactiveUnits, reactiveUnitMap, filterQuery };
+      },
+      template: `<OrbatTree :units="reactiveUnits" :unit-map="reactiveUnitMap" :filter-query="filterQuery" :virtualization-threshold="999" />`,
+    });
+
+    const wrapper = mount(WrapperComponent, {
+      global: { stubs: { OrbatTreeItem: OrbatTreeItemStub } },
+    });
+    await nextTick();
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(0);
+
+    wrapper.vm.reactiveUnitMap["u-1"].name = "beta match";
+    await nextTick();
+
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(1);
+    expect(wrapper.text()).toContain("beta match");
+  });
+
+  it("updates location-filtered results when unit location state is mutated in place", async () => {
+    const { units, unitMap } = makeFlatTree(1);
+    unitMap["u-0"].name = "alpha";
+    unitMap["u-0"]._state = null;
+    const WrapperComponent = defineComponent({
+      components: { OrbatTree },
+      setup() {
+        const reactiveUnits = ref(units);
+        const reactiveUnitMap = ref(unitMap);
+        return { reactiveUnits, reactiveUnitMap };
+      },
+      template: `<OrbatTree :units="reactiveUnits" :unit-map="reactiveUnitMap" :location-filter="true" :virtualization-threshold="999" />`,
+    });
+
+    const wrapper = mount(WrapperComponent, {
+      global: { stubs: { OrbatTreeItem: OrbatTreeItemStub } },
+    });
+    await nextTick();
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(0);
+
+    wrapper.vm.reactiveUnitMap["u-0"]._state = { location: [12, 34] } as NUnit["_state"];
+    await nextTick();
+
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(1);
+    expect(wrapper.text()).toContain("alpha");
   });
 });
 

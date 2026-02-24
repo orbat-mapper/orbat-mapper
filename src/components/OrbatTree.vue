@@ -265,19 +265,53 @@ function getTreeChildren(item: NOrbatItemData): NOrbatItemData[] | undefined {
 
 const filteredUnits = ref<NOrbatItemData[]>([]);
 
-let prevFilterQuery = props.filterQuery;
+function buildUnfilteredTree(
+  units: EntityId[],
+  unitMap: Record<EntityId, NUnit>,
+): NOrbatItemData[] {
+  const walk = (unitId: EntityId): NOrbatItemData | null => {
+    const unit = unitMap[unitId];
+    if (!unit) return null;
+
+    const children: NOrbatItemData[] = [];
+    for (const childId of unit.subUnits || []) {
+      const child = walk(childId);
+      if (child) children.push(child);
+    }
+
+    return { unit, children };
+  };
+
+  const items: NOrbatItemData[] = [];
+  for (const unitId of units) {
+    const item = walk(unitId);
+    if (item) items.push(item);
+  }
+  return items;
+}
+
+let previousFilterQuery = props.filterQuery;
 
 watchEffect(() => {
   const filterQuery = props.filterQuery;
-  const resetOpen = filterQuery !== prevFilterQuery;
+  const locationFilter = props.locationFilter;
+  const hasFilter = Boolean(filterQuery) || locationFilter;
+
+  if (!hasFilter) {
+    filteredUnits.value = buildUnfilteredTree(props.units, props.unitMap);
+    previousFilterQuery = filterQuery;
+    return;
+  }
+
+  const resetOpen = filterQuery !== previousFilterQuery;
   filteredUnits.value = filterUnits(
     props.units,
     props.unitMap,
     filterQuery,
-    props.locationFilter,
+    locationFilter,
     resetOpen,
   );
-  prevFilterQuery = filterQuery;
+  previousFilterQuery = filterQuery;
 });
 
 const lastInGroupMap = computed(() => {
