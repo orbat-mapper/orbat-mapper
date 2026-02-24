@@ -70,6 +70,63 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+describe("OrbatTree reactivity", () => {
+  it("updates when a unit is added to the reactive unitMap (clone)", async () => {
+    const { units, unitMap } = makeFlatTree(3);
+    const WrapperComponent = defineComponent({
+      components: { OrbatTree },
+      setup() {
+        const reactiveUnits = ref(units);
+        const reactiveUnitMap = ref(unitMap);
+        return { reactiveUnits, reactiveUnitMap };
+      },
+      template: `<OrbatTree :units="reactiveUnits" :unit-map="reactiveUnitMap" :virtualization-threshold="999" />`,
+    });
+
+    const wrapper = mount(WrapperComponent, {
+      global: { stubs: { OrbatTreeItem: OrbatTreeItemStub } },
+    });
+    await nextTick();
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(3);
+
+    // Simulate clone: add a new unit to the reactive data in-place
+    const newUnit = makeUnit("u-clone");
+    wrapper.vm.reactiveUnitMap["u-clone"] = newUnit;
+    wrapper.vm.reactiveUnits.push("u-clone");
+    await nextTick();
+
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(4);
+    expect(wrapper.text()).toContain("u-clone");
+  });
+
+  it("updates when a unit is removed from the reactive unitMap (delete)", async () => {
+    const { units, unitMap } = makeFlatTree(3);
+    const WrapperComponent = defineComponent({
+      components: { OrbatTree },
+      setup() {
+        const reactiveUnits = ref(units);
+        const reactiveUnitMap = ref(unitMap);
+        return { reactiveUnits, reactiveUnitMap };
+      },
+      template: `<OrbatTree :units="reactiveUnits" :unit-map="reactiveUnitMap" :virtualization-threshold="999" />`,
+    });
+
+    const wrapper = mount(WrapperComponent, {
+      global: { stubs: { OrbatTreeItem: OrbatTreeItemStub } },
+    });
+    await nextTick();
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(3);
+
+    // Simulate delete: remove a unit from the reactive data in-place
+    delete wrapper.vm.reactiveUnitMap["u-1"];
+    wrapper.vm.reactiveUnits.splice(1, 1);
+    await nextTick();
+
+    expect(wrapper.findAll('[role="treeitem"]')).toHaveLength(2);
+    expect(wrapper.text()).not.toContain("u-1");
+  });
+});
+
 describe("OrbatTree virtualization", () => {
   it("renders all flattened items when virtualization is disabled", async () => {
     const { units, unitMap } = makeFlatTree(5);
