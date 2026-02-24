@@ -6,6 +6,7 @@ import OrbatSide from "@/components/OrbatSide.vue";
 import OrbatSideGroup from "@/components/OrbatSideGroup.vue";
 import { activeScenarioKey } from "@/components/injects";
 import { SideActions } from "@/types/constants";
+import { SID } from "@/symbology/values";
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
   draggable: vi.fn(() => () => {}),
@@ -27,6 +28,7 @@ function makeFixture() {
   const side = {
     id: "s1",
     name: "Blue",
+    standardIdentity: SID.Friend,
     groups: ["g1"],
     subUnits: ["u1"],
     _isOpen: false,
