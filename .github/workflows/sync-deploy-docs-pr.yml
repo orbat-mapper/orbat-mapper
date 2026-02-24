@@ -1,0 +1,43 @@
+name: Sync main → deploy-docs PR
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-deploy-docs-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create or update deploy-docs PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if an open PR from main → deploy-docs already exists
+          EXISTING_PR=$(gh pr list \
+            --base deploy-docs \
+            --head main \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Deploy-docs PR #$EXISTING_PR already exists — it will automatically include the latest commits on main."
+          else
+            gh pr create \
+              --base deploy-docs \
+              --head main \
+              --title "chore: sync main → deploy-docs" \
+              --body "Merging this PR will trigger a docs deployment.
+
+          This PR was automatically created by the **sync-deploy-docs-pr** workflow." \
+              --label deploy || true
+          fi
