@@ -196,7 +196,7 @@ async function handleCreateCopy() {
       class="bg-muted relative top-0 right-0 left-0 flex w-full items-center justify-center gap-8 p-1 text-center"
     >
       <p>
-        This is a work in progress prototype. Follow the
+        Follow the
         <a href="https://github.com/orbat-mapper/orbat-mapper" class="underline"
           >development on GitHub <GithubIcon class="inline size-6 sm:size-8" />
         </a>
