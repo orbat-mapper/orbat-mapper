@@ -227,23 +227,20 @@ watch([settingsStore, symbolSettings, mapSettingsStore], () => {
   drawUnits();
 });
 
-watch(
-  [() => state.currentTime, doNotFilterLayers, () => state.featureStateCounter],
-  () => {
-    initializeFeatureLayersFromStore({
-      doClearCache: false,
-      filterVisible: !doNotFilterLayers.value,
-    });
-    // trigger redraw of selected features
-    if (selectedFeatureIds.value.size > 0) {
-      const ids = Array.from(selectedFeatureIds.value);
-      selectedFeatureIds.value.clear();
-      for (const id of ids) {
-        selectedFeatureIds.value.add(id);
-      }
+watch([doNotFilterLayers, () => state.featureStateCounter], () => {
+  initializeFeatureLayersFromStore({
+    doClearCache: false,
+    filterVisible: !doNotFilterLayers.value,
+  });
+  // trigger redraw of selected features
+  if (selectedFeatureIds.value.size > 0) {
+    const ids = Array.from(selectedFeatureIds.value);
+    selectedFeatureIds.value.clear();
+    for (const id of ids) {
+      selectedFeatureIds.value.add(id);
     }
-  },
-);
+  }
+});
 
 onUnmounted(() => {
   geoStore.olMap = undefined;
