@@ -92,7 +92,7 @@ const settingsStore = useSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
 const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
-const { unitLayer, drawUnits, labelLayer } = useUnitLayer();
+const { unitLayer, drawUnits, updateUnitPositions, labelLayer } = useUnitLayer();
 
 const { onScenarioAction } = useSearchActions();
 
@@ -213,14 +213,22 @@ function toggleUnitInteractions(event: ObjectEvent) {
 
 emit("map-ready", { olMap, featureSelectInteraction, unitSelectInteraction });
 
-function redrawUnits() {
-  drawUnits();
+/** Incrementally update unit positions without recreating all features */
+function updateUnitsOnMap() {
+  updateUnitPositions();
   drawHistory();
   redrawSelectedUnits();
   drawRangeRings();
 }
 
-watch(geo.everyVisibleUnit, () => redrawUnits(), { deep: true });
+watch(
+  [
+    () => state.unitStateCounter,
+    () => state.currentTime,
+    () => geo.everyVisibleUnit.value.length,
+  ],
+  () => updateUnitsOnMap(),
+);
 
 watch(
   [settingsStore, symbolSettings, mapSettingsStore, () => state.settingsStateCounter],

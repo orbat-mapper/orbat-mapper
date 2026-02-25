@@ -258,6 +258,50 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     unitLayer.getSource()?.addFeatures(units);
   };
 
+  /**
+   * Incrementally update unit features on the map. Only adds, removes, or
+   * repositions features that actually changed instead of clearing and
+   * recreating all features.
+   */
+  const updateUnitPositions = () => {
+    const source = unitLayer.getSource();
+    if (!source) return;
+    const visibleUnits = geo.everyVisibleUnit.value;
+    const wantedIds = new Set<string>();
+    const toAdd: Feature<Point>[] = [];
+
+    for (const unit of visibleUnits) {
+      const id = unit.id;
+      wantedIds.add(id);
+      const location = unit._state!.location!;
+      const existing = source.getFeatureById(id) as Feature<Point> | null;
+      if (existing) {
+        // Update position only if it actually changed
+        const geom = existing.getGeometry()!;
+        const projected = fromLonLat(location);
+        const coords = geom.getCoordinates();
+        if (coords[0] !== projected[0] || coords[1] !== projected[1]) {
+          geom.setCoordinates(projected);
+        }
+      } else {
+        toAdd.push(createUnitFeatureAt(location, unit));
+      }
+    }
+
+    // Remove features that are no longer visible
+    const toRemove: Feature<Point>[] = [];
+    for (const feature of source.getFeatures()) {
+      if (!wantedIds.has(feature.getId() as string)) {
+        toRemove.push(feature as Feature<Point>);
+      }
+    }
+    source.removeFeatures(toRemove);
+
+    if (toAdd.length) {
+      source.addFeatures(toAdd);
+    }
+  };
+
   const animateUnits = () => {
     unitLayer.getSource()?.clear();
     const units = geo.everyVisibleUnit.value.map((unit) => {
@@ -269,7 +313,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     //   unitLayer.animateFeature(f, new Fade({ duration: 1000 }))
     // );
   };
-  return { unitLayer, labelLayer, drawUnits, animateUnits };
+  return { unitLayer, labelLayer, drawUnits, updateUnitPositions, animateUnits };
 }
 
 export function useMapDrop(

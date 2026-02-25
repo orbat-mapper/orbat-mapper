@@ -6,6 +6,7 @@ import ScenarioMapLogic from "@/components/ScenarioMapLogic.vue";
 
 const mocks = vi.hoisted(() => ({
   drawUnitsSpy: vi.fn(),
+  updateUnitPositionsSpy: vi.fn(),
   clearUnitStyleCacheSpy: vi.fn(),
   drawHistorySpy: vi.fn(),
   drawRangeRingsSpy: vi.fn(),
@@ -34,6 +35,7 @@ vi.mock("@/composables/geoUnitLayers", () => ({
       }),
     },
     drawUnits: mocks.drawUnitsSpy,
+    updateUnitPositions: mocks.updateUnitPositionsSpy,
     labelLayer: {},
   }),
   useUnitSelectInteraction: () => ({
@@ -178,6 +180,7 @@ vi.mock("ol/layer/Group", () => ({
 describe("ScenarioMapLogic", () => {
   it("redraws units when settingsStateCounter changes", async () => {
     mocks.drawUnitsSpy.mockClear();
+    mocks.updateUnitPositionsSpy.mockClear();
     mocks.clearUnitStyleCacheSpy.mockClear();
     mocks.drawHistorySpy.mockClear();
     mocks.drawRangeRingsSpy.mockClear();
@@ -185,6 +188,8 @@ describe("ScenarioMapLogic", () => {
 
     const settingsCounter = ref(0);
     const featureCounter = ref(0);
+    const unitStateCounter = ref(0);
+    const currentTime = ref(0);
     mocks.injectedScenario = {
       geo: { everyVisibleUnit: ref([]) },
       store: {
@@ -194,6 +199,12 @@ describe("ScenarioMapLogic", () => {
           },
           get featureStateCounter() {
             return featureCounter.value;
+          },
+          get unitStateCounter() {
+            return unitStateCounter.value;
+          },
+          get currentTime() {
+            return currentTime.value;
           },
           boundingBox: null,
         },
@@ -218,5 +229,62 @@ describe("ScenarioMapLogic", () => {
 
     expect(mocks.drawUnitsSpy.mock.calls.length).toBe(drawUnitsBefore + 1);
     expect(mocks.clearUnitStyleCacheSpy.mock.calls.length).toBe(clearBefore + 1);
+  });
+
+  it("incrementally updates unit positions when unitStateCounter changes", async () => {
+    mocks.drawUnitsSpy.mockClear();
+    mocks.updateUnitPositionsSpy.mockClear();
+    mocks.clearUnitStyleCacheSpy.mockClear();
+    mocks.drawHistorySpy.mockClear();
+    mocks.drawRangeRingsSpy.mockClear();
+    mocks.redrawSelectedUnitsSpy.mockClear();
+
+    const settingsCounter = ref(0);
+    const featureCounter = ref(0);
+    const unitStateCounter = ref(0);
+    const currentTime = ref(0);
+    mocks.injectedScenario = {
+      geo: { everyVisibleUnit: ref([]) },
+      store: {
+        state: {
+          get settingsStateCounter() {
+            return settingsCounter.value;
+          },
+          get featureStateCounter() {
+            return featureCounter.value;
+          },
+          get unitStateCounter() {
+            return unitStateCounter.value;
+          },
+          get currentTime() {
+            return currentTime.value;
+          },
+          boundingBox: null,
+        },
+      },
+    };
+
+    const olMap = {
+      addLayer: vi.fn(),
+      addInteraction: vi.fn(),
+      getView: () => ({ fit: vi.fn() }),
+    } as any;
+
+    mount(ScenarioMapLogic, {
+      props: { olMap },
+    });
+
+    const updateBefore = mocks.updateUnitPositionsSpy.mock.calls.length;
+    const historyBefore = mocks.drawHistorySpy.mock.calls.length;
+    const rangeBefore = mocks.drawRangeRingsSpy.mock.calls.length;
+    const selectedBefore = mocks.redrawSelectedUnitsSpy.mock.calls.length;
+
+    unitStateCounter.value++;
+    await nextTick();
+
+    expect(mocks.updateUnitPositionsSpy.mock.calls.length).toBe(updateBefore + 1);
+    expect(mocks.drawHistorySpy.mock.calls.length).toBe(historyBefore + 1);
+    expect(mocks.drawRangeRingsSpy.mock.calls.length).toBe(rangeBefore + 1);
+    expect(mocks.redrawSelectedUnitsSpy.mock.calls.length).toBe(selectedBefore + 1);
   });
 });

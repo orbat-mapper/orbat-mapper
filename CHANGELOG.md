@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - Removed the **"beta"** label from the application name.
 - Switched to a dropdown menu for selecting the scenario edit mode on mobile devices.
 - Added a dark mode toggle to the main toolbar on mobile devices.
+- Optimized unit map rendering by incrementally updating positions instead of recreating features.
 
 ### Fixed
 
