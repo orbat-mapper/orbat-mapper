@@ -30,12 +30,15 @@ export type ColumnField =
   | "sidc"
   | "externalUrl"
   | "description";
+export type GridResizableColumnKey = "__indicator" | "__unit" | ColumnField;
 export type CellType = "text" | "sidc" | "markdown";
 
 export interface TableColumn extends SelectItem<ColumnField> {
   type: CellType;
   hidden?: boolean;
 }
+
+export type GridColumnWidths = Record<GridResizableColumnKey, number>;
 
 export type DetailsPanel = "unit" | "event" | "mapLayer" | "feature" | "scenario";
 

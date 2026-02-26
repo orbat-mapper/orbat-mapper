@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added resizable columns to the Grid Edit view.
 - Added support for dragging and dropping ORBAT units between different browser tabs and windows.
 - Added custom icon support for KMZ export.
 - Added virtualization to the Grid Edit view to improve performance with large unit lists.

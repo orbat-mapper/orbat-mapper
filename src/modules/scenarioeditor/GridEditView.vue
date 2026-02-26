@@ -6,7 +6,13 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, sidcModalKey } from "@/components/injects";
 import type { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import FilterQueryInput from "@/components/FilterQueryInput.vue";
-import type { ColumnField, TableColumn, TableItem } from "@/modules/scenarioeditor/types";
+import type {
+  ColumnField,
+  GridColumnWidths,
+  GridResizableColumnKey,
+  TableColumn,
+  TableItem,
+} from "@/modules/scenarioeditor/types";
 import { filterUnits, type NOrbatItemData } from "@/composables/filtering";
 import { type NWalkSideGroupCallback } from "@/scenariostore/unitManipulations";
 import GridHeader from "@/modules/scenarioeditor/GridHeader.vue";
@@ -27,6 +33,11 @@ import {
 
 const ROW_HEIGHT = 48;
 const VIRTUAL_OVERSCAN = 20;
+const MAX_WIDTH_SAMPLING_ROWS = 100;
+const MIN_INDICATOR_COLUMN_WIDTH = 24;
+const MAX_INDICATOR_COLUMN_WIDTH = 120;
+const MIN_DATA_COLUMN_WIDTH = 120;
+const MAX_DATA_COLUMN_WIDTH = 900;
 
 type GridArrowDirection = "up" | "down" | "left" | "right";
 type ScrollAlignment = "auto" | "center" | "end" | "start";
@@ -55,6 +66,25 @@ const availableColumns: TableColumn[] = [
   { value: "id", label: "Id", type: "text", hidden: true },
 ];
 
+const allResizableColumnKeys: GridResizableColumnKey[] = [
+  "__indicator",
+  "__unit",
+  ...availableColumns.map((column) => column.value),
+];
+
+const defaultColumnWidths: GridColumnWidths = {
+  __indicator: 40,
+  __unit: 260,
+  name: 260,
+  shortName: 200,
+  sidc: 240,
+  externalUrl: 280,
+  description: 320,
+  id: 220,
+};
+const columnByKey = new Map(availableColumns.map((column) => [column.value, column]));
+let textMeasurementContext: CanvasRenderingContext2D | null | undefined;
+
 const selectedColumns = useStorage(
   "grid-columns-1",
   availableColumns.filter((e) => !(e.hidden === true)).map((e) => e.value),
@@ -63,6 +93,165 @@ const selectedColumns = useStorage(
 const columns = computed(() =>
   availableColumns.filter((c) => selectedColumns.value.includes(c.value)),
 );
+const columnWidths = useStorage<Partial<GridColumnWidths>>("grid-column-widths-1", {});
+
+function getDefaultColumnWidth(key: GridResizableColumnKey) {
+  return defaultColumnWidths[key];
+}
+
+function getTextWidth(value: string) {
+  const text = value || "";
+  if (!text) return 0;
+
+  if (textMeasurementContext === undefined) {
+    const canvas = document.createElement("canvas");
+    textMeasurementContext = canvas.getContext("2d");
+    if (textMeasurementContext) {
+      textMeasurementContext.font = "600 14px sans-serif";
+    }
+  }
+
+  if (textMeasurementContext) {
+    return Math.ceil(textMeasurementContext.measureText(text).width);
+  }
+
+  return text.length * 8;
+}
+
+function clampColumnWidth(key: GridResizableColumnKey, width: number) {
+  const [min, max] =
+    key === "__indicator"
+      ? [MIN_INDICATOR_COLUMN_WIDTH, MAX_INDICATOR_COLUMN_WIDTH]
+      : [MIN_DATA_COLUMN_WIDTH, MAX_DATA_COLUMN_WIDTH];
+  return Math.max(min, Math.min(max, width));
+}
+
+function getColumnWidth(key: GridResizableColumnKey) {
+  const rawWidth = columnWidths.value[key];
+  const width = Number(rawWidth);
+  if (!Number.isFinite(width) || width <= 0) {
+    return getDefaultColumnWidth(key);
+  }
+  return clampColumnWidth(key, width);
+}
+
+function setColumnWidth(key: GridResizableColumnKey, width: number) {
+  columnWidths.value[key] = clampColumnWidth(key, width);
+}
+
+function getUnitColumnValue(unit: NUnit, column: ColumnField) {
+  switch (column) {
+    case "id":
+      return unit.id;
+    case "name":
+      return unit.name;
+    case "shortName":
+      return unit.shortName;
+    case "sidc":
+      return unit.sidc;
+    case "externalUrl":
+      return unit.externalUrl;
+    case "description":
+      return unit.description;
+  }
+}
+
+function getSideColumnValue(side: NSide, column: ColumnField) {
+  switch (column) {
+    case "id":
+      return side.id;
+    case "name":
+      return side.name;
+    case "shortName":
+      return side.name;
+    default:
+      return undefined;
+  }
+}
+
+function getSideGroupColumnValue(sideGroup: NSideGroup, column: ColumnField) {
+  switch (column) {
+    case "id":
+      return sideGroup.id;
+    case "name":
+      return sideGroup.name;
+    case "shortName":
+      return sideGroup.name;
+    default:
+      return undefined;
+  }
+}
+
+function getTableItemColumnValue(item: TableItem, column: ColumnField) {
+  if (item.type === "unit") return getUnitColumnValue(item.unit, column);
+  if (item.type === "side") return getSideColumnValue(item.side, column);
+  return getSideGroupColumnValue(item.sideGroup, column);
+}
+
+function estimateInitialColumnWidth(key: GridResizableColumnKey) {
+  const sampledItems = items.value.slice(0, MAX_WIDTH_SAMPLING_ROWS);
+
+  if (key === "__indicator") return getDefaultColumnWidth(key);
+
+  if (key === "__unit") {
+    let widest = getTextWidth("Unit") + 64;
+    for (const item of sampledItems) {
+      if (item.type === "unit") {
+        widest = Math.max(
+          widest,
+          getTextWidth(item.unit.name || "") + 64 + item.level * 16,
+        );
+      } else if (item.type === "side") {
+        widest = Math.max(widest, getTextWidth(item.side.name || "") + 56);
+      } else {
+        widest = Math.max(widest, getTextWidth(item.sideGroup.name || "") + 56);
+      }
+    }
+    return clampColumnWidth(key, widest);
+  }
+
+  const column = columnByKey.get(key);
+  let widest = getTextWidth(column?.label || key) + 40;
+  for (const item of sampledItems) {
+    const value = getTableItemColumnValue(item, key);
+    widest = Math.max(widest, getTextWidth(String(value ?? "")) + 32);
+  }
+  return clampColumnWidth(key, widest);
+}
+
+const visibleColumnWidthKeys = computed<GridResizableColumnKey[]>(() => [
+  "__indicator",
+  "__unit",
+  ...columns.value.map((column) => column.value),
+]);
+
+const resolvedColumnWidths = computed<GridColumnWidths>(() =>
+  allResizableColumnKeys.reduce((acc, key) => {
+    acc[key] = getColumnWidth(key);
+    return acc;
+  }, {} as GridColumnWidths),
+);
+
+const tableWidth = computed(() =>
+  visibleColumnWidthKeys.value.reduce(
+    (total, key) => total + resolvedColumnWidths.value[key],
+    0,
+  ),
+);
+
+function onColumnWidthUpdate({
+  key,
+  width,
+}: {
+  key: GridResizableColumnKey;
+  width: number;
+}) {
+  setColumnWidth(key, width);
+}
+
+function onColumnWidthAutoSize({ key }: { key: GridResizableColumnKey }) {
+  setColumnWidth(key, estimateInitialColumnWidth(key));
+}
 
 const sgOpen = ref(new Map<NSideGroup, boolean>());
 const sideOpen = ref(new Map<NSide, boolean>());
@@ -162,6 +351,19 @@ const items = computed(() => {
   });
   return _items;
 });
+
+watch(
+  [visibleColumnWidthKeys, items],
+  ([keys]) => {
+    keys.forEach((key) => {
+      const width = Number(columnWidths.value[key]);
+      if (!Number.isFinite(width) || width <= 0) {
+        setColumnWidth(key, estimateInitialColumnWidth(key));
+      }
+    });
+  },
+  { immediate: true },
+);
 
 const rowVirtualizerOptions = computed(() => ({
   count: items.value.length,
@@ -572,8 +774,16 @@ async function onUnitEdit(unit: NUnit, b: ColumnField, c: string) {
         ref="scrollContainerRef"
         class="relative max-w-none min-w-0 flex-auto overflow-auto pb-7"
       >
-        <table class="text-foreground w-full table-fixed text-sm">
-          <GridHeader :columns="columns" />
+        <table
+          class="text-foreground w-max table-fixed text-sm"
+          :style="{ width: `${tableWidth}px` }"
+        >
+          <GridHeader
+            :columns="columns"
+            :column-widths="resolvedColumnWidths"
+            @update:column-width="onColumnWidthUpdate"
+            @autosize:column-width="onColumnWidthAutoSize"
+          />
           <tbody class="divide-border bg-card divide-y">
             <tr v-if="paddingTop > 0" aria-hidden="true">
               <td
