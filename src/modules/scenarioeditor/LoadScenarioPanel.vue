@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useDropZone } from "@vueuse/core";
 import { type Scenario } from "@/types/scenarioModels";
+import { parseMsdlToScenario } from "@/import/msdl";
 
 const emit = defineEmits(["update:modelValue", "loaded"]);
 
@@ -10,23 +11,45 @@ const dropZoneRef = ref<HTMLDivElement>();
 const { isOverDropZone } = useDropZone(dropZoneRef, onDrop);
 const isError = ref(false);
 
-function readFile(file: File) {
+async function readFile(file: File) {
   const reader = new FileReader();
 
-  reader.onload = function (evt) {
+  reader.onload = async function (evt) {
     const content = evt?.target?.result as string;
 
     try {
-      const scenarioData = JSON.parse(content) as Scenario;
-      if (
-        scenarioData?.type === "ORBAT-mapper" ||
-        scenarioData?.type === "ORBAT-mapper-encrypted"
-      ) {
-        emit("loaded", scenarioData);
-      } else {
-        console.error("Failed to load", file.name);
-        isError.value = true;
+      // Try parsing as JSON first
+      try {
+        const scenarioData = JSON.parse(content) as Scenario;
+        if (
+          scenarioData?.type === "ORBAT-mapper" ||
+          scenarioData?.type === "ORBAT-mapper-encrypted"
+        ) {
+          emit("loaded", scenarioData);
+          return;
+        }
+      } catch (e) {
+        // Not JSON, continue to check for MSDL
       }
+
+      // Check for MSDL/XML
+      if (
+        file.name.endsWith(".xml") ||
+        file.name.endsWith(".msdl") ||
+        file.name.endsWith(".msd") ||
+        content.trim().startsWith("<")
+      ) {
+        try {
+          const scenarioData = parseMsdlToScenario(content);
+          emit("loaded", scenarioData);
+          return;
+        } catch (e) {
+          console.error("Failed to parse MSDL", e);
+        }
+      }
+
+      console.error("Failed to load", file.name);
+      isError.value = true;
     } catch (e) {
       console.error("Failed to load", file.name);
       isError.value = true;
