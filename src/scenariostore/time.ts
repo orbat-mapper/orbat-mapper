@@ -188,16 +188,24 @@ export function useScenarioTime(store: NewScenarioStore) {
     Object.values(state.layerMap).forEach((layer) => {
       const visibleFromT = layer.visibleFromT || Number.MIN_SAFE_INTEGER;
       const visibleUntilT = layer.visibleUntilT || Number.MAX_SAFE_INTEGER;
+      const oldHidden = layer._hidden;
       layer._hidden = timestamp <= visibleFromT || timestamp >= visibleUntilT;
+      if (oldHidden !== layer._hidden) {
+        state.featureStateCounter++;
+      }
       layer.features.forEach((featureId) => {
         const feature = state.featureMap[featureId];
         const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
         const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
         if (!feature) return;
+        const oldHidden = feature._hidden;
         feature._hidden =
           timestamp <= visibleFromT ||
           timestamp >= visibleUntilT ||
           !!feature.meta.isHidden;
+        if (oldHidden !== feature._hidden) {
+          state.featureStateCounter++;
+        }
         if (feature.state?.length) {
           let currentState = createInitialFeatureState(feature);
           for (const s of feature.state) {
@@ -208,6 +216,7 @@ export function useScenarioTime(store: NewScenarioStore) {
             }
           }
           feature._state = currentState;
+          state.featureStateCounter++;
         }
       });
     });
