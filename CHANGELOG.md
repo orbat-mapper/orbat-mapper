@@ -34,6 +34,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fixed issue where changing the symbol fill color for a side would immediately update before saving.
+- Fixed issue where saving side or side-group symbol fill color did not immediately refresh map symbols.
 
 
 ## January 2026

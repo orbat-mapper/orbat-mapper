@@ -222,10 +222,13 @@ function redrawUnits() {
 
 watch(geo.everyVisibleUnit, () => redrawUnits(), { deep: true });
 
-watch([settingsStore, symbolSettings, mapSettingsStore], () => {
-  clearUnitStyleCache();
-  drawUnits();
-});
+watch(
+  [settingsStore, symbolSettings, mapSettingsStore, () => state.settingsStateCounter],
+  () => {
+    clearUnitStyleCache();
+    drawUnits();
+  },
+);
 
 watch([doNotFilterLayers, () => state.featureStateCounter], () => {
   initializeFeatureLayersFromStore({

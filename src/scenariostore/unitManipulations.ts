@@ -208,6 +208,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
           state,
         );
       }
+      state.settingsStateCounter++;
       return;
     }
     update((s) => {
@@ -229,6 +230,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         );
       }
     });
+    state.settingsStateCounter++;
   }
 
   function deleteSide(sideId: EntityId) {
@@ -274,6 +276,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       });
     }
     clearUnitStyleCache();
+    state.settingsStateCounter++;
   }
 
   function reorderSideGroup(sideGroupId: EntityId, direction: "up" | "down") {
