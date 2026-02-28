@@ -1,14 +1,10 @@
 name: Hard sync deploy history to main on approval
-
 on:
   pull_request_review:
     types: [submitted]
-    branches: [deploy]
-
 permissions:
   contents: write
   pull-requests: write
-
 jobs:
   hard-sync-deploy-history:
     if: github.event.review.state == 'approved' && github.event.pull_request.state == 'open'
@@ -23,24 +19,20 @@ jobs:
           HAS_DEPLOY_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'deploy') }}
         run: |
           set -euo pipefail
-
           if [ "$BASE_REF" != "deploy" ]; then
             echo "Unexpected PR base: $BASE_REF"
             exit 1
           fi
-
           if [ "$HAS_DEPLOY_LABEL" != "true" ]; then
             echo "PR does not have deploy label. Skipping hard sync."
             echo "should_sync=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-
           if [ "$HEAD_REF" != "main" ] && [[ "$PR_TITLE" != *"sync main"*deploy* ]]; then
             echo "PR is not recognized as deploy sync PR (head=$HEAD_REF, title=$PR_TITLE). Skipping hard sync."
             echo "should_sync=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-
           echo "should_sync=true" >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
@@ -54,21 +46,16 @@ jobs:
         id: sync
         run: |
           set -euo pipefail
-
           git fetch origin main deploy
-
           OLD_DEPLOY_SHA="$(git rev-parse origin/deploy)"
           MAIN_SHA="$(git rev-parse origin/main)"
-
           echo "old_deploy_sha=$OLD_DEPLOY_SHA" >> "$GITHUB_OUTPUT"
           echo "main_sha=$MAIN_SHA" >> "$GITHUB_OUTPUT"
-
           if [ "$OLD_DEPLOY_SHA" = "$MAIN_SHA" ]; then
             echo "Deploy already matches main. No push needed."
             echo "did_push=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-
           git push --force-with-lease=refs/heads/deploy:"$OLD_DEPLOY_SHA" origin "$MAIN_SHA":refs/heads/deploy
           echo "did_push=true" >> "$GITHUB_OUTPUT"
 
@@ -82,18 +69,14 @@ jobs:
           DID_PUSH: ${{ steps.sync.outputs.did_push }}
         run: |
           set -euo pipefail
-
           if [ "$DID_PUSH" = "true" ]; then
             MESSAGE="Deploy history hard-synced to main.
-
             - Previous deploy tip: \`$OLD_DEPLOY_SHA\`
             - New deploy tip: \`$MAIN_SHA\`"
           else
             MESSAGE="Deploy already matched main. No ref update was required.
-
             - Deploy/main tip: \`$MAIN_SHA\`"
           fi
-
           gh pr comment "$PR_NUMBER" --body "$MESSAGE"
 
       - name: Close sync PR without merge
@@ -103,4 +86,10 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
-          gh pr close "$PR_NUMBER" --delete-branch=false --comment "Closed after approval-driven hard sync. Deploy now points to main without a merge commit."
+          # Check if PR is still open before trying to close it
+          PR_STATE=$(gh pr view "$PR_NUMBER" --json state --jq .state)
+          if [ "$PR_STATE" = "OPEN" ]; then
+            gh pr close "$PR_NUMBER" --delete-branch=false --comment "Closed after approval-driven hard sync. Deploy now points to main without a merge commit."
+          else
+            echo "PR state is $PR_STATE. No manual close required."
+          fi
