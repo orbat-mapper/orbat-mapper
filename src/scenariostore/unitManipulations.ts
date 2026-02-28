@@ -323,10 +323,15 @@ export function useUnitManipulations(store: NewScenarioStore) {
         (unit) => {
           updateSidIfNecessary(unit, side);
           unit._sid = side.id;
+          if (unit._ikey) {
+            invalidateUnitStyle(unit._ikey);
+            unit._ikey = undefined;
+          }
           invalidateUnitStyle(unit.id);
         },
         s,
       );
+      s.settingsStateCounter++;
     });
   }
 
@@ -521,11 +526,16 @@ export function useUnitManipulations(store: NewScenarioStore) {
             updateSidIfNecessary(u, side);
             u._sid = side.id;
             u._gid = sideGroup?.id;
+            if (u._ikey) {
+              invalidateUnitStyle(u._ikey);
+              u._ikey = undefined;
+            }
             invalidateUnitStyle(u.id);
           },
           { state: s, includeParent: true },
         );
       }
+      s.settingsStateCounter++;
     });
   }
 
