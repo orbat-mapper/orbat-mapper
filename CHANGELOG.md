@@ -31,6 +31,11 @@ All notable changes to this project will be documented in this file.
 - Switched to a dropdown menu for selecting the scenario edit mode on mobile devices.
 - Added a dark mode toggle to the main toolbar on mobile devices.
 
+### Fixed
+
+- Fixed issue where changing the symbol fill color for a side would immediately update before saving.
+
+
 ## January 2026
 
 - Added "Paste scenario from clipboard" feature to the landing page and map editor (includes button and keyboard shortcut detection).

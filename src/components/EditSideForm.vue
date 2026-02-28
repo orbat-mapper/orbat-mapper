@@ -28,7 +28,7 @@ watch(
   (sideId) => {
     if (sideId && side.value) {
       const { name, standardIdentity, symbolOptions = {} } = side.value;
-      form.value = { name, standardIdentity, symbolOptions };
+      form.value = { name, standardIdentity, symbolOptions: { ...symbolOptions } };
     }
   },
   { immediate: true },
