@@ -34,7 +34,7 @@ jobs:
               --base deploy \
               --head main \
               --title "chore: sync main → deploy" \
-              --body "Merging this PR will trigger a production deployment via Cloudflare Pages.
+              --body "Approve this PR (do not merge). Approval triggers a workflow that force-aligns the deploy branch to main so history is identical.
 
           This PR was automatically created by the **sync-deploy-pr** workflow." \
               --label deploy || true
