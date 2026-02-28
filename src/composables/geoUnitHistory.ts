@@ -221,6 +221,7 @@ export function useUnitHistory(
 
   historyModify.on(["modifystart", "modifyend"], (evt) => {
     const f = (evt as ModifyEvent).features.item(0) as Feature<LineString | Point>;
+    const unitId = f.get("unitId");
     const geometryType = f.getGeometry()?.getType();
     if (geometryType === "Point") {
     } else {
@@ -239,7 +240,7 @@ export function useUnitHistory(
         }
 
         handleHistoryFeatureChange(
-          f.get("unitId"),
+          unitId,
           action,
           elementIndex,
           isVia,
@@ -252,7 +253,6 @@ export function useUnitHistory(
           .map((e) => [e[0], e[1], e[2] === 0 ? VIA_TIME : e[2]]);
         if (updatedGeometry) f.getGeometry()?.setCoordinates(updatedGeometry, "XYM");
       } else if (geometryType === "Point") {
-        const unitId = f.get("unitId");
         const unit = unitActions.getUnitById(unitId);
         if (!unit) return;
         const action = deleteCondition((<ModifyEvent>evt).mapBrowserEvent)
@@ -269,6 +269,7 @@ export function useUnitHistory(
           postCoords,
         );
       }
+      unitActions.updateUnitState(unitId);
       drawHistory();
     }
   });
