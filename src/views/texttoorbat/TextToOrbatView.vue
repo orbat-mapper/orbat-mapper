@@ -306,7 +306,7 @@ onUnmounted(() => {
               Enter unit hierarchy using indentation.
               <span class="hidden sm:inline"
                 >Each line is a unit name. Use tabs or spaces to indicate parent-child
-                relationships</span
+                relationships. Echelon abbreviations can be contiguous (e.g., 2bn)</span
               >.
             </p>
             <div class="mt-2 flex items-center gap-2">
@@ -335,7 +335,7 @@ onUnmounted(() => {
             class="flex-1 resize-none rounded-none border-0 font-mono text-sm focus-visible:ring-0"
             placeholder="1st Infantry Division
   1st Brigade
-    1st Battalion
+    2bn
     2nd Battalion
   2nd Brigade
     3rd Battalion

@@ -66,6 +66,10 @@ describe("getEchelonCodeFromName", () => {
     expect(getEchelonCodeFromName("1st Bde")).toBe("18");
   });
 
+  it("detects concatenated Brigade abbreviations", () => {
+    expect(getEchelonCodeFromName("1bde")).toBe("18");
+  });
+
   it("detects Regiment", () => {
     expect(getEchelonCodeFromName("Artillery Regiment")).toBe("17");
     expect(getEchelonCodeFromName("1st Regt")).toBe("17");
@@ -77,6 +81,11 @@ describe("getEchelonCodeFromName", () => {
     expect(getEchelonCodeFromName("2nd Btn")).toBe("16");
   });
 
+  it("detects concatenated Battalion abbreviations", () => {
+    expect(getEchelonCodeFromName("2bn")).toBe("16");
+    expect(getEchelonCodeFromName("2btn")).toBe("16");
+  });
+
   it("detects Squadron", () => {
     expect(getEchelonCodeFromName("1st Cavalry Squadron")).toBe("16");
     expect(getEchelonCodeFromName("1st Sqn")).toBe("16");
@@ -86,6 +95,10 @@ describe("getEchelonCodeFromName", () => {
     expect(getEchelonCodeFromName("Alpha Company")).toBe("15");
     expect(getEchelonCodeFromName("A Coy")).toBe("15");
     expect(getEchelonCodeFromName("A Co")).toBe("15");
+  });
+
+  it("detects concatenated Company abbreviations", () => {
+    expect(getEchelonCodeFromName("Aco")).toBe("15");
   });
 
   it("detects Battery", () => {
@@ -101,6 +114,10 @@ describe("getEchelonCodeFromName", () => {
   it("detects Platoon", () => {
     expect(getEchelonCodeFromName("1st Platoon")).toBe("14");
     expect(getEchelonCodeFromName("1st Plt")).toBe("14");
+  });
+
+  it("detects concatenated Platoon abbreviations", () => {
+    expect(getEchelonCodeFromName("3plt")).toBe("14");
   });
 
   it("detects Detachment", () => {
@@ -303,6 +320,25 @@ describe("parseTextToUnits", () => {
     expect(getEchelonFromSidc(units[0].sidc)).toBe("21"); // Division
     expect(getEchelonFromSidc(units[0].children[0].sidc)).toBe("18"); // Brigade
     expect(getEchelonFromSidc(units[0].children[0].children[0].sidc)).toBe("16"); // Battalion
+  });
+
+  it("detects echelons from concatenated abbreviations in hierarchy", () => {
+    const text = `1div
+  1bde
+    2bn
+      Aco
+        3plt`;
+    const units = parseTextToUnits(text);
+
+    expect(getEchelonFromSidc(units[0].sidc)).toBe("21"); // Division
+    expect(getEchelonFromSidc(units[0].children[0].sidc)).toBe("18"); // Brigade
+    expect(getEchelonFromSidc(units[0].children[0].children[0].sidc)).toBe("16"); // Battalion
+    expect(getEchelonFromSidc(units[0].children[0].children[0].children[0].sidc)).toBe(
+      "15",
+    ); // Company
+    expect(
+      getEchelonFromSidc(units[0].children[0].children[0].children[0].children[0].sidc),
+    ).toBe("14"); // Platoon
   });
 
   it("infers echelons from parent when names lack keywords", () => {

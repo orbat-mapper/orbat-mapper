@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Added a **"Recently Shared"** submenu to the File menu, providing quick access to the history of shared scenario links.
 - Added a "Share Scenario" button to the main toolbar.
 - Added a CSV/TSV export option with a configurable separator.
+- Added support in Text to ORBAT for concatenated echelon abbreviations (for example `2bn`, `1bde`, `Aco`) during echelon detection.
 
 ### Changed
 

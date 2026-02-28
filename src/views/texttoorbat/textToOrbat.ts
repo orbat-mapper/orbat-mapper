@@ -118,6 +118,75 @@ export const ECHELON_HIERARCHY = [
   ECHELON_TEAM,
 ];
 
+// Echelon abbreviation suffixes that may be attached to designators (e.g. "2bn", "Aco")
+const CONCATENATED_ECHELON_SUFFIXES = [
+  "divn",
+  "div",
+  "bgde",
+  "brig",
+  "bde",
+  "bct",
+  "rct",
+  "regt",
+  "rgmt",
+  "rgt",
+  "grp",
+  "abt",
+  "btn",
+  "btln",
+  "sqdn",
+  "sqn",
+  "sqd",
+  "coy",
+  "cmp",
+  "btry",
+  "bty",
+  "trp",
+  "flt",
+  "ptn",
+  "plt",
+  "sctn",
+  "sect",
+  "sec",
+  "mef",
+  "gp",
+  "bn",
+  "sq",
+  "co",
+  "kp",
+  "pl",
+  "tm",
+];
+
+const UNIT_DESIGNATOR_PATTERN = /^(?:\d+(?:st|nd|rd|th)?|[ivxlcdm]+|[a-z])$/i;
+
+function normalizeEchelonTokenBoundaries(name: string): string {
+  return name
+    .split(/(\s+)/)
+    .map((segment) => {
+      if (!segment.trim()) return segment;
+
+      const match = segment.match(/^([A-Za-z0-9]+)([^A-Za-z0-9]*)$/);
+      if (!match) return segment;
+
+      const [, core, trailing] = match;
+      const lowerCore = core.toLowerCase();
+
+      for (const suffix of CONCATENATED_ECHELON_SUFFIXES) {
+        if (!lowerCore.endsWith(suffix) || core.length <= suffix.length) continue;
+
+        const prefix = core.slice(0, core.length - suffix.length);
+        if (!UNIT_DESIGNATOR_PATTERN.test(prefix)) continue;
+
+        const suffixOriginal = core.slice(core.length - suffix.length);
+        return `${prefix} ${suffixOriginal}${trailing}`;
+      }
+
+      return segment;
+    })
+    .join("");
+}
+
 // Entity codes (mainIcon) for symbol set 10 (Land Unit)
 // Format: entity (2) + entityType (2) + entitySubType (2) + modifier1 (2) + modifier2 (2) = 10 characters
 export const ICON_UNSPECIFIED = "0000000000";
@@ -531,8 +600,9 @@ export function getIconCodeFromName(name: string): string {
  * Detect echelon code from unit name using keyword patterns
  */
 export function getEchelonCodeFromName(name: string): string {
+  const normalizedName = normalizeEchelonTokenBoundaries(name);
   for (const { pattern, code } of ECHELON_PATTERNS) {
-    if (pattern.test(name)) {
+    if (pattern.test(normalizedName)) {
       return code;
     }
   }
