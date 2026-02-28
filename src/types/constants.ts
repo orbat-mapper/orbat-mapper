@@ -20,6 +20,7 @@ export const UnitActions = {
   CloneWithSubordinatesAndState: "CloneWithSubordinatesAndState",
   MoveUp: "MoveUp",
   MoveDown: "MoveDown",
+  MoveUpInHierarchy: "MoveUpInHierarchy",
   Pan: "Pan",
   DeleteWaypoints: "DeleteWaypoint",
   ClearState: "ClearState",

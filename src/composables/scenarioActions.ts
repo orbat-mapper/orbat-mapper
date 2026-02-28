@@ -127,6 +127,12 @@ export function useUnitActions(
     if (action === UnitActions.MoveDown) {
       unitActions.reorderUnit(unit.id, "down");
     }
+    if (action === UnitActions.MoveUpInHierarchy) {
+      const parentUnit = unitActions.getUnitById(unit._pid);
+      if (parentUnit) {
+        unitActions.changeUnitParent(unit.id, parentUnit.id, "below");
+      }
+    }
 
     if (
       action === UnitActions.Delete ||
@@ -173,10 +179,34 @@ export function useUnitMenu(
   isLocked: ComputedRef<boolean>,
   isSideGroupLocked: ComputedRef<boolean>,
 ) {
+  const { store } = injectStrict(activeScenarioKey);
   const unit = "unit" in item ? item.unit : item;
 
   const hasChildren = computed(() => {
     return Boolean(unit.subUnits && unit.subUnits.length);
+  });
+
+  const isFirstSibling = computed(() => {
+    if (!("_pid" in unit) || !unit._pid) return false;
+    const parentId = unit._pid;
+    const parent =
+      store.state.unitMap[parentId] ?? store.state.sideGroupMap[parentId] ?? null;
+    if (!parent) return false;
+    return parent.subUnits[0] === unit.id;
+  });
+
+  const isLastSibling = computed(() => {
+    if (!("_pid" in unit) || !unit._pid) return false;
+    const parentId = unit._pid;
+    const parent =
+      store.state.unitMap[parentId] ?? store.state.sideGroupMap[parentId] ?? null;
+    if (!parent?.subUnits?.length) return false;
+    return parent.subUnits[parent.subUnits.length - 1] === unit.id;
+  });
+
+  const canMoveUpInHierarchy = computed(() => {
+    if (!("_pid" in unit) || !unit._pid) return false;
+    return Boolean(store.state.unitMap[unit._pid]);
   });
 
   const unitMenuItems = computed((): MenuItemData<UnitAction>[] => {
@@ -222,8 +252,21 @@ export function useUnitMenu(
         action: UnitActions.CloneWithSubordinatesAndState,
         disabled: isLocked.value,
       },
-      { label: "Move up", action: UnitActions.MoveUp, disabled: isLocked.value },
-      { label: "Move down", action: UnitActions.MoveDown, disabled: isLocked.value },
+      {
+        label: "Move up",
+        action: UnitActions.MoveUp,
+        disabled: isLocked.value || isFirstSibling.value,
+      },
+      {
+        label: "Move down",
+        action: UnitActions.MoveDown,
+        disabled: isLocked.value || isLastSibling.value,
+      },
+      {
+        label: "Move up in hierarchy",
+        action: UnitActions.MoveUpInHierarchy,
+        disabled: isLocked.value || !canMoveUpInHierarchy.value,
+      },
       unit.locked
         ? {
             label: "Unlock",

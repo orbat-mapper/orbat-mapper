@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Added a "Share Scenario" button to the main toolbar.
 - Added a CSV/TSV export option with a configurable separator.
 - Added support in Text to ORBAT for concatenated echelon abbreviations (for example `2bn`, `1bde`, `Aco`) during echelon detection.
+- Added a **"Move up in hierarchy"** action to the unit context menu.
 
 ### Changed
 
