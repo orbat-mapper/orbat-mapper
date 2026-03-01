@@ -136,12 +136,14 @@ export function createScenarioLayerFeatures(
         ...feature.properties,
       });
       f.setId(feature.id);
+      f.set("name", feature.meta?.name || feature.properties?.name || "");
       olFeatures.push(f);
     } else {
       const f = gjson.readFeature(feature, {
         featureProjection: "EPSG:3857",
         dataProjection: "EPSG:4326",
       }) as Feature;
+      f.set("name", feature.meta?.name || feature.properties?.name || "");
       olFeatures.push(f);
     }
   });
