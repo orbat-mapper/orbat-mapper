@@ -155,9 +155,6 @@ const { history: shareHistory, clearHistory: clearShareHistory } = useShareHisto
           <DropdownMenuItem @select="emit('action', 'import')">
             Import data...
           </DropdownMenuItem>
-          <DropdownMenuItem @select="emit('action', 'exportToClipboard')">
-            Copy scenario to clipboard
-          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem @select="emit('action', 'duplicate')">
             Duplicate scenario
@@ -177,6 +174,10 @@ const { history: shareHistory, clearHistory: clearShareHistory } = useShareHisto
           <DropdownMenuItem @select="redo()" :disabled="!canRedo">
             Redo
             <DropdownMenuShortcut class="ml-4">Ctrl/⌘ shift Z</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem @select="emit('action', 'exportToClipboard')">
+            Copy scenario to clipboard
           </DropdownMenuItem>
         </DropdownMenuSubContent>
       </DropdownMenuSub>
