@@ -2,15 +2,15 @@
 import { ref } from "vue";
 import { type ScenarioLayerInstance } from "@/types/scenarioGeoModels";
 import { useFocusOnMount } from "@/components/helpers";
-import InputGroup from "../../components/InputGroup.vue";
 import InlineFormPanel from "../../components/InlineFormPanel.vue";
 import BaseButton from "../../components/BaseButton.vue";
 import { type NScenarioLayer } from "@/types/internalModels";
 import { formatDateString } from "@/geo/utils";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";
-import DescriptionItem from "@/components/DescriptionItem.vue";
 import PlainButton from "@/components/PlainButton.vue";
+import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 const props = defineProps<{
   layer: ScenarioLayerInstance | NScenarioLayer;
@@ -51,37 +51,52 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
 <template>
   <InlineFormPanel @close="$emit('close')" title="Edit layer">
     <form @submit.prevent="onFormSubmit" class="space-y-4">
-      <InputGroup
-        label="Layer name"
-        v-model="form.name"
-        :id="focusId"
-        @keyup.esc="emit('close')"
-      />
+      <Field>
+        <FieldLabel :for="focusId">Layer name</FieldLabel>
+        <Input v-model="form.name" :id="focusId" type="text" @keyup.esc="emit('close')" />
+      </Field>
 
-      <DescriptionItem label="Visible from"
-        >{{ formatDateString(form.visibleFromT, timeZone) }}
-        <PlainButton type="button" @click="doShowTimeModal('visibleFromT')" class="ml-2"
-          >Change</PlainButton
-        ><PlainButton
-          type="button"
-          v-if="form.visibleFromT !== undefined"
-          @click="form.visibleFromT = undefined"
-          >X</PlainButton
-        >
-      </DescriptionItem>
+      <Field orientation="horizontal" class="items-start">
+        <FieldContent>
+          <FieldLabel>Visible from</FieldLabel>
+          <FieldDescription>{{
+            formatDateString(form.visibleFromT, timeZone)
+          }}</FieldDescription>
+        </FieldContent>
+        <div class="flex items-center gap-2">
+          <PlainButton type="button" @click="doShowTimeModal('visibleFromT')">
+            Change
+          </PlainButton>
+          <PlainButton
+            type="button"
+            v-if="form.visibleFromT !== undefined"
+            @click="form.visibleFromT = undefined"
+          >
+            X
+          </PlainButton>
+        </div>
+      </Field>
 
-      <DescriptionItem label="Visible until"
-        >{{ formatDateString(form.visibleUntilT, timeZone) }}
-        <PlainButton type="button" @click="doShowTimeModal('visibleUntilT')" class="ml-2"
-          >Change</PlainButton
-        >
-        <PlainButton
-          type="button"
-          v-if="form.visibleUntilT !== undefined"
-          @click="form.visibleUntilT = undefined"
-          >X</PlainButton
-        >
-      </DescriptionItem>
+      <Field orientation="horizontal" class="items-start">
+        <FieldContent>
+          <FieldLabel>Visible until</FieldLabel>
+          <FieldDescription>
+            {{ formatDateString(form.visibleUntilT, timeZone) }}
+          </FieldDescription>
+        </FieldContent>
+        <div class="flex items-center gap-2">
+          <PlainButton type="button" @click="doShowTimeModal('visibleUntilT')">
+            Change
+          </PlainButton>
+          <PlainButton
+            type="button"
+            v-if="form.visibleUntilT !== undefined"
+            @click="form.visibleUntilT = undefined"
+          >
+            X
+          </PlainButton>
+        </div>
+      </Field>
 
       <div class="my-4 flex items-center justify-end space-x-2">
         <BaseButton primary small type="submit">Save</BaseButton>
