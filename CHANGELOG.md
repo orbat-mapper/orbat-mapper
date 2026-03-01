@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## March 2026
+
+### Changed
+
+- Expanded scenario timeline zoom-out range.
 
 ## February 2026
 

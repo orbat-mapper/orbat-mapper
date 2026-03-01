@@ -94,6 +94,13 @@ function parseWidth(style: string | undefined) {
   return match ? Number(match[1]) : NaN;
 }
 
+function nonEmptyTexts(wrapper: VueWrapper, selector: string) {
+  return wrapper
+    .findAll(selector)
+    .map((node) => node.text().trim())
+    .filter(Boolean);
+}
+
 const wrappers: VueWrapper[] = [];
 
 function mountTimeline() {
@@ -195,6 +202,74 @@ describe("ScenarioTimeline", () => {
 
     expect(wheelWidth).toBe(140);
     expect(contextWidth).toBe(140);
+  });
+
+  it("allows zooming out below 10px and clamps stepped day blocks", async () => {
+    const { wrapper } = mountTimeline();
+    await nextTick();
+
+    await wrapper.get("[data-test='ctx-zoom-out']").trigger("click");
+    await wrapper.get("[data-test='ctx-zoom-out']").trigger("click");
+    await wrapper.get("[data-test='ctx-zoom-out']").trigger("click");
+    await nextTick();
+
+    const steppedWidth = parseWidth(
+      wrapper.get("[data-testid='minor-tick']").attributes("style"),
+    );
+    expect(steppedWidth).toBeGreaterThanOrEqual(5);
+    expect(steppedWidth).toBeLessThanOrEqual(140);
+    expect(steppedWidth % 5).toBe(0);
+  });
+
+  it("uses denser minor tick blocks when space allows it", async () => {
+    const { wrapper } = mountTimeline();
+    await nextTick();
+
+    await wrapper.get("[data-test='ctx-zoom-out']").trigger("click");
+    await wrapper.get("[data-test='ctx-zoom-out']").trigger("click");
+    await nextTick();
+
+    const widths = wrapper
+      .findAll("[data-testid='minor-tick']")
+      .map((node) => parseWidth(node.attributes("style")));
+
+    expect(widths.some((value) => value === 60)).toBe(true);
+    expect(widths.every((value) => value <= 60)).toBe(true);
+  });
+
+  it("switches to month/day rows at threshold mode", async () => {
+    const { wrapper } = mountTimeline();
+    await nextTick();
+
+    await wrapper.get("[data-test='ctx-zoom-out']").trigger("click");
+    await wrapper.get("[data-test='ctx-zoom-out']").trigger("click");
+    await nextTick();
+
+    const majorLabels = nonEmptyTexts(wrapper, "[data-testid='major-tick']");
+    const minorLabels = nonEmptyTexts(wrapper, "[data-testid='minor-tick']");
+
+    expect(majorLabels.some((label) => /[A-Za-z]{3}\s\d{4}/.test(label))).toBe(true);
+    expect(minorLabels.some((label) => /^\d{2}$/.test(label))).toBe(true);
+  });
+
+  it("uses month-anchored day labels that include 01 in stepped mode", async () => {
+    const { wrapper } = mountTimeline();
+    await nextTick();
+
+    await wrapper.get("[data-test='ctx-zoom-out']").trigger("click");
+    await wrapper.get("[data-test='ctx-zoom-out']").trigger("click");
+    await nextTick();
+
+    const minorLabels = nonEmptyTexts(wrapper, "[data-testid='minor-tick']");
+
+    expect(minorLabels).toContain("01");
+    expect(
+      minorLabels.every((label) =>
+        ["01", "04", "07", "10", "13", "16", "19", "22", "25", "28", "31"].includes(
+          label,
+        ),
+      ),
+    ).toBe(true);
   });
 
   it("rounds click-selected time to the nearest 15 minutes", async () => {

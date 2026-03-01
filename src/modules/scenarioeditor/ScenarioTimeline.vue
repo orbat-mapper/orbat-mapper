@@ -13,8 +13,12 @@ import TimelineContextMenu from "@/components/TimelineContextMenu.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { MS_PER_DAY, MS_PER_HOUR } from "@/utils/time";
 import {
+  buildDayTicksWithStep,
   buildTimelineRenderData,
+  buildMonthTicksFromDayRange,
   calculatePixelDateFromViewport,
+  cullOverlappingTickLabels,
+  getDayTickStepForZoom,
   getMsPerPixel,
   roundToNearestQuarterHour,
   toLocalX,
@@ -26,6 +30,10 @@ import {
 } from "./scenarioTimelineMath";
 
 const HOURS_PER_DAY = MS_PER_DAY / MS_PER_HOUR;
+const MAJOR_WIDTH_DEFAULT = 100;
+const MAJOR_WIDTH_SWITCH_THRESHOLD = 55;
+const MAJOR_WIDTH_MIN = 5;
+const ZOOM_STEP = 40;
 
 const {
   time: {
@@ -64,6 +72,8 @@ function getMajorFormatter(majorWidth: number) {
 interface Tick {
   label: string;
   timestamp: number;
+  width: number;
+  showLabel: boolean;
 }
 
 const hoveredDate = ref<Date | null>(null);
@@ -74,7 +84,8 @@ const binsWithX = ref<BinWithX[]>([]);
 const centerTimeStamp = ref(0);
 const xOffset = ref(0);
 const draggedDiff = ref(0);
-const majorWidth = ref(100);
+const majorWidth = ref(MAJOR_WIDTH_DEFAULT);
+const isMonthDayMode = computed(() => majorWidth.value <= MAJOR_WIDTH_SWITCH_THRESHOLD);
 const minorStep = computed(() => {
   if (majorWidth.value < 100) {
     return 12;
@@ -94,7 +105,6 @@ const minorStep = computed(() => {
 let maxCount = 1;
 let histogram: HistogramBin[] = [];
 
-const minorWidth = computed(() => majorWidth.value / (HOURS_PER_DAY / minorStep.value));
 const currentTimestamp = ref(0);
 const animate = ref(false);
 const hoveredX = ref(0);
@@ -105,7 +115,7 @@ const { activeScenarioEventId } = useSelectedItems();
 const countColor = scaleSequential(interpolateOranges).domain([1, maxCount]);
 
 const timelineWidth = computed(() => {
-  return majorTicks.value.length * majorWidth.value;
+  return majorTicks.value.reduce((total, tick) => total + tick.width, 0);
 });
 
 const totalXOffset = computed(() => {
@@ -124,18 +134,36 @@ function updateTicks(
   const end = utcDay.offset(currentUtcDay, dayPadding);
 
   const dayRange = utcDay.range(start, end);
-  const majorFormatter = getMajorFormatter(majorWidth);
-  majorTicks.value = dayRange.map((d) => ({
-    label: majorFormatter(d),
-    timestamp: +d,
-  }));
+  if (isMonthDayMode.value) {
+    const monthFormatter = utcFormat("%b %Y");
+    majorTicks.value = cullOverlappingTickLabels(
+      buildMonthTicksFromDayRange(dayRange, majorWidth, monthFormatter),
+    );
 
-  const hourRange = utcHour.range(start, end, minorStep);
-  const minorFormatter = getMinorFormatter(majorWidth);
-  minorTicks.value = hourRange.map((d) => ({
-    label: minorFormatter(d),
-    timestamp: +d,
-  }));
+    const dayFormatter = utcFormat("%d");
+    const dayStep = getDayTickStepForZoom(majorWidth);
+    minorTicks.value = cullOverlappingTickLabels(
+      buildDayTicksWithStep(dayRange, majorWidth, dayFormatter, dayStep),
+    );
+  } else {
+    const majorFormatter = getMajorFormatter(majorWidth);
+    majorTicks.value = dayRange.map((d) => ({
+      label: majorFormatter(d),
+      timestamp: +d,
+      width: majorWidth,
+      showLabel: true,
+    }));
+
+    const hourRange = utcHour.range(start, end, minorStep);
+    const minorFormatter = getMinorFormatter(majorWidth);
+    const hourWidth = majorWidth / (HOURS_PER_DAY / minorStep);
+    minorTicks.value = hourRange.map((d) => ({
+      label: minorFormatter(d),
+      timestamp: +d,
+      width: hourWidth,
+      showLabel: true,
+    }));
+  }
   return { minDate: start, maxDate: end };
 }
 
@@ -254,11 +282,11 @@ const formattedHoveredDate = computed(() => {
 });
 
 function zoomIn() {
-  majorWidth.value += 40;
+  majorWidth.value += ZOOM_STEP;
 }
 
 function zoomOut() {
-  majorWidth.value = Math.max(majorWidth.value - 40, 55);
+  majorWidth.value = Math.max(majorWidth.value - ZOOM_STEP, MAJOR_WIDTH_MIN);
 }
 
 function onWheel(e: WheelEvent) {
@@ -414,19 +442,20 @@ function onContextMenuAction(action: TimelineAction) {
             :key="tick.timestamp"
             data-testid="major-tick"
             class="border-muted-foreground flex-none border-r border-b pl-0.5"
-            :style="`width: ${majorWidth}px`"
+            :style="`width: ${tick.width}px`"
           >
-            {{ tick.label }}
+            {{ tick.showLabel ? tick.label : "" }}
           </div>
         </div>
         <div class="flex justify-center text-xs">
           <div
             v-for="tick in minorTicks"
             :key="tick.timestamp"
+            data-testid="minor-tick"
             class="text-muted-foreground border-muted-foreground min-h-[1rem] flex-none border-r pl-0.5"
-            :style="`width: ${minorWidth}px`"
+            :style="`width: ${tick.width}px`"
           >
-            {{ tick.label }}
+            {{ tick.showLabel ? tick.label : "" }}
           </div>
         </div>
       </div>
