@@ -424,6 +424,8 @@ function onContextMenuAction(action: TimelineAction) {
               data-testid="scenario-event-marker"
               class="absolute h-4 w-4 -translate-x-1/2 rounded-full border border-gray-500 bg-amber-500 hover:bg-red-900"
               :style="`left: ${x}px;`"
+              @pointerdown.stop
+              @pointerup.stop
               @mousemove.stop
               :title="event.title"
               @click.stop="onEventClick(event)"

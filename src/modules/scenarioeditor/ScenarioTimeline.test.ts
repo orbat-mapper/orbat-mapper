@@ -291,4 +291,39 @@ describe("ScenarioTimeline", () => {
 
     expect(setCurrentTime).toHaveBeenLastCalledWith(Date.UTC(2024, 0, 1, 10, 0));
   });
+
+  it("does not trigger timeline pointerup rounding when pressing an event marker", async () => {
+    const { wrapper, setCurrentTime, state } = mountTimeline();
+    state.eventMap["evt-1"] = {
+      id: "evt-1",
+      _type: "scenario",
+      title: "Event 1",
+      startTime: Date.UTC(2024, 0, 1, 10, 7),
+    };
+    state.events.push("evt-1");
+    await nextTick();
+    await nextTick();
+
+    setCurrentTime.mockClear();
+
+    const marker = wrapper.get("[data-testid='scenario-event-marker']").element;
+    marker.dispatchEvent(
+      new PointerEvent("pointerdown", {
+        bubbles: true,
+        pointerId: 1,
+        clientX: 500,
+      }),
+    );
+    marker.dispatchEvent(
+      new PointerEvent("pointerup", {
+        bubbles: true,
+        pointerId: 1,
+        button: 0,
+        clientX: 500,
+      }),
+    );
+    await nextTick();
+
+    expect(setCurrentTime).not.toHaveBeenCalled();
+  });
 });
