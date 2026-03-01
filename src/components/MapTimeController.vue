@@ -8,7 +8,6 @@ import {
   IconSkipNext,
   IconSkipPrevious,
 } from "@iconify-prerendered/vue-mdi";
-import { useUiStore } from "@/stores/uiStore";
 import BaseToolbar from "./BaseToolbar.vue";
 import ToolbarButton from "./ToolbarButton.vue";
 import { injectStrict } from "@/utils";
@@ -35,18 +34,14 @@ const emit = defineEmits([
 ]);
 const {
   store: { state },
-  time: { scenarioTime },
 } = injectStrict(activeScenarioKey);
-
-const uiStore = useUiStore();
 </script>
 
 <template>
   <div class="flex flex-col items-center">
     <p
       v-if="!hideTime"
-      class="pointer-events-none font-mono text-xl font-bold sm:text-2xl"
-      style="text-shadow: white 0 0 5px"
+      class="pointer-events-none font-mono text-xl font-bold text-gray-100 [text-shadow:black_0_0_2px] sm:text-2xl"
     >
       {{ fmt.scenarioFormatter.format(state.currentTime) }}
     </p>
