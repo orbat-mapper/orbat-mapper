@@ -10,6 +10,12 @@ export interface MapHoverOptions {
 export function useMapHover(olMap: OLMap, options: MapHoverOptions = {}) {
   const enableRef = ref(options.enable ?? true);
   let pointerMoveKey: any = null;
+  const targetElement = olMap.getTargetElement();
+
+  const resetHoverState = () => {
+    targetElement.style.cursor = "";
+    targetElement.title = "";
+  };
 
   watch(
     enableRef,
@@ -17,20 +23,26 @@ export function useMapHover(olMap: OLMap, options: MapHoverOptions = {}) {
       const touch = matchMedia("(hover: none)").matches;
       if (touch) {
         // Touch device detected, disabling hover
+        resetHoverState();
         return;
       }
 
       if (!enabled) {
         pointerMoveKey && unByKey(pointerMoveKey);
         pointerMoveKey = null;
+        resetHoverState();
         return;
       }
 
       pointerMoveKey = useOlEvent(
         olMap.on("pointermove", (e) => {
           const pixel = olMap.getEventPixel(e.originalEvent);
-          const hit = olMap.hasFeatureAtPixel(pixel);
-          olMap.getTargetElement().style.cursor = hit ? "pointer" : "";
+          const feature = olMap.forEachFeatureAtPixel(pixel, (feature, layer) => {
+            return layer?.get("layerType") === "SCENARIO_FEATURE" ? feature : undefined;
+          });
+          const featureName = feature?.get("name") ?? "";
+          targetElement.style.cursor = feature ? "pointer" : "";
+          targetElement.title = typeof featureName === "string" ? featureName : "";
         }),
       );
     },
