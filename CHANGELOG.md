@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Show feature name on map hover.
+- Added map symbol size override support per unit.
 
 ### Changed
 

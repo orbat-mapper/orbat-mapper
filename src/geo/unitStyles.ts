@@ -106,14 +106,20 @@ export function createUnitStyle(
       cacheKey,
     };
   }
+  const { size: _symbolOptionSize, ...restSymbolOptions } = symbolOptions || {};
+  const pixelRatio = window.devicePixelRatio || 1;
+  const resolvedSize =
+    typeof unit.style?.mapSymbolSize === "number"
+      ? unit.style.mapSymbolSize * pixelRatio
+      : mapSettingsStore.mapIconSize * pixelRatio;
   const options = {
-    size: mapSettingsStore.mapIconSize * (window.devicePixelRatio || 1),
+    size: resolvedSize,
     uniqueDesignation: symbolUniqueDesignation,
     outlineColor: "white",
     outlineWidth: 8,
     ...textAmplifiers,
     ...symbolSettings.symbolOptions,
-    ...symbolOptions,
+    ...restSymbolOptions,
   };
 
   const milSymbol = symbolGenerator(sidc, options);

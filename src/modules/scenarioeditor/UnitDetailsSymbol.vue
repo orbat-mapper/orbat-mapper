@@ -17,6 +17,7 @@ import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { Slider } from "@/components/ui/slider";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
 interface Props {
   unit: NUnit;
@@ -32,6 +33,9 @@ const {
   helpers: { getUnitById },
 } = activeScenario;
 const { groupUpdate } = store;
+const mapSettings = useMapSettingsStore();
+const MIN_MAP_SYMBOL_SIZE = 8;
+const MAX_MAP_SYMBOL_SIZE = 120;
 
 const { selectedUnitIds } = useSelectedItems();
 
@@ -152,6 +156,7 @@ function resetRotationDraft() {
 
 onBeforeUnmount(() => {
   cancelScheduledRotationApply();
+  cancelScheduledMapSymbolSizeApply();
 });
 
 watch(overrideName, (override) => {
@@ -187,6 +192,158 @@ const combinedSymbolOptions = computed(() => {
     ...textAmplifiers.value,
     outlineWidth: 4,
   };
+});
+
+const mapSymbolSizeUnits = computed(() => {
+  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
+    return [...selectedUnitIds.value]
+      .map((unitId) => getUnitById(unitId))
+      .filter((unit): unit is NUnit => !!unit);
+  }
+  return [props.unit];
+});
+
+const currentMapSymbolSizeOverride = computed<number | undefined>(() => {
+  const unit = mapSymbolSizeUnits.value[0];
+  const size = unit?.style?.mapSymbolSize;
+  return typeof size === "number" ? size : undefined;
+});
+
+const hasMixedMapSymbolSizeOverride = computed(() => {
+  if (mapSymbolSizeUnits.value.length < 2) return false;
+  const values = new Set(
+    mapSymbolSizeUnits.value.map((unit) => {
+      const value = unit.style?.mapSymbolSize;
+      return typeof value === "number" ? value : "none";
+    }),
+  );
+  return values.size > 1;
+});
+
+const mapSymbolSizeDraft = ref(mapSettings.mapIconSize);
+const isSyncingMapSymbolSizeDraft = ref(false);
+const overrideMapSymbolSize = ref(false);
+const isSyncingMapSymbolSizeToggle = ref(false);
+let mapSymbolSizeCommitTimeout: ReturnType<typeof setTimeout> | null = null;
+const previewSymbolSize = computed(() => {
+  return overrideMapSymbolSize.value
+    ? clampMapSymbolSize(mapSymbolSizeDraft.value)
+    : mapSettings.mapIconSize;
+});
+
+watch(
+  [
+    currentMapSymbolSizeOverride,
+    () => mapSettings.mapIconSize,
+    () => props.unit.id,
+    selectedUnitIds,
+  ],
+  () => {
+    isSyncingMapSymbolSizeDraft.value = true;
+    isSyncingMapSymbolSizeToggle.value = true;
+    overrideMapSymbolSize.value = mapSymbolSizeUnits.value.some(
+      (unit) => typeof unit.style?.mapSymbolSize === "number",
+    );
+    mapSymbolSizeDraft.value =
+      currentMapSymbolSizeOverride.value ?? mapSettings.mapIconSize;
+    isSyncingMapSymbolSizeToggle.value = false;
+    isSyncingMapSymbolSizeDraft.value = false;
+  },
+  { immediate: true },
+);
+
+function clampMapSymbolSize(value: number) {
+  return Math.max(MIN_MAP_SYMBOL_SIZE, Math.min(MAX_MAP_SYMBOL_SIZE, Math.round(value)));
+}
+
+function getMapSymbolSizeTargetIds() {
+  const ids =
+    props.isMultiMode && selectedUnitIds.value.size > 1
+      ? [...selectedUnitIds.value]
+      : [props.unit.id];
+  return ids.filter((id) => !isUnitLocked(id));
+}
+
+function applyMapSymbolSizeOverride() {
+  const targetIds = getMapSymbolSizeTargetIds();
+  if (!targetIds.length) return;
+  const size = clampMapSymbolSize(mapSymbolSizeDraft.value);
+  mapSymbolSizeDraft.value = size;
+
+  groupUpdate(() => {
+    targetIds.forEach((unitId) => {
+      const unit = getUnitById(unitId);
+      if (!unit) return;
+      const unitStyle = unit.style ?? {};
+      updateUnit(unitId, {
+        style: {
+          ...unitStyle,
+          mapSymbolSize: size,
+        },
+      });
+    });
+  });
+}
+
+function cancelScheduledMapSymbolSizeApply() {
+  if (mapSymbolSizeCommitTimeout !== null) {
+    clearTimeout(mapSymbolSizeCommitTimeout);
+    mapSymbolSizeCommitTimeout = null;
+  }
+}
+
+function scheduleApplyMapSymbolSizeOverride() {
+  cancelScheduledMapSymbolSizeApply();
+  mapSymbolSizeCommitTimeout = setTimeout(() => {
+    mapSymbolSizeCommitTimeout = null;
+    applyMapSymbolSizeOverride();
+  }, 120);
+}
+
+function resetMapSymbolSizeOverride() {
+  const targetIds = getMapSymbolSizeTargetIds();
+  if (!targetIds.length) return;
+  cancelScheduledMapSymbolSizeApply();
+
+  groupUpdate(() => {
+    targetIds.forEach((unitId) => {
+      const unit = getUnitById(unitId);
+      if (!unit) return;
+      const unitStyle = unit.style ?? {};
+      const { mapSymbolSize: _mapSymbolSize, ...styleWithoutMapSymbolSize } = unitStyle;
+      updateUnit(unitId, {
+        style: styleWithoutMapSymbolSize,
+      });
+    });
+  });
+  isSyncingMapSymbolSizeDraft.value = true;
+  mapSymbolSizeDraft.value = mapSettings.mapIconSize;
+  isSyncingMapSymbolSizeDraft.value = false;
+}
+
+watch(mapSymbolSizeDraft, (next, prev) => {
+  if (isSyncingMapSymbolSizeDraft.value || props.isLocked || !overrideMapSymbolSize.value)
+    return;
+  const normalizedNext = clampMapSymbolSize(next);
+  const normalizedPrev = clampMapSymbolSize(prev);
+  if (normalizedNext !== next) {
+    mapSymbolSizeDraft.value = normalizedNext;
+    return;
+  }
+  if (normalizedNext === normalizedPrev) return;
+  if (normalizedNext === currentMapSymbolSizeOverride.value) return;
+  scheduleApplyMapSymbolSizeOverride();
+});
+
+watch(overrideMapSymbolSize, (override) => {
+  if (isSyncingMapSymbolSizeToggle.value || props.isLocked) return;
+  cancelScheduledMapSymbolSizeApply();
+  if (override) {
+    mapSymbolSizeDraft.value = clampMapSymbolSize(mapSymbolSizeDraft.value);
+    applyMapSymbolSizeOverride();
+  } else {
+    resetMapSymbolSizeOverride();
+  }
 });
 
 interface TextFieldMeta {
@@ -332,11 +489,42 @@ function setTextAmpValue(field: TextAmpKey, value: string | number | undefined) 
     <div class="mt-4 flex justify-center">
       <UnitSymbol
         :sidc="props.unit.sidc"
-        :size="30"
+        :size="previewSymbolSize"
         :options="combinedSymbolOptions"
-        class="w-30"
       />
     </div>
+    <PanelDataGrid class="mt-6">
+      <div class="col-span-2 mt-2 font-semibold">Map symbol size</div>
+      <ToggleField class="col-span-2" v-model="overrideMapSymbolSize"
+        >Override size</ToggleField
+      >
+      <div class="self-center">Size</div>
+      <div>
+        <NumberInputGroup
+          v-model="mapSymbolSizeDraft"
+          :min="MIN_MAP_SYMBOL_SIZE"
+          :max="MAX_MAP_SYMBOL_SIZE"
+          :step="1"
+          :disabled="isLocked || !overrideMapSymbolSize"
+        />
+      </div>
+
+      <div v-if="hasMixedMapSymbolSizeOverride" class="col-span-2 text-xs text-amber-700">
+        Mixed values in current selection.
+      </div>
+      <div class="col-span-2 flex justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          :disabled="isLocked || !overrideMapSymbolSize"
+          @click="resetMapSymbolSizeOverride"
+        >
+          Reset
+        </Button>
+      </div>
+    </PanelDataGrid>
+
     <PanelDataGrid class="mt-6">
       <div class="col-span-2 mt-2 font-semibold">Rotation</div>
       <div class="leading-tight">Angle (deg)</div>
@@ -374,6 +562,5 @@ function setTextAmpValue(field: TextAmpKey, value: string | number | undefined) 
         </Button>
       </div>
     </PanelDataGrid>
-    <pre></pre>
   </section>
 </template>

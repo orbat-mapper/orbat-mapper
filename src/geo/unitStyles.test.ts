@@ -90,6 +90,43 @@ describe("unit styles rotation", () => {
   });
 });
 
+describe("unit styles size overrides", () => {
+  it("uses map default size when unit size override is missing", () => {
+    symbolGeneratorMock.mockClear();
+    const unit = {
+      id: "unit-1",
+      name: "Unit",
+      sidc: "10031000000000000000",
+      _state: { sidc: "10031000000000000000", symbolRotation: 0 },
+      textAmplifiers: {},
+    } as any;
+
+    createUnitStyle(unit, {}, createScenarioWithCustomSymbol());
+
+    const lastCall = symbolGeneratorMock.mock.lastCall as any[] | undefined;
+    const options = lastCall?.[1];
+    expect(options?.size).toBe(40);
+  });
+
+  it("uses unit.style.mapSymbolSize as map symbol size override", () => {
+    symbolGeneratorMock.mockClear();
+    const unit = {
+      id: "unit-1",
+      name: "Unit",
+      sidc: "10031000000000000000",
+      _state: { sidc: "10031000000000000000", symbolRotation: 0 },
+      style: { mapSymbolSize: 67 },
+      textAmplifiers: {},
+    } as any;
+
+    createUnitStyle(unit, { size: 23 } as any, createScenarioWithCustomSymbol());
+
+    const lastCall = symbolGeneratorMock.mock.lastCall as any[] | undefined;
+    const options = lastCall?.[1];
+    expect(options?.size).toBe(67);
+  });
+});
+
 describe("unit styles unique designation", () => {
   it("hides default uniqueDesignation on symbol when bottom labels are enabled", () => {
     mapSettingsMock.mapUnitLabelBelow = true;
@@ -105,8 +142,9 @@ describe("unit styles unique designation", () => {
 
     createUnitStyle(unit, {}, createScenarioWithCustomSymbol());
 
-    const options = symbolGeneratorMock.mock.calls.at(-1)?.[1];
-    expect(options.uniqueDesignation).toBe("");
+    const lastCall = symbolGeneratorMock.mock.lastCall as any[] | undefined;
+    const options = lastCall?.[1];
+    expect(options?.uniqueDesignation).toBe("");
   });
 
   it("keeps overridden uniqueDesignation on symbol when bottom labels are enabled", () => {
@@ -123,8 +161,9 @@ describe("unit styles unique designation", () => {
 
     createUnitStyle(unit, {}, createScenarioWithCustomSymbol());
 
-    const options = symbolGeneratorMock.mock.calls.at(-1)?.[1];
-    expect(options.uniqueDesignation).toBe("CUSTOM");
+    const lastCall = symbolGeneratorMock.mock.lastCall as any[] | undefined;
+    const options = lastCall?.[1];
+    expect(options?.uniqueDesignation).toBe("CUSTOM");
   });
 
   it("keeps overridden uniqueDesignation on symbol when bottom labels are disabled", () => {
@@ -141,7 +180,8 @@ describe("unit styles unique designation", () => {
 
     createUnitStyle(unit, {}, createScenarioWithCustomSymbol());
 
-    const options = symbolGeneratorMock.mock.calls.at(-1)?.[1];
-    expect(options.uniqueDesignation).toBe("CUSTOM");
+    const lastCall = symbolGeneratorMock.mock.lastCall as any[] | undefined;
+    const options = lastCall?.[1];
+    expect(options?.uniqueDesignation).toBe("CUSTOM");
   });
 });

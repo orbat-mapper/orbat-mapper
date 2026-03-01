@@ -125,7 +125,9 @@ export interface Unit {
   _lkey?: string; // label cache key
 }
 
-export interface UnitStyle extends Partial<VisibilityStyleSpec> {}
+export interface UnitStyle extends Partial<VisibilityStyleSpec> {
+  mapSymbolSize?: number;
+}
 
 export type SpeedUnitOfMeasure = "km/h" | "mph" | "knots" | "m/s" | "ft/s";
 export type UnitProperty = { value: number; uom: SpeedUnitOfMeasure };
@@ -260,6 +262,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "2.4.0"
   | "2.3.0"
   | "2.2.0"
   | "2.1.0"
