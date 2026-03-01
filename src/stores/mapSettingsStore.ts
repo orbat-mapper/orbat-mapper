@@ -11,6 +11,7 @@ export const useMapSettingsStore = defineStore("mapSettings", {
       "DecimalDegrees",
     ),
     showScaleLine: useLocalStorage("showScaleLine", true),
+    showFeatureTooltip: useLocalStorage("showFeatureTooltip", true),
     baseLayerName: DEFAULT_BASEMAP_ID,
     showDayNightTerminator: false,
     mapIconSize: useLocalStorage("mapIconSize", 30),

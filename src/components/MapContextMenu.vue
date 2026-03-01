@@ -77,8 +77,13 @@ const breakpoints = useBreakpoints(breakpointsTailwind);
 
 const isMobile = breakpoints.smallerOrEqual("md");
 
-const { coordinateFormat, showLocation, showScaleLine, showDayNightTerminator } =
-  storeToRefs(useMapSettingsStore());
+const {
+  coordinateFormat,
+  showLocation,
+  showScaleLine,
+  showDayNightTerminator,
+  showFeatureTooltip,
+} = storeToRefs(useMapSettingsStore());
 
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
 const uiSettings = useUiStore();
@@ -407,6 +412,9 @@ const baseMapId = computed({
           </ContextMenuCheckboxItem>
           <ContextMenuCheckboxItem v-model="showScaleLine" @select.prevent>
             Scale line
+          </ContextMenuCheckboxItem>
+          <ContextMenuCheckboxItem v-model="showFeatureTooltip" @select.prevent>
+            Feature tooltip
           </ContextMenuCheckboxItem>
           <ContextMenuSeparator />
           <ContextMenuCheckboxItem

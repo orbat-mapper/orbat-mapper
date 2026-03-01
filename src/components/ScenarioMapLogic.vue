@@ -25,7 +25,7 @@ import LayerGroup from "ol/layer/Group";
 import { useScenarioMapLayers } from "@/modules/scenarioeditor/scenarioMapLayers";
 import { useScenarioFeatureSelect } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
-import { useMapHover } from "@/composables/geoHover";
+import { provideMapHover } from "@/composables/geoHover";
 import { saveMapAsPng, useOlEvent } from "@/composables/openlayersHelpers";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useShowLocationControl } from "@/composables/geoShowLocation";
@@ -39,6 +39,7 @@ import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
 import { useSearchActions } from "@/composables/searchActions";
 import { useScenarioFeatureLayers } from "@/modules/scenarioeditor/scenarioFeatureLayers";
 import { useSelectedItems } from "@/stores/selectedStore";
+import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -131,7 +132,7 @@ const { historyLayer, drawHistory, historyModify, waypointSelect, ctrlClickInter
     showWaypointTimestamps,
   });
 
-useMapHover(olMap, { enable: hoverEnabled });
+provideMapHover(mapRef, { enable: hoverEnabled });
 
 olMap.addLayer(historyLayer);
 olMap.addLayer(unitLayerGroup);
@@ -266,6 +267,7 @@ onScenarioAction(async (e) => {
 </script>
 
 <template>
+  <MapHoverFeatureTooltip :is-dragging="isDragging" />
   <div
     v-if="isDragging"
     class="pointer-events-none absolute inset-0 border-4 border-dashed border-blue-700"

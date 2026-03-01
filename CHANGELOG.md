@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## March 2026
 
+### Added
+
+- Show feature name on map hover.
+
 ### Changed
 
 - Expanded scenario timeline zoom-out range.

@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
   drawRangeRingsSpy: vi.fn(),
   redrawSelectedUnitsSpy: vi.fn(),
   injectedScenario: null as any,
+  hoveredFeatures: { value: [] as any[] },
+  hoveredPixel: { value: null as number[] | null },
 }));
 
 vi.mock("pinia", () => ({
@@ -103,6 +105,18 @@ vi.mock("@vueuse/core", () => ({
   useBreakpoints: () => ({
     smallerOrEqual: () => ref(false),
   }),
+  useTimeoutFn: (cb: () => void, delay: number) => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    return {
+      start: () => {
+        timer = setTimeout(cb, delay);
+      },
+      stop: () => {
+        if (timer) clearTimeout(timer);
+        timer = null;
+      },
+    };
+  },
   breakpointsTailwind: {},
 }));
 
@@ -119,7 +133,13 @@ vi.mock("@/modules/scenarioeditor/featureLayerUtils", () => ({
 }));
 
 vi.mock("@/composables/geoHover", () => ({
-  useMapHover: vi.fn(),
+  provideMapHover: vi.fn(),
+  useMapHover: () => ({
+    features: mocks.hoveredFeatures,
+    pixel: mocks.hoveredPixel,
+    isMatch: ref(false),
+    allFeatures: ref([]),
+  }),
 }));
 
 vi.mock("@/composables/openlayersHelpers", () => ({
@@ -179,6 +199,8 @@ vi.mock("ol/layer/Group", () => ({
 
 describe("ScenarioMapLogic", () => {
   it("redraws units when settingsStateCounter changes", async () => {
+    mocks.hoveredFeatures.value = [];
+    mocks.hoveredPixel.value = null;
     mocks.drawUnitsSpy.mockClear();
     mocks.updateUnitPositionsSpy.mockClear();
     mocks.clearUnitStyleCacheSpy.mockClear();
@@ -232,6 +254,8 @@ describe("ScenarioMapLogic", () => {
   });
 
   it("incrementally updates unit positions when unitStateCounter changes", async () => {
+    mocks.hoveredFeatures.value = [];
+    mocks.hoveredPixel.value = null;
     mocks.drawUnitsSpy.mockClear();
     mocks.updateUnitPositionsSpy.mockClear();
     mocks.clearUnitStyleCacheSpy.mockClear();
@@ -286,5 +310,121 @@ describe("ScenarioMapLogic", () => {
     expect(mocks.drawHistorySpy.mock.calls.length).toBe(historyBefore + 1);
     expect(mocks.drawRangeRingsSpy.mock.calls.length).toBe(rangeBefore + 1);
     expect(mocks.redrawSelectedUnitsSpy.mock.calls.length).toBe(selectedBefore + 1);
+  });
+
+  it("shows hover tooltip for top-most named scenario feature", async () => {
+    vi.useFakeTimers();
+    mocks.hoveredFeatures.value = [{ getId: () => "feature-1" }];
+    mocks.hoveredPixel.value = [100, 200];
+    mocks.injectedScenario = {
+      geo: {
+        everyVisibleUnit: ref([]),
+        getFeatureById: vi.fn(() => ({ feature: { meta: { name: "Bridge Alpha" } } })),
+      },
+      store: {
+        state: {
+          settingsStateCounter: 0,
+          featureStateCounter: 0,
+          unitStateCounter: 0,
+          currentTime: 0,
+          boundingBox: null,
+        },
+      },
+    };
+
+    const olMap = {
+      addLayer: vi.fn(),
+      addInteraction: vi.fn(),
+      getView: () => ({ fit: vi.fn() }),
+    } as any;
+    const wrapper = mount(ScenarioMapLogic, {
+      props: { olMap },
+    });
+
+    vi.advanceTimersByTime(200);
+    await nextTick();
+    const tooltip = wrapper.find("[data-test='hover-feature-tooltip']");
+    expect(tooltip.exists()).toBe(true);
+    expect(tooltip.text()).toBe("Bridge Alpha");
+    vi.useRealTimers();
+  });
+
+  it("hides tooltip when hovered feature name is empty", () => {
+    vi.useFakeTimers();
+    mocks.hoveredFeatures.value = [{ getId: () => "feature-empty" }];
+    mocks.hoveredPixel.value = [100, 200];
+    mocks.injectedScenario = {
+      geo: {
+        everyVisibleUnit: ref([]),
+        getFeatureById: vi.fn(() => ({ feature: { meta: { name: "" } } })),
+      },
+      store: {
+        state: {
+          settingsStateCounter: 0,
+          featureStateCounter: 0,
+          unitStateCounter: 0,
+          currentTime: 0,
+          boundingBox: null,
+        },
+      },
+    };
+
+    const olMap = {
+      addLayer: vi.fn(),
+      addInteraction: vi.fn(),
+      getView: () => ({ fit: vi.fn() }),
+    } as any;
+    const wrapper = mount(ScenarioMapLogic, {
+      props: { olMap },
+    });
+
+    vi.advanceTimersByTime(200);
+    expect(wrapper.find("[data-test='hover-feature-tooltip']").exists()).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it("uses first named scenario feature when non-scenario and unnamed hits overlap", async () => {
+    vi.useFakeTimers();
+    mocks.hoveredFeatures.value = [
+      { getId: () => "unit-1" },
+      { getId: () => "feature-empty" },
+      { getId: () => "feature-1" },
+    ];
+    mocks.hoveredPixel.value = [100, 200];
+    mocks.injectedScenario = {
+      geo: {
+        everyVisibleUnit: ref([]),
+        getFeatureById: vi.fn((id: string) => {
+          if (id === "feature-empty") return { feature: { meta: { name: "" } } };
+          if (id === "feature-1") return { feature: { meta: { name: "Bridge Alpha" } } };
+          return { feature: undefined };
+        }),
+      },
+      store: {
+        state: {
+          settingsStateCounter: 0,
+          featureStateCounter: 0,
+          unitStateCounter: 0,
+          currentTime: 0,
+          boundingBox: null,
+        },
+      },
+    };
+
+    const olMap = {
+      addLayer: vi.fn(),
+      addInteraction: vi.fn(),
+      getView: () => ({ fit: vi.fn() }),
+    } as any;
+    const wrapper = mount(ScenarioMapLogic, {
+      props: { olMap },
+    });
+
+    vi.advanceTimersByTime(200);
+    await nextTick();
+    const tooltip = wrapper.find("[data-test='hover-feature-tooltip']");
+    expect(tooltip.exists()).toBe(true);
+    expect(tooltip.text()).toBe("Bridge Alpha");
+    vi.useRealTimers();
   });
 });

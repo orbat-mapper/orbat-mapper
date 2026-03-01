@@ -39,6 +39,9 @@ const measurementItems: RadioGroupItemData<MeasurementUnit>[] = [
     <ToggleField v-model="settings.showLocation"
       >Show location of mouse cursor
     </ToggleField>
+    <ToggleField v-model="settings.showFeatureTooltip"
+      >Show scenario feature tooltip
+    </ToggleField>
     <SimpleDivider class="mt-8" />
     <PanelSubHeading>Map unit symbol settings</PanelSubHeading>
     <NumberInputGroup label="Map symbol size" v-model="settings.mapIconSize" />
