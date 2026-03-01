@@ -125,6 +125,30 @@ describe("unit styles size overrides", () => {
     const options = lastCall?.[1];
     expect(options?.size).toBe(67);
   });
+
+  it("includes custom symbol size override in cache key", () => {
+    const unit = {
+      id: "unit-1",
+      name: "Unit",
+      sidc: "custom1:10031000000000000000:custom-1",
+      _state: { sidc: "custom1:10031000000000000000:custom-1", symbolRotation: 0 },
+      textAmplifiers: {},
+    } as any;
+
+    const keyDefault = createUnitStyle(
+      unit,
+      {},
+      createScenarioWithCustomSymbol(),
+    ).cacheKey;
+    unit.style = { mapSymbolSize: 50 };
+    const keyOverride = createUnitStyle(
+      unit,
+      {},
+      createScenarioWithCustomSymbol(),
+    ).cacheKey;
+
+    expect(keyDefault).not.toBe(keyOverride);
+  });
 });
 
 describe("unit styles unique designation", () => {

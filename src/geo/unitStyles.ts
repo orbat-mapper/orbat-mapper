@@ -77,6 +77,10 @@ export function createUnitStyle(
 
   const mapSettingsStore = useMapSettingsStore();
   const symbolSettings = useSymbolSettingsStore();
+  const baseMapSymbolSize =
+    typeof unit.style?.mapSymbolSize === "number"
+      ? unit.style.mapSymbolSize
+      : mapSettingsStore.mapIconSize;
 
   const rawTextAmplifiers = unit.textAmplifiers || {};
   const hasOverriddenUniqueDesignation = Object.prototype.hasOwnProperty.call(
@@ -92,13 +96,16 @@ export function createUnitStyle(
 
   if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
     const customSymbolId = sidc.slice(CUSTOM_SYMBOL_SLICE);
-    const cacheKey = customSymbolId + hashObject({ symbolRotationDeg, color });
+    const customSymbolSize =
+      baseMapSymbolSize * (mapSettingsStore.mapCustomIconScale || 1.7);
+    const cacheKey =
+      customSymbolId + hashObject({ symbolRotationDeg, color, customSymbolSize });
     const customSymbol = scenario.store.state.customSymbolMap[customSymbolId];
     return {
       style: customSymbol
         ? createCustomSymbolStyle(
             customSymbol,
-            mapSettingsStore.mapIconSize * (mapSettingsStore.mapCustomIconScale || 1.7),
+            customSymbolSize,
             symbolRotationRad,
             color,
           )
@@ -108,10 +115,7 @@ export function createUnitStyle(
   }
   const { size: _symbolOptionSize, ...restSymbolOptions } = symbolOptions || {};
   const pixelRatio = window.devicePixelRatio || 1;
-  const resolvedSize =
-    typeof unit.style?.mapSymbolSize === "number"
-      ? unit.style.mapSymbolSize * pixelRatio
-      : mapSettingsStore.mapIconSize * pixelRatio;
+  const resolvedSize = baseMapSymbolSize * pixelRatio;
   const options = {
     size: resolvedSize,
     uniqueDesignation: symbolUniqueDesignation,
