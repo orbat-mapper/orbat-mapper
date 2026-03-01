@@ -67,4 +67,21 @@ describe("useMapHover", () => {
     expect(targetElement.style.cursor).toBe("");
     expect(targetElement.title).toBe("");
   });
+
+  it("does not throw when map target element is unavailable", () => {
+    let pointerMoveHandler: any;
+    const olMap = {
+      on: vi.fn((eventType: string, handler: unknown) => {
+        if (eventType === "pointermove") pointerMoveHandler = handler;
+        return "pointerMoveKey";
+      }),
+      getEventPixel: vi.fn(() => [10, 20]),
+      getTargetElement: vi.fn(() => null),
+      forEachFeatureAtPixel: vi.fn(() => undefined),
+    } as any;
+
+    useMapHover(olMap, { enable: ref(true) });
+
+    expect(() => pointerMoveHandler({ originalEvent: {} })).not.toThrow();
+  });
 });

@@ -10,9 +10,10 @@ export interface MapHoverOptions {
 export function useMapHover(olMap: OLMap, options: MapHoverOptions = {}) {
   const enableRef = ref(options.enable ?? true);
   let pointerMoveKey: any = null;
-  const targetElement = olMap.getTargetElement();
 
   const resetHoverState = () => {
+    const targetElement = olMap.getTargetElement();
+    if (!targetElement) return;
     targetElement.style.cursor = "";
     targetElement.title = "";
   };
@@ -37,10 +38,14 @@ export function useMapHover(olMap: OLMap, options: MapHoverOptions = {}) {
       pointerMoveKey = useOlEvent(
         olMap.on("pointermove", (e) => {
           const pixel = olMap.getEventPixel(e.originalEvent);
-          const feature = olMap.forEachFeatureAtPixel(pixel, (feature, layer) => {
-            return layer?.get("layerType") === "SCENARIO_FEATURE" ? feature : undefined;
+          const targetElement = olMap.getTargetElement();
+          if (!targetElement) return;
+          const feature = olMap.forEachFeatureAtPixel(pixel, (currentFeature, layer) => {
+            return layer?.get("layerType") === "SCENARIO_FEATURE"
+              ? currentFeature
+              : undefined;
           });
-          const featureName = feature?.get("name") ?? "";
+          const featureName = feature?.get("name");
           targetElement.style.cursor = feature ? "pointer" : "";
           targetElement.title = typeof featureName === "string" ? featureName : "";
         }),
