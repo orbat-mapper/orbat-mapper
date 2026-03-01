@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Moved "Copy scenario to clipboard" action from the File menu to the Edit menu.
 - Improved dark mode support in the Chart Edit view.
 - Added support for symbol outlines in ORBAT charts to improve visibility.
+- Moved unit symbol rotation settings from the "Map display" tab to the "Map symbol" tab.
 
 ### Fixed
 
