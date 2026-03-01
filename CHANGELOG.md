@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Expanded scenario timeline zoom-out range.
+- Moved "Copy scenario to clipboard" action from the File menu to the Edit menu.
 
 ## February 2026
 
@@ -43,7 +44,6 @@ All notable changes to this project will be documented in this file.
 
 - Fixed issue where changing the symbol fill color for a side would immediately update before saving.
 - Fixed issue where saving side or side-group symbol fill color did not immediately refresh map symbols.
-
 
 ## January 2026
 
