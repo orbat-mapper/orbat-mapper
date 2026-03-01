@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file.
 - Improved dark mode support in the Chart Edit view.
 - Added support for symbol outlines in ORBAT charts to improve visibility.
 
+### Fixed
+
+- Fixed issue where layer edit form "Change" and clear timestamp buttons submitted the form and closed it immediately.
+
 ## February 2026
 
 ### Added

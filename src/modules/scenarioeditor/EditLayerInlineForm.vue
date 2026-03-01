@@ -60,26 +60,32 @@ async function doShowTimeModal(field: "visibleFromT" | "visibleUntilT") {
 
       <DescriptionItem label="Visible from"
         >{{ formatDateString(form.visibleFromT, timeZone) }}
-        <PlainButton @click="doShowTimeModal('visibleFromT')" class="ml-2"
+        <PlainButton type="button" @click="doShowTimeModal('visibleFromT')" class="ml-2"
           >Change</PlainButton
-        ><PlainButton v-if="form.visibleFromT" @click="form.visibleFromT = undefined"
+        ><PlainButton
+          type="button"
+          v-if="form.visibleFromT !== undefined"
+          @click="form.visibleFromT = undefined"
           >X</PlainButton
         >
       </DescriptionItem>
 
       <DescriptionItem label="Visible until"
         >{{ formatDateString(form.visibleUntilT, timeZone) }}
-        <PlainButton @click="doShowTimeModal('visibleUntilT')" class="ml-2"
+        <PlainButton type="button" @click="doShowTimeModal('visibleUntilT')" class="ml-2"
           >Change</PlainButton
         >
-        <PlainButton v-if="form.visibleUntilT" @click="form.visibleUntilT = undefined"
+        <PlainButton
+          type="button"
+          v-if="form.visibleUntilT !== undefined"
+          @click="form.visibleUntilT = undefined"
           >X</PlainButton
         >
       </DescriptionItem>
 
       <div class="my-4 flex items-center justify-end space-x-2">
         <BaseButton primary small type="submit">Save</BaseButton>
-        <BaseButton small @click="emit('close')">Cancel</BaseButton>
+        <BaseButton small type="button" @click="emit('close')">Cancel</BaseButton>
       </div>
     </form>
   </InlineFormPanel>
