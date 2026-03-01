@@ -37,6 +37,7 @@ const { date, hour, minute, resDateTime } = useDateElements({
   isLocal,
   timeZone: props.timeZone,
 });
+const activeTimestamp = computed(() => resDateTime.value.valueOf());
 
 const updateTime = () => {
   emit("update:timestamp", resDateTime.value.valueOf());
@@ -78,7 +79,12 @@ function onEventClick(event: ScenarioEvent) {
         </form>
       </TabsContent>
       <TabsContent value="events">
-        <ScenarioEventsPanel select-only @event-click="onEventClick" hide-dropdown />
+        <ScenarioEventsPanel
+          select-only
+          hide-dropdown
+          :highlight-timestamp="activeTimestamp"
+          @event-click="onEventClick"
+        />
       </TabsContent>
     </Tabs>
   </NewSimpleModal>

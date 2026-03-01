@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 interface Props {
   selectOnly?: boolean;
   hideDropdown?: boolean;
+  highlightTimestamp?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -30,6 +31,7 @@ const { activeScenarioEventId } = useSelectedItems();
 const fmt = useTimeFormatStore();
 const events = computed(() => store.state.events.map((id) => store.state.eventMap[id]));
 const t = computed(() => store.state.currentTime);
+const activeTimestamp = computed(() => props.highlightTimestamp ?? t.value);
 
 function onEventClick(event: NScenarioEvent) {
   if (!props.selectOnly) goToScenarioEvent(event);
@@ -81,13 +83,17 @@ function addEvent() {
                 @click="onEventClick(event)"
                 class="ring-ring mt-1 flex size-4 items-center justify-center rounded-full ring-4"
                 :class="{
-                  'bg-muted': event.startTime > t,
-                  'bg-background': event.startTime < t,
-                  'bg-accent-foreground': event.startTime === t,
+                  'bg-muted': event.startTime > activeTimestamp,
+                  'bg-background': event.startTime < activeTimestamp,
+                  'bg-accent-foreground': event.startTime === activeTimestamp,
                 }"
               ></button>
               <div
                 class="min-w-0 flex-1 cursor-pointer text-sm"
+                :class="{
+                  'border-primary/60 bg-primary/10 rounded-md border px-2 py-1':
+                    event.startTime === activeTimestamp,
+                }"
                 @click="onEventClick(event)"
               >
                 <p class="text-muted-foreground text-xs font-medium">
