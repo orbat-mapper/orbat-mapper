@@ -143,13 +143,19 @@ export interface PersonnelOptions {
   showPersonnel: boolean;
 }
 
+export interface ChartSymbolOptions {
+  symbolOutlineWidth?: number;
+  symbolOutlineColor?: string;
+}
+
 export interface OrbChartOptions
   extends
     FontOptions,
     ConnectorOptions,
     LabelOptions,
     EquipmentOptions,
-    PersonnelOptions {
+    PersonnelOptions,
+    ChartSymbolOptions {
   symbolSize: number;
   maxLevels: number;
   debug: boolean;

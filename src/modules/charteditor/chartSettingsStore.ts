@@ -56,6 +56,8 @@ export const useChartSettingsStore = defineStore("chartSettingsStore", {
     labelPlacement: "below",
     showEquipment: false,
     showPersonnel: false,
+    symbolOutlineWidth: DEFAULT_OPTIONS.symbolOutlineWidth,
+    symbolOutlineColor: DEFAULT_OPTIONS.symbolOutlineColor,
   }),
 });
 
