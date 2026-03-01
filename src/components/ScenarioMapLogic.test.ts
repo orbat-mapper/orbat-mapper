@@ -80,6 +80,7 @@ vi.mock("@/stores/mapSettingsStore", () => ({
     coordinateFormat: ref("dd"),
     showLocation: ref(false),
     showScaleLine: ref(false),
+    showFeatureTooltip: ref(true),
   }),
 }));
 
