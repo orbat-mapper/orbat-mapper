@@ -436,23 +436,23 @@ function onContextMenuAction(action: TimelineAction) {
             :style="`width: ${timelineWidth}px`"
           ></div>
         </div>
-        <div class="border-muted-foreground flex justify-center">
+        <div class="border-muted-foreground flex h-6 justify-center">
           <div
             v-for="tick in majorTicks"
             :key="tick.timestamp"
             data-testid="major-tick"
-            class="border-muted-foreground flex-none border-r border-b pl-0.5"
+            class="border-muted-foreground h-6 flex-none overflow-hidden border-r border-b pl-0.5 leading-6 whitespace-nowrap"
             :style="`width: ${tick.width}px`"
           >
             {{ tick.showLabel ? tick.label : "" }}
           </div>
         </div>
-        <div class="flex justify-center text-xs">
+        <div class="flex h-4 justify-center text-xs">
           <div
             v-for="tick in minorTicks"
             :key="tick.timestamp"
             data-testid="minor-tick"
-            class="text-muted-foreground border-muted-foreground min-h-[1rem] flex-none border-r pl-0.5"
+            class="text-muted-foreground border-muted-foreground h-4 min-h-0 flex-none overflow-hidden border-r pl-0.5 leading-4 whitespace-nowrap"
             :style="`width: ${tick.width}px`"
           >
             {{ tick.showLabel ? tick.label : "" }}
