@@ -300,11 +300,11 @@ function setTextAmpValue(field: TextAmpKey, value: string | number | undefined) 
           >
             <NewMilitarySymbol
               :sidc="displaySymbol"
-              class="stroke-muted-foreground"
+              class="text-muted-foreground"
               :size="75"
               :modifiers="{
                 frame: true,
-                monoColor: 'inherit',
+                monoColor: 'currentColor',
               }"
             />
           </div>
