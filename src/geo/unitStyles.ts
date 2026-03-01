@@ -78,8 +78,17 @@ export function createUnitStyle(
   const mapSettingsStore = useMapSettingsStore();
   const symbolSettings = useSymbolSettingsStore();
 
-  const { uniqueDesignation = shortName || name, ...textAmplifiers } =
-    unit.textAmplifiers || {};
+  const rawTextAmplifiers = unit.textAmplifiers || {};
+  const hasOverriddenUniqueDesignation = Object.prototype.hasOwnProperty.call(
+    rawTextAmplifiers,
+    "uniqueDesignation",
+  );
+  const { uniqueDesignation, ...textAmplifiers } = rawTextAmplifiers;
+  const resolvedUniqueDesignation = uniqueDesignation ?? shortName ?? name ?? "";
+  const symbolUniqueDesignation =
+    mapSettingsStore.mapUnitLabelBelow && !hasOverriddenUniqueDesignation
+      ? ""
+      : resolvedUniqueDesignation;
 
   if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
     const customSymbolId = sidc.slice(CUSTOM_SYMBOL_SLICE);
@@ -99,7 +108,7 @@ export function createUnitStyle(
   }
   const options = {
     size: mapSettingsStore.mapIconSize * (window.devicePixelRatio || 1),
-    uniqueDesignation: mapSettingsStore.mapUnitLabelBelow ? "" : uniqueDesignation,
+    uniqueDesignation: symbolUniqueDesignation,
     outlineColor: "white",
     outlineWidth: 8,
     ...textAmplifiers,

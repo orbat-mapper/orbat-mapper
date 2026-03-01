@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { createUnitStyle } from "./unitStyles";
 
+const mapSettingsMock = {
+  mapIconSize: 40,
+  mapCustomIconScale: 1.7,
+  mapUnitLabelBelow: false,
+};
+
 const { symbolGeneratorMock } = vi.hoisted(() => ({
   symbolGeneratorMock: vi.fn(() => ({
     getAnchor: () => ({ x: 10, y: 10 }),
@@ -17,11 +23,7 @@ vi.mock("@/stores/settingsStore", () => ({
 }));
 
 vi.mock("@/stores/mapSettingsStore.ts", () => ({
-  useMapSettingsStore: () => ({
-    mapIconSize: 40,
-    mapCustomIconScale: 1.7,
-    mapUnitLabelBelow: false,
-  }),
+  useMapSettingsStore: () => mapSettingsMock,
 }));
 
 function createScenarioWithCustomSymbol() {
@@ -85,5 +87,61 @@ describe("unit styles rotation", () => {
 
     const { style } = createUnitStyle(unit, {}, createScenarioWithCustomSymbol());
     expect(style.getImage()?.getRotation()).toBeCloseTo(Math.PI);
+  });
+});
+
+describe("unit styles unique designation", () => {
+  it("hides default uniqueDesignation on symbol when bottom labels are enabled", () => {
+    mapSettingsMock.mapUnitLabelBelow = true;
+    symbolGeneratorMock.mockClear();
+    const unit = {
+      id: "unit-1",
+      name: "Unit",
+      shortName: "U",
+      sidc: "10031000000000000000",
+      _state: { sidc: "10031000000000000000", symbolRotation: 0 },
+      textAmplifiers: {},
+    } as any;
+
+    createUnitStyle(unit, {}, createScenarioWithCustomSymbol());
+
+    const options = symbolGeneratorMock.mock.calls.at(-1)?.[1];
+    expect(options.uniqueDesignation).toBe("");
+  });
+
+  it("keeps overridden uniqueDesignation on symbol when bottom labels are enabled", () => {
+    mapSettingsMock.mapUnitLabelBelow = true;
+    symbolGeneratorMock.mockClear();
+    const unit = {
+      id: "unit-1",
+      name: "Unit",
+      shortName: "U",
+      sidc: "10031000000000000000",
+      _state: { sidc: "10031000000000000000", symbolRotation: 0 },
+      textAmplifiers: { uniqueDesignation: "CUSTOM" },
+    } as any;
+
+    createUnitStyle(unit, {}, createScenarioWithCustomSymbol());
+
+    const options = symbolGeneratorMock.mock.calls.at(-1)?.[1];
+    expect(options.uniqueDesignation).toBe("CUSTOM");
+  });
+
+  it("keeps overridden uniqueDesignation on symbol when bottom labels are disabled", () => {
+    mapSettingsMock.mapUnitLabelBelow = false;
+    symbolGeneratorMock.mockClear();
+    const unit = {
+      id: "unit-1",
+      name: "Unit",
+      shortName: "U",
+      sidc: "10031000000000000000",
+      _state: { sidc: "10031000000000000000", symbolRotation: 0 },
+      textAmplifiers: { uniqueDesignation: "CUSTOM" },
+    } as any;
+
+    createUnitStyle(unit, {}, createScenarioWithCustomSymbol());
+
+    const options = symbolGeneratorMock.mock.calls.at(-1)?.[1];
+    expect(options.uniqueDesignation).toBe("CUSTOM");
   });
 });
