@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 
 - Expanded scenario timeline zoom-out range.
 - Moved "Copy scenario to clipboard" action from the File menu to the Edit menu.
+- Improved dark mode support in the Chart Edit view.
+- Added support for symbol outlines in ORBAT charts to improve visibility.
 
 ## February 2026
 

@@ -44,7 +44,7 @@ export function createChartStyle(options: OrbChartOptions) {
   return `
 .o-line {
 stroke-linecap: round
- 
+
 }
 
 .o-label {
@@ -65,7 +65,12 @@ function convertBasicUnitNode2UnitNodeInfo(
   basicUnitNode: BasicUnitNode,
   options: Partial<OrbChartOptions>,
 ): UnitNodeInfo {
-  const symbolOptions = { size: options.symbolSize, ...basicUnitNode.unit.symbolOptions };
+  const symbolOptions = {
+    size: options.symbolSize,
+    outlineWidth: options.symbolOutlineWidth,
+    outlineColor: options.symbolOutlineColor,
+    ...basicUnitNode.unit.symbolOptions,
+  };
   const symb = options.symbolGenerator
     ? options.symbolGenerator(basicUnitNode.unit.sidc, symbolOptions)
     : new ms.Symbol(
@@ -370,7 +375,7 @@ export function drawUnitLevelConnectorPath(
   const dy = firstUnitInGroup.y - (firstUnitInGroup.y - parentUnit.y) / 2;
   const d1 = `M ${parentUnit.x}, ${parentUnit.ly + options.connectorOffset} V ${dy}`;
   g.append("path").attr("d", d1).classed("o-line", true);
-  const d = `M ${firstUnitInGroup.x}, ${dy} 
+  const d = `M ${firstUnitInGroup.x}, ${dy}
   H ${Math.max(lastUnitInGroup.x, parentUnit.x)}`;
   g.append("path").attr("d", d).classed("o-line", true);
 }

@@ -127,6 +127,15 @@ const onUnitSelect = (unitId: string) => {
         :items="labelPlacementItems"
       />
       <InputGroup label="Font color" type="color" v-model="options.fontColor" />
+      <NumberInputGroup
+        label="Symbol outline width"
+        v-model="options.symbolOutlineWidth"
+      />
+      <InputGroup
+        label="Symbol outline color"
+        type="color"
+        v-model="options.symbolOutlineColor"
+      />
       <ToggleField v-model="options.useShortName">Use short unit names</ToggleField>
       <ToggleField v-model="options.hideLabel">Hide label</ToggleField>
     </AccordionPanel>

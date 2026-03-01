@@ -31,9 +31,11 @@ export const DEFAULT_OPTIONS = {
   labelOffset: 8,
   fontStyle: "normal",
   fontWeight: "normal",
-  lineColor: "#1F2937",
-  fontColor: "#0F172A",
+  lineColor: "currentColor",
+  fontColor: "currentColor",
   hideLabel: false,
   showEquipment: false,
   showPersonnel: false,
+  symbolOutlineWidth: 4,
+  symbolOutlineColor: "white",
 } as OrbChartOptions;
