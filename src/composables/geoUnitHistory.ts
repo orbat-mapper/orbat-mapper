@@ -11,8 +11,10 @@ import {
   VIA_TIME,
 } from "@/geo/history";
 import Modify, { ModifyEvent } from "ol/interaction/Modify";
-import { LineString, Point } from "ol/geom";
-import { Feature, MapBrowserEvent } from "ol";
+import LineString from "ol/geom/LineString";
+import Point from "ol/geom/Point";
+import Feature from "ol/Feature";
+import MapBrowserEvent from "ol/MapBrowserEvent";
 import { type MaybeRef, ref, watch } from "vue";
 
 import { useSelectedItems } from "@/stores/selectedStore";

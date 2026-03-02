@@ -2,7 +2,7 @@
 import { ref, watchEffect } from "vue";
 import Point from "ol/geom/Point";
 import { toContext } from "ol/render";
-import { Style } from "ol/style";
+import Style from "ol/style/Style";
 import { createArrowMarkerImage, getArrowSvgDataUri } from "@/geo/arrowStyles";
 import type { ArrowType } from "@/geo/simplestyle";
 

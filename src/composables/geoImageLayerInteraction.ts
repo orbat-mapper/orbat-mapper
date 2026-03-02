@@ -1,13 +1,15 @@
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
-import { Fill, Stroke, Style } from "ol/style";
+import Fill from "ol/style/Fill";
+import Stroke from "ol/style/Stroke";
+import Style from "ol/style/Style";
 import TransformInteraction from "ol-ext/interaction/Transform";
 import { onUnmounted, ref } from "vue";
 import { fromExtent } from "ol/geom/Polygon";
 import Feature from "ol/Feature";
 import { boundingExtent, getCenter, getHeight, getWidth } from "ol/extent";
-import { Collection } from "ol";
+import Collection from "ol/Collection";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 

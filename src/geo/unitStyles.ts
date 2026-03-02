@@ -1,4 +1,5 @@
-import { Icon, Style } from "ol/style";
+import Icon from "ol/style/Icon";
+import Style from "ol/style/Style";
 import type { CustomSymbol, UnitSymbolOptions } from "@/types/scenarioModels";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import type { Symbol as MilSymbol } from "milsymbol";

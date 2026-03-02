@@ -7,7 +7,7 @@ import {
   tryOnBeforeUnmount,
 } from "@vueuse/core";
 import { unByKey } from "ol/Observable";
-import { MapBrowserEvent } from "ol";
+import MapBrowserEvent from "ol/MapBrowserEvent";
 import { toLonLat } from "ol/proj";
 import type { EventsKey } from "ol/events";
 import { ref } from "vue";

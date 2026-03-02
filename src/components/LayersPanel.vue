@@ -11,7 +11,7 @@ import type { AnyTileLayer, AnyVectorLayer } from "@/geo/types";
 import TileSource from "ol/source/Tile";
 import { toLonLat } from "ol/proj";
 import OpacityInput from "./OpacityInput.vue";
-import { getUid } from "ol";
+import { getUid } from "ol/util";
 import { type LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import ImageLayer from "ol/layer/Image";

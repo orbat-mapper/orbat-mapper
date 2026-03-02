@@ -1,5 +1,5 @@
-import { Interaction } from "ol/interaction";
-import { MapBrowserEvent } from "ol";
+import Interaction from "ol/interaction/Interaction";
+import MapBrowserEvent from "ol/MapBrowserEvent";
 import { click } from "ol/events/condition";
 
 const ctrlKeyOnly = function (mapBrowserEvent: MapBrowserEvent<any>) {

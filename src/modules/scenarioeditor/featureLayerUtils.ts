@@ -6,7 +6,7 @@ import { getCenter, isEmpty } from "ol/extent";
 import { featureCollection } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
 import { injectStrict, nanoid } from "@/utils";
-import { Collection } from "ol";
+import Collection from "ol/Collection";
 import { getFeatureAndLayerById, useOlEvent } from "@/composables/openlayersHelpers";
 import GeoJSON from "ol/format/GeoJSON";
 import Feature, { type FeatureLike } from "ol/Feature";
@@ -39,7 +39,7 @@ import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { SimpleGeometry } from "ol/geom";
+import SimpleGeometry from "ol/geom/SimpleGeometry";
 
 const selectStyle = new Style({
   stroke: new Stroke({ color: "#ffff00", width: 9 }),

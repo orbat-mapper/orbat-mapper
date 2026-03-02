@@ -24,7 +24,7 @@ import { add as addCoordinate } from "ol/coordinate";
 import { getLength } from "ol/sphere";
 import LineString from "ol/geom/LineString";
 import { point } from "@turf/helpers";
-import { GeoJSON } from "ol/format";
+import GeoJSON from "ol/format/GeoJSON";
 
 const undoActionLabels: ActionLabel[] = [
   "deleteLayer",

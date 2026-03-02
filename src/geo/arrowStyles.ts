@@ -5,7 +5,9 @@
  * of line features, with configurable arrow types and colors.
  */
 
-import { type Geometry, LineString, Point } from "ol/geom";
+import type Geometry from "ol/geom/Geometry";
+import LineString from "ol/geom/LineString";
+import Point from "ol/geom/Point";
 import Style from "ol/style/Style";
 import RegularShape from "ol/style/RegularShape";
 import Fill from "ol/style/Fill";

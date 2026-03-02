@@ -2,7 +2,7 @@ import DayNight from "ol-ext/source/DayNight";
 import VectorLayer from "ol/layer/Vector";
 import Style from "ol/style/Style";
 import CircleStyle from "ol/style/Circle";
-import { Fill } from "ol/style";
+import Fill from "ol/style/Fill";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { watch } from "vue";

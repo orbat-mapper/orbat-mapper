@@ -3,7 +3,7 @@ import { onMounted, onUnmounted, ref, watch } from "vue";
 
 import MapEvent from "ol/MapEvent";
 import OLMap from "ol/Map";
-import { defaults as defaultControls } from "ol/control";
+import { defaults as defaultControls } from "ol/control/defaults";
 import View from "ol/View";
 import "ol/ol.css";
 import { type Coordinate } from "ol/coordinate";

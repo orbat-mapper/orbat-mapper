@@ -8,7 +8,7 @@ import { activeScenarioKey } from "@/components/injects";
 import type { MenuItemData } from "@/components/types";
 import { multiPoint } from "@turf/helpers";
 import turfEnvelope from "@turf/envelope";
-import { GeoJSON } from "ol/format";
+import GeoJSON from "ol/format/GeoJSON";
 import Feature from "ol/Feature";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
 import type { TScenario } from "@/scenariostore";

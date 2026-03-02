@@ -13,12 +13,14 @@ import {
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import { fromLonLat, toLonLat } from "ol/proj";
-import { Point } from "ol/geom";
-import { DragBox, Modify, Select } from "ol/interaction";
+import Point from "ol/geom/Point";
+import DragBox from "ol/interaction/DragBox";
+import Modify from "ol/interaction/Modify";
+import Select from "ol/interaction/Select";
 import PointerInteraction from "ol/interaction/Pointer";
 import { ModifyEvent } from "ol/interaction/Modify";
-import { Feature } from "ol";
-import type { MapBrowserEvent } from "ol";
+import Feature from "ol/Feature";
+import type MapBrowserEvent from "ol/MapBrowserEvent";
 
 import {
   clearUnitStyleCache,

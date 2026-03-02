@@ -8,7 +8,7 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import Feature from "ol/Feature";
 import BaseButton from "@/components/BaseButton.vue";
-import { MapBrowserEvent } from "ol";
+import MapBrowserEvent from "ol/MapBrowserEvent";
 import { toLonLat } from "ol/proj";
 import { onClickOutside, onKeyStroke } from "@vueuse/core";
 import { unByKey } from "ol/Observable";

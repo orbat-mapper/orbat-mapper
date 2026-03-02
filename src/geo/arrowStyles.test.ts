@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { getLineAngle, createArrowMarkerImage, createArrowStyles } from "./arrowStyles";
-import { LineString, Point, Polygon } from "ol/geom";
+import LineString from "ol/geom/LineString";
+import Point from "ol/geom/Point";
+import Polygon from "ol/geom/Polygon";
 import Style from "ol/style/Style";
 import RegularShape from "ol/style/RegularShape";
 import CircleStyle from "ol/style/Circle";

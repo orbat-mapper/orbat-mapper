@@ -7,7 +7,7 @@ import Translate from "ol/interaction/Translate";
 import Snap from "ol/interaction/Snap";
 import Select from "ol/interaction/Select";
 import Layer from "ol/layer/Layer";
-import { Modify } from "ol/interaction";
+import Modify from "ol/interaction/Modify";
 import { getSnappableFeatures, useOlEvent } from "./openlayersHelpers";
 import {
   click as clickCondition,
@@ -15,8 +15,8 @@ import {
   primaryAction,
 } from "ol/events/condition";
 import type Feature from "ol/Feature";
-import { Collection } from "ol";
-import { Geometry } from "ol/geom";
+import Collection from "ol/Collection";
+import Geometry from "ol/geom/Geometry";
 
 export type DrawType = "Point" | "LineString" | "Polygon" | "Circle";
 
