@@ -11,6 +11,9 @@ const mocks = vi.hoisted(() => ({
   drawHistorySpy: vi.fn(),
   drawRangeRingsSpy: vi.fn(),
   redrawSelectedUnitsSpy: vi.fn(),
+  unitLayerChangedSpy: vi.fn(),
+  labelLayerChangedSpy: vi.fn(),
+  undoRedoCallback: null as null | (() => void),
   injectedScenario: null as any,
   hoveredFeatures: { value: [] as any[] },
   hoveredPixel: { value: null as number[] | null },
@@ -31,6 +34,7 @@ vi.mock("@/composables/geoUnitLayers", () => ({
   useRotateInteraction: () => ({ rotateInteraction: { setActive: vi.fn() } }),
   useUnitLayer: () => ({
     unitLayer: {
+      changed: mocks.unitLayerChangedSpy,
       getSource: () => ({
         getExtent: () => undefined,
         isEmpty: () => true,
@@ -38,7 +42,7 @@ vi.mock("@/composables/geoUnitLayers", () => ({
     },
     drawUnits: mocks.drawUnitsSpy,
     updateUnitPositions: mocks.updateUnitPositionsSpy,
-    labelLayer: {},
+    labelLayer: { changed: mocks.labelLayerChangedSpy },
   }),
   useUnitSelectInteraction: () => ({
     unitSelectInteraction: {},
@@ -208,6 +212,8 @@ describe("ScenarioMapLogic", () => {
     mocks.drawHistorySpy.mockClear();
     mocks.drawRangeRingsSpy.mockClear();
     mocks.redrawSelectedUnitsSpy.mockClear();
+    mocks.unitLayerChangedSpy.mockClear();
+    mocks.labelLayerChangedSpy.mockClear();
 
     const settingsCounter = ref(0);
     const featureCounter = ref(0);
@@ -216,6 +222,10 @@ describe("ScenarioMapLogic", () => {
     mocks.injectedScenario = {
       geo: { everyVisibleUnit: ref([]) },
       store: {
+        onUndoRedo: (cb: () => void) => {
+          mocks.undoRedoCallback = cb;
+          return () => {};
+        },
         state: {
           get settingsStateCounter() {
             return settingsCounter.value;
@@ -263,6 +273,8 @@ describe("ScenarioMapLogic", () => {
     mocks.drawHistorySpy.mockClear();
     mocks.drawRangeRingsSpy.mockClear();
     mocks.redrawSelectedUnitsSpy.mockClear();
+    mocks.unitLayerChangedSpy.mockClear();
+    mocks.labelLayerChangedSpy.mockClear();
 
     const settingsCounter = ref(0);
     const featureCounter = ref(0);
@@ -271,6 +283,10 @@ describe("ScenarioMapLogic", () => {
     mocks.injectedScenario = {
       geo: { everyVisibleUnit: ref([]) },
       store: {
+        onUndoRedo: (cb: () => void) => {
+          mocks.undoRedoCallback = cb;
+          return () => {};
+        },
         state: {
           get settingsStateCounter() {
             return settingsCounter.value;
@@ -313,6 +329,54 @@ describe("ScenarioMapLogic", () => {
     expect(mocks.redrawSelectedUnitsSpy.mock.calls.length).toBe(selectedBefore + 1);
   });
 
+  it("forces unit and label layer repaint on undo/redo", () => {
+    mocks.hoveredFeatures.value = [];
+    mocks.hoveredPixel.value = null;
+    mocks.drawUnitsSpy.mockClear();
+    mocks.updateUnitPositionsSpy.mockClear();
+    mocks.clearUnitStyleCacheSpy.mockClear();
+    mocks.drawHistorySpy.mockClear();
+    mocks.drawRangeRingsSpy.mockClear();
+    mocks.redrawSelectedUnitsSpy.mockClear();
+    mocks.unitLayerChangedSpy.mockClear();
+    mocks.labelLayerChangedSpy.mockClear();
+    mocks.undoRedoCallback = null;
+
+    mocks.injectedScenario = {
+      geo: { everyVisibleUnit: ref([]) },
+      store: {
+        onUndoRedo: (cb: () => void) => {
+          mocks.undoRedoCallback = cb;
+          return () => {};
+        },
+        state: {
+          settingsStateCounter: 0,
+          featureStateCounter: 0,
+          unitStateCounter: 0,
+          currentTime: 0,
+          boundingBox: null,
+        },
+      },
+    };
+
+    const olMap = {
+      addLayer: vi.fn(),
+      addInteraction: vi.fn(),
+      getView: () => ({ fit: vi.fn() }),
+    } as any;
+
+    mount(ScenarioMapLogic, {
+      props: { olMap },
+    });
+
+    const undoRedoCallback = mocks.undoRedoCallback as (() => void) | null;
+    expect(undoRedoCallback).toBeTypeOf("function");
+    if (undoRedoCallback) undoRedoCallback();
+
+    expect(mocks.unitLayerChangedSpy).toHaveBeenCalledTimes(1);
+    expect(mocks.labelLayerChangedSpy).toHaveBeenCalledTimes(1);
+  });
+
   it("shows hover tooltip for top-most named scenario feature", async () => {
     vi.useFakeTimers();
     mocks.hoveredFeatures.value = [{ getId: () => "feature-1" }];
@@ -323,6 +387,10 @@ describe("ScenarioMapLogic", () => {
         getFeatureById: vi.fn(() => ({ feature: { meta: { name: "Bridge Alpha" } } })),
       },
       store: {
+        onUndoRedo: (cb: () => void) => {
+          mocks.undoRedoCallback = cb;
+          return () => {};
+        },
         state: {
           settingsStateCounter: 0,
           featureStateCounter: 0,
@@ -360,6 +428,10 @@ describe("ScenarioMapLogic", () => {
         getFeatureById: vi.fn(() => ({ feature: { meta: { name: "" } } })),
       },
       store: {
+        onUndoRedo: (cb: () => void) => {
+          mocks.undoRedoCallback = cb;
+          return () => {};
+        },
         state: {
           settingsStateCounter: 0,
           featureStateCounter: 0,
@@ -402,6 +474,10 @@ describe("ScenarioMapLogic", () => {
         }),
       },
       store: {
+        onUndoRedo: (cb: () => void) => {
+          mocks.undoRedoCallback = cb;
+          return () => {};
+        },
         state: {
           settingsStateCounter: 0,
           featureStateCounter: 0,

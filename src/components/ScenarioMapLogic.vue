@@ -55,7 +55,7 @@ const emit = defineEmits<{
 
 const {
   geo,
-  store: { state },
+  store: { state, onUndoRedo },
 } = injectStrict(activeScenarioKey);
 
 const mapRef = shallowRef<OLMap>();
@@ -221,6 +221,13 @@ function updateUnitsOnMap() {
   redrawSelectedUnits();
   drawRangeRings();
 }
+
+onUndoRedo(() => {
+  // Undo/redo can restore style-affecting unit fields without changing geometry.
+  // Force layer repaint so cached styles are recomputed for non-selected units.
+  unitLayer.changed();
+  labelLayer.changed();
+});
 
 watch(
   [
