@@ -41,7 +41,7 @@ const {
   <div class="flex flex-col items-center">
     <p
       v-if="!hideTime"
-      class="pointer-events-none font-mono text-xl font-bold text-gray-100 [text-shadow:black_0_0_2px] sm:text-2xl"
+      class="pointer-events-none font-mono text-base font-bold text-gray-100 [text-shadow:black_0_0_2px] sm:text-2xl"
     >
       {{ fmt.scenarioFormatter.format(state.currentTime) }}
     </p>

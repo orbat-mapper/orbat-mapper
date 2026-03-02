@@ -232,10 +232,10 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
         v-if="mapRef"
         class="pointer-events-none absolute inset-0 flex flex-col justify-between"
       >
-        <header class="flex flex-none items-center justify-end p-2">
+        <header class="flex flex-none items-center justify-end sm:p-2">
           <MapTimeController
             class="pointer-events-auto"
-            :show-controls="isMobile ? ui.mobilePanelOpen : false"
+            :show-controls="false"
             @open-time-modal="openTimeDialog()"
             @show-settings="emit('show-settings')"
             @inc-day="onIncDay()"
@@ -245,10 +245,10 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
           />
           <IconButton
             @click.stop="onShowPlaceSearch"
-            class="pointer-events-auto ml-2"
+            class="pointer-events-auto mr-2 sm:ml-2"
             title="Search"
           >
-            <MagnifyingGlassIcon class="text-muted-foreground h-5 w-5" />
+            <MagnifyingGlassIcon class="h-5 w-5" />
           </IconButton>
         </header>
         <section v-if="!isMobile" class="flex flex-auto justify-between p-2">

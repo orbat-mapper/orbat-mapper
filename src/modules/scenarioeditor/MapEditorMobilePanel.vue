@@ -57,20 +57,19 @@ const activeTabIndexString = computed({
   set: (v) => (activeTabIndex.value = parseInt(v)),
 });
 
-const swipeUpEl = ref<HTMLElement | null>(null);
-const swipeDownEl = ref<HTMLElement | null>(null);
-
-const { isSwiping, direction } = useSwipe(swipeUpEl);
-const { isSwiping: isSwipingDown, direction: downDirection } = useSwipe(swipeDownEl);
+const swipeControlsEl = ref<HTMLElement | null>(null);
+const { isSwiping, direction } = useSwipe(swipeControlsEl);
 
 watch(isSwiping, (swiping) => {
-  if (swiping && direction.value === "up") {
+  if (swiping && direction.value === "up" && !showBottomPanel.value) {
     showBottomPanel.value = true;
   }
-});
-
-watch(isSwipingDown, (swiping) => {
-  if (swiping && downDirection.value === "down") {
+  if (
+    swiping &&
+    direction.value === "down" &&
+    showBottomPanel.value &&
+    !isResizing.value
+  ) {
     showBottomPanel.value = false;
   }
 });
@@ -101,33 +100,55 @@ const panelStyle = computed(() =>
     : undefined,
 );
 
-const resizeHandleRef = ref<HTMLButtonElement | null>(null);
+const resizeHandleRef = ref<HTMLElement | null>(null);
 const isResizing = ref(false);
+let didDragResize = false;
+let ignoreNextHandleClick = false;
 let startY = 0;
 let startHeight = 0;
+const DRAG_THRESHOLD = 8;
 
 function onResizePointerDown(event: PointerEvent) {
+  if (!showBottomPanel.value) return;
   startY = event.clientY;
   startHeight = clampPanelHeight(mobilePanelHeight.value);
+  didDragResize = false;
   resizeHandleRef.value?.setPointerCapture(event.pointerId);
   isResizing.value = true;
 }
 
 function onResizePointerUp(event: PointerEvent) {
-  if (!isResizing.value) return;
+  if (!showBottomPanel.value || !isResizing.value) return;
   if (resizeHandleRef.value?.hasPointerCapture(event.pointerId)) {
     resizeHandleRef.value.releasePointerCapture(event.pointerId);
   }
+  if (!didDragResize) {
+    showBottomPanel.value = false;
+    ignoreNextHandleClick = true;
+  }
   isResizing.value = false;
+  didDragResize = false;
 }
 
 function onResizePointerMove(event: PointerEvent) {
-  if (!isResizing.value) return;
+  if (!showBottomPanel.value || !isResizing.value) return;
   const deltaY = startY - event.clientY;
+  if (!didDragResize && Math.abs(deltaY) < DRAG_THRESHOLD) {
+    return;
+  }
+  didDragResize = true;
   mobilePanelHeight.value = clampPanelHeight(startHeight + deltaY);
 }
 
 const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
+
+function onHandleClick() {
+  if (ignoreNextHandleClick) {
+    ignoreNextHandleClick = false;
+    return;
+  }
+  toggleBottomPanel();
+}
 </script>
 
 <template>
@@ -136,13 +157,23 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
     :class="[showBottomPanel ? '' : 'h-12']"
     :style="panelStyle"
   >
-    <div v-show="!showBottomPanel" class="flex h-full items-center" ref="swipeUpEl">
+    <div id="mob-controls" class="flex h-12 items-center" ref="swipeControlsEl">
       <div
-        class="relative flex flex-1 items-center justify-center"
-        @click="toggleBottomPanel()"
+        ref="resizeHandleRef"
+        role="separator"
+        aria-orientation="horizontal"
+        :aria-label="showBottomPanel ? 'Resize or collapse panel' : 'Expand panel'"
+        class="active:bg-muted/40 relative flex flex-1 touch-none items-center justify-center"
+        :class="showBottomPanel ? 'cursor-row-resize' : 'cursor-pointer'"
+        @click="onHandleClick"
+        @pointerdown="onResizePointerDown"
+        @pointerup="onResizePointerUp"
+        @pointercancel="onResizePointerUp"
+        @pointermove="throttledResizePointerMove"
       >
         <IconButton class="">
-          <IconChevronDoubleUp class="h-6 w-6" @click="toggleBottomPanel()" />
+          <GripHorizontal v-if="showBottomPanel" class="size-6" />
+          <IconChevronDoubleUp v-else class="size-6" />
         </IconButton>
       </div>
 
@@ -157,25 +188,6 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
         @prev-event="emit('prev-event')"
       />
     </div>
-    <button
-      v-show="showBottomPanel"
-      ref="resizeHandleRef"
-      type="button"
-      role="separator"
-      aria-label="Resize panel"
-      aria-orientation="horizontal"
-      class="active:bg-muted/40 flex h-10 w-full cursor-row-resize touch-none items-center justify-center"
-      @pointerdown="onResizePointerDown"
-      @pointerup="onResizePointerUp"
-      @pointercancel="onResizePointerUp"
-      @pointermove="throttledResizePointerMove"
-    >
-      <span
-        class="bg-muted text-foreground ring-border/70 inline-flex items-center justify-center rounded-full px-3 py-1 shadow-sm ring-1"
-      >
-        <GripHorizontal class="h-5 w-5" />
-      </span>
-    </button>
     <ScrollTabs
       v-model="activeTabIndexString"
       :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Filter', 'Details']"
