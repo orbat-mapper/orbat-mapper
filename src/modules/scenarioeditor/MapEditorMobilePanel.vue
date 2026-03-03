@@ -103,10 +103,11 @@ const panelStyle = computed(() =>
 const resizeHandleRef = ref<HTMLElement | null>(null);
 const isResizing = ref(false);
 let didDragResize = false;
-let ignoreNextHandleClick = false;
+let suppressHandleClickUntil = 0;
 let startY = 0;
 let startHeight = 0;
 const DRAG_THRESHOLD = 8;
+const HANDLE_CLICK_SUPPRESS_MS = 250;
 
 function onResizePointerDown(event: PointerEvent) {
   if (!showBottomPanel.value) return;
@@ -122,9 +123,10 @@ function onResizePointerUp(event: PointerEvent) {
   if (resizeHandleRef.value?.hasPointerCapture(event.pointerId)) {
     resizeHandleRef.value.releasePointerCapture(event.pointerId);
   }
+  // Prevent the synthetic click that may follow pointerup from re-toggling.
+  suppressHandleClickUntil = performance.now() + HANDLE_CLICK_SUPPRESS_MS;
   if (!didDragResize) {
     showBottomPanel.value = false;
-    ignoreNextHandleClick = true;
   }
   isResizing.value = false;
   didDragResize = false;
@@ -143,8 +145,7 @@ function onResizePointerMove(event: PointerEvent) {
 const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
 
 function onHandleClick() {
-  if (ignoreNextHandleClick) {
-    ignoreNextHandleClick = false;
+  if (performance.now() < suppressHandleClickUntil) {
     return;
   }
   toggleBottomPanel();
