@@ -6,7 +6,6 @@ import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import CloseButton from "@/components/CloseButton.vue";
-import IconButton from "@/components/IconButton.vue";
 import { computed, defineAsyncComponent, ref, watch } from "vue";
 import { useSwipe, useThrottleFn, useToggle, useWindowSize } from "@vueuse/core";
 import MapTimeController from "@/components/MapTimeController.vue";
@@ -102,54 +101,32 @@ const panelStyle = computed(() =>
 
 const resizeHandleRef = ref<HTMLElement | null>(null);
 const isResizing = ref(false);
-let didDragResize = false;
-let suppressHandleClickUntil = 0;
 let startY = 0;
 let startHeight = 0;
-const DRAG_THRESHOLD = 8;
-const HANDLE_CLICK_SUPPRESS_MS = 250;
 
 function onResizePointerDown(event: PointerEvent) {
   if (!showBottomPanel.value) return;
   startY = event.clientY;
   startHeight = clampPanelHeight(mobilePanelHeight.value);
-  didDragResize = false;
   resizeHandleRef.value?.setPointerCapture(event.pointerId);
   isResizing.value = true;
 }
 
 function onResizePointerUp(event: PointerEvent) {
-  if (!showBottomPanel.value || !isResizing.value) return;
+  if (!isResizing.value) return;
   if (resizeHandleRef.value?.hasPointerCapture(event.pointerId)) {
     resizeHandleRef.value.releasePointerCapture(event.pointerId);
   }
-  // Prevent the synthetic click that may follow pointerup from re-toggling.
-  suppressHandleClickUntil = performance.now() + HANDLE_CLICK_SUPPRESS_MS;
-  if (!didDragResize) {
-    showBottomPanel.value = false;
-  }
   isResizing.value = false;
-  didDragResize = false;
 }
 
 function onResizePointerMove(event: PointerEvent) {
   if (!showBottomPanel.value || !isResizing.value) return;
   const deltaY = startY - event.clientY;
-  if (!didDragResize && Math.abs(deltaY) < DRAG_THRESHOLD) {
-    return;
-  }
-  didDragResize = true;
   mobilePanelHeight.value = clampPanelHeight(startHeight + deltaY);
 }
 
 const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
-
-function onHandleClick() {
-  if (performance.now() < suppressHandleClickUntil) {
-    return;
-  }
-  toggleBottomPanel();
-}
 </script>
 
 <template>
@@ -160,26 +137,36 @@ function onHandleClick() {
   >
     <div id="mob-controls" class="flex h-12 items-center" ref="swipeControlsEl">
       <div
+        v-if="showBottomPanel"
         ref="resizeHandleRef"
+        data-testid="mobile-panel-resize-strip"
         role="separator"
         aria-orientation="horizontal"
-        :aria-label="showBottomPanel ? 'Resize or collapse panel' : 'Expand panel'"
+        aria-label="Resize panel"
         class="active:bg-muted/40 relative flex flex-1 touch-none items-center justify-center"
-        :class="showBottomPanel ? 'cursor-row-resize' : 'cursor-pointer'"
-        @click="onHandleClick"
+        :class="showBottomPanel ? 'cursor-row-resize' : ''"
         @pointerdown="onResizePointerDown"
         @pointerup="onResizePointerUp"
         @pointercancel="onResizePointerUp"
         @pointermove="throttledResizePointerMove"
       >
-        <IconButton class="">
-          <GripHorizontal v-if="showBottomPanel" class="size-6" />
-          <IconChevronDoubleUp v-else class="size-6" />
-        </IconButton>
+        <GripHorizontal class="size-6" />
       </div>
 
+      <button
+        type="button"
+        data-testid="mobile-panel-toggle"
+        class="active:bg-muted/40 flex h-full items-center justify-center"
+        :class="showBottomPanel ? 'w-12 flex-none' : 'flex-1'"
+        :aria-label="showBottomPanel ? 'Collapse panel' : 'Expand panel'"
+        :aria-expanded="showBottomPanel"
+        @click="toggleBottomPanel()"
+      >
+        <IconChevronDoubleUp class="size-6" :class="{ 'rotate-180': showBottomPanel }" />
+      </button>
+
       <MapTimeController
-        class="flex-none"
+        class="ml-auto flex-none"
         hide-time
         @open-time-modal="emit('open-time-modal')"
         @show-settings="emit('show-settings')"
