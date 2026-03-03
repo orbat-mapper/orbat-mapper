@@ -12,7 +12,7 @@ const props = defineProps({
   description: String,
   items: { type: Array as PropType<SelectItem[]> },
   values: { type: Array as PropType<(string | number)[]> },
-  extraClass: [String, Array, Object, Function, Boolean],
+  extraClass: [String, Array, Object, Function],
 });
 
 const selectedValue = defineModel<string | number>();

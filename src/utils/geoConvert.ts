@@ -30,7 +30,7 @@ export function getCoordinateFormatFunction(
   return (v: any) => formatDecimalDegrees(v, 3);
 }
 
-export function fixExtent(extent: number[] = []) {
+export function fixExtent(extent: number[] | null | undefined = []) {
   if (!extent || extent.length === 0) return;
   const [minx, miny, maxx, maxy] = extent;
   return [

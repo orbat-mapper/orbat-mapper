@@ -38,7 +38,15 @@ const marker = computed((): Partial<MarkerStyleSpec> => {
   };
 });
 
-function updateValue(name: keyof MarkerStyleSpec, value: string | number | boolean) {
+function updateValue(name: keyof MarkerStyleSpec, value: unknown) {
+  if (
+    typeof value !== "string" &&
+    typeof value !== "number" &&
+    typeof value !== "boolean"
+  ) {
+    return;
+  }
+
   if (name === "marker-color") {
     emit("update", {
       style: {
