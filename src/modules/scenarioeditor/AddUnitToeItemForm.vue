@@ -71,13 +71,17 @@ watch(
   },
   { immediate: true },
 );
+
+const categoryLabel = computed(() =>
+  props.mode === "equipment" ? "Equipment category" : "Personnel category",
+);
 </script>
 
 <template>
   <form @submit.prevent="onSubmit" class="" @keyup.esc.stop="emit('cancel')">
     <h3 class="text-sm font-semibold">{{ heading }}</h3>
     <section v-if="itemCategories.length" class="mt-4 grid grid-cols-2 gap-6">
-      <SimpleSelect label="Supply category" v-model="form.id" :items="itemCategories" />
+      <SimpleSelect :label="categoryLabel" v-model="form.id" :items="itemCategories" />
       <InputGroup label="Initial value" type="number" v-model="form.count" />
     </section>
     <section v-else class="mt-4">
