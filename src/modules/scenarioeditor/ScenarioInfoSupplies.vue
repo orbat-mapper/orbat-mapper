@@ -54,16 +54,11 @@ const addForm = ref<Omit<NSupplyCategory, "id">>({
   uom: "",
 });
 
-function onSubmit(e: NSupplyCategory) {
+function onSubmit(e: NSupplyCategory, nextEditedId: string | null = null) {
   const { id, ...rest } = e;
   unitActions.updateSupplyCategory(id, rest);
   if (uiStore.goToNextOnSubmit) {
-    const currentIndex = supplies.value.findIndex((sc) => sc.id === id);
-    if (currentIndex < supplies.value.length - 1) {
-      editedId.value = supplies.value[currentIndex + 1].id;
-    } else {
-      editedId.value = null;
-    }
+    editedId.value = nextEditedId;
   } else {
     editedId.value = null;
   }
@@ -136,11 +131,11 @@ function onAddSubmit(formData: Omit<NSupplyCategory, "id">) {
       v-model:selected="selectedSupplies"
       v-model:editMode="editMode"
     >
-      <template #inline-form="{ row }">
+      <template #inline-form="{ row, nextEditedId }">
         <InlineFormWrapper class="pr-6">
           <AddSupplyCategoryForm
             :model-value="row"
-            @submit="onSubmit($event as NSupplyCategory)"
+            @submit="onSubmit($event as NSupplyCategory, nextEditedId)"
             @cancel="cancelEdit()"
             heading="Edit supply category"
             showNextToggle

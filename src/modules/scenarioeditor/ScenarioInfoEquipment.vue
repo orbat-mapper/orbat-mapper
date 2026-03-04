@@ -35,16 +35,11 @@ const columns: ColumnDef<NEquipmentData>[] = [
 
 const addForm = ref<Omit<NEquipmentData, "id">>({ name: "", description: "" });
 
-function onSubmit(e: NEquipmentData) {
+function onSubmit(e: NEquipmentData, nextEditedId: string | null = null) {
   const { id, ...rest } = e;
   scn.unitActions.updateEquipment(id, rest);
   if (uiStore.goToNextOnSubmit) {
-    const currentIndex = equipment.value.findIndex((sc) => sc.id === id);
-    if (currentIndex < equipment.value.length - 1) {
-      editedId.value = equipment.value[currentIndex + 1].id;
-    } else {
-      editedId.value = null;
-    }
+    editedId.value = nextEditedId;
   } else {
     editedId.value = null;
   }
@@ -117,11 +112,11 @@ function onDelete() {
       v-model:editMode="editMode"
       :tableStore="tableStore"
     >
-      <template #inline-form="{ row }">
+      <template #inline-form="{ row, nextEditedId }">
         <InlineFormWrapper class="pr-6">
           <AddNameDescriptionForm
             :model-value="row"
-            @submit="onSubmit($event as NEquipmentData)"
+            @submit="onSubmit($event as NEquipmentData, nextEditedId)"
             @cancel="cancelEdit()"
             heading="Edit equipment category"
             showNextToggle
