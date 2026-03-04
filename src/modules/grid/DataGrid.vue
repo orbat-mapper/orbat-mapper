@@ -52,6 +52,8 @@ const query = ref("");
 const debouncedQuery = useDebounce(query, 200);
 
 const rowSelection = ref<RowSelectionState>({});
+const tableCheckboxClass =
+  "m-2 size-4 cursor-pointer rounded border-foreground/30 bg-background focus-visible:ring-ring/50 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background checked:border-primary checked:bg-primary indeterminate:border-primary indeterminate:bg-primary dark:checked:border-primary-foreground dark:checked:bg-primary-foreground dark:indeterminate:border-primary-foreground dark:indeterminate:bg-primary-foreground disabled:cursor-not-allowed disabled:opacity-50 sm:left-6";
 
 const selectColumn: ColumnDef<any, any> = {
   id: "select",
@@ -62,7 +64,7 @@ const selectColumn: ColumnDef<any, any> = {
       type: "checkbox",
       checked: table.getIsAllRowsSelected(),
       indeterminate: table.getIsSomeRowsSelected(),
-      class: "m-2 rounded border-input accent-primary focus:ring-primary sm:left-6",
+      class: tableCheckboxClass,
       onChange: table.getToggleAllRowsSelectedHandler(),
     });
   },
@@ -72,7 +74,7 @@ const selectColumn: ColumnDef<any, any> = {
       checked: row.getIsSelected(),
       disabled: !row.getCanSelect(),
       indeterminate: !props.noIndeterminate ? row.getIsSomeSelected() : undefined,
-      class: "m-2 rounded border-input accent-primary focus:ring-primary sm:left-6",
+      class: tableCheckboxClass,
       onChange: row.getToggleSelectedHandler(),
     });
   },
