@@ -21,7 +21,7 @@ const uiStore = useUiStore();
       </ToggleField>
     </div>
     <div class="flex items-center gap-x-2">
-      <Button variant="link" @click="emit('cancel')">
+      <Button type="button" variant="link" @click="emit('cancel')">
         {{ cancelLabel }}
       </Button>
       <Button type="submit">
