@@ -6,6 +6,7 @@ import { type ScenarioMetadata, useIndexedDb } from "@/scenariostore/localdb";
 import { LANDING_PAGE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { nanoid } from "@/utils";
 import type { EncryptedScenario, Scenario, Unit } from "@/types/scenarioModels";
+import { consumeImportedScenario } from "@/composables/importScenarioTransfer";
 import DecryptScenarioModal from "@/components/DecryptScenarioModal.vue";
 import {
   Card,
@@ -42,9 +43,69 @@ const showDecryptModal = ref(false);
 const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
 const existingScenario = ref<ScenarioMetadata | null>(null);
 
+function getQueryParam(value: unknown): string {
+  if (Array.isArray(value)) return value[0] ?? "";
+  return typeof value === "string" ? value : "";
+}
+
+const importSource = computed(() => {
+  const source = getQueryParam(route.query.source);
+  if (source === "clipboard" || source === "external") return source;
+  return "url";
+});
+
+const importDescription = computed(() => {
+  if (importSource.value === "clipboard") {
+    return "A scenario was pasted from your clipboard.";
+  }
+  if (importSource.value === "external") {
+    return "A scenario was loaded from a local file or URL.";
+  }
+  return "A scenario has been shared with you via URL.";
+});
+
+const loadingMessage = computed(() => {
+  if (importSource.value !== "url") return "Loading scenario...";
+  return route.query.id ? "Downloading scenario..." : "Decoding scenario data...";
+});
+
 onMounted(async () => {
-  const dataParam = route.query.data as string;
-  const idParam = route.query.id as string;
+  const sourceParam = getQueryParam(route.query.source);
+  const tokenParam = getQueryParam(route.query.token);
+  const dataParam = getQueryParam(route.query.data);
+  const idParam = getQueryParam(route.query.id);
+
+  if (sourceParam === "clipboard" || sourceParam === "external") {
+    try {
+      if (!tokenParam) {
+        throw new Error(
+          sourceParam === "clipboard"
+            ? "Clipboard scenario is no longer available. Paste again."
+            : "Imported scenario is no longer available. Load it again.",
+        );
+      }
+      const loadedScenario = consumeImportedScenario(tokenParam);
+      if (!loadedScenario) {
+        throw new Error(
+          sourceParam === "clipboard"
+            ? "Clipboard scenario is no longer available. Paste again."
+            : "Imported scenario is no longer available. Load it again.",
+        );
+      }
+      if (loadedScenario.type === "ORBAT-mapper-encrypted") {
+        currentEncryptedScenario.value = loadedScenario as EncryptedScenario;
+        showDecryptModal.value = true;
+      } else {
+        await processLoadedScenario(loadedScenario as Scenario);
+      }
+    } catch (e: any) {
+      console.error("Failed to load clipboard scenario", e);
+      error.value = e?.message ?? "Failed to load clipboard scenario.";
+    } finally {
+      isLoading.value = false;
+    }
+    return;
+  }
 
   if (!dataParam && !idParam) {
     error.value = "No scenario data provided in the URL.";
@@ -59,8 +120,8 @@ onMounted(async () => {
 async function handleDownload() {
   isWaitingForDownload.value = false;
   isLoading.value = true;
-  const dataParam = route.query.data as string;
-  const idParam = route.query.id as string;
+  const dataParam = getQueryParam(route.query.data);
+  const idParam = getQueryParam(route.query.id);
 
   try {
     let loadedScenario: any;
@@ -96,6 +157,8 @@ async function handleDownload() {
 
 async function processLoadedScenario(scenario: Scenario) {
   scenarioData.value = scenario;
+  hasConflict.value = false;
+  existingScenario.value = null;
 
   // Check if scenario with same ID exists
   if (scenarioData.value && scenarioData.value.id) {
@@ -108,6 +171,8 @@ async function processLoadedScenario(scenario: Scenario) {
 
 async function onDecrypted(scenario: Scenario) {
   await processLoadedScenario(scenario);
+  currentEncryptedScenario.value = null;
+  showDecryptModal.value = false;
 }
 
 const scenarioName = computed(() => scenarioData.value?.name ?? "Unnamed Scenario");
@@ -228,9 +293,7 @@ async function handleCreateCopy() {
       <Card class="w-full">
         <CardHeader>
           <CardTitle class="text-2xl">Import Scenario</CardTitle>
-          <CardDescription>
-            A scenario has been shared with you via URL.
-          </CardDescription>
+          <CardDescription>{{ importDescription }}</CardDescription>
         </CardHeader>
 
         <CardContent class="space-y-6">
@@ -254,11 +317,7 @@ async function handleCreateCopy() {
           <!-- Loading State -->
           <div v-else-if="isLoading" class="flex flex-col items-center gap-4 py-8">
             <LoaderCircleIcon class="text-muted-foreground size-8 animate-spin" />
-            <p class="text-muted-foreground">
-              {{
-                route.query.id ? "Downloading scenario..." : "Decoding scenario data..."
-              }}
-            </p>
+            <p class="text-muted-foreground">{{ loadingMessage }}</p>
           </div>
 
           <!-- Error State -->

@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 
-import { MAP_EDIT_MODE_ROUTE, NEW_SCENARIO_ROUTE } from "@/router/names";
+import {
+  IMPORT_SCENARIO_ROUTE,
+  MAP_EDIT_MODE_ROUTE,
+  NEW_SCENARIO_ROUTE,
+} from "@/router/names";
 import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
 import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromUrlPanel.vue";
 import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
@@ -12,6 +16,8 @@ import { defineAsyncComponent, ref } from "vue";
 import { useEventListener } from "@vueuse/core";
 import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
 import LoadScenarioFromClipboardPanel from "@/modules/scenarioeditor/LoadScenarioFromClipboardPanel.vue";
+import { saveImportedScenario } from "@/composables/importScenarioTransfer";
+import { useIndexedDb } from "@/scenariostore/localdb";
 
 const DecryptScenarioModal = defineAsyncComponent(
   () => import("@/components/DecryptScenarioModal.vue"),
@@ -33,18 +39,51 @@ const newScenario = () => {
 
 const showDecryptModal = ref(false);
 const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
+const decryptedScenarioSource = ref<"clipboard" | "external">("external");
 
-function onLoaded(scenario: Scenario | EncryptedScenario) {
+async function routeToImportPreview(
+  scenario: Scenario,
+  source: "clipboard" | "external",
+) {
+  const token = saveImportedScenario(scenario);
+  await router.push({
+    name: IMPORT_SCENARIO_ROUTE,
+    query: { token, source },
+  });
+}
+
+async function handleLoadedScenario(
+  scenario: Scenario | EncryptedScenario,
+  source: "clipboard" | "external",
+) {
   if (scenario.type === "ORBAT-mapper-encrypted") {
     currentEncryptedScenario.value = scenario as EncryptedScenario;
+    decryptedScenarioSource.value = source;
     showDecryptModal.value = true;
     return;
   }
-  loadScenario(scenario as Scenario);
+
+  const { getScenarioInfo } = await useIndexedDb();
+  const existingScenario = await getScenarioInfo(scenario.id);
+
+  if (existingScenario) {
+    await routeToImportPreview(scenario as Scenario, source);
+    return;
+  }
+
+  await loadScenario(scenario as Scenario);
 }
 
-function onDecrypted(scenario: Scenario) {
-  loadScenario(scenario);
+async function onExternalLoaded(scenario: Scenario | EncryptedScenario) {
+  await handleLoadedScenario(scenario, "external");
+}
+
+async function onClipboardLoaded(scenario: Scenario | EncryptedScenario) {
+  await handleLoadedScenario(scenario, "clipboard");
+}
+
+async function onDecrypted(scenario: Scenario) {
+  await handleLoadedScenario(scenario, decryptedScenarioSource.value);
   showDecryptModal.value = false;
   currentEncryptedScenario.value = null;
 }
@@ -70,7 +109,7 @@ useEventListener("paste", (event: ClipboardEvent) => {
 </script>
 
 <template>
-  <div class="bg-background relative py-5">
+  <div class="bg-background relative py-5" data-testid="landing-scenarios">
     <div class="mx-auto max-w-3xl p-4 text-center">
       <h2 class="text-heading text-3xl font-bold tracking-tight">Scenarios</h2>
     </div>
@@ -170,13 +209,16 @@ useEventListener("paste", (event: ClipboardEvent) => {
           </button>
         </li>
         <li class="col-span-1 flex">
-          <LoadScenarioPanel @loaded="onLoaded" />
+          <LoadScenarioPanel @loaded="onExternalLoaded" />
         </li>
         <li class="col-span-1 flex">
-          <LoadScenarioFromUrlPanel @loaded="onLoaded" />
+          <LoadScenarioFromUrlPanel @loaded="onExternalLoaded" />
         </li>
         <li class="col-span-1 flex">
-          <LoadScenarioFromClipboardPanel ref="clipboardPanelRef" @loaded="onLoaded" />
+          <LoadScenarioFromClipboardPanel
+            ref="clipboardPanelRef"
+            @loaded="onClipboardLoaded"
+          />
         </li>
       </ul>
     </section>
