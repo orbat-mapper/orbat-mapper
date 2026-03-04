@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fixed issue where layer edit form "Change" and clear timestamp buttons submitted the form and closed it immediately.
+- Fixed an issue where TO&E would not update if a unit had no state entries.
+- Fixed an issue where "Go to next on save" in TO&E edit mode would not work for sorted tables.
 
 ## February 2026
 

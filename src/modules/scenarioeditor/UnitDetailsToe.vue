@@ -179,6 +179,7 @@ function onAddSubmit(toeMode: ToeMode, formData: NUnitSupply) {
 function updateItemCount(
   toeMode: ToeMode,
   { id: itemId, count }: NUnitEquipment | NUnitPersonnel,
+  nextEditedId: string | null = null,
 ) {
   groupUpdate(() => {
     selectedUnitIds.value.forEach((unitId) => {
@@ -190,12 +191,13 @@ function updateItemCount(
     });
   });
   triggerRef(selectedUnitIds);
-  handleNextEditedId(toeMode, itemId);
+  handleNextEditedId(toeMode, nextEditedId);
 }
 
 function updateItemOnHand(
   toeMode: ToeMode,
   { id: itemId, onHand }: NUnitEquipment | NUnitPersonnel,
+  nextEditedId: string | null = null,
 ) {
   groupUpdate(() => {
     selectedUnitIds.value.forEach((unitId) => {
@@ -219,12 +221,13 @@ function updateItemOnHand(
     });
   });
   triggerRef(selectedUnitIds);
-  handleNextEditedId(toeMode, itemId);
+  handleNextEditedId(toeMode, nextEditedId);
 }
 
 function diffItemOnHand(
   toeMode: ToeMode,
   { id: itemId, onHand }: NUnitEquipment | NUnitPersonnel,
+  nextEditedId: string | null = null,
 ) {
   groupUpdate(() => {
     selectedUnitIds.value.forEach((unitId) => {
@@ -248,7 +251,7 @@ function diffItemOnHand(
     });
   });
   triggerRef(selectedUnitIds);
-  handleNextEditedId(toeMode, itemId);
+  handleNextEditedId(toeMode, nextEditedId);
 }
 
 function onDeleteItems(toeMode: ToeMode) {
@@ -270,7 +273,7 @@ function onDeleteItems(toeMode: ToeMode) {
   triggerRef(selectedUnitIds);
 }
 
-function handleNextEditedId(mode: ToeMode, itemId: string) {
+function handleNextEditedId(mode: ToeMode, nextEditedId: string | null) {
   if (!uiStore.goToNextOnSubmit) {
     if (mode === "equipment") {
       editedEquipmentId.value = null;
@@ -280,19 +283,9 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
     return;
   }
   if (mode === "equipment") {
-    const currentIndex = aggregatedEquipment.value.findIndex((e) => e.id === itemId);
-    if (currentIndex < aggregatedEquipment.value.length - 1) {
-      editedEquipmentId.value = aggregatedEquipment.value[currentIndex + 1].id;
-    } else {
-      editedEquipmentId.value = null;
-    }
+    editedEquipmentId.value = nextEditedId;
   } else if (mode === "personnel") {
-    const currentIndex = aggregatedPersonnel.value.findIndex((p) => p.id === itemId);
-    if (currentIndex < aggregatedPersonnel.value.length - 1) {
-      editedPersonnelId.value = aggregatedPersonnel.value[currentIndex + 1].id;
-    } else {
-      editedPersonnelId.value = null;
-    }
+    editedPersonnelId.value = nextEditedId;
   }
 }
 </script>
@@ -338,16 +331,16 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
         v-model:selected="selectedEquipment"
         :isLocked="isLocked"
       >
-        <template #inline-form="{ row }">
+        <template #inline-form="{ row, nextEditedId }">
           <InlineFormWrapper class="pr-6" details-panel>
             <ModifyUnitToeItemForm
               :itemData="row"
               :heading="row.name"
               :editStore="equipmentEditStore"
               @cancel="isEditMode = false"
-              @updateCount="updateItemCount('equipment', $event)"
-              @updateOnHand="updateItemOnHand('equipment', $event)"
-              @diffOnHand="diffItemOnHand('equipment', $event)"
+              @updateCount="updateItemCount('equipment', $event, nextEditedId)"
+              @updateOnHand="updateItemOnHand('equipment', $event, nextEditedId)"
+              @diffOnHand="diffItemOnHand('equipment', $event, nextEditedId)"
             />
           </InlineFormWrapper>
         </template>
@@ -382,16 +375,16 @@ function handleNextEditedId(mode: ToeMode, itemId: string) {
         v-model:selected="selectedPersonnel"
         :isLocked="isLocked"
       >
-        <template #inline-form="{ row }">
+        <template #inline-form="{ row, nextEditedId }">
           <InlineFormWrapper class="pr-6" details-panel>
             <ModifyUnitToeItemForm
               :itemData="row"
               :heading="row.name"
               @cancel="isEditMode = false"
               :editStore="personnelEditStore"
-              @updateCount="updateItemCount('personnel', $event)"
-              @updateOnHand="updateItemOnHand('personnel', $event)"
-              @diffOnHand="diffItemOnHand('personnel', $event)"
+              @updateCount="updateItemCount('personnel', $event, nextEditedId)"
+              @updateOnHand="updateItemOnHand('personnel', $event, nextEditedId)"
+              @diffOnHand="diffItemOnHand('personnel', $event, nextEditedId)"
             />
           </InlineFormWrapper>
         </template>

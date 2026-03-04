@@ -250,7 +250,7 @@ watch(
           </thead>
           <tbody class="text-wrap break-words">
             <tr
-              v-for="row in rows"
+              v-for="(row, rowIndex) in rows"
               :key="row.id"
               :data-index="row.index"
               class="dark:even:bg-foreground/[2.5%] even:bg-zinc-950/[2.5%]"
@@ -258,7 +258,11 @@ watch(
             >
               <template v-if="row.original.id === editedId">
                 <td class="" :colspan="row.getVisibleCells().length + 1">
-                  <slot name="inline-form" :row="row.original" />
+                  <slot
+                    name="inline-form"
+                    :row="row.original"
+                    :nextEditedId="rows[rowIndex + 1]?.original.id ?? null"
+                  />
                 </td>
               </template>
               <template v-else>

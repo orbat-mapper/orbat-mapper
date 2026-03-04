@@ -160,7 +160,10 @@ watch(
   { immediate: true, deep: true },
 );
 
-function updateSupplyCount(supplyId: string, { count }: { count: number }) {
+function updateSupplyCount(
+  { id: supplyId, count }: { id: string; count: number } | any,
+  nextEditedId: string | null = null,
+) {
   groupUpdate(() => {
     selectedUnitIds.value.forEach((unitId) => {
       updateUnitSupply(unitId, supplyId, { count });
@@ -168,10 +171,13 @@ function updateSupplyCount(supplyId: string, { count }: { count: number }) {
   });
 
   triggerRef(selectedUnitIds);
-  handleNextEditedId(supplyId);
+  handleNextEditedId(nextEditedId);
 }
 
-function updateSupplyOnHand(supplyId: string, { onHand }: NUnitSupply) {
+function updateSupplyOnHand(
+  { id: supplyId, onHand }: { id: string; onHand?: number } | any,
+  nextEditedId: string | null = null,
+) {
   groupUpdate(() => {
     selectedUnitIds.value.forEach((unitId) => {
       // skip units that don't have the supply
@@ -186,7 +192,7 @@ function updateSupplyOnHand(supplyId: string, { onHand }: NUnitSupply) {
   });
 
   triggerRef(selectedUnitIds);
-  handleNextEditedId(supplyId);
+  handleNextEditedId(nextEditedId);
 }
 
 function addSupply(
@@ -198,7 +204,10 @@ function addSupply(
   triggerRef(selectedUnitIds);
 }
 
-function diffSupplyOnHand(supplyId: string, { onHand }: NUnitSupply) {
+function diffSupplyOnHand(
+  { id: supplyId, onHand }: { id: string; onHand?: number } | any,
+  nextEditedId: string | null = null,
+) {
   groupUpdate(() => {
     selectedUnitIds.value.forEach((unitId) => {
       // skip units that don't have the supply
@@ -214,17 +223,12 @@ function diffSupplyOnHand(supplyId: string, { onHand }: NUnitSupply) {
   });
 
   triggerRef(selectedUnitIds);
-  handleNextEditedId(supplyId);
+  handleNextEditedId(nextEditedId);
 }
 
-function handleNextEditedId(supplyId: string) {
+function handleNextEditedId(nextEditedId: string | null) {
   if (uiStore.goToNextOnSubmit) {
-    const currentIndex = aggregatedSupplies.value.findIndex((sc) => sc.id === supplyId);
-    if (currentIndex < aggregatedSupplies.value.length - 1) {
-      editedId.value = aggregatedSupplies.value[currentIndex + 1].id;
-    } else {
-      editedId.value = null;
-    }
+    editedId.value = nextEditedId;
   } else {
     editedId.value = null;
   }
@@ -287,15 +291,15 @@ function onDelete() {
       :tableStore="tableStore"
       :isLocked="isLocked"
     >
-      <template #inline-form="{ row }">
+      <template #inline-form="{ row, nextEditedId }">
         <InlineFormWrapper class="pr-6" details-panel>
           <ModifyUnitSupplyForm
             :itemData="row"
             :heading="row.name"
             @cancel="isSuppliesEditMode = false"
-            @diffOnHand="diffSupplyOnHand"
-            @updateCount="updateSupplyCount"
-            @updateOnHand="updateSupplyOnHand"
+            @diff-on-hand="diffSupplyOnHand($event, nextEditedId)"
+            @update-count="updateSupplyCount($event, nextEditedId)"
+            @update-on-hand="updateSupplyOnHand($event, nextEditedId)"
           />
         </InlineFormWrapper>
       </template>

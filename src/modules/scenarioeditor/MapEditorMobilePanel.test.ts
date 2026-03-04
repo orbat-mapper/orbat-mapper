@@ -134,6 +134,8 @@ describe("MapEditorMobilePanel", () => {
     await nextTick();
 
     expect(wrapper.find("[data-testid='mobile-panel-toggle']").exists()).toBe(true);
-    expect(wrapper.find("[data-testid='mobile-panel-resize-strip']").exists()).toBe(false);
+    expect(wrapper.find("[data-testid='mobile-panel-resize-strip']").exists()).toBe(
+      false,
+    );
   });
 });
