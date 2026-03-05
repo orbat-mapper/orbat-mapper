@@ -223,7 +223,9 @@ function onCancel() {
         <ToggleField v-model="store.keepOpen">Keep dialog open on export</ToggleField>
         <div class="flex items-center space-x-2">
           <Button type="submit" size="sm">Export</Button>
-          <Button variant="outline" size="sm" @click="onCancel">Cancel</Button>
+          <Button variant="outline" type="button" size="sm" @click="onCancel"
+            >Cancel</Button
+          >
         </div>
       </footer>
     </form>

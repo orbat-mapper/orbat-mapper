@@ -298,6 +298,7 @@ function removeUnit(side: InitialSideData, unit: RootUnit) {
               <Button
                 variant="link"
                 size="sm"
+                type="button"
                 v-if="idx === form.sides.length - 1"
                 @click="form.sides.pop()"
               >

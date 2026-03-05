@@ -39,7 +39,9 @@ const onFormSubmit = () => {
     <InputGroup label="Credits URL" v-model="form.creditsUrl" />
     <div class="flex items-center justify-end space-x-2">
       <Button type="submit" size="sm">Save</Button>
-      <Button variant="outline" size="sm" @click="emit('cancel')">Cancel</Button>
+      <Button variant="outline" type="button" size="sm" @click="emit('cancel')"
+        >Cancel</Button
+      >
     </div>
   </form>
 </template>

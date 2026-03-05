@@ -56,6 +56,7 @@ const handleSelect = (value: string | number) => {
     <Popover v-model:open="open">
       <PopoverTrigger as-child>
         <Button
+          type="button"
           variant="outline"
           role="combobox"
           :aria-expanded="open"

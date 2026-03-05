@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button/index.js";
-const props = withDefaults(
+withDefaults(
   defineProps<{
     primary?: boolean;
     secondary?: boolean;
@@ -20,6 +20,7 @@ const props = withDefaults(
 
 <template>
   <Button
+    type="button"
     :variant="primary ? 'default' : secondary ? 'secondary' : 'outline'"
     :size="small ? 'sm' : large ? 'lg' : huge ? 'lg' : undefined"
   >

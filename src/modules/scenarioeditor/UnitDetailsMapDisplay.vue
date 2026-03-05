@@ -365,6 +365,7 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
                   <Button
                     variant="outline"
                     size="sm"
+                    type="button"
                     class="ml-2"
                     @click="editedIndex = -1"
                   >
