@@ -17,7 +17,7 @@ import { app6d as sym } from "@/symbology/standards/app6d";
 import FilterTree, {
   type NestedUnitStatItem,
 } from "@/modules/scenarioeditor/FilterTree.vue";
-import { IconExpandAllOutline } from "@iconify-prerendered/vue-mdi";
+import { IconCollapseAll, IconExpandAll } from "@iconify-prerendered/vue-mdi";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
 import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
@@ -46,6 +46,30 @@ const { selectedUnitIds } = useSelectedItems();
 const excludedKeys = ref<Set<string>>(new Set());
 const expandedKeys = ref<string[]>([]);
 const flatStats = ref<Record<string, number>>({});
+
+const panelsOpen = ref({
+  commandLevel: false,
+  mainIcon: true,
+  side: false,
+  visibility: false,
+  identity: false,
+  status: false,
+  modifiers: false,
+});
+
+const isAnyPanelOpen = computed(() => Object.values(panelsOpen.value).some((v) => v));
+
+function collapseAll() {
+  Object.keys(panelsOpen.value).forEach((key) => {
+    panelsOpen.value[key as keyof typeof panelsOpen.value] = false;
+  });
+}
+
+function expandAll() {
+  Object.keys(panelsOpen.value).forEach((key) => {
+    panelsOpen.value[key as keyof typeof panelsOpen.value] = true;
+  });
+}
 
 watchEffect(() => {
   const stats: Record<string, number> = {};
@@ -610,6 +634,16 @@ function expandAllIcons() {
     >
       <PanelHeading>Select units</PanelHeading>
       <div class="flex items-center space-x-1">
+        <IconButton
+          v-if="isAnyPanelOpen"
+          title="Collapse all filter sections"
+          @click="collapseAll()"
+        >
+          <IconCollapseAll class="h-5 w-5" />
+        </IconButton>
+        <IconButton v-else title="Expand all filter sections" @click="expandAll()">
+          <IconExpandAll class="h-5 w-5" />
+        </IconButton>
         <Button
           v-if="excludedKeys.size"
           variant="outline"
@@ -628,7 +662,7 @@ function expandAllIcons() {
         >
       </div>
     </header>
-    <NewAccordionPanel label="Command level">
+    <NewAccordionPanel label="Command level" v-model="panelsOpen.commandLevel">
       <FilterTree
         :tree="emtTree"
         v-model:expandedKeys="expandedKeys"
@@ -641,10 +675,10 @@ function expandAllIcons() {
         @clearExclude="excludedKeys.delete($event)"
       />
     </NewAccordionPanel>
-    <NewAccordionPanel label="Main unit icon" default-open>
+    <NewAccordionPanel label="Main unit icon" v-model="panelsOpen.mainIcon">
       <template #header
-        ><IconButton title="Expand all" @click.stop="expandAllIcons()"
-          ><IconExpandAllOutline /></IconButton
+        ><IconButton title="Expand all icons" @click.stop="expandAllIcons()"
+          ><IconExpandAll /></IconButton
       ></template>
       <FilterTree
         :tree="iconTree"
@@ -658,7 +692,7 @@ function expandAllIcons() {
         @clearExclude="excludedKeys.delete($event)"
       />
     </NewAccordionPanel>
-    <NewAccordionPanel label="Side">
+    <NewAccordionPanel label="Side" v-model="panelsOpen.side">
       <FilterTree
         :tree="sideTree"
         v-model:expandedKeys="expandedKeys"
@@ -671,7 +705,7 @@ function expandAllIcons() {
         @clearExclude="excludedKeys.delete($event)"
       />
     </NewAccordionPanel>
-    <NewAccordionPanel label="Map visibility">
+    <NewAccordionPanel label="Map visibility" v-model="panelsOpen.visibility">
       <FilterTree
         :tree="visibilityTree"
         v-model:expandedKeys="expandedKeys"
@@ -684,7 +718,7 @@ function expandAllIcons() {
         @clearExclude="excludedKeys.delete($event)"
       />
     </NewAccordionPanel>
-    <NewAccordionPanel label="Standard identity">
+    <NewAccordionPanel label="Standard identity" v-model="panelsOpen.identity">
       <FilterTree
         :tree="sidTree"
         v-model:expandedKeys="expandedKeys"
@@ -697,7 +731,7 @@ function expandAllIcons() {
         @clearExclude="excludedKeys.delete($event)"
       />
     </NewAccordionPanel>
-    <NewAccordionPanel label="Status">
+    <NewAccordionPanel label="Status" v-model="panelsOpen.status">
       <FilterTree
         :tree="statusTree"
         v-model:expandedKeys="expandedKeys"
@@ -710,7 +744,7 @@ function expandAllIcons() {
         @clearExclude="excludedKeys.delete($event)"
       />
     </NewAccordionPanel>
-    <NewAccordionPanel label="Symbol modifiers">
+    <NewAccordionPanel label="Symbol modifiers" v-model="panelsOpen.modifiers">
       <FilterTree
         :tree="modifierTree"
         v-model:expandedKeys="expandedKeys"
