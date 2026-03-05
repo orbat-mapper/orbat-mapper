@@ -173,7 +173,7 @@
               },
               "media": [
                 {
-                  "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/HMS_Endurance_%28A171%29_at_Nassau_in_1982.JPEG/800px-HMS_Endurance_%28A171%29_at_Nassau_in_1982.JPEG",
+                  "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/HMS_Endurance_%28A171%29_at_Nassau_in_1982.JPEG/960px-HMS_Endurance_%28A171%29_at_Nassau_in_1982.JPEG",
                   "credits": "USN, Public domain, via Wikimedia Commons",
                   "caption": "HMS Endurance (A171) at Nassau in 1982",
                   "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Endurance_(A171)_at_Nassau_in_1982.JPEG"
@@ -270,7 +270,7 @@
               "location": [-36.49445470967382, -54.283293554297046],
               "media": [
                 {
-                  "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/King_Edward_Point_on_South_Georgia_1.jpg/800px-King_Edward_Point_on_South_Georgia_1.jpg",
+                  "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/King_Edward_Point_on_South_Georgia_1.jpg/960px-King_Edward_Point_on_South_Georgia_1.jpg",
                   "credits": "Liam Quinn, CC BY-SA 2.0, via Wikimedia Commons",
                   "creditsUrl": "https://commons.wikimedia.org/wiki/File:King_Edward_Point_on_South_Georgia_1.jpg"
                 }
@@ -335,7 +335,7 @@
                   "externalUrl": "https://en.wikipedia.org/wiki/HMS_Hermes_(R12)",
                   "media": [
                     {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/HMS_Hermes_%28R12%29_underway_at_sea_on_16_March_1982_%286350755%29.jpg/759px-HMS_Hermes_%28R12%29_underway_at_sea_on_16_March_1982_%286350755%29.jpg",
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/HMS_Hermes_%28R12%29_underway_at_sea_on_16_March_1982_%286350755%29.jpg/960px-HMS_Hermes_%28R12%29_underway_at_sea_on_16_March_1982_%286350755%29.jpg",
                       "caption": "HMS Hermes (R12) underway at sea on 16 March 1982",
                       "credits": "U.S. Navy, Public domain, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Hermes_(R12)_underway_at_sea_on_16_March_1982_(6350755).jpg"
@@ -577,7 +577,7 @@
                   "subUnits": [],
                   "media": [
                     {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/HMS_Sheffield_%28D80%29.jpg/1024px-HMS_Sheffield_%28D80%29.jpg",
+                      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/HMS_Sheffield_%28D80%29.jpg/960px-HMS_Sheffield_%28D80%29.jpg",
                       "caption": "",
                       "credits": "Nathalmad, CC BY 3.0, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Sheffield_(D80).jpg"
@@ -2508,7 +2508,7 @@
       },
       "media": [
         {
-          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Leith_whaling_station.JPG/1024px-Leith_whaling_station.JPG",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Leith_whaling_station.JPG/960px-Leith_whaling_station.JPG",
           "credits": "Markabq, Public domain, via Wikimedia Commons",
           "caption": "Abandoned whaling station at Leith Harbour, South Georgia.",
           "creditsUrl": "https://commons.wikimedia.org/wiki/File:Leith_whaling_station.JPG"
