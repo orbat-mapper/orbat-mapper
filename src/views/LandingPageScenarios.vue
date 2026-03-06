@@ -18,6 +18,7 @@ import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
 import LoadScenarioFromClipboardPanel from "@/modules/scenarioeditor/LoadScenarioFromClipboardPanel.vue";
 import { saveImportedScenario } from "@/composables/importScenarioTransfer";
 import { useIndexedDb } from "@/scenariostore/localdb";
+import { useScenarioFileLoader } from "@/composables/useScenarioFileLoader";
 
 const DecryptScenarioModal = defineAsyncComponent(
   () => import("@/components/DecryptScenarioModal.vue"),
@@ -78,6 +79,12 @@ async function onExternalLoaded(scenario: Scenario | EncryptedScenario) {
   await handleLoadedScenario(scenario, "external");
 }
 
+const {
+  fileInputRef: landingFileInputRef,
+  onFileChange: onLandingFileChange,
+  openFilePicker: openLandingFilePicker,
+} = useScenarioFileLoader(onExternalLoaded);
+
 async function onClipboardLoaded(scenario: Scenario | EncryptedScenario) {
   await handleLoadedScenario(scenario, "clipboard");
 }
@@ -122,6 +129,20 @@ useEventListener("paste", (event: ClipboardEvent) => {
         </h2>
         <div class="mt-3 flex items-center gap-1 sm:mt-0 sm:ml-4">
           <SortDropdown :options="sortOptions" />
+          <input
+            ref="landingFileInputRef"
+            type="file"
+            class="absolute h-[0.1px] w-[0.1px] opacity-0"
+            @change="onLandingFileChange"
+          />
+          <Button
+            variant="outline"
+            data-testid="header-load-file"
+            @click="openLandingFilePicker"
+            class="mr-1"
+          >
+            Load from file
+          </Button>
           <Button as-child>
             <router-link :to="{ name: NEW_SCENARIO_ROUTE }">
               Create new scenario

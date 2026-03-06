@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Show feature name on map hover.
+- Added a "Load from file" button to the landing page header for faster local scenario imports.
 - Added map symbol size override support per unit.
 - Added a button to the unit filters panel to quickly collapse or expand all filter sections.
 

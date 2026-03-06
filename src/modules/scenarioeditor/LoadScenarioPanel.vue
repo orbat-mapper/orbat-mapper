@@ -1,51 +1,21 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useDropZone } from "@vueuse/core";
-import { type Scenario } from "@/types/scenarioModels";
+import { useScenarioFileLoader } from "@/composables/useScenarioFileLoader";
+import type { ImportedScenarioPayload } from "@/composables/importScenarioTransfer";
 
 const emit = defineEmits(["update:modelValue", "loaded"]);
 
 const dropZoneRef = ref<HTMLDivElement>();
+const { fileInputRef, isError, loadFile, onFileChange, openFilePicker } =
+  useScenarioFileLoader((scenario: ImportedScenarioPayload) => emit("loaded", scenario));
 
-const { isOverDropZone } = useDropZone(dropZoneRef, onDrop);
-const isError = ref(false);
-
-function readFile(file: File) {
-  const reader = new FileReader();
-
-  reader.onload = function (evt) {
-    const content = evt?.target?.result as string;
-
-    try {
-      const scenarioData = JSON.parse(content) as Scenario;
-      if (
-        scenarioData?.type === "ORBAT-mapper" ||
-        scenarioData?.type === "ORBAT-mapper-encrypted"
-      ) {
-        emit("loaded", scenarioData);
-      } else {
-        console.error("Failed to load", file.name);
-        isError.value = true;
-      }
-    } catch (e) {
-      console.error("Failed to load", file.name);
-      isError.value = true;
-    }
-  };
-  reader.readAsText(file);
-}
-
-const onFileLoad = (e: Event) => {
-  const target = <HTMLInputElement>e.target;
-  if (!target?.files?.length) return;
-  const file = target.files[0];
-  if (file) readFile(file);
-};
-
-function onDrop(files: File[] | null) {
-  const file = files && files[0];
-  if (file) readFile(file);
-}
+const { isOverDropZone } = useDropZone(dropZoneRef, (files: File[] | null) => {
+  const file = files?.[0];
+  if (file) {
+    void loadFile(file);
+  }
+});
 </script>
 
 <template>
@@ -55,14 +25,16 @@ function onDrop(files: File[] | null) {
     :class="isOverDropZone ? 'border-primary cursor-crosshair' : ''"
   >
     <input
+      ref="fileInputRef"
       type="file"
       id="file"
-      @change="onFileLoad"
+      @change="onFileChange"
       class="absolute h-[0.1px] w-[0.1px] opacity-0"
     />
     <label
       for="file"
       class="text-foreground hover:text-muted-foreground flex h-full w-full cursor-pointer flex-col items-center justify-center text-sm font-medium"
+      @click.prevent="openFilePicker"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

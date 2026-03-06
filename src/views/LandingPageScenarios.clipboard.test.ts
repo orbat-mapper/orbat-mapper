@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { shallowMount } from "@vue/test-utils";
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import LandingPageScenarios from "@/views/LandingPageScenarios.vue";
 
 const { pushMock, loadScenarioMock, saveImportedScenarioMock, getScenarioInfoMock } =
@@ -11,6 +11,11 @@ const { pushMock, loadScenarioMock, saveImportedScenarioMock, getScenarioInfoMoc
     getScenarioInfoMock: vi.fn(),
   }));
 
+const { storedScenariosMock, openFilePickerMock } = vi.hoisted(() => ({
+  storedScenariosMock: [] as Array<{ id: string; name: string }>,
+  openFilePickerMock: vi.fn(),
+}));
+
 vi.mock("vue-router", () => ({
   useRouter: () => ({ push: pushMock }),
   useRoute: () => ({ query: {} }),
@@ -19,10 +24,23 @@ vi.mock("vue-router", () => ({
 vi.mock("@/composables/browserScenarios", () => ({
   DEMO_SCENARIOS: [],
   useBrowserScenarios: () => ({
-    storedScenarios: [],
+    storedScenarios: storedScenariosMock,
     sortOptions: [],
     onAction: vi.fn(),
     loadScenario: loadScenarioMock,
+  }),
+}));
+
+vi.mock("@/composables/useScenarioFileLoader", () => ({
+  useScenarioFileLoader: (onLoaded: (scenario: unknown) => unknown) => ({
+    fileInputRef: ref(null),
+    isError: { value: false },
+    loadFile: vi.fn(),
+    onFileChange: vi.fn(),
+    openFilePicker: (...args: unknown[]) => {
+      openFilePickerMock(...args);
+      return onLoaded({ type: "ORBAT-mapper", id: "from-header" });
+    },
   }),
 }));
 
@@ -47,6 +65,7 @@ vi.mock("@vueuse/core", async () => {
 describe("LandingPageScenarios clipboard routing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    storedScenariosMock.length = 0;
   });
 
   function mountWithSourceScenario(options: {
@@ -139,6 +158,25 @@ describe("LandingPageScenarios clipboard routing", () => {
     await wrapper.get('[data-testid="url-load"]').trigger("click");
 
     expect(saveImportedScenarioMock).toHaveBeenCalledWith(urlScenario);
+    expect(pushMock).toHaveBeenCalledWith({
+      name: "ImportScenarioRoute",
+      query: { token: "token-123", source: "external" },
+    });
+    expect(loadScenarioMock).not.toHaveBeenCalled();
+  });
+
+  it("routes header file-button scenario through the external import flow", async () => {
+    storedScenariosMock.push({ id: "recent-1", name: "Recent" });
+    getScenarioInfoMock.mockResolvedValue({ id: "from-header", name: "Existing" });
+    const wrapper = mountWithSourceScenario({});
+
+    await wrapper.get('[data-testid="header-load-file"]').trigger("click");
+
+    expect(openFilePickerMock).toHaveBeenCalledOnce();
+    expect(saveImportedScenarioMock).toHaveBeenCalledWith({
+      type: "ORBAT-mapper",
+      id: "from-header",
+    });
     expect(pushMock).toHaveBeenCalledWith({
       name: "ImportScenarioRoute",
       query: { token: "token-123", source: "external" },
