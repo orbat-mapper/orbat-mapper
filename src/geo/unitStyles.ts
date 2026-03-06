@@ -71,7 +71,7 @@ export function createUnitStyle(
   color?: string,
   rotationOverrideDeg?: number,
 ): { style: Style; cacheKey: string } {
-  const { name = "", shortName = "" } = unit;
+  const { name, shortName } = unit;
   const sidc = unit._state?.sidc || unit.sidc;
   const symbolRotationDeg = rotationOverrideDeg ?? unit._state?.symbolRotation ?? 0;
   const symbolRotationRad = (symbolRotationDeg * Math.PI) / 180;

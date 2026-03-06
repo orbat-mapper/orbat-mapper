@@ -152,6 +152,24 @@ describe("unit styles size overrides", () => {
 });
 
 describe("unit styles unique designation", () => {
+  it("uses name as uniqueDesignation fallback when shortName is missing", () => {
+    mapSettingsMock.mapUnitLabelBelow = false;
+    symbolGeneratorMock.mockClear();
+    const unit = {
+      id: "unit-1",
+      name: "36CAA",
+      sidc: "10031000000000000000",
+      _state: { sidc: "10031000000000000000", symbolRotation: 0 },
+      textAmplifiers: {},
+    } as any;
+
+    createUnitStyle(unit, {}, createScenarioWithCustomSymbol());
+
+    const lastCall = symbolGeneratorMock.mock.lastCall as any[] | undefined;
+    const options = lastCall?.[1];
+    expect(options?.uniqueDesignation).toBe("36CAA");
+  });
+
   it("hides default uniqueDesignation on symbol when bottom labels are enabled", () => {
     mapSettingsMock.mapUnitLabelBelow = true;
     symbolGeneratorMock.mockClear();
