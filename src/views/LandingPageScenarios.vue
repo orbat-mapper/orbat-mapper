@@ -144,9 +144,7 @@ useEventListener("paste", (event: ClipboardEvent) => {
             Load from file
           </Button>
           <Button as-child>
-            <router-link :to="{ name: NEW_SCENARIO_ROUTE }">
-              Create new scenario
-            </router-link>
+            <router-link :to="{ name: NEW_SCENARIO_ROUTE }"> Create new </router-link>
           </Button>
         </div>
       </header>
