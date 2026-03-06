@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 
 - Show feature name on map hover.
 - Added a "Load from file" button to the landing page header for faster local scenario imports.
+- Added scenario search and filtering to the landing page recent scenarios section.
+- Added scenario search and filtering to the browser tab in the load scenario dialog.
 - Added map symbol size override support per unit.
 - Added a button to the unit filters panel to quickly collapse or expand all filter sections.
 

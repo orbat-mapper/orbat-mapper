@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
+import { Search, X } from "lucide-vue-next";
 
 import {
   IMPORT_SCENARIO_ROUTE,
@@ -12,7 +13,12 @@ import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
 import SortDropdown from "@/components/SortDropdown.vue";
 import { DEMO_SCENARIOS, useBrowserScenarios } from "@/composables/browserScenarios";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { computed, defineAsyncComponent, ref } from "vue";
 import { useEventListener } from "@vueuse/core";
 import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
@@ -54,6 +60,18 @@ const getScenarioTo = (scenarioId: string) => {
 
 const newScenario = () => {
   router.push({ name: NEW_SCENARIO_ROUTE });
+};
+
+const onScenarioSearchKeydown = (event: KeyboardEvent) => {
+  if (event.key !== "Escape" || !scenarioQuery.value) {
+    return;
+  }
+
+  scenarioQuery.value = "";
+};
+
+const clearScenarioQuery = () => {
+  scenarioQuery.value = "";
 };
 
 const showDecryptModal = ref(false);
@@ -145,18 +163,32 @@ useEventListener("paste", (event: ClipboardEvent) => {
         <div class="flex min-w-0 flex-1 flex-col gap-3">
           <div class="max-w-xl">
             <label for="scenario-search" class="sr-only">Search scenarios</label>
-            <Input
-              id="scenario-search"
-              v-model="scenarioQuery"
-              type="search"
-              placeholder="Search scenarios..."
-              autocomplete="off"
-              class="w-full"
-            />
+            <InputGroup>
+              <InputGroupAddon aria-hidden="true">
+                <Search class="size-4" />
+              </InputGroupAddon>
+              <InputGroupInput
+                id="scenario-search"
+                v-model="scenarioQuery"
+                type="text"
+                placeholder="Search scenarios..."
+                autocomplete="off"
+                autofocus
+                class="h-full"
+                @keydown="onScenarioSearchKeydown"
+              />
+              <InputGroupAddon v-if="scenarioQuery" align="inline-end">
+                <InputGroupButton
+                  size="icon-xs"
+                  type="button"
+                  aria-label="Clear scenario search"
+                  @click="clearScenarioQuery"
+                >
+                  <X class="size-3.5" />
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
-          <h2 class="text-foreground text-base leading-6 font-semibold">
-            Recent scenarios
-          </h2>
         </div>
         <div class="flex flex-wrap items-center gap-1 lg:ml-4 lg:justify-end">
           <SortDropdown :options="sortOptions" />
@@ -194,7 +226,7 @@ useEventListener("paste", (event: ClipboardEvent) => {
         v-else
         class="text-muted-foreground mt-4 rounded-lg border border-dashed p-6 text-sm"
       >
-        No recent scenarios match "{{ scenarioQuery.trim() }}".
+        No scenarios match "{{ scenarioQuery.trim() }}".
       </div>
     </section>
     <section class="mb-2">
