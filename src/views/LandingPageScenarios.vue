@@ -243,11 +243,11 @@ useEventListener("paste", (event: ClipboardEvent) => {
         </li>
       </ul>
     </section>
+    <DecryptScenarioModal
+      v-if="showDecryptModal && currentEncryptedScenario"
+      v-model="showDecryptModal"
+      :encrypted-scenario="currentEncryptedScenario"
+      @decrypted="onDecrypted"
+    />
   </div>
-  <DecryptScenarioModal
-    v-if="showDecryptModal && currentEncryptedScenario"
-    v-model="showDecryptModal"
-    :encrypted-scenario="currentEncryptedScenario"
-    @decrypted="onDecrypted"
-  />
 </template>
