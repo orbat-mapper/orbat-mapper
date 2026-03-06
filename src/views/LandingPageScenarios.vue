@@ -12,7 +12,8 @@ import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
 import SortDropdown from "@/components/SortDropdown.vue";
 import { DEMO_SCENARIOS, useBrowserScenarios } from "@/composables/browserScenarios";
 import { Button } from "@/components/ui/button";
-import { defineAsyncComponent, ref } from "vue";
+import { Input } from "@/components/ui/input";
+import { computed, defineAsyncComponent, ref } from "vue";
 import { useEventListener } from "@vueuse/core";
 import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
 import LoadScenarioFromClipboardPanel from "@/modules/scenarioeditor/LoadScenarioFromClipboardPanel.vue";
@@ -25,6 +26,23 @@ const DecryptScenarioModal = defineAsyncComponent(
 );
 
 const { storedScenarios, sortOptions, onAction, loadScenario } = useBrowserScenarios();
+const scenarioQuery = ref("");
+const normalizedScenarioQuery = computed(() => scenarioQuery.value.trim().toLowerCase());
+const filteredStoredScenarios = computed(() => {
+  if (!normalizedScenarioQuery.value) {
+    return storedScenarios.value;
+  }
+
+  return storedScenarios.value.filter((scenario) => {
+    const name = scenario.name.toLowerCase();
+    const description = scenario.description?.toLowerCase() ?? "";
+
+    return (
+      name.includes(normalizedScenarioQuery.value) ||
+      description.includes(normalizedScenarioQuery.value)
+    );
+  });
+});
 
 const router = useRouter();
 const getScenarioTo = (scenarioId: string) => {
@@ -122,12 +140,25 @@ useEventListener("paste", (event: ClipboardEvent) => {
     </div>
     <section v-if="storedScenarios.length > 0" class="mx-auto max-w-7xl p-6">
       <header
-        class="border-border border-b pb-5 sm:flex sm:items-center sm:justify-between"
+        class="border-border flex flex-col gap-4 border-b pb-5 lg:flex-row lg:items-start lg:justify-between"
       >
-        <h2 class="text-foreground text-base leading-6 font-semibold">
-          Recent scenarios
-        </h2>
-        <div class="mt-3 flex items-center gap-1 sm:mt-0 sm:ml-4">
+        <div class="flex min-w-0 flex-1 flex-col gap-3">
+          <div class="max-w-xl">
+            <label for="scenario-search" class="sr-only">Search scenarios</label>
+            <Input
+              id="scenario-search"
+              v-model="scenarioQuery"
+              type="search"
+              placeholder="Search scenarios..."
+              autocomplete="off"
+              class="w-full"
+            />
+          </div>
+          <h2 class="text-foreground text-base leading-6 font-semibold">
+            Recent scenarios
+          </h2>
+        </div>
+        <div class="flex flex-wrap items-center gap-1 lg:ml-4 lg:justify-end">
           <SortDropdown :options="sortOptions" />
           <input
             ref="landingFileInputRef"
@@ -149,15 +180,22 @@ useEventListener("paste", (event: ClipboardEvent) => {
         </div>
       </header>
       <ul
+        v-if="filteredStoredScenarios.length > 0"
         class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
       >
         <ScenarioLinkCard
-          v-for="info in storedScenarios"
+          v-for="info in filteredStoredScenarios"
           :key="info.id"
           :data="info"
           @action="onAction($event, info)"
         />
       </ul>
+      <div
+        v-else
+        class="text-muted-foreground mt-4 rounded-lg border border-dashed p-6 text-sm"
+      >
+        No recent scenarios match "{{ scenarioQuery.trim() }}".
+      </div>
     </section>
     <section class="mb-2">
       <p
