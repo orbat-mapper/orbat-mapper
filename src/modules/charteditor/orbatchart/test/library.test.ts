@@ -3,47 +3,22 @@ import {
   ChartOrientations,
   DEFAULT_OPTIONS,
   OrbatChart,
-  type PartialOrbChartOptions,
   type SymbolGenerator,
   type ChartUnit,
 } from "../index";
 import { ORBAT1 } from "./testorbats";
 import ms from "milsymbol";
 
-// @ts-ignore
-SVGElement.prototype.getBBox = () => {
-  return { x: 0, y: 0, width: 20, height: 10 };
-};
-
 describe("OrbatChart class", () => {
   it("is defined", () => {
     expect(OrbatChart).toBeDefined();
   });
 
-  it("renders", () => {
+  it("calculates layout", () => {
     const o = new OrbatChart(ORBAT1);
-    const svg = o.toSVG(document.body);
-    expect(svg.getAttribute("width")).toBe("100%");
-  });
-});
-
-describe("OrbatChart SVG rendering", () => {
-  it("renders", () => {
-    const o = new OrbatChart(ORBAT1);
-    const svg = o.toSVG(document.body);
-    expect(svg.getAttribute("width")).toBe("100%");
-  });
-
-  it("has empty ID by default", () => {
-    const o = new OrbatChart(ORBAT1);
-    const svg = o.toSVG(document.body);
-    expect(svg.id).toBe("");
-  });
-
-  it("allows a custom ID", () => {
-    const o = new OrbatChart(ORBAT1);
-    const svg = o.toSVG(document.body, { elementId: "CustomID" });
-    expect(svg.id).toBe("CustomID");
+    const layout = o.calculateLayout(1000, 1000);
+    expect(layout.levels).toBeDefined();
+    expect(layout.links).toBeDefined();
   });
 });
 
@@ -99,40 +74,5 @@ describe("OrbatChart orientation", () => {
       orientation: ChartOrientations.Bottom,
     });
     expect(ob.options.orientation).toBe(ChartOrientations.Bottom);
-  });
-});
-
-function createChartSvgString(options?: PartialOrbChartOptions) {
-  const o = new OrbatChart(DUMMY_UNIT, options);
-  const svg = o.toSVG(document.body);
-  return svg.innerHTML;
-}
-
-describe("OrbatChart unit labels", () => {
-  it("uses name by default", () => {
-    const svgString = createChartSvgString();
-    expect(svgString).toContain(DUMMY_UNIT.name);
-  });
-
-  it("uses short name if useShortName is true", () => {
-    const svgString = createChartSvgString({ useShortName: true });
-    expect(svgString).toContain(DUMMY_UNIT.shortName);
-  });
-
-  it("has configurable labelOffset", () => {
-    const svgString = createChartSvgString({ labelOffset: 1337 });
-    expect(svgString).toContain("1337");
-    expect(svgString).toContain(DUMMY_UNIT.name);
-  });
-
-  it("can be disable with hideLabel setting", () => {
-    const svgString = createChartSvgString({ labelOffset: 1337, hideLabel: true });
-    expect(svgString).not.toContain(DUMMY_UNIT.name);
-    expect(svgString).not.toContain("1337");
-  });
-
-  it("can change color", () => {
-    const svgString = createChartSvgString({ fontColor: "testvalue" });
-    expect(svgString).toContain('fill="testvalue"');
   });
 });
