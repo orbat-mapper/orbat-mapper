@@ -22,7 +22,7 @@ const tabItems = [
   { label: "Chart", value: ChartTabs.Chart.toString() },
   { label: "Level", value: ChartTabs.Level.toString() },
   { label: "Branch", value: ChartTabs.Branch.toString() },
-  { label: "Unitss", value: ChartTabs.Unit.toString() },
+  { label: "Units", value: ChartTabs.Unit.toString() },
 ];
 </script>
 

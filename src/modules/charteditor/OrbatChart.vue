@@ -43,8 +43,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(["unitclick", "levelclick", "branchclick"]);
 
-const chartRootElement = ref();
-let orbatChart: OrbatChart;
+const chartRootElement = ref<HTMLElement>();
+let orbatChart: OrbatChart | undefined;
 
 function onClick(unit: UnitNodeInfo) {
   emit("unitclick", unit);
@@ -59,18 +59,24 @@ function onBranchClick(parentId: string | number, levelNumber: number) {
 }
 
 function handleLevelHighlight(value: number[]) {
-  orbatChart.highlightLevels([...value]);
+  orbatChart?.highlightLevels([...value]);
 }
 
 const visible = ref(true);
 
 watchEffect(() => {
-  if (!chartRootElement.value || !props.unit) return;
   let panScaleCopy: { pan: { x: number; y: number }; scale: number } | null | undefined;
   if (orbatChart) {
     panScaleCopy = orbatChart.getPanScale();
     orbatChart.cleanup();
+    orbatChart = undefined;
   }
+
+  if (!chartRootElement.value || !props.unit) {
+    if (chartRootElement.value) chartRootElement.value.innerHTML = "";
+    return;
+  }
+
   orbatChart = new OrbatChart(
     props.unit,
     {
@@ -104,7 +110,7 @@ onBeforeUnmount(() => {
 });
 
 function resetZoom() {
-  orbatChart.resetZoom();
+  orbatChart?.resetZoom();
 }
 </script>
 
@@ -120,10 +126,10 @@ function resetZoom() {
       class="absolute bottom-4 left-4 print:hidden"
     >
       <BaseToolbar class="">
-        <ToolbarButton start @click="orbatChart.zoomIn()">
+        <ToolbarButton start @click="orbatChart?.zoomIn()">
           <MagnifyingGlassPlusIcon class="h-5 w-5" />
         </ToolbarButton>
-        <ToolbarButton @click="orbatChart.zoomOut()">
+        <ToolbarButton @click="orbatChart?.zoomOut()">
           <MagnifyingGlassMinusIcon class="h-5 w-5" />
         </ToolbarButton>
         <ToolbarButton end @click="resetZoom()">

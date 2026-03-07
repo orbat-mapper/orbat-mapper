@@ -20,7 +20,9 @@ const currentUnit = computed(() => currentUnitNode.node?.unit);
     <p class="text-muted-foreground text-sm">Unit specific options.</p>
     <div v-if="currentUnit" class="s">
       <header class="flex items-start">
-        <div class="h-20 w-16 shrink-0">
+        <div
+          class="mr-3 flex h-20 w-16 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white shadow-xs"
+        >
           <MilitarySymbol
             :sidc="currentUnit.sidc"
             :size="34"
