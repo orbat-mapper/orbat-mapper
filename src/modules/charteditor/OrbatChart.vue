@@ -84,6 +84,8 @@ watchEffect(() => {
       pz = Panzoom(svgRef.value, {
         maxScale: 10,
         pinchAndPan: true,
+        animate: true,
+        duration: 200,
       });
     }
   } else {
@@ -96,7 +98,13 @@ watchEffect(() => {
 
 function handleWheel(event: WheelEvent) {
   if (pz && props.enablePanZoom) {
-    pz.zoomWithWheel(event);
+    event.preventDefault();
+    // Use magnitude-aware zoom for smoother touchpad experience
+    const scale = pz.getScale();
+    const delta = event.deltaY;
+    // Smoother scaling: 0.001 sensitivity is usually good for touchpads
+    const factor = 1 - delta * 0.001;
+    pz.zoomToPoint(scale * factor, event, { animate: false });
   }
 }
 
@@ -122,7 +130,7 @@ function zoomOut() {
     <svg
       v-if="props.unit"
       ref="svgRef"
-      class="animate orbat-chart transform-origin-top-left h-full w-full"
+      class="orbat-chart transform-origin-top-left h-full w-full"
       :viewBox="`0 0 ${width} ${height}`"
       :id="chartId"
     >
