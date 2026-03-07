@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import StoredScenarioBrowser from "@/components/StoredScenarioBrowser.vue";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
-import SortDropdown from "@/components/SortDropdown.vue";
-import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
 import { type StoredScenarioAction } from "@/types/constants";
 import { type ScenarioMetadata } from "@/scenariostore/localdb";
+
 const emit = defineEmits(["loaded"]);
 const { importScenario, storedScenarios, sortOptions, onAction } = useBrowserScenarios();
 
@@ -18,20 +18,15 @@ async function handleAction(action: StoredScenarioAction, info: ScenarioMetadata
 </script>
 
 <template>
-  <section class="">
-    <header class="flex items-center justify-end border-b border-gray-200 px-6 pb-5">
-      <div class="mt-3 flex items-center sm:mt-0 sm:ml-4">
-        <SortDropdown class="mr-4" :options="sortOptions" />
-      </div>
-    </header>
-    <ul class="grid grid-cols-1 gap-6 p-6 sm:grid-cols-3">
-      <ScenarioLinkCard
-        no-link
-        v-for="info in storedScenarios"
-        :key="info.id"
-        :data="info"
-        @action="handleAction($event, info)"
-      />
-    </ul>
+  <section class="px-6 pb-6">
+    <StoredScenarioBrowser
+      :scenarios="storedScenarios"
+      :sort-options="sortOptions"
+      search-input-id="import-scenario-search"
+      no-link
+      empty-message="No recent scenarios match"
+      grid-class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-3"
+      @action="handleAction"
+    />
   </section>
 </template>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { Search, X } from "lucide-vue-next";
 
 import {
   IMPORT_SCENARIO_ROUTE,
@@ -9,17 +8,10 @@ import {
 } from "@/router/names";
 import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
 import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromUrlPanel.vue";
-import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
-import SortDropdown from "@/components/SortDropdown.vue";
+import StoredScenarioBrowser from "@/components/StoredScenarioBrowser.vue";
 import { DEMO_SCENARIOS, useBrowserScenarios } from "@/composables/browserScenarios";
 import { Button } from "@/components/ui/button";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import { computed, defineAsyncComponent, ref } from "vue";
+import { defineAsyncComponent, ref } from "vue";
 import { useEventListener } from "@vueuse/core";
 import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
 import LoadScenarioFromClipboardPanel from "@/modules/scenarioeditor/LoadScenarioFromClipboardPanel.vue";
@@ -32,23 +24,6 @@ const DecryptScenarioModal = defineAsyncComponent(
 );
 
 const { storedScenarios, sortOptions, onAction, loadScenario } = useBrowserScenarios();
-const scenarioQuery = ref("");
-const normalizedScenarioQuery = computed(() => scenarioQuery.value.trim().toLowerCase());
-const filteredStoredScenarios = computed(() => {
-  if (!normalizedScenarioQuery.value) {
-    return storedScenarios.value;
-  }
-
-  return storedScenarios.value.filter((scenario) => {
-    const name = scenario.name.toLowerCase();
-    const description = scenario.description?.toLowerCase() ?? "";
-
-    return (
-      name.includes(normalizedScenarioQuery.value) ||
-      description.includes(normalizedScenarioQuery.value)
-    );
-  });
-});
 
 const router = useRouter();
 const getScenarioTo = (scenarioId: string) => {
@@ -60,18 +35,6 @@ const getScenarioTo = (scenarioId: string) => {
 
 const newScenario = () => {
   router.push({ name: NEW_SCENARIO_ROUTE });
-};
-
-const onScenarioSearchKeydown = (event: KeyboardEvent) => {
-  if (event.key !== "Escape" || !scenarioQuery.value) {
-    return;
-  }
-
-  scenarioQuery.value = "";
-};
-
-const clearScenarioQuery = () => {
-  scenarioQuery.value = "";
 };
 
 const showDecryptModal = ref(false);
@@ -157,41 +120,16 @@ useEventListener("paste", (event: ClipboardEvent) => {
       <h2 class="text-heading text-3xl font-bold tracking-tight">Scenarios</h2>
     </div>
     <section v-if="storedScenarios.length > 0" class="mx-auto max-w-7xl p-6">
-      <header
-        class="border-border flex flex-col gap-4 border-b pb-5 lg:flex-row lg:items-start lg:justify-between"
+      <StoredScenarioBrowser
+        :scenarios="storedScenarios"
+        :sort-options="sortOptions"
+        search-input-id="scenario-search"
+        autofocus
+        show-clear-button
+        empty-message="No scenarios match"
+        @action="onAction"
       >
-        <div class="flex min-w-0 flex-1 flex-col gap-3">
-          <div class="max-w-xl">
-            <label for="scenario-search" class="sr-only">Search scenarios</label>
-            <InputGroup>
-              <InputGroupAddon aria-hidden="true">
-                <Search class="size-4" />
-              </InputGroupAddon>
-              <InputGroupInput
-                id="scenario-search"
-                v-model="scenarioQuery"
-                type="text"
-                placeholder="Search scenarios..."
-                autocomplete="off"
-                autofocus
-                class="h-full"
-                @keydown="onScenarioSearchKeydown"
-              />
-              <InputGroupAddon v-if="scenarioQuery" align="inline-end">
-                <InputGroupButton
-                  size="icon-xs"
-                  type="button"
-                  aria-label="Clear scenario search"
-                  @click="clearScenarioQuery"
-                >
-                  <X class="size-3.5" />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-        </div>
-        <div class="flex flex-wrap items-center gap-1 lg:ml-4 lg:justify-end">
-          <SortDropdown :options="sortOptions" />
+        <template #actions>
           <input
             ref="landingFileInputRef"
             type="file"
@@ -209,25 +147,8 @@ useEventListener("paste", (event: ClipboardEvent) => {
           <Button as-child>
             <router-link :to="{ name: NEW_SCENARIO_ROUTE }"> Create new </router-link>
           </Button>
-        </div>
-      </header>
-      <ul
-        v-if="filteredStoredScenarios.length > 0"
-        class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-      >
-        <ScenarioLinkCard
-          v-for="info in filteredStoredScenarios"
-          :key="info.id"
-          :data="info"
-          @action="onAction($event, info)"
-        />
-      </ul>
-      <div
-        v-else
-        class="text-muted-foreground mt-4 rounded-lg border border-dashed p-6 text-sm"
-      >
-        No scenarios match "{{ scenarioQuery.trim() }}".
-      </div>
+        </template>
+      </StoredScenarioBrowser>
     </section>
     <section class="mb-2">
       <p
