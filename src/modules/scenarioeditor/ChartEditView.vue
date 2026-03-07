@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
@@ -83,9 +83,18 @@ const panelWidth = ref();
 const debug = ref(false);
 const currentTab = ref<ChartTab>(ChartTabs.Chart);
 const currentChartElements = useSelectedChartElementStore();
+const activeRootUnitId = computed(() => activeUnit.value?.id ?? null);
 
 const width = computed(() => sizeToWidthHeight(options.paperSize).width);
 const height = computed(() => sizeToWidthHeight(options.paperSize).height);
+
+watch(
+  activeRootUnitId,
+  (currentId, previousId) => {
+    if (currentId !== previousId) currentChartElements.clear();
+  },
+  { immediate: true },
+);
 
 const onUnitClick = (unitNode: RenderedUnitNode) => {
   currentChartElements.selectUnit(unitNode);
@@ -199,7 +208,7 @@ const menuItems: MenuItemData<Function>[] = [
             </OrbatPanel>
           </TabsContent>
           <TabsContent value="1" class="mt-0 h-full">
-            <OrbatChartSettings chart-mode :tab="currentTab" />
+            <OrbatChartSettings chart-mode v-model:tab="currentTab" />
           </TabsContent>
         </div>
       </Tabs>
