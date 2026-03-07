@@ -1,9 +1,4 @@
 import type { Symbol as MilSymbol, SymbolOptions } from "milsymbol";
-import { type Selection } from "d3-selection";
-
-export type SVGElementSelection = Selection<SVGElement, any, any, any>;
-export type GElementSelection = Selection<SVGGElement, any, any, any>;
-export type RectElementSelection = Selection<SVGRectElement, any, any, any>;
 
 export const ChartOrientations = {
   Top: "TOP",
@@ -85,6 +80,8 @@ export interface Point {
   y: number;
 }
 
+export interface Rect extends Point, Size {}
+
 export interface BasicUnitNode {
   unit: ChartUnit;
   parent?: BasicUnitNode;
@@ -101,6 +98,11 @@ export interface UnitNodeInfo extends BasicUnitNode {
   unit: ChartUnit;
   // bounding box (including label)
   ly: number;
+  ty: number;
+  ot: number;
+  ob: number;
+  st: number;
+  sb: number;
   lx: number;
   rx: number;
   // symbol box
@@ -212,27 +214,32 @@ export interface ChartUnit {
   personnel?: Personnel[];
 }
 
-export interface RenderedElement {
-  groupElement: GElementSelection;
+export interface RenderedLink {
+  d: string;
+  options?: Partial<OrbChartOptions>;
 }
 
-export interface RenderedChart extends RenderedElement {
+export interface RenderedChart {
   levels: RenderedLevel[];
+  links: RenderedLink[];
 }
 
-export interface RenderedLevel extends RenderedElement {
+export interface RenderedLevel {
   branches: RenderedBranch[];
   options: Partial<OrbChartOptions>;
+  boundingBox: Rect;
 }
 
-export interface RenderedBranch extends RenderedElement {
+export interface RenderedBranch {
   units: RenderedUnitNode[];
   options: Partial<OrbChartOptions>;
   level: number;
+  boundingBox: Rect;
+  parentId: string | number;
 }
 
-export interface RenderedUnitNode extends RenderedElement, UnitNodeInfo {
-  boundingBox: DOMRect;
+export interface RenderedUnitNode extends UnitNodeInfo {
+  boundingBox: Size;
   parent?: RenderedUnitNode;
   options: Partial<OrbChartOptions>;
   level: number;

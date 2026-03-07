@@ -1,18 +1,13 @@
-import { select } from "d3-selection";
 import { arrSum, flattenArray, walkTree } from "./utils";
 import type {
   BasicUnitNode,
   ChartUnit,
-  GElementSelection,
   LevelLayout,
   OrbChartOptions,
-  RenderedBranch,
   RenderedChart,
   RenderedLevel,
   RenderedUnitNode,
   SpecificOptions,
-  SVGElementSelection,
-  ToSvgOptions,
 } from "./types";
 import { LevelLayouts, UnitLevelDistances, VerticalAlignments } from "./types";
 import {
@@ -22,24 +17,12 @@ import {
   MARGIN_TOP,
 } from "./defaults";
 import {
-  addConnectorAttributes,
-  addFontAttributes,
   calculateAnchorPoints,
-  createChartStyle,
-  createGroupElement,
   createInitialNodeStructure,
-  drawDebugAnchors,
-  drawDebugRect,
   drawUnitBranchConnectorPath,
   drawUnitBranchTreeLeftRightConnectorPath,
   drawUnitLevelConnectorPath,
-  putGroupAt,
 } from "./svgRender";
-import Panzoom, { type PanzoomObject } from "@panzoom/panzoom";
-
-function isStackedLayout(layout: LevelLayout) {
-  return layout === LevelLayouts.Stacked;
-}
 
 function isLeftRightLayout(layout: LevelLayout) {
   return layout === LevelLayouts.TreeRight || layout === LevelLayouts.TreeLeft;
@@ -62,16 +45,13 @@ export function isStackedTreeLayout(layout: LevelLayout) {
   );
 }
 
-class OrbatChart {
+export class OrbatChart {
   width!: number;
   height!: number;
   options: OrbChartOptions;
   groupedLevels: BasicUnitNode[][][] = [];
-  svg!: SVGElementSelection;
-  connectorGroup!: GElementSelection;
   renderedChart!: RenderedChart;
-  wrapperGroup!: GElementSelection;
-  pz: PanzoomObject | null;
+
   constructor(
     private rootNode: ChartUnit,
     options: Partial<OrbChartOptions> = {},
@@ -79,153 +59,40 @@ class OrbatChart {
   ) {
     this.options = { ...DEFAULT_OPTIONS, ...options };
     if (rootNode) this._computeOrbatInfo(rootNode);
-    this.pz = null;
   }
 
-  cleanup() {
-    // Remove event listeners
-    if (this.svg) {
-      this.svg.selectAll("g.o-unit").on("click", null);
-      this._removeSelectEventListeners();
-    }
+  cleanup() {}
 
-    this._cleanupPanZoomInteraction();
-  }
-
-  private _removeSelectEventListeners() {
-    this.svg.selectAll(".select-rect").on("click", null);
-  }
-
-  toSVG(
-    parentElement: HTMLElement,
-    {
-      width = DEFAULT_CHART_WIDTH,
-      height = DEFAULT_CHART_HEIGHT,
-      elementId,
-      enablePanZoom = false,
-    }: ToSvgOptions = {},
-  ): SVGElement {
+  calculateLayout(
+    width = DEFAULT_CHART_WIDTH,
+    height = DEFAULT_CHART_HEIGHT,
+  ): RenderedChart {
     this.width = width;
     this.height = height;
-    const renderedChart = this._createSvgRootElement(parentElement, elementId);
-    const chartGroup = createGroupElement(this.wrapperGroup, "o-chart");
-    addFontAttributes(chartGroup, this.options);
 
-    this.connectorGroup = createGroupElement(chartGroup, "o-connectors");
-    addConnectorAttributes(this.connectorGroup, this.options);
+    const renderedChart: RenderedChart = {
+      levels: [],
+      links: [],
+    };
 
-    // Pass 1: Create g elements and other svg elements
-    // Pass 2: Do unit layout
-    // Pass 3: Draw connectors
+    // Pass 1: Create initial node structure with basic sizes
     renderedChart.levels = createInitialNodeStructure(
-      chartGroup,
       this.groupedLevels,
       this.options,
       this.specificOptions,
     );
+
+    // Pass 2: Do unit layout (calculate x/y)
     this._doNodeLayout(renderedChart);
+
+    // Pass 3: Draw connectors (calculate SVG paths)
     this._drawConnectors(renderedChart);
+
+    // Pass 4: Calculate hierarchy bounding boxes for interaction
+    this._calculateHierarchyBoundingBoxes(renderedChart);
+
     this.renderedChart = renderedChart;
-    if (enablePanZoom) {
-      this._addPanZoomInteraction();
-    } else {
-      this.pz = null;
-    }
-    return this.svg.node() as SVGElement;
-  }
-
-  private _addPanZoomInteraction() {
-    this.pz = Panzoom(this.svg.node()!, {
-      maxScale: 10,
-      pinchAndPan: true,
-    });
-    this.svg.node()?.parentElement?.addEventListener("wheel", (event: WheelEvent) => {
-      this.pz?.zoomWithWheel(event);
-    });
-  }
-
-  private _cleanupPanZoomInteraction() {
-    if (this.pz) {
-      this.svg.node()?.parentElement?.removeEventListener("wheel", this.pz.zoomWithWheel);
-      this.pz.destroy();
-    }
-  }
-
-  highlightLevel(levelNumber: number) {
-    const backgroundLayer = select("#o-highlight-layer");
-    const groupElement = select(`#o-level-${levelNumber}`) as GElementSelection;
-    const bbox = groupElement.node()?.getBBox();
-    if (!bbox) return;
-    const offset = 20;
-    const tmp = backgroundLayer
-      .append("rect")
-      .attr("x", bbox.x - offset * 2)
-      .attr("y", bbox.y - offset)
-      .attr("width", bbox.width + 4 * offset)
-      .attr("height", bbox.height + 2 * offset)
-      .attr("class", "highlight select-rect");
-
-    if (this.options.onLevelClick) {
-      tmp.on("click", (e) => {
-        this.options.onLevelClick(levelNumber);
-      });
-    }
-  }
-
-  highlightGroup(renderedBranch: RenderedBranch) {
-    const backgroundLayer = select("#o-highlight-layer");
-    const groupElement = renderedBranch.groupElement;
-    const bbox = groupElement.node()!.getBBox();
-    const offset = 10;
-    const tmp = backgroundLayer
-      .append("rect")
-      .attr("x", bbox.x - offset * 2)
-      .attr("y", bbox.y - offset)
-      .attr("width", bbox.width + 4 * offset)
-      .attr("height", bbox.height + 2 * offset)
-      .attr("class", "highlight select-rect");
-    if (this.options.onBranchClick) {
-      tmp.on("click", (e) => {
-        this.options.onBranchClick(
-          renderedBranch.units[0]?.parent?.unit.id || 0,
-          renderedBranch.level,
-        );
-      });
-    }
-  }
-
-  private _createSvgRootElement(
-    parentElement: HTMLElement,
-    elementId?: string,
-  ): RenderedChart {
-    parentElement.innerHTML = "";
-    const svg = select(parentElement)
-      .append<SVGElement>("svg")
-      .attr("viewBox", `0 0 ${this.width} ${this.height}`)
-      .attr("class", "orbat-chart");
-    if (elementId) svg.attr("id", elementId);
-
-    svg.append("style").text(createChartStyle(this.options));
-    svg.attr("width", "100%");
-    svg.attr("height", "100%");
-    this.wrapperGroup = createGroupElement(svg, "o-wrapper");
-    if (this.options.debug) {
-      this.wrapperGroup
-        .append<SVGRectElement>("rect")
-        .attr("fill", "none")
-        .attr("stroke", "red")
-        .attr("y", "0")
-        .attr("x", "0")
-        .attr("width", this.width)
-        .attr("height", this.height);
-    }
-
-    createGroupElement(this.wrapperGroup, "", "o-highlight-layer");
-    this.svg = svg;
-    return {
-      groupElement: (<unknown>this.wrapperGroup) as GElementSelection,
-      levels: [],
-    };
+    return renderedChart;
   }
 
   private _computeOrbatInfo(rootNode: ChartUnit) {
@@ -296,7 +163,6 @@ class OrbatChart {
   ) {
     const levelOptions = { ...this.options, ...renderedLevel.options };
     const chartWidth = this.width;
-    const wrapperGroup = this.wrapperGroup;
 
     const renderGroups = renderedLevel.branches;
     const unitsOnLevel = flattenArray<RenderedUnitNode>(
@@ -324,13 +190,11 @@ class OrbatChart {
         console.warn("Unhandled layout", levelLayout);
     }
 
-    if (levelOptions.debug) drawDebugRect(renderedLevel.groupElement);
-
     function _doHorizontalLayout() {
       let xIdx = 0;
       let prevX = -padding / 2;
 
-      renderedLevel.branches.forEach((unitBranch, groupIdx) => {
+      renderedLevel.branches.forEach((unitBranch) => {
         const branchOptions = { ...levelOptions, ...unitBranch.options };
         for (const unitNode of unitBranch.units) {
           let x;
@@ -343,15 +207,11 @@ class OrbatChart {
 
           unitNode.x = x;
           unitNode.y = y;
-          calculateAnchorPoints(unitNode);
+          calculateAnchorPoints(unitNode, unitOptions);
 
           prevX = unitNode.x + unitNode.boundingBox.width / 2;
-          putGroupAt(unitNode.groupElement, unitNode, x, y, unitOptions.debug);
-
-          if (unitOptions.debug) drawDebugAnchors(wrapperGroup, unitNode);
           xIdx += 1;
         }
-        if (branchOptions.debug) drawDebugRect(unitBranch.groupElement, "yellow");
       });
     }
 
@@ -374,14 +234,10 @@ class OrbatChart {
           const ny = prevY;
           unitNode.x = x;
           unitNode.y = ny;
-          calculateAnchorPoints(unitNode);
+          calculateAnchorPoints(unitNode, unitOptions);
 
           if (yIdx % 2) prevY = unitNode.ly + unitOptions.stackedOffset;
-
-          putGroupAt(unitNode.groupElement, unitNode, x, ny, unitOptions.debug);
-          if (unitOptions.debug) drawDebugAnchors(wrapperGroup, unitNode);
         }
-        if (branchOptions.debug) drawDebugRect(unitBranch.groupElement, "yellow");
       });
     }
 
@@ -390,7 +246,7 @@ class OrbatChart {
       renderedLevel.branches.forEach((unitBranch, groupIdx) => {
         const branchOptions = { ...levelOptions, ...unitBranch.options };
         let prevY = y;
-        for (const [yIdx, unitNode] of unitBranch.units.entries()) {
+        for (const unitNode of unitBranch.units) {
           const unitOptions = { ...branchOptions, ...unitNode.options };
           let x = unitNode.parent
             ? unitNode.parent.x
@@ -404,13 +260,10 @@ class OrbatChart {
           const ny = prevY;
           unitNode.x = x;
           unitNode.y = ny;
-          calculateAnchorPoints(unitNode);
+          calculateAnchorPoints(unitNode, unitOptions);
 
           prevY = unitNode.ly + unitOptions.stackedOffset;
-          putGroupAt(unitNode.groupElement, unitNode, x, ny, unitOptions.debug);
-          if (unitOptions.debug) drawDebugAnchors(wrapperGroup, unitNode);
         }
-        if (branchOptions.debug) drawDebugRect(unitBranch.groupElement, "yellow");
       });
     }
   }
@@ -419,98 +272,88 @@ class OrbatChart {
     const nLevels = this.options.maxLevels || renderedChart.levels.length;
     renderedChart.levels.forEach((renderedLevel, yIdx) => {
       const levelOptions = { ...this.options, ...renderedLevel.options };
-      const currentLevelGElement =
-        yIdx > 0
-          ? createGroupElement(this.connectorGroup, "", `o-connectors-level-${yIdx}`)
-          : null;
 
-      if (currentLevelGElement)
-        addConnectorAttributes(currentLevelGElement, levelOptions);
-      renderedLevel.branches.forEach((branch, groupIdx) => {
-        const parent = branch.units[0].parent;
+      renderedLevel.branches.forEach((branch) => {
         const currentLevelLayout =
           yIdx === nLevels - 1 ? this.options.lastLevelLayout : LevelLayouts.Horizontal;
         const branchOptions = { ...levelOptions, ...branch.options };
-        if (!currentLevelGElement) return;
 
-        const branchId = `o-connectors-group-${parent ? parent.unit.id : 0}`;
-        const currentBranchElement = createGroupElement(
-          currentLevelGElement,
-          "",
-          branchId,
-        );
-        addConnectorAttributes(currentBranchElement, branchOptions);
         branch.units.forEach((unitNode, idx) => {
           const unitOptions = { ...branchOptions, ...unitNode.options };
           if (currentLevelLayout === LevelLayouts.Stacked && idx > 0) return;
           if (isLeftRightLayout(currentLevelLayout)) return;
           if (currentLevelLayout === LevelLayouts.Tree) return;
-          drawUnitBranchConnectorPath(currentBranchElement, unitNode, unitOptions);
+
+          const pathD = drawUnitBranchConnectorPath(unitNode, unitOptions);
+          if (pathD) renderedChart.links.push({ d: pathD, options: unitOptions });
         });
+
         switch (currentLevelLayout) {
           case LevelLayouts.TreeRight:
           case LevelLayouts.TreeLeft:
           case LevelLayouts.Tree:
-            drawUnitBranchTreeLeftRightConnectorPath(
-              currentBranchElement,
+            const treeLinks = drawUnitBranchTreeLeftRightConnectorPath(
               branch.units,
               currentLevelLayout,
               branchOptions,
             );
+            renderedChart.links.push(...treeLinks);
             break;
           default:
-            drawUnitLevelConnectorPath(currentBranchElement, branch.units, branchOptions);
+            const levelLinks = drawUnitLevelConnectorPath(branch.units, branchOptions);
+            renderedChart.links.push(...levelLinks);
         }
       });
     });
   }
 
-  public makeInteractive() {
-    this._addSelectionLayer(this.renderedChart);
-  }
+  private _calculateHierarchyBoundingBoxes(renderedChart: RenderedChart) {
+    renderedChart.levels.forEach((level) => {
+      let lMinX = Infinity,
+        lMinY = Infinity,
+        lMaxX = -Infinity,
+        lMaxY = -Infinity;
 
-  private _addSelectionLayer(renderedChart: RenderedChart) {
-    renderedChart.levels.forEach((level, levelNumber) => {
-      this.highlightLevel(levelNumber);
       level.branches.forEach((branch) => {
-        this.highlightGroup(branch);
+        let bMinX = Infinity,
+          bMinY = Infinity,
+          bMaxX = -Infinity,
+          bMaxY = -Infinity;
+
+        branch.units.forEach((unit) => {
+          const { x } = unit;
+          const ux = x - unit.boundingBox.width / 2;
+          const uy = unit.y - unit.octagonAnchor.y;
+          const urx = unit.x + unit.boundingBox.width / 2;
+          const uby = uy + unit.boundingBox.height;
+
+          bMinX = Math.min(bMinX, ux);
+          bMinY = Math.min(bMinY, uy);
+          bMaxX = Math.max(bMaxX, urx);
+          bMaxY = Math.max(bMaxY, uby);
+        });
+
+        // Add some padding to the highlight box
+        const padding = 10;
+        branch.boundingBox = {
+          x: bMinX - padding,
+          y: bMinY - padding,
+          width: bMaxX - bMinX + padding * 2,
+          height: bMaxY - bMinY + padding * 2,
+        };
+
+        lMinX = Math.min(lMinX, branch.boundingBox.x);
+        lMinY = Math.min(lMinY, branch.boundingBox.y);
+        lMaxX = Math.max(lMaxX, branch.boundingBox.x + branch.boundingBox.width);
+        lMaxY = Math.max(lMaxY, branch.boundingBox.y + branch.boundingBox.height);
       });
+
+      level.boundingBox = {
+        x: lMinX,
+        y: lMinY,
+        width: lMaxX - lMinX,
+        height: lMaxY - lMinY,
+      };
     });
   }
-
-  public removeSelectionLayer() {
-    this._removeSelectEventListeners();
-    this.svg.selectAll("#o-highlight-layer rect").remove();
-  }
-
-  public highlightLevels(levelIndexes: number[]) {
-    console.log("Not implemented yet", levelIndexes);
-  }
-
-  public resetZoom() {
-    this.pz?.reset();
-  }
-
-  public zoomIn() {
-    this.pz?.zoomIn();
-  }
-
-  public zoomOut() {
-    this.pz?.zoomOut();
-  }
-
-  public getPanScale() {
-    if (this.pz) {
-      return { pan: this.pz.getPan(), scale: this.pz.getScale() };
-    } else return null;
-  }
-
-  public setPanScale(pan: { x: number; y: number }, scale: number) {
-    if (this.pz) {
-      this.pz.zoom(scale);
-      setTimeout(() => this.pz?.pan(pan.x, pan.y));
-    }
-  }
 }
-
-export { OrbatChart };
