@@ -12,6 +12,7 @@ export function filterUnits(
   query: string = "",
   locationFilter = false,
   resetOpen = true,
+  effectiveSubUnits?: Record<EntityId, EntityId[]>,
 ): NOrbatItemData[] {
   const filteredUnits: NOrbatItemData[] = [];
   const re = new RegExp(query, "i");
@@ -33,8 +34,9 @@ export function filterUnits(
     } else if (parentMatched && resetOpen) {
       oi.unit._isOpen = false;
     }
-    if (currentUnit.subUnits?.length) {
-      for (const subUnit of currentUnit.subUnits) {
+    const subUnits = effectiveSubUnits?.[currentUnitId] ?? currentUnit.subUnits;
+    if (subUnits?.length) {
+      for (const subUnit of subUnits) {
         const su = helper(subUnit, matched || parentMatched);
         if (su.length) {
           childMatched = true;

@@ -21,6 +21,7 @@ import { type EntityId } from "@/types/base";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { monitorForExternal } from "@atlaskit/pragmatic-drag-and-drop/external/adapter";
 import { isSideDragItem, isSideGroupDragItem, isUnitDragItem } from "@/types/draggables";
+import { usePlaybackStore } from "@/stores/playbackStore";
 
 import {
   extractInstruction,
@@ -35,6 +36,7 @@ const props = withDefaults(defineProps<Props>(), { hideFilter: false });
 const activeScenario = injectStrict(activeScenarioKey);
 const { store, unitActions, io, time } = activeScenario;
 const activeParentId = injectStrict(activeParentKey);
+const playback = usePlaybackStore();
 
 const isDragging = ref(false);
 const isDraggingUnit = ref(false);
@@ -269,6 +271,34 @@ function onUnitDrop(
 ) {
   const isDuplicateAction = options.isDuplicateAction ?? false;
   const isDuplicateState = options.isDuplicateState ?? false;
+
+  if (playback.isRecording) {
+    groupUpdate(() => {
+      const selUnits = new Set([...selectedUnitIds.value, unit.id]);
+      for (const id of selUnits) {
+        let parentId = destinationUnit.id;
+        let index: number | undefined = undefined;
+
+        if (target === "above" || target === "below") {
+          parentId =
+            state.effectiveParentMap[destinationUnit.id] ??
+            (destinationUnit as NUnit)._pid;
+          const siblings =
+            state.effectiveSubUnits[parentId] ??
+            state.effectiveSideGroupSubUnits[parentId];
+          if (siblings) {
+            const destIndex = siblings.indexOf(destinationUnit.id);
+            if (destIndex !== -1) {
+              index = target === "above" ? destIndex : destIndex + 1;
+            }
+          }
+        }
+        unitActions.addParentChangeStateEntry(id, parentId, state.currentTime, index);
+      }
+    });
+    return;
+  }
+
   groupUpdate(() => {
     const selUnits = new Set([...selectedUnitIds.value, unit.id]);
     for (const id of selUnits) {

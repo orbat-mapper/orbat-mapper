@@ -194,13 +194,23 @@ const onSideAction = (action: SideAction) => {
       const sideGroup = store.state.sideGroupMap[sideGroupId];
       if (sideGroup) sideGroup._isOpen = true;
     }
-    unitActions.walkSide(props.side.id, (unit) => {
-      unit._isOpen = true;
-    });
+    unitActions.walkSide(
+      props.side.id,
+      (unit) => {
+        unit._isOpen = true;
+      },
+      undefined,
+      true,
+    );
   } else if (action === SideActions.Collapse) {
-    unitActions.walkSide(props.side.id, (unit) => {
-      unit._isOpen = false;
-    });
+    unitActions.walkSide(
+      props.side.id,
+      (unit) => {
+        unit._isOpen = false;
+      },
+      undefined,
+      true,
+    );
     for (const sideGroupId of props.side.groups) {
       const sideGroup = store.state.sideGroupMap[sideGroupId];
       if (sideGroup) sideGroup._isOpen = false;
@@ -360,10 +370,16 @@ const onHeaderKeydown = (event: KeyboardEvent) => {
           v-model:location-filter="hasLocationFilter"
         />
       </div>
-      <div v-if="side.subUnits.length" class="mt-2">
+      <div
+        v-if="
+          (store.state.effectiveSideGroupSubUnits?.[side.id] ?? side.subUnits)?.length
+        "
+        class="mt-2"
+      >
         <OrbatTree
-          :units="side.subUnits"
+          :units="store.state.effectiveSideGroupSubUnits?.[side.id] ?? side.subUnits"
           :unit-map="store.state.unitMap"
+          :effective-sub-units="store.state.effectiveSubUnits"
           :class="{ 'opacity-50': isHidden }"
           :filter-query="filterQuery"
           :location-filter="hasLocationFilter"

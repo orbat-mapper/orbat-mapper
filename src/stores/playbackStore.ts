@@ -10,6 +10,7 @@ export const usePlaybackStore = defineStore("playbackStore", () => {
 
   const [playbackRunning, togglePlayback] = useToggle(false);
   const [playbackLooping, toggleLooping] = useToggle(false);
+  const [isRecording, toggleRecording] = useToggle(false);
 
   function increaseSpeed() {
     playbackSpeed.value *= 2;
@@ -50,5 +51,7 @@ export const usePlaybackStore = defineStore("playbackStore", () => {
     playbackLooping,
     toggleLooping,
     clearMarkers,
+    isRecording,
+    toggleRecording,
   };
 });

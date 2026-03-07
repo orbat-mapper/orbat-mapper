@@ -2,8 +2,12 @@ import type { NewScenarioStore } from "@/scenariostore/newScenarioStore";
 import type { NState, NUnit } from "@/types/internalModels";
 import { mergeArray, nanoid } from "@/utils";
 import { klona } from "klona";
-import type { EntityId, HistoryAction } from "@/types/base";
-import { createInitialState, updateCurrentUnitState } from "@/scenariostore/time";
+import type { EntityId, HistoryAction, ScenarioTime } from "@/types/base";
+import {
+  createInitialState,
+  rebuildEffectiveHierarchy,
+  updateCurrentUnitState,
+} from "@/scenariostore/time";
 import type { State, StateAdd } from "@/types/scenarioModels";
 import { type Position } from "@/types/scenarioGeoModels";
 
@@ -51,6 +55,7 @@ function isNotEmptyState(state: NState) {
     state.diff ||
     state.location ||
     state.sidc ||
+    state.parent ||
     state.symbolRotation !== undefined ||
     state.symbolOptions ||
     state.textAmplifiers ||
@@ -67,6 +72,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     if (!unit) return;
     const timestamp = state.currentTime;
     updateCurrentUnitState(unit, timestamp);
+    rebuildEffectiveHierarchy(state);
     state.unitStateCounter++;
   }
 
@@ -106,7 +112,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
         for (let i = 0, len = u.state.length; i < len; i++) {
           if (t <= u.state[i].t) {
             if (merge && u.state[i].t === t) {
-              const { id, t, update, diff, ...rest } = newState;
+              const { update, diff, ...rest } = newState;
               Object.assign(u.state[i], rest);
               if (update) {
                 const source = u.state[i]?.update || {};
@@ -215,6 +221,15 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     );
   }
 
+  function addParentChangeStateEntry(
+    unitId: EntityId,
+    newParentId: EntityId,
+    timestamp: ScenarioTime,
+    index?: number,
+  ) {
+    addUnitStateEntry(unitId, { t: timestamp, parent: { id: newParentId, index } }, true);
+  }
+
   return {
     clearUnitState,
     updateUnitState,
@@ -224,5 +239,6 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     updateUnitStateEntry,
     setUnitState,
     updateUnitStateVia,
+    addParentChangeStateEntry,
   };
 }

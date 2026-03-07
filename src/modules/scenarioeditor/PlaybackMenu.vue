@@ -5,6 +5,7 @@ import {
   IconClockStart,
   IconPause,
   IconPlay,
+  IconRecord,
   IconSpeedometer,
   IconSpeedometerSlow,
 } from "@iconify-prerendered/vue-mdi";
@@ -36,7 +37,16 @@ const playback = usePlaybackStore();
     <Button
       variant="ghost"
       size="icon"
-      title="Undo action (ctrl+z)"
+      title="Toggle recording time-varying changes"
+      @click="playback.toggleRecording()"
+      :class="playback.isRecording ? 'text-destructive hover:text-destructive' : ''"
+    >
+      <IconRecord class="size-6" />
+    </Button>
+    <Button
+      variant="ghost"
+      size="icon"
+      title="Play/Pause playback (k, alt+p)"
       @click="playback.togglePlayback()"
     >
       <IconPause v-if="playback.playbackRunning" class="size-6" />
@@ -54,6 +64,10 @@ const playback = usePlaybackStore();
           <span>{{ playback.playbackRunning ? "Pause" : "Play" }}</span>
           <DropdownMenuShortcut>k, alt+p</DropdownMenuShortcut>
         </DropdownMenuItem>
+        <DropdownMenuCheckboxItem v-model="playback.isRecording" @select.prevent>
+          Record changes
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem @select.prevent="playback.increaseSpeed()">
           <IconSpeedometer class="mr-2 h-4 w-4" />
           <span>Speed up</span>

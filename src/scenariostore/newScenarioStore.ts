@@ -84,6 +84,12 @@ export interface ScenarioState {
   symbolFillColorMap: Record<string, NSymbolFillColor>;
   customSymbolMap: Record<string, CustomSymbol>;
   boundingBox: BBox | null;
+  /** Maps unitId → effective subUnit IDs at current time. Populated by setCurrentTime(). */
+  effectiveSubUnits: Record<EntityId, EntityId[]>;
+  /** Maps sideGroupId → effective subUnit IDs at current time. */
+  effectiveSideGroupSubUnits: Record<EntityId, EntityId[]>;
+  /** Maps unitId → effective parent ID at current time. */
+  effectiveParentMap: Record<EntityId, EntityId>;
 }
 
 export type NewScenarioStore = ReturnType<typeof useNewScenarioStore>;
@@ -494,6 +500,9 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     symbolFillColorMap,
     customSymbolMap,
     boundingBox: scenario.settings?.boundingBox ?? null,
+    effectiveSubUnits: {},
+    effectiveSideGroupSubUnits: {},
+    effectiveParentMap: {},
   };
 }
 

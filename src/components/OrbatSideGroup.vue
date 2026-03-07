@@ -199,15 +199,19 @@ const toggleOpen = () => {
 const onSideGroupAction = (group: NSideGroup, action: SideAction) => {
   if (action === SideActions.Expand) {
     isOpen.value = true;
-    group.subUnits.forEach((unitId) => {
+    const children = state.effectiveSideGroupSubUnits?.[group.id] ?? group.subUnits;
+    children.forEach((unitId: string) => {
       unitActions.walkSubUnits(unitId, (unit) => (unit._isOpen = true), {
         includeParent: true,
+        useEffective: true,
       });
     });
   } else if (action === SideActions.Collapse) {
-    group.subUnits.forEach((unitId) => {
+    const children = state.effectiveSideGroupSubUnits?.[group.id] ?? group.subUnits;
+    children.forEach((unitId: string) => {
       unitActions.walkSubUnits(unitId, (unit) => (unit._isOpen = false), {
         includeParent: true,
+        useEffective: true,
       });
     });
     isOpen.value = false;
@@ -340,8 +344,9 @@ const onHeaderKeydown = (event: KeyboardEvent) => {
     />
     <section v-if="isOpen">
       <OrbatTree
-        :units="group.subUnits"
+        :units="state.effectiveSideGroupSubUnits?.[group.id] ?? group.subUnits"
         :unit-map="state.unitMap"
+        :effective-sub-units="state.effectiveSubUnits"
         class="mt-0"
         :class="{ 'opacity-50': isHidden }"
         :filter-query="filterQuery"

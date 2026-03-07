@@ -1,4 +1,4 @@
-import type { NewScenarioStore } from "./newScenarioStore";
+import type { NewScenarioStore, ScenarioState } from "./newScenarioStore";
 import type { CurrentState, ScenarioEvent } from "@/types/scenarioModels";
 import type {
   NScenarioEvent,
@@ -40,6 +40,7 @@ export function createInitialState(unit: NUnit): CurrentState | null {
       type: "initial",
       sidc: unit.sidc,
       symbolRotation: 0,
+      parent: { id: unit._pid },
       equipment: klona(unit.equipment),
       personnel: klona(unit.personnel),
       supplies: klona(unit.supplies),
@@ -176,6 +177,63 @@ function createInitialFeatureState(
   };
 }
 
+export function rebuildEffectiveHierarchy(s: ScenarioState) {
+  const effectiveSubUnits: Record<EntityId, EntityId[]> = {};
+  const effectiveSideGroupSubUnits: Record<EntityId, EntityId[]> = {};
+  const effectiveParentMap: Record<EntityId, EntityId> = {};
+
+  // Initialize from base hierarchy
+  for (const [id, unit] of Object.entries(s.unitMap)) {
+    effectiveSubUnits[id] = [...unit.subUnits];
+    effectiveParentMap[id] = unit._pid;
+  }
+  for (const [id, sg] of Object.entries(s.sideGroupMap)) {
+    effectiveSideGroupSubUnits[id] = [...sg.subUnits];
+  }
+  for (const [id, side] of Object.entries(s.sideMap || {})) {
+    effectiveSideGroupSubUnits[id] = [...side.subUnits];
+  }
+
+  // Apply time-based parent changes
+  for (const [id, unit] of Object.entries(s.unitMap)) {
+    const newParent = unit._state?.parent;
+    if (newParent && newParent.id !== unit._pid) {
+      // Remove from old parent's effective children
+      const oldParent = unit._pid;
+      if (effectiveSubUnits[oldParent]) {
+        effectiveSubUnits[oldParent] = effectiveSubUnits[oldParent].filter(
+          (childId) => childId !== id,
+        );
+      } else if (effectiveSideGroupSubUnits[oldParent]) {
+        effectiveSideGroupSubUnits[oldParent] = effectiveSideGroupSubUnits[
+          oldParent
+        ].filter((childId) => childId !== id);
+      }
+
+      // Insert into new parent's children at the specified index (or append)
+      const insertInto = (arr: EntityId[]) => {
+        const idx = newParent.index;
+        if (idx !== undefined && idx >= 0 && idx <= arr.length) {
+          arr.splice(idx, 0, id);
+        } else {
+          arr.push(id);
+        }
+      };
+      if (effectiveSubUnits[newParent.id]) {
+        insertInto(effectiveSubUnits[newParent.id]);
+      } else if (effectiveSideGroupSubUnits[newParent.id]) {
+        insertInto(effectiveSideGroupSubUnits[newParent.id]);
+      }
+
+      effectiveParentMap[id] = newParent.id;
+    }
+  }
+
+  s.effectiveSubUnits = effectiveSubUnits;
+  s.effectiveSideGroupSubUnits = effectiveSideGroupSubUnits;
+  s.effectiveParentMap = effectiveParentMap;
+}
+
 export function useScenarioTime(store: NewScenarioStore) {
   const { state, update } = store;
 
@@ -185,6 +243,7 @@ export function useScenarioTime(store: NewScenarioStore) {
     Object.values(state.unitMap).forEach((unit) =>
       updateCurrentUnitState(unit, timestamp),
     );
+    rebuildEffectiveHierarchy(state);
     Object.values(state.layerMap).forEach((layer) => {
       const visibleFromT = layer.visibleFromT || Number.MIN_SAFE_INTEGER;
       const visibleUntilT = layer.visibleUntilT || Number.MAX_SAFE_INTEGER;

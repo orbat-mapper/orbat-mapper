@@ -19,6 +19,7 @@ import {
 interface Props {
   units: EntityId[];
   unitMap: Record<EntityId, NUnit>;
+  effectiveSubUnits?: Record<EntityId, EntityId[]>;
   filterQuery?: string;
   locationFilter?: boolean;
   symbolOptions?: UnitSymbolOptions;
@@ -216,10 +217,10 @@ function expandSubtree(unitId: EntityId) {
   const stack = [unitId];
   while (stack.length) {
     const id = stack.pop()!;
-    const unit = props.unitMap[id];
-    if (!unit?.subUnits?.length) continue;
+    const children = props.effectiveSubUnits?.[id] ?? props.unitMap[id]?.subUnits;
+    if (!children?.length) continue;
     next.add(id);
-    for (const childId of unit.subUnits) {
+    for (const childId of children) {
       if (props.unitMap[childId]) stack.push(childId);
     }
   }
@@ -232,10 +233,10 @@ function collapseSubtree(unitId: EntityId) {
   const stack = [unitId];
   while (stack.length) {
     const id = stack.pop()!;
-    const unit = props.unitMap[id];
-    if (!unit?.subUnits?.length) continue;
+    const children = props.effectiveSubUnits?.[id] ?? props.unitMap[id]?.subUnits;
+    if (!children?.length) continue;
     next.delete(id);
-    for (const childId of unit.subUnits) {
+    for (const childId of children) {
       if (props.unitMap[childId]) stack.push(childId);
     }
   }
@@ -273,8 +274,9 @@ function buildUnfilteredTree(
     const unit = unitMap[unitId];
     if (!unit) return null;
 
+    const childIds = props.effectiveSubUnits?.[unitId] ?? unit.subUnits ?? [];
     const children: NOrbatItemData[] = [];
-    for (const childId of unit.subUnits || []) {
+    for (const childId of childIds) {
       const child = walk(childId);
       if (child) children.push(child);
     }
@@ -310,6 +312,7 @@ watchEffect(() => {
     filterQuery,
     locationFilter,
     resetOpen,
+    props.effectiveSubUnits,
   );
   previousFilterQuery = filterQuery;
 });

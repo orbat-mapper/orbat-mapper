@@ -35,6 +35,11 @@ export interface State extends Partial<ScenarioEventDescription> {
   viaStartTime?: ScenarioTime;
   reinforcedStatus?: ReinforcedStatus;
   status?: string | null;
+  /** Time-varying parent override */
+  parent?: {
+    id: EntityId;
+    index?: number;
+  };
   // an update replaces the current state with the new state
   update?: {
     equipment?: UpdateUnitEquipment[];
@@ -57,6 +62,11 @@ export type CurrentStateType = "initial" | "interpolated";
 
 export interface CurrentState extends Omit<NState, "id"> {
   type?: CurrentStateType;
+  /** Effective parent at current time */
+  parent?: {
+    id: EntityId;
+    index?: number;
+  };
   equipment?: NUnitEquipment[];
   personnel?: NUnitPersonnel[];
   supplies?: NUnitSupply[];
