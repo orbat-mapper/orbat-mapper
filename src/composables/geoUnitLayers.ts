@@ -170,6 +170,24 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     { immediate: true },
   );
 
+  function getOrCreateCachedUnitStyle(
+    unit: ReturnType<typeof getUnitById>,
+    unitId: string,
+  ) {
+    if (!unit) return;
+
+    let unitStyle = unitStyleCache.get(unit._ikey ?? unitId);
+    if (!unitStyle) {
+      const symbolOptions = getCombinedSymbolOptions(unit);
+      const { style, cacheKey } = createUnitStyle(unit, symbolOptions, scenario);
+      unitStyle = style;
+      unit._ikey = cacheKey;
+      unitStyleCache.set(unit._ikey ?? unitId, unitStyle);
+    }
+
+    return unitStyle;
+  }
+
   function unitStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
 
@@ -198,16 +216,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       return style;
     }
 
-    let unitStyle = unitStyleCache.get(unit._ikey ?? unitId);
-    if (!unitStyle) {
-      const symbolOptions = getCombinedSymbolOptions(unit);
-      const { style, cacheKey } = createUnitStyle(unit, symbolOptions, scenario);
-      unitStyle = style;
-      unit._ikey = cacheKey;
-      unitStyleCache.set(unit._ikey ?? unitId, unitStyle);
-    }
-
-    return unitStyle;
+    return getOrCreateCachedUnitStyle(unit, unitId);
   }
 
   function labelStyleFunction(feature: FeatureLike, resolution: number) {
@@ -224,18 +233,16 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
       return;
     }
 
-    let labelData = labelStyleCache.get(unitId);
     if (!unit) return;
+    let labelData = labelStyleCache.get(unitId);
     if (!labelData) {
-      const unitStyle = unitStyleCache.get(unit._ikey ?? unitId);
+      const unitStyle = getOrCreateCachedUnitStyle(unit, unitId);
       labelData = createUnitLabelData(unit, unitStyle, {
         wrapLabels: mapSettings.mapWrapUnitLabels,
         wrapWidth: mapSettings.mapWrapLabelWidth,
       });
 
-      if (unitStyle) {
-        labelStyleCache.set(unitId, labelData);
-      }
+      labelStyleCache.set(unitId, labelData);
     }
 
     const textStyle = unitLabelStyle.getText()!;
