@@ -148,20 +148,22 @@ export function useUnitManipulations(store: NewScenarioStore) {
   }
 
   function removeTimedHierarchyReferences(targetIds: Set<EntityId>, s = state) {
-    let changed = false;
+    let anyChanged = false;
     Object.values(s.unitMap).forEach((unit) => {
       if (!unit.state?.length) return;
+      let unitChanged = false;
       unit.state.forEach((stateEntry) => {
         if (stateEntry.hierarchy && targetIds.has(stateEntry.hierarchy.targetId)) {
           delete stateEntry.hierarchy;
-          changed = true;
+          unitChanged = true;
+          anyChanged = true;
         }
       });
-      if (changed) {
+      if (unitChanged) {
         unit.state = removeUnusedUnitStateEntries(unit) ?? [];
       }
     });
-    if (changed) {
+    if (anyChanged) {
       refreshHierarchyTimelineMetadata(s);
     }
   }
