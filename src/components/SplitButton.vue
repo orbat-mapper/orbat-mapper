@@ -19,12 +19,23 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), { static: false });
 const emit = defineEmits(["update:activeItem"]);
+const fallbackItem: ButtonGroupItem = { label: "", onClick: () => {}, disabled: true };
 
 const _activeItem = ref(props.items[0]);
 
+const resolvedActiveItem = computed(() => {
+  const candidate =
+    props.activeItem || _activeItem.value || props.items[0] || fallbackItem;
+  return (
+    props.items.find((item) => item.label === candidate.label) ||
+    props.items[0] ||
+    fallbackItem
+  );
+});
+
 const activeItemRef = computed({
   get() {
-    return props.activeItem || _activeItem.value;
+    return resolvedActiveItem.value;
   },
   set(v) {
     _activeItem.value = v;

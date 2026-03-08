@@ -6,6 +6,10 @@ import type { EntityId, HistoryAction } from "@/types/base";
 import { createInitialState, updateCurrentUnitState } from "@/scenariostore/time";
 import type { State, StateAdd } from "@/types/scenarioModels";
 import { type Position } from "@/types/scenarioGeoModels";
+import {
+  refreshHierarchyTimelineMetadata,
+  syncTimedHierarchyProjection,
+} from "@/scenariostore/hierarchy";
 
 export function removeUnusedUnitStateEntries(unit: NUnit) {
   if (!unit || !unit.state) return;
@@ -55,7 +59,8 @@ function isNotEmptyState(state: NState) {
     state.symbolOptions ||
     state.textAmplifiers ||
     state.status ||
-    state.reinforcedStatus
+    state.reinforcedStatus ||
+    state.hierarchy
   );
 }
 
@@ -67,6 +72,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     if (!unit) return;
     const timestamp = state.currentTime;
     updateCurrentUnitState(unit, timestamp);
+    syncTimedHierarchyProjection(state, timestamp);
     state.unitStateCounter++;
   }
 
@@ -77,6 +83,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
         if (!_unit) return;
         _unit.state = [];
         _unit._state = createInitialState(_unit);
+        refreshHierarchyTimelineMetadata(s);
       },
       { label: "clearUnitState", value: unitId },
     );
@@ -89,6 +96,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       if (!_unit) return;
       const index = _unit.state?.findIndex((s) => s.id === stateId) ?? -1;
       if (index >= 0) _unit.state?.splice(index, 1);
+      refreshHierarchyTimelineMetadata(s);
     });
 
     updateUnitState(unitId);
@@ -148,10 +156,12 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
               u.state.splice(i, 0, newState as NState);
             }
 
+            refreshHierarchyTimelineMetadata(s);
             return;
           }
         }
         u.state.push(newState as NState);
+        refreshHierarchyTimelineMetadata(s);
       },
       { label: "addUnitPosition", value: unitId },
     );
@@ -163,6 +173,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       const _unit = s.unitMap[unitId];
       if (!_unit) return;
       _unit.state?.splice(index, 1);
+      refreshHierarchyTimelineMetadata(s);
     });
 
     updateUnitState(unitId);
@@ -174,6 +185,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       if (!unit?.state) return;
       Object.assign(unit.state[index], data);
       unit.state.sort(({ t: a }, { t: b }) => (a < b ? -1 : a > b ? 1 : 0));
+      refreshHierarchyTimelineMetadata(s);
     });
     state.unitStateCounter++;
 
@@ -185,6 +197,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       const unit = s.unitMap[unitId];
       if (!unit) return;
       unit.state = state;
+      refreshHierarchyTimelineMetadata(s);
     });
     updateUnitState(unitId);
   }

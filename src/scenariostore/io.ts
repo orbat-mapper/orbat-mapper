@@ -118,21 +118,29 @@ function getScenarioEvents(state: ScenarioState): ScenarioEvent[] {
 function getSides(state: ScenarioState): Side[] {
   function getSideGroup(groupId: EntityId): SideGroup {
     const group = state.sideGroupMap[groupId];
+    const { _baseSubUnits, ...rest } = group;
     return {
-      ...group,
-      subUnits: group.subUnits.map((unitId) => serializeUnit(unitId, state)),
+      ...rest,
+      subUnits: (_baseSubUnits ?? group.subUnits).map((unitId) =>
+        serializeUnit(unitId, state),
+      ),
     };
   }
 
   return state.sides
     .map((sideId) => state.sideMap[sideId])
-    .map((nSide) => ({
-      ...nSide,
-      groups: nSide.groups.map((groupId) => getSideGroup(groupId)),
-      subUnits: nSide.subUnits.length
-        ? nSide.subUnits.map((unitId) => serializeUnit(unitId, state))
-        : undefined,
-    }));
+    .map((nSide) => {
+      const { _baseSubUnits, ...rest } = nSide;
+      return {
+        ...rest,
+        groups: nSide.groups.map((groupId) => getSideGroup(groupId)),
+        subUnits: (_baseSubUnits ?? nSide.subUnits).length
+          ? (_baseSubUnits ?? nSide.subUnits).map((unitId) =>
+              serializeUnit(unitId, state),
+            )
+          : undefined,
+      };
+    });
 }
 
 export type SerializeUnitOptions = {
@@ -153,14 +161,16 @@ export function serializeUnit(
   });
 
   if (rangeRings?.length === 0) rangeRings = undefined;
-  const { id, state, ...rest } = nUnit;
+  const { id, state, _basePid, _baseSubUnits, ...rest } = nUnit;
 
   return {
     id: newId ? nanoid() : id,
     ...rest,
     status: nUnit.status ? scnState.unitStatusMap[nUnit.status]?.name : undefined,
     subUnits: includeSubUnits
-      ? nUnit.subUnits.map((subUnitId) => serializeUnit(subUnitId, scnState, options))
+      ? (_baseSubUnits ?? nUnit.subUnits).map((subUnitId) =>
+          serializeUnit(subUnitId, scnState, options),
+        )
       : [],
     equipment,
     personnel,

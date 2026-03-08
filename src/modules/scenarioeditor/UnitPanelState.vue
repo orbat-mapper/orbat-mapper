@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, type VNode } from "vue";
+import { computed, nextTick, ref, watch, type VNode } from "vue";
 import {
   IconCrosshairsGps,
   IconMapMarkerAlert,
   IconMapMarkerOffOutline,
   IconMapMarkerPath,
 } from "@iconify-prerendered/vue-mdi";
-import { RotateCwIcon } from "lucide-vue-next";
-import type { StateAdd } from "@/types/scenarioModels";
+import { GitBranchIcon, RotateCwIcon } from "lucide-vue-next";
+import type { StateAdd, TimedHierarchyMove } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
 import { useUnitActions } from "@/composables/scenarioActions";
@@ -27,6 +27,7 @@ import UnitStatusPopover from "@/modules/scenarioeditor/UnitStatusPopover.vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import { useLocalStorage } from "@vueuse/core";
 import { Input } from "@/components/ui/input";
+import type { EntityId } from "@/types/base";
 
 interface Props {
   unit: NUnit;
@@ -96,6 +97,20 @@ function formatRotation(rotation: number) {
   const normalized = rotation % 360;
   const normalizedPositive = normalized < 0 ? normalized + 360 : normalized;
   return `${Math.trunc(normalizedPositive)}\u00b0`;
+}
+
+function getHierarchyTargetLabel(targetId: EntityId) {
+  return (
+    store.state.unitMap[targetId]?.shortName ||
+    store.state.unitMap[targetId]?.name ||
+    store.state.sideGroupMap[targetId]?.name ||
+    store.state.sideMap[targetId]?.name ||
+    targetId
+  );
+}
+
+function formatHierarchyMove(hierarchy: TimedHierarchyMove) {
+  return `${hierarchy.placement} ${getHierarchyTargetLabel(hierarchy.targetId)}`;
 }
 
 const deleteState = (index: number) => {
@@ -372,6 +387,11 @@ function setUnitStatus(newStatus?: string | null) {
             v-if="s.status"
             class="bg-muted/10 text-muted-foreground w-auto rounded-full px-2.5 py-0.5 text-xs font-medium"
             >{{ unitStatusMap[s.status]?.name }}</span
+          >
+          <span
+            v-if="s.hierarchy"
+            class="bg-accent/10 text-accent-foreground inline-flex w-auto items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium"
+            ><GitBranchIcon class="size-3" />{{ formatHierarchyMove(s.hierarchy) }}</span
           >
           <span v-if="s.update?.equipment" class="badge">Equipment</span>
           <span v-if="s.update?.personnel" class="badge">Personnel</span>

@@ -2,9 +2,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mount, type VueWrapper } from "@vue/test-utils";
 import { defineComponent, ref } from "vue";
+import { createPinia, setActivePinia } from "pinia";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import { activeParentKey, activeScenarioKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useUiStore } from "@/stores/uiStore";
+import { getSideDragItem, getUnitDragItem } from "@/types/draggables";
+import type { NUnit } from "@/types/internalModels";
 
 const TEST_SIDC = "10031000001211000000";
 
@@ -15,21 +19,31 @@ type UnitLike = {
   subUnits: UnitLike[];
 };
 
-const { addUnitHierarchySpy, serializeUnitSpy, monitorForElementsSpy, onUnitActionSpy } =
-  vi.hoisted(() => ({
-    addUnitHierarchySpy: vi.fn(),
-    serializeUnitSpy: vi.fn((id: string) => ({
-      id,
-      name: `Unit ${id}`,
-      sidc: TEST_SIDC,
-      subUnits: [],
-    })),
-    monitorForElementsSpy: vi.fn(() => () => {}),
-    onUnitActionSpy: vi.fn(),
-  }));
+const {
+  addUnitHierarchySpy,
+  extractInstructionSpy,
+  serializeUnitSpy,
+  monitorForElementsSpy,
+  onUnitActionSpy,
+} = vi.hoisted(() => ({
+  addUnitHierarchySpy: vi.fn(),
+  extractInstructionSpy: vi.fn(),
+  serializeUnitSpy: vi.fn((id: string) => ({
+    id,
+    name: `Unit ${id}`,
+    sidc: TEST_SIDC,
+    subUnits: [],
+  })),
+  monitorForElementsSpy: vi.fn(() => () => {}),
+  onUnitActionSpy: vi.fn(),
+}));
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
   monitorForElements: monitorForElementsSpy,
+}));
+
+vi.mock("@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item", () => ({
+  extractInstruction: extractInstructionSpy,
 }));
 
 vi.mock("@/composables/scenarioActions", () => ({
@@ -88,8 +102,9 @@ function makeScenario() {
       },
       unitActions: {
         changeUnitParent: vi.fn(),
+        recordUnitHierarchyMove: vi.fn(),
         addSide: vi.fn(),
-        cloneUnit: vi.fn(),
+        cloneUnit: vi.fn((id: string) => `${id}-clone`),
         getUnitById: vi.fn((id: string) => {
           if (id === "u-1") return parentUnit;
           return { id, _isOpen: false };
@@ -170,12 +185,67 @@ function mountPanel() {
   return { wrapper, scenario, parentUnit };
 }
 
+function triggerUnitDrop(
+  sourceUnit: NUnit,
+  destinationUnit: NUnit,
+  instruction: { type: "reorder-above" | "reorder-below" | "make-child" },
+  input: { ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean } = {},
+) {
+  extractInstructionSpy.mockReturnValueOnce(instruction);
+  const monitorArgs = (monitorForElementsSpy as any).mock.calls[0]?.[0] as
+    | { onDrop: (args: unknown) => void }
+    | undefined;
+  expect(monitorArgs?.onDrop).toBeTypeOf("function");
+  if (!monitorArgs) throw new Error("monitorForElements was not registered");
+  monitorArgs.onDrop({
+    source: { data: getUnitDragItem({ unit: sourceUnit }) },
+    location: {
+      initial: {
+        input: {
+          ctrlKey: input.ctrlKey ?? false,
+          metaKey: input.metaKey ?? false,
+          altKey: input.altKey ?? false,
+        },
+      },
+      current: {
+        dropTargets: [{ data: getUnitDragItem({ unit: destinationUnit }) }],
+      },
+    },
+  });
+}
+
+function triggerDragStart(
+  sourceData: ReturnType<typeof getUnitDragItem> | ReturnType<typeof getSideDragItem>,
+  input: { ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean } = {},
+) {
+  const monitorArgs = (monitorForElementsSpy as any).mock.calls[0]?.[0] as
+    | { onDragStart: (args: unknown) => void }
+    | undefined;
+  expect(monitorArgs?.onDragStart).toBeTypeOf("function");
+  if (!monitorArgs) throw new Error("monitorForElements was not registered");
+  monitorArgs.onDragStart({
+    source: { data: sourceData },
+    location: {
+      initial: {
+        input: {
+          ctrlKey: input.ctrlKey ?? false,
+          metaKey: input.metaKey ?? false,
+          altKey: input.altKey ?? false,
+        },
+      },
+    },
+  });
+}
+
 beforeEach(() => {
+  setActivePinia(createPinia());
   const selected = useSelectedItems();
   selected.clear();
   addUnitHierarchySpy.mockReset();
+  extractInstructionSpy.mockReset();
   serializeUnitSpy.mockClear();
   monitorForElementsSpy.mockClear();
+  onUnitActionSpy.mockClear();
 });
 
 afterEach(() => {
@@ -312,5 +382,174 @@ describe("OrbatPanel clipboard handling", () => {
 
     expect(addUnitHierarchySpy).not.toHaveBeenCalled();
     expect(event.defaultPrevented).toBe(false);
+  });
+});
+
+describe("OrbatPanel unit drag-and-drop hierarchy recording", () => {
+  it("records timed hierarchy move when recordHierarchyChanges is enabled", () => {
+    const { scenario } = mountPanel();
+    useUiStore().recordHierarchyChanges = true;
+
+    const sourceUnit = {
+      id: "u-1",
+      name: "Source",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+    const destinationUnit = {
+      id: "u-2",
+      name: "Target",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+
+    triggerUnitDrop(sourceUnit, destinationUnit, { type: "reorder-above" });
+
+    expect(scenario.unitActions.recordUnitHierarchyMove).toHaveBeenCalledWith(
+      "u-1",
+      "u-2",
+      "above",
+    );
+    expect(scenario.unitActions.changeUnitParent).not.toHaveBeenCalled();
+  });
+
+  it("keeps base parent change when recordHierarchyChanges is disabled", () => {
+    const { scenario } = mountPanel();
+    useUiStore().recordHierarchyChanges = false;
+
+    const sourceUnit = {
+      id: "u-1",
+      name: "Source",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+    const destinationUnit = {
+      id: "u-2",
+      name: "Target",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+
+    triggerUnitDrop(sourceUnit, destinationUnit, { type: "reorder-below" });
+
+    expect(scenario.unitActions.changeUnitParent).toHaveBeenCalledWith(
+      "u-1",
+      "u-2",
+      "below",
+    );
+    expect(scenario.unitActions.recordUnitHierarchyMove).not.toHaveBeenCalled();
+  });
+
+  it("records timed hierarchy move on the cloned unit for duplicate-with-state drops", () => {
+    const { scenario } = mountPanel();
+    useUiStore().recordHierarchyChanges = true;
+
+    const sourceUnit = {
+      id: "u-1",
+      name: "Source",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+    const destinationUnit = {
+      id: "u-2",
+      name: "Target",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+
+    triggerUnitDrop(
+      sourceUnit,
+      destinationUnit,
+      { type: "make-child" },
+      {
+        ctrlKey: true,
+        altKey: true,
+      },
+    );
+
+    expect(scenario.unitActions.cloneUnit).toHaveBeenCalledWith("u-1", {
+      includeSubordinates: true,
+      includeState: true,
+    });
+    expect(scenario.unitActions.recordUnitHierarchyMove).toHaveBeenCalledWith(
+      "u-1-clone",
+      "u-2",
+      "on",
+    );
+    expect(scenario.time.setCurrentTime).toHaveBeenCalledWith(0);
+  });
+
+  it("shows hierarchy recording banner during unit drag when enabled", async () => {
+    const { wrapper } = mountPanel();
+    useUiStore().recordHierarchyChanges = true;
+
+    const sourceUnit = {
+      id: "u-1",
+      name: "Source",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+
+    triggerDragStart(getUnitDragItem({ unit: sourceUnit }));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain("Recording hierarchy changes during drag and drop");
+    expect(wrapper.find('[data-testid="orbat-hierarchy-overlay"]').exists()).toBe(true);
+  });
+
+  it("shows copy mode banner while hierarchy recording remains in the panel overlay", async () => {
+    const { wrapper } = mountPanel();
+    useUiStore().recordHierarchyChanges = true;
+
+    const sourceUnit = {
+      id: "u-1",
+      name: "Source",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+
+    triggerDragStart(getUnitDragItem({ unit: sourceUnit }), {
+      ctrlKey: true,
+      altKey: true,
+    });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain("Dragging copy mode");
+    expect(wrapper.text()).toContain("(including state)");
+    expect(wrapper.text()).toContain("Recording hierarchy changes during drag and drop");
+    expect(wrapper.find('[data-testid="orbat-hierarchy-overlay"]').exists()).toBe(true);
+  });
+
+  it("does not show hierarchy recording banner for non-unit drags", async () => {
+    const { wrapper } = mountPanel();
+    useUiStore().recordHierarchyChanges = true;
+
+    triggerDragStart(
+      getSideDragItem({
+        side: { id: "side-1", name: "Blue", groups: [], subUnits: [] } as any,
+      }),
+    );
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).not.toContain(
+      "Recording hierarchy changes during drag and drop",
+    );
+    expect(wrapper.find('[data-testid="orbat-hierarchy-overlay"]').exists()).toBe(false);
   });
 });

@@ -180,4 +180,62 @@ describe("Scenario IO", () => {
     updateCurrentUnitState(unit, +new Date("2025-01-01T02:30:00Z"));
     expect(unit._state?.symbolRotation).toBe(180);
   });
+
+  it("round-trips timed hierarchy state", () => {
+    const scenario = {
+      id: "scenario-hierarchy",
+      type: "ORBAT-mapper",
+      version: "2.5.0",
+      name: "Scenario",
+      startTime: "2025-01-01T00:00:00Z",
+      sides: [
+        {
+          id: "side-1",
+          name: "Side",
+          standardIdentity: "3",
+          groups: [
+            {
+              id: "group-1",
+              name: "Group",
+              subUnits: [
+                {
+                  id: "unit-1",
+                  name: "Unit",
+                  sidc: "10031000000000000000",
+                  state: [
+                    {
+                      id: "s1",
+                      t: "2025-01-01T01:00:00Z",
+                      hierarchy: { targetId: "group-1", placement: "on" },
+                    },
+                  ],
+                  subUnits: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      events: [],
+      layers: [{ id: "layer-1", name: "Features", features: [] }],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    } as any;
+
+    const store = useNewScenarioStore(scenario);
+    const storeRef = shallowRef(store);
+    const { toObject } = useScenarioIO(storeRef);
+    const serialized = toObject();
+
+    expect(serialized.sides[0].groups[0].subUnits[0].state?.[0]?.hierarchy).toEqual({
+      targetId: "group-1",
+      placement: "on",
+    });
+  });
 });

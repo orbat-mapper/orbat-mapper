@@ -15,6 +15,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
 import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
 import ScrollTabs from "@/components/ScrollTabs.vue";
+import OrbatPanelFooterToolbar from "@/modules/scenarioeditor/OrbatPanelFooterToolbar.vue";
 
 const ScenarioFiltersTabPanel = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
@@ -70,8 +71,11 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
       <template #right>
         <CloseButton @click="emit('close')" class="bg-transparent" />
       </template>
-      <TabsContent value="0" class="h-full pb-10">
-        <OrbatPanel />
+      <TabsContent value="0" class="flex h-full flex-col">
+        <div class="min-h-0 flex-1 overflow-y-auto">
+          <OrbatPanel />
+        </div>
+        <OrbatPanelFooterToolbar />
       </TabsContent>
       <TabsContent value="1" class="p-4 pb-10">
         <ScenarioEventsPanel @event-click="onEventClick" />

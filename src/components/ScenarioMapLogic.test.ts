@@ -219,6 +219,7 @@ describe("ScenarioMapLogic", () => {
     const featureCounter = ref(0);
     const unitStateCounter = ref(0);
     const currentTime = ref(0);
+    const isMapStylesDirty = ref(false);
     mocks.injectedScenario = {
       geo: { everyVisibleUnit: ref([]) },
       store: {
@@ -238,6 +239,12 @@ describe("ScenarioMapLogic", () => {
           },
           get currentTime() {
             return currentTime.value;
+          },
+          get isMapStylesDirty() {
+            return isMapStylesDirty.value;
+          },
+          set isMapStylesDirty(value: boolean) {
+            isMapStylesDirty.value = value;
           },
           boundingBox: null,
         },
@@ -280,6 +287,7 @@ describe("ScenarioMapLogic", () => {
     const featureCounter = ref(0);
     const unitStateCounter = ref(0);
     const currentTime = ref(0);
+    const isMapStylesDirty = ref(false);
     mocks.injectedScenario = {
       geo: { everyVisibleUnit: ref([]) },
       store: {
@@ -299,6 +307,12 @@ describe("ScenarioMapLogic", () => {
           },
           get currentTime() {
             return currentTime.value;
+          },
+          get isMapStylesDirty() {
+            return isMapStylesDirty.value;
+          },
+          set isMapStylesDirty(value: boolean) {
+            isMapStylesDirty.value = value;
           },
           boundingBox: null,
         },
@@ -324,9 +338,30 @@ describe("ScenarioMapLogic", () => {
     await nextTick();
 
     expect(mocks.updateUnitPositionsSpy.mock.calls.length).toBe(updateBefore + 1);
+    expect(mocks.unitLayerChangedSpy).not.toHaveBeenCalled();
+    expect(mocks.labelLayerChangedSpy).not.toHaveBeenCalled();
+    expect(isMapStylesDirty.value).toBe(false);
     expect(mocks.drawHistorySpy.mock.calls.length).toBe(historyBefore + 1);
     expect(mocks.drawRangeRingsSpy.mock.calls.length).toBe(rangeBefore + 1);
     expect(mocks.redrawSelectedUnitsSpy.mock.calls.length).toBe(selectedBefore + 1);
+
+    mocks.drawHistorySpy.mockClear();
+    mocks.drawRangeRingsSpy.mockClear();
+    mocks.redrawSelectedUnitsSpy.mockClear();
+    mocks.unitLayerChangedSpy.mockClear();
+    mocks.labelLayerChangedSpy.mockClear();
+
+    isMapStylesDirty.value = true;
+    unitStateCounter.value++;
+    await nextTick();
+
+    expect(mocks.updateUnitPositionsSpy.mock.calls.length).toBe(updateBefore + 2);
+    expect(mocks.unitLayerChangedSpy).toHaveBeenCalledTimes(1);
+    expect(mocks.labelLayerChangedSpy).toHaveBeenCalledTimes(1);
+    expect(isMapStylesDirty.value).toBe(false);
+    expect(mocks.drawHistorySpy.mock.calls.length).toBe(1);
+    expect(mocks.drawRangeRingsSpy.mock.calls.length).toBe(1);
+    expect(mocks.redrawSelectedUnitsSpy.mock.calls.length).toBe(1);
   });
 
   it("forces unit and label layer repaint on undo/redo", () => {
@@ -354,6 +389,7 @@ describe("ScenarioMapLogic", () => {
           featureStateCounter: 0,
           unitStateCounter: 0,
           currentTime: 0,
+          isMapStylesDirty: false,
           boundingBox: null,
         },
       },

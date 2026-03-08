@@ -19,6 +19,7 @@ import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
 import ScrollTabs from "@/components/ScrollTabs.vue";
 import { GripHorizontal } from "lucide-vue-next";
+import OrbatPanelFooterToolbar from "@/modules/scenarioeditor/OrbatPanelFooterToolbar.vue";
 
 const ScenarioFiltersTabPanel = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
@@ -184,8 +185,9 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
       <template #right
         ><CloseButton @click="toggleBottomPanel()" class="px-6"
       /></template>
-      <TabsContent value="0" class="mt-0 h-full pb-10">
+      <TabsContent value="0" class="mt-0 pb-14">
         <OrbatPanel />
+        <OrbatPanelFooterToolbar class="mt-2" />
       </TabsContent>
       <TabsContent value="1" class="mt-0 p-4 pb-10">
         <ScenarioEventsPanel />

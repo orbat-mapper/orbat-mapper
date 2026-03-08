@@ -77,6 +77,11 @@ export interface ScenarioState {
   unitStatusMap: Record<string, NUnitStatus>;
   supplyClassMap: Record<string, NSupplyClass>;
   supplyUomMap: Record<string, NSupplyUoM>;
+  hierarchyChangeTimestamps: number[];
+  hierarchyStateVersion: number;
+  hierarchyProjectionVersion: number;
+  hierarchyProjectionBucket: number;
+  isMapStylesDirty: boolean;
   unitStateCounter: number;
   featureStateCounter: number;
   settingsStateCounter: number; // used to force reactivity
@@ -135,6 +140,11 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
   const unitStateCounter = 0;
   const featureStateCounter = 0;
   const settingsStateCounter = 0;
+  const hierarchyChangeTimestamps: number[] = [];
+  const hierarchyStateVersion = 0;
+  const hierarchyProjectionVersion = -1;
+  const hierarchyProjectionBucket = -1;
+  const isMapStylesDirty = false;
 
   scenario.events.forEach((e) => {
     const nEvent: NScenarioEvent = {
@@ -286,14 +296,22 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
       return { ...rest, update: newUpdate, diff: newDiff };
     });
 
+    newState.forEach((stateEntry) => {
+      if (stateEntry.hierarchy) {
+        hierarchyChangeTimestamps.push(stateEntry.t);
+      }
+    });
+
     unitMap[unit1.id] = {
       ...unit,
       subUnits: unit.subUnits?.map((u) => u.id) || [],
+      _baseSubUnits: unit.subUnits?.map((u) => u.id) || [],
       equipment,
       personnel,
       supplies,
       rangeRings,
       state: newState,
+      _basePid: parent.id,
     } as NUnit;
   }
 
@@ -391,6 +409,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
       ...side,
       groups: side.groups.map((group) => group.id),
       subUnits: side.subUnits?.map((unit) => unit.id) ?? [],
+      _baseSubUnits: side.subUnits?.map((unit) => unit.id) ?? [],
     };
     sides.push(side.id);
     checkFillColor(side);
@@ -399,6 +418,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
         ...group,
         _pid: side.id,
         subUnits: group.subUnits.map((unit) => unit.id),
+        _baseSubUnits: group.subUnits.map((unit) => unit.id),
       };
       checkFillColor(group);
     });
@@ -485,6 +505,11 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     supplyCategoryMap,
     supplyClassMap,
     supplyUomMap: supplyUoMMap,
+    hierarchyChangeTimestamps: hierarchyChangeTimestamps.sort((a, b) => a - b),
+    hierarchyStateVersion,
+    hierarchyProjectionVersion,
+    hierarchyProjectionBucket,
+    isMapStylesDirty,
     rangeRingGroupMap,
     unitStateCounter,
     featureStateCounter,

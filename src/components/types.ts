@@ -3,7 +3,7 @@ import type { NUnit, ScenarioEventType } from "@/types/internalModels";
 import type { ScenarioActions, SideAction, UnitAction } from "@/types/constants";
 import type { InjectionKey } from "vue";
 import type { CurrentState, UnitSymbolOptions } from "@/types/scenarioModels";
-import type { EntityId } from "@/types/base";
+import type { DropTarget, EntityId } from "@/types/base";
 
 export interface ButtonGroupItem {
   label: string;
@@ -72,8 +72,8 @@ export interface ActionSearchResult extends SearchResult {
   icon?: string;
 }
 
-export type DropTarget = "on" | "above" | "below";
 export type CloneTarget = "end" | "above" | "below";
+export type { DropTarget } from "@/types/base";
 
 export interface UnitEmits {
   (e: "unit-action", unit: NUnit, action: UnitAction): void;
