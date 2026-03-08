@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createUnitStyle, clearUnitStyleCache, unitStyleCache } from "@/geo/unitStyles";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useUnitManipulations } from "@/scenariostore/unitManipulations";
+import { useScenarioTime } from "@/scenariostore/time";
 
 const { symbolGeneratorMock } = vi.hoisted(() => ({
   symbolGeneratorMock: vi.fn(() => ({
@@ -103,11 +104,69 @@ describe("unit style cache invalidation on reparent", () => {
     actions.changeUnitParent("unit-1", "group-2", "on");
 
     expect(unit._ikey).toBeUndefined();
+    expect(store.state.isMapStylesDirty).toBe(true);
     expect(unitStyleCache.has(before.cacheKey)).toBe(false);
 
     const afterOptions = actions.getCombinedSymbolOptions(unit);
     const after = createUnitStyle(unit, afterOptions, scenario);
     expect(afterOptions.fillColor).toBe("#CC2222");
+    expect(after.cacheKey).not.toBe(before.cacheKey);
+  });
+
+  it("timed reparenting invalidates stale _ikey cache and recomputes inherited fill color", () => {
+    clearUnitStyleCache();
+    const store = useNewScenarioStore({
+      ...createScenario(),
+      version: "2.5.0",
+      sides: [
+        {
+          ...createScenario().sides[0],
+          groups: [
+            {
+              ...createScenario().sides[0].groups[0],
+              subUnits: [
+                {
+                  id: "unit-1",
+                  name: "1st Unit",
+                  sidc: "10031000000000000000",
+                  location: [10, 60],
+                  subUnits: [],
+                  state: [
+                    {
+                      id: "move-1",
+                      t: "2025-01-01T01:00:00Z",
+                      hierarchy: { targetId: "group-2", placement: "on" },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        createScenario().sides[1],
+      ],
+    } as any);
+    const time = useScenarioTime(store);
+    const actions = useUnitManipulations(store);
+    const scenario = { store, unitActions: actions } as any;
+    const unit = store.state.unitMap["unit-1"];
+
+    const beforeOptions = actions.getCombinedSymbolOptions(unit);
+    const before = createUnitStyle(unit, beforeOptions, scenario);
+    unit._ikey = before.cacheKey;
+    unitStyleCache.set(before.cacheKey, before.style);
+    expect(beforeOptions.fillColor).toBe("#0055FF");
+
+    time.setCurrentTime(+new Date("2025-01-01T01:00:00Z"));
+
+    expect(unit._ikey).toBeUndefined();
+    expect(store.state.isMapStylesDirty).toBe(true);
+    expect(unitStyleCache.has(before.cacheKey)).toBe(false);
+
+    const afterOptions = actions.getCombinedSymbolOptions(unit);
+    const after = createUnitStyle(unit, afterOptions, scenario);
+    expect(afterOptions.fillColor).toBe("#CC2222");
+    expect(unit._state?.sidc).toBe("10061000000000000000");
     expect(after.cacheKey).not.toBe(before.cacheKey);
   });
 });

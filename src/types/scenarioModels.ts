@@ -5,7 +5,7 @@ import type {
   ScenarioLayer,
   ScenarioMapLayer,
 } from "./scenarioGeoModels";
-import type { EntityId, ScenarioTime } from "./base";
+import type { DropTarget, EntityId, ScenarioTime } from "./base";
 import type { SidValue } from "@/symbology/values";
 import { type SymbolOptions } from "milsymbol";
 import type { TextAmpValue } from "@/symbology/milsymbwrapper";
@@ -47,6 +47,7 @@ export interface State extends Partial<ScenarioEventDescription> {
     personnel?: UpdateUnitPersonnel[];
     supplies?: UpdateUnitSupplies[];
   };
+  hierarchy?: TimedHierarchyMove;
 }
 
 export interface StateAdd extends Omit<NState, "id"> {
@@ -123,6 +124,11 @@ export interface Unit {
   _isOpen?: boolean;
   _ikey?: string; // icon cache key
   _lkey?: string; // label cache key
+}
+
+export interface TimedHierarchyMove {
+  targetId: EntityId;
+  placement: DropTarget;
 }
 
 export interface UnitStyle extends Partial<VisibilityStyleSpec> {
@@ -262,6 +268,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "2.5.0"
   | "2.4.0"
   | "2.3.0"
   | "2.2.0"

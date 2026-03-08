@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added support for time varying ORBATs.
 - Show feature name on map hover.
 - Added a "Load from file" button to the landing page header for faster local scenario imports.
 - Added scenario browser search and filtering.

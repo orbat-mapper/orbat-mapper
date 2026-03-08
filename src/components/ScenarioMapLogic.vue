@@ -217,6 +217,11 @@ emit("map-ready", { olMap, featureSelectInteraction, unitSelectInteraction });
 /** Incrementally update unit positions without recreating all features */
 function updateUnitsOnMap() {
   updateUnitPositions();
+  if (state.isMapStylesDirty) {
+    unitLayer.changed();
+    labelLayer.changed();
+    state.isMapStylesDirty = false;
+  }
   drawHistory();
   redrawSelectedUnits();
   drawRangeRings();

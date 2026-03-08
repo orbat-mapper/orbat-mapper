@@ -11,6 +11,7 @@ import { useUnitActions } from "@/composables/scenarioActions";
 import { useEventBus, useEventListener } from "@vueuse/core";
 import { orbatUnitClick } from "@/components/eventKeys";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useUiStore } from "@/stores/uiStore";
 import { serializeUnit } from "@/scenariostore/io";
 import {
   addUnitHierarchy,
@@ -53,6 +54,10 @@ const sides = computed(() => {
 
 const { onUnitAction } = useUnitActions();
 const { selectedUnitIds, activeUnitId } = useSelectedItems();
+const uiStore = useUiStore();
+const showHierarchyDragStatus = computed(
+  () => isDraggingUnit.value && uiStore.recordHierarchyChanges,
+);
 
 let dndCleanup: () => void = () => {};
 let externalCleanup: () => void = () => {};
@@ -279,7 +284,11 @@ function onUnitDrop(
           includeState: isDuplicateState,
         })!;
       }
-      changeUnitParent(unitId, destinationUnit.id, target);
+      if (uiStore.recordHierarchyChanges) {
+        unitActions.recordUnitHierarchyMove(unitId, destinationUnit.id, target);
+      } else {
+        changeUnitParent(unitId, destinationUnit.id, target);
+      }
     }
   });
   if (isDuplicateState) {
@@ -426,6 +435,17 @@ function onPaste(e: ClipboardEvent) {
       class="mt-8"
       @add="addSide()"
     />
+  </div>
+  <div
+    v-if="showHierarchyDragStatus"
+    class="pointer-events-none fixed top-1 left-1 z-10 mt-0 w-full px-3 sm:sticky sm:right-0 sm:bottom-3 sm:left-0"
+    data-testid="orbat-hierarchy-overlay"
+  >
+    <div
+      class="bg-opacity-10 border-border bg-background/90 text-foreground rounded border p-2 text-center text-sm shadow-sm"
+    >
+      <p>Recording hierarchy changes during drag and drop</p>
+    </div>
   </div>
   <div
     v-if="isDragging && isCopying"

@@ -17,7 +17,7 @@ import type {
   UnitStatus,
   UnitSupply,
 } from "./scenarioModels";
-import type { EntityId } from "./base";
+import type { DropTarget, EntityId } from "./base";
 import type {
   FeatureId,
   RangeRingGroup,
@@ -37,11 +37,13 @@ export interface NUnit extends Omit<
   "subUnits" | "_pid" | "_gid" | "_sid" | "personnel" | "equipment" | "state" | "supplies"
 > {
   subUnits: EntityId[];
+  _baseSubUnits?: EntityId[];
   equipment?: NUnitEquipment[];
   personnel?: NUnitPersonnel[];
   supplies?: NUnitSupply[];
   state?: NState[];
   _pid: EntityId;
+  _basePid?: EntityId;
   _gid?: EntityId;
   _sid: EntityId;
 }
@@ -106,6 +108,7 @@ export interface OlUnitProps extends Pick<
 export interface NSide extends Omit<Side, "groups" | "subUnits"> {
   groups: EntityId[];
   subUnits: EntityId[];
+  _baseSubUnits?: EntityId[];
   _isOpen?: boolean;
 }
 
@@ -113,6 +116,7 @@ export interface SideUpdate extends Omit<NSide, "id" | "groups"> {}
 
 export interface NSideGroup extends Omit<SideGroup, "subUnits" | "_pid"> {
   subUnits: EntityId[];
+  _baseSubUnits?: EntityId[];
   _isOpen?: boolean;
   _pid: EntityId;
 }
@@ -204,6 +208,10 @@ export interface NState extends Omit<State, "update" | "diff"> {
     personnel?: NUpdateUnitPersonnel[];
     supplies?: NUpdateUnitSupplies[];
   };
+  hierarchy?: {
+    targetId: EntityId;
+    placement: DropTarget;
+  };
 }
 
 export interface SupplyClassUpdate extends Partial<Omit<NSupplyClass, "id">> {}
@@ -228,6 +236,8 @@ export const INTERNAL_NAMES = [
   "_counter",
   "_ikey",
   "_lkey",
+  "_basePid",
+  "_baseSubUnits",
 ];
 export const TIMESTAMP_NAMES = ["t", "visibleFromT", "visibleUntilT", "startTime"];
 export type ScenarioEventType = "unit" | "scenario";

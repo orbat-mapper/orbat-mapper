@@ -78,6 +78,10 @@ describe("LandingPageScenarios clipboard routing", () => {
         stubs: {
           RouterLink: true,
           UseDark: true,
+          StoredScenarioBrowser: defineComponent({
+            props: ["scenarios", "sortOptions", "searchInputId", "autofocus"],
+            template: '<div><slot name="actions" /><slot /></div>',
+          }),
           LoadScenarioFromClipboardPanel: defineComponent({
             emits: ["loaded"],
             template:
