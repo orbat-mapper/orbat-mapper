@@ -6,7 +6,7 @@ import { createPinia, setActivePinia } from "pinia";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import { activeParentKey, activeScenarioKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { useUiStore } from "@/stores/uiStore";
+import { timeRecordStore } from "@/stores/recordStore";
 import { getSideDragItem, getUnitDragItem } from "@/types/draggables";
 import type { NUnit } from "@/types/internalModels";
 
@@ -388,7 +388,7 @@ describe("OrbatPanel clipboard handling", () => {
 describe("OrbatPanel unit drag-and-drop hierarchy recording", () => {
   it("records timed hierarchy move when recordHierarchyChanges is enabled", () => {
     const { scenario } = mountPanel();
-    useUiStore().recordHierarchyChanges = true;
+    timeRecordStore().recordHierarchyChanges = true;
 
     const sourceUnit = {
       id: "u-1",
@@ -419,7 +419,7 @@ describe("OrbatPanel unit drag-and-drop hierarchy recording", () => {
 
   it("keeps base parent change when recordHierarchyChanges is disabled", () => {
     const { scenario } = mountPanel();
-    useUiStore().recordHierarchyChanges = false;
+    timeRecordStore().recordHierarchyChanges = false;
 
     const sourceUnit = {
       id: "u-1",
@@ -450,7 +450,7 @@ describe("OrbatPanel unit drag-and-drop hierarchy recording", () => {
 
   it("records timed hierarchy move on the cloned unit for duplicate-with-state drops", () => {
     const { scenario } = mountPanel();
-    useUiStore().recordHierarchyChanges = true;
+    timeRecordStore().recordHierarchyChanges = true;
 
     const sourceUnit = {
       id: "u-1",
@@ -493,7 +493,7 @@ describe("OrbatPanel unit drag-and-drop hierarchy recording", () => {
 
   it("shows hierarchy recording banner during unit drag when enabled", async () => {
     const { wrapper } = mountPanel();
-    useUiStore().recordHierarchyChanges = true;
+    timeRecordStore().recordHierarchyChanges = true;
 
     const sourceUnit = {
       id: "u-1",
@@ -513,7 +513,7 @@ describe("OrbatPanel unit drag-and-drop hierarchy recording", () => {
 
   it("shows copy mode banner while hierarchy recording remains in the panel overlay", async () => {
     const { wrapper } = mountPanel();
-    useUiStore().recordHierarchyChanges = true;
+    timeRecordStore().recordHierarchyChanges = true;
 
     const sourceUnit = {
       id: "u-1",
@@ -538,7 +538,7 @@ describe("OrbatPanel unit drag-and-drop hierarchy recording", () => {
 
   it("does not show hierarchy recording banner for non-unit drags", async () => {
     const { wrapper } = mountPanel();
-    useUiStore().recordHierarchyChanges = true;
+    timeRecordStore().recordHierarchyChanges = true;
 
     triggerDragStart(
       getSideDragItem({

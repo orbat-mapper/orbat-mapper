@@ -31,7 +31,6 @@ export const useUiStore = defineStore("ui", {
     prevToeIncludeSubordinates: undefined as boolean | undefined,
     prevSuppliesIncludeSubordinates: undefined as boolean | undefined,
     popperCounter: 0,
-    recordHierarchyChanges: false,
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,
