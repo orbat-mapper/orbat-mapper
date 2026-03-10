@@ -31,6 +31,7 @@ export type GoToScenarioEventEvent = {
 export function createInitialState(unit: NUnit): CurrentState | null {
   if (
     unit.location ||
+    unit.reinforcedStatus !== undefined ||
     unit.equipment?.length ||
     unit.personnel?.length ||
     unit.supplies?.length
@@ -41,6 +42,7 @@ export function createInitialState(unit: NUnit): CurrentState | null {
       type: "initial",
       sidc: unit.sidc,
       symbolRotation: 0,
+      reinforcedStatus: unit.reinforcedStatus,
       equipment: klona(unit.equipment),
       personnel: klona(unit.personnel),
       supplies: klona(unit.supplies),
@@ -164,8 +166,12 @@ export function updateCurrentUnitState(
   }
   if (
     currentState?.sidc !== unit._state?.sidc ||
-    currentState?.symbolRotation !== unit._state?.symbolRotation
+    currentState?.symbolRotation !== unit._state?.symbolRotation ||
+    currentState?.reinforcedStatus !== unit._state?.reinforcedStatus
   ) {
+    if (unit._ikey) {
+      invalidateUnitStyle(unit._ikey);
+    }
     unit._ikey = undefined;
     invalidateUnitStyle(unit.id);
     options.markMapStylesDirty?.();

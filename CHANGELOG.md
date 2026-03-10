@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
 - Fixed issue where layer edit form "Change" and clear timestamp buttons submitted the form and closed it immediately.
 - Fixed an issue where TO&E would not update if a unit had no state entries.
 - Fixed an issue where "Go to next on save" in TO&E edit mode would not work for sorted tables.
+- Fixed timed reinforced/reduced symbol updates so that they be edited in unit events and animated correctly over time.
 
 ## February 2026
 

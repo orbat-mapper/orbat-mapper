@@ -169,4 +169,61 @@ describe("unit style cache invalidation on reparent", () => {
     expect(unit._state?.sidc).toBe("10061000000000000000");
     expect(after.cacheKey).not.toBe(before.cacheKey);
   });
+
+  it("timed reinforcedStatus changes invalidate stale _ikey cache and recompute symbol options", () => {
+    clearUnitStyleCache();
+    const store = useNewScenarioStore({
+      ...createScenario(),
+      sides: [
+        {
+          ...createScenario().sides[0],
+          groups: [
+            {
+              ...createScenario().sides[0].groups[0],
+              subUnits: [
+                {
+                  id: "unit-1",
+                  name: "1st Unit",
+                  sidc: "10031000000000000000",
+                  location: [10, 60],
+                  reinforcedStatus: "Reinforced",
+                  subUnits: [],
+                  state: [
+                    {
+                      id: "reinforced-1",
+                      t: "2025-01-01T01:00:00Z",
+                      reinforcedStatus: "Reduced",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        createScenario().sides[1],
+      ],
+    } as any);
+    const time = useScenarioTime(store);
+    const actions = useUnitManipulations(store);
+    const scenario = { store, unitActions: actions } as any;
+    const unit = store.state.unitMap["unit-1"];
+
+    const beforeOptions = actions.getCombinedSymbolOptions(unit);
+    const before = createUnitStyle(unit, beforeOptions, scenario);
+    unit._ikey = before.cacheKey;
+    unitStyleCache.set(before.cacheKey, before.style);
+    expect(beforeOptions.reinforcedReduced).toBe("(+)");
+
+    time.setCurrentTime(+new Date("2025-01-01T01:00:00Z"));
+
+    expect(unit._ikey).toBeUndefined();
+    expect(store.state.isMapStylesDirty).toBe(true);
+    expect(unitStyleCache.has(before.cacheKey)).toBe(false);
+
+    const afterOptions = actions.getCombinedSymbolOptions(unit);
+    const after = createUnitStyle(unit, afterOptions, scenario);
+    expect(unit._state?.reinforcedStatus).toBe("Reduced");
+    expect(afterOptions.reinforcedReduced).toBe("(-)");
+    expect(after.cacheKey).not.toBe(before.cacheKey);
+  });
 });

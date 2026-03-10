@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createUnitStyle } from "./unitStyles";
+import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
 
 const mapSettingsMock = {
   mapIconSize: 40,
@@ -87,6 +88,45 @@ describe("unit styles rotation", () => {
 
     const { style } = createUnitStyle(unit, {}, createScenarioWithCustomSymbol());
     expect(style.getImage()?.getRotation()).toBeCloseTo(Math.PI);
+  });
+
+  it("includes reinforcedReduced in symbol options and cache key", () => {
+    symbolGeneratorMock.mockClear();
+    const unit = {
+      id: "unit-1",
+      name: "Unit",
+      sidc: "10031000000000000000",
+      _state: {
+        sidc: "10031000000000000000",
+        symbolRotation: 0,
+        reinforcedStatus: "Reinforced",
+      },
+      textAmplifiers: {},
+    } as any;
+
+    const key1 = createUnitStyle(
+      unit,
+      {
+        reinforcedReduced: mapReinforcedStatus2Field(unit._state.reinforcedStatus),
+      },
+      createScenarioWithCustomSymbol(),
+    ).cacheKey;
+
+    const firstCall = symbolGeneratorMock.mock.lastCall as any[] | undefined;
+    expect(firstCall?.[1]?.reinforcedReduced).toBe("(+)");
+
+    unit._state.reinforcedStatus = "Reduced";
+    const key2 = createUnitStyle(
+      unit,
+      {
+        reinforcedReduced: mapReinforcedStatus2Field(unit._state.reinforcedStatus),
+      },
+      createScenarioWithCustomSymbol(),
+    ).cacheKey;
+
+    const secondCall = symbolGeneratorMock.mock.lastCall as any[] | undefined;
+    expect(secondCall?.[1]?.reinforcedReduced).toBe("(-)");
+    expect(key2).not.toBe(key1);
   });
 });
 

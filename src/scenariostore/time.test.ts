@@ -42,4 +42,43 @@ describe("time rotation state", () => {
     updateCurrentUnitState(unit, 2500);
     expect(unit._state?.symbolRotation).toBe(270);
   });
+
+  it("seeds initial state with base reinforcedStatus", () => {
+    const unit = createUnit({
+      reinforcedStatus: "Reinforced",
+    });
+
+    const initialState = createInitialState(unit);
+
+    expect(initialState?.reinforcedStatus).toBe("Reinforced");
+  });
+
+  it("applies reinforcedStatus from latest state at timestamp", () => {
+    const unit = createUnit({
+      reinforcedStatus: "Reinforced",
+      state: [
+        { id: "a", t: 1000, reinforcedStatus: "Reduced" },
+        { id: "b", t: 2000, reinforcedStatus: "ReinforcedReduced" },
+      ] as any,
+    });
+
+    updateCurrentUnitState(unit, 1500);
+    expect(unit._state?.reinforcedStatus).toBe("Reduced");
+
+    updateCurrentUnitState(unit, 2500);
+    expect(unit._state?.reinforcedStatus).toBe("ReinforcedReduced");
+  });
+
+  it('allows a timed "None" state to clear the base reinforcedStatus', () => {
+    const unit = createUnit({
+      reinforcedStatus: "Reinforced",
+      state: [{ id: "a", t: 1000, reinforcedStatus: "None" }] as any,
+    });
+
+    updateCurrentUnitState(unit, 500);
+    expect(unit._state?.reinforcedStatus).toBe("Reinforced");
+
+    updateCurrentUnitState(unit, 1500);
+    expect(unit._state?.reinforcedStatus).toBe("None");
+  });
 });
