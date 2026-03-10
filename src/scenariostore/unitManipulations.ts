@@ -1053,7 +1053,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
     if ("sidc" in unitOrSideGroup) {
       _sid = unitOrSideGroup._sid;
       _gid = unitOrSideGroup._gid;
-      reinforcedReduced = mapReinforcedStatus2Field(unitOrSideGroup.reinforcedStatus);
+      reinforcedReduced = mapReinforcedStatus2Field(
+        unitOrSideGroup._state?.reinforcedStatus ?? unitOrSideGroup.reinforcedStatus,
+      );
     } else {
       _sid = unitOrSideGroup._pid;
       _gid = unitOrSideGroup.id;

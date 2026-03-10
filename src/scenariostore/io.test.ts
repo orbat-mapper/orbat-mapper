@@ -127,6 +127,49 @@ describe("Scenario IO", () => {
     expect(savedRotation).toBe(135);
   });
 
+  it("serializes reinforcedStatus in unit state", () => {
+    const sideId = "side-1";
+    const groupId = "group-1";
+    const unitId = "unit-1";
+    const state = createMinimalState({
+      sides: [sideId],
+      sideMap: {
+        [sideId]: {
+          id: sideId,
+          name: "Side",
+          standardIdentity: "3",
+          groups: [groupId],
+          subUnits: [],
+        },
+      },
+      sideGroupMap: {
+        [groupId]: { id: groupId, name: "Group", subUnits: [unitId], _pid: sideId },
+      },
+      unitMap: {
+        [unitId]: {
+          id: unitId,
+          name: "Unit",
+          sidc: "10031000000000000000",
+          subUnits: [],
+          _pid: groupId,
+          _gid: groupId,
+          _sid: sideId,
+          state: [{ id: "state-1", t: 0, reinforcedStatus: "Reduced" }],
+          _state: { t: 0, sidc: "10031000000000000000", reinforcedStatus: "Reduced" },
+        },
+      },
+    });
+
+    const store = { state } as NewScenarioStore;
+    const storeRef = shallowRef(store);
+    const { toObject } = useScenarioIO(storeRef);
+    const serialized = toObject();
+    const savedReinforcedStatus =
+      serialized.sides[0].groups[0].subUnits[0].state?.[0]?.reinforcedStatus;
+
+    expect(savedReinforcedStatus).toBe("Reduced");
+  });
+
   it("loads symbolRotation and applies it for matching timestamps", () => {
     const scenario = {
       id: "scenario-1",
@@ -179,6 +222,65 @@ describe("Scenario IO", () => {
 
     updateCurrentUnitState(unit, +new Date("2025-01-01T02:30:00Z"));
     expect(unit._state?.symbolRotation).toBe(180);
+  });
+
+  it("loads reinforcedStatus and applies it for matching timestamps", () => {
+    const scenario = {
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "2.3.0",
+      name: "Scenario",
+      startTime: "2025-01-01T00:00:00Z",
+      sides: [
+        {
+          id: "side-1",
+          name: "Side",
+          standardIdentity: "3",
+          groups: [
+            {
+              id: "group-1",
+              name: "Group",
+              subUnits: [
+                {
+                  id: "unit-1",
+                  name: "Unit",
+                  sidc: "10031000000000000000",
+                  location: [10, 60],
+                  reinforcedStatus: "Reinforced",
+                  state: [
+                    { id: "s1", t: "2025-01-01T01:00:00Z", reinforcedStatus: "Reduced" },
+                    {
+                      id: "s2",
+                      t: "2025-01-01T02:00:00Z",
+                      reinforcedStatus: "None",
+                    },
+                  ],
+                  subUnits: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      events: [],
+      layers: [{ id: "layer-1", name: "Features", features: [] }],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+      },
+    } as any;
+
+    const store = useNewScenarioStore(scenario);
+    const unit = store.state.unitMap["unit-1"];
+
+    updateCurrentUnitState(unit, +new Date("2025-01-01T01:30:00Z"));
+    expect(unit._state?.reinforcedStatus).toBe("Reduced");
+
+    updateCurrentUnitState(unit, +new Date("2025-01-01T02:30:00Z"));
+    expect(unit._state?.reinforcedStatus).toBe("None");
   });
 
   it("round-trips timed hierarchy state", () => {

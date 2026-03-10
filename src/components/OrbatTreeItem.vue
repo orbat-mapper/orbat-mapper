@@ -102,6 +102,10 @@ const customSidc = computed(() => {
   return undefined;
 });
 
+const effectiveReinforcedStatus = computed(
+  () => unit.value._state?.reinforcedStatus ?? unit.value.reinforcedStatus,
+);
+
 const activeUnitStore = useActiveUnitStore();
 
 const isActiveUnit = computed(() => activeUnitId.value === props.item.unit.id);
@@ -299,10 +303,10 @@ const toggleOpen = () => {
                 :options="combinedOptions"
               />
               <span
-                v-if="unit.reinforcedStatus"
+                v-if="effectiveReinforcedStatus"
                 class="absolute -top-2 -right-2.5 text-xs font-medium"
                 >{{
-                  mapReinforcedStatus2Field(unit.reinforcedStatus, { compact: true })
+                  mapReinforcedStatus2Field(effectiveReinforcedStatus, { compact: true })
                 }}</span
               >
             </template>

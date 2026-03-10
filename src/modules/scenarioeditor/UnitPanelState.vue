@@ -257,12 +257,15 @@ async function handleChangeSymbol() {
       store.state.info.timeZone,
     )}`,
     symbolOptions: unitActions.getCombinedSymbolOptions(props.unit),
+    reinforcedStatus:
+      props.unit._state?.reinforcedStatus ?? props.unit.reinforcedStatus ?? "None",
   });
   if (newSidcValue !== undefined) {
     const newState: StateAdd = {
       sidc: newSidcValue.sidc,
       t: store.state.currentTime,
       symbolOptions: newSidcValue.symbolOptions,
+      reinforcedStatus: newSidcValue.reinforcedStatus,
     };
     unitActions.addUnitStateEntry(props.unit.id, newState, true);
   }
