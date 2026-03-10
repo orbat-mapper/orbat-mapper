@@ -28,6 +28,7 @@ import { onKeyStroke, useToggle } from "@vueuse/core";
 import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useEditingInteraction } from "@/composables/geoEditing";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
+import { timeRecordStore } from "@/stores/recordStore";
 import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useSelectedItems } from "@/stores/selectedStore";
@@ -48,9 +49,11 @@ const { getOlLayerById } = useFeatureLayerUtils(mapRef.value);
 const { selectedFeatureIds, activeFeatureId } = useSelectedItems();
 
 const { addMultiple, currentDrawStyle } = storeToRefs(useMainToolbarStore());
+const recordStore = timeRecordStore();
+const { recordFeatureGeometry } = storeToRefs(recordStore);
+const { toggleRecordFeatureGeometry } = recordStore;
 const [snap, toggleSnap] = useToggle(true);
 const [translate, toggleTranslate] = useToggle(false);
-const [modifyHistory, toggleModifyHistory] = useToggle(false);
 const [freehand, toggleFreehand] = useToggle(false);
 
 const layer = ref<any>();
@@ -118,7 +121,7 @@ const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawi
     },
     modifyHandler: (olFeatures) => {
       olFeatures.forEach((f) =>
-        updateFeatureGeometryFromOlFeature(f, modifyHistory.value),
+        updateFeatureGeometryFromOlFeature(f, recordFeatureGeometry.value),
       );
     },
     snap,
@@ -219,9 +222,9 @@ onKeyStroke("Escape", (event) => {
           <EditIcon class="size-5" />
         </MainToolbarButton>
         <MainToolbarButton
-          title="Modify feature history"
-          @click="toggleModifyHistory()"
-          :active="modifyHistory"
+          title="Record feature geometry"
+          @click="toggleRecordFeatureGeometry()"
+          :active="recordFeatureGeometry"
         >
           <IconClockEdit class="size-5" />
         </MainToolbarButton>
