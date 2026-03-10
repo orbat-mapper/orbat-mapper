@@ -41,7 +41,6 @@ export const useUiStore = defineStore("ui", {
     detailsPanelSidebarPinned: useLocalStorage("detailsPanelSidebarPinned", true),
     detailsPanelOverlayPinned: useLocalStorage("detailsPanelOverlayPinned", false),
     popperCounter: 0,
-    recordHierarchyChanges: false,
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,

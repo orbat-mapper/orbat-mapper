@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { IconClockEditOutline as IconClockEdit } from "@iconify-prerendered/vue-mdi";
 import { Switch } from "@/components/ui/switch";
-import { useUiStore } from "@/stores/uiStore";
+import { timeRecordStore } from "@/stores/recordStore";
 
-const uiStore = useUiStore();
+const recordStore = timeRecordStore();
 </script>
 
 <template>
@@ -14,7 +14,7 @@ const uiStore = useUiStore();
       class="flex items-center gap-2 text-sm"
       title="Toggle hierarchy change recording during drag and drop"
     >
-      <Switch v-model="uiStore.recordHierarchyChanges" />
+      <Switch v-model="recordStore.recordHierarchyChanges" />
       <span class="flex items-center gap-1">
         <IconClockEdit class="text-muted-foreground size-4" />
         <span>Track hierarchy changes</span>
