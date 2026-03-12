@@ -12,7 +12,7 @@ import { useEventBus, useEventListener } from "@vueuse/core";
 import { orbatUnitClick } from "@/components/eventKeys";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useUiStore } from "@/stores/uiStore";
-import { timeRecordStore } from "@/stores/recordStore";
+import { useRecordingStore } from "@/stores/recordingStore.ts";
 import { serializeUnit } from "@/scenariostore/io";
 import {
   addUnitHierarchy,
@@ -56,9 +56,9 @@ const sides = computed(() => {
 const { onUnitAction } = useUnitActions();
 const { selectedUnitIds, activeUnitId } = useSelectedItems();
 const uiStore = useUiStore();
-const recordStore = timeRecordStore();
+const recordStore = useRecordingStore();
 const showHierarchyDragStatus = computed(
-  () => isDraggingUnit.value && recordStore.recordHierarchyChanges,
+  () => isDraggingUnit.value && recordStore.isRecordingHierarchy,
 );
 
 let dndCleanup: () => void = () => {};
@@ -286,7 +286,7 @@ function onUnitDrop(
           includeState: isDuplicateState,
         })!;
       }
-      if (recordStore.recordHierarchyChanges) {
+      if (recordStore.isRecordingHierarchy) {
         unitActions.recordUnitHierarchyMove(unitId, destinationUnit.id, target);
       } else {
         changeUnitParent(unitId, destinationUnit.id, target);
