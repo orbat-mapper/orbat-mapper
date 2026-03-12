@@ -7,7 +7,7 @@ import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
 import MapContextMenu from "@/components/MapContextMenu.vue";
 import OrbatPanelFooterToolbar from "@/modules/scenarioeditor/OrbatPanelFooterToolbar.vue";
-import { timeRecordStore } from "@/stores/recordStore";
+import { useRecordingStore } from "@/stores/recordingStore.ts";
 import {
   activeLayerKey,
   activeScenarioKey,
@@ -268,14 +268,14 @@ beforeEach(() => {
   setActivePinia(createPinia());
 });
 
-describe("recordHierarchyChanges UI", () => {
+describe("isRecordingHierarchy UI", () => {
   it("toggles from the ORBAT footer toolbar", async () => {
     const wrapper = mount(OrbatPanelFooterToolbar);
-    const recordStore = timeRecordStore();
+    const recordStore = useRecordingStore();
     const toggle = wrapper.get('input[type="checkbox"]');
 
     expect(wrapper.text()).toContain("Track hierarchy");
     await toggle.setValue(true);
-    expect(recordStore.recordHierarchyChanges).toBe(true);
+    expect(recordStore.isRecordingHierarchy).toBe(true);
   });
 });
