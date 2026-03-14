@@ -11,6 +11,13 @@ export const useRecordingStore = defineStore("timeRecordStore", () => {
 
   const isRecordingLocation = ref(true);
   const toggleRecordingLocation = useToggle(isRecordingLocation);
+
+  const stopAllRecording = () => {
+    isRecordingHierarchy.value = false;
+    isRecordingGeometry.value = false;
+    isRecordingLocation.value = false;
+  };
+
   return {
     isRecordingHierarchy,
     toggleRecordingHierarchy,
@@ -18,5 +25,6 @@ export const useRecordingStore = defineStore("timeRecordStore", () => {
     toggleRecordingGeometry,
     isRecordingLocation,
     toggleRecordingLocation,
+    stopAllRecording,
   };
 });
