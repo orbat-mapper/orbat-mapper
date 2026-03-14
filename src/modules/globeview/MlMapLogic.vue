@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { type GeoJSONSource, type MapStyleImageMissingEvent, type Map as MlMap } from "maplibre-gl";
+import {
+  type GeoJSONSource,
+  type MapStyleImageMissingEvent,
+  type Map as MlMap,
+} from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
 import { onUnmounted, provide, watch } from "vue";
 import type { Feature } from "geojson";
@@ -55,11 +59,11 @@ function setupMapLayers() {
         "text-field": ["get", "label"],
       },
     });
-
-  mlMap.on("styleimagemissing", styleImageMissing);
 }
 
 function styleImageMissing(e: MapStyleImageMissingEvent) {
+  if (usedImageIds.has(e.id) || mlMap.hasImage(e.id)) return;
+
   const isSelected = e.id.startsWith("sel-");
   const symbolCode = isSelected ? e.id.slice(4) : e.id;
 
@@ -84,11 +88,18 @@ function styleImageMissing(e: MapStyleImageMissingEvent) {
   }
 }
 
-setupMapLayers();
+function onStyleLoad() {
+  usedImageIds.clear();
+  setupMapLayers();
+  addUnits();
+}
+
+mlMap.on("styleimagemissing", styleImageMissing);
+mlMap.on("style.load", onStyleLoad);
+onStyleLoad();
 if (activeScenario.store.state.id === "demo-falklands82") {
   // activeScenario.time.setCurrentTime(+new Date("1982-05-21T12:00:00-04:00"));
 }
-
 addUnits(true);
 
 watch(
@@ -139,6 +150,7 @@ function addUnits(initial = false) {
 onUnmounted(() => {
   if (!mlMap) return;
   mlMap.off("styleimagemissing", styleImageMissing);
+  mlMap.off("style.load", onStyleLoad);
 });
 
 const { pause, resume, isActive } = useRafFn(
