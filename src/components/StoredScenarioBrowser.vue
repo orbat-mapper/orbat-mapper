@@ -14,6 +14,7 @@ import type { MenuItemData } from "@/components/types";
 import type { ScenarioMetadata } from "@/scenariostore/localdb";
 import type { StoredScenarioAction } from "@/types/constants";
 import { cn } from "@/lib/utils";
+import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 
 const props = withDefaults(
   defineProps<{
@@ -22,6 +23,7 @@ const props = withDefaults(
     searchInputId: string;
     autofocus?: boolean;
     noLink?: boolean;
+    routeName?: string;
     showClearButton?: boolean;
     emptyMessage?: string;
     class?: HTMLAttributes["class"];
@@ -32,6 +34,7 @@ const props = withDefaults(
   {
     autofocus: false,
     noLink: false,
+    routeName: MAP_EDIT_MODE_ROUTE,
     showClearButton: false,
     emptyMessage: "No scenarios match",
   },
@@ -136,6 +139,7 @@ function onAction(action: StoredScenarioAction, scenario: ScenarioMetadata) {
         :key="info.id"
         :data="info"
         :no-link="noLink"
+        :route-name="routeName"
         @action="onAction($event, info)"
       />
     </ul>

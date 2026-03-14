@@ -6,7 +6,7 @@ import StoredScenarioBrowser from "@/components/StoredScenarioBrowser.vue";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ref } from "vue";
-import { NEW_SCENARIO_ROUTE } from "@/router/names";
+import { MAP_EDIT_MODE_ROUTE, NEW_SCENARIO_ROUTE } from "@/router/names";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Button } from "@/components/ui/button";
 import { defineAsyncComponent } from "vue";
@@ -16,12 +16,17 @@ const DecryptScenarioModal = defineAsyncComponent(
   () => import("@/components/DecryptScenarioModal.vue"),
 );
 
+const props = withDefaults(defineProps<{ routeName?: string }>(), {
+  routeName: MAP_EDIT_MODE_ROUTE,
+});
 const open = defineModel({ default: false });
 const inputSource = ref<"external" | "browser">("browser");
 const showDecryptModal = ref(false);
 const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
 
-const { loadScenario, storedScenarios, sortOptions, onAction } = useBrowserScenarios();
+const { loadScenario, storedScenarios, sortOptions, onAction } = useBrowserScenarios({
+  routeName: props.routeName,
+});
 
 function onLoaded(scenario: Scenario | EncryptedScenario) {
   if (scenario.type === "ORBAT-mapper-encrypted") {
@@ -29,12 +34,12 @@ function onLoaded(scenario: Scenario | EncryptedScenario) {
     showDecryptModal.value = true;
     return;
   }
-  loadScenario(scenario as Scenario);
+  loadScenario(scenario as Scenario, props.routeName);
   open.value = false;
 }
 
 function onDecrypted(scenario: Scenario) {
-  loadScenario(scenario);
+  loadScenario(scenario, props.routeName);
   open.value = false;
   showDecryptModal.value = false;
   currentEncryptedScenario.value = null;
@@ -70,6 +75,7 @@ function onDecrypted(scenario: Scenario) {
         <StoredScenarioBrowser
           :scenarios="storedScenarios"
           :sort-options="sortOptions"
+          :route-name="props.routeName"
           search-input-id="load-scenario-search"
           autofocus
           empty-message="No recent scenarios match"
