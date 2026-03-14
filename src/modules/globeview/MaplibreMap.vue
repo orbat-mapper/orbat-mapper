@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, useAttrs, useTemplateRef, watch } from "vue";
-import { GlobeControl, Map as MlMap, NavigationControl } from "maplibre-gl";
+import {
+  GlobeControl,
+  Map as MlMap,
+  NavigationControl,
+  type MapMouseEvent,
+} from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { GlobeBasemapStyle } from "@/modules/globeview/globeBasemaps";
 import { applyGlobeProjection } from "@/modules/globeview/maplibreGlobe";
@@ -13,11 +18,14 @@ const props = defineProps<{
   basemapId: string;
   styleSpec: GlobeBasemapStyle;
 }>();
-const emit = defineEmits(["ready"]);
+const emit = defineEmits<{
+  ready: [map: MlMap];
+}>();
 const attrs = useAttrs();
 
 const mapContainerElement = useTemplateRef("mapContainerElement");
 let mlMap: MlMap;
+let replayingContextMenu = false;
 
 onMounted(async () => {
   mlMap = new MlMap({
@@ -42,6 +50,34 @@ onMounted(async () => {
 
   mlMap.on("load", async () => {
     emit("ready", mlMap);
+  });
+
+  mlMap.on("contextmenu", (event: MapMouseEvent) => {
+    if (replayingContextMenu || !mapContainerElement.value) return;
+
+    const originalEvent = event.originalEvent as MouseEvent;
+    originalEvent.preventDefault();
+    originalEvent.stopPropagation();
+
+    replayingContextMenu = true;
+    mapContainerElement.value.dispatchEvent(
+      new MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        button: 2,
+        buttons: originalEvent.buttons,
+        clientX: originalEvent.clientX,
+        clientY: originalEvent.clientY,
+        ctrlKey: originalEvent.ctrlKey,
+        altKey: originalEvent.altKey,
+        shiftKey: originalEvent.shiftKey,
+        metaKey: originalEvent.metaKey,
+        screenX: originalEvent.screenX,
+        screenY: originalEvent.screenY,
+      }),
+    );
+    replayingContextMenu = false;
   });
 });
 

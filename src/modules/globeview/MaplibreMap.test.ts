@@ -8,7 +8,7 @@ const setStyle = vi.fn();
 const setProjection = vi.fn();
 const addControl = vi.fn();
 const remove = vi.fn();
-const listeners = new Map<string, Array<() => void>>();
+const listeners = new Map<string, Array<(event?: any) => void>>();
 
 vi.mock("maplibre-gl", () => {
   class MockMap {
@@ -16,7 +16,7 @@ vi.mock("maplibre-gl", () => {
 
     addControl = addControl;
 
-    on(event: string, handler: () => void) {
+    on(event: string, handler: (event?: any) => void) {
       const handlers = listeners.get(event) ?? [];
       handlers.push(handler);
       listeners.set(event, handlers);
@@ -90,5 +90,35 @@ describe("MaplibreMap", () => {
 
     expect(setStyle).toHaveBeenCalledTimes(1);
     expect(setProjection).toHaveBeenCalled();
+  });
+
+  it("emits MapLibre contextmenu events using the original mouse event", async () => {
+    const wrapper = mount(MaplibreMap, {
+      props: {
+        basemapId: "osm",
+        styleSpec: {
+          version: 8,
+          sources: {},
+          layers: [],
+        },
+      },
+    });
+
+    const dispatchSpy = vi.spyOn(wrapper.element, "dispatchEvent");
+    const mouseEvent = new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+      button: 2,
+      clientX: 12,
+      clientY: 34,
+    });
+
+    for (const handler of listeners.get("contextmenu") ?? []) {
+      handler({ originalEvent: mouseEvent });
+    }
+    await nextTick();
+
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(mouseEvent.defaultPrevented).toBe(true);
   });
 });

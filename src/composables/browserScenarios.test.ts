@@ -48,8 +48,9 @@ describe("useBrowserScenarios", () => {
       id: "scenario-1",
       name: "Scenario",
       description: "",
-      modified: Date.now(),
-      created: Date.now(),
+      image: "",
+      modified: new Date(),
+      created: new Date(),
     });
 
     expect(pushMock).toHaveBeenCalledWith({
@@ -65,8 +66,9 @@ describe("useBrowserScenarios", () => {
       id: "scenario-2",
       name: "Scenario",
       description: "",
-      modified: Date.now(),
-      created: Date.now(),
+      image: "",
+      modified: new Date(),
+      created: new Date(),
     });
     await nextTick();
 

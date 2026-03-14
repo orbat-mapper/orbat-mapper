@@ -1,4 +1,3 @@
-import type { StoredLayerConfig } from "@/stores/baseLayersStore";
 import type { StyleSpecification } from "maplibre-gl";
 
 export const GLOBE_VECTOR_BASEMAP_ID = "openFreeMapPositron";
@@ -16,8 +15,29 @@ export interface GlobeBasemapOption {
   style: GlobeBasemapStyle;
 }
 
+interface GlobeBasemapLayer {
+  name: string;
+  title: string;
+  opacity: number;
+  layerSourceType?: "osm" | "xyz";
+  sourceOptions?: {
+    url?: string;
+    attributions?: unknown;
+    maxZoom?: number;
+  };
+}
+
+function toMapLibreAttribution(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) {
+    const parts = value.filter((part): part is string => typeof part === "string");
+    return parts.length > 0 ? parts.join(" | ") : undefined;
+  }
+  return undefined;
+}
+
 function createRasterStyle(
-  layer: StoredLayerConfig,
+  layer: GlobeBasemapLayer,
   tiles: string[],
 ): StyleSpecification {
   return {
@@ -28,7 +48,7 @@ function createRasterStyle(
         type: "raster",
         tiles,
         tileSize: 256,
-        attribution: layer.sourceOptions?.attributions,
+        attribution: toMapLibreAttribution(layer.sourceOptions?.attributions),
         maxzoom: layer.sourceOptions?.maxZoom,
       },
     },
@@ -54,7 +74,7 @@ function createEmptyStyle(): StyleSpecification {
   };
 }
 
-function getTileUrls(layer: StoredLayerConfig): string[] | null {
+function getTileUrls(layer: GlobeBasemapLayer): string[] | null {
   if (layer.layerSourceType === "osm") {
     return [layer.sourceOptions?.url || OSM_TILE_URL];
   }
@@ -65,7 +85,7 @@ function getTileUrls(layer: StoredLayerConfig): string[] | null {
 }
 
 export function getSupportedGlobeBasemaps(
-  layers: StoredLayerConfig[],
+  layers: readonly GlobeBasemapLayer[],
 ): GlobeBasemapOption[] {
   const options: GlobeBasemapOption[] = [
     {
@@ -100,7 +120,7 @@ export function getSupportedGlobeBasemaps(
 
 export function resolveGlobeBasemap(
   basemapId: string | undefined,
-  layers: StoredLayerConfig[],
+  layers: readonly GlobeBasemapLayer[],
 ): GlobeBasemapOption {
   const options = getSupportedGlobeBasemaps(layers);
   return (
