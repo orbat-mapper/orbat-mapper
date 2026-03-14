@@ -9,6 +9,10 @@ import { useRouter } from "vue-router";
 import { useClipboard } from "@vueuse/core";
 import { useNotifications } from "@/composables/notifications";
 
+interface UseBrowserScenariosOptions {
+  routeName?: string;
+}
+
 export const DEMO_SCENARIOS = [
   {
     name: "The Falklands War 1982",
@@ -28,12 +32,13 @@ export const DEMO_SCENARIOS = [
   },
 ];
 
-export function useBrowserScenarios() {
+export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
   const router = useRouter();
   const { copy: copyToClipboard } = useClipboard();
   const { send } = useNotifications();
   const storedScenarios = ref<ScenarioMetadata[]>([]);
   const activeSort = ref("lastModified");
+  const routeName = options.routeName ?? MAP_EDIT_MODE_ROUTE;
 
   const sortOptions = computed<MenuItemData[]>(() => [
     {
@@ -73,7 +78,7 @@ export function useBrowserScenarios() {
     switch (action) {
       case "open":
         await router.push({
-          name: MAP_EDIT_MODE_ROUTE,
+          name: routeName,
           params: { scenarioId: scenario.id },
         });
         break;
