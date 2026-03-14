@@ -251,6 +251,7 @@ const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
 };
 
 import { useScenarioShare } from "@/composables/scenarioShare";
+import RecordingState from "@/components/RecordingState.vue";
 
 useScenarioShare();
 
@@ -359,6 +360,7 @@ if (state.layers.length > 0) {
         </div>
       </div>
       <div class="flex shrink-0 items-center space-x-1 overflow-clip sm:space-x-2">
+        <RecordingState />
         <PlaybackMenu v-if="route.name === MAP_EDIT_MODE_ROUTE" />
         <Button variant="ghost" class="hidden sm:inline-flex" asChild
           ><a
