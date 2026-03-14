@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
-import { GLOBE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
+import { MAP_EDIT_MODE_ROUTE, ORBAT_CHART_ROUTE } from "@/router/names";
 
 const { pushMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),
@@ -42,18 +42,19 @@ describe("useBrowserScenarios", () => {
   });
 
   it("routes open actions to the supplied route name", async () => {
-    const { onAction } = useBrowserScenarios({ routeName: GLOBE_ROUTE });
+    const { onAction } = useBrowserScenarios({ routeName: ORBAT_CHART_ROUTE });
 
     await onAction("open", {
       id: "scenario-1",
       name: "Scenario",
       description: "",
-      modified: Date.now(),
-      created: Date.now(),
+      image: "",
+      modified: new Date(),
+      created: new Date(),
     });
 
     expect(pushMock).toHaveBeenCalledWith({
-      name: GLOBE_ROUTE,
+      name: ORBAT_CHART_ROUTE,
       params: { scenarioId: "scenario-1" },
     });
   });
@@ -65,8 +66,9 @@ describe("useBrowserScenarios", () => {
       id: "scenario-2",
       name: "Scenario",
       description: "",
-      modified: Date.now(),
-      created: Date.now(),
+      image: "",
+      modified: new Date(),
+      created: new Date(),
     });
     await nextTick();
 

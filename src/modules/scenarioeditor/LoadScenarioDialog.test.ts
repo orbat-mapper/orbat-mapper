@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { defineComponent } from "vue";
 import LoadScenarioDialog from "@/modules/scenarioeditor/LoadScenarioDialog.vue";
-import { GLOBE_ROUTE } from "@/router/names";
+import { ORBAT_CHART_ROUTE } from "@/router/names";
 import StoredScenarioBrowser from "@/components/StoredScenarioBrowser.vue";
 
 const { loadScenarioMock, onActionMock } = vi.hoisted(() => ({
@@ -66,7 +66,7 @@ describe("LoadScenarioDialog", () => {
     return mount(LoadScenarioDialog, {
       props: {
         modelValue: true,
-        routeName: GLOBE_ROUTE,
+        routeName: ORBAT_CHART_ROUTE,
       },
       global: {
         stubs: {
@@ -105,12 +105,12 @@ describe("LoadScenarioDialog", () => {
     expect(loadScenarioMock).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({ id: "file-1" }),
-      GLOBE_ROUTE,
+      ORBAT_CHART_ROUTE,
     );
     expect(loadScenarioMock).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({ id: "url-1" }),
-      GLOBE_ROUTE,
+      ORBAT_CHART_ROUTE,
     );
   });
 
@@ -126,7 +126,7 @@ describe("LoadScenarioDialog", () => {
 
     expect(loadScenarioMock).toHaveBeenCalledWith(
       expect.objectContaining({ id: "dec-1" }),
-      GLOBE_ROUTE,
+      ORBAT_CHART_ROUTE,
     );
   });
 
@@ -134,7 +134,7 @@ describe("LoadScenarioDialog", () => {
     const wrapper = mountDialog();
 
     expect(wrapper.findComponent(StoredScenarioBrowser).props("routeName")).toBe(
-      GLOBE_ROUTE,
+      ORBAT_CHART_ROUTE,
     );
   });
 });
