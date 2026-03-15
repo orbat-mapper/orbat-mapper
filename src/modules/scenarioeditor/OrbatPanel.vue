@@ -206,8 +206,12 @@ onMounted(() => {
         if (!units) return;
         units.forEach((unit) => {
           groupUpdate(() => {
-            addUnitHierarchy(unit, parentId, activeScenario);
-            changeUnitParent(unit.id, parentId, dropTarget);
+            const insertedUnitId = addUnitHierarchy(unit, parentId, activeScenario, {
+              newIds: false,
+            });
+            if (insertedUnitId) {
+              changeUnitParent(insertedUnitId, parentId, dropTarget);
+            }
           });
         });
       };
@@ -233,14 +237,23 @@ onMounted(() => {
       }
 
       if (pastedOrbat) {
+        let insertionTargetId = targetUnitId;
         pastedOrbat.forEach((unit) => {
+          let insertedUnitId: EntityId | undefined;
           groupUpdate(() => {
             // addUnitHierarchy registers the unit and its subordinates into the store
-            addUnitHierarchy(unit, effectiveParentId, activeScenario);
+            insertedUnitId = addUnitHierarchy(unit, effectiveParentId, activeScenario, {
+              newIds: false,
+            });
 
             // Then we re-parent/order it correctly based on the drop target
-            changeUnitParent(unit.id, targetUnitId, dropTarget);
+            if (insertedUnitId) {
+              changeUnitParent(insertedUnitId, insertionTargetId, dropTarget);
+            }
           });
+          if (dropTarget === "below" && insertedUnitId) {
+            insertionTargetId = insertedUnitId;
+          }
         });
       }
 

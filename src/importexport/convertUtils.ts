@@ -61,7 +61,7 @@ export function addUnitHierarchy(
   parentId: EntityId,
   targetScenario: TScenario,
   options: AddUnitHierarchyOptions = {},
-) {
+): EntityId | undefined {
   const newIds = options.newIds ?? true;
   const includeState = options.includeState ?? false;
   const noUndo = true;
@@ -78,6 +78,7 @@ export function addUnitHierarchy(
   const targetSupplyUomNameToIdMap = createNameToIdMapObject(store.state.supplyUomMap);
   const targetSupplyClassMap = createNameToIdMapObject(store.state.supplyClassMap);
   const sourceCustomSymbolIds = new Set<string>();
+  let insertedRootId: EntityId | undefined;
 
   store.update((s) => {
     function addUnitStatus(unitStatus: UnitStatus) {
@@ -87,7 +88,11 @@ export function addUnitHierarchy(
       return id;
     }
 
-    function helper(unit: Unit, parentId: EntityId, depth: number = 0) {
+    function helper(
+      unit: Unit,
+      parentId: EntityId,
+      depth: number = 0,
+    ): EntityId | undefined {
       const equipment: NUnitEquipment[] = [];
       const personnel: NUnitPersonnel[] = [];
       const rangeRings: RangeRing[] = [];
@@ -266,9 +271,10 @@ export function addUnitHierarchy(
       };
       unitActions.addUnit(newUnit, parentId, undefined, { noUndo, s });
       unit.subUnits?.forEach((child) => helper(child, newUnit.id!));
+      return newUnit.id;
     }
 
-    helper(rootUnit, parentId);
+    insertedRootId = helper(rootUnit, parentId);
     // copy over custom symbols used by the source scenario
     sourceCustomSymbolIds.forEach((csid) => {
       if (!s.customSymbolMap[csid]) {
@@ -279,4 +285,6 @@ export function addUnitHierarchy(
       }
     });
   });
+
+  return insertedRootId;
 }

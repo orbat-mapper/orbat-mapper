@@ -22,12 +22,14 @@ type UnitLike = {
 const {
   addUnitHierarchySpy,
   extractInstructionSpy,
+  monitorForExternalSpy,
   serializeUnitSpy,
   monitorForElementsSpy,
   onUnitActionSpy,
 } = vi.hoisted(() => ({
-  addUnitHierarchySpy: vi.fn(),
+  addUnitHierarchySpy: vi.fn((unit: { id: string }) => unit.id),
   extractInstructionSpy: vi.fn(),
+  monitorForExternalSpy: vi.fn(() => () => {}),
   serializeUnitSpy: vi.fn((id: string) => ({
     id,
     name: `Unit ${id}`,
@@ -40,6 +42,10 @@ const {
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
   monitorForElements: monitorForElementsSpy,
+}));
+
+vi.mock("@atlaskit/pragmatic-drag-and-drop/external/adapter", () => ({
+  monitorForExternal: monitorForExternalSpy,
 }));
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item", () => ({
@@ -96,6 +102,7 @@ function makeScenario() {
         state: {
           sides: [],
           sideMap: {},
+          unitMap: {},
           currentTime: 0,
         },
         groupUpdate: (fn: () => void) => fn(),
@@ -164,6 +171,17 @@ function focusOrbatLikeElementWithIndent(unitId = "u-1") {
 }
 
 const wrappers: VueWrapper[] = [];
+
+function makeDropTargetUnit(id: string, parentId: string): NUnit {
+  return {
+    id,
+    _pid: parentId,
+    _sid: "side-1",
+    name: `Unit ${id}`,
+    sidc: TEST_SIDC,
+    subUnits: [],
+  } as NUnit;
+}
 
 function mountPanel() {
   const { scenario, parentUnit } = makeScenario();
@@ -237,12 +255,40 @@ function triggerDragStart(
   });
 }
 
+function triggerExternalDrop(
+  destinationData:
+    | ReturnType<typeof getUnitDragItem>
+    | ReturnType<typeof getSideDragItem>,
+  instruction: { type: "reorder-above" | "reorder-below" | "make-child" },
+  applicationOrbat: string,
+) {
+  extractInstructionSpy.mockReturnValueOnce(instruction);
+  const monitorArgs = (monitorForExternalSpy as any).mock.calls[0]?.[0] as
+    | { onDrop: (args: unknown) => void }
+    | undefined;
+  expect(monitorArgs?.onDrop).toBeTypeOf("function");
+  if (!monitorArgs) throw new Error("monitorForExternal was not registered");
+  monitorArgs.onDrop({
+    source: {
+      types: ["application/orbat"],
+      getStringData: (mime: string) =>
+        mime === "application/orbat" ? applicationOrbat : "",
+    },
+    location: {
+      current: {
+        dropTargets: [{ data: destinationData }],
+      },
+    },
+  });
+}
+
 beforeEach(() => {
   setActivePinia(createPinia());
   const selected = useSelectedItems();
   selected.clear();
   addUnitHierarchySpy.mockReset();
   extractInstructionSpy.mockReset();
+  monitorForExternalSpy.mockClear();
   serializeUnitSpy.mockClear();
   monitorForElementsSpy.mockClear();
   onUnitActionSpy.mockClear();
@@ -386,6 +432,86 @@ describe("OrbatPanel clipboard handling", () => {
 });
 
 describe("OrbatPanel unit drag-and-drop hierarchy recording", () => {
+  it("external_drop_below_preserves_incoming_order_at_drop_indicator", () => {
+    const { scenario } = mountPanel();
+    scenario.store.state.unitMap = {
+      "u-1": makeDropTargetUnit("u-1", "group-1"),
+    };
+
+    const payload = JSON.stringify([
+      { id: "u-new-1", name: "First", sidc: TEST_SIDC, subUnits: [] },
+      { id: "u-new-2", name: "Second", sidc: TEST_SIDC, subUnits: [] },
+    ]);
+
+    triggerExternalDrop(
+      getUnitDragItem({ unit: makeDropTargetUnit("u-1", "group-1") }),
+      { type: "reorder-below" },
+      payload,
+    );
+
+    expect(addUnitHierarchySpy).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ id: "u-new-1" }),
+      "group-1",
+      scenario,
+      { newIds: false },
+    );
+    expect(addUnitHierarchySpy).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ id: "u-new-2" }),
+      "group-1",
+      scenario,
+      { newIds: false },
+    );
+    expect(scenario.unitActions.changeUnitParent).toHaveBeenNthCalledWith(
+      1,
+      "u-new-1",
+      "u-1",
+      "below",
+    );
+    expect(scenario.unitActions.changeUnitParent).toHaveBeenNthCalledWith(
+      2,
+      "u-new-2",
+      "u-new-1",
+      "below",
+    );
+  });
+
+  it("external_drop_uses_inserted_ids_when_import_collides", () => {
+    const { scenario } = mountPanel();
+    scenario.store.state.unitMap = {
+      "u-1": makeDropTargetUnit("u-1", "group-1"),
+      "u-new-1": makeDropTargetUnit("u-new-1", "group-1"),
+    };
+    addUnitHierarchySpy
+      .mockImplementationOnce(() => "u-new-1-imported")
+      .mockImplementationOnce(() => "u-new-2");
+
+    const payload = JSON.stringify([
+      { id: "u-new-1", name: "First", sidc: TEST_SIDC, subUnits: [] },
+      { id: "u-new-2", name: "Second", sidc: TEST_SIDC, subUnits: [] },
+    ]);
+
+    triggerExternalDrop(
+      getUnitDragItem({ unit: makeDropTargetUnit("u-1", "group-1") }),
+      { type: "reorder-below" },
+      payload,
+    );
+
+    expect(scenario.unitActions.changeUnitParent).toHaveBeenNthCalledWith(
+      1,
+      "u-new-1-imported",
+      "u-1",
+      "below",
+    );
+    expect(scenario.unitActions.changeUnitParent).toHaveBeenNthCalledWith(
+      2,
+      "u-new-2",
+      "u-new-1-imported",
+      "below",
+    );
+  });
+
   it("records timed hierarchy move when recordHierarchyChanges is enabled", () => {
     const { scenario } = mountPanel();
     useUiStore().recordHierarchyChanges = true;
