@@ -21,11 +21,10 @@ interface IconEntry {
   sidc: string;
 }
 
-// Build SIDC from entity code (same compact form used previously in this component)
-function buildSidc(entityCode: string): string {
+// Build SIDC from entity code and symbol set
+function buildSidc(entityCode: string, symbolSet = "10"): string {
   // Format: version(2) context(1) standard_identity(1) symbol_set(2) status(1) hq/TF(1) echelon(2) entity(10)
-  // Use friendly standard identity and land unit symbol set with unspecified echelon
-  return `1003${10}0000${entityCode}`;
+  return `1003${symbolSet}0000${entityCode}`;
 }
 
 function friendlyNameFromVar(varName: string) {
@@ -38,9 +37,10 @@ function friendlyNameFromVar(varName: string) {
 
 const icons: IconEntry[] = Object.entries(ICON_CODE_TO_NAME)
   .map(([entityCode, varName]) => {
-    const patternLabel = ICON_PATTERNS.find((p) => p.code === entityCode)?.label;
-    const name = patternLabel ?? friendlyNameFromVar(varName);
-    return { name, code: varName, sidc: buildSidc(entityCode) } as IconEntry;
+    const matchedPattern = ICON_PATTERNS.find((p) => p.code === entityCode);
+    const name = matchedPattern?.label ?? friendlyNameFromVar(varName);
+    const symbolSet = matchedPattern?.symbolSet ?? "10";
+    return { name, code: varName, sidc: buildSidc(entityCode, symbolSet) } as IconEntry;
   })
   .sort((a, b) => a.name.localeCompare(b.name));
 

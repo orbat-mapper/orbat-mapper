@@ -18,14 +18,16 @@ import {
 } from "@/views/texttoorbat/textToOrbat";
 import ToggleField from "@/components/ToggleField.vue";
 
+const FRIENDLY_SI = "3";
+
 const open = defineModel<boolean>({ default: false });
 const searchQuery = ref("");
 const showDebug = ref(false);
 
 // Build SIDC for icon patterns (using battalion echelon for display)
-function buildIconSidc(entityCode: string): string {
-  // Format: 10 + 03 (friendly) + 10 (land unit) + 0 (present) + 0 (not HQ/TF) + 16 (battalion) + entityCode
-  return `1003100000${entityCode}`;
+function buildIconSidc(entityCode: string, symbolSet = "10"): string {
+  // Format: 10 + 0 + 3 (friendly) + SS (symbol set) + 0 (present) + 0 (not HQ/TF) + 00 (no echelon) + entityCode
+  return `100${FRIENDLY_SI}${symbolSet}0000${entityCode}`;
 }
 
 // Build SIDC for echelon patterns (using infantry as base icon)
@@ -78,7 +80,7 @@ const iconEntries = computed<PatternEntry[]>(() => {
   return ICON_PATTERNS.map((p) => ({
     label: p.label,
     keywords: extractKeywords(p.pattern),
-    sidc: buildIconSidc(p.code),
+    sidc: buildIconSidc(p.code, p.symbolSet),
     originalPattern: p.pattern.source,
     constantName: ICON_CODE_TO_NAME[p.code],
     code: p.code,

@@ -1,43 +1,50 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildSidc,
-  getEchelonCode,
-  getEchelonCodeFromName,
-  getEchelonFromSidc,
-  getIconCodeFromName,
-  getNextLowerEchelon,
   ICON_AIR_ASSAULT_INFANTRY,
   ICON_AIR_DEFENSE,
   ICON_AIR_FORCE,
   ICON_AIRBORNE_INFANTRY,
   ICON_AMPHIBIOUS,
+  ICON_AMPHIBIOUS_WARFARE_SHIP,
   ICON_ANTITANK,
   ICON_ARMOR,
   ICON_ARTILLERY,
   ICON_ATTACK_HELICOPTER,
+  ICON_AUXILIARY_SHIP,
   ICON_AVIATION,
+  ICON_BATTLESHIP,
+  ICON_CARGO_SHIP,
+  ICON_CARRIER,
   ICON_CAVALRY,
   ICON_CHEMICAL,
   ICON_CIVIL_AFFAIRS,
   ICON_COMBAT_ENGINEER,
+  ICON_CORVETTE,
+  ICON_CRUISER,
+  ICON_DESTROYER,
   ICON_ELECTRONIC_WARFARE,
   ICON_ENGINEER,
+  ICON_FRIGATE,
   ICON_HEADQUARTERS,
+  ICON_HOSPITAL_SHIP,
   ICON_INFANTRY,
   ICON_LIGHT_ARMOR,
   ICON_LIGHT_INFANTRY,
+  ICON_LITTORAL_COMBAT_SHIP,
   ICON_MAINTENANCE,
   ICON_MARINE_INFANTRY,
   ICON_MECHANIZED_INFANTRY,
   ICON_MEDICAL,
   ICON_MILITARY_INTELLIGENCE,
   ICON_MILITARY_POLICE,
+  ICON_MINE_WARFARE_SHIP,
   ICON_MISSILE,
   ICON_MORTAR,
   ICON_MOTORIZED_INFANTRY,
   ICON_MOUNTAIN_INFANTRY,
   ICON_NAVAL,
   ICON_PARACHUTE,
+  ICON_PATROL_BOAT,
   ICON_PSYCHOLOGICAL_OPS,
   ICON_RECONNAISSANCE,
   ICON_ROCKET_ARTILLERY,
@@ -46,9 +53,19 @@ import {
   ICON_SIGNAL,
   ICON_SNIPER,
   ICON_SPECIAL_FORCES,
+  ICON_SUBMARINE,
   ICON_SUPPLY,
+  ICON_TANKER_SHIP,
   ICON_TRANSPORTATION,
   ICON_UNSPECIFIED,
+} from "./iconRegistry";
+import {
+  buildSidc,
+  getEchelonCode,
+  getEchelonCodeFromName,
+  getEchelonFromSidc,
+  getIconCodeFromName,
+  getNextLowerEchelon,
   parseTextToUnits,
 } from "./textToOrbat.ts";
 
@@ -827,6 +844,84 @@ describe("getIconCodeFromName", () => {
     });
   });
 
+  describe("Sea surface vessels", () => {
+    it("detects carrier", () => {
+      expect(getIconCodeFromName("Aircraft Carrier")).toBe(ICON_CARRIER);
+      expect(getIconCodeFromName("CVN-78")).toBe(ICON_CARRIER);
+    });
+
+    it("detects battleship", () => {
+      expect(getIconCodeFromName("Battleship")).toBe(ICON_BATTLESHIP);
+      expect(getIconCodeFromName("BB Missouri")).toBe(ICON_BATTLESHIP);
+    });
+
+    it("detects cruiser", () => {
+      expect(getIconCodeFromName("Cruiser Division")).toBe(ICON_CRUISER);
+      expect(getIconCodeFromName("CG Ticonderoga")).toBe(ICON_CRUISER);
+    });
+
+    it("detects destroyer", () => {
+      expect(getIconCodeFromName("Destroyer Squadron")).toBe(ICON_DESTROYER);
+      expect(getIconCodeFromName("DDG Arleigh Burke")).toBe(ICON_DESTROYER);
+    });
+
+    it("detects frigate", () => {
+      expect(getIconCodeFromName("Frigate")).toBe(ICON_FRIGATE);
+      expect(getIconCodeFromName("FFG Perry")).toBe(ICON_FRIGATE);
+    });
+
+    it("detects corvette", () => {
+      expect(getIconCodeFromName("Corvette")).toBe(ICON_CORVETTE);
+    });
+
+    it("detects littoral combat ship", () => {
+      expect(getIconCodeFromName("Littoral Combat Ship")).toBe(ICON_LITTORAL_COMBAT_SHIP);
+      expect(getIconCodeFromName("LCS Freedom")).toBe(ICON_LITTORAL_COMBAT_SHIP);
+    });
+
+    it("detects amphibious warfare ship", () => {
+      expect(getIconCodeFromName("Amphibious Assault Ship")).toBe(
+        ICON_AMPHIBIOUS_WARFARE_SHIP,
+      );
+      expect(getIconCodeFromName("Landing Ship")).toBe(ICON_AMPHIBIOUS_WARFARE_SHIP);
+    });
+
+    it("detects mine warfare ship", () => {
+      expect(getIconCodeFromName("Minesweeper")).toBe(ICON_MINE_WARFARE_SHIP);
+      expect(getIconCodeFromName("MCM Avenger")).toBe(ICON_MINE_WARFARE_SHIP);
+    });
+
+    it("detects patrol boat", () => {
+      expect(getIconCodeFromName("Patrol Boat")).toBe(ICON_PATROL_BOAT);
+      expect(getIconCodeFromName("Torpedo Boat")).toBe(ICON_PATROL_BOAT);
+    });
+
+    it("detects submarine", () => {
+      expect(getIconCodeFromName("Submarine")).toBe(ICON_SUBMARINE);
+      expect(getIconCodeFromName("U-Boat")).toBe(ICON_SUBMARINE);
+      expect(getIconCodeFromName("SSN Virginia")).toBe(ICON_SUBMARINE);
+    });
+
+    it("detects auxiliary ship", () => {
+      expect(getIconCodeFromName("Auxiliary Ship")).toBe(ICON_AUXILIARY_SHIP);
+      expect(getIconCodeFromName("Fleet Auxiliary")).toBe(ICON_AUXILIARY_SHIP);
+    });
+
+    it("detects hospital ship", () => {
+      expect(getIconCodeFromName("Hospital Ship")).toBe(ICON_HOSPITAL_SHIP);
+    });
+
+    it("detects cargo ship", () => {
+      expect(getIconCodeFromName("Cargo Ship")).toBe(ICON_CARGO_SHIP);
+      expect(getIconCodeFromName("Liberty Ship")).toBe(ICON_CARGO_SHIP);
+    });
+
+    it("detects tanker", () => {
+      expect(getIconCodeFromName("Tanker")).toBe(ICON_TANKER_SHIP);
+      expect(getIconCodeFromName("Oil Tanker")).toBe(ICON_TANKER_SHIP);
+    });
+  });
+
   describe("Headquarters", () => {
     it("detects headquarters units", () => {
       expect(getIconCodeFromName("Division Headquarters")).toBe(ICON_HEADQUARTERS);
@@ -891,6 +986,40 @@ describe("buildSidc with icon detection", () => {
     const sidc = buildSidc(0, "Alpha");
     const entityCode = sidc.substring(10, 20);
     expect(entityCode).toBe(ICON_UNSPECIFIED);
+  });
+});
+
+describe("buildSidc with naval units", () => {
+  it("uses sea surface symbol set (30) for surface vessels", () => {
+    const sidc = buildSidc(0, "Destroyer");
+    expect(sidc.substring(4, 6)).toBe("30");
+  });
+
+  it("uses sea subsurface symbol set (35) for submarines", () => {
+    const sidc = buildSidc(0, "Submarine");
+    expect(sidc.substring(4, 6)).toBe("35");
+  });
+
+  it("sets echelon to 00 for naval units", () => {
+    const sidc = buildSidc(0, "Carrier");
+    expect(getEchelonFromSidc(sidc)).toBe("00");
+  });
+
+  it("sets echelon to 00 even when name contains echelon keyword", () => {
+    const sidc = buildSidc(0, "Destroyer Squadron");
+    expect(sidc.substring(4, 6)).toBe("30");
+    expect(getEchelonFromSidc(sidc)).toBe("00");
+  });
+
+  it("sets echelon to 00 even with parent echelon", () => {
+    const sidc = buildSidc(1, "Frigate", "21");
+    expect(sidc.substring(4, 6)).toBe("30");
+    expect(getEchelonFromSidc(sidc)).toBe("00");
+  });
+
+  it("still uses land symbol set for non-naval units", () => {
+    const sidc = buildSidc(0, "1st Infantry Division");
+    expect(sidc.substring(4, 6)).toBe("10");
   });
 });
 
