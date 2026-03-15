@@ -57,16 +57,16 @@ const showPatternMapping = ref(false);
 const isOpeningScenario = ref(false);
 const isCopyingToClipboard = ref(false);
 
-const inputText = ref(
-  "1st Infantry Division\n" +
-    "  1st Brigade\n" +
-    "    1st Tank Battalion\n" +
-    "    2nd Art Battalion\n" +
-    "  2nd Cdo Btn\n" +
-    "    3rd RA\n" +
-    "    4th Eng \n" +
-    "  Artillery Coy",
-);
+const inputText = ref(`# sample ORBAT
+1st Infantry Division
+  1st Brigade
+    # use | or [] for metadata
+    1st | tank bn
+    2nd Art [bty]
+  2nd Cdo Btn
+    3rd RA
+    4th Eng
+  Artillery Coy  `);
 
 const parsedUnits = computed(() => parseTextToUnits(inputText.value));
 const spatialIllusionsOrbat = computed(() =>

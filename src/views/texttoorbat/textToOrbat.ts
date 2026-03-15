@@ -65,6 +65,54 @@ const UNIT_SYMBOL_SET = "10";
 
 const UNIT_DESIGNATOR_PATTERN = /^(?:\d+(?:st|nd|rd|th)?|[ivxlcdm]+|[a-z])$/i;
 
+function normalizeMetadataWhitespace(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+interface NormalizedUnitLine {
+  displayName: string;
+  metadataName: string;
+}
+
+function stripComment(line: string): string {
+  const commentIndex = line.indexOf("#");
+  if (commentIndex === -1) {
+    return line;
+  }
+  return line.slice(0, commentIndex);
+}
+
+function normalizeUnitLine(line: string): NormalizedUnitLine {
+  const metadataSegments: string[] = [];
+  let displayName = stripComment(line);
+
+  displayName = displayName.replace(/\[([^[\]]*)\]/g, (match, inner: string) => {
+    const normalized = normalizeMetadataWhitespace(inner);
+    if (normalized) metadataSegments.push(normalized);
+    return normalized ? " " : "";
+  });
+
+  const pipeCount = [...displayName].filter((char) => char === "|").length;
+  if (pipeCount === 1) {
+    const pipeIndex = displayName.indexOf("|");
+    const metadata = normalizeMetadataWhitespace(displayName.slice(pipeIndex + 1));
+    if (metadata) metadataSegments.push(metadata);
+    displayName = displayName.slice(0, pipeIndex);
+  } else if (pipeCount >= 2) {
+    displayName = displayName.replace(/\|([^|]*)\|/g, (match, inner: string) => {
+      const normalized = normalizeMetadataWhitespace(inner);
+      if (normalized) metadataSegments.push(normalized);
+      return normalized ? " " : "";
+    });
+  }
+
+  const normalizedDisplayName = normalizeMetadataWhitespace(displayName);
+  return {
+    displayName: normalizedDisplayName,
+    metadataName: metadataSegments.join(" "),
+  };
+}
+
 function normalizeEchelonTokenBoundaries(
   name: string,
   registry: MappingRegistry = defaultRegistry,
@@ -238,6 +286,62 @@ export function buildSidc(
   return version + context + si + symbolSet + status + hqtfd + echelon + entity;
 }
 
+function buildSidcWithMetadataPriority(
+  level: number,
+  displayName: string,
+  metadataName: string,
+  parentEchelon?: string,
+  parentIcon?: string,
+  registry: MappingRegistry = defaultRegistry,
+): string {
+  const version = "10";
+  const context = "0";
+  const si = FRIENDLY_SI;
+  const status = "0";
+  const hqtfd = "0";
+
+  let echelon =
+    (metadataName && getEchelonCodeFromName(metadataName, registry)) ||
+    ECHELON_UNSPECIFIED;
+
+  if (echelon === ECHELON_UNSPECIFIED) {
+    echelon = getEchelonCodeFromName(displayName, registry);
+  }
+
+  if (
+    echelon === ECHELON_UNSPECIFIED &&
+    parentEchelon &&
+    parentEchelon !== ECHELON_UNSPECIFIED
+  ) {
+    echelon = getNextLowerEchelon(parentEchelon, registry);
+  }
+
+  if (echelon === ECHELON_UNSPECIFIED) {
+    echelon = getEchelonCode(level, registry);
+  }
+
+  const metadataIconMatch = metadataName
+    ? getIconMatchFromName(metadataName, registry)
+    : { code: ICON_UNSPECIFIED };
+  const displayIconMatch = getIconMatchFromName(displayName, registry);
+  const iconMatch =
+    metadataIconMatch.code !== ICON_UNSPECIFIED ? metadataIconMatch : displayIconMatch;
+
+  let entity = iconMatch.code;
+  const matchedSymbolSet = iconMatch.symbolSet;
+  if (entity === ICON_UNSPECIFIED && parentIcon && parentIcon !== ICON_UNSPECIFIED) {
+    entity = parentIcon;
+  }
+
+  const symbolSet = matchedSymbolSet ?? UNIT_SYMBOL_SET;
+
+  if (matchedSymbolSet && matchedSymbolSet !== UNIT_SYMBOL_SET) {
+    echelon = ECHELON_UNSPECIFIED;
+  }
+
+  return version + context + si + symbolSet + status + hqtfd + echelon + entity;
+}
+
 /**
  * Extract echelon code from SIDC (positions 8-9).
  */
@@ -270,7 +374,8 @@ export function parseTextToUnits(
   for (const line of lines) {
     const trimmed = line.trimStart();
     const indent = line.length - trimmed.length;
-    const name = trimmed.trim();
+    const normalizedLine = normalizeUnitLine(trimmed.trim());
+    const name = normalizedLine.displayName;
 
     if (!name) continue;
 
@@ -287,7 +392,14 @@ export function parseTextToUnits(
     // Get parent's echelon and icon if available
     const parentEchelon = stack.length > 0 ? stack[stack.length - 1].echelon : undefined;
     const parentIcon = stack.length > 0 ? stack[stack.length - 1].icon : undefined;
-    const sidc = buildSidc(level, name, parentEchelon, parentIcon, registry);
+    const sidc = buildSidcWithMetadataPriority(
+      level,
+      name,
+      normalizedLine.metadataName,
+      parentEchelon,
+      parentIcon,
+      registry,
+    );
     const unitEchelon = getEchelonFromSidc(sidc);
     const unitIcon = getIconFromSidc(sidc);
 

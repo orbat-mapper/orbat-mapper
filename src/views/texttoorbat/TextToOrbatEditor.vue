@@ -3,10 +3,13 @@ import { startCompletion } from "@codemirror/autocomplete";
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
 import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import {
+  Decoration,
   type KeyBinding,
   EditorView,
   keymap,
   placeholder as placeholderExtension,
+  ViewPlugin,
+  type ViewUpdate,
 } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import {
@@ -40,6 +43,86 @@ const emit = defineEmits<{
 const editorRoot = ref<HTMLDivElement | null>(null);
 const editorView = shallowRef<EditorView | null>(null);
 const autocompleteCompartment = new Compartment();
+const metadataMark = Decoration.mark({ class: "cm-text-to-orbat-metadata" });
+const commentMark = Decoration.mark({ class: "cm-text-to-orbat-comment" });
+
+function getMetadataRanges(line: string): Array<{ from: number; to: number }> {
+  const ranges: Array<{ from: number; to: number }> = [];
+  const commentStart = line.indexOf("#");
+  const content = commentStart === -1 ? line : line.slice(0, commentStart);
+  const bracketPattern = /\[[^[\]]*\]/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = bracketPattern.exec(content)) !== null) {
+    ranges.push({ from: match.index, to: match.index + match[0].length });
+  }
+
+  const pipeIndexes = [...content.matchAll(/\|/g)]
+    .map((item) => item.index ?? -1)
+    .filter((i) => i >= 0);
+  if (pipeIndexes.length === 1) {
+    const start = pipeIndexes[0];
+    if (start < content.length - 1) {
+      ranges.push({ from: start, to: content.length });
+    }
+  } else if (pipeIndexes.length >= 2) {
+    for (let i = 0; i + 1 < pipeIndexes.length; i += 2) {
+      const start = pipeIndexes[i];
+      const end = pipeIndexes[i + 1] + 1;
+      if (end > start + 1) {
+        ranges.push({ from: start, to: end });
+      }
+    }
+  }
+
+  return ranges.sort((a, b) => a.from - b.from);
+}
+
+function getCommentRange(line: string): { from: number; to: number } | null {
+  const commentStart = line.indexOf("#");
+  if (commentStart === -1) {
+    return null;
+  }
+  return { from: commentStart, to: line.length };
+}
+
+function buildMetadataDecorations(state: EditorState) {
+  const ranges = [];
+
+  for (let lineNumber = 1; lineNumber <= state.doc.lines; lineNumber += 1) {
+    const line = state.doc.line(lineNumber);
+    const commentRange = getCommentRange(line.text);
+    for (const range of getMetadataRanges(line.text)) {
+      ranges.push(metadataMark.range(line.from + range.from, line.from + range.to));
+    }
+    if (commentRange) {
+      ranges.push(
+        commentMark.range(line.from + commentRange.from, line.from + commentRange.to),
+      );
+    }
+  }
+
+  return Decoration.set(ranges, true);
+}
+
+const metadataHighlightExtension = ViewPlugin.fromClass(
+  class {
+    decorations;
+
+    constructor(view: EditorView) {
+      this.decorations = buildMetadataDecorations(view.state);
+    }
+
+    update(update: ViewUpdate) {
+      if (update.docChanged) {
+        this.decorations = buildMetadataDecorations(update.state);
+      }
+    }
+  },
+  {
+    decorations: (value) => value.decorations,
+  },
+);
 
 function dispatchDocumentChange(
   view: EditorView,
@@ -140,6 +223,7 @@ onMounted(() => {
   const extensions: Extension[] = [
     history(),
     EditorView.lineWrapping,
+    metadataHighlightExtension,
     autocompleteCompartment.of(createAutocompleteExtension()),
     keymap.of([
       { key: "Tab", run: indentCommand },
@@ -200,6 +284,18 @@ onMounted(() => {
       },
       ".cm-placeholder": {
         color: "var(--muted-foreground)",
+      },
+      ".cm-text-to-orbat-metadata": {
+        color: "color-mix(in srgb, var(--chart-2) 78%, var(--foreground) 22%)",
+        backgroundColor: "color-mix(in srgb, var(--chart-2) 18%, transparent)",
+        boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--chart-2) 24%, transparent)",
+        borderRadius: "0.2rem",
+        padding: "0 0.14rem",
+        fontWeight: "500",
+      },
+      ".cm-text-to-orbat-comment": {
+        color: "color-mix(in srgb, var(--muted-foreground) 88%, var(--foreground) 12%)",
+        fontStyle: "italic",
       },
       ".cm-tooltip": {
         border: "1px solid var(--border)",

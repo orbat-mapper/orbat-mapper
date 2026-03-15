@@ -202,4 +202,44 @@ describe("TextToOrbatEditor", () => {
 
     expect(document.querySelector(".cm-tooltip-autocomplete")).toBeNull();
   });
+
+  it("renders metadata with distinct syntax highlighting", async () => {
+    const wrapper = trackWrapper(
+      mount(TextToOrbatEditor, {
+        attachTo: document.body,
+        props: {
+          modelValue: "Alpha [brigade] |mechanized infantry|\nBravo |artillery",
+        },
+      }),
+    );
+    await nextTick();
+
+    const metadataNodes = wrapper.findAll(".cm-text-to-orbat-metadata");
+    expect(metadataNodes).toHaveLength(3);
+    expect(metadataNodes.map((node) => node.text())).toEqual([
+      "[brigade]",
+      "|mechanized infantry|",
+      "|artillery",
+    ]);
+  });
+
+  it("renders comments with distinct syntax highlighting", async () => {
+    const wrapper = trackWrapper(
+      mount(TextToOrbatEditor, {
+        attachTo: document.body,
+        props: {
+          modelValue:
+            "Alpha [brigade] |mechanized infantry| # note\n# whole-line comment",
+        },
+      }),
+    );
+    await nextTick();
+
+    const commentNodes = wrapper.findAll(".cm-text-to-orbat-comment");
+    expect(commentNodes).toHaveLength(2);
+    expect(commentNodes.map((node) => node.text())).toEqual([
+      "# note",
+      "# whole-line comment",
+    ]);
+  });
 });

@@ -66,12 +66,14 @@ import {
 } from "./iconRegistry";
 import {
   buildSidc,
+  convertParsedUnitsToSpatialIllusions,
   getEchelonCode,
   getEchelonCodeFromName,
   getEchelonFromSidc,
   getIconCodeFromName,
   getNextLowerEchelon,
   parseTextToUnits,
+  serializeParsedUnitsToScenarioUnits,
 } from "./textToOrbat.ts";
 
 describe("getEchelonCodeFromName", () => {
@@ -470,6 +472,120 @@ describe("parseTextToUnits", () => {
     expect(units[0].children[0].name).toBe("1st Brigade");
     expect(units[1].name).toBe("2nd Division");
     expect(units[1].children[0].name).toBe("2nd Brigade");
+  });
+
+  it("uses balanced pipe metadata for parsing but hides it from the unit name", () => {
+    const units = parseTextToUnits("Alpha Company |mechanized infantry|");
+
+    expect(units[0].name).toBe("Alpha Company");
+    expect(units[0].sidc.substring(10, 20)).toBe(ICON_MECHANIZED_INFANTRY);
+  });
+
+  it("uses single-pipe trailing metadata for parsing but hides it from the unit name", () => {
+    const units = parseTextToUnits("Alpha Company |mechanized infantry");
+
+    expect(units[0].name).toBe("Alpha Company");
+    expect(units[0].sidc.substring(10, 20)).toBe(ICON_MECHANIZED_INFANTRY);
+  });
+
+  it("uses bracket metadata for echelon detection while hiding it from the unit name", () => {
+    const units = parseTextToUnits("Alpha [brigade]");
+
+    expect(units[0].name).toBe("Alpha");
+    expect(getEchelonFromSidc(units[0].sidc)).toBe("18");
+  });
+
+  it("lets metadata override visible-name echelon detection", () => {
+    const units = parseTextToUnits("1st Infantry Division | bn");
+
+    expect(units[0].name).toBe("1st Infantry Division");
+    expect(getEchelonFromSidc(units[0].sidc)).toBe("16");
+  });
+
+  it("combines visible text with hidden metadata for parsing", () => {
+    const units = parseTextToUnits("1st Brigade |mechanized infantry|");
+
+    expect(units[0].name).toBe("1st Brigade");
+    expect(getEchelonFromSidc(units[0].sidc)).toBe("18");
+    expect(units[0].sidc.substring(10, 20)).toBe(ICON_MECHANIZED_INFANTRY);
+  });
+
+  it("supports multiple metadata segments on one line", () => {
+    const units = parseTextToUnits("Alpha [brigade] |mechanized infantry|");
+
+    expect(units[0].name).toBe("Alpha");
+    expect(getEchelonFromSidc(units[0].sidc)).toBe("18");
+    expect(units[0].sidc.substring(10, 20)).toBe(ICON_MECHANIZED_INFANTRY);
+  });
+
+  it("preserves inheritance when parent and child use hidden metadata", () => {
+    const text = `1st Division |tank|
+  Alpha [brigade]
+    Bravo`;
+    const units = parseTextToUnits(text);
+
+    expect(units[0].name).toBe("1st Division");
+    expect(units[0].sidc.substring(10, 20)).toBe(ICON_ARMOR);
+
+    expect(units[0].children[0].name).toBe("Alpha");
+    expect(getEchelonFromSidc(units[0].children[0].sidc)).toBe("18");
+    expect(units[0].children[0].sidc.substring(10, 20)).toBe(ICON_ARMOR);
+
+    expect(units[0].children[0].children[0].name).toBe("Bravo");
+    expect(units[0].children[0].children[0].sidc.substring(10, 20)).toBe(ICON_ARMOR);
+  });
+
+  it("ignores an empty single trailing pipe", () => {
+    const units = parseTextToUnits("Alpha Company |");
+
+    expect(units[0].name).toBe("Alpha Company");
+    expect(units[0].sidc.substring(10, 20)).toBe(ICON_UNSPECIFIED);
+  });
+
+  it("ignores trailing comments after a unit definition", () => {
+    const units = parseTextToUnits("Alpha [brigade] |mechanized infantry| # note");
+
+    expect(units[0].name).toBe("Alpha");
+    expect(getEchelonFromSidc(units[0].sidc)).toBe("18");
+    expect(units[0].sidc.substring(10, 20)).toBe(ICON_MECHANIZED_INFANTRY);
+  });
+
+  it("ignores comment-only lines", () => {
+    const text = `# top-level note
+1st Division
+  # brigade note
+  1st Brigade`;
+    const units = parseTextToUnits(text);
+
+    expect(units).toHaveLength(1);
+    expect(units[0].name).toBe("1st Division");
+    expect(units[0].children).toHaveLength(1);
+    expect(units[0].children[0].name).toBe("1st Brigade");
+  });
+
+  it("keeps unmatched brackets as literal text", () => {
+    const units = parseTextToUnits("Alpha [brigade");
+
+    expect(units[0].name).toBe("Alpha [brigade");
+    expect(getEchelonFromSidc(units[0].sidc)).toBe("18");
+  });
+});
+
+describe("conversion helpers with hidden metadata", () => {
+  it("exports scenario units without hidden metadata in the name", () => {
+    const units = parseTextToUnits("Alpha [brigade] |mechanized infantry|");
+    const scenarioUnits = serializeParsedUnitsToScenarioUnits(units);
+
+    expect(scenarioUnits[0].name).toBe("Alpha");
+    expect(scenarioUnits[0].sidc.substring(10, 20)).toBe(ICON_MECHANIZED_INFANTRY);
+  });
+
+  it("exports Spatial Illusions designations without hidden metadata in the name", () => {
+    const units = parseTextToUnits("Alpha [brigade] |mechanized infantry|");
+    const orbat = convertParsedUnitsToSpatialIllusions(units);
+
+    expect(orbat.options.uniqueDesignation).toBe("Alpha");
+    expect(orbat.options.sidc.substring(10, 20)).toBe(ICON_MECHANIZED_INFANTRY);
   });
 });
 
