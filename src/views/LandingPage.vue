@@ -84,7 +84,7 @@ const features = [
             >
               Recreate historic battles and military scenarios in your browser
             </p>
-            <p class="mt-4">
+            <div class="mt-4 flex items-center justify-center gap-1 text-sm sm:text-base">
               <Button as-child variant="link"
                 ><a
                   href="https://docs.orbat-mapper.app/guide/about-orbat-mapper"
@@ -92,7 +92,13 @@ const features = [
                   >View documentation
                   <ExternalLinkIcon class="text-muted-foreground -ml-1" /></a
               ></Button>
-            </p>
+              <span class="text-muted-foreground/70" aria-hidden="true">|</span>
+              <Button as-child variant="link">
+                <router-link :to="{ name: TEXT_TO_ORBAT_ROUTE }"
+                  >Text to ORBAT</router-link
+                >
+              </Button>
+            </div>
           </div>
         </div>
       </section>
