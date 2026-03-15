@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Added scenario browser search and filtering.
 - Added map symbol size override support per unit.
 - Added a button to the unit filters panel to quickly collapse or expand all filter sections.
+- Added clipboard and drag and drop functionality to the "Text to ORBAT" tool.
 
 ### Changed
 
@@ -21,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Added support for symbol outlines in ORBAT charts to improve visibility.
 - Moved unit symbol rotation settings from the "Map display" tab to the "Map symbol" tab.
 - Improved map editor UX on mobile
+- Improved the text editor in the "Text to ORBAT" tool with better keyboard support and editing features.
 
 ### Fixed
 
