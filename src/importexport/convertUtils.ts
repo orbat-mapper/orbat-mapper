@@ -34,10 +34,19 @@ export function orbatToText(root: Unit, options: OrbatToTextOptions = {}): strin
 }
 
 export function parseApplicationOrbat(text: string): Unit[] | null {
-  const obj = JSON.parse(text);
-  if (Array.isArray(obj)) {
-    return obj;
+  if (!text.trim()) {
+    return null;
   }
+
+  try {
+    const obj = JSON.parse(text);
+    if (Array.isArray(obj)) {
+      return obj;
+    }
+  } catch {
+    return null;
+  }
+
   return null;
 }
 

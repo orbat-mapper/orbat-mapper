@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TextToOrbatView from "@/views/texttoorbat/TextToOrbatView.vue";
 import TextToOrbatEditor from "@/views/texttoorbat/TextToOrbatEditor.vue";
 
@@ -33,15 +33,27 @@ function installCodeMirrorTestPolyfills() {
 
 installCodeMirrorTestPolyfills();
 
+const {
+  sendNotificationMock,
+  routerPushMock,
+  clipboardWriteMock,
+  clipboardWriteTextMock,
+} = vi.hoisted(() => ({
+  sendNotificationMock: vi.fn(),
+  routerPushMock: vi.fn(),
+  clipboardWriteMock: vi.fn(),
+  clipboardWriteTextMock: vi.fn(),
+}));
+
 vi.mock("vue-router", () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: routerPushMock,
   }),
 }));
 
 vi.mock("@/composables/notifications", () => ({
   useNotifications: () => ({
-    send: vi.fn(),
+    send: sendNotificationMock,
   }),
 }));
 
@@ -77,6 +89,23 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
+beforeEach(() => {
+  sendNotificationMock.mockReset();
+  routerPushMock.mockReset();
+  clipboardWriteMock.mockReset();
+  clipboardWriteTextMock.mockReset();
+
+  Object.defineProperty(globalThis, "navigator", {
+    value: {
+      clipboard: {
+        write: clipboardWriteMock,
+        writeText: clipboardWriteTextMock,
+      },
+    },
+    configurable: true,
+  });
+});
+
 describe("TextToOrbatView", () => {
   it("updates the generated ORBAT when the editor text changes", async () => {
     const wrapper = mount(TextToOrbatView, {
@@ -102,6 +131,215 @@ describe("TextToOrbatView", () => {
     expect(wrapper.text()).toContain("9th Division");
     expect(wrapper.text()).toContain("1st Brigade");
     expect(wrapper.text()).toContain("1 top-level unit(s)");
+    wrapper.unmount();
+  });
+
+  it("copies ORBAT JSON to text/plain when ClipboardItem is available", async () => {
+    let clipboardItemData: Record<string, Blob> | undefined;
+    const OriginalBlob = globalThis.Blob;
+
+    class ClipboardItemStub {
+      constructor(data: Record<string, Blob>) {
+        clipboardItemData = data;
+      }
+    }
+
+    class BlobStub {
+      parts: string[];
+      type: string;
+
+      constructor(parts: BlobPart[], options?: BlobPropertyBag) {
+        this.parts = parts.map((part) => String(part));
+        this.type = options?.type ?? "";
+      }
+
+      async text() {
+        return this.parts.join("");
+      }
+    }
+
+    Object.defineProperty(globalThis, "ClipboardItem", {
+      value: ClipboardItemStub,
+      configurable: true,
+    });
+    Object.defineProperty(globalThis, "Blob", {
+      value: BlobStub,
+      configurable: true,
+    });
+
+    const wrapper = mount(TextToOrbatView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          "router-link": {
+            template: "<a><slot /></a>",
+          },
+          UseDark: {
+            template: "<div><slot :isDark='false' :toggleDark='() => undefined' /></div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('button[title="Copy ORBAT to clipboard"]').trigger("click");
+
+    expect(clipboardWriteMock).toHaveBeenCalledTimes(1);
+    expect(clipboardWriteTextMock).not.toHaveBeenCalled();
+    expect(sendNotificationMock).toHaveBeenCalledWith({
+      message: "ORBAT copied to clipboard",
+    });
+    expect(clipboardItemData).toBeDefined();
+
+    const textPlain = await clipboardItemData!["text/plain"].text();
+    const parsed = JSON.parse(textPlain);
+
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].name).toBe("1st Infantry Division");
+    expect(parsed[0].sidc).toBeDefined();
+    expect(parsed[0].subUnits[0].name).toBe("1st Brigade");
+    expect(parsed[0].subUnits[0].subUnits[0].name).toBe("1st Tank Battalion");
+    expect(parsed[0].id).not.toBe(parsed[0].subUnits[0].id);
+
+    Object.defineProperty(globalThis, "Blob", {
+      value: OriginalBlob,
+      configurable: true,
+    });
+    wrapper.unmount();
+  });
+
+  it("disables copy when there are no parsed units", async () => {
+    Object.defineProperty(globalThis, "ClipboardItem", {
+      value: undefined,
+      configurable: true,
+    });
+
+    const wrapper = mount(TextToOrbatView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          "router-link": {
+            template: "<a><slot /></a>",
+          },
+          UseDark: {
+            template: "<div><slot :isDark='false' :toggleDark='() => undefined' /></div>",
+          },
+        },
+      },
+    });
+
+    const copyButton = wrapper.get('button[title="Copy ORBAT to clipboard"]');
+    expect(copyButton.attributes("disabled")).toBeUndefined();
+
+    wrapper.findComponent(TextToOrbatEditor).vm.$emit("update:modelValue", "");
+    await nextTick();
+
+    expect(copyButton.attributes("disabled")).toBeDefined();
+    wrapper.unmount();
+  });
+
+  it("falls back to writeText when ClipboardItem is unavailable", async () => {
+    Object.defineProperty(globalThis, "ClipboardItem", {
+      value: undefined,
+      configurable: true,
+    });
+
+    const wrapper = mount(TextToOrbatView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          "router-link": {
+            template: "<a><slot /></a>",
+          },
+          UseDark: {
+            template: "<div><slot :isDark='false' :toggleDark='() => undefined' /></div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('button[title="Copy ORBAT to clipboard"]').trigger("click");
+
+    expect(clipboardWriteMock).not.toHaveBeenCalled();
+    expect(clipboardWriteTextMock).toHaveBeenCalledTimes(1);
+    const payload = clipboardWriteTextMock.mock.calls[0][0];
+    const parsed = JSON.parse(payload);
+    expect(parsed[0].name).toBe("1st Infantry Division");
+    expect(parsed[0].subUnits[0].name).toBe("1st Brigade");
+    expect(sendNotificationMock).toHaveBeenCalledWith({
+      message: "ORBAT copied to clipboard",
+    });
+
+    wrapper.unmount();
+  });
+
+  it("exports ORBAT data during drag start for scenario editor drops", async () => {
+    const wrapper = mount(TextToOrbatView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          "router-link": {
+            template: "<a><slot /></a>",
+          },
+          UseDark: {
+            template: "<div><slot :isDark='false' :toggleDark='() => undefined' /></div>",
+          },
+        },
+      },
+    });
+
+    const setData = vi.fn();
+    const dataTransfer = {
+      effectAllowed: "none",
+      setData,
+    };
+
+    await wrapper.get('button[title="Drag ORBAT into scenario"]').trigger("dragstart", {
+      dataTransfer,
+    });
+
+    expect(dataTransfer.effectAllowed).toBe("copy");
+    expect(setData).toHaveBeenCalledWith("application/orbat", expect.any(String));
+    expect(setData).toHaveBeenCalledWith("text/plain", expect.any(String));
+
+    const payload = setData.mock.calls.find(
+      ([mime]) => mime === "application/orbat",
+    )?.[1];
+    const parsed = JSON.parse(payload);
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].name).toBe("1st Infantry Division");
+    expect(parsed[0].subUnits[0].name).toBe("1st Brigade");
+
+    wrapper.unmount();
+  });
+
+  it("shows an error notification when clipboard copy fails", async () => {
+    Object.defineProperty(globalThis, "ClipboardItem", {
+      value: undefined,
+      configurable: true,
+    });
+    clipboardWriteTextMock.mockRejectedValueOnce(new Error("copy failed"));
+
+    const wrapper = mount(TextToOrbatView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          "router-link": {
+            template: "<a><slot /></a>",
+          },
+          UseDark: {
+            template: "<div><slot :isDark='false' :toggleDark='() => undefined' /></div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('button[title="Copy ORBAT to clipboard"]').trigger("click");
+
+    expect(sendNotificationMock).toHaveBeenCalledWith({
+      message: "Failed to copy ORBAT to clipboard",
+      type: "error",
+    });
+
     wrapper.unmount();
   });
 });

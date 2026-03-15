@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { nanoid } from "nanoid";
 import { computed, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import {
   ArrowLeftIcon,
   BookOpenIcon,
+  CopyIcon,
   DownloadIcon,
   ExternalLinkIcon,
+  GripIcon,
   MapIcon,
   MoonStarIcon,
   SunIcon,
@@ -34,12 +37,14 @@ import {
   convertParsedUnitsToOrbatMapperScenario,
   convertParsedUnitsToSpatialIllusions,
   parseTextToUnits,
+  type ParsedUnit,
 } from "@/views/texttoorbat/textToOrbat.ts";
 import { useNotifications } from "@/composables/notifications";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useScenario } from "@/scenariostore";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { useIndexedDb } from "@/scenariostore/localdb";
+import type { Unit } from "@/types/scenarioModels";
 
 const originalTitle = useTitle().value;
 useTitle("Text to ORBAT");
@@ -52,6 +57,7 @@ const enableAutocomplete = ref(true);
 const showIconBrowser = ref(false);
 const showPatternMapping = ref(false);
 const isOpeningScenario = ref(false);
+const isCopyingToClipboard = ref(false);
 
 const inputText = ref(
   "1st Infantry Division\n" +
@@ -74,6 +80,72 @@ const orbatMapperScenario = computed(() =>
 const { send: sendNotification } = useNotifications();
 const router = useRouter();
 const { scenario } = useScenario();
+
+function serializeParsedUnitForClipboard(unit: ParsedUnit): Unit {
+  return {
+    id: nanoid(),
+    name: unit.name,
+    sidc: unit.sidc,
+    subUnits: unit.children.map((child) => serializeParsedUnitForClipboard(child)),
+  };
+}
+
+function buildClipboardUnits(): Unit[] {
+  return parsedUnits.value.map((unit) => serializeParsedUnitForClipboard(unit));
+}
+
+function handleOrbatDragStart(event: DragEvent) {
+  if (parsedUnits.value.length === 0 || !event.dataTransfer) {
+    event.preventDefault();
+    return;
+  }
+
+  const serializedJson = JSON.stringify(buildClipboardUnits());
+  event.dataTransfer.effectAllowed = "copy";
+  event.dataTransfer.setData("application/orbat", serializedJson);
+  event.dataTransfer.setData("text/plain", serializedJson);
+}
+
+async function handleCopyToClipboard() {
+  if (parsedUnits.value.length === 0 || isCopyingToClipboard.value) {
+    return;
+  }
+
+  isCopyingToClipboard.value = true;
+
+  try {
+    const serializedUnits = buildClipboardUnits();
+    const serializedJson = JSON.stringify(serializedUnits);
+
+    if (
+      typeof ClipboardItem !== "undefined" &&
+      typeof navigator.clipboard?.write === "function"
+    ) {
+      const clipboardItem = new ClipboardItem({
+        // Async clipboard writes only support a limited MIME set, so keep the
+        // ORBAT JSON in text/plain for paste compatibility with OrbatPanel.
+        "text/plain": new Blob([serializedJson], {
+          type: "text/plain",
+        }),
+      });
+      await navigator.clipboard.write([clipboardItem]);
+    } else if (typeof navigator.clipboard?.writeText === "function") {
+      await navigator.clipboard.writeText(serializedJson);
+    } else {
+      throw new Error("Clipboard API unavailable");
+    }
+
+    sendNotification({ message: "ORBAT copied to clipboard" });
+  } catch (error) {
+    sendNotification({
+      message: "Failed to copy ORBAT to clipboard",
+      type: "error",
+    });
+    console.error(error);
+  } finally {
+    isCopyingToClipboard.value = false;
+  }
+}
 
 async function handleDownloadSpatialIllusions() {
   if (parsedUnits.value.length === 0) {
@@ -241,8 +313,10 @@ onUnmounted(() => {
         <div class="flex h-full flex-col overflow-hidden">
           <div class="bg-muted/50 flex items-center justify-between border-b px-4 py-2">
             <div>
-              <h2 class="text-muted-foreground text-sm font-medium">Generated ORBAT</h2>
-              <p class="text-muted-foreground mt-1 text-xs">
+              <h2 v-if="!isMobile" class="text-muted-foreground text-sm font-medium">
+                Generated ORBAT
+              </h2>
+              <p v-if="!isMobile" class="text-muted-foreground mt-1 text-xs">
                 {{ parsedUnits.length }} top-level unit(s)
               </p>
             </div>
@@ -255,6 +329,28 @@ onUnmounted(() => {
               >
                 <ExternalLinkIcon class="mr-1 size-4" />
                 Open
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                :disabled="parsedUnits.length === 0 || isCopyingToClipboard"
+                @click="handleCopyToClipboard"
+                title="Copy ORBAT to clipboard"
+              >
+                <CopyIcon class="mr-1 size-4" />
+                Copy
+              </Button>
+              <Button
+                v-if="!isMobile"
+                size="sm"
+                variant="outline"
+                :disabled="parsedUnits.length === 0"
+                draggable="true"
+                @dragstart="handleOrbatDragStart"
+                title="Drag ORBAT into scenario"
+              >
+                <GripIcon class="mr-1 size-4" />
+                Drag into scenario
               </Button>
 
               <DropdownMenu>
