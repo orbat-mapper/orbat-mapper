@@ -796,14 +796,14 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     code: "1201000001",
     label: "Aircraft Carrier (CVN)",
     symbolSet: "30",
-    patterns: [/\bCVN\b/],
+    patterns: [/\bCVN\b/i],
   },
   {
     name: "ICON_CARRIER",
     code: "1201000000",
     label: "Aircraft Carrier (CV/CVX)",
     symbolSet: "30",
-    patterns: [/(?:\bCVX?\b|\bCV(?=-))/],
+    patterns: [/(?:\bCVX?\b|\bCV(?=-))/i],
   },
   {
     name: "ICON_BATTLESHIP",
@@ -826,7 +826,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     code: "1202010000",
     label: "Battleship (BB)",
     symbolSet: "30",
-    patterns: [/\bBB\b/],
+    patterns: [/\bBB\b/i],
   },
   {
     name: "ICON_CRUISER",
@@ -849,7 +849,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     code: "1202020000",
     label: "Cruiser (CA/CG/CL)",
     symbolSet: "30",
-    patterns: [/\bC[AGLX]\b/],
+    patterns: [/\bC[AGLX]\b/i],
   },
   {
     name: "ICON_DESTROYER",
@@ -870,7 +870,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     code: "1202030000",
     label: "Destroyer (DD)",
     symbolSet: "30",
-    patterns: [/\bDD[GX]?\b/],
+    patterns: [/\bDD[GX]?\b/i],
   },
   {
     name: "ICON_FRIGATE",
@@ -892,7 +892,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     code: "1202040000",
     label: "Frigate (FF)",
     symbolSet: "30",
-    patterns: [/\bFF[GX]?\b/],
+    patterns: [/\bFF[GX]?\b/i],
   },
   {
     name: "ICON_CORVETTE",
@@ -921,7 +921,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     code: "1205000000",
     label: "Patrol Boat (PB/PC)",
     symbolSet: "30",
-    patterns: [/\bP[BCT]\b/],
+    patterns: [/\bP[BCT]\b/i],
   },
   {
     name: "ICON_SUBMARINE",
@@ -944,7 +944,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     code: "1101000000",
     label: "Submarine (SS)",
     symbolSet: "35",
-    patterns: [/\bSS[BGKN]?\b/],
+    patterns: [/\bSS[BGKN]?\b/i],
   },
 
   {

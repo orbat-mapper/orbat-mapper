@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { startCompletion } from "@codemirror/autocomplete";
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
-import { EditorState, type Extension } from "@codemirror/state";
+import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import {
   type KeyBinding,
   EditorView,
@@ -13,15 +14,22 @@ import {
   applyShiftTabOutdent,
   applyTabIndent,
 } from "@/views/texttoorbat/textEditorCommands";
+import {
+  textToOrbatAutocompletion,
+  type TextToOrbatCompletion,
+} from "@/views/texttoorbat/textEditorSuggestions";
 import { INDENT_SIZE } from "@/views/texttoorbat/textToOrbat";
+import { symbolGenerator } from "@/symbology/milsymbwrapper";
 
 const props = withDefaults(
   defineProps<{
     modelValue: string;
     placeholder?: string;
+    enableAutocomplete?: boolean;
   }>(),
   {
     placeholder: "",
+    enableAutocomplete: true,
   },
 );
 
@@ -31,6 +39,7 @@ const emit = defineEmits<{
 
 const editorRoot = ref<HTMLDivElement | null>(null);
 const editorView = shallowRef<EditorView | null>(null);
+const autocompleteCompartment = new Compartment();
 
 function dispatchDocumentChange(
   view: EditorView,
@@ -84,6 +93,45 @@ const newlineCommand = createWholeDocumentCommand((value, selectionStart, select
   applyIndentedNewline(value, selectionStart, selectionEnd),
 );
 
+function renderCompletionPreview(completion: TextToOrbatCompletion) {
+  if (!completion.previewSidc) {
+    return null;
+  }
+
+  const wrapper = document.createElement("span");
+  wrapper.className = "text-to-orbat-completion-preview";
+  wrapper.setAttribute("aria-hidden", "true");
+
+  const symbolNode = symbolGenerator(completion.previewSidc, {
+    size: 18,
+    simpleStatusModifier: false,
+    outlineColor: "white",
+    outlineWidth: 6,
+  }).asDOM();
+  wrapper.innerHTML = symbolNode.outerHTML;
+
+  return wrapper;
+}
+
+function createAutocompleteExtension() {
+  if (!props.enableAutocomplete) {
+    return [];
+  }
+
+  return textToOrbatAutocompletion({
+    icons: false,
+    tooltipClass: () => "text-to-orbat-completion-tooltip",
+    optionClass: () => "text-to-orbat-completion-option",
+    addToOptions: [
+      {
+        position: 15,
+        render: (completion) =>
+          renderCompletionPreview(completion as TextToOrbatCompletion),
+      },
+    ],
+  });
+}
+
 onMounted(() => {
   if (!editorRoot.value) {
     return;
@@ -92,10 +140,12 @@ onMounted(() => {
   const extensions: Extension[] = [
     history(),
     EditorView.lineWrapping,
+    autocompleteCompartment.of(createAutocompleteExtension()),
     keymap.of([
       { key: "Tab", run: indentCommand },
       { key: "Shift-Tab", run: outdentCommand },
       { key: "Enter", run: newlineCommand },
+      { key: "Ctrl-Space", run: startCompletion },
       ...historyKeymap,
       ...defaultKeymap,
     ]),
@@ -125,6 +175,17 @@ onMounted(() => {
         padding: "0.75rem",
         caretColor: "var(--foreground)",
       },
+      ".text-to-orbat-completion-preview": {
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "1.75rem",
+        marginRight: "0.25rem",
+        flexShrink: "0",
+      },
+      ".text-to-orbat-completion-preview svg": {
+        display: "block",
+      },
       ".cm-line": {
         padding: 0,
       },
@@ -139,6 +200,55 @@ onMounted(() => {
       },
       ".cm-placeholder": {
         color: "var(--muted-foreground)",
+      },
+      ".cm-tooltip": {
+        border: "1px solid var(--border)",
+        backgroundColor: "var(--popover)",
+        color: "var(--popover-foreground)",
+        borderRadius: "calc(var(--radius) + 2px)",
+        boxShadow:
+          "0 10px 30px -12px color-mix(in srgb, var(--foreground) 18%, transparent), 0 8px 12px -8px color-mix(in srgb, var(--foreground) 14%, transparent)",
+        padding: "0.25rem",
+        backdropFilter: "blur(8px)",
+      },
+      ".cm-tooltip-autocomplete ul": {
+        padding: 0,
+        margin: 0,
+        fontFamily:
+          'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+      },
+      ".cm-tooltip-autocomplete ul li": {
+        color: "var(--popover-foreground)",
+        display: "flex",
+        alignItems: "center",
+        gap: "0.375rem",
+        borderRadius: "calc(var(--radius) - 4px)",
+        padding: "0.5rem 0.625rem",
+        margin: "0.125rem 0",
+        lineHeight: "1.2",
+      },
+      ".cm-tooltip-autocomplete ul li[aria-selected]": {
+        backgroundColor: "color-mix(in srgb, var(--accent) 88%, transparent)",
+        color: "var(--accent-foreground)",
+      },
+      ".cm-tooltip-autocomplete ul li:hover": {
+        backgroundColor: "color-mix(in srgb, var(--accent) 72%, transparent)",
+      },
+      ".cm-completionLabel": {
+        color: "inherit",
+        fontWeight: "500",
+      },
+      ".cm-completionDetail": {
+        color: "var(--muted-foreground)",
+        marginLeft: "auto",
+        fontSize: "0.75rem",
+        letterSpacing: "0.01em",
+      },
+      ".text-to-orbat-completion-tooltip": {
+        fontSize: "0.875rem",
+      },
+      ".text-to-orbat-completion-option": {
+        listStyle: "none",
       },
     }),
   ];
@@ -171,6 +281,20 @@ watch(
 
     const { from, to } = view.state.selection.main;
     dispatchDocumentChange(view, nextValue, from, to);
+  },
+);
+
+watch(
+  () => props.enableAutocomplete,
+  () => {
+    const view = editorView.value;
+    if (!view) {
+      return;
+    }
+
+    view.dispatch({
+      effects: autocompleteCompartment.reconfigure(createAutocompleteExtension()),
+    });
   },
 );
 

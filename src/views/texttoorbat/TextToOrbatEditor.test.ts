@@ -67,6 +67,7 @@ async function pressKey(
     }),
   );
   await nextTick();
+  await new Promise((resolve) => window.setTimeout(resolve, 0));
 }
 
 afterEach(() => {
@@ -177,5 +178,28 @@ describe("TextToOrbatEditor", () => {
     await pressKey(view, "Enter");
 
     expect(getLastEmission(wrapper)).toEqual(["  Alpha\n  "]);
+  });
+
+  it("does not open autocomplete when disabled", async () => {
+    const wrapper = trackWrapper(
+      mount(TextToOrbatEditor, {
+        attachTo: document.body,
+        props: {
+          modelValue: "frig",
+          enableAutocomplete: false,
+        },
+      }),
+    );
+    await nextTick();
+
+    const view = getEditorView(wrapper);
+    if (!view) {
+      throw new Error("Expected editor view to exist");
+    }
+
+    view.dispatch({ selection: { anchor: view.state.doc.length } });
+    await pressKey(view, " ", { ctrlKey: true });
+
+    expect(document.querySelector(".cm-tooltip-autocomplete")).toBeNull();
   });
 });

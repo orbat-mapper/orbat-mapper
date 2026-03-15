@@ -23,6 +23,7 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.9",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
+    "@codemirror/autocomplete": "^6.20.1",
     "@codemirror/commands": "^6.10.3",
     "@codemirror/state": "^6.6.0",
     "@codemirror/view": "^6.40.0",

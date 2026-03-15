@@ -48,6 +48,7 @@ const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("sm");
 
 const showDebug = ref(false);
+const enableAutocomplete = ref(true);
 const showIconBrowser = ref(false);
 const showPatternMapping = ref(false);
 const isOpeningScenario = ref(false);
@@ -214,10 +215,12 @@ onUnmounted(() => {
                 <BookOpenIcon class="mr-1 size-4" />
                 Icons
               </Button>
+              <ToggleField v-model="enableAutocomplete">Autocomplete</ToggleField>
             </div>
           </div>
           <TextToOrbatEditor
             v-model="inputText"
+            :enable-autocomplete="enableAutocomplete"
             class="flex-1"
             placeholder="1st Infantry Division
   1st Brigade

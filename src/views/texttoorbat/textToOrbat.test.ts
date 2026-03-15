@@ -875,6 +875,7 @@ describe("getIconCodeFromName", () => {
     it("detects frigate", () => {
       expect(getIconCodeFromName("Frigate")).toBe(ICON_FRIGATE);
       expect(getIconCodeFromName("FFG Perry")).toBe(ICON_FRIGATE);
+      expect(getIconCodeFromName("KMN Nansen ff")).toBe(ICON_FRIGATE);
     });
 
     it("detects corvette", () => {
