@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { nanoid } from "nanoid";
 import { computed, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import {
@@ -37,14 +36,13 @@ import {
   convertParsedUnitsToOrbatMapperScenario,
   convertParsedUnitsToSpatialIllusions,
   parseTextToUnits,
-  type ParsedUnit,
+  serializeParsedUnitsToScenarioUnits,
 } from "@/views/texttoorbat/textToOrbat.ts";
 import { useNotifications } from "@/composables/notifications";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useScenario } from "@/scenariostore";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { useIndexedDb } from "@/scenariostore/localdb";
-import type { Unit } from "@/types/scenarioModels";
 
 const originalTitle = useTitle().value;
 useTitle("Text to ORBAT");
@@ -81,17 +79,8 @@ const { send: sendNotification } = useNotifications();
 const router = useRouter();
 const { scenario } = useScenario();
 
-function serializeParsedUnitForClipboard(unit: ParsedUnit): Unit {
-  return {
-    id: nanoid(),
-    name: unit.name,
-    sidc: unit.sidc,
-    subUnits: unit.children.map((child) => serializeParsedUnitForClipboard(child)),
-  };
-}
-
-function buildClipboardUnits(): Unit[] {
-  return parsedUnits.value.map((unit) => serializeParsedUnitForClipboard(unit));
+function buildClipboardUnits() {
+  return serializeParsedUnitsToScenarioUnits(parsedUnits.value);
 }
 
 function handleOrbatDragStart(event: DragEvent) {
@@ -313,12 +302,9 @@ onUnmounted(() => {
         <div class="flex h-full flex-col overflow-hidden">
           <div class="bg-muted/50 flex items-center justify-between border-b px-4 py-2">
             <div>
-              <h2 v-if="!isMobile" class="text-muted-foreground text-sm font-medium">
+              <h2 class="text-muted-foreground hidden text-sm font-medium lg:inline">
                 Generated ORBAT
               </h2>
-              <p v-if="!isMobile" class="text-muted-foreground mt-1 text-xs">
-                {{ parsedUnits.length }} top-level unit(s)
-              </p>
             </div>
             <div class="flex items-center gap-2">
               <Button
@@ -350,7 +336,7 @@ onUnmounted(() => {
                 title="Drag ORBAT into scenario"
               >
                 <GripIcon class="mr-1 size-4" />
-                Drag into scenario
+                Drag
               </Button>
 
               <DropdownMenu>

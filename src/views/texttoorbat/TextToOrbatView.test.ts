@@ -33,16 +33,44 @@ function installCodeMirrorTestPolyfills() {
 
 installCodeMirrorTestPolyfills();
 
+type ExternalDragConfig = {
+  getInitialDataForExternal: () => Record<string, string>;
+};
+
+function getApplicationOrbatPayload(config: ExternalDragConfig) {
+  return JSON.parse(config.getInitialDataForExternal()["application/orbat"]);
+}
+
+function getExternalDragConfigs(): ExternalDragConfig[] {
+  const configs: ExternalDragConfig[] = [];
+
+  for (const call of draggableMock.mock.calls as unknown[]) {
+    const candidate = Array.isArray(call) ? call[0] : undefined;
+    if (
+      candidate &&
+      typeof candidate === "object" &&
+      "getInitialDataForExternal" in candidate &&
+      typeof candidate.getInitialDataForExternal === "function"
+    ) {
+      configs.push(candidate as ExternalDragConfig);
+    }
+  }
+
+  return configs;
+}
+
 const {
   sendNotificationMock,
   routerPushMock,
   clipboardWriteMock,
   clipboardWriteTextMock,
+  draggableMock,
 } = vi.hoisted(() => ({
   sendNotificationMock: vi.fn(),
   routerPushMock: vi.fn(),
   clipboardWriteMock: vi.fn(),
   clipboardWriteTextMock: vi.fn(),
+  draggableMock: vi.fn(() => () => {}),
 }));
 
 vi.mock("vue-router", () => ({
@@ -85,6 +113,10 @@ vi.mock("@/components/NewMilitarySymbol.vue", () => ({
   },
 }));
 
+vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
+  draggable: draggableMock,
+}));
+
 afterEach(() => {
   document.body.innerHTML = "";
 });
@@ -94,6 +126,7 @@ beforeEach(() => {
   routerPushMock.mockReset();
   clipboardWriteMock.mockReset();
   clipboardWriteTextMock.mockReset();
+  draggableMock.mockClear();
 
   Object.defineProperty(globalThis, "navigator", {
     value: {
@@ -130,7 +163,6 @@ describe("TextToOrbatView", () => {
 
     expect(wrapper.text()).toContain("9th Division");
     expect(wrapper.text()).toContain("1st Brigade");
-    expect(wrapper.text()).toContain("1 top-level unit(s)");
     wrapper.unmount();
   });
 
@@ -308,6 +340,91 @@ describe("TextToOrbatView", () => {
     expect(parsed).toHaveLength(1);
     expect(parsed[0].name).toBe("1st Infantry Division");
     expect(parsed[0].subUnits[0].name).toBe("1st Brigade");
+
+    wrapper.unmount();
+  });
+
+  it("registers a drag handle for each generated unit icon", () => {
+    const wrapper = mount(TextToOrbatView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          "router-link": {
+            template: "<a><slot /></a>",
+          },
+          UseDark: {
+            template: "<div><slot :isDark='false' :toggleDark='() => undefined' /></div>",
+          },
+        },
+      },
+    });
+
+    expect(draggableMock).toHaveBeenCalled();
+    expect(draggableMock).toHaveBeenCalledTimes(8);
+
+    wrapper.unmount();
+  });
+
+  it("dragging a root unit icon exports only that subtree", () => {
+    const wrapper = mount(TextToOrbatView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          "router-link": {
+            template: "<a><slot /></a>",
+          },
+          UseDark: {
+            template: "<div><slot :isDark='false' :toggleDark='() => undefined' /></div>",
+          },
+        },
+      },
+    });
+
+    const dragConfigs = getExternalDragConfigs();
+    const rootDragConfig = dragConfigs.find(
+      (config) => getApplicationOrbatPayload(config)[0]?.name === "1st Infantry Division",
+    );
+    expect(rootDragConfig?.getInitialDataForExternal).toBeTypeOf("function");
+
+    const parsed = getApplicationOrbatPayload(rootDragConfig!);
+
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].name).toBe("1st Infantry Division");
+    expect(parsed[0].subUnits).toHaveLength(3);
+    expect(parsed[0].subUnits[0].name).toBe("1st Brigade");
+    expect(parsed[0].subUnits[0].subUnits[0].name).toBe("1st Tank Battalion");
+
+    wrapper.unmount();
+  });
+
+  it("dragging a child unit icon exports only the child subtree", () => {
+    const wrapper = mount(TextToOrbatView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          "router-link": {
+            template: "<a><slot /></a>",
+          },
+          UseDark: {
+            template: "<div><slot :isDark='false' :toggleDark='() => undefined' /></div>",
+          },
+        },
+      },
+    });
+
+    const dragConfigs = getExternalDragConfigs();
+    const childDragConfig = dragConfigs.find(
+      (config) => getApplicationOrbatPayload(config)[0]?.name === "1st Brigade",
+    );
+    expect(childDragConfig?.getInitialDataForExternal).toBeTypeOf("function");
+
+    const parsed = getApplicationOrbatPayload(childDragConfig!);
+
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].name).toBe("1st Brigade");
+    expect(parsed[0].subUnits).toHaveLength(2);
+    expect(parsed[0].subUnits[0].name).toBe("1st Tank Battalion");
+    expect(parsed[0].subUnits[1].name).toBe("2nd Art Battalion");
 
     wrapper.unmount();
   });

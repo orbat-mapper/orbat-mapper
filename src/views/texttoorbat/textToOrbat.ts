@@ -353,6 +353,19 @@ function convertParsedUnitToOrbatMapperUnit(unit: ParsedUnit): Unit {
   };
 }
 
+export function serializeParsedUnitToScenarioUnit(unit: ParsedUnit): Unit {
+  return {
+    id: nanoid(),
+    name: unit.name,
+    sidc: unit.sidc,
+    subUnits: unit.children.map((child) => serializeParsedUnitToScenarioUnit(child)),
+  };
+}
+
+export function serializeParsedUnitsToScenarioUnits(units: ParsedUnit[]): Unit[] {
+  return units.map((unit) => serializeParsedUnitToScenarioUnit(unit));
+}
+
 export function convertParsedUnitsToOrbatMapperScenario(units: ParsedUnit[]): Scenario {
   const scenarioId = nanoid();
   const now = new Date().toISOString();

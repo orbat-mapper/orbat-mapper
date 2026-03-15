@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import MilSymbol from "@/components/NewMilitarySymbol.vue";
 import {
   ECHELON_CODE_TO_NAME,
   ICON_CODE_TO_NAME,
+  serializeParsedUnitToScenarioUnit,
 } from "@/views/texttoorbat/textToOrbat.ts";
 
 interface ParsedUnit {
@@ -18,6 +20,9 @@ const props = defineProps<{
   unit: ParsedUnit;
   showDebug?: boolean;
 }>();
+
+const dragHandleRef = ref<HTMLElement | null>(null);
+let dndCleanup: () => void = () => {};
 
 // Map echelon codes (from SIDC positions 8-9) to labels
 const echelonCodeLabels: Record<string, string> = {
@@ -52,16 +57,41 @@ const echelonVarName = computed(() => {
 const entityVarName = computed(() => {
   return ICON_CODE_TO_NAME[entityCode.value] ?? entityCode.value;
 });
+
+onMounted(() => {
+  if (!dragHandleRef.value) return;
+
+  dndCleanup = draggable({
+    element: dragHandleRef.value,
+    getInitialDataForExternal: () => {
+      const serializedUnit = serializeParsedUnitToScenarioUnit(props.unit);
+      return {
+        "application/orbat": JSON.stringify([serializedUnit]),
+        "text/plain": JSON.stringify([serializedUnit]),
+      };
+    },
+  });
+});
+
+onUnmounted(() => {
+  dndCleanup();
+});
 </script>
 
 <template>
   <li>
     <div class="hover:bg-muted/50 flex items-center gap-2 rounded px-2 py-1">
-      <MilSymbol
-        :sidc="unit.sidc"
-        :size="24"
-        :options="{ outlineColor: 'white', outlineWidth: 8 }"
-      />
+      <span
+        ref="dragHandleRef"
+        class="cursor-grab active:cursor-grabbing"
+        title="Drag unit into scenario"
+      >
+        <MilSymbol
+          :sidc="unit.sidc"
+          :size="24"
+          :options="{ outlineColor: 'white', outlineWidth: 8 }"
+        />
+      </span>
       <span class="text-sm">{{ unit.name }}</span>
       <span v-if="showDebug" class="font-mono text-xs text-amber-600 dark:text-amber-400">
         [{{ echelonVarName }} | {{ entityVarName }}]
