@@ -43,6 +43,11 @@ import {
   ICON_MOTORIZED_INFANTRY,
   ICON_MOUNTAIN_INFANTRY,
   ICON_NAVAL,
+  ICON_NAVY_TASK_ELEMENT,
+  ICON_NAVY_TASK_FORCE,
+  ICON_NAVY_TASK_GROUP,
+  ICON_NAVY_TASK_UNIT,
+  ICON_CONVOY,
   ICON_PARACHUTE,
   ICON_PATROL_BOAT,
   ICON_PSYCHOLOGICAL_OPS,
@@ -847,7 +852,9 @@ describe("getIconCodeFromName", () => {
   describe("Sea surface vessels", () => {
     it("detects carrier", () => {
       expect(getIconCodeFromName("Aircraft Carrier")).toBe(ICON_CARRIER);
-      expect(getIconCodeFromName("CVN-78")).toBe(ICON_CARRIER);
+      expect(getIconCodeFromName("CV-6")).toBe(ICON_CARRIER);
+      expect(getIconCodeFromName("CVX")).toBe(ICON_CARRIER);
+      expect(getIconCodeFromName("CVN-78")).toBe("1201000001");
     });
 
     it("detects battleship", () => {
@@ -891,6 +898,19 @@ describe("getIconCodeFromName", () => {
       expect(getIconCodeFromName("MCM Avenger")).toBe(ICON_MINE_WARFARE_SHIP);
     });
 
+    it("detects navy task organization", () => {
+      expect(getIconCodeFromName("Navy Task Element")).toBe(ICON_NAVY_TASK_ELEMENT);
+      expect(getIconCodeFromName("TE 1")).toBe(ICON_NAVY_TASK_ELEMENT);
+      expect(getIconCodeFromName("Navy Task Force")).toBe(ICON_NAVY_TASK_FORCE);
+      expect(getIconCodeFromName("TF 38")).toBe(ICON_NAVY_TASK_FORCE);
+      expect(getIconCodeFromName("Navy Task Group")).toBe(ICON_NAVY_TASK_GROUP);
+      expect(getIconCodeFromName("Task Group 20")).toBe(ICON_NAVY_TASK_GROUP);
+      expect(getIconCodeFromName("TG 58.1")).toBe(ICON_NAVY_TASK_GROUP);
+      expect(getIconCodeFromName("Navy Task Unit")).toBe(ICON_NAVY_TASK_UNIT);
+      expect(getIconCodeFromName("TU 77.4.3")).toBe(ICON_NAVY_TASK_UNIT);
+      expect(getIconCodeFromName("Convoy PQ-17")).toBe(ICON_CONVOY);
+    });
+
     it("detects patrol boat", () => {
       expect(getIconCodeFromName("Patrol Boat")).toBe(ICON_PATROL_BOAT);
       expect(getIconCodeFromName("Torpedo Boat")).toBe(ICON_PATROL_BOAT);
@@ -905,6 +925,10 @@ describe("getIconCodeFromName", () => {
     it("detects auxiliary ship", () => {
       expect(getIconCodeFromName("Auxiliary Ship")).toBe(ICON_AUXILIARY_SHIP);
       expect(getIconCodeFromName("Fleet Auxiliary")).toBe(ICON_AUXILIARY_SHIP);
+      expect(getIconCodeFromName("Icebreaker")).toBe(ICON_AUXILIARY_SHIP);
+      expect(getIconCodeFromName("ARA Isla de los Estados - supply ship")).toBe(
+        ICON_AUXILIARY_SHIP,
+      );
     });
 
     it("detects hospital ship", () => {

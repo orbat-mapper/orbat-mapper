@@ -600,6 +600,25 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     ],
   },
 
+  // ── Sea surface noncombatant vessels (symbol set 30) ────────────────
+  {
+    name: "ICON_AUXILIARY_SHIP",
+    code: "1301000000",
+    label: "Auxiliary Ship",
+    symbolSet: "30",
+    aliases: [
+      "auxiliary\\s*ship",
+      "auxiliary\\s*vessel",
+      "support\\s*ship",
+      "supply\\s*ship",
+      "tender",
+      "replenishment",
+      "oiler",
+      "icebreaker",
+      "fleet\\s*auxiliary",
+    ],
+  },
+
   // ── Sustainment / logistics ─────────────────────────────────────────
   {
     name: "ICON_SUPPLY",
@@ -707,6 +726,46 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     ],
   },
 
+  // ── Navy task organization / sea surface vessels (symbol set 30) ─────
+  {
+    name: "ICON_NAVY_TASK_ELEMENT",
+    code: "1210010000",
+    label: "Navy Task Element",
+    symbolSet: "30",
+    aliases: ["navy\\s*task\\s*element"],
+    patterns: [/\bTE\b/],
+  },
+  {
+    name: "ICON_NAVY_TASK_FORCE",
+    code: "1210020000",
+    label: "Navy Task Force",
+    symbolSet: "30",
+    aliases: ["navy\\s*task\\s*force"],
+    patterns: [/\bTF\b/],
+  },
+  {
+    name: "ICON_NAVY_TASK_GROUP",
+    code: "1210030000",
+    label: "Navy Task Group",
+    symbolSet: "30",
+    aliases: ["navy\\s*task\\s*group", "task\\s*group"],
+    patterns: [/\bTG\b/],
+  },
+  {
+    name: "ICON_NAVY_TASK_UNIT",
+    code: "1210040000",
+    label: "Navy Task Unit",
+    symbolSet: "30",
+    aliases: ["navy\\s*task\\s*unit"],
+    patterns: [/\bTU\b/],
+  },
+  {
+    name: "ICON_CONVOY",
+    code: "1210050000",
+    label: "Convoy",
+    symbolSet: "30",
+    aliases: ["convoy"],
+  },
   // ── Naval (ground-based naval units) ────────────────────────────────
   {
     name: "ICON_NAVAL",
@@ -733,11 +792,18 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     ],
   },
   {
+    name: "ICON_NUCLEAR_CARRIER",
+    code: "1201000001",
+    label: "Aircraft Carrier (CVN)",
+    symbolSet: "30",
+    patterns: [/\bCVN\b/],
+  },
+  {
     name: "ICON_CARRIER",
     code: "1201000000",
-    label: "Aircraft Carrier (CV)",
+    label: "Aircraft Carrier (CV/CVX)",
     symbolSet: "30",
-    patterns: [/\bCV[NX]?\b/],
+    patterns: [/(?:\bCVX?\b|\bCV(?=-))/],
   },
   {
     name: "ICON_BATTLESHIP",
@@ -881,23 +947,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     patterns: [/\bSS[BGKN]?\b/],
   },
 
-  // ── Sea surface noncombatant vessels (symbol set 30) ────────────────
-  {
-    name: "ICON_AUXILIARY_SHIP",
-    code: "1301000000",
-    label: "Auxiliary Ship",
-    symbolSet: "30",
-    aliases: [
-      "auxiliary\\s*ship",
-      "auxiliary\\s*vessel",
-      "support\\s*ship",
-      "supply\\s*ship",
-      "tender",
-      "replenishment",
-      "oiler",
-      "fleet\\s*auxiliary",
-    ],
-  },
   {
     name: "ICON_CARGO_SHIP",
     code: "1401010000",
@@ -1008,6 +1057,11 @@ export const ICON_PARACHUTE = _codes["ICON_PARACHUTE"];
 export const ICON_SECURITY = _codes["ICON_SECURITY"];
 
 // Naval vessel icons (sea surface symbol set 30)
+export const ICON_NAVY_TASK_ELEMENT = _codes["ICON_NAVY_TASK_ELEMENT"];
+export const ICON_NAVY_TASK_FORCE = _codes["ICON_NAVY_TASK_FORCE"];
+export const ICON_NAVY_TASK_GROUP = _codes["ICON_NAVY_TASK_GROUP"];
+export const ICON_NAVY_TASK_UNIT = _codes["ICON_NAVY_TASK_UNIT"];
+export const ICON_CONVOY = _codes["ICON_CONVOY"];
 export const ICON_CARRIER = _codes["ICON_CARRIER"];
 export const ICON_BATTLESHIP = _codes["ICON_BATTLESHIP"];
 export const ICON_CRUISER = _codes["ICON_CRUISER"];

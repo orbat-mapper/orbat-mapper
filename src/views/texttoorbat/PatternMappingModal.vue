@@ -11,11 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
-import {
-  ECHELON_PATTERNS,
-  ICON_CODE_TO_NAME,
-  ICON_PATTERNS,
-} from "@/views/texttoorbat/textToOrbat";
+import { ECHELON_PATTERNS, ICON_PATTERNS } from "@/views/texttoorbat/textToOrbat";
 import ToggleField from "@/components/ToggleField.vue";
 
 const FRIENDLY_SI = "3";
@@ -60,31 +56,56 @@ function extractKeywords(pattern: RegExp): string[] {
 
 interface PatternEntry {
   label: string;
-  keywords: string[];
+  keywords: Array<{ value: string; type: "alias" | "pattern" }>;
   sidc: string;
-  originalPattern: string;
   constantName?: string;
   code?: string;
+  symbolSet?: string;
 }
 
 const echelonEntries = computed<PatternEntry[]>(() => {
   return ECHELON_PATTERNS.map((p) => ({
     label: p.label,
-    keywords: extractKeywords(p.pattern),
+    keywords: extractKeywords(p.pattern).map((value) => ({
+      value,
+      type: p.sourceType,
+    })),
     sidc: buildEchelonSidc(p.code),
-    originalPattern: p.pattern.source,
   }));
 });
 
 const iconEntries = computed<PatternEntry[]>(() => {
-  return ICON_PATTERNS.map((p) => ({
-    label: p.label,
-    keywords: extractKeywords(p.pattern),
-    sidc: buildIconSidc(p.code, p.symbolSet),
-    originalPattern: p.pattern.source,
-    constantName: ICON_CODE_TO_NAME[p.code],
-    code: p.code,
-  }));
+  const grouped = new Map<string, PatternEntry>();
+
+  for (const p of ICON_PATTERNS) {
+    const groupKey = `${p.symbolSet ?? "10"}:${p.code}`;
+    const entryKeywords = extractKeywords(p.pattern).map((value) => ({
+      value,
+      type: p.sourceType,
+    }));
+    const existing = grouped.get(groupKey);
+
+    if (!existing) {
+      grouped.set(groupKey, {
+        label: p.label,
+        keywords: entryKeywords,
+        sidc: buildIconSidc(p.code, p.symbolSet),
+        constantName: p.name,
+        code: p.code,
+        symbolSet: p.symbolSet,
+      });
+      continue;
+    }
+
+    const seen = new Set(existing.keywords.map((keyword) => keyword.value));
+    for (const keyword of entryKeywords) {
+      if (seen.has(keyword.value)) continue;
+      existing.keywords.push(keyword);
+      seen.add(keyword.value);
+    }
+  }
+
+  return [...grouped.values()];
 });
 
 const filteredEchelonEntries = computed(() => {
@@ -93,7 +114,9 @@ const filteredEchelonEntries = computed(() => {
   return echelonEntries.value.filter(
     (entry) =>
       entry.label.toLowerCase().includes(query) ||
-      entry.keywords.some((kw) => kw.toLowerCase().includes(query)),
+      entry.constantName?.toLowerCase().includes(query) ||
+      entry.code?.toLowerCase().includes(query) ||
+      entry.keywords.some((kw) => kw.value.toLowerCase().includes(query)),
   );
 });
 
@@ -103,7 +126,9 @@ const filteredIconEntries = computed(() => {
   return iconEntries.value.filter(
     (entry) =>
       entry.label.toLowerCase().includes(query) ||
-      entry.keywords.some((kw) => kw.toLowerCase().includes(query)),
+      entry.constantName?.toLowerCase().includes(query) ||
+      entry.code?.toLowerCase().includes(query) ||
+      entry.keywords.some((kw) => kw.value.toLowerCase().includes(query)),
   );
 });
 </script>
@@ -152,7 +177,7 @@ const filteredIconEntries = computed(() => {
                 <tbody class="divide-y">
                   <tr
                     v-for="entry in filteredIconEntries"
-                    :key="entry.label"
+                    :key="entry.sidc"
                     class="hover:bg-muted/50"
                   >
                     <td class="p-2">
@@ -187,10 +212,20 @@ const filteredIconEntries = computed(() => {
                       <div class="flex flex-wrap gap-1">
                         <span
                           v-for="keyword in entry.keywords"
-                          :key="keyword"
-                          class="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                          :key="`${keyword.type}-${keyword.value}`"
+                          :class="
+                            keyword.type === 'pattern'
+                              ? 'rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 font-mono text-xs text-amber-900 shadow-sm dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200'
+                              : 'rounded-full bg-blue-100 px-1.5 py-0.5 text-xs text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                          "
                         >
-                          {{ keyword }}
+                          <span
+                            v-if="keyword.type === 'pattern'"
+                            class="mr-1 text-[10px] uppercase"
+                          >
+                            regex
+                          </span>
+                          {{ keyword.value }}
                         </span>
                       </div>
                     </td>
@@ -230,10 +265,20 @@ const filteredIconEntries = computed(() => {
                       <div class="flex flex-wrap gap-1">
                         <span
                           v-for="keyword in entry.keywords"
-                          :key="keyword"
-                          class="rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800 dark:bg-green-900 dark:text-green-200"
+                          :key="`${keyword.type}-${keyword.value}`"
+                          :class="
+                            keyword.type === 'pattern'
+                              ? 'rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-mono text-xs text-emerald-900 shadow-sm dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200'
+                              : 'rounded-full bg-green-100 px-1.5 py-0.5 text-xs text-green-800 dark:bg-green-900 dark:text-green-200'
+                          "
                         >
-                          {{ keyword }}
+                          <span
+                            v-if="keyword.type === 'pattern'"
+                            class="mr-1 text-[10px] uppercase"
+                          >
+                            regex
+                          </span>
+                          {{ keyword.value }}
                         </span>
                       </div>
                     </td>

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
-import { ICON_CODE_TO_NAME, ICON_PATTERNS } from "@/views/texttoorbat/textToOrbat";
+import { ICON_PATTERNS } from "@/views/texttoorbat/textToOrbat";
 
 const open = defineModel<boolean>({ default: false });
 const searchQuery = ref("");
@@ -18,6 +18,8 @@ const searchQuery = ref("");
 interface IconEntry {
   name: string;
   code: string;
+  entityCode: string;
+  symbolSet: string;
   sidc: string;
 }
 
@@ -35,21 +37,31 @@ function friendlyNameFromVar(varName: string) {
     .join(" ");
 }
 
-const icons: IconEntry[] = Object.entries(ICON_CODE_TO_NAME)
-  .map(([entityCode, varName]) => {
-    const matchedPattern = ICON_PATTERNS.find((p) => p.code === entityCode);
-    const name = matchedPattern?.label ?? friendlyNameFromVar(varName);
-    const symbolSet = matchedPattern?.symbolSet ?? "10";
-    return { name, code: varName, sidc: buildSidc(entityCode, symbolSet) } as IconEntry;
-  })
-  .sort((a, b) => a.name.localeCompare(b.name));
+const icons: IconEntry[] = Object.values(
+  ICON_PATTERNS.reduce<Record<string, IconEntry>>((acc, pattern) => {
+    const symbolSet = pattern.symbolSet ?? "10";
+    const key = `${symbolSet}:${pattern.code}:${pattern.name}`;
+    if (acc[key]) return acc;
+
+    acc[key] = {
+      name: pattern.label ?? friendlyNameFromVar(pattern.name),
+      code: pattern.name,
+      entityCode: pattern.code,
+      symbolSet,
+      sidc: buildSidc(pattern.code, symbolSet),
+    };
+    return acc;
+  }, {}),
+).sort((a, b) => a.name.localeCompare(b.name));
 
 const filteredIcons = computed(() => {
   const query = searchQuery.value.toLowerCase().trim();
   if (!query) return icons;
   return icons.filter(
     (icon) =>
-      icon.name.toLowerCase().includes(query) || icon.code.toLowerCase().includes(query),
+      icon.name.toLowerCase().includes(query) ||
+      icon.code.toLowerCase().includes(query) ||
+      icon.entityCode.toLowerCase().includes(query),
   );
 });
 </script>
@@ -75,7 +87,7 @@ const filteredIcons = computed(() => {
         <div class="grid max-h-[60vh] grid-cols-2 gap-4 overflow-y-auto md:grid-cols-3">
           <div
             v-for="icon in filteredIcons"
-            :key="icon.code"
+            :key="icon.sidc"
             class="hover:bg-muted flex flex-col items-center gap-2 rounded border p-3 transition-colors"
           >
             <div class="flex h-12 w-12 items-center justify-center">
@@ -93,7 +105,7 @@ const filteredIcons = computed(() => {
                 {{ icon.code.slice(5) }}
               </div>
               <div class="font-mono text-sm tracking-wider">
-                {{ icon.sidc.slice(10) }}
+                {{ icon.entityCode }}
               </div>
             </div>
           </div>

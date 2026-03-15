@@ -23,10 +23,13 @@ import {
 
 export interface CompiledPattern {
   pattern: RegExp;
+  name: string;
   code: string;
   label: string;
   /** Symbol set override from the definition (e.g. "30" for sea surface). */
   symbolSet?: string;
+  /** Whether this entry came from aliases or an explicit regex pattern. */
+  sourceType: "alias" | "pattern";
 }
 
 // ---------------------------------------------------------------------------
@@ -61,7 +64,7 @@ export interface UserMappingData {
 function compileDefinition(
   def: Pick<
     IconDefinition | EchelonDefinition,
-    "code" | "label" | "aliases" | "patterns"
+    "name" | "code" | "label" | "aliases" | "patterns"
   > & { symbolSet?: string },
 ): CompiledPattern[] {
   const result: CompiledPattern[] = [];
@@ -72,8 +75,10 @@ function compileDefinition(
     const joined = def.aliases.join("|");
     result.push({
       pattern: new RegExp(`\\b(${joined})\\b`, "i"),
+      name: def.name,
       code: def.code,
       label: def.label,
+      sourceType: "alias",
       ...(symbolSet && { symbolSet }),
     });
   }
@@ -83,8 +88,10 @@ function compileDefinition(
     for (const p of def.patterns) {
       result.push({
         pattern: p,
+        name: def.name,
         code: def.code,
         label: def.label,
+        sourceType: "pattern",
         ...(symbolSet && { symbolSet }),
       });
     }
