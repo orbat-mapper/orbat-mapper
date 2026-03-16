@@ -229,7 +229,7 @@ describe("TextToOrbatView", () => {
     expect(parsed[0].name).toBe("1st Infantry Division");
     expect(parsed[0].sidc).toBeDefined();
     expect(parsed[0].subUnits[0].name).toBe("1st Brigade");
-    expect(parsed[0].subUnits[0].subUnits[0].name).toBe("1st Tank Battalion");
+    expect(parsed[0].subUnits[0].subUnits[0].name).toBe("1st");
     expect(parsed[0].id).not.toBe(parsed[0].subUnits[0].id);
 
     Object.defineProperty(globalThis, "Blob", {
@@ -392,7 +392,7 @@ describe("TextToOrbatView", () => {
     expect(parsed[0].name).toBe("1st Infantry Division");
     expect(parsed[0].subUnits).toHaveLength(3);
     expect(parsed[0].subUnits[0].name).toBe("1st Brigade");
-    expect(parsed[0].subUnits[0].subUnits[0].name).toBe("1st Tank Battalion");
+    expect(parsed[0].subUnits[0].subUnits[0].name).toBe("1st");
 
     wrapper.unmount();
   });
@@ -423,8 +423,8 @@ describe("TextToOrbatView", () => {
     expect(parsed).toHaveLength(1);
     expect(parsed[0].name).toBe("1st Brigade");
     expect(parsed[0].subUnits).toHaveLength(2);
-    expect(parsed[0].subUnits[0].name).toBe("1st Tank Battalion");
-    expect(parsed[0].subUnits[1].name).toBe("2nd Art Battalion");
+    expect(parsed[0].subUnits[0].name).toBe("1st");
+    expect(parsed[0].subUnits[1].name).toBe("2nd Art");
 
     wrapper.unmount();
   });
