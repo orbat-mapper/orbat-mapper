@@ -360,7 +360,7 @@ describe("TextToOrbatView", () => {
     });
 
     expect(draggableMock).toHaveBeenCalled();
-    expect(draggableMock).toHaveBeenCalledTimes(8);
+    expect(draggableMock).toHaveBeenCalledTimes(9);
 
     wrapper.unmount();
   });
@@ -390,7 +390,7 @@ describe("TextToOrbatView", () => {
 
     expect(parsed).toHaveLength(1);
     expect(parsed[0].name).toBe("1st Infantry Division");
-    expect(parsed[0].subUnits).toHaveLength(3);
+    expect(parsed[0].subUnits).toHaveLength(4);
     expect(parsed[0].subUnits[0].name).toBe("1st Brigade");
     expect(parsed[0].subUnits[0].subUnits[0].name).toBe("1st");
 

@@ -1216,3 +1216,94 @@ describe("parseTextToUnits with icon inheritance", () => {
     expect(units[0].children[1].sidc.substring(10, 20)).toBe(ICON_INFANTRY);
   });
 });
+
+describe("comma separator mode", () => {
+  const opts = { useCommaSeparator: true };
+
+  it("single value sets name only", () => {
+    const units = parseTextToUnits("Alpha Company", opts);
+    expect(units[0].name).toBe("Alpha Company");
+    expect(units[0].shortName).toBeUndefined();
+    expect(units[0].description).toBeUndefined();
+  });
+
+  it("two values set shortName and name", () => {
+    const units = parseTextToUnits("A, Alpha Company", opts);
+    expect(units[0].shortName).toBe("A");
+    expect(units[0].name).toBe("Alpha Company");
+    expect(units[0].description).toBeUndefined();
+  });
+
+  it("three values set shortName, name, and description", () => {
+    const units = parseTextToUnits("A, Alpha Company, Main assault element", opts);
+    expect(units[0].shortName).toBe("A");
+    expect(units[0].name).toBe("Alpha Company");
+    expect(units[0].description).toBe("Main assault element");
+  });
+
+  it("extra commas are included in description", () => {
+    const units = parseTextToUnits("A, Alpha, First, second, third", opts);
+    expect(units[0].shortName).toBe("A");
+    expect(units[0].name).toBe("Alpha");
+    expect(units[0].description).toBe("First, second, third");
+  });
+
+  it("commas are literal when option is off", () => {
+    const units = parseTextToUnits("A, Alpha Company");
+    expect(units[0].name).toBe("A, Alpha Company");
+    expect(units[0].shortName).toBeUndefined();
+  });
+
+  it("works with metadata pipe syntax", () => {
+    const units = parseTextToUnits("A, Alpha Company | infantry bn", opts);
+    expect(units[0].shortName).toBe("A");
+    expect(units[0].name).toBe("Alpha Company");
+    expect(units[0].sidc.substring(10, 20)).toBe(ICON_INFANTRY);
+  });
+
+  it("works with metadata bracket syntax", () => {
+    const units = parseTextToUnits("A, Alpha Company [armor]", opts);
+    expect(units[0].shortName).toBe("A");
+    expect(units[0].name).toBe("Alpha Company");
+    expect(units[0].sidc.substring(10, 20)).toBe(ICON_ARMOR);
+  });
+
+  it("SIDC matching uses full display name across all comma fields", () => {
+    const units = parseTextToUnits("1st, Infantry Division", opts);
+    expect(units[0].sidc.substring(10, 20)).toBe(ICON_INFANTRY);
+  });
+
+  it("empty shortName from leading comma is omitted", () => {
+    const units = parseTextToUnits(", Alpha Company", opts);
+    expect(units[0].shortName).toBeUndefined();
+    expect(units[0].name).toBe("Alpha Company");
+  });
+
+  describe("name,shortName,description order", () => {
+    const nsdOpts = {
+      useCommaSeparator: true,
+      commaFieldOrder: "name,shortName,description" as const,
+    };
+
+    it("two values set name and shortName", () => {
+      const units = parseTextToUnits("Alpha Company, A", nsdOpts);
+      expect(units[0].name).toBe("Alpha Company");
+      expect(units[0].shortName).toBe("A");
+      expect(units[0].description).toBeUndefined();
+    });
+
+    it("three values set name, shortName, and description", () => {
+      const units = parseTextToUnits("Alpha Company, A, Main assault element", nsdOpts);
+      expect(units[0].name).toBe("Alpha Company");
+      expect(units[0].shortName).toBe("A");
+      expect(units[0].description).toBe("Main assault element");
+    });
+
+    it("extra commas are included in description", () => {
+      const units = parseTextToUnits("Alpha, A, First, second", nsdOpts);
+      expect(units[0].name).toBe("Alpha");
+      expect(units[0].shortName).toBe("A");
+      expect(units[0].description).toBe("First, second");
+    });
+  });
+});

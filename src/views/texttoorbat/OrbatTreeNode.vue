@@ -11,6 +11,8 @@ import {
 interface ParsedUnit {
   id: string;
   name: string;
+  shortName?: string;
+  description?: string;
   sidc: string;
   children: ParsedUnit[];
   level: number;
@@ -92,7 +94,15 @@ onUnmounted(() => {
           :options="{ outlineColor: 'white', outlineWidth: 8 }"
         />
       </span>
-      <span class="text-sm">{{ unit.name }}</span>
+      <div class="flex flex-col">
+        <span class="text-sm">{{ unit.name }}</span>
+        <span v-if="unit.shortName" class="text-muted-foreground text-xs">{{
+          unit.shortName
+        }}</span>
+        <span v-if="unit.description" class="text-muted-foreground text-xs italic">{{
+          unit.description
+        }}</span>
+      </div>
       <span v-if="showDebug" class="font-mono text-xs text-amber-600 dark:text-amber-400">
         [{{ echelonVarName }} | {{ entityVarName }}]
       </span>

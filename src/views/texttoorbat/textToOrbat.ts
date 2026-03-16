@@ -46,9 +46,19 @@ export const ECHELON_HIERARCHY = defaultRegistry.echelonHierarchy;
 export interface ParsedUnit {
   id: string;
   name: string;
+  shortName?: string;
+  description?: string;
   sidc: string;
   children: ParsedUnit[];
   level: number;
+}
+
+export type CommaFieldOrder = "shortName,name,description" | "name,shortName,description";
+
+export interface ParseTextOptions {
+  registry?: MappingRegistry;
+  useCommaSeparator?: boolean;
+  commaFieldOrder?: CommaFieldOrder;
 }
 
 // Indentation configuration
@@ -360,13 +370,61 @@ export function getIconFromSidc(sidc: string): string {
 // Text parsing
 // ---------------------------------------------------------------------------
 
+interface CommaSplitResult {
+  name: string;
+  shortName?: string;
+  description?: string;
+}
+
+function splitCommaFields(
+  displayName: string,
+  order: CommaFieldOrder = "shortName,name,description",
+): CommaSplitResult {
+  const parts = displayName.split(",").map((p) => p.trim());
+  if (parts.length === 1) {
+    return { name: parts[0] };
+  }
+  if (order === "name,shortName,description") {
+    if (parts.length >= 3) {
+      return {
+        name: parts[0],
+        shortName: parts[1] || undefined,
+        description: parts.slice(2).join(", ") || undefined,
+      };
+    }
+    return { name: parts[0], shortName: parts[1] || undefined };
+  }
+  // shortName,name,description (default)
+  if (parts.length >= 3) {
+    return {
+      shortName: parts[0] || undefined,
+      name: parts[1],
+      description: parts.slice(2).join(", ") || undefined,
+    };
+  }
+  return { shortName: parts[0] || undefined, name: parts[1] };
+}
+
 /**
  * Parse indented text into a hierarchical unit structure.
  */
 export function parseTextToUnits(
   text: string,
-  registry: MappingRegistry = defaultRegistry,
+  registryOrOptions?: MappingRegistry | ParseTextOptions,
 ): ParsedUnit[] {
+  let registry: MappingRegistry = defaultRegistry;
+  let useCommaSeparator = false;
+  let commaFieldOrder: CommaFieldOrder = "shortName,name,description";
+  if (registryOrOptions) {
+    if ("iconPatterns" in registryOrOptions) {
+      registry = registryOrOptions;
+    } else {
+      registry = registryOrOptions.registry ?? defaultRegistry;
+      useCommaSeparator = registryOrOptions.useCommaSeparator ?? false;
+      commaFieldOrder = registryOrOptions.commaFieldOrder ?? "shortName,name,description";
+    }
+  }
+
   const lines = text.split("\n").filter((line) => line.trim().length > 0);
   const result: ParsedUnit[] = [];
   const stack: { unit: ParsedUnit; indent: number; echelon: string; icon: string }[] = [];
@@ -375,9 +433,16 @@ export function parseTextToUnits(
     const trimmed = line.trimStart();
     const indent = line.length - trimmed.length;
     const normalizedLine = normalizeUnitLine(trimmed.trim());
-    const name = normalizedLine.displayName;
+    const displayName = normalizedLine.displayName;
 
-    if (!name) continue;
+    if (!displayName) continue;
+
+    const fields = useCommaSeparator
+      ? splitCommaFields(displayName, commaFieldOrder)
+      : { name: displayName };
+
+    // Use the full display name (all comma parts) for SIDC pattern matching
+    const nameForMatching = displayName;
 
     // Determine the level based on indentation
     let level = 0;
@@ -394,7 +459,7 @@ export function parseTextToUnits(
     const parentIcon = stack.length > 0 ? stack[stack.length - 1].icon : undefined;
     const sidc = buildSidcWithMetadataPriority(
       level,
-      name,
+      nameForMatching,
       normalizedLine.metadataName,
       parentEchelon,
       parentIcon,
@@ -405,7 +470,9 @@ export function parseTextToUnits(
 
     const unit: ParsedUnit = {
       id: nanoid(),
-      name,
+      name: fields.name,
+      ...(fields.shortName !== undefined && { shortName: fields.shortName }),
+      ...(fields.description !== undefined && { description: fields.description }),
       sidc,
       children: [],
       level,
@@ -460,6 +527,8 @@ function convertParsedUnitToOrbatMapperUnit(unit: ParsedUnit): Unit {
   return {
     id: unit.id,
     name: unit.name,
+    ...(unit.shortName !== undefined && { shortName: unit.shortName }),
+    ...(unit.description !== undefined && { description: unit.description }),
     sidc: unit.sidc,
     subUnits: unit.children.map((child) => convertParsedUnitToOrbatMapperUnit(child)),
   };
@@ -469,6 +538,8 @@ export function serializeParsedUnitToScenarioUnit(unit: ParsedUnit): Unit {
   return {
     id: nanoid(),
     name: unit.name,
+    ...(unit.shortName !== undefined && { shortName: unit.shortName }),
+    ...(unit.description !== undefined && { description: unit.description }),
     sidc: unit.sidc,
     subUnits: unit.children.map((child) => serializeParsedUnitToScenarioUnit(child)),
   };

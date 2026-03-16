@@ -20,7 +20,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UseDark } from "@vueuse/components";
-import { breakpointsTailwind, useBreakpoints, useTitle } from "@vueuse/core";
+import {
+  breakpointsTailwind,
+  useBreakpoints,
+  useLocalStorage,
+  useTitle,
+} from "@vueuse/core";
 import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
 import TextToOrbatEditor from "@/views/texttoorbat/TextToOrbatEditor.vue";
 import ToggleField from "@/components/ToggleField.vue";
@@ -37,7 +42,15 @@ import {
   convertParsedUnitsToSpatialIllusions,
   parseTextToUnits,
   serializeParsedUnitsToScenarioUnits,
+  type CommaFieldOrder,
 } from "@/views/texttoorbat/textToOrbat.ts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useNotifications } from "@/composables/notifications";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useScenario } from "@/scenariostore";
@@ -51,7 +64,12 @@ const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("sm");
 
 const showDebug = ref(false);
-const enableAutocomplete = ref(true);
+const enableAutocomplete = useLocalStorage("enableAutoComplete", true);
+const useCommaSeparator = useLocalStorage("useCommaSeparator", false);
+const commaFieldOrder = useLocalStorage(
+  "commaFieldOrder",
+  "name,shortName,description" as CommaFieldOrder,
+);
 const showIconBrowser = ref(false);
 const showPatternMapping = ref(false);
 const isOpeningScenario = ref(false);
@@ -66,9 +84,17 @@ const inputText = ref(`# sample ORBAT
   2nd Cdo Btn
     3rd RA
     4th Eng
-  Artillery Coy  `);
+  Artillery Coy
+  # enable "Split fields" to use commas
+  A, Alpha Company, Main assault element
+`);
 
-const parsedUnits = computed(() => parseTextToUnits(inputText.value));
+const parsedUnits = computed(() =>
+  parseTextToUnits(inputText.value, {
+    useCommaSeparator: useCommaSeparator.value,
+    commaFieldOrder: commaFieldOrder.value as CommaFieldOrder,
+  }),
+);
 const spatialIllusionsOrbat = computed(() =>
   convertParsedUnitsToSpatialIllusions(parsedUnits.value),
 );
@@ -257,7 +283,7 @@ onUnmounted(() => {
                 relationships. Echelon abbreviations can be contiguous (e.g., 2bn)</span
               >.
             </p>
-            <div class="mt-2 flex items-center gap-2">
+            <div class="mt-2 flex flex-wrap items-center gap-2">
               <Button
                 variant="ghost"
                 size="sm"
@@ -277,6 +303,20 @@ onUnmounted(() => {
                 Icons
               </Button>
               <ToggleField v-model="enableAutocomplete">Autocomplete</ToggleField>
+              <ToggleField v-model="useCommaSeparator">Split fields</ToggleField>
+              <Select v-if="useCommaSeparator" v-model="commaFieldOrder">
+                <SelectTrigger class="h-7 w-auto gap-1 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name,shortName,description">
+                    name, short name, description
+                  </SelectItem>
+                  <SelectItem value="shortName,name,description">
+                    short name, name, description
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <TextToOrbatEditor
