@@ -65,7 +65,7 @@ const isMobile = breakpoints.smallerOrEqual("sm");
 
 const showDebug = ref(false);
 const enableAutocomplete = useLocalStorage("enableAutoComplete", true);
-const useCommaSeparator = useLocalStorage("useCommaSeparator", false);
+const useCommaSeparator = useLocalStorage("useCommaSeparator", true);
 const commaFieldOrder = useLocalStorage(
   "commaFieldOrder",
   "name,shortName,description" as CommaFieldOrder,
