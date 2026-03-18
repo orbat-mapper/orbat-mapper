@@ -5,21 +5,14 @@ import {
   ArrowLeftIcon,
   BookOpenIcon,
   CircleXIcon,
-  CopyIcon,
-  DownloadIcon,
-  ExternalLinkIcon,
   GripIcon,
   MapIcon,
   MoonStarIcon,
   SunIcon,
 } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import SplitButton from "@/components/SplitButton.vue";
+import type { ButtonGroupItem } from "@/components/types";
 import { UseDark } from "@vueuse/components";
 import {
   breakpointsTailwind,
@@ -66,7 +59,6 @@ useTitle("Text to ORBAT");
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("sm");
 
-const showDebug = ref(false);
 const enableAutocomplete = useLocalStorage("enableAutoComplete", true);
 const useCommaSeparator = useLocalStorage("useCommaSeparator", true);
 const commaFieldOrder = useLocalStorage(
@@ -248,6 +240,29 @@ async function handleOpenScenario() {
   }
 }
 
+const splitButtonItems = computed<ButtonGroupItem[]>(() => [
+  {
+    label: "Open scenario",
+    onClick: handleOpenScenario,
+    disabled: parsedUnits.value.length === 0 || isOpeningScenario.value,
+  },
+  {
+    label: "Copy to clipboard",
+    onClick: handleCopyToClipboard,
+    disabled: parsedUnits.value.length === 0 || isCopyingToClipboard.value,
+  },
+  {
+    label: "Export Battle Staff Tools JSON",
+    onClick: handleDownloadSpatialIllusions,
+    disabled: parsedUnits.value.length === 0,
+  },
+  {
+    label: "Export ORBAT Mapper Scenario",
+    onClick: handleDownloadOrbatMapperScenario,
+    disabled: parsedUnits.value.length === 0,
+  },
+]);
+
 onUnmounted(() => {
   useTitle(originalTitle);
 });
@@ -370,25 +385,7 @@ onUnmounted(() => {
                   </h2>
                 </div>
                 <div class="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    :disabled="parsedUnits.length === 0 || isOpeningScenario"
-                    @click="handleOpenScenario"
-                    title="Open in Scenario Editor"
-                  >
-                    <ExternalLinkIcon class="mr-1 size-4" />
-                    Open
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    :disabled="parsedUnits.length === 0 || isCopyingToClipboard"
-                    @click="handleCopyToClipboard"
-                    title="Copy ORBAT to clipboard"
-                  >
-                    <CopyIcon class="mr-1 size-4" />
-                    Copy
-                  </Button>
+                  <SplitButton :items="splitButtonItems" static />
                   <Button
                     v-if="!isMobile"
                     size="sm"
@@ -402,28 +399,6 @@ onUnmounted(() => {
                     Drag
                   </Button>
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger as-child>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        :disabled="parsedUnits.length === 0"
-                        title="Download ORBAT formats"
-                      >
-                        <DownloadIcon class="mr-1 size-4" />
-                        Export
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem @click="handleDownloadSpatialIllusions">
-                        Battle Staff Tools JSON
-                      </DropdownMenuItem>
-                      <DropdownMenuItem @click="handleDownloadOrbatMapperScenario">
-                        ORBAT Mapper Scenario
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <ToggleField v-model="showDebug">Debug info</ToggleField>
                   <ToggleField v-model="showScratchPad">Scratch Pad</ToggleField>
                 </div>
               </div>
@@ -439,7 +414,6 @@ onUnmounted(() => {
                     v-for="unit in parsedUnits"
                     :key="unit.id"
                     :unit="unit"
-                    :show-debug="showDebug"
                   />
                 </ul>
               </div>
@@ -459,25 +433,7 @@ onUnmounted(() => {
               </h2>
             </div>
             <div class="flex items-center gap-2">
-              <Button
-                size="sm"
-                :disabled="parsedUnits.length === 0 || isOpeningScenario"
-                @click="handleOpenScenario"
-                title="Open in Scenario Editor"
-              >
-                <ExternalLinkIcon class="mr-1 size-4" />
-                Open
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                :disabled="parsedUnits.length === 0 || isCopyingToClipboard"
-                @click="handleCopyToClipboard"
-                title="Copy ORBAT to clipboard"
-              >
-                <CopyIcon class="mr-1 size-4" />
-                Copy
-              </Button>
+              <SplitButton :items="splitButtonItems" static />
               <Button
                 v-if="!isMobile"
                 size="sm"
@@ -490,29 +446,6 @@ onUnmounted(() => {
                 <GripIcon class="mr-1 size-4" />
                 Drag
               </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger as-child>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    :disabled="parsedUnits.length === 0"
-                    title="Download ORBAT formats"
-                  >
-                    <DownloadIcon class="mr-1 size-4" />
-                    Export
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem @click="handleDownloadSpatialIllusions">
-                    Battle Staff Tools JSON
-                  </DropdownMenuItem>
-                  <DropdownMenuItem @click="handleDownloadOrbatMapperScenario">
-                    ORBAT Mapper Scenario
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <ToggleField v-model="showDebug">Debug info</ToggleField>
               <ToggleField v-model="showScratchPad">Scratch Pad</ToggleField>
             </div>
           </div>
@@ -524,12 +457,7 @@ onUnmounted(() => {
               <p>Enter text on the left to generate an ORBAT</p>
             </div>
             <ul v-else class="space-y-2">
-              <OrbatTreeNode
-                v-for="unit in parsedUnits"
-                :key="unit.id"
-                :unit="unit"
-                :show-debug="showDebug"
-              />
+              <OrbatTreeNode v-for="unit in parsedUnits" :key="unit.id" :unit="unit" />
             </ul>
           </div>
         </div>

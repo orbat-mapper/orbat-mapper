@@ -10,11 +10,24 @@ import {
   monitorForExternal,
 } from "@atlaskit/pragmatic-drag-and-drop/external/adapter";
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
+import { useRouter } from "vue-router";
 import { Redo2Icon, Trash2Icon, Undo2Icon } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
+import SplitButton from "@/components/SplitButton.vue";
+import type { ButtonGroupItem } from "@/components/types";
 import ScratchPadTreeNode from "@/views/texttoorbat/ScratchPadTreeNode.vue";
 import type { Unit } from "@/types/scenarioModels";
 import type { ParsedUnit } from "@/views/texttoorbat/textToOrbat.ts";
+import {
+  convertParsedUnitsToOrbatMapperScenario,
+  convertParsedUnitsToSpatialIllusions,
+  serializeParsedUnitsToScenarioUnits,
+} from "@/views/texttoorbat/textToOrbat.ts";
+import { useNotifications } from "@/composables/notifications";
+import { saveBlobToLocalFile } from "@/utils/files";
+import { useScenario } from "@/scenariostore";
+import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
+import { useIndexedDb } from "@/scenariostore/localdb";
 
 const props = defineProps<{
   modelValue: Unit[];
@@ -87,6 +100,127 @@ function unitToParsedUnit(unit: Unit, level = 0): ParsedUnit {
 const parsedUnits = computed(() =>
   props.modelValue.map((unit) => unitToParsedUnit(unit)),
 );
+
+const { send: sendNotification } = useNotifications();
+const router = useRouter();
+const { scenario } = useScenario();
+const isOpeningScenario = ref(false);
+const isCopyingToClipboard = ref(false);
+const isEmpty = computed(() => props.modelValue.length === 0);
+
+async function handleOpenScenario() {
+  if (isEmpty.value || isOpeningScenario.value) return;
+  isOpeningScenario.value = true;
+  try {
+    const payload = convertParsedUnitsToOrbatMapperScenario(parsedUnits.value);
+    scenario.value.io.loadFromObject(payload);
+    scenario.value.store.clearUndoRedoStack?.();
+    const { addScenario } = await useIndexedDb();
+    const storedScenario = scenario.value.io.serializeToObject();
+    const scenarioId = await addScenario(storedScenario, storedScenario.id);
+    await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId } });
+    sendNotification({ message: "Scenario opened in editor" });
+  } catch (error) {
+    sendNotification({ message: "Failed to open scenario", type: "error" });
+    console.error(error);
+  } finally {
+    isOpeningScenario.value = false;
+  }
+}
+
+async function handleCopyToClipboard() {
+  if (isEmpty.value || isCopyingToClipboard.value) return;
+  isCopyingToClipboard.value = true;
+  try {
+    const serializedJson = JSON.stringify(
+      serializeParsedUnitsToScenarioUnits(parsedUnits.value),
+    );
+    if (
+      typeof ClipboardItem !== "undefined" &&
+      typeof navigator.clipboard?.write === "function"
+    ) {
+      const clipboardItem = new ClipboardItem({
+        "text/plain": new Blob([serializedJson], { type: "text/plain" }),
+      });
+      await navigator.clipboard.write([clipboardItem]);
+    } else if (typeof navigator.clipboard?.writeText === "function") {
+      await navigator.clipboard.writeText(serializedJson);
+    } else {
+      throw new Error("Clipboard API unavailable");
+    }
+    sendNotification({ message: "ORBAT copied to clipboard" });
+  } catch (error) {
+    sendNotification({ message: "Failed to copy ORBAT to clipboard", type: "error" });
+    console.error(error);
+  } finally {
+    isCopyingToClipboard.value = false;
+  }
+}
+
+async function handleExportSpatialIllusions() {
+  if (isEmpty.value) return;
+  try {
+    const payload = convertParsedUnitsToSpatialIllusions(parsedUnits.value);
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    await saveBlobToLocalFile(blob, "spatial-illusions-orbat.json", {
+      mimeTypes: ["application/json"],
+      extensions: [".json"],
+    });
+    sendNotification({ message: "Spatial Illusions JSON ready for download" });
+  } catch (error) {
+    sendNotification({
+      message: "Failed to download Spatial Illusions JSON",
+      type: "error",
+    });
+    console.error(error);
+  }
+}
+
+async function handleExportOrbatMapper() {
+  if (isEmpty.value) return;
+  try {
+    const payload = convertParsedUnitsToOrbatMapperScenario(parsedUnits.value);
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    await saveBlobToLocalFile(blob, "orbat-mapper-scenario.json", {
+      mimeTypes: ["application/json"],
+      extensions: [".json"],
+    });
+    sendNotification({ message: "ORBAT Mapper scenario ready for download" });
+  } catch (error) {
+    sendNotification({
+      message: "Failed to download ORBAT Mapper scenario",
+      type: "error",
+    });
+    console.error(error);
+  }
+}
+
+const splitButtonItems = computed<ButtonGroupItem[]>(() => [
+  {
+    label: "Open scenario",
+    onClick: handleOpenScenario,
+    disabled: isEmpty.value || isOpeningScenario.value,
+  },
+  {
+    label: "Copy to clipboard",
+    onClick: handleCopyToClipboard,
+    disabled: isEmpty.value || isCopyingToClipboard.value,
+  },
+  {
+    label: "Export Battle Staff Tools JSON",
+    onClick: handleExportSpatialIllusions,
+    disabled: isEmpty.value,
+  },
+  {
+    label: "Export ORBAT Mapper Scenario",
+    onClick: handleExportOrbatMapper,
+    disabled: isEmpty.value,
+  },
+]);
 
 function handleClearAll() {
   commitChange([]);
@@ -299,6 +433,7 @@ onUnmounted(() => {
         </span>
       </div>
       <div class="flex items-center gap-1">
+        <SplitButton :items="splitButtonItems" static />
         <Button
           variant="ghost"
           size="icon"
