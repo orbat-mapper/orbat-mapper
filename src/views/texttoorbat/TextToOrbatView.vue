@@ -46,12 +46,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import MilSymbol from "@/components/MilSymbol.vue";
 import { useNotifications } from "@/composables/notifications";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useScenario } from "@/scenariostore";
 import type { Unit } from "@/types/scenarioModels";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { useIndexedDb } from "@/scenariostore/localdb";
+
+const sidItems = [
+  { code: "3", text: "Friend", sidc: "10031000000000000000" },
+  { code: "6", text: "Hostile", sidc: "10061000000000000000" },
+  { code: "4", text: "Neutral", sidc: "10041000000000000000" },
+  { code: "1", text: "Unknown", sidc: "10011000000000000000" },
+];
 
 const originalTitle = useTitle().value;
 useTitle("Text to ORBAT");
@@ -65,6 +73,7 @@ const commaFieldOrder = useLocalStorage(
   "commaFieldOrder",
   "name,shortName,description" as CommaFieldOrder,
 );
+const standardIdentity = useLocalStorage("textToOrbatSI", "3");
 const showScratchPad = useLocalStorage("showScratchPad", false);
 const scratchPadUnits = useLocalStorage<Unit[]>("textToOrbatScratchPad", []);
 const showIconBrowser = ref(false);
@@ -90,13 +99,14 @@ const parsedUnits = computed(() =>
   parseTextToUnits(inputText.value, {
     useCommaSeparator: useCommaSeparator.value,
     commaFieldOrder: commaFieldOrder.value as CommaFieldOrder,
+    standardIdentity: standardIdentity.value,
   }),
 );
 const spatialIllusionsOrbat = computed(() =>
   convertParsedUnitsToSpatialIllusions(parsedUnits.value),
 );
 const orbatMapperScenario = computed(() =>
-  convertParsedUnitsToOrbatMapperScenario(parsedUnits.value),
+  convertParsedUnitsToOrbatMapperScenario(parsedUnits.value, standardIdentity.value),
 );
 const { send: sendNotification } = useNotifications();
 const router = useRouter();
@@ -385,6 +395,34 @@ onUnmounted(() => {
                   </h2>
                 </div>
                 <div class="flex items-center gap-2">
+                  <Select v-model="standardIdentity">
+                    <SelectTrigger class="h-7 w-auto gap-1 text-xs">
+                      <div class="flex items-center gap-1">
+                        <MilSymbol
+                          :sidc="'100' + standardIdentity + '1000000000000000'"
+                          :size="16"
+                          :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
+                        />
+                        <SelectValue />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem
+                        v-for="sid in sidItems"
+                        :key="sid.code"
+                        :value="sid.code"
+                      >
+                        <div class="flex items-center gap-2">
+                          <MilSymbol
+                            :sidc="sid.sidc"
+                            :size="20"
+                            :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
+                          />
+                          <span>{{ sid.text }}</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                   <SplitButton :items="splitButtonItems" static />
                   <Button
                     v-if="!isMobile"
@@ -433,6 +471,30 @@ onUnmounted(() => {
               </h2>
             </div>
             <div class="flex items-center gap-2">
+              <Select v-model="standardIdentity">
+                <SelectTrigger class="h-7 w-auto gap-1 text-xs">
+                  <div class="flex items-center gap-1">
+                    <MilSymbol
+                      :sidc="'100' + standardIdentity + '1000000000000000'"
+                      :size="16"
+                      :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
+                    />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="sid in sidItems" :key="sid.code" :value="sid.code">
+                    <div class="flex items-center gap-2">
+                      <MilSymbol
+                        :sidc="sid.sidc"
+                        :size="20"
+                        :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
+                      />
+                      <span>{{ sid.text }}</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
               <SplitButton :items="splitButtonItems" static />
               <Button
                 v-if="!isMobile"

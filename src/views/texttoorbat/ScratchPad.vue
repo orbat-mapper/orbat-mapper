@@ -23,11 +23,28 @@ import {
   convertParsedUnitsToSpatialIllusions,
   serializeParsedUnitsToScenarioUnits,
 } from "@/views/texttoorbat/textToOrbat.ts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import MilSymbol from "@/components/MilSymbol.vue";
+import { setSid } from "@/symbology/helpers";
+import { useLocalStorage } from "@vueuse/core";
 import { useNotifications } from "@/composables/notifications";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useScenario } from "@/scenariostore";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { useIndexedDb } from "@/scenariostore/localdb";
+
+const sidItems = [
+  { code: "3", text: "Friend", sidc: "10031000000000000000" },
+  { code: "6", text: "Hostile", sidc: "10061000000000000000" },
+  { code: "4", text: "Neutral", sidc: "10041000000000000000" },
+  { code: "1", text: "Unknown", sidc: "10011000000000000000" },
+];
 
 const props = defineProps<{
   modelValue: Unit[];
@@ -36,6 +53,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   "update:modelValue": [units: Unit[]];
 }>();
+
+const standardIdentity = useLocalStorage("scratchPadSI", "3");
 
 const dropZoneRef = ref<HTMLElement | null>(null);
 const isOverDropZone = ref(false);
@@ -91,7 +110,7 @@ function unitToParsedUnit(unit: Unit, level = 0): ParsedUnit {
     name: unit.name,
     shortName: unit.shortName,
     description: unit.description,
-    sidc: unit.sidc,
+    sidc: setSid(unit.sidc, standardIdentity.value),
     children: (unit.subUnits ?? []).map((c) => unitToParsedUnit(c, level + 1)),
     level,
   };
@@ -112,7 +131,10 @@ async function handleOpenScenario() {
   if (isEmpty.value || isOpeningScenario.value) return;
   isOpeningScenario.value = true;
   try {
-    const payload = convertParsedUnitsToOrbatMapperScenario(parsedUnits.value);
+    const payload = convertParsedUnitsToOrbatMapperScenario(
+      parsedUnits.value,
+      standardIdentity.value,
+    );
     scenario.value.io.loadFromObject(payload);
     scenario.value.store.clearUndoRedoStack?.();
     const { addScenario } = await useIndexedDb();
@@ -181,7 +203,10 @@ async function handleExportSpatialIllusions() {
 async function handleExportOrbatMapper() {
   if (isEmpty.value) return;
   try {
-    const payload = convertParsedUnitsToOrbatMapperScenario(parsedUnits.value);
+    const payload = convertParsedUnitsToOrbatMapperScenario(
+      parsedUnits.value,
+      standardIdentity.value,
+    );
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json",
     });
@@ -433,6 +458,30 @@ onUnmounted(() => {
         </span>
       </div>
       <div class="flex items-center gap-1">
+        <Select v-model="standardIdentity">
+          <SelectTrigger class="h-7 w-auto gap-1 text-xs">
+            <div class="flex items-center gap-1">
+              <MilSymbol
+                :sidc="'100' + standardIdentity + '1000000000000000'"
+                :size="16"
+                :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
+              />
+              <SelectValue />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="sid in sidItems" :key="sid.code" :value="sid.code">
+              <div class="flex items-center gap-2">
+                <MilSymbol
+                  :sidc="sid.sidc"
+                  :size="20"
+                  :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
+                />
+                <span>{{ sid.text }}</span>
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
         <SplitButton :items="splitButtonItems" static />
         <Button
           variant="ghost"
