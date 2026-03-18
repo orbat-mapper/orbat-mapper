@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import {
   ArrowLeftIcon,
   BookOpenIcon,
+  CircleXIcon,
   CopyIcon,
   DownloadIcon,
   ExternalLinkIcon,
@@ -104,6 +105,10 @@ const orbatMapperScenario = computed(() =>
 const { send: sendNotification } = useNotifications();
 const router = useRouter();
 const { scenario } = useScenario();
+
+function handleClearInput() {
+  inputText.value = "";
+}
 
 function buildClipboardUnits() {
   return serializeParsedUnitsToScenarioUnits(parsedUnits.value);
@@ -301,6 +306,16 @@ onUnmounted(() => {
               >
                 <BookOpenIcon class="mr-1 size-4" />
                 Icons
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                :disabled="inputText.length === 0"
+                @click="handleClearInput"
+                title="Clear input"
+              >
+                <CircleXIcon class="mr-1 size-4" />
+                Clear
               </Button>
               <ToggleField v-model="enableAutocomplete">Autocomplete</ToggleField>
               <ToggleField v-model="useCommaSeparator">Split fields</ToggleField>
