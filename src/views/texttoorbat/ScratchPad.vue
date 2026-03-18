@@ -10,7 +10,7 @@ import {
   monitorForExternal,
 } from "@atlaskit/pragmatic-drag-and-drop/external/adapter";
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
-import { Trash2Icon } from "lucide-vue-next";
+import { Redo2Icon, Trash2Icon, Undo2Icon } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import ScratchPadTreeNode from "@/views/texttoorbat/ScratchPadTreeNode.vue";
 import type { Unit } from "@/types/scenarioModels";
@@ -27,6 +27,50 @@ const emit = defineEmits<{
 const dropZoneRef = ref<HTMLElement | null>(null);
 const isOverDropZone = ref(false);
 let dndCleanup: () => void = () => {};
+
+// --- Undo/Redo ---
+
+const undoStack = ref<Unit[][]>([]);
+const redoStack = ref<Unit[][]>([]);
+const canUndo = computed(() => undoStack.value.length > 0);
+const canRedo = computed(() => redoStack.value.length > 0);
+
+function commitChange(newValue: Unit[]) {
+  undoStack.value.push(cloneTree(props.modelValue));
+  redoStack.value = [];
+  emit("update:modelValue", newValue);
+}
+
+function undo() {
+  if (!canUndo.value) return;
+  redoStack.value.push(cloneTree(props.modelValue));
+  emit("update:modelValue", undoStack.value.pop()!);
+}
+
+function redo() {
+  if (!canRedo.value) return;
+  undoStack.value.push(cloneTree(props.modelValue));
+  emit("update:modelValue", redoStack.value.pop()!);
+}
+
+function handleKeydown(event: KeyboardEvent) {
+  const mod = event.metaKey || event.ctrlKey;
+  if (!mod || event.key.toLowerCase() !== "z") return;
+
+  if (event.shiftKey) {
+    if (canRedo.value) {
+      event.preventDefault();
+      event.stopPropagation();
+      redo();
+    }
+  } else {
+    if (canUndo.value) {
+      event.preventDefault();
+      event.stopPropagation();
+      undo();
+    }
+  }
+}
 
 function unitToParsedUnit(unit: Unit, level = 0): ParsedUnit {
   return {
@@ -45,13 +89,13 @@ const parsedUnits = computed(() =>
 );
 
 function handleClearAll() {
-  emit("update:modelValue", []);
+  commitChange([]);
 }
 
 function handleDeleteUnit(unitId: string) {
   const tree = cloneTree(props.modelValue);
   removeUnit(tree, unitId);
-  emit("update:modelValue", tree);
+  commitChange(tree);
 }
 
 // --- Tree manipulation helpers ---
@@ -77,6 +121,14 @@ function removeUnit(units: Unit[], id: string): Unit | null {
   const found = findUnit(units, id);
   if (!found) return null;
   return found.list.splice(found.index, 1)[0];
+}
+
+/** Check if targetId is a descendant of the unit with ancestorId */
+function isDescendant(units: Unit[], ancestorId: string, targetId: string): boolean {
+  const found = findUnit(units, ancestorId);
+  if (!found) return false;
+  const ancestor = found.list[found.index];
+  return !!findUnit(ancestor.subUnits ?? [], targetId);
 }
 
 /** Insert units relative to a target based on instruction type */
@@ -106,6 +158,12 @@ function handleDrop(
   sourceUnits: Unit[],
   sourceUnitId?: string,
 ) {
+  // Don't allow dropping a unit onto itself or its own descendants
+  if (sourceUnitId) {
+    if (sourceUnitId === targetId) return;
+    if (isDescendant(props.modelValue, sourceUnitId, targetId)) return;
+  }
+
   const tree = cloneTree(props.modelValue);
 
   // If reordering within the scratch pad, remove the source first
@@ -114,7 +172,7 @@ function handleDrop(
   }
 
   applyInstruction(tree, targetId, sourceUnits, instructionType);
-  emit("update:modelValue", tree);
+  commitChange(tree);
 }
 
 function handleRootDrop(sourceUnits: Unit[], sourceUnitId?: string) {
@@ -125,7 +183,7 @@ function handleRootDrop(sourceUnits: Unit[], sourceUnitId?: string) {
   }
 
   tree.push(...sourceUnits);
-  emit("update:modelValue", tree);
+  commitChange(tree);
 }
 
 function parseOrbatJson(raw: string): Unit[] | null {
@@ -225,7 +283,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex h-full flex-col overflow-hidden">
+  <div
+    class="flex h-full flex-col overflow-hidden outline-none"
+    tabindex="-1"
+    @keydown="handleKeydown"
+  >
     <div class="bg-muted/50 flex items-center justify-between border-b px-4 py-2">
       <div class="flex items-center gap-2">
         <h2 class="text-muted-foreground text-sm font-medium">Scratch Pad</h2>
@@ -236,16 +298,38 @@ onUnmounted(() => {
           {{ modelValue.length }}
         </span>
       </div>
-      <Button
-        v-if="modelValue.length > 0"
-        variant="ghost"
-        size="sm"
-        @click="handleClearAll"
-        title="Clear all saved units"
-      >
-        <Trash2Icon class="mr-1 size-4" />
-        Clear
-      </Button>
+      <div class="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          class="size-7"
+          :disabled="!canUndo"
+          title="Undo (Ctrl+Z)"
+          @click="undo"
+        >
+          <Undo2Icon class="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="size-7"
+          :disabled="!canRedo"
+          title="Redo (Ctrl+Shift+Z)"
+          @click="redo"
+        >
+          <Redo2Icon class="size-4" />
+        </Button>
+        <Button
+          v-if="modelValue.length > 0"
+          variant="ghost"
+          size="sm"
+          @click="handleClearAll"
+          title="Clear all saved units"
+        >
+          <Trash2Icon class="mr-1 size-4" />
+          Clear
+        </Button>
+      </div>
     </div>
     <div
       ref="dropZoneRef"
