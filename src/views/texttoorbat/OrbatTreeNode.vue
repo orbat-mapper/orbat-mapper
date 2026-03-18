@@ -65,6 +65,13 @@ onMounted(() => {
 
   dndCleanup = draggable({
     element: dragHandleRef.value,
+    getInitialData: () => {
+      const serializedUnit = serializeParsedUnitToScenarioUnit(props.unit);
+      return {
+        type: "application/orbat",
+        orbatJson: JSON.stringify([serializedUnit]),
+      };
+    },
     getInitialDataForExternal: () => {
       const serializedUnit = serializeParsedUnitToScenarioUnit(props.unit);
       return {

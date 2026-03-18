@@ -32,6 +32,7 @@ import TextToOrbatEditor from "@/views/texttoorbat/TextToOrbatEditor.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import IconBrowserModal from "@/views/texttoorbat/IconBrowserModal.vue";
 import PatternMappingModal from "@/views/texttoorbat/PatternMappingModal.vue";
+import ScratchPad from "@/views/texttoorbat/ScratchPad.vue";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -55,6 +56,7 @@ import {
 import { useNotifications } from "@/composables/notifications";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useScenario } from "@/scenariostore";
+import type { Unit } from "@/types/scenarioModels";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { useIndexedDb } from "@/scenariostore/localdb";
 
@@ -71,6 +73,8 @@ const commaFieldOrder = useLocalStorage(
   "commaFieldOrder",
   "name,shortName,description" as CommaFieldOrder,
 );
+const showScratchPad = useLocalStorage("showScratchPad", false);
+const scratchPadUnits = useLocalStorage<Unit[]>("textToOrbatScratchPad", []);
 const showIconBrowser = ref(false);
 const showPatternMapping = ref(false);
 const isOpeningScenario = ref(false);
@@ -354,7 +358,100 @@ onUnmounted(() => {
 
       <!-- Right/Bottom: ORBAT display -->
       <ResizablePanel :default-size="50" :min-size="20">
-        <div class="flex h-full flex-col overflow-hidden">
+        <ResizablePanelGroup v-if="showScratchPad" direction="vertical" class="h-full">
+          <ResizablePanel :default-size="60" :min-size="20">
+            <div class="flex h-full flex-col overflow-hidden">
+              <div
+                class="bg-muted/50 flex items-center justify-between border-b px-4 py-2"
+              >
+                <div>
+                  <h2 class="text-muted-foreground hidden text-sm font-medium lg:inline">
+                    Generated ORBAT
+                  </h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    :disabled="parsedUnits.length === 0 || isOpeningScenario"
+                    @click="handleOpenScenario"
+                    title="Open in Scenario Editor"
+                  >
+                    <ExternalLinkIcon class="mr-1 size-4" />
+                    Open
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    :disabled="parsedUnits.length === 0 || isCopyingToClipboard"
+                    @click="handleCopyToClipboard"
+                    title="Copy ORBAT to clipboard"
+                  >
+                    <CopyIcon class="mr-1 size-4" />
+                    Copy
+                  </Button>
+                  <Button
+                    v-if="!isMobile"
+                    size="sm"
+                    variant="outline"
+                    :disabled="parsedUnits.length === 0"
+                    draggable="true"
+                    @dragstart="handleOrbatDragStart"
+                    title="Drag ORBAT into scenario"
+                  >
+                    <GripIcon class="mr-1 size-4" />
+                    Drag
+                  </Button>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        :disabled="parsedUnits.length === 0"
+                        title="Download ORBAT formats"
+                      >
+                        <DownloadIcon class="mr-1 size-4" />
+                        Export
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem @click="handleDownloadSpatialIllusions">
+                        Battle Staff Tools JSON
+                      </DropdownMenuItem>
+                      <DropdownMenuItem @click="handleDownloadOrbatMapperScenario">
+                        ORBAT Mapper Scenario
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <ToggleField v-model="showDebug">Debug info</ToggleField>
+                  <ToggleField v-model="showScratchPad">Scratch Pad</ToggleField>
+                </div>
+              </div>
+              <div class="flex-1 overflow-y-auto p-4">
+                <div
+                  v-if="parsedUnits.length === 0"
+                  class="text-muted-foreground text-center"
+                >
+                  <p>Enter text on the left to generate an ORBAT</p>
+                </div>
+                <ul v-else class="space-y-2">
+                  <OrbatTreeNode
+                    v-for="unit in parsedUnits"
+                    :key="unit.id"
+                    :unit="unit"
+                    :show-debug="showDebug"
+                  />
+                </ul>
+              </div>
+            </div>
+          </ResizablePanel>
+          <ResizableHandle with-handle />
+          <ResizablePanel :default-size="40" :min-size="15">
+            <ScratchPad v-model="scratchPadUnits" />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+
+        <div v-else class="flex h-full flex-col overflow-hidden">
           <div class="bg-muted/50 flex items-center justify-between border-b px-4 py-2">
             <div>
               <h2 class="text-muted-foreground hidden text-sm font-medium lg:inline">
@@ -416,6 +513,7 @@ onUnmounted(() => {
                 </DropdownMenuContent>
               </DropdownMenu>
               <ToggleField v-model="showDebug">Debug info</ToggleField>
+              <ToggleField v-model="showScratchPad">Scratch Pad</ToggleField>
             </div>
           </div>
           <div class="flex-1 overflow-y-auto p-4">
