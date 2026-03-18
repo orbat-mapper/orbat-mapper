@@ -13,6 +13,7 @@ import {
   type SpatialIllusionsOrbat,
 } from "@/types/externalModels";
 import type { Scenario, Side, SideGroup, Unit } from "@/types/scenarioModels";
+import type { SidValue } from "@/symbology/values";
 import { defaultRegistry, type MappingRegistry } from "./mappingRegistry";
 
 // ---------------------------------------------------------------------------
@@ -59,6 +60,7 @@ export interface ParseTextOptions {
   registry?: MappingRegistry;
   useCommaSeparator?: boolean;
   commaFieldOrder?: CommaFieldOrder;
+  standardIdentity?: string;
 }
 
 // Indentation configuration
@@ -253,10 +255,10 @@ export function buildSidc(
   parentEchelon?: string,
   parentIcon?: string,
   registry: MappingRegistry = defaultRegistry,
+  si: string = FRIENDLY_SI,
 ): string {
   const version = "10";
   const context = "0";
-  const si = FRIENDLY_SI;
   const status = "0";
   const hqtfd = "0";
 
@@ -303,10 +305,10 @@ function buildSidcWithMetadataPriority(
   parentEchelon?: string,
   parentIcon?: string,
   registry: MappingRegistry = defaultRegistry,
+  si: string = FRIENDLY_SI,
 ): string {
   const version = "10";
   const context = "0";
-  const si = FRIENDLY_SI;
   const status = "0";
   const hqtfd = "0";
 
@@ -415,6 +417,7 @@ export function parseTextToUnits(
   let registry: MappingRegistry = defaultRegistry;
   let useCommaSeparator = false;
   let commaFieldOrder: CommaFieldOrder = "shortName,name,description";
+  let si = FRIENDLY_SI;
   if (registryOrOptions) {
     if ("iconPatterns" in registryOrOptions) {
       registry = registryOrOptions;
@@ -422,6 +425,7 @@ export function parseTextToUnits(
       registry = registryOrOptions.registry ?? defaultRegistry;
       useCommaSeparator = registryOrOptions.useCommaSeparator ?? false;
       commaFieldOrder = registryOrOptions.commaFieldOrder ?? "shortName,name,description";
+      si = registryOrOptions.standardIdentity ?? FRIENDLY_SI;
     }
   }
 
@@ -464,12 +468,13 @@ export function parseTextToUnits(
       parentEchelon,
       parentIcon,
       registry,
+      si,
     );
     const unitEchelon = getEchelonFromSidc(sidc);
     const unitIcon = getIconFromSidc(sidc);
 
     const unit: ParsedUnit = {
-      id: nanoid(),
+      id: nanoid(12),
       name: fields.name,
       ...(fields.shortName !== undefined && { shortName: fields.shortName }),
       ...(fields.description !== undefined && { description: fields.description }),
@@ -549,8 +554,21 @@ export function serializeParsedUnitsToScenarioUnits(units: ParsedUnit[]): Unit[]
   return units.map((unit) => serializeParsedUnitToScenarioUnit(unit));
 }
 
-export function convertParsedUnitsToOrbatMapperScenario(units: ParsedUnit[]): Scenario {
-  const scenarioId = nanoid();
+const SI_NAMES: Record<string, string> = {
+  "0": "Pending",
+  "1": "Unknown",
+  "2": "Assumed Friend",
+  "3": "Friendly",
+  "4": "Neutral",
+  "5": "Suspect",
+  "6": "Hostile",
+};
+
+export function convertParsedUnitsToOrbatMapperScenario(
+  units: ParsedUnit[],
+  standardIdentity: string = "3",
+): Scenario {
+  const scenarioId = nanoid(12);
   const now = new Date().toISOString();
 
   const subUnits = units.map((unit) => convertParsedUnitToOrbatMapperUnit(unit));
@@ -561,10 +579,10 @@ export function convertParsedUnitsToOrbatMapperScenario(units: ParsedUnit[]): Sc
     subUnits,
   };
 
-  const friendlySide: Side = {
+  const side: Side = {
     id: nanoid(),
-    name: "Friendly",
-    standardIdentity: "3",
+    name: SI_NAMES[standardIdentity] ?? "Friendly",
+    standardIdentity: standardIdentity as SidValue,
     groups: [friendlyGroup],
   };
 
@@ -577,7 +595,7 @@ export function convertParsedUnitsToOrbatMapperScenario(units: ParsedUnit[]): Sc
       lastModifiedDate: now,
     },
     name: "Text to ORBAT Scenario",
-    sides: [friendlySide],
+    sides: [side],
     events: [],
     layers: [],
     mapLayers: [],
