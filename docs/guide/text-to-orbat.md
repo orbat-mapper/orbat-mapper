@@ -2,7 +2,7 @@
 
 The Text to ORBAT tool lets you quickly build an order of battle by typing unit names as indented text. The tool automatically detects unit types and echelons from keywords in the text and generates military symbols.
 
-You can access the tool from the start page or by navigating to `/texttoorbat` in the app.
+You can access the tool from the start page or directly at [orbat-mapper.app/text-to-orbat](https://orbat-mapper.app/text-to-orbat).
 
 ## Basic syntax
 

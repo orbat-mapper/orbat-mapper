@@ -66,10 +66,10 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
     {
       text: "Import and export",
       items: [
-        { text: "Text to ORBAT", link: "text-to-orbat" },
         { text: "Import data", link: "import-data" },
         { text: "Export data", link: "export-data" },
         { text: "Sharing scenarios", link: "sharing-scenarios" },
+        { text: "Text to ORBAT", link: "text-to-orbat" },
       ],
     },
   ];
