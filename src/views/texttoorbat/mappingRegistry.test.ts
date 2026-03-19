@@ -67,25 +67,6 @@ describe("MappingRegistry — adding new mappings", () => {
     expect(getIconCodeFromName("Panzer Division", registry)).toBe(CUSTOM_CODE);
   });
 
-  it("positioned insertion respects 'before' and 'after'", () => {
-    const registry = new MappingRegistry();
-
-    // Insert before ICON_ARMOR so the more-specific "heavy armour" pattern matches first
-    registry.addIcon(
-      {
-        name: "ICON_HEAVY_ARMOR",
-        code: "1205020000",
-        label: "Heavy Armor",
-        aliases: ["heavy\\s*armou?r"],
-      },
-      { placement: "before", referenceCode: ICON_ARMOR },
-    );
-
-    expect(getIconCodeFromName("Heavy Armour Battalion", registry)).toBe("1205020000");
-    // Plain armor still resolves to the built-in
-    expect(getIconCodeFromName("1st Armored Division", registry)).toBe(ICON_ARMOR);
-  });
-
   it("extends an existing echelon with extra aliases", () => {
     const registry = new MappingRegistry();
 
@@ -120,26 +101,6 @@ describe("MappingRegistry — adding new mappings", () => {
     expect(getIconFromSidc(units[0].children[1].sidc)).toBe(DRONE_CODE);
   });
 
-  it("importUserMappings round-trips correctly", () => {
-    const registry = new MappingRegistry();
-
-    registry.importUserMappings({
-      iconExtensions: [{ code: ICON_INFANTRY, extraAliases: ["fusiliers?"] }],
-      iconAdditions: [
-        {
-          code: "1206010000",
-          label: "Drone",
-          aliases: ["drone", "uav"],
-        },
-      ],
-      echelonExtensions: [{ code: ECHELON_BATTALION, extraAliases: ["tabor"] }],
-    });
-
-    expect(getIconCodeFromName("Fusilier Company", registry)).toBe(ICON_INFANTRY);
-    expect(getIconCodeFromName("Drone Squadron", registry)).toBe("1206010000");
-    expect(getEchelonCodeFromName("1st Tabor", registry)).toBe(ECHELON_BATTALION);
-  });
-
   it("does not affect other MappingRegistry instances", () => {
     const registryA = new MappingRegistry();
     const registryB = new MappingRegistry();
@@ -154,5 +115,89 @@ describe("MappingRegistry — adding new mappings", () => {
     // registryA matches, registryB does not
     expect(getIconCodeFromName("Drone Squadron", registryA)).toBe("1206010000");
     expect(getIconCodeFromName("Drone Squadron", registryB)).toBe(ICON_UNSPECIFIED);
+  });
+
+  it("exportMappings → importMappings round-trip preserves mappings", () => {
+    const registry1 = new MappingRegistry();
+    registry1.extendIcon(ICON_INFANTRY, ["fusiliers?"]);
+    registry1.addIcon({
+      name: "ICON_DRONE",
+      code: "1206010000",
+      label: "Drone",
+      aliases: ["drone"],
+    });
+    registry1.extendEchelon(ECHELON_BATTALION, ["tabor"]);
+
+    const exported = registry1.exportMappings();
+
+    const registry2 = new MappingRegistry();
+    registry2.importMappings(exported);
+
+    expect(getIconCodeFromName("Fusilier Company", registry2)).toBe(ICON_INFANTRY);
+    expect(getIconCodeFromName("Drone Squadron", registry2)).toBe("1206010000");
+    expect(getEchelonCodeFromName("1st Tabor", registry2)).toBe(ECHELON_BATTALION);
+    // Built-ins still work
+    expect(getIconCodeFromName("1st Armored Division", registry2)).toBe(ICON_ARMOR);
+  });
+
+  it("resetToDefaults clears all customizations", () => {
+    const registry = new MappingRegistry();
+
+    registry.extendIcon(ICON_INFANTRY, ["fusiliers?"]);
+    registry.addIcon({
+      name: "ICON_DRONE",
+      code: "1206010000",
+      label: "Drone",
+      aliases: ["drone"],
+    });
+    registry.extendEchelon(ECHELON_BATTALION, ["tabor"]);
+
+    expect(getIconCodeFromName("Fusilier Company", registry)).toBe(ICON_INFANTRY);
+
+    registry.resetToDefaults();
+
+    expect(getIconCodeFromName("Fusilier Company", registry)).toBe(ICON_UNSPECIFIED);
+    expect(getIconCodeFromName("Drone Squadron", registry)).toBe(ICON_UNSPECIFIED);
+    expect(getEchelonCodeFromName("1st Tabor", registry)).toBe("00");
+    // Built-ins still work
+    expect(getIconCodeFromName("1st Infantry Division", registry)).toBe(ICON_INFANTRY);
+  });
+
+  it("version increments on each mutation", () => {
+    const registry = new MappingRegistry();
+    const v0 = registry.version;
+
+    registry.extendIcon(ICON_INFANTRY, ["fusiliers?"]);
+    expect(registry.version).toBeGreaterThan(v0);
+
+    const v1 = registry.version;
+    registry.addIcon({
+      name: "ICON_DRONE",
+      code: "1206010000",
+      label: "Drone",
+      aliases: ["drone"],
+    });
+    expect(registry.version).toBeGreaterThan(v1);
+
+    const v2 = registry.version;
+    registry.extendEchelon(ECHELON_BATTALION, ["tabor"]);
+    expect(registry.version).toBeGreaterThan(v2);
+  });
+
+  it("importMappings replaces all definitions", () => {
+    const registry = new MappingRegistry();
+
+    // Import a minimal set — only one icon and one echelon
+    registry.importMappings({
+      icons: [{ code: "1211000000", label: "Infantry", aliases: ["infantry", "inf"] }],
+      echelons: [{ code: "16", label: "Battalion", aliases: ["battalion", "bn"] }],
+    });
+
+    // The imported mappings work
+    expect(getIconCodeFromName("1st Infantry", registry)).toBe("1211000000");
+    expect(getEchelonCodeFromName("1st Battalion", registry)).toBe("16");
+
+    // Other built-ins are gone since we replaced everything
+    expect(getIconCodeFromName("Armor Company", registry)).toBe(ICON_UNSPECIFIED);
   });
 });

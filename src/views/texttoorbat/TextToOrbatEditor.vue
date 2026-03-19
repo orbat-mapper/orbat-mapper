@@ -25,6 +25,10 @@ import {
   INDENT_SIZE,
   serializeUnitsToIndentedText,
 } from "@/views/texttoorbat/textToOrbat";
+import {
+  defaultRegistry,
+  type MappingRegistry,
+} from "@/views/texttoorbat/mappingRegistry";
 import type { Unit } from "@/types/scenarioModels";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 
@@ -33,10 +37,14 @@ const props = withDefaults(
     modelValue: string;
     placeholder?: string;
     enableAutocomplete?: boolean;
+    registry?: MappingRegistry;
+    registryVersion?: number;
   }>(),
   {
     placeholder: "",
     enableAutocomplete: true,
+    registry: () => defaultRegistry,
+    registryVersion: 0,
   },
 );
 
@@ -205,18 +213,21 @@ function createAutocompleteExtension() {
     return [];
   }
 
-  return textToOrbatAutocompletion({
-    icons: false,
-    tooltipClass: () => "text-to-orbat-completion-tooltip",
-    optionClass: () => "text-to-orbat-completion-option",
-    addToOptions: [
-      {
-        position: 15,
-        render: (completion) =>
-          renderCompletionPreview(completion as TextToOrbatCompletion),
-      },
-    ],
-  });
+  return textToOrbatAutocompletion(
+    {
+      icons: false,
+      tooltipClass: () => "text-to-orbat-completion-tooltip",
+      optionClass: () => "text-to-orbat-completion-option",
+      addToOptions: [
+        {
+          position: 15,
+          render: (completion) =>
+            renderCompletionPreview(completion as TextToOrbatCompletion),
+        },
+      ],
+    },
+    props.registry,
+  );
 }
 
 onMounted(() => {
@@ -402,19 +413,16 @@ watch(
   },
 );
 
-watch(
-  () => props.enableAutocomplete,
-  () => {
-    const view = editorView.value;
-    if (!view) {
-      return;
-    }
+watch([() => props.enableAutocomplete, () => props.registryVersion], () => {
+  const view = editorView.value;
+  if (!view) {
+    return;
+  }
 
-    view.dispatch({
-      effects: autocompleteCompartment.reconfigure(createAutocompleteExtension()),
-    });
-  },
-);
+  view.dispatch({
+    effects: autocompleteCompartment.reconfigure(createAutocompleteExtension()),
+  });
+});
 
 onBeforeUnmount(() => {
   editorView.value?.destroy();

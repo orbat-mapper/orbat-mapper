@@ -40,6 +40,10 @@ import {
   type CommaFieldOrder,
 } from "@/views/texttoorbat/textToOrbat.ts";
 import {
+  defaultRegistry,
+  type AllMappingData,
+} from "@/views/texttoorbat/mappingRegistry";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -76,6 +80,23 @@ const commaFieldOrder = useLocalStorage(
 const standardIdentity = useLocalStorage("textToOrbatSI", "3");
 const showScratchPad = useLocalStorage("showScratchPad", false);
 const scratchPadUnits = useLocalStorage<Unit[]>("textToOrbatScratchPad", []);
+const storedMappings = useLocalStorage<AllMappingData | null>(
+  "textToOrbatMappings",
+  null,
+);
+const registryVersion = ref(0);
+
+// Load stored mappings on init
+if (storedMappings.value?.icons?.length || storedMappings.value?.echelons?.length) {
+  defaultRegistry.importMappings(storedMappings.value);
+  registryVersion.value = defaultRegistry.version;
+}
+
+function handleMappingsChanged() {
+  registryVersion.value = defaultRegistry.version;
+  storedMappings.value = defaultRegistry.exportMappings();
+}
+
 const showIconBrowser = ref(false);
 const showPatternMapping = ref(false);
 const isOpeningScenario = ref(false);
@@ -95,13 +116,15 @@ const inputText = ref(`# sample ORBAT
   A, Alpha Company, Main assault element
 `);
 
-const parsedUnits = computed(() =>
-  parseTextToUnits(inputText.value, {
+const parsedUnits = computed(() => {
+  void registryVersion.value;
+  return parseTextToUnits(inputText.value, {
+    registry: defaultRegistry,
     useCommaSeparator: useCommaSeparator.value,
     commaFieldOrder: commaFieldOrder.value as CommaFieldOrder,
     standardIdentity: standardIdentity.value,
-  }),
-);
+  });
+});
 const spatialIllusionsOrbat = computed(() =>
   convertParsedUnitsToSpatialIllusions(parsedUnits.value),
 );
@@ -366,6 +389,8 @@ onUnmounted(() => {
           <TextToOrbatEditor
             v-model="inputText"
             :enable-autocomplete="enableAutocomplete"
+            :registry="defaultRegistry"
+            :registry-version="registryVersion"
             class="flex-1"
             placeholder="1st Infantry Division
   1st Brigade
@@ -530,5 +555,10 @@ onUnmounted(() => {
   </div>
 
   <IconBrowserModal v-model="showIconBrowser" />
-  <PatternMappingModal v-model="showPatternMapping" />
+  <PatternMappingModal
+    v-model="showPatternMapping"
+    :registry="defaultRegistry"
+    :registry-version="registryVersion"
+    @mappings-changed="handleMappingsChanged"
+  />
 </template>

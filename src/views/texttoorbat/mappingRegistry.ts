@@ -33,27 +33,13 @@ export interface CompiledPattern {
 }
 
 // ---------------------------------------------------------------------------
-// User-defined mapping types (for persistence / serialisation)
+// Serialisable mapping snapshot
 // ---------------------------------------------------------------------------
 
-export interface UserIconMapping {
-  /** 10-character SIDC entity code */
-  code: string;
-  /** Human-readable label */
-  label: string;
-  /** Case-insensitive keyword aliases */
-  aliases: string[];
-  /** Where to insert. Default: prepend (user mappings win) */
-  position?: { placement: "before" | "after"; referenceCode: string } | "prepend";
-}
-
-export interface UserMappingData {
-  /** Extra aliases for existing built-in icons */
-  iconExtensions?: { code: string; extraAliases: string[] }[];
-  /** Completely new icon mappings */
-  iconAdditions?: UserIconMapping[];
-  /** Extra aliases for existing echelons */
-  echelonExtensions?: { code: string; extraAliases: string[] }[];
+/** Serialisable snapshot of all icon and echelon definitions. */
+export interface AllMappingData {
+  icons: { code: string; label: string; aliases: string[]; symbolSet?: string }[];
+  echelons: { code: string; label: string; aliases: string[] }[];
 }
 
 // ---------------------------------------------------------------------------
@@ -114,6 +100,9 @@ export class MappingRegistry {
   private _iconDefs: IconDefinition[];
   private _echelonDefs: EchelonDefinition[];
 
+  // Monotonically increasing version for reactive consumers
+  private _version = 0;
+
   // Cached compiled patterns (invalidated on mutation)
   private _iconPatterns: CompiledPattern[] | null = null;
   private _echelonPatterns: CompiledPattern[] | null = null;
@@ -122,15 +111,25 @@ export class MappingRegistry {
   private _echelonCodeToName: Record<string, string> | null = null;
 
   constructor(
-    builtInIcons: IconDefinition[] = BUILTIN_ICON_DEFINITIONS,
-    builtInEchelons: EchelonDefinition[] = BUILTIN_ECHELON_DEFINITIONS,
+    private _builtInIcons: IconDefinition[] = BUILTIN_ICON_DEFINITIONS,
+    private _builtInEchelons: EchelonDefinition[] = BUILTIN_ECHELON_DEFINITIONS,
   ) {
     // Deep-clone so mutations don't affect the originals
-    this._iconDefs = builtInIcons.map((d) => ({ ...d }));
-    this._echelonDefs = builtInEchelons.map((d) => ({ ...d }));
+    this._iconDefs = _builtInIcons.map((d) => ({ ...d }));
+    this._echelonDefs = _builtInEchelons.map((d) => ({ ...d }));
   }
 
   // ── Getters (lazy-compiled, cached) ──────────────────────────────
+
+  /** Current icon definitions. Read-only snapshot. */
+  get iconDefinitions(): readonly IconDefinition[] {
+    return this._iconDefs;
+  }
+
+  /** Current echelon definitions. Read-only snapshot. */
+  get echelonDefinitions(): readonly EchelonDefinition[] {
+    return this._echelonDefs;
+  }
 
   get iconPatterns(): CompiledPattern[] {
     if (!this._iconPatterns) {
@@ -193,9 +192,14 @@ export class MappingRegistry {
     return this._concatenatedSuffixes;
   }
 
+  /** Monotonically increasing version — use in Vue reactivity to trigger recomputation. */
+  get version(): number {
+    return this._version;
+  }
+
   // ── Mutation methods ─────────────────────────────────────────────
 
-  /** Add extra aliases to an existing built-in icon by code. */
+  /** Add extra aliases to an existing icon by code. */
   extendIcon(code: string, extraAliases: string[]): void {
     for (const def of this._iconDefs) {
       if (def.code === code) {
@@ -207,19 +211,42 @@ export class MappingRegistry {
   }
 
   /** Add a completely new icon mapping. */
-  addIcon(def: IconDefinition, position?: UserIconMapping["position"]): void {
-    if (position && position !== "prepend") {
-      const idx = this._iconDefs.findIndex((d) => d.code === position.referenceCode);
-      if (idx !== -1) {
-        const insertAt = position.placement === "before" ? idx : idx + 1;
-        this._iconDefs.splice(insertAt, 0, { ...def });
-        this.invalidateIconCache();
-        return;
+  addIcon(def: IconDefinition, position?: "prepend"): void {
+    if (!position || position === "prepend") {
+      this._iconDefs.unshift({ ...def });
+    }
+    this.invalidateIconCache();
+  }
+
+  /** Remove an alias from icon definitions matching the given code. */
+  removeIconAlias(code: string, alias: string): void {
+    for (const def of this._iconDefs) {
+      if (def.code === code && def.aliases) {
+        def.aliases = def.aliases.filter((a) => a !== alias);
       }
     }
-    // Default: prepend so user mappings take priority
-    this._iconDefs.unshift({ ...def });
     this.invalidateIconCache();
+  }
+
+  /** Remove a raw pattern from icon definitions matching the given code. */
+  removeIconPattern(code: string, patternSource: string): void {
+    for (const def of this._iconDefs) {
+      if (def.code === code && def.patterns) {
+        def.patterns = def.patterns.filter((p) => p.source !== patternSource);
+        if (def.patterns.length === 0) def.patterns = undefined;
+      }
+    }
+    this.invalidateIconCache();
+  }
+
+  /** Remove an alias from echelon definitions matching the given code. */
+  removeEchelonAlias(code: string, alias: string): void {
+    for (const def of this._echelonDefs) {
+      if (def.code === code && def.aliases) {
+        def.aliases = def.aliases.filter((a) => a !== alias);
+      }
+    }
+    this.invalidateEchelonCache();
   }
 
   /** Add extra aliases to an existing echelon by code. */
@@ -233,35 +260,89 @@ export class MappingRegistry {
     this.invalidateEchelonCache();
   }
 
-  // ── Serialisation ────────────────────────────────────────────────
-
-  /** Export user-defined additions for persistence (e.g. to IndexedDB). */
-  exportUserMappings(): UserMappingData {
-    // For now, return an empty object. This will be populated
-    // when user-override tracking is added.
-    return {};
+  /** Reset to built-in defaults, discarding all customizations. */
+  resetToDefaults(): void {
+    this._iconDefs = this._builtInIcons.map((d) => ({ ...d }));
+    this._echelonDefs = this._builtInEchelons.map((d) => ({ ...d }));
+    this.invalidateIconCache();
+    this.invalidateEchelonCache();
   }
 
-  /** Import previously saved user mappings. */
-  importUserMappings(data: UserMappingData): void {
-    if (data.iconExtensions) {
-      for (const ext of data.iconExtensions) {
-        this.extendIcon(ext.code, ext.extraAliases);
+  // ── Serialisation ────────────────────────────────────────────────
+
+  /** Export all icon and echelon definitions as a flat snapshot. */
+  exportMappings(): AllMappingData {
+    // Deduplicate icons by grouping aliases per (code + symbolSet) pair
+    const iconGroups = new Map<string, AllMappingData["icons"][0]>();
+    for (const def of this._iconDefs) {
+      const key = `${def.symbolSet ?? "10"}:${def.code}`;
+      const existing = iconGroups.get(key);
+      if (existing) {
+        const seen = new Set(existing.aliases);
+        for (const a of def.aliases ?? []) {
+          if (!seen.has(a)) {
+            existing.aliases.push(a);
+            seen.add(a);
+          }
+        }
+      } else {
+        iconGroups.set(key, {
+          code: def.code,
+          label: def.label,
+          aliases: [...(def.aliases ?? [])],
+          ...(def.symbolSet && { symbolSet: def.symbolSet }),
+        });
       }
     }
-    if (data.iconAdditions) {
-      for (const add of data.iconAdditions) {
-        this.addIcon(
-          { name: add.label.toUpperCase().replace(/\s+/g, "_"), ...add },
-          add.position,
-        );
+
+    // Deduplicate echelons by code
+    const echelonGroups = new Map<string, AllMappingData["echelons"][0]>();
+    for (const def of this._echelonDefs) {
+      const existing = echelonGroups.get(def.code);
+      if (existing) {
+        const seen = new Set(existing.aliases);
+        for (const a of def.aliases ?? []) {
+          if (!seen.has(a)) {
+            existing.aliases.push(a);
+            seen.add(a);
+          }
+        }
+      } else {
+        echelonGroups.set(def.code, {
+          code: def.code,
+          label: def.label,
+          aliases: [...(def.aliases ?? [])],
+        });
       }
     }
-    if (data.echelonExtensions) {
-      for (const ext of data.echelonExtensions) {
-        this.extendEchelon(ext.code, ext.extraAliases);
-      }
+
+    return {
+      icons: [...iconGroups.values()],
+      echelons: [...echelonGroups.values()],
+    };
+  }
+
+  /** Replace all definitions from a previously exported snapshot. */
+  importMappings(data: AllMappingData): void {
+    if (data.icons) {
+      this._iconDefs = data.icons.map((d) => ({
+        name: d.label.toUpperCase().replace(/\s+/g, "_"),
+        code: d.code,
+        label: d.label,
+        aliases: [...d.aliases],
+        ...(d.symbolSet && { symbolSet: d.symbolSet }),
+      }));
     }
+    if (data.echelons) {
+      this._echelonDefs = data.echelons.map((d) => ({
+        name: d.label.toUpperCase().replace(/\s+/g, "_"),
+        code: d.code,
+        label: d.label,
+        aliases: [...d.aliases],
+      }));
+    }
+    this.invalidateIconCache();
+    this.invalidateEchelonCache();
   }
 
   // ── Private ──────────────────────────────────────────────────────
@@ -269,12 +350,14 @@ export class MappingRegistry {
   private invalidateIconCache(): void {
     this._iconPatterns = null;
     this._iconCodeToName = null;
+    this._version++;
   }
 
   private invalidateEchelonCache(): void {
     this._echelonPatterns = null;
     this._echelonCodeToName = null;
     this._concatenatedSuffixes = null;
+    this._version++;
   }
 }
 

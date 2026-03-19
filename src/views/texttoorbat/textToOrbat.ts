@@ -24,8 +24,7 @@ export {
   MappingRegistry,
   defaultRegistry,
   type CompiledPattern,
-  type UserIconMapping,
-  type UserMappingData,
+  type AllMappingData,
 } from "./mappingRegistry";
 
 // Import values we need locally

@@ -10,98 +10,193 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
-import { ECHELON_PATTERNS, ICON_PATTERNS } from "@/views/texttoorbat/textToOrbat";
+import { defaultRegistry, type MappingRegistry } from "./mappingRegistry";
 import ToggleField from "@/components/ToggleField.vue";
+import {
+  PlusIcon,
+  RotateCcwIcon,
+  DownloadIcon,
+  UploadIcon,
+  PencilIcon,
+  XIcon,
+} from "lucide-vue-next";
+import { saveBlobToLocalFile } from "@/utils/files";
+import { useNotifications } from "@/composables/notifications";
 
 const FRIENDLY_SI = "3";
 
 const open = defineModel<boolean>({ default: false });
+
+const props = withDefaults(
+  defineProps<{
+    registry?: MappingRegistry;
+    registryVersion?: number;
+  }>(),
+  {
+    registry: () => defaultRegistry,
+    registryVersion: 0,
+  },
+);
+
+const emit = defineEmits<{
+  mappingsChanged: [];
+}>();
+
+const { send: sendNotification } = useNotifications();
 const searchQuery = ref("");
 const showDebug = ref(false);
+const isEditing = ref(false);
+
+// ── Add alias state ──────────────────────────────────────────────
+const addingAliasKey = ref<string | null>(null);
+const newAliasInput = ref("");
+
+// ── Add new icon state ───────────────────────────────────────────
+const showAddIconForm = ref(false);
+const newIconLabel = ref("");
+const newIconCode = ref("");
+const newIconAliases = ref("");
+const newIconSymbolSet = ref("10");
+
+// ── File input ref ───────────────────────────────────────────────
+const fileInputRef = ref<HTMLInputElement | null>(null);
 
 // Build SIDC for icon patterns (using battalion echelon for display)
 function buildIconSidc(entityCode: string, symbolSet = "10"): string {
-  // Format: 10 + 0 + 3 (friendly) + SS (symbol set) + 0 (present) + 0 (not HQ/TF) + 00 (no echelon) + entityCode
   return `100${FRIENDLY_SI}${symbolSet}0000${entityCode}`;
 }
 
 // Build SIDC for echelon patterns (using infantry as base icon)
 function buildEchelonSidc(echelonCode: string): string {
-  // Format: 10 + 03 (friendly) + 10 (land unit) + 0 (present) + 0 (not HQ/TF) + echelon + infantry icon
   return `10031000${echelonCode}1211000000`;
 }
 
-// Extract keywords from regex pattern for display
-function extractKeywords(pattern: RegExp): string[] {
-  const source = pattern.source;
-  // Remove regex syntax and extract the main keywords
-  const cleaned = source
-    .replace(/\\b/g, "") // word boundaries
-    .replace(/\\s\*/g, " ") // space patterns
-    .replace(/\[- ]\??/g, "-") // optional hyphen/space
-    .replace(/\(\?:/g, "(") // non-capturing groups
-    .replace(/\?/g, "") // optional markers
-    .replace(/s\?/g, "(s)") // optional plurals
-    .replace(/\\/g, ""); // escape chars
-
-  // Split by | and clean up
-  return cleaned
-    .replace(/^\(/, "")
-    .replace(/\)$/, "")
-    .split("|")
-    .map((p) => p.trim())
-    .filter((p) => p.length > 0);
+interface KeywordEntry {
+  value: string;
+  type: "alias" | "pattern";
+  /** Raw alias string or pattern source for deletion */
+  raw: string;
 }
 
 interface PatternEntry {
   label: string;
-  keywords: Array<{ value: string; type: "alias" | "pattern" }>;
+  keywords: KeywordEntry[];
   sidc: string;
   constantName?: string;
   code?: string;
   symbolSet?: string;
+  kind: "icon" | "echelon";
+}
+
+function displayAlias(alias: string): string {
+  return alias
+    .replace(/\\s\*/g, " ")
+    .replace(/\\s\+/g, " ")
+    .replace(/\\s/g, " ")
+    .replace(/\\\./g, "")
+    .replace(/\[\- ]\?/g, "-")
+    .replace(/\[- ]\?/g, "-")
+    .replace(/\(\?:/g, "(")
+    .replace(/\(\?[:!=<].*?\)/g, "")
+    .replace(/\(\?:|\(|\)|\?|\+|\*|\{.*?\}/g, "")
+    .replace(/\[[^\]]+\]/g, "")
+    .replace(/\|/g, " ")
+    .replace(/\\/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function displayPatternSource(source: string): string {
+  return source
+    .replace(/\\b/g, "")
+    .replace(/\\s\*/g, " ")
+    .replace(/\[- ]\??/g, "-")
+    .replace(/\(\?:/g, "(")
+    .replace(/\?/g, "")
+    .replace(/\\/g, "")
+    .trim();
 }
 
 const echelonEntries = computed<PatternEntry[]>(() => {
-  return ECHELON_PATTERNS.map((p) => ({
-    label: p.label,
-    keywords: extractKeywords(p.pattern).map((value) => ({
-      value,
-      type: p.sourceType,
-    })),
-    sidc: buildEchelonSidc(p.code),
-  }));
+  void props.registryVersion;
+  const grouped = new Map<string, PatternEntry>();
+
+  for (const def of props.registry.echelonDefinitions) {
+    const existing = grouped.get(def.code);
+    const aliasKeywords: KeywordEntry[] = (def.aliases ?? []).map((a) => ({
+      value: displayAlias(a),
+      type: "alias" as const,
+      raw: a,
+    }));
+    const patternKeywords: KeywordEntry[] = (def.patterns ?? []).map((p) => ({
+      value: displayPatternSource(p.source),
+      type: "pattern" as const,
+      raw: p.source,
+    }));
+    const keywords = [...aliasKeywords, ...patternKeywords];
+
+    if (existing) {
+      const seen = new Set(existing.keywords.map((k) => k.raw));
+      for (const kw of keywords) {
+        if (!seen.has(kw.raw)) {
+          existing.keywords.push(kw);
+          seen.add(kw.raw);
+        }
+      }
+    } else {
+      grouped.set(def.code, {
+        label: def.label,
+        keywords,
+        sidc: buildEchelonSidc(def.code),
+        code: def.code,
+        kind: "echelon" as const,
+      });
+    }
+  }
+
+  return [...grouped.values()];
 });
 
 const iconEntries = computed<PatternEntry[]>(() => {
+  void props.registryVersion;
   const grouped = new Map<string, PatternEntry>();
 
-  for (const p of ICON_PATTERNS) {
-    const groupKey = `${p.symbolSet ?? "10"}:${p.code}`;
-    const entryKeywords = extractKeywords(p.pattern).map((value) => ({
-      value,
-      type: p.sourceType,
+  for (const def of props.registry.iconDefinitions) {
+    const groupKey = `${def.symbolSet ?? "10"}:${def.code}`;
+    const aliasKeywords: KeywordEntry[] = (def.aliases ?? []).map((a) => ({
+      value: displayAlias(a),
+      type: "alias" as const,
+      raw: a,
     }));
+    const patternKeywords: KeywordEntry[] = (def.patterns ?? []).map((p) => ({
+      value: displayPatternSource(p.source),
+      type: "pattern" as const,
+      raw: p.source,
+    }));
+    const keywords = [...aliasKeywords, ...patternKeywords];
     const existing = grouped.get(groupKey);
 
     if (!existing) {
       grouped.set(groupKey, {
-        label: p.label,
-        keywords: entryKeywords,
-        sidc: buildIconSidc(p.code, p.symbolSet),
-        constantName: p.name,
-        code: p.code,
-        symbolSet: p.symbolSet,
+        label: def.label,
+        keywords,
+        sidc: buildIconSidc(def.code, def.symbolSet),
+        constantName: def.name,
+        code: def.code,
+        symbolSet: def.symbolSet,
+        kind: "icon" as const,
       });
       continue;
     }
 
-    const seen = new Set(existing.keywords.map((keyword) => keyword.value));
-    for (const keyword of entryKeywords) {
-      if (seen.has(keyword.value)) continue;
-      existing.keywords.push(keyword);
-      seen.add(keyword.value);
+    const seen = new Set(existing.keywords.map((k) => k.raw));
+    for (const kw of keywords) {
+      if (!seen.has(kw.raw)) {
+        existing.keywords.push(kw);
+        seen.add(kw.raw);
+      }
     }
   }
 
@@ -131,6 +226,122 @@ const filteredIconEntries = computed(() => {
       entry.keywords.some((kw) => kw.value.toLowerCase().includes(query)),
   );
 });
+
+// ── Actions ──────────────────────────────────────────────────────
+
+function startAddAlias(entry: PatternEntry) {
+  addingAliasKey.value = `${entry.kind}:${entry.code}`;
+  newAliasInput.value = "";
+}
+
+function cancelAddAlias() {
+  addingAliasKey.value = null;
+  newAliasInput.value = "";
+}
+
+function submitAddAlias(entry: PatternEntry) {
+  const alias = newAliasInput.value.trim();
+  if (!alias || !entry.code) return;
+
+  if (entry.kind === "icon") {
+    props.registry.extendIcon(entry.code, [alias]);
+  } else {
+    props.registry.extendEchelon(entry.code, [alias]);
+  }
+  emit("mappingsChanged");
+  cancelAddAlias();
+}
+
+function deleteKeyword(entry: PatternEntry, keyword: KeywordEntry) {
+  if (!entry.code) return;
+
+  if (entry.kind === "icon") {
+    if (keyword.type === "alias") {
+      props.registry.removeIconAlias(entry.code, keyword.raw);
+    } else {
+      props.registry.removeIconPattern(entry.code, keyword.raw);
+    }
+  } else {
+    if (keyword.type === "alias") {
+      props.registry.removeEchelonAlias(entry.code, keyword.raw);
+    }
+  }
+  emit("mappingsChanged");
+}
+
+function submitNewIcon() {
+  const label = newIconLabel.value.trim();
+  const code = newIconCode.value.trim();
+  const aliases = newIconAliases.value
+    .split(",")
+    .map((a) => a.trim())
+    .filter(Boolean);
+
+  if (!label || code.length !== 10 || aliases.length === 0) return;
+
+  props.registry.addIcon({
+    name: label.toUpperCase().replace(/\s+/g, "_"),
+    code,
+    label,
+    aliases,
+    ...(newIconSymbolSet.value !== "10" && { symbolSet: newIconSymbolSet.value }),
+  });
+  emit("mappingsChanged");
+  showAddIconForm.value = false;
+  newIconLabel.value = "";
+  newIconCode.value = "";
+  newIconAliases.value = "";
+  newIconSymbolSet.value = "10";
+}
+
+function handleReset() {
+  if (!window.confirm("Reset all mappings to defaults? Custom changes will be lost.")) {
+    return;
+  }
+  props.registry.resetToDefaults();
+  emit("mappingsChanged");
+  sendNotification({ message: "Mappings reset to defaults" });
+}
+
+async function handleExport() {
+  const data = props.registry.exportMappings();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  try {
+    await saveBlobToLocalFile(blob, "text-to-orbat-mappings.json", {
+      mimeTypes: ["application/json"],
+      extensions: [".json"],
+    });
+    sendNotification({ message: "Mappings exported" });
+  } catch {
+    // user cancelled
+  }
+}
+
+function handleImportClick() {
+  fileInputRef.value?.click();
+}
+
+async function handleImportFile(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (typeof data !== "object" || data === null) throw new Error("Invalid format");
+    props.registry.importMappings(data);
+    emit("mappingsChanged");
+    sendNotification({ message: "Mappings imported" });
+  } catch {
+    sendNotification({ message: "Failed to import mappings", type: "error" });
+  }
+
+  // Reset the input so the same file can be re-imported
+  input.value = "";
+}
 </script>
 
 <template>
@@ -139,7 +350,8 @@ const filteredIconEntries = computed(() => {
       <DialogHeader>
         <DialogTitle>Pattern Mappings</DialogTitle>
         <DialogDescription>
-          Keywords recognized for automatic echelon and icon detection
+          Keywords recognized for automatic echelon and icon detection. You can add custom
+          aliases or new icon mappings.
         </DialogDescription>
       </DialogHeader>
 
@@ -151,7 +363,12 @@ const filteredIconEntries = computed(() => {
             placeholder="Search patterns..."
             class="w-full md:max-w-sm"
           />
-          <ToggleField v-model="showDebug">Show debug details</ToggleField>
+          <div class="flex items-center gap-2">
+            <ToggleField v-model="isEditing">
+              <PencilIcon class="mr-1 inline size-3" />Edit
+            </ToggleField>
+            <ToggleField v-model="showDebug">Show debug details</ToggleField>
+          </div>
         </div>
 
         <Tabs default-value="icons" class="w-full">
@@ -165,6 +382,77 @@ const filteredIconEntries = computed(() => {
           </TabsList>
 
           <TabsContent value="icons" class="mt-4">
+            <!-- Add new icon form -->
+            <div v-if="isEditing && showAddIconForm" class="mb-4 rounded-md border p-3">
+              <h3 class="mb-2 text-sm font-medium">Add Custom Icon Mapping</h3>
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <Input
+                  v-model="newIconLabel"
+                  placeholder="Label (e.g. Drone)"
+                  class="h-8 text-sm"
+                />
+                <Input
+                  v-model="newIconCode"
+                  placeholder="Entity code (10 chars)"
+                  class="h-8 font-mono text-sm"
+                  maxlength="10"
+                />
+                <Input
+                  v-model="newIconAliases"
+                  placeholder="Aliases (comma-separated)"
+                  class="h-8 text-sm sm:col-span-2"
+                />
+              </div>
+              <div class="mt-2 flex items-center justify-between">
+                <div v-if="newIconCode.length === 10" class="flex items-center gap-2">
+                  <NewMilitarySymbol
+                    :sidc="buildIconSidc(newIconCode, newIconSymbolSet)"
+                    :size="30"
+                    :options="{ outlineWidth: 6, outlineColor: 'white' }"
+                  />
+                  <span class="text-muted-foreground text-xs">Preview</span>
+                </div>
+                <div v-else />
+                <div class="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    type="button"
+                    @click="showAddIconForm = false"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    type="button"
+                    :disabled="
+                      !newIconLabel.trim() ||
+                      newIconCode.trim().length !== 10 ||
+                      !newIconAliases.trim()
+                    "
+                    @click="submitNewIcon"
+                  >
+                    Add
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div
+              v-if="isEditing && !showAddIconForm"
+              class="mb-2 flex items-center justify-end"
+            >
+              <Button
+                size="sm"
+                variant="outline"
+                type="button"
+                @click="showAddIconForm = true"
+              >
+                <PlusIcon class="mr-1 size-4" />
+                Add custom icon
+              </Button>
+            </div>
+
             <div class="max-h-[45vh] overflow-y-auto sm:max-h-[60vh]">
               <table class="w-full table-fixed text-sm md:table-auto">
                 <thead class="bg-muted sticky top-0">
@@ -209,10 +497,11 @@ const filteredIconEntries = computed(() => {
                       </div>
                     </td>
                     <td class="p-2">
-                      <div class="flex flex-wrap gap-1">
+                      <div class="flex flex-wrap items-center gap-1">
                         <span
                           v-for="keyword in entry.keywords"
-                          :key="`${keyword.type}-${keyword.value}`"
+                          :key="`${keyword.type}-${keyword.raw}`"
+                          class="inline-flex items-center gap-0.5"
                           :class="
                             keyword.type === 'pattern'
                               ? 'rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 font-mono text-xs text-amber-900 shadow-sm dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200'
@@ -226,7 +515,47 @@ const filteredIconEntries = computed(() => {
                             regex
                           </span>
                           {{ keyword.value }}
+                          <button
+                            v-if="isEditing"
+                            type="button"
+                            class="ml-0.5 rounded-full p-0 hover:opacity-70"
+                            title="Remove keyword"
+                            @click="deleteKeyword(entry, keyword)"
+                          >
+                            <XIcon class="size-3" />
+                          </button>
                         </span>
+                        <template v-if="isEditing">
+                          <template v-if="addingAliasKey === `icon:${entry.code}`">
+                            <Input
+                              v-model="newAliasInput"
+                              class="h-6 w-28 text-xs"
+                              placeholder="new alias"
+                              @keydown.enter="submitAddAlias(entry)"
+                              @keydown.escape="cancelAddAlias"
+                            />
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              class="size-6"
+                              type="button"
+                              @click="submitAddAlias(entry)"
+                            >
+                              <PlusIcon class="size-3" />
+                            </Button>
+                          </template>
+                          <Button
+                            v-else
+                            size="icon"
+                            variant="ghost"
+                            class="size-6"
+                            type="button"
+                            title="Add alias"
+                            @click="startAddAlias(entry)"
+                          >
+                            <PlusIcon class="size-3" />
+                          </Button>
+                        </template>
                       </div>
                     </td>
                   </tr>
@@ -262,10 +591,11 @@ const filteredIconEntries = computed(() => {
                     </td>
                     <td class="min-w-0 p-2">{{ entry.label }}</td>
                     <td class="p-2">
-                      <div class="flex flex-wrap gap-1">
+                      <div class="flex flex-wrap items-center gap-1">
                         <span
                           v-for="keyword in entry.keywords"
-                          :key="`${keyword.type}-${keyword.value}`"
+                          :key="`${keyword.type}-${keyword.raw}`"
+                          class="inline-flex items-center gap-0.5"
                           :class="
                             keyword.type === 'pattern'
                               ? 'rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-mono text-xs text-emerald-900 shadow-sm dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200'
@@ -279,7 +609,47 @@ const filteredIconEntries = computed(() => {
                             regex
                           </span>
                           {{ keyword.value }}
+                          <button
+                            v-if="isEditing"
+                            type="button"
+                            class="ml-0.5 rounded-full p-0 hover:opacity-70"
+                            title="Remove keyword"
+                            @click="deleteKeyword(entry, keyword)"
+                          >
+                            <XIcon class="size-3" />
+                          </button>
                         </span>
+                        <template v-if="isEditing">
+                          <template v-if="addingAliasKey === `echelon:${entry.code}`">
+                            <Input
+                              v-model="newAliasInput"
+                              class="h-6 w-28 text-xs"
+                              placeholder="new alias"
+                              @keydown.enter="submitAddAlias(entry)"
+                              @keydown.escape="cancelAddAlias"
+                            />
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              class="size-6"
+                              type="button"
+                              @click="submitAddAlias(entry)"
+                            >
+                              <PlusIcon class="size-3" />
+                            </Button>
+                          </template>
+                          <Button
+                            v-else
+                            size="icon"
+                            variant="ghost"
+                            class="size-6"
+                            type="button"
+                            title="Add alias"
+                            @click="startAddAlias(entry)"
+                          >
+                            <PlusIcon class="size-3" />
+                          </Button>
+                        </template>
                       </div>
                     </td>
                   </tr>
@@ -290,9 +660,32 @@ const filteredIconEntries = computed(() => {
         </Tabs>
       </div>
 
-      <DialogFooter class="text-muted-foreground mt-2 text-sm">
-        Patterns are matched in order; more specific patterns take precedence
+      <DialogFooter class="flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <span class="text-muted-foreground text-sm">
+          Patterns are matched in order; more specific patterns take precedence.
+        </span>
+        <div class="flex flex-wrap gap-2">
+          <Button size="sm" variant="ghost" type="button" @click="handleReset">
+            <RotateCcwIcon class="mr-1 size-4" />
+            Reset
+          </Button>
+          <Button size="sm" variant="outline" type="button" @click="handleImportClick">
+            <UploadIcon class="mr-1 size-4" />
+            Import
+          </Button>
+          <Button size="sm" variant="outline" type="button" @click="handleExport">
+            <DownloadIcon class="mr-1 size-4" />
+            Export
+          </Button>
+        </div>
       </DialogFooter>
     </DialogContent>
   </Dialog>
+  <input
+    ref="fileInputRef"
+    type="file"
+    accept=".json"
+    class="hidden"
+    @change="handleImportFile"
+  />
 </template>
