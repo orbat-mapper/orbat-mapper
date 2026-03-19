@@ -554,6 +554,26 @@ export function serializeParsedUnitsToScenarioUnits(units: ParsedUnit[]): Unit[]
   return units.map((unit) => serializeParsedUnitToScenarioUnit(unit));
 }
 
+export function serializeUnitsToIndentedText(units: Unit[], depth = 0): string {
+  const indent = "  ".repeat(depth);
+  return units
+    .map((unit) => {
+      let line = indent + unit.name;
+      // Append shortName and description using comma-separated format
+      if (unit.shortName || unit.description) {
+        line += ", " + (unit.shortName ?? "");
+        if (unit.description) {
+          line += ", " + unit.description;
+        }
+      }
+      const children = unit.subUnits?.length
+        ? "\n" + serializeUnitsToIndentedText(unit.subUnits, depth + 1)
+        : "";
+      return line + children;
+    })
+    .join("\n");
+}
+
 const SI_NAMES: Record<string, string> = {
   "0": "Pending",
   "1": "Unknown",

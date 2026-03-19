@@ -262,12 +262,12 @@ const splitButtonItems = computed<ButtonGroupItem[]>(() => [
     disabled: parsedUnits.value.length === 0 || isCopyingToClipboard.value,
   },
   {
-    label: "Export Battle Staff Tools JSON",
+    label: "Export to Battle Staff Tools",
     onClick: handleDownloadSpatialIllusions,
     disabled: parsedUnits.value.length === 0,
   },
   {
-    label: "Export ORBAT Mapper Scenario",
+    label: "Export as ORBAT Mapper Scenario",
     onClick: handleDownloadOrbatMapperScenario,
     disabled: parsedUnits.value.length === 0,
   },

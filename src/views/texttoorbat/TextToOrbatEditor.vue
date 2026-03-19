@@ -21,7 +21,11 @@ import {
   textToOrbatAutocompletion,
   type TextToOrbatCompletion,
 } from "@/views/texttoorbat/textEditorSuggestions";
-import { INDENT_SIZE } from "@/views/texttoorbat/textToOrbat";
+import {
+  INDENT_SIZE,
+  serializeUnitsToIndentedText,
+} from "@/views/texttoorbat/textToOrbat";
+import type { Unit } from "@/types/scenarioModels";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 
 const props = withDefaults(
@@ -237,6 +241,24 @@ onMounted(() => {
       if (update.docChanged) {
         emit("update:modelValue", update.state.doc.toString());
       }
+    }),
+    EditorView.domEventHandlers({
+      drop(event, view) {
+        const orbatData = event.dataTransfer?.getData("application/orbat");
+        if (!orbatData) return false;
+        try {
+          const units: Unit[] = JSON.parse(orbatData);
+          const text = serializeUnitsToIndentedText(units);
+          const pos =
+            view.posAtCoords({ x: event.clientX, y: event.clientY }) ??
+            view.state.doc.length;
+          view.dispatch({ changes: { from: pos, insert: text } });
+          event.preventDefault();
+          return true;
+        } catch {
+          return false;
+        }
+      },
     }),
     EditorView.contentAttributes.of({
       "aria-label": "Text to ORBAT input",

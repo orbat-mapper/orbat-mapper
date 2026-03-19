@@ -236,12 +236,12 @@ const splitButtonItems = computed<ButtonGroupItem[]>(() => [
     disabled: isEmpty.value || isCopyingToClipboard.value,
   },
   {
-    label: "Export Battle Staff Tools JSON",
+    label: "Export to Battle Staff Tools",
     onClick: handleExportSpatialIllusions,
     disabled: isEmpty.value,
   },
   {
-    label: "Export ORBAT Mapper Scenario",
+    label: "Export as ORBAT Mapper Scenario",
     onClick: handleExportOrbatMapper,
     disabled: isEmpty.value,
   },
