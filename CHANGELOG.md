@@ -13,6 +13,13 @@ All notable changes to this project will be documented in this file.
 - Added map symbol size override support per unit.
 - Added a button to the unit filters panel to quickly collapse or expand all filter sections.
 - Added clipboard and drag and drop functionality to the "Text to ORBAT" tool.
+- Added a scratch pad panel to the "Text to ORBAT" tool with undo/redo support.
+- Added syntax highlighting and metadata parsing for unit definitions in "Text to ORBAT".
+- Added support for comma-separated fields (short name, name, description) in "Text to ORBAT".
+- Added a standard identity dropdown to both panels in "Text to ORBAT".
+- Added support for dropping ORBAT units as indented text into the "Text to ORBAT" editor.
+- Added a clear input button to the "Text to ORBAT" view.
+- Added "Text to ORBAT" documentation page.
 
 ### Changed
 
@@ -21,8 +28,9 @@ All notable changes to this project will be documented in this file.
 - Improved dark mode support in the Chart Edit view.
 - Added support for symbol outlines in ORBAT charts to improve visibility.
 - Moved unit symbol rotation settings from the "Map display" tab to the "Map symbol" tab.
-- Improved map editor UX on mobile
+- Improved map editor UX on mobile.
 - Improved the text editor in the "Text to ORBAT" tool with better keyboard support and editing features.
+- Made right panel toolbars horizontally scrollable on mobile.
 
 ### Fixed
 
