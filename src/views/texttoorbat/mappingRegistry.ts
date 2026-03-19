@@ -239,11 +239,60 @@ export class MappingRegistry {
     this.invalidateIconCache();
   }
 
+  /** Remove all icon definitions matching the given code (and optional symbolSet). */
+  removeIcon(code: string, symbolSet?: string): void {
+    this._iconDefs = this._iconDefs.filter(
+      (d) =>
+        d.code !== code ||
+        (symbolSet !== undefined && (d.symbolSet ?? "10") !== symbolSet),
+    );
+    this.invalidateIconCache();
+  }
+
+  /** Remove all echelon definitions matching the given code. */
+  removeEchelon(code: string): void {
+    this._echelonDefs = this._echelonDefs.filter((d) => d.code !== code);
+    this.invalidateEchelonCache();
+  }
+
   /** Remove an alias from echelon definitions matching the given code. */
   removeEchelonAlias(code: string, alias: string): void {
     for (const def of this._echelonDefs) {
       if (def.code === code && def.aliases) {
         def.aliases = def.aliases.filter((a) => a !== alias);
+      }
+    }
+    this.invalidateEchelonCache();
+  }
+
+  /** Update label (and optionally code) for icon definitions matching the given code. */
+  updateIcon(
+    code: string,
+    updates: { label?: string; code?: string },
+    symbolSet?: string,
+  ): void {
+    for (const def of this._iconDefs) {
+      if (
+        def.code === code &&
+        (symbolSet === undefined || (def.symbolSet ?? "10") === symbolSet)
+      ) {
+        if (updates.label !== undefined) def.label = updates.label;
+        if (updates.code !== undefined) {
+          def.code = updates.code;
+          def.name = updates.label
+            ? updates.label.toUpperCase().replace(/\s+/g, "_")
+            : def.name;
+        }
+      }
+    }
+    this.invalidateIconCache();
+  }
+
+  /** Update label for echelon definitions matching the given code. */
+  updateEchelon(code: string, updates: { label?: string }): void {
+    for (const def of this._echelonDefs) {
+      if (def.code === code) {
+        if (updates.label !== undefined) def.label = updates.label;
       }
     }
     this.invalidateEchelonCache();

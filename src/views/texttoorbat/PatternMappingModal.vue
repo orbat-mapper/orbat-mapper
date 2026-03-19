@@ -21,6 +21,7 @@ import {
   UploadIcon,
   PencilIcon,
   XIcon,
+  Trash2Icon,
 } from "lucide-vue-next";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useNotifications } from "@/composables/notifications";
@@ -59,6 +60,11 @@ const newIconLabel = ref("");
 const newIconCode = ref("");
 const newIconAliases = ref("");
 const newIconSymbolSet = ref("10");
+
+// ── Inline edit state ────────────────────────────────────────────
+const editingEntryKey = ref<string | null>(null);
+const editLabelValue = ref("");
+const editCodeValue = ref("");
 
 // ── File input ref ───────────────────────────────────────────────
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -269,6 +275,52 @@ function deleteKeyword(entry: PatternEntry, keyword: KeywordEntry) {
   emit("mappingsChanged");
 }
 
+function deleteEntry(entry: PatternEntry) {
+  if (!entry.code) return;
+  if (entry.kind === "icon") {
+    props.registry.removeIcon(entry.code, entry.symbolSet);
+  } else {
+    props.registry.removeEchelon(entry.code);
+  }
+  emit("mappingsChanged");
+}
+
+function entryKey(entry: PatternEntry): string {
+  return `${entry.kind}:${entry.symbolSet ?? ""}:${entry.code}`;
+}
+
+function startEditEntry(entry: PatternEntry) {
+  editingEntryKey.value = entryKey(entry);
+  editLabelValue.value = entry.label;
+  editCodeValue.value = entry.code ?? "";
+}
+
+function cancelEditEntry() {
+  editingEntryKey.value = null;
+}
+
+function submitEditEntry(entry: PatternEntry) {
+  const label = editLabelValue.value.trim();
+  if (!label || !entry.code) return;
+
+  if (entry.kind === "icon") {
+    const newCode = editCodeValue.value.trim();
+    if (newCode.length !== 10) return;
+    props.registry.updateIcon(
+      entry.code,
+      {
+        label,
+        ...(newCode !== entry.code && { code: newCode }),
+      },
+      entry.symbolSet,
+    );
+  } else {
+    props.registry.updateEchelon(entry.code, { label });
+  }
+  emit("mappingsChanged");
+  editingEntryKey.value = null;
+}
+
 function submitNewIcon() {
   const label = newIconLabel.value.trim();
   const code = newIconCode.value.trim();
@@ -469,17 +521,77 @@ async function handleImportFile(event: Event) {
                     class="hover:bg-muted/50"
                   >
                     <td class="p-2">
-                      <div class="flex h-10 w-10 items-center justify-center">
-                        <NewMilitarySymbol
-                          :sidc="entry.sidc"
-                          :size="35"
-                          :options="{ outlineWidth: 6, outlineColor: 'white' }"
-                        />
+                      <div class="flex items-center gap-1">
+                        <div class="flex h-10 w-10 items-center justify-center">
+                          <NewMilitarySymbol
+                            :sidc="entry.sidc"
+                            :size="35"
+                            :options="{ outlineWidth: 6, outlineColor: 'white' }"
+                          />
+                        </div>
+                        <Button
+                          v-if="isEditing"
+                          size="icon"
+                          variant="ghost"
+                          class="text-destructive hover:text-destructive size-6 shrink-0"
+                          type="button"
+                          title="Remove mapping"
+                          @click="deleteEntry(entry)"
+                        >
+                          <Trash2Icon class="size-3.5" />
+                        </Button>
                       </div>
                     </td>
                     <td class="min-w-0 p-2">
-                      <div class="flex flex-col gap-0.5">
-                        <span>{{ entry.label }}</span>
+                      <div
+                        v-if="isEditing && editingEntryKey === entryKey(entry)"
+                        class="flex flex-col gap-1"
+                      >
+                        <Input
+                          v-model="editLabelValue"
+                          class="h-7 text-sm"
+                          placeholder="Label"
+                          @keydown.enter="submitEditEntry(entry)"
+                          @keydown.escape="cancelEditEntry"
+                        />
+                        <Input
+                          v-model="editCodeValue"
+                          class="h-7 font-mono text-xs"
+                          placeholder="Entity code (10 chars)"
+                          maxlength="10"
+                          @keydown.enter="submitEditEntry(entry)"
+                          @keydown.escape="cancelEditEntry"
+                        />
+                        <div class="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            class="h-6 px-2 text-xs"
+                            type="button"
+                            @click="cancelEditEntry"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            class="h-6 px-2 text-xs"
+                            type="button"
+                            :disabled="
+                              !editLabelValue.trim() || editCodeValue.trim().length !== 10
+                            "
+                            @click="submitEditEntry(entry)"
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                      <div v-else class="flex flex-col gap-0.5">
+                        <span
+                          :class="isEditing && 'cursor-pointer hover:underline'"
+                          @click="isEditing && startEditEntry(entry)"
+                        >
+                          {{ entry.label }}
+                        </span>
                         <template v-if="showDebug">
                           <span
                             v-if="entry.constantName"
@@ -581,15 +693,68 @@ async function handleImportFile(event: Event) {
                     class="hover:bg-muted/50"
                   >
                     <td class="p-2">
-                      <div class="flex h-10 w-10 items-center justify-center">
-                        <NewMilitarySymbol
-                          :sidc="entry.sidc"
-                          :size="35"
-                          :options="{ outlineWidth: 8, outlineColor: 'white' }"
-                        />
+                      <div class="flex items-center gap-1">
+                        <div class="flex h-10 w-10 items-center justify-center">
+                          <NewMilitarySymbol
+                            :sidc="entry.sidc"
+                            :size="35"
+                            :options="{ outlineWidth: 8, outlineColor: 'white' }"
+                          />
+                        </div>
+                        <Button
+                          v-if="isEditing"
+                          size="icon"
+                          variant="ghost"
+                          class="text-destructive hover:text-destructive size-6 shrink-0"
+                          type="button"
+                          title="Remove mapping"
+                          @click="deleteEntry(entry)"
+                        >
+                          <Trash2Icon class="size-3.5" />
+                        </Button>
                       </div>
                     </td>
-                    <td class="min-w-0 p-2">{{ entry.label }}</td>
+                    <td class="min-w-0 p-2">
+                      <div
+                        v-if="isEditing && editingEntryKey === entryKey(entry)"
+                        class="flex flex-col gap-1"
+                      >
+                        <Input
+                          v-model="editLabelValue"
+                          class="h-7 text-sm"
+                          placeholder="Label"
+                          @keydown.enter="submitEditEntry(entry)"
+                          @keydown.escape="cancelEditEntry"
+                        />
+                        <div class="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            class="h-6 px-2 text-xs"
+                            type="button"
+                            @click="cancelEditEntry"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            class="h-6 px-2 text-xs"
+                            type="button"
+                            :disabled="!editLabelValue.trim()"
+                            @click="submitEditEntry(entry)"
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                      <span
+                        v-else
+                        :class="isEditing && 'cursor-pointer hover:underline'"
+                        @click="isEditing && startEditEntry(entry)"
+                      >
+                        {{ entry.label }}
+                      </span>
+                    </td>
                     <td class="p-2">
                       <div class="flex flex-wrap items-center gap-1">
                         <span
