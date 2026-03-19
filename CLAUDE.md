@@ -72,3 +72,4 @@ Map functionality lives in `src/geo/` (styles, utilities, history) with composab
 - Prettier: 90 char width, double quotes, semicolons
 - Imports: external libraries first, then `@/` internal imports
 - Use Immer for complex state updates in the scenario store
+- Do not add Co-Authored-By lines to commit messages
