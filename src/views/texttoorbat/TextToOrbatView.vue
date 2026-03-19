@@ -387,14 +387,14 @@ onUnmounted(() => {
           <ResizablePanel :default-size="60" :min-size="20">
             <div class="flex h-full flex-col overflow-hidden">
               <div
-                class="bg-muted/50 flex items-center justify-between border-b px-4 py-2"
+                class="bg-muted/50 flex items-center justify-between gap-4 overflow-x-auto border-b px-4 py-2"
               >
-                <div>
+                <div class="shrink-0">
                   <h2 class="text-muted-foreground hidden text-sm font-medium lg:inline">
                     Generated ORBAT
                   </h2>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex shrink-0 items-center gap-2">
                   <Select v-model="standardIdentity">
                     <SelectTrigger class="h-7 w-auto gap-1 text-xs">
                       <div class="flex items-center gap-1">
@@ -464,13 +464,15 @@ onUnmounted(() => {
         </ResizablePanelGroup>
 
         <div v-else class="flex h-full flex-col overflow-hidden">
-          <div class="bg-muted/50 flex items-center justify-between border-b px-4 py-2">
-            <div>
+          <div
+            class="bg-muted/50 flex items-center justify-between gap-4 overflow-x-auto border-b px-4 py-2"
+          >
+            <div class="shrink-0">
               <h2 class="text-muted-foreground hidden text-sm font-medium lg:inline">
                 Generated ORBAT
               </h2>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex shrink-0 items-center gap-2">
               <Select v-model="standardIdentity">
                 <SelectTrigger class="h-7 w-auto gap-1 text-xs">
                   <div class="flex items-center gap-1">

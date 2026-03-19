@@ -447,8 +447,10 @@ onUnmounted(() => {
     tabindex="-1"
     @keydown="handleKeydown"
   >
-    <div class="bg-muted/50 flex items-center justify-between border-b px-4 py-2">
-      <div class="flex items-center gap-2">
+    <div
+      class="bg-muted/50 flex items-center justify-between gap-4 overflow-x-auto border-b px-4 py-2"
+    >
+      <div class="flex shrink-0 items-center gap-2">
         <h2 class="text-muted-foreground text-sm font-medium">Scratch Pad</h2>
         <span
           v-if="modelValue.length > 0"
@@ -457,7 +459,7 @@ onUnmounted(() => {
           {{ modelValue.length }}
         </span>
       </div>
-      <div class="flex items-center gap-1">
+      <div class="flex shrink-0 items-center gap-1">
         <Select v-model="standardIdentity">
           <SelectTrigger class="h-7 w-auto gap-1 text-xs">
             <div class="flex items-center gap-1">
