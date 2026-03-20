@@ -3,7 +3,6 @@ import { computed, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import {
   ArrowLeftIcon,
-  BookOpenIcon,
   CircleXIcon,
   GripIcon,
   MapIcon,
@@ -23,7 +22,6 @@ import {
 import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
 import TextToOrbatEditor from "@/views/texttoorbat/TextToOrbatEditor.vue";
 import ToggleField from "@/components/ToggleField.vue";
-import IconBrowserModal from "@/views/texttoorbat/IconBrowserModal.vue";
 import PatternMappingModal from "@/views/texttoorbat/PatternMappingModal.vue";
 import ScratchPad from "@/views/texttoorbat/ScratchPad.vue";
 import {
@@ -114,7 +112,6 @@ function handleMappingsReset() {
   storedMappings.value = null;
 }
 
-const showIconBrowser = ref(false);
 const showPatternMapping = ref(false);
 const isOpeningScenario = ref(false);
 const isCopyingToClipboard = ref(false);
@@ -370,15 +367,6 @@ onUnmounted(() => {
               <Button
                 variant="ghost"
                 size="sm"
-                @click="showIconBrowser = true"
-                title="Browse icon codes"
-              >
-                <BookOpenIcon class="mr-1 size-4" />
-                Icons
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
                 :disabled="inputText.length === 0"
                 @click="handleClearInput"
                 title="Clear input"
@@ -571,7 +559,6 @@ onUnmounted(() => {
     </ResizablePanelGroup>
   </div>
 
-  <IconBrowserModal v-model="showIconBrowser" />
   <PatternMappingModal
     v-model="showPatternMapping"
     :registry="defaultRegistry"

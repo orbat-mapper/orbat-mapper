@@ -37,8 +37,6 @@ import {
 import { ECHELON_UNSPECIFIED } from "./echelonRegistry";
 
 // Derived constants from the default registry, used by PatternMappingModal
-// and IconBrowserModal
-export const ICON_PATTERNS = defaultRegistry.iconPatterns;
 export const ECHELON_PATTERNS = defaultRegistry.echelonPatterns;
 export const ICON_CODE_TO_NAME = defaultRegistry.iconCodeToName;
 export const ECHELON_CODE_TO_NAME = defaultRegistry.echelonCodeToName;
