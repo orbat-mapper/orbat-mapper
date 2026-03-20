@@ -197,14 +197,17 @@ export function getEchelonCodeFromName(
 
 /**
  * Get echelon code based on hierarchy level (fallback).
+ * Starts at brigade (index 4) so level 0 defaults to brigade, not army group.
  */
 export function getEchelonCode(
   level: number,
   registry: MappingRegistry = defaultRegistry,
 ): string {
   const hierarchy = registry.echelonHierarchy;
-  if (level < hierarchy.length) {
-    return hierarchy[level];
+  const BRIGADE_OFFSET = 4;
+  const idx = level + BRIGADE_OFFSET;
+  if (idx < hierarchy.length) {
+    return hierarchy[idx];
   }
   return hierarchy[hierarchy.length - 1];
 }
