@@ -9,22 +9,39 @@
  */
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Extract the 2-character symbol set from a 20-char SIDC (positions 4-5). */
+export function extractSymbolSet(sidc: string): string {
+  return sidc.substring(4, 6);
+}
+
+/** Extract the 10-character entity code from a 20-char SIDC (positions 10-19). */
+export function extractEntityCode(sidc: string): string {
+  return sidc.substring(10, 20);
+}
+
+/** Build a 20-char template SIDC from an entity code and optional symbol set. */
+export function buildIconSidc(entityCode: string, symbolSet = "10"): string {
+  return `1000${symbolSet}0000${entityCode}`;
+}
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export interface IconDefinition {
   /** Internal key for debug display, e.g. "ICON_INFANTRY" */
   name: string;
-  /** 10-character SIDC entity code (entity + entityType + entitySubType + mod1 + mod2) */
-  code: string;
+  /** 20-character SIDC template (SI=0, status=0, hqtfd=0, echelon=00) */
+  sidc: string;
   /** Human-readable label shown in the UI */
   label: string;
   /** Case-insensitive aliases compiled into a `\b(…)\b` regex automatically */
   aliases?: string[];
   /** Raw regex patterns for special cases (e.g. case-sensitive short-forms) */
   patterns?: RegExp[];
-  /** Symbol set override (default: "10" for land units). E.g. "30" for sea surface. */
-  symbolSet?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -35,13 +52,13 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Infantry types (more specific first) ────────────────────────────
   {
     name: "ICON_AIR_ASSAULT_INFANTRY",
-    code: "1211000100",
+    sidc: "10001000001211000100",
     label: "Air Assault Infantry",
     aliases: ["air\\s*assault\\s*infantry", "aaslt\\s*inf", "air\\s*assault"],
   },
   {
     name: "ICON_AIRBORNE_INFANTRY",
-    code: "1211004700",
+    sidc: "10001000001211004700",
     label: "Airborne Infantry",
     aliases: [
       "airborne\\s*infantry",
@@ -52,7 +69,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_PARACHUTE",
-    code: "1211000001",
+    sidc: "10001000001211000001",
     label: "Airborne/Parachute",
     aliases: [
       "airborne",
@@ -67,13 +84,13 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // RA (Royal Artillery) — must precede generic artillery
   {
     name: "ICON_ARTILLERY",
-    code: "1303000000",
+    sidc: "10001000001303000000",
     label: "Royal Artillery (RA)",
     aliases: ["ra", "R\\.?A\\.?", "royal\\s+artillery"],
   },
   {
     name: "ICON_MARINE_INFANTRY",
-    code: "1211004600",
+    sidc: "10001000001211004600",
     label: "Marine Infantry",
     aliases: [
       "marine\\s*infantry",
@@ -88,13 +105,13 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_MARINE_INFANTRY",
-    code: "1211004600",
+    sidc: "10001000001211004600",
     label: "Royal Marines (RM)",
     patterns: [/\bRM\b/],
   },
   {
     name: "ICON_MOUNTAIN_INFANTRY",
-    code: "1211000027",
+    sidc: "10001000001211000027",
     label: "Mountain Infantry",
     aliases: [
       "mountain\\s*infantry",
@@ -107,7 +124,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_LIGHT_INFANTRY",
-    code: "1211000019",
+    sidc: "10001000001211000019",
     label: "Light Infantry",
     aliases: [
       "light\\s*infantry",
@@ -122,7 +139,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_MECHANIZED_INFANTRY",
-    code: "1211020000",
+    sidc: "10001000001211020000",
     label: "Mechanized Infantry",
     aliases: [
       "mechanized\\s*infantry",
@@ -133,19 +150,19 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_MOTORIZED_INFANTRY",
-    code: "1211040000",
+    sidc: "10001000001211040000",
     label: "Motorized Infantry",
     aliases: ["motorized\\s*infantry", "mot\\s*inf", "mot\\s*infantry", "motorised"],
   },
   {
     name: "ICON_SNIPER",
-    code: "1215000000",
+    sidc: "10001000001215000000",
     label: "Sniper",
     aliases: ["sniper", "marksman", "sharpshooter", "designated\\s*marksman"],
   },
   {
     name: "ICON_INFANTRY",
-    code: "1211000000",
+    sidc: "10001000001211000000",
     label: "Infantry",
     aliases: [
       "infantry",
@@ -161,23 +178,20 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
 
   {
     name: "ICON_LITTORAL_COMBAT_SHIP",
-    code: "1202060000",
+    sidc: "10003000001202060000",
     label: "Littoral Combat Ship",
-    symbolSet: "30",
     aliases: ["littoral\\s*combat\\s*ship", "littoral"],
   },
   {
     name: "ICON_LITTORAL_COMBAT_SHIP",
-    code: "1202060000",
+    sidc: "10003000001202060000",
     label: "Littoral Combat Ship (LCS)",
-    symbolSet: "30",
     patterns: [/\bLCS\b/],
   },
   {
     name: "ICON_AMPHIBIOUS_WARFARE_SHIP",
-    code: "1203000000",
+    sidc: "10003000001203000000",
     label: "Amphibious Warfare Ship",
-    symbolSet: "30",
     aliases: [
       "amphibious\\s*warfare\\s*ship",
       "amphibious\\s*assault\\s*ship",
@@ -189,15 +203,14 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_AMPHIBIOUS_WARFARE_SHIP",
-    code: "1203000000",
+    sidc: "10003000001203000000",
     label: "Amphibious Warfare Ship (LH/LPD)",
-    symbolSet: "30",
     patterns: [/\bL[HSPDC]{1,2}\b/],
   },
   // ── Amphibious ──────────────────────────────────────────────────────
   {
     name: "ICON_AMPHIBIOUS",
-    code: "1202000000",
+    sidc: "10001000001202000000",
     label: "Amphibious",
     aliases: ["amphibious", "amphib", "amph", "landing"],
   },
@@ -205,7 +218,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Anti-tank (must precede armor — contains "tank") ────────────────
   {
     name: "ICON_ANTITANK",
-    code: "1204000000",
+    sidc: "10001000001204000000",
     label: "Anti-Tank",
     aliases: [
       "anti[- ]?tank",
@@ -218,7 +231,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_ANTITANK",
-    code: "1204000000",
+    sidc: "10001000001204000000",
     label: "Anti-Tank (AT)",
     patterns: [/\bAT\b/],
   },
@@ -226,13 +239,13 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Armor and cavalry ──────────────────────────────────────────────
   {
     name: "ICON_LIGHT_ARMOR",
-    code: "1205010000",
+    sidc: "10001000001205010000",
     label: "Light Armor",
     aliases: ["light\\s*armou?r(?:ed)?", "light\\s*tank", "lt\\s*armor", "lt\\s*tk"],
   },
   {
     name: "ICON_ARMOR",
-    code: "1205000000",
+    sidc: "10001000001205000000",
     label: "Armor",
     aliases: [
       "armou?r(?:ed)?",
@@ -251,7 +264,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_CAVALRY",
-    code: "1213000000",
+    sidc: "10001000001213000000",
     label: "Cavalry",
     aliases: [
       "cavalry",
@@ -269,7 +282,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_RECONNAISSANCE",
-    code: "1213000000",
+    sidc: "10001000001213000000",
     label: "Reconnaissance",
     aliases: [
       "reconnaissance",
@@ -289,9 +302,8 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
 
   {
     name: "ICON_MINE_WARFARE_SHIP",
-    code: "1204000000",
+    sidc: "10003000001204000000",
     label: "Mine Warfare Ship",
-    symbolSet: "30",
     aliases: [
       "mine\\s*warfare\\s*ship",
       "mine\\s*layer",
@@ -305,15 +317,14 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_MINE_WARFARE_SHIP",
-    code: "1204000000",
+    sidc: "10003000001204000000",
     label: "Mine Warfare Ship (MCM)",
-    symbolSet: "30",
     patterns: [/\bMC[MH]\b/],
   },
   // ── Air defense (must precede artillery) ────────────────────────────
   {
     name: "ICON_AIR_DEFENSE",
-    code: "1301000000",
+    sidc: "10001000001301000000",
     label: "Air Defense",
     aliases: [
       "air\\s*defen[cs]e",
@@ -336,7 +347,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Artillery types (more specific first) ───────────────────────────
   {
     name: "ICON_ROCKET_ARTILLERY",
-    code: "1303020000",
+    sidc: "10001000001303020000",
     label: "Rocket Artillery",
     aliases: [
       "rocket\\s*artillery",
@@ -352,7 +363,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_SELF_PROPELLED_ARTILLERY",
-    code: "1303010000",
+    sidc: "10001000001303010000",
     label: "Self-Propelled Artillery",
     aliases: [
       "self[- ]?propelled\\s*artillery",
@@ -366,7 +377,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_ARTILLERY",
-    code: "1303000000",
+    sidc: "10001000001303000000",
     label: "Artillery",
     aliases: [
       "artillery",
@@ -387,13 +398,13 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_MORTAR",
-    code: "1308000000",
+    sidc: "10001000001308000000",
     label: "Mortar",
     aliases: ["mortar", "mörser", "mortaio", "granatwerfer", "mort", "mtr"],
   },
   {
     name: "ICON_MISSILE",
-    code: "1307000000",
+    sidc: "10001000001307000000",
     label: "Missile",
     aliases: [
       "missile",
@@ -414,7 +425,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Aviation ────────────────────────────────────────────────────────
   {
     name: "ICON_ATTACK_HELICOPTER",
-    code: "1206000300",
+    sidc: "10001000001206000300",
     label: "Attack Helicopter",
     aliases: [
       "attack\\s*helicopter",
@@ -426,7 +437,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_AVIATION",
-    code: "1206000000",
+    sidc: "10001000001206000000",
     label: "Aviation",
     aliases: [
       "aviation",
@@ -442,7 +453,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_AIR_FORCE",
-    code: "1101000000",
+    sidc: "10001000001101000000",
     label: "Air Force",
     aliases: [
       "air\\s*force",
@@ -458,7 +469,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Combat support ──────────────────────────────────────────────────
   {
     name: "ICON_COMBAT_ENGINEER",
-    code: "1407010000",
+    sidc: "10001000001407010000",
     label: "Combat Engineer",
     aliases: [
       "combat\\s*engineer",
@@ -470,7 +481,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_ENGINEER",
-    code: "1407000000",
+    sidc: "10001000001407000000",
     label: "Engineer",
     aliases: [
       "engineer",
@@ -487,7 +498,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_SIGNAL",
-    code: "1110000000",
+    sidc: "10001000001110000000",
     label: "Signal",
     aliases: [
       "signals?",
@@ -502,7 +513,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_MILITARY_POLICE",
-    code: "1412000000",
+    sidc: "10001000001412000000",
     label: "Military Police",
     aliases: [
       "military\\s*police",
@@ -517,13 +528,13 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_INFANTRY",
-    code: "1211000000",
+    sidc: "10001000001211000000",
     label: "Guards",
     aliases: ["guard", "guards?"],
   },
   {
     name: "ICON_SECURITY",
-    code: "1416000000",
+    sidc: "10001000001416000000",
     label: "Security",
     aliases: ["security", "guards?", "wach", "protection", "force\\s*protection", "sec"],
   },
@@ -531,7 +542,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── NBC/Chemical ────────────────────────────────────────────────────
   {
     name: "ICON_CHEMICAL",
-    code: "1401000000",
+    sidc: "10001000001401000000",
     label: "Chemical/NBC",
     aliases: [
       "chemical",
@@ -551,7 +562,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Electronic Warfare & Intelligence ───────────────────────────────
   {
     name: "ICON_ELECTRONIC_WARFARE",
-    code: "1505000000",
+    sidc: "10001000001505000000",
     label: "Electronic Warfare",
     aliases: [
       "electronic\\s*warfare",
@@ -566,7 +577,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_MILITARY_INTELLIGENCE",
-    code: "1510000000",
+    sidc: "10001000001510000000",
     label: "Military Intelligence",
     aliases: [
       "military\\s*intelligence",
@@ -581,13 +592,13 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_CIVIL_AFFAIRS",
-    code: "1102000000",
+    sidc: "10001000001102000000",
     label: "Civil Affairs",
     aliases: ["civil\\s*affairs", "ca", "cimic", "zivil[- ]?militär", "cmo"],
   },
   {
     name: "ICON_PSYCHOLOGICAL_OPS",
-    code: "1106000000",
+    sidc: "10001000001106000000",
     label: "Psychological Operations",
     aliases: [
       "psychological\\s*op(?:eration)?s?",
@@ -603,9 +614,8 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Sea surface noncombatant vessels (symbol set 30) ────────────────
   {
     name: "ICON_AUXILIARY_SHIP",
-    code: "1301000000",
+    sidc: "10003000001301000000",
     label: "Auxiliary Ship",
-    symbolSet: "30",
     aliases: [
       "auxiliary\\s*ship",
       "auxiliary\\s*vessel",
@@ -622,7 +632,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Sustainment / logistics ─────────────────────────────────────────
   {
     name: "ICON_SUPPLY",
-    code: "1634000000",
+    sidc: "10001000001634000000",
     label: "Supply",
     aliases: [
       "supply",
@@ -639,7 +649,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_MAINTENANCE",
-    code: "1611000000",
+    sidc: "10001000001611000000",
     label: "Maintenance",
     aliases: [
       "maintenance",
@@ -655,14 +665,13 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_HOSPITAL_SHIP",
-    code: "1301070000",
+    sidc: "10003000001301070000",
     label: "Hospital Ship",
-    symbolSet: "30",
     aliases: ["hospital\\s*ship", "lazarettschiff", "navire[- ]?hôpital"],
   },
   {
     name: "ICON_MEDICAL",
-    code: "1613000000",
+    sidc: "10001000001613000000",
     label: "Medical",
     aliases: [
       "medical",
@@ -683,7 +692,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_TRANSPORTATION",
-    code: "1636000000",
+    sidc: "10001000001636000000",
     label: "Transportation",
     aliases: [
       "transport",
@@ -704,7 +713,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Special operations ──────────────────────────────────────────────
   {
     name: "ICON_SPECIAL_FORCES",
-    code: "1217000000",
+    sidc: "10001000001217000000",
     label: "Special Forces",
     aliases: [
       "special\\s*forces",
@@ -729,47 +738,42 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Navy task organization / sea surface vessels (symbol set 30) ─────
   {
     name: "ICON_NAVY_TASK_ELEMENT",
-    code: "1210010000",
+    sidc: "10003000001210010000",
     label: "Navy Task Element",
-    symbolSet: "30",
     aliases: ["navy\\s*task\\s*element"],
     patterns: [/\bTE\b/],
   },
   {
     name: "ICON_NAVY_TASK_FORCE",
-    code: "1210020000",
+    sidc: "10003000001210020000",
     label: "Navy Task Force",
-    symbolSet: "30",
     aliases: ["navy\\s*task\\s*force"],
     patterns: [/\bTF\b/],
   },
   {
     name: "ICON_NAVY_TASK_GROUP",
-    code: "1210030000",
+    sidc: "10003000001210030000",
     label: "Navy Task Group",
-    symbolSet: "30",
     aliases: ["navy\\s*task\\s*group", "task\\s*group"],
     patterns: [/\bTG\b/],
   },
   {
     name: "ICON_NAVY_TASK_UNIT",
-    code: "1210040000",
+    sidc: "10003000001210040000",
     label: "Navy Task Unit",
-    symbolSet: "30",
     aliases: ["navy\\s*task\\s*unit"],
     patterns: [/\bTU\b/],
   },
   {
     name: "ICON_CONVOY",
-    code: "1210050000",
+    sidc: "10003000001210050000",
     label: "Convoy",
-    symbolSet: "30",
     aliases: ["convoy"],
   },
   // ── Naval (ground-based naval units) ────────────────────────────────
   {
     name: "ICON_NAVAL",
-    code: "1701000000",
+    sidc: "10001000001701000000",
     label: "Naval",
     aliases: ["naval", "navy", "marine\\s*corps", "kriegsmarine", "seebataillon"],
   },
@@ -777,9 +781,8 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   // ── Sea surface vessels (symbol set 30) ─────────────────────────────
   {
     name: "ICON_CARRIER",
-    code: "1201000000",
+    sidc: "10003000001201000000",
     label: "Aircraft Carrier",
-    symbolSet: "30",
     aliases: [
       "aircraft\\s*carrier",
       "carrier",
@@ -793,23 +796,20 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_NUCLEAR_CARRIER",
-    code: "1201000001",
+    sidc: "10003000001201000001",
     label: "Aircraft Carrier (CVN)",
-    symbolSet: "30",
     patterns: [/\bCVN\b/i],
   },
   {
     name: "ICON_CARRIER",
-    code: "1201000000",
+    sidc: "10003000001201000000",
     label: "Aircraft Carrier (CV/CVX)",
-    symbolSet: "30",
     patterns: [/(?:\bCVX?\b|\bCV(?=-))/i],
   },
   {
     name: "ICON_BATTLESHIP",
-    code: "1202010000",
+    sidc: "10003000001202010000",
     label: "Battleship",
-    symbolSet: "30",
     aliases: [
       "battleship",
       "schlachtschiff",
@@ -823,16 +823,14 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_BATTLESHIP",
-    code: "1202010000",
+    sidc: "10003000001202010000",
     label: "Battleship (BB)",
-    symbolSet: "30",
     patterns: [/\bBB\b/i],
   },
   {
     name: "ICON_CRUISER",
-    code: "1202020000",
+    sidc: "10003000001202020000",
     label: "Cruiser",
-    symbolSet: "30",
     aliases: [
       "cruiser",
       "kreuzer",
@@ -846,16 +844,14 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_CRUISER",
-    code: "1202020000",
+    sidc: "10003000001202020000",
     label: "Cruiser (CA/CG/CL)",
-    symbolSet: "30",
     patterns: [/\bC[AGLX]\b/i],
   },
   {
     name: "ICON_DESTROYER",
-    code: "1202030000",
+    sidc: "10003000001202030000",
     label: "Destroyer",
-    symbolSet: "30",
     aliases: [
       "destroyer",
       "zerstörer",
@@ -867,16 +863,14 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_DESTROYER",
-    code: "1202030000",
+    sidc: "10003000001202030000",
     label: "Destroyer (DD)",
-    symbolSet: "30",
     patterns: [/\bDD[GX]?\b/i],
   },
   {
     name: "ICON_FRIGATE",
-    code: "1202040000",
+    sidc: "10003000001202040000",
     label: "Frigate",
-    symbolSet: "30",
     aliases: [
       "frigate",
       "fregatte",
@@ -889,23 +883,20 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_FRIGATE",
-    code: "1202040000",
+    sidc: "10003000001202040000",
     label: "Frigate (FF)",
-    symbolSet: "30",
     patterns: [/\bFF[GX]?\b/i],
   },
   {
     name: "ICON_CORVETTE",
-    code: "1202050000",
+    sidc: "10003000001202050000",
     label: "Corvette",
-    symbolSet: "30",
     aliases: ["corvette", "korvette", "corvetta", "corbeta"],
   },
   {
     name: "ICON_PATROL_BOAT",
-    code: "1205000000",
+    sidc: "10003000001205000000",
     label: "Patrol Boat",
-    symbolSet: "30",
     aliases: [
       "patrol\\s*boat",
       "patrol\\s*craft",
@@ -918,16 +909,14 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_PATROL_BOAT",
-    code: "1205000000",
+    sidc: "10003000001205000000",
     label: "Patrol Boat (PB/PC)",
-    symbolSet: "30",
     patterns: [/\bP[BCT]\b/i],
   },
   {
     name: "ICON_SUBMARINE",
-    code: "1101000000",
+    sidc: "10003500001101000000",
     label: "Submarine",
-    symbolSet: "35",
     aliases: [
       "submarine",
       "sub",
@@ -941,17 +930,15 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_SUBMARINE",
-    code: "1101000000",
+    sidc: "10003500001101000000",
     label: "Submarine (SS)",
-    symbolSet: "35",
     patterns: [/\bSS[BGKN]?\b/i],
   },
 
   {
     name: "ICON_CARGO_SHIP",
-    code: "1401010000",
+    sidc: "10003000001401010000",
     label: "Cargo Ship",
-    symbolSet: "30",
     aliases: [
       "cargo\\s*ship",
       "merchant\\s*ship",
@@ -964,16 +951,15 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   },
   {
     name: "ICON_TANKER_SHIP",
-    code: "1401090000",
+    sidc: "10003000001401090000",
     label: "Tanker",
-    symbolSet: "30",
     aliases: ["tanker\\s*ship", "oil\\s*tanker", "tanker"],
   },
 
   // ── Headquarters ────────────────────────────────────────────────────
   {
     name: "ICON_HEADQUARTERS",
-    code: "1800009800",
+    sidc: "10001000001800009800",
     label: "Headquarters",
     aliases: [
       "headquarters",
@@ -1004,10 +990,10 @@ function uniqueByName(defs: IconDefinition[]): IconDefinition[] {
 
 const uniqueDefs = uniqueByName(BUILTIN_ICON_DEFINITIONS);
 
-/** All ICON_XXX constant values keyed by name */
+/** All ICON_XXX constant values keyed by name (10-char entity codes for backward compat) */
 const _codes: Record<string, string> = {};
 for (const d of uniqueDefs) {
-  _codes[d.name] = d.code;
+  _codes[d.name] = extractEntityCode(d.sidc);
 }
 
 // Individual constants for backward compatibility

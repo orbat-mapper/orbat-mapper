@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { MappingRegistry } from "./mappingRegistry";
-import { ICON_INFANTRY, ICON_ARMOR, ICON_UNSPECIFIED } from "./iconRegistry";
+import {
+  ICON_INFANTRY,
+  ICON_ARMOR,
+  ICON_UNSPECIFIED,
+  buildIconSidc,
+} from "./iconRegistry";
 import { ECHELON_BATTALION } from "./echelonRegistry";
 import {
   getIconCodeFromName,
@@ -20,7 +25,7 @@ describe("MappingRegistry — adding new mappings", () => {
     // Add user-defined mapping
     registry.addIcon({
       name: "ICON_DRONE",
-      code: DRONE_CODE,
+      sidc: buildIconSidc(DRONE_CODE),
       label: "Drone",
       aliases: ["drone", "uav", "uas", "rpas"],
     });
@@ -38,8 +43,8 @@ describe("MappingRegistry — adding new mappings", () => {
     // "fusiliers" doesn't match infantry by default
     expect(getIconCodeFromName("Royal Fusiliers", registry)).toBe(ICON_UNSPECIFIED);
 
-    // Extend the infantry icon with a new alias
-    registry.extendIcon(ICON_INFANTRY, ["fusiliers?"]);
+    // Extend the infantry icon with a new alias (now uses full SIDC)
+    registry.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusiliers?"]);
 
     expect(getIconCodeFromName("Royal Fusiliers", registry)).toBe(ICON_INFANTRY);
     expect(getIconCodeFromName("Fusilier Company", registry)).toBe(ICON_INFANTRY);
@@ -56,7 +61,7 @@ describe("MappingRegistry — adding new mappings", () => {
     registry.addIcon(
       {
         name: "ICON_CUSTOM_PANZER",
-        code: CUSTOM_CODE,
+        sidc: buildIconSidc(CUSTOM_CODE),
         label: "Custom Panzer",
         aliases: ["panzer"],
       },
@@ -85,7 +90,7 @@ describe("MappingRegistry — adding new mappings", () => {
 
     registry.addIcon({
       name: "ICON_DRONE",
-      code: DRONE_CODE,
+      sidc: buildIconSidc(DRONE_CODE),
       label: "Drone",
       aliases: ["drone", "uav"],
     });
@@ -107,7 +112,7 @@ describe("MappingRegistry — adding new mappings", () => {
 
     registryA.addIcon({
       name: "ICON_DRONE",
-      code: "1206010000",
+      sidc: buildIconSidc("1206010000"),
       label: "Drone",
       aliases: ["drone"],
     });
@@ -119,10 +124,10 @@ describe("MappingRegistry — adding new mappings", () => {
 
   it("exportMappings → importMappings round-trip preserves mappings", () => {
     const registry1 = new MappingRegistry();
-    registry1.extendIcon(ICON_INFANTRY, ["fusiliers?"]);
+    registry1.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusiliers?"]);
     registry1.addIcon({
       name: "ICON_DRONE",
-      code: "1206010000",
+      sidc: buildIconSidc("1206010000"),
       label: "Drone",
       aliases: ["drone"],
     });
@@ -143,10 +148,10 @@ describe("MappingRegistry — adding new mappings", () => {
   it("resetToDefaults clears all customizations", () => {
     const registry = new MappingRegistry();
 
-    registry.extendIcon(ICON_INFANTRY, ["fusiliers?"]);
+    registry.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusiliers?"]);
     registry.addIcon({
       name: "ICON_DRONE",
-      code: "1206010000",
+      sidc: buildIconSidc("1206010000"),
       label: "Drone",
       aliases: ["drone"],
     });
@@ -167,13 +172,13 @@ describe("MappingRegistry — adding new mappings", () => {
     const registry = new MappingRegistry();
     const v0 = registry.version;
 
-    registry.extendIcon(ICON_INFANTRY, ["fusiliers?"]);
+    registry.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusiliers?"]);
     expect(registry.version).toBeGreaterThan(v0);
 
     const v1 = registry.version;
     registry.addIcon({
       name: "ICON_DRONE",
-      code: "1206010000",
+      sidc: buildIconSidc("1206010000"),
       label: "Drone",
       aliases: ["drone"],
     });
@@ -189,7 +194,13 @@ describe("MappingRegistry — adding new mappings", () => {
 
     // Import a minimal set — only one icon and one echelon
     registry.importMappings({
-      icons: [{ code: "1211000000", label: "Infantry", aliases: ["infantry", "inf"] }],
+      icons: [
+        {
+          sidc: buildIconSidc("1211000000"),
+          label: "Infantry",
+          aliases: ["infantry", "inf"],
+        },
+      ],
       echelons: [{ code: "16", label: "Battalion", aliases: ["battalion", "bn"] }],
     });
 

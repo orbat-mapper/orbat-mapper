@@ -9,6 +9,8 @@
 import {
   BUILTIN_ICON_DEFINITIONS,
   ICON_UNSPECIFIED,
+  buildIconSidc,
+  extractEntityCode,
   type IconDefinition,
 } from "./iconRegistry";
 import {
@@ -24,10 +26,9 @@ import {
 export interface CompiledPattern {
   pattern: RegExp;
   name: string;
+  /** For icons: full 20-char template SIDC. For echelons: 2-char echelon code. */
   code: string;
   label: string;
-  /** Symbol set override from the definition (e.g. "30" for sea surface). */
-  symbolSet?: string;
   /** Whether this entry came from aliases or an explicit regex pattern. */
   sourceType: "alias" | "pattern";
 }
@@ -45,11 +46,13 @@ interface SerializedPattern {
 /** Serialisable snapshot of all icon and echelon definitions. */
 export interface AllMappingData {
   icons: {
-    code: string;
+    sidc: string;
     label: string;
     aliases: string[];
-    symbolSet?: string;
     patterns?: SerializedPattern[];
+    /** @deprecated old format fields, kept for migration */
+    code?: string;
+    symbolSet?: string;
   }[];
   echelons: {
     code: string;
@@ -68,11 +71,11 @@ export interface AllMappingData {
 function compileDefinition(
   def: Pick<
     IconDefinition | EchelonDefinition,
-    "name" | "code" | "label" | "aliases" | "patterns"
-  > & { symbolSet?: string },
+    "name" | "label" | "aliases" | "patterns"
+  >,
+  code: string,
 ): CompiledPattern[] {
   const result: CompiledPattern[] = [];
-  const symbolSet = def.symbolSet;
 
   // Aliases → single case-insensitive regex
   if (def.aliases && def.aliases.length > 0) {
@@ -80,10 +83,9 @@ function compileDefinition(
     result.push({
       pattern: new RegExp(`\\b(${joined})\\b`, "i"),
       name: def.name,
-      code: def.code,
+      code,
       label: def.label,
       sourceType: "alias",
-      ...(symbolSet && { symbolSet }),
     });
   }
 
@@ -93,10 +95,9 @@ function compileDefinition(
       result.push({
         pattern: p,
         name: def.name,
-        code: def.code,
+        code,
         label: def.label,
         sourceType: "pattern",
-        ...(symbolSet && { symbolSet }),
       });
     }
   }
@@ -104,10 +105,12 @@ function compileDefinition(
   return result;
 }
 
-function compileDefinitions(
-  defs: (IconDefinition | EchelonDefinition)[],
-): CompiledPattern[] {
-  return defs.flatMap(compileDefinition);
+function compileIconDefinitions(defs: IconDefinition[]): CompiledPattern[] {
+  return defs.flatMap((d) => compileDefinition(d, d.sidc));
+}
+
+function compileEchelonDefinitions(defs: EchelonDefinition[]): CompiledPattern[] {
+  return defs.flatMap((d) => compileDefinition(d, d.code));
 }
 
 // ---------------------------------------------------------------------------
@@ -165,14 +168,14 @@ export class MappingRegistry {
 
   get iconPatterns(): CompiledPattern[] {
     if (!this._iconPatterns) {
-      this._iconPatterns = compileDefinitions(this._iconDefs);
+      this._iconPatterns = compileIconDefinitions(this._iconDefs);
     }
     return this._iconPatterns;
   }
 
   get echelonPatterns(): CompiledPattern[] {
     if (!this._echelonPatterns) {
-      this._echelonPatterns = compileDefinitions(this._echelonDefs);
+      this._echelonPatterns = compileEchelonDefinitions(this._echelonDefs);
     }
     return this._echelonPatterns;
   }
@@ -181,7 +184,7 @@ export class MappingRegistry {
     if (!this._iconCodeToName) {
       const map: Record<string, string> = {};
       for (const d of this._iconDefs) {
-        if (!(d.code in map)) map[d.code] = d.name;
+        if (!(d.sidc in map)) map[d.sidc] = d.name;
       }
       map[ICON_UNSPECIFIED] = "ICON_UNSPECIFIED";
       this._iconCodeToName = map;
@@ -284,11 +287,11 @@ export class MappingRegistry {
 
   // ── Mutation methods ─────────────────────────────────────────────
 
-  /** Add extra aliases to an existing icon by code. */
-  extendIcon(code: string, extraAliases: string[]): void {
+  /** Add extra aliases to an existing icon by SIDC. */
+  extendIcon(sidc: string, extraAliases: string[]): void {
     this.pushUndo();
     for (const def of this._iconDefs) {
-      if (def.code === code) {
+      if (def.sidc === sidc) {
         def.aliases = [...(def.aliases ?? []), ...extraAliases];
         break;
       }
@@ -305,22 +308,22 @@ export class MappingRegistry {
     this.invalidateIconCache();
   }
 
-  /** Remove an alias from icon definitions matching the given code. */
-  removeIconAlias(code: string, alias: string): void {
+  /** Remove an alias from icon definitions matching the given SIDC. */
+  removeIconAlias(sidc: string, alias: string): void {
     this.pushUndo();
     for (const def of this._iconDefs) {
-      if (def.code === code && def.aliases) {
+      if (def.sidc === sidc && def.aliases) {
         def.aliases = def.aliases.filter((a) => a !== alias);
       }
     }
     this.invalidateIconCache();
   }
 
-  /** Remove a raw pattern from icon definitions matching the given code. */
-  removeIconPattern(code: string, patternSource: string): void {
+  /** Remove a raw pattern from icon definitions matching the given SIDC. */
+  removeIconPattern(sidc: string, patternSource: string): void {
     this.pushUndo();
     for (const def of this._iconDefs) {
-      if (def.code === code && def.patterns) {
+      if (def.sidc === sidc && def.patterns) {
         def.patterns = def.patterns.filter((p) => p.source !== patternSource);
         if (def.patterns.length === 0) def.patterns = undefined;
       }
@@ -328,14 +331,10 @@ export class MappingRegistry {
     this.invalidateIconCache();
   }
 
-  /** Remove all icon definitions matching the given code (and optional symbolSet). */
-  removeIcon(code: string, symbolSet?: string): void {
+  /** Remove all icon definitions matching the given SIDC. */
+  removeIcon(sidc: string): void {
     this.pushUndo();
-    this._iconDefs = this._iconDefs.filter(
-      (d) =>
-        d.code !== code ||
-        (symbolSet !== undefined && (d.symbolSet ?? "10") !== symbolSet),
-    );
+    this._iconDefs = this._iconDefs.filter((d) => d.sidc !== sidc);
     this.invalidateIconCache();
   }
 
@@ -357,21 +356,14 @@ export class MappingRegistry {
     this.invalidateEchelonCache();
   }
 
-  /** Update label (and optionally code) for icon definitions matching the given code. */
-  updateIcon(
-    code: string,
-    updates: { label?: string; code?: string },
-    symbolSet?: string,
-  ): void {
+  /** Update label (and optionally SIDC) for icon definitions matching the given SIDC. */
+  updateIcon(sidc: string, updates: { label?: string; sidc?: string }): void {
     this.pushUndo();
     for (const def of this._iconDefs) {
-      if (
-        def.code === code &&
-        (symbolSet === undefined || (def.symbolSet ?? "10") === symbolSet)
-      ) {
+      if (def.sidc === sidc) {
         if (updates.label !== undefined) def.label = updates.label;
-        if (updates.code !== undefined) {
-          def.code = updates.code;
+        if (updates.sidc !== undefined) {
+          def.sidc = updates.sidc;
           def.name = updates.label
             ? updates.label.toUpperCase().replace(/\s+/g, "_")
             : def.name;
@@ -419,10 +411,9 @@ export class MappingRegistry {
   exportMappings(): AllMappingData {
     return {
       icons: this._iconDefs.map((def) => ({
-        code: def.code,
+        sidc: def.sidc,
         label: def.label,
         aliases: [...(def.aliases ?? [])],
-        ...(def.symbolSet && { symbolSet: def.symbolSet }),
         ...(def.patterns &&
           def.patterns.length > 0 && {
             patterns: def.patterns.map((p) => ({ source: p.source, flags: p.flags })),
@@ -448,17 +439,23 @@ export class MappingRegistry {
   importMappings(data: AllMappingData): void {
     this.pushUndo();
     if (data.icons) {
-      this._iconDefs = data.icons.map((d) => ({
-        name: d.label.toUpperCase().replace(/\s+/g, "_"),
-        code: d.code,
-        label: d.label,
-        aliases: [...d.aliases],
-        ...(d.symbolSet && { symbolSet: d.symbolSet }),
-        ...(d.patterns &&
-          d.patterns.length > 0 && {
-            patterns: d.patterns.map((p) => new RegExp(p.source, p.flags)),
-          }),
-      }));
+      this._iconDefs = data.icons.map((d) => {
+        // Migrate old format (code + symbolSet) to new (sidc)
+        const sidc =
+          "sidc" in d && d.sidc
+            ? d.sidc
+            : buildIconSidc(d.code ?? "0000000000", d.symbolSet ?? "10");
+        return {
+          name: d.label.toUpperCase().replace(/\s+/g, "_"),
+          sidc,
+          label: d.label,
+          aliases: [...d.aliases],
+          ...(d.patterns &&
+            d.patterns.length > 0 && {
+              patterns: d.patterns.map((p) => new RegExp(p.source, p.flags)),
+            }),
+        };
+      });
     }
     if (data.echelons) {
       this._echelonDefs = data.echelons.map((d) => ({

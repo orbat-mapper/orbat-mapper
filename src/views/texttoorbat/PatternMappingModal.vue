@@ -13,6 +13,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { defaultRegistry, type MappingRegistry } from "./mappingRegistry";
+import {
+  extractEntityCode,
+  extractSymbolSet,
+  buildIconSidc as buildTemplateSidc,
+} from "./iconRegistry";
 import ToggleField from "@/components/ToggleField.vue";
 import {
   PlusIcon,
@@ -72,9 +77,14 @@ const editCodeValue = ref("");
 // ── File input ref ───────────────────────────────────────────────
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
-// Build SIDC for icon patterns (using battalion echelon for display)
-function buildIconSidc(entityCode: string, symbolSet = "10"): string {
+// Build display SIDC for icon patterns (with friendly SI)
+function buildDisplaySidc(entityCode: string, symbolSet = "10"): string {
   return `100${FRIENDLY_SI}${symbolSet}0000${entityCode}`;
+}
+
+// Convert a template SIDC (SI=0) to a display SIDC (SI=friendly)
+function templateToDisplaySidc(templateSidc: string): string {
+  return templateSidc.substring(0, 3) + FRIENDLY_SI + templateSidc.substring(4);
 }
 
 // Build SIDC for echelon patterns (using infantry as base icon)
@@ -92,10 +102,11 @@ interface KeywordEntry {
 interface PatternEntry {
   label: string;
   keywords: KeywordEntry[];
+  /** Display SIDC (with friendly SI, for rendering the symbol). */
   sidc: string;
   constantName?: string;
+  /** For icons: template SIDC (20-char). For echelons: echelon code (2-char). */
   code?: string;
-  symbolSet?: string;
   kind: "icon" | "echelon";
 }
 
@@ -173,7 +184,7 @@ const iconEntries = computed<PatternEntry[]>(() => {
   const grouped = new Map<string, PatternEntry>();
 
   for (const def of props.registry.iconDefinitions) {
-    const groupKey = `${def.symbolSet ?? "10"}:${def.code}`;
+    const groupKey = def.sidc;
     const aliasKeywords: KeywordEntry[] = (def.aliases ?? []).map((a) => ({
       value: displayAlias(a),
       type: "alias" as const,
@@ -191,10 +202,9 @@ const iconEntries = computed<PatternEntry[]>(() => {
       grouped.set(groupKey, {
         label: def.label,
         keywords,
-        sidc: buildIconSidc(def.code, def.symbolSet),
+        sidc: templateToDisplaySidc(def.sidc),
         constantName: def.name,
-        code: def.code,
-        symbolSet: def.symbolSet,
+        code: def.sidc,
         kind: "icon" as const,
       });
       continue;
@@ -281,7 +291,7 @@ function deleteKeyword(entry: PatternEntry, keyword: KeywordEntry) {
 function deleteEntry(entry: PatternEntry) {
   if (!entry.code) return;
   if (entry.kind === "icon") {
-    props.registry.removeIcon(entry.code, entry.symbolSet);
+    props.registry.removeIcon(entry.code);
   } else {
     props.registry.removeEchelon(entry.code);
   }
@@ -289,13 +299,16 @@ function deleteEntry(entry: PatternEntry) {
 }
 
 function entryKey(entry: PatternEntry): string {
-  return `${entry.kind}:${entry.symbolSet ?? ""}:${entry.code}`;
+  return `${entry.kind}:${entry.code}`;
 }
 
 function startEditEntry(entry: PatternEntry) {
   editingEntryKey.value = entryKey(entry);
   editLabelValue.value = entry.label;
-  editCodeValue.value = entry.code ?? "";
+  editCodeValue.value =
+    entry.kind === "icon" && entry.code
+      ? extractEntityCode(entry.code)
+      : (entry.code ?? "");
 }
 
 function cancelEditEntry() {
@@ -307,16 +320,17 @@ function submitEditEntry(entry: PatternEntry) {
   if (!label || !entry.code) return;
 
   if (entry.kind === "icon") {
-    const newCode = editCodeValue.value.trim();
-    if (newCode.length !== 10) return;
-    props.registry.updateIcon(
-      entry.code,
-      {
-        label,
-        ...(newCode !== entry.code && { code: newCode }),
-      },
-      entry.symbolSet,
-    );
+    const newEntityCode = editCodeValue.value.trim();
+    if (newEntityCode.length !== 10) return;
+    const currentEntityCode = extractEntityCode(entry.code);
+    const newSidc =
+      newEntityCode !== currentEntityCode
+        ? buildTemplateSidc(newEntityCode, extractSymbolSet(entry.code))
+        : undefined;
+    props.registry.updateIcon(entry.code, {
+      label,
+      ...(newSidc && { sidc: newSidc }),
+    });
   } else {
     props.registry.updateEchelon(entry.code, { label });
   }
@@ -326,20 +340,20 @@ function submitEditEntry(entry: PatternEntry) {
 
 function submitNewIcon() {
   const label = newIconLabel.value.trim();
-  const code = newIconCode.value.trim();
+  const entityCode = newIconCode.value.trim();
   const aliases = newIconAliases.value
     .split(",")
     .map((a) => a.trim())
     .filter(Boolean);
 
-  if (!label || code.length !== 10 || aliases.length === 0) return;
+  if (!label || entityCode.length !== 10 || aliases.length === 0) return;
 
+  const sidc = buildTemplateSidc(entityCode, newIconSymbolSet.value);
   props.registry.addIcon({
     name: label.toUpperCase().replace(/\s+/g, "_"),
-    code,
+    sidc,
     label,
     aliases,
-    ...(newIconSymbolSet.value !== "10" && { symbolSet: newIconSymbolSet.value }),
   });
   emit("mappingsChanged");
   showAddIconForm.value = false;
@@ -508,7 +522,7 @@ onBeforeUnmount(() => {
               <div class="mt-2 flex items-center justify-between">
                 <div v-if="newIconCode.length === 10" class="flex items-center gap-2">
                   <NewMilitarySymbol
-                    :sidc="buildIconSidc(newIconCode, newIconSymbolSet)"
+                    :sidc="buildDisplaySidc(newIconCode, newIconSymbolSet)"
                     :size="30"
                     :options="{ outlineWidth: 6, outlineColor: 'white' }"
                   />
@@ -653,7 +667,11 @@ onBeforeUnmount(() => {
                             v-if="entry.code"
                             class="text-muted-foreground font-mono text-xs tracking-wider break-all whitespace-normal"
                           >
-                            {{ entry.code }}
+                            {{
+                              entry.kind === "icon" && entry.code
+                                ? extractEntityCode(entry.code)
+                                : entry.code
+                            }}
                           </span>
                         </template>
                       </div>

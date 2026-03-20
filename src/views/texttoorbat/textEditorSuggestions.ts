@@ -188,11 +188,10 @@ export function getUnitTypeCompletions(
   return buildCompletionsFromDefinitions(
     [...registry.iconDefinitions],
     "Recognized unit type",
-    (definition) =>
-      buildIconPreviewSidc(
-        (definition as IconDefinition).code,
-        (definition as IconDefinition).symbolSet ?? DEFAULT_SYMBOL_SET,
-      ),
+    (definition) => {
+      const sidc = (definition as IconDefinition).sidc;
+      return sidc.substring(0, 3) + FRIENDLY_SI + sidc.substring(4);
+    },
   );
 }
 

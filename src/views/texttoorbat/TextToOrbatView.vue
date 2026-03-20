@@ -83,7 +83,12 @@ const scratchPadUnits = useLocalStorage<Unit[]>("textToOrbatScratchPad", []);
 const storedMappings = useLocalStorage<AllMappingData | null>(
   "textToOrbatMappings",
   null,
-  { serializer: { read: (v: string) => JSON.parse(v), write: (v: any) => JSON.stringify(v) } },
+  {
+    serializer: {
+      read: (v: string) => JSON.parse(v),
+      write: (v: any) => JSON.stringify(v),
+    },
+  },
 );
 const registryVersion = ref(0);
 
