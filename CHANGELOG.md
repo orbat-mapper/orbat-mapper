@@ -20,6 +20,10 @@ All notable changes to this project will be documented in this file.
 - Added support for dropping ORBAT units as indented text into the "Text to ORBAT" editor.
 - Added a clear input button to the "Text to ORBAT" view.
 - Added "Text to ORBAT" documentation page.
+- Added user-defined pattern mappings to "Text to ORBAT" — add custom icon/echelon aliases or entirely new icon mappings.
+- Added inline editing and deletion for pattern mapping entries in "Text to ORBAT".
+- Added localStorage persistence for custom pattern mappings with undo/redo support.
+- Added a visual symbol picker for selecting icons when adding or editing pattern mappings in "Text to ORBAT".
 
 ### Changed
 

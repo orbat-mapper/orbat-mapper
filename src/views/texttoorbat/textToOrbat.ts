@@ -24,12 +24,16 @@ export {
   MappingRegistry,
   defaultRegistry,
   type CompiledPattern,
-  type UserIconMapping,
-  type UserMappingData,
+  type AllMappingData,
 } from "./mappingRegistry";
 
 // Import values we need locally
-import { ICON_UNSPECIFIED } from "./iconRegistry";
+import {
+  ICON_UNSPECIFIED,
+  buildIconSidc,
+  extractEntityCode,
+  extractSymbolSet,
+} from "./iconRegistry";
 import { ECHELON_UNSPECIFIED } from "./echelonRegistry";
 
 // Derived constants from the default registry, used by PatternMappingModal
@@ -213,33 +217,34 @@ export function getEchelonCode(
  * Result of matching a name against icon patterns.
  */
 export interface IconMatch {
-  code: string;
-  symbolSet?: string;
+  /** Full 20-char template SIDC for the matched icon. */
+  sidc: string;
 }
 
 /**
- * Detect symbol icon code and optional symbol set from unit name.
+ * Detect symbol icon and return a full template SIDC from unit name.
  */
 export function getIconMatchFromName(
   name: string,
   registry: MappingRegistry = defaultRegistry,
 ): IconMatch {
-  for (const { pattern, code, symbolSet } of registry.iconPatterns) {
+  for (const { pattern, code } of registry.iconPatterns) {
     if (pattern.test(name)) {
-      return { code, symbolSet };
+      return { sidc: code };
     }
   }
-  return { code: ICON_UNSPECIFIED };
+  return { sidc: buildIconSidc(ICON_UNSPECIFIED) };
 }
 
 /**
  * Detect symbol icon code from unit name using keyword patterns.
+ * Returns a 10-char entity code for backward compatibility.
  */
 export function getIconCodeFromName(
   name: string,
   registry: MappingRegistry = defaultRegistry,
 ): string {
-  return getIconMatchFromName(name, registry).code;
+  return extractEntityCode(getIconMatchFromName(name, registry).sidc);
 }
 
 // ---------------------------------------------------------------------------
@@ -281,17 +286,17 @@ export function buildSidc(
 
   // Detect symbol icon from name, fall back to parent icon if not detected
   const iconMatch = getIconMatchFromName(name, registry);
-  let entity = iconMatch.code;
-  const matchedSymbolSet = iconMatch.symbolSet;
+  let entity = extractEntityCode(iconMatch.sidc);
+  const matchedSymbolSet = extractSymbolSet(iconMatch.sidc);
   if (entity === ICON_UNSPECIFIED && parentIcon && parentIcon !== ICON_UNSPECIFIED) {
     entity = parentIcon;
   }
 
   // Use the symbol set from the matched icon definition if available
-  const symbolSet = matchedSymbolSet ?? UNIT_SYMBOL_SET;
+  const symbolSet = matchedSymbolSet;
 
   // Naval and other non-land symbol sets don't use land echelons
-  if (matchedSymbolSet && matchedSymbolSet !== UNIT_SYMBOL_SET) {
+  if (matchedSymbolSet !== UNIT_SYMBOL_SET) {
     echelon = ECHELON_UNSPECIFIED;
   }
 
@@ -332,22 +337,25 @@ function buildSidcWithMetadataPriority(
     echelon = getEchelonCode(level, registry);
   }
 
+  const unspecifiedSidc = buildIconSidc(ICON_UNSPECIFIED);
   const metadataIconMatch = metadataName
     ? getIconMatchFromName(metadataName, registry)
-    : { code: ICON_UNSPECIFIED };
+    : { sidc: unspecifiedSidc };
   const displayIconMatch = getIconMatchFromName(displayName, registry);
   const iconMatch =
-    metadataIconMatch.code !== ICON_UNSPECIFIED ? metadataIconMatch : displayIconMatch;
+    extractEntityCode(metadataIconMatch.sidc) !== ICON_UNSPECIFIED
+      ? metadataIconMatch
+      : displayIconMatch;
 
-  let entity = iconMatch.code;
-  const matchedSymbolSet = iconMatch.symbolSet;
+  let entity = extractEntityCode(iconMatch.sidc);
+  const matchedSymbolSet = extractSymbolSet(iconMatch.sidc);
   if (entity === ICON_UNSPECIFIED && parentIcon && parentIcon !== ICON_UNSPECIFIED) {
     entity = parentIcon;
   }
 
-  const symbolSet = matchedSymbolSet ?? UNIT_SYMBOL_SET;
+  const symbolSet = matchedSymbolSet;
 
-  if (matchedSymbolSet && matchedSymbolSet !== UNIT_SYMBOL_SET) {
+  if (matchedSymbolSet !== UNIT_SYMBOL_SET) {
     echelon = ECHELON_UNSPECIFIED;
   }
 

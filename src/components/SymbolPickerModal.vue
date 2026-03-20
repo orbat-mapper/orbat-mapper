@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, ref, watch, watchEffect } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  inject,
+  nextTick,
+  ref,
+  watch,
+  watchEffect,
+} from "vue";
 import {
   ComboboxContent,
   ComboboxGroup,
@@ -39,7 +47,6 @@ import BaseButton from "@/components/BaseButton.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Button } from "@/components/ui/button";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
-import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects.ts";
 import SymbolPickerCustomSymbol from "@/components/SymbolPickerCustomSymbol.vue";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
@@ -68,7 +75,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const open = defineModel<boolean>("isVisible", { default: true });
 const emit = defineEmits(["update:sidc", "cancel"]);
-const scn = injectStrict(activeScenarioKey);
+const scn = inject(activeScenarioKey, null);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 
@@ -79,7 +86,7 @@ const customSymbolId = ref(
 );
 
 const customSymbol = computed(() => {
-  if (!customSymbolId.value) return null;
+  if (!customSymbolId.value || !scn) return null;
   return scn.store.state.customSymbolMap[customSymbolId.value];
 });
 
@@ -182,7 +189,7 @@ const onSubmit = () => {
         ? { fillColor: internalSymbolOptions.value.fillColor }
         : {},
     });
-    if (internalSymbolOptions.value.fillColor)
+    if (internalSymbolOptions.value.fillColor && scn)
       scn.settings.addColorIfAbsent(internalSymbolOptions.value.fillColor);
   }
   open.value = false;
@@ -218,7 +225,7 @@ function updateFromBrowseTab(sidc: string) {
 }
 
 function updateFromCustomSymbol(symbolId: string) {
-  const customSymbol = scn.store.state.customSymbolMap[symbolId];
+  const customSymbol = scn?.store.state.customSymbolMap[symbolId];
   const sidc = new Sidc(customSymbol ? customSymbol.sidc : "10031000001100000000");
   sidc.standardIdentity = sidValue.value;
   csidc.value = sidc.toString();

@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { ICON_PATTERNS } from "@/views/texttoorbat/textToOrbat";
+import { extractEntityCode } from "@/views/texttoorbat/iconRegistry";
 
 const open = defineModel<boolean>({ default: false });
 const searchQuery = ref("");
@@ -19,14 +20,7 @@ interface IconEntry {
   name: string;
   code: string;
   entityCode: string;
-  symbolSet: string;
   sidc: string;
-}
-
-// Build SIDC from entity code and symbol set
-function buildSidc(entityCode: string, symbolSet = "10"): string {
-  // Format: version(2) context(1) standard_identity(1) symbol_set(2) status(1) hq/TF(1) echelon(2) entity(10)
-  return `1003${symbolSet}0000${entityCode}`;
 }
 
 function friendlyNameFromVar(varName: string) {
@@ -39,16 +33,18 @@ function friendlyNameFromVar(varName: string) {
 
 const icons: IconEntry[] = Object.values(
   ICON_PATTERNS.reduce<Record<string, IconEntry>>((acc, pattern) => {
-    const symbolSet = pattern.symbolSet ?? "10";
-    const key = `${symbolSet}:${pattern.code}:${pattern.name}`;
+    // pattern.code is the full 20-char template SIDC for icons
+    const key = `${pattern.code}:${pattern.name}`;
     if (acc[key]) return acc;
+
+    // Build display SIDC: replace SI position (index 3) with friendly "3"
+    const displaySidc = pattern.code.substring(0, 3) + "3" + pattern.code.substring(4);
 
     acc[key] = {
       name: pattern.label ?? friendlyNameFromVar(pattern.name),
       code: pattern.name,
-      entityCode: pattern.code,
-      symbolSet,
-      sidc: buildSidc(pattern.code, symbolSet),
+      entityCode: extractEntityCode(pattern.code),
+      sidc: displaySidc,
     };
     return acc;
   }, {}),
@@ -104,8 +100,8 @@ const filteredIcons = computed(() => {
               <div class="font-mono text-xs leading-6 text-amber-600 dark:text-amber-400">
                 {{ icon.code.slice(5) }}
               </div>
-              <div class="font-mono text-sm tracking-wider">
-                {{ icon.entityCode }}
+              <div class="font-mono text-xs tracking-wider">
+                {{ icon.sidc }}
               </div>
             </div>
           </div>

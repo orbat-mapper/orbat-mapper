@@ -4,14 +4,12 @@ import {
   type CompletionContext,
   type CompletionResult,
 } from "@codemirror/autocomplete";
+import { type EchelonDefinition } from "@/views/texttoorbat/echelonRegistry";
+import { type IconDefinition } from "@/views/texttoorbat/iconRegistry";
 import {
-  BUILTIN_ECHELON_DEFINITIONS,
-  type EchelonDefinition,
-} from "@/views/texttoorbat/echelonRegistry";
-import {
-  BUILTIN_ICON_DEFINITIONS,
-  type IconDefinition,
-} from "@/views/texttoorbat/iconRegistry";
+  defaultRegistry,
+  type MappingRegistry,
+} from "@/views/texttoorbat/mappingRegistry";
 
 const FRIENDLY_SI = "3";
 const DEFAULT_SYMBOL_SET = "10";
@@ -184,38 +182,46 @@ function filterCompletionOptions(text: string, options: Completion[]) {
   });
 }
 
-export function getUnitTypeCompletions(): Completion[] {
+export function getUnitTypeCompletions(
+  registry: MappingRegistry = defaultRegistry,
+): Completion[] {
   return buildCompletionsFromDefinitions(
-    BUILTIN_ICON_DEFINITIONS,
+    [...registry.iconDefinitions],
     "Recognized unit type",
-    (definition) =>
-      buildIconPreviewSidc(
-        (definition as IconDefinition).code,
-        (definition as IconDefinition).symbolSet ?? DEFAULT_SYMBOL_SET,
-      ),
+    (definition) => {
+      const sidc = (definition as IconDefinition).sidc;
+      return sidc.substring(0, 3) + FRIENDLY_SI + sidc.substring(4);
+    },
   );
 }
 
-export function getEchelonCompletions(): Completion[] {
+export function getEchelonCompletions(
+  registry: MappingRegistry = defaultRegistry,
+): Completion[] {
   return buildCompletionsFromDefinitions(
-    BUILTIN_ECHELON_DEFINITIONS,
+    [...registry.echelonDefinitions],
     "Recognized echelon",
     (definition) => buildEchelonPreviewSidc((definition as EchelonDefinition).code),
   );
 }
 
-export function getTextToOrbatCompletions(): Completion[] {
-  return [...getUnitTypeCompletions(), ...getEchelonCompletions()];
+export function getTextToOrbatCompletions(
+  registry: MappingRegistry = defaultRegistry,
+): Completion[] {
+  return [...getUnitTypeCompletions(registry), ...getEchelonCompletions(registry)];
 }
 
-export function completeUnitTypes(context: CompletionContext): CompletionResult | null {
+export function completeUnitTypes(
+  context: CompletionContext,
+  registry: MappingRegistry = defaultRegistry,
+): CompletionResult | null {
   const word = getActiveCompletionText(context);
 
   if (!word || (word.from === word.to && !context.explicit)) {
     return null;
   }
 
-  const allOptions = getTextToOrbatCompletions();
+  const allOptions = getTextToOrbatCompletions(registry);
   let options = filterCompletionOptions(word.text, allOptions);
   let from = word.from;
   if (options.length === 0 && word.text.includes(" ")) {
@@ -237,9 +243,10 @@ export function completeUnitTypes(context: CompletionContext): CompletionResult 
 
 export function textToOrbatAutocompletion(
   options?: Parameters<typeof autocompletion>[0],
+  registry: MappingRegistry = defaultRegistry,
 ) {
   return autocompletion({
-    override: [completeUnitTypes],
+    override: [(context) => completeUnitTypes(context, registry)],
     activateOnTyping: true,
     defaultKeymap: true,
     ...options,
