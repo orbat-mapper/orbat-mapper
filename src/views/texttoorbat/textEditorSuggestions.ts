@@ -187,7 +187,7 @@ export function getUnitTypeCompletions(
 ): Completion[] {
   return buildCompletionsFromDefinitions(
     [...registry.iconDefinitions],
-    "Recognized unit type",
+    "unit type",
     (definition) => {
       const sidc = (definition as IconDefinition).sidc;
       return sidc.substring(0, 3) + FRIENDLY_SI + sidc.substring(4);
@@ -200,7 +200,7 @@ export function getEchelonCompletions(
 ): Completion[] {
   return buildCompletionsFromDefinitions(
     [...registry.echelonDefinitions],
-    "Recognized echelon",
+    "echelon",
     (definition) => buildEchelonPreviewSidc((definition as EchelonDefinition).code),
   );
 }
