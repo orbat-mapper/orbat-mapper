@@ -36,10 +36,28 @@ export interface CompiledPattern {
 // Serialisable mapping snapshot
 // ---------------------------------------------------------------------------
 
+/** A serialisable regex pattern: source + flags. */
+interface SerializedPattern {
+  source: string;
+  flags: string;
+}
+
 /** Serialisable snapshot of all icon and echelon definitions. */
 export interface AllMappingData {
-  icons: { code: string; label: string; aliases: string[]; symbolSet?: string }[];
-  echelons: { code: string; label: string; aliases: string[] }[];
+  icons: {
+    code: string;
+    label: string;
+    aliases: string[];
+    symbolSet?: string;
+    patterns?: SerializedPattern[];
+  }[];
+  echelons: {
+    code: string;
+    label: string;
+    aliases: string[];
+    patterns?: SerializedPattern[];
+    concatenatedSuffixes?: string[];
+  }[];
 }
 
 // ---------------------------------------------------------------------------
@@ -96,12 +114,26 @@ function compileDefinitions(
 // MappingRegistry class
 // ---------------------------------------------------------------------------
 
+interface RegistrySnapshot {
+  iconDefs: IconDefinition[];
+  echelonDefs: EchelonDefinition[];
+}
+
+function cloneDefs<T extends object>(defs: T[]): T[] {
+  return defs.map((d) => ({ ...d }));
+}
+
 export class MappingRegistry {
   private _iconDefs: IconDefinition[];
   private _echelonDefs: EchelonDefinition[];
 
   // Monotonically increasing version for reactive consumers
   private _version = 0;
+
+  // Undo/redo stacks (snapshots of definition arrays)
+  private _undoStack: RegistrySnapshot[] = [];
+  private _redoStack: RegistrySnapshot[] = [];
+  private static readonly MAX_UNDO = 50;
 
   // Cached compiled patterns (invalidated on mutation)
   private _iconPatterns: CompiledPattern[] | null = null;
@@ -197,10 +229,64 @@ export class MappingRegistry {
     return this._version;
   }
 
+  // ── Undo / Redo ────────────────────────────────────────────────
+
+  get canUndo(): boolean {
+    return this._undoStack.length > 0;
+  }
+
+  get canRedo(): boolean {
+    return this._redoStack.length > 0;
+  }
+
+  undo(): boolean {
+    const snapshot = this._undoStack.pop();
+    if (!snapshot) return false;
+    this._redoStack.push({
+      iconDefs: cloneDefs(this._iconDefs),
+      echelonDefs: cloneDefs(this._echelonDefs),
+    });
+    this._iconDefs = snapshot.iconDefs;
+    this._echelonDefs = snapshot.echelonDefs;
+    this.invalidateAllCaches();
+    return true;
+  }
+
+  redo(): boolean {
+    const snapshot = this._redoStack.pop();
+    if (!snapshot) return false;
+    this._undoStack.push({
+      iconDefs: cloneDefs(this._iconDefs),
+      echelonDefs: cloneDefs(this._echelonDefs),
+    });
+    this._iconDefs = snapshot.iconDefs;
+    this._echelonDefs = snapshot.echelonDefs;
+    this.invalidateAllCaches();
+    return true;
+  }
+
+  clearUndoRedoStack(): void {
+    this._undoStack = [];
+    this._redoStack = [];
+  }
+
+  /** Save a snapshot before a mutation so it can be undone. */
+  private pushUndo(): void {
+    this._undoStack.push({
+      iconDefs: cloneDefs(this._iconDefs),
+      echelonDefs: cloneDefs(this._echelonDefs),
+    });
+    if (this._undoStack.length > MappingRegistry.MAX_UNDO) {
+      this._undoStack.shift();
+    }
+    this._redoStack = [];
+  }
+
   // ── Mutation methods ─────────────────────────────────────────────
 
   /** Add extra aliases to an existing icon by code. */
   extendIcon(code: string, extraAliases: string[]): void {
+    this.pushUndo();
     for (const def of this._iconDefs) {
       if (def.code === code) {
         def.aliases = [...(def.aliases ?? []), ...extraAliases];
@@ -212,6 +298,7 @@ export class MappingRegistry {
 
   /** Add a completely new icon mapping. */
   addIcon(def: IconDefinition, position?: "prepend"): void {
+    this.pushUndo();
     if (!position || position === "prepend") {
       this._iconDefs.unshift({ ...def });
     }
@@ -220,6 +307,7 @@ export class MappingRegistry {
 
   /** Remove an alias from icon definitions matching the given code. */
   removeIconAlias(code: string, alias: string): void {
+    this.pushUndo();
     for (const def of this._iconDefs) {
       if (def.code === code && def.aliases) {
         def.aliases = def.aliases.filter((a) => a !== alias);
@@ -230,6 +318,7 @@ export class MappingRegistry {
 
   /** Remove a raw pattern from icon definitions matching the given code. */
   removeIconPattern(code: string, patternSource: string): void {
+    this.pushUndo();
     for (const def of this._iconDefs) {
       if (def.code === code && def.patterns) {
         def.patterns = def.patterns.filter((p) => p.source !== patternSource);
@@ -241,6 +330,7 @@ export class MappingRegistry {
 
   /** Remove all icon definitions matching the given code (and optional symbolSet). */
   removeIcon(code: string, symbolSet?: string): void {
+    this.pushUndo();
     this._iconDefs = this._iconDefs.filter(
       (d) =>
         d.code !== code ||
@@ -251,12 +341,14 @@ export class MappingRegistry {
 
   /** Remove all echelon definitions matching the given code. */
   removeEchelon(code: string): void {
+    this.pushUndo();
     this._echelonDefs = this._echelonDefs.filter((d) => d.code !== code);
     this.invalidateEchelonCache();
   }
 
   /** Remove an alias from echelon definitions matching the given code. */
   removeEchelonAlias(code: string, alias: string): void {
+    this.pushUndo();
     for (const def of this._echelonDefs) {
       if (def.code === code && def.aliases) {
         def.aliases = def.aliases.filter((a) => a !== alias);
@@ -271,6 +363,7 @@ export class MappingRegistry {
     updates: { label?: string; code?: string },
     symbolSet?: string,
   ): void {
+    this.pushUndo();
     for (const def of this._iconDefs) {
       if (
         def.code === code &&
@@ -290,6 +383,7 @@ export class MappingRegistry {
 
   /** Update label for echelon definitions matching the given code. */
   updateEchelon(code: string, updates: { label?: string }): void {
+    this.pushUndo();
     for (const def of this._echelonDefs) {
       if (def.code === code) {
         if (updates.label !== undefined) def.label = updates.label;
@@ -300,6 +394,7 @@ export class MappingRegistry {
 
   /** Add extra aliases to an existing echelon by code. */
   extendEchelon(code: string, extraAliases: string[]): void {
+    this.pushUndo();
     for (const def of this._echelonDefs) {
       if (def.code === code) {
         def.aliases = [...(def.aliases ?? []), ...extraAliases];
@@ -311,6 +406,7 @@ export class MappingRegistry {
 
   /** Reset to built-in defaults, discarding all customizations. */
   resetToDefaults(): void {
+    this.pushUndo();
     this._iconDefs = this._builtInIcons.map((d) => ({ ...d }));
     this._echelonDefs = this._builtInEchelons.map((d) => ({ ...d }));
     this.invalidateIconCache();
@@ -321,58 +417,36 @@ export class MappingRegistry {
 
   /** Export all icon and echelon definitions as a flat snapshot. */
   exportMappings(): AllMappingData {
-    // Deduplicate icons by grouping aliases per (code + symbolSet) pair
-    const iconGroups = new Map<string, AllMappingData["icons"][0]>();
-    for (const def of this._iconDefs) {
-      const key = `${def.symbolSet ?? "10"}:${def.code}`;
-      const existing = iconGroups.get(key);
-      if (existing) {
-        const seen = new Set(existing.aliases);
-        for (const a of def.aliases ?? []) {
-          if (!seen.has(a)) {
-            existing.aliases.push(a);
-            seen.add(a);
-          }
-        }
-      } else {
-        iconGroups.set(key, {
-          code: def.code,
-          label: def.label,
-          aliases: [...(def.aliases ?? [])],
-          ...(def.symbolSet && { symbolSet: def.symbolSet }),
-        });
-      }
-    }
-
-    // Deduplicate echelons by code
-    const echelonGroups = new Map<string, AllMappingData["echelons"][0]>();
-    for (const def of this._echelonDefs) {
-      const existing = echelonGroups.get(def.code);
-      if (existing) {
-        const seen = new Set(existing.aliases);
-        for (const a of def.aliases ?? []) {
-          if (!seen.has(a)) {
-            existing.aliases.push(a);
-            seen.add(a);
-          }
-        }
-      } else {
-        echelonGroups.set(def.code, {
-          code: def.code,
-          label: def.label,
-          aliases: [...(def.aliases ?? [])],
-        });
-      }
-    }
-
     return {
-      icons: [...iconGroups.values()],
-      echelons: [...echelonGroups.values()],
+      icons: this._iconDefs.map((def) => ({
+        code: def.code,
+        label: def.label,
+        aliases: [...(def.aliases ?? [])],
+        ...(def.symbolSet && { symbolSet: def.symbolSet }),
+        ...(def.patterns &&
+          def.patterns.length > 0 && {
+            patterns: def.patterns.map((p) => ({ source: p.source, flags: p.flags })),
+          }),
+      })),
+      echelons: this._echelonDefs.map((def) => ({
+        code: def.code,
+        label: def.label,
+        aliases: [...(def.aliases ?? [])],
+        ...(def.patterns &&
+          def.patterns.length > 0 && {
+            patterns: def.patterns.map((p) => ({ source: p.source, flags: p.flags })),
+          }),
+        ...(def.concatenatedSuffixes &&
+          def.concatenatedSuffixes.length > 0 && {
+            concatenatedSuffixes: [...def.concatenatedSuffixes],
+          }),
+      })),
     };
   }
 
   /** Replace all definitions from a previously exported snapshot. */
   importMappings(data: AllMappingData): void {
+    this.pushUndo();
     if (data.icons) {
       this._iconDefs = data.icons.map((d) => ({
         name: d.label.toUpperCase().replace(/\s+/g, "_"),
@@ -380,6 +454,10 @@ export class MappingRegistry {
         label: d.label,
         aliases: [...d.aliases],
         ...(d.symbolSet && { symbolSet: d.symbolSet }),
+        ...(d.patterns &&
+          d.patterns.length > 0 && {
+            patterns: d.patterns.map((p) => new RegExp(p.source, p.flags)),
+          }),
       }));
     }
     if (data.echelons) {
@@ -388,6 +466,14 @@ export class MappingRegistry {
         code: d.code,
         label: d.label,
         aliases: [...d.aliases],
+        ...(d.patterns &&
+          d.patterns.length > 0 && {
+            patterns: d.patterns.map((p) => new RegExp(p.source, p.flags)),
+          }),
+        ...(d.concatenatedSuffixes &&
+          d.concatenatedSuffixes.length > 0 && {
+            concatenatedSuffixes: [...d.concatenatedSuffixes],
+          }),
       }));
     }
     this.invalidateIconCache();
@@ -407,6 +493,11 @@ export class MappingRegistry {
     this._echelonCodeToName = null;
     this._concatenatedSuffixes = null;
     this._version++;
+  }
+
+  private invalidateAllCaches(): void {
+    this.invalidateIconCache();
+    this.invalidateEchelonCache();
   }
 }
 

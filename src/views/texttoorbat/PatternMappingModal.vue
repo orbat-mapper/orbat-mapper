@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { onBeforeUnmount, onMounted, ref, computed } from "vue";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,8 @@ import {
   PencilIcon,
   XIcon,
   Trash2Icon,
+  Undo2Icon,
+  Redo2Icon,
 } from "lucide-vue-next";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useNotifications } from "@/composables/notifications";
@@ -43,6 +45,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   mappingsChanged: [];
+  mappingsReset: [];
 }>();
 
 const { send: sendNotification } = useNotifications();
@@ -351,7 +354,7 @@ function handleReset() {
     return;
   }
   props.registry.resetToDefaults();
-  emit("mappingsChanged");
+  emit("mappingsReset");
   sendNotification({ message: "Mappings reset to defaults" });
 }
 
@@ -394,6 +397,53 @@ async function handleImportFile(event: Event) {
   // Reset the input so the same file can be re-imported
   input.value = "";
 }
+
+// ── Undo / Redo ──────────────────────────────────────────────────
+
+const canUndo = computed(() => {
+  void props.registryVersion;
+  return props.registry.canUndo;
+});
+
+const canRedo = computed(() => {
+  void props.registryVersion;
+  return props.registry.canRedo;
+});
+
+function handleUndo() {
+  if (props.registry.undo()) {
+    emit("mappingsChanged");
+  }
+}
+
+function handleRedo() {
+  if (props.registry.redo()) {
+    emit("mappingsChanged");
+  }
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (!open.value) return;
+  const mod = e.metaKey || e.ctrlKey;
+  if (mod && e.key === "z" && !e.shiftKey) {
+    e.preventDefault();
+    handleUndo();
+  } else if (mod && e.key === "z" && e.shiftKey) {
+    e.preventDefault();
+    handleRedo();
+  } else if (mod && e.key === "y") {
+    e.preventDefault();
+    handleRedo();
+  }
+}
+
+onMounted(() => {
+  window.addEventListener("keydown", onKeydown);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", onKeydown);
+});
 </script>
 
 <template>
@@ -830,6 +880,28 @@ async function handleImportFile(event: Event) {
           Patterns are matched in order; more specific patterns take precedence.
         </span>
         <div class="flex flex-wrap gap-2">
+          <Button
+            size="icon"
+            variant="ghost"
+            class="size-8"
+            type="button"
+            title="Undo (Ctrl+Z)"
+            :disabled="!canUndo"
+            @click="handleUndo"
+          >
+            <Undo2Icon class="size-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            class="size-8"
+            type="button"
+            title="Redo (Ctrl+Shift+Z)"
+            :disabled="!canRedo"
+            @click="handleRedo"
+          >
+            <Redo2Icon class="size-4" />
+          </Button>
           <Button size="sm" variant="ghost" type="button" @click="handleReset">
             <RotateCcwIcon class="mr-1 size-4" />
             Reset

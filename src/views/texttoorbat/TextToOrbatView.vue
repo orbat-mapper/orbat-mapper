@@ -83,18 +83,30 @@ const scratchPadUnits = useLocalStorage<Unit[]>("textToOrbatScratchPad", []);
 const storedMappings = useLocalStorage<AllMappingData | null>(
   "textToOrbatMappings",
   null,
+  { serializer: { read: (v: string) => JSON.parse(v), write: (v: any) => JSON.stringify(v) } },
 );
 const registryVersion = ref(0);
 
 // Load stored mappings on init
 if (storedMappings.value?.icons?.length || storedMappings.value?.echelons?.length) {
-  defaultRegistry.importMappings(storedMappings.value);
-  registryVersion.value = defaultRegistry.version;
+  try {
+    defaultRegistry.importMappings(storedMappings.value);
+    defaultRegistry.clearUndoRedoStack();
+    registryVersion.value = defaultRegistry.version;
+  } catch (e) {
+    console.warn("Failed to load stored mappings, resetting to defaults", e);
+    storedMappings.value = null;
+  }
 }
 
 function handleMappingsChanged() {
   registryVersion.value = defaultRegistry.version;
   storedMappings.value = defaultRegistry.exportMappings();
+}
+
+function handleMappingsReset() {
+  registryVersion.value = defaultRegistry.version;
+  storedMappings.value = null;
 }
 
 const showIconBrowser = ref(false);
@@ -560,5 +572,6 @@ onUnmounted(() => {
     :registry="defaultRegistry"
     :registry-version="registryVersion"
     @mappings-changed="handleMappingsChanged"
+    @mappings-reset="handleMappingsReset"
   />
 </template>
