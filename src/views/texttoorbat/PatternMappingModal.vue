@@ -667,11 +667,7 @@ onBeforeUnmount(() => {
                             v-if="entry.code"
                             class="text-muted-foreground font-mono text-xs tracking-wider break-all whitespace-normal"
                           >
-                            {{
-                              entry.kind === "icon" && entry.code
-                                ? extractEntityCode(entry.code)
-                                : entry.code
-                            }}
+                            {{ entry.code }}
                           </span>
                         </template>
                       </div>

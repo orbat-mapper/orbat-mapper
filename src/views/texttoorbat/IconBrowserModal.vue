@@ -100,8 +100,8 @@ const filteredIcons = computed(() => {
               <div class="font-mono text-xs leading-6 text-amber-600 dark:text-amber-400">
                 {{ icon.code.slice(5) }}
               </div>
-              <div class="font-mono text-sm tracking-wider">
-                {{ icon.entityCode }}
+              <div class="font-mono text-xs tracking-wider">
+                {{ icon.sidc }}
               </div>
             </div>
           </div>
