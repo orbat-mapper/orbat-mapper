@@ -349,6 +349,18 @@ export class MappingRegistry {
     this.invalidateEchelonCache();
   }
 
+  /** Clear all aliases and patterns from echelon definitions matching the given code. */
+  clearEchelonAliases(code: string): void {
+    this.pushUndo();
+    for (const def of this._echelonDefs) {
+      if (def.code === code) {
+        def.aliases = [];
+        def.patterns = [];
+      }
+    }
+    this.invalidateEchelonCache();
+  }
+
   /** Remove an alias from echelon definitions matching the given code. */
   removeEchelonAlias(code: string, alias: string): void {
     this.pushUndo();

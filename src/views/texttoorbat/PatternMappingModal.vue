@@ -312,7 +312,7 @@ function deleteEntry(entry: PatternEntry) {
   if (entry.kind === "icon") {
     props.registry.removeIcon(entry.code);
   } else {
-    props.registry.removeEchelon(entry.code);
+    props.registry.clearEchelonAliases(entry.code);
   }
   emit("mappingsChanged");
 }
