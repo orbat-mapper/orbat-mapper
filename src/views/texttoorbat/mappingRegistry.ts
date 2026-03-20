@@ -43,8 +43,12 @@ interface SerializedPattern {
   flags: string;
 }
 
+/** Current export format version. */
+const MAPPING_DATA_VERSION = 1;
+
 /** Serialisable snapshot of all icon and echelon definitions. */
 export interface AllMappingData {
+  version?: number;
   icons: {
     sidc: string;
     label: string;
@@ -410,6 +414,7 @@ export class MappingRegistry {
   /** Export all icon and echelon definitions as a flat snapshot. */
   exportMappings(): AllMappingData {
     return {
+      version: MAPPING_DATA_VERSION,
       icons: this._iconDefs.map((def) => ({
         sidc: def.sidc,
         label: def.label,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, computed } from "vue";
+import { defineAsyncComponent, onBeforeUnmount, onMounted, ref, computed } from "vue";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,11 @@ import {
 } from "lucide-vue-next";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useNotifications } from "@/composables/notifications";
+import { useSidcModal } from "@/composables/modals";
+
+const SymbolPickerModal = defineAsyncComponent(
+  () => import("@/components/SymbolPickerModal.vue"),
+);
 
 const FRIENDLY_SI = "3";
 
@@ -62,12 +67,21 @@ const isEditing = ref(false);
 const addingAliasKey = ref<string | null>(null);
 const newAliasInput = ref("");
 
+// ── SIDC modal ──────────────────────────────────────────────────
+const {
+  showSidcModal,
+  getModalSidc,
+  confirmSidcModal,
+  cancelSidcModal,
+  initialSidcModalValue,
+  sidcModalTitle,
+} = useSidcModal();
+
 // ── Add new icon state ───────────────────────────────────────────
 const showAddIconForm = ref(false);
 const newIconLabel = ref("");
-const newIconCode = ref("");
+const newIconSidc = ref("");
 const newIconAliases = ref("");
-const newIconSymbolSet = ref("10");
 
 // ── Inline edit state ────────────────────────────────────────────
 const editingEntryKey = ref<string | null>(null);
@@ -85,6 +99,11 @@ function buildDisplaySidc(entityCode: string, symbolSet = "10"): string {
 // Convert a template SIDC (SI=0) to a display SIDC (SI=friendly)
 function templateToDisplaySidc(templateSidc: string): string {
   return templateSidc.substring(0, 3) + FRIENDLY_SI + templateSidc.substring(4);
+}
+
+// Convert a display SIDC to a template SIDC (SI=0)
+function displayToTemplateSidc(displaySidc: string): string {
+  return displaySidc.substring(0, 3) + "0" + displaySidc.substring(4);
 }
 
 // Build SIDC for echelon patterns (using infantry as base icon)
@@ -305,10 +324,7 @@ function entryKey(entry: PatternEntry): string {
 function startEditEntry(entry: PatternEntry) {
   editingEntryKey.value = entryKey(entry);
   editLabelValue.value = entry.label;
-  editCodeValue.value =
-    entry.kind === "icon" && entry.code
-      ? extractEntityCode(entry.code)
-      : (entry.code ?? "");
+  editCodeValue.value = entry.kind === "icon" ? (entry.code ?? "") : (entry.code ?? "");
 }
 
 function cancelEditEntry() {
@@ -320,13 +336,7 @@ function submitEditEntry(entry: PatternEntry) {
   if (!label || !entry.code) return;
 
   if (entry.kind === "icon") {
-    const newEntityCode = editCodeValue.value.trim();
-    if (newEntityCode.length !== 10) return;
-    const currentEntityCode = extractEntityCode(entry.code);
-    const newSidc =
-      newEntityCode !== currentEntityCode
-        ? buildTemplateSidc(newEntityCode, extractSymbolSet(entry.code))
-        : undefined;
+    const newSidc = editCodeValue.value !== entry.code ? editCodeValue.value : undefined;
     props.registry.updateIcon(entry.code, {
       label,
       ...(newSidc && { sidc: newSidc }),
@@ -338,17 +348,39 @@ function submitEditEntry(entry: PatternEntry) {
   editingEntryKey.value = null;
 }
 
+async function pickNewIconSidc() {
+  const result = await getModalSidc(newIconSidc.value || "10031000001211000000", {
+    title: "Pick icon symbol",
+    hideSymbolColor: true,
+    hideCustomSymbols: true,
+  });
+  if (result) {
+    newIconSidc.value = displayToTemplateSidc(result.sidc);
+  }
+}
+
+async function pickEditSidc(entry: PatternEntry) {
+  if (!entry.code) return;
+  const result = await getModalSidc(templateToDisplaySidc(entry.code), {
+    title: "Pick icon symbol",
+    hideSymbolColor: true,
+    hideCustomSymbols: true,
+  });
+  if (result) {
+    editCodeValue.value = displayToTemplateSidc(result.sidc);
+  }
+}
+
 function submitNewIcon() {
   const label = newIconLabel.value.trim();
-  const entityCode = newIconCode.value.trim();
+  const sidc = newIconSidc.value;
   const aliases = newIconAliases.value
     .split(",")
     .map((a) => a.trim())
     .filter(Boolean);
 
-  if (!label || entityCode.length !== 10 || aliases.length === 0) return;
+  if (!label || !sidc || aliases.length === 0) return;
 
-  const sidc = buildTemplateSidc(entityCode, newIconSymbolSet.value);
   props.registry.addIcon({
     name: label.toUpperCase().replace(/\s+/g, "_"),
     sidc,
@@ -358,9 +390,8 @@ function submitNewIcon() {
   emit("mappingsChanged");
   showAddIconForm.value = false;
   newIconLabel.value = "";
-  newIconCode.value = "";
+  newIconSidc.value = "";
   newIconAliases.value = "";
-  newIconSymbolSet.value = "10";
 }
 
 function handleReset() {
@@ -507,28 +538,32 @@ onBeforeUnmount(() => {
                   placeholder="Label (e.g. Drone)"
                   class="h-8 text-sm"
                 />
-                <Input
-                  v-model="newIconCode"
-                  placeholder="Entity code (10 chars)"
-                  class="h-8 font-mono text-sm"
-                  maxlength="10"
-                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  type="button"
+                  class="h-8 text-sm"
+                  @click="pickNewIconSidc"
+                >
+                  <template v-if="newIconSidc">
+                    <NewMilitarySymbol
+                      :sidc="templateToDisplaySidc(newIconSidc)"
+                      :size="20"
+                      :options="{ outlineWidth: 4, outlineColor: 'white' }"
+                    />
+                    <span class="ml-1 font-mono text-xs">{{
+                      extractEntityCode(newIconSidc)
+                    }}</span>
+                  </template>
+                  <template v-else>Pick symbol...</template>
+                </Button>
                 <Input
                   v-model="newIconAliases"
                   placeholder="Aliases (comma-separated)"
                   class="h-8 text-sm sm:col-span-2"
                 />
               </div>
-              <div class="mt-2 flex items-center justify-between">
-                <div v-if="newIconCode.length === 10" class="flex items-center gap-2">
-                  <NewMilitarySymbol
-                    :sidc="buildDisplaySidc(newIconCode, newIconSymbolSet)"
-                    :size="30"
-                    :options="{ outlineWidth: 6, outlineColor: 'white' }"
-                  />
-                  <span class="text-muted-foreground text-xs">Preview</span>
-                </div>
-                <div v-else />
+              <div class="mt-2 flex items-center justify-end">
                 <div class="flex gap-2">
                   <Button
                     size="sm"
@@ -542,9 +577,7 @@ onBeforeUnmount(() => {
                     size="sm"
                     type="button"
                     :disabled="
-                      !newIconLabel.trim() ||
-                      newIconCode.trim().length !== 10 ||
-                      !newIconAliases.trim()
+                      !newIconLabel.trim() || !newIconSidc || !newIconAliases.trim()
                     "
                     @click="submitNewIcon"
                   >
@@ -618,14 +651,22 @@ onBeforeUnmount(() => {
                           @keydown.enter="submitEditEntry(entry)"
                           @keydown.escape="cancelEditEntry"
                         />
-                        <Input
-                          v-model="editCodeValue"
-                          class="h-7 font-mono text-xs"
-                          placeholder="Entity code (10 chars)"
-                          maxlength="10"
-                          @keydown.enter="submitEditEntry(entry)"
-                          @keydown.escape="cancelEditEntry"
-                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          type="button"
+                          class="h-7 text-xs"
+                          @click="pickEditSidc(entry)"
+                        >
+                          <NewMilitarySymbol
+                            :sidc="templateToDisplaySidc(editCodeValue || entry.code!)"
+                            :size="18"
+                            :options="{ outlineWidth: 4, outlineColor: 'white' }"
+                          />
+                          <span class="ml-1 font-mono">{{
+                            extractEntityCode(editCodeValue || entry.code!)
+                          }}</span>
+                        </Button>
                         <div class="flex gap-1">
                           <Button
                             size="sm"
@@ -640,9 +681,7 @@ onBeforeUnmount(() => {
                             size="sm"
                             class="h-6 px-2 text-xs"
                             type="button"
-                            :disabled="
-                              !editLabelValue.trim() || editCodeValue.trim().length !== 10
-                            "
+                            :disabled="!editLabelValue.trim()"
                             @click="submitEditEntry(entry)"
                           >
                             Save
@@ -938,5 +977,14 @@ onBeforeUnmount(() => {
     accept=".json"
     class="hidden"
     @change="handleImportFile"
+  />
+  <SymbolPickerModal
+    v-if="showSidcModal"
+    :initial-sidc="initialSidcModalValue"
+    :dialog-title="sidcModalTitle"
+    hide-symbol-color
+    hide-custom-symbols
+    @update:sidc="confirmSidcModal($event)"
+    @cancel="cancelSidcModal"
   />
 </template>
