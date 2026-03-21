@@ -73,6 +73,7 @@ const { send: sendNotification } = useNotifications();
 const searchQuery = ref("");
 const showDebug = ref(false);
 const isEditing = ref(false);
+const activeTab = ref<"icons" | "echelons">("icons");
 
 // ── Add alias state ──────────────────────────────────────────────
 const addingAliasKey = ref<string | null>(null);
@@ -445,12 +446,23 @@ function submitNewIcon() {
 }
 
 function handleReset() {
-  if (!window.confirm("Reset all mappings to defaults? Custom changes will be lost.")) {
+  const scope = activeTab.value === "icons" ? "icon" : "echelon";
+  if (
+    !window.confirm(
+      `Reset all ${scope} mappings to defaults? Custom changes will be lost.`,
+    )
+  ) {
     return;
   }
-  props.registry.resetToDefaults();
+  if (activeTab.value === "icons") {
+    props.registry.resetIconsToDefaults();
+  } else {
+    props.registry.resetEchelonsToDefaults();
+  }
   emit("mappingsReset");
-  sendNotification({ message: "Mappings reset to defaults" });
+  sendNotification({
+    message: `${scope.charAt(0).toUpperCase() + scope.slice(1)} mappings reset to defaults`,
+  });
 }
 
 async function handleExportJson() {
@@ -691,7 +703,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <Tabs default-value="icons" class="w-full">
+        <Tabs v-model="activeTab" default-value="icons" class="w-full">
           <TabsList class="grid w-full grid-cols-2">
             <TabsTrigger value="icons">
               Unit Icons ({{ filteredIconEntries.length }})
@@ -1184,7 +1196,7 @@ onBeforeUnmount(() => {
           </Button>
           <Button size="sm" variant="ghost" type="button" @click="handleReset">
             <RotateCcwIcon class="mr-1 size-4" />
-            Reset
+            Reset {{ activeTab === "icons" ? "icons" : "echelons" }}
           </Button>
           <Button size="sm" variant="outline" type="button" @click="handleImportClick">
             <UploadIcon class="mr-1 size-4" />
