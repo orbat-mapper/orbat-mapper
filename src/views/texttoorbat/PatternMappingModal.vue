@@ -12,7 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
-import { defaultRegistry, type MappingRegistry } from "./mappingRegistry";
+import {
+  defaultRegistry,
+  parseMappingsFromXlsxWorkbook,
+  type MappingRegistry,
+} from "./mappingRegistry";
 import {
   extractEntityCode,
   extractSymbolSet,
@@ -29,7 +33,14 @@ import {
   Trash2Icon,
   Undo2Icon,
   Redo2Icon,
+  ChevronDownIcon,
 } from "lucide-vue-next";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useNotifications } from "@/composables/notifications";
 import { useSidcModal } from "@/composables/modals";
@@ -403,7 +414,7 @@ function handleReset() {
   sendNotification({ message: "Mappings reset to defaults" });
 }
 
-async function handleExport() {
+async function handleExportJson() {
   const data = props.registry.exportMappings();
   const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: "application/json",
@@ -413,10 +424,121 @@ async function handleExport() {
       mimeTypes: ["application/json"],
       extensions: [".json"],
     });
-    sendNotification({ message: "Mappings exported" });
+    sendNotification({ message: "Mappings exported as JSON" });
   } catch {
     // user cancelled
   }
+}
+
+async function handleExportXlsx() {
+  const { xlsxWrite, xlsxUtils } = await import("@/extlib/xlsx-lazy");
+  const { zipSync, unzipSync } = await import("fflate");
+  const wb = xlsxUtils.book_new();
+  const iconRows = props.registry.exportIconRows();
+  const echelonRows = props.registry.exportEchelonRows();
+  xlsxUtils.book_append_sheet(wb, xlsxUtils.json_to_sheet(iconRows), "Icons");
+  xlsxUtils.book_append_sheet(wb, xlsxUtils.json_to_sheet(echelonRows), "Echelons");
+
+  const readmeRows = [
+    {
+      Section: "Overview",
+      Description:
+        "This spreadsheet contains pattern mappings used by the Text to ORBAT feature. Edit the Icons and Echelons sheets and re-import the file to update your mappings.",
+    },
+    { Section: "", Description: "" },
+    {
+      Section: "Icons sheet",
+      Description:
+        "Each row maps a military symbol (identified by its 20-character SIDC code) to keywords that the parser recognizes.",
+    },
+    {
+      Section: "Echelons sheet",
+      Description:
+        "Each row maps an echelon level (identified by a 2-character code) to keywords that the parser recognizes.",
+    },
+    { Section: "", Description: "" },
+    {
+      Section: "Aliases",
+      Description:
+        'Comma-separated list of regular expressions matched as whole words (case-insensitive). Simple keywords like "infantry, inf, foot" work as-is, but you can also use regex syntax for flexible matching — e.g. "mech\\s+inf" matches "mech inf" with any amount of whitespace, and "anti[- ]?tank" matches "anti-tank", "anti tank", or "antitank".',
+    },
+    {
+      Section: "Patterns",
+      Description:
+        "Comma-separated list of regular expressions for cases where whole-word, case-insensitive matching is not enough. Unlike aliases, patterns are matched exactly as written (case-sensitive by default, no automatic word boundaries).",
+    },
+    {
+      Section: "Patterns (flags)",
+      Description:
+        'To specify regex flags on a pattern, append them after a trailing slash: "pattern/i" for case-insensitive. Without a slash, patterns are matched as-is.',
+    },
+    { Section: "", Description: "" },
+    {
+      Section: "Concatenated Suffixes",
+      Description:
+        '(Echelons only) Comma-separated suffixes that can be appended to unit names to indicate echelon, e.g. "bn, btl" so that "infantry bn" is recognized as battalion-level.',
+    },
+  ];
+  const readmeSheet = xlsxUtils.json_to_sheet(readmeRows);
+  readmeSheet["!cols"] = [{ wch: 24 }, { wch: 80 }];
+  xlsxUtils.book_append_sheet(wb, readmeSheet, "README");
+
+  // Generate XLSX buffer, then patch styles to add wrapText for the README sheet
+  const buf = xlsxWrite(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer;
+  const patched = applyWrapTextToReadmeSheet(new Uint8Array(buf), unzipSync, zipSync);
+
+  await saveBlobToLocalFile(
+    new Blob([patched as unknown as ArrayBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }),
+    "text-to-orbat-mappings.xlsx",
+    {
+      mimeTypes: ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+      extensions: [".xlsx"],
+    },
+  );
+  sendNotification({ message: "Mappings exported as XLSX" });
+}
+
+/**
+ * Patch an XLSX buffer to add a wrapText cell style and apply it to
+ * all data cells (row >= 2) in the last worksheet (the README sheet).
+ */
+function applyWrapTextToReadmeSheet(
+  xlsxBuf: Uint8Array,
+  unzipFn: (data: Uint8Array) => Record<string, Uint8Array>,
+  zipFn: (data: Record<string, Uint8Array>) => Uint8Array,
+): Uint8Array {
+  const dec = new TextDecoder();
+  const enc = new TextEncoder();
+  const files = unzipFn(xlsxBuf);
+
+  // Add a second cellXf with wrapText alignment to styles.xml
+  const stylesKey = "xl/styles.xml";
+  if (files[stylesKey]) {
+    let xml = dec.decode(files[stylesKey]);
+    xml = xml.replace(
+      /<cellXfs count="1">([\s\S]*?)<\/cellXfs>/,
+      '<cellXfs count="2">$1<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf></cellXfs>',
+    );
+    files[stylesKey] = enc.encode(xml);
+  }
+
+  // Find the last worksheet (README is appended last)
+  const sheetKeys = Object.keys(files)
+    .filter((k) => /^xl\/worksheets\/sheet\d+\.xml$/.test(k))
+    .sort();
+  const readmeSheetKey = sheetKeys[sheetKeys.length - 1];
+  if (readmeSheetKey && files[readmeSheetKey]) {
+    let xml = dec.decode(files[readmeSheetKey]);
+    // Apply s="1" (wrapText style) to all cells in data rows (row >= 2)
+    xml = xml.replace(/<c r="([A-Z]+)(\d+)"/g, (match, col, row) => {
+      return parseInt(row) >= 2 ? `${match} s="1"` : match;
+    });
+    files[readmeSheetKey] = enc.encode(xml);
+  }
+
+  return zipFn(files);
 }
 
 function handleImportClick() {
@@ -429,10 +551,22 @@ async function handleImportFile(event: Event) {
   if (!file) return;
 
   try {
-    const text = await file.text();
-    const data = JSON.parse(text);
-    if (typeof data !== "object" || data === null) throw new Error("Invalid format");
-    props.registry.importMappings(data);
+    const isXlsx = file.name.toLowerCase().endsWith(".xlsx");
+    if (isXlsx) {
+      const { readSpreadsheet } = await import("@/extlib/xlsx-read-lazy");
+      const { xlsxUtils } = await import("@/extlib/xlsx-lazy");
+      const buffer = await file.arrayBuffer();
+      const wb = readSpreadsheet(buffer, { type: "array" });
+      const data = parseMappingsFromXlsxWorkbook(wb, (sheet) =>
+        xlsxUtils.sheet_to_json(sheet as any),
+      );
+      props.registry.importMappings(data);
+    } else {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (typeof data !== "object" || data === null) throw new Error("Invalid format");
+      props.registry.importMappings(data);
+    }
     emit("mappingsChanged");
     sendNotification({ message: "Mappings imported" });
   } catch {
@@ -963,10 +1097,23 @@ onBeforeUnmount(() => {
             <UploadIcon class="mr-1 size-4" />
             Import
           </Button>
-          <Button size="sm" variant="outline" type="button" @click="handleExport">
-            <DownloadIcon class="mr-1 size-4" />
-            Export
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button size="sm" variant="outline" type="button">
+                <DownloadIcon class="mr-1 size-4" />
+                Export
+                <ChevronDownIcon class="ml-1 size-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem @click="handleExportJson">
+                Export as JSON
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="handleExportXlsx">
+                Export as XLSX
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </DialogFooter>
     </DialogContent>
@@ -974,7 +1121,7 @@ onBeforeUnmount(() => {
   <input
     ref="fileInputRef"
     type="file"
-    accept=".json"
+    accept=".json,.xlsx"
     class="hidden"
     @change="handleImportFile"
   />

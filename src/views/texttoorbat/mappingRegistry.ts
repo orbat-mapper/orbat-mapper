@@ -513,6 +513,121 @@ export class MappingRegistry {
     this.invalidateIconCache();
     this.invalidateEchelonCache();
   }
+
+  // ── XLSX serialisation ──────────────────────────────────────────
+
+  /** Export icon definitions as flat row objects for `json_to_sheet`. */
+  exportIconRows(): Record<string, string>[] {
+    return this._iconDefs.map((def) => ({
+      SIDC: def.sidc,
+      Label: def.label,
+      Aliases: (def.aliases ?? []).join(", "),
+      Patterns:
+        def.patterns && def.patterns.length > 0
+          ? def.patterns
+              .map((p) => (p.flags ? `${p.source}/${p.flags}` : p.source))
+              .join(", ")
+          : "",
+    }));
+  }
+
+  /** Export echelon definitions as flat row objects for `json_to_sheet`. */
+  exportEchelonRows(): Record<string, string>[] {
+    return this._echelonDefs.map((def) => ({
+      Code: def.code,
+      Label: def.label,
+      Aliases: (def.aliases ?? []).join(", "),
+      Patterns:
+        def.patterns && def.patterns.length > 0
+          ? def.patterns
+              .map((p) => (p.flags ? `${p.source}/${p.flags}` : p.source))
+              .join(", ")
+          : "",
+      "Concatenated Suffixes":
+        def.concatenatedSuffixes && def.concatenatedSuffixes.length > 0
+          ? def.concatenatedSuffixes.join(", ")
+          : "",
+    }));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// XLSX workbook → AllMappingData conversion
+// ---------------------------------------------------------------------------
+
+/** Split a comma-separated cell value into trimmed, non-empty strings. */
+function splitCell(value: unknown): string[] {
+  if (value == null || value === "") return [];
+  return String(value)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/** Parse a pattern string that may contain flags after a trailing `/`. */
+function parsePatternString(raw: string): { source: string; flags: string } {
+  const lastSlash = raw.lastIndexOf("/");
+  if (lastSlash > 0 && /^[gimsuy]*$/.test(raw.slice(lastSlash + 1))) {
+    return { source: raw.slice(0, lastSlash), flags: raw.slice(lastSlash + 1) };
+  }
+  return { source: raw, flags: "" };
+}
+
+/**
+ * Convert an XLSX workbook (with "Icons" and "Echelons" sheets) into
+ * the standard {@link AllMappingData} format that `importMappings()` accepts.
+ */
+export function parseMappingsFromXlsxWorkbook(
+  workbook: { SheetNames: string[]; Sheets: Record<string, unknown> },
+  sheetToJson: (sheet: unknown) => Record<string, unknown>[],
+): AllMappingData {
+  const data: AllMappingData = { version: MAPPING_DATA_VERSION, icons: [], echelons: [] };
+
+  const iconsSheet = workbook.Sheets["Icons"];
+  if (iconsSheet) {
+    const rows = sheetToJson(iconsSheet);
+    data.icons = rows
+      .filter((r) => r["SIDC"] || r["Label"])
+      .map((r) => {
+        const aliases = splitCell(r["Aliases"]);
+        const patternStrings = splitCell(r["Patterns"]);
+        const patterns =
+          patternStrings.length > 0
+            ? patternStrings.map((s) => parsePatternString(s))
+            : undefined;
+        return {
+          sidc: String(r["SIDC"] ?? ""),
+          label: String(r["Label"] ?? ""),
+          aliases,
+          ...(patterns && { patterns }),
+        };
+      });
+  }
+
+  const echelonsSheet = workbook.Sheets["Echelons"];
+  if (echelonsSheet) {
+    const rows = sheetToJson(echelonsSheet);
+    data.echelons = rows
+      .filter((r) => r["Code"] || r["Label"])
+      .map((r) => {
+        const aliases = splitCell(r["Aliases"]);
+        const patternStrings = splitCell(r["Patterns"]);
+        const patterns =
+          patternStrings.length > 0
+            ? patternStrings.map((s) => parsePatternString(s))
+            : undefined;
+        const concatenatedSuffixes = splitCell(r["Concatenated Suffixes"]);
+        return {
+          code: String(r["Code"] ?? ""),
+          label: String(r["Label"] ?? ""),
+          aliases,
+          ...(patterns && { patterns }),
+          ...(concatenatedSuffixes.length > 0 && { concatenatedSuffixes }),
+        };
+      });
+  }
+
+  return data;
 }
 
 // ---------------------------------------------------------------------------
