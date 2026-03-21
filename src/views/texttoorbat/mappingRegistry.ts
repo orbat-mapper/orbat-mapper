@@ -400,6 +400,30 @@ export class MappingRegistry {
     this.invalidateEchelonCache();
   }
 
+  /** Add a concatenated suffix to an existing echelon by code. */
+  addEchelonSuffix(code: string, suffix: string): void {
+    this.pushUndo();
+    for (const def of this._echelonDefs) {
+      if (def.code === code) {
+        def.concatenatedSuffixes = [...(def.concatenatedSuffixes ?? []), suffix];
+        break;
+      }
+    }
+    this.invalidateEchelonCache();
+  }
+
+  /** Remove a concatenated suffix from echelon definitions matching the given code. */
+  removeEchelonSuffix(code: string, suffix: string): void {
+    this.pushUndo();
+    for (const def of this._echelonDefs) {
+      if (def.code === code && def.concatenatedSuffixes) {
+        def.concatenatedSuffixes = def.concatenatedSuffixes.filter((s) => s !== suffix);
+        if (def.concatenatedSuffixes.length === 0) def.concatenatedSuffixes = undefined;
+      }
+    }
+    this.invalidateEchelonCache();
+  }
+
   /** Add extra aliases to an existing echelon by code. */
   extendEchelon(code: string, extraAliases: string[]): void {
     this.pushUndo();

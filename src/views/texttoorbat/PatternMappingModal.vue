@@ -78,6 +78,10 @@ const isEditing = ref(false);
 const addingAliasKey = ref<string | null>(null);
 const newAliasInput = ref("");
 
+// ── Add suffix state ─────────────────────────────────────────────
+const addingSuffixKey = ref<string | null>(null);
+const newSuffixInput = ref("");
+
 // ── SIDC modal ──────────────────────────────────────────────────
 const {
   showSidcModal,
@@ -138,6 +142,8 @@ interface PatternEntry {
   /** For icons: template SIDC (20-char). For echelons: echelon code (2-char). */
   code?: string;
   kind: "icon" | "echelon";
+  /** Concatenated suffixes (echelons only). */
+  suffixes?: string[];
 }
 
 function displayAlias(alias: string): string {
@@ -186,6 +192,7 @@ const echelonEntries = computed<PatternEntry[]>(() => {
       raw: p.source,
     }));
     const keywords = [...aliasKeywords, ...patternKeywords];
+    const suffixes = [...(def.concatenatedSuffixes ?? [])];
 
     if (existing) {
       const seen = new Set(existing.keywords.map((k) => k.raw));
@@ -195,6 +202,12 @@ const echelonEntries = computed<PatternEntry[]>(() => {
           seen.add(kw.raw);
         }
       }
+      const existingSuffixes = new Set(existing.suffixes ?? []);
+      for (const s of suffixes) {
+        if (!existingSuffixes.has(s)) {
+          existing.suffixes = [...(existing.suffixes ?? []), s];
+        }
+      }
     } else {
       grouped.set(def.code, {
         label: def.label,
@@ -202,6 +215,7 @@ const echelonEntries = computed<PatternEntry[]>(() => {
         sidc: buildEchelonSidc(def.code),
         code: def.code,
         kind: "echelon" as const,
+        suffixes: suffixes.length > 0 ? suffixes : undefined,
       });
     }
   }
@@ -260,7 +274,8 @@ const filteredEchelonEntries = computed(() => {
       entry.label.toLowerCase().includes(query) ||
       entry.constantName?.toLowerCase().includes(query) ||
       entry.code?.toLowerCase().includes(query) ||
-      entry.keywords.some((kw) => kw.value.toLowerCase().includes(query)),
+      entry.keywords.some((kw) => kw.value.toLowerCase().includes(query)) ||
+      entry.suffixes?.some((s) => s.toLowerCase().includes(query)),
   );
 });
 
@@ -299,6 +314,30 @@ function submitAddAlias(entry: PatternEntry) {
   }
   emit("mappingsChanged");
   cancelAddAlias();
+}
+
+function startAddSuffix(entry: PatternEntry) {
+  addingSuffixKey.value = `${entry.kind}:${entry.code}`;
+  newSuffixInput.value = "";
+}
+
+function cancelAddSuffix() {
+  addingSuffixKey.value = null;
+  newSuffixInput.value = "";
+}
+
+function submitAddSuffix(entry: PatternEntry) {
+  const suffix = newSuffixInput.value.trim().toLowerCase();
+  if (!suffix || !entry.code) return;
+  props.registry.addEchelonSuffix(entry.code, suffix);
+  emit("mappingsChanged");
+  cancelAddSuffix();
+}
+
+function deleteSuffix(entry: PatternEntry, suffix: string) {
+  if (!entry.code) return;
+  props.registry.removeEchelonSuffix(entry.code, suffix);
+  emit("mappingsChanged");
 }
 
 function deleteKeyword(entry: PatternEntry, keyword: KeywordEntry) {
@@ -919,8 +958,9 @@ onBeforeUnmount(() => {
                 <thead class="bg-muted sticky top-0">
                   <tr>
                     <th class="p-2 text-left font-medium">Symbol</th>
-                    <th class="w-1/3 p-2 text-left font-medium">Echelon</th>
+                    <th class="w-1/4 p-2 text-left font-medium">Echelon</th>
                     <th class="p-2 text-left font-medium">Recognized Keywords</th>
+                    <th class="w-1/4 p-2 text-left font-medium">Suffixes</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y">
@@ -1048,6 +1088,59 @@ onBeforeUnmount(() => {
                             type="button"
                             title="Add alias"
                             @click="startAddAlias(entry)"
+                          >
+                            <PlusIcon class="size-3" />
+                          </Button>
+                        </template>
+                      </div>
+                    </td>
+                    <td class="p-2">
+                      <div class="flex flex-wrap items-center gap-1">
+                        <span
+                          v-for="suffix in entry.suffixes ?? []"
+                          :key="suffix"
+                          class="inline-flex items-center gap-0.5 rounded-full bg-purple-100 px-1.5 py-0.5 text-xs text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                        >
+                          {{ suffix }}
+                          <button
+                            v-if="isEditing"
+                            type="button"
+                            class="ml-0.5 rounded-full p-0 hover:opacity-70"
+                            title="Remove suffix"
+                            @click="deleteSuffix(entry, suffix)"
+                          >
+                            <XIcon class="size-3" />
+                          </button>
+                        </span>
+                        <template v-if="isEditing">
+                          <template
+                            v-if="addingSuffixKey === `echelon:${entry.code}`"
+                          >
+                            <Input
+                              v-model="newSuffixInput"
+                              class="h-6 w-20 text-xs"
+                              placeholder="e.g. bn"
+                              @keydown.enter="submitAddSuffix(entry)"
+                              @keydown.escape="cancelAddSuffix"
+                            />
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              class="size-6"
+                              type="button"
+                              @click="submitAddSuffix(entry)"
+                            >
+                              <PlusIcon class="size-3" />
+                            </Button>
+                          </template>
+                          <Button
+                            v-else
+                            size="icon"
+                            variant="ghost"
+                            class="size-6"
+                            type="button"
+                            title="Add suffix"
+                            @click="startAddSuffix(entry)"
                           >
                             <PlusIcon class="size-3" />
                           </Button>
