@@ -25,6 +25,7 @@ import {
 } from "./iconRegistry";
 import { ECHELON_UNSPECIFIED } from "./echelonRegistry";
 import { getIconMatchFromName, getEchelonCodeFromName } from "./textToOrbat";
+import fuzzysort from "fuzzysort";
 import ToggleField from "@/components/ToggleField.vue";
 import {
   PlusIcon,
@@ -335,6 +336,75 @@ const testResult = computed(() => {
     hasEchelonMatch,
     displaySidc,
   };
+});
+
+interface FuzzySuggestion {
+  keyword: string;
+  label: string;
+  kind: "icon" | "echelon";
+  sidc: string;
+}
+
+interface FuzzyTarget {
+  text: string;
+  label: string;
+  kind: "icon" | "echelon";
+  sidc: string;
+}
+
+const fuzzyTargets = computed<FuzzyTarget[]>(() => {
+  void props.registryVersion;
+  const targets: FuzzyTarget[] = [];
+  for (const entry of iconEntries.value) {
+    for (const kw of entry.keywords) {
+      if (kw.type === "alias") {
+        targets.push({
+          text: kw.value,
+          label: entry.label,
+          kind: "icon",
+          sidc: entry.sidc,
+        });
+      }
+    }
+  }
+  for (const entry of echelonEntries.value) {
+    for (const kw of entry.keywords) {
+      if (kw.type === "alias") {
+        targets.push({
+          text: kw.value,
+          label: entry.label,
+          kind: "echelon",
+          sidc: entry.sidc,
+        });
+      }
+    }
+  }
+  return targets;
+});
+
+const fuzzySuggestions = computed<FuzzySuggestion[]>(() => {
+  const result = testResult.value;
+  if (!result || (result.hasIconMatch && result.hasEchelonMatch)) return [];
+  const input = testInput.value.trim();
+  if (!input) return [];
+
+  const hits = fuzzysort.go(input, fuzzyTargets.value, { key: "text", limit: 5 });
+  // Deduplicate by label+kind
+  const seen = new Set<string>();
+  const suggestions: FuzzySuggestion[] = [];
+  for (const hit of hits) {
+    const key = `${hit.obj.kind}:${hit.obj.label}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    suggestions.push({
+      keyword: hit.obj.text,
+      label: hit.obj.label,
+      kind: hit.obj.kind,
+      sidc: hit.obj.sidc,
+    });
+    if (suggestions.length >= 3) break;
+  }
+  return suggestions;
 });
 
 // ── Actions ──────────────────────────────────────────────────────
@@ -804,6 +874,25 @@ onBeforeUnmount(() => {
                   {{ testResult.displaySidc }}
                 </span>
               </div>
+            </div>
+            <div
+              v-if="fuzzySuggestions.length > 0"
+              class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
+            >
+              <span class="text-muted-foreground">Did you mean:</span>
+              <span
+                v-for="(s, i) in fuzzySuggestions"
+                :key="i"
+                class="inline-flex items-center gap-1"
+              >
+                <NewMilitarySymbol
+                  :sidc="s.sidc"
+                  :size="22"
+                  :options="{ outlineWidth: 4, outlineColor: 'white' }"
+                />
+                <span>{{ s.label }}</span>
+                <span class="text-muted-foreground text-xs">({{ s.keyword }})</span>
+              </span>
             </div>
           </div>
         </div>
