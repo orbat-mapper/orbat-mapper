@@ -304,6 +304,13 @@ const filteredIconEntries = computed(() => {
 
 // ── Pattern tester ───────────────────────────────────────────────
 
+interface OverriddenMatch {
+  label: string;
+  matchedText: string;
+  sidc: string;
+  kind: "icon" | "echelon";
+}
+
 const testResult = computed(() => {
   void props.registryVersion;
   const input = testInput.value.trim();
@@ -316,11 +323,66 @@ const testResult = computed(() => {
     ? iconEntries.value.find((e) => e.code === iconMatch.sidc)
     : null;
 
+  // Find which icon pattern matched + collect overridden matches
+  let iconMatchedPattern: string | null = null;
+  const overridden: OverriddenMatch[] = [];
+  {
+    let foundWinner = false;
+    const seenCodes = new Set<string>();
+    for (const cp of props.registry.iconPatterns) {
+      if (cp.pattern.test(input)) {
+        const m = input.match(cp.pattern);
+        const matchedText = m ? m[0] : cp.pattern.source;
+        if (!foundWinner) {
+          iconMatchedPattern = matchedText;
+          seenCodes.add(cp.code);
+          foundWinner = true;
+        } else if (!seenCodes.has(cp.code)) {
+          seenCodes.add(cp.code);
+          const entry = iconEntries.value.find((e) => e.code === cp.code);
+          overridden.push({
+            label: entry?.label ?? cp.label,
+            matchedText,
+            sidc: entry?.sidc ?? templateToDisplaySidc(cp.code),
+            kind: "icon",
+          });
+        }
+      }
+    }
+  }
+
   const echelonCode = getEchelonCodeFromName(input, props.registry);
   const hasEchelonMatch = echelonCode !== ECHELON_UNSPECIFIED;
   const echelonEntry = hasEchelonMatch
     ? echelonEntries.value.find((e) => e.code === echelonCode)
     : null;
+
+  // Find which echelon pattern matched + collect overridden matches
+  let echelonMatchedPattern: string | null = null;
+  {
+    let foundWinner = false;
+    const seenCodes = new Set<string>();
+    for (const cp of props.registry.echelonPatterns) {
+      if (cp.pattern.test(input)) {
+        const m = input.match(cp.pattern);
+        const matchedText = m ? m[0] : cp.pattern.source;
+        if (!foundWinner) {
+          echelonMatchedPattern = matchedText;
+          seenCodes.add(cp.code);
+          foundWinner = true;
+        } else if (!seenCodes.has(cp.code)) {
+          seenCodes.add(cp.code);
+          const entry = echelonEntries.value.find((e) => e.code === cp.code);
+          overridden.push({
+            label: entry?.label ?? cp.label,
+            matchedText,
+            sidc: entry?.sidc ?? buildEchelonSidc(cp.code),
+            kind: "echelon",
+          });
+        }
+      }
+    }
+  }
 
   // Build a combined display SIDC
   const si = FRIENDLY_SI;
@@ -330,10 +392,13 @@ const testResult = computed(() => {
   return {
     iconLabel: iconEntry?.label ?? null,
     iconSidc: hasIconMatch ? templateToDisplaySidc(iconMatch.sidc) : null,
+    iconMatchedPattern,
     hasIconMatch,
     echelonLabel: echelonEntry?.label ?? null,
     echelonSidc: hasEchelonMatch ? buildEchelonSidc(echelonCode) : null,
+    echelonMatchedPattern,
     hasEchelonMatch,
+    overridden,
     displaySidc,
   };
 });
@@ -848,6 +913,12 @@ onBeforeUnmount(() => {
                     :options="{ outlineWidth: 4, outlineColor: 'white' }"
                   />
                   <span>{{ testResult.iconLabel }}</span>
+                  <span
+                    v-if="testResult.iconMatchedPattern"
+                    class="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                  >
+                    {{ testResult.iconMatchedPattern }}
+                  </span>
                 </template>
                 <span v-else class="text-muted-foreground italic">No match</span>
               </div>
@@ -860,6 +931,12 @@ onBeforeUnmount(() => {
                     :options="{ outlineWidth: 6, outlineColor: 'white' }"
                   />
                   <span>{{ testResult.echelonLabel }}</span>
+                  <span
+                    v-if="testResult.echelonMatchedPattern"
+                    class="rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800 dark:bg-green-900 dark:text-green-200"
+                  >
+                    {{ testResult.echelonMatchedPattern }}
+                  </span>
                 </template>
                 <span v-else class="text-muted-foreground italic">No match</span>
               </div>
@@ -874,6 +951,34 @@ onBeforeUnmount(() => {
                   {{ testResult.displaySidc }}
                 </span>
               </div>
+            </div>
+            <div
+              v-if="testResult?.overridden.length"
+              class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
+            >
+              <span class="text-muted-foreground">Also matched:</span>
+              <span
+                v-for="(o, i) in testResult.overridden"
+                :key="i"
+                class="inline-flex items-center gap-1 opacity-60"
+              >
+                <NewMilitarySymbol
+                  :sidc="o.sidc"
+                  :size="22"
+                  :options="{ outlineWidth: 4, outlineColor: 'white' }"
+                />
+                <span>{{ o.label }}</span>
+                <span
+                  class="rounded px-1.5 py-0.5 text-xs"
+                  :class="
+                    o.kind === 'icon'
+                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                  "
+                >
+                  {{ o.matchedText }}
+                </span>
+              </span>
             </div>
             <div
               v-if="fuzzySuggestions.length > 0"
