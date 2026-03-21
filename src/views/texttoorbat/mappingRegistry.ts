@@ -445,6 +445,20 @@ export class MappingRegistry {
     this.invalidateEchelonCache();
   }
 
+  /** Reset only icon definitions to built-in defaults. */
+  resetIconsToDefaults(): void {
+    this.pushUndo();
+    this._iconDefs = this._builtInIcons.map((d) => ({ ...d }));
+    this.invalidateIconCache();
+  }
+
+  /** Reset only echelon definitions to built-in defaults. */
+  resetEchelonsToDefaults(): void {
+    this.pushUndo();
+    this._echelonDefs = this._builtInEchelons.map((d) => ({ ...d }));
+    this.invalidateEchelonCache();
+  }
+
   // ── Serialisation ────────────────────────────────────────────────
 
   /** Export all icon and echelon definitions as a flat snapshot. */
