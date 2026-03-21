@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MappingRegistry } from "./mappingRegistry";
+import { MappingRegistry, parseMappingsFromXlsxWorkbook } from "./mappingRegistry";
 import {
   ICON_INFANTRY,
   ICON_ARMOR,
@@ -187,6 +187,44 @@ describe("MappingRegistry — adding new mappings", () => {
     const v2 = registry.version;
     registry.extendEchelon(ECHELON_BATTALION, ["tabor"]);
     expect(registry.version).toBeGreaterThan(v2);
+  });
+
+  it("XLSX roundtrip: exportRows → parseMappingsFromXlsxWorkbook → importMappings preserves mappings", () => {
+    const registry1 = new MappingRegistry();
+    registry1.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusiliers?"]);
+    registry1.addIcon({
+      name: "ICON_DRONE",
+      sidc: buildIconSidc("1206010000"),
+      label: "Drone",
+      aliases: ["drone", "uav"],
+      patterns: [/\bRPA\b/],
+    });
+    registry1.extendEchelon(ECHELON_BATTALION, ["tabor"]);
+
+    // Simulate XLSX roundtrip: export rows, build a mock workbook, parse it back
+    const iconRows = registry1.exportIconRows();
+    const echelonRows = registry1.exportEchelonRows();
+
+    const mockWorkbook = {
+      SheetNames: ["Icons", "Echelons"],
+      Sheets: { Icons: iconRows, Echelons: echelonRows },
+    };
+    // sheetToJson returns the rows directly (same as xlsxUtils.sheet_to_json roundtrip)
+    const parsed = parseMappingsFromXlsxWorkbook(
+      mockWorkbook,
+      (sheet) => sheet as Record<string, unknown>[],
+    );
+
+    const registry2 = new MappingRegistry();
+    registry2.importMappings(parsed);
+
+    // Custom aliases work
+    expect(getIconCodeFromName("Fusilier Company", registry2)).toBe(ICON_INFANTRY);
+    expect(getIconCodeFromName("Drone Squadron", registry2)).toBe("1206010000");
+    expect(getIconCodeFromName("1st UAV Platoon", registry2)).toBe("1206010000");
+    expect(getEchelonCodeFromName("1st Tabor", registry2)).toBe(ECHELON_BATTALION);
+    // Built-ins still work
+    expect(getIconCodeFromName("1st Armored Division", registry2)).toBe(ICON_ARMOR);
   });
 
   it("importMappings replaces all definitions", () => {
