@@ -21,7 +21,10 @@ import {
   extractEntityCode,
   extractSymbolSet,
   buildIconSidc as buildTemplateSidc,
+  ICON_UNSPECIFIED,
 } from "./iconRegistry";
+import { ECHELON_UNSPECIFIED } from "./echelonRegistry";
+import { getIconMatchFromName, getEchelonCodeFromName } from "./textToOrbat";
 import ToggleField from "@/components/ToggleField.vue";
 import {
   PlusIcon,
@@ -34,6 +37,8 @@ import {
   Undo2Icon,
   Redo2Icon,
   ChevronDownIcon,
+  ChevronRightIcon,
+  FlaskConicalIcon,
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -74,6 +79,10 @@ const searchQuery = ref("");
 const showDebug = ref(false);
 const isEditing = ref(false);
 const activeTab = ref<"icons" | "echelons">("icons");
+
+// ── Pattern tester state ─────────────────────────────────────────
+const showTester = ref(false);
+const testInput = ref("");
 
 // ── Add alias state ──────────────────────────────────────────────
 const addingAliasKey = ref<string | null>(null);
@@ -290,6 +299,42 @@ const filteredIconEntries = computed(() => {
       entry.code?.toLowerCase().includes(query) ||
       entry.keywords.some((kw) => kw.value.toLowerCase().includes(query)),
   );
+});
+
+// ── Pattern tester ───────────────────────────────────────────────
+
+const testResult = computed(() => {
+  void props.registryVersion;
+  const input = testInput.value.trim();
+  if (!input) return null;
+
+  const iconMatch = getIconMatchFromName(input, props.registry);
+  const iconEntity = extractEntityCode(iconMatch.sidc);
+  const hasIconMatch = iconEntity !== ICON_UNSPECIFIED;
+  const iconEntry = hasIconMatch
+    ? iconEntries.value.find((e) => e.code === iconMatch.sidc)
+    : null;
+
+  const echelonCode = getEchelonCodeFromName(input, props.registry);
+  const hasEchelonMatch = echelonCode !== ECHELON_UNSPECIFIED;
+  const echelonEntry = hasEchelonMatch
+    ? echelonEntries.value.find((e) => e.code === echelonCode)
+    : null;
+
+  // Build a combined display SIDC
+  const si = FRIENDLY_SI;
+  const symbolSet = extractSymbolSet(iconMatch.sidc);
+  const displaySidc = `100${si}${symbolSet}00${echelonCode}${iconEntity}`;
+
+  return {
+    iconLabel: iconEntry?.label ?? null,
+    iconSidc: hasIconMatch ? templateToDisplaySidc(iconMatch.sidc) : null,
+    hasIconMatch,
+    echelonLabel: echelonEntry?.label ?? null,
+    echelonSidc: hasEchelonMatch ? buildEchelonSidc(echelonCode) : null,
+    hasEchelonMatch,
+    displaySidc,
+  };
 });
 
 // ── Actions ──────────────────────────────────────────────────────
@@ -678,7 +723,7 @@ onBeforeUnmount(() => {
 
 <template>
   <Dialog v-model:open="open">
-    <DialogContent class="md:max-w-4xl">
+    <DialogContent class="flex max-h-[90vh] flex-col md:max-w-4xl">
       <DialogHeader>
         <DialogTitle>Pattern Mappings</DialogTitle>
         <DialogDescription>
@@ -687,7 +732,7 @@ onBeforeUnmount(() => {
         </DialogDescription>
       </DialogHeader>
 
-      <div class="space-y-4">
+      <div class="min-h-0 flex-1 space-y-4 overflow-y-auto">
         <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <Input
             v-model="searchQuery"
@@ -700,6 +745,66 @@ onBeforeUnmount(() => {
               <PencilIcon class="mr-1 inline size-3" />Edit
             </ToggleField>
             <ToggleField v-model="showDebug">Show debug details</ToggleField>
+          </div>
+        </div>
+
+        <!-- Pattern tester -->
+        <div class="rounded-md border p-3">
+          <button
+            type="button"
+            class="flex items-center gap-1 text-sm font-medium"
+            @click="showTester = !showTester"
+          >
+            <ChevronRightIcon
+              class="size-4 transition-transform"
+              :class="showTester && 'rotate-90'"
+            />
+            <FlaskConicalIcon class="size-3.5" />
+            Test pattern
+          </button>
+          <div v-if="showTester" class="mt-2 space-y-2">
+            <Input
+              v-model="testInput"
+              type="text"
+              placeholder="Type a unit name to test, e.g. 1st Armored Division"
+            />
+            <div v-if="testResult" class="flex flex-wrap items-center gap-4 text-sm">
+              <div class="flex items-center gap-1.5">
+                <span class="text-muted-foreground">Icon:</span>
+                <template v-if="testResult.hasIconMatch">
+                  <NewMilitarySymbol
+                    :sidc="testResult.iconSidc!"
+                    :size="28"
+                    :options="{ outlineWidth: 4, outlineColor: 'white' }"
+                  />
+                  <span>{{ testResult.iconLabel }}</span>
+                </template>
+                <span v-else class="text-muted-foreground italic">No match</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-muted-foreground">Echelon:</span>
+                <template v-if="testResult.hasEchelonMatch">
+                  <NewMilitarySymbol
+                    :sidc="testResult.echelonSidc!"
+                    :size="28"
+                    :options="{ outlineWidth: 6, outlineColor: 'white' }"
+                  />
+                  <span>{{ testResult.echelonLabel }}</span>
+                </template>
+                <span v-else class="text-muted-foreground italic">No match</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-muted-foreground">Combined:</span>
+                <NewMilitarySymbol
+                  :sidc="testResult.displaySidc"
+                  :size="28"
+                  :options="{ outlineWidth: 4, outlineColor: 'white' }"
+                />
+                <span class="text-muted-foreground font-mono text-xs">
+                  {{ testResult.displaySidc }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -787,7 +892,7 @@ onBeforeUnmount(() => {
               </Button>
             </div>
 
-            <div class="max-h-[45vh] overflow-y-auto sm:max-h-[60vh]">
+            <div>
               <table class="w-full table-fixed text-sm md:table-auto">
                 <thead class="bg-muted sticky top-0">
                   <tr>
@@ -965,7 +1070,7 @@ onBeforeUnmount(() => {
           </TabsContent>
 
           <TabsContent value="echelons" class="mt-4">
-            <div class="max-h-96 overflow-x-auto overflow-y-auto">
+            <div>
               <table class="w-full table-fixed text-sm">
                 <thead class="bg-muted sticky top-0">
                   <tr>
@@ -1125,9 +1230,7 @@ onBeforeUnmount(() => {
                           </button>
                         </span>
                         <template v-if="isEditing">
-                          <template
-                            v-if="addingSuffixKey === `echelon:${entry.code}`"
-                          >
+                          <template v-if="addingSuffixKey === `echelon:${entry.code}`">
                             <Input
                               v-model="newSuffixInput"
                               class="h-6 w-20 text-xs"
