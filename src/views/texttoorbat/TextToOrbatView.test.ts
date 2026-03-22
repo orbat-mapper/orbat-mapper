@@ -1,4 +1,6 @@
 import { mount } from "@vue/test-utils";
+import { createTestingPinia } from "@pinia/testing";
+import { setActivePinia } from "pinia";
 import { nextTick } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TextToOrbatView from "@/views/texttoorbat/TextToOrbatView.vue";
@@ -123,6 +125,7 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  setActivePinia(createTestingPinia({ createSpy: vi.fn }));
   sendNotificationMock.mockReset();
   routerPushMock.mockReset();
   clipboardWriteMock.mockReset();

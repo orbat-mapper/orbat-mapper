@@ -196,9 +196,36 @@ export function getTextToOrbatCompletions(
   return [...getUnitTypeCompletions(registry), ...getEchelonCompletions(registry)];
 }
 
+/**
+ * Match the casing of the completion to the user's typed text.
+ * If the user typed uppercase (e.g. "Air"), the completion "air assault"
+ * becomes "Air Assault". If typed all-caps, the completion is all-caps too.
+ */
+function matchCase(typed: string, completion: string): string {
+  if (!typed) return completion;
+  const isAllCaps = typed === typed.toUpperCase() && typed !== typed.toLowerCase();
+  if (isAllCaps) return completion.toUpperCase();
+  const isCapitalized =
+    typed[0] === typed[0].toUpperCase() && typed[0] !== typed[0].toLowerCase();
+  if (isCapitalized) {
+    return completion.replace(/\b[a-z]/g, (ch, index) =>
+      index < typed.length || completion[index - 1] === " " ? ch.toUpperCase() : ch,
+    );
+  }
+  return completion;
+}
+
+function applyWithMatchedCase(option: Completion, typed: string): Completion {
+  const label = typeof option.apply === "string" ? option.apply : option.label;
+  const matched = matchCase(typed, label);
+  if (matched === label) return option;
+  return { ...option, apply: matched };
+}
+
 export function completeUnitTypes(
   context: CompletionContext,
   registry: MappingRegistry = defaultRegistry,
+  matchInputCase = true,
 ): CompletionResult | null {
   const word = getActiveCompletionText(context);
 
@@ -207,12 +234,18 @@ export function completeUnitTypes(
   }
 
   const allOptions = getTextToOrbatCompletions(registry);
-  let options = filterCompletionOptions(word.text, allOptions);
+  const maybeMatchCase = (opt: Completion, typed: string) =>
+    matchInputCase ? applyWithMatchedCase(opt, typed) : opt;
+  let options = filterCompletionOptions(word.text, allOptions).map((opt) =>
+    maybeMatchCase(opt, word.text),
+  );
   let from = word.from;
   if (options.length === 0 && word.text.includes(" ")) {
     const lastToken = getLastTokenRange(word.text, word.to);
     if (lastToken) {
-      options = filterCompletionOptions(lastToken.text, allOptions);
+      options = filterCompletionOptions(lastToken.text, allOptions).map((opt) =>
+        maybeMatchCase(opt, lastToken.text),
+      );
       from = lastToken.from;
     }
   }
@@ -229,9 +262,10 @@ export function completeUnitTypes(
 export function textToOrbatAutocompletion(
   options?: Parameters<typeof autocompletion>[0],
   registry: MappingRegistry = defaultRegistry,
+  matchInputCase = true,
 ) {
   return autocompletion({
-    override: [(context) => completeUnitTypes(context, registry)],
+    override: [(context) => completeUnitTypes(context, registry, matchInputCase)],
     activateOnTyping: true,
     defaultKeymap: true,
     ...options,

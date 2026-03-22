@@ -17,6 +17,7 @@ import {
   type MappingRegistry,
   parseMappingsFromXlsxWorkbook,
 } from "./mappingRegistry";
+import { useTextToOrbatStore } from "./textToOrbatStore";
 import { extractEntityCode, extractSymbolSet, ICON_UNSPECIFIED } from "./iconRegistry";
 import { ECHELON_UNSPECIFIED } from "./echelonRegistry";
 import { getEchelonCodeFromName, getIconMatchFromName } from "./textToOrbat";
@@ -27,6 +28,7 @@ import {
   ChevronRightIcon,
   DownloadIcon,
   FlaskConicalIcon,
+  CaseSensitiveIcon,
   InfoIcon,
   PencilIcon,
   PlusIcon,
@@ -81,6 +83,8 @@ const activeTab = ref<"icons" | "echelons">("icons");
 const showSyntaxHelp = ref(false);
 const showTester = ref(false);
 const testInput = ref("");
+
+const textToOrbatStore = useTextToOrbatStore();
 
 // ── Add alias state ──────────────────────────────────────────────
 const addingAliasKey = ref<string | null>(null);
@@ -145,6 +149,8 @@ interface KeywordEntry {
   type: "alias" | "pattern";
   /** Raw alias string or pattern source for deletion */
   raw: string;
+  /** Regex flags (patterns only) */
+  flags?: string;
 }
 
 interface PatternEntry {
@@ -189,6 +195,7 @@ const echelonEntries = computed<PatternEntry[]>(() => {
       value: displayPatternSource(p.source),
       type: "pattern" as const,
       raw: p.source,
+      flags: p.flags,
     }));
     const keywords = [...aliasKeywords, ...patternKeywords];
     const suffixes = [...(def.concatenatedSuffixes ?? [])];
@@ -237,6 +244,7 @@ const iconEntries = computed<PatternEntry[]>(() => {
       value: displayPatternSource(p.source),
       type: "pattern" as const,
       raw: p.source,
+      flags: p.flags,
     }));
     const keywords = [...aliasKeywords, ...patternKeywords];
     const existing = grouped.get(groupKey);
@@ -393,6 +401,7 @@ interface FuzzySuggestion {
   label: string;
   kind: "icon" | "echelon";
   sidc: string;
+  caseSensitive?: boolean;
 }
 
 interface FuzzyTarget {
@@ -400,6 +409,7 @@ interface FuzzyTarget {
   label: string;
   kind: "icon" | "echelon";
   sidc: string;
+  caseSensitive?: boolean;
 }
 
 const fuzzyTargets = computed<FuzzyTarget[]>(() => {
@@ -407,26 +417,24 @@ const fuzzyTargets = computed<FuzzyTarget[]>(() => {
   const targets: FuzzyTarget[] = [];
   for (const entry of iconEntries.value) {
     for (const kw of entry.keywords) {
-      if (kw.type === "alias") {
-        targets.push({
-          text: kw.value,
-          label: entry.label,
-          kind: "icon",
-          sidc: entry.sidc,
-        });
-      }
+      targets.push({
+        text: kw.value,
+        label: entry.label,
+        kind: "icon",
+        sidc: entry.sidc,
+        caseSensitive: kw.type === "pattern" && !kw.flags?.includes("i"),
+      });
     }
   }
   for (const entry of echelonEntries.value) {
     for (const kw of entry.keywords) {
-      if (kw.type === "alias") {
-        targets.push({
-          text: kw.value,
-          label: entry.label,
-          kind: "echelon",
-          sidc: entry.sidc,
-        });
-      }
+      targets.push({
+        text: kw.value,
+        label: entry.label,
+        kind: "echelon",
+        sidc: entry.sidc,
+        caseSensitive: kw.type === "pattern" && !kw.flags?.includes("i"),
+      });
     }
   }
   return targets;
@@ -451,6 +459,7 @@ const fuzzySuggestions = computed<FuzzySuggestion[]>(() => {
       label: hit.obj.label,
       kind: hit.obj.kind,
       sidc: hit.obj.sidc,
+      caseSensitive: hit.obj.caseSensitive,
     });
     if (suggestions.length >= 3) break;
   }
@@ -470,7 +479,7 @@ function cancelAddAlias() {
 }
 
 function submitAddAlias(entry: PatternEntry) {
-  const alias = newAliasInput.value.trim();
+  const alias = newAliasInput.value.replace(/,/g, "").trim();
   if (!alias || !entry.code) return;
 
   if (entry.kind === "icon") {
@@ -902,7 +911,7 @@ onBeforeUnmount(() => {
 
 <template>
   <Dialog v-model:open="open">
-    <DialogContent class="flex max-h-[90vh] flex-col md:max-w-4xl">
+    <DialogContent class="flex max-h-[90vh] flex-col md:max-w-5xl">
       <DialogHeader>
         <DialogTitle>Pattern Mappings</DialogTitle>
         <DialogDescription>
@@ -924,6 +933,9 @@ onBeforeUnmount(() => {
               <PencilIcon class="mr-1 inline size-3" />Edit
             </ToggleField>
             <ToggleField v-model="showDebug">Show debug details</ToggleField>
+            <ToggleField v-model="textToOrbatStore.matchInputCase">
+              Match input case
+            </ToggleField>
           </div>
         </div>
 
@@ -1101,7 +1113,16 @@ onBeforeUnmount(() => {
                   :options="{ outlineWidth: 4, outlineColor: 'white' }"
                 />
                 <span>{{ s.label }}</span>
-                <span class="text-muted-foreground text-xs">({{ s.keyword }})</span>
+                <span
+                  class="text-muted-foreground inline-flex items-center gap-0.5 text-xs"
+                >
+                  ({{ s.keyword
+                  }}<CaseSensitiveIcon
+                    v-if="s.caseSensitive"
+                    class="inline size-3"
+                    title="Case-sensitive"
+                  />)
+                </span>
               </span>
             </div>
           </div>
@@ -1200,8 +1221,8 @@ onBeforeUnmount(() => {
               <table class="w-full table-fixed text-sm md:table-auto">
                 <thead class="bg-muted sticky top-0">
                   <tr>
-                    <th class="p-2 text-left font-medium">Symbol</th>
-                    <th class="p-2 text-left font-medium">Type</th>
+                    <th class="w-12 p-2 text-left font-medium">Symbol</th>
+                    <th class="min-w-48 p-2 text-left font-medium">Type</th>
                     <th class="p-2 text-left font-medium">Recognized Keywords</th>
                   </tr>
                 </thead>
@@ -1313,9 +1334,14 @@ onBeforeUnmount(() => {
                         >
                           <span
                             v-if="keyword.type === 'pattern'"
-                            class="mr-1 text-[10px] uppercase"
+                            class="mr-1 inline-flex items-center gap-0.5 text-[10px] uppercase"
                           >
                             regex
+                            <CaseSensitiveIcon
+                              v-if="!keyword.flags?.includes('i')"
+                              class="size-3"
+                              title="Case-sensitive"
+                            />
                           </span>
                           {{ keyword.value }}
                           <button
@@ -1496,9 +1522,14 @@ onBeforeUnmount(() => {
                         >
                           <span
                             v-if="keyword.type === 'pattern'"
-                            class="mr-1 text-[10px] uppercase"
+                            class="mr-1 inline-flex items-center gap-0.5 text-[10px] uppercase"
                           >
                             regex
+                            <CaseSensitiveIcon
+                              v-if="!keyword.flags?.includes('i')"
+                              class="size-3"
+                              title="Case-sensitive"
+                            />
                           </span>
                           {{ keyword.value }}
                           <button

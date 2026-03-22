@@ -37,6 +37,7 @@ import {
   serializeParsedUnitsToScenarioUnits,
   type CommaFieldOrder,
 } from "@/views/texttoorbat/textToOrbat.ts";
+import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
 import {
   defaultRegistry,
   type AllMappingData,
@@ -111,6 +112,8 @@ function handleMappingsReset() {
   registryVersion.value = defaultRegistry.version;
   storedMappings.value = null;
 }
+
+const textToOrbatStore = useTextToOrbatStore();
 
 const showPatternMapping = ref(false);
 const isOpeningScenario = ref(false);
@@ -375,6 +378,12 @@ onUnmounted(() => {
                 Clear
               </Button>
               <ToggleField v-model="enableAutocomplete">Autocomplete</ToggleField>
+              <ToggleField
+                v-if="enableAutocomplete"
+                v-model="textToOrbatStore.matchInputCase"
+              >
+                Match case
+              </ToggleField>
               <ToggleField v-model="useCommaSeparator">Split fields</ToggleField>
               <Select v-if="useCommaSeparator" v-model="commaFieldOrder">
                 <SelectTrigger class="h-7 w-auto gap-1 text-xs">
@@ -394,6 +403,7 @@ onUnmounted(() => {
           <TextToOrbatEditor
             v-model="inputText"
             :enable-autocomplete="enableAutocomplete"
+            :match-input-case="textToOrbatStore.matchInputCase"
             :registry="defaultRegistry"
             :registry-version="registryVersion"
             class="flex-1"

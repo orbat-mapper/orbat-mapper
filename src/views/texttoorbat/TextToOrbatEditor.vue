@@ -37,12 +37,14 @@ const props = withDefaults(
     modelValue: string;
     placeholder?: string;
     enableAutocomplete?: boolean;
+    matchInputCase?: boolean;
     registry?: MappingRegistry;
     registryVersion?: number;
   }>(),
   {
     placeholder: "",
     enableAutocomplete: true,
+    matchInputCase: true,
     registry: () => defaultRegistry,
     registryVersion: 0,
   },
@@ -227,6 +229,7 @@ function createAutocompleteExtension() {
       ],
     },
     props.registry,
+    props.matchInputCase,
   );
 }
 
@@ -413,16 +416,23 @@ watch(
   },
 );
 
-watch([() => props.enableAutocomplete, () => props.registryVersion], () => {
-  const view = editorView.value;
-  if (!view) {
-    return;
-  }
+watch(
+  [
+    () => props.enableAutocomplete,
+    () => props.registryVersion,
+    () => props.matchInputCase,
+  ],
+  () => {
+    const view = editorView.value;
+    if (!view) {
+      return;
+    }
 
-  view.dispatch({
-    effects: autocompleteCompartment.reconfigure(createAutocompleteExtension()),
-  });
-});
+    view.dispatch({
+      effects: autocompleteCompartment.reconfigure(createAutocompleteExtension()),
+    });
+  },
+);
 
 onBeforeUnmount(() => {
   editorView.value?.destroy();
