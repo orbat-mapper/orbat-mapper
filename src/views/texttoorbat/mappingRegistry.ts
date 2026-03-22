@@ -351,6 +351,18 @@ export class MappingRegistry {
     this.invalidateIconCache();
   }
 
+  /** Add a raw regex pattern to an existing icon by SIDC. */
+  extendIconPattern(sidc: string, pattern: RegExp): void {
+    this.pushUndo();
+    for (const def of this._iconDefs) {
+      if (def.sidc === sidc) {
+        def.patterns = [...(def.patterns ?? []), pattern];
+        break;
+      }
+    }
+    this.invalidateIconCache();
+  }
+
   /** Add a completely new icon mapping. */
   addIcon(def: IconDefinition, position?: "prepend"): void {
     this.pushUndo();
@@ -467,6 +479,18 @@ export class MappingRegistry {
       if (def.code === code && def.concatenatedSuffixes) {
         def.concatenatedSuffixes = def.concatenatedSuffixes.filter((s) => s !== suffix);
         if (def.concatenatedSuffixes.length === 0) def.concatenatedSuffixes = undefined;
+      }
+    }
+    this.invalidateEchelonCache();
+  }
+
+  /** Add a raw regex pattern to an existing echelon by code. */
+  extendEchelonPattern(code: string, pattern: RegExp): void {
+    this.pushUndo();
+    for (const def of this._echelonDefs) {
+      if (def.code === code) {
+        def.patterns = [...(def.patterns ?? []), pattern];
+        break;
       }
     }
     this.invalidateEchelonCache();

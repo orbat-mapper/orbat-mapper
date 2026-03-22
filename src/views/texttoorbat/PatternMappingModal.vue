@@ -91,6 +91,11 @@ const testInput = ref("");
 const addingAliasKey = ref<string | null>(null);
 const newAliasInput = ref("");
 
+// ── Add pattern state ───────────────────────────────────────────
+const addingPatternKey = ref<string | null>(null);
+const newPatternInput = ref("");
+const patternError = ref<string | null>(null);
+
 // ── Add suffix state ─────────────────────────────────────────────
 const addingSuffixKey = ref<string | null>(null);
 const newSuffixInput = ref("");
@@ -110,6 +115,7 @@ const showAddIconForm = ref(false);
 const newIconLabel = ref("");
 const newIconSidc = ref("");
 const newIconAliases = ref("");
+const newIconPatterns = ref("");
 
 // ── Inline edit state ────────────────────────────────────────────
 const editingEntryKey = ref<string | null>(null);
@@ -485,6 +491,48 @@ function submitAddAlias(entry: PatternEntry) {
   cancelAddAlias();
 }
 
+function startAddPattern(entry: PatternEntry) {
+  addingPatternKey.value = `${entry.kind}:${entry.code}`;
+  newPatternInput.value = "";
+  patternError.value = null;
+}
+
+function cancelAddPattern() {
+  addingPatternKey.value = null;
+  newPatternInput.value = "";
+  patternError.value = null;
+}
+
+function parsePatternInput(input: string): { source: string; flags: string } {
+  const match = input.match(/^\/(.+)\/([gimsuy]*)$/);
+  if (match) {
+    return { source: match[1], flags: match[2] };
+  }
+  return { source: input, flags: "" };
+}
+
+function submitAddPattern(entry: PatternEntry) {
+  const raw = newPatternInput.value.trim();
+  if (!raw || !entry.code) return;
+
+  const { source, flags } = parsePatternInput(raw);
+  let regex: RegExp;
+  try {
+    regex = new RegExp(source, flags);
+  } catch (e) {
+    patternError.value = e instanceof Error ? e.message : "Invalid regex";
+    return;
+  }
+
+  if (entry.kind === "icon") {
+    props.registry.extendIconPattern(entry.code, regex);
+  } else {
+    props.registry.extendEchelonPattern(entry.code, regex);
+  }
+  emit("mappingsChanged");
+  cancelAddPattern();
+}
+
 function startAddSuffix(entry: PatternEntry) {
   addingSuffixKey.value = `${entry.kind}:${entry.code}`;
   newSuffixInput.value = "";
@@ -600,17 +648,35 @@ function submitNewIcon() {
 
   if (!label || !sidc || aliases.length === 0) return;
 
+  const patternStrings = newIconPatterns.value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  let patterns: RegExp[] | undefined;
+  if (patternStrings.length > 0) {
+    try {
+      patterns = patternStrings.map((s) => {
+        const { source, flags } = parsePatternInput(s);
+        return new RegExp(source, flags);
+      });
+    } catch {
+      return;
+    }
+  }
+
   props.registry.addIcon({
     name: label.toUpperCase().replace(/\s+/g, "_"),
     sidc,
     label,
     aliases,
+    ...(patterns && { patterns }),
   });
   emit("mappingsChanged");
   showAddIconForm.value = false;
   newIconLabel.value = "";
   newIconSidc.value = "";
   newIconAliases.value = "";
+  newIconPatterns.value = "";
 }
 
 function handleReset() {
@@ -1095,6 +1161,11 @@ onBeforeUnmount(() => {
                   placeholder="Aliases (comma-separated)"
                   class="h-8 text-sm sm:col-span-2"
                 />
+                <Input
+                  v-model="newIconPatterns"
+                  placeholder="Regex patterns (optional, comma-separated, e.g. /\bXY\b/i)"
+                  class="h-8 font-mono text-sm sm:col-span-2"
+                />
               </div>
               <div class="mt-2 flex items-center justify-end">
                 <div class="flex gap-2">
@@ -1292,17 +1363,52 @@ onBeforeUnmount(() => {
                               <PlusIcon class="size-3" />
                             </Button>
                           </template>
-                          <Button
-                            v-else
-                            size="icon"
-                            variant="ghost"
-                            class="size-6"
-                            type="button"
-                            title="Add alias"
-                            @click="startAddAlias(entry)"
-                          >
-                            <PlusIcon class="size-3" />
-                          </Button>
+                          <template v-else-if="addingPatternKey === `icon:${entry.code}`">
+                            <div class="flex flex-col gap-1">
+                              <div class="flex items-center gap-1">
+                                <Input
+                                  v-model="newPatternInput"
+                                  class="h-6 w-36 font-mono text-xs"
+                                  placeholder="/regex/flags"
+                                  @keydown.enter="submitAddPattern(entry)"
+                                  @keydown.escape="cancelAddPattern"
+                                />
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  class="size-6"
+                                  type="button"
+                                  @click="submitAddPattern(entry)"
+                                >
+                                  <PlusIcon class="size-3" />
+                                </Button>
+                              </div>
+                              <span
+                                v-if="patternError"
+                                class="text-xs text-red-600 dark:text-red-400"
+                              >
+                                {{ patternError }}
+                              </span>
+                            </div>
+                          </template>
+                          <template v-else>
+                            <button
+                              type="button"
+                              class="rounded-md border border-amber-300 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 uppercase hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/40"
+                              title="Add regex pattern"
+                              @click="startAddPattern(entry)"
+                            >
+                              +regex
+                            </button>
+                            <button
+                              type="button"
+                              class="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white uppercase shadow-sm hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                              title="Add alias"
+                              @click="startAddAlias(entry)"
+                            >
+                              +alias
+                            </button>
+                          </template>
                         </template>
                       </div>
                     </td>
@@ -1440,17 +1546,54 @@ onBeforeUnmount(() => {
                               <PlusIcon class="size-3" />
                             </Button>
                           </template>
-                          <Button
-                            v-else
-                            size="icon"
-                            variant="ghost"
-                            class="size-6"
-                            type="button"
-                            title="Add alias"
-                            @click="startAddAlias(entry)"
+                          <template
+                            v-else-if="addingPatternKey === `echelon:${entry.code}`"
                           >
-                            <PlusIcon class="size-3" />
-                          </Button>
+                            <div class="flex flex-col gap-1">
+                              <div class="flex items-center gap-1">
+                                <Input
+                                  v-model="newPatternInput"
+                                  class="h-6 w-36 font-mono text-xs"
+                                  placeholder="/regex/flags"
+                                  @keydown.enter="submitAddPattern(entry)"
+                                  @keydown.escape="cancelAddPattern"
+                                />
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  class="size-6"
+                                  type="button"
+                                  @click="submitAddPattern(entry)"
+                                >
+                                  <PlusIcon class="size-3" />
+                                </Button>
+                              </div>
+                              <span
+                                v-if="patternError"
+                                class="text-xs text-red-600 dark:text-red-400"
+                              >
+                                {{ patternError }}
+                              </span>
+                            </div>
+                          </template>
+                          <template v-else>
+                            <button
+                              type="button"
+                              class="rounded-md border border-emerald-300 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 uppercase hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                              title="Add regex pattern"
+                              @click="startAddPattern(entry)"
+                            >
+                              +regex
+                            </button>
+                            <button
+                              type="button"
+                              class="rounded-md bg-green-600 px-2.5 py-1 text-xs font-semibold text-white uppercase shadow-sm hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+                              title="Add alias"
+                              @click="startAddAlias(entry)"
+                            >
+                              +alias
+                            </button>
+                          </template>
                         </template>
                       </div>
                     </td>
