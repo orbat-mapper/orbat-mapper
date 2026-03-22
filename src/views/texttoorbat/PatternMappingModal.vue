@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  onBeforeUnmount,
+  onMounted,
+  onUnmounted,
+  ref,
+} from "vue";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +35,7 @@ import {
   ChevronRightIcon,
   DownloadIcon,
   FlaskConicalIcon,
+  GripVerticalIcon,
   CaseSensitiveIcon,
   InfoIcon,
   PencilIcon,
@@ -45,6 +53,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  draggable,
+  dropTargetForElements,
+  monitorForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import {
+  attachClosestEdge,
+  extractClosestEdge,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/types";
+import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
+import DropIndicator from "@/components/DropIndicator.vue";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useNotifications } from "@/composables/notifications";
 import { useSidcModal } from "@/composables/modals";
@@ -161,6 +182,8 @@ interface PatternEntry {
   /** For icons: template SIDC (20-char). For echelons: echelon code (2-char). */
   code?: string;
   kind: "icon" | "echelon";
+  /** Position in the underlying definitions array (icons only). */
+  defIndex?: number;
   /** Concatenated suffixes (echelons only). */
   suffixes?: string[];
 }
@@ -231,10 +254,7 @@ const echelonEntries = computed<PatternEntry[]>(() => {
 
 const iconEntries = computed<PatternEntry[]>(() => {
   void props.registryVersion;
-  const grouped = new Map<string, PatternEntry>();
-
-  for (const def of props.registry.iconDefinitions) {
-    const groupKey = def.sidc;
+  return props.registry.iconDefinitions.map((def, index) => {
     const aliasKeywords: KeywordEntry[] = (def.aliases ?? []).map((a) => ({
       value: displayAlias(a),
       type: "alias" as const,
@@ -246,30 +266,15 @@ const iconEntries = computed<PatternEntry[]>(() => {
       raw: p.source,
       flags: p.flags,
     }));
-    const keywords = [...aliasKeywords, ...patternKeywords];
-    const existing = grouped.get(groupKey);
-
-    if (!existing) {
-      grouped.set(groupKey, {
-        label: def.label,
-        keywords,
-        sidc: templateToDisplaySidc(def.sidc),
-        code: def.sidc,
-        kind: "icon" as const,
-      });
-      continue;
-    }
-
-    const seen = new Set(existing.keywords.map((k) => k.raw));
-    for (const kw of keywords) {
-      if (!seen.has(kw.raw)) {
-        existing.keywords.push(kw);
-        seen.add(kw.raw);
-      }
-    }
-  }
-
-  return [...grouped.values()];
+    return {
+      label: def.label,
+      keywords: [...aliasKeywords, ...patternKeywords],
+      sidc: templateToDisplaySidc(def.sidc),
+      code: def.sidc,
+      kind: "icon" as const,
+      defIndex: index,
+    };
+  });
 });
 
 const filteredEchelonEntries = computed(() => {
@@ -574,10 +579,130 @@ function deleteKeyword(entry: PatternEntry, keyword: KeywordEntry) {
   emit("mappingsChanged");
 }
 
+// ── Icon drag-and-drop reordering ────────────────────────────────
+
+const iconDragSymbol = Symbol("icon-drag");
+
+function getIconDragItem(defIndex: number): Record<string | symbol, unknown> {
+  return { [iconDragSymbol]: true, defIndex };
+}
+
+function isIconDragItem(
+  data: Record<string | symbol, unknown>,
+): data is { [iconDragSymbol]: true; defIndex: number } {
+  return data[iconDragSymbol] === true;
+}
+
+interface IconDragState {
+  type: "dragging" | "drag-over";
+  closestEdge?: Edge | null;
+}
+
+const iconDragStates = ref(new Map<number, IconDragState>());
+const rowCleanups = new Map<number, CleanupFn>();
+const handleEls = new Map<number, HTMLElement>();
+
+function setHandleRef(defIndex: number | undefined, el: unknown) {
+  if (defIndex === undefined) return;
+  if (el instanceof HTMLElement) {
+    handleEls.set(defIndex, el);
+  } else {
+    handleEls.delete(defIndex);
+  }
+}
+
+function setupRowDrag(el: unknown, entry: PatternEntry) {
+  if (entry.defIndex === undefined) return;
+  const idx = entry.defIndex;
+
+  rowCleanups.get(idx)?.();
+  rowCleanups.delete(idx);
+
+  if (!(el instanceof HTMLElement)) return;
+
+  const handle = handleEls.get(idx);
+  if (!handle) return;
+
+  rowCleanups.set(
+    idx,
+    combine(
+      draggable({
+        element: el,
+        dragHandle: handle,
+        getInitialData: () => getIconDragItem(idx),
+        onDragStart: () => iconDragStates.value.set(idx, { type: "dragging" }),
+        onDrop: () => iconDragStates.value.delete(idx),
+      }),
+      dropTargetForElements({
+        element: el,
+        canDrop: ({ source }) =>
+          isIconDragItem(source.data) && source.data.defIndex !== idx,
+        getData: ({ input, element }) =>
+          attachClosestEdge(getIconDragItem(idx), {
+            input,
+            element,
+            allowedEdges: ["top", "bottom"],
+          }),
+        onDragEnter: ({ self }) =>
+          iconDragStates.value.set(idx, {
+            type: "drag-over",
+            closestEdge: extractClosestEdge(self.data),
+          }),
+        onDrag: ({ self }) =>
+          iconDragStates.value.set(idx, {
+            type: "drag-over",
+            closestEdge: extractClosestEdge(self.data),
+          }),
+        onDragLeave: () => iconDragStates.value.delete(idx),
+        onDrop: () => iconDragStates.value.delete(idx),
+      }),
+    ),
+  );
+}
+
+let monitorCleanup: CleanupFn = () => {};
+
+onMounted(() => {
+  monitorCleanup = monitorForElements({
+    canMonitor: ({ source }) => isIconDragItem(source.data),
+    onDrop: ({ source, location }) => {
+      const destination = location.current.dropTargets[0];
+      if (
+        !destination ||
+        !isIconDragItem(destination.data) ||
+        !isIconDragItem(source.data)
+      )
+        return;
+
+      const sourceIndex = source.data.defIndex;
+      const destIndex = destination.data.defIndex;
+      const edge = extractClosestEdge(destination.data);
+
+      const targetIndex = edge === "top" ? destIndex : destIndex + 1;
+      const adjustedTarget = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
+
+      if (sourceIndex !== adjustedTarget) {
+        props.registry.moveIconTo(sourceIndex, adjustedTarget);
+        emit("mappingsChanged");
+      }
+    },
+  });
+});
+
+onUnmounted(() => {
+  monitorCleanup();
+  for (const cleanup of rowCleanups.values()) cleanup();
+  rowCleanups.clear();
+});
+
 function deleteEntry(entry: PatternEntry) {
   if (!entry.code) return;
   if (entry.kind === "icon") {
-    props.registry.removeIcon(entry.code);
+    if (entry.defIndex !== undefined) {
+      props.registry.removeIconAt(entry.defIndex);
+    } else {
+      props.registry.removeIcon(entry.code);
+    }
   } else {
     props.registry.clearEchelonAliases(entry.code);
   }
@@ -585,6 +710,9 @@ function deleteEntry(entry: PatternEntry) {
 }
 
 function entryKey(entry: PatternEntry): string {
+  if (entry.kind === "icon" && entry.defIndex !== undefined) {
+    return `icon:${entry.defIndex}`;
+  }
   return `${entry.kind}:${entry.code}`;
 }
 
@@ -1215,9 +1343,15 @@ onBeforeUnmount(() => {
             </div>
 
             <div>
+              <p class="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs">
+                <InfoIcon class="size-3.5 shrink-0" />
+                Entries are matched top-to-bottom. More specific patterns should appear
+                before general ones.
+              </p>
               <table class="w-full table-fixed text-sm md:table-auto">
-                <thead class="bg-muted sticky top-0">
+                <thead class="bg-muted sticky top-0 z-10">
                   <tr>
+                    <th class="w-8 p-2 text-right font-medium">#</th>
                     <th class="w-12 p-2 text-left font-medium">Symbol</th>
                     <th class="min-w-48 p-2 text-left font-medium">Type</th>
                     <th class="p-2 text-left font-medium">Recognized Keywords</th>
@@ -1226,9 +1360,32 @@ onBeforeUnmount(() => {
                 <tbody class="divide-y">
                   <tr
                     v-for="entry in filteredIconEntries"
-                    :key="entry.sidc"
-                    class="hover:bg-muted/50"
+                    :key="entry.defIndex"
+                    :ref="
+                      (el) =>
+                        isEditing && !searchQuery ? setupRowDrag(el, entry) : undefined
+                    "
+                    class="hover:bg-muted/50 relative"
+                    :class="
+                      iconDragStates.get(entry.defIndex ?? -1)?.type === 'dragging'
+                        ? 'opacity-20'
+                        : ''
+                    "
                   >
+                    <td class="p-2 align-top">
+                      <div class="flex items-center gap-1">
+                        <span
+                          v-if="isEditing && !searchQuery"
+                          :ref="(el) => setHandleRef(entry.defIndex, el)"
+                          class="cursor-grab"
+                        >
+                          <GripVerticalIcon class="text-muted-foreground size-4" />
+                        </span>
+                        <span class="text-muted-foreground text-xs tabular-nums">
+                          {{ (entry.defIndex ?? 0) + 1 }}
+                        </span>
+                      </div>
+                    </td>
                     <td class="p-2">
                       <div class="flex items-center gap-1">
                         <div class="flex h-10 w-10 items-center justify-center">
@@ -1419,6 +1576,14 @@ onBeforeUnmount(() => {
                         </template>
                       </div>
                     </td>
+                    <DropIndicator
+                      v-if="
+                        iconDragStates.get(entry.defIndex ?? -1)?.type === 'drag-over' &&
+                        iconDragStates.get(entry.defIndex ?? -1)?.closestEdge
+                      "
+                      :edge="iconDragStates.get(entry.defIndex ?? -1)!.closestEdge!"
+                      gap="0px"
+                    />
                   </tr>
                 </tbody>
               </table>
@@ -1428,7 +1593,7 @@ onBeforeUnmount(() => {
           <TabsContent value="echelons" class="mt-4">
             <div>
               <table class="w-full table-fixed text-sm">
-                <thead class="bg-muted sticky top-0">
+                <thead class="bg-muted sticky top-0 z-10">
                   <tr>
                     <th class="p-2 text-left font-medium">Symbol</th>
                     <th class="w-1/4 p-2 text-left font-medium">Echelon</th>

@@ -388,10 +388,29 @@ export class MappingRegistry {
     this.invalidateIconCache();
   }
 
+  /** Move an icon definition from one index to another. */
+  moveIconTo(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || fromIndex >= this._iconDefs.length) return;
+    if (toIndex < 0 || toIndex >= this._iconDefs.length) return;
+    this.pushUndo();
+    const [item] = this._iconDefs.splice(fromIndex, 1);
+    this._iconDefs.splice(toIndex, 0, item);
+    this.invalidateIconCache();
+  }
+
   /** Remove all icon definitions matching the given SIDC. */
   removeIcon(sidc: string): void {
     this.pushUndo();
     this._iconDefs = this._iconDefs.filter((d) => d.sidc !== sidc);
+    this.invalidateIconCache();
+  }
+
+  /** Remove a single icon definition by array index. */
+  removeIconAt(index: number): void {
+    if (index < 0 || index >= this._iconDefs.length) return;
+    this.pushUndo();
+    this._iconDefs.splice(index, 1);
     this.invalidateIconCache();
   }
 
