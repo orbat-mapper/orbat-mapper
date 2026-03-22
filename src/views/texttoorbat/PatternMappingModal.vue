@@ -933,9 +933,6 @@ onBeforeUnmount(() => {
               <PencilIcon class="mr-1 inline size-3" />Edit
             </ToggleField>
             <ToggleField v-model="showDebug">Show debug details</ToggleField>
-            <ToggleField v-model="textToOrbatStore.matchInputCase">
-              Match input case
-            </ToggleField>
           </div>
         </div>
 

@@ -7,6 +7,7 @@ import {
   GripIcon,
   MapIcon,
   MoonStarIcon,
+  SlidersHorizontalIcon,
   SunIcon,
 } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import MilSymbol from "@/components/MilSymbol.vue";
 import { useNotifications } from "@/composables/notifications";
 import { saveBlobToLocalFile } from "@/utils/files";
@@ -338,24 +349,48 @@ onUnmounted(() => {
                 <CircleXIcon class="mr-1 size-4" />
                 Clear
               </Button>
-              <ToggleField v-model="enableAutocomplete">Autocomplete</ToggleField>
-              <ToggleField v-if="enableAutocomplete" v-model="matchInputCase">
-                Match case
-              </ToggleField>
-              <ToggleField v-model="useCommaSeparator">Split fields</ToggleField>
-              <Select v-if="useCommaSeparator" v-model="commaFieldOrder">
-                <SelectTrigger class="h-7 w-auto gap-1 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name,shortName,description">
-                    name, short name, description
-                  </SelectItem>
-                  <SelectItem value="shortName,name,description">
-                    short name, name, description
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                  <Button variant="ghost" size="sm" title="Settings">
+                    <SlidersHorizontalIcon class="mr-1 size-4" />
+                    Settings
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuCheckboxItem v-model="enableAutocomplete" @select.prevent>
+                    Autocomplete
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    v-model="matchInputCase"
+                    :disabled="!enableAutocomplete"
+                    @select.prevent
+                  >
+                    Match input case
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuCheckboxItem v-model="useCommaSeparator" @select.prevent>
+                    Split fields
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuRadioGroup v-model="commaFieldOrder">
+                    <DropdownMenuRadioItem
+                      value="name,shortName,description"
+                      :disabled="!useCommaSeparator"
+                      @select.prevent
+                    >
+                      name, short name, description
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                      value="shortName,name,description"
+                      :disabled="!useCommaSeparator"
+                      @select.prevent
+                    >
+                      short name, name, description
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           <TextToOrbatEditor
