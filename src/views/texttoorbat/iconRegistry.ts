@@ -97,11 +97,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "marineinfanterie",
       "royal marine(s)",
     ],
-  },
-  {
-    name: "ICON_MARINE_INFANTRY",
-    sidc: "10001000001211004600",
-    label: "Royal Marines (RM)",
     patterns: [/\bRM\b/],
   },
   {
@@ -170,11 +165,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     sidc: "10003000001202060000",
     label: "Littoral Combat Ship",
     aliases: ["littoral combat ship", "littoral"],
-  },
-  {
-    name: "ICON_LITTORAL_COMBAT_SHIP",
-    sidc: "10003000001202060000",
-    label: "Littoral Combat Ship (LCS)",
     patterns: [/\bLCS\b/],
   },
   {
@@ -189,11 +179,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "landing craft",
       "dock landing",
     ],
-  },
-  {
-    name: "ICON_AMPHIBIOUS_WARFARE_SHIP",
-    sidc: "10003000001203000000",
-    label: "Amphibious Warfare Ship (LH/LPD)",
     patterns: [/\bL[HSPDC]{1,2}\b/],
   },
   // ── Amphibious ──────────────────────────────────────────────────────
@@ -217,11 +202,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "tank destroyer",
       "td",
     ],
-  },
-  {
-    name: "ICON_ANTITANK",
-    sidc: "10001000001204000000",
-    label: "Anti-Tank (AT)",
     patterns: [/\bAT\b/],
   },
 
@@ -300,11 +280,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "mine hunter",
       "mine countermeasure",
     ],
-  },
-  {
-    name: "ICON_MINE_WARFARE_SHIP",
-    sidc: "10003000001204000000",
-    label: "Mine Warfare Ship (MCM)",
     patterns: [/\bMC[MH]\b/],
   },
   // ── Air defense (must precede artillery) ────────────────────────────
@@ -763,18 +738,13 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "porte avion(s)",
       "portaerei",
     ],
+    patterns: [/\bCVX\b/i, /\bCV(?=-)/i],
   },
   {
     name: "ICON_NUCLEAR_CARRIER",
     sidc: "10003000001201000001",
     label: "Aircraft Carrier (CVN)",
     patterns: [/\bCVN\b/i],
-  },
-  {
-    name: "ICON_CARRIER",
-    sidc: "10003000001201000000",
-    label: "Aircraft Carrier (CV/CVX)",
-    patterns: [/(?:\bCVX?\b|\bCV(?=-))/i],
   },
   {
     name: "ICON_BATTLESHIP",
@@ -789,11 +759,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "acorazado",
       "dreadnought",
     ],
-  },
-  {
-    name: "ICON_BATTLESHIP",
-    sidc: "10003000001202010000",
-    label: "Battleship (BB)",
     patterns: [/\bBB\b/i],
   },
   {
@@ -810,11 +775,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "light cruiser",
       "battle cruiser",
     ],
-  },
-  {
-    name: "ICON_CRUISER",
-    sidc: "10003000001202020000",
-    label: "Cruiser (CA/CG/CL)",
     patterns: [/\bC[AGLX]\b/i],
   },
   {
@@ -829,11 +789,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "cacciatorpediniere",
       "destructor",
     ],
-  },
-  {
-    name: "ICON_DESTROYER",
-    sidc: "10003000001202030000",
-    label: "Destroyer (DD)",
     patterns: [/\bDD[GX]?\b/i],
   },
   {
@@ -841,11 +796,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
     sidc: "10003000001202040000",
     label: "Frigate",
     aliases: ["frigate", "fregatte", "fregate", "fregata", "fragata", "escort"],
-  },
-  {
-    name: "ICON_FRIGATE",
-    sidc: "10003000001202040000",
-    label: "Frigate (FF)",
     patterns: [/\bFF[GX]?\b/i],
   },
   {
@@ -867,11 +817,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "schnellboot",
       "vedette",
     ],
-  },
-  {
-    name: "ICON_PATROL_BOAT",
-    sidc: "10003000001205000000",
-    label: "Patrol Boat (PB/PC)",
     patterns: [/\bP[BCT]\b/i],
   },
   {
@@ -889,11 +834,6 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "submarino",
       "unterseeboot",
     ],
-  },
-  {
-    name: "ICON_SUBMARINE",
-    sidc: "10003500001101000000",
-    label: "Submarine (SS)",
     patterns: [/\bSS[BGKN]?\b/i],
   },
 
