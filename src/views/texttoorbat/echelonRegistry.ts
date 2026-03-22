@@ -18,7 +18,7 @@ export interface EchelonDefinition {
   code: string;
   /** Human-readable label shown in the UI */
   label: string;
-  /** Case-insensitive aliases compiled into a `\b(…)\b` regex */
+  /** Plain-text aliases. Use (text) for optional segments. Compiled to regex automatically. */
   aliases?: string[];
   /** Raw regex patterns for special cases */
   patterns?: RegExp[];
@@ -35,13 +35,13 @@ export const BUILTIN_ECHELON_DEFINITIONS: EchelonDefinition[] = [
     name: "ECHELON_ARMY_GROUP",
     code: "24",
     label: "Army Group",
-    aliases: ["army\\s*group", "heeresgruppe", "front", "theater", "theatre"],
+    aliases: ["army group", "heeresgruppe", "front", "theater", "theatre"],
   },
   {
     name: "ECHELON_ARMY",
     code: "23",
     label: "Army",
-    aliases: ["army", "armee", "field\\s*army"],
+    aliases: ["army", "armee", "field army"],
   },
   {
     name: "ECHELON_CORPS",
@@ -61,7 +61,7 @@ export const BUILTIN_ECHELON_DEFINITIONS: EchelonDefinition[] = [
     name: "ECHELON_BRIGADE",
     code: "18",
     label: "Brigade",
-    aliases: ["brigade", "bde", "bgde", "brig", "combat\\s*team", "bct", "rct"],
+    aliases: ["brigade", "bde", "bgde", "brig", "combat team", "bct", "rct"],
     concatenatedSuffixes: ["bgde", "brig", "bde", "bct", "rct"],
   },
   {
@@ -155,7 +155,7 @@ export const BUILTIN_ECHELON_DEFINITIONS: EchelonDefinition[] = [
     name: "ECHELON_TEAM",
     code: "11",
     label: "Team",
-    aliases: ["team", "tm", "crew", "cell", "fireteam", "fire\\s*team"],
+    aliases: ["team", "tm", "crew", "cell", "fireteam", "fire team"],
     concatenatedSuffixes: ["tm"],
   },
 ];

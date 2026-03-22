@@ -14,7 +14,7 @@ import {
 } from "@/types/externalModels";
 import type { Scenario, Side, SideGroup, Unit } from "@/types/scenarioModels";
 import type { SidValue } from "@/symbology/values";
-import { defaultRegistry, type MappingRegistry } from "./mappingRegistry";
+import { defaultRegistry, normalizeInput, type MappingRegistry } from "./mappingRegistry";
 
 // ---------------------------------------------------------------------------
 // Re-exports (only items that consumers import from this module)
@@ -184,7 +184,7 @@ export function getEchelonCodeFromName(
   name: string,
   registry: MappingRegistry = defaultRegistry,
 ): string {
-  const normalizedName = normalizeEchelonTokenBoundaries(name, registry);
+  const normalizedName = normalizeInput(normalizeEchelonTokenBoundaries(name, registry));
   for (const { pattern, code } of registry.echelonPatterns) {
     if (pattern.test(normalizedName)) {
       return code;
@@ -229,8 +229,9 @@ export function getIconMatchFromName(
   name: string,
   registry: MappingRegistry = defaultRegistry,
 ): IconMatch {
+  const normalized = normalizeInput(name);
   for (const { pattern, code } of registry.iconPatterns) {
-    if (pattern.test(name)) {
+    if (pattern.test(normalized)) {
       return { sidc: code };
     }
   }

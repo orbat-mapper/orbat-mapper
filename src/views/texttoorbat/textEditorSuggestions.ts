@@ -32,26 +32,9 @@ function buildEchelonPreviewSidc(echelonCode: string) {
 }
 
 function normalizeAliasForCompletion(alias: string) {
-  const normalized = alias
-    .replace(/\\s\*/g, " ")
-    .replace(/\\s\+/g, " ")
-    .replace(/\\s/g, " ")
-    .replace(/\\\./g, "")
-    .replace(/\[\- ]\?/g, "-")
-    .replace(/\[- ]\?/g, "-")
-    .replace(/\(\?:/g, "(")
-    .replace(/\(\?[:!=<].*?\)/g, "")
-    .replace(/\(\?:|\(|\)|\?|\+|\*|\{.*?\}/g, "")
-    .replace(/\[[^\]]+\]/g, "")
-    .replace(/\|/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const normalized = alias.replace(/[().]/g, "").replace(/\s+/g, " ").trim();
 
-  if (!normalized || /[\\^$]/.test(normalized)) {
-    return null;
-  }
-
-  return normalized;
+  return normalized || null;
 }
 
 function extractLabelAbbreviations(label: string) {
@@ -72,14 +55,15 @@ function extractLiteralPatternSuggestions(patterns?: RegExp[]) {
 
   return patterns.flatMap((pattern) => {
     const source = pattern.source;
+    const caseInsensitive = pattern.flags.includes("i");
     const exactWordMatch = source.match(/^\\b([A-Za-z][A-Za-z0-9/-]{1,})\\b$/);
     if (exactWordMatch) {
-      return [exactWordMatch[1].toLowerCase()];
+      return [caseInsensitive ? exactWordMatch[1].toLowerCase() : exactWordMatch[1]];
     }
 
     const lookaheadMatch = source.match(/^\\b([A-Za-z][A-Za-z0-9/-]{1,})\(\?=/);
     if (lookaheadMatch) {
-      return [lookaheadMatch[1].toLowerCase()];
+      return [caseInsensitive ? lookaheadMatch[1].toLowerCase() : lookaheadMatch[1]];
     }
 
     return [];
@@ -95,8 +79,9 @@ function buildCompletionsFromDefinitions(
 
   return definitions.flatMap((definition) => {
     const previewSidc = getPreviewSidc(definition);
+    const defLabel = definition.label.trim();
     const values = [
-      definition.label.trim(),
+      defLabel,
       ...extractLabelAbbreviations(definition.label),
       ...(definition.aliases ?? [])
         .map((alias) => normalizeAliasForCompletion(alias))
@@ -116,7 +101,7 @@ function buildCompletionsFromDefinitions(
         {
           label: value,
           type: "keyword",
-          detail,
+          detail: value === defLabel ? undefined : defLabel,
           apply: value,
           previewSidc,
         } satisfies TextToOrbatCompletion,

@@ -79,7 +79,7 @@ const standardIdentity = useLocalStorage("textToOrbatSI", "3");
 const showScratchPad = useLocalStorage("showScratchPad", false);
 const scratchPadUnits = useLocalStorage<Unit[]>("textToOrbatScratchPad", []);
 const storedMappings = useLocalStorage<AllMappingData | null>(
-  "textToOrbatMappings",
+  "textToOrbatMappings_v2",
   null,
   {
     serializer: {

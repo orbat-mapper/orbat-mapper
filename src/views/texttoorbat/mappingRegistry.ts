@@ -71,6 +71,54 @@ export interface AllMappingData {
 // Helpers
 // ---------------------------------------------------------------------------
 
+/** Strip Unicode combining marks so e.g. "é" → "e", "ô" → "o". */
+export function normalizeInput(input: string): string {
+  return input.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+const REGEX_ESCAPE = /[\\^$*+?{}[\]|]/g;
+
+/**
+ * Compile a plain-text alias into a regex source string.
+ *
+ * Mini-syntax (two rules):
+ * - `(text)` → optional segment (`(?:text)?`)
+ * - `.`      → optional literal dot (`\.?`)
+ * - spaces   → flexible separator (`[\s.\-]*`)
+ * - everything else is literal
+ */
+export function compileSimpleAlias(alias: string): string {
+  const normalized = normalizeInput(alias.toLowerCase());
+  let result = "";
+  let i = 0;
+  while (i < normalized.length) {
+    const ch = normalized[i];
+    if (ch === "(") {
+      // Collect content until closing paren
+      const close = normalized.indexOf(")", i + 1);
+      if (close === -1) {
+        // No closing paren — treat as literal
+        result += "\\(";
+        i++;
+      } else {
+        const content = normalized.slice(i + 1, close);
+        result += `(?:${content.replace(REGEX_ESCAPE, "\\$&")})?`;
+        i = close + 1;
+      }
+    } else if (ch === ".") {
+      result += "\\.?";
+      i++;
+    } else if (ch === " ") {
+      result += "[\\s.\\-]*";
+      i++;
+    } else {
+      result += ch.replace(REGEX_ESCAPE, "\\$&");
+      i++;
+    }
+  }
+  return result;
+}
+
 /** Compile a definition's aliases + raw patterns into `CompiledPattern[]`. */
 function compileDefinition(
   def: Pick<
@@ -83,7 +131,7 @@ function compileDefinition(
 
   // Aliases → single case-insensitive regex
   if (def.aliases && def.aliases.length > 0) {
-    const joined = def.aliases.join("|");
+    const joined = def.aliases.map(compileSimpleAlias).join("|");
     result.push({
       pattern: new RegExp(`\\b(${joined})\\b`, "i"),
       name: def.name,
@@ -303,6 +351,18 @@ export class MappingRegistry {
     this.invalidateIconCache();
   }
 
+  /** Add a raw regex pattern to an existing icon by SIDC. */
+  extendIconPattern(sidc: string, pattern: RegExp): void {
+    this.pushUndo();
+    for (const def of this._iconDefs) {
+      if (def.sidc === sidc) {
+        def.patterns = [...(def.patterns ?? []), pattern];
+        break;
+      }
+    }
+    this.invalidateIconCache();
+  }
+
   /** Add a completely new icon mapping. */
   addIcon(def: IconDefinition, position?: "prepend"): void {
     this.pushUndo();
@@ -419,6 +479,18 @@ export class MappingRegistry {
       if (def.code === code && def.concatenatedSuffixes) {
         def.concatenatedSuffixes = def.concatenatedSuffixes.filter((s) => s !== suffix);
         if (def.concatenatedSuffixes.length === 0) def.concatenatedSuffixes = undefined;
+      }
+    }
+    this.invalidateEchelonCache();
+  }
+
+  /** Add a raw regex pattern to an existing echelon by code. */
+  extendEchelonPattern(code: string, pattern: RegExp): void {
+    this.pushUndo();
+    for (const def of this._echelonDefs) {
+      if (def.code === code) {
+        def.patterns = [...(def.patterns ?? []), pattern];
+        break;
       }
     }
     this.invalidateEchelonCache();

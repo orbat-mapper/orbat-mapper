@@ -40,6 +40,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   FlaskConicalIcon,
+  InfoIcon,
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -81,13 +82,19 @@ const showDebug = ref(false);
 const isEditing = ref(false);
 const activeTab = ref<"icons" | "echelons">("icons");
 
-// ── Pattern tester state ─────────────────────────────────────────
+// ── Collapsible sections ─────────────────────────────────────────
+const showSyntaxHelp = ref(false);
 const showTester = ref(false);
 const testInput = ref("");
 
 // ── Add alias state ──────────────────────────────────────────────
 const addingAliasKey = ref<string | null>(null);
 const newAliasInput = ref("");
+
+// ── Add pattern state ───────────────────────────────────────────
+const addingPatternKey = ref<string | null>(null);
+const newPatternInput = ref("");
+const patternError = ref<string | null>(null);
 
 // ── Add suffix state ─────────────────────────────────────────────
 const addingSuffixKey = ref<string | null>(null);
@@ -108,6 +115,7 @@ const showAddIconForm = ref(false);
 const newIconLabel = ref("");
 const newIconSidc = ref("");
 const newIconAliases = ref("");
+const newIconPatterns = ref("");
 
 // ── Inline edit state ────────────────────────────────────────────
 const editingEntryKey = ref<string | null>(null);
@@ -158,21 +166,7 @@ interface PatternEntry {
 }
 
 function displayAlias(alias: string): string {
-  return alias
-    .replace(/\\s\*/g, " ")
-    .replace(/\\s\+/g, " ")
-    .replace(/\\s/g, " ")
-    .replace(/\\\./g, "")
-    .replace(/\[\- ]\?/g, "-")
-    .replace(/\[- ]\?/g, "-")
-    .replace(/\(\?:/g, "(")
-    .replace(/\(\?[:!=<].*?\)/g, "")
-    .replace(/\(\?:|\(|\)|\?|\+|\*|\{.*?\}/g, "")
-    .replace(/\[[^\]]+\]/g, "")
-    .replace(/\|/g, " ")
-    .replace(/\\/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return alias.replace(/[()]/g, "").replace(/\s+/g, " ").trim();
 }
 
 function displayPatternSource(source: string): string {
@@ -304,6 +298,13 @@ const filteredIconEntries = computed(() => {
 
 // ── Pattern tester ───────────────────────────────────────────────
 
+interface OverriddenMatch {
+  label: string;
+  matchedText: string;
+  sidc: string;
+  kind: "icon" | "echelon";
+}
+
 const testResult = computed(() => {
   void props.registryVersion;
   const input = testInput.value.trim();
@@ -316,11 +317,66 @@ const testResult = computed(() => {
     ? iconEntries.value.find((e) => e.code === iconMatch.sidc)
     : null;
 
+  // Find which icon pattern matched + collect overridden matches
+  let iconMatchedPattern: string | null = null;
+  const overridden: OverriddenMatch[] = [];
+  {
+    let foundWinner = false;
+    const seenCodes = new Set<string>();
+    for (const cp of props.registry.iconPatterns) {
+      if (cp.pattern.test(input)) {
+        const m = input.match(cp.pattern);
+        const matchedText = m ? m[0] : cp.pattern.source;
+        if (!foundWinner) {
+          iconMatchedPattern = matchedText;
+          seenCodes.add(cp.code);
+          foundWinner = true;
+        } else if (!seenCodes.has(cp.code)) {
+          seenCodes.add(cp.code);
+          const entry = iconEntries.value.find((e) => e.code === cp.code);
+          overridden.push({
+            label: entry?.label ?? cp.label,
+            matchedText,
+            sidc: entry?.sidc ?? templateToDisplaySidc(cp.code),
+            kind: "icon",
+          });
+        }
+      }
+    }
+  }
+
   const echelonCode = getEchelonCodeFromName(input, props.registry);
   const hasEchelonMatch = echelonCode !== ECHELON_UNSPECIFIED;
   const echelonEntry = hasEchelonMatch
     ? echelonEntries.value.find((e) => e.code === echelonCode)
     : null;
+
+  // Find which echelon pattern matched + collect overridden matches
+  let echelonMatchedPattern: string | null = null;
+  {
+    let foundWinner = false;
+    const seenCodes = new Set<string>();
+    for (const cp of props.registry.echelonPatterns) {
+      if (cp.pattern.test(input)) {
+        const m = input.match(cp.pattern);
+        const matchedText = m ? m[0] : cp.pattern.source;
+        if (!foundWinner) {
+          echelonMatchedPattern = matchedText;
+          seenCodes.add(cp.code);
+          foundWinner = true;
+        } else if (!seenCodes.has(cp.code)) {
+          seenCodes.add(cp.code);
+          const entry = echelonEntries.value.find((e) => e.code === cp.code);
+          overridden.push({
+            label: entry?.label ?? cp.label,
+            matchedText,
+            sidc: entry?.sidc ?? buildEchelonSidc(cp.code),
+            kind: "echelon",
+          });
+        }
+      }
+    }
+  }
 
   // Build a combined display SIDC
   const si = FRIENDLY_SI;
@@ -330,10 +386,13 @@ const testResult = computed(() => {
   return {
     iconLabel: iconEntry?.label ?? null,
     iconSidc: hasIconMatch ? templateToDisplaySidc(iconMatch.sidc) : null,
+    iconMatchedPattern,
     hasIconMatch,
     echelonLabel: echelonEntry?.label ?? null,
     echelonSidc: hasEchelonMatch ? buildEchelonSidc(echelonCode) : null,
+    echelonMatchedPattern,
     hasEchelonMatch,
+    overridden,
     displaySidc,
   };
 });
@@ -430,6 +489,48 @@ function submitAddAlias(entry: PatternEntry) {
   }
   emit("mappingsChanged");
   cancelAddAlias();
+}
+
+function startAddPattern(entry: PatternEntry) {
+  addingPatternKey.value = `${entry.kind}:${entry.code}`;
+  newPatternInput.value = "";
+  patternError.value = null;
+}
+
+function cancelAddPattern() {
+  addingPatternKey.value = null;
+  newPatternInput.value = "";
+  patternError.value = null;
+}
+
+function parsePatternInput(input: string): { source: string; flags: string } {
+  const match = input.match(/^\/(.+)\/([gimsuy]*)$/);
+  if (match) {
+    return { source: match[1], flags: match[2] };
+  }
+  return { source: input, flags: "" };
+}
+
+function submitAddPattern(entry: PatternEntry) {
+  const raw = newPatternInput.value.trim();
+  if (!raw || !entry.code) return;
+
+  const { source, flags } = parsePatternInput(raw);
+  let regex: RegExp;
+  try {
+    regex = new RegExp(source, flags);
+  } catch (e) {
+    patternError.value = e instanceof Error ? e.message : "Invalid regex";
+    return;
+  }
+
+  if (entry.kind === "icon") {
+    props.registry.extendIconPattern(entry.code, regex);
+  } else {
+    props.registry.extendEchelonPattern(entry.code, regex);
+  }
+  emit("mappingsChanged");
+  cancelAddPattern();
 }
 
 function startAddSuffix(entry: PatternEntry) {
@@ -547,17 +648,35 @@ function submitNewIcon() {
 
   if (!label || !sidc || aliases.length === 0) return;
 
+  const patternStrings = newIconPatterns.value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  let patterns: RegExp[] | undefined;
+  if (patternStrings.length > 0) {
+    try {
+      patterns = patternStrings.map((s) => {
+        const { source, flags } = parsePatternInput(s);
+        return new RegExp(source, flags);
+      });
+    } catch {
+      return;
+    }
+  }
+
   props.registry.addIcon({
     name: label.toUpperCase().replace(/\s+/g, "_"),
     sidc,
     label,
     aliases,
+    ...(patterns && { patterns }),
   });
   emit("mappingsChanged");
   showAddIconForm.value = false;
   newIconLabel.value = "";
   newIconSidc.value = "";
   newIconAliases.value = "";
+  newIconPatterns.value = "";
 }
 
 function handleReset() {
@@ -626,7 +745,7 @@ async function handleExportXlsx() {
     {
       Section: "Aliases",
       Description:
-        'Comma-separated list of regular expressions matched as whole words (case-insensitive). Simple keywords like "infantry, inf, foot" work as-is, but you can also use regex syntax for flexible matching — e.g. "mech\\s+inf" matches "mech inf" with any amount of whitespace, and "anti[- ]?tank" matches "anti-tank", "anti tank", or "antitank".',
+        'Comma-separated list of plain-text keywords matched as whole words (case-insensitive). Spaces match flexibly (whitespace, hyphens, dots, or nothing), and dots are optional — so "anti tank" matches "anti-tank", "antitank", and "anti tank", while "R.A." matches "RA" and "R.A.". Use parentheses for optional segments — e.g. "armo(u)r(ed)" matches "armor", "armour", "armored", and "armoured".',
     },
     {
       Section: "Patterns",
@@ -818,6 +937,67 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
+        <!-- Syntax help -->
+        <div class="rounded-md border p-3">
+          <button
+            type="button"
+            class="flex items-center gap-1 text-sm font-medium"
+            @click="showSyntaxHelp = !showSyntaxHelp"
+          >
+            <ChevronRightIcon
+              class="size-4 transition-transform"
+              :class="showSyntaxHelp && 'rotate-90'"
+            />
+            <InfoIcon class="size-3.5" />
+            Alias syntax
+          </button>
+          <div v-if="showSyntaxHelp" class="mt-2 space-y-2 text-sm">
+            <p class="text-muted-foreground">
+              Aliases are plain text keywords. The parser handles common variations
+              automatically:
+            </p>
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="text-muted-foreground border-b">
+                  <th class="pr-4 pb-1 font-medium">You write</th>
+                  <th class="pr-4 pb-1 font-medium">Matches</th>
+                  <th class="pb-1 font-medium">Why</th>
+                </tr>
+              </thead>
+              <tbody class="font-mono">
+                <tr class="border-b">
+                  <td class="py-1 pr-4">anti tank</td>
+                  <td class="py-1 pr-4">anti tank, anti-tank, antitank, anti.tank</td>
+                  <td class="py-1 font-sans">
+                    Spaces match any separator (whitespace, hyphen, dot, or nothing)
+                  </td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-1 pr-4">R.A.</td>
+                  <td class="py-1 pr-4">RA, R.A., R.A, R A</td>
+                  <td class="py-1 font-sans">Dots are optional</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-1 pr-4">marine(s)</td>
+                  <td class="py-1 pr-4">marine, marines</td>
+                  <td class="py-1 font-sans">Parentheses mark optional segments</td>
+                </tr>
+                <tr>
+                  <td class="py-1 pr-4">armo(u)r(ed)</td>
+                  <td class="py-1 pr-4">armor, armour, armored, armoured</td>
+                  <td class="py-1 font-sans">
+                    Multiple optional segments can be combined
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="text-muted-foreground">
+              Matching is always case-insensitive and accent-insensitive (e.g. "blindé"
+              matches "blinde").
+            </p>
+          </div>
+        </div>
+
         <!-- Pattern tester -->
         <div class="rounded-md border p-3">
           <button
@@ -848,6 +1028,12 @@ onBeforeUnmount(() => {
                     :options="{ outlineWidth: 4, outlineColor: 'white' }"
                   />
                   <span>{{ testResult.iconLabel }}</span>
+                  <span
+                    v-if="testResult.iconMatchedPattern"
+                    class="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                  >
+                    {{ testResult.iconMatchedPattern }}
+                  </span>
                 </template>
                 <span v-else class="text-muted-foreground italic">No match</span>
               </div>
@@ -860,6 +1046,12 @@ onBeforeUnmount(() => {
                     :options="{ outlineWidth: 6, outlineColor: 'white' }"
                   />
                   <span>{{ testResult.echelonLabel }}</span>
+                  <span
+                    v-if="testResult.echelonMatchedPattern"
+                    class="rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800 dark:bg-green-900 dark:text-green-200"
+                  >
+                    {{ testResult.echelonMatchedPattern }}
+                  </span>
                 </template>
                 <span v-else class="text-muted-foreground italic">No match</span>
               </div>
@@ -874,6 +1066,34 @@ onBeforeUnmount(() => {
                   {{ testResult.displaySidc }}
                 </span>
               </div>
+            </div>
+            <div
+              v-if="testResult?.overridden.length"
+              class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
+            >
+              <span class="text-muted-foreground">Also matched:</span>
+              <span
+                v-for="(o, i) in testResult.overridden"
+                :key="i"
+                class="inline-flex items-center gap-1 opacity-60"
+              >
+                <NewMilitarySymbol
+                  :sidc="o.sidc"
+                  :size="22"
+                  :options="{ outlineWidth: 4, outlineColor: 'white' }"
+                />
+                <span>{{ o.label }}</span>
+                <span
+                  class="rounded px-1.5 py-0.5 text-xs"
+                  :class="
+                    o.kind === 'icon'
+                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                  "
+                >
+                  {{ o.matchedText }}
+                </span>
+              </span>
             </div>
             <div
               v-if="fuzzySuggestions.length > 0"
@@ -940,6 +1160,11 @@ onBeforeUnmount(() => {
                   v-model="newIconAliases"
                   placeholder="Aliases (comma-separated)"
                   class="h-8 text-sm sm:col-span-2"
+                />
+                <Input
+                  v-model="newIconPatterns"
+                  placeholder="Regex patterns (optional, comma-separated, e.g. /\bXY\b/i)"
+                  class="h-8 font-mono text-sm sm:col-span-2"
                 />
               </div>
               <div class="mt-2 flex items-center justify-end">
@@ -1138,17 +1363,52 @@ onBeforeUnmount(() => {
                               <PlusIcon class="size-3" />
                             </Button>
                           </template>
-                          <Button
-                            v-else
-                            size="icon"
-                            variant="ghost"
-                            class="size-6"
-                            type="button"
-                            title="Add alias"
-                            @click="startAddAlias(entry)"
-                          >
-                            <PlusIcon class="size-3" />
-                          </Button>
+                          <template v-else-if="addingPatternKey === `icon:${entry.code}`">
+                            <div class="flex flex-col gap-1">
+                              <div class="flex items-center gap-1">
+                                <Input
+                                  v-model="newPatternInput"
+                                  class="h-6 w-36 font-mono text-xs"
+                                  placeholder="/regex/flags"
+                                  @keydown.enter="submitAddPattern(entry)"
+                                  @keydown.escape="cancelAddPattern"
+                                />
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  class="size-6"
+                                  type="button"
+                                  @click="submitAddPattern(entry)"
+                                >
+                                  <PlusIcon class="size-3" />
+                                </Button>
+                              </div>
+                              <span
+                                v-if="patternError"
+                                class="text-xs text-red-600 dark:text-red-400"
+                              >
+                                {{ patternError }}
+                              </span>
+                            </div>
+                          </template>
+                          <template v-else>
+                            <button
+                              type="button"
+                              class="rounded-md border border-amber-300 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 uppercase hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/40"
+                              title="Add regex pattern"
+                              @click="startAddPattern(entry)"
+                            >
+                              +regex
+                            </button>
+                            <button
+                              type="button"
+                              class="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white uppercase shadow-sm hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                              title="Add alias"
+                              @click="startAddAlias(entry)"
+                            >
+                              +alias
+                            </button>
+                          </template>
                         </template>
                       </div>
                     </td>
@@ -1286,17 +1546,54 @@ onBeforeUnmount(() => {
                               <PlusIcon class="size-3" />
                             </Button>
                           </template>
-                          <Button
-                            v-else
-                            size="icon"
-                            variant="ghost"
-                            class="size-6"
-                            type="button"
-                            title="Add alias"
-                            @click="startAddAlias(entry)"
+                          <template
+                            v-else-if="addingPatternKey === `echelon:${entry.code}`"
                           >
-                            <PlusIcon class="size-3" />
-                          </Button>
+                            <div class="flex flex-col gap-1">
+                              <div class="flex items-center gap-1">
+                                <Input
+                                  v-model="newPatternInput"
+                                  class="h-6 w-36 font-mono text-xs"
+                                  placeholder="/regex/flags"
+                                  @keydown.enter="submitAddPattern(entry)"
+                                  @keydown.escape="cancelAddPattern"
+                                />
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  class="size-6"
+                                  type="button"
+                                  @click="submitAddPattern(entry)"
+                                >
+                                  <PlusIcon class="size-3" />
+                                </Button>
+                              </div>
+                              <span
+                                v-if="patternError"
+                                class="text-xs text-red-600 dark:text-red-400"
+                              >
+                                {{ patternError }}
+                              </span>
+                            </div>
+                          </template>
+                          <template v-else>
+                            <button
+                              type="button"
+                              class="rounded-md border border-emerald-300 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 uppercase hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                              title="Add regex pattern"
+                              @click="startAddPattern(entry)"
+                            >
+                              +regex
+                            </button>
+                            <button
+                              type="button"
+                              class="rounded-md bg-green-600 px-2.5 py-1 text-xs font-semibold text-white uppercase shadow-sm hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+                              title="Add alias"
+                              @click="startAddAlias(entry)"
+                            >
+                              +alias
+                            </button>
+                          </template>
                         </template>
                       </div>
                     </td>
