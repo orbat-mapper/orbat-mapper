@@ -32,26 +32,9 @@ function buildEchelonPreviewSidc(echelonCode: string) {
 }
 
 function normalizeAliasForCompletion(alias: string) {
-  const normalized = alias
-    .replace(/\\s\*/g, " ")
-    .replace(/\\s\+/g, " ")
-    .replace(/\\s/g, " ")
-    .replace(/\\\./g, "")
-    .replace(/\[\- ]\?/g, "-")
-    .replace(/\[- ]\?/g, "-")
-    .replace(/\(\?:/g, "(")
-    .replace(/\(\?[:!=<].*?\)/g, "")
-    .replace(/\(\?:|\(|\)|\?|\+|\*|\{.*?\}/g, "")
-    .replace(/\[[^\]]+\]/g, "")
-    .replace(/\|/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const normalized = alias.replace(/[()]/g, "").replace(/\s+/g, " ").trim();
 
-  if (!normalized || /[\\^$]/.test(normalized)) {
-    return null;
-  }
-
-  return normalized;
+  return normalized || null;
 }
 
 function extractLabelAbbreviations(label: string) {

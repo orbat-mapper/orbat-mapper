@@ -40,6 +40,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   FlaskConicalIcon,
+  InfoIcon,
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -81,7 +82,8 @@ const showDebug = ref(false);
 const isEditing = ref(false);
 const activeTab = ref<"icons" | "echelons">("icons");
 
-// ── Pattern tester state ─────────────────────────────────────────
+// ── Collapsible sections ─────────────────────────────────────────
+const showSyntaxHelp = ref(false);
 const showTester = ref(false);
 const testInput = ref("");
 
@@ -158,21 +160,7 @@ interface PatternEntry {
 }
 
 function displayAlias(alias: string): string {
-  return alias
-    .replace(/\\s\*/g, " ")
-    .replace(/\\s\+/g, " ")
-    .replace(/\\s/g, " ")
-    .replace(/\\\./g, "")
-    .replace(/\[\- ]\?/g, "-")
-    .replace(/\[- ]\?/g, "-")
-    .replace(/\(\?:/g, "(")
-    .replace(/\(\?[:!=<].*?\)/g, "")
-    .replace(/\(\?:|\(|\)|\?|\+|\*|\{.*?\}/g, "")
-    .replace(/\[[^\]]+\]/g, "")
-    .replace(/\|/g, " ")
-    .replace(/\\/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return alias.replace(/[()]/g, "").replace(/\s+/g, " ").trim();
 }
 
 function displayPatternSource(source: string): string {
@@ -691,7 +679,7 @@ async function handleExportXlsx() {
     {
       Section: "Aliases",
       Description:
-        'Comma-separated list of regular expressions matched as whole words (case-insensitive). Simple keywords like "infantry, inf, foot" work as-is, but you can also use regex syntax for flexible matching — e.g. "mech\\s+inf" matches "mech inf" with any amount of whitespace, and "anti[- ]?tank" matches "anti-tank", "anti tank", or "antitank".',
+        'Comma-separated list of plain-text keywords matched as whole words (case-insensitive). Spaces match flexibly (whitespace, hyphens, dots, or nothing), and dots are optional — so "anti tank" matches "anti-tank", "antitank", and "anti tank", while "R.A." matches "RA" and "R.A.". Use parentheses for optional segments — e.g. "armo(u)r(ed)" matches "armor", "armour", "armored", and "armoured".',
     },
     {
       Section: "Patterns",
@@ -880,6 +868,67 @@ onBeforeUnmount(() => {
               <PencilIcon class="mr-1 inline size-3" />Edit
             </ToggleField>
             <ToggleField v-model="showDebug">Show debug details</ToggleField>
+          </div>
+        </div>
+
+        <!-- Syntax help -->
+        <div class="rounded-md border p-3">
+          <button
+            type="button"
+            class="flex items-center gap-1 text-sm font-medium"
+            @click="showSyntaxHelp = !showSyntaxHelp"
+          >
+            <ChevronRightIcon
+              class="size-4 transition-transform"
+              :class="showSyntaxHelp && 'rotate-90'"
+            />
+            <InfoIcon class="size-3.5" />
+            Alias syntax
+          </button>
+          <div v-if="showSyntaxHelp" class="mt-2 space-y-2 text-sm">
+            <p class="text-muted-foreground">
+              Aliases are plain text keywords. The parser handles common variations
+              automatically:
+            </p>
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="text-muted-foreground border-b">
+                  <th class="pr-4 pb-1 font-medium">You write</th>
+                  <th class="pr-4 pb-1 font-medium">Matches</th>
+                  <th class="pb-1 font-medium">Why</th>
+                </tr>
+              </thead>
+              <tbody class="font-mono">
+                <tr class="border-b">
+                  <td class="py-1 pr-4">anti tank</td>
+                  <td class="py-1 pr-4">anti tank, anti-tank, antitank, anti.tank</td>
+                  <td class="py-1 font-sans">
+                    Spaces match any separator (whitespace, hyphen, dot, or nothing)
+                  </td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-1 pr-4">R.A.</td>
+                  <td class="py-1 pr-4">RA, R.A., R.A, R A</td>
+                  <td class="py-1 font-sans">Dots are optional</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-1 pr-4">marine(s)</td>
+                  <td class="py-1 pr-4">marine, marines</td>
+                  <td class="py-1 font-sans">Parentheses mark optional segments</td>
+                </tr>
+                <tr>
+                  <td class="py-1 pr-4">armo(u)r(ed)</td>
+                  <td class="py-1 pr-4">armor, armour, armored, armoured</td>
+                  <td class="py-1 font-sans">
+                    Multiple optional segments can be combined
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="text-muted-foreground">
+              Matching is always case-insensitive and accent-insensitive (e.g. "blindé"
+              matches "blinde").
+            </p>
           </div>
         </div>
 
