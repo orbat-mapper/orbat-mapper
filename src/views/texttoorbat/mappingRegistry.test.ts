@@ -44,7 +44,7 @@ describe("MappingRegistry — adding new mappings", () => {
     expect(getIconCodeFromName("Royal Fusiliers", registry)).toBe(ICON_UNSPECIFIED);
 
     // Extend the infantry icon with a new alias (now uses full SIDC)
-    registry.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusiliers?"]);
+    registry.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusilier(s)"]);
 
     expect(getIconCodeFromName("Royal Fusiliers", registry)).toBe(ICON_INFANTRY);
     expect(getIconCodeFromName("Fusilier Company", registry)).toBe(ICON_INFANTRY);
@@ -124,7 +124,7 @@ describe("MappingRegistry — adding new mappings", () => {
 
   it("exportMappings → importMappings round-trip preserves mappings", () => {
     const registry1 = new MappingRegistry();
-    registry1.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusiliers?"]);
+    registry1.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusilier(s)"]);
     registry1.addIcon({
       name: "ICON_DRONE",
       sidc: buildIconSidc("1206010000"),
@@ -148,7 +148,7 @@ describe("MappingRegistry — adding new mappings", () => {
   it("resetToDefaults clears all customizations", () => {
     const registry = new MappingRegistry();
 
-    registry.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusiliers?"]);
+    registry.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusilier(s)"]);
     registry.addIcon({
       name: "ICON_DRONE",
       sidc: buildIconSidc("1206010000"),
@@ -172,7 +172,7 @@ describe("MappingRegistry — adding new mappings", () => {
     const registry = new MappingRegistry();
     const v0 = registry.version;
 
-    registry.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusiliers?"]);
+    registry.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusilier(s)"]);
     expect(registry.version).toBeGreaterThan(v0);
 
     const v1 = registry.version;
@@ -191,7 +191,7 @@ describe("MappingRegistry — adding new mappings", () => {
 
   it("XLSX roundtrip: exportRows → parseMappingsFromXlsxWorkbook → importMappings preserves mappings", () => {
     const registry1 = new MappingRegistry();
-    registry1.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusiliers?"]);
+    registry1.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusilier(s)"]);
     registry1.addIcon({
       name: "ICON_DRONE",
       sidc: buildIconSidc("1206010000"),

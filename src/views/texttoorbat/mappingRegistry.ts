@@ -71,6 +71,54 @@ export interface AllMappingData {
 // Helpers
 // ---------------------------------------------------------------------------
 
+/** Strip Unicode combining marks so e.g. "é" → "e", "ô" → "o". */
+export function normalizeInput(input: string): string {
+  return input.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+const REGEX_ESCAPE = /[\\^$*+?{}[\]|]/g;
+
+/**
+ * Compile a plain-text alias into a regex source string.
+ *
+ * Mini-syntax (two rules):
+ * - `(text)` → optional segment (`(?:text)?`)
+ * - `.`      → optional literal dot (`\.?`)
+ * - spaces   → flexible separator (`[\s.\-]*`)
+ * - everything else is literal
+ */
+export function compileSimpleAlias(alias: string): string {
+  const normalized = normalizeInput(alias.toLowerCase());
+  let result = "";
+  let i = 0;
+  while (i < normalized.length) {
+    const ch = normalized[i];
+    if (ch === "(") {
+      // Collect content until closing paren
+      const close = normalized.indexOf(")", i + 1);
+      if (close === -1) {
+        // No closing paren — treat as literal
+        result += "\\(";
+        i++;
+      } else {
+        const content = normalized.slice(i + 1, close);
+        result += `(?:${content.replace(REGEX_ESCAPE, "\\$&")})?`;
+        i = close + 1;
+      }
+    } else if (ch === ".") {
+      result += "\\.?";
+      i++;
+    } else if (ch === " ") {
+      result += "[\\s.\\-]*";
+      i++;
+    } else {
+      result += ch.replace(REGEX_ESCAPE, "\\$&");
+      i++;
+    }
+  }
+  return result;
+}
+
 /** Compile a definition's aliases + raw patterns into `CompiledPattern[]`. */
 function compileDefinition(
   def: Pick<
@@ -83,7 +131,7 @@ function compileDefinition(
 
   // Aliases → single case-insensitive regex
   if (def.aliases && def.aliases.length > 0) {
-    const joined = def.aliases.join("|");
+    const joined = def.aliases.map(compileSimpleAlias).join("|");
     result.push({
       pattern: new RegExp(`\\b(${joined})\\b`, "i"),
       name: def.name,
