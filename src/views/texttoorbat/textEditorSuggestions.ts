@@ -4,14 +4,12 @@ import {
   type CompletionContext,
   type CompletionResult,
 } from "@codemirror/autocomplete";
+import { type EchelonDefinition } from "@/views/texttoorbat/echelonRegistry";
+import { type IconDefinition } from "@/views/texttoorbat/iconRegistry";
 import {
-  BUILTIN_ECHELON_DEFINITIONS,
-  type EchelonDefinition,
-} from "@/views/texttoorbat/echelonRegistry";
-import {
-  BUILTIN_ICON_DEFINITIONS,
-  type IconDefinition,
-} from "@/views/texttoorbat/iconRegistry";
+  defaultRegistry,
+  type MappingRegistry,
+} from "@/views/texttoorbat/mappingRegistry";
 
 const FRIENDLY_SI = "3";
 const DEFAULT_SYMBOL_SET = "10";
@@ -34,26 +32,9 @@ function buildEchelonPreviewSidc(echelonCode: string) {
 }
 
 function normalizeAliasForCompletion(alias: string) {
-  const normalized = alias
-    .replace(/\\s\*/g, " ")
-    .replace(/\\s\+/g, " ")
-    .replace(/\\s/g, " ")
-    .replace(/\\\./g, "")
-    .replace(/\[\- ]\?/g, "-")
-    .replace(/\[- ]\?/g, "-")
-    .replace(/\(\?:/g, "(")
-    .replace(/\(\?[:!=<].*?\)/g, "")
-    .replace(/\(\?:|\(|\)|\?|\+|\*|\{.*?\}/g, "")
-    .replace(/\[[^\]]+\]/g, "")
-    .replace(/\|/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const normalized = alias.replace(/[().]/g, "").replace(/\s+/g, " ").trim();
 
-  if (!normalized || /[\\^$]/.test(normalized)) {
-    return null;
-  }
-
-  return normalized;
+  return normalized || null;
 }
 
 function extractLabelAbbreviations(label: string) {
@@ -74,14 +55,15 @@ function extractLiteralPatternSuggestions(patterns?: RegExp[]) {
 
   return patterns.flatMap((pattern) => {
     const source = pattern.source;
+    const caseInsensitive = pattern.flags.includes("i");
     const exactWordMatch = source.match(/^\\b([A-Za-z][A-Za-z0-9/-]{1,})\\b$/);
     if (exactWordMatch) {
-      return [exactWordMatch[1].toLowerCase()];
+      return [caseInsensitive ? exactWordMatch[1].toLowerCase() : exactWordMatch[1]];
     }
 
     const lookaheadMatch = source.match(/^\\b([A-Za-z][A-Za-z0-9/-]{1,})\(\?=/);
     if (lookaheadMatch) {
-      return [lookaheadMatch[1].toLowerCase()];
+      return [caseInsensitive ? lookaheadMatch[1].toLowerCase() : lookaheadMatch[1]];
     }
 
     return [];
@@ -97,8 +79,9 @@ function buildCompletionsFromDefinitions(
 
   return definitions.flatMap((definition) => {
     const previewSidc = getPreviewSidc(definition);
+    const defLabel = definition.label.trim();
     const values = [
-      definition.label.trim(),
+      defLabel,
       ...extractLabelAbbreviations(definition.label),
       ...(definition.aliases ?? [])
         .map((alias) => normalizeAliasForCompletion(alias))
@@ -118,7 +101,7 @@ function buildCompletionsFromDefinitions(
         {
           label: value,
           type: "keyword",
-          detail,
+          detail: value === defLabel ? undefined : defLabel,
           apply: value,
           previewSidc,
         } satisfies TextToOrbatCompletion,
@@ -184,38 +167,46 @@ function filterCompletionOptions(text: string, options: Completion[]) {
   });
 }
 
-export function getUnitTypeCompletions(): Completion[] {
+export function getUnitTypeCompletions(
+  registry: MappingRegistry = defaultRegistry,
+): Completion[] {
   return buildCompletionsFromDefinitions(
-    BUILTIN_ICON_DEFINITIONS,
-    "Recognized unit type",
-    (definition) =>
-      buildIconPreviewSidc(
-        (definition as IconDefinition).code,
-        (definition as IconDefinition).symbolSet ?? DEFAULT_SYMBOL_SET,
-      ),
+    [...registry.iconDefinitions],
+    "unit type",
+    (definition) => {
+      const sidc = (definition as IconDefinition).sidc;
+      return sidc.substring(0, 3) + FRIENDLY_SI + sidc.substring(4);
+    },
   );
 }
 
-export function getEchelonCompletions(): Completion[] {
+export function getEchelonCompletions(
+  registry: MappingRegistry = defaultRegistry,
+): Completion[] {
   return buildCompletionsFromDefinitions(
-    BUILTIN_ECHELON_DEFINITIONS,
-    "Recognized echelon",
+    [...registry.echelonDefinitions],
+    "echelon",
     (definition) => buildEchelonPreviewSidc((definition as EchelonDefinition).code),
   );
 }
 
-export function getTextToOrbatCompletions(): Completion[] {
-  return [...getUnitTypeCompletions(), ...getEchelonCompletions()];
+export function getTextToOrbatCompletions(
+  registry: MappingRegistry = defaultRegistry,
+): Completion[] {
+  return [...getUnitTypeCompletions(registry), ...getEchelonCompletions(registry)];
 }
 
-export function completeUnitTypes(context: CompletionContext): CompletionResult | null {
+export function completeUnitTypes(
+  context: CompletionContext,
+  registry: MappingRegistry = defaultRegistry,
+): CompletionResult | null {
   const word = getActiveCompletionText(context);
 
   if (!word || (word.from === word.to && !context.explicit)) {
     return null;
   }
 
-  const allOptions = getTextToOrbatCompletions();
+  const allOptions = getTextToOrbatCompletions(registry);
   let options = filterCompletionOptions(word.text, allOptions);
   let from = word.from;
   if (options.length === 0 && word.text.includes(" ")) {
@@ -237,9 +228,10 @@ export function completeUnitTypes(context: CompletionContext): CompletionResult 
 
 export function textToOrbatAutocompletion(
   options?: Parameters<typeof autocompletion>[0],
+  registry: MappingRegistry = defaultRegistry,
 ) {
   return autocompletion({
-    override: [completeUnitTypes],
+    override: [(context) => completeUnitTypes(context, registry)],
     activateOnTyping: true,
     defaultKeymap: true,
     ...options,

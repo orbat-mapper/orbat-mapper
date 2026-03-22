@@ -3,6 +3,7 @@ import { nextTick } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TextToOrbatView from "@/views/texttoorbat/TextToOrbatView.vue";
 import TextToOrbatEditor from "@/views/texttoorbat/TextToOrbatEditor.vue";
+import SplitButton from "@/components/SplitButton.vue";
 
 function installCodeMirrorTestPolyfills() {
   const createClientRectList = () =>
@@ -213,7 +214,11 @@ describe("TextToOrbatView", () => {
       },
     });
 
-    await wrapper.get('button[title="Copy ORBAT to clipboard"]').trigger("click");
+    const copyItem = wrapper
+      .findComponent(SplitButton)
+      .props("items")
+      .find((i: { label: string }) => i.label === "Copy to clipboard");
+    await copyItem!.onClick();
 
     expect(clipboardWriteMock).toHaveBeenCalledTimes(1);
     expect(clipboardWriteTextMock).not.toHaveBeenCalled();
@@ -259,13 +264,18 @@ describe("TextToOrbatView", () => {
       },
     });
 
-    const copyButton = wrapper.get('button[title="Copy ORBAT to clipboard"]');
-    expect(copyButton.attributes("disabled")).toBeUndefined();
+    const getCopyItem = () =>
+      wrapper
+        .findComponent(SplitButton)
+        .props("items")
+        .find((i: { label: string }) => i.label === "Copy to clipboard");
+
+    expect(getCopyItem()!.disabled).toBeFalsy();
 
     wrapper.findComponent(TextToOrbatEditor).vm.$emit("update:modelValue", "");
     await nextTick();
 
-    expect(copyButton.attributes("disabled")).toBeDefined();
+    expect(getCopyItem()!.disabled).toBeTruthy();
     wrapper.unmount();
   });
 
@@ -289,7 +299,11 @@ describe("TextToOrbatView", () => {
       },
     });
 
-    await wrapper.get('button[title="Copy ORBAT to clipboard"]').trigger("click");
+    const copyItem = wrapper
+      .findComponent(SplitButton)
+      .props("items")
+      .find((i: { label: string }) => i.label === "Copy to clipboard");
+    await copyItem!.onClick();
 
     expect(clipboardWriteMock).not.toHaveBeenCalled();
     expect(clipboardWriteTextMock).toHaveBeenCalledTimes(1);
@@ -450,7 +464,11 @@ describe("TextToOrbatView", () => {
       },
     });
 
-    await wrapper.get('button[title="Copy ORBAT to clipboard"]').trigger("click");
+    const copyItem = wrapper
+      .findComponent(SplitButton)
+      .props("items")
+      .find((i: { label: string }) => i.label === "Copy to clipboard");
+    await copyItem!.onClick();
 
     expect(sendNotificationMock).toHaveBeenCalledWith({
       message: "Failed to copy ORBAT to clipboard",

@@ -21,7 +21,15 @@ import {
   textToOrbatAutocompletion,
   type TextToOrbatCompletion,
 } from "@/views/texttoorbat/textEditorSuggestions";
-import { INDENT_SIZE } from "@/views/texttoorbat/textToOrbat";
+import {
+  INDENT_SIZE,
+  serializeUnitsToIndentedText,
+} from "@/views/texttoorbat/textToOrbat";
+import {
+  defaultRegistry,
+  type MappingRegistry,
+} from "@/views/texttoorbat/mappingRegistry";
+import type { Unit } from "@/types/scenarioModels";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 
 const props = withDefaults(
@@ -29,10 +37,14 @@ const props = withDefaults(
     modelValue: string;
     placeholder?: string;
     enableAutocomplete?: boolean;
+    registry?: MappingRegistry;
+    registryVersion?: number;
   }>(),
   {
     placeholder: "",
     enableAutocomplete: true,
+    registry: () => defaultRegistry,
+    registryVersion: 0,
   },
 );
 
@@ -201,18 +213,21 @@ function createAutocompleteExtension() {
     return [];
   }
 
-  return textToOrbatAutocompletion({
-    icons: false,
-    tooltipClass: () => "text-to-orbat-completion-tooltip",
-    optionClass: () => "text-to-orbat-completion-option",
-    addToOptions: [
-      {
-        position: 15,
-        render: (completion) =>
-          renderCompletionPreview(completion as TextToOrbatCompletion),
-      },
-    ],
-  });
+  return textToOrbatAutocompletion(
+    {
+      icons: false,
+      tooltipClass: () => "text-to-orbat-completion-tooltip",
+      optionClass: () => "text-to-orbat-completion-option",
+      addToOptions: [
+        {
+          position: 15,
+          render: (completion) =>
+            renderCompletionPreview(completion as TextToOrbatCompletion),
+        },
+      ],
+    },
+    props.registry,
+  );
 }
 
 onMounted(() => {
@@ -237,6 +252,24 @@ onMounted(() => {
       if (update.docChanged) {
         emit("update:modelValue", update.state.doc.toString());
       }
+    }),
+    EditorView.domEventHandlers({
+      drop(event, view) {
+        const orbatData = event.dataTransfer?.getData("application/orbat");
+        if (!orbatData) return false;
+        try {
+          const units: Unit[] = JSON.parse(orbatData);
+          const text = serializeUnitsToIndentedText(units);
+          const pos =
+            view.posAtCoords({ x: event.clientX, y: event.clientY }) ??
+            view.state.doc.length;
+          view.dispatch({ changes: { from: pos, insert: text } });
+          event.preventDefault();
+          return true;
+        } catch {
+          return false;
+        }
+      },
     }),
     EditorView.contentAttributes.of({
       "aria-label": "Text to ORBAT input",
@@ -380,19 +413,16 @@ watch(
   },
 );
 
-watch(
-  () => props.enableAutocomplete,
-  () => {
-    const view = editorView.value;
-    if (!view) {
-      return;
-    }
+watch([() => props.enableAutocomplete, () => props.registryVersion], () => {
+  const view = editorView.value;
+  if (!view) {
+    return;
+  }
 
-    view.dispatch({
-      effects: autocompleteCompartment.reconfigure(createAutocompleteExtension()),
-    });
-  },
-);
+  view.dispatch({
+    effects: autocompleteCompartment.reconfigure(createAutocompleteExtension()),
+  });
+});
 
 onBeforeUnmount(() => {
   editorView.value?.destroy();

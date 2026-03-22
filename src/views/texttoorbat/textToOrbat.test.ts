@@ -223,12 +223,12 @@ describe("getNextLowerEchelon", () => {
 });
 
 describe("getEchelonCode", () => {
-  it("returns Army Group for level 0", () => {
-    expect(getEchelonCode(0)).toBe("24");
+  it("returns Brigade for level 0", () => {
+    expect(getEchelonCode(0)).toBe("18");
   });
 
-  it("returns Division for level 3", () => {
-    expect(getEchelonCode(3)).toBe("21");
+  it("returns Company for level 3", () => {
+    expect(getEchelonCode(3)).toBe("15");
   });
 
   it("returns Team for very deep levels", () => {
@@ -269,7 +269,7 @@ describe("buildSidc", () => {
 
   it("falls back to level-based echelon when no parent", () => {
     const sidc = buildSidc(3, "Headquarters");
-    expect(getEchelonFromSidc(sidc)).toBe("21"); // level 3 = Division
+    expect(getEchelonFromSidc(sidc)).toBe("15"); // level 3 = Company (brigade + 3)
   });
 
   it("name detection takes priority over parent inference", () => {

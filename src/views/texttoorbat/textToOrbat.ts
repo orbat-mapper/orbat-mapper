@@ -13,7 +13,8 @@ import {
   type SpatialIllusionsOrbat,
 } from "@/types/externalModels";
 import type { Scenario, Side, SideGroup, Unit } from "@/types/scenarioModels";
-import { defaultRegistry, type MappingRegistry } from "./mappingRegistry";
+import type { SidValue } from "@/symbology/values";
+import { defaultRegistry, normalizeInput, type MappingRegistry } from "./mappingRegistry";
 
 // ---------------------------------------------------------------------------
 // Re-exports (only items that consumers import from this module)
@@ -23,17 +24,19 @@ export {
   MappingRegistry,
   defaultRegistry,
   type CompiledPattern,
-  type UserIconMapping,
-  type UserMappingData,
+  type AllMappingData,
 } from "./mappingRegistry";
 
 // Import values we need locally
-import { ICON_UNSPECIFIED } from "./iconRegistry";
+import {
+  ICON_UNSPECIFIED,
+  buildIconSidc,
+  extractEntityCode,
+  extractSymbolSet,
+} from "./iconRegistry";
 import { ECHELON_UNSPECIFIED } from "./echelonRegistry";
 
 // Derived constants from the default registry, used by PatternMappingModal
-// and IconBrowserModal
-export const ICON_PATTERNS = defaultRegistry.iconPatterns;
 export const ECHELON_PATTERNS = defaultRegistry.echelonPatterns;
 export const ICON_CODE_TO_NAME = defaultRegistry.iconCodeToName;
 export const ECHELON_CODE_TO_NAME = defaultRegistry.echelonCodeToName;
@@ -59,6 +62,7 @@ export interface ParseTextOptions {
   registry?: MappingRegistry;
   useCommaSeparator?: boolean;
   commaFieldOrder?: CommaFieldOrder;
+  standardIdentity?: string;
 }
 
 // Indentation configuration
@@ -180,7 +184,7 @@ export function getEchelonCodeFromName(
   name: string,
   registry: MappingRegistry = defaultRegistry,
 ): string {
-  const normalizedName = normalizeEchelonTokenBoundaries(name, registry);
+  const normalizedName = normalizeInput(normalizeEchelonTokenBoundaries(name, registry));
   for (const { pattern, code } of registry.echelonPatterns) {
     if (pattern.test(normalizedName)) {
       return code;
@@ -191,14 +195,17 @@ export function getEchelonCodeFromName(
 
 /**
  * Get echelon code based on hierarchy level (fallback).
+ * Starts at brigade (index 4) so level 0 defaults to brigade, not army group.
  */
 export function getEchelonCode(
   level: number,
   registry: MappingRegistry = defaultRegistry,
 ): string {
   const hierarchy = registry.echelonHierarchy;
-  if (level < hierarchy.length) {
-    return hierarchy[level];
+  const BRIGADE_OFFSET = 4;
+  const idx = level + BRIGADE_OFFSET;
+  if (idx < hierarchy.length) {
+    return hierarchy[idx];
   }
   return hierarchy[hierarchy.length - 1];
 }
@@ -211,33 +218,35 @@ export function getEchelonCode(
  * Result of matching a name against icon patterns.
  */
 export interface IconMatch {
-  code: string;
-  symbolSet?: string;
+  /** Full 20-char template SIDC for the matched icon. */
+  sidc: string;
 }
 
 /**
- * Detect symbol icon code and optional symbol set from unit name.
+ * Detect symbol icon and return a full template SIDC from unit name.
  */
 export function getIconMatchFromName(
   name: string,
   registry: MappingRegistry = defaultRegistry,
 ): IconMatch {
-  for (const { pattern, code, symbolSet } of registry.iconPatterns) {
-    if (pattern.test(name)) {
-      return { code, symbolSet };
+  const normalized = normalizeInput(name);
+  for (const { pattern, code } of registry.iconPatterns) {
+    if (pattern.test(normalized)) {
+      return { sidc: code };
     }
   }
-  return { code: ICON_UNSPECIFIED };
+  return { sidc: buildIconSidc(ICON_UNSPECIFIED) };
 }
 
 /**
  * Detect symbol icon code from unit name using keyword patterns.
+ * Returns a 10-char entity code for backward compatibility.
  */
 export function getIconCodeFromName(
   name: string,
   registry: MappingRegistry = defaultRegistry,
 ): string {
-  return getIconMatchFromName(name, registry).code;
+  return extractEntityCode(getIconMatchFromName(name, registry).sidc);
 }
 
 // ---------------------------------------------------------------------------
@@ -253,10 +262,10 @@ export function buildSidc(
   parentEchelon?: string,
   parentIcon?: string,
   registry: MappingRegistry = defaultRegistry,
+  si: string = FRIENDLY_SI,
 ): string {
   const version = "10";
   const context = "0";
-  const si = FRIENDLY_SI;
   const status = "0";
   const hqtfd = "0";
 
@@ -279,17 +288,17 @@ export function buildSidc(
 
   // Detect symbol icon from name, fall back to parent icon if not detected
   const iconMatch = getIconMatchFromName(name, registry);
-  let entity = iconMatch.code;
-  const matchedSymbolSet = iconMatch.symbolSet;
+  let entity = extractEntityCode(iconMatch.sidc);
+  const matchedSymbolSet = extractSymbolSet(iconMatch.sidc);
   if (entity === ICON_UNSPECIFIED && parentIcon && parentIcon !== ICON_UNSPECIFIED) {
     entity = parentIcon;
   }
 
   // Use the symbol set from the matched icon definition if available
-  const symbolSet = matchedSymbolSet ?? UNIT_SYMBOL_SET;
+  const symbolSet = matchedSymbolSet;
 
   // Naval and other non-land symbol sets don't use land echelons
-  if (matchedSymbolSet && matchedSymbolSet !== UNIT_SYMBOL_SET) {
+  if (matchedSymbolSet !== UNIT_SYMBOL_SET) {
     echelon = ECHELON_UNSPECIFIED;
   }
 
@@ -303,10 +312,10 @@ function buildSidcWithMetadataPriority(
   parentEchelon?: string,
   parentIcon?: string,
   registry: MappingRegistry = defaultRegistry,
+  si: string = FRIENDLY_SI,
 ): string {
   const version = "10";
   const context = "0";
-  const si = FRIENDLY_SI;
   const status = "0";
   const hqtfd = "0";
 
@@ -330,22 +339,25 @@ function buildSidcWithMetadataPriority(
     echelon = getEchelonCode(level, registry);
   }
 
+  const unspecifiedSidc = buildIconSidc(ICON_UNSPECIFIED);
   const metadataIconMatch = metadataName
     ? getIconMatchFromName(metadataName, registry)
-    : { code: ICON_UNSPECIFIED };
+    : { sidc: unspecifiedSidc };
   const displayIconMatch = getIconMatchFromName(displayName, registry);
   const iconMatch =
-    metadataIconMatch.code !== ICON_UNSPECIFIED ? metadataIconMatch : displayIconMatch;
+    extractEntityCode(metadataIconMatch.sidc) !== ICON_UNSPECIFIED
+      ? metadataIconMatch
+      : displayIconMatch;
 
-  let entity = iconMatch.code;
-  const matchedSymbolSet = iconMatch.symbolSet;
+  let entity = extractEntityCode(iconMatch.sidc);
+  const matchedSymbolSet = extractSymbolSet(iconMatch.sidc);
   if (entity === ICON_UNSPECIFIED && parentIcon && parentIcon !== ICON_UNSPECIFIED) {
     entity = parentIcon;
   }
 
-  const symbolSet = matchedSymbolSet ?? UNIT_SYMBOL_SET;
+  const symbolSet = matchedSymbolSet;
 
-  if (matchedSymbolSet && matchedSymbolSet !== UNIT_SYMBOL_SET) {
+  if (matchedSymbolSet !== UNIT_SYMBOL_SET) {
     echelon = ECHELON_UNSPECIFIED;
   }
 
@@ -415,6 +427,7 @@ export function parseTextToUnits(
   let registry: MappingRegistry = defaultRegistry;
   let useCommaSeparator = false;
   let commaFieldOrder: CommaFieldOrder = "shortName,name,description";
+  let si = FRIENDLY_SI;
   if (registryOrOptions) {
     if ("iconPatterns" in registryOrOptions) {
       registry = registryOrOptions;
@@ -422,6 +435,7 @@ export function parseTextToUnits(
       registry = registryOrOptions.registry ?? defaultRegistry;
       useCommaSeparator = registryOrOptions.useCommaSeparator ?? false;
       commaFieldOrder = registryOrOptions.commaFieldOrder ?? "shortName,name,description";
+      si = registryOrOptions.standardIdentity ?? FRIENDLY_SI;
     }
   }
 
@@ -464,12 +478,13 @@ export function parseTextToUnits(
       parentEchelon,
       parentIcon,
       registry,
+      si,
     );
     const unitEchelon = getEchelonFromSidc(sidc);
     const unitIcon = getIconFromSidc(sidc);
 
     const unit: ParsedUnit = {
-      id: nanoid(),
+      id: nanoid(12),
       name: fields.name,
       ...(fields.shortName !== undefined && { shortName: fields.shortName }),
       ...(fields.description !== undefined && { description: fields.description }),
@@ -549,8 +564,41 @@ export function serializeParsedUnitsToScenarioUnits(units: ParsedUnit[]): Unit[]
   return units.map((unit) => serializeParsedUnitToScenarioUnit(unit));
 }
 
-export function convertParsedUnitsToOrbatMapperScenario(units: ParsedUnit[]): Scenario {
-  const scenarioId = nanoid();
+export function serializeUnitsToIndentedText(units: Unit[], depth = 0): string {
+  const indent = "  ".repeat(depth);
+  return units
+    .map((unit) => {
+      let line = indent + unit.name;
+      // Append shortName and description using comma-separated format
+      if (unit.shortName || unit.description) {
+        line += ", " + (unit.shortName ?? "");
+        if (unit.description) {
+          line += ", " + unit.description;
+        }
+      }
+      const children = unit.subUnits?.length
+        ? "\n" + serializeUnitsToIndentedText(unit.subUnits, depth + 1)
+        : "";
+      return line + children;
+    })
+    .join("\n");
+}
+
+const SI_NAMES: Record<string, string> = {
+  "0": "Pending",
+  "1": "Unknown",
+  "2": "Assumed Friend",
+  "3": "Friendly",
+  "4": "Neutral",
+  "5": "Suspect",
+  "6": "Hostile",
+};
+
+export function convertParsedUnitsToOrbatMapperScenario(
+  units: ParsedUnit[],
+  standardIdentity: string = "3",
+): Scenario {
+  const scenarioId = nanoid(12);
   const now = new Date().toISOString();
 
   const subUnits = units.map((unit) => convertParsedUnitToOrbatMapperUnit(unit));
@@ -561,10 +609,10 @@ export function convertParsedUnitsToOrbatMapperScenario(units: ParsedUnit[]): Sc
     subUnits,
   };
 
-  const friendlySide: Side = {
+  const side: Side = {
     id: nanoid(),
-    name: "Friendly",
-    standardIdentity: "3",
+    name: SI_NAMES[standardIdentity] ?? "Friendly",
+    standardIdentity: standardIdentity as SidValue,
     groups: [friendlyGroup],
   };
 
@@ -577,7 +625,7 @@ export function convertParsedUnitsToOrbatMapperScenario(units: ParsedUnit[]): Sc
       lastModifiedDate: now,
     },
     name: "Text to ORBAT Scenario",
-    sides: [friendlySide],
+    sides: [side],
     events: [],
     layers: [],
     mapLayers: [],

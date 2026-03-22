@@ -3,23 +3,15 @@ import { computed, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import {
   ArrowLeftIcon,
-  BookOpenIcon,
   CircleXIcon,
-  CopyIcon,
-  DownloadIcon,
-  ExternalLinkIcon,
   GripIcon,
   MapIcon,
   MoonStarIcon,
   SunIcon,
 } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import SplitButton from "@/components/SplitButton.vue";
+import type { ButtonGroupItem } from "@/components/types";
 import { UseDark } from "@vueuse/components";
 import {
   breakpointsTailwind,
@@ -30,8 +22,8 @@ import {
 import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
 import TextToOrbatEditor from "@/views/texttoorbat/TextToOrbatEditor.vue";
 import ToggleField from "@/components/ToggleField.vue";
-import IconBrowserModal from "@/views/texttoorbat/IconBrowserModal.vue";
 import PatternMappingModal from "@/views/texttoorbat/PatternMappingModal.vue";
+import ScratchPad from "@/views/texttoorbat/ScratchPad.vue";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -46,17 +38,30 @@ import {
   type CommaFieldOrder,
 } from "@/views/texttoorbat/textToOrbat.ts";
 import {
+  defaultRegistry,
+  type AllMappingData,
+} from "@/views/texttoorbat/mappingRegistry";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import MilSymbol from "@/components/MilSymbol.vue";
 import { useNotifications } from "@/composables/notifications";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { useScenario } from "@/scenariostore";
+import type { Unit } from "@/types/scenarioModels";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { useIndexedDb } from "@/scenariostore/localdb";
+
+const sidItems = [
+  { code: "3", text: "Friend", sidc: "10031000000000000000" },
+  { code: "6", text: "Hostile", sidc: "10061000000000000000" },
+  { code: "4", text: "Neutral", sidc: "10041000000000000000" },
+  { code: "1", text: "Unknown", sidc: "10011000000000000000" },
+];
 
 const originalTitle = useTitle().value;
 useTitle("Text to ORBAT");
@@ -64,14 +69,49 @@ useTitle("Text to ORBAT");
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("sm");
 
-const showDebug = ref(false);
 const enableAutocomplete = useLocalStorage("enableAutoComplete", true);
 const useCommaSeparator = useLocalStorage("useCommaSeparator", true);
 const commaFieldOrder = useLocalStorage(
   "commaFieldOrder",
   "name,shortName,description" as CommaFieldOrder,
 );
-const showIconBrowser = ref(false);
+const standardIdentity = useLocalStorage("textToOrbatSI", "3");
+const showScratchPad = useLocalStorage("showScratchPad", false);
+const scratchPadUnits = useLocalStorage<Unit[]>("textToOrbatScratchPad", []);
+const storedMappings = useLocalStorage<AllMappingData | null>(
+  "textToOrbatMappings_v2",
+  null,
+  {
+    serializer: {
+      read: (v: string) => JSON.parse(v),
+      write: (v: any) => JSON.stringify(v),
+    },
+  },
+);
+const registryVersion = ref(0);
+
+// Load stored mappings on init
+if (storedMappings.value?.icons?.length || storedMappings.value?.echelons?.length) {
+  try {
+    defaultRegistry.importMappings(storedMappings.value);
+    defaultRegistry.clearUndoRedoStack();
+    registryVersion.value = defaultRegistry.version;
+  } catch (e) {
+    console.warn("Failed to load stored mappings, resetting to defaults", e);
+    storedMappings.value = null;
+  }
+}
+
+function handleMappingsChanged() {
+  registryVersion.value = defaultRegistry.version;
+  storedMappings.value = defaultRegistry.exportMappings();
+}
+
+function handleMappingsReset() {
+  registryVersion.value = defaultRegistry.version;
+  storedMappings.value = null;
+}
+
 const showPatternMapping = ref(false);
 const isOpeningScenario = ref(false);
 const isCopyingToClipboard = ref(false);
@@ -90,17 +130,20 @@ const inputText = ref(`# sample ORBAT
   A, Alpha Company, Main assault element
 `);
 
-const parsedUnits = computed(() =>
-  parseTextToUnits(inputText.value, {
+const parsedUnits = computed(() => {
+  void registryVersion.value;
+  return parseTextToUnits(inputText.value, {
+    registry: defaultRegistry,
     useCommaSeparator: useCommaSeparator.value,
     commaFieldOrder: commaFieldOrder.value as CommaFieldOrder,
-  }),
-);
+    standardIdentity: standardIdentity.value,
+  });
+});
 const spatialIllusionsOrbat = computed(() =>
   convertParsedUnitsToSpatialIllusions(parsedUnits.value),
 );
 const orbatMapperScenario = computed(() =>
-  convertParsedUnitsToOrbatMapperScenario(parsedUnits.value),
+  convertParsedUnitsToOrbatMapperScenario(parsedUnits.value, standardIdentity.value),
 );
 const { send: sendNotification } = useNotifications();
 const router = useRouter();
@@ -244,6 +287,29 @@ async function handleOpenScenario() {
   }
 }
 
+const splitButtonItems = computed<ButtonGroupItem[]>(() => [
+  {
+    label: "Open scenario",
+    onClick: handleOpenScenario,
+    disabled: parsedUnits.value.length === 0 || isOpeningScenario.value,
+  },
+  {
+    label: "Copy to clipboard",
+    onClick: handleCopyToClipboard,
+    disabled: parsedUnits.value.length === 0 || isCopyingToClipboard.value,
+  },
+  {
+    label: "Export to Battle Staff Tools",
+    onClick: handleDownloadSpatialIllusions,
+    disabled: parsedUnits.value.length === 0,
+  },
+  {
+    label: "Export as ORBAT Mapper Scenario",
+    onClick: handleDownloadOrbatMapperScenario,
+    disabled: parsedUnits.value.length === 0,
+  },
+]);
+
 onUnmounted(() => {
   useTitle(originalTitle);
 });
@@ -301,15 +367,6 @@ onUnmounted(() => {
               <Button
                 variant="ghost"
                 size="sm"
-                @click="showIconBrowser = true"
-                title="Browse icon codes"
-              >
-                <BookOpenIcon class="mr-1 size-4" />
-                Icons
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
                 :disabled="inputText.length === 0"
                 @click="handleClearInput"
                 title="Clear input"
@@ -337,6 +394,8 @@ onUnmounted(() => {
           <TextToOrbatEditor
             v-model="inputText"
             :enable-autocomplete="enableAutocomplete"
+            :registry="defaultRegistry"
+            :registry-version="registryVersion"
             class="flex-1"
             placeholder="1st Infantry Division
   1st Brigade
@@ -354,33 +413,121 @@ onUnmounted(() => {
 
       <!-- Right/Bottom: ORBAT display -->
       <ResizablePanel :default-size="50" :min-size="20">
-        <div class="flex h-full flex-col overflow-hidden">
-          <div class="bg-muted/50 flex items-center justify-between border-b px-4 py-2">
-            <div>
+        <ResizablePanelGroup v-if="showScratchPad" direction="vertical" class="h-full">
+          <ResizablePanel :default-size="60" :min-size="20">
+            <div class="flex h-full flex-col overflow-hidden">
+              <div
+                class="bg-muted/50 flex items-center justify-between gap-4 overflow-x-auto border-b px-4 py-2"
+              >
+                <div class="shrink-0">
+                  <h2 class="text-muted-foreground hidden text-sm font-medium lg:inline">
+                    Generated ORBAT
+                  </h2>
+                </div>
+                <div class="flex shrink-0 items-center gap-2">
+                  <Select v-model="standardIdentity">
+                    <SelectTrigger class="h-7 w-auto gap-1 text-xs">
+                      <div class="flex items-center gap-1">
+                        <MilSymbol
+                          :sidc="'100' + standardIdentity + '1000000000000000'"
+                          :size="16"
+                          :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
+                        />
+                        <SelectValue />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem
+                        v-for="sid in sidItems"
+                        :key="sid.code"
+                        :value="sid.code"
+                      >
+                        <div class="flex items-center gap-2">
+                          <MilSymbol
+                            :sidc="sid.sidc"
+                            :size="20"
+                            :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
+                          />
+                          <span>{{ sid.text }}</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <SplitButton :items="splitButtonItems" static />
+                  <Button
+                    v-if="!isMobile"
+                    size="sm"
+                    variant="outline"
+                    :disabled="parsedUnits.length === 0"
+                    draggable="true"
+                    @dragstart="handleOrbatDragStart"
+                    title="Drag ORBAT into scenario"
+                  >
+                    <GripIcon class="mr-1 size-4" />
+                    Drag
+                  </Button>
+
+                  <ToggleField v-model="showScratchPad">Scratch Pad</ToggleField>
+                </div>
+              </div>
+              <div class="flex-1 overflow-y-auto p-4">
+                <div
+                  v-if="parsedUnits.length === 0"
+                  class="text-muted-foreground text-center"
+                >
+                  <p>Enter text on the left to generate an ORBAT</p>
+                </div>
+                <ul v-else class="space-y-2">
+                  <OrbatTreeNode
+                    v-for="unit in parsedUnits"
+                    :key="unit.id"
+                    :unit="unit"
+                  />
+                </ul>
+              </div>
+            </div>
+          </ResizablePanel>
+          <ResizableHandle with-handle />
+          <ResizablePanel :default-size="40" :min-size="15">
+            <ScratchPad v-model="scratchPadUnits" />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+
+        <div v-else class="flex h-full flex-col overflow-hidden">
+          <div
+            class="bg-muted/50 flex items-center justify-between gap-4 overflow-x-auto border-b px-4 py-2"
+          >
+            <div class="shrink-0">
               <h2 class="text-muted-foreground hidden text-sm font-medium lg:inline">
                 Generated ORBAT
               </h2>
             </div>
-            <div class="flex items-center gap-2">
-              <Button
-                size="sm"
-                :disabled="parsedUnits.length === 0 || isOpeningScenario"
-                @click="handleOpenScenario"
-                title="Open in Scenario Editor"
-              >
-                <ExternalLinkIcon class="mr-1 size-4" />
-                Open
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                :disabled="parsedUnits.length === 0 || isCopyingToClipboard"
-                @click="handleCopyToClipboard"
-                title="Copy ORBAT to clipboard"
-              >
-                <CopyIcon class="mr-1 size-4" />
-                Copy
-              </Button>
+            <div class="flex shrink-0 items-center gap-2">
+              <Select v-model="standardIdentity">
+                <SelectTrigger class="h-7 w-auto gap-1 text-xs">
+                  <div class="flex items-center gap-1">
+                    <MilSymbol
+                      :sidc="'100' + standardIdentity + '1000000000000000'"
+                      :size="16"
+                      :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
+                    />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="sid in sidItems" :key="sid.code" :value="sid.code">
+                    <div class="flex items-center gap-2">
+                      <MilSymbol
+                        :sidc="sid.sidc"
+                        :size="20"
+                        :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
+                      />
+                      <span>{{ sid.text }}</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <SplitButton :items="splitButtonItems" static />
               <Button
                 v-if="!isMobile"
                 size="sm"
@@ -393,29 +540,7 @@ onUnmounted(() => {
                 <GripIcon class="mr-1 size-4" />
                 Drag
               </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger as-child>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    :disabled="parsedUnits.length === 0"
-                    title="Download ORBAT formats"
-                  >
-                    <DownloadIcon class="mr-1 size-4" />
-                    Export
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem @click="handleDownloadSpatialIllusions">
-                    Battle Staff Tools JSON
-                  </DropdownMenuItem>
-                  <DropdownMenuItem @click="handleDownloadOrbatMapperScenario">
-                    ORBAT Mapper Scenario
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <ToggleField v-model="showDebug">Debug info</ToggleField>
+              <ToggleField v-model="showScratchPad">Scratch Pad</ToggleField>
             </div>
           </div>
           <div class="flex-1 overflow-y-auto p-4">
@@ -426,12 +551,7 @@ onUnmounted(() => {
               <p>Enter text on the left to generate an ORBAT</p>
             </div>
             <ul v-else class="space-y-2">
-              <OrbatTreeNode
-                v-for="unit in parsedUnits"
-                :key="unit.id"
-                :unit="unit"
-                :show-debug="showDebug"
-              />
+              <OrbatTreeNode v-for="unit in parsedUnits" :key="unit.id" :unit="unit" />
             </ul>
           </div>
         </div>
@@ -439,6 +559,11 @@ onUnmounted(() => {
     </ResizablePanelGroup>
   </div>
 
-  <IconBrowserModal v-model="showIconBrowser" />
-  <PatternMappingModal v-model="showPatternMapping" />
+  <PatternMappingModal
+    v-model="showPatternMapping"
+    :registry="defaultRegistry"
+    :registry-version="registryVersion"
+    @mappings-changed="handleMappingsChanged"
+    @mappings-reset="handleMappingsReset"
+  />
 </template>
