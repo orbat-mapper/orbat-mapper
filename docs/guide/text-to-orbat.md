@@ -38,6 +38,29 @@ Echelon abbreviations can be written without a space after a designator number, 
 
 When a unit's name doesn't contain a recognized keyword, the tool infers the echelon from its parent and inherits the parent's unit type icon.
 
+## Custom pattern mappings
+
+You can view and edit pattern mappings by clicking **Patterns** in the toolbar. This opens a modal where you can add, remove, or modify the keywords that the parser uses to detect unit types and echelons.
+
+Mappings can also be exported to and imported from an Excel spreadsheet for bulk editing.
+
+### Alias syntax
+
+Aliases are plain-text keywords. The parser handles common variations automatically:
+
+| You write | Matches | Why |
+|---|---|---|
+| `anti tank` | anti tank, anti-tank, antitank, anti.tank | Spaces match any separator (whitespace, hyphen, dot, or nothing) |
+| `R.A.` | RA, R.A., R.A | Dots are optional |
+| `marine(s)` | marine, marines | Parentheses mark optional segments |
+| `armo(u)r(ed)` | armor, armour, armored, armoured | Multiple optional segments can be combined |
+
+Matching is always case-insensitive and accent-insensitive (e.g. "blindé" matches an alias written as "blinde").
+
+### Raw regex patterns
+
+For cases that can't be expressed with plain-text aliases — such as case-sensitive abbreviations (`AT`, `RM`) or digit patterns (`BM-21`) — use the **Patterns** field. Patterns are raw regular expressions matched as written.
+
 ## Metadata syntax
 
 You can provide additional hints for symbol detection without affecting the displayed unit name.
