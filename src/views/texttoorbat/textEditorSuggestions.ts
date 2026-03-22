@@ -32,7 +32,7 @@ function buildEchelonPreviewSidc(echelonCode: string) {
 }
 
 function normalizeAliasForCompletion(alias: string) {
-  const normalized = alias.replace(/[()]/g, "").replace(/\s+/g, " ").trim();
+  const normalized = alias.replace(/[().]/g, "").replace(/\s+/g, " ").trim();
 
   return normalized || null;
 }
