@@ -872,7 +872,7 @@ async function handleExportXlsx() {
     {
       Section: "Aliases",
       Description:
-        'Comma-separated list of plain-text keywords matched as whole words (case-insensitive). Spaces match flexibly (whitespace, hyphens, dots, or nothing), and dots are optional — so "anti tank" matches "anti-tank", "antitank", and "anti tank", while "R.A." matches "RA" and "R.A.". Use parentheses for optional segments — e.g. "armo(u)r(ed)" matches "armor", "armour", "armored", and "armoured".',
+        'Comma-separated list of plain-text keywords matched as whole words (case-insensitive). Spaces match flexibly (whitespace, hyphens, dots, or nothing), and each dot is individually optional — so "anti tank" matches "anti-tank", "antitank", and "anti tank", while "R.A." matches "RA" and "R.A.". Use parentheses for optional segments — e.g. "armo(u)r(ed)" matches "armor", "armour", "armored", and "armoured".',
     },
     {
       Section: "Patterns",
@@ -1094,24 +1094,24 @@ onBeforeUnmount(() => {
               <tbody class="font-mono">
                 <tr class="border-b">
                   <td class="py-1 pr-4">anti tank</td>
-                  <td class="py-1 pr-4">anti tank, anti-tank, antitank, anti.tank</td>
+                  <td class="py-1 pr-4">anti tank, Anti-Tank, ANTITANK, anti.tank</td>
                   <td class="py-1 font-sans">
                     Spaces match any separator (whitespace, hyphen, dot, or nothing)
                   </td>
                 </tr>
                 <tr class="border-b">
                   <td class="py-1 pr-4">R.A.</td>
-                  <td class="py-1 pr-4">RA, R.A., R.A, R A</td>
-                  <td class="py-1 font-sans">Dots are optional</td>
+                  <td class="py-1 pr-4">RA, R.A., r.a., R.A</td>
+                  <td class="py-1 font-sans">Each dot is individually optional</td>
                 </tr>
                 <tr class="border-b">
                   <td class="py-1 pr-4">marine(s)</td>
-                  <td class="py-1 pr-4">marine, marines</td>
+                  <td class="py-1 pr-4">marine, Marines, MARINES</td>
                   <td class="py-1 font-sans">Parentheses mark optional segments</td>
                 </tr>
                 <tr>
                   <td class="py-1 pr-4">armo(u)r(ed)</td>
-                  <td class="py-1 pr-4">armor, armour, armored, armoured</td>
+                  <td class="py-1 pr-4">armor, Armour, ARMORED, armoured</td>
                   <td class="py-1 font-sans">
                     Multiple optional segments can be combined
                   </td>

@@ -54,10 +54,10 @@ Aliases are plain-text keywords. The parser compiles them into flexible patterns
 
 | Syntax | Example | Matches | Rule |
 |---|---|---|---|
-| `(text)` | `marine(s)` | marine, marines | Parentheses mark optional segments |
-| multiple `()` | `armo(u)r(ed)` | armor, armour, armored, armoured | Optional segments can be combined |
-| `.` | `R.A.` | RA, R.A., R.A | Dots are optional |
-| space | `anti tank` | anti tank, anti-tank, antitank, anti.tank | Spaces match any separator (whitespace, hyphen, dot) or nothing |
+| `(text)` | `marine(s)` | marine, Marines, MARINES | Parentheses mark optional segments |
+| multiple `()` | `armo(u)r(ed)` | armor, Armour, ARMORED, armoured | Optional segments can be combined |
+| `.` | `R.A.` | RA, R.A., r.a., R.A | Each dot is individually optional |
+| space | `anti tank` | anti tank, Anti-Tank, ANTITANK, anti.tank | Spaces match any separator (whitespace, hyphen, dot) or nothing |
 
 Aliases are matched with word boundaries, so `inf` matches "2nd inf" but not "information".
 
