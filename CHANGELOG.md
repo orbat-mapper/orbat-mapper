@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 - Added inline editing and deletion for pattern mapping entries in "Text to ORBAT".
 - Added localStorage persistence for custom pattern mappings with undo/redo support.
 - Added a visual symbol picker for selecting icons when adding or editing pattern mappings in "Text to ORBAT".
+- Added priority numbers and drag-handle reordering for pattern mappings in "Text to ORBAT".
+- Added a configurable default starting echelon setting to "Text to ORBAT".
 
 ### Changed
 
@@ -34,6 +36,7 @@ All notable changes to this project will be documented in this file.
 - Moved unit symbol rotation settings from the "Map display" tab to the "Map symbol" tab.
 - Improved map editor UX on mobile.
 - Improved the text editor in the "Text to ORBAT" tool with better keyboard support and editing features.
+- Consolidated "Text to ORBAT" settings (autocomplete, match case, split fields, field order) into a dropdown menu.
 - Made right panel toolbars horizontally scrollable on mobile.
 
 ### Fixed

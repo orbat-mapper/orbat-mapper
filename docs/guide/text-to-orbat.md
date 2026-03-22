@@ -42,18 +42,24 @@ When a unit's name doesn't contain a recognized keyword, the tool infers the ech
 
 You can view and edit pattern mappings by clicking **Patterns** in the toolbar. This opens a modal where you can add, remove, or modify the keywords that the parser uses to detect unit types and echelons.
 
+::: info
+Entries are matched top-to-bottom using first-match-wins logic. More specific patterns should appear before general ones (e.g. "airborne infantry" before "infantry"). In edit mode, you can drag entries by their handle to reorder them.
+:::
+
 Mappings can also be exported to and imported from an Excel spreadsheet for bulk editing.
 
 ### Alias syntax
 
-Aliases are plain-text keywords. The parser handles common variations automatically:
+Aliases are plain-text keywords. The parser compiles them into flexible patterns that handle common variations automatically:
 
-| You write | Matches | Why |
-|---|---|---|
-| `anti tank` | anti tank, anti-tank, antitank, anti.tank | Spaces match any separator (whitespace, hyphen, dot, or nothing) |
-| `R.A.` | RA, R.A., R.A | Dots are optional |
-| `marine(s)` | marine, marines | Parentheses mark optional segments |
-| `armo(u)r(ed)` | armor, armour, armored, armoured | Multiple optional segments can be combined |
+| Syntax | Example | Matches | Rule |
+|---|---|---|---|
+| `(text)` | `marine(s)` | marine, marines | Parentheses mark optional segments |
+| multiple `()` | `armo(u)r(ed)` | armor, armour, armored, armoured | Optional segments can be combined |
+| `.` | `R.A.` | RA, R.A., R.A | Dots are optional |
+| space | `anti tank` | anti tank, anti-tank, antitank, anti.tank | Spaces match any separator (whitespace, hyphen, dot) or nothing |
+
+Aliases are matched with word boundaries, so `inf` matches "2nd inf" but not "information".
 
 Matching is always case-insensitive and accent-insensitive (e.g. "blindé" matches an alias written as "blinde").
 
@@ -89,11 +95,20 @@ This displays the unit as "2nd Art" and uses "bty" (battery) for echelon detecti
 Metadata is checked first for echelon and icon matching, then the display name is checked as a fallback.
 :::
 
+## Settings
+
+Click **Settings** in the toolbar to open the settings menu. The following options are available:
+
+- **Autocomplete** — enable/disable autocomplete suggestions as you type
+- **Match input case** — when enabled, autocomplete suggestions match the casing of your input
+- **Split fields** — use commas as field separators (see below)
+- **Starting echelon** — set the default echelon for the top-level unit when no echelon keyword is detected (default: Brigade). Child units are assigned progressively smaller echelons based on this starting point.
+
 ## Split fields
 
-Enable the **Split fields** toggle to use commas as field separators. This lets you populate the unit's short name and description in addition to the name.
+Enable **Split fields** in the Settings menu to use commas as field separators. This lets you populate the unit's short name and description in addition to the name.
 
-A dropdown next to the toggle lets you choose the field order:
+The field order can be selected in the Settings menu:
 
 | Order | Format |
 |---|---|
@@ -119,11 +134,11 @@ A, Alpha Company [armor]
 
 ### Autocomplete
 
-When the **Autocomplete** toggle is enabled, the editor suggests icon and echelon keywords as you type, with symbol previews.
+When **Autocomplete** is enabled in the Settings menu, the editor suggests icon and echelon keywords as you type, with symbol previews.
 
 ### Pattern and icon browsers
 
-- **Patterns** — opens a modal showing all pattern-to-icon and pattern-to-echelon mappings
+- **Patterns** — opens a modal showing all pattern-to-icon and pattern-to-echelon mappings with priority numbers and drag-handle reordering
 - **Icons** — opens a modal browsing all available icon codes and their aliases
 
 ### Debug info
