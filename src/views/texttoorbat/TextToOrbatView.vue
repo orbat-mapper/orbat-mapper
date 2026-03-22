@@ -36,6 +36,7 @@ import {
 import { storeToRefs } from "pinia";
 import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
 import { defaultRegistry } from "@/views/texttoorbat/mappingRegistry";
+import { BUILTIN_ECHELON_DEFINITIONS } from "@/views/texttoorbat/echelonRegistry";
 import {
   Select,
   SelectContent,
@@ -51,6 +52,9 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import MilSymbol from "@/components/MilSymbol.vue";
@@ -68,6 +72,12 @@ const sidItems = [
   { code: "1", text: "Unknown", sidc: "10011000000000000000" },
 ];
 
+const echelonItems = BUILTIN_ECHELON_DEFINITIONS.map((def) => ({
+  code: def.code,
+  label: def.label,
+  sidc: `10031000${def.code}1211000000`,
+}));
+
 const originalTitle = useTitle().value;
 useTitle("Text to ORBAT");
 
@@ -81,6 +91,7 @@ const {
   useCommaSeparator,
   commaFieldOrder,
   standardIdentity,
+  defaultStartingEchelon,
   showScratchPad,
   scratchPadUnits,
   registryVersion,
@@ -112,6 +123,7 @@ const parsedUnits = computed(() => {
     useCommaSeparator: useCommaSeparator.value,
     commaFieldOrder: commaFieldOrder.value as CommaFieldOrder,
     standardIdentity: standardIdentity.value,
+    defaultStartingEchelon: defaultStartingEchelon.value,
   });
 });
 const spatialIllusionsOrbat = computed(() =>
@@ -389,6 +401,27 @@ onUnmounted(() => {
                       short name, name, description
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>Starting echelon</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuRadioGroup v-model="defaultStartingEchelon">
+                        <DropdownMenuRadioItem
+                          v-for="ech in echelonItems"
+                          :key="ech.code"
+                          :value="ech.code"
+                          @select.prevent
+                        >
+                          <MilSymbol
+                            :sidc="ech.sidc"
+                            :size="20"
+                            :modifiers="{ outlineColor: 'white', outlineWidth: 4 }"
+                          />
+                          {{ ech.label }}
+                        </DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

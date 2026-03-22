@@ -118,6 +118,20 @@ vi.mock("@/components/NewMilitarySymbol.vue", () => ({
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
   draggable: draggableMock,
+  dropTargetForElements: vi.fn(() => () => {}),
+  monitorForElements: vi.fn(() => () => {}),
+}));
+
+vi.mock("@atlaskit/pragmatic-drag-and-drop/combine", () => ({
+  combine:
+    (...fns: (() => void)[]) =>
+    () =>
+      fns.forEach((fn) => fn()),
+}));
+
+vi.mock("@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge", () => ({
+  attachClosestEdge: vi.fn((data: unknown) => data),
+  extractClosestEdge: vi.fn(() => null),
 }));
 
 afterEach(() => {

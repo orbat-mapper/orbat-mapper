@@ -63,6 +63,7 @@ export interface ParseTextOptions {
   useCommaSeparator?: boolean;
   commaFieldOrder?: CommaFieldOrder;
   standardIdentity?: string;
+  defaultStartingEchelon?: string;
 }
 
 // Indentation configuration
@@ -195,15 +196,21 @@ export function getEchelonCodeFromName(
 
 /**
  * Get echelon code based on hierarchy level (fallback).
- * Starts at brigade (index 4) so level 0 defaults to brigade, not army group.
+ * If a starting echelon is provided, level 0 maps to that echelon.
+ * Otherwise defaults to brigade (index 4).
  */
 export function getEchelonCode(
   level: number,
   registry: MappingRegistry = defaultRegistry,
+  startingEchelon?: string,
 ): string {
   const hierarchy = registry.echelonHierarchy;
-  const BRIGADE_OFFSET = 4;
-  const idx = level + BRIGADE_OFFSET;
+  let startIdx = 4; // default: brigade
+  if (startingEchelon) {
+    const found = hierarchy.indexOf(startingEchelon);
+    if (found >= 0) startIdx = found;
+  }
+  const idx = level + startIdx;
   if (idx < hierarchy.length) {
     return hierarchy[idx];
   }
@@ -263,6 +270,7 @@ export function buildSidc(
   parentIcon?: string,
   registry: MappingRegistry = defaultRegistry,
   si: string = FRIENDLY_SI,
+  startingEchelon?: string,
 ): string {
   const version = "10";
   const context = "0";
@@ -283,7 +291,7 @@ export function buildSidc(
 
   // If still not determined, fall back to level-based
   if (echelon === ECHELON_UNSPECIFIED) {
-    echelon = getEchelonCode(level, registry);
+    echelon = getEchelonCode(level, registry, startingEchelon);
   }
 
   // Detect symbol icon from name, fall back to parent icon if not detected
@@ -313,6 +321,7 @@ function buildSidcWithMetadataPriority(
   parentIcon?: string,
   registry: MappingRegistry = defaultRegistry,
   si: string = FRIENDLY_SI,
+  startingEchelon?: string,
 ): string {
   const version = "10";
   const context = "0";
@@ -336,7 +345,7 @@ function buildSidcWithMetadataPriority(
   }
 
   if (echelon === ECHELON_UNSPECIFIED) {
-    echelon = getEchelonCode(level, registry);
+    echelon = getEchelonCode(level, registry, startingEchelon);
   }
 
   const unspecifiedSidc = buildIconSidc(ICON_UNSPECIFIED);
@@ -428,6 +437,7 @@ export function parseTextToUnits(
   let useCommaSeparator = false;
   let commaFieldOrder: CommaFieldOrder = "shortName,name,description";
   let si = FRIENDLY_SI;
+  let startingEchelon: string | undefined;
   if (registryOrOptions) {
     if ("iconPatterns" in registryOrOptions) {
       registry = registryOrOptions;
@@ -436,6 +446,7 @@ export function parseTextToUnits(
       useCommaSeparator = registryOrOptions.useCommaSeparator ?? false;
       commaFieldOrder = registryOrOptions.commaFieldOrder ?? "shortName,name,description";
       si = registryOrOptions.standardIdentity ?? FRIENDLY_SI;
+      startingEchelon = registryOrOptions.defaultStartingEchelon;
     }
   }
 
@@ -479,6 +490,7 @@ export function parseTextToUnits(
       parentIcon,
       registry,
       si,
+      startingEchelon,
     );
     const unitEchelon = getEchelonFromSidc(sidc);
     const unitIcon = getIconFromSidc(sidc);
