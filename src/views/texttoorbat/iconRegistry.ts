@@ -89,8 +89,8 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "seebataillon",
       "marineinfanterie",
       "royal marine(s)",
+      "RM",
     ],
-    patterns: [/\bRM\b/],
   },
   {
     sidc: "10001000001211000027",
@@ -150,8 +150,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   {
     sidc: "10003000001202060000",
     label: "Littoral Combat Ship",
-    aliases: ["littoral combat ship", "littoral"],
-    patterns: [/\bLCS\b/],
+    aliases: ["littoral combat ship", "littoral", "LCS"],
   },
   {
     sidc: "10003000001203000000",
@@ -163,8 +162,13 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "landing ship",
       "landing craft",
       "dock landing",
+      "LPD",
+      "LHD",
+      "LHA",
+      "LPH",
+      "LSD",
+      "LST",
     ],
-    patterns: [/\bL[HSPDC]{1,2}\b/],
   },
   // ── Amphibious ──────────────────────────────────────────────────────
   {
@@ -184,8 +188,8 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "panzerabwehr",
       "tank destroyer",
       "td",
+      "AT",
     ],
-    patterns: [/\bAT\b/],
   },
 
   // ── Armor and cavalry ──────────────────────────────────────────────
@@ -257,8 +261,9 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "mine sweeper",
       "mine hunter",
       "mine countermeasure",
+      "MCM",
+      "MCH",
     ],
-    patterns: [/\bMC[MH]\b/],
   },
   // ── Air defense (must precede artillery) ────────────────────────────
   {
@@ -635,26 +640,22 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
   {
     sidc: "10003000001210010000",
     label: "Navy Task Element",
-    aliases: ["navy task element"],
-    patterns: [/\bTE\b/],
+    aliases: ["navy task element", "TE"],
   },
   {
     sidc: "10003000001210020000",
     label: "Navy Task Force",
-    aliases: ["navy task force"],
-    patterns: [/\bTF\b/],
+    aliases: ["navy task force", "TF"],
   },
   {
     sidc: "10003000001210030000",
     label: "Navy Task Group",
-    aliases: ["navy task group", "task group"],
-    patterns: [/\bTG\b/],
+    aliases: ["navy task group", "task group", "TG"],
   },
   {
     sidc: "10003000001210040000",
     label: "Navy Task Unit",
-    aliases: ["navy task unit"],
-    patterns: [/\bTU\b/],
+    aliases: ["navy task unit", "TU"],
   },
   {
     sidc: "10003000001210050000",
@@ -681,13 +682,14 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "flugzeugtraeger",
       "porte avion(s)",
       "portaerei",
+      "CV",
+      "CVX",
     ],
-    patterns: [/\bCVX\b/i, /\bCV(?=-)/i],
   },
   {
     sidc: "10003000001201000001",
     label: "Aircraft Carrier (CVN)",
-    patterns: [/\bCVN\b/i],
+    aliases: ["CVN"],
   },
   {
     sidc: "10003000001202010000",
@@ -700,8 +702,8 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "corazzata",
       "acorazado",
       "dreadnought",
+      "BB",
     ],
-    patterns: [/\bBB\b/i],
   },
   {
     sidc: "10003000001202020000",
@@ -715,8 +717,10 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "heavy cruiser",
       "light cruiser",
       "battle cruiser",
+      "CA",
+      "CG",
+      "CL",
     ],
-    patterns: [/\bC[AGLX]\b/i],
   },
   {
     sidc: "10003000001202030000",
@@ -728,14 +732,23 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "contre torpilleur",
       "cacciatorpediniere",
       "destructor",
+      "DD",
+      "DDG",
     ],
-    patterns: [/\bDD[GX]?\b/i],
   },
   {
     sidc: "10003000001202040000",
     label: "Frigate",
-    aliases: ["frigate", "fregatte", "fregate", "fregata", "fragata", "escort"],
-    patterns: [/\bFF[GX]?\b/i],
+    aliases: [
+      "frigate",
+      "fregatte",
+      "fregate",
+      "fregata",
+      "fragata",
+      "escort",
+      "FF",
+      "FFG",
+    ],
   },
   {
     sidc: "10003000001202050000",
@@ -753,8 +766,10 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "torpedo boat",
       "schnellboot",
       "vedette",
+      "PB",
+      "PC",
+      "PT",
     ],
-    patterns: [/\bP[BCT]\b/i],
   },
   {
     sidc: "10003500001101000000",
@@ -769,8 +784,12 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "sottomarine",
       "submarino",
       "unterseeboot",
+      "SS",
+      "SSN",
+      "SSK",
+      "SSG",
+      "SSB",
     ],
-    patterns: [/\bSS[BGKN]?\b/i],
   },
 
   {

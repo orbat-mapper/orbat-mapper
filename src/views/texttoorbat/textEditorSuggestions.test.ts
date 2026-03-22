@@ -32,7 +32,7 @@ describe("textEditorSuggestions", () => {
     expect(labels).toContain("Infantry");
     expect(labels).toContain("Armor");
     expect(labels).toContain("Airborne Infantry");
-    expect(labels).toContain("cv");
+    expect(labels).toContain("CV");
     expect(new Set(labels).size).toBe(labels.length);
     expect(
       (
@@ -103,13 +103,13 @@ describe("textEditorSuggestions", () => {
     expect(companyResult?.options.some((option) => option.label === "coy")).toBe(true);
   });
 
-  it("offers literal pattern abbreviations like cv", () => {
+  it("offers literal pattern abbreviations like CV", () => {
     const result = completeUnitTypes(
-      createCompletionContext("USS cv", "USS cv".length) as never,
+      createCompletionContext("USS CV", "USS CV".length) as never,
     );
 
     expect(result?.from).toBe(4);
-    expect(result?.options.some((option) => option.label === "cv")).toBe(true);
+    expect(result?.options.some((option) => option.label === "CV")).toBe(true);
   });
 
   it("does not offer suggestions when there is no active token", () => {
