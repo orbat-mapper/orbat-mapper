@@ -7,10 +7,9 @@
  */
 
 import {
+  buildIconSidc,
   BUILTIN_ICON_DEFINITIONS,
   ICON_UNSPECIFIED,
-  buildIconSidc,
-  extractEntityCode,
   type IconDefinition,
 } from "./iconRegistry";
 import {
@@ -25,7 +24,6 @@ import {
 
 export interface CompiledPattern {
   pattern: RegExp;
-  name: string;
   /** For icons: full 20-char template SIDC. For echelons: 2-char echelon code. */
   code: string;
   label: string;
@@ -121,10 +119,7 @@ export function compileSimpleAlias(alias: string): string {
 
 /** Compile a definition's aliases + raw patterns into `CompiledPattern[]`. */
 function compileDefinition(
-  def: Pick<
-    IconDefinition | EchelonDefinition,
-    "name" | "label" | "aliases" | "patterns"
-  >,
+  def: Pick<IconDefinition | EchelonDefinition, "label" | "aliases" | "patterns">,
   code: string,
 ): CompiledPattern[] {
   const result: CompiledPattern[] = [];
@@ -134,7 +129,6 @@ function compileDefinition(
     const joined = def.aliases.map(compileSimpleAlias).join("|");
     result.push({
       pattern: new RegExp(`\\b(${joined})\\b`, "i"),
-      name: def.name,
       code,
       label: def.label,
       sourceType: "alias",
@@ -146,7 +140,6 @@ function compileDefinition(
     for (const p of def.patterns) {
       result.push({
         pattern: p,
-        name: def.name,
         code,
         label: def.label,
         sourceType: "pattern",
@@ -236,9 +229,9 @@ export class MappingRegistry {
     if (!this._iconCodeToName) {
       const map: Record<string, string> = {};
       for (const d of this._iconDefs) {
-        if (!(d.sidc in map)) map[d.sidc] = d.name;
+        if (!(d.sidc in map)) map[d.sidc] = d.label;
       }
-      map[ICON_UNSPECIFIED] = "ICON_UNSPECIFIED";
+      map[ICON_UNSPECIFIED] = "Unspecified";
       this._iconCodeToName = map;
     }
     return this._iconCodeToName;
@@ -248,9 +241,9 @@ export class MappingRegistry {
     if (!this._echelonCodeToName) {
       const map: Record<string, string> = {};
       for (const d of this._echelonDefs) {
-        if (!(d.code in map)) map[d.code] = d.name;
+        if (!(d.code in map)) map[d.code] = d.label;
       }
-      map[ECHELON_UNSPECIFIED] = "ECHELON_UNSPECIFIED";
+      map[ECHELON_UNSPECIFIED] = "Unspecified";
       this._echelonCodeToName = map;
     }
     return this._echelonCodeToName;
@@ -440,9 +433,6 @@ export class MappingRegistry {
         if (updates.label !== undefined) def.label = updates.label;
         if (updates.sidc !== undefined) {
           def.sidc = updates.sidc;
-          def.name = updates.label
-            ? updates.label.toUpperCase().replace(/\s+/g, "_")
-            : def.name;
         }
       }
     }
@@ -573,7 +563,6 @@ export class MappingRegistry {
             ? d.sidc
             : buildIconSidc(d.code ?? "0000000000", d.symbolSet ?? "10");
         return {
-          name: d.label.toUpperCase().replace(/\s+/g, "_"),
           sidc,
           label: d.label,
           aliases: [...d.aliases],
@@ -586,7 +575,6 @@ export class MappingRegistry {
     }
     if (data.echelons) {
       this._echelonDefs = data.echelons.map((d) => ({
-        name: d.label.toUpperCase().replace(/\s+/g, "_"),
         code: d.code,
         label: d.label,
         aliases: [...d.aliases],

@@ -1,67 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  ICON_AIR_ASSAULT_INFANTRY,
-  ICON_AIR_DEFENSE,
-  ICON_AIR_FORCE,
-  ICON_AIRBORNE_INFANTRY,
-  ICON_AMPHIBIOUS,
-  ICON_AMPHIBIOUS_WARFARE_SHIP,
-  ICON_ANTITANK,
-  ICON_ARMOR,
-  ICON_ARTILLERY,
-  ICON_ATTACK_HELICOPTER,
-  ICON_AUXILIARY_SHIP,
-  ICON_AVIATION,
-  ICON_BATTLESHIP,
-  ICON_CARGO_SHIP,
-  ICON_CARRIER,
-  ICON_CAVALRY,
-  ICON_CHEMICAL,
-  ICON_CIVIL_AFFAIRS,
-  ICON_COMBAT_ENGINEER,
-  ICON_CORVETTE,
-  ICON_CRUISER,
-  ICON_DESTROYER,
-  ICON_ELECTRONIC_WARFARE,
-  ICON_ENGINEER,
-  ICON_FRIGATE,
-  ICON_HEADQUARTERS,
-  ICON_HOSPITAL_SHIP,
-  ICON_INFANTRY,
-  ICON_LIGHT_ARMOR,
-  ICON_LIGHT_INFANTRY,
-  ICON_LITTORAL_COMBAT_SHIP,
-  ICON_MAINTENANCE,
-  ICON_MARINE_INFANTRY,
-  ICON_MECHANIZED_INFANTRY,
-  ICON_MEDICAL,
-  ICON_MILITARY_INTELLIGENCE,
-  ICON_MILITARY_POLICE,
-  ICON_MINE_WARFARE_SHIP,
-  ICON_MISSILE,
-  ICON_MORTAR,
-  ICON_MOTORIZED_INFANTRY,
-  ICON_MOUNTAIN_INFANTRY,
-  ICON_NAVAL,
-  ICON_NAVY_TASK_ELEMENT,
-  ICON_NAVY_TASK_FORCE,
-  ICON_NAVY_TASK_GROUP,
-  ICON_NAVY_TASK_UNIT,
-  ICON_CONVOY,
-  ICON_PARACHUTE,
-  ICON_PATROL_BOAT,
-  ICON_PSYCHOLOGICAL_OPS,
-  ICON_RECONNAISSANCE,
-  ICON_ROCKET_ARTILLERY,
-  ICON_SECURITY,
-  ICON_SELF_PROPELLED_ARTILLERY,
-  ICON_SIGNAL,
-  ICON_SNIPER,
-  ICON_SPECIAL_FORCES,
-  ICON_SUBMARINE,
-  ICON_SUPPLY,
-  ICON_TANKER_SHIP,
-  ICON_TRANSPORTATION,
+  BUILTIN_ICON_DEFINITIONS,
+  extractEntityCode,
   ICON_UNSPECIFIED,
 } from "./iconRegistry";
 import {
@@ -75,6 +15,76 @@ import {
   parseTextToUnits,
   serializeParsedUnitsToScenarioUnits,
 } from "./textToOrbat.ts";
+
+/** Look up the 10-char entity code for a built-in icon by label. */
+function iconCode(label: string): string {
+  const def = BUILTIN_ICON_DEFINITIONS.find((d) => d.label === label);
+  if (!def) throw new Error(`No icon definition with label "${label}"`);
+  return extractEntityCode(def.sidc);
+}
+
+const ICON_AIR_ASSAULT_INFANTRY = iconCode("Air Assault Infantry");
+const ICON_AIR_DEFENSE = iconCode("Air Defense");
+const ICON_AIR_FORCE = iconCode("Air Force");
+const ICON_AIRBORNE_INFANTRY = iconCode("Airborne Infantry");
+const ICON_AMPHIBIOUS = iconCode("Amphibious");
+const ICON_AMPHIBIOUS_WARFARE_SHIP = iconCode("Amphibious Warfare Ship");
+const ICON_ANTITANK = iconCode("Anti-Tank");
+const ICON_ARMOR = iconCode("Armor");
+const ICON_ARTILLERY = iconCode("Artillery");
+const ICON_ATTACK_HELICOPTER = iconCode("Attack Helicopter");
+const ICON_AUXILIARY_SHIP = iconCode("Auxiliary Ship");
+const ICON_AVIATION = iconCode("Aviation");
+const ICON_BATTLESHIP = iconCode("Battleship");
+const ICON_CARGO_SHIP = iconCode("Cargo Ship");
+const ICON_CARRIER = iconCode("Aircraft Carrier");
+const ICON_CAVALRY = iconCode("Cavalry");
+const ICON_CHEMICAL = iconCode("Chemical/NBC");
+const ICON_CIVIL_AFFAIRS = iconCode("Civil Affairs");
+const ICON_COMBAT_ENGINEER = iconCode("Combat Engineer");
+const ICON_CORVETTE = iconCode("Corvette");
+const ICON_CRUISER = iconCode("Cruiser");
+const ICON_DESTROYER = iconCode("Destroyer");
+const ICON_ELECTRONIC_WARFARE = iconCode("Electronic Warfare");
+const ICON_ENGINEER = iconCode("Engineer");
+const ICON_FRIGATE = iconCode("Frigate");
+const ICON_HEADQUARTERS = iconCode("Headquarters");
+const ICON_HOSPITAL_SHIP = iconCode("Hospital Ship");
+const ICON_INFANTRY = iconCode("Infantry");
+const ICON_LIGHT_ARMOR = iconCode("Light Armor");
+const ICON_LIGHT_INFANTRY = iconCode("Light Infantry");
+const ICON_LITTORAL_COMBAT_SHIP = iconCode("Littoral Combat Ship");
+const ICON_MAINTENANCE = iconCode("Maintenance");
+const ICON_MARINE_INFANTRY = iconCode("Marine Infantry");
+const ICON_MECHANIZED_INFANTRY = iconCode("Mechanized Infantry");
+const ICON_MEDICAL = iconCode("Medical");
+const ICON_MILITARY_INTELLIGENCE = iconCode("Military Intelligence");
+const ICON_MILITARY_POLICE = iconCode("Military Police");
+const ICON_MINE_WARFARE_SHIP = iconCode("Mine Warfare Ship");
+const ICON_MISSILE = iconCode("Missile");
+const ICON_MORTAR = iconCode("Mortar");
+const ICON_MOTORIZED_INFANTRY = iconCode("Motorized Infantry");
+const ICON_MOUNTAIN_INFANTRY = iconCode("Mountain Infantry");
+const ICON_NAVAL = iconCode("Naval");
+const ICON_NAVY_TASK_ELEMENT = iconCode("Navy Task Element");
+const ICON_NAVY_TASK_FORCE = iconCode("Navy Task Force");
+const ICON_NAVY_TASK_GROUP = iconCode("Navy Task Group");
+const ICON_NAVY_TASK_UNIT = iconCode("Navy Task Unit");
+const ICON_CONVOY = iconCode("Convoy");
+const ICON_PARACHUTE = iconCode("Airborne/Parachute");
+const ICON_PATROL_BOAT = iconCode("Patrol Boat");
+const ICON_PSYCHOLOGICAL_OPS = iconCode("Psychological Operations");
+const ICON_RECONNAISSANCE = iconCode("Reconnaissance");
+const ICON_ROCKET_ARTILLERY = iconCode("Rocket Artillery");
+const ICON_SECURITY = iconCode("Security");
+const ICON_SELF_PROPELLED_ARTILLERY = iconCode("Self-Propelled Artillery");
+const ICON_SIGNAL = iconCode("Signal");
+const ICON_SNIPER = iconCode("Sniper");
+const ICON_SPECIAL_FORCES = iconCode("Special Forces");
+const ICON_SUBMARINE = iconCode("Submarine");
+const ICON_SUPPLY = iconCode("Supply");
+const ICON_TANKER_SHIP = iconCode("Tanker");
+const ICON_TRANSPORTATION = iconCode("Transportation");
 
 describe("getEchelonCodeFromName", () => {
   it("detects Division from full word", () => {

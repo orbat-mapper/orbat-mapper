@@ -1,12 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { MappingRegistry, parseMappingsFromXlsxWorkbook } from "./mappingRegistry";
 import {
-  ICON_INFANTRY,
-  ICON_ARMOR,
+  BUILTIN_ICON_DEFINITIONS,
   ICON_UNSPECIFIED,
   buildIconSidc,
+  extractEntityCode,
 } from "./iconRegistry";
-import { ECHELON_BATTALION } from "./echelonRegistry";
+import { BUILTIN_ECHELON_DEFINITIONS } from "./echelonRegistry";
+
+const ICON_INFANTRY = extractEntityCode(
+  BUILTIN_ICON_DEFINITIONS.find((d) => d.label === "Infantry")!.sidc,
+);
+const ICON_ARMOR = extractEntityCode(
+  BUILTIN_ICON_DEFINITIONS.find((d) => d.label === "Armor")!.sidc,
+);
+const ECHELON_BATTALION = BUILTIN_ECHELON_DEFINITIONS.find(
+  (d) => d.label === "Battalion",
+)!.code;
 import {
   getIconCodeFromName,
   getEchelonCodeFromName,
@@ -24,7 +34,6 @@ describe("MappingRegistry — adding new mappings", () => {
 
     // Add user-defined mapping
     registry.addIcon({
-      name: "ICON_DRONE",
       sidc: buildIconSidc(DRONE_CODE),
       label: "Drone",
       aliases: ["drone", "uav", "uas", "rpas"],
@@ -60,7 +69,6 @@ describe("MappingRegistry — adding new mappings", () => {
     // Prepend a user mapping that hijacks "panzer"
     registry.addIcon(
       {
-        name: "ICON_CUSTOM_PANZER",
         sidc: buildIconSidc(CUSTOM_CODE),
         label: "Custom Panzer",
         aliases: ["panzer"],
@@ -89,7 +97,6 @@ describe("MappingRegistry — adding new mappings", () => {
     const DRONE_CODE = "1206010000";
 
     registry.addIcon({
-      name: "ICON_DRONE",
       sidc: buildIconSidc(DRONE_CODE),
       label: "Drone",
       aliases: ["drone", "uav"],
@@ -111,7 +118,6 @@ describe("MappingRegistry — adding new mappings", () => {
     const registryB = new MappingRegistry();
 
     registryA.addIcon({
-      name: "ICON_DRONE",
       sidc: buildIconSidc("1206010000"),
       label: "Drone",
       aliases: ["drone"],
@@ -126,7 +132,6 @@ describe("MappingRegistry — adding new mappings", () => {
     const registry1 = new MappingRegistry();
     registry1.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusilier(s)"]);
     registry1.addIcon({
-      name: "ICON_DRONE",
       sidc: buildIconSidc("1206010000"),
       label: "Drone",
       aliases: ["drone"],
@@ -150,7 +155,6 @@ describe("MappingRegistry — adding new mappings", () => {
 
     registry.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusilier(s)"]);
     registry.addIcon({
-      name: "ICON_DRONE",
       sidc: buildIconSidc("1206010000"),
       label: "Drone",
       aliases: ["drone"],
@@ -177,7 +181,6 @@ describe("MappingRegistry — adding new mappings", () => {
 
     const v1 = registry.version;
     registry.addIcon({
-      name: "ICON_DRONE",
       sidc: buildIconSidc("1206010000"),
       label: "Drone",
       aliases: ["drone"],
@@ -193,7 +196,6 @@ describe("MappingRegistry — adding new mappings", () => {
     const registry1 = new MappingRegistry();
     registry1.extendIcon(buildIconSidc(ICON_INFANTRY), ["fusilier(s)"]);
     registry1.addIcon({
-      name: "ICON_DRONE",
       sidc: buildIconSidc("1206010000"),
       label: "Drone",
       aliases: ["drone", "uav"],

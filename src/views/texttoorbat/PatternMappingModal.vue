@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeUnmount, onMounted, ref, computed } from "vue";
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from "vue";
 import {
   Dialog,
   DialogContent,
@@ -14,33 +14,28 @@ import { Button } from "@/components/ui/button";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import {
   defaultRegistry,
-  parseMappingsFromXlsxWorkbook,
   type MappingRegistry,
+  parseMappingsFromXlsxWorkbook,
 } from "./mappingRegistry";
-import {
-  extractEntityCode,
-  extractSymbolSet,
-  buildIconSidc as buildTemplateSidc,
-  ICON_UNSPECIFIED,
-} from "./iconRegistry";
+import { extractEntityCode, extractSymbolSet, ICON_UNSPECIFIED } from "./iconRegistry";
 import { ECHELON_UNSPECIFIED } from "./echelonRegistry";
-import { getIconMatchFromName, getEchelonCodeFromName } from "./textToOrbat";
+import { getEchelonCodeFromName, getIconMatchFromName } from "./textToOrbat";
 import fuzzysort from "fuzzysort";
 import ToggleField from "@/components/ToggleField.vue";
 import {
-  PlusIcon,
-  RotateCcwIcon,
-  DownloadIcon,
-  UploadIcon,
-  PencilIcon,
-  XIcon,
-  Trash2Icon,
-  Undo2Icon,
-  Redo2Icon,
   ChevronDownIcon,
   ChevronRightIcon,
+  DownloadIcon,
   FlaskConicalIcon,
   InfoIcon,
+  PencilIcon,
+  PlusIcon,
+  Redo2Icon,
+  RotateCcwIcon,
+  Trash2Icon,
+  Undo2Icon,
+  UploadIcon,
+  XIcon,
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -157,7 +152,6 @@ interface PatternEntry {
   keywords: KeywordEntry[];
   /** Display SIDC (with friendly SI, for rendering the symbol). */
   sidc: string;
-  constantName?: string;
   /** For icons: template SIDC (20-char). For echelons: echelon code (2-char). */
   code?: string;
   kind: "icon" | "echelon";
@@ -252,7 +246,6 @@ const iconEntries = computed<PatternEntry[]>(() => {
         label: def.label,
         keywords,
         sidc: templateToDisplaySidc(def.sidc),
-        constantName: def.name,
         code: def.sidc,
         kind: "icon" as const,
       });
@@ -277,7 +270,6 @@ const filteredEchelonEntries = computed(() => {
   return echelonEntries.value.filter(
     (entry) =>
       entry.label.toLowerCase().includes(query) ||
-      entry.constantName?.toLowerCase().includes(query) ||
       entry.code?.toLowerCase().includes(query) ||
       entry.keywords.some((kw) => kw.value.toLowerCase().includes(query)) ||
       entry.suffixes?.some((s) => s.toLowerCase().includes(query)),
@@ -290,7 +282,6 @@ const filteredIconEntries = computed(() => {
   return iconEntries.value.filter(
     (entry) =>
       entry.label.toLowerCase().includes(query) ||
-      entry.constantName?.toLowerCase().includes(query) ||
       entry.code?.toLowerCase().includes(query) ||
       entry.keywords.some((kw) => kw.value.toLowerCase().includes(query)),
   );
@@ -665,7 +656,6 @@ function submitNewIcon() {
   }
 
   props.registry.addIcon({
-    name: label.toUpperCase().replace(/\s+/g, "_"),
     sidc,
     label,
     aliases,
@@ -1300,12 +1290,6 @@ onBeforeUnmount(() => {
                           {{ entry.label }}
                         </span>
                         <template v-if="showDebug">
-                          <span
-                            v-if="entry.constantName"
-                            class="text-muted-foreground text-xs wrap-break-word whitespace-normal"
-                          >
-                            {{ entry.constantName }}
-                          </span>
                           <span
                             v-if="entry.code"
                             class="text-muted-foreground font-mono text-xs tracking-wider break-all whitespace-normal"
