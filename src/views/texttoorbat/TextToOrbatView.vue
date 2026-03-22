@@ -13,12 +13,7 @@ import { Button } from "@/components/ui/button";
 import SplitButton from "@/components/SplitButton.vue";
 import type { ButtonGroupItem } from "@/components/types";
 import { UseDark } from "@vueuse/components";
-import {
-  breakpointsTailwind,
-  useBreakpoints,
-  useLocalStorage,
-  useTitle,
-} from "@vueuse/core";
+import { breakpointsTailwind, useBreakpoints, useTitle } from "@vueuse/core";
 import OrbatTreeNode from "@/views/texttoorbat/OrbatTreeNode.vue";
 import TextToOrbatEditor from "@/views/texttoorbat/TextToOrbatEditor.vue";
 import ToggleField from "@/components/ToggleField.vue";
@@ -37,11 +32,9 @@ import {
   serializeParsedUnitsToScenarioUnits,
   type CommaFieldOrder,
 } from "@/views/texttoorbat/textToOrbat.ts";
+import { storeToRefs } from "pinia";
 import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
-import {
-  defaultRegistry,
-  type AllMappingData,
-} from "@/views/texttoorbat/mappingRegistry";
+import { defaultRegistry } from "@/views/texttoorbat/mappingRegistry";
 import {
   Select,
   SelectContent,
@@ -70,50 +63,18 @@ useTitle("Text to ORBAT");
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("sm");
 
-const enableAutocomplete = useLocalStorage("enableAutoComplete", true);
-const useCommaSeparator = useLocalStorage("useCommaSeparator", true);
-const commaFieldOrder = useLocalStorage(
-  "commaFieldOrder",
-  "name,shortName,description" as CommaFieldOrder,
-);
-const standardIdentity = useLocalStorage("textToOrbatSI", "3");
-const showScratchPad = useLocalStorage("showScratchPad", false);
-const scratchPadUnits = useLocalStorage<Unit[]>("textToOrbatScratchPad", []);
-const storedMappings = useLocalStorage<AllMappingData | null>(
-  "textToOrbatMappings_v2",
-  null,
-  {
-    serializer: {
-      read: (v: string) => JSON.parse(v),
-      write: (v: any) => JSON.stringify(v),
-    },
-  },
-);
-const registryVersion = ref(0);
-
-// Load stored mappings on init
-if (storedMappings.value?.icons?.length || storedMappings.value?.echelons?.length) {
-  try {
-    defaultRegistry.importMappings(storedMappings.value);
-    defaultRegistry.clearUndoRedoStack();
-    registryVersion.value = defaultRegistry.version;
-  } catch (e) {
-    console.warn("Failed to load stored mappings, resetting to defaults", e);
-    storedMappings.value = null;
-  }
-}
-
-function handleMappingsChanged() {
-  registryVersion.value = defaultRegistry.version;
-  storedMappings.value = defaultRegistry.exportMappings();
-}
-
-function handleMappingsReset() {
-  registryVersion.value = defaultRegistry.version;
-  storedMappings.value = null;
-}
-
-const textToOrbatStore = useTextToOrbatStore();
+const store = useTextToOrbatStore();
+const {
+  enableAutocomplete,
+  matchInputCase,
+  useCommaSeparator,
+  commaFieldOrder,
+  standardIdentity,
+  showScratchPad,
+  scratchPadUnits,
+  registryVersion,
+} = storeToRefs(store);
+const { handleMappingsChanged, handleMappingsReset } = store;
 
 const showPatternMapping = ref(false);
 const isOpeningScenario = ref(false);
@@ -378,10 +339,7 @@ onUnmounted(() => {
                 Clear
               </Button>
               <ToggleField v-model="enableAutocomplete">Autocomplete</ToggleField>
-              <ToggleField
-                v-if="enableAutocomplete"
-                v-model="textToOrbatStore.matchInputCase"
-              >
+              <ToggleField v-if="enableAutocomplete" v-model="matchInputCase">
                 Match case
               </ToggleField>
               <ToggleField v-model="useCommaSeparator">Split fields</ToggleField>
@@ -403,7 +361,7 @@ onUnmounted(() => {
           <TextToOrbatEditor
             v-model="inputText"
             :enable-autocomplete="enableAutocomplete"
-            :match-input-case="textToOrbatStore.matchInputCase"
+            :match-input-case="matchInputCase"
             :registry="defaultRegistry"
             :registry-version="registryVersion"
             class="flex-1"
