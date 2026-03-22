@@ -1372,7 +1372,7 @@ onBeforeUnmount(() => {
                         : ''
                     "
                   >
-                    <td class="p-2 align-top">
+                    <td class="p-2 align-middle">
                       <div class="flex items-center gap-1">
                         <span
                           v-if="isEditing && !searchQuery"
