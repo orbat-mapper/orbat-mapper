@@ -81,6 +81,16 @@ Use a single `|` to separate the display name from metadata:
 
 This displays the unit as "1st" but uses "tank bn" for symbol detection (resulting in a tank/armor battalion icon).
 
+### Double-slash syntax
+
+Use `//` as an alternative to the single pipe:
+
+```
+1st // tank bn
+```
+
+This behaves identically to `1st | tank bn` — everything after `//` is treated as metadata.
+
 ### Bracket syntax
 
 Use square brackets to embed metadata inline:

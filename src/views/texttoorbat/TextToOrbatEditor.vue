@@ -71,6 +71,12 @@ function getMetadataRanges(line: string): Array<{ from: number; to: number }> {
     ranges.push({ from: match.index, to: match.index + match[0].length });
   }
 
+  const slashSlashIndex = content.indexOf("//");
+  if (slashSlashIndex !== -1) {
+    ranges.push({ from: slashSlashIndex, to: content.length });
+    return ranges.sort((a, b) => a.from - b.from);
+  }
+
   const pipeIndexes = [...content.matchAll(/\|/g)]
     .map((item) => item.index ?? -1)
     .filter((i) => i >= 0);

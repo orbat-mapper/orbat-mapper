@@ -3,6 +3,8 @@ import { computed, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import {
   ArrowLeftIcon,
+  BookOpenIcon,
+  ExternalLinkIcon,
   CircleXIcon,
   GripIcon,
   MapIcon,
@@ -105,8 +107,8 @@ const isCopyingToClipboard = ref(false);
 const inputText = ref(`# sample ORBAT
 1st Infantry Division
   1st Brigade
-    # use | or [] for metadata
-    1st | tank bn
+    # use |, // or [] for metadata
+    1st // tank bn
     2nd Art [bty]
   2nd Cdo Btn
     3rd RA
@@ -424,6 +426,16 @@ onUnmounted(() => {
                   </DropdownMenuSub>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <a
+                href="https://docs.orbat-mapper.app/guide/text-to-orbat"
+                target="_blank"
+                rel="noopener"
+                class="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs underline underline-offset-2"
+              >
+                <BookOpenIcon class="size-3.5" />
+                Documentation
+                <ExternalLinkIcon class="size-3" />
+              </a>
             </div>
           </div>
           <TextToOrbatEditor

@@ -107,6 +107,13 @@ function normalizeUnitLine(line: string): NormalizedUnitLine {
     return normalized ? " " : "";
   });
 
+  const slashSlashIndex = displayName.indexOf("//");
+  if (slashSlashIndex !== -1) {
+    const metadata = normalizeMetadataWhitespace(displayName.slice(slashSlashIndex + 2));
+    if (metadata) metadataSegments.push(metadata);
+    displayName = displayName.slice(0, slashSlashIndex);
+  }
+
   const pipeCount = [...displayName].filter((char) => char === "|").length;
   if (pipeCount === 1) {
     const pipeIndex = displayName.indexOf("|");
