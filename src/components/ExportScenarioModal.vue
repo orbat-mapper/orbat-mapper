@@ -20,6 +20,9 @@ import ToggleField from "@/components/ToggleField.vue";
 import { useExportStore } from "@/stores/importExportStore";
 import { Button } from "@/components/ui/button";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
+import { ClipboardCopyIcon, CheckIcon } from "lucide-vue-next";
+import { useClipboard } from "@vueuse/core";
+import { ref } from "vue";
 
 const open = defineModel<boolean>({ default: false });
 const emit = defineEmits(["cancel"]);
@@ -32,6 +35,12 @@ const {
   downloadAsMilx,
   downloadAsSpatialIllusions,
   downloadAsOrbatMapper,
+  generateGeoJSON,
+  generateKml,
+  generateCsv,
+  generateMilx,
+  generateSpatialIllusions,
+  generateOrbatMapper,
 } = useScenarioExport();
 const store = useExportStore();
 const formatItems: SelectItem<ExportFormat>[] = [
@@ -87,8 +96,13 @@ const form = useLocalStorage(
 );
 
 const { send } = useNotifications();
+const { copy } = useClipboard();
+const justCopied = ref(false);
 
 const format = computed(() => form.value.format);
+const canCopyToClipboard = computed(
+  () => !["xlsx", "kmz"].includes(form.value.format),
+);
 const isGeojson = computed(() => form.value.format === "geojson");
 const isKml = computed(() => form.value.format === "kml");
 const isKmz = computed(() => form.value.format === "kmz");
@@ -129,6 +143,32 @@ async function onExport(e: Event) {
       message: `${kmzWarnings.length} icon(s) could not be embedded. ${warningExamples}${andMore}`,
       duration: 10000,
     });
+  }
+}
+
+async function onCopyToClipboard() {
+  const { format } = form.value;
+  let data: string | undefined;
+  NProgress.start();
+  if (format === "geojson") {
+    data = generateGeoJSON(form.value);
+  } else if (format === "kml") {
+    data = await generateKml(form.value);
+  } else if (format === "csv") {
+    data = await generateCsv(form.value);
+  } else if (format === "milx") {
+    data = await generateMilx(form.value);
+  } else if (format === "unitgenerator") {
+    data = generateSpatialIllusions(form.value);
+  } else if (format === "orbatmapper") {
+    data = generateOrbatMapper(form.value);
+  }
+  NProgress.done();
+  if (data) {
+    await copy(data);
+    justCopied.value = true;
+    setTimeout(() => (justCopied.value = false), 2000);
+    send({ message: "Copied to clipboard" });
   }
 }
 
@@ -223,6 +263,19 @@ function onCancel() {
         <ToggleField v-model="store.keepOpen">Keep dialog open on export</ToggleField>
         <div class="flex items-center space-x-2">
           <Button type="submit" size="sm">Export</Button>
+          <Button
+            v-if="canCopyToClipboard"
+            variant="outline"
+            type="button"
+            size="sm"
+            @click="onCopyToClipboard"
+          >
+            <component
+              :is="justCopied ? CheckIcon : ClipboardCopyIcon"
+              class="mr-1 h-4 w-4"
+            />
+            {{ justCopied ? "Copied!" : "Copy" }}
+          </Button>
           <Button variant="outline" type="button" size="sm" @click="onCancel"
             >Cancel</Button
           >
