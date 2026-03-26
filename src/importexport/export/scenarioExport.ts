@@ -83,7 +83,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   const { convertUnitsToGeoJson, convertScenarioFeaturesToGeoJson } =
     useGeoJsonConverter(scenario);
 
-  async function downloadAsGeoJSON(opts: GeoJsonSettings) {
+  function generateGeoJSON(opts: GeoJsonSettings): string {
     const units = opts.includeUnits
       ? convertUnitsToGeoJson(geo.everyVisibleUnit.value, opts).features
       : [];
@@ -91,22 +91,29 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       ? convertScenarioFeaturesToGeoJson(opts).features
       : [];
     const combined = [...units, ...(features as any)];
+    return JSON.stringify(featureCollection(combined), stringifyReplacer, 2);
+  }
 
+  async function downloadAsGeoJSON(opts: GeoJsonSettings) {
     await saveBlobToLocalFile(
-      new Blob([JSON.stringify(featureCollection(combined), stringifyReplacer, 2)], {
+      new Blob([generateGeoJSON(opts)], {
         type: "application/json",
       }),
       opts.fileName,
     );
   }
 
-  const { downloadAsKML, downloadAsKMZ: exportAsKMZ } = useKmlExport(scenario);
+  const {
+    generateKml,
+    downloadAsKML,
+    downloadAsKMZ: exportAsKMZ,
+  } = useKmlExport(scenario);
 
   async function downloadAsKMZ(opts: ExportSettings) {
     return exportAsKMZ(opts);
   }
 
-  async function downloadAsMilx(opts: ExportSettings) {
+  async function generateMilx(opts: ExportSettings): Promise<string> {
     const { toMilx } = await import("@/importexport/milx");
 
     const layers: OrbatMapperGeoJsonLayer[] = [];
@@ -132,7 +139,11 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       }
     }
 
-    const milxString = toMilx(layers);
+    return toMilx(layers);
+  }
+
+  async function downloadAsMilx(opts: ExportSettings) {
+    const milxString = await generateMilx(opts);
     await saveBlobToLocalFile(
       new Blob([milxString], {
         type: "application/xml",
@@ -181,7 +192,9 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     writeFileXLSX(workbook, "scenario.xlsx");
   }
 
-  async function downloadAsCsv(opts: CsvSettings & ExportSettings) {
+  async function generateCsv(
+    opts: CsvSettings & ExportSettings,
+  ): Promise<string> {
     const { formatLocation } = await import("@/importexport/export/locationFormat");
     const formatLoc = (loc: any) => formatLocation(loc, opts.locationFormat);
     const separator = opts.separator || ",";
@@ -199,7 +212,12 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
 
     const mappedData = columnMapper(unitData, opts.columns);
-    const csvContent = toCsv(mappedData, separator);
+    return toCsv(mappedData, separator);
+  }
+
+  async function downloadAsCsv(opts: CsvSettings & ExportSettings) {
+    const csvContent = await generateCsv(opts);
+    const separator = opts.separator || ",";
     const extension = separator === "\t" ? ".tsv" : ".csv";
     const mimeType = separator === "\t" ? "text/tab-separated-values" : "text/csv";
 
@@ -210,7 +228,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
-  async function downloadAsSpatialIllusions(opts: UnitGeneratorSettings) {
+  function generateSpatialIllusions(opts: UnitGeneratorSettings): string {
     const { rootUnit } = opts;
     const hierarchy = unitActions.expandUnitWithSymbolOptions(getUnitById(rootUnit));
 
@@ -230,8 +248,12 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
             : [],
       };
     }
+    return JSON.stringify(d, undefined, 2);
+  }
+
+  async function downloadAsSpatialIllusions(opts: UnitGeneratorSettings) {
     await saveBlobToLocalFile(
-      new Blob([JSON.stringify(d, undefined, 2)], {
+      new Blob([generateSpatialIllusions(opts)], {
         type: "application/json",
       }),
       "spatialillusions-orbat.json",
@@ -239,11 +261,10 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
-  async function downloadAsOrbatMapper({
-    fileName,
+  function generateOrbatMapper({
     scenarioName,
     sideGroups,
-  }: OrbatMapperExportSettings) {
+  }: OrbatMapperExportSettings): string {
     const scn = io.toObject();
     const sidesWithFilteredGroups = scn.sides.map((side) => ({
       ...side,
@@ -260,12 +281,15 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       exportedDate: new Date().toISOString(),
     };
     if (scenarioName) newScenario.name = scenarioName;
+    return JSON.stringify(newScenario, undefined, 2);
+  }
 
+  async function downloadAsOrbatMapper(opts: OrbatMapperExportSettings) {
     await saveBlobToLocalFile(
-      new Blob([JSON.stringify(newScenario, undefined, 2)], {
+      new Blob([generateOrbatMapper(opts)], {
         type: "application/json",
       }),
-      fileName || "scenario-export-orbatmapper.json",
+      opts.fileName || "scenario-export-orbatmapper.json",
       { mimeTypes: ["application/json"], extensions: [".json"] },
     );
   }
@@ -279,5 +303,11 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     downloadAsMilx,
     downloadAsSpatialIllusions,
     downloadAsOrbatMapper,
+    generateGeoJSON,
+    generateKml,
+    generateCsv,
+    generateMilx,
+    generateSpatialIllusions,
+    generateOrbatMapper,
   };
 }

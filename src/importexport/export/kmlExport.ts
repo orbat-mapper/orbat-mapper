@@ -198,12 +198,16 @@ export function useKmlExport(scenario: TScenario) {
     return { root, symbolDataCache };
   }
 
-  async function downloadAsKML(opts: KmlKmzExportSettings) {
+  async function generateKml(opts: KmlKmzExportSettings): Promise<string> {
     const { foldersToKML } = await import("@/extlib/tokml");
     const { root } = createKMLString(opts);
-    const kmlString = foldersToKML(root, [], {
+    return foldersToKML(root, [], {
       listStyle: opts.useRadioFolder ? "radioFolder" : undefined,
     });
+  }
+
+  async function downloadAsKML(opts: KmlKmzExportSettings) {
+    const kmlString = await generateKml(opts);
     await saveBlobToLocalFile(
       new Blob([kmlString], {
         type: "application/vnd.google-earth.kml+xml",
@@ -554,6 +558,7 @@ export function useKmlExport(scenario: TScenario) {
   }
 
   return {
+    generateKml,
     downloadAsKML,
     downloadAsKMZ,
   };
