@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 - Added a visual symbol picker for selecting icons when adding or editing pattern mappings in "Text to ORBAT".
 - Added priority numbers and drag-handle reordering for pattern mappings in "Text to ORBAT".
 - Added a configurable default starting echelon setting to "Text to ORBAT".
+- Added a copy to clipboard button to the export modal.
+- Added `//` as an alternative metadata syntax in "Text to ORBAT" and a link to the documentation.
 
 ### Changed
 
