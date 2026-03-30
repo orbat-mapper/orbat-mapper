@@ -32,9 +32,9 @@ export const useUiStore = defineStore("ui", {
     toeIncludeSubordinates: useLocalStorage("toeIncludeSubordinates", true),
     prevToeIncludeSubordinates: undefined as boolean | undefined,
     prevSuppliesIncludeSubordinates: undefined as boolean | undefined,
-    detailsPanelMode: useLocalStorage<DetailsPanelMode>("detailsPanelMode", "sidebar", {
+    detailsPanelMode: useLocalStorage<DetailsPanelMode>("detailsPanelMode", "overlay", {
       serializer: {
-        read: (v) => (v === "overlay" || v === "sidebar" ? v : "sidebar"),
+        read: (v) => (v === "overlay" || v === "sidebar" ? v : "overlay"),
         write: (v) => v,
       },
     }),
