@@ -28,9 +28,15 @@ All notable changes to this project will be documented in this file.
 - Added a configurable default starting echelon setting to "Text to ORBAT".
 - Added a copy to clipboard button to the export modal.
 - Added `//` as an alternative metadata syntax in "Text to ORBAT" and a link to the documentation.
+- Added overlay and sidebar display modes for the unit details panel, each with independent pin toggles. 
 
 ### Changed
 
+- Moved the ORBAT panel from a map overlay to a flex sidebar layout — the map now physically resizes instead of being overlaid.
+- Restyled the ORBAT panel open button as a tab on the left edge of the map.
+- The ORBAT panel now opens automatically when using the locate-in-orbat action.
+- Moved zoom controls to the top-left of the map on mobile.
+- Map controls now reposition above the toolbar on narrow screens using container queries.
 - Expanded scenario timeline zoom-out range.
 - Moved "Copy scenario to clipboard" action from the File menu to the Edit menu.
 - Improved dark mode support in the Chart Edit view.

@@ -121,7 +121,9 @@ onUnmounted(() => {
 }
 
 .ol-zoom {
-  @apply top-[unset] right-2 bottom-12 left-[unset] sm:bottom-10;
+  @apply right-[unset] bottom-[unset];
+  top: 0.5rem;
+  left: 0.5rem;
 }
 
 .dark .ol-control {
@@ -146,6 +148,10 @@ onUnmounted(() => {
 .dark .ol-control button:focus {
   box-shadow: inset 0 0 0 1px var(--color-ring);
   outline: none;
+}
+
+.ol-attribution {
+  bottom: calc(0.5em + var(--ol-toolbar-clearance-right, 0rem));
 }
 
 .dark .ol-attribution {

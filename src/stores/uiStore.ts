@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 import { TAB_ORBAT } from "@/types/constants";
 
+export type DetailsPanelMode = "overlay" | "sidebar";
+
 export const prevToeIncludeSubordinates: boolean | undefined = undefined;
 
 export const useUiStore = defineStore("ui", {
@@ -30,6 +32,14 @@ export const useUiStore = defineStore("ui", {
     toeIncludeSubordinates: useLocalStorage("toeIncludeSubordinates", true),
     prevToeIncludeSubordinates: undefined as boolean | undefined,
     prevSuppliesIncludeSubordinates: undefined as boolean | undefined,
+    detailsPanelMode: useLocalStorage<DetailsPanelMode>("detailsPanelMode", "sidebar", {
+      serializer: {
+        read: (v) => (v === "overlay" || v === "sidebar" ? v : "sidebar"),
+        write: (v) => v,
+      },
+    }),
+    detailsPanelSidebarPinned: useLocalStorage("detailsPanelSidebarPinned", true),
+    detailsPanelOverlayPinned: useLocalStorage("detailsPanelOverlayPinned", false),
     popperCounter: 0,
     recordHierarchyChanges: false,
   }),
@@ -43,6 +53,19 @@ export const useUiStore = defineStore("ui", {
         state.getLocationActive ||
         state.popperCounter > 0
       ),
+    detailsPanelPinned: (state) =>
+      state.detailsPanelMode === "sidebar"
+        ? state.detailsPanelSidebarPinned
+        : state.detailsPanelOverlayPinned,
+  },
+  actions: {
+    toggleDetailsPanelPinned() {
+      if (this.detailsPanelMode === "sidebar") {
+        this.detailsPanelSidebarPinned = !this.detailsPanelSidebarPinned;
+      } else {
+        this.detailsPanelOverlayPinned = !this.detailsPanelOverlayPinned;
+      }
+    },
   },
 });
 

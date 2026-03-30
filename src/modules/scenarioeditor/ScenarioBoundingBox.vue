@@ -14,39 +14,14 @@ import VectorSource from "ol/source/Vector";
 import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";
 import Draw, { createBox } from "ol/interaction/Draw";
 import { transformExtent, toLonLat } from "ol/proj";
-import { useUiStore, useWidthStore } from "@/stores/uiStore";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
-import { storeToRefs } from "pinia";
 
 const scn = injectStrict(activeScenarioKey);
 const { store } = scn;
 const geoStore = useGeoStore();
 const olMapRef = injectStrict(activeMapKey);
 
-const uiStore = useUiStore();
-const widthStore = useWidthStore();
-const { orbatPanelWidth, detailsWidth } = storeToRefs(widthStore);
-const { showLeftPanel } = storeToRefs(uiStore);
-const {
-  selectedFeatureIds,
-  selectedUnitIds,
-  activeScenarioEventId,
-  activeMapLayerId,
-  showScenarioInfo,
-} = useSelectedItems();
-const breakpoints = useBreakpoints(breakpointsTailwind);
-const isMobile = breakpoints.smallerOrEqual("md");
-
-const showDetailsPanel = computed(() => {
-  return Boolean(
-    selectedFeatureIds.value.size ||
-    selectedUnitIds.value.size ||
-    activeScenarioEventId.value ||
-    activeMapLayerId.value ||
-    showScenarioInfo.value,
-  );
-});
+const { selectedUnitIds } = useSelectedItems();
 
 const boundingBox = computed(() => store.state.boundingBox);
 const isDrawing = ref(false);
@@ -148,13 +123,10 @@ function setFromMapView() {
   const size = map.getSize();
   if (!size) return;
 
-  const leftWidth = !isMobile.value && showLeftPanel.value ? orbatPanelWidth.value : 0;
-  const rightWidth = !isMobile.value && showDetailsPanel.value ? detailsWidth.value : 0;
-
   const [width, height] = size;
 
-  const blPixel = [leftWidth, height];
-  const trPixel = [width - rightWidth, 0];
+  const blPixel = [0, height];
+  const trPixel = [width, 0];
 
   const blCoord = map.getCoordinateFromPixel(blPixel);
   const trCoord = map.getCoordinateFromPixel(trPixel);

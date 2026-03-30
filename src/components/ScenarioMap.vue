@@ -37,29 +37,48 @@ function onMoveEnd({ view }: { view: View }) {
 }
 </script>
 <template>
-  <div class="bg-background relative">
-    <MapContextMenu :map-ref="mapRef" v-slot="{ onContextMenu }">
-      <MapContainer
-        @ready="onMapReady"
-        @dragover.prevent
-        :base-layer-name="mapSettings.baseLayerName"
-        @contextmenu="onContextMenu"
-        @moveend="onMoveEnd"
-      />
-    </MapContextMenu>
+  <div class="@container h-full">
+    <div class="map-wrapper bg-background relative h-full">
+      <MapContextMenu :map-ref="mapRef" v-slot="{ onContextMenu }">
+        <MapContainer
+          @ready="onMapReady"
+          @dragover.prevent
+          :base-layer-name="mapSettings.baseLayerName"
+          @contextmenu="onContextMenu"
+          @moveend="onMoveEnd"
+        />
+      </MapContextMenu>
 
-    <ScenarioMapLogic
-      ref="mapLogicComponent"
-      v-if="mapRef"
-      :ol-map="mapRef"
-      @map-ready="emit('map-ready', $event)"
-    />
-    <slot />
+      <ScenarioMapLogic
+        ref="mapLogicComponent"
+        v-if="mapRef"
+        :ol-map="mapRef"
+        @map-ready="emit('map-ready', $event)"
+      />
+      <slot />
+    </div>
   </div>
 </template>
 
 <style>
+.map-wrapper {
+  --ol-toolbar-clearance-left: 0rem;
+  --ol-toolbar-clearance-right: 0rem;
+}
+
+@container (min-width: 40rem) and (max-width: 60rem) {
+  .map-wrapper {
+    --ol-toolbar-clearance-left: 4.5rem;
+  }
+}
+
+@container (min-width: 40rem) and (max-width: 48rem) {
+  .map-wrapper {
+    --ol-toolbar-clearance-right: 4.5rem;
+  }
+}
+
 .ol-scale-line {
-  bottom: 2.2rem;
+  bottom: calc(2.2rem + var(--ol-toolbar-clearance-left));
 }
 </style>
