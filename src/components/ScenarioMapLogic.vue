@@ -4,7 +4,7 @@ import { computed, onUnmounted, shallowRef, watch } from "vue";
 import Select from "ol/interaction/Select";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import { useUiStore, useWidthStore } from "@/stores/uiStore";
+import { useUiStore } from "@/stores/uiStore";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 import {
   useGeoStore,
@@ -61,30 +61,12 @@ const {
 const mapRef = shallowRef<OLMap>();
 
 const uiStore = useUiStore();
-const widthStore = useWidthStore();
-const { orbatPanelWidth, detailsWidth } = storeToRefs(widthStore);
-const { showLeftPanel } = storeToRefs(uiStore);
 
-const {
-  selectedFeatureIds,
-  selectedUnitIds,
-  activeScenarioEventId,
-  activeMapLayerId,
-  showScenarioInfo,
-} = useSelectedItems();
+const { selectedFeatureIds } = useSelectedItems();
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 
-const showDetailsPanel = computed(() => {
-  return Boolean(
-    selectedFeatureIds.value.size ||
-    selectedUnitIds.value.size ||
-    activeScenarioEventId.value ||
-    activeMapLayerId.value ||
-    showScenarioInfo.value,
-  );
-});
 const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
 const unitSettingsStore = useUnitSettingsStore();
 const mapSettingsStore = useMapSettingsStore();
@@ -191,9 +173,7 @@ initializeFeatureLayersFromStore();
 
 // Set initial view: prioritize bounding box, then fall back to unit extent
 if (state.boundingBox && state.boundingBox.length === 4) {
-  const leftPadding = !isMobile.value && showLeftPanel.value ? orbatPanelWidth.value : 0;
-  const rightPadding = !isMobile.value && showDetailsPanel.value ? detailsWidth.value : 0;
-  const padding = [20, rightPadding + 20, 20, leftPadding + 20];
+  const padding = [20, 20, 20, 20];
 
   geoStore.zoomToBbox(state.boundingBox as [number, number, number, number], {
     duration: 0,

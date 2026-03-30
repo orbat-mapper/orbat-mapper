@@ -100,9 +100,7 @@ const { copy } = useClipboard();
 const justCopied = ref(false);
 
 const format = computed(() => form.value.format);
-const canCopyToClipboard = computed(
-  () => !["xlsx", "kmz"].includes(form.value.format),
-);
+const canCopyToClipboard = computed(() => !["xlsx", "kmz"].includes(form.value.format));
 const isGeojson = computed(() => form.value.format === "geojson");
 const isKml = computed(() => form.value.format === "kml");
 const isKmz = computed(() => form.value.format === "kmz");

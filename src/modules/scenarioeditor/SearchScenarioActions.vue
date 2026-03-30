@@ -52,6 +52,7 @@ const toeActions = useToeActions();
 
 onUnitSelect(({ unitId, options }) => {
   const doZoom = !(options?.noZoom === true);
+  ui.showLeftPanel = true;
   ui.activeTabIndex = TAB_ORBAT;
   activeUnitId.value = unitId;
   selectedUnitIds.value.clear();

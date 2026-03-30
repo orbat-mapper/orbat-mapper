@@ -1,44 +1,79 @@
 <script setup lang="ts">
 import CloseButton from "@/components/CloseButton.vue";
-import { onMounted, onUnmounted } from "vue";
-import { injectStrict } from "@/utils";
-import { activeMapKey } from "@/components/injects";
-import { useWidthStore } from "@/stores/uiStore";
+import { type DetailsPanelMode, useUiStore, useWidthStore } from "@/stores/uiStore";
 import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
-const emit = defineEmits(["close"]);
-const mapRef = injectStrict(activeMapKey);
-const widthStore = useWidthStore();
-onMounted(() => {
-  const padding = mapRef.value.getView().padding || [0, 0, 0, 0];
-  const [top, right, bottom, left] = padding;
-  mapRef.value.getView().padding = [top, 400, bottom, left];
-});
+import { Button } from "@/components/ui/button";
+import { PanelRightIcon, PinIcon, PinOffIcon } from "lucide-vue-next";
+import OverlayPanelIcon from "@/components/OverlayPanelIcon.vue";
 
-onUnmounted(() => {
-  const padding = mapRef.value.getView().padding;
-  if (padding) {
-    const [top, right, bottom, left] = padding;
-    mapRef.value.getView().padding = [top, 0, bottom, left];
-  }
-});
+defineProps<{ mode: DetailsPanelMode }>();
+const emit = defineEmits(["close"]);
+const widthStore = useWidthStore();
+const ui = useUiStore();
+
+function setMode(mode: DetailsPanelMode) {
+  ui.detailsPanelMode = mode;
+}
+
+import { storeToRefs } from "pinia";
+
+const { detailsPanelPinned: isPinned } = storeToRefs(ui);
+
+const sidebarClasses =
+  "bg-sidebar border-sidebar-border relative flex h-full flex-col overflow-hidden border-l shadow-sm";
+const overlayClasses =
+  "bg-sidebar border-sidebar-border absolute right-2 top-2 z-30 flex max-h-[70vh] flex-col overflow-clip rounded-md border shadow-sm";
 </script>
 
 <template>
-  <div class="">
-    <aside
-      class="bg-sidebar border-sidebar-border pointer-events-auto relative mt-4 flex max-h-[70vh] flex-col overflow-clip rounded-md border shadow-sm"
-      :style="{ width: widthStore.detailsWidth + 'px' }"
-    >
-      <CloseButton class="absolute top-1 right-1 z-99" @click="emit('close')" />
-      <div class="flex-auto overflow-auto p-4">
-        <slot />
-      </div>
-      <PanelResizeHandle
-        :width="widthStore.detailsWidth"
-        @update="widthStore.detailsWidth = $event"
-        @reset="widthStore.resetDetailsWidth()"
-        left
-      />
-    </aside>
-  </div>
+  <aside
+    :class="mode === 'overlay' ? overlayClasses : sidebarClasses"
+    :style="{
+      width: widthStore.detailsWidth + 'px',
+      minWidth: '250px',
+      maxWidth: '50vw',
+    }"
+  >
+    <div class="flex items-center gap-0.5 border-b px-1 py-0.5">
+      <Button
+        :variant="mode === 'overlay' ? 'secondary' : 'ghost'"
+        size="icon"
+        class="size-7"
+        @click="setMode('overlay')"
+        title="Overlay"
+      >
+        <OverlayPanelIcon class="size-3.5" />
+      </Button>
+      <Button
+        :variant="mode === 'sidebar' ? 'secondary' : 'ghost'"
+        size="icon"
+        class="size-7"
+        @click="setMode('sidebar')"
+        title="Sidebar"
+      >
+        <PanelRightIcon class="size-3.5" />
+      </Button>
+      <div class="bg-border mx-0.5 h-4 w-px" />
+      <Button
+        :variant="isPinned ? 'secondary' : 'ghost'"
+        size="icon"
+        class="size-7"
+        @click="ui.toggleDetailsPanelPinned()"
+        title="Pin panel"
+      >
+        <PinIcon v-if="isPinned" class="size-3.5" />
+        <PinOffIcon v-else class="size-3.5" />
+      </Button>
+      <CloseButton @click="emit('close')" class="ml-auto bg-transparent" />
+    </div>
+    <div class="flex-auto overflow-auto p-4">
+      <slot />
+    </div>
+    <PanelResizeHandle
+      :width="widthStore.detailsWidth"
+      @update="widthStore.detailsWidth = $event"
+      @reset="widthStore.resetDetailsWidth()"
+      left
+    />
+  </aside>
 </template>

@@ -192,9 +192,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     writeFileXLSX(workbook, "scenario.xlsx");
   }
 
-  async function generateCsv(
-    opts: CsvSettings & ExportSettings,
-  ): Promise<string> {
+  async function generateCsv(opts: CsvSettings & ExportSettings): Promise<string> {
     const { formatLocation } = await import("@/importexport/export/locationFormat");
     const formatLoc = (loc: any) => formatLocation(loc, opts.locationFormat);
     const separator = opts.separator || ",";

@@ -4,12 +4,10 @@ import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vu
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import CloseButton from "@/components/CloseButton.vue";
 import { useToggle } from "@vueuse/core";
-import { injectStrict } from "@/utils";
-import { activeMapKey } from "@/components/injects";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 import { storeToRefs } from "pinia";
 import { useUiStore, useWidthStore } from "@/stores/uiStore";
-import { computed, defineAsyncComponent, onMounted, onUnmounted } from "vue";
+import { computed, defineAsyncComponent } from "vue";
 import { type ScenarioEvent } from "@/types/scenarioModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
@@ -23,7 +21,6 @@ const ScenarioFiltersTabPanel = defineAsyncComponent(
 
 const emit = defineEmits(["close"]);
 
-const mapRef = injectStrict(activeMapKey);
 const { activeScenarioEventId } = useSelectedItems();
 
 const [showBottomPanel, toggleBottomPanel] = useToggle(true);
@@ -37,20 +34,6 @@ const activeTabIndexString = computed({
   set: (v) => (activeTabIndex.value = parseInt(v)),
 });
 
-onMounted(() => {
-  const padding = mapRef.value.getView().padding || [0, 0, 0, 0];
-  const [top, right, bottom, left] = padding;
-  mapRef.value.getView().padding = [top, right, bottom, 400];
-});
-
-onUnmounted(() => {
-  const padding = mapRef.value.getView().padding;
-  if (padding) {
-    const [top, right, bottom, left] = padding;
-    mapRef.value.getView().padding = [top, right, bottom, 0];
-  }
-});
-
 function onEventClick(scenarioEvent: ScenarioEvent) {
   activeScenarioEventId.value = scenarioEvent.id;
 }
@@ -58,8 +41,8 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
 
 <template>
   <aside
-    class="pointer-events-auto relative -mt-12 hidden max-h-[80vh] overflow-auto rounded-md border-t border-b border-l border-gray-300 shadow-sm md:block dark:border-slate-700"
-    :style="{ width: orbatPanelWidth + 'px' }"
+    class="bg-sidebar border-sidebar-border relative flex h-full shrink-0 flex-col overflow-hidden border-r shadow-sm"
+    :style="{ width: orbatPanelWidth + 'px', minWidth: '250px', maxWidth: '50vw' }"
   >
     <ScrollTabs
       v-model="activeTabIndexString"

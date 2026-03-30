@@ -147,7 +147,8 @@
 }
 
 .location-control {
-  @apply text-foreground bg-background/50 absolute bottom-2 left-3 rounded px-1 text-base tracking-tighter tabular-nums;
+  @apply text-foreground bg-background/50 absolute left-3 rounded px-1 text-base tracking-tighter tabular-nums;
+  bottom: calc(0.5rem + var(--ol-toolbar-clearance-left, 0rem));
 }
 
 .badge {

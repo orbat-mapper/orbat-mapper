@@ -2,6 +2,7 @@
 import {
   computed,
   defineAsyncComponent,
+  nextTick,
   onActivated,
   onUnmounted,
   provide,
@@ -36,21 +37,17 @@ import {
   useToggle,
 } from "@vueuse/core";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
-import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
 import MapEditorDesktopPanel from "@/modules/scenarioeditor/MapEditorDesktopPanel.vue";
 import MapEditorDetailsPanel from "@/modules/scenarioeditor/MapEditorDetailsPanel.vue";
-import { useUiStore } from "@/stores/uiStore";
+import DetailsPanelContent from "@/modules/scenarioeditor/DetailsPanelContent.vue";
+import { useUiStore, useWidthStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { GlobalEvents } from "vue-global-events";
 import SearchScenarioActions from "@/modules/scenarioeditor/SearchScenarioActions.vue";
 import IconButton from "@/components/IconButton.vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
-import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
-import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
-import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
-import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
 import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
 import { storeToRefs } from "pinia";
@@ -102,26 +99,57 @@ function onMapReady({
 const {
   selectedUnitIds,
   selectedFeatureIds,
-  activeUnitId,
   activeScenarioEventId,
   activeMapLayerId,
   showScenarioInfo,
-  activeDetailsPanel,
   clear: clearSelected,
 } = useSelectedItems();
 
 const { showLeftPanel } = storeToRefs(ui);
 const toggleLeftPanel = useToggle(showLeftPanel);
 
-const showDetailsPanel = computed(() => {
-  return Boolean(
+const widthStore = useWidthStore();
+const { orbatPanelWidth, detailsWidth } = storeToRefs(widthStore);
+
+const hasSelection = computed(() =>
+  Boolean(
     selectedFeatureIds.value.size ||
     selectedUnitIds.value.size ||
     activeScenarioEventId.value ||
     activeMapLayerId.value ||
     showScenarioInfo.value,
-  );
+  ),
+);
+
+const detailsPanelClosed = ref(false);
+
+watch(hasSelection, (val) => {
+  if (val) detailsPanelClosed.value = false;
 });
+
+const showDetailsPanel = computed(() => {
+  if (detailsPanelClosed.value) return false;
+  return hasSelection.value || ui.detailsPanelPinned;
+});
+
+const showDetailsSidebar = computed(
+  () => showDetailsPanel.value && ui.detailsPanelMode === "sidebar",
+);
+
+watch(
+  [
+    showLeftPanel,
+    orbatPanelWidth,
+    showDetailsSidebar,
+    detailsWidth,
+    () => ui.detailsPanelMode,
+  ],
+  () => {
+    nextTick(() => {
+      mapRef.value?.updateSize();
+    });
+  },
+);
 
 onUnmounted(() => {
   activeUnitStore.clearActiveUnit();
@@ -134,6 +162,7 @@ onActivated(() => {
 });
 
 function onCloseDetailsPanel() {
+  detailsPanelClosed.value = true;
   clearSelected();
 }
 
@@ -226,92 +255,93 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
 
 <template>
   <div class="relative flex min-h-0 flex-auto flex-col">
-    <div class="relative flex flex-auto flex-col">
-      <NewScenarioMap class="flex-auto" @mapReady="onMapReady" />
-      <main
-        v-if="mapRef"
-        class="pointer-events-none absolute inset-0 flex flex-col justify-between"
-      >
-        <header class="flex flex-none items-center justify-end sm:p-2">
-          <MapTimeController
-            class="pointer-events-auto"
-            :show-controls="false"
+    <div class="relative flex min-h-0 flex-1">
+      <template v-if="!isMobile">
+        <MapEditorDesktopPanel v-if="showLeftPanel" @close="toggleLeftPanel()" />
+      </template>
+      <div class="relative flex min-w-0 flex-auto flex-col">
+        <NewScenarioMap class="flex-auto" @mapReady="onMapReady" />
+        <main
+          v-if="mapRef"
+          class="pointer-events-none absolute inset-0 flex flex-col justify-between"
+        >
+          <header class="flex flex-none items-center justify-between sm:p-2">
+            <div class="ml-10 flex items-center sm:ml-8">
+              <MapTimeController
+                class="pointer-events-auto ml-1"
+                :show-controls="false"
+                @open-time-modal="openTimeDialog()"
+                @show-settings="emit('show-settings')"
+                @inc-day="onIncDay()"
+                @dec-day="onDecDay()"
+                @next-event="goToNextScenarioEvent()"
+                @prev-event="goToPrevScenarioEvent()"
+              />
+            </div>
+            <IconButton
+              @click.stop="onShowPlaceSearch"
+              class="pointer-events-auto mr-2 sm:ml-2"
+              :style="
+                !isMobile && showDetailsPanel && ui.detailsPanelMode === 'overlay'
+                  ? { marginRight: detailsWidth + 16 + 'px' }
+                  : {}
+              "
+              title="Search"
+            >
+              <MagnifyingGlassIcon class="h-5 w-5" />
+            </IconButton>
+          </header>
+          <Button
+            v-if="!isMobile && !showLeftPanel"
+            type="button"
+            variant="secondary"
+            class="pointer-events-auto absolute top-[45%] left-0 h-11 w-5 -translate-y-1/2 rounded-l-none rounded-r-md px-0"
+            @click="toggleLeftPanel()"
+            title="Show panel"
+          >
+            <ShowPanelIcon class="size-4" />
+          </Button>
+        </main>
+        <footer
+          v-if="mapRef && ui.showToolbar"
+          class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
+        >
+          <MapEditorMainToolbar
             @open-time-modal="openTimeDialog()"
-            @show-settings="emit('show-settings')"
             @inc-day="onIncDay()"
             @dec-day="onDecDay()"
             @next-event="goToNextScenarioEvent()"
             @prev-event="goToPrevScenarioEvent()"
+            @show-settings="emit('show-settings')"
           />
-          <IconButton
-            @click.stop="onShowPlaceSearch"
-            class="pointer-events-auto mr-2 sm:ml-2"
-            title="Search"
-          >
-            <MagnifyingGlassIcon class="h-5 w-5" />
-          </IconButton>
-        </header>
-        <section v-if="!isMobile" class="flex flex-auto justify-between p-2">
-          <MapEditorDesktopPanel v-if="showLeftPanel" @close="toggleLeftPanel()" />
-          <div v-else>
-            <Button
-              type="button"
-              size="icon"
-              variant="secondary"
-              @click="toggleLeftPanel()"
-              title="Show panel"
-              class="pointer-events-auto absolute -my-12"
-            >
-              <ShowPanelIcon class="size-7" />
-            </Button>
-          </div>
-          <MapEditorDetailsPanel v-if="showDetailsPanel" @close="onCloseDetailsPanel()">
-            <ScenarioFeatureDetails
-              v-if="activeDetailsPanel === 'feature'"
-              :selected-ids="selectedFeatureIds"
-            />
-            <UnitDetails
-              v-else-if="activeDetailsPanel === 'unit'"
-              :unit-id="activeUnitId || [...selectedUnitIds][0]"
-            />
-            <ScenarioEventDetails
-              v-else-if="activeDetailsPanel === 'event'"
-              :event-id="activeScenarioEventId!"
-            />
-            <ScenarioMapLayerDetails
-              v-else-if="activeDetailsPanel === 'mapLayer'"
-              :layer-id="activeMapLayerId!"
-            />
-            <ScenarioInfoPanel v-else-if="activeDetailsPanel === 'scenario'" />
-          </MapEditorDetailsPanel>
-          <div v-else></div>
-        </section>
-      </main>
-      <footer
-        v-if="mapRef && ui.showToolbar"
-        class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
+          <MapEditorMeasurementToolbar
+            class="absolute bottom-14 sm:bottom-16"
+            v-if="toolbarStore.currentToolbar === 'measurements'"
+          />
+          <MapEditorDrawToolbar
+            class="absolute bottom-14 sm:bottom-16"
+            v-if="toolbarStore.currentToolbar === 'draw'"
+          />
+          <MapEditorUnitTrackToolbar
+            class="absolute bottom-14 sm:bottom-16"
+            v-if="toolbarStore.currentToolbar === 'track'"
+          />
+        </footer>
+        <MapEditorDetailsPanel
+          v-if="!isMobile && showDetailsPanel && ui.detailsPanelMode === 'overlay'"
+          :mode="ui.detailsPanelMode"
+          @close="onCloseDetailsPanel()"
+        >
+          <DetailsPanelContent />
+        </MapEditorDetailsPanel>
+      </div>
+      <MapEditorDetailsPanel
+        v-if="!isMobile && showDetailsPanel && ui.detailsPanelMode === 'sidebar'"
+        :mode="ui.detailsPanelMode"
+        @close="onCloseDetailsPanel()"
       >
-        <MapEditorMainToolbar
-          @open-time-modal="openTimeDialog()"
-          @inc-day="onIncDay()"
-          @dec-day="onDecDay()"
-          @next-event="goToNextScenarioEvent()"
-          @prev-event="goToPrevScenarioEvent()"
-          @show-settings="emit('show-settings')"
-        />
-        <MapEditorMeasurementToolbar
-          class="absolute bottom-14 sm:bottom-16"
-          v-if="toolbarStore.currentToolbar === 'measurements'"
-        />
-        <MapEditorDrawToolbar
-          class="absolute bottom-14 sm:bottom-16"
-          v-if="toolbarStore.currentToolbar === 'draw'"
-        />
-        <MapEditorUnitTrackToolbar
-          class="absolute bottom-14 sm:bottom-16"
-          v-if="toolbarStore.currentToolbar === 'track'"
-        />
-      </footer>
+        <DetailsPanelContent />
+      </MapEditorDetailsPanel>
     </div>
     <template v-if="isMobile">
       <UnitBreadcrumbs v-if="ui.showOrbatBreadcrumbs" />
