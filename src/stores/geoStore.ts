@@ -13,21 +13,16 @@ import { useLocalStorage } from "@vueuse/core";
 export interface ZoomOptions {
   maxZoom?: number;
   duration?: number;
-  padding?: number[];
+  padding?: [number, number, number, number];
 }
 
 export const useGeoStore = defineStore("geo", () => {
   const mapAdapter = shallowRef<MapAdapter | null>(null);
 
   /** @deprecated Use mapAdapter instead. Returns the native OL Map for backward compatibility. */
-  const olMap = computed<OLMap | null | undefined>({
-    get: () => (mapAdapter.value?.getNativeMap() as OLMap) ?? null,
-    set: () => {
-      // no-op: setting olMap directly is no longer supported.
-      // Use setMapAdapter() instead.
-      console.warn("Setting geoStore.olMap directly is deprecated. Use setMapAdapter().");
-    },
-  });
+  const olMap = computed<OLMap | null>(
+    () => (mapAdapter.value?.getNativeMap() as OLMap) ?? null,
+  );
 
   function setMapAdapter(adapter: MapAdapter | null) {
     mapAdapter.value = adapter;

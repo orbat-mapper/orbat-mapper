@@ -49,7 +49,11 @@ export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
 
 export const activeMapKey = Symbol("Active map") as InjectionKey<ShallowRef<MapAdapter>>;
 
-/** @deprecated Use activeMapKey (MapAdapter) with getNativeMap() instead. */
+/**
+ * Temporary escape hatch during scenario editor migration.
+ * Prefer activeMapKey (MapAdapter) with getNativeMap() instead.
+ * This injection key will be removed once the migration is complete.
+ */
 export const activeNativeMapKey = Symbol("Active native map") as InjectionKey<
   ShallowRef<OLMap>
 >;
