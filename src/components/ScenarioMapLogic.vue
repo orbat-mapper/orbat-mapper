@@ -247,7 +247,6 @@ watch([doNotFilterLayers, () => state.featureStateCounter], () => {
 });
 
 onUnmounted(() => {
-  geoStore.setMapAdapter(null);
   clearUnitStyleCache();
 });
 

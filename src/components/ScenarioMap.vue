@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, shallowRef } from "vue";
+import { onUnmounted, ref, shallowRef } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
 import { OlMapAdapter } from "@/geo/olMapAdapter";
@@ -28,10 +28,20 @@ const mapViewStore = useMapViewStore();
 const mapRef = shallowRef<OLMap>();
 const geoStore = useGeoStore();
 
+let ownAdapter: OlMapAdapter | null = null;
+
 const onMapReady = (olMap: OLMap) => {
   mapRef.value = olMap;
-  geoStore.setMapAdapter(new OlMapAdapter(olMap));
+  ownAdapter = new OlMapAdapter(olMap);
+  geoStore.setMapAdapter(ownAdapter);
 };
+
+onUnmounted(() => {
+  if (geoStore.mapAdapter === ownAdapter) {
+    geoStore.setMapAdapter(null);
+  }
+  ownAdapter = null;
+});
 
 function onMoveEnd({ view }: { view: View }) {
   mapViewStore.zoomLevel = view.getZoom() ?? 0;

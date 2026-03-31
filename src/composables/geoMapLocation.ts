@@ -24,6 +24,7 @@ export function useGetMapLocation(
   const isActive = ref(false);
   const mapSelectStore = useMapSelectStore();
 
+  let activeMap: MapAdapter | null = null;
   let prevCursor = "";
   let unsubscribeClick: Fn | undefined;
   let stopEscListener: Fn;
@@ -37,6 +38,7 @@ export function useGetMapLocation(
   function start() {
     const map = toValue(mapSource);
     if (!map) return;
+    activeMap = map;
     isActive.value = true;
     onStartHook.trigger(null);
     prevHoverValue = mapSelectStore.hoverEnabled;
@@ -63,8 +65,8 @@ export function useGetMapLocation(
   }
 
   function cleanUp() {
-    const map = toValue(mapSource);
-    map?.setCursor(prevCursor);
+    activeMap?.setCursor(prevCursor);
+    activeMap = null;
     isActive.value = false;
     if (unsubscribeClick) unsubscribeClick();
     if (stopEscListener) stopEscListener();
