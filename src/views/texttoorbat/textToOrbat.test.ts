@@ -790,6 +790,7 @@ describe("getIconCodeFromName", () => {
       expect(getIconCodeFromName("SHORAD Battalion")).toBe(ICON_AIR_DEFENSE);
       expect(getIconCodeFromName("Patriot Battery")).toBe(ICON_AIR_DEFENSE);
       expect(getIconCodeFromName("Stinger Platoon")).toBe(ICON_AIR_DEFENSE);
+      expect(getIconCodeFromName("63 AD Squadron")).toBe(ICON_AIR_DEFENSE);
     });
   });
 
