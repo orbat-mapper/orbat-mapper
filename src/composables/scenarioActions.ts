@@ -56,7 +56,7 @@ export function useUnitActions(
 
     if (action === UnitActions.Zoom) {
       if (unit._state?.location) {
-        geoStore.zoomToUnit(unit, 0);
+        geoStore.zoomToUnit(unit);
       } else {
         const subUnits: NUnit[] = [];
         unitActions.walkSubUnits(
