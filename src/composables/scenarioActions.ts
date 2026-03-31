@@ -7,10 +7,6 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { MenuItemData } from "@/components/types";
 import { multiPoint } from "@turf/helpers";
-import turfEnvelope from "@turf/envelope";
-import GeoJSON from "ol/format/GeoJSON";
-import Feature from "ol/Feature";
-import SimpleGeometry from "ol/geom/SimpleGeometry";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import OLMap from "ol/Map";
@@ -75,15 +71,7 @@ export function useUnitActions(
         );
 
         if (locations.length === 0) return;
-        const bb = new GeoJSON().readFeature(turfEnvelope(multiPoint(locations)), {
-          featureProjection: "EPSG:3857",
-          dataProjection: "EPSG:4326",
-        }) as Feature;
-        if (!bb) return;
-        const geometry = bb.getGeometry();
-        if (!geometry) return;
-        if (!(geometry instanceof SimpleGeometry)) return;
-        geoStore.olMap?.getView().fit(geometry, { maxZoom: 17 });
+        geoStore.mapAdapter?.fitGeometry(multiPoint(locations), { maxZoom: 17 });
       }
     }
     if (action === UnitActions.Pan) geoStore.panToUnit(unit, 500);

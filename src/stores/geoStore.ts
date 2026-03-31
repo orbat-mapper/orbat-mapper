@@ -1,18 +1,14 @@
 import { defineStore } from "pinia";
-import OLMap from "ol/Map";
+import type OLMap from "ol/Map";
 import type { Unit } from "@/types/scenarioModels";
-import { fromLonLat, transformExtent } from "ol/proj";
 import type { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement";
 import type { NUnit } from "@/types/internalModels";
 import type { Position } from "geojson";
 import { type AllGeoJSON, featureCollection, point as turfPoint } from "@turf/helpers";
-import GeoJSON from "ol/format/GeoJSON";
-import turfEnvelope from "@turf/envelope";
+import type { MapAdapter } from "@/geo/mapAdapter";
 
-import Feature from "ol/Feature";
-import { shallowRef, ref } from "vue";
+import { shallowRef, ref, computed } from "vue";
 import { useLocalStorage } from "@vueuse/core";
-import SimpleGeometry from "ol/geom/SimpleGeometry";
 
 export interface ZoomOptions {
   maxZoom?: number;
@@ -21,18 +17,27 @@ export interface ZoomOptions {
 }
 
 export const useGeoStore = defineStore("geo", () => {
-  const olMap = shallowRef<OLMap | null | undefined>(null);
+  const mapAdapter = shallowRef<MapAdapter | null>(null);
+
+  /** @deprecated Use mapAdapter instead. Returns the native OL Map for backward compatibility. */
+  const olMap = computed<OLMap | null | undefined>({
+    get: () => (mapAdapter.value?.getNativeMap() as OLMap) ?? null,
+    set: () => {
+      // no-op: setting olMap directly is no longer supported.
+      // Use setMapAdapter() instead.
+      console.warn("Setting geoStore.olMap directly is deprecated. Use setMapAdapter().");
+    },
+  });
+
+  function setMapAdapter(adapter: MapAdapter | null) {
+    mapAdapter.value = adapter;
+  }
 
   function zoomToUnit(unit?: Unit | NUnit | null, duration = 900) {
-    if (!olMap.value) return;
+    if (!mapAdapter.value) return;
     const location = unit?._state?.location;
     if (!location) return;
-    const view = olMap.value.getView();
-    view.animate({
-      zoom: 15,
-      center: fromLonLat(location, view.getProjection()),
-      duration,
-    });
+    mapAdapter.value.animateView({ zoom: 15, center: location, duration });
   }
 
   function zoomToUnits(units: NUnit[], options: ZoomOptions = {}) {
@@ -48,74 +53,46 @@ export const useGeoStore = defineStore("geo", () => {
   }
 
   function zoomToGeometry(geometry: AllGeoJSON, options: ZoomOptions = {}) {
-    if (!olMap.value) return;
-    const { duration = 900, maxZoom = 15, padding } = options;
-    const bb = new GeoJSON().readFeature(turfEnvelope(geometry), {
-      featureProjection: "EPSG:3857",
-      dataProjection: "EPSG:4326",
-    }) as Feature;
-    if (!bb) return;
-    const geom = bb.getGeometry();
-    if (geom instanceof SimpleGeometry) {
-      olMap.value.getView().fit(geom, { maxZoom, duration, padding });
-    }
+    if (!mapAdapter.value) return;
+    mapAdapter.value.fitGeometry(geometry, options);
   }
 
   function zoomToLocation(location?: Position, duration = 900) {
-    if (!olMap.value) return;
+    if (!mapAdapter.value) return;
     if (!location) return;
-    const view = olMap.value.getView();
-    view.animate({
-      zoom: 10,
-      center: fromLonLat(location, view.getProjection()),
-      duration,
-    });
+    mapAdapter.value.animateView({ zoom: 10, center: location, duration });
   }
 
   function panToUnit(unit?: Unit | NUnit | null, duration = 900) {
-    if (!olMap.value) return;
+    if (!mapAdapter.value) return;
     const location = unit?._state?.location;
     if (!location) return;
-    const view = olMap.value.getView();
-    view.animate({
-      center: fromLonLat(location, view.getProjection()),
-      duration,
-    });
+    mapAdapter.value.animateView({ center: location, duration });
   }
 
   function panToLocation(location?: Position, duration = 900) {
-    if (!olMap.value) return;
+    if (!mapAdapter.value) return;
     if (!location) return;
-    const view = olMap.value.getView();
-    view.animate({
-      center: fromLonLat(location, view.getProjection()),
-      duration,
-    });
+    mapAdapter.value.animateView({ center: location, duration });
   }
 
   function updateMapSize() {
-    olMap.value?.updateSize();
+    mapAdapter.value?.updateSize();
   }
 
   function getMapViewBbox(): [number, number, number, number] | undefined {
-    if (!olMap.value) return;
-    const view = olMap.value.getView();
-    const extent = view.calculateExtent(olMap.value.getSize());
-    if (!extent) return;
-    // Convert from EPSG:3857 to EPSG:4326 (lon/lat)
-    const bbox = transformExtent(extent, "EPSG:3857", "EPSG:4326");
-    return bbox as [number, number, number, number];
+    return mapAdapter.value?.getViewBbox();
   }
 
   function zoomToBbox(bbox: [number, number, number, number], options: ZoomOptions = {}) {
-    if (!olMap.value) return;
-    const { duration = 900, maxZoom = 15, padding } = options;
-    const extent = transformExtent(bbox, "EPSG:4326", "EPSG:3857");
-    olMap.value.getView().fit(extent, { maxZoom, duration, padding });
+    if (!mapAdapter.value) return;
+    mapAdapter.value.fitExtent(bbox, options);
   }
 
   return {
+    mapAdapter,
     olMap,
+    setMapAdapter,
     zoomToUnit,
     zoomToUnits,
     zoomToGeometry,
