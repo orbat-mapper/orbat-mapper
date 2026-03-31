@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { activeScenarioKey, activeMapKey } from "@/components/injects";
+import { activeScenarioKey, activeNativeMapKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useGeoStore } from "@/stores/geoStore";
@@ -19,7 +19,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 const scn = injectStrict(activeScenarioKey);
 const { store } = scn;
 const geoStore = useGeoStore();
-const olMapRef = injectStrict(activeMapKey);
+const olMapRef = injectStrict(activeNativeMapKey);
 
 const { selectedUnitIds } = useSelectedItems();
 

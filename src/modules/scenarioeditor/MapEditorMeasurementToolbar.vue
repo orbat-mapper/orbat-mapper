@@ -13,7 +13,7 @@ import FloatingPanel from "@/components/FloatingPanel.vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { onKeyDown } from "@vueuse/core";
-import { activeMapKey } from "@/components/injects";
+import { activeNativeMapKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { useMeasurementInteraction } from "@/composables/geoMeasurement";
 import { storeToRefs } from "pinia";
@@ -21,7 +21,7 @@ import { useMeasurementsStore } from "@/stores/geoStore";
 import { onUnmounted } from "vue";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 
-const mapRef = injectStrict(activeMapKey);
+const mapRef = injectStrict(activeNativeMapKey);
 
 const store = useMainToolbarStore();
 const selectStore = useMapSelectStore();

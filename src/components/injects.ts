@@ -7,6 +7,7 @@ import type { EventHook } from "@vueuse/core";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type OLMap from "ol/Map";
 import type Select from "ol/interaction/Select";
+import type { MapAdapter } from "@/geo/mapAdapter";
 import type { EventSearchResult } from "@/components/types";
 import type { PhotonSearchResult } from "@/composables/geosearching";
 import type { ScenarioActions } from "@/types/constants";
@@ -46,7 +47,12 @@ export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
   onScenarioActionHook: EventHook<{ action: ScenarioActions }>;
 }>;
 
-export const activeMapKey = Symbol("Active map") as InjectionKey<ShallowRef<OLMap>>;
+export const activeMapKey = Symbol("Active map") as InjectionKey<ShallowRef<MapAdapter>>;
+
+/** @deprecated Use activeMapKey (MapAdapter) with getNativeMap() instead. */
+export const activeNativeMapKey = Symbol("Active native map") as InjectionKey<
+  ShallowRef<OLMap>
+>;
 export const activeFeatureSelectInteractionKey = Symbol(
   "Active feature select",
 ) as InjectionKey<ShallowRef<Select>>;

@@ -10,7 +10,7 @@ import { GlobalEvents } from "vue-global-events";
 import { injectStrict } from "@/utils";
 import {
   activeFeatureSelectInteractionKey,
-  activeMapKey,
+  activeNativeMapKey,
   activeScenarioKey,
 } from "@/components/injects";
 import { computed, defineAsyncComponent, ref, watch } from "vue";
@@ -59,7 +59,7 @@ const {
   geo,
   store: { groupUpdate },
 } = injectStrict(activeScenarioKey);
-const olMapRef = injectStrict(activeMapKey);
+const olMapRef = injectStrict(activeNativeMapKey);
 const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
 
 const featureActions = useScenarioFeatureActions();

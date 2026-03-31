@@ -5,7 +5,11 @@ import { geometryCollection } from "@turf/helpers";
 import { computed, onUnmounted, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict, nanoid } from "@/utils";
-import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
+import {
+  activeLayerKey,
+  activeNativeMapKey,
+  activeScenarioKey,
+} from "@/components/injects";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { NScenarioFeature, NUnit } from "@/types/internalModels";
 import type { Feature } from "geojson";
@@ -37,7 +41,7 @@ const isUnitMode = props.unitMode;
 const scn = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
 
-const olMapRef = injectStrict(activeMapKey);
+const olMapRef = injectStrict(activeNativeMapKey);
 const fmt = useTimeFormatStore();
 
 const formattedTime = computed(() =>

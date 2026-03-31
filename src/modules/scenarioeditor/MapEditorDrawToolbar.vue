@@ -19,7 +19,7 @@ import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import {
   activeFeatureSelectInteractionKey,
   activeLayerKey,
-  activeMapKey,
+  activeNativeMapKey,
   activeScenarioKey,
 } from "@/components/injects";
 import { injectStrict, nanoid } from "@/utils";
@@ -40,7 +40,7 @@ const {
   geo,
 } = injectStrict(activeScenarioKey);
 
-const mapRef = injectStrict(activeMapKey);
+const mapRef = injectStrict(activeNativeMapKey);
 const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
 const activeLayerIdRef = injectStrict(activeLayerKey);
 
