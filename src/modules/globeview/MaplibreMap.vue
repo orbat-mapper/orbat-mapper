@@ -34,7 +34,7 @@ onMounted(async () => {
     center: [0, 0], // starting position [lng, lat]
     zoom: 3, // starting zoom
   });
-  mlMap.addControl(new GlobeControl());
+  mlMap.addControl(new GlobeControl(), "top-left");
   mlMap.addControl(
     new NavigationControl({
       visualizePitch: true,
@@ -42,6 +42,7 @@ onMounted(async () => {
       showZoom: true,
       showCompass: true,
     }),
+    "top-left",
   );
 
   mlMap.on("style.load", () => {

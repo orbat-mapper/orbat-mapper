@@ -5,6 +5,7 @@ import type { Map as MlMap } from "maplibre-gl";
 import {
   computed,
   defineAsyncComponent,
+  nextTick,
   onMounted,
   onUnmounted,
   provide,
@@ -16,16 +17,23 @@ import type { ShallowRef } from "vue";
 import type { MapAdapter } from "@/geo/mapAdapter";
 import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
 import { useGeoStore } from "@/stores/geoStore";
-import { activeMapKey, activeParentKey } from "@/components/injects";
+import {
+  activeFeatureSelectInteractionKey,
+  activeMapKey,
+  activeParentKey,
+  searchActionsKey,
+  sidcModalKey,
+} from "@/components/injects";
 import GlobeOrbatPanel from "@/modules/globeview/GlobeOrbatPanel.vue";
 import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
+import GlobeDetailsPanel from "@/modules/globeview/GlobeDetailsPanel.vue";
 import type { EntityId } from "@/types/base";
 import { useIndexedDb } from "@/scenariostore/localdb.ts";
 import { Button } from "@/components/ui/button";
 import { GLOBE_ROUTE } from "@/router/names.ts";
 import { ArrowLeftIcon, ListTreeIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
 import { UseDark } from "@vueuse/components";
-import { useTitle } from "@vueuse/core";
+import { createEventHook, useTitle } from "@vueuse/core";
 import ToggleField from "@/components/ToggleField.vue";
 import FpsDisplay from "@/components/FpsDisplay.vue";
 import GlobeContextMenu from "@/modules/globeview/GlobeContextMenu.vue";
@@ -34,9 +42,21 @@ import {
   GLOBE_VECTOR_BASEMAP_ID,
   resolveGlobeBasemap,
 } from "@/modules/globeview/globeBasemaps";
+import { useSelectedItems } from "@/stores/selectedStore";
+import { useUiStore } from "@/stores/uiStore";
+import { useSidcModal } from "@/composables/modals";
+import type { FeatureId } from "@/types/scenarioGeoModels";
+import type { EventSearchResult } from "@/components/types";
+import type { PhotonSearchResult } from "@/composables/geosearching";
+import type { ScenarioActions } from "@/types/constants";
+import type Select from "ol/interaction/Select";
 
 const LoadScenarioDialog = defineAsyncComponent(
   () => import("../scenarioeditor/LoadScenarioDialog.vue"),
+);
+
+const SymbolPickerModal = defineAsyncComponent(
+  () => import("@/components/SymbolPickerModal.vue"),
 );
 
 const props = defineProps<{ scenarioId: string }>();
@@ -53,6 +73,115 @@ const activeParentId = ref<EntityId | undefined | null>(null);
 const showOrbatPanel = ref(true);
 provide(activeMapKey, mapAdapterRef as ShallowRef<MapAdapter>);
 provide(activeParentKey, activeParentId);
+// Stub for activeFeatureSelectInteractionKey — not used in globe view
+const featureSelectStub = shallowRef(null) as unknown as ShallowRef<Select>;
+provide(activeFeatureSelectInteractionKey, featureSelectStub);
+
+// Search actions hooks (communication bus for details panel navigation)
+const ui = useUiStore();
+const {
+  selectedUnitIds,
+  selectedFeatureIds,
+  activeUnitId,
+  activeScenarioEventId,
+  activeMapLayerId,
+  showScenarioInfo,
+  orbatRevealUnitId,
+  clear: clearSelected,
+} = useSelectedItems();
+
+const onUnitSelectHook = createEventHook<{
+  unitId: EntityId;
+  options?: { noZoom?: boolean };
+}>();
+const onLayerSelectHook = createEventHook<{ layerId: FeatureId }>();
+const onImageLayerSelectHook = createEventHook<{ layerId: FeatureId }>();
+const onFeatureSelectHook = createEventHook<{
+  featureId: FeatureId;
+  layerId: FeatureId;
+}>();
+const onEventSelectHook = createEventHook<EventSearchResult>();
+const onPlaceSelectHook = createEventHook<PhotonSearchResult>();
+const onScenarioActionHook = createEventHook<{ action: ScenarioActions }>();
+provide(searchActionsKey, {
+  onUnitSelectHook,
+  onLayerSelectHook,
+  onFeatureSelectHook,
+  onEventSelectHook,
+  onPlaceSelectHook,
+  onImageLayerSelectHook,
+  onScenarioActionHook,
+});
+
+onUnitSelectHook.on(({ unitId, options }) => {
+  showOrbatPanel.value = true;
+  activeUnitId.value = unitId;
+  selectedUnitIds.value.clear();
+  selectedUnitIds.value.add(unitId);
+  const { side, sideGroup, parents } =
+    scenario.value.unitActions.getUnitHierarchy(unitId);
+  if (side) side._isOpen = true;
+  if (sideGroup) sideGroup._isOpen = true;
+  parents.forEach((p) => (p._isOpen = true));
+  orbatRevealUnitId.value = unitId;
+
+  if (!(options?.noZoom === true)) {
+    geoStore.zoomToUnit(
+      scenario.value.unitActions.getUnitById(unitId),
+    );
+  }
+});
+
+// SIDC modal for symbol editing in details panel
+const {
+  showSidcModal,
+  confirmSidcModal,
+  cancelSidcModal,
+  initialSidcModalValue,
+  sidcModalTitle,
+  hideModifiers,
+  hideSymbolColor,
+  hideCustomSymbols,
+  symbolOptions,
+  inheritedSymbolOptions,
+  initialTab: sidcModalInitialTab,
+  initialReinforcedReduced,
+  getModalSidc,
+} = useSidcModal();
+provide(sidcModalKey, { getModalSidc });
+
+// Details panel state
+const detailsPanelClosed = ref(false);
+const hasSelection = computed(() =>
+  Boolean(
+    selectedFeatureIds.value.size ||
+    selectedUnitIds.value.size ||
+    activeScenarioEventId.value ||
+    activeMapLayerId.value ||
+    showScenarioInfo.value,
+  ),
+);
+
+watch(hasSelection, (val) => {
+  if (val) detailsPanelClosed.value = false;
+});
+
+const showDetailsPanel = computed(() => {
+  if (detailsPanelClosed.value) return false;
+  return hasSelection.value || ui.detailsPanelPinned;
+});
+
+function onCloseDetailsPanel() {
+  detailsPanelClosed.value = true;
+  clearSelected();
+}
+
+// Resize map when sidebar details panel toggles
+watch(
+  () => showDetailsPanel.value && ui.detailsPanelMode === "sidebar",
+  () => nextTick(() => mlMap.value?.resize()),
+);
+
 const baseLayersStore = useBaseLayersStore();
 const globeBaseMapId = ref(GLOBE_VECTOR_BASEMAP_ID);
 
@@ -174,12 +303,42 @@ onUnmounted(() => {
           :activeScenario="scenario"
           :key="scenarioId"
         />
+        <GlobeDetailsPanel
+          v-if="
+            isReady && localReady && showDetailsPanel && ui.detailsPanelMode === 'overlay'
+          "
+          :active-scenario="scenario"
+          :mode="ui.detailsPanelMode"
+          @close="onCloseDetailsPanel()"
+        />
       </div>
+      <GlobeDetailsPanel
+        v-if="
+          isReady && localReady && showDetailsPanel && ui.detailsPanelMode === 'sidebar'
+        "
+        :active-scenario="scenario"
+        :mode="ui.detailsPanelMode"
+        @close="onCloseDetailsPanel()"
+      />
     </div>
     <LoadScenarioDialog
       v-if="showLoadScenarioDialog"
       v-model="showLoadScenarioDialog"
       :routeName="GLOBE_ROUTE"
+    />
+    <SymbolPickerModal
+      v-if="showSidcModal"
+      :initialSidc="initialSidcModalValue"
+      @update:sidc="confirmSidcModal($event)"
+      @cancel="cancelSidcModal"
+      :dialogTitle="sidcModalTitle"
+      :hideModifiers
+      :hideSymbolColor
+      :hideCustomSymbols
+      :inheritedSymbolOptions
+      :symbolOptions
+      :initialTab="sidcModalInitialTab"
+      :reinforcedStatus="initialReinforcedReduced"
     />
   </div>
 </template>
