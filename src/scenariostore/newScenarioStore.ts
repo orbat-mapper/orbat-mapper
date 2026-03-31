@@ -410,6 +410,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
       groups: side.groups.map((group) => group.id),
       subUnits: side.subUnits?.map((unit) => unit.id) ?? [],
       _baseSubUnits: side.subUnits?.map((unit) => unit.id) ?? [],
+      _isOpen: side.initiallyOpen !== false,
     };
     sides.push(side.id);
     checkFillColor(side);
@@ -419,6 +420,7 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
         _pid: side.id,
         subUnits: group.subUnits.map((unit) => unit.id),
         _baseSubUnits: group.subUnits.map((unit) => unit.id),
+        _isOpen: group.initiallyOpen !== false,
       };
       checkFillColor(group);
     });

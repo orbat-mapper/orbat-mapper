@@ -47,6 +47,7 @@ export const SideActions = {
   CloneWithState: "CloneWithState",
   Hide: "Hide",
   Show: "Show",
+  ToggleInitiallyClosed: "ToggleInitiallyClosed",
 } as const;
 
 export type SideAction = (typeof SideActions)[keyof typeof SideActions];

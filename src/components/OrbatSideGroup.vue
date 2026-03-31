@@ -324,6 +324,7 @@ const onHeaderKeydown = (event: KeyboardEvent) => {
         :is-side-locked="isSideLocked"
         :is-side-hidden="isSideHidden"
         :is-side-group-hidden="isSideGroupHidden"
+        :initially-open="sideGroupItem.initiallyOpen"
         @action="onSideGroupAction(group, $event)"
       />
       <TreeDropIndicator

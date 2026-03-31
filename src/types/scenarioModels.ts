@@ -188,6 +188,7 @@ export interface SideGroup {
   symbolOptions?: UnitSymbolOptions;
   isHidden?: boolean;
   locked?: boolean;
+  initiallyOpen?: boolean;
   _pid?: EntityId;
   _isNew?: boolean;
 }
@@ -197,6 +198,7 @@ export interface Side extends SideData {
   isHidden?: boolean;
   groups: SideGroup[];
   locked?: boolean;
+  initiallyOpen?: boolean;
   subUnits?: Unit[];
   _isNew?: boolean;
 }
@@ -268,6 +270,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "2.6.0"
   | "2.5.0"
   | "2.4.0"
   | "2.3.0"

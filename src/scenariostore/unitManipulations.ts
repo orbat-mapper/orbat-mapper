@@ -540,7 +540,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
       if (target === "above" || target === "below") {
         const targetUnit = s.unitMap[targetId];
         const targetSideGroup = s.sideGroupMap[targetId];
-        parentId = targetUnit?._basePid ?? targetUnit?._pid ?? targetSideGroup?._pid ?? "";
+        parentId =
+          targetUnit?._basePid ?? targetUnit?._pid ?? targetSideGroup?._pid ?? "";
       }
       if (!parentId) return;
       const newParent = getUnitOrSideGroupOrSide(parentId, s);

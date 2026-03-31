@@ -236,6 +236,9 @@ function onSideGroupAction(sideGroup: NSideGroup, action: SideAction) {
     unitActions.updateSideGroup(sideGroup.id, { isHidden: true });
   } else if (action === SideActions.Show) {
     unitActions.updateSideGroup(sideGroup.id, { isHidden: false });
+  } else if (action === SideActions.ToggleInitiallyClosed) {
+    const value = sideGroup.initiallyOpen === false ? undefined : false;
+    unitActions.updateSideGroup(sideGroup.id, { initiallyOpen: value });
   }
 }
 
@@ -344,6 +347,7 @@ const onHeaderKeydown = (event: KeyboardEvent) => {
         @action="onSideAction"
         :is-locked="isLocked"
         :is-hidden="isHidden"
+        :initially-open="sideItem.initiallyOpen"
       />
       <TreeDropIndicator v-if="instruction" :instruction="instruction" class="z-10" />
     </header>

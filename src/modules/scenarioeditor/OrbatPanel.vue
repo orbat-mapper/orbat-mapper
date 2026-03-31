@@ -370,6 +370,9 @@ function onSideAction(side: NSide, action: SideAction) {
     unitActions.updateSide(side.id, { isHidden: true });
   } else if (action === SideActions.Show) {
     unitActions.updateSide(side.id, { isHidden: false });
+  } else if (action === SideActions.ToggleInitiallyClosed) {
+    const value = side.initiallyOpen === false ? undefined : false;
+    unitActions.updateSide(side.id, { initiallyOpen: value });
   }
 }
 

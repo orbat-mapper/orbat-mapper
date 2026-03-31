@@ -20,8 +20,20 @@ vi.mock("@/components/ui/dropdown-menu", () => {
       "<button class='dropdown-item' :data-disabled='disabled || undefined' @click='!disabled && $emit(\"select\")'><slot /></button>",
   });
 
+  const DropdownMenuCheckboxItem = defineComponent({
+    name: "DropdownMenuCheckboxItem",
+    props: {
+      checked: { type: Boolean, default: false },
+      disabled: { type: Boolean, default: false },
+    },
+    emits: ["select"],
+    template:
+      "<button class='dropdown-checkbox-item' :data-disabled='disabled || undefined' @click='!disabled && $emit(\"select\")'><slot /></button>",
+  });
+
   return {
     DropdownMenu: passthrough("DropdownMenu"),
+    DropdownMenuCheckboxItem,
     DropdownMenuContent: passthrough("DropdownMenuContent"),
     DropdownMenuItem,
     DropdownMenuLabel: passthrough("DropdownMenuLabel"),

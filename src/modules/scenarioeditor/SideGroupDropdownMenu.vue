@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -20,6 +21,7 @@ const props = defineProps<{
   isSideHidden: boolean;
   isSideGroupLocked: boolean;
   isSideGroupHidden: boolean;
+  initiallyOpen?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -71,6 +73,14 @@ const sideGroupMenuItems = computed((): MenuItemData<SideAction>[] => [
       >
         <span>{{ item.label }}</span>
       </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuCheckboxItem
+        :model-value="props.initiallyOpen === false"
+        :disabled="props.isLocked"
+        @select="emit('action', SideActions.ToggleInitiallyClosed)"
+      >
+        Initially closed
+      </DropdownMenuCheckboxItem>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>
