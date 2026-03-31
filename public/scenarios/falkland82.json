@@ -1,10 +1,10 @@
 {
   "id": "demo-falklands82",
   "type": "ORBAT-mapper",
-  "version": "0.39.0",
+  "version": "2.5.0",
   "meta": {
     "createdDate": "2024-02-04T14:33:50.335Z",
-    "lastModifiedDate": "2025-04-16T20:03:42.124Z"
+    "lastModifiedDate": "2026-03-31T16:11:25.310Z"
   },
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
@@ -17,298 +17,6 @@
       "id": "v8CMB5OIz_0wx3NFZIVCL",
       "standardIdentity": "3",
       "groups": [
-        {
-          "name": "Operation Rosario",
-          "id": "sdfsdsdf2",
-          "subUnits": [
-            {
-              "id": "06Nc9BTRjs",
-              "name": "Naval Party 8901",
-              "sidc": "10031000141211004600",
-              "subUnits": [
-                {
-                  "id": "fb9O6b9w4r",
-                  "name": "NP A",
-                  "sidc": "10031000131211004600",
-                  "subUnits": [],
-                  "state": [
-                    {
-                      "t": "1982-04-02T18:00:00-04:00",
-                      "location": [-57.883186, -51.705864],
-                      "id": "Co5metgkVt"
-                    },
-                    {
-                      "t": "1982-04-03T18:00:00-04:00",
-                      "location": [-57.87279, -51.69186],
-                      "id": "Jw9m0vYUvm"
-                    },
-                    {
-                      "t": "1982-04-04T18:00:00-04:00",
-                      "location": null,
-                      "id": "w6RlXJ3kHK"
-                    }
-                  ]
-                },
-                {
-                  "id": "EaungIuhgJ",
-                  "name": "NP B",
-                  "sidc": "10031000131211004600",
-                  "subUnits": [],
-                  "state": [
-                    {
-                      "t": "1982-04-02T18:00:00-04:00",
-                      "location": [-57.843876, -51.699906],
-                      "id": "vNEtN9X5nZ"
-                    },
-                    {
-                      "t": "1982-04-03T18:00:00-04:00",
-                      "location": [-57.87249, -51.69188],
-                      "id": "FweebZIy9V"
-                    },
-                    {
-                      "t": "1982-04-04T18:00:00-04:00",
-                      "location": null,
-                      "id": "1rjDwE9jtt"
-                    }
-                  ]
-                },
-                {
-                  "id": "wSQ6YzQNhn",
-                  "name": "NP C",
-                  "sidc": "10031000131211004600",
-                  "subUnits": [],
-                  "state": [
-                    {
-                      "t": "1982-04-02T18:00:00-04:00",
-                      "location": [-57.799072, -51.700225],
-                      "id": "pHZNuKjuYh"
-                    },
-                    {
-                      "t": "1982-04-03T18:00:00-04:00",
-                      "location": [-57.872758, -51.691993],
-                      "id": "0ugBL1lHQ7"
-                    },
-                    {
-                      "t": "1982-04-04T18:00:00-04:00",
-                      "location": null,
-                      "id": "DYgld3Vl2u"
-                    }
-                  ]
-                },
-                {
-                  "id": "TNVdKUtZQn",
-                  "name": "NP D",
-                  "sidc": "10031000131211004600",
-                  "subUnits": [],
-                  "state": [
-                    {
-                      "t": "1982-04-02T18:00:00-04:00",
-                      "location": [-57.768173, -51.68618],
-                      "id": "Hh88WcIsPa"
-                    },
-                    {
-                      "t": "1982-04-03T18:00:00-04:00",
-                      "location": [-57.872522, -51.691986],
-                      "id": "kEbVN1vIkk"
-                    },
-                    {
-                      "t": "1982-04-04T18:00:00-04:00",
-                      "location": null,
-                      "id": "yIwHshJgJj"
-                    }
-                  ]
-                },
-                {
-                  "id": "dZ8b08YeOc",
-                  "name": "NP",
-                  "sidc": "10031000131211004600",
-                  "subUnits": [],
-                  "state": [
-                    {
-                      "t": "1982-03-24T13:00:00-04:00",
-                      "location": [-36.49508667798066, -54.283319740386965],
-                      "id": "uLMSMHKB2T"
-                    },
-                    {
-                      "location": null,
-                      "t": "1982-04-14T10:00:00-04:00",
-                      "id": "s8ujf0Y3IM"
-                    }
-                  ]
-                }
-              ],
-              "shortName": "NP 8901",
-              "state": [
-                {
-                  "t": "1982-03-11T10:00:00-04:00",
-                  "location": [-57.92004760266475, -51.6839065051063],
-                  "id": "cbC44ObOPl"
-                },
-                {
-                  "t": "1982-04-02T18:00:00-04:00",
-                  "location": null,
-                  "id": "UzvhWBUB2a"
-                },
-                {
-                  "t": "1982-04-04T18:00:00-04:00",
-                  "location": [-57.872586, -51.6919],
-                  "id": "SgUyheDi70"
-                },
-                {
-                  "location": null,
-                  "t": "1982-04-14T10:00:00-04:00",
-                  "id": "OkMNdY9UW4"
-                }
-              ]
-            },
-            {
-              "id": "Ev1wliqyqA",
-              "name": "HMS Endurance",
-              "sidc": "10033000001205001900",
-              "properties": {
-                "averageSpeed": {
-                  "value": 14.5,
-                  "uom": "knots"
-                }
-              },
-              "media": [
-                {
-                  "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/HMS_Endurance_%28A171%29_at_Nassau_in_1982.JPEG/960px-HMS_Endurance_%28A171%29_at_Nassau_in_1982.JPEG",
-                  "credits": "USN, Public domain, via Wikimedia Commons",
-                  "caption": "HMS Endurance (A171) at Nassau in 1982",
-                  "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Endurance_(A171)_at_Nassau_in_1982.JPEG"
-                }
-              ],
-              "subUnits": [
-                {
-                  "id": "LpBP1MLw8b",
-                  "name": "NP E",
-                  "sidc": "10031000131211004600",
-                  "subUnits": [],
-                  "state": [
-                    {
-                      "t": "1982-03-31T20:00:00-04:00",
-                      "location": [-36.509564, -54.280661],
-                      "id": "AdZbOsSJ2G"
-                    },
-                    {
-                      "t": "1982-04-02T20:00:00-04:00",
-                      "location": [-36.493835, -54.282815],
-                      "id": "6mqtcwchS0"
-                    },
-                    {
-                      "location": null,
-                      "t": "1982-04-14T10:00:00-04:00",
-                      "id": "0Od1lO322x"
-                    }
-                  ]
-                }
-              ],
-              "externalUrl": "https://en.wikipedia.org/wiki/HMS_Endurance_(1967)",
-              "description": "A Royal Navy ice patrol vessel that served from 1967 to 1991. ",
-              "shortName": "END",
-              "state": [
-                {
-                  "t": "1982-03-10T12:00:00-04:00",
-                  "location": [-57.857406173757106, -51.69060624656955],
-                  "id": "Rlx8uMzAAp"
-                },
-                {
-                  "t": "1982-03-20T12:00:00-04:00",
-                  "title": "HMS Endurance sails from Stanley with a Royal Marines detachment onboard",
-                  "location": [-57.857406173757106, -51.69060624656955],
-                  "id": "Z3JGqOIchb"
-                },
-                {
-                  "t": "1982-03-24T12:00:00-04:00",
-                  "location": [-36.49467898221041, -54.284221639121604],
-                  "via": [
-                    [-57.831722350100485, -51.6896359583592],
-                    [-57.828117461184455, -51.67026401383344],
-                    [-57.76494607446571, -51.6657923881361],
-                    [-36.331059429056495, -53.96070327336668],
-                    [-36.457658080362194, -54.291163832602]
-                  ],
-                  "id": "cYbTure29y"
-                },
-                {
-                  "t": "1982-03-25T12:00:00-04:00",
-                  "location": [-36.45206657208752, -54.29076642604551],
-                  "id": "slqjc78gUH"
-                },
-                {
-                  "t": "1982-03-26T12:00:00-04:00",
-                  "location": [-36.412152668913826, -54.26110243227498],
-                  "id": "q2KEj3Nq82"
-                },
-                {
-                  "t": "1982-03-27T12:00:00-04:00",
-                  "location": [-36.46495839819665, -54.26163847539827],
-                  "id": "dSNDwRhEJY"
-                },
-                {
-                  "t": "1982-03-28T11:00:00-04:00",
-                  "location": [-36.41590799090575, -54.24799236693261],
-                  "id": "IRG2xALZXI"
-                },
-                {
-                  "t": "1982-03-31T20:00:00-04:00",
-                  "location": [-36.46671251416015, -54.24256045504427],
-                  "id": "iA43CaFBg7"
-                },
-                {
-                  "id": "NEv7dqR4M5",
-                  "t": "1982-05-01T12:00:00-04:00",
-                  "location": [-50.83016162572641, -51.52127438243896]
-                }
-              ]
-            },
-            {
-              "id": "1lNcQCawMZ",
-              "name": "British Antarctic Survey",
-              "sidc": "10031102001100000000",
-              "location": [-36.49445470967382, -54.283293554297046],
-              "media": [
-                {
-                  "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/King_Edward_Point_on_South_Georgia_1.jpg/960px-King_Edward_Point_on_South_Georgia_1.jpg",
-                  "credits": "Liam Quinn, CC BY-SA 2.0, via Wikimedia Commons",
-                  "creditsUrl": "https://commons.wikimedia.org/wiki/File:King_Edward_Point_on_South_Georgia_1.jpg"
-                }
-              ],
-              "subUnits": [
-                {
-                  "id": "L3qn46k1P9",
-                  "name": "BAS Team",
-                  "sidc": "10031100001103000000",
-                  "subUnits": [],
-                  "shortName": "BAS1",
-                  "state": [
-                    {
-                      "t": "1982-03-19T10:00:00-04:00",
-                      "location": [-36.68852253064409, -54.14715926640066],
-                      "id": "CZ0cQJ6dF3"
-                    },
-                    {
-                      "location": null,
-                      "t": "1982-04-14T10:00:00-04:00",
-                      "id": "dgbr0J8ZTS"
-                    }
-                  ]
-                }
-              ],
-              "shortName": "BAS",
-              "externalUrl": "https://en.wikipedia.org/wiki/British_Antarctic_Survey",
-              "description": "The British Antarctic Survey (BAS) is the United Kingdom's national polar research institute. It has a dual purpose, to conduct polar science, enabling better understanding of global issues, and to provide an active presence in the Antarctic on behalf of the UK. ",
-              "state": [
-                {
-                  "location": null,
-                  "t": "1982-04-14T10:00:00-04:00",
-                  "id": "dgbr0J8ZTssfS"
-                }
-              ]
-            }
-          ]
-        },
         {
           "id": "sdfsdsdf3",
           "name": "Operation Corporate",
@@ -1451,6 +1159,296 @@
                 }
               ],
               "state": []
+            }
+          ]
+        }
+      ],
+      "subUnits": [
+        {
+          "id": "Ev1wliqyqA",
+          "name": "HMS Endurance",
+          "sidc": "10033000001205001900",
+          "properties": {
+            "averageSpeed": {
+              "value": 14.5,
+              "uom": "knots"
+            }
+          },
+          "media": [
+            {
+              "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/HMS_Endurance_%28A171%29_at_Nassau_in_1982.JPEG/960px-HMS_Endurance_%28A171%29_at_Nassau_in_1982.JPEG",
+              "credits": "USN, Public domain, via Wikimedia Commons",
+              "caption": "HMS Endurance (A171) at Nassau in 1982",
+              "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Endurance_(A171)_at_Nassau_in_1982.JPEG"
+            }
+          ],
+          "subUnits": [
+            {
+              "id": "LpBP1MLw8b",
+              "name": "NP E",
+              "sidc": "10031000131211004600",
+              "subUnits": [],
+              "state": [
+                {
+                  "t": "1982-03-31T20:00:00-04:00",
+                  "location": [-36.509564, -54.280661],
+                  "id": "AdZbOsSJ2G"
+                },
+                {
+                  "t": "1982-04-02T20:00:00-04:00",
+                  "location": [-36.493835, -54.282815],
+                  "id": "6mqtcwchS0"
+                },
+                {
+                  "location": null,
+                  "t": "1982-04-14T10:00:00-04:00",
+                  "id": "0Od1lO322x"
+                }
+              ]
+            }
+          ],
+          "externalUrl": "https://en.wikipedia.org/wiki/HMS_Endurance_(1967)",
+          "description": "A Royal Navy ice patrol vessel that served from 1967 to 1991. ",
+          "shortName": "END",
+          "state": [
+            {
+              "t": "1982-03-10T12:00:00-04:00",
+              "location": [-57.857406173757106, -51.69060624656955],
+              "id": "Rlx8uMzAAp"
+            },
+            {
+              "t": "1982-03-20T12:00:00-04:00",
+              "title": "HMS Endurance sails from Stanley with a Royal Marines detachment onboard",
+              "location": [-57.857406173757106, -51.69060624656955],
+              "id": "Z3JGqOIchb"
+            },
+            {
+              "t": "1982-03-24T12:00:00-04:00",
+              "location": [-36.49467898221041, -54.284221639121604],
+              "via": [
+                [-57.831722350100485, -51.6896359583592],
+                [-57.828117461184455, -51.67026401383344],
+                [-57.76494607446571, -51.6657923881361],
+                [-36.331059429056495, -53.96070327336668],
+                [-36.457658080362194, -54.291163832602]
+              ],
+              "id": "cYbTure29y"
+            },
+            {
+              "t": "1982-03-25T12:00:00-04:00",
+              "location": [-36.45206657208752, -54.29076642604551],
+              "id": "slqjc78gUH"
+            },
+            {
+              "t": "1982-03-26T12:00:00-04:00",
+              "location": [-36.412152668913826, -54.26110243227498],
+              "id": "q2KEj3Nq82"
+            },
+            {
+              "t": "1982-03-27T12:00:00-04:00",
+              "location": [-36.46495839819665, -54.26163847539827],
+              "id": "dSNDwRhEJY"
+            },
+            {
+              "t": "1982-03-28T11:00:00-04:00",
+              "location": [-36.41590799090575, -54.24799236693261],
+              "id": "IRG2xALZXI"
+            },
+            {
+              "t": "1982-03-31T20:00:00-04:00",
+              "location": [-36.46671251416015, -54.24256045504427],
+              "id": "iA43CaFBg7"
+            },
+            {
+              "id": "NEv7dqR4M5",
+              "t": "1982-05-01T12:00:00-04:00",
+              "location": [-50.83016162572641, -51.52127438243896]
+            }
+          ]
+        },
+        {
+          "id": "06Nc9BTRjs",
+          "name": "Naval Party 8901",
+          "sidc": "10031000141211004600",
+          "subUnits": [
+            {
+              "id": "fb9O6b9w4r",
+              "name": "NP A",
+              "sidc": "10031000131211004600",
+              "subUnits": [],
+              "state": [
+                {
+                  "t": "1982-04-02T18:00:00-04:00",
+                  "location": [-57.883186, -51.705864],
+                  "id": "Co5metgkVt"
+                },
+                {
+                  "t": "1982-04-03T18:00:00-04:00",
+                  "location": [-57.87279, -51.69186],
+                  "id": "Jw9m0vYUvm"
+                },
+                {
+                  "t": "1982-04-04T18:00:00-04:00",
+                  "location": null,
+                  "id": "w6RlXJ3kHK"
+                }
+              ]
+            },
+            {
+              "id": "EaungIuhgJ",
+              "name": "NP B",
+              "sidc": "10031000131211004600",
+              "subUnits": [],
+              "state": [
+                {
+                  "t": "1982-04-02T18:00:00-04:00",
+                  "location": [-57.843876, -51.699906],
+                  "id": "vNEtN9X5nZ"
+                },
+                {
+                  "t": "1982-04-03T18:00:00-04:00",
+                  "location": [-57.87249, -51.69188],
+                  "id": "FweebZIy9V"
+                },
+                {
+                  "t": "1982-04-04T18:00:00-04:00",
+                  "location": null,
+                  "id": "1rjDwE9jtt"
+                }
+              ]
+            },
+            {
+              "id": "wSQ6YzQNhn",
+              "name": "NP C",
+              "sidc": "10031000131211004600",
+              "subUnits": [],
+              "state": [
+                {
+                  "t": "1982-04-02T18:00:00-04:00",
+                  "location": [-57.799072, -51.700225],
+                  "id": "pHZNuKjuYh"
+                },
+                {
+                  "t": "1982-04-03T18:00:00-04:00",
+                  "location": [-57.872758, -51.691993],
+                  "id": "0ugBL1lHQ7"
+                },
+                {
+                  "t": "1982-04-04T18:00:00-04:00",
+                  "location": null,
+                  "id": "DYgld3Vl2u"
+                }
+              ]
+            },
+            {
+              "id": "TNVdKUtZQn",
+              "name": "NP D",
+              "sidc": "10031000131211004600",
+              "subUnits": [],
+              "state": [
+                {
+                  "t": "1982-04-02T18:00:00-04:00",
+                  "location": [-57.768173, -51.68618],
+                  "id": "Hh88WcIsPa"
+                },
+                {
+                  "t": "1982-04-03T18:00:00-04:00",
+                  "location": [-57.872522, -51.691986],
+                  "id": "kEbVN1vIkk"
+                },
+                {
+                  "t": "1982-04-04T18:00:00-04:00",
+                  "location": null,
+                  "id": "yIwHshJgJj"
+                }
+              ]
+            },
+            {
+              "id": "dZ8b08YeOc",
+              "name": "NP",
+              "sidc": "10031000131211004600",
+              "subUnits": [],
+              "state": [
+                {
+                  "t": "1982-03-24T13:00:00-04:00",
+                  "location": [-36.49508667798066, -54.283319740386965],
+                  "id": "uLMSMHKB2T"
+                },
+                {
+                  "location": null,
+                  "t": "1982-04-14T10:00:00-04:00",
+                  "id": "s8ujf0Y3IM"
+                }
+              ]
+            }
+          ],
+          "shortName": "NP 8901",
+          "state": [
+            {
+              "t": "1982-03-11T10:00:00-04:00",
+              "location": [-57.92004760266475, -51.6839065051063],
+              "id": "cbC44ObOPl"
+            },
+            {
+              "t": "1982-04-02T18:00:00-04:00",
+              "location": null,
+              "id": "UzvhWBUB2a"
+            },
+            {
+              "t": "1982-04-04T18:00:00-04:00",
+              "location": [-57.872586, -51.6919],
+              "id": "SgUyheDi70"
+            },
+            {
+              "location": null,
+              "t": "1982-04-14T10:00:00-04:00",
+              "id": "OkMNdY9UW4"
+            }
+          ]
+        },
+        {
+          "id": "1lNcQCawMZ",
+          "name": "British Antarctic Survey",
+          "sidc": "10031100001100000000",
+          "location": [-36.49445470967382, -54.283293554297046],
+          "media": [
+            {
+              "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/King_Edward_Point_on_South_Georgia_1.jpg/960px-King_Edward_Point_on_South_Georgia_1.jpg",
+              "credits": "Liam Quinn, CC BY-SA 2.0, via Wikimedia Commons",
+              "creditsUrl": "https://commons.wikimedia.org/wiki/File:King_Edward_Point_on_South_Georgia_1.jpg"
+            }
+          ],
+          "subUnits": [
+            {
+              "id": "L3qn46k1P9",
+              "name": "BAS Team",
+              "sidc": "10031100001103000000",
+              "subUnits": [],
+              "shortName": "BAS1",
+              "state": [
+                {
+                  "t": "1982-03-19T10:00:00-04:00",
+                  "location": [-36.68852253064409, -54.14715926640066],
+                  "id": "CZ0cQJ6dF3"
+                },
+                {
+                  "location": null,
+                  "t": "1982-04-14T10:00:00-04:00",
+                  "id": "dgbr0J8ZTS"
+                }
+              ]
+            }
+          ],
+          "shortName": "BAS",
+          "externalUrl": "https://en.wikipedia.org/wiki/British_Antarctic_Survey",
+          "description": "The British Antarctic Survey (BAS) is the United Kingdom's national polar research institute. It has a dual purpose, to conduct polar science, enabling better understanding of global issues, and to provide an active presence in the Antarctic on behalf of the UK. ",
+          "symbolOptions": {},
+          "reinforcedStatus": "None",
+          "state": [
+            {
+              "location": null,
+              "t": "1982-04-14T10:00:00-04:00",
+              "id": "dgbr0J8ZTssfS"
             }
           ]
         }
@@ -2621,6 +2619,8 @@
     "supplyUoMs": [],
     "map": {
       "baseMapId": "osm"
-    }
+    },
+    "symbolFillColors": [],
+    "customSymbols": []
   }
 }
