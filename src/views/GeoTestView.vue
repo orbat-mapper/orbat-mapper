@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import MapContainer from "../components/MapContainer.vue";
 import OLMap from "ol/Map";
+import { OlMapAdapter } from "@/geo/olMapAdapter";
 import { ref, shallowRef, unref } from "vue";
 import MeasurementToolbar from "../components/MeasurementToolbar.vue";
 import MapEditToolbar from "../components/MapEditToolbar.vue";
@@ -27,7 +28,7 @@ const vectorLayer = new VectorLayer({
 const onMapReady = (olMap: OLMap) => {
   mapRef.value = olMap;
   olMap.addLayer(vectorLayer);
-  nn.value = useGetMapLocation(olMap);
+  nn.value = useGetMapLocation(new OlMapAdapter(olMap));
   nn.value.onGetLocation((location) => {
     loc.value = formatPosition(location);
   });

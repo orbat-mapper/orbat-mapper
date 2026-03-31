@@ -108,6 +108,7 @@ export class OlMapAdapter implements MapAdapter {
       handler({
         coordinate: e.coordinate ? (toLonLat(e.coordinate) as Position) : undefined,
         pixel: e.pixel as [number, number] | undefined,
+        stopPropagation: () => e.stopPropagation(),
       });
     });
     return () => unByKey(key);
@@ -118,6 +119,7 @@ export class OlMapAdapter implements MapAdapter {
       handler({
         coordinate: e.coordinate ? (toLonLat(e.coordinate) as Position) : undefined,
         pixel: e.pixel as [number, number] | undefined,
+        stopPropagation: () => e.stopPropagation(),
       });
     });
     return () => unByKey(key);
