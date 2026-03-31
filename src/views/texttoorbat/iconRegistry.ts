@@ -285,6 +285,7 @@ export const BUILTIN_ICON_DEFINITIONS: IconDefinition[] = [
       "patriot",
       "stinger",
       "avenger",
+      "ad",
     ],
   },
 
