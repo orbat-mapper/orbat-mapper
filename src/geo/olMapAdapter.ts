@@ -52,7 +52,9 @@ export class OlMapAdapter implements MapAdapter {
 
   getViewBbox(): [number, number, number, number] | undefined {
     const view = this.olMap.getView();
-    const extent = view.calculateExtent(this.olMap.getSize());
+    const size = this.olMap.getSize();
+    if (!size) return;
+    const extent = view.calculateExtent(size);
     if (!extent) return;
     return transformExtent(extent, this.projection, "EPSG:4326") as [
       number,

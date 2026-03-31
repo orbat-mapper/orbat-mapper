@@ -16,7 +16,7 @@ export interface UseGetMapLocationOptions {
 }
 
 export function useGetMapLocation(
-  map: MapAdapter,
+  map: MapAdapter | null | undefined,
   options: UseGetMapLocationOptions = {},
 ) {
   const { cancelOnClickOutside = true, stopPropagationOnClickOutside = true } = options;
@@ -24,7 +24,7 @@ export function useGetMapLocation(
   const isActive = ref(false);
   const mapSelectStore = useMapSelectStore();
 
-  const el = map.getTargetElement();
+  const el = map?.getTargetElement();
   const prevCursor = el?.style.cursor ?? "";
   let unsubscribeClick: Fn | undefined;
   let stopEscListener: Fn;
@@ -36,6 +36,7 @@ export function useGetMapLocation(
   let prevHoverValue = true;
 
   function start() {
+    if (!map) return;
     isActive.value = true;
     onStartHook.trigger(null);
     prevHoverValue = mapSelectStore.hoverEnabled;
@@ -61,7 +62,7 @@ export function useGetMapLocation(
   }
 
   function cleanUp() {
-    map.setCursor(prevCursor);
+    map?.setCursor(prevCursor);
     isActive.value = false;
     if (unsubscribeClick) unsubscribeClick();
     if (stopEscListener) stopEscListener();
