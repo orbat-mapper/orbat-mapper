@@ -15,10 +15,13 @@ export interface AnimateOptions {
 
 export type MapEventType = "moveend" | "click" | "pointermove" | "singleclick";
 
-export type MapEventHandler = (event: {
+export interface MapEvent {
   coordinate?: Position;
   pixel?: [number, number];
-}) => void;
+  stopPropagation(): void;
+}
+
+export type MapEventHandler = (event: MapEvent) => void;
 
 export interface MapAdapter {
   // View operations

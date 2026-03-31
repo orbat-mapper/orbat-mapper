@@ -1,4 +1,4 @@
-import OLMap from "ol/Map";
+import type { MapAdapter, MapEvent } from "@/geo/mapAdapter";
 import {
   createEventHook,
   type Fn,
@@ -6,10 +6,6 @@ import {
   onKeyStroke,
   tryOnBeforeUnmount,
 } from "@vueuse/core";
-import { unByKey } from "ol/Observable";
-import MapBrowserEvent from "ol/MapBrowserEvent";
-import { toLonLat } from "ol/proj";
-import type { EventsKey } from "ol/events";
 import { ref } from "vue";
 import type { Position } from "geojson";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
@@ -19,14 +15,18 @@ export interface UseGetMapLocationOptions {
   stopPropagationOnClickOutside?: boolean;
 }
 
-export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOptions = {}) {
+export function useGetMapLocation(
+  map: MapAdapter,
+  options: UseGetMapLocationOptions = {},
+) {
   const { cancelOnClickOutside = true, stopPropagationOnClickOutside = true } = options;
 
   const isActive = ref(false);
   const mapSelectStore = useMapSelectStore();
 
-  const prevCursor = olMap.getTargetElement().style.cursor;
-  let clickEventKey: EventsKey;
+  const el = map.getTargetElement();
+  const prevCursor = el?.style.cursor ?? "";
+  let unsubscribeClick: Fn | undefined;
   let stopEscListener: Fn;
   let stopClickOutside: Fn | undefined;
 
@@ -40,33 +40,30 @@ export function useGetMapLocation(olMap: OLMap, options: UseGetMapLocationOption
     onStartHook.trigger(null);
     prevHoverValue = mapSelectStore.hoverEnabled;
     mapSelectStore.hoverEnabled = false;
-    olMap.getTargetElement().style.cursor = "crosshair";
-    if (cancelOnClickOutside) {
-      stopClickOutside = onClickOutside(olMap.getTargetElement(), (e) => {
+    map.setCursor("crosshair");
+    const targetEl = map.getTargetElement();
+    if (cancelOnClickOutside && targetEl) {
+      stopClickOutside = onClickOutside(targetEl, (e) => {
         if (stopPropagationOnClickOutside) e.stopPropagation();
         cancel();
       });
     }
     stopEscListener = onKeyStroke("Escape", () => cancel());
-    //@ts-ignore
-    clickEventKey = olMap.once("click", handleMapClickEvent);
+    unsubscribeClick = map.once("click", handleMapClickEvent);
   }
 
-  function handleMapClickEvent(event: MapBrowserEvent<PointerEvent>) {
+  function handleMapClickEvent(event: MapEvent) {
     event.stopPropagation();
     cleanUp();
-    onGetLocationHook.trigger(
-      toLonLat(event.coordinate, olMap.getView().getProjection()),
-    );
+    if (event.coordinate) {
+      onGetLocationHook.trigger(event.coordinate);
+    }
   }
 
   function cleanUp() {
-    const el = olMap?.getTargetElement();
-    if (el) {
-      el.style.cursor = prevCursor;
-    }
+    map.setCursor(prevCursor);
     isActive.value = false;
-    if (clickEventKey) unByKey(clickEventKey);
+    if (unsubscribeClick) unsubscribeClick();
     if (stopEscListener) stopEscListener();
     if (stopClickOutside) stopClickOutside();
     mapSelectStore.hoverEnabled = prevHoverValue;

@@ -32,7 +32,7 @@ import type { MediaUpdate, UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
-import OLMap from "ol/Map";
+
 import { useUiStore } from "@/stores/uiStore";
 import { CUSTOM_SYMBOL_SID_INDEX, SID_INDEX } from "@/symbology/sidc";
 import { useSelectedItems } from "@/stores/selectedStore";
@@ -218,7 +218,7 @@ const {
   start: startGetLocation,
   isActive: isGetLocationActive,
   onGetLocation,
-} = useGetMapLocation(geoStore.olMap as OLMap);
+} = useGetMapLocation(geoStore.mapAdapter!);
 const uiStore = useUiStore();
 const { selectedUnitIds, clear: clearSelection } = useSelectedItems();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
