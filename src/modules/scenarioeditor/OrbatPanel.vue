@@ -289,6 +289,7 @@ function onUnitDrop(
   const isDuplicateState = options.isDuplicateState ?? false;
   groupUpdate(() => {
     const selUnits = new Set([...selectedUnitIds.value, unit.id]);
+    selUnits.delete(destinationUnit.id);
     for (const id of selUnits) {
       let unitId = id;
       if (isDuplicateAction) {

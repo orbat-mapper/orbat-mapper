@@ -204,13 +204,26 @@ onMounted(() => {
         });
       },
       canDrop: ({ source }) => {
-        return (
-          !isUnitLocked(props.item.unit.id) &&
-          isUnitDragItem(source.data) &&
-          source.data.unit.id !== props.item.unit.id &&
-          props.item.unit._pid !== source.data.unit.id &&
-          !selectedUnitIds.value.has(props.item.unit.id)
-        );
+        if (!isUnitDragItem(source.data)) return false;
+        if (isUnitLocked(props.item.unit.id)) return false;
+        if (source.data.unit.id === props.item.unit.id) return false;
+
+        // When dragging selected units, prevent dropping on any of them
+        const sourceInSelection = selectedUnitIds.value.has(source.data.unit.id);
+        if (sourceInSelection && selectedUnitIds.value.has(props.item.unit.id))
+          return false;
+
+        // Prevent dropping a unit onto any of its own descendants
+        const draggedIds = sourceInSelection
+          ? selectedUnitIds.value
+          : new Set([source.data.unit.id]);
+        let pid = props.item.unit._pid;
+        while (pid) {
+          if (draggedIds.has(pid)) return false;
+          pid = state.unitMap[pid]?._pid;
+        }
+
+        return true;
       },
       onDrag: (args) => {
         instruction.value = extractInstruction(args.self.data);

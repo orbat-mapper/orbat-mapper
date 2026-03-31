@@ -311,10 +311,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
   return { unitLayer, labelLayer, drawUnits, updateUnitPositions, animateUnits };
 }
 
-export function useMapDrop(
-  mapAdapter: MapAdapter,
-  unitLayer: MaybeRef<VectorLayer>,
-) {
+export function useMapDrop(mapAdapter: MapAdapter, unitLayer: MaybeRef<VectorLayer>) {
   const activeScenario = injectStrict(activeScenarioKey);
   const {
     helpers: { getUnitById },
