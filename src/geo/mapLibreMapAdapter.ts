@@ -83,6 +83,16 @@ export class MapLibreMapAdapter implements MapAdapter {
     return position as number[];
   }
 
+  getEventCoordinate(event: MouseEvent): Position {
+    const container = this.mlMap.getContainer();
+    const rect = container.getBoundingClientRect();
+    const lngLat = this.mlMap.unproject([
+      event.clientX - rect.left,
+      event.clientY - rect.top,
+    ]);
+    return [lngLat.lng, lngLat.lat];
+  }
+
   getTargetElement(): HTMLElement | undefined {
     return this.mlMap.getContainer() ?? undefined;
   }
