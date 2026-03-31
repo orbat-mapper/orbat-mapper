@@ -2,6 +2,7 @@
 import { ref, shallowRef } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
+import { OlMapAdapter } from "@/geo/olMapAdapter";
 import { useGeoStore } from "@/stores/geoStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import type Select from "ol/interaction/Select";
@@ -29,7 +30,7 @@ const geoStore = useGeoStore();
 
 const onMapReady = (olMap: OLMap) => {
   mapRef.value = olMap;
-  geoStore.olMap = olMap;
+  geoStore.setMapAdapter(new OlMapAdapter(olMap));
 };
 
 function onMoveEnd({ view }: { view: View }) {

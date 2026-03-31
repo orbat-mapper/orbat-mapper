@@ -63,7 +63,12 @@ vi.mock("@/stores/uiStore", () => ({
 }));
 
 vi.mock("@/stores/geoStore", () => ({
-  useGeoStore: () => ({ olMap: undefined, zoomToBbox: vi.fn() }),
+  useGeoStore: () => ({
+    olMap: undefined,
+    mapAdapter: undefined,
+    setMapAdapter: vi.fn(),
+    zoomToBbox: vi.fn(),
+  }),
   useMeasurementsStore: () => ({ measurementUnit: ref("metric") }),
   useUnitSettingsStore: () => ({
     moveUnitEnabled: ref(false),

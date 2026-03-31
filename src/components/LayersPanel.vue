@@ -9,7 +9,7 @@ import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/solid";
 import BaseLayerSwitcher from "./BaseLayerSwitcher.vue";
 import type { AnyTileLayer, AnyVectorLayer } from "@/geo/types";
 import TileSource from "ol/source/Tile";
-import { toLonLat } from "ol/proj";
+
 import OpacityInput from "./OpacityInput.vue";
 import { getUid } from "ol/util";
 import { type LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
@@ -64,16 +64,15 @@ const activeBaseLayer = computed({
 });
 
 const mapView = computed(() => {
-  if (!geoStore.olMap) return;
-  const view = geoStore.olMap.getView();
+  if (!geoStore.mapAdapter) return;
   return {
-    center: toLonLat(view.getCenter() || [0, 0], view.getProjection()),
-    zoom: view.getZoom(),
+    center: geoStore.mapAdapter.getCenter() ?? [0, 0],
+    zoom: geoStore.mapAdapter.getZoom(),
   };
 });
 
 watch(
-  () => geoStore.olMap,
+  () => geoStore.mapAdapter,
   (v) => v && updateLayers(),
   { immediate: true },
 );

@@ -21,7 +21,7 @@ import type {
 } from "@/components/types.ts";
 import CommandPaletteEventItem from "@/components/commandPalette/CommandPaletteEventItem.vue";
 import { useGeoStore } from "@/stores/geoStore.ts";
-import { toLonLat } from "ol/proj";
+
 import { type PhotonSearchResult, useGeoSearch } from "@/composables/geosearching.ts";
 import CommandPalettePlaceItem from "@/components/commandPalette/CommandPalettePlaceItem.vue";
 import { useUiStore } from "@/stores/uiStore.ts";
@@ -77,9 +77,8 @@ const hitCount = ref(0);
 
 watch(open, (isOpen) => {
   if (isOpen) {
-    if (geoStore.olMap) {
-      const center = geoStore.olMap.getView().getCenter();
-      mapCenter.value = center && toLonLat(center);
+    if (geoStore.mapAdapter) {
+      mapCenter.value = geoStore.mapAdapter.getCenter() ?? null;
     } else {
       mapCenter.value = null;
     }
