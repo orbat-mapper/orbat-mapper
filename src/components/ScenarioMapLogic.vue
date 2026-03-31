@@ -174,7 +174,7 @@ initializeFeatureLayersFromStore();
 
 // Set initial view: prioritize bounding box, then fall back to unit extent
 if (state.boundingBox && state.boundingBox.length === 4) {
-  const padding = [20, 20, 20, 20];
+  const padding: [number, number, number, number] = [20, 20, 20, 20];
 
   geoStore.zoomToBbox(state.boundingBox as [number, number, number, number], {
     duration: 0,

@@ -4,7 +4,7 @@ import type { Position } from "geojson";
 export interface FitOptions {
   maxZoom?: number;
   duration?: number;
-  padding?: number[];
+  padding?: [number, number, number, number];
 }
 
 export interface AnimateOptions {

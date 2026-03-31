@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, markRaw, ref, shallowRef, watch } from "vue";
 import { useGeoStore } from "@/stores/geoStore";
+import type OLMap from "ol/Map";
 import BaseLayer from "ol/layer/Base";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
@@ -78,7 +79,8 @@ watch(
 );
 
 function updateLayers() {
-  if (!geoStore.olMap) return;
+  const nativeMap = geoStore.mapAdapter?.getNativeMap() as OLMap | undefined;
+  if (!nativeMap) return;
 
   const transformLayer = (layer: BaseLayer): LayerInfo => {
     const l: LayerInfo = {
@@ -102,7 +104,7 @@ function updateLayers() {
     return l;
   };
 
-  const mappedLayers = geoStore.olMap
+  const mappedLayers = nativeMap
     .getAllLayers()
     .filter((l) => l.get("title"))
     .map(transformLayer);

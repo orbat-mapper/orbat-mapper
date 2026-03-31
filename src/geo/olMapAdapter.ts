@@ -18,27 +18,29 @@ import type {
 export class OlMapAdapter implements MapAdapter {
   constructor(private olMap: OLMap) {}
 
+  private get projection() {
+    return this.olMap.getView().getProjection();
+  }
+
   animateView(options: AnimateOptions): void {
     const view = this.olMap.getView();
     view.animate({
       zoom: options.zoom,
-      center: options.center
-        ? fromLonLat(options.center, view.getProjection())
-        : undefined,
+      center: options.center ? fromLonLat(options.center, this.projection) : undefined,
       duration: options.duration,
     });
   }
 
   fitExtent(bbox: [number, number, number, number], options: FitOptions = {}): void {
     const { duration = 900, maxZoom = 15, padding } = options;
-    const extent = transformExtent(bbox, "EPSG:4326", "EPSG:3857");
+    const extent = transformExtent(bbox, "EPSG:4326", this.projection);
     this.olMap.getView().fit(extent, { maxZoom, duration, padding });
   }
 
   fitGeometry(geojson: AllGeoJSON, options: FitOptions = {}): void {
     const { duration = 900, maxZoom = 15, padding } = options;
     const bb = new GeoJSON().readFeature(turfEnvelope(geojson), {
-      featureProjection: "EPSG:3857",
+      featureProjection: this.projection,
       dataProjection: "EPSG:4326",
     }) as Feature;
     if (!bb) return;
@@ -52,7 +54,7 @@ export class OlMapAdapter implements MapAdapter {
     const view = this.olMap.getView();
     const extent = view.calculateExtent(this.olMap.getSize());
     if (!extent) return;
-    return transformExtent(extent, "EPSG:3857", "EPSG:4326") as [
+    return transformExtent(extent, this.projection, "EPSG:4326") as [
       number,
       number,
       number,
@@ -67,7 +69,7 @@ export class OlMapAdapter implements MapAdapter {
   getCenter(): Position | undefined {
     const center = this.olMap.getView().getCenter();
     if (!center) return;
-    return toLonLat(center) as Position;
+    return toLonLat(center, this.projection) as Position;
   }
 
   getResolution(): number | undefined {
@@ -87,11 +89,11 @@ export class OlMapAdapter implements MapAdapter {
   }
 
   toLonLat(coordinate: number[]): Position {
-    return toLonLat(coordinate) as Position;
+    return toLonLat(coordinate, this.projection) as Position;
   }
 
   fromLonLat(position: Position): number[] {
-    return fromLonLat(position, this.olMap.getView().getProjection());
+    return fromLonLat(position, this.projection);
   }
 
   getTargetElement(): HTMLElement | undefined {
@@ -106,7 +108,9 @@ export class OlMapAdapter implements MapAdapter {
   on(event: MapEventType, handler: MapEventHandler): () => void {
     const key = this.olMap.on(event as any, (e: any) => {
       handler({
-        coordinate: e.coordinate ? (toLonLat(e.coordinate) as Position) : undefined,
+        coordinate: e.coordinate
+          ? (toLonLat(e.coordinate, this.projection) as Position)
+          : undefined,
         pixel: e.pixel as [number, number] | undefined,
         stopPropagation: () => e.stopPropagation(),
       });
@@ -117,7 +121,9 @@ export class OlMapAdapter implements MapAdapter {
   once(event: MapEventType, handler: MapEventHandler): () => void {
     const key = this.olMap.once(event as any, (e: any) => {
       handler({
-        coordinate: e.coordinate ? (toLonLat(e.coordinate) as Position) : undefined,
+        coordinate: e.coordinate
+          ? (toLonLat(e.coordinate, this.projection) as Position)
+          : undefined,
         pixel: e.pixel as [number, number] | undefined,
         stopPropagation: () => e.stopPropagation(),
       });
