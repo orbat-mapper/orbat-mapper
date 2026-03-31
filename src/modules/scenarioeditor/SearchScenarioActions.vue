@@ -4,7 +4,11 @@ import { useSearchActions } from "@/composables/searchActions";
 import { TAB_EVENTS, TAB_LAYERS, TAB_ORBAT, UnitActions } from "@/types/constants";
 import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
 import { injectStrict } from "@/utils";
-import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
+import {
+  activeLayerKey,
+  activeNativeMapKey,
+  activeScenarioKey,
+} from "@/components/injects";
 import { useUiStore } from "@/stores/uiStore";
 import { useToeActions, useUnitActions } from "@/composables/scenarioActions";
 import { getTransform } from "ol/proj";
@@ -21,7 +25,7 @@ import { fixExtent } from "@/utils/geoConvert";
 import { addMapLayer } from "@/modules/scenarioeditor/scenarioMapLayers";
 import { usePlaybackStore } from "@/stores/playbackStore";
 
-const mapRef = injectStrict(activeMapKey);
+const mapRef = injectStrict(activeNativeMapKey);
 const activeScenario = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
 const imageLayerBus = useEventBus(imageLayerAction);

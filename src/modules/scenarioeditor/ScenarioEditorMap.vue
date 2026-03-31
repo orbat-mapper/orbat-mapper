@@ -15,9 +15,12 @@ import { useActiveUnitStore } from "@/stores/dragStore";
 import {
   activeFeatureSelectInteractionKey,
   activeMapKey,
+  activeNativeMapKey,
   activeScenarioKey,
   timeModalKey,
 } from "@/components/injects";
+import { OlMapAdapter } from "@/geo/olMapAdapter";
+import type { MapAdapter } from "@/geo/mapAdapter";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
 import { PanelLeftOpenIcon as ShowPanelIcon } from "lucide-vue-next";
 import { injectStrict } from "@/utils";
@@ -73,9 +76,11 @@ const activeUnitStore = useActiveUnitStore();
 const ui = useUiStore();
 const playback = usePlaybackStore();
 
-const mapRef = shallowRef<OLMap>();
+const mapAdapterRef = shallowRef<MapAdapter>();
+const nativeMapRef = shallowRef<OLMap>();
 const featureSelectInteractionRef = shallowRef<Select>();
-provide(activeMapKey, mapRef as ShallowRef<OLMap>);
+provide(activeMapKey, mapAdapterRef as ShallowRef<MapAdapter>);
+provide(activeNativeMapKey, nativeMapRef as ShallowRef<OLMap>);
 provide(
   activeFeatureSelectInteractionKey,
   featureSelectInteractionRef as ShallowRef<Select>,
@@ -92,7 +97,8 @@ function onMapReady({
   olMap: OLMap;
   featureSelectInteraction: Select;
 }) {
-  mapRef.value = olMap;
+  nativeMapRef.value = olMap;
+  mapAdapterRef.value = new OlMapAdapter(olMap);
   featureSelectInteractionRef.value = featureSelectInteraction;
 }
 
@@ -146,7 +152,7 @@ watch(
   ],
   () => {
     nextTick(() => {
-      mapRef.value?.updateSize();
+      mapAdapterRef.value?.updateSize();
     });
   },
 );
@@ -157,7 +163,7 @@ onUnmounted(() => {
 });
 
 onActivated(() => {
-  mapRef.value?.updateSize();
+  mapAdapterRef.value?.updateSize();
   playback.playbackRunning = false;
 });
 
@@ -262,7 +268,7 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
       <div class="relative flex min-w-0 flex-auto flex-col">
         <NewScenarioMap class="flex-auto" @mapReady="onMapReady" />
         <main
-          v-if="mapRef"
+          v-if="nativeMapRef"
           class="pointer-events-none absolute inset-0 flex flex-col justify-between"
         >
           <header class="flex flex-none items-center justify-between sm:p-2">
@@ -303,7 +309,7 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
           </Button>
         </main>
         <footer
-          v-if="mapRef && ui.showToolbar"
+          v-if="nativeMapRef && ui.showToolbar"
           class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
         >
           <MapEditorMainToolbar
@@ -354,8 +360,8 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
         @show-settings="emit('show-settings')"
       />
     </template>
-    <KeyboardScenarioActions v-if="mapRef" />
-    <SearchScenarioActions v-if="mapRef" />
+    <KeyboardScenarioActions v-if="nativeMapRef" />
+    <SearchScenarioActions v-if="nativeMapRef" />
     <GlobalEvents
       v-if="ui.shortcutsEnabled"
       :filter="inputEventFilter"

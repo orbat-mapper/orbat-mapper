@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { injectStrict, nanoid, triggerPostMoveFlash } from "@/utils";
-import { activeLayerKey, activeMapKey, activeScenarioKey } from "@/components/injects";
+import {
+  activeLayerKey,
+  activeNativeMapKey,
+  activeScenarioKey,
+} from "@/components/injects";
 import {
   useFeatureLayerUtils,
   useScenarioLayerSync,
@@ -42,7 +46,7 @@ import {
 
 const emit = defineEmits(["feature-click"]);
 
-const mapRef = injectStrict(activeMapKey);
+const mapRef = injectStrict(activeNativeMapKey);
 const activeLayerId = injectStrict(activeLayerKey);
 const uiStore = useUiStore();
 const {
