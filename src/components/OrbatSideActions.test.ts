@@ -7,6 +7,9 @@ import OrbatSideGroup from "@/components/OrbatSideGroup.vue";
 import { activeScenarioKey } from "@/components/injects";
 import { SideActions } from "@/types/constants";
 import { SID } from "@/symbology/values";
+import { getUnitDragItem } from "@/types/draggables";
+import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
   draggable: vi.fn(() => () => {}),
@@ -119,6 +122,23 @@ function makeFixture() {
   return { side, group, unitMap, scenario };
 }
 
+function makeSecondGroupFixture() {
+  const { side, group, scenario } = makeFixture();
+  const group2 = {
+    id: "g2",
+    _pid: "s1",
+    name: "Group 2",
+    subUnits: [],
+    _isOpen: false,
+    isHidden: false,
+    locked: false,
+    symbolOptions: {},
+  };
+  side.groups = ["g1", "g2"];
+  scenario.store.state.sideGroupMap[group2.id] = group2;
+  return { side, firstGroup: group, secondGroup: group2, scenario };
+}
+
 const SideDropdownMenuStub = defineComponent({
   name: "SideDropdownMenu",
   emits: ["action"],
@@ -142,6 +162,70 @@ const SideGroupDropdownMenuStub = defineComponent({
 });
 
 describe("OrbatSide/OrbatSideGroup expand-collapse actions", () => {
+  it("only allows dropping a unit above the first side group", () => {
+    const attachInstructionMock = vi.mocked(attachInstruction);
+    const dropTargetForElementsMock = vi.mocked(dropTargetForElements);
+    const source = { data: getUnitDragItem({ unit: { id: "u9" } as any }) };
+
+    const { firstGroup, secondGroup, scenario } = makeSecondGroupFixture();
+
+    mount(OrbatSideGroup, {
+      props: { group: firstGroup },
+      global: {
+        provide: { [activeScenarioKey as symbol]: scenario },
+        stubs: {
+          SideGroupDropdownMenu: SideGroupDropdownMenuStub,
+          OrbatTree: true,
+          EditSideGroupForm: true,
+          SecondaryButton: true,
+          TreeDropIndicator: true,
+          IconDrag: true,
+          IconEye: true,
+          IconEyeOff: true,
+          IconLockOutline: true,
+          ChevronUpIcon: true,
+        },
+      },
+    });
+
+    let firstGroupConfig = dropTargetForElementsMock.mock.calls.at(-1)?.[0] as any;
+    firstGroupConfig.getData({ input: {} as any, element: {} as any, source });
+    expect(attachInstructionMock).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        block: ["reparent", "instruction-blocked", "reorder-below"],
+      }),
+    );
+
+    mount(OrbatSideGroup, {
+      props: { group: secondGroup },
+      global: {
+        provide: { [activeScenarioKey as symbol]: scenario },
+        stubs: {
+          SideGroupDropdownMenu: SideGroupDropdownMenuStub,
+          OrbatTree: true,
+          EditSideGroupForm: true,
+          SecondaryButton: true,
+          TreeDropIndicator: true,
+          IconDrag: true,
+          IconEye: true,
+          IconEyeOff: true,
+          IconLockOutline: true,
+          ChevronUpIcon: true,
+        },
+      },
+    });
+
+    const secondGroupConfig = dropTargetForElementsMock.mock.calls.at(-1)?.[0] as any;
+    secondGroupConfig.getData({ input: {} as any, element: {} as any, source });
+    expect(attachInstructionMock).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        block: ["reparent", "instruction-blocked", "reorder-above", "reorder-below"],
+      }),
+    );
+  });
+
   it("side expand/collapse updates side, groups, and all units", async () => {
     const { side, group, unitMap, scenario } = makeFixture();
     const wrapper = mount(OrbatSide, {

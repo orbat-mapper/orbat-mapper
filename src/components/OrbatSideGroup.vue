@@ -72,6 +72,10 @@ const {
   unitActions,
 } = injectStrict(activeScenarioKey);
 const sideGroupItem = computed(() => state.sideGroupMap[props.group.id] ?? props.group);
+const isFirstSideGroup = computed(() => {
+  const side = state.sideMap[props.group._pid!];
+  return side?.groups[0] === props.group.id;
+});
 
 const isDragOver = ref(false);
 const isOpen = computed({
@@ -142,6 +146,9 @@ onMounted(() => {
       element: dropRef.value,
       getData: ({ input, element, source }) => {
         const data = getSideGroupDragItem({ sideGroup: props.group });
+        const unitDropBlocks = isFirstSideGroup.value
+          ? ["reparent", "instruction-blocked", "reorder-below"]
+          : ["reparent", "instruction-blocked", "reorder-above", "reorder-below"];
         return attachInstruction(data, {
           input,
           element,
@@ -149,7 +156,7 @@ onMounted(() => {
           indentPerLevel: 0,
           block: isSideGroupDragItem(source.data)
             ? ["make-child", "reparent"]
-            : ["reparent", "instruction-blocked", "reorder-below"],
+            : unitDropBlocks,
           mode: "standard",
         });
       },
