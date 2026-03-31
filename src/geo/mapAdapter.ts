@@ -39,6 +39,7 @@ export interface MapAdapter {
   // Coordinate conversion
   toLonLat(coordinate: number[]): Position;
   fromLonLat(position: Position): number[];
+  getEventCoordinate(event: MouseEvent): Position;
 
   // DOM
   getTargetElement(): HTMLElement | undefined;

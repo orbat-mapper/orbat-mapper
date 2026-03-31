@@ -72,6 +72,9 @@ function createFakeMapAdapter(initialCursor = ""): FakeMapAdapter {
     fromLonLat(position) {
       return position;
     },
+    getEventCoordinate(_event: MouseEvent) {
+      return [0, 0] as [number, number];
+    },
     getTargetElement() {
       return targetElement;
     },

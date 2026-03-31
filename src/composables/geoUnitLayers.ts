@@ -1,15 +1,6 @@
 import { createUnitFeatureAt, createUnitLayer } from "@/geo/layers";
 // import Fade from "ol-ext/featureanimation/Fade";
-import {
-  computed,
-  type MaybeRef,
-  onMounted,
-  onUnmounted,
-  ref,
-  type Ref,
-  unref,
-  watch,
-} from "vue";
+import { type MaybeRef, onUnmounted, ref, type Ref, unref, watch } from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import { fromLonLat, toLonLat } from "ol/proj";
@@ -44,16 +35,11 @@ import type { TScenario } from "@/scenariostore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import type { FeatureLike } from "ol/Feature";
 import BaseEvent from "ol/events/Event";
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { isScenarioFeatureDragItem, isUnitDragItem } from "@/types/draggables";
+import { useMapDropTarget } from "@/composables/useMapDropTarget";
+import type { MapAdapter } from "@/geo/mapAdapter";
 import type { Coordinate } from "ol/coordinate";
-import type { Position } from "geojson";
-import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
-import { coordEach } from "@turf/meta";
-import { centroid } from "@turf/centroid";
 
-import { klona } from "klona";
 import View from "ol/View";
 import Text from "ol/style/Text";
 import Fill from "ol/style/Fill";
@@ -326,87 +312,33 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
 }
 
 export function useMapDrop(
-  mapRef: MaybeRef<OLMap | null | undefined>,
+  mapAdapter: MapAdapter,
   unitLayer: MaybeRef<VectorLayer>,
 ) {
+  const activeScenario = injectStrict(activeScenarioKey);
   const {
-    geo,
-    store: { groupUpdate },
     helpers: { getUnitById },
-  } = injectStrict(activeScenarioKey);
-  const mStore = useMapSettingsStore();
-  const { selectedUnitIds } = useSelectedItems();
-  let dndCleanup = () => {};
-  const isDragging = ref(false);
-  const dropPosition = ref<Position>([0, 0]);
+  } = activeScenario;
 
-  const formattedPosition = computed(() =>
-    isDragging.value
-      ? getCoordinateFormatFunction(mStore.coordinateFormat)(dropPosition.value)
-      : "",
-  );
+  return useMapDropTarget({
+    activeScenario,
+    mapAdapter,
+    onUnitsDropped: (unitIds, position) => {
+      for (const unitId of unitIds) {
+        const unitSource = unref(unitLayer).getSource();
+        const existingUnitFeature = unitSource?.getFeatureById(unitId);
 
-  onMounted(() => {
-    const olMap = unref(mapRef)!;
-    dndCleanup = dropTargetForElements({
-      element: olMap.getTargetElement(),
-      canDrop: ({ source }) =>
-        isUnitDragItem(source.data) || isScenarioFeatureDragItem(source.data),
-      getData: ({ input }) => {
-        return { position: toLonLat(olMap.getEventCoordinate(input as MouseEvent)) };
-      },
-      onDragEnter: () => {
-        isDragging.value = true;
-      },
-      onDragLeave: () => {
-        isDragging.value = false;
-      },
-      onDrag: ({ self }) => {
-        dropPosition.value = self.data.position as Coordinate;
-      },
-      onDrop: ({ source, self }) => {
-        const dragData = source.data;
-        isDragging.value = false;
-
-        const dropPosition = self.data.position as Coordinate;
-        if (isUnitDragItem(dragData)) {
-          groupUpdate(() => {
-            const selUnits = new Set([...selectedUnitIds.value, dragData.unit.id]);
-            for (const unitId of selUnits) {
-              const unitSource = unref(unitLayer).getSource();
-              const existingUnitFeature = unitSource?.getFeatureById(unitId);
-
-              geo.addUnitPosition(unitId, dropPosition);
-
-              if (existingUnitFeature) {
-                existingUnitFeature.setGeometry(new Point(fromLonLat(dropPosition)));
-              } else {
-                const unit = getUnitById(unitId);
-                if (unit) {
-                  unitSource?.addFeature(createUnitFeatureAt(dropPosition, unit));
-                }
-              }
-            }
-          });
-        } else if (isScenarioFeatureDragItem(dragData)) {
-          const geometryCenter = centroid(dragData.feature).geometry.coordinates;
-          const to = dropPosition;
-          const diff = [to[0] - geometryCenter[0], to[1] - geometryCenter[1]];
-          const geometryCopy = klona(dragData.feature.geometry);
-          coordEach(geometryCopy, (coord) => {
-            coord[0] += diff[0];
-            coord[1] += diff[1];
-          });
-
-          geo.updateFeature(dragData.feature.id, { geometry: geometryCopy });
+        if (existingUnitFeature) {
+          existingUnitFeature.setGeometry(new Point(fromLonLat(position)));
+        } else {
+          const unit = getUnitById(unitId);
+          if (unit) {
+            unitSource?.addFeature(createUnitFeatureAt(position, unit));
+          }
         }
-      },
-    });
+      }
+    },
   });
-
-  onUnmounted(() => dndCleanup());
-
-  return { isDragging, dropPosition, formattedPosition };
 }
 
 export function useMoveInteraction(

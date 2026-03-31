@@ -80,7 +80,7 @@ const { unitLayer, drawUnits, updateUnitPositions, labelLayer } = useUnitLayer()
 
 const { onScenarioAction } = useSearchActions();
 
-const { isDragging, formattedPosition } = useMapDrop(mapRef, unitLayer);
+const { isDragging, formattedPosition } = useMapDrop(geoStore.mapAdapter!, unitLayer);
 
 const olMap = props.olMap;
 mapRef.value = olMap;

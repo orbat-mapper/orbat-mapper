@@ -98,6 +98,10 @@ export class OlMapAdapter implements MapAdapter {
     return fromLonLat(position, this.projection);
   }
 
+  getEventCoordinate(event: MouseEvent): Position {
+    return toLonLat(this.olMap.getEventCoordinate(event), this.projection) as Position;
+  }
+
   getTargetElement(): HTMLElement | undefined {
     return this.olMap.getTargetElement() ?? undefined;
   }
