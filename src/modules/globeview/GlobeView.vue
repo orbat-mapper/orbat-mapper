@@ -2,7 +2,15 @@
 import MaplibreMap from "@/modules/globeview/MaplibreMap.vue";
 import { useScenario } from "@/scenariostore";
 import type { Map as MlMap } from "maplibre-gl";
-import { defineAsyncComponent, ref, shallowRef, watch, onUnmounted } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  onMounted,
+  onUnmounted,
+  ref,
+  shallowRef,
+  watch,
+} from "vue";
 import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
 import { useIndexedDb } from "@/scenariostore/localdb.ts";
 import { Button } from "@/components/ui/button";
@@ -12,6 +20,12 @@ import { UseDark } from "@vueuse/components";
 import { useTitle } from "@vueuse/core";
 import ToggleField from "@/components/ToggleField.vue";
 import FpsDisplay from "@/components/FpsDisplay.vue";
+import GlobeContextMenu from "@/modules/globeview/GlobeContextMenu.vue";
+import { useBaseLayersStore } from "@/stores/baseLayersStore";
+import {
+  GLOBE_VECTOR_BASEMAP_ID,
+  resolveGlobeBasemap,
+} from "@/modules/globeview/globeBasemaps";
 
 const LoadScenarioDialog = defineAsyncComponent(
   () => import("../scenarioeditor/LoadScenarioDialog.vue"),
@@ -25,10 +39,20 @@ const showDebug = ref(false);
 const showLoadScenarioDialog = ref(false);
 const localReady = ref(false);
 const mlMap = shallowRef<MlMap>();
+const baseLayersStore = useBaseLayersStore();
+const globeBaseMapId = ref(GLOBE_VECTOR_BASEMAP_ID);
+
+const activeGlobeBasemap = computed(() =>
+  resolveGlobeBasemap(globeBaseMapId.value, baseLayersStore.layers),
+);
 
 function onMapReady(mapInstance: MlMap) {
   mlMap.value = mapInstance;
 }
+
+onMounted(() => {
+  void baseLayersStore.initialize();
+});
 
 watch(
   () => props.scenarioId,
@@ -59,7 +83,7 @@ function isDemoScenario(scenarioId: string) {
 
 watch(isReady, (newVal) => {
   if (newVal) {
-    console.log("Scenario is ready" );
+    console.log("Scenario is ready");
   } else {
     console.log("Scenario is not ready yet");
   }
@@ -103,7 +127,14 @@ onUnmounted(() => {
       </div>
     </header>
     <div class="relative flex-auto">
-      <MaplibreMap @ready="onMapReady" class="bg-radial from-gray-800 to-gray-950" />
+      <GlobeContextMenu v-model:base-map-id="globeBaseMapId">
+        <MaplibreMap
+          @ready="onMapReady"
+          :basemap-id="activeGlobeBasemap.id"
+          :style-spec="activeGlobeBasemap.style"
+          class="bg-radial from-gray-800 to-gray-950"
+        />
+      </GlobeContextMenu>
       <MlMapLogic
         v-if="isReady && mlMap && localReady"
         :mlMap
