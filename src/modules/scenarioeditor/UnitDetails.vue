@@ -218,7 +218,7 @@ const {
   start: startGetLocation,
   isActive: isGetLocationActive,
   onGetLocation,
-} = useGetMapLocation(geoStore.mapAdapter);
+} = useGetMapLocation(() => geoStore.mapAdapter);
 const uiStore = useUiStore();
 const { selectedUnitIds, clear: clearSelection } = useSelectedItems();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
