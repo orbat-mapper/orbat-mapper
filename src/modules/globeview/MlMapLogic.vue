@@ -10,12 +10,12 @@ import type { Feature } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
 import { centerOfMass } from "@turf/turf";
-import { activeScenarioKey } from "@/components/injects.ts";
+import { activeMapKey, activeScenarioKey } from "@/components/injects.ts";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import { usePlaybackStore } from "@/stores/playbackStore.ts";
 import { useGlobeMapDrop } from "@/modules/globeview/useGlobeMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
-import { hashObject } from "@/utils";
+import { hashObject, injectStrict } from "@/utils";
 
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
@@ -30,8 +30,9 @@ const symbolCache: Map<string, Record<string, any>> = new Map();
 const usedImageIds = new Set<string>();
 
 const playback = usePlaybackStore();
+const mapAdapter = injectStrict(activeMapKey);
 
-const { isDragging, formattedPosition } = useGlobeMapDrop(mlMap, activeScenario, () =>
+const { isDragging, formattedPosition } = useGlobeMapDrop(mapAdapter.value, activeScenario, () =>
   addUnits(),
 );
 function setupMapLayers() {
