@@ -238,6 +238,53 @@ function createScenarioForHierarchyRecording() {
 }
 
 describe("unitManipulations settings redraw signaling", () => {
+  it("refreshes the effective symbol immediately when the base sidc changes", () => {
+    const store = useNewScenarioStore({
+      ...createScenario(),
+      sides: [
+        {
+          ...createScenario().sides[0],
+          groups: [
+            {
+              ...createScenario().sides[0].groups[0],
+              subUnits: [
+                {
+                  id: "unit-1",
+                  name: "1st Unit",
+                  sidc: "10031000000000000000",
+                  location: [10, 60],
+                  subUnits: [],
+                  state: [
+                    {
+                      id: "state-1",
+                      t: "2025-01-01T01:00:00Z",
+                      symbolRotation: 45,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    } as any);
+    const actions = useUnitManipulations(store);
+    const time = useScenarioTime(store);
+
+    time.setCurrentTime(Date.parse("2025-01-01T02:00:00Z"));
+    expect(store.state.unitMap["unit-1"]._state?.sidc).toBe("10031000000000000000");
+
+    actions.updateUnit(
+      "unit-1",
+      { sidc: "10031000001100000000" },
+      { doUpdateUnitState: true },
+    );
+
+    expect(store.state.unitMap["unit-1"].sidc).toBe("10031000001100000000");
+    expect(store.state.unitMap["unit-1"]._state?.sidc).toBe("10031000001100000000");
+    expect(store.state.unitMap["unit-1"]._state?.symbolRotation).toBe(45);
+  });
+
   it("updateSideGroup increments settingsStateCounter and updates fields", () => {
     const store = useNewScenarioStore(createScenario());
     const actions = useUnitManipulations(store);

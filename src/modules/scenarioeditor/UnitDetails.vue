@@ -374,21 +374,25 @@ async function handleChangeSymbol() {
   if (newSidcValue !== undefined) {
     const { sidc, symbolOptions = {}, reinforcedStatus } = newSidcValue;
     const isCustomSymbol = sidc.startsWith(CUSTOM_SYMBOL_PREFIX);
-    const dataUpdate: UnitUpdate = { sidc, symbolOptions };
-    if (reinforcedStatus) dataUpdate.reinforcedStatus = reinforcedStatus;
     if (isMultiMode.value) {
       store.groupUpdate(() =>
         selectedUnitIds.value.forEach((unitId) => {
           const { side } = getUnitHierarchy(unitId);
-          dataUpdate.sidc = setCharAt(
+          const nextSidc = setCharAt(
             sidc,
             isCustomSymbol ? CUSTOM_SYMBOL_SID_INDEX : SID_INDEX,
             side.standardIdentity,
           );
-          updateUnit(unitId, dataUpdate);
+          const dataUpdate: UnitUpdate = { sidc: nextSidc, symbolOptions };
+          if (reinforcedStatus) dataUpdate.reinforcedStatus = reinforcedStatus;
+          updateUnit(unitId, dataUpdate, { doUpdateUnitState: true });
         }),
       );
-    } else updateUnit(props.unitId, dataUpdate);
+    } else {
+      const dataUpdate: UnitUpdate = { sidc, symbolOptions };
+      if (reinforcedStatus) dataUpdate.reinforcedStatus = reinforcedStatus;
+      updateUnit(props.unitId, dataUpdate, { doUpdateUnitState: true });
+    }
   }
 }
 

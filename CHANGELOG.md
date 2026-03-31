@@ -52,6 +52,7 @@ All notable changes to this project will be documented in this file.
 - Fixed ORBAT drag-and-drop so that selected units can be used as drop targets.
 - Fixed dropping a unit above a side group to make it a side root unit.
 - Fixed issue where layer edit form "Change" and clear timestamp buttons submitted the form and closed it immediately.
+- Fixed issue where changing a unit symbol in the details panel did not immediately refresh the symbol in the panel or on the map.
 - Fixed an issue where TO&E would not update if a unit had no state entries.
 - Fixed an issue where "Go to next on save" in TO&E edit mode would not work for sorted tables.
 - Fixed timed reinforced/reduced symbol updates so that they be edited in unit events and animated correctly over time.
