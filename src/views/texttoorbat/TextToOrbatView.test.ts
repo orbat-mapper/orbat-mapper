@@ -158,6 +158,97 @@ beforeEach(() => {
 });
 
 describe("TextToOrbatView", () => {
+  it("generates short names for units that do not already have them", async () => {
+    const wrapper = mount(TextToOrbatView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          "router-link": {
+            template: "<a><slot /></a>",
+          },
+          UseDark: {
+            template: "<div><slot :isDark='false' :toggleDark='() => undefined' /></div>",
+          },
+        },
+      },
+    });
+    await nextTick();
+
+    wrapper
+      .findComponent(TextToOrbatEditor)
+      .vm.$emit(
+        "update:modelValue",
+        "5 Inf Bde\n  2nd Bn Scots Guards\n  1st Bn Welsh Guards, 1 BN WEL",
+      );
+    await nextTick();
+
+    const generateButton = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Generate short names"));
+    expect(generateButton).toBeDefined();
+
+    await generateButton!.trigger("click");
+    await nextTick();
+
+    const editorValue = wrapper
+      .findComponent(TextToOrbatEditor)
+      .props("modelValue") as string;
+    expect(editorValue).toContain("5 Inf Bde, 5 INF BDE");
+    expect(editorValue).toContain("2nd Bn Scots Guards, 2 BN SCOT");
+    expect(editorValue).toContain("1st Bn Welsh Guards, 1 BN WEL");
+    expect(wrapper.text()).toContain("5 INF BDE");
+    expect(wrapper.text()).toContain("2 BN SCOT");
+    expect(sendNotificationMock).toHaveBeenCalledWith({
+      message: "Generated 2 short names",
+    });
+
+    await generateButton!.trigger("click");
+    await nextTick();
+
+    expect(sendNotificationMock).toHaveBeenLastCalledWith({
+      message: "All units already have short names",
+    });
+
+    wrapper.unmount();
+  });
+
+  it("clears all short names while preserving description slots", async () => {
+    const wrapper = mount(TextToOrbatView, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          "router-link": {
+            template: "<a><slot /></a>",
+          },
+          UseDark: {
+            template: "<div><slot :isDark='false' :toggleDark='() => undefined' /></div>",
+          },
+        },
+      },
+    });
+    await nextTick();
+
+    wrapper
+      .findComponent(TextToOrbatEditor)
+      .vm.$emit("update:modelValue", "3rd RA, 3 RA, description");
+    await nextTick();
+
+    await (
+      wrapper.vm as unknown as { handleClearShortNames: () => void }
+    ).handleClearShortNames();
+    await nextTick();
+
+    const editorValue = wrapper
+      .findComponent(TextToOrbatEditor)
+      .props("modelValue") as string;
+    expect(editorValue).toBe("3rd RA, , description");
+    expect(sendNotificationMock).toHaveBeenCalledWith({
+      message: "Cleared 1 short name",
+    });
+
+    wrapper.unmount();
+  });
+
   it("updates the generated ORBAT when the editor text changes", async () => {
     const wrapper = mount(TextToOrbatView, {
       attachTo: document.body,

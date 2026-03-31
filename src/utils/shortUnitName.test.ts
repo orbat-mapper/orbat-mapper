@@ -176,6 +176,27 @@ describe("createShortUnitName", () => {
     ).toBe("Alph");
   });
 
+  it("ignores outlier sibling names when a stronger shared prefix exists among the matching group", () => {
+    const siblings = [
+      "TGG",
+      "ARA Veinticinco de Mayo",
+      "ARA Comodoro Py",
+      "ARA Comodoro Seguí",
+      "ARA Hipólito Bouchard",
+      "ARA Piedrabuena",
+      "ARA Punta Médanos",
+    ];
+
+    expect(
+      createShortUnitName("ARA Comodoro Py", {
+        maxLength: 8,
+        allowWhitespace: true,
+        uppercase: true,
+        otherNames: siblings,
+      }),
+    ).toBe("COM PY");
+  });
+
   it("does not strip tokens when the sibling set does not share a true prefix", () => {
     expect(
       createShortUnitName("1st Battalion Alpha", {

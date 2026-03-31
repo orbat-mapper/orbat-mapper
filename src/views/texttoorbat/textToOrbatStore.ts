@@ -18,6 +18,13 @@ export const useTextToOrbatStore = defineStore("textToOrbat", () => {
   );
   const standardIdentity = useLocalStorage("textToOrbatSI", "3");
   const defaultStartingEchelon = useLocalStorage("textToOrbatStartEchelon", "18");
+  const shortNameMaxLength = useLocalStorage("textToOrbatShortNameMaxLength", 8);
+  const shortNameUppercase = useLocalStorage("textToOrbatShortNameUppercase", true);
+  const shortNameAllowWhitespace = useLocalStorage(
+    "textToOrbatShortNameAllowWhitespace",
+    true,
+  );
+  const shortNameForceLength = useLocalStorage("textToOrbatShortNameForceLength", false);
   const showScratchPad = useLocalStorage("showScratchPad", false);
   const scratchPadUnits = useLocalStorage<Unit[]>("textToOrbatScratchPad", []);
   const storedMappings = useLocalStorage<AllMappingData | null>(
@@ -61,6 +68,10 @@ export const useTextToOrbatStore = defineStore("textToOrbat", () => {
     commaFieldOrder,
     standardIdentity,
     defaultStartingEchelon,
+    shortNameMaxLength,
+    shortNameUppercase,
+    shortNameAllowWhitespace,
+    shortNameForceLength,
     showScratchPad,
     scratchPadUnits,
     registryVersion,
