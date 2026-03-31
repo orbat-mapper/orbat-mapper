@@ -203,6 +203,40 @@ function findSharedPrefixLength(tokenSets: string[][]) {
   return prefixLength;
 }
 
+function findSupportedSharedPrefixLength(
+  currentTokens: string[],
+  siblingTokens: string[][],
+) {
+  let bestPrefixLength = 0;
+  let bestSupport = 0;
+
+  for (let prefixLength = 1; prefixLength < currentTokens.length; prefixLength += 1) {
+    const prefix = currentTokens
+      .slice(0, prefixLength)
+      .map((token) => normalizeTokenForCompare(token));
+
+    let support = 0;
+    for (const tokens of siblingTokens) {
+      if (tokens.length < prefixLength) continue;
+      const matches = prefix.every(
+        (token, index) => normalizeTokenForCompare(tokens[index] ?? "") === token,
+      );
+      if (matches) support += 1;
+    }
+
+    if (support < 2) continue;
+    if (
+      prefixLength > bestPrefixLength ||
+      (prefixLength === bestPrefixLength && support > bestSupport)
+    ) {
+      bestPrefixLength = prefixLength;
+      bestSupport = support;
+    }
+  }
+
+  return bestPrefixLength;
+}
+
 function buildAbbreviationCandidate(
   contributions: string[],
   limit: number,
@@ -346,8 +380,13 @@ export function createShortUnitName(
   let workingTokens = originalTokens;
   if (siblingTokens.length > 0) {
     const sharedPrefixLength = findSharedPrefixLength([originalTokens, ...siblingTokens]);
-    if (sharedPrefixLength > 0 && sharedPrefixLength < originalTokens.length) {
-      workingTokens = originalTokens.slice(sharedPrefixLength);
+    const supportedPrefixLength = findSupportedSharedPrefixLength(
+      originalTokens,
+      siblingTokens,
+    );
+    const prefixLength = Math.max(sharedPrefixLength, supportedPrefixLength);
+    if (prefixLength > 0 && prefixLength < originalTokens.length) {
+      workingTokens = originalTokens.slice(prefixLength);
     }
   }
 

@@ -5,8 +5,12 @@ import {
   ICON_UNSPECIFIED,
 } from "./iconRegistry";
 import {
+  applyGeneratedShortNamesToText,
+  clearAllShortNames,
   buildSidc,
   convertParsedUnitsToSpatialIllusions,
+  generateMissingShortNames,
+  generateMissingShortNamesWithOptions,
   getEchelonCode,
   getEchelonCodeFromName,
   getEchelonFromSidc,
@@ -14,6 +18,7 @@ import {
   getNextLowerEchelon,
   parseTextToUnits,
   serializeParsedUnitsToScenarioUnits,
+  serializeUnitsToIndentedText,
 } from "./textToOrbat.ts";
 
 /** Look up the 10-char entity code for a built-in icon by label. */
@@ -1315,5 +1320,177 @@ describe("comma separator mode", () => {
       expect(units[0].shortName).toBe("A");
       expect(units[0].description).toBe("First, second");
     });
+  });
+});
+
+describe("generateMissingShortNames", () => {
+  it("fills only missing short names and preserves existing values", () => {
+    const result = generateMissingShortNames([
+      {
+        id: "1",
+        name: "1st Battalion Alpha",
+        sidc: "10031000161211000000",
+        subUnits: [],
+      },
+      {
+        id: "2",
+        name: "1st Battalion Bravo",
+        shortName: "EXISTING",
+        sidc: "10031000161211000000",
+        subUnits: [],
+      },
+    ]);
+
+    expect(result.generatedCount).toBe(1);
+    expect(result.units[0].shortName).toBeTruthy();
+    expect(result.units[1].shortName).toBe("EXISTING");
+  });
+
+  it("uses sibling context per level and reserves existing sibling short names", () => {
+    const result = generateMissingShortNames([
+      {
+        id: "root",
+        name: "5 Inf Bde",
+        sidc: "10031000181211000000",
+        subUnits: [
+          {
+            id: "a",
+            name: "2nd Bn Scots Guards",
+            sidc: "10031000161211000000",
+            subUnits: [
+              {
+                id: "a1",
+                name: "Left Flank",
+                sidc: "10031000111211000000",
+                subUnits: [],
+              },
+              {
+                id: "a2",
+                name: "Right Flank",
+                sidc: "10031000111211000000",
+                subUnits: [],
+              },
+            ],
+          },
+          {
+            id: "b",
+            name: "1st Bn Welsh Guards",
+            shortName: "1 BN WEL",
+            sidc: "10031000161211000000",
+            subUnits: [],
+          },
+        ],
+      },
+    ]);
+
+    expect(result.units[0].shortName).toBe("5 INF BDE");
+    expect(result.units[0].subUnits?.[0].shortName).toBe("2 BN SCOT");
+    expect(result.units[0].subUnits?.[1].shortName).toBe("1 BN WEL");
+    expect(result.units[0].subUnits?.[0].subUnits?.[0].shortName).toBe("L FLK");
+    expect(result.units[0].subUnits?.[0].subUnits?.[1].shortName).toBe("R FLK");
+  });
+
+  it("serializes generated short names back to comma-separated text", () => {
+    const result = generateMissingShortNames([
+      {
+        id: "1",
+        name: "63 AD Squadron",
+        sidc: "10031000161211000000",
+        subUnits: [],
+      },
+    ]);
+
+    expect(serializeUnitsToIndentedText(result.units)).toBe("63 AD Squadron, 63 AD SQN");
+  });
+
+  it("honors explicit short-name generation settings", () => {
+    const result = generateMissingShortNamesWithOptions(
+      [
+        {
+          id: "1",
+          name: "63 AD Squadron",
+          sidc: "10031000161211000000",
+          subUnits: [],
+        },
+      ],
+      {
+        maxLength: 4,
+        uppercase: false,
+        allowWhitespace: false,
+        forceLength: true,
+      },
+    );
+
+    expect(result.units[0].shortName).toBe("63AD");
+  });
+
+  it("does not assign a short name when it would be identical to the unit name", () => {
+    const result = generateMissingShortNames([
+      {
+        id: "1",
+        name: "TGG",
+        sidc: "10031000161211000000",
+        subUnits: [],
+      },
+    ]);
+
+    expect(result.generatedCount).toBe(0);
+    expect(result.units[0].shortName).toBeUndefined();
+  });
+
+  it("applies generated short names without destroying comments or metadata markup", () => {
+    const source = [
+      "# heading",
+      "5 Inf Bde // mech",
+      "  2nd Bn Scots Guards [infantry] # comment",
+      "  1st Bn Welsh Guards, 1 BN WEL |guards|",
+    ].join("\n");
+    const originalUnits = parseTextToUnits(source, {
+      useCommaSeparator: true,
+      commaFieldOrder: "name,shortName,description",
+    });
+    const generated = generateMissingShortNames(
+      serializeParsedUnitsToScenarioUnits(originalUnits),
+    );
+
+    const result = applyGeneratedShortNamesToText(source, originalUnits, generated.units);
+
+    expect(result.updatedCount).toBe(2);
+    expect(result.text).toContain("5 Inf Bde, 5 INF BDE // mech");
+    expect(result.text).toContain("2nd Bn Scots Guards, 2 BN SCOT [infantry] # comment");
+    expect(result.text).toContain("1st Bn Welsh Guards, 1 BN WEL |guards|");
+    expect(result.text).toContain("# heading");
+  });
+
+  it("fills an empty short-name slot when description is already present", () => {
+    const source = "3rd RA,,description";
+    const originalUnits = parseTextToUnits(source, {
+      useCommaSeparator: true,
+      commaFieldOrder: "name,shortName,description",
+    });
+    const generated = generateMissingShortNames(
+      serializeParsedUnitsToScenarioUnits(originalUnits),
+    );
+
+    const result = applyGeneratedShortNamesToText(source, originalUnits, generated.units);
+
+    expect(result.updatedCount).toBe(1);
+    expect(result.text).toBe("3rd RA, 3 RA, description");
+  });
+
+  it("clears short names while preserving descriptions", () => {
+    const source = "3rd RA, 3 RA, description";
+    const originalUnits = parseTextToUnits(source, {
+      useCommaSeparator: true,
+      commaFieldOrder: "name,shortName,description",
+    });
+    const clearedUnits = clearAllShortNames(
+      serializeParsedUnitsToScenarioUnits(originalUnits),
+    );
+
+    const result = applyGeneratedShortNamesToText(source, originalUnits, clearedUnits);
+
+    expect(result.updatedCount).toBe(1);
+    expect(result.text).toBe("3rd RA, , description");
   });
 });

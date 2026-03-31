@@ -11,6 +11,7 @@ import {
   MoonStarIcon,
   SlidersHorizontalIcon,
   SunIcon,
+  WandSparklesIcon,
 } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import SplitButton from "@/components/SplitButton.vue";
@@ -29,8 +30,11 @@ import {
 } from "@/components/ui/resizable";
 
 import {
+  applyGeneratedShortNamesToText,
+  clearAllShortNames,
   convertParsedUnitsToOrbatMapperScenario,
   convertParsedUnitsToSpatialIllusions,
+  generateMissingShortNamesWithOptions,
   parseTextToUnits,
   serializeParsedUnitsToScenarioUnits,
   type CommaFieldOrder,
@@ -50,6 +54,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -94,6 +99,10 @@ const {
   commaFieldOrder,
   standardIdentity,
   defaultStartingEchelon,
+  shortNameMaxLength,
+  shortNameUppercase,
+  shortNameAllowWhitespace,
+  shortNameForceLength,
   showScratchPad,
   scratchPadUnits,
   registryVersion,
@@ -144,6 +153,61 @@ function handleClearInput() {
 
 function buildClipboardUnits() {
   return serializeParsedUnitsToScenarioUnits(parsedUnits.value);
+}
+
+function handleGenerateShortNames() {
+  if (parsedUnits.value.length === 0) {
+    return;
+  }
+
+  const units = serializeParsedUnitsToScenarioUnits(parsedUnits.value);
+  const result = generateMissingShortNamesWithOptions(units, {
+    maxLength: shortNameMaxLength.value,
+    uppercase: shortNameUppercase.value,
+    allowWhitespace: shortNameAllowWhitespace.value,
+    forceLength: shortNameForceLength.value,
+  });
+
+  if (result.generatedCount === 0) {
+    sendNotification({ message: "All units already have short names" });
+    return;
+  }
+
+  useCommaSeparator.value = true;
+  commaFieldOrder.value = "name,shortName,description";
+  inputText.value = applyGeneratedShortNamesToText(
+    inputText.value,
+    parsedUnits.value,
+    result.units,
+  ).text;
+  sendNotification({
+    message: `Generated ${result.generatedCount} short name${result.generatedCount === 1 ? "" : "s"}`,
+  });
+}
+
+function handleClearShortNames() {
+  if (parsedUnits.value.length === 0) {
+    return;
+  }
+
+  const units = serializeParsedUnitsToScenarioUnits(parsedUnits.value);
+  const result = applyGeneratedShortNamesToText(
+    inputText.value,
+    parsedUnits.value,
+    clearAllShortNames(units),
+  );
+
+  if (result.updatedCount === 0) {
+    sendNotification({ message: "No short names to clear" });
+    return;
+  }
+
+  useCommaSeparator.value = true;
+  commaFieldOrder.value = "name,shortName,description";
+  inputText.value = result.text;
+  sendNotification({
+    message: `Cleared ${result.updatedCount} short name${result.updatedCount === 1 ? "" : "s"}`,
+  });
 }
 
 function handleOrbatDragStart(event: DragEvent) {
@@ -405,6 +469,62 @@ onUnmounted(() => {
                   </DropdownMenuRadioGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>Short names</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent class="min-w-56">
+                      <DropdownMenuCheckboxItem
+                        v-model="shortNameUppercase"
+                        @select.prevent
+                      >
+                        Uppercase output
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        v-model="shortNameAllowWhitespace"
+                        @select.prevent
+                      >
+                        Allow whitespace
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        v-model="shortNameForceLength"
+                        @select.prevent
+                      >
+                        Force length
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Max length</DropdownMenuLabel>
+                      <DropdownMenuRadioGroup
+                        :model-value="String(shortNameMaxLength)"
+                        @update:model-value="shortNameMaxLength = Number($event)"
+                      >
+                        <DropdownMenuRadioItem value="3" @select.prevent>
+                          3
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="4" @select.prevent>
+                          4
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="6" @select.prevent>
+                          6
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="8" @select.prevent>
+                          8
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="10" @select.prevent>
+                          10
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="12" @select.prevent>
+                          12
+                        </DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        :disabled="parsedUnits.length === 0"
+                        @select="handleClearShortNames"
+                      >
+                        Clear all short names
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuSub>
                     <DropdownMenuSubTrigger>Starting echelon</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
                       <DropdownMenuRadioGroup v-model="defaultStartingEchelon">
@@ -426,6 +546,15 @@ onUnmounted(() => {
                   </DropdownMenuSub>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Button
+                variant="ghost"
+                size="sm"
+                :disabled="parsedUnits.length === 0"
+                @click="handleGenerateShortNames"
+              >
+                <WandSparklesIcon class="mr-1 size-4" />
+                Generate short names
+              </Button>
               <a
                 href="https://docs.orbat-mapper.app/guide/text-to-orbat"
                 target="_blank"

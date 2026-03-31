@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 - Added a visual symbol picker for selecting icons when adding or editing pattern mappings in "Text to ORBAT".
 - Added priority numbers and drag-handle reordering for pattern mappings in "Text to ORBAT".
 - Added a configurable default starting echelon setting to "Text to ORBAT".
+- Added a "Generate short names" action to the "Text to ORBAT" input toolbar.
+- Added short-name settings to the "Text to ORBAT" settings menu, including max length, uppercase, whitespace, force-length, and clear-all actions.
 - Added a copy to clipboard button to the export modal.
 - Added `//` as an alternative metadata syntax in "Text to ORBAT" and a link to the documentation.
 - Added overlay and sidebar display modes for the unit details panel, each with independent pin toggles.

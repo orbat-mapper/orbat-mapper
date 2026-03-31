@@ -15,6 +15,7 @@ import {
 import type { Scenario, Side, SideGroup, Unit } from "@/types/scenarioModels";
 import type { SidValue } from "@/symbology/values";
 import { defaultRegistry, normalizeInput, type MappingRegistry } from "./mappingRegistry";
+import { createShortUnitName } from "@/utils";
 
 // ---------------------------------------------------------------------------
 // Re-exports (only items that consumers import from this module)
@@ -601,6 +602,197 @@ export function serializeUnitsToIndentedText(units: Unit[], depth = 0): string {
       return line + children;
     })
     .join("\n");
+}
+
+export interface ShortNameGenerationOptions {
+  maxLength?: number;
+  uppercase?: boolean;
+  allowWhitespace?: boolean;
+  forceLength?: boolean;
+}
+
+function flattenParsedUnits(units: ParsedUnit[]): ParsedUnit[] {
+  return units.flatMap((unit) => [unit, ...flattenParsedUnits(unit.children)]);
+}
+
+function flattenScenarioUnits(units: Unit[]): Unit[] {
+  return units.flatMap((unit) => [unit, ...flattenScenarioUnits(unit.subUnits ?? [])]);
+}
+
+function findMarkupStartIndex(body: string): number {
+  const candidates: number[] = [];
+
+  const slashSlashIndex = body.indexOf("//");
+  if (slashSlashIndex !== -1) candidates.push(slashSlashIndex);
+
+  const pipeIndex = body.indexOf("|");
+  if (pipeIndex !== -1) candidates.push(pipeIndex);
+
+  const bracketStart = body.indexOf("[");
+  if (bracketStart !== -1 && body.indexOf("]", bracketStart + 1) !== -1) {
+    candidates.push(bracketStart);
+  }
+
+  if (candidates.length === 0) return body.length;
+
+  let start = Math.min(...candidates);
+  if (start > 0 && body[start - 1] === " ") {
+    start -= 1;
+  }
+  return start;
+}
+
+function buildNameShortNameDescriptionText(unit: ParsedUnit | Unit): string {
+  let line = unit.name;
+  if (unit.shortName || unit.description) {
+    line += ", " + (unit.shortName ?? "");
+    if (unit.description) {
+      line += ", " + unit.description;
+    }
+  }
+  return line;
+}
+
+export function applyGeneratedShortNamesToText(
+  text: string,
+  originalUnits: ParsedUnit[],
+  updatedUnits: Unit[],
+) {
+  const originalFlatUnits = flattenParsedUnits(originalUnits);
+  const updatedFlatUnits = flattenScenarioUnits(updatedUnits);
+  const lines = text.split("\n");
+  let unitIndex = 0;
+  let updatedCount = 0;
+
+  const nextLine = lines.map((line) => {
+    const trimmedStart = line.trimStart();
+    const normalizedLine = normalizeUnitLine(trimmedStart.trim());
+    if (!normalizedLine.displayName) {
+      return line;
+    }
+
+    const originalUnit = originalFlatUnits[unitIndex];
+    const updatedUnit = updatedFlatUnits[unitIndex];
+    unitIndex += 1;
+
+    if (!originalUnit || !updatedUnit) {
+      return line;
+    }
+
+    const originalShortName = originalUnit.shortName?.trim() ?? "";
+    const updatedShortName = updatedUnit.shortName?.trim() ?? "";
+    const originalDescription = originalUnit.description ?? "";
+    const updatedDescription = updatedUnit.description ?? "";
+
+    if (
+      originalShortName === updatedShortName &&
+      originalDescription === updatedDescription &&
+      originalUnit.name === updatedUnit.name
+    ) {
+      return line;
+    }
+
+    const indentLength = line.length - trimmedStart.length;
+    const indent = line.slice(0, indentLength);
+
+    const commentIndex = line.indexOf("#", indentLength);
+    const bodyEnd = commentIndex === -1 ? line.length : commentIndex;
+    const body = line.slice(indentLength, bodyEnd);
+    const comment = commentIndex === -1 ? "" : line.slice(commentIndex);
+
+    const markupStart = findMarkupStartIndex(body);
+    const markup = body.slice(markupStart);
+
+    updatedCount += 1;
+    return `${indent}${buildNameShortNameDescriptionText(updatedUnit)}${markup}${comment}`;
+  });
+
+  return {
+    text: nextLine.join("\n"),
+    updatedCount,
+  };
+}
+
+interface GenerateMissingShortNamesResult {
+  units: Unit[];
+  generatedCount: number;
+}
+
+function cloneUnit(unit: Unit): Unit {
+  return {
+    ...unit,
+    subUnits: unit.subUnits?.map((child) => cloneUnit(child)),
+  };
+}
+
+function generateMissingShortNamesForSiblings(
+  units: Unit[],
+): GenerateMissingShortNamesResult {
+  return generateMissingShortNamesForSiblingsWithOptions(units, {});
+}
+
+function generateMissingShortNamesForSiblingsWithOptions(
+  units: Unit[],
+  options: ShortNameGenerationOptions,
+): GenerateMissingShortNamesResult {
+  const clonedUnits = units.map((unit) => cloneUnit(unit));
+  const siblingNames = clonedUnits.map((unit) => unit.name);
+  const reservedShortNames = clonedUnits
+    .map((unit) => unit.shortName?.trim())
+    .filter((shortName): shortName is string => Boolean(shortName));
+
+  let generatedCount = 0;
+
+  for (const unit of clonedUnits) {
+    if (!unit.shortName?.trim()) {
+      const generatedShortName = createShortUnitName(unit.name, {
+        maxLength: options.maxLength ?? 8,
+        otherNames: siblingNames,
+        existingShortNames: reservedShortNames,
+        uppercase: options.uppercase ?? true,
+        allowWhitespace: options.allowWhitespace ?? true,
+        forceLength: options.forceLength ?? false,
+      });
+
+      if (generatedShortName && generatedShortName.trim() !== unit.name.trim()) {
+        unit.shortName = generatedShortName;
+        reservedShortNames.push(generatedShortName);
+        generatedCount += 1;
+      }
+    }
+
+    if (unit.subUnits?.length) {
+      const childResult = generateMissingShortNamesForSiblingsWithOptions(
+        unit.subUnits,
+        options,
+      );
+      unit.subUnits = childResult.units;
+      generatedCount += childResult.generatedCount;
+    }
+  }
+
+  return { units: clonedUnits, generatedCount };
+}
+
+export function generateMissingShortNames(
+  units: Unit[],
+): GenerateMissingShortNamesResult {
+  return generateMissingShortNamesForSiblings(units);
+}
+
+export function generateMissingShortNamesWithOptions(
+  units: Unit[],
+  options: ShortNameGenerationOptions,
+): GenerateMissingShortNamesResult {
+  return generateMissingShortNamesForSiblingsWithOptions(units, options);
+}
+
+export function clearAllShortNames(units: Unit[]): Unit[] {
+  return units.map((unit) => ({
+    ...unit,
+    shortName: undefined,
+    subUnits: unit.subUnits ? clearAllShortNames(unit.subUnits) : unit.subUnits,
+  }));
 }
 
 const SI_NAMES: Record<string, string> = {
