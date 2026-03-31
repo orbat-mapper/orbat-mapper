@@ -150,8 +150,11 @@ onUnmounted(() => {
   outline: none;
 }
 
-.ol-attribution {
-  bottom: calc(0.5em + var(--ol-toolbar-clearance-right, 0rem));
+.ol-attribution:not(.ol-collapsed) {
+  bottom: 0;
+  font-size: 0.65rem;
+  line-height: 1.2;
+  max-height: 1.6rem;
 }
 
 .dark .ol-attribution {
