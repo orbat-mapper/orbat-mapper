@@ -146,7 +146,7 @@ onMounted(() => {
       element: dropRef.value,
       getData: ({ input, element, source }) => {
         const data = getSideGroupDragItem({ sideGroup: props.group });
-        const unitDropBlocks = isFirstSideGroup.value
+        const unitDropBlocks: Instruction["type"][] = isFirstSideGroup.value
           ? ["reparent", "instruction-blocked", "reorder-below"]
           : ["reparent", "instruction-blocked", "reorder-above", "reorder-below"];
         return attachInstruction(data, {
