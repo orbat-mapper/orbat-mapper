@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import OLMap from "ol/Map";
-import { OlMapAdapter } from "@/geo/olMapAdapter";
+
 import { computed, onUnmounted, shallowRef, watch } from "vue";
 import Select from "ol/interaction/Select";
 import { injectStrict } from "@/utils";
@@ -84,7 +84,6 @@ const { isDragging, formattedPosition } = useMapDrop(mapRef, unitLayer);
 
 const olMap = props.olMap;
 mapRef.value = olMap;
-geoStore.setMapAdapter(new OlMapAdapter(olMap));
 
 calculateZoomToResolution(olMap.getView());
 

@@ -6,7 +6,7 @@ import {
   onKeyStroke,
   tryOnBeforeUnmount,
 } from "@vueuse/core";
-import { ref } from "vue";
+import { type MaybeRefOrGetter, ref, toValue } from "vue";
 import type { Position } from "geojson";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 
@@ -16,7 +16,7 @@ export interface UseGetMapLocationOptions {
 }
 
 export function useGetMapLocation(
-  map: MapAdapter | null | undefined,
+  mapSource: MaybeRefOrGetter<MapAdapter | null | undefined>,
   options: UseGetMapLocationOptions = {},
 ) {
   const { cancelOnClickOutside = true, stopPropagationOnClickOutside = true } = options;
@@ -24,8 +24,7 @@ export function useGetMapLocation(
   const isActive = ref(false);
   const mapSelectStore = useMapSelectStore();
 
-  const el = map?.getTargetElement();
-  const prevCursor = el?.style.cursor ?? "";
+  let prevCursor = "";
   let unsubscribeClick: Fn | undefined;
   let stopEscListener: Fn;
   let stopClickOutside: Fn | undefined;
@@ -36,11 +35,13 @@ export function useGetMapLocation(
   let prevHoverValue = true;
 
   function start() {
+    const map = toValue(mapSource);
     if (!map) return;
     isActive.value = true;
     onStartHook.trigger(null);
     prevHoverValue = mapSelectStore.hoverEnabled;
     mapSelectStore.hoverEnabled = false;
+    prevCursor = map.getTargetElement()?.style.cursor ?? "";
     map.setCursor("crosshair");
     const targetEl = map.getTargetElement();
     if (cancelOnClickOutside && targetEl) {
@@ -62,6 +63,7 @@ export function useGetMapLocation(
   }
 
   function cleanUp() {
+    const map = toValue(mapSource);
     map?.setCursor(prevCursor);
     isActive.value = false;
     if (unsubscribeClick) unsubscribeClick();

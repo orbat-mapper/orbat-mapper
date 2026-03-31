@@ -94,7 +94,7 @@ const {
   onGetLocation,
   onCancel,
   onStart,
-} = useGetMapLocation(mapRef.value, {
+} = useGetMapLocation(mapRef, {
   cancelOnClickOutside: false,
   stopPropagationOnClickOutside: false,
 });
