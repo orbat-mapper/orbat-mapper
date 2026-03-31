@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type OLMap from "ol/Map";
+import OLMap from "ol/Map";
 import type { Unit } from "@/types/scenarioModels";
 import type { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement";
 import type { NUnit } from "@/types/internalModels";
@@ -20,9 +20,10 @@ export const useGeoStore = defineStore("geo", () => {
   const mapAdapter = shallowRef<MapAdapter | null>(null);
 
   /** @deprecated Use mapAdapter instead. Returns the native OL Map for backward compatibility. */
-  const olMap = computed<OLMap | null>(
-    () => (mapAdapter.value?.getNativeMap() as OLMap) ?? null,
-  );
+  const olMap = computed<OLMap | null>(() => {
+    const native = mapAdapter.value?.getNativeMap();
+    return native instanceof OLMap ? native : null;
+  });
 
   function setMapAdapter(adapter: MapAdapter | null) {
     mapAdapter.value = adapter;
