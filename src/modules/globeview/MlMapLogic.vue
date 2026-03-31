@@ -13,6 +13,7 @@ import { centerOfMass } from "@turf/turf";
 import { activeScenarioKey } from "@/components/injects.ts";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import { usePlaybackStore } from "@/stores/playbackStore.ts";
+import { useGlobeMapDrop } from "@/modules/globeview/useGlobeMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
 import { hashObject } from "@/utils";
 
@@ -29,6 +30,10 @@ const symbolCache: Map<string, Record<string, any>> = new Map();
 const usedImageIds = new Set<string>();
 
 const playback = usePlaybackStore();
+
+const { isDragging, formattedPosition } = useGlobeMapDrop(mlMap, activeScenario, () =>
+  addUnits(),
+);
 function setupMapLayers() {
   !mlMap.getSource("unitSource") &&
     mlMap.addSource("unitSource", {
@@ -186,4 +191,11 @@ watch(
 </script>
 <template>
   <Teleport to="#globetoolbar"><PlaybackMenu /></Teleport>
+  <div v-if="isDragging" class="pointer-events-none absolute inset-0 z-10">
+    <p
+      class="text-foreground bg-background absolute bottom-1 left-2 rounded px-1 text-base tracking-tighter tabular-nums"
+    >
+      {{ formattedPosition }}
+    </p>
+  </div>
 </template>
