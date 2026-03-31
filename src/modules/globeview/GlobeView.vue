@@ -7,10 +7,16 @@ import {
   defineAsyncComponent,
   onMounted,
   onUnmounted,
+  provide,
   ref,
   shallowRef,
   watch,
 } from "vue";
+import type { ShallowRef } from "vue";
+import type { MapAdapter } from "@/geo/mapAdapter";
+import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
+import { useGeoStore } from "@/stores/geoStore";
+import { activeMapKey } from "@/components/injects";
 import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
 import { useIndexedDb } from "@/scenariostore/localdb.ts";
 import { Button } from "@/components/ui/button";
@@ -39,6 +45,9 @@ const showDebug = ref(false);
 const showLoadScenarioDialog = ref(false);
 const localReady = ref(false);
 const mlMap = shallowRef<MlMap>();
+const geoStore = useGeoStore();
+const mapAdapterRef = shallowRef<MapAdapter>();
+provide(activeMapKey, mapAdapterRef as ShallowRef<MapAdapter>);
 const baseLayersStore = useBaseLayersStore();
 const globeBaseMapId = ref(GLOBE_VECTOR_BASEMAP_ID);
 
@@ -48,6 +57,9 @@ const activeGlobeBasemap = computed(() =>
 
 function onMapReady(mapInstance: MlMap) {
   mlMap.value = mapInstance;
+  const adapter = new MapLibreMapAdapter(mapInstance);
+  mapAdapterRef.value = adapter;
+  geoStore.setMapAdapter(adapter);
 }
 
 onMounted(() => {
@@ -90,6 +102,7 @@ watch(isReady, (newVal) => {
 });
 
 onUnmounted(() => {
+  geoStore.setMapAdapter(null);
   useTitle(originalTitle);
 });
 </script>
