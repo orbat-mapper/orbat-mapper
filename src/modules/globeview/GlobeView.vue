@@ -16,12 +16,14 @@ import type { ShallowRef } from "vue";
 import type { MapAdapter } from "@/geo/mapAdapter";
 import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
 import { useGeoStore } from "@/stores/geoStore";
-import { activeMapKey } from "@/components/injects";
+import { activeMapKey, activeParentKey } from "@/components/injects";
+import GlobeOrbatPanel from "@/modules/globeview/GlobeOrbatPanel.vue";
 import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
+import type { EntityId } from "@/types/base";
 import { useIndexedDb } from "@/scenariostore/localdb.ts";
 import { Button } from "@/components/ui/button";
 import { GLOBE_ROUTE } from "@/router/names.ts";
-import { ArrowLeftIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
+import { ArrowLeftIcon, ListTreeIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
 import { UseDark } from "@vueuse/components";
 import { useTitle } from "@vueuse/core";
 import ToggleField from "@/components/ToggleField.vue";
@@ -47,7 +49,10 @@ const localReady = ref(false);
 const mlMap = shallowRef<MlMap>();
 const geoStore = useGeoStore();
 const mapAdapterRef = shallowRef<MapAdapter>();
+const activeParentId = ref<EntityId | undefined | null>(null);
+const showOrbatPanel = ref(true);
 provide(activeMapKey, mapAdapterRef as ShallowRef<MapAdapter>);
+provide(activeParentKey, activeParentId);
 const baseLayersStore = useBaseLayersStore();
 const globeBaseMapId = ref(GLOBE_VECTOR_BASEMAP_ID);
 
@@ -121,6 +126,14 @@ onUnmounted(() => {
         <Button @click="showLoadScenarioDialog = true" variant="outline"
           >Load Scenario</Button
         >
+        <Button
+          variant="outline"
+          size="icon"
+          @click="showOrbatPanel = !showOrbatPanel"
+          title="Toggle ORBAT panel"
+        >
+          <ListTreeIcon class="size-4" />
+        </Button>
       </div>
       <div class="flex items-center gap-4">
         <FpsDisplay v-if="showDebug" />
@@ -139,21 +152,29 @@ onUnmounted(() => {
         </UseDark>
       </div>
     </header>
-    <div class="relative flex-auto">
-      <GlobeContextMenu v-model:base-map-id="globeBaseMapId">
-        <MaplibreMap
-          @ready="onMapReady"
-          :basemap-id="activeGlobeBasemap.id"
-          :style-spec="activeGlobeBasemap.style"
-          class="bg-radial from-gray-800 to-gray-950"
-        />
-      </GlobeContextMenu>
-      <MlMapLogic
-        v-if="isReady && mlMap && localReady"
-        :mlMap
-        :activeScenario="scenario"
-        :key="scenarioId"
+    <div class="relative flex flex-auto overflow-hidden">
+      <GlobeOrbatPanel
+        v-if="isReady && localReady"
+        v-show="showOrbatPanel"
+        :active-scenario="scenario"
+        @close="showOrbatPanel = false"
       />
+      <div class="relative flex-auto">
+        <GlobeContextMenu v-model:base-map-id="globeBaseMapId">
+          <MaplibreMap
+            @ready="onMapReady"
+            :basemap-id="activeGlobeBasemap.id"
+            :style-spec="activeGlobeBasemap.style"
+            class="bg-radial from-gray-800 to-gray-950"
+          />
+        </GlobeContextMenu>
+        <MlMapLogic
+          v-if="isReady && mlMap && localReady"
+          :mlMap
+          :activeScenario="scenario"
+          :key="scenarioId"
+        />
+      </div>
     </div>
     <LoadScenarioDialog
       v-if="showLoadScenarioDialog"
