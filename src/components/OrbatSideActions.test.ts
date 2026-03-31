@@ -188,7 +188,8 @@ describe("OrbatSide/OrbatSideGroup expand-collapse actions", () => {
       },
     });
 
-    let firstGroupConfig = dropTargetForElementsMock.mock.calls.at(-1)?.[0] as any;
+    const calls1 = dropTargetForElementsMock.mock.calls;
+    let firstGroupConfig = calls1[calls1.length - 1]?.[0] as any;
     firstGroupConfig.getData({ input: {} as any, element: {} as any, source });
     expect(attachInstructionMock).toHaveBeenLastCalledWith(
       expect.anything(),
@@ -216,7 +217,8 @@ describe("OrbatSide/OrbatSideGroup expand-collapse actions", () => {
       },
     });
 
-    const secondGroupConfig = dropTargetForElementsMock.mock.calls.at(-1)?.[0] as any;
+    const calls2 = dropTargetForElementsMock.mock.calls;
+    const secondGroupConfig = calls2[calls2.length - 1]?.[0] as any;
     secondGroupConfig.getData({ input: {} as any, element: {} as any, source });
     expect(attachInstructionMock).toHaveBeenLastCalledWith(
       expect.anything(),
