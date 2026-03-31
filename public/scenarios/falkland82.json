@@ -1,10 +1,10 @@
 {
   "id": "demo-falklands82",
   "type": "ORBAT-mapper",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "meta": {
     "createdDate": "2024-02-04T14:33:50.335Z",
-    "lastModifiedDate": "2026-03-31T16:11:25.310Z"
+    "lastModifiedDate": "2026-03-31T17:11:02.339Z"
   },
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
@@ -19,7 +19,7 @@
       "groups": [
         {
           "id": "sdfsdsdf3",
-          "name": "Operation Corporate",
+          "name": "British forces",
           "subUnits": [
             {
               "id": "FNjlGIDROk",
@@ -1160,7 +1160,9 @@
               ],
               "state": []
             }
-          ]
+          ],
+          "symbolOptions": {},
+          "initiallyOpen": false
         }
       ],
       "subUnits": [
@@ -1464,626 +1466,667 @@
       "groups": [
         {
           "id": "FkpNiWEqlI",
-          "name": "Argentine navy",
+          "name": "Argentine forces",
           "subUnits": [
             {
-              "id": "kzPA2jyP6Y",
-              "name": "Combatants",
-              "sidc": "10033000001200000000",
+              "id": "U7PsSCajeu",
+              "name": "Navy",
+              "sidc": "10033000001210000000",
               "subUnits": [
                 {
-                  "id": "W2ZO6vxg0q",
-                  "name": "ARA Cabo San Antonio",
-                  "sidc": "10033000001203070000",
-                  "subUnits": [],
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/De_Soto_County_LST-1171.jpg",
-                      "caption": "",
-                      "credits": "See page for author, Public domain, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:De_Soto_County_LST-1171.jpg"
-                    }
-                  ],
-                  "shortName": "CSA",
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-61.983432057200275, -38.97245098455193],
-                      "id": "AZEtO1qosT"
-                    },
-                    {
-                      "t": "1982-03-28T12:00:00-04:00",
-                      "location": [-61.983432057200275, -38.97245098455193],
-                      "id": "CJ4cNSRrh3"
-                    },
-                    {
-                      "t": "1982-04-01T18:00:00-04:00",
-                      "location": [-57.7804342217386, -51.66632575751278],
-                      "id": "Mp7xGHu93J",
-                      "via": [
-                        [-57.69893798303006, -51.497788663609626],
-                        [-57.70237121056912, -51.64246991287166]
-                      ]
-                    },
-                    {
-                      "t": "1982-04-02T18:00:00-04:00",
-                      "location": [-57.800875, -51.678995],
-                      "id": "BR9Z0cZAbF"
-                    },
-                    {
-                      "t": "1982-04-14T10:00:00-04:00",
-                      "location": [-57.800875, -51.678995],
-                      "id": "dCYHWzWGo5",
-                      "title": "ARA Cabo San Antonio departs Stanley"
-                    },
-                    {
-                      "id": "6SPQdml02H",
-                      "t": "1982-04-16T12:00:00-04:00",
-                      "location": [-62.082969626339114, -38.92137309870187]
-                    },
-                    {
-                      "location": null,
-                      "t": "1982-05-26T20:00:00-04:00",
-                      "id": "929pPngnPQ"
-                    }
-                  ]
-                },
-                {
-                  "id": "AC8ZMWwYvR",
-                  "name": "ARA Comodoro Py",
-                  "sidc": "10033000001202030000",
-                  "subUnits": [],
-                  "shortName": "CPY",
-                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/2/28/Argentine_destroyer_ARA_Py_%28D-27%29_underway_at_sea_in_1978.jpg",
-                      "caption": "",
-                      "credits": "Col. Martín Otero, CC BY 2.5, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Veinticinco_de_Mayo.jpg"
-                    }
-                  ],
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-62.124558602371216, -38.921489637879176],
-                      "id": "55eAstP3Ae"
-                    }
-                  ]
-                },
-                {
-                  "id": "KLFoTRFuAB",
-                  "name": "ARA Comodoro Segui",
-                  "sidc": "10033000001202030000",
-                  "subUnits": [],
-                  "shortName": "CSG",
-                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-62.10773578742981, -38.922558060636455],
-                      "id": "twtCIcvL4E"
-                    }
-                  ]
-                },
-                {
-                  "id": "VDqHwIOuso",
-                  "name": "ARA Guerrico",
-                  "sidc": "10033000001202051900",
-                  "subUnits": [],
-                  "shortName": "GUE",
-                  "state": [
-                    {
-                      "t": "1982-04-02T20:00:00-04:00",
-                      "location": [-36.49641, -54.285671],
-                      "id": "mkkQD44CZk"
-                    }
-                  ]
-                },
-                {
-                  "id": "n4cQBRLpod",
-                  "name": "ARA Hipólito Bouchard",
-                  "sidc": "10033000001202030000",
-                  "subUnits": [],
-                  "shortName": "HBO",
-                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-62.10945240119934, -38.91053737702328],
-                      "id": "ztQ1MEsdUz"
-                    },
-                    {
-                      "id": "x8BrcrTeu0",
-                      "t": "1982-04-30T23:40:48-04:00",
-                      "location": [-64.47233315440036, -54.18237186313547]
-                    },
-                    {
-                      "id": "x416MiBpWA",
-                      "t": "1982-05-01T19:00:00-04:00",
-                      "location": [-62.39017271605724, -54.90342405375845]
-                    },
-                    {
-                      "id": "Q37ngYlKLI",
-                      "t": "1982-05-02T04:00:00-04:00",
-                      "location": [-54.15411556504058, -55.74217371857454]
-                    },
-                    {
-                      "id": "lz5NXBtuRp",
-                      "t": "1982-05-02T13:00:00-04:00",
-                      "location": [-60.929175979603485, -55.463042371571255]
-                    },
-                    {
-                      "id": "SggAT4cVYV",
-                      "t": "1982-05-02T15:00:00-04:00",
-                      "location": [-61.596688901632646, -55.42026751502761]
-                    },
-                    {
-                      "id": "YINBzpZV94",
-                      "t": "1982-05-02T21:14:24-04:00",
-                      "location": [-61.63404937672241, -55.41593008842774]
-                    }
-                  ]
-                },
-                {
-                  "id": "57C8QDlA48",
-                  "name": "ARA Piedra buena (D-29)",
-                  "sidc": "10033000001202030000",
-                  "subUnits": [],
-                  "shortName": "PBU",
-                  "externalUrl": "https://en.wikipedia.org/wiki/USS_Collett#Argentine_service",
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-62.12524524787902, -38.8995834259827],
-                      "id": "3xL7l5Lt7l"
-                    },
-                    {
-                      "id": "LPUwjLW9Zx",
-                      "t": "1982-04-30T23:40:48-04:00",
-                      "location": [-64.40488839954956, -54.16178954213078]
-                    },
-                    {
-                      "id": "C3ZY0Rs11b",
-                      "t": "1982-05-01T19:00:00-04:00",
-                      "location": [-62.24132018466973, -54.81289683669516]
-                    },
-                    {
-                      "id": "unB3XdAYGM",
-                      "t": "1982-05-02T04:00:00-04:00",
-                      "location": [-53.96273606041202, -55.35650088608002]
-                    },
-                    {
-                      "id": "2VczAShg5q",
-                      "t": "1982-05-02T13:00:00-04:00",
-                      "location": [-60.905288697831864, -55.2325290136594]
-                    },
-                    {
-                      "id": "YApAmeeR1Z",
-                      "t": "1982-05-02T15:00:00-04:00",
-                      "location": [-61.60931299324422, -55.38129977252975]
-                    },
-                    {
-                      "id": "VANT637h9B",
-                      "t": "1982-05-02T21:14:24-04:00",
-                      "location": [-61.63648424785495, -55.382746901606005]
-                    }
-                  ]
-                },
-                {
-                  "id": "5G3UQJUa9e",
-                  "name": "ARA Santa Fe",
-                  "sidc": "10033500001101000000",
-                  "subUnits": [],
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/3/32/ARA_Santa_Fe_%28S-11%29.jpg",
-                      "caption": "",
-                      "credits": "From wikimedia commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Santa_Fe_(S-11).jpg#file"
-                    }
-                  ],
-                  "shortName": "SFE",
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-61.986178639231525, -38.99540201865318],
-                      "id": "hUcDAlINEc"
-                    }
-                  ]
-                },
-                {
-                  "id": "oRsy5ZvKZO",
-                  "name": "ARA Santisima Trinidad",
-                  "sidc": "10033000001202030000",
-                  "subUnits": [],
-                  "shortName": "STR",
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-62.01364445954402, -38.97565390108864],
-                      "id": "v3T4BwmnAJ"
-                    },
-                    {
-                      "t": "1982-03-28T12:00:00-04:00",
-                      "location": [-62.01364445954402, -38.97565390108864],
-                      "id": "bJLexBRHfM"
-                    },
-                    {
-                      "t": "1982-04-01T18:00:00-04:00",
-                      "location": [-57.829628, -51.737022],
-                      "id": "umUuK95EIb",
-                      "via": [[-57.63988646935819, -51.68463511650648]]
-                    },
-                    {
-                      "t": "1982-04-02T18:00:00-04:00",
-                      "location": [-57.857437, -51.725912],
-                      "id": "YX7GN0VxZG"
-                    },
-                    {
-                      "location": null,
-                      "t": "1982-05-26T20:00:00-04:00",
-                      "id": "FtPyxllBy5"
-                    }
-                  ]
-                },
-                {
-                  "id": "v1MIvqTJkj",
-                  "name": "ARA Veinticinco de Mayo",
-                  "sidc": "10033000001201000000",
-                  "subUnits": [],
-                  "shortName": "VDM",
-                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Veinticinco_de_Mayo_(V-2)",
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/c/c8/ARA_Veinticinco_de_Mayo.jpg",
-                      "caption": "",
-                      "credits": "ValtTeck, CC BY-SA 4.0, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Veinticinco_de_Mayo.jpg"
-                    }
-                  ],
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-62.13382831672671, -38.910270227594424],
-                      "id": "rKCJbthjrM"
-                    }
-                  ]
-                },
-                {
-                  "id": "StgaVQO18b",
-                  "name": "ARA Drummond",
-                  "sidc": "10033000001202050000",
-                  "subUnits": [],
-                  "shortName": "DRU",
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-62.01433110505183, -38.99967115754452],
-                      "id": "6lM4rD1w9s"
-                    }
-                  ]
-                },
-                {
-                  "id": "brruuJVSKS",
-                  "name": "ARA Granville",
-                  "sidc": "10033000001202050000",
-                  "subUnits": [],
-                  "shortName": "GRV",
-                  "state": [
-                    {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-61.94909978180964, -38.99113262219964],
-                      "id": "QhNYqHMYuD"
-                    }
-                  ]
-                },
-                {
-                  "id": "mhQX0REztU",
-                  "name": "ARA General Belgrano",
-                  "sidc": "10033000001202020000",
-                  "subUnits": [],
-                  "shortName": "GBE",
-                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_General_Belgrano",
-                  "media": [
-                    {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/ARA_General_Belgrano_underway.jpg",
-                      "caption": "",
-                      "credits": "Public domain, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_General_Belgrano_underway.jpg"
-                    }
-                  ],
-                  "state": [
-                    {
-                      "id": "0DQ91sSfBb",
-                      "t": "1982-04-16T10:00:00-04:00",
-                      "location": [-62.10334149267671, -38.91020535789416]
-                    },
-                    {
-                      "t": "1982-04-26T10:00:00-04:00",
-                      "location": [-68.29113980631531, -54.81416370017099],
-                      "id": "nYXxt1kyse",
-                      "via": [
-                        [-61.49226992988301, -39.627638018657144],
-                        [-65.67250157742718, -49.78690267294657],
-                        [-65.1085926639276, -55.04552890511212],
-                        [-66.64446996258982, -55.08913867916945],
-                        [-67.26555866990267, -54.92511420548745],
-                        [-67.88186578856305, -54.88981854891848]
-                      ]
-                    },
-                    {
-                      "id": "SM7a2OLgv3",
-                      "t": "1982-05-01T10:00:00-04:00",
-                      "location": [-64.21709561476271, -53.94803504982351],
-                      "title": "Belgrano first sighted by Conqueror",
-                      "via": [
-                        [-68.00964013539391, -54.87807134866447],
-                        [-67.23825699983426, -54.926896540567895],
-                        [-66.45664252127928, -55.09020303574768],
-                        [-65.17645197546543, -55.13471597196748]
-                      ]
-                    },
-                    {
-                      "id": "SgsA0KiHMx",
-                      "t": "1982-05-01T19:00:00-04:00",
-                      "location": [-62.4702694428877, -54.78804754117214]
-                    },
-                    {
-                      "id": "1iOsQzCtFL",
-                      "t": "1982-05-02T04:00:00-04:00",
-                      "location": [-53.79656338820029, -55.55197148053584],
-                      "via": [[-59.60833096632528, -55.98765721586382]]
-                    },
-                    {
-                      "id": "pPhbBq97Eg",
-                      "t": "1982-05-02T13:00:00-04:00",
-                      "location": [-60.781533687669814, -55.34526411990806]
-                    },
-                    {
-                      "id": "bmVI0XDT4r",
-                      "t": "1982-05-02T15:00:00-04:00",
-                      "location": [-61.53, -55.4],
-                      "sidc": "10033040001202020000",
-                      "title": "Belgrano torpedoed",
-                      "where": {
-                        "type": "units",
-                        "units": ["mhQX0REztU"]
-                      }
-                    }
-                  ]
-                }
-              ],
-              "state": []
-            },
-            {
-              "id": "K4PFOFgCSG",
-              "name": "Support ships",
-              "sidc": "10033000001300000000",
-              "subUnits": [
-                {
-                  "id": "FfAifXXyRE",
-                  "name": "ARA Almirante Irízar",
-                  "sidc": "10033000001301001900",
+                  "id": "kVjEaJucgD",
+                  "name": "TG 40",
+                  "sidc": "10033000001210030000",
                   "subUnits": [
                     {
-                      "id": "xDO7zxDv2C",
-                      "name": "H1",
-                      "sidc": "10030100001102000703",
-                      "subUnits": [],
-                      "state": []
-                    },
-                    {
-                      "id": "MsrVuaZMBE",
-                      "name": "H2",
-                      "sidc": "10030100001102000703",
+                      "id": "4uaYzkhO8a",
+                      "name": "TG 40.1",
+                      "sidc": "10031004001211000000",
                       "subUnits": [],
                       "state": []
                     }
                   ],
-                  "shortName": "AIR",
-                  "state": [
-                    {
-                      "t": "1982-04-02T20:00:00-04:00",
-                      "location": [-36.474094, -54.286774],
-                      "id": "Ol62166MoN"
-                    }
-                  ]
+                  "state": []
                 },
                 {
-                  "id": "rQVoXIJpJw",
-                  "name": "ARA Bahía Buen Suceso",
-                  "sidc": "10033000001301000000",
+                  "id": "Dldry81snx",
+                  "name": "TF 60",
+                  "sidc": "10033000001210030000",
                   "subUnits": [],
-                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Buen_Suceso",
-                  "shortName": "BBS",
-                  "media": [
+                  "state": []
+                },
+                {
+                  "id": "kzPA2jyP6Y",
+                  "name": "Combatants",
+                  "sidc": "10033000001200000000",
+                  "subUnits": [
                     {
-                      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/ARA_Bah%C3%ADa_Buen_Suceso.png/1280px-ARA_Bah%C3%ADa_Buen_Suceso.png",
-                      "caption": "",
-                      "credits": "Original copy of the photo, Public domain, via Wikimedia Commons",
-                      "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Bah%C3%ADa_Buen_Suceso.png"
+                      "id": "W2ZO6vxg0q",
+                      "name": "ARA Cabo San Antonio",
+                      "sidc": "10033000001203070000",
+                      "subUnits": [],
+                      "media": [
+                        {
+                          "url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/De_Soto_County_LST-1171.jpg",
+                          "caption": "",
+                          "credits": "See page for author, Public domain, via Wikimedia Commons",
+                          "creditsUrl": "https://commons.wikimedia.org/wiki/File:De_Soto_County_LST-1171.jpg"
+                        }
+                      ],
+                      "shortName": "CSA",
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-61.983432057200275, -38.97245098455193],
+                          "id": "AZEtO1qosT"
+                        },
+                        {
+                          "t": "1982-03-28T12:00:00-04:00",
+                          "location": [-61.983432057200275, -38.97245098455193],
+                          "id": "CJ4cNSRrh3"
+                        },
+                        {
+                          "t": "1982-04-01T18:00:00-04:00",
+                          "location": [-57.7804342217386, -51.66632575751278],
+                          "id": "Mp7xGHu93J",
+                          "via": [
+                            [-57.69893798303006, -51.497788663609626],
+                            [-57.70237121056912, -51.64246991287166]
+                          ]
+                        },
+                        {
+                          "t": "1982-04-02T18:00:00-04:00",
+                          "location": [-57.800875, -51.678995],
+                          "id": "BR9Z0cZAbF"
+                        },
+                        {
+                          "t": "1982-04-14T10:00:00-04:00",
+                          "location": [-57.800875, -51.678995],
+                          "id": "dCYHWzWGo5",
+                          "title": "ARA Cabo San Antonio departs Stanley"
+                        },
+                        {
+                          "id": "6SPQdml02H",
+                          "t": "1982-04-16T12:00:00-04:00",
+                          "location": [-62.082969626339114, -38.92137309870187]
+                        },
+                        {
+                          "location": null,
+                          "t": "1982-05-26T20:00:00-04:00",
+                          "id": "929pPngnPQ"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "AC8ZMWwYvR",
+                      "name": "ARA Comodoro Py",
+                      "sidc": "10033000001202030000",
+                      "subUnits": [],
+                      "shortName": "CPY",
+                      "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
+                      "media": [
+                        {
+                          "url": "https://upload.wikimedia.org/wikipedia/commons/2/28/Argentine_destroyer_ARA_Py_%28D-27%29_underway_at_sea_in_1978.jpg",
+                          "caption": "",
+                          "credits": "Col. Martín Otero, CC BY 2.5, via Wikimedia Commons",
+                          "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Veinticinco_de_Mayo.jpg"
+                        }
+                      ],
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-62.124558602371216, -38.921489637879176],
+                          "id": "55eAstP3Ae"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "KLFoTRFuAB",
+                      "name": "ARA Comodoro Segui",
+                      "sidc": "10033000001202030000",
+                      "subUnits": [],
+                      "shortName": "CSG",
+                      "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-62.10773578742981, -38.922558060636455],
+                          "id": "twtCIcvL4E"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "VDqHwIOuso",
+                      "name": "ARA Guerrico",
+                      "sidc": "10033000001202051900",
+                      "subUnits": [],
+                      "shortName": "GUE",
+                      "state": [
+                        {
+                          "t": "1982-04-02T20:00:00-04:00",
+                          "location": [-36.49641, -54.285671],
+                          "id": "mkkQD44CZk"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "n4cQBRLpod",
+                      "name": "ARA Hipólito Bouchard",
+                      "sidc": "10033000001202030000",
+                      "subUnits": [],
+                      "shortName": "HBO",
+                      "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-62.10945240119934, -38.91053737702328],
+                          "id": "ztQ1MEsdUz"
+                        },
+                        {
+                          "id": "x8BrcrTeu0",
+                          "t": "1982-04-30T23:40:48-04:00",
+                          "location": [-64.47233315440036, -54.18237186313547]
+                        },
+                        {
+                          "id": "x416MiBpWA",
+                          "t": "1982-05-01T19:00:00-04:00",
+                          "location": [-62.39017271605724, -54.90342405375845]
+                        },
+                        {
+                          "id": "Q37ngYlKLI",
+                          "t": "1982-05-02T04:00:00-04:00",
+                          "location": [-54.15411556504058, -55.74217371857454]
+                        },
+                        {
+                          "id": "lz5NXBtuRp",
+                          "t": "1982-05-02T13:00:00-04:00",
+                          "location": [-60.929175979603485, -55.463042371571255]
+                        },
+                        {
+                          "id": "SggAT4cVYV",
+                          "t": "1982-05-02T15:00:00-04:00",
+                          "location": [-61.596688901632646, -55.42026751502761]
+                        },
+                        {
+                          "id": "YINBzpZV94",
+                          "t": "1982-05-02T21:14:24-04:00",
+                          "location": [-61.63404937672241, -55.41593008842774]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "57C8QDlA48",
+                      "name": "ARA Piedra buena (D-29)",
+                      "sidc": "10033000001202030000",
+                      "subUnits": [],
+                      "shortName": "PBU",
+                      "externalUrl": "https://en.wikipedia.org/wiki/USS_Collett#Argentine_service",
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-62.12524524787902, -38.8995834259827],
+                          "id": "3xL7l5Lt7l"
+                        },
+                        {
+                          "id": "LPUwjLW9Zx",
+                          "t": "1982-04-30T23:40:48-04:00",
+                          "location": [-64.40488839954956, -54.16178954213078]
+                        },
+                        {
+                          "id": "C3ZY0Rs11b",
+                          "t": "1982-05-01T19:00:00-04:00",
+                          "location": [-62.24132018466973, -54.81289683669516]
+                        },
+                        {
+                          "id": "unB3XdAYGM",
+                          "t": "1982-05-02T04:00:00-04:00",
+                          "location": [-53.96273606041202, -55.35650088608002]
+                        },
+                        {
+                          "id": "2VczAShg5q",
+                          "t": "1982-05-02T13:00:00-04:00",
+                          "location": [-60.905288697831864, -55.2325290136594]
+                        },
+                        {
+                          "id": "YApAmeeR1Z",
+                          "t": "1982-05-02T15:00:00-04:00",
+                          "location": [-61.60931299324422, -55.38129977252975]
+                        },
+                        {
+                          "id": "VANT637h9B",
+                          "t": "1982-05-02T21:14:24-04:00",
+                          "location": [-61.63648424785495, -55.382746901606005]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "5G3UQJUa9e",
+                      "name": "ARA Santa Fe",
+                      "sidc": "10033500001101000000",
+                      "subUnits": [],
+                      "media": [
+                        {
+                          "url": "https://upload.wikimedia.org/wikipedia/commons/3/32/ARA_Santa_Fe_%28S-11%29.jpg",
+                          "caption": "",
+                          "credits": "From wikimedia commons",
+                          "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Santa_Fe_(S-11).jpg#file"
+                        }
+                      ],
+                      "shortName": "SFE",
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-61.986178639231525, -38.99540201865318],
+                          "id": "hUcDAlINEc"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "oRsy5ZvKZO",
+                      "name": "ARA Santisima Trinidad",
+                      "sidc": "10033000001202030000",
+                      "subUnits": [],
+                      "shortName": "STR",
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-62.01364445954402, -38.97565390108864],
+                          "id": "v3T4BwmnAJ"
+                        },
+                        {
+                          "t": "1982-03-28T12:00:00-04:00",
+                          "location": [-62.01364445954402, -38.97565390108864],
+                          "id": "bJLexBRHfM"
+                        },
+                        {
+                          "t": "1982-04-01T18:00:00-04:00",
+                          "location": [-57.829628, -51.737022],
+                          "id": "umUuK95EIb",
+                          "via": [[-57.63988646935819, -51.68463511650648]]
+                        },
+                        {
+                          "t": "1982-04-02T18:00:00-04:00",
+                          "location": [-57.857437, -51.725912],
+                          "id": "YX7GN0VxZG"
+                        },
+                        {
+                          "location": null,
+                          "t": "1982-05-26T20:00:00-04:00",
+                          "id": "FtPyxllBy5"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "v1MIvqTJkj",
+                      "name": "ARA Veinticinco de Mayo",
+                      "sidc": "10033000001201000000",
+                      "subUnits": [],
+                      "shortName": "VDM",
+                      "externalUrl": "https://en.wikipedia.org/wiki/ARA_Veinticinco_de_Mayo_(V-2)",
+                      "media": [
+                        {
+                          "url": "https://upload.wikimedia.org/wikipedia/commons/c/c8/ARA_Veinticinco_de_Mayo.jpg",
+                          "caption": "",
+                          "credits": "ValtTeck, CC BY-SA 4.0, via Wikimedia Commons",
+                          "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Veinticinco_de_Mayo.jpg"
+                        }
+                      ],
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-62.13382831672671, -38.910270227594424],
+                          "id": "rKCJbthjrM"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "StgaVQO18b",
+                      "name": "ARA Drummond",
+                      "sidc": "10033000001202050000",
+                      "subUnits": [],
+                      "shortName": "DRU",
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-62.01433110505183, -38.99967115754452],
+                          "id": "6lM4rD1w9s"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "brruuJVSKS",
+                      "name": "ARA Granville",
+                      "sidc": "10033000001202050000",
+                      "subUnits": [],
+                      "shortName": "GRV",
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-61.94909978180964, -38.99113262219964],
+                          "id": "QhNYqHMYuD"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "mhQX0REztU",
+                      "name": "ARA General Belgrano",
+                      "sidc": "10033000001202020000",
+                      "subUnits": [],
+                      "shortName": "GBE",
+                      "externalUrl": "https://en.wikipedia.org/wiki/ARA_General_Belgrano",
+                      "media": [
+                        {
+                          "url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/ARA_General_Belgrano_underway.jpg",
+                          "caption": "",
+                          "credits": "Public domain, via Wikimedia Commons",
+                          "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_General_Belgrano_underway.jpg"
+                        }
+                      ],
+                      "state": [
+                        {
+                          "id": "0DQ91sSfBb",
+                          "t": "1982-04-16T10:00:00-04:00",
+                          "location": [-62.10334149267671, -38.91020535789416]
+                        },
+                        {
+                          "t": "1982-04-26T10:00:00-04:00",
+                          "location": [-68.29113980631531, -54.81416370017099],
+                          "id": "nYXxt1kyse",
+                          "via": [
+                            [-61.49226992988301, -39.627638018657144],
+                            [-65.67250157742718, -49.78690267294657],
+                            [-65.1085926639276, -55.04552890511212],
+                            [-66.64446996258982, -55.08913867916945],
+                            [-67.26555866990267, -54.92511420548745],
+                            [-67.88186578856305, -54.88981854891848]
+                          ]
+                        },
+                        {
+                          "id": "SM7a2OLgv3",
+                          "t": "1982-05-01T10:00:00-04:00",
+                          "location": [-64.21709561476271, -53.94803504982351],
+                          "title": "Belgrano first sighted by Conqueror",
+                          "via": [
+                            [-68.00964013539391, -54.87807134866447],
+                            [-67.23825699983426, -54.926896540567895],
+                            [-66.45664252127928, -55.09020303574768],
+                            [-65.17645197546543, -55.13471597196748]
+                          ]
+                        },
+                        {
+                          "id": "SgsA0KiHMx",
+                          "t": "1982-05-01T19:00:00-04:00",
+                          "location": [-62.4702694428877, -54.78804754117214]
+                        },
+                        {
+                          "id": "1iOsQzCtFL",
+                          "t": "1982-05-02T04:00:00-04:00",
+                          "location": [-53.79656338820029, -55.55197148053584],
+                          "via": [[-59.60833096632528, -55.98765721586382]]
+                        },
+                        {
+                          "id": "pPhbBq97Eg",
+                          "t": "1982-05-02T13:00:00-04:00",
+                          "location": [-60.781533687669814, -55.34526411990806]
+                        },
+                        {
+                          "id": "bmVI0XDT4r",
+                          "t": "1982-05-02T15:00:00-04:00",
+                          "location": [-61.53, -55.4],
+                          "sidc": "10033040001202020000",
+                          "title": "Belgrano torpedoed",
+                          "where": {
+                            "type": "units",
+                            "units": ["mhQX0REztU"]
+                          }
+                        }
+                      ]
                     }
                   ],
-                  "description": "A Bahía Aguirre-class 5,000-ton fleet transport that served in the Argentine Navy from 1950 to 1982.",
-                  "state": [
-                    {
-                      "t": "1982-03-11T09:00:00-04:00",
-                      "location": [-58.347816408312845, -34.59035066507696],
-                      "title": "Constantino Davidoff's working expedition leave Buenos Aires",
-                      "id": "yIWQMOhJna"
-                    },
-                    {
-                      "t": "1982-03-19T10:00:00-04:00",
-                      "location": [-36.6833405589705, -54.14092108867432],
-                      "via": [
-                        [-55.362188636921495, -35.581456163182054],
-                        [-36.61587532073748, -54.12574548510739],
-                        [-36.642482834165214, -54.152696173974796]
-                      ],
-                      "id": "riuxcQx29K"
-                    },
-                    {
-                      "t": "1982-03-21T10:00:00-04:00",
-                      "location": [-36.6833405589705, -54.14092108867432],
-                      "id": "rj0rA3uczx"
-                    },
-                    {
-                      "t": "1982-03-29T09:00:00-04:00",
-                      "location": [-68.29874331690512, -54.80851783108162],
-                      "via": [
-                        [-36.62584570318642, -54.16054166776286],
-                        [-36.62584570318642, -54.16054166776286],
-                        [-36.4681617905871, -53.96977947141108],
-                        [-38.242380889954, -53.93417882296758]
-                      ],
-                      "id": "oWkvHGyy5G"
-                    },
-                    {
-                      "id": "sHPDhYMWw7",
-                      "t": "1982-04-29T12:00:00-04:00",
-                      "location": [-57.83410555740221, -51.6892864793202],
-                      "via": [
-                        [-67.09056783092183, -54.940041278382495],
-                        [-66.62140677829008, -55.08619705089171],
-                        [-65.85372626649364, -55.167631654814166],
-                        [-58.35419851490972, -52.370417580954964],
-                        [-57.69473415288281, -51.664771987214365],
-                        [-57.824049473702004, -51.67057399098556]
-                      ]
-                    },
-                    {
-                      "id": "cUeUGpXoPY",
-                      "t": "1982-05-06T12:20:00-04:00",
-                      "location": [-59.664925513256755, -52.206453296729876],
-                      "via": [
-                        [-57.80873287327491, -51.66431467893492],
-                        [-57.680148092008565, -51.68053326465378],
-                        [-58.47098283727121, -52.21668093624794],
-                        [-59.469439985842406, -52.41590416951315]
-                      ]
-                    },
-                    {
-                      "id": "qDkt4N7Co8",
-                      "t": "1982-05-16T08:00:00-04:00",
-                      "location": [-60.07669068838216, -51.95596463531349],
-                      "title": "",
-                      "via": [
-                        [-59.82251957174952, -52.166289386507096],
-                        [-60.04639247792612, -52.067251840749215],
-                        [-60.083877219399, -51.96256327260412]
-                      ]
-                    },
-                    {
-                      "id": "PdzRFLfu5g",
-                      "t": "1982-05-16T13:20:00-04:00",
-                      "location": [-60.07669068838216, -51.95596463531349],
-                      "title": "ARA Bahia Buen Suceso attacked by two Sea Harrier from HMS Hermes",
-                      "via": [],
-                      "sidc": "10033030001301000000",
-                      "symbolOptions": {
-                        "fillColor": "#aab074"
-                      }
-                    }
-                  ]
+                  "state": []
                 },
                 {
-                  "id": "V8ElpGSpvK",
-                  "name": "ARA Bahía Paraíso",
-                  "sidc": "10033000001301000000",
-                  "subUnits": [],
-                  "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Para%C3%ADso",
-                  "shortName": "BPA",
-                  "description": "The ship operated as a naval auxiliary vessel from 1981 to 1986 and served in the Falklands War as a troop transport as well as hospital ship. It was involved in transporting troops to Leith Harbour prior to the Invasion of South Georgia. ",
-                  "state": [
+                  "id": "K4PFOFgCSG",
+                  "name": "Support ships",
+                  "sidc": "10033000001300000000",
+                  "subUnits": [
                     {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-44.745513546481135, -60.73552079710086],
-                      "id": "3mspJYjS3w"
+                      "id": "FfAifXXyRE",
+                      "name": "ARA Almirante Irízar",
+                      "sidc": "10033000001301001900",
+                      "subUnits": [
+                        {
+                          "id": "xDO7zxDv2C",
+                          "name": "H1",
+                          "sidc": "10030100001102000703",
+                          "subUnits": [],
+                          "state": []
+                        },
+                        {
+                          "id": "MsrVuaZMBE",
+                          "name": "H2",
+                          "sidc": "10030100001102000703",
+                          "subUnits": [],
+                          "state": []
+                        }
+                      ],
+                      "shortName": "AIR",
+                      "state": [
+                        {
+                          "t": "1982-04-02T20:00:00-04:00",
+                          "location": [-36.474094, -54.286774],
+                          "id": "Ol62166MoN"
+                        }
+                      ]
                     },
                     {
-                      "t": "1982-03-23T10:00:00-04:00",
-                      "location": [-44.76734861976849, -60.7177783125482],
-                      "id": "a1cZP1BgmW"
+                      "id": "rQVoXIJpJw",
+                      "name": "ARA Bahía Buen Suceso",
+                      "sidc": "10033000001301000000",
+                      "subUnits": [],
+                      "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Buen_Suceso",
+                      "shortName": "BBS",
+                      "media": [
+                        {
+                          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/ARA_Bah%C3%ADa_Buen_Suceso.png/1280px-ARA_Bah%C3%ADa_Buen_Suceso.png",
+                          "caption": "",
+                          "credits": "Original copy of the photo, Public domain, via Wikimedia Commons",
+                          "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Bah%C3%ADa_Buen_Suceso.png"
+                        }
+                      ],
+                      "description": "A Bahía Aguirre-class 5,000-ton fleet transport that served in the Argentine Navy from 1950 to 1982.",
+                      "state": [
+                        {
+                          "t": "1982-03-11T09:00:00-04:00",
+                          "location": [-58.347816408312845, -34.59035066507696],
+                          "title": "Constantino Davidoff's working expedition leave Buenos Aires",
+                          "id": "yIWQMOhJna",
+                          "hierarchy": {
+                            "targetId": "ks0mMcty6I",
+                            "placement": "above"
+                          }
+                        },
+                        {
+                          "t": "1982-03-19T10:00:00-04:00",
+                          "location": [-36.6833405589705, -54.14092108867432],
+                          "via": [
+                            [-55.362188636921495, -35.581456163182054],
+                            [-36.61587532073748, -54.12574548510739],
+                            [-36.642482834165214, -54.152696173974796]
+                          ],
+                          "id": "riuxcQx29K"
+                        },
+                        {
+                          "t": "1982-03-21T10:00:00-04:00",
+                          "location": [-36.6833405589705, -54.14092108867432],
+                          "id": "rj0rA3uczx"
+                        },
+                        {
+                          "t": "1982-03-29T09:00:00-04:00",
+                          "location": [-68.29874331690512, -54.80851783108162],
+                          "via": [
+                            [-36.62584570318642, -54.16054166776286],
+                            [-36.62584570318642, -54.16054166776286],
+                            [-36.4681617905871, -53.96977947141108],
+                            [-38.242380889954, -53.93417882296758]
+                          ],
+                          "id": "oWkvHGyy5G"
+                        },
+                        {
+                          "id": "sHPDhYMWw7",
+                          "t": "1982-04-29T12:00:00-04:00",
+                          "location": [-57.83410555740221, -51.6892864793202],
+                          "via": [
+                            [-67.09056783092183, -54.940041278382495],
+                            [-66.62140677829008, -55.08619705089171],
+                            [-65.85372626649364, -55.167631654814166],
+                            [-58.35419851490972, -52.370417580954964],
+                            [-57.69473415288281, -51.664771987214365],
+                            [-57.824049473702004, -51.67057399098556]
+                          ]
+                        },
+                        {
+                          "id": "cUeUGpXoPY",
+                          "t": "1982-05-06T12:20:00-04:00",
+                          "location": [-59.664925513256755, -52.206453296729876],
+                          "via": [
+                            [-57.80873287327491, -51.66431467893492],
+                            [-57.680148092008565, -51.68053326465378],
+                            [-58.47098283727121, -52.21668093624794],
+                            [-59.469439985842406, -52.41590416951315]
+                          ]
+                        },
+                        {
+                          "id": "qDkt4N7Co8",
+                          "t": "1982-05-16T08:00:00-04:00",
+                          "location": [-60.07669068838216, -51.95596463531349],
+                          "title": "",
+                          "via": [
+                            [-59.82251957174952, -52.166289386507096],
+                            [-60.04639247792612, -52.067251840749215],
+                            [-60.083877219399, -51.96256327260412]
+                          ]
+                        },
+                        {
+                          "id": "PdzRFLfu5g",
+                          "t": "1982-05-16T13:20:00-04:00",
+                          "location": [-60.07669068838216, -51.95596463531349],
+                          "title": "ARA Bahia Buen Suceso attacked by two Sea Harrier from HMS Hermes",
+                          "via": [],
+                          "sidc": "10033030001301000000",
+                          "symbolOptions": {
+                            "fillColor": "#aab074"
+                          }
+                        }
+                      ]
                     },
                     {
-                      "t": "1982-03-25T22:00:00-04:00",
-                      "location": [-36.684097226005825, -54.14272379683638],
-                      "id": "Ci4gkXRU7f"
-                    }
-                  ]
-                },
-                {
-                  "id": "gAJzCZKNNd",
-                  "name": "ARA Punta Médanos",
-                  "sidc": "10033000001301100000",
-                  "subUnits": [],
-                  "externalUrl": "",
-                  "shortName": "PME",
-                  "description": "",
-                  "state": [
+                      "id": "V8ElpGSpvK",
+                      "name": "ARA Bahía Paraíso",
+                      "sidc": "10033000001301000000",
+                      "subUnits": [],
+                      "externalUrl": "https://en.wikipedia.org/wiki/ARA_Bah%C3%ADa_Para%C3%ADso",
+                      "shortName": "BPA",
+                      "description": "The ship operated as a naval auxiliary vessel from 1981 to 1986 and served in the Falklands War as a troop transport as well as hospital ship. It was involved in transporting troops to Leith Harbour prior to the Invasion of South Georgia. ",
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-44.745513546481135, -60.73552079710086],
+                          "id": "3mspJYjS3w"
+                        },
+                        {
+                          "t": "1982-03-23T10:00:00-04:00",
+                          "location": [-44.76734861976849, -60.7177783125482],
+                          "id": "a1cZP1BgmW"
+                        },
+                        {
+                          "t": "1982-03-25T22:00:00-04:00",
+                          "location": [-36.684097226005825, -54.14272379683638],
+                          "id": "Ci4gkXRU7f"
+                        }
+                      ]
+                    },
                     {
-                      "t": "1982-03-11T10:00:00-04:00",
-                      "location": [-62.12078205207824, -38.90946877327505],
-                      "id": "ILr5wFvqlA"
+                      "id": "gAJzCZKNNd",
+                      "name": "ARA Punta Médanos",
+                      "sidc": "10033000001301100000",
+                      "subUnits": [],
+                      "externalUrl": "",
+                      "shortName": "PME",
+                      "description": "",
+                      "state": [
+                        {
+                          "t": "1982-03-11T10:00:00-04:00",
+                          "location": [-62.12078205207824, -38.90946877327505],
+                          "id": "ILr5wFvqlA"
+                        }
+                      ]
                     }
-                  ]
-                }
-              ],
-              "state": []
-            }
-          ]
-        },
-        {
-          "id": "sdfsdsdfsdf32",
-          "name": "Operation Blue",
-          "subUnits": [
-            {
-              "id": "kVjEaJucgD",
-              "name": "TG 40",
-              "sidc": "10033000001210030000",
-              "subUnits": [
-                {
-                  "id": "4uaYzkhO8a",
-                  "name": "TG 40.1",
-                  "sidc": "10031004001211000000",
-                  "subUnits": [],
+                  ],
                   "state": []
                 }
               ],
+              "symbolOptions": {},
+              "reinforcedStatus": "None",
               "state": []
             },
             {
-              "id": "Dldry81snx",
-              "name": "TF 60",
-              "sidc": "10033000001210030000",
-              "subUnits": [],
-              "state": []
-            },
-            {
-              "id": "ks0mMcty6I",
-              "name": "Workers",
-              "sidc": "10031100001104000000",
-              "subUnits": [],
-              "state": [
+              "id": "WEi8zOQmnr",
+              "name": "10 Mechanized Infantry Brigade",
+              "sidc": "10031000181211000000",
+              "subUnits": [
                 {
-                  "t": "1982-03-19T10:00:00-04:00",
-                  "location": [-36.68911416889803, -54.14095696852837],
-                  "id": "sU7S8PB4QP"
+                  "id": "EVkwU3z8me",
+                  "name": "3rd Inf Reg",
+                  "sidc": "10031000171211000000",
+                  "subUnits": [],
+                  "shortName": "3 Inf Reg",
+                  "state": []
                 },
                 {
-                  "location": null,
-                  "t": "1982-04-14T10:00:00-04:00",
-                  "id": "eE3oEfoxYt"
+                  "id": "h7MAj2W9Ub",
+                  "name": "7th Infantry Regiment",
+                  "sidc": "10031000171211000000",
+                  "subUnits": [],
+                  "shortName": "7 Inf Reg",
+                  "state": []
+                },
+                {
+                  "id": "K6QslV9ovo",
+                  "name": "6th Infantry Regiment",
+                  "sidc": "10031000171211000000",
+                  "subUnits": [],
+                  "shortName": "6 Inf Reg",
+                  "state": []
+                },
+                {
+                  "id": "52lP3wBqgH",
+                  "name": "25th Infantry Regiment",
+                  "sidc": "10031000171211000000",
+                  "subUnits": [],
+                  "shortName": "25 Inf Reg",
+                  "state": []
+                },
+                {
+                  "id": "jksAfGOypF",
+                  "name": "181st Armoured Cavalry Squadron",
+                  "sidc": "10031000151205010000",
+                  "subUnits": [],
+                  "shortName": "181 Arm Cav Sqd",
+                  "state": []
                 }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "sdfsf4562",
-          "name": "Falklands war",
-          "subUnits": [
+              ],
+              "shortName": "10 Mech Inf",
+              "state": []
+            },
+            {
+              "id": "b2stPeJbsj",
+              "name": "5th Marine Infantry Battalion",
+              "sidc": "10031000161211004600",
+              "subUnits": [],
+              "shortName": "5 Mar Inf Btn",
+              "state": []
+            },
             {
               "id": "uPYcvYQqch",
               "name": "3rd Mechanized Infantry Brigade",
@@ -2174,63 +2217,31 @@
                 }
               ],
               "state": []
+            }
+          ],
+          "symbolOptions": {},
+          "initiallyOpen": false
+        }
+      ],
+      "subUnits": [
+        {
+          "id": "ks0mMcty6I",
+          "name": "Workers",
+          "sidc": "10031100001104000000",
+          "subUnits": [],
+          "shortName": "",
+          "description": "The Argentine scrap metal workers, led by Constantino Davidoff, arrived at Leith Harbour on March 19, 1982, to dismantle an abandoned whaling station. By raising the Argentine flag and bypassing British customs at Grytviken, they triggered a diplomatic crisis. This unauthorized presence prompted the deployment of HMS Endurance, creating the immediate military friction that served as the final pretext for the Argentine invasion of the Falklands.",
+          "externalUrl": "",
+          "state": [
+            {
+              "t": "1982-03-19T10:00:00-04:00",
+              "location": [-36.68911416889803, -54.14095696852837],
+              "id": "sU7S8PB4QP"
             },
             {
-              "id": "WEi8zOQmnr",
-              "name": "10 Mechanized Infantry Brigade",
-              "sidc": "10031000181211000000",
-              "subUnits": [
-                {
-                  "id": "EVkwU3z8me",
-                  "name": "3rd Inf Reg",
-                  "sidc": "10031000171211000000",
-                  "subUnits": [],
-                  "shortName": "3 Inf Reg",
-                  "state": []
-                },
-                {
-                  "id": "h7MAj2W9Ub",
-                  "name": "7th Infantry Regiment",
-                  "sidc": "10031000171211000000",
-                  "subUnits": [],
-                  "shortName": "7 Inf Reg",
-                  "state": []
-                },
-                {
-                  "id": "K6QslV9ovo",
-                  "name": "6th Infantry Regiment",
-                  "sidc": "10031000171211000000",
-                  "subUnits": [],
-                  "shortName": "6 Inf Reg",
-                  "state": []
-                },
-                {
-                  "id": "52lP3wBqgH",
-                  "name": "25th Infantry Regiment",
-                  "sidc": "10031000171211000000",
-                  "subUnits": [],
-                  "shortName": "25 Inf Reg",
-                  "state": []
-                },
-                {
-                  "id": "jksAfGOypF",
-                  "name": "181st Armoured Cavalry Squadron",
-                  "sidc": "10031000151205010000",
-                  "subUnits": [],
-                  "shortName": "181 Arm Cav Sqd",
-                  "state": []
-                }
-              ],
-              "shortName": "10 Mech Inf",
-              "state": []
-            },
-            {
-              "id": "b2stPeJbsj",
-              "name": "5th Marine Infantry Battalion",
-              "sidc": "10031000161211004600",
-              "subUnits": [],
-              "shortName": "5 Mar Inf Btn",
-              "state": []
+              "location": null,
+              "t": "1982-04-14T10:00:00-04:00",
+              "id": "eE3oEfoxYt"
             }
           ]
         }
@@ -2511,7 +2522,10 @@
           "caption": "Abandoned whaling station at Leith Harbour, South Georgia.",
           "creditsUrl": "https://commons.wikimedia.org/wiki/File:Leith_whaling_station.JPG"
         }
-      ]
+      ],
+      "subTitle": "",
+      "description": "The Argentine scrap metal workers, led by Constantino Davidoff, arrived at Leith Harbour on March 19, 1982, to dismantle an abandoned whaling station. By raising the Argentine flag and bypassing British customs at Grytviken, they triggered a diplomatic crisis. This unauthorized presence prompted the deployment of HMS Endurance, creating the immediate military friction that served as the final pretext for the Argentine invasion of the Falklands.",
+      "externalUrl": ""
     },
     {
       "title": "Argentine invasion force departs Argentina",
