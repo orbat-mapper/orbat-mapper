@@ -149,7 +149,7 @@ onMounted(() => {
           indentPerLevel: 0,
           block: isSideGroupDragItem(source.data)
             ? ["make-child", "reparent"]
-            : ["reparent", "instruction-blocked", "reorder-above", "reorder-below"],
+            : ["reparent", "instruction-blocked", "reorder-below"],
           mode: "standard",
         });
       },

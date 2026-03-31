@@ -49,6 +49,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed ORBAT drag-and-drop so that selected units can be used as drop targets.
+- Fixed dropping a unit above a side group to make it a side root unit.
 - Fixed issue where layer edit form "Change" and clear timestamp buttons submitted the form and closed it immediately.
 - Fixed an issue where TO&E would not update if a unit had no state entries.
 - Fixed an issue where "Go to next on save" in TO&E edit mode would not work for sorted tables.

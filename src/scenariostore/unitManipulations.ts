@@ -539,7 +539,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
       if (target === "above" || target === "below") {
         const targetUnit = s.unitMap[targetId];
-        parentId = targetUnit?._basePid ?? targetUnit?._pid ?? "";
+        const targetSideGroup = s.sideGroupMap[targetId];
+        parentId = targetUnit?._basePid ?? targetUnit?._pid ?? targetSideGroup?._pid ?? "";
       }
       if (!parentId) return;
       const newParent = getUnitOrSideGroupOrSide(parentId, s);
@@ -559,10 +560,15 @@ export function useUnitManipulations(store: NewScenarioStore) {
       if (target === "on") {
         getBaseSubUnits(newParent).push(unitId);
       } else {
-        const idx = getBaseSubUnits(newParent).findIndex((id) => id === targetId);
-        if (idx < 0) return;
-        if (target === "below") getBaseSubUnits(newParent).splice(idx + 1, 0, unitId);
-        if (target === "above") getBaseSubUnits(newParent).splice(idx, 0, unitId);
+        const subUnits = getBaseSubUnits(newParent);
+        const idx = subUnits.findIndex((id) => id === targetId);
+        if (idx < 0) {
+          // Target is a side group — insert as a direct child of the side
+          subUnits.push(unitId);
+        } else {
+          if (target === "below") subUnits.splice(idx + 1, 0, unitId);
+          if (target === "above") subUnits.splice(idx, 0, unitId);
+        }
       }
 
       //update SID if necessary
