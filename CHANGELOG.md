@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## April 20206
+## April 2026
+
+### Added
+
+- Added a missing short name input to the unit details form, including automatic short-name mode support.
 
 ### Fixed
 
