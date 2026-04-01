@@ -26,7 +26,8 @@ import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useShareHistory } from "@/composables/scenarioShare";
-import { LockIcon } from "lucide-vue-next";
+import { LockIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
+import { UseDark } from "@vueuse/components";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -86,6 +87,14 @@ const { history: shareHistory, clearHistory: clearShareHistory } = useShareHisto
       </DropdownMenuItem>
 
       <DropdownMenuSeparator />
+      <UseDark v-if="isMobile" v-slot="{ isDark, toggleDark }">
+        <DropdownMenuItem @select="toggleDark()">
+          <SunIcon v-if="isDark" class="mr-2 h-4 w-4" />
+          <MoonStarIcon v-else class="mr-2 h-4 w-4" />
+          <span>{{ isDark ? "Light mode" : "Dark mode" }}</span>
+        </DropdownMenuItem>
+      </UseDark>
+      <DropdownMenuSeparator v-if="isMobile" />
       <DropdownMenuItem @select="emit('uiAction', 'showSearch')"
         >Search
         <DropdownMenuShortcut class="ml-4">Ctrl/⌘ K</DropdownMenuShortcut>

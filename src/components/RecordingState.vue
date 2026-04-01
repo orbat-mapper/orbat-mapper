@@ -63,12 +63,12 @@ const toggleRecordingPrefix = () => {
 
 <template>
   <div
-    class="bg-card flex items-center overflow-hidden rounded-md border shadow-sm transition-all"
+    class="bg-card flex shrink-0 items-center overflow-hidden rounded-md border shadow-sm transition-all"
   >
     <Button
       variant="ghost"
       size="sm"
-      class="h-9 gap-2 rounded-none px-3 transition-colors"
+      class="h-8 gap-1.5 rounded-none px-2 transition-colors sm:h-9 sm:gap-2 sm:px-3"
       :class="{ 'bg-red-50/50 dark:bg-red-950/20': isAnyRecording }"
       :aria-label="
         isAnyRecording
@@ -120,17 +120,20 @@ const toggleRecordingPrefix = () => {
         <Button
           variant="ghost"
           size="sm"
-          class="h-9 rounded-none border-l px-2"
+          class="h-8 rounded-none border-l px-1.5 sm:h-9 sm:px-2"
           aria-label="Choose recording modes"
           title="Choose recording modes"
         >
-          <Settings2 class="text-muted-foreground h-4 w-4" />
-          <ChevronDown class="text-muted-foreground/50 ml-1 h-3 w-3" />
+          <Settings2 class="text-muted-foreground hidden h-4 w-4 sm:block" />
+          <ChevronDown class="text-muted-foreground/50 h-3 w-3 sm:ml-1" />
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" class="w-56">
         <DropdownMenuLabel>Recording Settings</DropdownMenuLabel>
+        <div class="text-muted-foreground px-2 py-1 text-xs">
+          Choose which changes are recorded at the current scenario time.
+        </div>
         <DropdownMenuSeparator />
         <DropdownMenuLabel class="text-muted-foreground text-xs">Units</DropdownMenuLabel>
 

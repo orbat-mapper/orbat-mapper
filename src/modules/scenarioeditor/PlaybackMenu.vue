@@ -31,21 +31,22 @@ const playback = usePlaybackStore();
 
 <template>
   <div
-    class="bg-muted-foreground/20 dark:bg-muted-foreground/30 items-center rounded-lg px-1 sm:flex"
+    class="bg-muted-foreground/20 dark:bg-muted-foreground/30 flex shrink-0 items-center rounded-lg px-0.5 sm:px-1"
   >
     <Button
       variant="ghost"
-      size="icon"
+      size="icon-sm"
+      class="sm:size-9"
       title="Undo action (ctrl+z)"
       @click="playback.togglePlayback()"
     >
-      <IconPause v-if="playback.playbackRunning" class="size-6" />
-      <IconPlay v-else class="size-6" />
+      <IconPause v-if="playback.playbackRunning" class="size-5 sm:size-6" />
+      <IconPlay v-else class="size-5 sm:size-6" />
     </Button>
     <DropdownMenu>
       <DropdownMenuTrigger
-        class="text-muted-foreground hover:bg-muted hover:text-foreground focus:ring-ring items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:block"
-        ><IconChevronDown class="block size-6"
+        class="text-muted-foreground hover:bg-muted hover:text-foreground focus:ring-ring flex items-center justify-center rounded-md p-1 focus:ring-2 focus:outline-hidden focus:ring-inset disabled:opacity-50 sm:p-1.5"
+        ><IconChevronDown class="block size-5 sm:size-6"
       /></DropdownMenuTrigger>
       <DropdownMenuContent :side-offset="10">
         <DropdownMenuItem @select.prevent="playback.togglePlayback()">
