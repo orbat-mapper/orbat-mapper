@@ -19,9 +19,13 @@ const mocks = vi.hoisted(() => ({
   hoveredPixel: { value: null as number[] | null },
 }));
 
-vi.mock("pinia", () => ({
-  storeToRefs: (store: any) => store,
-}));
+vi.mock("pinia", async () => {
+  const actual = await vi.importActual<typeof import("pinia")>("pinia");
+  return {
+    ...actual,
+    storeToRefs: (store: any) => store,
+  };
+});
 
 vi.mock("@/utils", () => ({
   injectStrict: () => mocks.injectedScenario,
@@ -76,6 +80,12 @@ vi.mock("@/stores/geoStore", () => ({
     showHistory: ref(false),
     editHistory: ref(false),
     showWaypointTimestamps: ref(false),
+  }),
+}));
+
+vi.mock("@/stores/recordingStore", () => ({
+  useRecordingStore: () => ({
+    isRecordingLocation: true,
   }),
 }));
 

@@ -41,6 +41,7 @@ import { useSearchActions } from "@/composables/searchActions";
 import { useScenarioFeatureLayers } from "@/modules/scenarioeditor/scenarioFeatureLayers";
 import { useSelectedItems } from "@/stores/selectedStore";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
+import { useRecordingStore } from "@/stores/recordingStore";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -62,6 +63,7 @@ const {
 const mapRef = shallowRef<OLMap>();
 
 const uiStore = useUiStore();
+const recordingStore = useRecordingStore();
 
 const { selectedFeatureIds } = useSelectedItems();
 
@@ -188,7 +190,9 @@ if (state.boundingBox && state.boundingBox.length === 4) {
 
 function toggleUnitInteractions(event: ObjectEvent) {
   const isUnitLayerVisible = !event.oldValue;
-  moveUnitInteraction.setActive(isUnitLayerVisible && moveUnitEnabled.value);
+  moveUnitInteraction.setActive(
+    isUnitLayerVisible && moveUnitEnabled.value && recordingStore.isRecordingLocation,
+  );
   rotateInteraction.setActive(isUnitLayerVisible && rotateUnitEnabled.value);
 }
 
@@ -213,6 +217,21 @@ onUndoRedo(() => {
   unitLayer.changed();
   labelLayer.changed();
 });
+
+watch(
+  () => recordingStore.isRecordingLocation,
+  (enabled) => {
+    if (!enabled && moveUnitEnabled.value) {
+      moveUnitEnabled.value = false;
+    }
+    const isUnitLayerVisible =
+      typeof unitLayerGroup.getVisible === "function"
+        ? unitLayerGroup.getVisible()
+        : true;
+    moveUnitInteraction.setActive(isUnitLayerVisible && moveUnitEnabled.value && enabled);
+  },
+  { immediate: true },
+);
 
 watch(
   [

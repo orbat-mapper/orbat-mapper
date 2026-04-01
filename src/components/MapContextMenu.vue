@@ -58,9 +58,11 @@ import { useActiveUnitStore } from "@/stores/dragStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore.ts";
 import type { ScenarioFeature } from "@/types/scenarioGeoModels.ts";
 import UnitSymbol from "@/components/UnitSymbol.vue";
+import { useRecordingStore } from "@/stores/recordingStore";
 
 const tm = useTimeFormatStore();
 const mainToolbarStore = useMainToolbarStore();
+const recordingStore = useRecordingStore();
 
 const props = defineProps<{ mapRef?: OLMap }>();
 
@@ -206,6 +208,7 @@ function onContextMenuUpdate(open: boolean) {
 }
 
 function onAddUnit() {
+  if (!recordingStore.isRecordingLocation) return;
   store.groupUpdate(() => {
     if (!activeParent.value || unitActions.isUnitLocked(activeParent.value.id)) return;
 
@@ -329,7 +332,10 @@ const baseMapId = computed({
       <ContextMenuSub>
         <ContextMenuSubTrigger inset><span>Add</span></ContextMenuSubTrigger>
         <ContextMenuSubContent>
-          <ContextMenuItem @select="onAddUnit"
+          <ContextMenuItem
+            @select="onAddUnit"
+            :disabled="!recordingStore.isRecordingLocation"
+          >
             ><MilitarySymbol
               :sidc="sidc"
               :options="symbolOptions"

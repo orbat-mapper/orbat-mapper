@@ -12,6 +12,7 @@ import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import { usePlaybackStore } from "@/stores/playbackStore";
+import { useRecordingStore } from "@/stores/recordingStore";
 
 const {
   unitActions,
@@ -33,6 +34,7 @@ const { onFeatureAction } = useScenarioFeatureActions();
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 const unitSettings = useUnitSettingsStore();
 const playback = usePlaybackStore();
+const recordingStore = useRecordingStore();
 const { selectedWaypointIds } = useSelectedWaypoints();
 
 const selectedUnits = computed(() =>
@@ -102,6 +104,7 @@ function handlePanShortcut(e: KeyboardEvent) {
 }
 
 function handleMoveShortcut(e: KeyboardEvent) {
+  if (!recordingStore.isRecordingLocation) return;
   unitSettings.moveUnitEnabled = !unitSettings.moveUnitEnabled;
 }
 

@@ -38,6 +38,7 @@ import SymbolPickerPopover from "@/modules/scenarioeditor/SymbolPickerPopover.vu
 import EchelonPickerPopover from "@/modules/scenarioeditor/EchelonPickerPopover.vue";
 import { Button } from "@/components/ui/button";
 import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
+import { useRecordingStore } from "@/stores/recordingStore";
 
 const emit = defineEmits([
   "open-time-modal",
@@ -62,6 +63,7 @@ const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore(
 const selectStore = useMapSelectStore();
 const toggleAddMultiple = useToggle(addMultiple);
 const bus = useEventBus(orbatUnitClick);
+const recordingStore = useRecordingStore();
 const { activeUnitId, resetActiveParent, activeParent, activeParentId } =
   useActiveUnitStore();
 
@@ -178,6 +180,7 @@ function setSelectMode() {
 }
 
 function setMoveMode() {
+  if (!recordingStore.isRecordingLocation) return;
   moveUnitEnabled.value = true;
   rotateUnitEnabled.value = false;
 }
@@ -211,7 +214,12 @@ function setRotateMode() {
       <MainToolbarButton
         :active="moveUnitEnabled && !rotateUnitEnabled"
         @click="setMoveMode()"
-        title="Move unit"
+        :title="
+          recordingStore.isRecordingLocation
+            ? 'Move unit'
+            : 'Move unit disabled. Enable Unit position in Rec first.'
+        "
+        :disabled="!recordingStore.isRecordingLocation"
       >
         <MoveIcon class="size-6" />
       </MainToolbarButton>

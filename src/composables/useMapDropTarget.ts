@@ -7,6 +7,8 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import type { Position } from "geojson";
 import type { MapAdapter } from "@/geo/mapAdapter";
+import { useRecordingStore } from "@/stores/recordingStore";
+import { useNotifications } from "@/composables/notifications";
 
 export interface MapDropTargetOptions {
   /** The scenario to add unit positions to */
@@ -24,10 +26,13 @@ export function useMapDropTarget(options: MapDropTargetOptions) {
     store: { groupUpdate },
   } = activeScenario;
   const mStore = useMapSettingsStore();
+  const recordingStore = useRecordingStore();
+  const { send } = useNotifications();
   const { selectedUnitIds } = useSelectedItems();
   let dndCleanup = () => {};
   const isDragging = ref(false);
   const dropPosition = ref<Position>([0, 0]);
+  const blockedHintShown = ref(false);
 
   const formattedPosition = computed(() =>
     isDragging.value
@@ -44,17 +49,31 @@ export function useMapDropTarget(options: MapDropTargetOptions) {
       getData: ({ input }) => {
         return { position: mapAdapter.getEventCoordinate(input as MouseEvent) };
       },
-      onDragEnter: () => {
+      onDragEnter: ({ source }) => {
+        if (!isUnitDragItem(source.data)) return;
+        if (!recordingStore.isRecordingLocation) {
+          if (!blockedHintShown.value) {
+            send({
+              message: "Enable Unit position in Rec to place units on the map.",
+            });
+            blockedHintShown.value = true;
+          }
+          return;
+        }
         isDragging.value = true;
       },
       onDragLeave: () => {
         isDragging.value = false;
+        blockedHintShown.value = false;
       },
-      onDrag: ({ self }) => {
+      onDrag: ({ self, source }) => {
+        if (!isUnitDragItem(source.data) || !recordingStore.isRecordingLocation) return;
         dropPosition.value = self.data.position as Position;
       },
       onDrop: ({ source, self }) => {
         isDragging.value = false;
+        blockedHintShown.value = false;
+        if (!recordingStore.isRecordingLocation) return;
         const dragData = source.data;
         if (!isUnitDragItem(dragData)) return;
 
