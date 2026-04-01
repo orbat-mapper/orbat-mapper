@@ -38,19 +38,35 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
   const { send } = useNotifications();
   const storedScenarios = ref<ScenarioMetadata[]>([]);
   const activeSort = ref<"name" | "lastModified" | "created">("lastModified");
+  const activeSortDirection = ref<"asc" | "desc">("desc");
   const routeName = options.routeName ?? MAP_EDIT_MODE_ROUTE;
 
-  function applySort(sort: "name" | "lastModified" | "created") {
+  function getDefaultSortDirection(sort: "name" | "lastModified" | "created") {
+    return sort === "name" ? "asc" : "desc";
+  }
+
+  function applySort(
+    sort: "name" | "lastModified" | "created",
+    direction: "asc" | "desc" = activeSortDirection.value,
+  ) {
+    const directionMultiplier = direction === "asc" ? 1 : -1;
+
     switch (sort) {
       case "name":
-        storedScenarios.value.sort((a, b) => a.name.localeCompare(b.name));
+        storedScenarios.value.sort(
+          (a, b) => a.name.localeCompare(b.name) * directionMultiplier,
+        );
         break;
       case "created":
-        storedScenarios.value.sort((a, b) => +b.created - +a.created);
+        storedScenarios.value.sort(
+          (a, b) => (+a.created - +b.created) * directionMultiplier,
+        );
         break;
       case "lastModified":
       default:
-        storedScenarios.value.sort((a, b) => +b.modified - +a.modified);
+        storedScenarios.value.sort(
+          (a, b) => (+a.modified - +b.modified) * directionMultiplier,
+        );
         break;
     }
   }
@@ -60,7 +76,8 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
       label: "Name",
       action: () => {
         activeSort.value = "name";
-        applySort(activeSort.value);
+        activeSortDirection.value = getDefaultSortDirection(activeSort.value);
+        applySort(activeSort.value, activeSortDirection.value);
       },
       active: activeSort.value === "name",
     },
@@ -68,7 +85,8 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
       label: "Last modified",
       action: () => {
         activeSort.value = "lastModified";
-        applySort(activeSort.value);
+        activeSortDirection.value = getDefaultSortDirection(activeSort.value);
+        applySort(activeSort.value, activeSortDirection.value);
       },
       active: activeSort.value === "lastModified",
     },
@@ -76,16 +94,22 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
       label: "Created",
       action: () => {
         activeSort.value = "created";
-        applySort(activeSort.value);
+        activeSortDirection.value = getDefaultSortDirection(activeSort.value);
+        applySort(activeSort.value, activeSortDirection.value);
       },
       active: activeSort.value === "created",
     },
   ]);
 
+  function toggleSortDirection() {
+    activeSortDirection.value = activeSortDirection.value === "asc" ? "desc" : "asc";
+    applySort(activeSort.value, activeSortDirection.value);
+  }
+
   async function reloadScenarios() {
     const { listScenarios } = await useIndexedDb();
     storedScenarios.value = await listScenarios();
-    applySort(activeSort.value);
+    applySort(activeSort.value, activeSortDirection.value);
   }
 
   async function onAction(action: StoredScenarioAction, scenario: ScenarioMetadata) {
@@ -190,6 +214,8 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
   return {
     storedScenarios,
     sortOptions,
+    sortDirection: activeSortDirection,
+    toggleSortDirection,
     onAction,
     onBulkAction,
     loadScenario,

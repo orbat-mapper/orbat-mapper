@@ -56,7 +56,9 @@ describe("DeleteStoredScenariosModal", () => {
 
   it("emits cancel and closes when the footer Cancel button is clicked", async () => {
     const wrapper = mountModal();
-    const cancelButton = wrapper.findAll("button").find((button) => button.text() === "Cancel")!;
+    const cancelButton = wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Cancel")!;
 
     await cancelButton.trigger("click");
 

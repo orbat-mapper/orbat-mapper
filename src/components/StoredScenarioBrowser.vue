@@ -23,6 +23,7 @@ const props = withDefaults(
   defineProps<{
     scenarios: ScenarioMetadata[];
     sortOptions: MenuItemData[];
+    sortDirection?: "asc" | "desc";
     searchInputId: string;
     autofocus?: boolean;
     noLink?: boolean;
@@ -47,6 +48,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: "action", action: StoredScenarioAction, scenario: ScenarioMetadata): void;
+  (e: "toggle-sort-direction"): void;
   (
     e: "bulk-action",
     action: StoredScenarioBulkAction,
@@ -173,6 +175,10 @@ function onAction(action: StoredScenarioAction, scenario: ScenarioMetadata) {
   emit("action", action, scenario);
 }
 
+function onToggleSortDirection() {
+  emit("toggle-sort-direction");
+}
+
 watch(
   () => props.scenarios,
   (scenarios) => {
@@ -252,7 +258,11 @@ useEventListener("keydown", (event: KeyboardEvent) => {
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-1 lg:ml-4 lg:justify-end">
-        <SortDropdown :options="sortOptions" />
+        <SortDropdown
+          :options="sortOptions"
+          :sort-direction="sortDirection"
+          @toggle-direction="onToggleSortDirection"
+        />
         <template v-if="enableBatchActions && isSelecting">
           <span class="mr-2 text-sm font-medium">{{ selectedCount }} selected</span>
           <Button
@@ -301,7 +311,7 @@ useEventListener("keydown", (event: KeyboardEvent) => {
       </div>
     </header>
 
-    <div class="min-h-0 max-h-[60vh] overflow-y-auto">
+    <div class="max-h-[60vh] min-h-0 overflow-y-auto">
       <ul
         v-if="filteredScenarios.length > 0"
         :class="

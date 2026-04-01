@@ -89,7 +89,8 @@ const InputGroupInputStub = defineComponent({
 
 const SortDropdownStub = defineComponent({
   name: "SortDropdown",
-  props: ["options"],
+  props: ["options", "sortDirection"],
+  emits: ["toggle-direction"],
   template: `<div data-testid="sort-dropdown" />`,
 });
 

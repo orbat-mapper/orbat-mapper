@@ -48,7 +48,9 @@ function onCancel() {
 
       <div class="flex justify-end gap-2">
         <Button type="button" variant="secondary" @click="onCancel">Cancel</Button>
-        <Button type="button" variant="destructive" @click="emit('confirm')">Delete</Button>
+        <Button type="button" variant="destructive" @click="emit('confirm')"
+          >Delete</Button
+        >
       </div>
     </div>
   </NewSimpleModal>

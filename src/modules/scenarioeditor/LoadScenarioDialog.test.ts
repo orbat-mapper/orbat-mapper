@@ -15,6 +15,8 @@ vi.mock("@/composables/browserScenarios", () => ({
   useBrowserScenarios: (options?: { routeName?: string }) => ({
     storedScenarios: [],
     sortOptions: [],
+    sortDirection: "desc",
+    toggleSortDirection: vi.fn(),
     onAction: onActionMock,
     loadScenario: loadScenarioMock,
     options,
@@ -26,12 +28,13 @@ const StoredScenarioBrowserStub = defineComponent({
   props: [
     "scenarios",
     "sortOptions",
+    "sortDirection",
     "searchInputId",
     "autofocus",
     "gridClass",
     "routeName",
   ],
-  emits: ["action"],
+  emits: ["action", "toggle-sort-direction"],
   template: "<div><slot name='actions' /></div>",
 });
 

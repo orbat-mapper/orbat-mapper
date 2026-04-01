@@ -165,4 +165,69 @@ describe("useBrowserScenarios", () => {
       "Bravo",
     ]);
   });
+
+  it("toggles the current sort direction and preserves it after reloading", async () => {
+    const {
+      storedScenarios,
+      sortOptions,
+      sortDirection,
+      toggleSortDirection,
+      onBulkAction,
+    } = useBrowserScenarios();
+    storedScenarios.value = [
+      {
+        id: "scenario-a",
+        name: "Alpha",
+        description: "",
+        image: "",
+        modified: new Date("2024-01-04T00:00:00.000Z"),
+        created: new Date("2024-01-04T00:00:00.000Z"),
+      },
+      {
+        id: "scenario-b",
+        name: "Bravo",
+        description: "",
+        image: "",
+        modified: new Date("2024-01-03T00:00:00.000Z"),
+        created: new Date("2024-01-03T00:00:00.000Z"),
+      },
+    ];
+
+    const sortByName = sortOptions.value.find((option) => option.label === "Name")!;
+    (sortByName.action as () => void)();
+    toggleSortDirection();
+
+    expect(sortDirection.value).toBe("desc");
+    expect(storedScenarios.value.map((scenario) => scenario.name)).toEqual([
+      "Bravo",
+      "Alpha",
+    ]);
+
+    listScenariosMock.mockResolvedValue([
+      {
+        id: "scenario-b",
+        name: "Bravo",
+        description: "",
+        image: "",
+        modified: new Date("2024-01-01T00:00:00.000Z"),
+        created: new Date("2024-01-01T00:00:00.000Z"),
+      },
+      {
+        id: "scenario-a",
+        name: "Alpha",
+        description: "",
+        image: "",
+        modified: new Date("2024-01-05T00:00:00.000Z"),
+        created: new Date("2024-01-05T00:00:00.000Z"),
+      },
+    ]);
+
+    await onBulkAction("delete", [storedScenarios.value[0]]);
+
+    expect(sortDirection.value).toBe("desc");
+    expect(storedScenarios.value.map((scenario) => scenario.name)).toEqual([
+      "Bravo",
+      "Alpha",
+    ]);
+  });
 });

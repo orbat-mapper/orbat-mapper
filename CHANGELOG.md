@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
 
 - Added a missing short name input to the unit details form, including automatic short-name mode support.
 - Added multi-select batch delete for stored scenarios in the landing page and import scenario browsers, including filtered select-all and confirmation dialog support.
+- Added a sort direction control to the stored scenario browser dropdown, with an icon indicating ascending or descending order.
+
+### Changed
+
+- The stored scenario browser now keeps its header controls visible while long scenario lists scroll within a capped results area.
+- The stored scenario browser sort dropdown now shows the active sort field with radio-item selection.
 
 ### Fixed
 

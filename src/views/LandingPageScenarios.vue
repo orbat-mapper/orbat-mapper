@@ -23,8 +23,15 @@ const DecryptScenarioModal = defineAsyncComponent(
   () => import("@/components/DecryptScenarioModal.vue"),
 );
 
-const { storedScenarios, sortOptions, onAction, onBulkAction, loadScenario } =
-  useBrowserScenarios();
+const {
+  storedScenarios,
+  sortOptions,
+  sortDirection,
+  toggleSortDirection,
+  onAction,
+  onBulkAction,
+  loadScenario,
+} = useBrowserScenarios();
 
 const router = useRouter();
 const getScenarioTo = (scenarioId: string) => {
@@ -124,6 +131,7 @@ useEventListener("paste", (event: ClipboardEvent) => {
       <StoredScenarioBrowser
         :scenarios="storedScenarios"
         :sort-options="sortOptions"
+        :sort-direction="sortDirection"
         search-input-id="scenario-search"
         autofocus
         show-clear-button
@@ -131,6 +139,7 @@ useEventListener("paste", (event: ClipboardEvent) => {
         empty-message="No scenarios match"
         @action="onAction"
         @bulk-action="onBulkAction"
+        @toggle-sort-direction="toggleSortDirection"
       >
         <template #actions>
           <input

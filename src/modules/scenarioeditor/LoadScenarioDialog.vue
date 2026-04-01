@@ -24,7 +24,14 @@ const inputSource = ref<"external" | "browser">("browser");
 const showDecryptModal = ref(false);
 const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
 
-const { loadScenario, storedScenarios, sortOptions, onAction } = useBrowserScenarios({
+const {
+  loadScenario,
+  storedScenarios,
+  sortOptions,
+  sortDirection,
+  toggleSortDirection,
+  onAction,
+} = useBrowserScenarios({
   routeName: props.routeName,
 });
 
@@ -75,12 +82,14 @@ function onDecrypted(scenario: Scenario) {
         <StoredScenarioBrowser
           :scenarios="storedScenarios"
           :sort-options="sortOptions"
+          :sort-direction="sortDirection"
           :route-name="props.routeName"
           search-input-id="load-scenario-search"
           autofocus
           empty-message="No recent scenarios match"
           grid-class="mt-4 grid grid-cols-1 gap-6 @xl:grid-cols-2"
           @action="onAction"
+          @toggle-sort-direction="toggleSortDirection"
         >
           <template #actions>
             <Button as-child variant="secondary">
