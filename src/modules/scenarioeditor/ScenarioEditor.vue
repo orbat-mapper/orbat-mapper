@@ -359,9 +359,7 @@ if (state.layers.length > 0) {
           </Button>
         </div>
       </div>
-      <div class="flex shrink-0 items-center space-x-1 overflow-clip sm:space-x-2">
-        <RecordingState />
-        <PlaybackMenu v-if="route.name === MAP_EDIT_MODE_ROUTE" />
+      <div class="flex shrink-0 items-center gap-0.5 overflow-clip sm:gap-2">
         <Button variant="ghost" class="hidden sm:inline-flex" asChild
           ><a
             :href="
@@ -386,54 +384,62 @@ if (state.layers.length > 0) {
           variant="ghost"
           size="icon"
           @click="showSearch = true"
-          class="text-foreground/70"
+          class="text-foreground/70 size-8 sm:size-9"
         >
-          <SearchIcon class="size-6" />
+          <SearchIcon class="size-5 sm:size-6" />
         </Button>
-        <Select v-model="selectedModeRoute">
-          <SelectTrigger
-            class="bg-muted-foreground/20 border-0 sm:hidden"
-            aria-label="Edit mode"
+        <div class="flex min-w-0 items-center gap-0.5 sm:gap-2">
+          <RecordingState />
+          <PlaybackMenu v-if="route.name === MAP_EDIT_MODE_ROUTE" />
+          <Select v-model="selectedModeRoute">
+            <SelectTrigger
+              class="bg-muted-foreground/20 border-0 sm:hidden"
+              aria-label="Edit mode"
+            >
+              <SelectValue>
+                <component :is="activeModeOption.icon" class="size-6 text-green-500" />
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent class="">
+              <SelectItem
+                v-for="mode in modeOptions"
+                :key="mode.value"
+                :value="mode.value"
+              >
+                <component :is="mode.icon" class="size-5" />
+                <span>{{ mode.label }}</span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <div
+            id="mode-switcher"
+            class="bg-muted-foreground/20 dark:bg-foreground/15 text-muted-foreground/80 hidden items-center rounded-lg px-1 sm:flex"
           >
-            <SelectValue>
-              <component :is="activeModeOption.icon" class="size-6 text-green-500" />
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent class="">
-            <SelectItem v-for="mode in modeOptions" :key="mode.value" :value="mode.value">
-              <component :is="mode.icon" class="size-5" />
-              <span>{{ mode.label }}</span>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        <div
-          id="mode-switcher"
-          class="bg-muted-foreground/20 dark:bg-foreground/15 text-muted-foreground/80 hidden items-center rounded-lg px-1 sm:flex"
-        >
-          <router-link
-            :to="{ name: MAP_EDIT_MODE_ROUTE }"
-            title="Map edit mode"
-            exact-active-class="text-green-500"
-            class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
-          >
-            <GlobeAltIcon class="size-6" />
-          </router-link>
-          <router-link
-            :to="{ name: GRID_EDIT_ROUTE }"
-            title="Grid edit mode"
-            exact-active-class="text-green-500"
-            class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
-          >
-            <TableIcon class="size-6" />
-          </router-link>
-          <router-link
-            :to="{ name: CHART_EDIT_MODE_ROUTE }"
-            title="Chart edit mode"
-            exact-active-class="text-green-500"
-            class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
-          >
-            <IconSitemap class="size-6" />
-          </router-link>
+            <router-link
+              :to="{ name: MAP_EDIT_MODE_ROUTE }"
+              title="Map edit mode"
+              exact-active-class="text-green-500"
+              class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
+            >
+              <GlobeAltIcon class="size-6" />
+            </router-link>
+            <router-link
+              :to="{ name: GRID_EDIT_ROUTE }"
+              title="Grid edit mode"
+              exact-active-class="text-green-500"
+              class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
+            >
+              <TableIcon class="size-6" />
+            </router-link>
+            <router-link
+              :to="{ name: CHART_EDIT_MODE_ROUTE }"
+              title="Chart edit mode"
+              exact-active-class="text-green-500"
+              class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
+            >
+              <IconSitemap class="size-6" />
+            </router-link>
+          </div>
         </div>
         <div class="flex items-center">
           <Button
@@ -472,7 +478,7 @@ if (state.layers.length > 0) {
             size="icon"
             @click="toggleDark()"
             title="Toggle dark mode"
-            class="text-foreground/70"
+            class="text-foreground/70 hidden sm:inline-flex"
           >
             <SunIcon v-if="isDark" class="size-5" /><MoonStarIcon v-else class="size-5" />
           </Button>
