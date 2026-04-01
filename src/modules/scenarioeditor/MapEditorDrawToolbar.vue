@@ -28,7 +28,7 @@ import { onKeyStroke, useToggle } from "@vueuse/core";
 import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useEditingInteraction } from "@/composables/geoEditing";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
-import { useRecordingStore } from "@/stores/recordingStore.ts";
+import { useRecordingStore } from "@/stores/recordingStore";
 import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useSelectedItems } from "@/stores/selectedStore";

@@ -31,9 +31,9 @@ const isAnyRecording = computed(
 );
 
 const activeRecordingLabels = computed(() => {
-  const labels = [];
+  const labels: string[] = [];
   if (store.isRecordingHierarchy) labels.push("Unit hierarchy");
-  if (store.isRecordingLocation) labels.push("Unit location");
+  if (store.isRecordingLocation) labels.push("Unit position");
   if (store.isRecordingGeometry) labels.push("Feature geometry");
   return labels;
 });
@@ -66,6 +66,7 @@ const toggleRecordingPrefix = () => {
     class="bg-card flex shrink-0 items-center overflow-hidden rounded-md border shadow-sm transition-all"
   >
     <Button
+      type="button"
       variant="ghost"
       size="sm"
       class="h-8 gap-1.5 rounded-none px-2 transition-colors sm:h-9 sm:gap-2 sm:px-3"
@@ -118,6 +119,7 @@ const toggleRecordingPrefix = () => {
     <DropdownMenu>
       <DropdownMenuTrigger as-child>
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           class="h-8 rounded-none border-l px-1.5 sm:h-9 sm:px-2"
@@ -146,7 +148,7 @@ const toggleRecordingPrefix = () => {
         <DropdownMenuCheckboxItem v-model="store.isRecordingLocation" @select.prevent>
           <span class="flex items-center gap-2">
             <MapPinned class="h-4 w-4" />
-            <span>Unit location</span>
+            <span>Unit position</span>
           </span>
         </DropdownMenuCheckboxItem>
 

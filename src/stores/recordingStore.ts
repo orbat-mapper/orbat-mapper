@@ -14,7 +14,7 @@ export const DEFAULT_RECORDING_MIX: RecordingMix = {
   location: true,
 };
 
-export const useRecordingStore = defineStore("timeRecordStore", () => {
+export const useRecordingStore = defineStore("recordingStore", () => {
   const isRecordingHierarchy = ref(DEFAULT_RECORDING_MIX.hierarchy);
   const toggleRecordingHierarchy = useToggle(isRecordingHierarchy);
 

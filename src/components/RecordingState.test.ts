@@ -83,7 +83,7 @@ describe("RecordingState", () => {
 
     expect(wrapper.get("button").text()).toContain("Rec");
     expect(wrapper.get("button").text()).not.toContain("Location");
-    expect(wrapper.get("button").attributes("title")).toContain("Unit location");
+    expect(wrapper.get("button").attributes("title")).toContain("Unit position");
   });
 
   it("stops all recording and resumes the last non-empty selection", async () => {

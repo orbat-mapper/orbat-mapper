@@ -12,7 +12,7 @@ import { useEventBus, useEventListener } from "@vueuse/core";
 import { orbatUnitClick } from "@/components/eventKeys";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useUiStore } from "@/stores/uiStore";
-import { useRecordingStore } from "@/stores/recordingStore.ts";
+import { useRecordingStore } from "@/stores/recordingStore";
 import { serializeUnit } from "@/scenariostore/io";
 import {
   addUnitHierarchy,

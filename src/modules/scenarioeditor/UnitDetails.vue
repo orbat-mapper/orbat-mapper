@@ -490,7 +490,11 @@ function locateInOrbat() {
 
           <IconButton
             @click="recordingStore.isRecordingLocation && startGetLocation()"
-            title="Set unit location"
+            :title="
+              recordingStore.isRecordingLocation
+                ? 'Set unit location'
+                : 'Set unit location disabled. Enable Unit position in Rec first.'
+            "
             :disabled="isMultiMode || isLocked || !recordingStore.isRecordingLocation"
           >
             <IconCrosshairsGps class="size-5" aria-hidden="true" />
