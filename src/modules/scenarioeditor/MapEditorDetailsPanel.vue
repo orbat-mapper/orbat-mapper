@@ -20,9 +20,9 @@ import { storeToRefs } from "pinia";
 const { detailsPanelPinned: isPinned } = storeToRefs(ui);
 
 const sidebarClasses =
-  "bg-sidebar border-sidebar-border relative flex h-full flex-col overflow-hidden border-l shadow-sm";
+  "bg-sidebar border-sidebar-border pointer-events-auto relative flex h-full flex-col overflow-hidden border-l shadow-sm";
 const overlayClasses =
-  "bg-sidebar border-sidebar-border absolute right-2 top-2 z-30 flex max-h-[70vh] flex-col overflow-clip rounded-md border shadow-sm";
+  "bg-sidebar border-sidebar-border pointer-events-auto absolute right-2 top-2 z-30 flex max-h-[70vh] flex-col overflow-clip rounded-md border shadow-sm";
 </script>
 
 <template>
