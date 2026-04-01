@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## April 20206
+
+### Fixed
+
+- Fixed dragging an unselected unit also moving previously selected units.
+
 ## March 2026
 
 ### Added

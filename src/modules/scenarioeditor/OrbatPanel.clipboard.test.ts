@@ -662,6 +662,72 @@ describe("OrbatPanel unit drag-and-drop hierarchy recording", () => {
     expect(wrapper.find('[data-testid="orbat-hierarchy-overlay"]').exists()).toBe(true);
   });
 
+  it("dragging an unselected unit does not move previously selected units", () => {
+    const { scenario } = mountPanel();
+    const selected = useSelectedItems();
+    // Select unit A
+    selected.selectedUnitIds.value.add("u-A");
+
+    const sourceUnit = {
+      id: "u-B",
+      name: "Source B",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+    const destinationUnit = {
+      id: "u-2",
+      name: "Target",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+
+    // Drag unit B (which is NOT selected) onto unit 2
+    triggerUnitDrop(sourceUnit, destinationUnit, { type: "make-child" });
+
+    // Only the dragged unit (u-B) should be moved, not the selected unit (u-A)
+    expect(scenario.unitActions.changeUnitParent).toHaveBeenCalledTimes(1);
+    expect(scenario.unitActions.changeUnitParent).toHaveBeenCalledWith(
+      "u-B",
+      "u-2",
+      "on",
+    );
+  });
+
+  it("dragging a selected unit also moves other selected units", () => {
+    const { scenario } = mountPanel();
+    const selected = useSelectedItems();
+    // Select both unit A and unit B
+    selected.selectedUnitIds.value.add("u-A");
+    selected.selectedUnitIds.value.add("u-B");
+
+    const sourceUnit = {
+      id: "u-B",
+      name: "Source B",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+    const destinationUnit = {
+      id: "u-2",
+      name: "Target",
+      sidc: TEST_SIDC,
+      subUnits: [],
+      _pid: "group-1",
+      _sid: "side-1",
+    } as NUnit;
+
+    // Drag unit B (which IS selected) onto unit 2
+    triggerUnitDrop(sourceUnit, destinationUnit, { type: "make-child" });
+
+    // Both selected units should be moved
+    expect(scenario.unitActions.changeUnitParent).toHaveBeenCalledTimes(2);
+  });
+
   it("does not show hierarchy recording banner for non-unit drags", async () => {
     const { wrapper } = mountPanel();
     useUiStore().recordHierarchyChanges = true;
