@@ -15,6 +15,22 @@ const { storedScenariosMock, openFilePickerMock } = vi.hoisted(() => ({
   storedScenariosMock: [] as Array<{ id: string; name: string }>,
   openFilePickerMock: vi.fn(),
 }));
+const { onBulkActionMock } = vi.hoisted(() => ({
+  onBulkActionMock: vi.fn(),
+}));
+
+const StoredScenarioBrowserStub = defineComponent({
+  name: "StoredScenarioBrowser",
+  props: {
+    scenarios: { type: Array, default: () => [] },
+    sortOptions: { type: Array, default: () => [] },
+    searchInputId: { type: String, default: "" },
+    autofocus: { type: Boolean, default: false },
+    enableBatchActions: { type: Boolean, default: false },
+  },
+  emits: ["bulk-action"],
+  template: '<div><slot name="actions" /><slot /></div>',
+});
 
 vi.mock("vue-router", () => ({
   useRouter: () => ({ push: pushMock }),
@@ -27,6 +43,7 @@ vi.mock("@/composables/browserScenarios", () => ({
     storedScenarios: storedScenariosMock,
     sortOptions: [],
     onAction: vi.fn(),
+    onBulkAction: onBulkActionMock,
     loadScenario: loadScenarioMock,
   }),
 }));
@@ -78,10 +95,7 @@ describe("LandingPageScenarios clipboard routing", () => {
         stubs: {
           RouterLink: true,
           UseDark: true,
-          StoredScenarioBrowser: defineComponent({
-            props: ["scenarios", "sortOptions", "searchInputId", "autofocus"],
-            template: '<div><slot name="actions" /><slot /></div>',
-          }),
+          StoredScenarioBrowser: StoredScenarioBrowserStub,
           LoadScenarioFromClipboardPanel: defineComponent({
             emits: ["loaded"],
             template:
@@ -186,5 +200,26 @@ describe("LandingPageScenarios clipboard routing", () => {
       query: { token: "token-123", source: "external" },
     });
     expect(loadScenarioMock).not.toHaveBeenCalled();
+  });
+
+  it("enables batch actions on the stored scenario browser", () => {
+    storedScenariosMock.push({ id: "recent-1", name: "Recent" });
+    const wrapper = mountWithSourceScenario({});
+
+    expect(
+      wrapper.findComponent(StoredScenarioBrowserStub).props("enableBatchActions"),
+    ).toBe(true);
+  });
+
+  it("forwards bulk actions to the browser-scenarios composable", () => {
+    storedScenariosMock.push({ id: "recent-1", name: "Recent" });
+    const wrapper = mountWithSourceScenario({});
+    const scenarios = [{ id: "scenario-1", name: "Scenario 1" }];
+
+    wrapper
+      .findComponent(StoredScenarioBrowserStub)
+      .vm.$emit("bulk-action", "delete", scenarios);
+
+    expect(onBulkActionMock).toHaveBeenCalledWith("delete", scenarios);
   });
 });

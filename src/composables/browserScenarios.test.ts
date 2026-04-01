@@ -3,8 +3,11 @@ import { nextTick } from "vue";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
 import { MAP_EDIT_MODE_ROUTE, ORBAT_CHART_ROUTE } from "@/router/names";
 
-const { pushMock } = vi.hoisted(() => ({
+const { pushMock, sendMock, deleteScenariosMock, listScenariosMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),
+  sendMock: vi.fn(),
+  deleteScenariosMock: vi.fn(),
+  listScenariosMock: vi.fn(async () => []),
 }));
 
 vi.mock("vue-router", () => ({
@@ -20,13 +23,14 @@ vi.mock("@vueuse/core", async () => {
 });
 
 vi.mock("@/composables/notifications", () => ({
-  useNotifications: () => ({ send: vi.fn() }),
+  useNotifications: () => ({ send: sendMock }),
 }));
 
 vi.mock("@/scenariostore/localdb", () => ({
   useIndexedDb: async () => ({
-    listScenarios: async () => [],
+    listScenarios: listScenariosMock,
     deleteScenario: vi.fn(),
+    deleteScenarios: deleteScenariosMock,
     duplicateScenario: vi.fn(),
     downloadAsJson: vi.fn(),
     loadScenario: vi.fn(),
@@ -39,6 +43,7 @@ vi.mock("@/scenariostore/localdb", () => ({
 describe("useBrowserScenarios", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    listScenariosMock.mockResolvedValue([]);
   });
 
   it("routes open actions to the supplied route name", async () => {
@@ -76,5 +81,36 @@ describe("useBrowserScenarios", () => {
       name: MAP_EDIT_MODE_ROUTE,
       params: { scenarioId: "scenario-2" },
     });
+  });
+
+  it("deletes multiple scenarios and sends a success notification", async () => {
+    const { onBulkAction } = useBrowserScenarios();
+    const scenarios = [
+      {
+        id: "scenario-1",
+        name: "Scenario 1",
+        description: "",
+        image: "",
+        modified: new Date(),
+        created: new Date(),
+      },
+      {
+        id: "scenario-2",
+        name: "Scenario 2",
+        description: "",
+        image: "",
+        modified: new Date(),
+        created: new Date(),
+      },
+    ];
+
+    await onBulkAction("delete", scenarios);
+
+    expect(deleteScenariosMock).toHaveBeenCalledWith(["scenario-1", "scenario-2"]);
+    expect(sendMock).toHaveBeenCalledWith({
+      message: "Deleted 2 scenarios",
+      type: "success",
+    });
+    expect(listScenariosMock).toHaveBeenCalled();
   });
 });

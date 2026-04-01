@@ -5,7 +5,8 @@ import { type StoredScenarioAction } from "@/types/constants";
 import { type ScenarioMetadata } from "@/scenariostore/localdb";
 
 const emit = defineEmits(["loaded"]);
-const { importScenario, storedScenarios, sortOptions, onAction } = useBrowserScenarios();
+const { importScenario, storedScenarios, sortOptions, onAction, onBulkAction } =
+  useBrowserScenarios();
 
 async function handleAction(action: StoredScenarioAction, info: ScenarioMetadata) {
   if (action === "open") {
@@ -24,9 +25,11 @@ async function handleAction(action: StoredScenarioAction, info: ScenarioMetadata
       :sort-options="sortOptions"
       search-input-id="import-scenario-search"
       no-link
+      enable-batch-actions
       empty-message="No recent scenarios match"
       grid-class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-3"
       @action="handleAction"
+      @bulk-action="onBulkAction"
     />
   </section>
 </template>

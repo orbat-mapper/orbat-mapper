@@ -121,11 +121,17 @@ export async function useIndexedDb() {
     return db.getAllFromIndex("scenario-metadata", "by-modified");
   }
 
-  async function deleteScenario(id: string) {
+  async function deleteScenarios(ids: string[]) {
     const tx = db.transaction(["scenario-blobs", "scenario-metadata"], "readwrite");
-    await tx.objectStore("scenario-blobs").delete(id);
-    await tx.objectStore("scenario-metadata").delete(id);
+    for (const id of ids) {
+      await tx.objectStore("scenario-blobs").delete(id);
+      await tx.objectStore("scenario-metadata").delete(id);
+    }
     await tx.done;
+  }
+
+  async function deleteScenario(id: string) {
+    await deleteScenarios([id]);
   }
 
   async function duplicateScenario(id: string) {
@@ -174,6 +180,7 @@ export async function useIndexedDb() {
     loadScenario,
     putScenario,
     deleteScenario,
+    deleteScenarios,
     duplicateScenario,
     downloadAsJson,
     getScenarioInfo,
