@@ -144,8 +144,8 @@ importers:
         specifier: ^6.198.0
         version: 6.198.0
       '@xmldom/xmldom':
-        specifier: ^0.8.11
-        version: 0.8.11
+        specifier: ^0.8.12
+        version: 0.8.12
       audit:
         specifier: ^0.0.6
         version: 0.0.6
@@ -2215,8 +2215,8 @@ packages:
   '@vvo/tzdb@6.198.0':
     resolution: {integrity: sha512-bNRWBhWYl0edVgyX6AYbhoCM2tk2lXJjGCyO2VDc2xn6Dw8dLd7WGj2DDXkVOkmOIQTNjEAcxrEpIzz5pWVwFg==}
 
-  '@xmldom/xmldom@0.8.11':
-    resolution: {integrity: sha512-cQzWCtO6C8TQiYl1ruKNn2U6Ao4o4WBBcbL61yJl84x+j5sOWWFU9X7DpND8XZG3daDppSsigMdfAIl2upQBRw==}
+  '@xmldom/xmldom@0.8.12':
+    resolution: {integrity: sha512-9k/gHF6n/pAi/9tqr3m3aqkuiNosYTurLLUtc7xQ9sxB/wm7WPygCv8GYa6mS0fLJEHhqMC1ATYhz++U/lRHqg==}
     engines: {node: '>=10.0.0'}
 
   '@zarrita/storage@0.1.4':
@@ -6697,7 +6697,7 @@ snapshots:
 
   '@vvo/tzdb@6.198.0': {}
 
-  '@xmldom/xmldom@0.8.11': {}
+  '@xmldom/xmldom@0.8.12': {}
 
   '@zarrita/storage@0.1.4':
     dependencies:
