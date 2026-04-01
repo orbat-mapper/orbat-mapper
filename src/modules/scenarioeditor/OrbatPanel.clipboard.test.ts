@@ -6,7 +6,7 @@ import { createPinia, setActivePinia } from "pinia";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import { activeParentKey, activeScenarioKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { useRecordingStore } from "@/stores/recordingStore.ts";
+import { useRecordingStore } from "@/stores/recordingStore";
 import { getSideDragItem, getUnitDragItem } from "@/types/draggables";
 import type { NUnit } from "@/types/internalModels";
 

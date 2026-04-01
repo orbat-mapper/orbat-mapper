@@ -2,7 +2,7 @@
 import { IconClockEditOutline as IconClockEdit } from "@iconify-prerendered/vue-mdi";
 import { MapPinned, Workflow } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
-import { useRecordingStore } from "@/stores/recordingStore.ts";
+import { useRecordingStore } from "@/stores/recordingStore";
 
 const recordStore = useRecordingStore();
 </script>

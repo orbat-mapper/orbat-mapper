@@ -7,7 +7,7 @@ import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
 import MapContextMenu from "@/components/MapContextMenu.vue";
 import OrbatPanelFooterToolbar from "@/modules/scenarioeditor/OrbatPanelFooterToolbar.vue";
-import { useRecordingStore } from "@/stores/recordingStore.ts";
+import { useRecordingStore } from "@/stores/recordingStore";
 import {
   activeLayerKey,
   activeScenarioKey,
