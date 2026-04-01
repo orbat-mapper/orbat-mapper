@@ -2,12 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
 import { MAP_EDIT_MODE_ROUTE, ORBAT_CHART_ROUTE } from "@/router/names";
+import type { ScenarioMetadata } from "@/scenariostore/localdb";
 
 const { pushMock, sendMock, deleteScenariosMock, listScenariosMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),
   sendMock: vi.fn(),
   deleteScenariosMock: vi.fn(),
-  listScenariosMock: vi.fn(async () => []),
+  listScenariosMock: vi.fn<() => Promise<ScenarioMetadata[]>>(async () => []),
 }));
 
 vi.mock("vue-router", () => ({
@@ -112,5 +113,56 @@ describe("useBrowserScenarios", () => {
       type: "success",
     });
     expect(listScenariosMock).toHaveBeenCalled();
+  });
+
+  it("preserves the active sort order after reloading scenarios", async () => {
+    const { storedScenarios, sortOptions, onBulkAction } = useBrowserScenarios();
+    storedScenarios.value = [
+      {
+        id: "scenario-b",
+        name: "Bravo",
+        description: "",
+        image: "",
+        modified: new Date("2024-01-03T00:00:00.000Z"),
+        created: new Date("2024-01-03T00:00:00.000Z"),
+      },
+      {
+        id: "scenario-a",
+        name: "Alpha",
+        description: "",
+        image: "",
+        modified: new Date("2024-01-04T00:00:00.000Z"),
+        created: new Date("2024-01-04T00:00:00.000Z"),
+      },
+    ];
+
+    const sortByName = sortOptions.value.find((option) => option.label === "Name")!;
+    (sortByName.action as () => void)();
+
+    listScenariosMock.mockResolvedValue([
+      {
+        id: "scenario-b",
+        name: "Bravo",
+        description: "",
+        image: "",
+        modified: new Date("2024-01-01T00:00:00.000Z"),
+        created: new Date("2024-01-01T00:00:00.000Z"),
+      },
+      {
+        id: "scenario-a",
+        name: "Alpha",
+        description: "",
+        image: "",
+        modified: new Date("2024-01-05T00:00:00.000Z"),
+        created: new Date("2024-01-05T00:00:00.000Z"),
+      },
+    ]);
+
+    await onBulkAction("delete", [storedScenarios.value[0]]);
+
+    expect(storedScenarios.value.map((scenario) => scenario.name)).toEqual([
+      "Alpha",
+      "Bravo",
+    ]);
   });
 });

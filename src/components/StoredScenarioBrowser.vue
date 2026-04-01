@@ -87,11 +87,22 @@ const allFilteredSelected = computed(
     filteredScenarioIds.value.every((id) => selectedIds.value.has(id)),
 );
 
+function isEditableTarget(target: EventTarget | null) {
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    (target instanceof HTMLElement && target.isContentEditable)
+  );
+}
+
 function onScenarioSearchKeydown(event: KeyboardEvent) {
   if (event.key !== "Escape" || !scenarioQuery.value) {
     return;
   }
 
+  event.preventDefault();
+  event.stopPropagation();
   scenarioQuery.value = "";
 }
 
@@ -186,7 +197,12 @@ watch(
 );
 
 useEventListener("keydown", (event: KeyboardEvent) => {
-  if (!isSelecting.value || event.key !== "Escape") {
+  if (
+    !isSelecting.value ||
+    event.key !== "Escape" ||
+    event.defaultPrevented ||
+    isEditableTarget(event.target)
+  ) {
     return;
   }
 
