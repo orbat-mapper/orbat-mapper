@@ -37,15 +37,30 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
   const { copy: copyToClipboard } = useClipboard();
   const { send } = useNotifications();
   const storedScenarios = ref<ScenarioMetadata[]>([]);
-  const activeSort = ref("lastModified");
+  const activeSort = ref<"name" | "lastModified" | "created">("lastModified");
   const routeName = options.routeName ?? MAP_EDIT_MODE_ROUTE;
+
+  function applySort(sort: "name" | "lastModified" | "created") {
+    switch (sort) {
+      case "name":
+        storedScenarios.value.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "created":
+        storedScenarios.value.sort((a, b) => +b.created - +a.created);
+        break;
+      case "lastModified":
+      default:
+        storedScenarios.value.sort((a, b) => +b.modified - +a.modified);
+        break;
+    }
+  }
 
   const sortOptions = computed<MenuItemData[]>(() => [
     {
       label: "Name",
       action: () => {
-        storedScenarios.value.sort((a, b) => a.name.localeCompare(b.name));
         activeSort.value = "name";
+        applySort(activeSort.value);
       },
       active: activeSort.value === "name",
     },
@@ -53,7 +68,7 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
       label: "Last modified",
       action: () => {
         activeSort.value = "lastModified";
-        storedScenarios.value.sort((a, b) => +b.modified - +a.modified);
+        applySort(activeSort.value);
       },
       active: activeSort.value === "lastModified",
     },
@@ -61,7 +76,7 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
       label: "Created",
       action: () => {
         activeSort.value = "created";
-        storedScenarios.value.sort((a, b) => +b.created - +a.created);
+        applySort(activeSort.value);
       },
       active: activeSort.value === "created",
     },
@@ -70,7 +85,7 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
   async function reloadScenarios() {
     const { listScenarios } = await useIndexedDb();
     storedScenarios.value = await listScenarios();
-    storedScenarios.value.reverse();
+    applySort(activeSort.value);
   }
 
   async function onAction(action: StoredScenarioAction, scenario: ScenarioMetadata) {

@@ -183,6 +183,19 @@ describe("StoredScenarioBrowser", () => {
     expect(wrapper.text()).toContain("1 selected");
   });
 
+  it("clears the search on Escape without cancelling selection mode", async () => {
+    const wrapper = mountBrowser({ enableBatchActions: true });
+
+    await wrapper.get("input").setValue("Bravo");
+    await wrapper.get("button").trigger("click");
+    await wrapper.get("input").trigger("keydown", { key: "Escape" });
+
+    expect((wrapper.get("input").element as HTMLInputElement).value).toBe("");
+    expect(wrapper.text()).toContain("0 selected");
+    expect(wrapper.text()).toContain("Cancel");
+    expect(wrapper.find('[data-testid="scenario-card-alpha"]').exists()).toBe(true);
+  });
+
   it("disables Delete selected when nothing is selected", async () => {
     const wrapper = mountBrowser({ enableBatchActions: true });
 

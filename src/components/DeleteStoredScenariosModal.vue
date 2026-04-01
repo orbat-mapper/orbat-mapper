@@ -8,7 +8,7 @@ import type { ScenarioMetadata } from "@/scenariostore/localdb";
 const props = defineProps<{
   scenarios: ScenarioMetadata[];
 }>();
-defineEmits(["confirm", "cancel"]);
+const emit = defineEmits(["confirm", "cancel"]);
 
 const open = defineModel<boolean>({ default: false });
 
@@ -16,13 +16,18 @@ const visibleScenarios = computed(() => props.scenarios.slice(0, 10));
 const hiddenScenarioCount = computed(() =>
   Math.max(props.scenarios.length - visibleScenarios.value.length, 0),
 );
+
+function onCancel() {
+  open.value = false;
+  emit("cancel");
+}
 </script>
 
 <template>
   <NewSimpleModal
     v-model="open"
     dialog-title="Delete selected scenarios"
-    @cancel="$emit('cancel')"
+    @cancel="emit('cancel')"
   >
     <div class="space-y-4">
       <p class="text-sm">
@@ -42,8 +47,8 @@ const hiddenScenarioCount = computed(() =>
       </ul>
 
       <div class="flex justify-end gap-2">
-        <Button variant="secondary" @click="open = false">Cancel</Button>
-        <Button variant="destructive" @click="$emit('confirm')">Delete</Button>
+        <Button type="button" variant="secondary" @click="onCancel">Cancel</Button>
+        <Button type="button" variant="destructive" @click="emit('confirm')">Delete</Button>
       </div>
     </div>
   </NewSimpleModal>
