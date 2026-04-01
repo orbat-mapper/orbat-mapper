@@ -56,6 +56,7 @@ import { getUnitDragItem } from "@/types/draggables.ts";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 import { Badge } from "@/components/ui/badge";
+import { useRecordingStore } from "@/stores/recordingStore";
 
 const FeatureTransformations = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/FeatureTransformations.vue"),
@@ -124,6 +125,7 @@ const unitStatus = computed(() => {
 const isLocked = computed(() => isUnitLocked(props.unitId));
 
 const geoStore = useGeoStore();
+const recordingStore = useRecordingStore();
 const unitSettings = useUnitSettingsStore();
 const { getModalSidc } = injectStrict(sidcModalKey);
 
@@ -487,9 +489,9 @@ function locateInOrbat() {
           </IconButton>
 
           <IconButton
-            @click="startGetLocation()"
+            @click="recordingStore.isRecordingLocation && startGetLocation()"
             title="Set unit location"
-            :disabled="isMultiMode || isLocked"
+            :disabled="isMultiMode || isLocked || !recordingStore.isRecordingLocation"
           >
             <IconCrosshairsGps class="size-5" aria-hidden="true" />
           </IconButton>

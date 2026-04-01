@@ -268,14 +268,48 @@ beforeEach(() => {
   setActivePinia(createPinia());
 });
 
-describe("isRecordingHierarchy UI", () => {
-  it("toggles from the ORBAT footer toolbar", async () => {
-    const wrapper = mount(OrbatPanelFooterToolbar);
+describe("recording UI", () => {
+  it("shows hierarchy and position recording status in the ORBAT footer toolbar", async () => {
     const recordStore = useRecordingStore();
-    const toggle = wrapper.get('input[type="checkbox"]');
+    recordStore.isRecordingHierarchy = true;
+    recordStore.isRecordingLocation = true;
 
-    expect(wrapper.text()).toContain("Track hierarchy");
-    await toggle.setValue(true);
+    const wrapper = mount(OrbatPanelFooterToolbar);
+
+    expect(wrapper.attributes("title")).toBeUndefined();
+    expect(wrapper.text()).toBe("");
+    expect(wrapper.find('[aria-label="Unit hierarchy recording is on."]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.find('[aria-label="Unit position recording is on."]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.findAll("svg").length).toBeGreaterThanOrEqual(4);
+    expect(wrapper.find('input[type="checkbox"]').exists()).toBe(false);
+  });
+
+  it("toggles hierarchy recording from the ORBAT footer toolbar", async () => {
+    const recordStore = useRecordingStore();
+    const wrapper = mount(OrbatPanelFooterToolbar);
+    const buttons = wrapper.findAll("button");
+
+    await buttons[0].trigger("click");
     expect(recordStore.isRecordingHierarchy).toBe(true);
+    expect(recordStore.isRecordingLocation).toBe(true);
+
+    await buttons[0].trigger("click");
+    expect(recordStore.isRecordingHierarchy).toBe(false);
+  });
+
+  it("toggles position recording from the ORBAT footer toolbar", async () => {
+    const recordStore = useRecordingStore();
+    const wrapper = mount(OrbatPanelFooterToolbar);
+    const buttons = wrapper.findAll("button");
+
+    await buttons[1].trigger("click");
+    expect(recordStore.isRecordingLocation).toBe(false);
+
+    await buttons[1].trigger("click");
+    expect(recordStore.isRecordingLocation).toBe(true);
   });
 });

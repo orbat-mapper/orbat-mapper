@@ -46,6 +46,7 @@ import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils.ts";
+import { useRecordingStore } from "@/stores/recordingStore";
 
 let zoomResolutions: number[] = [];
 const ROTATION_EPSILON = 1e-6;
@@ -347,6 +348,7 @@ export function useMoveInteraction(
     geo,
     unitActions: { isUnitLocked },
   } = injectStrict(activeScenarioKey);
+  const recordingStore = useRecordingStore();
   const modifyInteraction = new Modify({
     hitDetection: unitLayer,
     source: unitLayer.getSource()!,
@@ -374,6 +376,7 @@ export function useMoveInteraction(
           unitFeature.set("_geometry", undefined, true);
           return;
         }
+        if (!recordingStore.isRecordingLocation) return;
         const newCoordinate = unitFeature.getGeometry()?.getCoordinates();
         if (newCoordinate) geo.addUnitPosition(movedUnitId, toLonLat(newCoordinate));
       }
