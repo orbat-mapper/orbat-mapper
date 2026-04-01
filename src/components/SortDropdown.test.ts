@@ -110,7 +110,7 @@ describe("SortDropdown", () => {
     expect(wrapper.get('[data-testid="direction-toggle"]').text()).toContain(
       "Order: Ascending",
     );
-    expect(wrapper.get('[data-testid="direction-toggle"] svg').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="direction-toggle"] svg').exists()).toBe(true);
   });
 
   it("emits a toggle event when the sort direction item is selected", async () => {

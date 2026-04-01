@@ -31,6 +31,13 @@ vi.mock("@/components/ui/dropdown-menu", () => {
       "<button class='dropdown-checkbox-item' :data-disabled='disabled || undefined' @click='!disabled && $emit(\"select\")'><slot /></button>",
   });
 
+  const DropdownMenuSubTrigger = defineComponent({
+    name: "DropdownMenuSubTrigger",
+    props: { disabled: { type: Boolean, default: false } },
+    template:
+      "<button class='dropdown-sub-trigger' :data-disabled='disabled || undefined'><slot /></button>",
+  });
+
   return {
     DropdownMenu: passthrough("DropdownMenu"),
     DropdownMenuCheckboxItem,
@@ -38,6 +45,9 @@ vi.mock("@/components/ui/dropdown-menu", () => {
     DropdownMenuItem,
     DropdownMenuLabel: passthrough("DropdownMenuLabel"),
     DropdownMenuSeparator: passthrough("DropdownMenuSeparator"),
+    DropdownMenuSub: passthrough("DropdownMenuSub"),
+    DropdownMenuSubContent: passthrough("DropdownMenuSubContent"),
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger: passthrough("DropdownMenuTrigger"),
   };
 });
@@ -53,6 +63,18 @@ describe("SideDropdownMenu", () => {
     expect(wrapper.text()).toContain("Collapse units");
   });
 
+  it("groups add actions under an Add submenu", () => {
+    const wrapper = mount(SideDropdownMenu, {
+      props: { isLocked: false, isHidden: false },
+      global: { stubs: { Button: true, EllipsisVertical: true } },
+    });
+
+    expect(wrapper.find("button.dropdown-sub-trigger").text()).toContain("Add");
+    expect(wrapper.text()).toContain("Add side");
+    expect(wrapper.text()).toContain("Add group");
+    expect(wrapper.text()).toContain("Add root unit");
+  });
+
   it("emits expand action when expand units is selected", async () => {
     const wrapper = mount(SideDropdownMenu, {
       props: { isLocked: false, isHidden: false },
@@ -66,6 +88,22 @@ describe("SideDropdownMenu", () => {
     await expand!.trigger("click");
 
     expect(wrapper.emitted("action")?.[0]).toEqual([SideActions.Expand]);
+  });
+
+  it("emits add group when selected from the Add submenu", async () => {
+    const wrapper = mount(SideDropdownMenu, {
+      props: { isLocked: false, isHidden: false },
+      global: { stubs: { Button: true, EllipsisVertical: true } },
+    });
+
+    const addGroup = wrapper
+      .findAll("button.dropdown-item")
+      .find((item) => item.text().includes("Add group"));
+    expect(addGroup).toBeDefined();
+
+    await addGroup!.trigger("click");
+
+    expect(wrapper.emitted("action")?.[0]).toEqual([SideActions.AddGroup]);
   });
 
   it("disables expand and collapse actions when side is locked", async () => {
@@ -86,5 +124,14 @@ describe("SideDropdownMenu", () => {
     await expand!.trigger("click");
     await collapse!.trigger("click");
     expect(wrapper.emitted("action")).toBeUndefined();
+  });
+
+  it("disables the Add submenu trigger when side is locked", () => {
+    const wrapper = mount(SideDropdownMenu, {
+      props: { isLocked: true, isHidden: false },
+      global: { stubs: { Button: true, EllipsisVertical: true } },
+    });
+
+    expect(wrapper.find("button.dropdown-sub-trigger").attributes("data-disabled")).toBeDefined();
   });
 });

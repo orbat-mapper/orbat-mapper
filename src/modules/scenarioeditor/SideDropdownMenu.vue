@@ -6,6 +6,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical } from "lucide-vue-next";
@@ -13,7 +16,7 @@ import { Button } from "@/components/ui/button";
 
 import { type SideAction, SideActions } from "@/types/constants";
 import { computed } from "vue";
-import { type DropdownMenuItemType } from "@/components/types";
+import { type DropdownMenuItemType, type MenuItemData } from "@/components/types";
 
 const props = defineProps<{
   isLocked: boolean;
@@ -45,8 +48,13 @@ const sideMenuItems = computed(() => {
       : { label: "Hide side", action: SideActions.Hide },
     { label: "Expand units", action: SideActions.Expand, disabled: props.isLocked },
     { label: "Collapse units", action: SideActions.Collapse, disabled: props.isLocked },
-
     { separator: true },
+    { label: "Delete side", action: SideActions.Delete, disabled: props.isLocked },
+  ] as DropdownMenuItemType[];
+});
+
+const addMenuItems = computed(() => {
+  return [
     { label: "Add side", action: SideActions.Add, disabled: props.isLocked },
     { label: "Add group", action: SideActions.AddGroup, disabled: props.isLocked },
     {
@@ -54,9 +62,7 @@ const sideMenuItems = computed(() => {
       action: SideActions.AddSubordinate,
       disabled: props.isLocked,
     },
-    { separator: true },
-    { label: "Delete side", action: SideActions.Delete, disabled: props.isLocked },
-  ] as DropdownMenuItemType[];
+  ] as MenuItemData<SideAction>[];
 });
 </script>
 
@@ -70,6 +76,20 @@ const sideMenuItems = computed(() => {
     <DropdownMenuContent class="min-w-52" align="end">
       <DropdownMenuLabel>Side actions</DropdownMenuLabel>
       <DropdownMenuSeparator />
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger :disabled="props.isLocked">Add</DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          <DropdownMenuItem
+            v-for="item in addMenuItems"
+            :key="item.action"
+            :disabled="item.disabled"
+            @select="emit('action', item.action)"
+          >
+            <span>{{ item.label }}</span>
+          </DropdownMenuItem>
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+
       <template
         v-for="(item, index) in sideMenuItems"
         :key="'action' in item ? item.action : index"
