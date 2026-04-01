@@ -301,37 +301,39 @@ useEventListener("keydown", (event: KeyboardEvent) => {
       </div>
     </header>
 
-    <ul
-      v-if="filteredScenarios.length > 0"
-      :class="
-        cn(
-          'mt-4 grid grid-cols-1 gap-6 @xl:grid-cols-2 @4xl:grid-cols-3 @6xl:grid-cols-4',
-          props.gridClass,
-        )
-      "
-    >
-      <ScenarioLinkCard
-        v-for="info in filteredScenarios"
-        :key="info.id"
-        :data="info"
-        :no-link="noLink"
-        :route-name="routeName"
-        :selection-mode="isSelecting"
-        :selected="selectedIds.has(info.id)"
-        @action="onAction($event, info)"
-        @toggle-select="toggleScenarioSelection(info.id)"
-      />
-    </ul>
-    <div
-      v-else
-      :class="
-        cn(
-          'text-muted-foreground mt-4 rounded-lg border border-dashed p-6 text-sm',
-          props.emptyClass,
-        )
-      "
-    >
-      {{ emptyMessage }} "{{ scenarioQuery.trim() }}".
+    <div class="min-h-0 max-h-[60vh] overflow-y-auto">
+      <ul
+        v-if="filteredScenarios.length > 0"
+        :class="
+          cn(
+            'mt-4 grid grid-cols-1 gap-6 @xl:grid-cols-2 @4xl:grid-cols-3 @6xl:grid-cols-4',
+            props.gridClass,
+          )
+        "
+      >
+        <ScenarioLinkCard
+          v-for="info in filteredScenarios"
+          :key="info.id"
+          :data="info"
+          :no-link="noLink"
+          :route-name="routeName"
+          :selection-mode="isSelecting"
+          :selected="selectedIds.has(info.id)"
+          @action="onAction($event, info)"
+          @toggle-select="toggleScenarioSelection(info.id)"
+        />
+      </ul>
+      <div
+        v-else
+        :class="
+          cn(
+            'text-muted-foreground mt-4 rounded-lg border border-dashed p-6 text-sm',
+            props.emptyClass,
+          )
+        "
+      >
+        {{ emptyMessage }} "{{ scenarioQuery.trim() }}".
+      </div>
     </div>
     <DeleteStoredScenariosModal
       v-model="showDeleteSelectedModal"

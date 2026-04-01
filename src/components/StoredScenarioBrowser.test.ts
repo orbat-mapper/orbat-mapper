@@ -124,6 +124,28 @@ function mountBrowser(props: Record<string, unknown> = {}) {
 }
 
 describe("StoredScenarioBrowser", () => {
+  it("wraps the results list in a scrollable container", () => {
+    const wrapper = mountBrowser();
+    const resultsContainer = wrapper.get('[data-testid="scenario-card-alpha"]').element
+      .parentElement;
+
+    expect(resultsContainer).not.toBeNull();
+    expect(resultsContainer?.className).toContain("mt-4");
+    expect(resultsContainer?.parentElement?.className).toContain("min-h-0");
+    expect(resultsContainer?.parentElement?.className).toContain("max-h-[60vh]");
+    expect(resultsContainer?.parentElement?.className).toContain("overflow-y-auto");
+  });
+
+  it("renders the empty state inside the scrollable container", () => {
+    const wrapper = mountBrowser({ scenarios: [] });
+    const emptyState = wrapper.get(".border-dashed");
+
+    expect(emptyState.text()).toContain('No scenarios match "".');
+    expect(emptyState.element.parentElement?.className).toContain("min-h-0");
+    expect(emptyState.element.parentElement?.className).toContain("max-h-[60vh]");
+    expect(emptyState.element.parentElement?.className).toContain("overflow-y-auto");
+  });
+
   it("renders a Select button only when batch actions are enabled", () => {
     const disabledWrapper = mountBrowser();
     const enabledWrapper = mountBrowser({ enableBatchActions: true });
