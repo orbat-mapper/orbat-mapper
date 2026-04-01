@@ -1,7 +1,7 @@
 import { computed, onMounted, ref } from "vue";
 import { type ScenarioMetadata, useIndexedDb } from "@/scenariostore/localdb";
 import type { MenuItemData } from "@/components/types";
-import type { StoredScenarioAction } from "@/types/constants";
+import type { StoredScenarioAction, StoredScenarioBulkAction } from "@/types/constants";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import type { Scenario } from "@/types/scenarioModels";
 import { nanoid } from "@/utils";
@@ -67,10 +67,15 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
     },
   ]);
 
+  async function reloadScenarios() {
+    const { listScenarios } = await useIndexedDb();
+    storedScenarios.value = await listScenarios();
+    storedScenarios.value.reverse();
+  }
+
   async function onAction(action: StoredScenarioAction, scenario: ScenarioMetadata) {
     const {
       deleteScenario,
-      listScenarios,
       duplicateScenario,
       downloadAsJson,
       loadScenario: loadScenarioFromDb,
@@ -108,11 +113,29 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
     }
 
     await reloadScenarios();
+  }
 
-    async function reloadScenarios() {
-      storedScenarios.value = await listScenarios();
-      storedScenarios.value.reverse();
+  async function onBulkAction(
+    action: StoredScenarioBulkAction,
+    scenarios: ScenarioMetadata[],
+  ) {
+    if (!scenarios.length) {
+      return;
     }
+
+    const { deleteScenarios } = await useIndexedDb();
+
+    switch (action) {
+      case "delete":
+        await deleteScenarios(scenarios.map((scenario) => scenario.id));
+        send({
+          message: `Deleted ${scenarios.length} scenario${scenarios.length === 1 ? "" : "s"}`,
+          type: "success",
+        });
+        break;
+    }
+
+    await reloadScenarios();
   }
 
   async function loadScenario(v: Scenario, routeName = MAP_EDIT_MODE_ROUTE) {
@@ -146,10 +169,15 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
   }
 
   onMounted(async () => {
-    const { listScenarios } = await useIndexedDb();
-    storedScenarios.value = await listScenarios();
-    storedScenarios.value.reverse();
+    await reloadScenarios();
   });
 
-  return { storedScenarios, sortOptions, onAction, loadScenario, importScenario };
+  return {
+    storedScenarios,
+    sortOptions,
+    onAction,
+    onBulkAction,
+    loadScenario,
+    importScenario,
+  };
 }

@@ -123,6 +123,7 @@ export type StoredScenarioAction =
   | "download"
   | "open"
   | "copyToClipboard";
+export type StoredScenarioBulkAction = "delete";
 
 export interface SymbolValue {
   code: string;

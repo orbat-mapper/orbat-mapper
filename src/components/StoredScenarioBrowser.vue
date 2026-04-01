@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, type HTMLAttributes, ref } from "vue";
+import { computed, type HTMLAttributes, ref, watch } from "vue";
+import { useEventListener } from "@vueuse/core";
 import { Search, X } from "lucide-vue-next";
 
+import DeleteStoredScenariosModal from "@/components/DeleteStoredScenariosModal.vue";
 import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
 import SortDropdown from "@/components/SortDropdown.vue";
 import {
@@ -10,9 +12,10 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { Button } from "@/components/ui/button";
 import type { MenuItemData } from "@/components/types";
 import type { ScenarioMetadata } from "@/scenariostore/localdb";
-import type { StoredScenarioAction } from "@/types/constants";
+import type { StoredScenarioAction, StoredScenarioBulkAction } from "@/types/constants";
 import { cn } from "@/lib/utils";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 
@@ -25,6 +28,7 @@ const props = withDefaults(
     noLink?: boolean;
     routeName?: string;
     showClearButton?: boolean;
+    enableBatchActions?: boolean;
     emptyMessage?: string;
     class?: HTMLAttributes["class"];
     headerClass?: HTMLAttributes["class"];
@@ -36,15 +40,24 @@ const props = withDefaults(
     noLink: false,
     routeName: MAP_EDIT_MODE_ROUTE,
     showClearButton: false,
+    enableBatchActions: false,
     emptyMessage: "No scenarios match",
   },
 );
 
 const emit = defineEmits<{
   (e: "action", action: StoredScenarioAction, scenario: ScenarioMetadata): void;
+  (
+    e: "bulk-action",
+    action: StoredScenarioBulkAction,
+    scenarios: ScenarioMetadata[],
+  ): void;
 }>();
 
 const scenarioQuery = ref("");
+const isSelecting = ref(false);
+const selectedIds = ref<Set<string>>(new Set());
+const showDeleteSelectedModal = ref(false);
 const normalizedScenarioQuery = computed(() => scenarioQuery.value.trim().toLowerCase());
 const filteredScenarios = computed(() => {
   if (!normalizedScenarioQuery.value) {
@@ -61,6 +74,18 @@ const filteredScenarios = computed(() => {
     );
   });
 });
+const filteredScenarioIds = computed(() =>
+  filteredScenarios.value.map((scenario) => scenario.id),
+);
+const selectedScenarios = computed(() =>
+  props.scenarios.filter((scenario) => selectedIds.value.has(scenario.id)),
+);
+const selectedCount = computed(() => selectedScenarios.value.length);
+const allFilteredSelected = computed(
+  () =>
+    filteredScenarioIds.value.length > 0 &&
+    filteredScenarioIds.value.every((id) => selectedIds.value.has(id)),
+);
 
 function onScenarioSearchKeydown(event: KeyboardEvent) {
   if (event.key !== "Escape" || !scenarioQuery.value) {
@@ -74,9 +99,100 @@ function clearScenarioQuery() {
   scenarioQuery.value = "";
 }
 
+function enterSelectMode() {
+  if (!props.enableBatchActions) {
+    return;
+  }
+
+  isSelecting.value = true;
+}
+
+function clearSelection() {
+  selectedIds.value = new Set();
+}
+
+function cancelSelectMode() {
+  clearSelection();
+  isSelecting.value = false;
+  showDeleteSelectedModal.value = false;
+}
+
+function toggleScenarioSelection(id: string) {
+  const nextSelectedIds = new Set(selectedIds.value);
+
+  if (nextSelectedIds.has(id)) {
+    nextSelectedIds.delete(id);
+  } else {
+    nextSelectedIds.add(id);
+  }
+
+  selectedIds.value = nextSelectedIds;
+}
+
+function toggleSelectAllFiltered() {
+  const nextSelectedIds = new Set(selectedIds.value);
+
+  if (allFilteredSelected.value) {
+    for (const id of filteredScenarioIds.value) {
+      nextSelectedIds.delete(id);
+    }
+  } else {
+    for (const id of filteredScenarioIds.value) {
+      nextSelectedIds.add(id);
+    }
+  }
+
+  selectedIds.value = nextSelectedIds;
+}
+
+function openDeleteSelectedModal() {
+  if (!selectedCount.value) {
+    return;
+  }
+
+  showDeleteSelectedModal.value = true;
+}
+
+function confirmDeleteSelected() {
+  emit("bulk-action", "delete", selectedScenarios.value);
+  showDeleteSelectedModal.value = false;
+}
+
 function onAction(action: StoredScenarioAction, scenario: ScenarioMetadata) {
   emit("action", action, scenario);
 }
+
+watch(
+  () => props.scenarios,
+  (scenarios) => {
+    if (!selectedIds.value.size) {
+      return;
+    }
+
+    const availableIds = new Set(scenarios.map((scenario) => scenario.id));
+    const nextSelectedIds = new Set(
+      [...selectedIds.value].filter((id) => availableIds.has(id)),
+    );
+
+    if (nextSelectedIds.size === selectedIds.value.size) {
+      return;
+    }
+
+    selectedIds.value = nextSelectedIds;
+    if (!nextSelectedIds.size) {
+      isSelecting.value = false;
+    }
+  },
+);
+
+useEventListener("keydown", (event: KeyboardEvent) => {
+  if (!isSelecting.value || event.key !== "Escape") {
+    return;
+  }
+
+  event.preventDefault();
+  cancelSelectMode();
+});
 </script>
 
 <template>
@@ -121,7 +237,51 @@ function onAction(action: StoredScenarioAction, scenario: ScenarioMetadata) {
       </div>
       <div class="flex flex-wrap items-center gap-1 lg:ml-4 lg:justify-end">
         <SortDropdown :options="sortOptions" />
-        <slot name="actions" />
+        <template v-if="enableBatchActions && isSelecting">
+          <span class="mr-2 text-sm font-medium">{{ selectedCount }} selected</span>
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            :disabled="filteredScenarioIds.length === 0"
+            @click="toggleSelectAllFiltered"
+          >
+            {{ allFilteredSelected ? "Deselect all" : "Select all" }}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            :disabled="selectedCount === 0"
+            @click="clearSelection"
+          >
+            Clear
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            type="button"
+            :disabled="selectedCount === 0"
+            @click="openDeleteSelectedModal"
+          >
+            Delete selected
+          </Button>
+          <Button variant="ghost" size="sm" type="button" @click="cancelSelectMode">
+            Cancel
+          </Button>
+        </template>
+        <template v-else>
+          <slot name="actions" />
+          <Button
+            v-if="enableBatchActions"
+            variant="outline"
+            size="sm"
+            type="button"
+            @click="enterSelectMode"
+          >
+            Select
+          </Button>
+        </template>
       </div>
     </header>
 
@@ -140,7 +300,10 @@ function onAction(action: StoredScenarioAction, scenario: ScenarioMetadata) {
         :data="info"
         :no-link="noLink"
         :route-name="routeName"
+        :selection-mode="isSelecting"
+        :selected="selectedIds.has(info.id)"
         @action="onAction($event, info)"
+        @toggle-select="toggleScenarioSelection(info.id)"
       />
     </ul>
     <div
@@ -154,5 +317,11 @@ function onAction(action: StoredScenarioAction, scenario: ScenarioMetadata) {
     >
       {{ emptyMessage }} "{{ scenarioQuery.trim() }}".
     </div>
+    <DeleteStoredScenariosModal
+      v-model="showDeleteSelectedModal"
+      :scenarios="selectedScenarios"
+      @confirm="confirmDeleteSelected"
+      @cancel="showDeleteSelectedModal = false"
+    />
   </div>
 </template>
