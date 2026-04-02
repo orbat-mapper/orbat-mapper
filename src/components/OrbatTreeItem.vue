@@ -277,10 +277,11 @@ const toggleOpen = () => {
     @dblclick="toggleOpen"
     @click="onUnitClick(unit, $event)"
     :class="[
-      selectedUnitIds.has(unit.id) && selectedUnitIds.size > 1
-        ? 'bg-primary/10 hover:bg-sidebar-accent/60'
-        : '',
-      isActiveUnit ? 'border-primary bg-primary/10' : 'border-transparent',
+      isActiveUnit
+        ? 'border-primary bg-primary/10 hover:bg-primary/20'
+        : selectedUnitIds.has(unit.id)
+          ? 'bg-primary/10 hover:bg-primary/20 border-transparent'
+          : 'hover:bg-sidebar-accent/60 border-transparent',
     ]"
   >
     <div class="flex items-center space-x-1">
