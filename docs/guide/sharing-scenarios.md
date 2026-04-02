@@ -38,7 +38,7 @@ ORBAT Mapper uses robust client-side encryption. The server only receives encryp
 
 ### Important Notes
 
-- **Link expiration**: Generated links are valid for **30 days** from creation.
+- **Link expiration**: Generated links are valid for **90 days** from creation.
 - **Privacy**: Anyone with the link can view the scenario (unless encrypted). Be careful when sharing sensitive or private scenarios.
 - **Upload limits**: There is an hourly upload limit to prevent abuse. If you encounter rate limiting, wait and try again later.
 - **Size limits**: Very large scenarios may exceed the maximum upload size. In such cases, consider exporting the scenario as a JSON file.

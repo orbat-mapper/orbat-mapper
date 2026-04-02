@@ -87,7 +87,7 @@ function onCopy() {
 <template>
   <NewSimpleModal v-model="open" dialog-title="Share scenario" class="sm:max-w-xl">
     <template #description
-      >Share this scenario by copying the link below. The link will remain valid for 30
+      >Share this scenario by copying the link below. The link will remain valid for 90
       days.
     </template>
     <div class="space-y-4">
