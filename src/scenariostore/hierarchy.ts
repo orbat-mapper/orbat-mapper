@@ -13,6 +13,7 @@ type TimedHierarchyEntry = {
   hierarchy: {
     targetId: EntityId;
     placement: DropTarget;
+    parentId?: EntityId;
   };
 };
 
@@ -131,19 +132,26 @@ function resolveTimedMoveDestination(
   targetId: EntityId,
   placement: DropTarget,
   state: ScenarioState,
+  parentId?: EntityId,
 ): { parent: HierarchyParent; index: number } | null {
   const target = getEntityById(targetId, state);
-  if (!target) return null;
+
+  if (!target) {
+    if (!parentId) return null;
+    const fallbackParent = getEntityById(parentId, state);
+    if (!fallbackParent) return null;
+    return { parent: fallbackParent, index: fallbackParent.subUnits.length };
+  }
 
   if (placement === "on") {
     return { parent: target, index: target.subUnits.length };
   }
 
   if (!("sidc" in target)) return null;
-  const parent = getEntityById(target._pid, state);
+  const parent = getEntityById(parentId ?? target._pid, state);
   if (!parent) return null;
   const index = parent.subUnits.indexOf(target.id);
-  if (index < 0) return null;
+  if (index < 0) return { parent, index: parent.subUnits.length };
   return { parent, index: placement === "below" ? index + 1 : index };
 }
 
@@ -165,6 +173,7 @@ function applyTimedHierarchyMove(entry: TimedHierarchyEntry, state: ScenarioStat
     entry.hierarchy.targetId,
     entry.hierarchy.placement,
     state,
+    entry.hierarchy.parentId,
   );
   if (!destination) {
     console.warn("Timed hierarchy move ignored: invalid destination", entry);

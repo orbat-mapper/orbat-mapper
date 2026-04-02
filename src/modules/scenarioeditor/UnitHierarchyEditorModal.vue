@@ -107,10 +107,17 @@ function close() {
 
 function save() {
   if (!hierarchyTargetId.value) return;
-  emit("save", {
+  const move: TimedHierarchyMove = {
     targetId: hierarchyTargetId.value,
     placement: hierarchyPlacement.value,
-  });
+  };
+  if (hierarchyPlacement.value === "above" || hierarchyPlacement.value === "below") {
+    const targetUnit = store.state.unitMap[hierarchyTargetId.value];
+    const targetSideGroup = store.state.sideGroupMap[hierarchyTargetId.value];
+    move.parentId =
+      targetUnit?._basePid ?? targetUnit?._pid ?? targetSideGroup?._pid ?? "";
+  }
+  emit("save", move);
   close();
 }
 </script>

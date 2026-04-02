@@ -129,6 +129,7 @@ export interface Unit {
 export interface TimedHierarchyMove {
   targetId: EntityId;
   placement: DropTarget;
+  parentId?: EntityId;
 }
 
 export interface UnitStyle extends Partial<VisibilityStyleSpec> {
@@ -270,6 +271,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "2.7.0"
   | "2.6.0"
   | "2.5.0"
   | "2.4.0"

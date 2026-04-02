@@ -211,6 +211,7 @@ export interface NState extends Omit<State, "update" | "diff"> {
   hierarchy?: {
     targetId: EntityId;
     placement: DropTarget;
+    parentId?: EntityId;
   };
 }
 

@@ -599,6 +599,13 @@ export function useUnitManipulations(store: NewScenarioStore) {
     targetId: EntityId,
     target: DropTarget = "on",
   ) {
+    let parentId: EntityId | undefined;
+    if (target === "above" || target === "below") {
+      const targetUnit = state.unitMap[targetId];
+      const targetSideGroup = state.sideGroupMap[targetId];
+      parentId = targetUnit?._basePid ?? targetUnit?._pid ?? targetSideGroup?._pid ?? "";
+    }
+
     addUnitStateEntry(
       unitId,
       {
@@ -606,6 +613,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         hierarchy: {
           targetId,
           placement: target,
+          ...(parentId !== undefined ? { parentId } : {}),
         },
       },
       true,

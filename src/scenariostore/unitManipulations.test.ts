@@ -485,7 +485,7 @@ describe("unitManipulations timed hierarchy recording", () => {
     expect(store.state.unitMap["unit-3"].state).toEqual([
       expect.objectContaining({
         t,
-        hierarchy: { targetId: "unit-1", placement: "above" },
+        hierarchy: { targetId: "unit-1", placement: "above", parentId: "group-1" },
       }),
     ]);
     expect(store.state.sideGroupMap["group-1"].subUnits).toEqual([
@@ -516,7 +516,7 @@ describe("unitManipulations timed hierarchy recording", () => {
     ]);
     expect(store.state.unitMap["unit-1"].state).toEqual([
       expect.objectContaining({
-        hierarchy: { targetId: "unit-2", placement: "below" },
+        hierarchy: { targetId: "unit-2", placement: "below", parentId: "group-1" },
       }),
     ]);
   });
@@ -612,7 +612,7 @@ describe("unitManipulations timed hierarchy recording", () => {
       expect.objectContaining({
         id: "state-1",
         t,
-        hierarchy: { targetId: "unit-1", placement: "above" },
+        hierarchy: { targetId: "unit-1", placement: "above", parentId: "group-1" },
       }),
     );
   });

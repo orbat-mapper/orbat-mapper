@@ -110,7 +110,11 @@ function getHierarchyTargetLabel(targetId: EntityId) {
 }
 
 function formatHierarchyMove(hierarchy: TimedHierarchyMove) {
-  return `${hierarchy.placement} ${getHierarchyTargetLabel(hierarchy.targetId)}`;
+  let label = `${hierarchy.placement} ${getHierarchyTargetLabel(hierarchy.targetId)}`;
+  if (hierarchy.parentId) {
+    label += ` in ${getHierarchyTargetLabel(hierarchy.parentId)}`;
+  }
+  return label;
 }
 
 const deleteState = (index: number) => {
