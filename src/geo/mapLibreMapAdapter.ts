@@ -8,7 +8,7 @@ import type {
   MapAdapter,
   MapEventHandler,
   MapEventType,
-} from "./mapAdapter";
+} from "@/geo/contracts/mapAdapter";
 
 const ML_EVENT_MAP: Record<MapEventType, string> = {
   moveend: "moveend",

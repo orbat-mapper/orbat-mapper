@@ -10,7 +10,10 @@ import type { Feature } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
 import { centerOfMass } from "@turf/turf";
-import { activeMapKey, activeScenarioKey } from "@/components/injects.ts";
+import {
+  activeScenarioKey,
+  activeScenarioMapEngineKey,
+} from "@/components/injects.ts";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import { usePlaybackStore } from "@/stores/playbackStore.ts";
 import { useGlobeMapDrop } from "@/modules/globeview/useGlobeMapDrop.ts";
@@ -30,10 +33,12 @@ const symbolCache: Map<string, Record<string, any>> = new Map();
 const usedImageIds = new Set<string>();
 
 const playback = usePlaybackStore();
-const mapAdapter = injectStrict(activeMapKey);
+const engineRef = injectStrict(activeScenarioMapEngineKey);
 
-const { isDragging, formattedPosition } = useGlobeMapDrop(mapAdapter.value, activeScenario, () =>
-  addUnits(),
+const { isDragging, formattedPosition } = useGlobeMapDrop(
+  engineRef.value!.map,
+  activeScenario,
+  () => addUnits(),
 );
 function setupMapLayers() {
   !mlMap.getSource("unitSource") &&

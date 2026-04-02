@@ -14,13 +14,14 @@ import {
   watch,
 } from "vue";
 import type { ShallowRef } from "vue";
-import type { MapAdapter } from "@/geo/mapAdapter";
+import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
+import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
 import { useGeoStore } from "@/stores/geoStore";
 import {
   activeFeatureSelectInteractionKey,
-  activeMapKey,
   activeParentKey,
+  activeScenarioMapEngineKey,
   searchActionsKey,
   sidcModalKey,
 } from "@/components/injects";
@@ -68,10 +69,13 @@ const showLoadScenarioDialog = ref(false);
 const localReady = ref(false);
 const mlMap = shallowRef<MlMap>();
 const geoStore = useGeoStore();
-const mapAdapterRef = shallowRef<MapAdapter>();
+const scenarioMapEngineRef = shallowRef<ScenarioMapEngine>();
 const activeParentId = ref<EntityId | undefined | null>(null);
 const showOrbatPanel = ref(true);
-provide(activeMapKey, mapAdapterRef as ShallowRef<MapAdapter>);
+provide(
+  activeScenarioMapEngineKey,
+  scenarioMapEngineRef as ShallowRef<ScenarioMapEngine | undefined>,
+);
 provide(activeParentKey, activeParentId);
 // Stub for activeFeatureSelectInteractionKey — not used in globe view
 const featureSelectStub = shallowRef(null) as unknown as ShallowRef<Select>;
@@ -192,7 +196,12 @@ const activeGlobeBasemap = computed(() =>
 function onMapReady(mapInstance: MlMap) {
   mlMap.value = mapInstance;
   const adapter = new MapLibreMapAdapter(mapInstance);
-  mapAdapterRef.value = adapter;
+  const layers = createMapLibreScenarioLayerController(adapter);
+  scenarioMapEngineRef.value = {
+    map: adapter,
+    layers,
+  };
+  layers.bindScenario(scenario.value);
   geoStore.setMapAdapter(adapter);
 }
 
