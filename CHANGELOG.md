@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added multi-select batch delete for stored scenarios in the landing page and import scenario browsers, including filtered select-all and confirmation dialog support.
 - Added a sort direction control to the stored scenario browser dropdown, with an icon indicating ascending or descending order.
 - Added a recording control dropdown to the navbar.
-- 
+
 ### Changed
 
 - Moved the dark mode toggle into the main menu on mobile devices.
@@ -21,6 +21,10 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fixed dragging an unselected unit also moving previously selected units.
+- Fixed map selection so clicking a unit or scenario feature switches selection in one click instead of requiring an intermediate deselect.
+- Fixed overlapping unit/feature selection on the map so the topmost item takes priority.
+- Fixed blank map clicks so they clear selected scenario features.
+- Fixed shift-click selection on the map so it only extends the current selection type instead of switching between units and scenario features.
 
 ## March 2026
 

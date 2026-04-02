@@ -102,6 +102,23 @@ function convertRadius(center: GeoJsonFeature<Point>, radiusInMeters: number): n
   return line.getLength();
 }
 
+export function getTopHitLayerType(
+  olMap: OLMap,
+  pixel: number[],
+  hitTolerance = 0,
+): string | undefined {
+  let topLayerType: string | undefined;
+  olMap.forEachFeatureAtPixel(
+    pixel,
+    (_feature, layer) => {
+      topLayerType = layer?.get("layerType");
+      return true;
+    },
+    { hitTolerance },
+  );
+  return topLayerType;
+}
+
 export function createScenarioLayerFeatures(
   features: NScenarioFeature[] | ScenarioFeature[],
   featureProjection: ProjectionLike,
@@ -163,10 +180,21 @@ export function useScenarioFeatureSelect(
   const { selectedFeatureIds: selectedIds, selectedUnitIds } = useSelectedItems();
 
   const enableRef = ref(options.enable ?? true);
+  const hitTolerance = 20;
 
   const selectInteraction = new Select({
-    condition: clickCondition,
-    hitTolerance: 20,
+    condition: (event) => {
+      if (!clickCondition(event)) return false;
+      const topHitLayerType = getTopHitLayerType(olMap, event.pixel, hitTolerance);
+      if (
+        topHitLayerType !== undefined &&
+        topHitLayerType !== LayerTypes.scenarioFeature
+      ) {
+        return false;
+      }
+      return !(event.originalEvent.shiftKey && selectedUnitIds.value.size > 0);
+    },
+    hitTolerance,
     layers: scenarioLayersOl.getArray(),
     style: (feature: FeatureLike, res: number): Style | Style[] => {
       const styleOrStyles = scenarioFeatureStyle(feature, res, true)!;
@@ -191,6 +219,9 @@ export function useScenarioFeatureSelect(
   useOlEvent(
     selectInteraction.on("select", (event: SelectEvent) => {
       isInternal = true;
+      if (event.selected.length > 0 && selectedUnitIds.value.size > 0) {
+        selectedUnitIds.value.clear();
+      }
       event.selected.forEach((f) => selectedIds.value.add(f.getId()!));
       event.deselected.forEach((f) => selectedIds.value.delete(f.getId()!));
     }),
@@ -205,11 +236,6 @@ export function useScenarioFeatureSelect(
           const { feature } = getFeatureAndLayerById(fid, scenarioLayersOl) || {};
           if (feature) selectedFeatures.push(feature);
         });
-      } else {
-        if (selectedUnitIds.value.size > 0) {
-          selectedIds.value.clear();
-          selectedFeatures.clear();
-        }
       }
       isInternal = false;
     },

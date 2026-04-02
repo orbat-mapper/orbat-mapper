@@ -46,6 +46,7 @@ import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils.ts";
+import { getTopHitLayerType } from "@/modules/scenarioeditor/featureLayerUtils.ts";
 import { useRecordingStore } from "@/stores/recordingStore";
 
 let zoomResolutions: number[] = [];
@@ -547,7 +548,11 @@ export function useUnitSelectInteraction(
   const enableRef = ref(options.enable ?? true);
   const enableBoxSelectRef = ref(options.enableBoxSelect ?? true);
 
-  const { selectedUnitIds: selectedIds, clear: clearSelectedItems } = useSelectedItems();
+  const {
+    selectedUnitIds: selectedIds,
+    selectedFeatureIds,
+    clear: clearSelectedItems,
+  } = useSelectedItems();
   const activeScenario = injectStrict(activeScenarioKey);
   const {
     geo,
@@ -555,10 +560,16 @@ export function useUnitSelectInteraction(
     helpers: { getUnitById },
   } = activeScenario;
 
+  const hitTolerance = 20;
+
   const unitSelectInteraction = new Select({
     layers,
     style: selectedUnitStyleFunction,
-    condition: clickCondition,
+    condition: (event) =>
+      clickCondition(event) &&
+      getTopHitLayerType(olMap, event.pixel, hitTolerance) !==
+        LayerTypes.scenarioFeature &&
+      !(event.originalEvent.shiftKey && selectedFeatureIds.value.size > 0),
     removeCondition: altKeyOnly,
   });
 
@@ -650,7 +661,7 @@ export function useUnitSelectInteraction(
   useOlEvent(
     unitSelectInteraction.on("select", (event: SelectEvent) => {
       isInternal = true;
-      if (selectedIds.value.size && !event.mapBrowserEvent.originalEvent.shiftKey) {
+      if (event.selected.length > 0 && !event.mapBrowserEvent.originalEvent.shiftKey) {
         clearSelectedItems();
       }
       if (
