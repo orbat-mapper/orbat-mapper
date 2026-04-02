@@ -44,7 +44,12 @@ import {
 import DropIndicator from "@/components/DropIndicator.vue";
 import { Button } from "@/components/ui/button";
 
-const props = defineProps<{ layer: NScenarioLayer; features: NScenarioFeature[] }>();
+const props = defineProps<{
+  layer: NScenarioLayer;
+  features: NScenarioFeature[];
+  layerMenuItems?: MenuItemData<ScenarioLayerAction>[];
+  featureMenuItems?: MenuItemData<ScenarioFeatureActions>[];
+}>();
 const emit = defineEmits<{
   (
     e: "feature-click",
@@ -88,7 +93,7 @@ const {
   { immediate: false },
 );
 
-const layerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
+const defaultLayerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Zoom to", action: ScenarioLayerActions.Zoom },
   { label: "Set as active", action: ScenarioLayerActions.SetActive },
   { label: "Edit", action: ScenarioLayerActions.Edit },
@@ -247,7 +252,7 @@ onUnmounted(() => {
         />
         <DotsMenu
           class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-          :items="layerMenuItems"
+          :items="layerMenuItems || defaultLayerMenuItems"
           @action="emit('layer-action', layer, $event)"
         />
       </div>
@@ -267,6 +272,7 @@ onUnmounted(() => {
         :layer="layer"
         :selected="selectedFeatureIds.has(feature.id)"
         :active="activeFeatureId === feature.id"
+        :menu-items="featureMenuItems"
         @feature-click="emit('feature-click', feature, layer, $event)"
         @feature-double-click="emit('feature-double-click', feature, layer, $event)"
         @feature-action="emit('feature-action', feature.id, $event)"

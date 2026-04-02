@@ -6,7 +6,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import type { Position } from "geojson";
-import type { MapAdapter } from "@/geo/mapAdapter";
+import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { useNotifications } from "@/composables/notifications";
 

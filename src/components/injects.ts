@@ -7,7 +7,7 @@ import type { EventHook } from "@vueuse/core";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type OLMap from "ol/Map";
 import type Select from "ol/interaction/Select";
-import type { MapAdapter } from "@/geo/mapAdapter";
+import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import type { EventSearchResult } from "@/components/types";
 import type { PhotonSearchResult } from "@/composables/geosearching";
 import type { ScenarioActions } from "@/types/constants";
@@ -47,11 +47,13 @@ export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
   onScenarioActionHook: EventHook<{ action: ScenarioActions }>;
 }>;
 
-export const activeMapKey = Symbol("Active map") as InjectionKey<ShallowRef<MapAdapter>>;
+export const activeScenarioMapEngineKey = Symbol(
+  "Active scenario map engine",
+) as InjectionKey<ShallowRef<ScenarioMapEngine | undefined>>;
 
 /**
  * Temporary escape hatch during scenario editor migration.
- * Prefer activeMapKey (MapAdapter) with getNativeMap() instead.
+ * Prefer activeScenarioMapEngineKey with `engine.map.getNativeMap()` instead.
  * This injection key will be removed once the migration is complete.
  */
 export const activeNativeMapKey = Symbol("Active native map") as InjectionKey<

@@ -2,12 +2,12 @@
 import { nextTick } from "vue";
 import { useSearchActions } from "@/composables/searchActions";
 import { TAB_EVENTS, TAB_LAYERS, TAB_ORBAT, UnitActions } from "@/types/constants";
-import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
 import { injectStrict } from "@/utils";
 import {
   activeLayerKey,
   activeNativeMapKey,
   activeScenarioKey,
+  activeScenarioMapEngineKey,
 } from "@/components/injects";
 import { useUiStore } from "@/stores/uiStore";
 import { useToeActions, useUnitActions } from "@/composables/scenarioActions";
@@ -19,17 +19,14 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import OlFeature from "ol/Feature";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { useEventBus } from "@vueuse/core";
-import { imageLayerAction } from "@/components/eventKeys";
 import { fixExtent } from "@/utils/geoConvert";
 import { addMapLayer } from "@/modules/scenarioeditor/scenarioMapLayers";
 import { usePlaybackStore } from "@/stores/playbackStore";
 
 const mapRef = injectStrict(activeNativeMapKey);
+const engineRef = injectStrict(activeScenarioMapEngineKey);
 const activeScenario = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
-const imageLayerBus = useEventBus(imageLayerAction);
-const l = useFeatureLayerUtils(mapRef.value);
 const playback = usePlaybackStore();
 
 const {
@@ -80,10 +77,10 @@ onLayerSelect(({ layerId }) => {
   if (!mapRef.value) return;
   ui.activeTabIndex = TAB_LAYERS;
   nextTick(() => {
-    const layer = l.getLayerById(layerId);
+    const layer = activeScenario.geo.getLayerById(layerId);
     if (layer) {
       layer._isOpen = true;
-      nextTick(() => l.zoomToLayer(layerId));
+      nextTick(() => engineRef.value?.layers.zoomToScenarioLayer(layerId));
     }
     activeLayerId.value = layerId;
   });
@@ -93,7 +90,7 @@ onImageLayerSelect(({ layerId }) => {
   if (!mapRef.value) return;
   ui.activeTabIndex = TAB_LAYERS;
   nextTick(() => {
-    imageLayerBus.emit({ action: "zoom", id: layerId });
+    engineRef.value?.layers.zoomToMapLayer(layerId);
     activeMapLayerId.value = layerId;
   });
 });
@@ -144,7 +141,7 @@ onFeatureSelect(({ featureId }) => {
       selectedFeatureIds.value.clear();
       selectedFeatureIds.value.add(featureId);
 
-      nextTick(() => l.zoomToFeature(featureId));
+      nextTick(() => engineRef.value?.layers.zoomToFeature(featureId));
     }
   });
 });

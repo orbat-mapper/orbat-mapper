@@ -1,4 +1,4 @@
-import type { MapAdapter, MapEvent } from "@/geo/mapAdapter";
+import type { MapAdapter, MapEvent } from "@/geo/contracts/mapAdapter";
 import {
   createEventHook,
   type Fn,

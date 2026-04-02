@@ -14,13 +14,13 @@ import {
 import { useActiveUnitStore } from "@/stores/dragStore";
 import {
   activeFeatureSelectInteractionKey,
-  activeMapKey,
   activeNativeMapKey,
   activeScenarioKey,
+  activeScenarioMapEngineKey,
   timeModalKey,
 } from "@/components/injects";
-import { OlMapAdapter } from "@/geo/olMapAdapter";
-import type { MapAdapter } from "@/geo/mapAdapter";
+import { OlMapAdapter } from "@/geo/engines/openlayers/olMapAdapter";
+import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
 import { PanelLeftOpenIcon as ShowPanelIcon } from "lucide-vue-next";
 import { injectStrict } from "@/utils";
@@ -76,10 +76,13 @@ const activeUnitStore = useActiveUnitStore();
 const ui = useUiStore();
 const playback = usePlaybackStore();
 
-const mapAdapterRef = shallowRef<MapAdapter>();
+const scenarioMapEngineRef = shallowRef<ScenarioMapEngine>();
 const nativeMapRef = shallowRef<OLMap>();
 const featureSelectInteractionRef = shallowRef<Select>();
-provide(activeMapKey, mapAdapterRef as ShallowRef<MapAdapter>);
+provide(
+  activeScenarioMapEngineKey,
+  scenarioMapEngineRef as ShallowRef<ScenarioMapEngine | undefined>,
+);
 provide(activeNativeMapKey, nativeMapRef as ShallowRef<OLMap>);
 provide(
   activeFeatureSelectInteractionKey,
@@ -93,12 +96,17 @@ const isMobile = breakpoints.smallerOrEqual("md");
 function onMapReady({
   olMap,
   featureSelectInteraction,
+  scenarioLayerController,
 }: {
   olMap: OLMap;
   featureSelectInteraction: Select;
+  scenarioLayerController: ScenarioMapEngine["layers"];
 }) {
   nativeMapRef.value = olMap;
-  mapAdapterRef.value = new OlMapAdapter(olMap);
+  scenarioMapEngineRef.value = {
+    map: new OlMapAdapter(olMap),
+    layers: scenarioLayerController,
+  };
   featureSelectInteractionRef.value = featureSelectInteraction;
 }
 
@@ -152,7 +160,7 @@ watch(
   ],
   () => {
     nextTick(() => {
-      mapAdapterRef.value?.updateSize();
+      scenarioMapEngineRef.value?.map.updateSize();
     });
   },
 );
@@ -163,7 +171,7 @@ onUnmounted(() => {
 });
 
 onActivated(() => {
-  mapAdapterRef.value?.updateSize();
+  scenarioMapEngineRef.value?.map.updateSize();
   playback.playbackRunning = false;
 });
 

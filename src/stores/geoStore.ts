@@ -5,7 +5,7 @@ import type { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasure
 import type { NUnit } from "@/types/internalModels";
 import type { Position } from "geojson";
 import { type AllGeoJSON, featureCollection, point as turfPoint } from "@turf/helpers";
-import type { MapAdapter } from "@/geo/mapAdapter";
+import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 
 import { shallowRef, ref, computed } from "vue";
 import { useLocalStorage } from "@vueuse/core";

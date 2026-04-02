@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { ScenarioImageLayer } from "@/types/scenarioGeoModels";
+import { activeScenarioMapEngineKey } from "@/components/injects";
+import { injectStrict } from "@/utils";
 import { onMounted, onUnmounted, ref, watch } from "vue";
 import type {
   ScenarioImageLayerUpdate,
   ScenarioMapLayerUpdate,
 } from "@/types/internalModels";
 import { type LayerUpdateOptions, useMapLayerInfo } from "@/composables/geoMapLayers";
-import { useEventBus } from "@vueuse/core";
-import { imageLayerAction } from "@/components/eventKeys";
 import { getChangedValues } from "@/utils";
 import DescriptionItem from "@/components/DescriptionItem.vue";
 import BaseButton from "@/components/BaseButton.vue";
@@ -21,31 +21,45 @@ const emit = defineEmits<{
   update: [d: ScenarioMapLayerUpdate, options?: LayerUpdateOptions];
 }>();
 
-const bus = useEventBus(imageLayerAction);
+const engineRef = injectStrict(activeScenarioMapEngineKey);
 const editMode = ref((props.layer._isNew && !props.layer._isTemporary) ?? false);
 
 const { layerTypeLabel, status, isInitialized } = useMapLayerInfo(props.layer);
+const canTransformMapLayer = () =>
+  Boolean(engineRef.value?.layers.capabilities.mapLayerTransform);
+const canZoomMapLayer = () =>
+  Boolean(engineRef.value?.layers.capabilities.zoomToMapLayer) &&
+  Boolean(engineRef.value?.layers.capabilities.mapLayerExtent);
 
 watch(status, (v) => {
   if (v === "initialized") {
-    bus.emit({ action: "zoom", id: props.layer.id });
-    bus.emit({ action: "startTransform", id: props.layer.id });
+    if (canZoomMapLayer()) {
+      engineRef.value?.layers.zoomToMapLayer(props.layer.id);
+    }
+    if (canTransformMapLayer()) {
+      engineRef.value?.layers.startMapLayerTransform(props.layer.id);
+    }
   }
 });
 
 onMounted(() => {
-  if (isInitialized.value) bus.emit({ action: "startTransform", id: props.layer.id });
+  if (isInitialized.value && canTransformMapLayer()) {
+    engineRef.value?.layers.startMapLayerTransform(props.layer.id);
+  }
 });
 
 onUnmounted(() => {
-  bus.emit({ action: "endTransform", id: props.layer.id });
+  if (canTransformMapLayer()) {
+    engineRef.value?.layers.endMapLayerTransform();
+  }
 });
 
 watch(
   () => props.layer.id,
   (v) => {
-    bus.emit({ action: "endTransform", id: v });
-    bus.emit({ action: "startTransform", id: v });
+    if (!canTransformMapLayer()) return;
+    engineRef.value?.layers.endMapLayerTransform();
+    engineRef.value?.layers.startMapLayerTransform(v);
   },
 );
 
@@ -86,6 +100,12 @@ function updateData(formData: ScenarioImageLayerUpdate) {
     </p>
     <p v-if="status === 'error'" class="mt-2 text-sm text-red-600">
       Failed to load layer.
+    </p>
+    <p
+      v-if="isInitialized && !canTransformMapLayer()"
+      class="text-muted-foreground mt-2 text-sm"
+    >
+      Interactive image transform is not supported by this map engine.
     </p>
   </section>
 </template>

@@ -9,7 +9,7 @@ import type {
   MapAdapter,
   MapEventHandler,
   MapEventType,
-} from "@/geo/mapAdapter";
+} from "@/geo/contracts/mapAdapter";
 
 type FakeMapAdapter = MapAdapter & {
   targetElement: HTMLElement;

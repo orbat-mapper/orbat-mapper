@@ -140,12 +140,28 @@ vi.mock("@vueuse/core", () => ({
   breakpointsTailwind: {},
 }));
 
-vi.mock("@/modules/scenarioeditor/scenarioMapLayers", () => ({
-  useScenarioMapLayers: () => ({ initializeFromStore: vi.fn() }),
-}));
-
-vi.mock("@/modules/scenarioeditor/scenarioFeatureLayers", () => ({
-  useScenarioFeatureLayers: () => ({ initializeFeatureLayersFromStore: vi.fn() }),
+vi.mock("@/geo/engines/openlayers/olScenarioLayerController", () => ({
+  useOlScenarioLayerController: () => ({
+    capabilities: {
+      zoomToFeature: true,
+      zoomToFeatureSet: true,
+      panToFeature: true,
+      zoomToScenarioLayer: true,
+      zoomToMapLayer: true,
+      mapLayerTransform: true,
+      mapLayerExtent: true,
+    },
+    bindScenario: vi.fn(() => vi.fn()),
+    refreshScenarioFeatureLayers: vi.fn(),
+    zoomToFeature: vi.fn(),
+    zoomToFeatures: vi.fn(),
+    panToFeature: vi.fn(),
+    zoomToScenarioLayer: vi.fn(),
+    zoomToMapLayer: vi.fn(),
+    startMapLayerTransform: vi.fn(),
+    endMapLayerTransform: vi.fn(),
+    onLayerEvent: vi.fn(() => vi.fn()),
+  }),
 }));
 
 vi.mock("@/modules/scenarioeditor/featureLayerUtils", () => ({

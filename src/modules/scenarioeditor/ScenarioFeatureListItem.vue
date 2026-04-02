@@ -30,15 +30,19 @@ import {
   isScenarioFeatureDragItem,
   type ItemState,
 } from "@/types/draggables";
+import type { MenuItemData } from "@/components/types";
 
 interface Props {
   feature: NScenarioFeature;
   layer: any;
   selected?: boolean;
   active?: boolean;
+  menuItems?: MenuItemData<ScenarioFeatureActions>[];
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  menuItems: () => featureMenuItems,
+});
 const emit = defineEmits<{
   (e: "feature-click", data: MouseEvent): void;
   (e: "feature-double-click", data: MouseEvent): void;
@@ -147,7 +151,7 @@ onUnmounted(() => {
         class="text-muted-foreground h-5 w-5"
       />
       <DotsMenu
-        :items="featureMenuItems"
+        :items="menuItems"
         @action="emit('feature-action', $event)"
         class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
       />

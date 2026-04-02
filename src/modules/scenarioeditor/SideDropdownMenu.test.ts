@@ -132,6 +132,8 @@ describe("SideDropdownMenu", () => {
       global: { stubs: { Button: true, EllipsisVertical: true } },
     });
 
-    expect(wrapper.find("button.dropdown-sub-trigger").attributes("data-disabled")).toBeDefined();
+    expect(
+      wrapper.find("button.dropdown-sub-trigger").attributes("data-disabled"),
+    ).toBeDefined();
   });
 });

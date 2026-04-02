@@ -2,15 +2,12 @@
 import { injectStrict, nanoid, triggerPostMoveFlash } from "@/utils";
 import {
   activeLayerKey,
-  activeNativeMapKey,
   activeScenarioKey,
+  activeScenarioMapEngineKey,
 } from "@/components/injects";
-import {
-  useFeatureLayerUtils,
-  useScenarioLayerSync,
-} from "@/modules/scenarioeditor/featureLayerUtils";
+import { featureMenuItems } from "@/modules/scenarioeditor/featureLayerUtils";
 import ChevronPanel from "@/components/ChevronPanel.vue";
-import { nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import type { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
 import type {
   FeatureId,
@@ -29,8 +26,6 @@ import type {
 } from "@/types/constants";
 import { ScenarioLayerActions } from "@/types/constants";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { useEventBus } from "@vueuse/core";
-import { imageLayerAction } from "@/components/eventKeys";
 import { addMapLayer, getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
 import SplitButton from "@/components/SplitButton.vue";
 import ScenarioFeatureLayer from "@/modules/scenarioeditor/ScenarioFeatureLayer.vue";
@@ -46,24 +41,39 @@ import {
 
 const emit = defineEmits(["feature-click"]);
 
-const mapRef = injectStrict(activeNativeMapKey);
 const activeLayerId = injectStrict(activeLayerKey);
+const engineRef = injectStrict(activeScenarioMapEngineKey);
 const uiStore = useUiStore();
 const {
   geo,
-  store: { groupUpdate, state },
+  store: { groupUpdate },
 } = injectStrict(activeScenarioKey);
 
 const { mapLayers } = geo;
 uiStore.layersPanelActive = true;
 onUnmounted(() => (uiStore.layersPanelActive = false));
 
-const mapLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
-  { label: "Zoom to", action: "zoom" },
+const canZoomFeatures = computed(() =>
+  Boolean(engineRef.value?.layers.capabilities.zoomToFeature),
+);
+const canPanFeatures = computed(() =>
+  Boolean(engineRef.value?.layers.capabilities.panToFeature),
+);
+const canZoomScenarioLayers = computed(() =>
+  Boolean(engineRef.value?.layers.capabilities.zoomToScenarioLayer),
+);
+const canZoomMapLayers = computed(
+  () =>
+    Boolean(engineRef.value?.layers.capabilities.zoomToMapLayer) &&
+    Boolean(engineRef.value?.layers.capabilities.mapLayerExtent),
+);
+
+const mapLayerMenuItems = computed<MenuItemData<ScenarioMapLayerAction>[]>(() => [
+  { label: "Zoom to", action: "zoom", disabled: !canZoomMapLayers.value },
   { label: "Move up", action: "moveUp" },
   { label: "Move down", action: "moveDown" },
   { label: "Delete", action: "delete" },
-];
+]);
 
 const mapLayerButtonItems: ButtonGroupItem[] = [
   {
@@ -86,15 +96,29 @@ const mapLayerButtonItems: ButtonGroupItem[] = [
   },
 ];
 
-const {
-  scenarioLayersFeatures,
-  scenarioLayersGroup,
-  zoomToLayer,
-  zoomToFeature,
-  zoomToFeatures,
-  panToFeature,
-} = useFeatureLayerUtils(mapRef.value);
-useScenarioLayerSync(scenarioLayersGroup.getLayers() as any);
+const scenarioLayersFeatures = computed(() => geo.layersFeatures.value);
+
+const layerMenuItems = computed<MenuItemData<ScenarioLayerAction>[]>(() => [
+  {
+    label: "Zoom to",
+    action: ScenarioLayerActions.Zoom,
+    disabled: !canZoomScenarioLayers.value,
+  },
+  { label: "Set as active", action: ScenarioLayerActions.SetActive },
+  { label: "Edit", action: ScenarioLayerActions.Edit },
+  { label: "Move up", action: ScenarioLayerActions.MoveUp },
+  { label: "Move down", action: ScenarioLayerActions.MoveDown },
+  { label: "Delete", action: ScenarioLayerActions.Delete },
+]);
+
+const availableFeatureMenuItems = computed<MenuItemData<ScenarioFeatureActions>[]>(() =>
+  featureMenuItems.map((item) => ({
+    ...item,
+    disabled:
+      (item.action === "zoom" && !canZoomFeatures.value) ||
+      (item.action === "pan" && !canPanFeatures.value),
+  })),
+);
 
 const { selectedFeatureIds, selectedMapLayerIds, activeMapLayerId, activeFeatureId } =
   useSelectedItems();
@@ -149,10 +173,8 @@ function onFeatureDoubleClick(
   layer: NScenarioLayer,
   event?: MouseEvent,
 ) {
-  zoomToFeature(feature.id);
+  engineRef.value?.layers.zoomToFeature(feature.id);
 }
-
-const bus = useEventBus(imageLayerAction);
 
 function onImageLayerClick(layer: ScenarioMapLayer, event?: MouseEvent) {
   if (event?.ctrlKey || event?.shiftKey) {
@@ -168,7 +190,7 @@ function onImageLayerClick(layer: ScenarioMapLayer, event?: MouseEvent) {
 }
 
 function onImageLayerDoubleClick(layer: ScenarioMapLayer) {
-  bus.emit({ action: "zoom", id: layer.id });
+  engineRef.value?.layers.zoomToMapLayer(layer.id);
 }
 
 const mapLayersMenuItems: MenuItemData[] = [
@@ -178,7 +200,7 @@ const mapLayersMenuItems: MenuItemData[] = [
 ];
 
 function onMapLayerAction(layer: ScenarioMapLayer, action: ScenarioMapLayerAction) {
-  if (action === "zoom") bus.emit({ action, id: layer.id });
+  if (action === "zoom") engineRef.value?.layers.zoomToMapLayer(layer.id);
   if (action === "delete") {
     geo.deleteMapLayer(layer.id);
     activeMapLayerId.value = null;
@@ -196,7 +218,9 @@ function onLayerAction(
   action: ScenarioLayerAction,
 ) {
   if (action === ScenarioLayerActions.SetActive) activeLayerId.value = layer.id;
-  if (action === ScenarioLayerActions.Zoom) zoomToLayer(layer.id);
+  if (action === ScenarioLayerActions.Zoom) {
+    engineRef.value?.layers.zoomToScenarioLayer(layer.id);
+  }
   if (action === ScenarioLayerActions.Edit) {
     editedLayerId.value = layer.id;
     layer._isOpen = true;
@@ -227,7 +251,13 @@ function onFeatureAction(
   const isArray = Array.isArray(featureOrFeaturesId);
 
   if (isArray && (action === "zoom" || action === "pan")) {
-    zoomToFeatures(featureOrFeaturesId);
+    if (action === "zoom") {
+      engineRef.value?.layers.zoomToFeatures(featureOrFeaturesId);
+    } else {
+      featureOrFeaturesId.forEach((featureId) => {
+        engineRef.value?.layers.panToFeature(featureId);
+      });
+    }
     return;
   }
   const tmp = isArray ? featureOrFeaturesId : [featureOrFeaturesId];
@@ -235,8 +265,8 @@ function onFeatureAction(
     () =>
       tmp.forEach((featureId) => {
         const { feature, layer } = geo.getFeatureById(featureId) || {};
-        if (action === "zoom") zoomToFeature(featureId);
-        if (action === "pan") panToFeature(featureId);
+        if (action === "zoom") engineRef.value?.layers.zoomToFeature(featureId);
+        if (action === "pan") engineRef.value?.layers.panToFeature(featureId);
 
         if (!layer || !layer) return;
 
@@ -452,6 +482,8 @@ onUnmounted(() => {
       :key="layer.id"
       :features="features"
       :layer="layer"
+      :layer-menu-items="layerMenuItems"
+      :feature-menu-items="availableFeatureMenuItems"
       v-model:activeLayerId="activeLayerId"
       v-model:editedLayerId="editedLayerId"
       @feature-click="onFeatureClick"

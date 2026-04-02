@@ -5,14 +5,13 @@ import {
   IconMagnifyExpand as ZoomIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects";
 import { computed, ref, watch } from "vue";
 import type { FeatureId, ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import EditableLabel from "@/components/EditableLabel.vue";
 import type { ScenarioMapLayerUpdate } from "@/types/internalModels";
 import IconButton from "@/components/IconButton.vue";
-import { useDebounceFn, useEventBus } from "@vueuse/core";
-import { imageLayerAction } from "@/components/eventKeys";
+import { useDebounceFn } from "@vueuse/core";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { type MenuItemData } from "@/components/types";
 import { type ScenarioMapLayerAction } from "@/types/constants";
@@ -32,8 +31,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const imageBus = useEventBus(imageLayerAction);
 const uiStore = useUiStore();
+const engineRef = injectStrict(activeScenarioMapEngineKey);
 const {
   geo,
   store: { groupUpdate },
@@ -43,6 +42,11 @@ const { clear } = useSelectedItems();
 
 const mapLayer = computed(() => geo.getMapLayerById(props.layerId) as ScenarioMapLayer);
 const isVisible = computed(() => !(mapLayer.value?.isHidden ?? false));
+const canZoomMapLayer = computed(
+  () =>
+    Boolean(engineRef.value?.layers.capabilities.zoomToMapLayer) &&
+    Boolean(engineRef.value?.layers.capabilities.mapLayerExtent),
+);
 const layerName = ref("DD");
 const selectedTab = ref(0);
 
@@ -102,13 +106,13 @@ function updateLayer(data: ScenarioMapLayerUpdate, options: LayerUpdateOptions =
 }
 const opacityAsPercent = computed(() => (opacity.value! * 100).toFixed(0));
 
-const imageLayerMenuItems: MenuItemData<ScenarioMapLayerAction>[] = [
-  { label: "Zoom to", action: "zoom" },
+const imageLayerMenuItems = computed<MenuItemData<ScenarioMapLayerAction>[]>(() => [
+  { label: "Zoom to", action: "zoom", disabled: !canZoomMapLayer.value },
   { label: "Delete", action: "delete" },
-];
+]);
 
 function onImageLayerAction(action: ScenarioMapLayerAction) {
-  if (action === "zoom") imageBus.emit({ action, id: mapLayer.value.id });
+  if (action === "zoom") engineRef.value?.layers.zoomToMapLayer(mapLayer.value.id);
   if (action === "delete") {
     geo.deleteMapLayer(mapLayer.value.id);
     clear();
@@ -141,7 +145,8 @@ function toggleLayerVisibility() {
         </div>
         <div class="ml-2 flex shrink-0 items-center">
           <IconButton
-            @click="imageBus.emit({ action: 'zoom', id: layerId })"
+            v-if="canZoomMapLayer"
+            @click="engineRef?.layers.zoomToMapLayer(layerId)"
             title="Zoom to layer extent"
           >
             <ZoomIcon class="h-6 w-6" />
@@ -170,7 +175,6 @@ function toggleLayerVisibility() {
             v-else-if="mapLayer.type === 'TileJSONLayer' || mapLayer.type === 'XYZLayer'"
             :layer="mapLayer"
             @update="updateLayer"
-            @action="onImageLayerAction"
           />
         </TabsContent>
         <TabsContent

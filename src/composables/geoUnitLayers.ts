@@ -36,7 +36,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import type { FeatureLike } from "ol/Feature";
 import BaseEvent from "ol/events/Event";
 import { useMapDropTarget } from "@/composables/useMapDropTarget";
-import type { MapAdapter } from "@/geo/mapAdapter";
+import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { Coordinate } from "ol/coordinate";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { ScenarioTileJSONLayer, ScenarioXYZLayer } from "@/types/scenarioGeoModels";
+import { activeScenarioMapEngineKey } from "@/components/injects";
+import { injectStrict } from "@/utils";
 import { computed, ref, watch } from "vue";
 import { getChangedValues } from "@/utils";
 import TileMapLayerSettingsForm from "@/modules/scenarioeditor/TileMapLayerSettingsForm.vue";
@@ -15,8 +17,12 @@ interface Props {
   layer: ScenarioTileJSONLayer | ScenarioXYZLayer;
 }
 const props = defineProps<Props>();
-const emit = defineEmits(["update", "action"]);
+const emit = defineEmits(["update"]);
+const engineRef = injectStrict(activeScenarioMapEngineKey);
 const { status, isInitialized, layerTypeLabel } = useMapLayerInfo(props.layer);
+const canZoomMapLayer = () =>
+  Boolean(engineRef.value?.layers.capabilities.zoomToMapLayer) &&
+  Boolean(engineRef.value?.layers.capabilities.mapLayerExtent);
 
 const urlLabel = computed(() => {
   if (props.layer.type === "TileJSONLayer") {
@@ -28,7 +34,9 @@ const urlLabel = computed(() => {
 
 watch(status, (v) => {
   if (v === "initialized") {
-    emit("action", "zoom");
+    if (canZoomMapLayer()) {
+      engineRef.value?.layers.zoomToMapLayer(props.layer.id);
+    }
   }
 });
 

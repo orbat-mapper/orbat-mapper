@@ -183,7 +183,7 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
     const { feature } = scn.geo.getFeatureById(featureId);
     const olLayer = getOlLayerById(feature._pid);
     if (!olLayer) return;
-    const olFeature = createScenarioLayerFeatures([feature], "EPSG:3837");
+    const olFeature = createScenarioLayerFeatures([feature], "EPSG:3857");
     olLayer.getSource()?.addFeatures(olFeature);
   }
 
@@ -225,7 +225,7 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
     layer: ScenarioLayer,
     options: { projection?: ProjectionLike; filterVisible?: boolean } = {},
   ) {
-    const { projection = "EPSG:3837", filterVisible = true } = options;
+    const { projection = "EPSG:3857", filterVisible = true } = options;
 
     const vectorLayer = new VectorLayer({
       source: new VectorSource({

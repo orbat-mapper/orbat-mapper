@@ -20,7 +20,7 @@ import { RotateCwIcon } from "lucide-vue-next";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { injectStrict } from "@/utils";
-import { activeMapKey, activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects";
 import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useEventBus, useToggle } from "@vueuse/core";
@@ -55,7 +55,7 @@ const {
   geo: { addUnitPosition },
   helpers: { getSideById },
 } = injectStrict(activeScenarioKey);
-const mapRef = injectStrict(activeMapKey);
+const engineRef = injectStrict(activeScenarioMapEngineKey);
 
 const store = useMainToolbarStore();
 const { addMultiple } = storeToRefs(store);
@@ -96,7 +96,7 @@ const {
   onGetLocation,
   onCancel,
   onStart,
-} = useGetMapLocation(mapRef, {
+} = useGetMapLocation(() => engineRef.value?.map, {
   cancelOnClickOutside: false,
   stopPropagationOnClickOutside: false,
 });

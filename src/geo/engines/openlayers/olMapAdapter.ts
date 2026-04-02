@@ -13,7 +13,7 @@ import type {
   MapAdapter,
   MapEventHandler,
   MapEventType,
-} from "./mapAdapter";
+} from "@/geo/contracts/mapAdapter";
 
 export class OlMapAdapter implements MapAdapter {
   constructor(private olMap: OLMap) {}

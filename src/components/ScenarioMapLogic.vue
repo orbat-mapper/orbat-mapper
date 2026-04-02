@@ -5,6 +5,7 @@ import { computed, onUnmounted, shallowRef, watch } from "vue";
 import Select from "ol/interaction/Select";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
+import type { ScenarioLayerController } from "@/geo/contracts/scenarioLayerController";
 import { useUiStore } from "@/stores/uiStore";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 import {
@@ -23,7 +24,6 @@ import {
   useUnitSelectInteraction,
 } from "@/composables/geoUnitLayers";
 import LayerGroup from "ol/layer/Group";
-import { useScenarioMapLayers } from "@/modules/scenarioeditor/scenarioMapLayers";
 import { useScenarioFeatureSelect } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { provideMapHover } from "@/composables/geoHover";
@@ -38,10 +38,10 @@ import { useUnitHistory } from "@/composables/geoUnitHistory";
 import { useDayNightLayer } from "@/composables/geoDayNight";
 import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
 import { useSearchActions } from "@/composables/searchActions";
-import { useScenarioFeatureLayers } from "@/modules/scenarioeditor/scenarioFeatureLayers";
 import { useSelectedItems } from "@/stores/selectedStore";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 import { useRecordingStore } from "@/stores/recordingStore";
+import { useOlScenarioLayerController } from "@/geo/engines/openlayers/olScenarioLayerController";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -51,6 +51,7 @@ const emit = defineEmits<{
       olMap: OLMap;
       featureSelectInteraction: Select;
       unitSelectInteraction: Select;
+      scenarioLayerController: ScenarioLayerController;
     },
   ): void;
 }>();
@@ -102,8 +103,10 @@ const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
 
 const dayNightLayer = useDayNightLayer();
 olMap.addLayer(dayNightLayer);
-const { initializeFromStore: loadMapLayers } = useScenarioMapLayers(olMap);
-const { initializeFeatureLayersFromStore } = useScenarioFeatureLayers(olMap);
+const scenarioLayerController = useOlScenarioLayerController(olMap);
+const cleanupScenarioLayerBinding = scenarioLayerController.bindScenario(
+  injectStrict(activeScenarioKey),
+);
 const { rangeLayer, drawRangeRings } = useRangeRingsLayer();
 // Disable temporarily
 const {} = useScenarioEvents(olMap);
@@ -168,9 +171,6 @@ useShowScaleLine(olMap, {
 drawRangeRings();
 drawUnits();
 drawHistory();
-
-loadMapLayers();
-initializeFeatureLayersFromStore();
 //loadScenarioLayers();
 
 // Set initial view: prioritize bounding box, then fall back to unit extent
@@ -196,7 +196,12 @@ function toggleUnitInteractions(event: ObjectEvent) {
   rotateInteraction.setActive(isUnitLayerVisible && rotateUnitEnabled.value);
 }
 
-emit("map-ready", { olMap, featureSelectInteraction, unitSelectInteraction });
+emit("map-ready", {
+  olMap,
+  featureSelectInteraction,
+  unitSelectInteraction,
+  scenarioLayerController,
+});
 
 /** Incrementally update unit positions without recreating all features */
 function updateUnitsOnMap() {
@@ -251,7 +256,7 @@ watch(
 );
 
 watch([doNotFilterLayers, () => state.featureStateCounter], () => {
-  initializeFeatureLayersFromStore({
+  scenarioLayerController.refreshScenarioFeatureLayers({
     doClearCache: false,
     filterVisible: !doNotFilterLayers.value,
   });
@@ -266,6 +271,7 @@ watch([doNotFilterLayers, () => state.featureStateCounter], () => {
 });
 
 onUnmounted(() => {
+  cleanupScenarioLayerBinding();
   clearUnitStyleCache();
 });
 

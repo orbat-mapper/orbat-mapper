@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MapContainer from "../components/MapContainer.vue";
 import OLMap from "ol/Map";
-import { OlMapAdapter } from "@/geo/olMapAdapter";
+import { OlMapAdapter } from "@/geo/engines/openlayers/olMapAdapter";
 import { ref, shallowRef, unref } from "vue";
 import MeasurementToolbar from "../components/MeasurementToolbar.vue";
 import MapEditToolbar from "../components/MapEditToolbar.vue";

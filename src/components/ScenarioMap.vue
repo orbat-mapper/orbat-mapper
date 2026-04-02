@@ -2,10 +2,11 @@
 import { onUnmounted, ref, shallowRef } from "vue";
 import MapContainer from "./MapContainer.vue";
 import OLMap from "ol/Map";
-import { OlMapAdapter } from "@/geo/olMapAdapter";
+import { OlMapAdapter } from "@/geo/engines/openlayers/olMapAdapter";
 import { useGeoStore } from "@/stores/geoStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import type Select from "ol/interaction/Select";
+import type { ScenarioLayerController } from "@/geo/contracts/scenarioLayerController";
 import ScenarioMapLogic from "@/components/ScenarioMapLogic.vue";
 import MapContextMenu from "@/components/MapContextMenu.vue";
 import { useMapViewStore } from "@/stores/mapViewStore";
@@ -18,6 +19,7 @@ const emit = defineEmits<{
       olMap: OLMap;
       featureSelectInteraction: Select;
       unitSelectInteraction: Select;
+      scenarioLayerController: ScenarioLayerController;
     },
   ): void;
 }>();
