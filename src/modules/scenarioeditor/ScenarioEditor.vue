@@ -6,7 +6,6 @@ import ShortcutsModal from "@/components/ShortcutsModal.vue";
 
 import {
   Bars3Icon as MenuIcon,
-  GlobeAltIcon,
   MagnifyingGlassIcon as SearchIcon,
   ShareIcon,
   TableCellsIcon as TableIcon,
@@ -59,7 +58,7 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import DebugInfo from "@/components/DebugInfo.vue";
-import { MoonStarIcon, SunIcon } from "lucide-vue-next";
+import { MapIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
 import { UseDark } from "@vueuse/components";
 import { Button } from "@/components/ui/button";
 import {
@@ -161,7 +160,7 @@ const selectedModeRoute = computed({
 });
 
 const modeOptions = [
-  { value: MAP_EDIT_MODE_ROUTE, label: "Map", icon: GlobeAltIcon },
+  { value: MAP_EDIT_MODE_ROUTE, label: "Map", icon: MapIcon },
   { value: GRID_EDIT_ROUTE, label: "Grid", icon: TableIcon },
   { value: CHART_EDIT_MODE_ROUTE, label: "Chart", icon: IconSitemap },
 ] as const;
@@ -421,7 +420,7 @@ if (state.layers.length > 0) {
               exact-active-class="text-green-500"
               class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
             >
-              <GlobeAltIcon class="size-6" />
+              <MapIcon class="size-6" />
             </router-link>
             <router-link
               :to="{ name: GRID_EDIT_ROUTE }"
