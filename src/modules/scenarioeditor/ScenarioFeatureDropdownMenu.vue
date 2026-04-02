@@ -34,6 +34,9 @@ const emit = defineEmits<{
         <span>Delete</span>
         <DropdownMenuShortcut>Del</DropdownMenuShortcut>
       </DropdownMenuItem>
+      <DropdownMenuItem inset @select="emit('action', 'copyAsGeoJson')">
+        <span>Copy as GeoJSON</span>
+      </DropdownMenuItem>
       <DropdownMenuItem inset @select="emit('action', 'removeMedia')">
         <span>Remove image</span>
       </DropdownMenuItem>

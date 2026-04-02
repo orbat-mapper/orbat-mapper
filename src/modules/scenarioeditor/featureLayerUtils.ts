@@ -4,6 +4,7 @@ import LayerGroup from "ol/layer/Group";
 import { click as clickCondition } from "ol/events/condition";
 import { getCenter, isEmpty } from "ol/extent";
 import { featureCollection } from "@turf/helpers";
+import turfCircle from "@turf/circle";
 import turfEnvelope from "@turf/envelope";
 import { injectStrict, nanoid } from "@/utils";
 import Collection from "ol/Collection";
@@ -91,7 +92,35 @@ export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
   { label: "Move down", action: "moveDown" },
   { label: "Delete", action: "delete" },
   { label: "Duplicate", action: "duplicate" },
+  { label: "Copy as GeoJSON", action: "copyAsGeoJson" },
 ];
+
+export function featuresToGeoJsonString(
+  features: (ScenarioFeature | NScenarioFeature)[],
+) {
+  const fc = featureCollection(
+    features.map((f) => {
+      const properties = {
+        name: f.meta.name,
+        description: f.meta.description,
+        ...f.properties,
+      };
+      if (f.meta.type === "Circle" && f.meta.radius && f.geometry.type === "Point") {
+        const poly = turfCircle(f.geometry.coordinates, f.meta.radius, {
+          units: "meters",
+        });
+        return { ...poly, id: f.id, properties };
+      }
+      return {
+        type: "Feature" as const,
+        id: f.id,
+        properties,
+        geometry: f.geometry,
+      };
+    }),
+  );
+  return JSON.stringify(fc, null, 2);
+}
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 

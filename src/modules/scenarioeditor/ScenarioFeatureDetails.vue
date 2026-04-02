@@ -39,6 +39,8 @@ import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import { inputEventFilter } from "@/components/helpers";
 import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatureDropdownMenu.vue";
 import type { ScenarioFeatureActions } from "@/types/constants";
+import { useNotifications } from "@/composables/notifications";
+import { featuresToGeoJsonString } from "@/modules/scenarioeditor/featureLayerUtils";
 import ScenarioFeatureState from "@/modules/scenarioeditor/ScenarioFeatureState.vue";
 import ScenarioFeatureTextSettings from "@/modules/scenarioeditor/ScenarioFeatureTextSettings.vue";
 import ScenarioFeatureVisibilitySettings from "@/modules/scenarioeditor/ScenarioFeatureVisibilitySettings.vue";
@@ -62,6 +64,7 @@ const {
 const olMapRef = injectStrict(activeNativeMapKey);
 const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
 
+const { send: notify } = useNotifications();
 const featureActions = useScenarioFeatureActions();
 const { selectedFeatureIds, clear: clearSelection } = useSelectedItems();
 const uiStore = useUiStore();
@@ -201,6 +204,16 @@ function doZoom() {
 function onAction(action: ScenarioFeatureActions) {
   if (action === "removeMedia") {
     removeMedia();
+    return;
+  }
+  if (action === "copyAsGeoJson") {
+    const features = [...props.selectedIds]
+      .map((id) => geo.getFeatureById(id)?.feature)
+      .filter((f) => !!f);
+    if (features.length) {
+      navigator.clipboard.writeText(featuresToGeoJsonString(features));
+      notify({ message: "Copied GeoJSON to clipboard" });
+    }
     return;
   }
   featureActions.onFeatureAction([...props.selectedIds], action);

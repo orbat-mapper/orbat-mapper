@@ -88,7 +88,8 @@ export type ScenarioFeatureActions =
   | "moveDown"
   | "pan"
   | "duplicate"
-  | "removeMedia";
+  | "removeMedia"
+  | "copyAsGeoJson";
 
 export type ScenarioEventAction = "delete" | "changeTime" | "editMeta" | "editMedia";
 
@@ -102,6 +103,7 @@ export const ScenarioLayerActions = {
   MoveUp: "MoveUp",
   MoveDown: "MoveDown",
   SetActive: "SetActive",
+  CopyAsGeoJson: "CopyAsGeoJson",
 } as const;
 
 export type ScenarioMapLayerAction = "zoom" | "delete" | "moveUp" | "moveDown";

@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added "Copy as GeoJSON" to the feature layer menu, individual feature menu, and feature details panel. Circles are exported as polygons.
 - Added a missing short name input to the unit details form, including automatic short-name mode support.
 - Added multi-select batch delete for stored scenarios in the landing page and import scenario browsers, including filtered select-all and confirmation dialog support.
 - Added a sort direction control to the stored scenario browser dropdown, with an icon indicating ascending or descending order.

@@ -5,7 +5,10 @@ import {
   activeScenarioKey,
   activeScenarioMapEngineKey,
 } from "@/components/injects";
-import { featureMenuItems } from "@/modules/scenarioeditor/featureLayerUtils";
+import {
+  featureMenuItems,
+  featuresToGeoJsonString,
+} from "@/modules/scenarioeditor/featureLayerUtils";
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import type { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
@@ -34,6 +37,7 @@ import {
   isScenarioFeatureDragItem,
   isScenarioFeatureLayerDragItem,
 } from "@/types/draggables";
+import { useNotifications } from "@/composables/notifications";
 import {
   type Edge,
   extractClosestEdge,
@@ -44,6 +48,7 @@ const emit = defineEmits(["feature-click"]);
 const activeLayerId = injectStrict(activeLayerKey);
 const engineRef = injectStrict(activeScenarioMapEngineKey);
 const uiStore = useUiStore();
+const { send: notify } = useNotifications();
 const {
   geo,
   store: { groupUpdate },
@@ -108,6 +113,7 @@ const layerMenuItems = computed<MenuItemData<ScenarioLayerAction>[]>(() => [
   { label: "Edit", action: ScenarioLayerActions.Edit },
   { label: "Move up", action: ScenarioLayerActions.MoveUp },
   { label: "Move down", action: ScenarioLayerActions.MoveDown },
+  { label: "Copy as GeoJSON", action: ScenarioLayerActions.CopyAsGeoJson },
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ]);
 
@@ -242,6 +248,13 @@ function onLayerAction(
     if (direction === "down") toIndex++;
     geo.moveLayer(layer.id, toIndex);
   }
+  if (action === ScenarioLayerActions.CopyAsGeoJson) {
+    const fullLayer = geo.getFullLayer(layer.id);
+    if (fullLayer) {
+      navigator.clipboard.writeText(featuresToGeoJsonString(fullLayer.features));
+      notify({ message: "Copied GeoJSON to clipboard" });
+    }
+  }
 }
 
 function onFeatureAction(
@@ -249,6 +262,18 @@ function onFeatureAction(
   action: ScenarioFeatureActions,
 ) {
   const isArray = Array.isArray(featureOrFeaturesId);
+
+  if (action === "copyAsGeoJson") {
+    const ids = isArray ? featureOrFeaturesId : [featureOrFeaturesId];
+    const features = ids
+      .map((id) => geo.getFeatureById(id)?.feature)
+      .filter((f): f is NScenarioFeature => !!f);
+    if (features.length) {
+      navigator.clipboard.writeText(featuresToGeoJsonString(features));
+      notify({ message: "Copied GeoJSON to clipboard" });
+    }
+    return;
+  }
 
   if (isArray && (action === "zoom" || action === "pan")) {
     if (action === "zoom") {
