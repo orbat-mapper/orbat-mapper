@@ -263,7 +263,7 @@ watch(currentTab, async (v) => {
     @cancel="emit('cancel')"
     class="md:max-w-(--breakpoint-md) lg:max-w-(--breakpoint-lg)"
   >
-    <div class="flex h-full flex-col" @keyup.ctrl.enter="onSubmit">
+    <div class="flex h-full flex-col overflow-hidden" @keyup.ctrl.enter="onSubmit">
       <header class="mt-4 flex h-20 w-full shrink-0 items-center justify-between">
         <template v-if="!customSymbol">
           <div class="flex items-center gap-1">
