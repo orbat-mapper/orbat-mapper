@@ -9,7 +9,6 @@ import {
   LANDING_PAGE_ROUTE,
   MAP_EDIT_MODE_ROUTE,
   NEW_SCENARIO_ROUTE,
-  ORBAT_CHART_ROUTE,
   STORY_MODE_ROUTE,
   SYMBOL_BROWSER_ROUTE,
   TEXT_TO_ORBAT_ROUTE,
@@ -26,11 +25,8 @@ const ScenarioEditorWrapper = () =>
   import("../modules/scenarioeditor/ScenarioEditorWrapper.vue");
 const NewScenarioView = () => import("../modules/scenarioeditor/NewScenarioView.vue");
 const StoryModeView = () => import("../modules/storymode/StoryModeWrapper.vue");
-const OrbatChartView = () => import("../modules/charteditor/OrbatChartViewWrapper.vue");
 const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
 const GeoTestView = () => import("../views/GeoTestView.vue");
-const GridTestView = () => import("@/modules/grid/GridTestView.vue");
-const TanstackGridTestView = () => import("@/modules/grid/TanstackGridTestView.vue");
 const TextToOrbatView = () => import("@/views/texttoorbat/TextToOrbatView.vue");
 const ImportScenarioView = () => import("@/views/ImportScenarioView.vue");
 const SymbolBrowserView = () => import("@/views/SymbolBrowserView.vue");
@@ -83,28 +79,12 @@ const routes = [
     },
   },
   {
-    path: "/chart",
-    name: ORBAT_CHART_ROUTE,
-    component: OrbatChartView,
-    beforeEnter: (to, from) => {
-      NProgress.start();
-    },
-  },
-  {
     path: "/testcomponents",
     component: ComponentsTestView,
   },
   {
     path: "/testgeo",
     component: GeoTestView,
-  },
-  {
-    path: "/testgrid",
-    component: GridTestView,
-  },
-  {
-    path: "/testgrid2",
-    component: TanstackGridTestView,
   },
   {
     path: "/text-to-orbat",

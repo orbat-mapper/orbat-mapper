@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import {
-  ORBAT_CHART_ROUTE,
-  SYMBOL_BROWSER_ROUTE,
-  TEXT_TO_ORBAT_ROUTE,
-} from "@/router/names";
+import { SYMBOL_BROWSER_ROUTE, TEXT_TO_ORBAT_ROUTE } from "@/router/names";
 
 // ... existing imports
 import { ExternalLinkIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
@@ -173,18 +169,8 @@ const features = [
                 >Symbol Browser
               </router-link>
 
-              <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="text-muted-foreground"
-                >Orbat chart test
-              </router-link>
-
               <router-link to="/storymode" class="text-muted-foreground"
                 >Story mode test</router-link
-              >
-              <router-link to="/testgrid" class="text-muted-foreground"
-                >Test grid</router-link
-              >
-              <router-link to="/testgrid2" class="text-muted-foreground"
-                >Tanstack Table Test grid</router-link
               >
             </ul>
           </div>
