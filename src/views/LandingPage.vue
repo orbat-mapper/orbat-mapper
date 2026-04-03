@@ -88,7 +88,9 @@ const features = [
             >
               Recreate historic battles and military scenarios in your browser
             </p>
-            <div class="mt-4 flex items-center justify-center gap-1 text-sm sm:text-base">
+            <div
+              class="mt-4 flex flex-wrap items-center justify-center gap-1 text-sm sm:text-base"
+            >
               <Button as-child variant="link"
                 ><a
                   href="https://docs.orbat-mapper.app/guide/about-orbat-mapper"

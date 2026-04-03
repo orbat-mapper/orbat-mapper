@@ -17,6 +17,9 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSymbolExport } from "@/composables/symbolExport";
@@ -45,7 +48,67 @@ const sizeOptions = [
 </script>
 
 <template>
-  <div class="flex items-center gap-1">
+  <!-- Compact: single combined dropdown -->
+  <div class="sm:hidden">
+    <DropdownMenu>
+      <DropdownMenuTrigger as-child>
+        <Button variant="outline" size="icon-sm" title="Export">
+          <DownloadIcon class="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" class="min-w-44">
+        <DropdownMenuLabel>Copy</DropdownMenuLabel>
+        <DropdownMenuItem @select="copySvg">Copy as SVG</DropdownMenuItem>
+        <DropdownMenuItem @select="copyPng">Copy as PNG</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Save</DropdownMenuLabel>
+        <DropdownMenuItem @select="downloadSvg">Save as SVG</DropdownMenuItem>
+        <DropdownMenuItem @select="downloadPng">Save as PNG</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <SettingsIcon class="mr-2 size-4" />Settings
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent class="min-w-40">
+            <DropdownMenuLabel>Symbol size</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              :model-value="String(exportSettings.size)"
+              @update:model-value="exportSettings.size = Number($event)"
+            >
+              <DropdownMenuRadioItem
+                v-for="opt in sizeOptions"
+                :key="opt.value"
+                :value="String(opt.value)"
+                @select.prevent
+              >
+                {{ opt.label }}
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Options</DropdownMenuLabel>
+            <DropdownMenuCheckboxItem v-model="exportSettings.showFrame" @select.prevent>
+              Frame
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem v-model="exportSettings.showIcon" @select.prevent>
+              Icon
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem v-model="exportSettings.showFill" @select.prevent>
+              Fill
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              v-model="exportSettings.showOutline"
+              @select.prevent
+            >
+              Outline
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </div>
+
+  <!-- Full: separate buttons -->
+  <div class="hidden items-center gap-1 sm:flex">
     <DropdownMenu>
       <DropdownMenuTrigger as-child>
         <Button variant="outline" size="sm">

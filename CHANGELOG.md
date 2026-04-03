@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added a standalone symbol browser page at `/symbol-browser`.
+- Added symbol export with copy and download as PNG and SVG, with configurable size and display options.
 - Added "Copy as GeoJSON" to the feature layer menu, individual feature menu, and feature details panel. Circles are exported as polygons.
 - Added a missing short name input to the unit details form, including automatic short-name mode support.
 - Added multi-select batch delete for stored scenarios in the landing page and import scenario browsers, including filtered select-all and confirmation dialog support.
