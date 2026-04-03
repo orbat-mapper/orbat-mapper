@@ -108,11 +108,12 @@ const sizeOptions = [
   </div>
 
   <!-- Full: separate buttons -->
-  <div class="hidden items-center gap-1 sm:flex">
+  <div class="ml-2 hidden items-center gap-1 sm:flex">
     <DropdownMenu>
       <DropdownMenuTrigger as-child>
         <Button variant="outline" size="sm">
-          <ClipboardCopyIcon class="size-3.5" />Copy<ChevronDownIcon class="size-3.5" />
+          <ClipboardCopyIcon class="size-3.5" /><span class="hidden @md:inline">Copy</span
+          ><ChevronDownIcon class="size-3.5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
@@ -124,7 +125,8 @@ const sizeOptions = [
     <DropdownMenu>
       <DropdownMenuTrigger as-child>
         <Button variant="outline" size="sm">
-          <DownloadIcon class="size-3.5" />Save<ChevronDownIcon class="size-3.5" />
+          <DownloadIcon class="size-3.5" /><span class="hidden @md:inline">Save</span
+          ><ChevronDownIcon class="size-3.5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">

@@ -264,7 +264,9 @@ watch(currentTab, async (v) => {
     class="md:max-w-(--breakpoint-md) lg:max-w-(--breakpoint-lg)"
   >
     <div class="flex h-full flex-col overflow-hidden" @keyup.ctrl.enter="onSubmit">
-      <header class="mt-4 flex h-20 w-full shrink-0 items-center justify-between">
+      <header
+        class="@container mt-4 flex h-20 w-full shrink-0 items-center justify-between"
+      >
         <template v-if="!customSymbol">
           <div class="flex items-center gap-1">
             <MilitarySymbol :sidc="csidc" :size="34" :options="finalSymbolOptions" />
@@ -392,7 +394,7 @@ watch(currentTab, async (v) => {
               <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <SymbolCodeSelect
                   v-model="hqtfdValue"
-                  label="Headquaters / Task force / Dummy"
+                  label="Headquarters / Task force / Dummy"
                   :items="hqtfdItems"
                   :symbol-options="combinedSymbolOptions"
                 />

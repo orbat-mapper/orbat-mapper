@@ -187,7 +187,9 @@ function updateFromSidcInput(sidc: string) {
       <!-- Left panel: Selection controls -->
       <ResizablePanel :default-size="40" :min-size="25">
         <div class="flex h-full flex-col overflow-y-auto p-4">
-          <header class="flex h-20 w-full shrink-0 items-center justify-between">
+          <header
+            class="@container flex h-20 w-full shrink-0 items-center justify-between"
+          >
             <div class="flex items-center gap-1">
               <MilitarySymbol :sidc="csidc" :size="34" :options="combinedSymbolOptions" />
               <SymbolExportMenu :sidc="csidc" :symbol-options="combinedSymbolOptions" />
@@ -269,7 +271,7 @@ function updateFromSidcInput(sidc: string) {
               />
               <SymbolCodeSelect
                 v-model="hqtfdValue"
-                label="Headquarters / Task force / Dummy"
+                label="HQ / TF / Dummy"
                 :items="hqtfdItems"
                 :symbol-options="combinedSymbolOptions"
               />
