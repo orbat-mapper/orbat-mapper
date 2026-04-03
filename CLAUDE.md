@@ -18,7 +18,7 @@ pnpm run format       # Prettier formatting for src/
 pnpm run docs:dev     # VitePress docs dev server
 ```
 
-To run a single test file: `npx vitest run src/path/to/file.test.ts`
+To run a single test file: `pnpm exec vitest run src/path/to/file.test.ts`
 
 ## Tech Stack
 
