@@ -22,20 +22,22 @@ hero:
       link: https://orbat-mapper.app/
 
 features:
-  - title: "Create ORBAT"
-    details: Quickly build and modify order of battles.
-  - title: "Animate units"
-    details: Visualize the movement of units over time.
-  - title: Draw
-    details: Add lines, shapes and text to the map.
+  - title: Create ORBATs
+    details: Quickly build and organize orders of battle with drag-and-drop.
+  - title: ORBAT chart view
+    details: Visualize unit hierarchies as organizational charts.
+  - title: Timeline and playback
+    details: Animate unit movements and scenario events over time.
+  - title: Symbol browser
+    details: Search, preview, and export military symbols as PNG or SVG.
+  - title: Text to ORBAT
+    details: Parse text into unit hierarchies automatically.
+  - title: Grid edit mode
+    details: Efficient spreadsheet-style editing of units and equipment.
+  - title: Draw and measure
+    details: Draw map features and measure distances and areas.
+  - title: Import and export
+    details: Support for GeoJSON, KML/KMZ, MilX, XLSX, and CSV formats.
   - title: Client side only
-    details: All your data is stored on your computer.
-  - title: Import data
-    details: Import data from JSON, spreadsheets, MilX and more.
-  - title: Import ORBAT
-    details: Import force structures from DATE, Spatial illusion and more
-  - title: Export ORBAT
-    details: Export your ORBAT as spreadsheets, MilX, Spatial illusion and more.
-  - title: Export as KML
-    details: View your scenario in 3D with Google Earth.
+    details: Everything is stored on your computer. No server required.
 ---

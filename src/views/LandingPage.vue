@@ -13,35 +13,39 @@ import { UseDark } from "@vueuse/components";
 const features = [
   {
     name: "Create ORBATs",
-    description: "Quickly build ORBATs.",
+    description: "Quickly build and organize orders of battle with drag-and-drop.",
   },
   {
-    name: "Draw features",
-    description: "",
+    name: "ORBAT chart view",
+    description: "Visualize unit hierarchies as organizational charts.",
+  },
+  {
+    name: "Timeline and playback",
+    description: "Animate unit movements and scenario events over time.",
+  },
+  {
+    name: "Symbol browser",
+    description: "Search, preview, and export military symbols as PNG or SVG.",
+  },
+  {
+    name: "Text to ORBAT",
+    description: "Parse text into unit hierarchies automatically.",
+  },
+  {
+    name: "Grid edit mode",
+    description: "Efficient spreadsheet-style editing of units and equipment.",
+  },
+  {
+    name: "Draw and measure",
+    description: "Draw map features and measure distances and areas.",
+  },
+  {
+    name: "Import and export",
+    description: "Support for GeoJSON, KML/KMZ, MilX, XLSX, and CSV formats.",
   },
   {
     name: "Client side only",
-    description: "Everything is stored on your computer.",
-  },
-  {
-    name: "Grid edit moe",
-    description: "Efficient editing.",
-  },
-  {
-    name: "Export to KML/KMZ",
-    description: "View your scenario in 3D with Google Earth.",
-  },
-  {
-    name: "Export as GeoJSON",
-    description: "",
-  },
-  {
-    name: "Import MilX",
-    description: "Import military map overlays from map.army.",
-  },
-  {
-    name: "Import GeoJSON",
-    description: "",
+    description: "Everything is stored on your computer. No server required.",
   },
 ];
 </script>
@@ -124,7 +128,7 @@ const features = [
             </p>
           </div>
           <dl
-            class="mt-12 space-y-10 sm:grid sm:grid-cols-2 sm:space-y-0 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-4 lg:gap-x-8"
+            class="mt-12 space-y-10 sm:grid sm:grid-cols-2 sm:space-y-0 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 lg:gap-x-8"
           >
             <div v-for="feature in features" :key="feature.name" class="relative">
               <dt>
