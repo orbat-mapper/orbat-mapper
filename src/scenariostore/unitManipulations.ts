@@ -599,11 +599,25 @@ export function useUnitManipulations(store: NewScenarioStore) {
     targetId: EntityId,
     target: DropTarget = "on",
   ) {
+    if (unitId === targetId) return;
+
+    // Cycle prevention: don't allow moving a unit into its own projected subtree
+    const unit = state.unitMap[unitId];
+    if (unit) {
+      const stack = [...unit.subUnits];
+      while (stack.length) {
+        const id = stack.pop()!;
+        if (id === targetId) return;
+        const child = state.unitMap[id];
+        if (child) stack.push(...child.subUnits);
+      }
+    }
+
     let parentId: EntityId | undefined;
     if (target === "above" || target === "below") {
       const targetUnit = state.unitMap[targetId];
       const targetSideGroup = state.sideGroupMap[targetId];
-      parentId = targetUnit?._basePid ?? targetUnit?._pid ?? targetSideGroup?._pid ?? "";
+      parentId = targetUnit?._pid ?? targetSideGroup?._pid ?? "";
     }
 
     addUnitStateEntry(

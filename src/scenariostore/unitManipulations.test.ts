@@ -557,6 +557,196 @@ describe("unitManipulations timed hierarchy recording", () => {
     expect(store.state.unitMap["unit-2"]._pid).toBe("side-1");
   });
 
+  it("rejects recording a move onto self", () => {
+    const t = Date.parse("2025-01-01T01:00:00Z");
+    const store = useNewScenarioStore(createScenarioForHierarchyRecording());
+    const actions = useUnitManipulations(store);
+    const time = useScenarioTime(store);
+
+    time.setCurrentTime(t);
+    actions.recordUnitHierarchyMove("unit-1", "unit-1", "on");
+
+    expect(store.state.unitMap["unit-1"].state ?? []).toEqual([]);
+  });
+
+  it("rejects recording a move onto a descendant", () => {
+    const t = Date.parse("2025-01-01T01:00:00Z");
+    const store = useNewScenarioStore({
+      ...createScenarioForHierarchyRecording(),
+      sides: [
+        {
+          ...createScenarioForHierarchyRecording().sides[0],
+          groups: [
+            {
+              id: "group-1",
+              name: "Units",
+              symbolOptions: {},
+              subUnits: [
+                {
+                  id: "unit-parent",
+                  name: "Parent",
+                  sidc: "10031000000000000000",
+                  subUnits: [
+                    {
+                      id: "unit-child",
+                      name: "Child",
+                      sidc: "10031000000000000000",
+                      subUnits: [
+                        {
+                          id: "unit-grandchild",
+                          name: "Grandchild",
+                          sidc: "10031000000000000000",
+                          subUnits: [],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            createScenarioForHierarchyRecording().sides[0].groups[1],
+          ],
+        },
+      ],
+    } as any);
+    const actions = useUnitManipulations(store);
+    const time = useScenarioTime(store);
+
+    time.setCurrentTime(t);
+    actions.recordUnitHierarchyMove("unit-parent", "unit-child", "on");
+    expect(store.state.unitMap["unit-parent"].state ?? []).toEqual([]);
+
+    actions.recordUnitHierarchyMove("unit-parent", "unit-grandchild", "on");
+    expect(store.state.unitMap["unit-parent"].state ?? []).toEqual([]);
+  });
+
+  it("allows recording a move onto a unit that was moved out of the subtree", () => {
+    const t1 = Date.parse("2025-01-01T01:00:00Z");
+    const t2 = Date.parse("2025-01-01T02:00:00Z");
+    const store = useNewScenarioStore({
+      ...createScenarioForHierarchyRecording(),
+      sides: [
+        {
+          ...createScenarioForHierarchyRecording().sides[0],
+          groups: [
+            {
+              id: "group-1",
+              name: "Units",
+              symbolOptions: {},
+              subUnits: [
+                {
+                  id: "unit-parent",
+                  name: "Parent",
+                  sidc: "10031000000000000000",
+                  subUnits: [
+                    {
+                      id: "unit-child",
+                      name: "Child",
+                      sidc: "10031000000000000000",
+                      subUnits: [],
+                      state: [
+                        {
+                          id: "move-child",
+                          t: "2025-01-01T01:00:00Z",
+                          hierarchy: { targetId: "group-2", placement: "on" },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              id: "group-2",
+              name: "Reserve",
+              symbolOptions: {},
+              subUnits: [],
+            },
+          ],
+        },
+      ],
+    } as any);
+    const actions = useUnitManipulations(store);
+    const time = useScenarioTime(store);
+
+    // At t1, unit-child has already moved to group-2 via its timed entry
+    time.setCurrentTime(t1);
+    expect(store.state.unitMap["unit-child"]._pid).toBe("group-2");
+    expect(store.state.unitMap["unit-parent"].subUnits).not.toContain("unit-child");
+
+    // At t2, moving unit-parent onto unit-child should now be allowed
+    time.setCurrentTime(t2);
+    actions.recordUnitHierarchyMove("unit-parent", "unit-child", "on");
+    expect(store.state.unitMap["unit-parent"].state).toHaveLength(1);
+    expect(store.state.unitMap["unit-parent"].state?.[0]).toEqual(
+      expect.objectContaining({
+        t: t2,
+        hierarchy: { targetId: "unit-child", placement: "on" },
+      }),
+    );
+    expect(store.state.unitMap["unit-parent"]._pid).toBe("unit-child");
+  });
+
+  it("records parentId from projected hierarchy, not base hierarchy", () => {
+    const t1 = Date.parse("2025-01-01T01:00:00Z");
+    const t2 = Date.parse("2025-01-01T02:00:00Z");
+    const store = useNewScenarioStore({
+      ...createScenarioForHierarchyRecording(),
+      sides: [
+        {
+          ...createScenarioForHierarchyRecording().sides[0],
+          groups: [
+            {
+              id: "group-1",
+              name: "Units",
+              symbolOptions: {},
+              subUnits: [
+                {
+                  id: "unit-1",
+                  name: "1st",
+                  sidc: "10031000000000000000",
+                  subUnits: [],
+                },
+                {
+                  id: "unit-2",
+                  name: "2nd",
+                  sidc: "10031000000000000000",
+                  subUnits: [],
+                  state: [
+                    {
+                      id: "move-2",
+                      t: "2025-01-01T01:00:00Z",
+                      hierarchy: { targetId: "group-2", placement: "on" },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              id: "group-2",
+              name: "Reserve",
+              symbolOptions: {},
+              subUnits: [],
+            },
+          ],
+        },
+      ],
+    } as any);
+    const actions = useUnitManipulations(store);
+    const time = useScenarioTime(store);
+
+    time.setCurrentTime(t2);
+    // unit-2 is now in group-2 (projected), parentId should reflect that
+    expect(store.state.unitMap["unit-2"]._pid).toBe("group-2");
+    actions.recordUnitHierarchyMove("unit-1", "unit-2", "above");
+
+    expect(store.state.unitMap["unit-1"].state?.[0]).toEqual(
+      expect.objectContaining({
+        hierarchy: { targetId: "unit-2", placement: "above", parentId: "group-2" },
+      }),
+    );
+  });
+
   it("merges hierarchy recording into an existing state entry at the same timestamp", () => {
     const t = 1735693200000;
     const baseScenario = createScenarioForHierarchyRecording();
