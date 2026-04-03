@@ -39,6 +39,7 @@ import SymbolCodeViewer from "@/components/SymbolCodeViewer.vue";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 import BaseButton from "@/components/BaseButton.vue";
+import SymbolExportMenu from "@/components/SymbolExportMenu.vue";
 import { useSymbolItems } from "@/composables/symbolData";
 import {
   type MainIconSearchResult,
@@ -187,7 +188,10 @@ function updateFromSidcInput(sidc: string) {
       <ResizablePanel :default-size="40" :min-size="25">
         <div class="flex h-full flex-col overflow-y-auto p-4">
           <header class="flex h-20 w-full shrink-0 items-center justify-between">
-            <MilitarySymbol :sidc="csidc" :size="34" :options="combinedSymbolOptions" />
+            <div class="flex items-center gap-1">
+              <MilitarySymbol :sidc="csidc" :size="34" :options="combinedSymbolOptions" />
+              <SymbolExportMenu :sidc="csidc" :symbol-options="combinedSymbolOptions" />
+            </div>
             <SymbolCodeViewer :sidc="csidc" @update="updateFromSidcInput" />
           </header>
 

@@ -51,6 +51,7 @@ import { activeScenarioKey } from "@/components/injects.ts";
 import SymbolPickerCustomSymbol from "@/components/SymbolPickerCustomSymbol.vue";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
 import { getFullUnitSidc } from "@/symbology/helpers.ts";
+import SymbolExportMenu from "@/components/SymbolExportMenu.vue";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
@@ -265,7 +266,10 @@ watch(currentTab, async (v) => {
     <div class="flex h-full flex-col" @keyup.ctrl.enter="onSubmit">
       <header class="mt-4 flex h-20 w-full shrink-0 items-center justify-between">
         <template v-if="!customSymbol">
-          <MilitarySymbol :sidc="csidc" :size="34" :options="finalSymbolOptions" />
+          <div class="flex items-center gap-1">
+            <MilitarySymbol :sidc="csidc" :size="34" :options="finalSymbolOptions" />
+            <SymbolExportMenu :sidc="csidc" :symbol-options="combinedSymbolOptions" />
+          </div>
           <SymbolCodeViewer :sidc="csidc" @update="updateFromSidcInput" />
         </template>
         <img
