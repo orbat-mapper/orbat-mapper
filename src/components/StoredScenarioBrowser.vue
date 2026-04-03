@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, type HTMLAttributes, ref, watch } from "vue";
 import { useEventListener } from "@vueuse/core";
-import { Search, X } from "lucide-vue-next";
+import { Search, X, ListChecksIcon } from "lucide-vue-next";
 
 import DeleteStoredScenariosModal from "@/components/DeleteStoredScenariosModal.vue";
 import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";
@@ -297,16 +297,16 @@ useEventListener("keydown", (event: KeyboardEvent) => {
           </Button>
         </template>
         <template v-else>
-          <slot name="actions" />
           <Button
             v-if="enableBatchActions"
             variant="outline"
-            size="sm"
             type="button"
             @click="enterSelectMode"
           >
+            <ListChecksIcon />
             Select
           </Button>
+          <slot name="actions" />
         </template>
       </div>
     </header>
