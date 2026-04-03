@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { ORBAT_CHART_ROUTE, TEXT_TO_ORBAT_ROUTE } from "@/router/names";
+import {
+  ORBAT_CHART_ROUTE,
+  SYMBOL_BROWSER_ROUTE,
+  TEXT_TO_ORBAT_ROUTE,
+} from "@/router/names";
 
 // ... existing imports
 import { ExternalLinkIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
@@ -98,6 +102,12 @@ const features = [
                   >Text to ORBAT</router-link
                 >
               </Button>
+              <span class="text-muted-foreground/70" aria-hidden="true">|</span>
+              <Button as-child variant="link">
+                <router-link :to="{ name: SYMBOL_BROWSER_ROUTE }"
+                  >Symbol Browser</router-link
+                >
+              </Button>
             </div>
           </div>
         </div>
@@ -153,6 +163,12 @@ const features = [
             <ul class="flex flex-col gap-4">
               <router-link :to="{ name: TEXT_TO_ORBAT_ROUTE }" class="shrink-0"
                 >Text to ORBAT
+              </router-link>
+
+              <router-link
+                :to="{ name: SYMBOL_BROWSER_ROUTE }"
+                class="text-muted-foreground"
+                >Symbol Browser
               </router-link>
 
               <router-link :to="{ name: ORBAT_CHART_ROUTE }" class="text-muted-foreground"

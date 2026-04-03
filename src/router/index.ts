@@ -11,6 +11,7 @@ import {
   NEW_SCENARIO_ROUTE,
   ORBAT_CHART_ROUTE,
   STORY_MODE_ROUTE,
+  SYMBOL_BROWSER_ROUTE,
   TEXT_TO_ORBAT_ROUTE,
 } from "@/router/names";
 
@@ -32,6 +33,7 @@ const GridTestView = () => import("@/modules/grid/GridTestView.vue");
 const TanstackGridTestView = () => import("@/modules/grid/TanstackGridTestView.vue");
 const TextToOrbatView = () => import("@/views/texttoorbat/TextToOrbatView.vue");
 const ImportScenarioView = () => import("@/views/ImportScenarioView.vue");
+const SymbolBrowserView = () => import("@/views/SymbolBrowserView.vue");
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
 const ScenarioEditorMap = () => import("@/modules/scenarioeditor/ScenarioEditorMap.vue");
@@ -113,6 +115,11 @@ const routes = [
     path: "/import",
     name: IMPORT_SCENARIO_ROUTE,
     component: ImportScenarioView,
+  },
+  {
+    path: "/symbol-browser",
+    name: SYMBOL_BROWSER_ROUTE,
+    component: SymbolBrowserView,
   },
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];

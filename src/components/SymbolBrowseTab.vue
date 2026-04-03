@@ -12,9 +12,10 @@ interface Props {
   initialSidc: string;
   symbolSize?: number;
   symbolOptions?: UnitSymbolOptions;
+  fullHeight?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), { symbolSize: 32 });
+const props = withDefaults(defineProps<Props>(), { symbolSize: 32, fullHeight: false });
 const searchQuery = ref("");
 const debouncedQuery = useDebounce(searchQuery, 100);
 const inputRef = ref();
@@ -97,7 +98,7 @@ function onEsc(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="flex px-0.5">
+  <div class="flex px-0.5" :class="fullHeight ? 'h-full' : ''">
     <aside class="hidden w-60 flex-none pr-2 md:block">
       <p class="text-sm leading-7 font-bold">Entity type</p>
       <ul class="dark:text-muted-foreground space-y-1.5 text-sm font-medium">
@@ -119,7 +120,7 @@ function onEsc(e: KeyboardEvent) {
         </li>
       </ul>
     </aside>
-    <div class="flex-auto">
+    <div class="flex min-h-0 flex-auto flex-col">
       <div class="relative">
         <MagnifyingGlassIcon
           class="text-muted-foreground pointer-events-none absolute top-3.5 left-0 h-5 w-5"
@@ -141,7 +142,10 @@ function onEsc(e: KeyboardEvent) {
         label="Symbol set"
       />
 
-      <div class="mt-4 max-h-[40vh] overflow-auto">
+      <div
+        class="mt-4 overflow-auto"
+        :class="fullHeight ? 'min-h-0 flex-1' : 'max-h-[40vh]'"
+      >
         <div
           v-for="[entity, entityIcons] in filteredIconsByEntity"
           class="relative"
