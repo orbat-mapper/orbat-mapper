@@ -15,14 +15,18 @@ const props = withDefaults(defineProps<Props>(), { sid: "3" });
 const emit = defineEmits(["update:modelValue"]);
 const colorValue = defineModel<string | null>({ default: null });
 
-const scn = inject(activeScenarioKey);
+const scn = inject(activeScenarioKey, undefined);
 
-const colorIconItems = computed((): NullableSymbolItem[] =>
-  [
+const colorIconItems = computed((): NullableSymbolItem[] => {
+  const items: { code: string | null; text: string }[] = [
     { code: null, text: "Default" },
     ...SYMBOL_FILL_COLORS,
     ...Object.values(scn?.store.state.symbolFillColorMap ?? {}),
-  ].map((item) => ({
+  ];
+  if (colorValue.value && !items.some((i) => i.code === colorValue.value)) {
+    items.push({ code: colorValue.value, text: `Custom (${colorValue.value})` });
+  }
+  return items.map((item) => ({
     ...item,
     sidc: "100" + props.sid + 10 + "00" + "00" + "0000000000",
     symbolOptions: item.code
@@ -30,8 +34,8 @@ const colorIconItems = computed((): NullableSymbolItem[] =>
       : props.defaultFillColor
         ? { fillColor: props.defaultFillColor }
         : undefined,
-  })),
-);
+  }));
+});
 </script>
 
 <template>

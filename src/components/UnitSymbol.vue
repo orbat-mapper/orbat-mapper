@@ -12,7 +12,7 @@ type Props = {
 };
 
 const props = withDefaults(defineProps<Props>(), { size: 15 });
-const { store } = inject(activeScenarioKey) || {};
+const { store } = inject(activeScenarioKey, undefined) || {};
 const customSidc = computed(() => {
   if (props.sidc?.startsWith(CUSTOM_SYMBOL_PREFIX)) {
     const symbolId = props.sidc.slice(CUSTOM_SYMBOL_SLICE);
