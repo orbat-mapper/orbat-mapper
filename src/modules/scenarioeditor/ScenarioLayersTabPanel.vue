@@ -265,9 +265,11 @@ function onFeatureAction(
 
   if (action === "copyAsGeoJson") {
     const ids = isArray ? featureOrFeaturesId : [featureOrFeaturesId];
-    const items = ids.map((id) => geo.getLayerItemById(id)?.item).filter(Boolean);
-    if (items.length) {
-      navigator.clipboard.writeText(layerItemsToGeoJsonString(items));
+    const layerItems = ids
+      .map((id) => geo.getLayerItemById(id)?.layerItem)
+      .filter(Boolean);
+    if (layerItems.length) {
+      navigator.clipboard.writeText(layerItemsToGeoJsonString(layerItems));
       notify({ message: "Copied GeoJSON to clipboard" });
     }
     return;

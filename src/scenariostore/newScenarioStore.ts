@@ -68,7 +68,7 @@ export interface ScenarioState {
   sides: EntityId[];
   layers: FeatureId[];
   layerMap: Record<FeatureId, NScenarioLayer>;
-  itemMap: Record<FeatureId, NScenarioLayerItem>;
+  layerItemMap: Record<FeatureId, NScenarioLayerItem>;
   featureMap: Record<FeatureId, NScenarioFeature>;
   mapLayers: FeatureId[];
   mapLayerMap: Record<FeatureId, ScenarioMapLayer>;
@@ -116,8 +116,8 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
   const layers: FeatureId[] = [];
   const mapLayers: FeatureId[] = [];
   const layerMap: Record<FeatureId, NScenarioLayer> = {};
-  const itemMap: Record<FeatureId, NScenarioLayerItem> = {};
-  const featureMap = itemMap as Record<FeatureId, NScenarioFeature>;
+  const layerItemMap: Record<FeatureId, NScenarioLayerItem> = {};
+  const featureMap = layerItemMap as Record<FeatureId, NScenarioFeature>;
   const mapLayerMap: Record<FeatureId, ScenarioMapLayer> = {};
   const equipmentMap: Record<string, NEquipmentData> = {};
   const personnelMap: Record<string, NPersonnelData> = {};
@@ -469,7 +469,7 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
       }));
 
       tmp.meta = mapVisibility(tmp.meta);
-      itemMap[feature.id] = {
+      layerItemMap[feature.id] = {
         ...tmp,
         kind: "geometry",
         _pid: layer.id,
@@ -505,7 +505,7 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     mapLayers: mapLayers,
     mapLayerMap: mapLayerMap,
     layerMap,
-    itemMap,
+    layerItemMap,
     featureMap,
     eventMap,
     currentTime: scenario.startTime || 0,

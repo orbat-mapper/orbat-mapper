@@ -40,8 +40,8 @@ export function useGeoJsonConverter(scenario: TScenario) {
       geo.layerItemsLayers.value
         .map((layer) => layer.items)
         .flat(1)
-        .filter((item): item is NScenarioLayerItem & GeometryLayerItem =>
-          isGeometryLayerItem(item),
+        .filter((layerItem): layerItem is NScenarioLayerItem & GeometryLayerItem =>
+          isGeometryLayerItem(layerItem),
         )
         .map((f) => {
           const { id, geometry, properties, meta } = f;

@@ -211,7 +211,7 @@ export function useScenarioTime(store: NewScenarioStore) {
         state.featureStateCounter++;
       }
       layer.items.forEach((featureId) => {
-        const feature = state.itemMap[featureId] as NScenarioFeature;
+        const feature = state.layerItemMap[featureId] as NScenarioFeature;
         const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
         const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
         if (!feature) return;
@@ -305,7 +305,7 @@ export function useScenarioTime(store: NewScenarioStore) {
       });
     });
 
-    Object.values(state.itemMap).forEach((feature) => {
+    Object.values(state.layerItemMap).forEach((feature) => {
       (feature?.state || []).forEach((s) => {
         // round to nearest hour
         const t = Math.round(s.t / 3600000) * 3600000;

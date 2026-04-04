@@ -56,9 +56,9 @@ export function useFeatureStyles(geo: TGeo) {
     }
     let cachedStyle = cachedItem?.style;
 
-    const { item } = geo.getLayerItemById(featureId);
-    if (!item || !isGeometryLayerItem(item)) return;
-    const scenarioFeature = item;
+    const { layerItem } = geo.getLayerItemById(featureId);
+    if (!layerItem || !isGeometryLayerItem(layerItem)) return;
+    const scenarioFeature = layerItem;
 
     const {
       meta: { name: label, _zIndex },

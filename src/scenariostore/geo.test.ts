@@ -44,9 +44,9 @@ describe("scenario geo item accessors", () => {
     const fullItemsLayer = geo.getFullLayerItemsLayer("layer-1");
     const fullFeatureLayer = geo.getFullLayer("layer-1");
 
-    expect(itemResult.item?.id).toBe("feature-1");
+    expect(itemResult.layerItem?.id).toBe("feature-1");
     expect(itemResult.layer?.id).toBe("layer-1");
-    expect(featureResult.feature).toEqual(itemResult.item);
+    expect(featureResult.feature).toEqual(itemResult.layerItem);
     expect(fullItemsLayer?.items).toHaveLength(1);
     expect(fullItemsLayer?.items[0]).toEqual(fullFeatureLayer?.features[0]);
     expect(geo.layerItemsLayers.value[0].items).toHaveLength(1);

@@ -61,8 +61,8 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
         break;
       case "updateFeature":
         olDeleteFeature(event.id);
-        const { item } = scn.geo.getLayerItemById(event.id);
-        if (item && !item._hidden) {
+        const { layerItem } = scn.geo.getLayerItemById(event.id);
+        if (layerItem && !layerItem._hidden) {
           olAddFeature(event.id);
         }
         invalidateStyle(event.id);
@@ -106,8 +106,8 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
       initializeFeatureLayersFromStore({ doClearCache: true, filterVisible: false });
     } else if (label === "updateFeature") {
       olDeleteFeature(layerOrFeatureId);
-      const { item } = scn.geo.getLayerItemById(layerOrFeatureId);
-      if (item && !item._hidden) {
+      const { layerItem } = scn.geo.getLayerItemById(layerOrFeatureId);
+      if (layerItem && !layerItem._hidden) {
         olAddFeature(layerOrFeatureId);
       }
       invalidateStyle(layerOrFeatureId);
@@ -176,11 +176,11 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
   }
 
   function olAddFeature(featureId: FeatureId) {
-    const { item } = scn.geo.getLayerItemById(featureId);
-    if (!item) return;
-    const olLayer = getOlLayerById(item._pid);
+    const { layerItem } = scn.geo.getLayerItemById(featureId);
+    if (!layerItem) return;
+    const olLayer = getOlLayerById(layerItem._pid);
     if (!olLayer) return;
-    const olFeature = createScenarioLayerItemFeatures([item], "EPSG:3857");
+    const olFeature = createScenarioLayerItemFeatures([layerItem], "EPSG:3857");
     olLayer.getSource()?.addFeatures(olFeature);
   }
 
@@ -227,7 +227,7 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
     const vectorLayer = new VectorLayer({
       source: new VectorSource({
         features: createScenarioLayerItemFeatures(
-          layer.items.filter((item) => !filterVisible || !item._hidden),
+          layer.items.filter((layerItem) => !filterVisible || !layerItem._hidden),
           projection,
         ),
       }),
