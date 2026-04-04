@@ -31,6 +31,7 @@ import type {
 } from "@/types/scenarioGeoModels";
 import type { Optional } from "@/types/helpers";
 import type { SymbolFillColor } from "@/config/colors.ts";
+import type { NScenarioLayerItem as VNextScenarioLayerItem } from "@/types/scenarioLayerItems";
 
 export interface NUnit extends Omit<
   Unit,
@@ -128,6 +129,8 @@ export interface NScenarioLayer extends Omit<ScenarioLayer, "features"> {
 export interface NScenarioFeature extends ScenarioFeature {
   _pid: FeatureId;
 }
+
+export type NScenarioLayerItem = VNextScenarioLayerItem;
 
 export interface ScenarioFeatureUpdate extends Partial<
   Omit<NScenarioFeature, "id" | "meta">

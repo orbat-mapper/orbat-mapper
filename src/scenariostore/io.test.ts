@@ -1,9 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
-import { useScenarioIO } from "./io";
+import { createEmptyScenario, useScenarioIO } from "./io";
 import type { NewScenarioStore, ScenarioState } from "./newScenarioStore";
 import { shallowRef } from "vue";
 import { useNewScenarioStore } from "./newScenarioStore";
 import { updateCurrentUnitState } from "./time";
+import "@/dayjs";
 
 // Mock the stores that might be used
 vi.mock("@/stores/settingsStore", () => ({
@@ -58,6 +59,120 @@ function createMinimalState(overrides: Partial<ScenarioState> = {}): ScenarioSta
 }
 
 describe("Scenario IO", () => {
+  it("creates empty scenarios with items[] layers", () => {
+    const scenario = createEmptyScenario();
+
+    expect(scenario.version).toBe("2.8.0");
+    expect(scenario.layers[0]).toHaveProperty("items");
+    expect(scenario.layers[0]).not.toHaveProperty("features");
+    expect((scenario.layers[0] as any).items).toEqual([]);
+  });
+
+  it("loads geometry items[] into the same normalized store state as legacy features[]", () => {
+    const feature = {
+      type: "Feature",
+      id: "feature-1",
+      geometry: { type: "Point", coordinates: [10, 60] },
+      properties: { title: "Feature properties" },
+      meta: { type: "Point", name: "HQ", description: "Feature description" },
+      style: { showLabel: true, title: "HQ" },
+      state: [
+        {
+          id: "state-1",
+          t: "2025-01-01T01:00:00Z",
+          geometry: { type: "Point", coordinates: [11, 61] },
+        },
+      ],
+    };
+    const baseScenario = {
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "2.8.0",
+      name: "Scenario",
+      startTime: "2025-01-01T00:00:00Z",
+      timeZone: "UTC",
+      sides: [],
+      events: [],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    };
+
+    const legacyStore = useNewScenarioStore({
+      ...baseScenario,
+      layers: [{ id: "layer-1", name: "Features", features: [feature] }],
+    } as any);
+    const itemsStore = useNewScenarioStore({
+      ...baseScenario,
+      layers: [
+        { id: "layer-1", name: "Features", items: [{ ...feature, kind: "geometry" }] },
+      ],
+    } as any);
+
+    expect(itemsStore.state.layerMap["layer-1"].features).toEqual(
+      legacyStore.state.layerMap["layer-1"].features,
+    );
+    expect(itemsStore.state.featureMap["feature-1"]).toEqual(
+      legacyStore.state.featureMap["feature-1"],
+    );
+  });
+
+  it("serializes geometry features as geometry items[] with the current scenario version", () => {
+    const feature = {
+      type: "Feature",
+      id: "feature-1",
+      geometry: { type: "Point", coordinates: [10, 60] },
+      properties: { title: "Feature properties" },
+      meta: { type: "Point", name: "HQ", description: "Feature description" },
+      style: { showLabel: true, title: "HQ" },
+      state: [
+        {
+          id: "state-1",
+          t: "2025-01-01T01:00:00Z",
+          geometry: { type: "Point", coordinates: [11, 61] },
+        },
+      ],
+    };
+    const store = useNewScenarioStore({
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "2.8.0",
+      name: "Scenario",
+      startTime: "2025-01-01T00:00:00Z",
+      timeZone: "UTC",
+      sides: [],
+      events: [],
+      layers: [
+        {
+          id: "layer-1",
+          name: "Features",
+          items: [{ ...feature, kind: "geometry" }],
+        },
+      ],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    } as any);
+
+    const storeRef = shallowRef(store);
+    const { serializeToObject } = useScenarioIO(storeRef);
+    const serialized = serializeToObject();
+
+    expect(serialized.version).toBe("2.8.0");
+    expect(serialized.layers[0]).not.toHaveProperty("features");
+    expect(serialized.layers[0].items).toEqual([{ ...feature, kind: "geometry" }]);
+  });
+
   it("serializes bounding box correctly", () => {
     const state = createMinimalState({
       boundingBox: [10, 20, 30, 40],

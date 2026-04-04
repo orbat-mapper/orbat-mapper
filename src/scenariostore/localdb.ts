@@ -3,6 +3,7 @@ import { openDB } from "idb";
 import type { Scenario } from "@/types/scenarioModels";
 import { nanoid } from "@/utils";
 import { saveBlobToLocalFile } from "@/utils/files";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 
 export interface ScenarioMetadata {
   id: string;
@@ -16,7 +17,7 @@ export interface ScenarioMetadata {
 interface ScenarioDb extends DBSchema {
   "scenario-blobs": {
     key: string;
-    value: Scenario;
+    value: LoadableScenario;
   };
   "scenario-metadata": {
     key: string;
@@ -57,7 +58,7 @@ export async function useIndexedDb() {
     });
   }
 
-  async function addScenario(scenario: Scenario, id?: string) {
+  async function addScenario(scenario: LoadableScenario | Scenario, id?: string) {
     const scenarioId = id ?? scenario.id ?? nanoid();
     if (scenario.id !== scenarioId) {
       scenario = { ...scenario, id: scenarioId };
@@ -80,7 +81,7 @@ export async function useIndexedDb() {
     return scenarioId;
   }
 
-  async function putScenario(scenario: Scenario) {
+  async function putScenario(scenario: LoadableScenario | Scenario) {
     const existing = await db.get("scenario-metadata", scenario.id);
 
     await db.put("scenario-blobs", scenario, scenario.id);

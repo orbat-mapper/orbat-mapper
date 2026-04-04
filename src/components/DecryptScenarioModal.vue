@@ -33,7 +33,7 @@ async function onDecrypt() {
   error.value = "";
   try {
     const decrypted = await decryptScenario(props.encryptedScenario, password.value);
-    emit("decrypted", decrypted);
+    emit("decrypted", decrypted as Scenario);
     open.value = false;
   } catch (e: any) {
     console.error(e);

@@ -31,11 +31,12 @@ import {
 } from "@/types/internalModels";
 import dayjs from "dayjs";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
+import type { RangeRingGroup, ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import type {
-  RangeRingGroup,
-  ScenarioLayer,
-  ScenarioMapLayer,
-} from "@/types/scenarioGeoModels";
+  GeometryLayerItem,
+  ScenarioLayerItemsLayer,
+} from "@/types/scenarioLayerItems";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 import { type EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
 import {
@@ -55,7 +56,9 @@ export interface CreateEmptyScenarioOptions {
   symbologyStandard?: SymbologyStandard;
 }
 
-export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): Scenario {
+export function createEmptyScenario(
+  options: CreateEmptyScenarioOptions = {},
+): LoadableScenario {
   const addGroups = options.addGroups ?? false;
   const symbolSettings = useSymbolSettingsStore();
   const symbologyStandard = options.symbologyStandard ?? symbolSettings.symbologyStandard;
@@ -82,7 +85,7 @@ export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): S
     symbologyStandard,
     sides: [],
     events: [],
-    layers: [{ id: nanoid(), name: "Features", features: [] }],
+    layers: [{ id: nanoid(), name: "Features", items: [] }],
     mapLayers: [],
     settings: {
       rangeRingGroups,
@@ -272,13 +275,18 @@ function serializeState(s: NState, scnState: ScenarioState) {
   return c;
 }
 
-function getLayers(state: ScenarioState): ScenarioLayer[] {
+function getStoredLayers(state: ScenarioState): ScenarioLayerItemsLayer[] {
   return state.layers
     .map((id) => state.layerMap[id])
-    .map((layer) => ({
-      ...layer,
-      features: layer.features.map((fId) => state.featureMap[fId]),
-    }));
+    .map((layer) => {
+      const { features: _features, ...rest } = layer;
+      return {
+        ...rest,
+        items: layer.features.map(
+          (fId) => ({ ...state.featureMap[fId], kind: "geometry" }) as GeometryLayerItem,
+        ),
+      };
+    });
 }
 
 function getMapLayers(state: ScenarioState): ScenarioMapLayer[] {
@@ -341,7 +349,7 @@ function getCustomSymbols(state: ScenarioState) {
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   const settingsStore = useSymbolSettingsStore();
 
-  function toObject(): Scenario {
+  function toObject(): LoadableScenario {
     const { state } = store.value;
     return {
       id: state.id,
@@ -353,7 +361,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       },
       ...getScenarioInfo(state),
       sides: getSides(state),
-      layers: getLayers(state),
+      layers: getStoredLayers(state),
       events: getScenarioEvents(state),
       mapLayers: getMapLayers(state),
       equipment: getEquipment(state),
@@ -391,7 +399,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     return val;
   }
 
-  function serializeToObject(): Scenario {
+  function serializeToObject(): LoadableScenario {
     return JSON.parse(stringifyScenario());
   }
 
@@ -427,7 +435,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     }
   }
 
-  function loadFromObject(data: Scenario) {
+  function loadFromObject(data: LoadableScenario | Scenario) {
     const { send } = useNotifications();
     if (compareVersions(data.version, SCENARIO_FILE_VERSION, ">")) {
       send({
@@ -449,7 +457,8 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   }
 
   async function loadFromUrl(url: string) {
-    const { data, isFinished, statusCode, error } = useFetch<Scenario>(url).json();
+    const { data, isFinished, statusCode, error } =
+      useFetch<LoadableScenario>(url).json();
     await until(isFinished).toBe(true);
 
     if (error.value) {

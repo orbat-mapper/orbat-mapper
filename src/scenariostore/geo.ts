@@ -12,11 +12,16 @@ import type {
 import type { EntityId } from "@/types/base";
 import type {
   NScenarioFeature,
+  NScenarioLayerItem,
   NScenarioLayer,
   ScenarioFeatureUpdate,
   ScenarioLayerUpdate,
   ScenarioMapLayerUpdate,
 } from "@/types/internalModels";
+import type {
+  ScenarioLayerItem,
+  ScenarioLayerItemsLayer,
+} from "@/types/scenarioLayerItems";
 import { klona } from "klona";
 import { moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
@@ -69,6 +74,11 @@ export function useGeo(store: NewScenarioStore) {
   const { state, update } = store;
   const mapLayerEvent = createEventHook<ScenarioMapLayerEvent>();
   const featureLayerEvent = createEventHook<ScenarioFeatureLayerEvent>();
+  const asFeature = (item: NScenarioLayerItem | ScenarioLayerItem): NScenarioFeature =>
+    item as unknown as NScenarioFeature;
+  const asFeatures = (
+    items: Array<NScenarioLayerItem | ScenarioLayerItem>,
+  ): NScenarioFeature[] => items as unknown as NScenarioFeature[];
 
   const hiddenGroups = computed(() => {
     return new Set(
@@ -287,31 +297,60 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function getFullLayer(layerId: FeatureId): ScenarioLayer | undefined {
-    const layer = state.layerMap[layerId];
+    const layer = getFullLayerItemsLayer(layerId);
     if (!layer) return;
-    return { ...layer, features: layer.features.map((f) => klona(state.featureMap[f])) };
+    return { ...layer, features: asFeatures(layer.items) };
   }
 
-  const layers = computed(() => {
+  function getFullLayerItemsLayer(
+    layerId: FeatureId,
+  ): ScenarioLayerItemsLayer | undefined {
+    const layer = state.layerMap[layerId];
+    if (!layer) return;
+    return {
+      ...layer,
+      items: layer.features.map((f) => klona(state.featureMap[f]) as NScenarioLayerItem),
+    };
+  }
+
+  const layerItemsLayers = computed<ScenarioLayerItemsLayer[]>(() => {
     return state.layers
       .map((layerId) => state.layerMap[layerId])
       .map((layer) => ({
         ...layer,
-        features: layer.features.map((featureId) => state.featureMap[featureId]),
+        items: layer.features.map(
+          (featureId) => state.featureMap[featureId] as NScenarioLayerItem,
+        ),
       }));
+  });
+
+  const layers = computed(() => {
+    return layerItemsLayers.value.map((layer) => ({
+      ...layer,
+      features: asFeatures(layer.items),
+    }));
   });
 
   const mapLayers = computed(() => {
     return state.mapLayers.map((layerId) => state.mapLayerMap[layerId]);
   });
 
-  const layersFeatures = computed(() => {
+  const layersItems = computed(() => {
     return state.layers
       .map((layerId) => state.layerMap[layerId])
       .map((layer) => ({
         layer,
-        features: layer.features.map((featureId) => state.featureMap[featureId]),
+        items: layer.features.map(
+          (featureId) => state.featureMap[featureId] as NScenarioLayerItem,
+        ),
       }));
+  });
+
+  const layersFeatures = computed(() => {
+    return layersItems.value.map(({ layer, items }) => ({
+      layer,
+      features: asFeatures(items),
+    }));
   });
 
   function updateLayer(
@@ -527,11 +566,18 @@ export function useGeo(store: NewScenarioStore) {
     store.state.featureStateCounter++;
   }
 
+  function getLayerItemById(id: FeatureId) {
+    const item = state.featureMap[id] as NScenarioLayerItem;
+    if (!item) return { item, layer: undefined };
+    return { item, layer: state.layerMap[item._pid] };
+  }
+
   const itemsInfo = computed<LayerFeatureItem[]>(() => {
     const items: LayerFeatureItem[] = [];
-    layers.value.forEach((layer) => {
+    layerItemsLayers.value.forEach((layer) => {
       items.push({ id: layer.id, type: "layer", name: layer.name });
-      const mappedFeatures: LayerFeatureItem[] = layer.features.map((feature) => {
+      const mappedFeatures: LayerFeatureItem[] = layer.items.map((item) => {
+        const feature = asFeature(item);
         const { meta, id } = feature;
         return {
           id,
@@ -552,11 +598,12 @@ export function useGeo(store: NewScenarioStore) {
     addLayer,
     getLayerById: (id: FeatureId) => state.layerMap[id],
     getFullLayer,
+    getFullLayerItemsLayer,
     getFeatureById: (id: FeatureId) => {
-      const feature = state.featureMap[id];
-      if (!feature) return { feature, layer: undefined };
-      return { feature, layer: state.layerMap[feature._pid] };
+      const { item, layer } = getLayerItemById(id);
+      return { feature: item as unknown as NScenarioFeature, layer };
     },
+    getLayerItemById,
     moveFeature,
     updateLayer,
     deleteLayer,
@@ -569,6 +616,8 @@ export function useGeo(store: NewScenarioStore) {
     deleteFeatureStateEntry,
     itemsInfo,
     layers,
+    layerItemsLayers,
+    layersItems,
     layersFeatures,
     mapLayers,
     addMapLayer,
@@ -578,6 +627,7 @@ export function useGeo(store: NewScenarioStore) {
     getMapLayerIndex: (id: FeatureId) => state.mapLayers.indexOf(id),
     onMapLayerEvent: mapLayerEvent.on,
     onFeatureLayerEvent: featureLayerEvent.on,
+    onLayerItemEvent: featureLayerEvent.on,
     moveMapLayer,
     reorderFeature,
     addFeatureStateGeometry,

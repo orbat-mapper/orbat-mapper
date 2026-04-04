@@ -51,7 +51,10 @@ import type {
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
 import { DEFAULT_BASEMAP_ID } from "@/config/constants";
-import { upgradeScenarioIfNecessary } from "@/scenariostore/upgrade";
+import {
+  upgradeScenarioIfNecessary,
+  type LoadableScenario,
+} from "@/scenariostore/upgrade";
 import { SYMBOL_FILL_COLORS } from "@/config/colors.ts";
 
 export interface ScenarioState {
@@ -102,7 +105,7 @@ export function convertStateToInternalFormat(e: State): State {
   };
 }
 
-export function prepareScenario(newScenario: Scenario): ScenarioState {
+export function prepareScenario(newScenario: Scenario | LoadableScenario): ScenarioState {
   const unitMap: Record<EntityId, NUnit> = {};
   const sideMap: Record<EntityId, NSide> = {};
   const sideGroupMap: Record<EntityId, NSideGroup> = {};
@@ -544,7 +547,7 @@ export type ActionLabel =
   | "moveMapLayer"
   | "clearUnitState";
 
-export function useNewScenarioStore(data: Scenario) {
+export function useNewScenarioStore(data: Scenario | LoadableScenario) {
   const inputState = prepareScenario(data);
   const store = useImmerStore<ScenarioState, ActionLabel>(inputState);
 

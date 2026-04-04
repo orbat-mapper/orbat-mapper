@@ -1,8 +1,5 @@
-import type {
-  EncryptedScenario,
-  EncryptedScenarioHeader,
-  Scenario,
-} from "@/types/scenarioModels";
+import type { EncryptedScenario, EncryptedScenarioHeader } from "@/types/scenarioModels";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 
 const ENCRYPTION_VERSION = "1.0.0" as const;
 const DEFAULT_ITERATIONS = 600_000;
@@ -22,7 +19,7 @@ export interface EncryptScenarioOptions {
  * @returns The encrypted scenario object.
  */
 export async function encryptScenario(
-  scenario: Scenario,
+  scenario: LoadableScenario,
   password: string,
   options: EncryptScenarioOptions = {},
 ): Promise<EncryptedScenario> {
@@ -76,7 +73,7 @@ export async function encryptScenario(
 export async function decryptScenario(
   encrypted: EncryptedScenario,
   password: string,
-): Promise<Scenario> {
+): Promise<LoadableScenario> {
   const salt = base64ToUint8Array(encrypted.crypto.salt);
   const iv = base64ToUint8Array(encrypted.crypto.iv);
   const ciphertext = base64ToUint8Array(encrypted.ciphertext);
@@ -100,7 +97,7 @@ export async function decryptScenario(
 
     const decoder = new TextDecoder();
     const json = decoder.decode(plaintextBuffer);
-    return JSON.parse(json) as Scenario;
+    return JSON.parse(json) as LoadableScenario;
   } catch (error) {
     // If this fails, it means either the password is wrong OR the header was tampered with.
     throw new Error(
