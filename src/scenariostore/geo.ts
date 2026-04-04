@@ -19,8 +19,8 @@ import type {
   ScenarioMapLayerUpdate,
 } from "@/types/internalModels";
 import type {
+  FullScenarioLayerItemsLayer,
   ScenarioLayerItem,
-  ScenarioLayerItemsLayer,
 } from "@/types/scenarioLayerItems";
 import { klona } from "klona";
 import { moveItemMutable, nanoid, removeElement } from "@/utils";
@@ -313,7 +313,7 @@ export function useGeo(store: NewScenarioStore) {
 
   function getFullLayerItemsLayer(
     layerId: FeatureId,
-  ): ScenarioLayerItemsLayer | undefined {
+  ): FullScenarioLayerItemsLayer | undefined {
     const layer = state.layerMap[layerId];
     if (!layer) return;
     return {
@@ -322,7 +322,7 @@ export function useGeo(store: NewScenarioStore) {
     };
   }
 
-  const layerItemsLayers = computed<ScenarioLayerItemsLayer[]>(() => {
+  const layerItemsLayers = computed<FullScenarioLayerItemsLayer[]>(() => {
     return state.layers
       .map((layerId) => state.layerMap[layerId])
       .map((layer) => ({
@@ -387,7 +387,9 @@ export function useGeo(store: NewScenarioStore) {
       if (normalizedData.items) layer.features = layer.items;
     }
     if (noEmit) return;
-    featureLayerEvent.trigger({ type: "updateLayer", id: layerId, data: normalizedData }).then();
+    featureLayerEvent
+      .trigger({ type: "updateLayer", id: layerId, data: normalizedData })
+      .then();
   }
 
   function updateMapLayer(

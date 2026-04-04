@@ -41,6 +41,8 @@ import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
 import { useSelectedItems } from "@/stores/selectedStore";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
+import type { GeometryLayerItem, ScenarioLayerItem } from "@/types/scenarioLayerItems";
+import { isGeometryLayerItem } from "@/types/scenarioLayerItems";
 
 const selectStyle = new Style({
   stroke: new Stroke({ color: "#ffff00", width: 9 }),
@@ -75,10 +77,24 @@ const geometryIconMap: any = {
   Circle: IconVectorCircleVariant,
   GeometryCollection: IconMapMarkerMultipleOutline,
   layer: IconLayersOutline,
+  annotation: IconMapMarker,
+  tacticalGraphic: IconVectorLine,
+  measurement: IconVectorCircleVariant,
 };
 
-export function getGeometryIcon(feature?: ScenarioFeature | NScenarioFeature) {
-  return (feature && geometryIconMap[feature.meta.type]) || geometryIconMap.Polygon;
+function getItemIconKey(
+  item?: ScenarioFeature | NScenarioFeature | ScenarioLayerItem,
+): string | undefined {
+  if (!item) return undefined;
+  if (isGeometryLayerItem(item)) return item.meta.type;
+  return "kind" in item ? item.kind : undefined;
+}
+
+export function getGeometryIcon(
+  feature?: ScenarioFeature | NScenarioFeature | ScenarioLayerItem,
+) {
+  const key = getItemIconKey(feature);
+  return (key && geometryIconMap[key]) || geometryIconMap.Polygon;
 }
 
 export function getItemsIcon(type: string) {
@@ -95,11 +111,11 @@ export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
   { label: "Copy as GeoJSON", action: "copyAsGeoJson" },
 ];
 
-export function featuresToGeoJsonString(
-  features: (ScenarioFeature | NScenarioFeature)[],
+export function layerItemsToGeoJsonString(
+  items: (ScenarioLayerItem | NScenarioFeature | ScenarioFeature)[],
 ) {
   const fc = featureCollection(
-    features.map((f) => {
+    items.filter(isGeometryLayerItem).map((f) => {
       const properties = {
         name: f.meta.name,
         description: f.meta.description,
@@ -120,6 +136,12 @@ export function featuresToGeoJsonString(
     }),
   );
   return JSON.stringify(fc, null, 2);
+}
+
+export function featuresToGeoJsonString(
+  features: (ScenarioFeature | NScenarioFeature)[],
+) {
+  return layerItemsToGeoJsonString(features);
 }
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
@@ -148,50 +170,63 @@ export function getTopHitLayerType(
   return topLayerType;
 }
 
-export function createScenarioLayerFeatures(
-  features: NScenarioFeature[] | ScenarioFeature[],
+export function projectGeometryLayerItemToOlFeature(
+  fullFeature: GeometryLayerItem,
+  index: number,
   featureProjection: ProjectionLike,
 ) {
   const gjson = new GeoJSON({
     dataProjection: "EPSG:4326",
     featureProjection,
   });
-  const olFeatures: Feature[] = [];
-  features.forEach((fullFeature, index) => {
-    let feature = fullFeature;
-    if (fullFeature._state) {
-      const { geometry, properties, ...rest } = fullFeature._state;
-      feature = {
-        ...fullFeature,
-        geometry: geometry || fullFeature.geometry,
-      };
-    }
+  let feature = fullFeature;
+  if (fullFeature._state && "geometry" in fullFeature._state) {
+    feature = {
+      ...fullFeature,
+      geometry: fullFeature._state.geometry || fullFeature.geometry,
+    };
+  }
 
-    feature.meta._zIndex = index;
-    if (feature.meta?.radius && feature.geometry.type === "Point") {
-      const newRadius = convertRadius(
-        feature as GeoJsonFeature<Point>,
-        feature.meta.radius,
-      );
-      const circle = new Circle(
-        fromLonLat(feature.geometry.coordinates as number[]),
-        newRadius,
-      );
-      const f = new Feature({
-        geometry: circle,
-        ...feature.properties,
-      });
-      f.setId(feature.id);
-      olFeatures.push(f);
-    } else {
-      const f = gjson.readFeature(feature, {
-        featureProjection: "EPSG:3857",
-        dataProjection: "EPSG:4326",
-      }) as Feature;
-      olFeatures.push(f);
-    }
-  });
-  return olFeatures;
+  feature.meta._zIndex = index;
+  if (feature.meta?.radius && feature.geometry.type === "Point") {
+    const newRadius = convertRadius(
+      feature as GeoJsonFeature<Point>,
+      feature.meta.radius,
+    );
+    const circle = new Circle(
+      fromLonLat(feature.geometry.coordinates as number[]),
+      newRadius,
+    );
+    const f = new Feature({
+      geometry: circle,
+      ...feature.properties,
+    });
+    f.setId(feature.id);
+    return f;
+  }
+
+  return gjson.readFeature(feature, {
+    featureProjection: "EPSG:3857",
+    dataProjection: "EPSG:4326",
+  }) as Feature;
+}
+
+export function createScenarioLayerItemFeatures(
+  items: Array<ScenarioLayerItem | NScenarioFeature | ScenarioFeature>,
+  featureProjection: ProjectionLike,
+) {
+  return items
+    .filter(isGeometryLayerItem)
+    .map((feature, index) =>
+      projectGeometryLayerItemToOlFeature(feature, index, featureProjection),
+    );
+}
+
+export function createScenarioLayerFeatures(
+  features: NScenarioFeature[] | ScenarioFeature[],
+  featureProjection: ProjectionLike,
+) {
+  return createScenarioLayerItemFeatures(features, featureProjection);
 }
 
 export function useScenarioFeatureSelect(

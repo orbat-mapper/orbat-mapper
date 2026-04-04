@@ -1,11 +1,12 @@
 import type { TScenario } from "@/scenariostore";
-import type { NUnit } from "@/types/internalModels";
+import type { NScenarioLayerItem, NUnit } from "@/types/internalModels";
 import type { GeoJsonSettings } from "@/types/importExport.ts";
 import { featureCollection, point } from "@turf/helpers";
 import type {
   MilSymbolProperties,
   OrbatMapperGeoJsonCollection,
 } from "@/importexport/jsonish/types.ts";
+import { type GeometryLayerItem, isGeometryLayerItem } from "@/types/scenarioLayerItems";
 
 export function useGeoJsonConverter(scenario: TScenario) {
   const { geo, unitActions } = scenario;
@@ -36,9 +37,12 @@ export function useGeoJsonConverter(scenario: TScenario) {
   function convertScenarioFeaturesToGeoJson(options: Partial<GeoJsonSettings> = {}) {
     const includeIdInProperties = options.includeIdInProperties ?? false;
     return featureCollection(
-      geo.layers.value
-        .map((layer) => layer.features)
+      geo.layerItemsLayers.value
+        .map((layer) => layer.items)
         .flat(1)
+        .filter((item): item is NScenarioLayerItem & GeometryLayerItem =>
+          isGeometryLayerItem(item),
+        )
         .map((f) => {
           const { id, geometry, properties, meta } = f;
           return {

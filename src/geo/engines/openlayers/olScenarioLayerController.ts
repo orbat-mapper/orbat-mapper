@@ -10,7 +10,7 @@ import GeoImage from "ol-ext/source/GeoImage";
 import { KMLZ } from "@/geo/kmlz";
 import { imageCache } from "@/importexport/fileHandling";
 import {
-  createScenarioLayerFeatures,
+  createScenarioLayerItemFeatures,
   getOrCreateLayerGroup,
   LayerTypes,
 } from "@/modules/scenarioeditor/featureLayerUtils";
@@ -28,7 +28,6 @@ import type {
   FeatureId,
   ScenarioImageLayer,
   ScenarioKMLLayer,
-  ScenarioLayer,
   ScenarioMapLayer,
   ScenarioTileJSONLayer,
   ScenarioXYZLayer,
@@ -54,6 +53,7 @@ import Feature from "ol/Feature";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
 import { unByKey } from "ol/Observable";
 import { getFeatureAndLayerById } from "@/composables/openlayersHelpers";
+import type { FullScenarioLayerItemsLayer } from "@/types/scenarioLayerItems";
 
 const undoActionLabels: ActionLabel[] = [
   "deleteLayer",
@@ -184,7 +184,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     const olLayers = getScenarioLayersCollection();
     olLayers.clear();
     const projection = olMap.getView().getProjection();
-    scenario.geo.layers.value.forEach((layer) => {
+    scenario.geo.layerItemsLayers.value.forEach((layer) => {
       if (filterVisible && layer._hidden) return;
       const olLayer = createScenarioFeatureLayer(layer, {
         projection,
@@ -196,14 +196,14 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
   }
 
   function createScenarioFeatureLayer(
-    layer: ScenarioLayer,
+    layer: FullScenarioLayerItemsLayer,
     options: { projection?: ProjectionLike; filterVisible?: boolean } = {},
   ) {
     const { projection = "EPSG:3857", filterVisible = true } = options;
     const vectorLayer = new VectorLayer({
       source: new VectorSource({
-        features: createScenarioLayerFeatures(
-          layer.features.filter((feature) => !filterVisible || !feature._hidden),
+        features: createScenarioLayerItemFeatures(
+          layer.items.filter((item) => !filterVisible || !item._hidden),
           projection,
         ),
       }),
@@ -235,7 +235,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
   function addScenarioLayer(layerId: FeatureId) {
     const scenario = activeScenario;
     if (!scenario) return;
-    const featureLayer = scenario.geo.getFullLayer(layerId);
+    const featureLayer = scenario.geo.getFullLayerItemsLayer(layerId);
     if (!featureLayer) return;
     const olLayer = createScenarioFeatureLayer(featureLayer);
     getScenarioLayersCollection().push(olLayer);
@@ -275,10 +275,11 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
   function addScenarioFeature(featureId: FeatureId) {
     const scenario = activeScenario;
     if (!scenario) return;
-    const { feature } = scenario.geo.getFeatureById(featureId);
-    const olLayer = getScenarioOlLayerById(feature._pid);
+    const { item } = scenario.geo.getLayerItemById(featureId);
+    if (!item) return;
+    const olLayer = getScenarioOlLayerById(item._pid);
     if (!olLayer) return;
-    const olFeature = createScenarioLayerFeatures([feature], "EPSG:3857");
+    const olFeature = createScenarioLayerItemFeatures([item], "EPSG:3857");
     olLayer.getSource()?.addFeatures(olFeature);
   }
 
@@ -636,8 +637,8 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     if (!scenario) return;
     const collection = featureCollection(
       featureIds
-        .map((featureId) => scenario.store.state.featureMap[featureId])
-        .filter(Boolean),
+        .map((featureId) => scenario.geo.getLayerItemById(featureId).item)
+        .filter((item) => !!item && "geometry" in item),
     );
     if (!collection.features.length) return;
     const bboxFeature = new GeoJSON().readFeature(turfEnvelope(collection), {
@@ -737,7 +738,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
             break;
           case "updateFeature":
             deleteScenarioFeature(event.id);
-            const updatedFeature = scenario.geo.getFeatureById(event.id).feature;
+            const updatedFeature = scenario.geo.getLayerItemById(event.id).item;
             if (updatedFeature && !updatedFeature._hidden) {
               addScenarioFeature(event.id);
             }
@@ -793,7 +794,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
             });
           } else if (meta.label === "updateFeature") {
             deleteScenarioFeature(layerId);
-            const feature = scenario.geo.getFeatureById(layerId).feature;
+            const feature = scenario.geo.getLayerItemById(layerId).item;
             if (feature && !feature._hidden) {
               addScenarioFeature(layerId);
             }

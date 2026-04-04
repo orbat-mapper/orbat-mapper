@@ -7,7 +7,7 @@ import {
 } from "@/components/injects";
 import {
   featureMenuItems,
-  featuresToGeoJsonString,
+  layerItemsToGeoJsonString,
 } from "@/modules/scenarioeditor/featureLayerUtils";
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
@@ -249,9 +249,9 @@ function onLayerAction(
     geo.moveLayer(layer.id, toIndex);
   }
   if (action === ScenarioLayerActions.CopyAsGeoJson) {
-    const fullLayer = geo.getFullLayer(layer.id);
+    const fullLayer = geo.getFullLayerItemsLayer(layer.id);
     if (fullLayer) {
-      navigator.clipboard.writeText(featuresToGeoJsonString(fullLayer.features));
+      navigator.clipboard.writeText(layerItemsToGeoJsonString(fullLayer.items));
       notify({ message: "Copied GeoJSON to clipboard" });
     }
   }
@@ -265,11 +265,9 @@ function onFeatureAction(
 
   if (action === "copyAsGeoJson") {
     const ids = isArray ? featureOrFeaturesId : [featureOrFeaturesId];
-    const features = ids
-      .map((id) => geo.getFeatureById(id)?.feature)
-      .filter((f): f is NScenarioFeature => !!f);
-    if (features.length) {
-      navigator.clipboard.writeText(featuresToGeoJsonString(features));
+    const items = ids.map((id) => geo.getLayerItemById(id)?.item).filter(Boolean);
+    if (items.length) {
+      navigator.clipboard.writeText(layerItemsToGeoJsonString(items));
       notify({ message: "Copied GeoJSON to clipboard" });
     }
     return;
@@ -302,7 +300,7 @@ function onFeatureAction(
         if (action === "moveUp" || action === "moveDown") {
           const direction = action === "moveUp" ? "up" : "down";
           const layer = geo.getLayerById(feature._pid);
-          let toIndex = layer.features.indexOf(feature.id);
+          let toIndex = layer.items.indexOf(feature.id);
 
           if (direction === "up") toIndex--;
           if (direction === "down") toIndex++;

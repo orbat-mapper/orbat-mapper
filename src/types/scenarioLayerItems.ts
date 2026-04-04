@@ -179,6 +179,15 @@ export type ScenarioLayerItem =
   | TacticalGraphicLayerItem
   | MeasurementLayerItem;
 
+export function isGeometryLayerItem(item: unknown): item is GeometryLayerItem {
+  if (!item || typeof item !== "object") return false;
+  const candidate = item as Partial<GeometryLayerItem> & { kind?: string; type?: string };
+  if (candidate.kind !== undefined) {
+    return candidate.kind === "geometry";
+  }
+  return candidate.type === "Feature" && !!candidate.geometry && !!candidate.meta;
+}
+
 export type ScenarioLayerItemState =
   | GeometryLayerItemState
   | AnnotationLayerItemState
@@ -202,3 +211,10 @@ export type NScenarioLayerItem = ScenarioLayerItem & {
   _state?: ProjectedScenarioLayerItem | null;
   _hidden?: boolean;
 };
+
+export interface FullScenarioLayerItemsLayer extends Omit<
+  ScenarioLayerItemsLayer,
+  "items"
+> {
+  items: NScenarioLayerItem[];
+}

@@ -63,7 +63,7 @@ describe("Scenario IO", () => {
   it("creates empty scenarios with items[] layers", () => {
     const scenario = createEmptyScenario();
 
-    expect(scenario.version).toBe("2.8.0");
+    expect(scenario.version).toBe("3.0.0");
     expect(scenario.layers[0]).toHaveProperty("items");
     expect(scenario.layers[0]).not.toHaveProperty("features");
     expect((scenario.layers[0] as any).items).toEqual([]);
@@ -88,7 +88,7 @@ describe("Scenario IO", () => {
     const baseScenario = {
       id: "scenario-1",
       type: "ORBAT-mapper",
-      version: "2.8.0",
+      version: "3.0.0",
       name: "Scenario",
       startTime: "2025-01-01T00:00:00Z",
       timeZone: "UTC",
@@ -142,7 +142,7 @@ describe("Scenario IO", () => {
     const store = useNewScenarioStore({
       id: "scenario-1",
       type: "ORBAT-mapper",
-      version: "2.8.0",
+      version: "3.0.0",
       name: "Scenario",
       startTime: "2025-01-01T00:00:00Z",
       timeZone: "UTC",
@@ -169,7 +169,7 @@ describe("Scenario IO", () => {
     const { serializeToObject } = useScenarioIO(storeRef);
     const serialized = serializeToObject();
 
-    expect(serialized.version).toBe("2.8.0");
+    expect(serialized.version).toBe("3.0.0");
     expect(serialized.layers[0]).not.toHaveProperty("features");
     expect(serialized.layers[0].items).toEqual([{ ...feature, kind: "geometry" }]);
   });
