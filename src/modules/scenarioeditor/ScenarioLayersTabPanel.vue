@@ -333,6 +333,7 @@ function addNewLayer() {
   const addedLayer = geo.addLayer({
     id: nanoid(),
     name: `New layer`,
+    items: [],
     features: [],
     _isNew: false,
   });

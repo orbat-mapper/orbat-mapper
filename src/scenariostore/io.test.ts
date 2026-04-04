@@ -33,6 +33,7 @@ function createMinimalState(overrides: Partial<ScenarioState> = {}): ScenarioSta
     sideGroupMap: {},
     unitMap: {},
     eventMap: {},
+    itemMap: {},
     featureMap: {},
     layerMap: {},
     mapLayerMap: {},

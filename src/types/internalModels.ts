@@ -25,13 +25,15 @@ import type {
   ScenarioFeatureMeta,
   ScenarioImageLayer,
   ScenarioKMLLayer,
-  ScenarioLayer,
   ScenarioTileJSONLayer,
   ScenarioXYZLayer,
 } from "@/types/scenarioGeoModels";
 import type { Optional } from "@/types/helpers";
 import type { SymbolFillColor } from "@/config/colors.ts";
-import type { NScenarioLayerItem as VNextScenarioLayerItem } from "@/types/scenarioLayerItems";
+import type {
+  NScenarioLayerItem as VNextScenarioLayerItem,
+  NScenarioLayerItemsLayer,
+} from "@/types/scenarioLayerItems";
 
 export interface NUnit extends Omit<
   Unit,
@@ -122,7 +124,8 @@ export interface NSideGroup extends Omit<SideGroup, "subUnits" | "_pid"> {
   _pid: EntityId;
 }
 
-export interface NScenarioLayer extends Omit<ScenarioLayer, "features"> {
+export interface NScenarioLayer extends Omit<NScenarioLayerItemsLayer, "items"> {
+  items: FeatureId[];
   features: FeatureId[];
   _isOpen?: boolean;
 }
@@ -139,8 +142,11 @@ export interface ScenarioFeatureUpdate extends Partial<
   _hidden?: boolean;
 }
 export interface ScenarioLayerUpdate extends Partial<
-  Omit<NScenarioLayer, "id" | "features">
-> {}
+  Omit<NScenarioLayer, "id" | "features" | "items">
+> {
+  items?: FeatureId[];
+  features?: FeatureId[];
+}
 
 export interface ScenarioImageLayerUpdate extends Partial<
   Omit<ScenarioImageLayer, "id">

@@ -28,6 +28,7 @@ import type {
   NRangeRingGroup,
   NScenarioEvent,
   NScenarioFeature,
+  NScenarioLayerItem,
   NScenarioLayer,
   NSide,
   NSideGroup,
@@ -67,6 +68,7 @@ export interface ScenarioState {
   sides: EntityId[];
   layers: FeatureId[];
   layerMap: Record<FeatureId, NScenarioLayer>;
+  itemMap: Record<FeatureId, NScenarioLayerItem>;
   featureMap: Record<FeatureId, NScenarioFeature>;
   mapLayers: FeatureId[];
   mapLayerMap: Record<FeatureId, ScenarioMapLayer>;
@@ -114,7 +116,8 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
   const layers: FeatureId[] = [];
   const mapLayers: FeatureId[] = [];
   const layerMap: Record<FeatureId, NScenarioLayer> = {};
-  const featureMap: Record<FeatureId, NScenarioFeature> = {};
+  const itemMap: Record<FeatureId, NScenarioLayerItem> = {};
+  const featureMap = itemMap as Record<FeatureId, NScenarioFeature>;
   const mapLayerMap: Record<FeatureId, ScenarioMapLayer> = {};
   const equipmentMap: Record<string, NEquipmentData> = {};
   const personnelMap: Record<string, NPersonnelData> = {};
@@ -451,9 +454,11 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
 
   scenario.layers.forEach((layer) => {
     layers.push(layer.id);
+    const itemIds = layer.features.map((f) => f.id);
     layerMap[layer.id] = {
       ...mapVisibility(layer),
-      features: layer.features.map((f) => f.id),
+      items: itemIds,
+      features: itemIds,
     };
     layer.features.forEach((feature) => {
       const tmp = { ...feature };
@@ -464,7 +469,11 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
       }));
 
       tmp.meta = mapVisibility(tmp.meta);
-      featureMap[feature.id] = { ...tmp, _pid: layer.id };
+      itemMap[feature.id] = {
+        ...tmp,
+        kind: "geometry",
+        _pid: layer.id,
+      } as NScenarioLayerItem;
     });
   });
 
@@ -496,6 +505,7 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     mapLayers: mapLayers,
     mapLayerMap: mapLayerMap,
     layerMap,
+    itemMap,
     featureMap,
     eventMap,
     currentTime: scenario.startTime || 0,

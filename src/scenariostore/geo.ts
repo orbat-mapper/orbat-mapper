@@ -142,7 +142,7 @@ export function useGeo(store: NewScenarioStore) {
     let newState: CurrentScenarioFeatureState | null = null;
     update(
       (s) => {
-        const u = s.featureMap[featureId];
+        const u = s.itemMap[featureId] as NScenarioFeature;
         const t = atTime ?? s.currentTime;
         newState = { t, geometry };
         if (t === s.currentTime) u._state = newState;
@@ -165,7 +165,14 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function addLayer(data: NScenarioLayer) {
-    const newLayer = klona({ ...data, _isNew: true });
+    const itemIds = data.items ?? data.features ?? [];
+    const newLayer = klona({
+      ...data,
+      items: itemIds,
+      features: itemIds,
+      _isNew: true,
+    });
+    newLayer.features = newLayer.items;
     if (!newLayer.id) newLayer.id = nanoid();
     newLayer._isNew = true;
     newLayer._isOpen = true;
@@ -227,15 +234,15 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function moveFeature(featureId: FeatureId, toIndex: number) {
-    const feature = state.featureMap[featureId];
+    const feature = state.itemMap[featureId] as NScenarioFeature;
 
     update(
       (s) => {
         const layer = s.layerMap[feature._pid];
-        const fromIndex = layer.features.indexOf(featureId);
-        moveItemMutable(layer.features, fromIndex, toIndex);
-        layer.features.forEach((fid, i) => {
-          const feature = s.featureMap[fid];
+        const fromIndex = layer.items.indexOf(featureId);
+        moveItemMutable(layer.items, fromIndex, toIndex);
+        layer.items.forEach((fid, i) => {
+          const feature = s.itemMap[fid] as NScenarioFeature;
           if (feature.meta._zIndex !== i) feature.meta._zIndex = i;
         });
       },
@@ -249,17 +256,19 @@ export function useGeo(store: NewScenarioStore) {
     destinationFeatureOrLayerId: FeatureId,
     target: DropTarget,
   ) {
-    const feature = state.featureMap[featureId];
-    const destinationFeature = state.featureMap[destinationFeatureOrLayerId];
+    const feature = state.itemMap[featureId] as NScenarioFeature;
+    const destinationFeature = state.itemMap[destinationFeatureOrLayerId] as
+      | NScenarioFeature
+      | undefined;
     const destinationLayerId = destinationFeature?._pid ?? destinationFeatureOrLayerId;
     if (!feature) return;
     const layer = state.layerMap[feature._pid];
     const destinationLayer = state.layerMap[destinationLayerId];
     if (!layer || !destinationLayer) return;
 
-    const toIndex = destinationLayer.features.indexOf(destinationFeatureOrLayerId);
+    const toIndex = destinationLayer.items.indexOf(destinationFeatureOrLayerId);
     if (layer.id === destinationLayer.id) {
-      const fromIndex = layer.features.indexOf(featureId);
+      const fromIndex = layer.items.indexOf(featureId);
       let newIndex = toIndex;
       if (target === "above") newIndex = toIndex;
       else if (target === "below") newIndex = toIndex + 1;
@@ -270,16 +279,16 @@ export function useGeo(store: NewScenarioStore) {
         (s) => {
           const fromLayer = s.layerMap[feature._pid];
           const toLayer = s.layerMap[destinationLayerId];
-          const f = s.featureMap[featureId];
+          const f = s.itemMap[featureId];
 
-          removeElement(featureId, fromLayer.features);
+          removeElement(featureId, fromLayer.items);
           let newIndex = toIndex;
           if (target === "above") newIndex = toIndex;
           else if (target === "below") newIndex = toIndex + 1;
           if (toIndex >= 0) {
-            toLayer.features.splice(newIndex, 0, featureId);
+            toLayer.items.splice(newIndex, 0, featureId);
           } else {
-            toLayer.features.push(featureId);
+            toLayer.items.push(featureId);
           }
           f._pid = toLayer.id;
         },
@@ -309,7 +318,7 @@ export function useGeo(store: NewScenarioStore) {
     if (!layer) return;
     return {
       ...layer,
-      items: layer.features.map((f) => klona(state.featureMap[f]) as NScenarioLayerItem),
+      items: layer.items.map((f) => klona(state.itemMap[f])),
     };
   }
 
@@ -318,9 +327,7 @@ export function useGeo(store: NewScenarioStore) {
       .map((layerId) => state.layerMap[layerId])
       .map((layer) => ({
         ...layer,
-        items: layer.features.map(
-          (featureId) => state.featureMap[featureId] as NScenarioLayerItem,
-        ),
+        items: layer.items.map((featureId) => state.itemMap[featureId]),
       }));
   });
 
@@ -340,9 +347,7 @@ export function useGeo(store: NewScenarioStore) {
       .map((layerId) => state.layerMap[layerId])
       .map((layer) => ({
         layer,
-        items: layer.features.map(
-          (featureId) => state.featureMap[featureId] as NScenarioLayerItem,
-        ),
+        items: layer.items.map((featureId) => state.itemMap[featureId]),
       }));
   });
 
@@ -358,6 +363,11 @@ export function useGeo(store: NewScenarioStore) {
     data: ScenarioLayerUpdate,
     options: UpdateOptions = {},
   ) {
+    const normalizedData = {
+      ...data,
+      items: data.items ?? data.features,
+      features: data.features ?? data.items,
+    };
     const undoable = options.undoable ?? true;
     const noEmit = options.noEmit ?? false;
     const emitOnly = options.emitOnly ?? false;
@@ -366,16 +376,18 @@ export function useGeo(store: NewScenarioStore) {
       update(
         (s) => {
           const layer = s.layerMap[layerId];
-          Object.assign(layer, data);
+          Object.assign(layer, normalizedData);
+          if (normalizedData.items) layer.features = layer.items;
         },
         { label: "updateLayer", value: layerId },
       );
     } else {
       const layer = state.layerMap[layerId];
-      Object.assign(layer, data);
+      Object.assign(layer, normalizedData);
+      if (normalizedData.items) layer.features = layer.items;
     }
     if (noEmit) return;
-    featureLayerEvent.trigger({ type: "updateLayer", id: layerId, data }).then();
+    featureLayerEvent.trigger({ type: "updateLayer", id: layerId, data: normalizedData }).then();
   }
 
   function updateMapLayer(
@@ -408,7 +420,7 @@ export function useGeo(store: NewScenarioStore) {
       (s) => {
         const layer = s.layerMap[layerId];
         if (!layer) return;
-        layer.features.forEach((featureId) => delete s.featureMap[featureId]);
+        layer.items.forEach((featureId) => delete s.itemMap[featureId]);
         delete s.layerMap[layerId];
         removeElement(layerId, s.layers);
       },
@@ -439,22 +451,29 @@ export function useGeo(store: NewScenarioStore) {
     options: UpdateOptions = {},
   ) {
     const noEmit = options.noEmit ?? false;
-    const newFeature = klona(data) as NScenarioFeature;
+    const newFeature = klona({
+      kind: "geometry",
+      ...data,
+    }) as NScenarioLayerItem;
     if (!newFeature.id) newFeature.id = nanoid();
     newFeature._pid = layerId;
     update(
       (s) => {
         const layer = s.layerMap[layerId];
         if (!layer) return;
-        s.featureMap[newFeature.id!] = newFeature;
-        layer.features.push(newFeature.id!);
+        s.itemMap[newFeature.id!] = newFeature;
+        layer.items.push(newFeature.id!);
       },
       { label: "addFeature", value: newFeature.id },
     );
     store.state.featureStateCounter++;
     if (!noEmit) {
       featureLayerEvent
-        .trigger({ type: "addFeature", id: newFeature.id, data: newFeature })
+        .trigger({
+          type: "addFeature",
+          id: newFeature.id,
+          data: newFeature as unknown as NScenarioFeature,
+        })
         .then();
     }
     return newFeature.id;
@@ -462,13 +481,13 @@ export function useGeo(store: NewScenarioStore) {
 
   function deleteFeature(featureId: FeatureId, options: UpdateOptions = {}) {
     const noEmit = options.noEmit ?? false;
-    const feature = state.featureMap[featureId];
+    const feature = state.itemMap[featureId];
     if (!feature) return;
     update(
       (s) => {
         const layer = s.layerMap[feature._pid];
-        delete s.featureMap[featureId];
-        removeElement(featureId, layer.features);
+        delete s.itemMap[featureId];
+        removeElement(featureId, layer.items);
       },
       { label: "deleteFeature", value: featureId },
     );
@@ -477,7 +496,7 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function duplicateFeature(featureId: FeatureId) {
-    const feature = state.featureMap[featureId];
+    const feature = state.itemMap[featureId] as NScenarioFeature;
     if (!feature) return;
     const shallowCopy = { ...feature };
     shallowCopy.id = nanoid();
@@ -495,7 +514,7 @@ export function useGeo(store: NewScenarioStore) {
     if (undoable) {
       update(
         (s) => {
-          const feature = s.featureMap[featureId];
+          const feature = s.itemMap[featureId] as NScenarioFeature;
           if (!feature) return;
           const { properties = {}, geometry, media, style = {}, meta = {}, state } = data;
           Object.assign(feature.style, style);
@@ -522,7 +541,7 @@ export function useGeo(store: NewScenarioStore) {
         },
       );
     } else {
-      const layer = state.featureMap[featureId];
+      const layer = state.itemMap[featureId];
       Object.assign(layer, data);
     }
     if (data.state) {
@@ -537,7 +556,7 @@ export function useGeo(store: NewScenarioStore) {
 
   function deleteFeatureStateEntry(featureId: FeatureId, index: number) {
     update((s) => {
-      const _feature = s.featureMap[featureId];
+      const _feature = s.itemMap[featureId];
       if (!_feature) return;
       _feature.state?.splice(index, 1);
     });
@@ -546,7 +565,7 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function updateFeatureState(featureId: FeatureId, undoable = false) {
-    const feature = state.featureMap[featureId];
+    const feature = state.itemMap[featureId] as NScenarioFeature;
     if (!feature) return;
     const timestamp = state.currentTime;
     if (!feature.state || !feature.state.length) {
@@ -567,7 +586,7 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function getLayerItemById(id: FeatureId) {
-    const item = state.featureMap[id] as NScenarioLayerItem;
+    const item = state.itemMap[id];
     if (!item) return { item, layer: undefined };
     return { item, layer: state.layerMap[item._pid] };
   }

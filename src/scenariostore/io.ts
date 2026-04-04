@@ -279,12 +279,10 @@ function getStoredLayers(state: ScenarioState): ScenarioLayerItemsLayer[] {
   return state.layers
     .map((id) => state.layerMap[id])
     .map((layer) => {
-      const { features: _features, ...rest } = layer;
+      const { items, features: _features, ...rest } = layer;
       return {
         ...rest,
-        items: layer.features.map(
-          (fId) => ({ ...state.featureMap[fId], kind: "geometry" }) as GeometryLayerItem,
-        ),
+        items: items.map((itemId) => state.itemMap[itemId] as GeometryLayerItem),
       };
     });
 }
