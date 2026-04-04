@@ -21,6 +21,7 @@ import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
 import {
   type CurrentGeometryLayerItemState,
   isNGeometryLayerItem,
+  projectGeometryLayerItemState,
 } from "@/types/scenarioLayerItems";
 
 export type GoToScenarioEventOptions = {
@@ -230,7 +231,10 @@ export function useScenarioTime(store: NewScenarioStore) {
           let currentState = createInitialFeatureState(feature);
           for (const s of feature.state) {
             if (s.t <= timestamp) {
-              currentState = { ...currentState, ...s };
+              currentState = {
+                ...currentState,
+                ...projectGeometryLayerItemState(s),
+              };
             } else {
               break;
             }

@@ -22,7 +22,10 @@ import type {
   GeometryLayerItem,
   ScenarioLayerItem,
 } from "@/types/scenarioLayerItems";
-import { isGeometryLayerItem } from "@/types/scenarioLayerItems";
+import {
+  isGeometryLayerItem,
+  projectGeometryLayerItemState,
+} from "@/types/scenarioLayerItems";
 import { klona } from "klona";
 import { moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
@@ -145,14 +148,21 @@ export function useGeo(store: NewScenarioStore) {
         if (!u.state) u.state = [];
         for (let i = 0, len = u.state.length; i < len; i++) {
           if (t < u.state[i].t) {
-            u.state.splice(i, 0, { id: nanoid(), ...newState });
+            u.state.splice(i, 0, {
+              id: nanoid(),
+              t,
+              patch: { geometry },
+            });
             return;
           } else if (t === u.state[i].t) {
-            u.state[i] = { ...u.state[i], ...newState };
+            u.state[i] = {
+              ...u.state[i],
+              patch: { ...u.state[i].patch, geometry },
+            };
             return;
           }
         }
-        u.state.push({ id: nanoid(), ...newState });
+        u.state.push({ id: nanoid(), t, patch: { geometry } });
       },
       { label: "updateFeatureState", value: featureId },
     );
@@ -541,7 +551,10 @@ export function useGeo(store: NewScenarioStore) {
     let currentState = createInitialFeatureState(feature);
     for (const s of feature.state) {
       if (s.t <= timestamp) {
-        currentState = { ...currentState, ...s };
+        currentState = {
+          ...currentState,
+          ...projectGeometryLayerItemState(s),
+        };
       } else {
         break;
       }

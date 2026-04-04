@@ -57,6 +57,7 @@ import {
   type LoadableScenario,
 } from "@/scenariostore/upgrade";
 import { SYMBOL_FILL_COLORS } from "@/config/colors.ts";
+import { normalizeGeometryLayerItemState } from "@/types/scenarioLayerItems";
 
 export interface ScenarioState {
   id: EntityId;
@@ -467,9 +468,11 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     layer.features.forEach((feature) => {
       const tmp = { ...feature };
       tmp.state = tmp.state?.map((s) => ({
-        ...s,
-        t: +dayjs(s.t),
-        id: s.id || nanoid(),
+        ...normalizeGeometryLayerItemState({
+          ...s,
+          t: +dayjs(s.t),
+          id: s.id || nanoid(),
+        }),
       }));
 
       tmp.meta = mapVisibility(tmp.meta);

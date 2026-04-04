@@ -3,16 +3,25 @@ import { compare as compareVersions } from "compare-versions";
 import type {
   ScenarioFeature,
   ScenarioFeatureMeta,
+  ScenarioFeatureState,
   ScenarioLayer,
 } from "@/types/scenarioGeoModels";
 import { type SimpleStyleSpec } from "@/geo/simplestyle";
 import type {
   AnnotationLayerItem,
+  LoadableGeometryLayerItemState,
   MeasurementLayerItem,
   TacticalGraphicLayerItem,
 } from "@/types/scenarioLayerItems";
+import {
+  flattenGeometryLayerItemState,
+  normalizeGeometryLayerItemState,
+} from "@/types/scenarioLayerItems";
 
-type LoadableGeometryLayerItem = ScenarioFeature & { kind: "geometry" };
+type LoadableGeometryLayerItem = Omit<ScenarioFeature, "state"> & {
+  kind: "geometry";
+  state?: LoadableGeometryLayerItemState[];
+};
 type UnsupportedLayerItem =
   | AnnotationLayerItem
   | TacticalGraphicLayerItem
@@ -34,6 +43,14 @@ function isGeometryLayerItem(
   return item.kind === "geometry";
 }
 
+function canonicalizeGeometryStateEntries(
+  states: LoadableGeometryLayerItemState[] | undefined,
+): ScenarioFeatureState[] | undefined {
+  return states?.map((state) =>
+    flattenGeometryLayerItemState(normalizeGeometryLayerItemState(state)),
+  );
+}
+
 function canonicalizeLayer(
   layer: LoadableScenarioLayer,
   scenarioId?: string,
@@ -49,8 +66,11 @@ function canonicalizeLayer(
 
   items.forEach((item) => {
     if (isGeometryLayerItem(item)) {
-      const { kind: _kind, ...feature } = item;
-      canonicalFeatures.push(feature);
+      const { kind: _kind, state, ...feature } = item;
+      canonicalFeatures.push({
+        ...feature,
+        state: canonicalizeGeometryStateEntries(state),
+      });
       return;
     }
 

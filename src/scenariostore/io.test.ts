@@ -110,7 +110,25 @@ describe("Scenario IO", () => {
     const itemsStore = useNewScenarioStore({
       ...baseScenario,
       layers: [
-        { id: "layer-1", name: "Features", items: [{ ...feature, kind: "geometry" }] },
+        {
+          id: "layer-1",
+          name: "Features",
+          items: [
+            {
+              ...feature,
+              kind: "geometry",
+              state: [
+                {
+                  id: "state-1",
+                  t: "2025-01-01T01:00:00Z",
+                  patch: {
+                    geometry: { type: "Point", coordinates: [11, 61] },
+                  },
+                },
+              ],
+            },
+          ],
+        },
       ],
     } as any);
 
@@ -151,7 +169,21 @@ describe("Scenario IO", () => {
         {
           id: "layer-1",
           name: "Features",
-          items: [{ ...feature, kind: "geometry" }],
+          items: [
+            {
+              ...feature,
+              kind: "geometry",
+              state: [
+                {
+                  id: "state-1",
+                  t: "2025-01-01T01:00:00Z",
+                  patch: {
+                    geometry: { type: "Point", coordinates: [11, 61] },
+                  },
+                },
+              ],
+            },
+          ],
         },
       ],
       mapLayers: [],
@@ -170,7 +202,21 @@ describe("Scenario IO", () => {
 
     expect(serialized.version).toBe("3.0.0");
     expect(serialized.layers[0]).not.toHaveProperty("features");
-    expect(serialized.layers[0].items).toEqual([{ ...feature, kind: "geometry" }]);
+    expect(serialized.layers[0].items).toEqual([
+      {
+        ...feature,
+        kind: "geometry",
+        state: [
+          {
+            id: "state-1",
+            t: "2025-01-01T01:00:00Z",
+            patch: {
+              geometry: { type: "Point", coordinates: [11, 61] },
+            },
+          },
+        ],
+      },
+    ]);
   });
 
   it("serializes bounding box correctly", () => {

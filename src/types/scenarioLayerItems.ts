@@ -10,7 +10,6 @@ import type {
   LayerId,
   Position,
   ScenarioFeatureMeta,
-  ScenarioFeatureProperties,
   ScenarioLayer,
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
@@ -71,17 +70,28 @@ export interface ScenarioLayerItemBase extends Partial<VisibilityInfo> {
   media?: Media[];
 }
 
-export interface GeometryLayerItemState extends Partial<ScenarioEventDescription> {
-  id: string;
-  t: ScenarioTime;
+export interface GeometryLayerItemStatePatch {
   geometry?: Geometry;
   properties?: GeoJsonProperties;
 }
 
-export interface CurrentGeometryLayerItemState extends Omit<
-  GeometryLayerItemState,
-  "id"
-> {
+export interface GeometryLayerItemState extends Partial<ScenarioEventDescription> {
+  id: string;
+  t: ScenarioTime;
+  patch: GeometryLayerItemStatePatch;
+}
+
+export type LoadableGeometryLayerItemState =
+  | GeometryLayerItemState
+  | (Partial<ScenarioEventDescription> & {
+      id: string;
+      t: ScenarioTime;
+      geometry?: Geometry;
+      properties?: GeoJsonProperties;
+    });
+
+export interface CurrentGeometryLayerItemState
+  extends Omit<GeometryLayerItemState, "id" | "patch">, GeometryLayerItemStatePatch {
   type?: CurrentStateType;
 }
 
@@ -231,6 +241,40 @@ export function isNGeometryLayerItem(
   item: NScenarioLayerItem,
 ): item is NGeometryLayerItem {
   return isGeometryLayerItem(item);
+}
+
+export function normalizeGeometryLayerItemState(
+  state: LoadableGeometryLayerItemState,
+): GeometryLayerItemState {
+  if ("patch" in state && state.patch) {
+    return state;
+  }
+  const legacyState = state as Exclude<
+    LoadableGeometryLayerItemState,
+    GeometryLayerItemState
+  >;
+  const { geometry, properties, ...rest } = legacyState;
+  return {
+    ...rest,
+    patch: {
+      ...(geometry !== undefined ? { geometry } : {}),
+      ...(properties !== undefined ? { properties } : {}),
+    },
+  };
+}
+
+export function flattenGeometryLayerItemState(
+  state: GeometryLayerItemState,
+): Omit<LoadableGeometryLayerItemState, "patch"> {
+  const { patch, ...rest } = state;
+  return { ...rest, ...patch };
+}
+
+export function projectGeometryLayerItemState(
+  state: GeometryLayerItemState,
+): CurrentGeometryLayerItemState {
+  const { patch, ...rest } = state;
+  return { ...rest, ...patch };
 }
 
 export type ScenarioLayerItemState =

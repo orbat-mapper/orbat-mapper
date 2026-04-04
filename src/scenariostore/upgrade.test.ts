@@ -67,7 +67,21 @@ describe("upgradeScenarioIfNecessary", () => {
         {
           id: "layer-1",
           name: "Features",
-          items: [{ ...feature, kind: "geometry" }],
+          items: [
+            {
+              ...feature,
+              kind: "geometry",
+              state: [
+                {
+                  id: "state-1",
+                  t: "2025-01-01T01:00:00Z",
+                  patch: {
+                    geometry: { type: "Point", coordinates: [11, 61] },
+                  },
+                },
+              ],
+            },
+          ],
         },
       ],
     });
