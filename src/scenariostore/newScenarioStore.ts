@@ -467,14 +467,13 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     };
     layer.features.forEach((feature) => {
       const tmp = { ...feature };
-      tmp.state =
-        tmp.state?.map((s) => ({
-          ...normalizeGeometryLayerItemState({
-            ...s,
-            t: +dayjs(s.t),
-            id: s.id || nanoid(),
-          }),
-        })) ?? [];
+      tmp.state = tmp.state?.map((s) => ({
+        ...normalizeGeometryLayerItemState({
+          ...s,
+          t: +dayjs(s.t),
+          id: s.id || nanoid(),
+        }),
+      }));
 
       tmp.meta = mapVisibility(tmp.meta);
       tmp.properties = tmp.properties ?? {};

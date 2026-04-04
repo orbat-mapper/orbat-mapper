@@ -145,7 +145,6 @@ export function useGeo(store: NewScenarioStore) {
         if (!u) return;
         const t = atTime ?? s.currentTime;
         newState = { t, geometry };
-        if (t === s.currentTime) u._state = newState;
         const nextState = [...(u.state ?? [])];
         for (let i = 0, len = nextState.length; i < len; i++) {
           if (t < nextState[i].t) {
@@ -154,19 +153,31 @@ export function useGeo(store: NewScenarioStore) {
               t,
               patch: { geometry },
             });
-            u.state = nextState;
+            s.layerItemMap[featureId] = {
+              ...u,
+              ...(t === s.currentTime ? { _state: newState } : {}),
+              state: nextState,
+            };
             return;
           } else if (t === nextState[i].t) {
             nextState[i] = {
               ...nextState[i],
               patch: { ...nextState[i].patch, geometry },
             };
-            u.state = nextState;
+            s.layerItemMap[featureId] = {
+              ...u,
+              ...(t === s.currentTime ? { _state: newState } : {}),
+              state: nextState,
+            };
             return;
           }
         }
         nextState.push({ id: nanoid(), t, patch: { geometry } });
-        u.state = nextState;
+        s.layerItemMap[featureId] = {
+          ...u,
+          ...(t === s.currentTime ? { _state: newState } : {}),
+          state: nextState,
+        };
       },
       { label: "updateFeatureState", value: featureId },
     );

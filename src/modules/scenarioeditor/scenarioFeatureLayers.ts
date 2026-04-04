@@ -257,9 +257,7 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
 }
 
 // Fixme: Should only return properties needed to represent the geometry
-export function convertOlFeatureToScenarioFeature(
-  olFeature: Feature,
-): NGeometryLayerItem {
+export function convertOlFeatureToScenarioFeature(olFeature: Feature): GeometryLayerItem {
   if (isCircle(olFeature)) {
     const circle = olFeature.getGeometry() as Circle;
     const { geometry, properties = {} } = olFeature.getProperties();
@@ -271,17 +269,27 @@ export function convertOlFeatureToScenarioFeature(
     };
 
     return {
-      ...point(toLonLat(circle.getCenter()), properties, {
-        id: olFeature.getId() || nanoid(),
-      }),
+      kind: "geometry",
+      type: "Feature",
+      id: String(olFeature.getId() || nanoid()),
+      geometry: point(toLonLat(circle.getCenter())).geometry,
+      properties,
       meta,
       style: {},
-    } as NGeometryLayerItem;
+    };
   }
 
   const gj = new GeoJSON({ featureProjection: "EPSG:3857" }).writeFeatureObject(
     olFeature,
   );
 
-  return { ...gj, style: {}, meta: { type: gj.geometry.type } } as NGeometryLayerItem;
+  return {
+    kind: "geometry",
+    type: gj.type,
+    id: String(gj.id ?? nanoid()),
+    geometry: gj.geometry,
+    properties: gj.properties ?? {},
+    style: {},
+    meta: { type: gj.geometry.type },
+  };
 }

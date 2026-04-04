@@ -219,6 +219,52 @@ describe("Scenario IO", () => {
     ]);
   });
 
+  it("does not serialize empty geometry item state arrays", () => {
+    const store = useNewScenarioStore({
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "3.0.0",
+      name: "Scenario",
+      startTime: "2025-01-01T00:00:00Z",
+      timeZone: "UTC",
+      sides: [],
+      events: [],
+      layers: [
+        {
+          id: "layer-1",
+          name: "Features",
+          items: [
+            {
+              kind: "geometry",
+              type: "Feature",
+              id: "feature-1",
+              geometry: { type: "Point", coordinates: [10, 60] },
+              properties: {},
+              meta: { type: "Point", name: "HQ" },
+              style: {},
+            },
+          ],
+        },
+      ],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    } as any);
+
+    const storeRef = shallowRef(store);
+    const { serializeToObject } = useScenarioIO(storeRef);
+    const serialized = serializeToObject();
+    const firstItem = serialized.layers[0]?.items?.[0];
+
+    expect(firstItem).toBeDefined();
+    expect(firstItem).not.toHaveProperty("state");
+  });
+
   it("serializes bounding box correctly", () => {
     const state = createMinimalState({
       boundingBox: [10, 20, 30, 40],

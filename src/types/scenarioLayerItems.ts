@@ -294,7 +294,7 @@ export function flattenGeometryLayerItemState(
 export function projectGeometryLayerItemState(
   state: GeometryLayerItemState,
 ): CurrentGeometryLayerItemState {
-  const { patch, ...rest } = state;
+  const { id: _id, patch, ...rest } = state;
   return { ...rest, ...patch };
 }
 
