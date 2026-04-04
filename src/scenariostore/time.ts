@@ -19,6 +19,7 @@ import { nanoid } from "@/utils";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
 import {
+  createInitialGeometryLayerItemState,
   type CurrentGeometryLayerItemState,
   isNGeometryLayerItem,
   projectGeometryLayerItemState,
@@ -183,15 +184,6 @@ export function updateCurrentUnitState(
   unit._state = currentState;
 }
 
-function createInitialFeatureState(
-  feature: NGeometryLayerItem,
-): CurrentGeometryLayerItemState | null {
-  return {
-    t: Number.MIN_SAFE_INTEGER,
-    geometry: feature.geometry,
-  };
-}
-
 export function useScenarioTime(store: NewScenarioStore) {
   const { state, update } = store;
 
@@ -215,10 +207,10 @@ export function useScenarioTime(store: NewScenarioStore) {
         state.featureStateCounter++;
       }
       layer.items.forEach((featureId) => {
-        const feature = state.layerItemMap[featureId] as NGeometryLayerItem;
+        const feature = state.layerItemMap[featureId];
+        if (!feature || !isNGeometryLayerItem(feature)) return;
         const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
         const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
-        if (!feature) return;
         const oldHidden = feature._hidden;
         feature._hidden =
           timestamp <= visibleFromT ||
@@ -228,7 +220,7 @@ export function useScenarioTime(store: NewScenarioStore) {
           state.featureStateCounter++;
         }
         if (feature.state?.length) {
-          let currentState = createInitialFeatureState(feature);
+          let currentState = createInitialGeometryLayerItemState(feature);
           for (const s of feature.state) {
             if (s.t <= timestamp) {
               currentState = {

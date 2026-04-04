@@ -282,6 +282,8 @@ function getStoredLayers(state: ScenarioState): ScenarioLayerItemsLayer[] {
       const { items, ...rest } = layer;
       return {
         ...rest,
+        // Transitional geometry-only serialization. This must become item-aware
+        // before annotation/tacticalGraphic/measurement items are persisted.
         items: items.map((itemId) => state.layerItemMap[itemId] as GeometryLayerItem),
       };
     });

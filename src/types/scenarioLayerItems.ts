@@ -228,12 +228,22 @@ export type NGeometryLayerItem = GeometryLayerItem & {
   _pid: LayerId;
 };
 
+export function createInitialGeometryLayerItemState(
+  feature: Pick<GeometryLayerItem, "geometry">,
+): CurrentGeometryLayerItemState {
+  return {
+    t: Number.MIN_SAFE_INTEGER,
+    geometry: feature.geometry,
+  };
+}
+
 export function isGeometryLayerItem(item: unknown): item is GeometryLayerItem {
   if (!item || typeof item !== "object") return false;
   const candidate = item as Partial<GeometryLayerItem> & { kind?: string; type?: string };
   if (candidate.kind !== undefined) {
     return candidate.kind === "geometry";
   }
+  // Transitional fallback for legacy feature-shaped data loaded before kind tagging.
   return candidate.type === "Feature" && !!candidate.geometry && !!candidate.meta;
 }
 
