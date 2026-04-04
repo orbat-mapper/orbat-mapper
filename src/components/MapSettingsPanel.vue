@@ -10,6 +10,7 @@ import { type MeasurementUnit } from "@/composables/geoMeasurement";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import SimpleDivider from "@/components/SimpleDivider.vue";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
+import type { UnitClusterGroupingMode, UnitClusteringMode } from "@/types/mapSettings";
 
 const settings = useMapSettingsStore();
 const measurementStore = useMeasurementsStore();
@@ -25,6 +26,29 @@ const measurementItems: RadioGroupItemData<MeasurementUnit>[] = [
   { name: "Metric", value: "metric" },
   { name: "Imperial", value: "imperial" },
   { name: "Nautical", value: "nautical" },
+];
+
+const unitClusteringItems: RadioGroupItemData<UnitClusteringMode>[] = [
+  { name: "Off", description: "Always show every unit", value: "off" },
+  { name: "Naive", description: "Cluster by distance only", value: "naive" },
+  {
+    name: "Hierarchy aware",
+    description: "Cluster nearby siblings within the current hierarchy",
+    value: "hierarchy",
+  },
+];
+
+const unitClusterGroupingItems: RadioGroupItemData<UnitClusterGroupingMode>[] = [
+  {
+    name: "Strict",
+    description: "Only cluster within the same side and domain",
+    value: "strict",
+  },
+  {
+    name: "Summary",
+    description: "Allow broader clusters and show side/domain composition",
+    value: "summary",
+  },
 ];
 </script>
 
@@ -58,6 +82,49 @@ const measurementItems: RadioGroupItemData<MeasurementUnit>[] = [
       </ToggleField>
       <NumberInputGroup label="Label wrap width" v-model="settings.mapWrapLabelWidth" />
     </template>
+    <section>
+      <p class="text-base leading-loose font-medium">Unit clustering</p>
+      <RadioGroupList
+        v-model="settings.unitClusteringMode"
+        :items="unitClusteringItems"
+      />
+      <template v-if="settings.unitClusteringMode !== 'off'">
+        <div class="mt-3 space-y-3">
+          <NumberInputGroup
+            label="Cluster distance (px)"
+            v-model="settings.unitClusteringDistancePx"
+            :min="8"
+            :max="200"
+          />
+          <NumberInputGroup
+            label="Minimum cluster size"
+            v-model="settings.unitClusteringMinSize"
+            :min="2"
+            :max="99"
+          />
+          <NumberInputGroup
+            label="Disable clustering above zoom"
+            v-model="settings.unitClusteringMaxZoom"
+            :min="0"
+            :max="24"
+          />
+          <div>
+            <p class="mb-1 text-sm leading-loose font-medium">Cluster grouping</p>
+            <RadioGroupList
+              v-model="settings.unitClusterGroupingMode"
+              :items="unitClusterGroupingItems"
+            />
+          </div>
+          <NumberInputGroup
+            v-if="settings.unitClusteringMode === 'hierarchy'"
+            label="Hierarchy minimum depth"
+            v-model="settings.unitClusteringHierarchyMinDepth"
+            :min="0"
+            :max="12"
+          />
+        </div>
+      </template>
+    </section>
 
     <SimpleDivider class="mt-8" />
     <section>

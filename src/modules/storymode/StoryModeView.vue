@@ -48,8 +48,9 @@ onUnmounted(() => {
   useTitle(originalTitle);
 });
 
-const { unitLayer, drawUnits, animateUnits } = useUnitLayer({
+const { unitLayer, clusterLayer, drawUnits, animateUnits, refreshClusters } = useUnitLayer({
   activeScenario: props.activeScenario,
+  mapRef,
 });
 
 function onMapReady(olMap: OLMap) {
@@ -65,6 +66,7 @@ function onMapReady(olMap: OLMap) {
     useScenarioFeatureLayers(mapRef.value!);
   loadScenarioLayers();
   olMap.addLayer(unitLayer);
+  olMap.addLayer(clusterLayer);
   drawUnits();
 
   watch(
@@ -77,6 +79,8 @@ function onMapReady(olMap: OLMap) {
     center: fromLonLat(center, view.getProjection()),
     duration: 0,
   });
+
+  view.on("change:resolution", () => refreshClusters());
 }
 
 function onUpdateState(state: StoryStateChange) {
