@@ -42,7 +42,10 @@ import CircleStyle from "ol/style/Circle";
 import { useSelectedItems } from "@/stores/selectedStore";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
 import type { GeometryLayerItem, ScenarioLayerItem } from "@/types/scenarioLayerItems";
-import { isGeometryLayerItem, isNGeometryLayerItem } from "@/types/scenarioLayerItems";
+import {
+  isGeometryLayerItemLike,
+  isNGeometryLayerItem,
+} from "@/types/scenarioLayerItems";
 
 const selectStyle = new Style({
   stroke: new Stroke({ color: "#ffff00", width: 9 }),
@@ -82,11 +85,19 @@ const geometryIconMap: any = {
   measurement: IconVectorCircleVariant,
 };
 
+type GeometryFeatureLike = GeometryLayerItem | NGeometryLayerItem | ScenarioFeature;
+
+function isGeometryFeatureLike(
+  item: ScenarioLayerItem | NGeometryLayerItem | ScenarioFeature,
+): item is GeometryFeatureLike {
+  return isGeometryLayerItemLike(item);
+}
+
 function getItemIconKey(
   item?: ScenarioFeature | NGeometryLayerItem | ScenarioLayerItem,
 ): string | undefined {
   if (!item) return undefined;
-  if (isGeometryLayerItem(item)) return item.meta.type;
+  if (isGeometryLayerItemLike(item)) return item.meta.type;
   return "kind" in item ? item.kind : undefined;
 }
 
@@ -115,7 +126,7 @@ export function layerItemsToGeoJsonString(
   items: (ScenarioLayerItem | NGeometryLayerItem | ScenarioFeature)[],
 ) {
   const fc = featureCollection(
-    items.filter(isGeometryLayerItem).map((f) => {
+    items.filter(isGeometryFeatureLike).map((f) => {
       const properties = {
         name: f.meta.name,
         description: f.meta.description,
@@ -165,7 +176,7 @@ export function getTopHitLayerType(
 }
 
 export function projectGeometryLayerItemToOlFeature(
-  fullFeature: GeometryLayerItem,
+  fullFeature: GeometryFeatureLike,
   index: number,
   featureProjection: ProjectionLike,
 ) {
@@ -200,7 +211,7 @@ export function projectGeometryLayerItemToOlFeature(
   }
 
   return gjson.readFeature(feature, {
-    featureProjection: "EPSG:3857",
+    featureProjection,
     dataProjection: "EPSG:4326",
   }) as Feature;
 }
@@ -210,7 +221,7 @@ export function createScenarioLayerItemFeatures(
   featureProjection: ProjectionLike,
 ) {
   return items
-    .filter(isGeometryLayerItem)
+    .filter(isGeometryFeatureLike)
     .map((feature, index) =>
       projectGeometryLayerItemToOlFeature(feature, index, featureProjection),
     );

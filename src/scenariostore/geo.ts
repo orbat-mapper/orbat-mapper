@@ -24,7 +24,7 @@ import type {
 } from "@/types/scenarioLayerItems";
 import {
   createInitialGeometryLayerItemState,
-  isGeometryLayerItem,
+  isNGeometryLayerItem,
   projectGeometryLayerItemState,
 } from "@/types/scenarioLayerItems";
 import { klona } from "klona";
@@ -580,7 +580,7 @@ export function useGeo(store: NewScenarioStore) {
 
   function getGeometryLayerItemById(id: FeatureId) {
     const { layerItem, layer } = getLayerItemById(id);
-    if (!layerItem || !isGeometryLayerItem(layerItem)) {
+    if (!layerItem || !isNGeometryLayerItem(layerItem)) {
       return { layerItem: undefined, layer };
     }
     return { layerItem, layer };
@@ -591,7 +591,7 @@ export function useGeo(store: NewScenarioStore) {
     layerItemsLayers.value.forEach((layer) => {
       items.push({ id: layer.id, type: "layer", name: layer.name });
       const mappedFeatures: LayerFeatureItem[] = layer.items.map((layerItem) => {
-        if (!isGeometryLayerItem(layerItem)) {
+        if (!isNGeometryLayerItem(layerItem)) {
           return {
             id: layerItem.id,
             type: "Point",

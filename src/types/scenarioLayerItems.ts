@@ -228,6 +228,10 @@ export type NGeometryLayerItem = GeometryLayerItem & {
   _pid: LayerId;
 };
 
+export type GeometryLayerItemLike = Omit<GeometryLayerItem, "kind"> & {
+  kind?: "geometry";
+};
+
 export function createInitialGeometryLayerItemState(
   feature: Pick<GeometryLayerItem, "geometry">,
 ): CurrentGeometryLayerItemState {
@@ -239,11 +243,18 @@ export function createInitialGeometryLayerItemState(
 
 export function isGeometryLayerItem(item: unknown): item is GeometryLayerItem {
   if (!item || typeof item !== "object") return false;
+  const candidate = item as Partial<GeometryLayerItem> & { kind?: string };
+  return candidate.kind === "geometry";
+}
+
+export function isGeometryLayerItemLike(item: unknown): item is GeometryLayerItemLike {
+  if (!item || typeof item !== "object") return false;
   const candidate = item as Partial<GeometryLayerItem> & { kind?: string; type?: string };
   if (candidate.kind !== undefined) {
     return candidate.kind === "geometry";
   }
   // Transitional fallback for legacy feature-shaped data loaded before kind tagging.
+  // Remove this once all call sites operate on canonical ScenarioLayerItem objects only.
   return candidate.type === "Feature" && !!candidate.geometry && !!candidate.meta;
 }
 

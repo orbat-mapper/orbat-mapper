@@ -9,7 +9,7 @@ import type {
 import {
   type GeometryLayerItem,
   type NScenarioLayerItem,
-  isGeometryLayerItem,
+  isNGeometryLayerItem,
 } from "@/types/scenarioLayerItems";
 
 export function useGeoJsonConverter(scenario: TScenario) {
@@ -45,7 +45,7 @@ export function useGeoJsonConverter(scenario: TScenario) {
         .map((layer) => layer.items)
         .flat(1)
         .filter((layerItem): layerItem is NScenarioLayerItem & GeometryLayerItem =>
-          isGeometryLayerItem(layerItem),
+          isNGeometryLayerItem(layerItem),
         )
         .map((f) => {
           const { id, geometry, properties, meta } = f;
