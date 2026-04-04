@@ -2,7 +2,7 @@ import type { NewScenarioStore } from "./newScenarioStore";
 import type { CurrentState, ScenarioEvent } from "@/types/scenarioModels";
 import type {
   NScenarioEvent,
-  NScenarioFeature,
+  NGeometryLayerItem,
   NUnit,
   ScenarioEventUpdate,
 } from "@/types/internalModels";
@@ -15,10 +15,13 @@ import type { EntityId } from "@/types/base";
 import { klona } from "klona";
 import { createEventHook } from "@vueuse/core";
 import { invalidateUnitStyle } from "@/geo/unitStyles";
-import type { CurrentScenarioFeatureState } from "@/types/scenarioGeoModels";
 import { nanoid } from "@/utils";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
+import {
+  type CurrentGeometryLayerItemState,
+  isNGeometryLayerItem,
+} from "@/types/scenarioLayerItems";
 
 export type GoToScenarioEventOptions = {
   silent?: boolean;
@@ -180,8 +183,8 @@ export function updateCurrentUnitState(
 }
 
 function createInitialFeatureState(
-  feature: NScenarioFeature,
-): CurrentScenarioFeatureState | null {
+  feature: NGeometryLayerItem,
+): CurrentGeometryLayerItemState | null {
   return {
     t: Number.MIN_SAFE_INTEGER,
     geometry: feature.geometry,
@@ -211,7 +214,7 @@ export function useScenarioTime(store: NewScenarioStore) {
         state.featureStateCounter++;
       }
       layer.items.forEach((featureId) => {
-        const feature = state.layerItemMap[featureId] as NScenarioFeature;
+        const feature = state.layerItemMap[featureId] as NGeometryLayerItem;
         const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
         const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
         if (!feature) return;
@@ -305,14 +308,16 @@ export function useScenarioTime(store: NewScenarioStore) {
       });
     });
 
-    Object.values(state.layerItemMap).forEach((feature) => {
-      (feature?.state || []).forEach((s) => {
-        // round to nearest hour
-        const t = Math.round(s.t / 3600000) * 3600000;
-        histogram[t] = (histogram[t] || 0) + 1;
-        max = Math.max(max, histogram[t]);
+    Object.values(state.layerItemMap)
+      .filter(isNGeometryLayerItem)
+      .forEach((feature) => {
+        (feature?.state || []).forEach((s) => {
+          // round to nearest hour
+          const t = Math.round(s.t / 3600000) * 3600000;
+          histogram[t] = (histogram[t] || 0) + 1;
+          max = Math.max(max, histogram[t]);
+        });
       });
-    });
 
     return {
       histogram: Object.entries(histogram).map(([k, v]) => ({ t: +k, count: v })),

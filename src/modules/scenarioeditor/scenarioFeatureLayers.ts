@@ -3,7 +3,7 @@ import { injectStrict, nanoid } from "@/utils";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
 import type { ScenarioFeatureLayerEvent } from "@/scenariostore/geo";
 import type { FeatureId, ScenarioFeatureMeta } from "@/types/scenarioGeoModels";
-import type { NScenarioFeature, ScenarioLayerUpdate } from "@/types/internalModels";
+import type { NGeometryLayerItem, ScenarioLayerUpdate } from "@/types/internalModels";
 import { type ProjectionLike, toLonLat } from "ol/proj";
 import VectorLayer from "ol/layer/Vector";
 import {
@@ -21,7 +21,11 @@ import { getLength } from "ol/sphere";
 import LineString from "ol/geom/LineString";
 import { point } from "@turf/helpers";
 import GeoJSON from "ol/format/GeoJSON";
-import type { FullScenarioLayerItemsLayer } from "@/types/scenarioLayerItems";
+import {
+  type FullScenarioLayerItemsLayer,
+  type GeometryLayerItem,
+  isNGeometryLayerItem,
+} from "@/types/scenarioLayerItems";
 
 const undoActionLabels: ActionLabel[] = [
   "deleteLayer",
@@ -61,7 +65,7 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
         break;
       case "updateFeature":
         olDeleteFeature(event.id);
-        const { layerItem } = scn.geo.getLayerItemById(event.id);
+        const { layerItem } = scn.geo.getGeometryLayerItemById(event.id);
         if (layerItem && !layerItem._hidden) {
           olAddFeature(event.id);
         }
@@ -106,7 +110,7 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
       initializeFeatureLayersFromStore({ doClearCache: true, filterVisible: false });
     } else if (label === "updateFeature") {
       olDeleteFeature(layerOrFeatureId);
-      const { layerItem } = scn.geo.getLayerItemById(layerOrFeatureId);
+      const { layerItem } = scn.geo.getGeometryLayerItemById(layerOrFeatureId);
       if (layerItem && !layerItem._hidden) {
         olAddFeature(layerOrFeatureId);
       }
@@ -176,7 +180,7 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
   }
 
   function olAddFeature(featureId: FeatureId) {
-    const { layerItem } = scn.geo.getLayerItemById(featureId);
+    const { layerItem } = scn.geo.getGeometryLayerItemById(featureId);
     if (!layerItem) return;
     const olLayer = getOlLayerById(layerItem._pid);
     if (!olLayer) return;
@@ -227,7 +231,10 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
     const vectorLayer = new VectorLayer({
       source: new VectorSource({
         features: createScenarioLayerItemFeatures(
-          layer.items.filter((layerItem) => !filterVisible || !layerItem._hidden),
+          layer.items.filter(
+            (layerItem) =>
+              isNGeometryLayerItem(layerItem) && (!filterVisible || !layerItem._hidden),
+          ),
           projection,
         ),
       }),
@@ -250,7 +257,9 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
 }
 
 // Fixme: Should only return properties needed to represent the geometry
-export function convertOlFeatureToScenarioFeature(olFeature: Feature): NScenarioFeature {
+export function convertOlFeatureToScenarioFeature(
+  olFeature: Feature,
+): NGeometryLayerItem {
   if (isCircle(olFeature)) {
     const circle = olFeature.getGeometry() as Circle;
     const { geometry, properties = {} } = olFeature.getProperties();
@@ -267,12 +276,12 @@ export function convertOlFeatureToScenarioFeature(olFeature: Feature): NScenario
       }),
       meta,
       style: {},
-    } as NScenarioFeature;
+    } as NGeometryLayerItem;
   }
 
   const gj = new GeoJSON({ featureProjection: "EPSG:3857" }).writeFeatureObject(
     olFeature,
   );
 
-  return { ...gj, style: {}, meta: { type: gj.geometry.type } } as NScenarioFeature;
+  return { ...gj, style: {}, meta: { type: gj.geometry.type } } as NGeometryLayerItem;
 }

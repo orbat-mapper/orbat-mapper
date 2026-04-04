@@ -34,18 +34,19 @@ import { useScenarioFeatureActions } from "@/composables/scenarioActions";
 import { renderMarkdown } from "@/composables/formatting";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
-import type { MediaUpdate, ScenarioFeatureUpdate } from "@/types/internalModels";
+import type { GeometryLayerItemUpdate, MediaUpdate } from "@/types/internalModels";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import { inputEventFilter } from "@/components/helpers";
 import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatureDropdownMenu.vue";
 import type { ScenarioFeatureActions } from "@/types/constants";
 import { useNotifications } from "@/composables/notifications";
-import { featuresToGeoJsonString } from "@/modules/scenarioeditor/featureLayerUtils";
+import { layerItemsToGeoJsonString } from "@/modules/scenarioeditor/featureLayerUtils";
 import ScenarioFeatureState from "@/modules/scenarioeditor/ScenarioFeatureState.vue";
 import ScenarioFeatureTextSettings from "@/modules/scenarioeditor/ScenarioFeatureTextSettings.vue";
 import ScenarioFeatureVisibilitySettings from "@/modules/scenarioeditor/ScenarioFeatureVisibilitySettings.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import { Button } from "@/components/ui/button";
+import type { NGeometryLayerItem } from "@/types/internalModels";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -73,7 +74,8 @@ const toolbarStore = useMainToolbarStore();
 
 const feature = computed(() => {
   if (props.selectedIds.size === 1) {
-    return geo.getFeatureById(props.selectedIds.values().next().value!).feature;
+    return geo.getGeometryLayerItemById(props.selectedIds.values().next().value!)
+      .layerItem as NGeometryLayerItem | undefined;
   }
   return null;
 });
@@ -165,7 +167,7 @@ const debouncedResetMap = useDebounceFn(
   3000,
 );
 
-function doUpdateFeature(data: ScenarioFeatureUpdate) {
+function doUpdateFeature(data: GeometryLayerItemUpdate) {
   const featureOrFeatures = isMultiMode.value
     ? [...props.selectedIds.values()]
     : feature.value?.id;
@@ -208,10 +210,10 @@ function onAction(action: ScenarioFeatureActions) {
   }
   if (action === "copyAsGeoJson") {
     const features = [...props.selectedIds]
-      .map((id) => geo.getFeatureById(id)?.feature)
+      .map((id) => geo.getGeometryLayerItemById(id)?.layerItem)
       .filter((f) => !!f);
     if (features.length) {
-      navigator.clipboard.writeText(featuresToGeoJsonString(features));
+      navigator.clipboard.writeText(layerItemsToGeoJsonString(features));
       notify({ message: "Copied GeoJSON to clipboard" });
     }
     return;

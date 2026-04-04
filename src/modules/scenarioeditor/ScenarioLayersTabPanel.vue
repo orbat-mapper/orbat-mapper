@@ -11,7 +11,7 @@ import {
 } from "@/modules/scenarioeditor/featureLayerUtils";
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
-import type { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
+import type { NGeometryLayerItem, NScenarioLayer } from "@/types/internalModels";
 import type {
   FeatureId,
   ScenarioLayer,
@@ -42,6 +42,7 @@ import {
   type Edge,
   extractClosestEdge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { isNGeometryLayerItem } from "@/types/scenarioLayerItems";
 
 const emit = defineEmits(["feature-click"]);
 
@@ -101,7 +102,15 @@ const mapLayerButtonItems: ButtonGroupItem[] = [
   },
 ];
 
-const scenarioLayersFeatures = computed(() => geo.layersFeatures.value);
+const scenarioLayers = computed(() => geo.layerItemsLayers.value);
+const scenarioGeometryLayers = computed<
+  Array<{ layer: NScenarioLayer; features: NGeometryLayerItem[] }>
+>(() =>
+  scenarioLayers.value.map((layer) => ({
+    layer: geo.getLayerById(layer.id)!,
+    features: layer.items.filter(isNGeometryLayerItem),
+  })),
+);
 
 const layerMenuItems = computed<MenuItemData<ScenarioLayerAction>[]>(() => [
   {
@@ -135,10 +144,10 @@ function calculateSelectedFeatureIds(newFeatureId: FeatureId): FeatureId[] {
   const lastSelectedId = [...selectedFeatureIds.value].pop();
   if (lastSelectedId === undefined) return [newFeatureId];
   const allOpenFeatures: FeatureId[] = [];
-  for (const { features, layer } of scenarioLayersFeatures.value) {
+  for (const layer of scenarioLayers.value) {
     if (!(layer._isOpen === false)) {
-      features.forEach((feature) => {
-        allOpenFeatures.push(feature.id);
+      layer.items.forEach((layerItem) => {
+        allOpenFeatures.push(layerItem.id);
       });
     }
   }
@@ -152,7 +161,7 @@ function calculateSelectedFeatureIds(newFeatureId: FeatureId): FeatureId[] {
 }
 
 function onFeatureClick(
-  feature: NScenarioFeature,
+  feature: NGeometryLayerItem,
   layer: NScenarioLayer,
   event?: MouseEvent,
 ) {
@@ -175,7 +184,7 @@ function onFeatureClick(
 }
 
 function onFeatureDoubleClick(
-  feature: NScenarioFeature,
+  feature: NGeometryLayerItem,
   layer: NScenarioLayer,
   event?: MouseEvent,
 ) {
@@ -266,8 +275,8 @@ function onFeatureAction(
   if (action === "copyAsGeoJson") {
     const ids = isArray ? featureOrFeaturesId : [featureOrFeaturesId];
     const layerItems = ids
-      .map((id) => geo.getLayerItemById(id)?.layerItem)
-      .filter(Boolean);
+      .map((id) => geo.getGeometryLayerItemById(id)?.layerItem)
+      .filter((layerItem): layerItem is NGeometryLayerItem => !!layerItem);
     if (layerItems.length) {
       navigator.clipboard.writeText(layerItemsToGeoJsonString(layerItems));
       notify({ message: "Copied GeoJSON to clipboard" });
@@ -289,11 +298,12 @@ function onFeatureAction(
   groupUpdate(
     () =>
       tmp.forEach((featureId) => {
-        const { feature, layer } = geo.getFeatureById(featureId) || {};
+        const { layerItem: feature, layer } =
+          geo.getGeometryLayerItemById(featureId) || {};
         if (action === "zoom") engineRef.value?.layers.zoomToFeature(featureId);
         if (action === "pan") engineRef.value?.layers.panToFeature(featureId);
 
-        if (!layer || !layer) return;
+        if (!feature || !layer) return;
 
         if (action === "delete") {
           geo.deleteFeature(feature.id);
@@ -321,8 +331,8 @@ function onFeatureAction(
 }
 
 function onFeatureDrop(data: {
-  feature: NScenarioFeature;
-  destinationFeature: NScenarioFeature | NScenarioLayer;
+  feature: NGeometryLayerItem;
+  destinationFeature: NGeometryLayerItem | NScenarioLayer;
   target: DropTarget;
 }) {
   const { feature, destinationFeature, target } = data;
@@ -334,7 +344,6 @@ function addNewLayer() {
     id: nanoid(),
     name: `New layer`,
     items: [],
-    features: [],
     _isNew: false,
   });
   activeLayerId.value = addedLayer.id;
@@ -355,7 +364,7 @@ function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
   geo.updateMapLayer(layer.id, { isHidden: !layer.isHidden });
 }
 
-function onLayerDrop(layer: NScenarioLayer, feature: NScenarioFeature) {
+function onLayerDrop(layer: NScenarioLayer, feature: NGeometryLayerItem) {
   onFeatureDrop({
     feature,
     destinationFeature: layer,
@@ -504,7 +513,7 @@ onUnmounted(() => {
       </ul>
     </ChevronPanel>
     <ScenarioFeatureLayer
-      v-for="{ layer, features } in scenarioLayersFeatures"
+      v-for="{ layer, features } in scenarioGeometryLayers"
       :key="layer.id"
       :features="features"
       :layer="layer"

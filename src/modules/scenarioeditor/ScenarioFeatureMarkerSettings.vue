@@ -2,12 +2,12 @@
 import { computed } from "vue";
 import { RadioGroupRoot, RadioGroupItem, Label } from "reka-ui";
 import type { MarkerStyleSpec, MarkerSymbol, SimpleStyleSpec } from "@/geo/simplestyle";
-import type { ScenarioFeature } from "@/types/scenarioGeoModels";
+import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import type { SelectItem } from "@/components/types";
 import DrawMarker from "@/components/DrawMarker.vue";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 
-const props = defineProps<{ feature: ScenarioFeature }>();
+const props = defineProps<{ feature: GeometryLayerItem }>();
 const emit = defineEmits<{
   (e: "update", value: { style: Partial<SimpleStyleSpec> }): void;
 }>();

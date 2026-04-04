@@ -23,7 +23,7 @@ const rawHoveredFeatureName = computed(() => {
   for (const hoveredFeature of hoveredFeatures.value) {
     const featureId = hoveredFeature?.getId?.();
     if (featureId === undefined || featureId === null) continue;
-    const { feature } = geo.getFeatureById(featureId);
+    const { layerItem: feature } = geo.getGeometryLayerItemById(featureId);
     const name = feature?.meta?.name?.trim();
     if (name) return name;
   }

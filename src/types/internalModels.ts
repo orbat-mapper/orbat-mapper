@@ -21,8 +21,6 @@ import type { DropTarget, EntityId } from "./base";
 import type {
   FeatureId,
   RangeRingGroup,
-  ScenarioFeature,
-  ScenarioFeatureMeta,
   ScenarioImageLayer,
   ScenarioKMLLayer,
   ScenarioTileJSONLayer,
@@ -31,7 +29,9 @@ import type {
 import type { Optional } from "@/types/helpers";
 import type { SymbolFillColor } from "@/config/colors.ts";
 import type {
-  NScenarioLayerItem as VNextScenarioLayerItem,
+  GeometryLayerItemUpdate,
+  NGeometryLayerItem,
+  NScenarioLayerItem,
   NScenarioLayerItemsLayer,
 } from "@/types/scenarioLayerItems";
 
@@ -126,27 +126,14 @@ export interface NSideGroup extends Omit<SideGroup, "subUnits" | "_pid"> {
 
 export interface NScenarioLayer extends Omit<NScenarioLayerItemsLayer, "items"> {
   items: FeatureId[];
-  features: FeatureId[];
   _isOpen?: boolean;
 }
-export interface NScenarioFeature extends ScenarioFeature {
-  _pid: FeatureId;
-}
-
-export type NScenarioLayerItem = VNextScenarioLayerItem;
-
-export interface ScenarioFeatureUpdate extends Partial<
-  Omit<NScenarioFeature, "id" | "meta">
-> {
-  meta?: Partial<ScenarioFeatureMeta>;
-  _hidden?: boolean;
-}
 export interface ScenarioLayerUpdate extends Partial<
-  Omit<NScenarioLayer, "id" | "features" | "items">
+  Omit<NScenarioLayer, "id" | "items">
 > {
   items?: FeatureId[];
-  features?: FeatureId[];
 }
+export type { NGeometryLayerItem, NScenarioLayerItem, GeometryLayerItemUpdate };
 
 export interface ScenarioImageLayerUpdate extends Partial<
   Omit<ScenarioImageLayer, "id">

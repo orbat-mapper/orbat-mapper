@@ -1,11 +1,16 @@
+import type { GeoJsonProperties, Geometry } from "geojson";
 import type { SimpleStyleSpec } from "@/geo/simplestyle";
 import type { ScenarioTime } from "@/types/base";
-import type { CurrentStateType, Media } from "@/types/scenarioModels";
+import type {
+  CurrentStateType,
+  Media,
+  ScenarioEventDescription,
+} from "@/types/scenarioModels";
 import type {
   LayerId,
   Position,
-  ScenarioFeature,
-  ScenarioFeatureState,
+  ScenarioFeatureMeta,
+  ScenarioFeatureProperties,
   ScenarioLayer,
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
@@ -17,8 +22,8 @@ import type {
  * This file introduces the broader item taxonomy so the loader/store/render path
  * can migrate incrementally without changing behavior yet.
  *
- * GeometryLayerItem intentionally aliases the existing ScenarioFeature shape for
- * compatibility during the transition.
+ * GeometryLayerItem intentionally mirrors the existing geometry feature shape so
+ * the geometry editor can migrate without renderer-specific coupling.
  */
 
 export type LayerItemId = string;
@@ -66,8 +71,33 @@ export interface ScenarioLayerItemBase extends Partial<VisibilityInfo> {
   media?: Media[];
 }
 
-export type GeometryLayerItem = ScenarioFeature & { kind: "geometry" };
-export type GeometryLayerItemState = ScenarioFeatureState;
+export interface GeometryLayerItemState extends Partial<ScenarioEventDescription> {
+  id: string;
+  t: ScenarioTime;
+  geometry?: Geometry;
+  properties?: GeoJsonProperties;
+}
+
+export interface CurrentGeometryLayerItemState extends Omit<
+  GeometryLayerItemState,
+  "id"
+> {
+  type?: CurrentStateType;
+}
+
+export interface GeometryLayerItem {
+  kind: "geometry";
+  type: "Feature";
+  id: LayerItemId;
+  geometry: Geometry;
+  properties: GeoJsonProperties;
+  meta: ScenarioFeatureMeta;
+  style: Partial<SimpleStyleSpec>;
+  state?: GeometryLayerItemState[];
+  media?: Media[];
+  _hidden?: boolean;
+  _state?: CurrentGeometryLayerItemState | null;
+}
 
 export type AnnotationAnchor =
   | { type: "point"; position: Position }
@@ -179,6 +209,15 @@ export type ScenarioLayerItem =
   | TacticalGraphicLayerItem
   | MeasurementLayerItem;
 
+export type NScenarioLayerItem = ScenarioLayerItem & {
+  _pid: LayerId;
+  _hidden?: boolean;
+};
+
+export type NGeometryLayerItem = GeometryLayerItem & {
+  _pid: LayerId;
+};
+
 export function isGeometryLayerItem(item: unknown): item is GeometryLayerItem {
   if (!item || typeof item !== "object") return false;
   const candidate = item as Partial<GeometryLayerItem> & { kind?: string; type?: string };
@@ -188,15 +227,17 @@ export function isGeometryLayerItem(item: unknown): item is GeometryLayerItem {
   return candidate.type === "Feature" && !!candidate.geometry && !!candidate.meta;
 }
 
+export function isNGeometryLayerItem(
+  item: NScenarioLayerItem,
+): item is NGeometryLayerItem {
+  return isGeometryLayerItem(item);
+}
+
 export type ScenarioLayerItemState =
   | GeometryLayerItemState
   | AnnotationLayerItemState
   | TacticalGraphicLayerItemState
   | MeasurementLayerItemState;
-
-export type ProjectedScenarioLayerItem = ScenarioLayerItem & {
-  projectionType?: CurrentStateType;
-};
 
 export interface ScenarioLayerItemsLayer extends Omit<ScenarioLayer, "features"> {
   items: ScenarioLayerItem[];
@@ -206,11 +247,12 @@ export interface NScenarioLayerItemsLayer extends Omit<ScenarioLayerItemsLayer, 
   items: LayerItemId[];
 }
 
-export type NScenarioLayerItem = ScenarioLayerItem & {
-  _pid: LayerId;
-  _state?: ProjectedScenarioLayerItem | null;
+export interface GeometryLayerItemUpdate extends Partial<
+  Omit<NGeometryLayerItem, "id" | "meta" | "kind">
+> {
+  meta?: Partial<ScenarioFeatureMeta>;
   _hidden?: boolean;
-};
+}
 
 export interface FullScenarioLayerItemsLayer extends Omit<
   ScenarioLayerItemsLayer,

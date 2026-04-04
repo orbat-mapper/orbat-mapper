@@ -2,7 +2,7 @@
 import { computed, h, ref } from "vue";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import type { NScenarioFeature, NUnit } from "@/types/internalModels";
+import type { NGeometryLayerItem, NUnit } from "@/types/internalModels";
 import type { Feature as GeoJSONFeature, FeatureCollection, Point } from "geojson";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
@@ -103,7 +103,7 @@ const geoJSONPointFeatures = computed(() => {
 });
 
 const existingLayers = computed((): SelectItem[] => {
-  return geo.layers.value.map((l) => ({ label: l.name, value: l.id }));
+  return geo.layerItemsLayers.value.map((l) => ({ label: l.name, value: l.id }));
 });
 
 function findLikelyNameColumn(columnNames: string[]) {
@@ -187,9 +187,10 @@ function loadAsUnits() {
 
 function loadAsFeatures() {
   if (!activeLayer.value) return;
-  const features = selectedFeatures.value.map((f): NScenarioFeature => {
+  const features = selectedFeatures.value.map((f): NGeometryLayerItem => {
     return {
       ...f,
+      kind: "geometry",
       _pid: activeLayer.value,
       id: nanoid(),
       meta: {

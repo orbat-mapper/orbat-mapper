@@ -40,18 +40,15 @@ describe("scenario geo item accessors", () => {
 
     const geo = useGeo(store);
     const itemResult = geo.getLayerItemById("feature-1");
-    const featureResult = geo.getFeatureById("feature-1");
     const fullItemsLayer = geo.getFullLayerItemsLayer("layer-1");
-    const fullFeatureLayer = geo.getFullLayer("layer-1");
+    const geometryItemResult = geo.getGeometryLayerItemById("feature-1");
 
     expect(itemResult.layerItem?.id).toBe("feature-1");
     expect(itemResult.layer?.id).toBe("layer-1");
-    expect(featureResult.feature).toEqual(itemResult.layerItem);
+    expect(geometryItemResult.layerItem).toEqual(itemResult.layerItem);
     expect(fullItemsLayer?.items).toHaveLength(1);
-    expect(fullItemsLayer?.items[0]).toEqual(fullFeatureLayer?.features[0]);
     expect(geo.layerItemsLayers.value[0].items).toHaveLength(1);
     expect(geo.layersItems.value[0].items[0].id).toBe("feature-1");
-    expect(geo.layersFeatures.value[0].features[0].id).toBe("feature-1");
   });
 
   it("keeps the item event hook aligned with the existing feature event hook", () => {

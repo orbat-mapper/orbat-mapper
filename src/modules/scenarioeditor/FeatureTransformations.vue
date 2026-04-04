@@ -11,7 +11,7 @@ import {
   activeScenarioKey,
 } from "@/components/injects";
 import type { FeatureId } from "@/types/scenarioGeoModels";
-import type { NScenarioFeature, NUnit } from "@/types/internalModels";
+import type { NGeometryLayerItem, NUnit } from "@/types/internalModels";
 import type { Feature } from "geojson";
 import { useDebounceFn } from "@vueuse/core";
 import VectorLayer from "ol/layer/Vector";
@@ -55,7 +55,7 @@ const selectedItems = computed(() => {
     return Array.from(selectedUnitIds.value).map((id) => scn.helpers.getUnitById(id));
   } else {
     return Array.from(selectedFeatureIds.value).map(
-      (id) => scn.geo.getFeatureById(id)?.feature,
+      (id) => scn.geo.getGeometryLayerItemById(id)?.layerItem,
     );
   }
 });
@@ -84,10 +84,10 @@ const previewLayer = new VectorLayer({
 olMapRef.value.addLayer(previewLayer);
 
 const calculatePreview = useDebounceFn(
-  (features: NScenarioFeature[] | NUnit[], ops: TransformationOperation[]) => {
+  (features: NGeometryLayerItem[] | NUnit[], ops: TransformationOperation[]) => {
     const geometry = isUnitMode
       ? doUnitTransformations(features as NUnit[], ops)
-      : doScenarioFeatureTransformation(features as NScenarioFeature[], ops);
+      : doScenarioFeatureTransformation(features as NGeometryLayerItem[], ops);
 
     drawGeoJsonLayer(previewLayer, geometry);
   },
@@ -97,11 +97,12 @@ const calculatePreview = useDebounceFn(
 function createScenarioFeatureFromGeoJSON(
   feature: Feature,
   layerId: FeatureId,
-): NScenarioFeature {
+): NGeometryLayerItem {
   return {
+    kind: "geometry",
     type: "Feature",
     id: nanoid(),
-    properties: feature.properties,
+    properties: feature.properties ?? {},
     geometry: feature.geometry,
     meta: { type: feature.geometry.type, name: "New Feature" },
     style: {},
@@ -112,8 +113,8 @@ function createScenarioFeatureFromGeoJSON(
 if (!props.unitMode) {
   watch(
     [
-      () => (selectedItems.value[0] as NScenarioFeature)?.geometry,
-      () => (selectedItems.value[0] as NScenarioFeature)?._state?.geometry,
+      () => (selectedItems.value[0] as NGeometryLayerItem)?.geometry,
+      () => (selectedItems.value[0] as NGeometryLayerItem)?._state?.geometry,
     ],
     () => {
       toggleRedraw.value = !toggleRedraw.value;
@@ -132,8 +133,11 @@ watch(
   ],
   () => {
     if (showPreview.value && transformations.value) {
+      const currentItems = props.unitMode
+        ? (selectedItems.value as NUnit[])
+        : (selectedItems.value.filter(Boolean) as NGeometryLayerItem[]);
       calculatePreview(
-        selectedItems.value,
+        currentItems,
         transformations.value.filter((v) => !!v),
       );
     } else {
@@ -151,7 +155,7 @@ function onSubmit(updateMode = false) {
   let transformedFeature = isUnitMode
     ? doUnitTransformations(selectedItems.value as NUnit[], filteredTrans)
     : doScenarioFeatureTransformation(
-        selectedItems.value as NScenarioFeature[],
+        selectedItems.value.filter(Boolean) as NGeometryLayerItem[],
         filteredTrans,
       );
   if (!transformedFeature) return;
@@ -178,7 +182,7 @@ function onSubmit(updateMode = false) {
 
     const activeFeatureName = isUnitMode
       ? (activeFeature as NUnit).name
-      : (activeFeature as NScenarioFeature).meta.name;
+      : (activeFeature as NGeometryLayerItem).meta.name;
     const featureName = isMultiMode.value ? "FeatureCollection" : activeFeatureName;
     scenarioFeature.meta.name = `${featureName} (${filteredTrans[0].transform})`;
     scn.geo.addFeature(scenarioFeature, layerId!);

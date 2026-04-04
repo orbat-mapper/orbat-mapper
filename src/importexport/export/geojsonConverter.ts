@@ -1,12 +1,16 @@
 import type { TScenario } from "@/scenariostore";
-import type { NScenarioLayerItem, NUnit } from "@/types/internalModels";
+import type { NUnit } from "@/types/internalModels";
 import type { GeoJsonSettings } from "@/types/importExport.ts";
 import { featureCollection, point } from "@turf/helpers";
 import type {
   MilSymbolProperties,
   OrbatMapperGeoJsonCollection,
 } from "@/importexport/jsonish/types.ts";
-import { type GeometryLayerItem, isGeometryLayerItem } from "@/types/scenarioLayerItems";
+import {
+  type GeometryLayerItem,
+  type NScenarioLayerItem,
+  isGeometryLayerItem,
+} from "@/types/scenarioLayerItems";
 
 export function useGeoJsonConverter(scenario: TScenario) {
   const { geo, unitActions } = scenario;

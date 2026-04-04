@@ -24,10 +24,10 @@ import { klona } from "klona";
 import type { EntityId } from "@/types/base";
 import type {
   NEquipmentData,
+  NGeometryLayerItem,
   NPersonnelData,
   NRangeRingGroup,
   NScenarioEvent,
-  NScenarioFeature,
   NScenarioLayerItem,
   NScenarioLayer,
   NSide,
@@ -69,7 +69,6 @@ export interface ScenarioState {
   layers: FeatureId[];
   layerMap: Record<FeatureId, NScenarioLayer>;
   layerItemMap: Record<FeatureId, NScenarioLayerItem>;
-  featureMap: Record<FeatureId, NScenarioFeature>;
   mapLayers: FeatureId[];
   mapLayerMap: Record<FeatureId, ScenarioMapLayer>;
   info: ScenarioInfo;
@@ -117,7 +116,6 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
   const mapLayers: FeatureId[] = [];
   const layerMap: Record<FeatureId, NScenarioLayer> = {};
   const layerItemMap: Record<FeatureId, NScenarioLayerItem> = {};
-  const featureMap = layerItemMap as Record<FeatureId, NScenarioFeature>;
   const mapLayerMap: Record<FeatureId, ScenarioMapLayer> = {};
   const equipmentMap: Record<string, NEquipmentData> = {};
   const personnelMap: Record<string, NPersonnelData> = {};
@@ -455,10 +453,16 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
   scenario.layers.forEach((layer) => {
     layers.push(layer.id);
     const itemIds = layer.features.map((f) => f.id);
+    const {
+      features: _features,
+      items: _items,
+      ...layerRest
+    } = layer as typeof layer & {
+      items?: unknown;
+    };
     layerMap[layer.id] = {
-      ...mapVisibility(layer),
+      ...mapVisibility(layerRest),
       items: itemIds,
-      features: itemIds,
     };
     layer.features.forEach((feature) => {
       const tmp = { ...feature };
@@ -469,11 +473,12 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
       }));
 
       tmp.meta = mapVisibility(tmp.meta);
+      tmp.properties = tmp.properties ?? {};
       layerItemMap[feature.id] = {
         ...tmp,
         kind: "geometry",
         _pid: layer.id,
-      } as NScenarioLayerItem;
+      } as NGeometryLayerItem;
     });
   });
 
@@ -506,7 +511,6 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     mapLayerMap: mapLayerMap,
     layerMap,
     layerItemMap,
-    featureMap,
     eventMap,
     currentTime: scenario.startTime || 0,
     info,

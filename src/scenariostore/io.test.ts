@@ -34,7 +34,6 @@ function createMinimalState(overrides: Partial<ScenarioState> = {}): ScenarioSta
     unitMap: {},
     eventMap: {},
     layerItemMap: {},
-    featureMap: {},
     layerMap: {},
     mapLayerMap: {},
     equipmentMap: {},
@@ -115,11 +114,11 @@ describe("Scenario IO", () => {
       ],
     } as any);
 
-    expect(itemsStore.state.layerMap["layer-1"].features).toEqual(
-      legacyStore.state.layerMap["layer-1"].features,
+    expect(itemsStore.state.layerMap["layer-1"].items).toEqual(
+      legacyStore.state.layerMap["layer-1"].items,
     );
-    expect(itemsStore.state.featureMap["feature-1"]).toEqual(
-      legacyStore.state.featureMap["feature-1"],
+    expect(itemsStore.state.layerItemMap["feature-1"]).toEqual(
+      legacyStore.state.layerItemMap["feature-1"],
     );
   });
 

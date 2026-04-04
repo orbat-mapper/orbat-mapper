@@ -31,7 +31,7 @@ import {
 import type { ScenarioFeatureActions } from "@/types/constants";
 import Select, { SelectEvent } from "ol/interaction/Select";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
-import type { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
+import type { NGeometryLayerItem, NScenarioLayer } from "@/types/internalModels";
 import type { TScenario } from "@/scenariostore";
 import type { UseFeatureStyles } from "@/geo/featureStyles";
 import type { MenuItemData } from "@/components/types";
@@ -42,7 +42,7 @@ import CircleStyle from "ol/style/Circle";
 import { useSelectedItems } from "@/stores/selectedStore";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
 import type { GeometryLayerItem, ScenarioLayerItem } from "@/types/scenarioLayerItems";
-import { isGeometryLayerItem } from "@/types/scenarioLayerItems";
+import { isGeometryLayerItem, isNGeometryLayerItem } from "@/types/scenarioLayerItems";
 
 const selectStyle = new Style({
   stroke: new Stroke({ color: "#ffff00", width: 9 }),
@@ -83,7 +83,7 @@ const geometryIconMap: any = {
 };
 
 function getItemIconKey(
-  item?: ScenarioFeature | NScenarioFeature | ScenarioLayerItem,
+  item?: ScenarioFeature | NGeometryLayerItem | ScenarioLayerItem,
 ): string | undefined {
   if (!item) return undefined;
   if (isGeometryLayerItem(item)) return item.meta.type;
@@ -91,7 +91,7 @@ function getItemIconKey(
 }
 
 export function getGeometryIcon(
-  feature?: ScenarioFeature | NScenarioFeature | ScenarioLayerItem,
+  feature?: ScenarioFeature | NGeometryLayerItem | ScenarioLayerItem,
 ) {
   const key = getItemIconKey(feature);
   return (key && geometryIconMap[key]) || geometryIconMap.Polygon;
@@ -112,7 +112,7 @@ export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
 ];
 
 export function layerItemsToGeoJsonString(
-  items: (ScenarioLayerItem | NScenarioFeature | ScenarioFeature)[],
+  items: (ScenarioLayerItem | NGeometryLayerItem | ScenarioFeature)[],
 ) {
   const fc = featureCollection(
     items.filter(isGeometryLayerItem).map((f) => {
@@ -136,12 +136,6 @@ export function layerItemsToGeoJsonString(
     }),
   );
   return JSON.stringify(fc, null, 2);
-}
-
-export function featuresToGeoJsonString(
-  features: (ScenarioFeature | NScenarioFeature)[],
-) {
-  return layerItemsToGeoJsonString(features);
 }
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
@@ -212,7 +206,7 @@ export function projectGeometryLayerItemToOlFeature(
 }
 
 export function createScenarioLayerItemFeatures(
-  items: Array<ScenarioLayerItem | NScenarioFeature | ScenarioFeature>,
+  items: Array<ScenarioLayerItem | NGeometryLayerItem | ScenarioFeature>,
   featureProjection: ProjectionLike,
 ) {
   return items
@@ -220,13 +214,6 @@ export function createScenarioLayerItemFeatures(
     .map((feature, index) =>
       projectGeometryLayerItemToOlFeature(feature, index, featureProjection),
     );
-}
-
-export function createScenarioLayerFeatures(
-  features: NScenarioFeature[] | ScenarioFeature[],
-  featureProjection: ProjectionLike,
-) {
-  return createScenarioLayerItemFeatures(features, featureProjection);
 }
 
 export function useScenarioFeatureSelect(
@@ -354,7 +341,9 @@ export function useFeatureLayerUtils(
   }
 
   function zoomToFeatures(featureIds: FeatureId[]) {
-    const c = featureCollection(featureIds.map((fid) => state.featureMap[fid]));
+    const c = featureCollection(
+      featureIds.map((fid) => state.layerItemMap[fid]).filter(isNGeometryLayerItem),
+    );
     const bb = new GeoJSON().readFeature(turfEnvelope(c), {
       featureProjection: "EPSG:3857",
       dataProjection: "EPSG:4326",
@@ -389,8 +378,7 @@ export function useFeatureLayerUtils(
 
   return {
     scenarioLayersGroup,
-    scenarioLayers: geo.layers,
-    scenarioLayersFeatures: geo.layersFeatures,
+    scenarioLayers: geo.layerItemsLayers,
     getOlLayerById,
     zoomToFeature,
     zoomToFeatures,
