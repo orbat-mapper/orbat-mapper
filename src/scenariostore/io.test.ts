@@ -64,7 +64,7 @@ describe("Scenario IO", () => {
   it("creates empty scenarios with items[] layers", () => {
     const scenario = createEmptyScenario();
 
-    expect(scenario.version).toBe("4.0.0");
+    expect(scenario.version).toBe("3.0.0");
     expect(getOverlayLayers(scenario)[0]).toHaveProperty("items");
     expect(getOverlayLayers(scenario)[0]).not.toHaveProperty("features");
     expect((getOverlayLayers(scenario)[0] as any).items).toEqual([]);
@@ -208,7 +208,7 @@ describe("Scenario IO", () => {
     const { serializeToObject } = useScenarioIO(storeRef);
     const serialized = serializeToObject();
 
-    expect(serialized.version).toBe("4.0.0");
+    expect(serialized.version).toBe("3.0.0");
     expect(getOverlayLayers(serialized)[0]).not.toHaveProperty("features");
     expect(getOverlayLayers(serialized)[0].items).toEqual([
       {
