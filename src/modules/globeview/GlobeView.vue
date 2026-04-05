@@ -32,7 +32,13 @@ import type { EntityId } from "@/types/base";
 import { useIndexedDb } from "@/scenariostore/localdb.ts";
 import { Button } from "@/components/ui/button";
 import { GLOBE_ROUTE } from "@/router/names.ts";
-import { ArrowLeftIcon, ListTreeIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
+import {
+  ArrowLeftIcon,
+  GanttChartIcon,
+  ListTreeIcon,
+  MoonStarIcon,
+  SunIcon,
+} from "lucide-vue-next";
 import { UseDark } from "@vueuse/components";
 import { createEventHook, useTitle } from "@vueuse/core";
 import ToggleField from "@/components/ToggleField.vue";
@@ -45,6 +51,7 @@ import {
 } from "@/modules/globeview/globeBasemaps";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useUiStore } from "@/stores/uiStore";
+import GlobeTimeline from "@/modules/globeview/GlobeTimeline.vue";
 import { useSidcModal } from "@/composables/modals";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { EventSearchResult } from "@/components/types";
@@ -130,9 +137,7 @@ onUnitSelectHook.on(({ unitId, options }) => {
   orbatRevealUnitId.value = unitId;
 
   if (!(options?.noZoom === true)) {
-    geoStore.zoomToUnit(
-      scenario.value.unitActions.getUnitById(unitId),
-    );
+    geoStore.zoomToUnit(scenario.value.unitActions.getUnitById(unitId));
   }
 });
 
@@ -272,6 +277,14 @@ onUnmounted(() => {
         >
           <ListTreeIcon class="size-4" />
         </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          @click="ui.showTimeline = !ui.showTimeline"
+          title="Toggle timeline"
+        >
+          <GanttChartIcon class="size-4" />
+        </Button>
       </div>
       <div class="flex items-center gap-4">
         <FpsDisplay v-if="showDebug" />
@@ -330,6 +343,10 @@ onUnmounted(() => {
         @close="onCloseDetailsPanel()"
       />
     </div>
+    <GlobeTimeline
+      v-if="isReady && localReady && ui.showTimeline"
+      :active-scenario="scenario"
+    />
     <LoadScenarioDialog
       v-if="showLoadScenarioDialog"
       v-model="showLoadScenarioDialog"

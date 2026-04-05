@@ -10,10 +10,7 @@ import type { Feature } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
 import { centerOfMass } from "@turf/turf";
-import {
-  activeScenarioKey,
-  activeScenarioMapEngineKey,
-} from "@/components/injects.ts";
+import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects.ts";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import { usePlaybackStore } from "@/stores/playbackStore.ts";
 import { useGlobeMapDrop } from "@/modules/globeview/useGlobeMapDrop.ts";
