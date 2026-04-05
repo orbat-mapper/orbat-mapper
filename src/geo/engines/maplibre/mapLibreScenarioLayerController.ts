@@ -10,7 +10,11 @@ import type {
 } from "@/geo/contracts/scenarioLayerController";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { TScenario } from "@/scenariostore";
-import type { FeatureId, ScenarioFeature, ScenarioMapLayer } from "@/types/scenarioGeoModels";
+import type {
+  FeatureId,
+  ScenarioFeature,
+  ScenarioMapLayer,
+} from "@/types/scenarioGeoModels";
 import type { NScenarioFeature } from "@/types/internalModels";
 import { fixExtent } from "@/utils/geoConvert";
 
@@ -62,7 +66,9 @@ function getMapLayerCenter(mapLayer: ScenarioMapLayer): Position | undefined {
   return [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2];
 }
 
-function isScenarioFeature(feature: NScenarioFeature | undefined): feature is NScenarioFeature {
+function isScenarioFeature(
+  feature: NScenarioFeature | undefined,
+): feature is NScenarioFeature {
   return Boolean(feature);
 }
 
