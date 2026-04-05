@@ -194,8 +194,7 @@ watch(
   () => nextTick(() => mlMap.value?.resize()),
 );
 
-const { showHexGrid, hexResolution, autoResolution, updateGrid } =
-  useH3HexGrid(mlMap);
+const { showHexGrid, hexResolution, autoResolution } = useH3HexGrid(mlMap);
 
 const hexResolutionSlider = computed({
   get: () => [hexResolution.value],

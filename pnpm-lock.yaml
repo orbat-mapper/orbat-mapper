@@ -242,6 +242,9 @@ importers:
       ol-ext:
         specifier: ^4.0.38
         version: 4.0.38(ol@10.8.0)
+      pbf:
+        specifier: ^4.0.1
+        version: 4.0.1
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
