@@ -18,6 +18,7 @@ import LoadScenarioFromClipboardPanel from "@/modules/scenarioeditor/LoadScenari
 import { saveImportedScenario } from "@/composables/importScenarioTransfer";
 import { useIndexedDb } from "@/scenariostore/localdb";
 import { useScenarioFileLoader } from "@/composables/useScenarioFileLoader";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 
 const DecryptScenarioModal = defineAsyncComponent(
   () => import("@/components/DecryptScenarioModal.vue"),
@@ -50,7 +51,7 @@ const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
 const decryptedScenarioSource = ref<"clipboard" | "external">("external");
 
 async function routeToImportPreview(
-  scenario: Scenario,
+  scenario: LoadableScenario,
   source: "clipboard" | "external",
 ) {
   const token = saveImportedScenario(scenario);
@@ -61,7 +62,7 @@ async function routeToImportPreview(
 }
 
 async function handleLoadedScenario(
-  scenario: Scenario | EncryptedScenario,
+  scenario: LoadableScenario | EncryptedScenario,
   source: "clipboard" | "external",
 ) {
   if (scenario.type === "ORBAT-mapper-encrypted") {
@@ -75,14 +76,14 @@ async function handleLoadedScenario(
   const existingScenario = await getScenarioInfo(scenario.id);
 
   if (existingScenario) {
-    await routeToImportPreview(scenario as Scenario, source);
+    await routeToImportPreview(scenario, source);
     return;
   }
 
-  await loadScenario(scenario as Scenario);
+  await loadScenario(scenario);
 }
 
-async function onExternalLoaded(scenario: Scenario | EncryptedScenario) {
+async function onExternalLoaded(scenario: LoadableScenario | EncryptedScenario) {
   await handleLoadedScenario(scenario, "external");
 }
 
@@ -92,7 +93,7 @@ const {
   openFilePicker: openLandingFilePicker,
 } = useScenarioFileLoader(onExternalLoaded);
 
-async function onClipboardLoaded(scenario: Scenario | EncryptedScenario) {
+async function onClipboardLoaded(scenario: LoadableScenario | EncryptedScenario) {
   await handleLoadedScenario(scenario, "clipboard");
 }
 

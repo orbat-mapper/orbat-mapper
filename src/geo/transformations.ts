@@ -5,7 +5,7 @@ import type {
   MultiPolygon,
   Polygon,
 } from "geojson";
-import type { NScenarioFeature, NUnit } from "@/types/internalModels.ts";
+import type { NGeometryLayerItem, NUnit } from "@/types/internalModels.ts";
 import {
   feature as turfFeature,
   featureCollection,
@@ -125,7 +125,7 @@ export function isPolygon(
 }
 
 export function doScenarioFeatureTransformation(
-  features: NScenarioFeature[],
+  features: NGeometryLayerItem[],
   transformations: TransformationOperation[],
 ): Feature | FeatureCollection | null | undefined {
   if (features.length === 0 || !features[0]) return;

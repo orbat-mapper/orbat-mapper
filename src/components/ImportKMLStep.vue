@@ -104,6 +104,7 @@ async function onLoad() {
       id: nanoid(),
       type: "KMLLayer",
     });
+    if (!newLayer) continue;
 
     await onImageLayerSelectHook.trigger({ layerId: newLayer.id });
   }

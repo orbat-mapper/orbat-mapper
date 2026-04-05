@@ -38,6 +38,7 @@ async function onLoad() {
     id: nanoid(),
     type: "ImageLayer",
   });
+  if (!newLayer) return;
   await onImageLayerSelectHook.trigger({ layerId: newLayer.id });
   emit("loaded");
 }

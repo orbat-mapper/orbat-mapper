@@ -47,7 +47,7 @@ import {
   activeScenarioKey,
   searchActionsKey,
 } from "@/components/injects";
-import type { NScenarioFeature, NUnit } from "@/types/internalModels";
+import type { NGeometryLayerItem, NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { usePlaybackStore } from "@/stores/playbackStore";
@@ -56,7 +56,6 @@ import type { Position } from "geojson";
 import { useActiveSidc } from "@/composables/mainToolbarData";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore.ts";
-import type { ScenarioFeature } from "@/types/scenarioGeoModels.ts";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import { useRecordingStore } from "@/stores/recordingStore";
 
@@ -102,7 +101,7 @@ const { sidc, symbolOptions } = useActiveSidc();
 const dropPosition = ref<Position>([0, 0]);
 const pixelPosition = ref<number[] | null>(null);
 const clickedUnits = ref<NUnit[]>([]);
-const clickedFeatures = ref<NScenarioFeature[]>([]);
+const clickedFeatures = ref<NGeometryLayerItem[]>([]);
 const mapZoomLevel = ref(0);
 
 const formattedPosition = computed(() =>
@@ -132,7 +131,7 @@ function onContextMenu(e: MouseEvent) {
       unit && clickedUnits.value.push(unit);
     } else if (layerType === "SCENARIO_FEATURE") {
       const featureId = feature.getId() as string;
-      const { feature: scenarioFeature } = geo.getFeatureById(featureId);
+      const { layerItem: scenarioFeature } = geo.getGeometryLayerItemById(featureId);
       scenarioFeature && clickedFeatures.value.push(scenarioFeature);
     }
   });
@@ -187,7 +186,7 @@ function onUnitSelect(unit: NUnit, event: MouseEvent | PointerEvent | KeyboardEv
 }
 
 function onFeatureSelect(
-  feature: NScenarioFeature,
+  feature: NGeometryLayerItem,
   event: MouseEvent | PointerEvent | KeyboardEvent,
 ) {
   if (event.shiftKey) {
@@ -223,11 +222,14 @@ function onAddUnit() {
 }
 
 function onAddPoint() {
-  const activeLayer = geo.getLayerById(activeLayerId.value ?? geo.layers.value[0]?.id);
+  const activeLayer = geo.getLayerById(
+    activeLayerId.value ?? geo.layerItemsLayers.value[0]?.id,
+  );
   if (!activeLayer) return;
-  const name = `Point ${(activeLayer.features.length ?? 0) + 1}`;
+  const name = `Point ${(activeLayer.items.length ?? 0) + 1}`;
 
-  const newFeature: ScenarioFeature = {
+  const newFeature: Omit<NGeometryLayerItem, "_pid"> = {
+    kind: "geometry" as const,
     type: "Feature",
     id: nanoid(),
     meta: {

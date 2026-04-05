@@ -31,7 +31,7 @@ import {
 import type { ScenarioFeatureActions } from "@/types/constants";
 import Select, { SelectEvent } from "ol/interaction/Select";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
-import type { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
+import type { NGeometryLayerItem, NScenarioLayer } from "@/types/internalModels";
 import type { TScenario } from "@/scenariostore";
 import type { UseFeatureStyles } from "@/geo/featureStyles";
 import type { MenuItemData } from "@/components/types";
@@ -41,6 +41,11 @@ import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
 import { useSelectedItems } from "@/stores/selectedStore";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
+import type { GeometryLayerItem, ScenarioLayerItem } from "@/types/scenarioLayerItems";
+import {
+  isGeometryLayerItemLike,
+  isNGeometryLayerItem,
+} from "@/types/scenarioLayerItems";
 
 const selectStyle = new Style({
   stroke: new Stroke({ color: "#ffff00", width: 9 }),
@@ -75,10 +80,32 @@ const geometryIconMap: any = {
   Circle: IconVectorCircleVariant,
   GeometryCollection: IconMapMarkerMultipleOutline,
   layer: IconLayersOutline,
+  annotation: IconMapMarker,
+  tacticalGraphic: IconVectorLine,
+  measurement: IconVectorCircleVariant,
 };
 
-export function getGeometryIcon(feature?: ScenarioFeature | NScenarioFeature) {
-  return (feature && geometryIconMap[feature.meta.type]) || geometryIconMap.Polygon;
+type GeometryFeatureLike = GeometryLayerItem | NGeometryLayerItem | ScenarioFeature;
+
+function isGeometryFeatureLike(
+  item: ScenarioLayerItem | NGeometryLayerItem | ScenarioFeature,
+): item is GeometryFeatureLike {
+  return isGeometryLayerItemLike(item);
+}
+
+function getItemIconKey(
+  item?: ScenarioFeature | NGeometryLayerItem | ScenarioLayerItem,
+): string | undefined {
+  if (!item) return undefined;
+  if (isGeometryLayerItemLike(item)) return item.meta.type;
+  return "kind" in item ? item.kind : undefined;
+}
+
+export function getGeometryIcon(
+  feature?: ScenarioFeature | NGeometryLayerItem | ScenarioLayerItem,
+) {
+  const key = getItemIconKey(feature);
+  return (key && geometryIconMap[key]) || geometryIconMap.Polygon;
 }
 
 export function getItemsIcon(type: string) {
@@ -95,11 +122,11 @@ export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
   { label: "Copy as GeoJSON", action: "copyAsGeoJson" },
 ];
 
-export function featuresToGeoJsonString(
-  features: (ScenarioFeature | NScenarioFeature)[],
+export function layerItemsToGeoJsonString(
+  items: (ScenarioLayerItem | NGeometryLayerItem | ScenarioFeature)[],
 ) {
   const fc = featureCollection(
-    features.map((f) => {
+    items.filter(isGeometryFeatureLike).map((f) => {
       const properties = {
         name: f.meta.name,
         description: f.meta.description,
@@ -148,50 +175,56 @@ export function getTopHitLayerType(
   return topLayerType;
 }
 
-export function createScenarioLayerFeatures(
-  features: NScenarioFeature[] | ScenarioFeature[],
+export function projectGeometryLayerItemToOlFeature(
+  fullFeature: GeometryFeatureLike,
+  index: number,
   featureProjection: ProjectionLike,
 ) {
   const gjson = new GeoJSON({
     dataProjection: "EPSG:4326",
     featureProjection,
   });
-  const olFeatures: Feature[] = [];
-  features.forEach((fullFeature, index) => {
-    let feature = fullFeature;
-    if (fullFeature._state) {
-      const { geometry, properties, ...rest } = fullFeature._state;
-      feature = {
-        ...fullFeature,
-        geometry: geometry || fullFeature.geometry,
-      };
-    }
+  let feature = fullFeature;
+  if (fullFeature._state && "geometry" in fullFeature._state) {
+    feature = {
+      ...fullFeature,
+      geometry: fullFeature._state.geometry || fullFeature.geometry,
+    };
+  }
 
-    feature.meta._zIndex = index;
-    if (feature.meta?.radius && feature.geometry.type === "Point") {
-      const newRadius = convertRadius(
-        feature as GeoJsonFeature<Point>,
-        feature.meta.radius,
-      );
-      const circle = new Circle(
-        fromLonLat(feature.geometry.coordinates as number[]),
-        newRadius,
-      );
-      const f = new Feature({
-        geometry: circle,
-        ...feature.properties,
-      });
-      f.setId(feature.id);
-      olFeatures.push(f);
-    } else {
-      const f = gjson.readFeature(feature, {
-        featureProjection: "EPSG:3857",
-        dataProjection: "EPSG:4326",
-      }) as Feature;
-      olFeatures.push(f);
-    }
-  });
-  return olFeatures;
+  feature.meta._zIndex = index;
+  if (feature.meta?.radius && feature.geometry.type === "Point") {
+    const newRadius = convertRadius(
+      feature as GeoJsonFeature<Point>,
+      feature.meta.radius,
+    );
+    const circle = new Circle(
+      fromLonLat(feature.geometry.coordinates as number[]),
+      newRadius,
+    );
+    const f = new Feature({
+      geometry: circle,
+      ...feature.properties,
+    });
+    f.setId(feature.id);
+    return f;
+  }
+
+  return gjson.readFeature(feature, {
+    featureProjection,
+    dataProjection: "EPSG:4326",
+  }) as Feature;
+}
+
+export function createScenarioLayerItemFeatures(
+  items: Array<ScenarioLayerItem | NGeometryLayerItem | ScenarioFeature>,
+  featureProjection: ProjectionLike,
+) {
+  return items
+    .filter(isGeometryFeatureLike)
+    .map((feature, index) =>
+      projectGeometryLayerItemToOlFeature(feature, index, featureProjection),
+    );
 }
 
 export function useScenarioFeatureSelect(
@@ -319,7 +352,9 @@ export function useFeatureLayerUtils(
   }
 
   function zoomToFeatures(featureIds: FeatureId[]) {
-    const c = featureCollection(featureIds.map((fid) => state.featureMap[fid]));
+    const c = featureCollection(
+      featureIds.map((fid) => state.layerItemMap[fid]).filter(isNGeometryLayerItem),
+    );
     const bb = new GeoJSON().readFeature(turfEnvelope(c), {
       featureProjection: "EPSG:3857",
       dataProjection: "EPSG:4326",
@@ -354,8 +389,7 @@ export function useFeatureLayerUtils(
 
   return {
     scenarioLayersGroup,
-    scenarioLayers: geo.layers,
-    scenarioLayersFeatures: geo.layersFeatures,
+    scenarioLayers: geo.layerItemsLayers,
     getOlLayerById,
     zoomToFeature,
     zoomToFeatures,

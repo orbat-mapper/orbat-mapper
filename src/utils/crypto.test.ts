@@ -9,6 +9,7 @@ const mockScenario: Scenario = {
   version: "2.1.0",
   sides: [],
   events: [],
+  layerStack: [],
   layers: [],
   mapLayers: [],
 };

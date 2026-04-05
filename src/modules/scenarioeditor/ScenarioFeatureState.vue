@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
-import type { ScenarioFeature, ScenarioFeatureState } from "@/types/scenarioGeoModels";
+import type {
+  GeometryLayerItem,
+  GeometryLayerItemState,
+} from "@/types/scenarioLayerItems";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { computed } from "vue";
@@ -13,7 +16,7 @@ import { type MenuItemData } from "@/components/types";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import BaseButton from "@/components/BaseButton.vue";
 
-const props = defineProps<{ feature: ScenarioFeature }>();
+const props = defineProps<{ feature: GeometryLayerItem }>();
 const { store, time, geo } = injectStrict(activeScenarioKey);
 const fmt = useTimeFormatStore();
 const st = useMainToolbarStore();
@@ -22,14 +25,14 @@ const state = computed(() => props.feature.state ?? []);
 
 const menuItems: MenuItemData<StateAction>[] = [{ label: "Delete", action: "delete" }];
 
-const isActive = (s: ScenarioFeatureState, index: number) => {
+const isActive = (s: GeometryLayerItemState, index: number) => {
   if (!state.value?.length) return;
   const nextTimestamp = state.value[index + 1]?.t || Number.MAX_VALUE;
   const currentTime = store.state.currentTime;
   return s.t <= currentTime && nextTimestamp > currentTime;
 };
 
-const changeToState = (stateEntry: ScenarioFeatureState) => {
+const changeToState = (stateEntry: GeometryLayerItemState) => {
   time.setCurrentTime(stateEntry.t);
 };
 

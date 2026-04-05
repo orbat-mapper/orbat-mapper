@@ -2,6 +2,7 @@ import type { EventsKey } from "ol/events";
 import { unByKey } from "ol/Observable";
 import Feature from "ol/Feature";
 import type OLMap from "ol/Map";
+import BaseLayer from "ol/layer/Base";
 import VectorLayer from "ol/layer/Vector";
 import Collection from "ol/Collection";
 import type { FeatureId } from "@/types/scenarioGeoModels";
@@ -31,13 +32,15 @@ export function isCircle(feature: Feature) {
 
 export function getFeatureAndLayerById(
   featureId: FeatureId,
-  layerCollection: Collection<VectorLayer>,
+  layerCollection: Collection<BaseLayer>,
 ) {
   for (let index = 0, ii = layerCollection.getLength(); index < ii; ++index) {
     const layer = layerCollection.item(index);
-    const feature = layer.getSource()?.getFeatureById(featureId);
+    const source = (layer as any)?.getSource?.();
+    if (!source || typeof source.getFeatureById !== "function") continue;
+    const feature = source.getFeatureById(featureId);
     if (feature) {
-      return { feature, layer, layerIndex: index };
+      return { feature, layer: layer as VectorLayer<any>, layerIndex: index };
     }
   }
   return null;

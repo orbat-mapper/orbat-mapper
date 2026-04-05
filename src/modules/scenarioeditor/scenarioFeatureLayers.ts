@@ -2,16 +2,12 @@ import OLMap from "ol/Map";
 import { injectStrict, nanoid } from "@/utils";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
 import type { ScenarioFeatureLayerEvent } from "@/scenariostore/geo";
-import type {
-  FeatureId,
-  ScenarioFeatureMeta,
-  ScenarioLayer,
-} from "@/types/scenarioGeoModels";
-import type { NScenarioFeature, ScenarioLayerUpdate } from "@/types/internalModels";
+import type { FeatureId, ScenarioFeatureMeta } from "@/types/scenarioGeoModels";
+import type { NGeometryLayerItem, ScenarioLayerUpdate } from "@/types/internalModels";
 import { type ProjectionLike, toLonLat } from "ol/proj";
 import VectorLayer from "ol/layer/Vector";
 import {
-  createScenarioLayerFeatures,
+  createScenarioLayerItemFeatures,
   getOrCreateLayerGroup,
   LayerTypes,
 } from "@/modules/scenarioeditor/featureLayerUtils";
@@ -25,6 +21,11 @@ import { getLength } from "ol/sphere";
 import LineString from "ol/geom/LineString";
 import { point } from "@turf/helpers";
 import GeoJSON from "ol/format/GeoJSON";
+import {
+  type FullScenarioLayerItemsLayer,
+  type GeometryLayerItem,
+  isNGeometryLayerItem,
+} from "@/types/scenarioLayerItems";
 
 const undoActionLabels: ActionLabel[] = [
   "deleteLayer",
@@ -64,8 +65,8 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
         break;
       case "updateFeature":
         olDeleteFeature(event.id);
-        const { feature } = scn.geo.getFeatureById(event.id);
-        if (feature && !feature._hidden) {
+        const { layerItem } = scn.geo.getGeometryLayerItemById(event.id);
+        if (layerItem && !layerItem._hidden) {
           olAddFeature(event.id);
         }
         invalidateStyle(event.id);
@@ -109,8 +110,8 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
       initializeFeatureLayersFromStore({ doClearCache: true, filterVisible: false });
     } else if (label === "updateFeature") {
       olDeleteFeature(layerOrFeatureId);
-      const { feature } = scn.geo.getFeatureById(layerOrFeatureId);
-      if (feature && !feature._hidden) {
+      const { layerItem } = scn.geo.getGeometryLayerItemById(layerOrFeatureId);
+      if (layerItem && !layerItem._hidden) {
         olAddFeature(layerOrFeatureId);
       }
       invalidateStyle(layerOrFeatureId);
@@ -142,9 +143,8 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
   }
 
   function olAddLayer(layerId: FeatureId) {
-    const featureLayer = scn.geo.getFullLayer(layerId);
-    featureLayer &&
-      olFeatureLayersGroup.getLayers().push(olCreateScenarioFeatureLayer(featureLayer));
+    const layer = scn.geo.getFullLayerItemsLayer(layerId);
+    layer && olFeatureLayersGroup.getLayers().push(olCreateScenarioFeatureLayer(layer));
   }
 
   function olUpdateLayer(layerId: FeatureId, data: ScenarioLayerUpdate) {
@@ -180,10 +180,11 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
   }
 
   function olAddFeature(featureId: FeatureId) {
-    const { feature } = scn.geo.getFeatureById(featureId);
-    const olLayer = getOlLayerById(feature._pid);
+    const { layerItem } = scn.geo.getGeometryLayerItemById(featureId);
+    if (!layerItem) return;
+    const olLayer = getOlLayerById(layerItem._pid);
     if (!olLayer) return;
-    const olFeature = createScenarioLayerFeatures([feature], "EPSG:3857");
+    const olFeature = createScenarioLayerItemFeatures([layerItem], "EPSG:3857");
     olLayer.getSource()?.addFeatures(olFeature);
   }
 
@@ -207,7 +208,7 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
     const olLayers = olFeatureLayersGroup.getLayers();
     olLayers.clear();
     const projection = olMap.getView().getProjection();
-    scn.geo.layers.value.forEach((layer) => {
+    scn.geo.layerItemsLayers.value.forEach((layer) => {
       if (filterVisible && layer._hidden) return;
       const olLayer = olCreateScenarioFeatureLayer(layer, { projection, filterVisible });
       olLayers.push(olLayer);
@@ -222,15 +223,18 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
   }
 
   function olCreateScenarioFeatureLayer(
-    layer: ScenarioLayer,
+    layer: FullScenarioLayerItemsLayer,
     options: { projection?: ProjectionLike; filterVisible?: boolean } = {},
   ) {
     const { projection = "EPSG:3857", filterVisible = true } = options;
 
     const vectorLayer = new VectorLayer({
       source: new VectorSource({
-        features: createScenarioLayerFeatures(
-          layer.features.filter((f) => !filterVisible || !f._hidden),
+        features: createScenarioLayerItemFeatures(
+          layer.items.filter(
+            (layerItem) =>
+              isNGeometryLayerItem(layerItem) && (!filterVisible || !layerItem._hidden),
+          ),
           projection,
         ),
       }),
@@ -253,7 +257,7 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
 }
 
 // Fixme: Should only return properties needed to represent the geometry
-export function convertOlFeatureToScenarioFeature(olFeature: Feature): NScenarioFeature {
+export function convertOlFeatureToScenarioFeature(olFeature: Feature): GeometryLayerItem {
   if (isCircle(olFeature)) {
     const circle = olFeature.getGeometry() as Circle;
     const { geometry, properties = {} } = olFeature.getProperties();
@@ -265,17 +269,27 @@ export function convertOlFeatureToScenarioFeature(olFeature: Feature): NScenario
     };
 
     return {
-      ...point(toLonLat(circle.getCenter()), properties, {
-        id: olFeature.getId() || nanoid(),
-      }),
+      kind: "geometry",
+      type: "Feature",
+      id: String(olFeature.getId() || nanoid()),
+      geometry: point(toLonLat(circle.getCenter())).geometry,
+      properties,
       meta,
       style: {},
-    } as NScenarioFeature;
+    };
   }
 
   const gj = new GeoJSON({ featureProjection: "EPSG:3857" }).writeFeatureObject(
     olFeature,
   );
 
-  return { ...gj, style: {}, meta: { type: gj.geometry.type } } as NScenarioFeature;
+  return {
+    kind: "geometry",
+    type: gj.type,
+    id: String(gj.id ?? nanoid()),
+    geometry: gj.geometry,
+    properties: gj.properties ?? {},
+    style: {},
+    meta: { type: gj.geometry.type },
+  };
 }

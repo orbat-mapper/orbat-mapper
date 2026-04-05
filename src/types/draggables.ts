@@ -1,5 +1,5 @@
 import type {
-  NScenarioFeature,
+  NGeometryLayerItem,
   NScenarioLayer,
   NSide,
   NSideGroup,
@@ -24,7 +24,7 @@ export type UnitDragItemSource = "orbatTree" | "breadcrumbs" | "detailsPanel";
 
 export type ScenarioFeatureDragItem = {
   [privateKey]: boolean;
-  feature: NScenarioFeature;
+  feature: NGeometryLayerItem;
 };
 
 export type ScenarioFeatureLayerDragItem = {

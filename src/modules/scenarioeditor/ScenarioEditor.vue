@@ -337,8 +337,13 @@ function showInfo() {
 
 const { isOverDropZone } = useFileDropZone(dropZoneRef, onDrop);
 
-if (state.layers.length > 0) {
-  activeLayerId.value = state.layers[0];
+const firstOverlayLayerId = state.layerStack.find((layerId) => {
+  const layer = state.layerStackMap[layerId];
+  return layer?.kind === "overlay";
+});
+
+if (firstOverlayLayerId) {
+  activeLayerId.value = firstOverlayLayerId;
 }
 </script>
 

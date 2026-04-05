@@ -31,11 +31,12 @@ import {
 } from "@/types/internalModels";
 import dayjs from "dayjs";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
+import type { RangeRingGroup, ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import type {
-  RangeRingGroup,
-  ScenarioLayer,
-  ScenarioMapLayer,
-} from "@/types/scenarioGeoModels";
+  GeometryLayerItem,
+  ScenarioLayerItemsLayer,
+} from "@/types/scenarioLayerItems";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 import { type EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
 import {
@@ -48,6 +49,15 @@ import { klona } from "klona";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { compare as compareVersions } from "compare-versions";
 import { useNotifications } from "@/composables/notifications";
+import type {
+  ScenarioOverlayLayer,
+  ScenarioReferenceLayer,
+  ScenarioStackLayer,
+} from "@/types/scenarioStackLayers";
+import {
+  isScenarioOverlayLayer,
+  isScenarioReferenceLayer,
+} from "@/types/scenarioStackLayers";
 
 export interface CreateEmptyScenarioOptions {
   id?: string;
@@ -82,8 +92,7 @@ export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): S
     symbologyStandard,
     sides: [],
     events: [],
-    layers: [{ id: nanoid(), name: "Features", features: [] }],
-    mapLayers: [],
+    layerStack: [{ id: nanoid(), kind: "overlay", name: "Features", items: [] }],
     settings: {
       rangeRingGroups,
       statuses: [],
@@ -272,19 +281,53 @@ function serializeState(s: NState, scnState: ScenarioState) {
   return c;
 }
 
-function getLayers(state: ScenarioState): ScenarioLayer[] {
-  return state.layers
-    .map((id) => state.layerMap[id])
-    .map((layer) => ({
-      ...layer,
-      features: layer.features.map((fId) => state.featureMap[fId]),
-    }));
+function getStoredOverlayLayers(state: ScenarioState): ScenarioOverlayLayer[] {
+  const layers: ScenarioOverlayLayer[] = [];
+  state.layerStack.forEach((id) => {
+    const layer = state.layerStackMap[id];
+    if (!isScenarioOverlayLayer(layer)) return;
+    const { items, ...rest } = layer;
+    layers.push({
+      ...rest,
+      kind: "overlay",
+      // Transitional geometry-only serialization. This must become item-aware
+      // before annotation/tacticalGraphic/measurement items are persisted.
+      items: items.map(
+        (itemId: string) => state.layerItemMap[itemId] as GeometryLayerItem,
+      ),
+    });
+  });
+  return layers;
 }
 
-function getMapLayers(state: ScenarioState): ScenarioMapLayer[] {
-  return state.mapLayers
-    .map((id) => state.mapLayerMap[id])
-    .filter((l) => !l._isTemporary);
+function getStoredReferenceLayers(state: ScenarioState): ScenarioReferenceLayer[] {
+  const layers: ScenarioReferenceLayer[] = [];
+  state.layerStack.forEach((id) => {
+    const layer = state.layerStackMap[id];
+    if (!isScenarioReferenceLayer(layer) || layer.source._isTemporary) return;
+    layers.push({
+      ...layer,
+      source: { ...layer.source },
+    });
+  });
+  return layers;
+}
+
+function getLayerStack(state: ScenarioState): ScenarioStackLayer[] {
+  const overlayLayers = new Map(
+    getStoredOverlayLayers(state).map((layer) => [layer.id, layer] as const),
+  );
+  const referenceLayers = new Map(
+    getStoredReferenceLayers(state).map((layer) => [layer.id, layer] as const),
+  );
+  return state.layerStack
+    .map(
+      (id) =>
+        overlayLayers.get(String(id)) ??
+        referenceLayers.get(String(id)) ??
+        state.layerStackMap[id],
+    )
+    .filter(Boolean) as ScenarioStackLayer[];
 }
 
 function getEquipment(state: ScenarioState): EquipmentData[] {
@@ -353,9 +396,8 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       },
       ...getScenarioInfo(state),
       sides: getSides(state),
-      layers: getLayers(state),
+      layerStack: getLayerStack(state),
       events: getScenarioEvents(state),
-      mapLayers: getMapLayers(state),
       equipment: getEquipment(state),
       personnel: getPersonnel(state),
       supplyCategories: getSupplyCategories(state),
@@ -427,7 +469,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     }
   }
 
-  function loadFromObject(data: Scenario) {
+  function loadFromObject(data: LoadableScenario | Scenario) {
     const { send } = useNotifications();
     if (compareVersions(data.version, SCENARIO_FILE_VERSION, ">")) {
       send({
@@ -449,7 +491,8 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   }
 
   async function loadFromUrl(url: string) {
-    const { data, isFinished, statusCode, error } = useFetch<Scenario>(url).json();
+    const { data, isFinished, statusCode, error } =
+      useFetch<LoadableScenario>(url).json();
     await until(isFinished).toBe(true);
 
     if (error.value) {

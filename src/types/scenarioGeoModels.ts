@@ -46,6 +46,7 @@ export interface ScenarioFeatureMeta extends Partial<VisibilityInfo> {
   isHidden?: boolean;
 }
 
+// Legacy geometry-only compatibility state used for upgrade/import bridges.
 export interface ScenarioFeatureState extends Partial<ScenarioEventDescription> {
   id: string;
   t: ScenarioTime;
@@ -57,7 +58,8 @@ export interface CurrentScenarioFeatureState extends Omit<ScenarioFeatureState, 
   type?: CurrentStateType;
 }
 
-// A scenario feature is basically just a GeoJSON Feature with a required id field.
+// Legacy geometry-only compatibility model used for upgrade/import bridges.
+// New top-level scenario typing should use ScenarioLayerItem/Scenario instead.
 export interface ScenarioFeature extends GeoJsonFeature {
   id: FeatureId;
   meta: ScenarioFeatureMeta;
@@ -69,6 +71,8 @@ export interface ScenarioFeature extends GeoJsonFeature {
   _state?: CurrentScenarioFeatureState | null;
 }
 
+// Legacy geometry-only compatibility layer used for upgrade/import bridges.
+// New top-level scenario typing should use ScenarioLayerItemsLayer/Scenario instead.
 export interface ScenarioLayer extends Partial<VisibilityInfo> {
   id: FeatureId;
   name: string;

@@ -282,6 +282,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
 
   function addLayer(layerId: FeatureId) {
     const mapLayer = scn.geo.getMapLayerById(layerId);
+    if (!mapLayer) return;
     if (mapLayer.type === "ImageLayer") addImageLayer(mapLayer);
     if (mapLayer.type === "TileJSONLayer") addTileJSONLayer(mapLayer);
     if (mapLayer.type === "XYZLayer") addXYZLayer(mapLayer);
@@ -290,6 +291,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
 
   function updateLayer(layerId: FeatureId, data: ScenarioMapLayerUpdate) {
     const mapLayer = scn.geo.getMapLayerById(layerId);
+    if (!mapLayer) return;
     const layer = getOlLayerById(layerId) as any;
     if (!layer) {
       addLayer(layerId);
@@ -409,6 +411,7 @@ export function useScenarioMapLayers(olMap: OLMap) {
       }
     } else if (label === "updateMapLayer") {
       const data = scn.geo.getMapLayerById(layerId);
+      if (!data) return;
       updateLayer(layerId, data);
       if (imageTransformIsActive.value) {
         const olLayer = getOlLayerById(layerId);

@@ -451,7 +451,9 @@ describe("ScenarioMapLogic", () => {
     mocks.injectedScenario = {
       geo: {
         everyVisibleUnit: ref([]),
-        getFeatureById: vi.fn(() => ({ feature: { meta: { name: "Bridge Alpha" } } })),
+        getGeometryLayerItemById: vi.fn(() => ({
+          layerItem: { meta: { name: "Bridge Alpha" } },
+        })),
       },
       store: {
         onUndoRedo: (cb: () => void) => {
@@ -492,7 +494,9 @@ describe("ScenarioMapLogic", () => {
     mocks.injectedScenario = {
       geo: {
         everyVisibleUnit: ref([]),
-        getFeatureById: vi.fn(() => ({ feature: { meta: { name: "" } } })),
+        getGeometryLayerItemById: vi.fn(() => ({
+          layerItem: { meta: { name: "" } },
+        })),
       },
       store: {
         onUndoRedo: (cb: () => void) => {
@@ -534,10 +538,11 @@ describe("ScenarioMapLogic", () => {
     mocks.injectedScenario = {
       geo: {
         everyVisibleUnit: ref([]),
-        getFeatureById: vi.fn((id: string) => {
-          if (id === "feature-empty") return { feature: { meta: { name: "" } } };
-          if (id === "feature-1") return { feature: { meta: { name: "Bridge Alpha" } } };
-          return { feature: undefined };
+        getGeometryLayerItemById: vi.fn((id: string) => {
+          if (id === "feature-empty") return { layerItem: { meta: { name: "" } } };
+          if (id === "feature-1")
+            return { layerItem: { meta: { name: "Bridge Alpha" } } };
+          return { layerItem: undefined };
         }),
       },
       store: {

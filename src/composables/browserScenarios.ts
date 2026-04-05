@@ -8,6 +8,10 @@ import { nanoid } from "@/utils";
 import { useRouter } from "vue-router";
 import { useClipboard } from "@vueuse/core";
 import { useNotifications } from "@/composables/notifications";
+import {
+  type LoadableScenario,
+  upgradeScenarioIfNecessary,
+} from "@/scenariostore/upgrade";
 
 interface UseBrowserScenariosOptions {
   routeName?: string;
@@ -177,24 +181,28 @@ export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
     await reloadScenarios();
   }
 
-  async function loadScenario(v: Scenario, routeName = MAP_EDIT_MODE_ROUTE) {
+  async function loadScenario(
+    v: Scenario | LoadableScenario,
+    routeName = MAP_EDIT_MODE_ROUTE,
+  ) {
     const { addScenario, getScenarioInfo, putScenario } = await useIndexedDb();
+    const scenario = upgradeScenarioIfNecessary(v);
 
-    const existingScenarioInfo = await getScenarioInfo(v.id ?? nanoid());
+    const existingScenarioInfo = await getScenarioInfo(scenario.id ?? nanoid());
     if (existingScenarioInfo) {
-      let scenarioId = v.id;
+      let scenarioId = scenario.id;
       if (
         window.confirm(
           "A scenario with the same ID is stored in the browser. Do you want to replace it with this scenario?",
         )
       ) {
-        scenarioId = await putScenario(v);
+        scenarioId = await putScenario(scenario);
       } else {
-        scenarioId = await addScenario(v, nanoid());
+        scenarioId = await addScenario(scenario, nanoid());
       }
       await router.push({ name: routeName, params: { scenarioId } });
     } else {
-      const scenarioId = await addScenario(v);
+      const scenarioId = await addScenario(scenario);
       await router.push({ name: routeName, params: { scenarioId } });
     }
   }

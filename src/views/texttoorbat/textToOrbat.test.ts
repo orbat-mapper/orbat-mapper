@@ -8,6 +8,7 @@ import {
   applyGeneratedShortNamesToText,
   clearAllShortNames,
   buildSidc,
+  convertParsedUnitsToOrbatMapperScenario,
   convertParsedUnitsToSpatialIllusions,
   generateMissingShortNames,
   generateMissingShortNamesWithOptions,
@@ -208,6 +209,22 @@ describe("getEchelonCodeFromName", () => {
   it("is case insensitive", () => {
     expect(getEchelonCodeFromName("1ST INFANTRY DIVISION")).toBe("21");
     expect(getEchelonCodeFromName("1st infantry division")).toBe("21");
+  });
+});
+
+describe("convertParsedUnitsToOrbatMapperScenario", () => {
+  it("creates a canonical v3 scenario with a default overlay layer", () => {
+    const scenario = convertParsedUnitsToOrbatMapperScenario([]);
+
+    expect(scenario.version).toBe("3.0.0");
+    expect(scenario.layerStack).toHaveLength(1);
+    expect(scenario.layerStack[0]).toMatchObject({
+      kind: "overlay",
+      name: "Features",
+      items: [],
+    });
+    expect(scenario.layers).toBeUndefined();
+    expect(scenario.mapLayers).toBeUndefined();
   });
 });
 

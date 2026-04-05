@@ -12,7 +12,7 @@ import {
   getGeometryIcon,
 } from "@/modules/scenarioeditor/featureLayerUtils";
 import type { ScenarioFeatureActions } from "@/types/constants";
-import type { NScenarioFeature } from "@/types/internalModels";
+import type { NGeometryLayerItem } from "@/types/internalModels";
 import {
   draggable,
   dropTargetForElements,
@@ -33,7 +33,7 @@ import {
 import type { MenuItemData } from "@/components/types";
 
 interface Props {
-  feature: NScenarioFeature;
+  feature: NGeometryLayerItem;
   layer: any;
   selected?: boolean;
   active?: boolean;

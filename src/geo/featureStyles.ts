@@ -11,6 +11,7 @@ import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { TGeo } from "@/scenariostore";
 import View from "ol/View";
 import Geometry from "ol/geom/Geometry";
+import { isNGeometryLayerItem } from "@/types/scenarioLayerItems";
 
 let zoomResolutions: number[] = [];
 
@@ -55,8 +56,9 @@ export function useFeatureStyles(geo: TGeo) {
     }
     let cachedStyle = cachedItem?.style;
 
-    const { feature: scenarioFeature } = geo.getFeatureById(featureId);
-    if (!scenarioFeature) return;
+    const { layerItem } = geo.getLayerItemById(featureId);
+    if (!layerItem || !isNGeometryLayerItem(layerItem)) return;
+    const scenarioFeature = layerItem;
 
     const {
       meta: { name: label, _zIndex },

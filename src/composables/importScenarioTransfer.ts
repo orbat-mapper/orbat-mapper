@@ -1,7 +1,8 @@
 import { nanoid } from "@/utils";
-import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
+import type { EncryptedScenario } from "@/types/scenarioModels";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 
-export type ImportedScenarioPayload = Scenario | EncryptedScenario;
+export type ImportedScenarioPayload = LoadableScenario | EncryptedScenario;
 
 const STORAGE_PREFIX = "import-scenario-transfer:";
 const MAX_AGE_MS = 5 * 60 * 1000;

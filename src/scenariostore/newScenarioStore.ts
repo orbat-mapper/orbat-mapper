@@ -24,10 +24,11 @@ import { klona } from "klona";
 import type { EntityId } from "@/types/base";
 import type {
   NEquipmentData,
+  NGeometryLayerItem,
   NPersonnelData,
   NRangeRingGroup,
   NScenarioEvent,
-  NScenarioFeature,
+  NScenarioLayerItem,
   NScenarioLayer,
   NSide,
   NSideGroup,
@@ -47,12 +48,24 @@ import type {
   FeatureId,
   RangeRing,
   RangeRingGroup,
-  ScenarioMapLayer,
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
 import { DEFAULT_BASEMAP_ID } from "@/config/constants";
-import { upgradeScenarioIfNecessary } from "@/scenariostore/upgrade";
+import {
+  upgradeScenarioIfNecessary,
+  type LoadableScenario,
+} from "@/scenariostore/upgrade";
 import { SYMBOL_FILL_COLORS } from "@/config/colors.ts";
+import { normalizeGeometryLayerItemState } from "@/types/scenarioLayerItems";
+import type {
+  NScenarioOverlayLayer,
+  NScenarioReferenceLayer,
+  NScenarioStackLayer,
+} from "@/types/scenarioStackLayers";
+import {
+  isScenarioOverlayLayer,
+  isScenarioReferenceLayer,
+} from "@/types/scenarioStackLayers";
 
 export interface ScenarioState {
   id: EntityId;
@@ -62,11 +75,9 @@ export interface ScenarioState {
   sideGroupMap: Record<EntityId, NSideGroup>;
   eventMap: Record<EntityId, NScenarioEvent>;
   sides: EntityId[];
-  layers: FeatureId[];
-  layerMap: Record<FeatureId, NScenarioLayer>;
-  featureMap: Record<FeatureId, NScenarioFeature>;
-  mapLayers: FeatureId[];
-  mapLayerMap: Record<FeatureId, ScenarioMapLayer>;
+  layerStack: FeatureId[];
+  layerStackMap: Record<FeatureId, NScenarioStackLayer>;
+  layerItemMap: Record<FeatureId, NScenarioLayerItem>;
   info: ScenarioInfo;
   events: EntityId[];
   equipmentMap: Record<string, NEquipmentData>;
@@ -102,17 +113,15 @@ export function convertStateToInternalFormat(e: State): State {
   };
 }
 
-export function prepareScenario(newScenario: Scenario): ScenarioState {
+export function prepareScenario(newScenario: Scenario | LoadableScenario): ScenarioState {
   const unitMap: Record<EntityId, NUnit> = {};
   const sideMap: Record<EntityId, NSide> = {};
   const sideGroupMap: Record<EntityId, NSideGroup> = {};
   const eventMap: Record<EntityId, NScenarioEvent> = {};
   const sides: EntityId[] = [];
-  const layers: FeatureId[] = [];
-  const mapLayers: FeatureId[] = [];
-  const layerMap: Record<FeatureId, NScenarioLayer> = {};
-  const featureMap: Record<FeatureId, NScenarioFeature> = {};
-  const mapLayerMap: Record<FeatureId, ScenarioMapLayer> = {};
+  const layerStack: FeatureId[] = [];
+  const layerStackMap: Record<FeatureId, NScenarioStackLayer> = {};
+  const layerItemMap: Record<FeatureId, NScenarioLayerItem> = {};
   const equipmentMap: Record<string, NEquipmentData> = {};
   const personnelMap: Record<string, NPersonnelData> = {};
   const supplyCategoryMap: Record<string, NSupplyCategory> = {};
@@ -446,29 +455,52 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
     return r;
   }
 
-  scenario.layers.forEach((layer) => {
-    layers.push(layer.id);
-    layerMap[layer.id] = {
-      ...mapVisibility(layer),
-      features: layer.features.map((f) => f.id),
-    };
-    layer.features.forEach((feature) => {
-      const tmp = { ...feature };
-      tmp.state = tmp.state?.map((s) => ({
-        ...s,
-        t: +dayjs(s.t),
-        id: s.id || nanoid(),
-      }));
+  scenario.layerStack.forEach((layer) => {
+    layerStack.push(layer.id);
+    if (isScenarioOverlayLayer(layer)) {
+      const itemIds = layer.items.map((item) => item.id);
+      const { items: _items, ...layerRest } = layer;
+      layerStackMap[layer.id] = {
+        ...mapVisibility(layerRest),
+        items: itemIds,
+      } as NScenarioOverlayLayer;
+      layer.items.forEach((item) => {
+        if (item.kind !== "geometry") {
+          layerItemMap[item.id] = {
+            ...item,
+            _pid: layer.id,
+          } as NScenarioLayerItem;
+          return;
+        }
+        const tmp = { ...item };
+        tmp.state = tmp.state?.map((s) => ({
+          ...normalizeGeometryLayerItemState({
+            ...s,
+            t: +dayjs(s.t),
+            id: s.id || nanoid(),
+          }),
+        }));
 
-      tmp.meta = mapVisibility(tmp.meta);
-      featureMap[feature.id] = { ...tmp, _pid: layer.id };
-    });
-  });
-
-  scenario.mapLayers?.forEach((layer) => {
-    mapLayers.push(layer.id);
-    mapLayerMap[layer.id] = {
-      ...layer,
+        tmp.meta = mapVisibility(tmp.meta);
+        tmp.properties = tmp.properties ?? {};
+        layerItemMap[item.id] = {
+          ...tmp,
+          _pid: layer.id,
+        } as NGeometryLayerItem;
+      });
+      return;
+    }
+    if (isScenarioReferenceLayer(layer)) {
+      layerStackMap[layer.id] = {
+        ...mapVisibility(layer),
+        source: {
+          ...layer.source,
+          ...mapVisibility(layer.source),
+        },
+      } as NScenarioReferenceLayer;
+      return;
+    }
+    layerStackMap[layer.id] = {
       ...mapVisibility(layer),
     };
   });
@@ -489,11 +521,9 @@ export function prepareScenario(newScenario: Scenario): ScenarioState {
   return {
     id: scenarioId,
     meta,
-    layers,
-    mapLayers: mapLayers,
-    mapLayerMap: mapLayerMap,
-    layerMap,
-    featureMap,
+    layerStack,
+    layerStackMap,
+    layerItemMap,
     eventMap,
     currentTime: scenario.startTime || 0,
     info,
@@ -544,7 +574,7 @@ export type ActionLabel =
   | "moveMapLayer"
   | "clearUnitState";
 
-export function useNewScenarioStore(data: Scenario) {
+export function useNewScenarioStore(data: Scenario | LoadableScenario) {
   const inputState = prepareScenario(data);
   const store = useImmerStore<ScenarioState, ActionLabel>(inputState);
 

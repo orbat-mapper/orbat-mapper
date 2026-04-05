@@ -63,8 +63,8 @@ watch(
   (layerId) => {
     if (layerId) {
       layer.value = getOlLayerById(layerId);
-    } else if (geo.layers.value?.length > 0) {
-      layer.value = getOlLayerById(geo.layers.value[0].id);
+    } else if (geo.layerItemsLayers.value?.length > 0) {
+      layer.value = getOlLayerById(geo.layerItemsLayers.value[0].id);
     }
   },
   { immediate: true },
@@ -74,7 +74,7 @@ function updateFeatureGeometryFromOlFeature(olFeature: Feature, updateState = fa
   const t = convertOlFeatureToScenarioFeature(olFeature);
   const id = olFeature.getId();
   if (!id) return;
-  const { feature, layer } = geo.getFeatureById(id) || {};
+  const { layerItem: feature, layer } = geo.getGeometryLayerItemById(id) || {};
   if (!(feature && layer)) return;
   const dataUpdate = {
     meta: { ...feature.meta, ...t.meta },
@@ -94,12 +94,12 @@ function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
   const scenarioFeature = convertOlFeatureToScenarioFeature(olFeature);
   const scenarioLayer = geo.getLayerById(olLayer.get("id"))!;
 
-  const { feature: lastFeatureInLayer } = geo.getFeatureById(
-    scenarioLayer.features[scenarioLayer.features.length - 1],
+  const { layerItem: lastFeatureInLayer } = geo.getGeometryLayerItemById(
+    scenarioLayer.items[scenarioLayer.items.length - 1],
   );
 
   const _zIndex = Math.max(
-    scenarioLayer.features.length,
+    scenarioLayer.items.length,
     (lastFeatureInLayer?.meta._zIndex || 0) + 1,
   );
   scenarioFeature.meta.name = `${scenarioFeature.meta.type} ${_zIndex + 1}`;
