@@ -1,9 +1,4 @@
-import type {
-  Position,
-  RangeRing,
-  RangeRingGroup,
-  ScenarioMapLayer,
-} from "./scenarioGeoModels";
+import type { Position, RangeRing, RangeRingGroup } from "./scenarioGeoModels";
 import type { DropTarget, EntityId, ScenarioTime } from "./base";
 import type { SidValue } from "@/symbology/values";
 import { type SymbolOptions } from "milsymbol";
@@ -20,7 +15,9 @@ import type {
 } from "@/types/internalModels";
 import type { VisibilityStyleSpec } from "@/geo/simplestyle";
 import type { SymbolFillColor } from "@/config/colors.ts";
+import type { ScenarioStackLayer } from "@/types/scenarioStackLayers";
 import type { ScenarioLayerItemsLayer } from "@/types/scenarioLayerItems";
+import type { ScenarioMapLayer } from "./scenarioGeoModels";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;
@@ -271,6 +268,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525" | "app6";
 export type ScenarioVersion =
+  | "4.0.0"
   | "3.0.0"
   | "2.8.0"
   | "2.7.0"
@@ -386,8 +384,11 @@ export interface Scenario extends ScenarioInfo {
   meta?: ScenarioMetadata;
   sides: Side[];
   events: ScenarioEvent[];
-  layers: ScenarioLayerItemsLayer[];
-  mapLayers: ScenarioMapLayer[];
+  layerStack: ScenarioStackLayer[];
+  /** @deprecated load-only compatibility shape */
+  layers?: ScenarioLayerItemsLayer[];
+  /** @deprecated load-only compatibility shape */
+  mapLayers?: ScenarioMapLayer[];
   equipment?: EquipmentData[];
   personnel?: PersonnelData[];
   supplyCategories?: SupplyCategory[];

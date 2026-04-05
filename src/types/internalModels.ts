@@ -34,6 +34,11 @@ import type {
   NScenarioLayerItem,
   NScenarioLayerItemsLayer,
 } from "@/types/scenarioLayerItems";
+import type {
+  NScenarioOverlayLayer,
+  NScenarioReferenceLayer,
+  NScenarioStackLayer,
+} from "@/types/scenarioStackLayers";
 
 export interface NUnit extends Omit<
   Unit,
@@ -128,6 +133,8 @@ export interface NScenarioLayer extends Omit<NScenarioLayerItemsLayer, "items"> 
   items: FeatureId[];
   _isOpen?: boolean;
 }
+export interface NScenarioMapStackLayer extends NScenarioReferenceLayer {}
+export type { NScenarioOverlayLayer, NScenarioReferenceLayer, NScenarioStackLayer };
 export interface ScenarioLayerUpdate extends Partial<
   Omit<NScenarioLayer, "id" | "items">
 > {
@@ -149,6 +156,10 @@ export type ScenarioMapLayerUpdate =
   | ScenarioTileJSONLayerUpdate
   | ScenarioXYZLayerUpdate
   | ScenarioKMLLayerUpdate;
+export type ScenarioStackLayerUpdate =
+  | ScenarioLayerUpdate
+  | ScenarioMapLayerUpdate
+  | Record<string, unknown>;
 
 export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id" | "subUnits">> {}
 export interface UnitUpdate extends Partial<Omit<NUnit, "id">> {}

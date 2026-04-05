@@ -1,6 +1,6 @@
 import type { ScenarioVersion } from "@/types/scenarioModels";
 
-export const SCENARIO_FILE_VERSION: ScenarioVersion = "3.0.0";
+export const SCENARIO_FILE_VERSION: ScenarioVersion = "4.0.0";
 export const LOCALSTORAGE_KEY = "orbat-scenario4";
 export const SHARE_HISTORY_LOCALSTORAGE_KEY = "orbat-share-history";
 

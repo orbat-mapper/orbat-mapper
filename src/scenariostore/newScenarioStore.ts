@@ -48,7 +48,6 @@ import type {
   FeatureId,
   RangeRing,
   RangeRingGroup,
-  ScenarioMapLayer,
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
 import { DEFAULT_BASEMAP_ID } from "@/config/constants";
@@ -58,6 +57,15 @@ import {
 } from "@/scenariostore/upgrade";
 import { SYMBOL_FILL_COLORS } from "@/config/colors.ts";
 import { normalizeGeometryLayerItemState } from "@/types/scenarioLayerItems";
+import type {
+  NScenarioOverlayLayer,
+  NScenarioReferenceLayer,
+  NScenarioStackLayer,
+} from "@/types/scenarioStackLayers";
+import {
+  isScenarioOverlayLayer,
+  isScenarioReferenceLayer,
+} from "@/types/scenarioStackLayers";
 
 export interface ScenarioState {
   id: EntityId;
@@ -67,11 +75,9 @@ export interface ScenarioState {
   sideGroupMap: Record<EntityId, NSideGroup>;
   eventMap: Record<EntityId, NScenarioEvent>;
   sides: EntityId[];
-  layers: FeatureId[];
-  layerMap: Record<FeatureId, NScenarioLayer>;
+  layerStack: FeatureId[];
+  layerStackMap: Record<FeatureId, NScenarioStackLayer>;
   layerItemMap: Record<FeatureId, NScenarioLayerItem>;
-  mapLayers: FeatureId[];
-  mapLayerMap: Record<FeatureId, ScenarioMapLayer>;
   info: ScenarioInfo;
   events: EntityId[];
   equipmentMap: Record<string, NEquipmentData>;
@@ -113,11 +119,9 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
   const sideGroupMap: Record<EntityId, NSideGroup> = {};
   const eventMap: Record<EntityId, NScenarioEvent> = {};
   const sides: EntityId[] = [];
-  const layers: FeatureId[] = [];
-  const mapLayers: FeatureId[] = [];
-  const layerMap: Record<FeatureId, NScenarioLayer> = {};
+  const layerStack: FeatureId[] = [];
+  const layerStackMap: Record<FeatureId, NScenarioStackLayer> = {};
   const layerItemMap: Record<FeatureId, NScenarioLayerItem> = {};
-  const mapLayerMap: Record<FeatureId, ScenarioMapLayer> = {};
   const equipmentMap: Record<string, NEquipmentData> = {};
   const personnelMap: Record<string, NPersonnelData> = {};
   const supplyCategoryMap: Record<string, NSupplyCategory> = {};
@@ -451,44 +455,52 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     return r;
   }
 
-  scenario.layers.forEach((layer) => {
-    layers.push(layer.id);
-    const itemIds = layer.items.map((item) => item.id);
-    const { items: _items, ...layerRest } = layer;
-    layerMap[layer.id] = {
-      ...mapVisibility(layerRest),
-      items: itemIds,
-    };
-    layer.items.forEach((item) => {
-      if (item.kind !== "geometry") {
+  scenario.layerStack.forEach((layer) => {
+    layerStack.push(layer.id);
+    if (isScenarioOverlayLayer(layer)) {
+      const itemIds = layer.items.map((item) => item.id);
+      const { items: _items, ...layerRest } = layer;
+      layerStackMap[layer.id] = {
+        ...mapVisibility(layerRest),
+        items: itemIds,
+      } as NScenarioOverlayLayer;
+      layer.items.forEach((item) => {
+        if (item.kind !== "geometry") {
+          layerItemMap[item.id] = {
+            ...item,
+            _pid: layer.id,
+          } as NScenarioLayerItem;
+          return;
+        }
+        const tmp = { ...item };
+        tmp.state = tmp.state?.map((s) => ({
+          ...normalizeGeometryLayerItemState({
+            ...s,
+            t: +dayjs(s.t),
+            id: s.id || nanoid(),
+          }),
+        }));
+
+        tmp.meta = mapVisibility(tmp.meta);
+        tmp.properties = tmp.properties ?? {};
         layerItemMap[item.id] = {
-          ...item,
+          ...tmp,
           _pid: layer.id,
-        } as NScenarioLayerItem;
-        return;
-      }
-      const tmp = { ...item };
-      tmp.state = tmp.state?.map((s) => ({
-        ...normalizeGeometryLayerItemState({
-          ...s,
-          t: +dayjs(s.t),
-          id: s.id || nanoid(),
-        }),
-      }));
-
-      tmp.meta = mapVisibility(tmp.meta);
-      tmp.properties = tmp.properties ?? {};
-      layerItemMap[item.id] = {
-        ...tmp,
-        _pid: layer.id,
-      } as NGeometryLayerItem;
-    });
-  });
-
-  scenario.mapLayers?.forEach((layer) => {
-    mapLayers.push(layer.id);
-    mapLayerMap[layer.id] = {
-      ...layer,
+        } as NGeometryLayerItem;
+      });
+      return;
+    }
+    if (isScenarioReferenceLayer(layer)) {
+      layerStackMap[layer.id] = {
+        ...mapVisibility(layer),
+        source: {
+          ...layer.source,
+          ...mapVisibility(layer.source),
+        },
+      } as NScenarioReferenceLayer;
+      return;
+    }
+    layerStackMap[layer.id] = {
       ...mapVisibility(layer),
     };
   });
@@ -509,10 +521,8 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
   return {
     id: scenarioId,
     meta,
-    layers,
-    mapLayers: mapLayers,
-    mapLayerMap: mapLayerMap,
-    layerMap,
+    layerStack,
+    layerStackMap,
     layerItemMap,
     eventMap,
     currentTime: scenario.startTime || 0,

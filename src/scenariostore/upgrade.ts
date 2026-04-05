@@ -4,6 +4,7 @@ import type {
   ScenarioFeature,
   ScenarioFeatureMeta,
   ScenarioLayer,
+  ScenarioMapLayer,
 } from "@/types/scenarioGeoModels";
 import { type SimpleStyleSpec } from "@/geo/simplestyle";
 import type {
@@ -15,6 +16,11 @@ import type {
   TacticalGraphicLayerItem,
 } from "@/types/scenarioLayerItems";
 import { normalizeGeometryLayerItemState } from "@/types/scenarioLayerItems";
+import type {
+  ScenarioOverlayLayer,
+  ScenarioReferenceLayer,
+  ScenarioStackLayer,
+} from "@/types/scenarioStackLayers";
 
 export type LoadableGeometryLayerItem = Omit<ScenarioFeature, "state"> & {
   kind: "geometry";
@@ -28,15 +34,22 @@ type UnsupportedLayerItem =
 
 export type LegacyScenarioLayer = ScenarioLayer;
 
-export type LoadableScenarioLayer =
+export type LoadableOverlayLayer =
   | ScenarioLayerItemsLayer
   | (Omit<ScenarioLayer, "features"> & {
       features?: ScenarioFeature[];
       items?: Array<LoadableGeometryLayerItem | UnsupportedLayerItem>;
     });
 
-export type LoadableScenario = Omit<Scenario, "layers"> & {
-  layers: LoadableScenarioLayer[];
+export type LoadableScenarioLayer =
+  | ScenarioStackLayer
+  | LoadableOverlayLayer
+  | ScenarioMapLayer;
+
+export type LoadableScenario = Omit<Scenario, "layerStack"> & {
+  layerStack?: LoadableScenarioLayer[];
+  layers?: LoadableOverlayLayer[];
+  mapLayers?: ScenarioMapLayer[];
 };
 
 function isGeometryLayerItem(
@@ -51,18 +64,20 @@ function canonicalizeGeometryStateEntries(
   return states?.map((state) => normalizeGeometryLayerItemState(state));
 }
 
-function canonicalizeLayer(
-  layer: LoadableScenarioLayer,
+function canonicalizeOverlayLayer(
+  layer: LoadableOverlayLayer,
   scenarioId?: string,
-): ScenarioLayerItemsLayer {
+): ScenarioOverlayLayer {
   if (!Array.isArray(layer.items)) {
     const { features = [], ...rest } = layer as Exclude<
-      LoadableScenarioLayer,
+      LoadableOverlayLayer,
       ScenarioLayerItemsLayer
     >;
 
     return {
       ...rest,
+      id: String(rest.id),
+      kind: "overlay",
       items: features.map((feature) => {
         const { state, ...featureRest } = feature;
         return {
@@ -107,24 +122,104 @@ function canonicalizeLayer(
     );
   }
 
-  return { ...rest, items: canonicalItems };
+  return { ...rest, id: String(rest.id), kind: "overlay", items: canonicalItems };
 }
 
-function canonicalizeScenarioLayers(scenario: LoadableScenario): Scenario {
+function isScenarioMapLayer(layer: LoadableScenarioLayer): layer is ScenarioMapLayer {
+  return (
+    !!layer &&
+    typeof layer === "object" &&
+    "type" in layer &&
+    (layer.type === "ImageLayer" ||
+      layer.type === "TileJSONLayer" ||
+      layer.type === "XYZLayer" ||
+      layer.type === "KMLLayer")
+  );
+}
+
+function canonicalizeReferenceLayer(layer: ScenarioMapLayer): ScenarioReferenceLayer {
+  return {
+    id: String(layer.id),
+    kind: "reference",
+    name: layer.name,
+    description: layer.description,
+    attributions: layer.attributions,
+    externalUrl: layer.externalUrl,
+    visibleFromT: layer.visibleFromT,
+    visibleUntilT: layer.visibleUntilT,
+    isHidden: layer.isHidden,
+    opacity: layer.opacity,
+    _isNew: layer._isNew,
+    _hidden: undefined,
+    source: { ...layer, id: String(layer.id) },
+  };
+}
+
+function canonicalizeScenarioLayerStack(scenario: LoadableScenario): Scenario {
+  if (Array.isArray(scenario.layerStack)) {
+    const canonicalLayerStack: Scenario["layerStack"] = [];
+    scenario.layerStack.forEach((layer) => {
+      if (
+        layer &&
+        typeof layer === "object" &&
+        "kind" in layer &&
+        layer.kind === "reference"
+      ) {
+        canonicalLayerStack.push({ ...layer, id: String(layer.id) });
+        return;
+      }
+      if (
+        layer &&
+        typeof layer === "object" &&
+        "kind" in layer &&
+        layer.kind === "data"
+      ) {
+        canonicalLayerStack.push({ ...layer, id: String(layer.id) });
+        return;
+      }
+      if (
+        layer &&
+        typeof layer === "object" &&
+        "kind" in layer &&
+        layer.kind === "overlay"
+      ) {
+        canonicalLayerStack.push(canonicalizeOverlayLayer(layer, scenario.id));
+        return;
+      }
+      if (isScenarioMapLayer(layer)) {
+        canonicalLayerStack.push(canonicalizeReferenceLayer(layer));
+        return;
+      }
+      canonicalLayerStack.push(
+        canonicalizeOverlayLayer(layer as LoadableOverlayLayer, scenario.id),
+      );
+    });
+    return {
+      ...scenario,
+      layerStack: canonicalLayerStack,
+    };
+  }
+
+  const legacyMapLayers = (scenario.mapLayers ?? []).map((layer) =>
+    canonicalizeReferenceLayer(layer),
+  );
+  const legacyOverlayLayers = (scenario.layers ?? []).map((layer) =>
+    canonicalizeOverlayLayer(layer, scenario.id),
+  );
   return {
     ...scenario,
-    layers: scenario.layers.map((layer) => canonicalizeLayer(layer, scenario.id)),
+    layerStack: [...legacyMapLayers, ...legacyOverlayLayers],
   };
 }
 
 function upgradeLegacyFeatureProperties(scenario: Scenario): Scenario {
   const upgradedScenario = { ...scenario };
-  upgradedScenario.layers = upgradedScenario.layers.map((layer) => {
+  upgradedScenario.layerStack = upgradedScenario.layerStack.map((layer) => {
+    if (layer.kind !== "overlay") return layer;
     const upgradedLayer = { ...layer };
     upgradedLayer.items = upgradedLayer.items.map((item) => {
       if (item.kind !== "geometry") return item;
-      const feature = item;
-      const upgradedFeature = { ...feature };
+      const upgradedFeature = { ...item };
       const {
         visibleFromT,
         visibleUntilT,
@@ -205,7 +300,7 @@ function upgradeLegacyFeatureProperties(scenario: Scenario): Scenario {
 export function upgradeScenarioIfNecessary(
   scenario: LoadableScenario | Scenario,
 ): Scenario {
-  const canonicalScenario = canonicalizeScenarioLayers(scenario as LoadableScenario);
+  const canonicalScenario = canonicalizeScenarioLayerStack(scenario as LoadableScenario);
 
   if (compareVersions(canonicalScenario.version, "0.30.0", "<")) {
     console.log("Found outdated scenario version, upgrading from", scenario.version);

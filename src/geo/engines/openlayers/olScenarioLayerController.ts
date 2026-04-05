@@ -1,5 +1,4 @@
 import type OLMap from "ol/Map";
-import LayerGroup from "ol/layer/Group";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import TileLayer from "ol/layer/Tile";
@@ -16,7 +15,7 @@ import {
 } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useImageLayerTransformInteraction } from "@/composables/geoImageLayerInteraction";
 import { activeFeatureStylesKey } from "@/components/injects";
-import { injectStrict, nanoid } from "@/utils";
+import { injectStrict } from "@/utils";
 import { fixExtent } from "@/utils/geoConvert";
 import type { TScenario } from "@/scenariostore";
 import type {
@@ -57,6 +56,10 @@ import {
   type FullScenarioLayerItemsLayer,
   isNGeometryLayerItem,
 } from "@/types/scenarioLayerItems";
+import {
+  isScenarioOverlayLayer,
+  isScenarioReferenceLayer,
+} from "@/types/scenarioStackLayers";
 
 const undoActionLabels: ActionLabel[] = [
   "deleteLayer",
@@ -76,8 +79,6 @@ const mapLayerUndoActionLabels = [
   "deleteMapLayer",
   "moveMapLayer",
 ] as const;
-
-const mapLayersMap = new WeakMap<OLMap, LayerGroup>();
 
 type CleanupHandle = (() => void) | { off: () => void };
 
@@ -107,7 +108,6 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
   const { scenarioFeatureStyle, clearCache, invalidateStyle } =
     injectStrict(activeFeatureStylesKey);
   const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
-  const mapLayersGroup = getOrCreateMapLayerGroup(olMap);
   const layerEventHandlers = new Set<(event: ScenarioLayerControllerEvent) => void>();
 
   const {
@@ -169,15 +169,12 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
   }
 
   function getMapOlLayerById(layerId: FeatureId) {
-    return mapLayersGroup
-      .getLayers()
+    return getScenarioLayersCollection()
       .getArray()
-      .find((layer) => layer.get("id") === layerId);
+      .find((layer: any) => layer.get("id") === layerId);
   }
 
-  function refreshScenarioFeatureLayers(
-    options: RefreshScenarioFeatureLayersOptions = {},
-  ) {
+  function refreshManagedLayers(options: RefreshScenarioFeatureLayersOptions = {}) {
     const scenario = activeScenario;
     if (!scenario) return;
     const { doClearCache = true, filterVisible = true } = options;
@@ -187,15 +184,32 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     const olLayers = getScenarioLayersCollection();
     olLayers.clear();
     const projection = olMap.getView().getProjection();
-    scenario.geo.layerItemsLayers.value.forEach((layer) => {
-      if (filterVisible && layer._hidden) return;
-      const olLayer = createScenarioFeatureLayer(layer, {
-        projection,
-        filterVisible,
-      });
-      olLayers.push(olLayer);
-      addScenarioLayerVisibilityListener(olLayer);
+    scenario.geo.stackLayers.value.forEach((layer: any) => {
+      if (isScenarioOverlayLayer(layer)) {
+        const fullLayer = scenario.geo.getFullLayerItemsLayer(layer.id);
+        if (!fullLayer) return;
+        if (filterVisible && fullLayer._hidden) return;
+        const olLayer = createScenarioFeatureLayer(fullLayer, {
+          projection,
+          filterVisible,
+        });
+        olLayers.push(olLayer);
+        addScenarioLayerVisibilityListener(olLayer);
+        return;
+      }
+      if (isScenarioReferenceLayer(layer)) {
+        const olLayer = createReferenceLayer(layer.id);
+        if (olLayer) {
+          olLayers.push(olLayer);
+        }
+      }
     });
+  }
+
+  function refreshScenarioFeatureLayers(
+    options: RefreshScenarioFeatureLayersOptions = {},
+  ) {
+    refreshManagedLayers(options);
   }
 
   function createScenarioFeatureLayer(
@@ -360,7 +374,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
       });
     });
 
-    mapLayersGroup.getLayers().push(layer);
+    return layer;
   }
 
   function addKmlLayer(layerId: FeatureId) {
@@ -412,7 +426,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
       undoable: false,
     });
     emitLayerEvent({ type: "map-layer-updated", layerId: data.id, data: statusUpdate });
-    mapLayersGroup.getLayers().push(layer);
+    return layer;
     layer.getSource()?.once("featuresloadend", () => {
       const extent = fixExtent(source.getExtent());
       if (extent && !isEmpty(extent)) {
@@ -510,10 +524,10 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
           layerId: data.id,
           data: errorUpdate,
         });
-        mapLayersGroup.getLayers().remove(layer);
+        getScenarioLayersCollection().remove(layer);
       }
     });
-    mapLayersGroup.getLayers().push(layer);
+    return layer;
   }
 
   function addXyzLayer(layerId: FeatureId) {
@@ -546,24 +560,24 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
       undoable: false,
     });
     emitLayerEvent({ type: "map-layer-updated", layerId: data.id, data: statusUpdate });
-    mapLayersGroup.getLayers().push(layer);
+    return layer;
   }
 
-  function addMapLayer(layerId: FeatureId) {
+  function createReferenceLayer(layerId: FeatureId) {
     const scenario = activeScenario;
     if (!scenario) return;
     const mapLayer = scenario.geo.getMapLayerById(layerId);
-    if (mapLayer.type === "ImageLayer") addImageLayer(layerId);
-    if (mapLayer.type === "TileJSONLayer") addTileJsonLayer(layerId);
-    if (mapLayer.type === "XYZLayer") addXyzLayer(layerId);
-    if (mapLayer.type === "KMLLayer") addKmlLayer(layerId);
+    if (mapLayer.type === "ImageLayer") return addImageLayer(layerId);
+    if (mapLayer.type === "TileJSONLayer") return addTileJsonLayer(layerId);
+    if (mapLayer.type === "XYZLayer") return addXyzLayer(layerId);
+    if (mapLayer.type === "KMLLayer") return addKmlLayer(layerId);
   }
 
   function deleteMapLayer(layerId: FeatureId) {
     const layer = getMapOlLayerById(layerId) as any;
     if (!layer) return;
     layer.getSource?.().clear?.();
-    mapLayersGroup.getLayers().remove(layer);
+    getScenarioLayersCollection().remove(layer);
   }
 
   function updateMapLayer(layerId: FeatureId, data: ScenarioMapLayerUpdate) {
@@ -572,7 +586,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     const mapLayer = scenario.geo.getMapLayerById(layerId);
     const layer = getMapOlLayerById(layerId) as any;
     if (!layer) {
-      addMapLayer(layerId);
+      refreshManagedLayers({ doClearCache: false, filterVisible: true });
       return;
     }
 
@@ -590,7 +604,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     ) {
       if ("url" in data && data.url !== undefined) {
         deleteMapLayer(layerId);
-        addMapLayer(layerId);
+        refreshManagedLayers({ doClearCache: false, filterVisible: true });
         if (imageTransformIsActive.value) {
           const updatedLayer = getMapOlLayerById(layerId);
           if (updatedLayer) startTransform(updatedLayer as any, layerId);
@@ -621,14 +635,9 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     const layer = getMapOlLayerById(layerId);
     if (!(scenario && layer)) return;
     const newIndex = scenario.geo.getMapLayerIndex(layerId);
-    const layers = mapLayersGroup.getLayers();
+    const layers = getScenarioLayersCollection();
     layers.remove(layer);
     layers.insertAt(newIndex, layer);
-  }
-
-  function initializeMapLayersFromStore() {
-    mapLayersGroup.getLayers().clear();
-    activeScenario?.geo.mapLayers.value.forEach((mapLayer) => addMapLayer(mapLayer.id));
   }
 
   function zoomToFeature(featureId: FeatureId) {
@@ -723,8 +732,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
   function bindScenario(scenario: TScenario) {
     cleanupScenarioBinding();
     activeScenario = scenario;
-    initializeMapLayersFromStore();
-    refreshScenarioFeatureLayers({ doClearCache: true, filterVisible: true });
+    refreshManagedLayers({ doClearCache: true, filterVisible: true });
     initializeScenarioLayerListeners();
 
     const cleanups: CleanupHandle[] = [
@@ -771,9 +779,9 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
       }),
       scenario.geo.onMapLayerEvent((event) => {
         if (event.type === "add") {
-          addMapLayer(event.id);
+          refreshManagedLayers({ doClearCache: false, filterVisible: true });
         } else if (event.type === "remove") {
-          deleteMapLayer(event.id);
+          refreshManagedLayers({ doClearCache: false, filterVisible: true });
         } else if (event.type === "update") {
           updateMapLayer(event.id, event.data as ScenarioMapLayerUpdate);
         } else if (event.type === "move") {
@@ -835,16 +843,16 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
           if (meta.label === "addMapLayer") {
             if (action === "undo") {
               if (imageTransformIsActive.value) endTransform();
-              deleteMapLayer(layerId);
+              refreshManagedLayers({ doClearCache: false, filterVisible: true });
             } else {
-              addMapLayer(layerId);
+              refreshManagedLayers({ doClearCache: false, filterVisible: true });
             }
           } else if (meta.label === "deleteMapLayer") {
             if (action === "undo") {
-              addMapLayer(layerId);
+              refreshManagedLayers({ doClearCache: false, filterVisible: true });
             } else {
               if (imageTransformIsActive.value) endTransform();
-              deleteMapLayer(layerId);
+              refreshManagedLayers({ doClearCache: false, filterVisible: true });
             }
           } else if (meta.label === "updateMapLayer") {
             const data = scenario.geo.getMapLayerById(layerId);
@@ -864,7 +872,6 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
       cleanups.forEach((cleanup) => runCleanup(cleanup));
       clearScenarioLayerVisibilityListeners();
       getScenarioLayersCollection().clear();
-      mapLayersGroup.getLayers().clear();
       endTransform();
       activeScenario = null;
     };
@@ -900,14 +907,4 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
   };
 
   return controller;
-}
-
-function getOrCreateMapLayerGroup(olMap: OLMap) {
-  if (mapLayersMap.has(olMap)) return mapLayersMap.get(olMap)!;
-  const group = new LayerGroup({
-    properties: { id: nanoid(), title: "Map layers" },
-  });
-  mapLayersMap.set(olMap, group);
-  olMap.addLayer(group);
-  return group;
 }

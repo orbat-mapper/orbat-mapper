@@ -24,6 +24,7 @@ import {
   isNGeometryLayerItem,
   projectGeometryLayerItemState,
 } from "@/types/scenarioLayerItems";
+import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 
 export type GoToScenarioEventOptions = {
   silent?: boolean;
@@ -198,7 +199,11 @@ export function useScenarioTime(store: NewScenarioStore) {
       }),
     );
     syncTimedHierarchyProjection(state, timestamp);
-    Object.values(state.layerMap).forEach((layer) => {
+    (
+      Object.values(state.layerStackMap).filter(
+        isScenarioOverlayLayer,
+      ) as import("@/types/scenarioStackLayers").NScenarioOverlayLayer[]
+    ).forEach((layer) => {
       const visibleFromT = layer.visibleFromT || Number.MIN_SAFE_INTEGER;
       const visibleUntilT = layer.visibleUntilT || Number.MAX_SAFE_INTEGER;
       const oldHidden = layer._hidden;

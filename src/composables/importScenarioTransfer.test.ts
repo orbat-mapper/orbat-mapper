@@ -13,6 +13,7 @@ const createScenario = (): Scenario =>
     name: "Scenario",
     description: "",
     events: [],
+    layerStack: [],
     layers: [{ id: "layer-1", name: "Features", items: [] }],
     mapLayers: [],
     sides: [],

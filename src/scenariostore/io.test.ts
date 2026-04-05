@@ -25,8 +25,7 @@ function createMinimalState(overrides: Partial<ScenarioState> = {}): ScenarioSta
     },
     sides: [],
     events: [],
-    layers: [],
-    mapLayers: [],
+    layerStack: [],
 
     // key maps
     sideMap: {},
@@ -34,8 +33,7 @@ function createMinimalState(overrides: Partial<ScenarioState> = {}): ScenarioSta
     unitMap: {},
     eventMap: {},
     layerItemMap: {},
-    layerMap: {},
-    mapLayerMap: {},
+    layerStackMap: {},
     equipmentMap: {},
     personnelMap: {},
     supplyCategoryMap: {},
@@ -58,14 +56,18 @@ function createMinimalState(overrides: Partial<ScenarioState> = {}): ScenarioSta
   } as unknown as ScenarioState;
 }
 
+function getOverlayLayers(scenario: { layerStack: any[] }) {
+  return scenario.layerStack.filter((layer) => layer.kind === "overlay");
+}
+
 describe("Scenario IO", () => {
   it("creates empty scenarios with items[] layers", () => {
     const scenario = createEmptyScenario();
 
-    expect(scenario.version).toBe("3.0.0");
-    expect(scenario.layers[0]).toHaveProperty("items");
-    expect(scenario.layers[0]).not.toHaveProperty("features");
-    expect((scenario.layers[0] as any).items).toEqual([]);
+    expect(scenario.version).toBe("4.0.0");
+    expect(getOverlayLayers(scenario)[0]).toHaveProperty("items");
+    expect(getOverlayLayers(scenario)[0]).not.toHaveProperty("features");
+    expect((getOverlayLayers(scenario)[0] as any).items).toEqual([]);
   });
 
   it("loads geometry items[] into the same normalized store state as legacy features[]", () => {
@@ -132,8 +134,14 @@ describe("Scenario IO", () => {
       ],
     } as any);
 
-    expect(itemsStore.state.layerMap["layer-1"].items).toEqual(
-      legacyStore.state.layerMap["layer-1"].items,
+    expect(
+      "items" in itemsStore.state.layerStackMap["layer-1"]
+        ? itemsStore.state.layerStackMap["layer-1"].items
+        : undefined,
+    ).toEqual(
+      "items" in legacyStore.state.layerStackMap["layer-1"]
+        ? legacyStore.state.layerStackMap["layer-1"].items
+        : undefined,
     );
     expect(itemsStore.state.layerItemMap["feature-1"]).toEqual(
       legacyStore.state.layerItemMap["feature-1"],
@@ -200,9 +208,9 @@ describe("Scenario IO", () => {
     const { serializeToObject } = useScenarioIO(storeRef);
     const serialized = serializeToObject();
 
-    expect(serialized.version).toBe("3.0.0");
-    expect(serialized.layers[0]).not.toHaveProperty("features");
-    expect(serialized.layers[0].items).toEqual([
+    expect(serialized.version).toBe("4.0.0");
+    expect(getOverlayLayers(serialized)[0]).not.toHaveProperty("features");
+    expect(getOverlayLayers(serialized)[0].items).toEqual([
       {
         ...feature,
         kind: "geometry",
@@ -259,7 +267,7 @@ describe("Scenario IO", () => {
     const storeRef = shallowRef(store);
     const { serializeToObject } = useScenarioIO(storeRef);
     const serialized = serializeToObject();
-    const firstItem = serialized.layers[0]?.items?.[0];
+    const firstItem = getOverlayLayers(serialized)[0]?.items?.[0];
 
     expect(firstItem).toBeDefined();
     expect(firstItem).not.toHaveProperty("state");

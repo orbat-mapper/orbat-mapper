@@ -14,7 +14,6 @@ import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import type { NGeometryLayerItem, NScenarioLayer } from "@/types/internalModels";
 import type {
   FeatureId,
-  ScenarioLayer,
   ScenarioMapLayer,
   ScenarioMapLayerType,
 } from "@/types/scenarioGeoModels";
@@ -43,6 +42,12 @@ import {
   extractClosestEdge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { isNGeometryLayerItem } from "@/types/scenarioLayerItems";
+import {
+  isScenarioOverlayLayer,
+  isScenarioReferenceLayer,
+  type NScenarioOverlayLayer,
+  type NScenarioReferenceLayer,
+} from "@/types/scenarioStackLayers";
 
 const emit = defineEmits(["feature-click"]);
 
@@ -54,8 +59,6 @@ const {
   geo,
   store: { groupUpdate },
 } = injectStrict(activeScenarioKey);
-
-const { mapLayers } = geo;
 uiStore.layersPanelActive = true;
 onUnmounted(() => (uiStore.layersPanelActive = false));
 
@@ -103,14 +106,29 @@ const mapLayerButtonItems: ButtonGroupItem[] = [
 ];
 
 const scenarioLayers = computed(() => geo.layerItemsLayers.value);
-const scenarioGeometryLayers = computed<
-  Array<{ layer: NScenarioLayer; features: NGeometryLayerItem[] }>
->(() =>
-  scenarioLayers.value.map((layer) => ({
-    layer: geo.getLayerById(layer.id)!,
-    features: layer.items.filter(isNGeometryLayerItem),
-  })),
-);
+const stackLayers = computed(() => {
+  if (geo.stackLayers?.value) return geo.stackLayers.value;
+  const referenceLayers = (geo.mapLayers?.value ?? []).map((layer) => ({
+    id: String(layer.id),
+    kind: "reference" as const,
+    name: layer.name,
+    source: layer,
+  }));
+  const overlayLayers = scenarioLayers.value.map((layer) => ({
+    ...layer,
+    id: String(layer.id),
+    kind: "overlay" as const,
+  }));
+  return [...referenceLayers, ...overlayLayers];
+});
+
+function isOverlayStackEntry(layer: unknown): layer is NScenarioOverlayLayer {
+  return isScenarioOverlayLayer(layer as any);
+}
+
+function isReferenceStackEntry(layer: unknown): layer is NScenarioReferenceLayer {
+  return isScenarioReferenceLayer(layer as any);
+}
 
 const layerMenuItems = computed<MenuItemData<ScenarioLayerAction>[]>(() => [
   {
@@ -228,10 +246,7 @@ function onMapLayerAction(layer: ScenarioMapLayer, action: ScenarioMapLayerActio
   }
 }
 
-function onLayerAction(
-  layer: ScenarioLayer | NScenarioLayer,
-  action: ScenarioLayerAction,
-) {
+function onLayerAction(layer: NScenarioLayer, action: ScenarioLayerAction) {
   if (action === ScenarioLayerActions.SetActive) activeLayerId.value = layer.id;
   if (action === ScenarioLayerActions.Zoom) {
     engineRef.value?.layers.zoomToScenarioLayer(layer.id);
@@ -312,6 +327,7 @@ function onFeatureAction(
         if (action === "moveUp" || action === "moveDown") {
           const direction = action === "moveUp" ? "up" : "down";
           const layer = geo.getLayerById(feature._pid);
+          if (!layer) return;
           let toIndex = layer.items.indexOf(feature.id);
 
           if (direction === "up") toIndex--;
@@ -346,6 +362,7 @@ function addNewLayer() {
     items: [],
     _isNew: false,
   });
+  if (!addedLayer) return;
   activeLayerId.value = addedLayer.id;
   editedLayerId.value = addedLayer.id;
   return addedLayer;
@@ -362,6 +379,12 @@ function addNewMapLayer(layerType: ScenarioMapLayerType): ScenarioMapLayer {
 
 function toggleMapLayerVisibility(layer: ScenarioMapLayer) {
   geo.updateMapLayer(layer.id, { isHidden: !layer.isHidden });
+}
+
+function getOverlayFeatures(layer: NScenarioOverlayLayer): NGeometryLayerItem[] {
+  return layer.items
+    .map((itemId) => geo.getGeometryLayerItemById(itemId).layerItem)
+    .filter((item): item is NGeometryLayerItem => !!item);
 }
 
 function onLayerDrop(layer: NScenarioLayer, feature: NGeometryLayerItem) {
@@ -445,7 +468,7 @@ onUnmounted(() => {
 <template>
   <div>
     <ChevronPanel
-      label="Map layers"
+      label="Layers"
       class="mb-4"
       header-class="ml-4"
       v-model:open="uiStore.mapLayersPanelOpen"
@@ -458,74 +481,87 @@ onUnmounted(() => {
           />
         </div>
       </template>
-      <ul class="-mt-6">
-        <li
-          v-for="layer in mapLayers"
-          class="group hover:bg-accent relative flex items-center justify-between border-l select-none"
-          :key="layer.id"
-          @dblclick="onImageLayerDoubleClick(layer)"
-          @click="onImageLayerClick(layer, $event)"
-          :class="
-            selectedMapLayerIds.has(layer.id)
-              ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900'
-              : 'border-transparent'
-          "
-        >
-          <button class="flex flex-auto items-center py-2.5 sm:py-2">
-            <component
-              :is="getMapLayerIcon(layer)"
-              class="text-muted-foreground size-5"
-            />
-            <span
-              class="group-hover:text-accent-foreground text-foreground ml-2 text-left text-sm"
-              :class="{
-                'font-bold': activeMapLayerId === layer.id,
-                'opacity-50': layer.isHidden,
-              }"
+      <div class="-mt-6">
+        <template v-for="layer in stackLayers" :key="layer.id">
+          <ScenarioFeatureLayer
+            v-if="isOverlayStackEntry(layer)"
+            :features="getOverlayFeatures(layer as NScenarioOverlayLayer)"
+            :layer="layer as unknown as NScenarioLayer"
+            :layer-menu-items="layerMenuItems"
+            :feature-menu-items="availableFeatureMenuItems"
+            v-model:activeLayerId="activeLayerId"
+            v-model:editedLayerId="editedLayerId"
+            @feature-click="onFeatureClick"
+            @feature-double-click="onFeatureDoubleClick"
+            @feature-action="onFeatureAction"
+            @layer-action="onLayerAction"
+          />
+          <ul v-else-if="isReferenceStackEntry(layer)">
+            <li
+              class="group hover:bg-accent relative flex items-center justify-between border-l select-none"
+              @dblclick="
+                onImageLayerDoubleClick((layer as NScenarioReferenceLayer).source)
+              "
+              @click="
+                onImageLayerClick((layer as NScenarioReferenceLayer).source, $event)
+              "
+              :class="
+                selectedMapLayerIds.has((layer as NScenarioReferenceLayer).source.id)
+                  ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900'
+                  : 'border-transparent'
+              "
             >
-              {{ layer.name }}
-            </span>
-          </button>
-          <div class="relative flex items-center">
-            <span
-              v-if="layer._isTemporary"
-              class="badge"
-              title="Temporary layer. Not saved"
-              >TEMP</span
-            >
-            <button
-              type="button"
-              @click="toggleMapLayerVisibility(layer)"
-              @keydown.stop
-              class="text-muted-foreground hover:text-muted-foreground ml-1 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-              title="Toggle layer visibility"
-            >
-              <IconEyeOff v-if="layer.isHidden" class="h-5 w-5" />
-              <IconEye class="h-5 w-5" v-else />
-            </button>
-            <DotsMenu
-              :items="mapLayerMenuItems"
-              @action="onMapLayerAction(layer, $event)"
-              class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-            />
-          </div>
-        </li>
-      </ul>
+              <button class="flex flex-auto items-center py-2.5 sm:py-2">
+                <component
+                  :is="getMapLayerIcon((layer as NScenarioReferenceLayer).source)"
+                  class="text-muted-foreground size-5"
+                />
+                <span
+                  class="group-hover:text-accent-foreground text-foreground ml-2 text-left text-sm"
+                  :class="{
+                    'font-bold':
+                      activeMapLayerId === (layer as NScenarioReferenceLayer).source.id,
+                    'opacity-50': (layer as NScenarioReferenceLayer).source.isHidden,
+                  }"
+                >
+                  {{ layer.name }}
+                </span>
+              </button>
+              <div class="relative flex items-center">
+                <span
+                  v-if="(layer as NScenarioReferenceLayer).source._isTemporary"
+                  class="badge"
+                  title="Temporary layer. Not saved"
+                  >TEMP</span
+                >
+                <button
+                  type="button"
+                  @click="
+                    toggleMapLayerVisibility((layer as NScenarioReferenceLayer).source)
+                  "
+                  @keydown.stop
+                  class="text-muted-foreground hover:text-muted-foreground ml-1 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+                  title="Toggle layer visibility"
+                >
+                  <IconEyeOff
+                    v-if="(layer as NScenarioReferenceLayer).source.isHidden"
+                    class="h-5 w-5"
+                  />
+                  <IconEye class="h-5 w-5" v-else />
+                </button>
+                <DotsMenu
+                  :items="mapLayerMenuItems"
+                  @action="
+                    onMapLayerAction((layer as NScenarioReferenceLayer).source, $event)
+                  "
+                  class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+                />
+              </div>
+            </li>
+          </ul>
+        </template>
+      </div>
     </ChevronPanel>
-    <ScenarioFeatureLayer
-      v-for="{ layer, features } in scenarioGeometryLayers"
-      :key="layer.id"
-      :features="features"
-      :layer="layer"
-      :layer-menu-items="layerMenuItems"
-      :feature-menu-items="availableFeatureMenuItems"
-      v-model:activeLayerId="activeLayerId"
-      v-model:editedLayerId="editedLayerId"
-      @feature-click="onFeatureClick"
-      @feature-double-click="onFeatureDoubleClick"
-      @feature-action="onFeatureAction"
-      @layer-action="onLayerAction"
-    />
 
     <footer class="my-8 text-right">
       <SplitButton :items="mapLayerButtonItems" />

@@ -838,6 +838,7 @@ export function convertParsedUnitsToOrbatMapperScenario(
     name: "Text to ORBAT Scenario",
     sides: [side],
     events: [],
+    layerStack: [],
     layers: [],
     mapLayers: [],
   };

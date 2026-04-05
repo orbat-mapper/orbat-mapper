@@ -94,7 +94,9 @@ async function create() {
   newScenario.value.startTime = startTime;
   newScenario.value.name = form.name;
   newScenario.value.description = form.description;
-  newScenario.value.layers = [{ name: "Features", id: nanoid(), items: [] }];
+  newScenario.value.layerStack = [
+    { name: "Features", id: nanoid(), kind: "overlay", items: [] },
+  ];
   newScenario.value.timeZone = timeZone.value;
 
   scenario.value.io.loadFromObject(newScenario.value);

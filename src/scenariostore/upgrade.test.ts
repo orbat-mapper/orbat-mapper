@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { upgradeScenarioIfNecessary } from "./upgrade";
+import type { ScenarioOverlayLayer } from "@/types/scenarioStackLayers";
+
+function getOverlayLayers(scenario: { layerStack: any[] }): ScenarioOverlayLayer[] {
+  return scenario.layerStack.filter((layer) => layer.kind === "overlay");
+}
 
 function createScenario(overrides: Record<string, unknown> = {}) {
   return {
@@ -56,7 +61,7 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(upgraded.layers[0].items).toEqual([
+    expect(getOverlayLayers(upgraded)[0].items).toEqual([
       {
         ...feature,
         kind: "geometry",
@@ -71,7 +76,7 @@ describe("upgradeScenarioIfNecessary", () => {
         ],
       },
     ]);
-    expect(upgraded.layers[0]).not.toHaveProperty("features");
+    expect(getOverlayLayers(upgraded)[0]).not.toHaveProperty("features");
   });
 
   it("leaves canonical geometry items[] layers unchanged", () => {
@@ -102,7 +107,7 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(upgraded.layers[0].items).toEqual([
+    expect(getOverlayLayers(upgraded)[0].items).toEqual([
       {
         ...feature,
         kind: "geometry",
@@ -117,7 +122,7 @@ describe("upgradeScenarioIfNecessary", () => {
         ],
       },
     ]);
-    expect(upgraded.layers[0]).not.toHaveProperty("features");
+    expect(getOverlayLayers(upgraded)[0]).not.toHaveProperty("features");
   });
 
   it("skips unsupported item kinds and warns with layer details and counts", () => {
@@ -159,7 +164,7 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(upgraded.layers[0].items).toEqual([
+    expect(getOverlayLayers(upgraded)[0].items).toEqual([
       {
         ...feature,
         kind: "geometry",
@@ -202,7 +207,7 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(upgraded.layers[0].items).toEqual([
+    expect(getOverlayLayers(upgraded)[0].items).toEqual([
       {
         ...itemFeature,
         kind: "geometry",
@@ -264,7 +269,7 @@ describe("upgradeScenarioIfNecessary", () => {
     });
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
-    const feature = upgraded.layers[0].items[0];
+    const feature = getOverlayLayers(upgraded)[0].items[0];
 
     expect(feature.kind).toBe("geometry");
     if (feature.kind !== "geometry") throw new Error("Expected geometry item");
