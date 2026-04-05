@@ -48,29 +48,38 @@ export function setH3Resolution(res: number) {
   }
 }
 
-/** Convert tile coords to lng/lat bounds */
+/** Latitude to mercator Y (in radians-based units) */
+function latToMercatorY(lat: number): number {
+  const latRad = (Math.max(Math.min(lat, 89.999), -89.999) * Math.PI) / 180;
+  return Math.log(Math.tan(Math.PI / 4 + latRad / 2));
+}
+
+/** Convert tile coords to bounds (lng in degrees, lat in degrees + mercator Y) */
 function tileBounds(z: number, x: number, y: number) {
-  const n = Math.PI - (2 * Math.PI * y) / (1 << z);
-  const n2 = Math.PI - (2 * Math.PI * (y + 1)) / (1 << z);
+  const mercN = Math.PI - (2 * Math.PI * y) / (1 << z);
+  const mercS = Math.PI - (2 * Math.PI * (y + 1)) / (1 << z);
   return {
     west: (x / (1 << z)) * 360 - 180,
     east: ((x + 1) / (1 << z)) * 360 - 180,
-    north: (Math.atan(Math.sinh(n)) * 180) / Math.PI,
-    south: (Math.atan(Math.sinh(n2)) * 180) / Math.PI,
+    north: (Math.atan(Math.sinh(mercN)) * 180) / Math.PI,
+    south: (Math.atan(Math.sinh(mercS)) * 180) / Math.PI,
+    mercNorth: mercN,
+    mercSouth: mercS,
   };
 }
 
-/** Project [lng, lat] to tile-local pixel coords (0..EXTENT) */
+/** Project [lng, lat] to tile-local pixel coords using mercator projection */
 function project(
   lng: number,
   lat: number,
   west: number,
-  south: number,
   east: number,
-  north: number,
+  mercSouth: number,
+  mercNorth: number,
 ): [number, number] {
   const x = ((lng - west) / (east - west)) * EXTENT;
-  const y = ((north - lat) / (north - south)) * EXTENT;
+  const mercY = latToMercatorY(lat);
+  const y = ((mercNorth - mercY) / (mercNorth - mercSouth)) * EXTENT;
   return [Math.round(x), Math.round(y)];
 }
 
@@ -223,7 +232,7 @@ function generateTile(z: number, x: number, y: number): ArrayBuffer {
 
     // Project to tile pixel coordinates
     const projected: Array<[number, number]> = normalized.map(([lng, lat]) =>
-      project(lng, lat, bounds.west, bounds.south, bounds.east, bounds.north),
+      project(lng, lat, bounds.west, bounds.east, bounds.mercSouth, bounds.mercNorth),
     );
 
     features.push({ geom: encodePolygonGeometry(projected) });

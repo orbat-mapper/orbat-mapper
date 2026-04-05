@@ -38,9 +38,9 @@ function h3ResToTileZoom(res: number): number {
 let protocolRegistered = false;
 
 export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
-  const showHexGrid = ref(false);
-  const hexResolution = ref(2);
-  const autoResolution = ref(true);
+  const showHexGrid = ref(true);
+  const hexResolution = ref(3);
+  const autoResolution = ref(false);
 
   if (!protocolRegistered) {
     registerH3Protocol();
@@ -58,6 +58,7 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
       });
     }
     if (!map.getLayer(H3_LAYER_LINE)) {
+      const beforeLayer = map.getLayer("unitLayer") ? "unitLayer" : undefined;
       map.addLayer(
         {
           id: H3_LAYER_LINE,
@@ -80,7 +81,7 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
             ],
           },
         },
-        "unitLayer",
+        beforeLayer,
       );
     }
   }
