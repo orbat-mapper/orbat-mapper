@@ -53,6 +53,9 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useUiStore } from "@/stores/uiStore";
 import GlobeTimeline from "@/modules/globeview/GlobeTimeline.vue";
 import { useSidcModal } from "@/composables/modals";
+import { useH3HexGrid } from "@/modules/globeview/useH3HexGrid";
+import { Slider } from "@/components/ui/slider";
+import { HexagonIcon } from "lucide-vue-next";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { EventSearchResult } from "@/components/types";
 import type { PhotonSearchResult } from "@/composables/geosearching";
@@ -191,6 +194,16 @@ watch(
   () => nextTick(() => mlMap.value?.resize()),
 );
 
+const { showHexGrid, hexResolution, autoResolution, updateGrid } =
+  useH3HexGrid(mlMap);
+
+const hexResolutionSlider = computed({
+  get: () => [hexResolution.value],
+  set: ([v]: number[]) => {
+    hexResolution.value = v;
+  },
+});
+
 const baseLayersStore = useBaseLayersStore();
 const globeBaseMapId = ref(GLOBE_VECTOR_BASEMAP_ID);
 
@@ -289,6 +302,30 @@ onUnmounted(() => {
       <div class="flex items-center gap-4">
         <FpsDisplay v-if="showDebug" />
         <div id="globetoolbar"></div>
+        <div class="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            @click="showHexGrid = !showHexGrid"
+            title="Toggle H3 hex grid"
+            :class="{ 'bg-accent': showHexGrid }"
+          >
+            <HexagonIcon class="size-4" />
+          </Button>
+          <template v-if="showHexGrid">
+            <ToggleField v-model="autoResolution">Auto</ToggleField>
+            <template v-if="!autoResolution">
+              <Slider
+                v-model="hexResolutionSlider"
+                :min="0"
+                :max="8"
+                :step="1"
+                class="w-24"
+              />
+              <span class="text-muted-foreground w-4 text-xs">{{ hexResolution }}</span>
+            </template>
+          </template>
+        </div>
         <ToggleField v-model="showDebug">Debug</ToggleField>
 
         <UseDark v-slot="{ isDark, toggleDark }">
