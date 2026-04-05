@@ -2,6 +2,7 @@ import type { TScenario } from "@/scenariostore";
 import { type Scenario } from "@/types/scenarioModels";
 import { useLocalStorage } from "@vueuse/core";
 import { SHARE_HISTORY_LOCALSTORAGE_KEY } from "@/config/constants";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 
 export interface ShareHistoryItem {
   id: string;
@@ -30,12 +31,12 @@ export function useScenarioShare() {
     return result;
   }
 
-  async function loadScenarioFromUrlParam(param: string): Promise<Scenario> {
+  async function loadScenarioFromUrlParam(param: string): Promise<LoadableScenario> {
     const { strFromU8, strToU8, unzlibSync } = await import("fflate");
     const compressed = strToU8(atob(param), true);
     const decompressed = unzlibSync(compressed);
     const jsonString = strFromU8(decompressed);
-    return JSON.parse(jsonString) as Scenario;
+    return JSON.parse(jsonString) as LoadableScenario;
   }
 
   return {

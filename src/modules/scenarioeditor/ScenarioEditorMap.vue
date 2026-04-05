@@ -58,6 +58,7 @@ import { usePlaybackStore } from "@/stores/playbackStore";
 import UnitBreadcrumbs from "@/modules/scenarioeditor/UnitBreadcrumbs.vue";
 import { Button } from "@/components/ui/button";
 import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 
 const DecryptScenarioModal = defineAsyncComponent(
   () => import("@/components/DecryptScenarioModal.vue"),
@@ -252,9 +253,9 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
   if (!text) return;
 
   try {
-    const scenarioData = JSON.parse(text) as Scenario | EncryptedScenario;
+    const scenarioData = JSON.parse(text) as LoadableScenario | EncryptedScenario;
     if (scenarioData?.type === "ORBAT-mapper") {
-      browserLoadScenario(scenarioData as Scenario);
+      browserLoadScenario(scenarioData);
       e.preventDefault();
     } else if (scenarioData?.type === "ORBAT-mapper-encrypted") {
       currentEncryptedScenario.value = scenarioData as EncryptedScenario;

@@ -48,7 +48,7 @@ afterEach(() => {
 });
 
 describe("upgradeScenarioIfNecessary", () => {
-  it("leaves legacy features[] layers unchanged", () => {
+  it("converts legacy features[] layers to canonical geometry items[]", () => {
     const feature = createFeature();
     const scenario = createScenario({
       layers: [{ id: "layer-1", name: "Features", features: [feature] }],
@@ -56,11 +56,25 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(upgraded.layers[0].features).toEqual([feature]);
-    expect(upgraded.layers[0]).not.toHaveProperty("items");
+    expect(upgraded.layers[0].items).toEqual([
+      {
+        ...feature,
+        kind: "geometry",
+        state: [
+          {
+            id: "state-1",
+            t: "2025-01-01T01:00:00Z",
+            patch: {
+              geometry: { type: "Point", coordinates: [11, 61] },
+            },
+          },
+        ],
+      },
+    ]);
+    expect(upgraded.layers[0]).not.toHaveProperty("features");
   });
 
-  it("canonicalizes geometry items[] into legacy features[]", () => {
+  it("leaves canonical geometry items[] layers unchanged", () => {
     const feature = createFeature();
     const scenario = createScenario({
       layers: [
@@ -88,8 +102,22 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(upgraded.layers[0].features).toEqual([feature]);
-    expect(upgraded.layers[0]).not.toHaveProperty("items");
+    expect(upgraded.layers[0].items).toEqual([
+      {
+        ...feature,
+        kind: "geometry",
+        state: [
+          {
+            id: "state-1",
+            t: "2025-01-01T01:00:00Z",
+            patch: {
+              geometry: { type: "Point", coordinates: [11, 61] },
+            },
+          },
+        ],
+      },
+    ]);
+    expect(upgraded.layers[0]).not.toHaveProperty("features");
   });
 
   it("skips unsupported item kinds and warns with layer details and counts", () => {
@@ -131,7 +159,21 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(upgraded.layers[0].features).toEqual([feature]);
+    expect(upgraded.layers[0].items).toEqual([
+      {
+        ...feature,
+        kind: "geometry",
+        state: [
+          {
+            id: "state-1",
+            t: "2025-01-01T01:00:00Z",
+            patch: {
+              geometry: { type: "Point", coordinates: [11, 61] },
+            },
+          },
+        ],
+      },
+    ]);
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(warnSpy.mock.calls[0][0]).toContain('layer "Features" (layer-1)');
     expect(warnSpy.mock.calls[0][0]).toContain("annotation=1");
@@ -160,7 +202,21 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(upgraded.layers[0].features).toEqual([itemFeature]);
+    expect(upgraded.layers[0].items).toEqual([
+      {
+        ...itemFeature,
+        kind: "geometry",
+        state: [
+          {
+            id: "state-1",
+            t: "2025-01-01T01:00:00Z",
+            patch: {
+              geometry: { type: "Point", coordinates: [11, 61] },
+            },
+          },
+        ],
+      },
+    ]);
   });
 
   it("applies the pre-0.30 feature properties upgrade after item canonicalization", () => {
@@ -208,8 +264,10 @@ describe("upgradeScenarioIfNecessary", () => {
     });
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
-    const feature = upgraded.layers[0].features[0];
+    const feature = upgraded.layers[0].items[0];
 
+    expect(feature.kind).toBe("geometry");
+    if (feature.kind !== "geometry") throw new Error("Expected geometry item");
     expect(feature.meta).toMatchObject({
       type: "Point",
       name: "Legacy item",

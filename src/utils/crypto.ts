@@ -1,4 +1,8 @@
-import type { EncryptedScenario, EncryptedScenarioHeader } from "@/types/scenarioModels";
+import type {
+  EncryptedScenario,
+  EncryptedScenarioHeader,
+  Scenario,
+} from "@/types/scenarioModels";
 import type { LoadableScenario } from "@/scenariostore/upgrade";
 
 const ENCRYPTION_VERSION = "1.0.0" as const;
@@ -19,7 +23,7 @@ export interface EncryptScenarioOptions {
  * @returns The encrypted scenario object.
  */
 export async function encryptScenario(
-  scenario: LoadableScenario,
+  scenario: Scenario,
   password: string,
   options: EncryptScenarioOptions = {},
 ): Promise<EncryptedScenario> {

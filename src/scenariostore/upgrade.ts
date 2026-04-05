@@ -3,22 +3,20 @@ import { compare as compareVersions } from "compare-versions";
 import type {
   ScenarioFeature,
   ScenarioFeatureMeta,
-  ScenarioFeatureState,
   ScenarioLayer,
 } from "@/types/scenarioGeoModels";
 import { type SimpleStyleSpec } from "@/geo/simplestyle";
 import type {
   AnnotationLayerItem,
+  GeometryLayerItem,
   LoadableGeometryLayerItemState,
   MeasurementLayerItem,
+  ScenarioLayerItemsLayer,
   TacticalGraphicLayerItem,
 } from "@/types/scenarioLayerItems";
-import {
-  flattenGeometryLayerItemState,
-  normalizeGeometryLayerItemState,
-} from "@/types/scenarioLayerItems";
+import { normalizeGeometryLayerItemState } from "@/types/scenarioLayerItems";
 
-type LoadableGeometryLayerItem = Omit<ScenarioFeature, "state"> & {
+export type LoadableGeometryLayerItem = Omit<ScenarioFeature, "state"> & {
   kind: "geometry";
   state?: LoadableGeometryLayerItemState[];
 };
@@ -28,10 +26,14 @@ type UnsupportedLayerItem =
   | MeasurementLayerItem
   | { kind?: string };
 
-type LoadableScenarioLayer = Omit<ScenarioLayer, "features"> & {
-  features?: ScenarioFeature[];
-  items?: Array<LoadableGeometryLayerItem | UnsupportedLayerItem>;
-};
+export type LegacyScenarioLayer = ScenarioLayer;
+
+export type LoadableScenarioLayer =
+  | ScenarioLayerItemsLayer
+  | (Omit<ScenarioLayer, "features"> & {
+      features?: ScenarioFeature[];
+      items?: Array<LoadableGeometryLayerItem | UnsupportedLayerItem>;
+    });
 
 export type LoadableScenario = Omit<Scenario, "layers"> & {
   layers: LoadableScenarioLayer[];
@@ -45,32 +47,48 @@ function isGeometryLayerItem(
 
 function canonicalizeGeometryStateEntries(
   states: LoadableGeometryLayerItemState[] | undefined,
-): ScenarioFeatureState[] | undefined {
-  return states?.map((state) =>
-    flattenGeometryLayerItemState(normalizeGeometryLayerItemState(state)),
-  );
+): GeometryLayerItem["state"] {
+  return states?.map((state) => normalizeGeometryLayerItemState(state));
 }
 
 function canonicalizeLayer(
   layer: LoadableScenarioLayer,
   scenarioId?: string,
-): ScenarioLayer {
-  const { items, features = [], ...rest } = layer;
+): ScenarioLayerItemsLayer {
+  if (!Array.isArray(layer.items)) {
+    const { features = [], ...rest } = layer as Exclude<
+      LoadableScenarioLayer,
+      ScenarioLayerItemsLayer
+    >;
 
-  if (!Array.isArray(items)) {
-    return { ...rest, features };
+    return {
+      ...rest,
+      items: features.map((feature) => {
+        const { state, ...featureRest } = feature;
+        return {
+          ...featureRest,
+          id: String(feature.id),
+          kind: "geometry",
+          state: canonicalizeGeometryStateEntries(state),
+        };
+      }),
+    };
   }
 
-  const canonicalFeatures: ScenarioFeature[] = [];
+  const { items, ...rest } = layer;
+
+  const canonicalItems: ScenarioLayerItemsLayer["items"] = [];
   const skippedKinds: Record<string, number> = {};
 
   items.forEach((item) => {
     if (isGeometryLayerItem(item)) {
       const { kind: _kind, state, ...feature } = item;
-      canonicalFeatures.push({
+      canonicalItems.push({
         ...feature,
+        id: String(feature.id),
+        kind: "geometry",
         state: canonicalizeGeometryStateEntries(state),
-      });
+      } satisfies GeometryLayerItem);
       return;
     }
 
@@ -89,7 +107,7 @@ function canonicalizeLayer(
     );
   }
 
-  return { ...rest, features: canonicalFeatures };
+  return { ...rest, items: canonicalItems };
 }
 
 function canonicalizeScenarioLayers(scenario: LoadableScenario): Scenario {
@@ -103,7 +121,9 @@ function upgradeLegacyFeatureProperties(scenario: Scenario): Scenario {
   const upgradedScenario = { ...scenario };
   upgradedScenario.layers = upgradedScenario.layers.map((layer) => {
     const upgradedLayer = { ...layer };
-    upgradedLayer.features = upgradedLayer.features.map((feature) => {
+    upgradedLayer.items = upgradedLayer.items.map((item) => {
+      if (item.kind !== "geometry") return item;
+      const feature = item;
       const upgradedFeature = { ...feature };
       const {
         visibleFromT,

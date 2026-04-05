@@ -21,6 +21,7 @@ import { isUrl } from "@/utils";
 import type { FeatureCollection } from "geojson";
 import ImportLoadStepBrowser from "@/modules/scenarioeditor/ImportLoadStepBrowser.vue";
 import { type Scenario } from "@/types/scenarioModels";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -166,7 +167,7 @@ async function onLoad() {
   }
 
   if (format === "orbatmapper" && stringSource.value) {
-    const data = importJsonString<OrbatGeneratorOrbat>(stringSource.value);
+    const data = importJsonString<LoadableScenario>(stringSource.value);
     NProgress.done();
     emit("loaded", "orbatmapper", data, fileInfo.value);
   }

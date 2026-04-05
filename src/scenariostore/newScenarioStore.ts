@@ -453,20 +453,21 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
 
   scenario.layers.forEach((layer) => {
     layers.push(layer.id);
-    const itemIds = layer.features.map((f) => f.id);
-    const {
-      features: _features,
-      items: _items,
-      ...layerRest
-    } = layer as typeof layer & {
-      items?: unknown;
-    };
+    const itemIds = layer.items.map((item) => item.id);
+    const { items: _items, ...layerRest } = layer;
     layerMap[layer.id] = {
       ...mapVisibility(layerRest),
       items: itemIds,
     };
-    layer.features.forEach((feature) => {
-      const tmp = { ...feature };
+    layer.items.forEach((item) => {
+      if (item.kind !== "geometry") {
+        layerItemMap[item.id] = {
+          ...item,
+          _pid: layer.id,
+        } as NScenarioLayerItem;
+        return;
+      }
+      const tmp = { ...item };
       tmp.state = tmp.state?.map((s) => ({
         ...normalizeGeometryLayerItemState({
           ...s,
@@ -477,9 +478,8 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
 
       tmp.meta = mapVisibility(tmp.meta);
       tmp.properties = tmp.properties ?? {};
-      layerItemMap[feature.id] = {
+      layerItemMap[item.id] = {
         ...tmp,
-        kind: "geometry",
         _pid: layer.id,
       } as NGeometryLayerItem;
     });

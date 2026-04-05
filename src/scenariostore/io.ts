@@ -56,9 +56,7 @@ export interface CreateEmptyScenarioOptions {
   symbologyStandard?: SymbologyStandard;
 }
 
-export function createEmptyScenario(
-  options: CreateEmptyScenarioOptions = {},
-): LoadableScenario {
+export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): Scenario {
   const addGroups = options.addGroups ?? false;
   const symbolSettings = useSymbolSettingsStore();
   const symbologyStandard = options.symbologyStandard ?? symbolSettings.symbologyStandard;
@@ -349,7 +347,7 @@ function getCustomSymbols(state: ScenarioState) {
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   const settingsStore = useSymbolSettingsStore();
 
-  function toObject(): LoadableScenario {
+  function toObject(): Scenario {
     const { state } = store.value;
     return {
       id: state.id,
@@ -399,7 +397,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     return val;
   }
 
-  function serializeToObject(): LoadableScenario {
+  function serializeToObject(): Scenario {
     return JSON.parse(stringifyScenario());
   }
 

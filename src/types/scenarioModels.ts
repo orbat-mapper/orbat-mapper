@@ -2,7 +2,6 @@ import type {
   Position,
   RangeRing,
   RangeRingGroup,
-  ScenarioLayer,
   ScenarioMapLayer,
 } from "./scenarioGeoModels";
 import type { DropTarget, EntityId, ScenarioTime } from "./base";
@@ -21,6 +20,7 @@ import type {
 } from "@/types/internalModels";
 import type { VisibilityStyleSpec } from "@/geo/simplestyle";
 import type { SymbolFillColor } from "@/config/colors.ts";
+import type { ScenarioLayerItemsLayer } from "@/types/scenarioLayerItems";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;
@@ -386,7 +386,7 @@ export interface Scenario extends ScenarioInfo {
   meta?: ScenarioMetadata;
   sides: Side[];
   events: ScenarioEvent[];
-  layers: ScenarioLayer[];
+  layers: ScenarioLayerItemsLayer[];
   mapLayers: ScenarioMapLayer[];
   equipment?: EquipmentData[];
   personnel?: PersonnelData[];
