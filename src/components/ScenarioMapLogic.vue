@@ -17,9 +17,11 @@ import { useSettingsStore, useSymbolSettingsStore } from "@/stores/settingsStore
 import { storeToRefs } from "pinia";
 import {
   calculateZoomToResolution,
+  useClusterHoverOutline,
   useMapDrop,
   useMoveInteraction,
   useRotateInteraction,
+  useUnitClusterInteraction,
   useUnitLayer,
   useUnitSelectInteraction,
 } from "@/composables/geoUnitLayers";
@@ -79,7 +81,17 @@ const settingsStore = useSettingsStore();
 const symbolSettings = useSymbolSettingsStore();
 const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
-const { unitLayer, drawUnits, updateUnitPositions, labelLayer } = useUnitLayer();
+const {
+  unitLayer,
+  clusterLayer,
+  drawUnits,
+  updateUnitPositions,
+  labelLayer,
+  refreshClusters,
+  toggleClusterExpansion,
+} = useUnitLayer({
+  mapRef,
+});
 
 const { onScenarioAction } = useSearchActions();
 
@@ -91,7 +103,7 @@ mapRef.value = olMap;
 calculateZoomToResolution(olMap.getView());
 
 const unitLayerGroup = new LayerGroup({
-  layers: [labelLayer, unitLayer],
+  layers: [labelLayer, unitLayer, clusterLayer],
 });
 
 unitLayerGroup.set("title", "Units");
@@ -123,6 +135,13 @@ provideMapHover(mapRef, { enable: hoverEnabled });
 
 olMap.addLayer(historyLayer);
 olMap.addLayer(unitLayerGroup);
+useUnitClusterInteraction(olMap, clusterLayer, { toggleClusterExpansion });
+const { outlineLayer: clusterHoverOutlineLayer } = useClusterHoverOutline(
+  olMap,
+  clusterLayer,
+  unitLayer,
+);
+olMap.addLayer(clusterHoverOutlineLayer);
 
 const {
   unitSelectInteraction,
@@ -243,8 +262,16 @@ watch(
     () => state.unitStateCounter,
     () => state.currentTime,
     () => geo.everyVisibleUnit.value.length,
+    () => state.hierarchyStateVersion,
+    () => state.hierarchyProjectionBucket,
   ],
   () => updateUnitsOnMap(),
+);
+
+useOlEvent(
+  olMap.getView().on("change:resolution", () => {
+    refreshClusters();
+  }),
 );
 
 watch(

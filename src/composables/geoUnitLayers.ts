@@ -3,8 +3,10 @@ import { createUnitFeatureAt, createUnitLayer } from "@/geo/layers";
 import { type MaybeRef, onUnmounted, ref, type Ref, unref, watch } from "vue";
 import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
 import { fromLonLat, toLonLat } from "ol/proj";
 import Point from "ol/geom/Point";
+import Polygon, { fromExtent as polygonFromExtent } from "ol/geom/Polygon";
 import DragBox from "ol/interaction/DragBox";
 import Modify from "ol/interaction/Modify";
 import Select from "ol/interaction/Select";
@@ -41,13 +43,25 @@ import type { Coordinate } from "ol/coordinate";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
 import View from "ol/View";
+import Icon from "ol/style/Icon";
 import Text from "ol/style/Text";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
+import CircleStyle from "ol/style/Circle";
+import type SimpleGeometry from "ol/geom/SimpleGeometry";
 import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils.ts";
 import { getTopHitLayerType } from "@/modules/scenarioeditor/featureLayerUtils.ts";
 import { useRecordingStore } from "@/stores/recordingStore";
+import { clusterUnits, type ClusterableUnit } from "@/geo/unitClustering";
+import type { UnitClusteringSettings } from "@/types/mapSettings";
+import { useGeoStore } from "@/stores/geoStore";
+import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants";
+import { getFullUnitSidc } from "@/symbology/helpers";
+import { Sidc } from "@/symbology/sidc";
+import { Dimension, symbolSetToDimension } from "@/symbology/values";
+import { convex as turfConvex } from "@turf/convex";
+import { featureCollection, point as turfPoint } from "@turf/helpers";
 
 let zoomResolutions: number[] = [];
 const ROTATION_EPSILON = 1e-6;
@@ -83,6 +97,168 @@ function getFeatureRotationRadians(feature: FeatureLike, fallbackDegrees = 0): n
   return (normalizeRotation(symbolRotationDeg) * Math.PI) / 180;
 }
 
+function getClusterDomain(unit: { sidc: string; _state?: { sidc?: string | undefined } | null }) {
+  const sidc = getFullUnitSidc(unit._state?.sidc || unit.sidc);
+  const symbolSet = new Sidc(sidc).symbolSet;
+  const dimension = symbolSetToDimension[symbolSet] ?? Dimension.Unknown;
+
+  switch (dimension) {
+    case Dimension.SeaSurface:
+    case Dimension.SeaSubsurface:
+      return "sea";
+    case Dimension.Air:
+      return "air";
+    case Dimension.Space:
+      return "space";
+    case Dimension.LandUnit:
+    case Dimension.LandEquipment:
+    case Dimension.LandInstallation:
+    case Dimension.DismountedIndividual:
+      return "land";
+    default:
+      return "other";
+  }
+}
+
+function getClusterStandardIdentity(unit: {
+  sidc: string;
+  _state?: { sidc?: string | undefined } | null;
+}) {
+  return new Sidc(getFullUnitSidc(unit._state?.sidc || unit.sidc)).standardIdentity;
+}
+
+function getClusterSegmentColor(standardIdentity: string, domain: string) {
+  const domainLightness = {
+    land: 52,
+    sea: 40,
+    air: 62,
+    space: 70,
+    other: 58,
+  }[domain] ?? 58;
+
+  const hue = {
+    "0": 0,
+    "1": 0,
+    "2": 90,
+    "3": 95,
+    "4": 205,
+    "5": 14,
+    "6": 0,
+    "7": 55,
+    "8": 305,
+  }[standardIdentity] ?? 275;
+
+  const saturation = {
+    "0": 0,
+    "1": 0,
+    "2": 45,
+    "3": 42,
+    "4": 48,
+    "5": 70,
+    "6": 72,
+    "7": 58,
+    "8": 58,
+  }[standardIdentity] ?? 55;
+
+  return `hsl(${hue} ${saturation}% ${domainLightness}%)`;
+}
+
+function getBufferedExtent(coords: Coordinate[], buffer: number): [number, number, number, number] {
+  const xs = coords.map((coord) => coord[0]);
+  const ys = coords.map((coord) => coord[1]);
+  return [
+    Math.min(...xs) - buffer,
+    Math.min(...ys) - buffer,
+    Math.max(...xs) + buffer,
+    Math.max(...ys) + buffer,
+  ];
+}
+
+function createClusterOutlineGeometry(
+  coordinates: Coordinate[],
+  resolution: number,
+): SimpleGeometry | undefined {
+  if (!coordinates.length) return;
+
+  const buffer = Math.max(resolution * 24, 12);
+  if (coordinates.length < 3) {
+    return polygonFromExtent(getBufferedExtent(coordinates, buffer));
+  }
+
+  const hull = turfConvex(featureCollection(coordinates.map((coord) => turfPoint(coord))));
+  const ring = hull?.geometry?.type === "Polygon" ? hull.geometry.coordinates[0] : undefined;
+  if (ring?.length) {
+    return new Polygon([ring as Coordinate[]]);
+  }
+
+  return polygonFromExtent(getBufferedExtent(coordinates, buffer));
+}
+
+function createClusterSummaryRingStyle(
+  composition: {
+    key: string;
+    standardIdentity: string;
+    domain: string;
+    count: number;
+  }[],
+  overlapOffset: Coordinate,
+) {
+  const cacheKey = `${composition
+    .map((entry) => `${entry.key}:${entry.count}`)
+    .join("|")}:${overlapOffset[0]}:${overlapOffset[1]}`;
+  const cached = clusterSummaryRingStyleCache.get(cacheKey);
+  if (cached) return cached;
+
+  const size = 76;
+  const outerRadius = 34;
+  const innerRadius = 25;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return new Style();
+
+  const total = composition.reduce((sum, entry) => sum + entry.count, 0) || 1;
+  let startAngle = -Math.PI / 2;
+  const center = size / 2;
+
+  composition.forEach((entry) => {
+    const slice = (entry.count / total) * Math.PI * 2;
+    const endAngle = startAngle + slice;
+    ctx.beginPath();
+    ctx.arc(center, center, outerRadius, startAngle, endAngle);
+    ctx.arc(center, center, innerRadius, endAngle, startAngle, true);
+    ctx.closePath();
+    ctx.fillStyle = getClusterSegmentColor(entry.standardIdentity, entry.domain);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.92)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    startAngle = endAngle;
+  });
+
+  const style = new Style({
+    geometry: (feature) => {
+      const point = feature.getGeometry();
+      if (!(point instanceof Point)) return point;
+      const coordinates = point.getCoordinates();
+      return new Point([
+        coordinates[0] + overlapOffset[0],
+        coordinates[1] + overlapOffset[1],
+      ]);
+    },
+    image: new Icon({
+      img: canvas,
+      anchor: [0.5, 0.5],
+      anchorXUnits: "fraction",
+      anchorYUnits: "fraction",
+    }),
+  });
+
+  clusterSummaryRingStyleCache.set(cacheKey, style);
+  return style;
+}
+
 export function calculateZoomToResolution(view: View) {
   zoomResolutions = [];
   for (let i = 0; i <= 24; i++) {
@@ -114,7 +290,77 @@ const selectedUnitLabelStyle = new Style({
   }),
 });
 
-export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } = {}) {
+const CLUSTER_HIDDEN_PROPERTY = "_clusterHidden";
+const CLUSTER_MEMBER_IDS_PROPERTY = "_clusterMemberIds";
+const CLUSTER_MODE_PROPERTY = "_clusterMode";
+const CLUSTER_COUNT_PROPERTY = "_clusterCount";
+const CLUSTER_SIDE_ID_PROPERTY = "_clusterSideId";
+const CLUSTER_ANCESTOR_ID_PROPERTY = "_clusterAncestorId";
+const CLUSTER_REPRESENTATIVE_UNIT_ID_PROPERTY = "_clusterRepresentativeUnitId";
+const CLUSTER_OFFSET_PROPERTY = "_clusterOffset";
+const CLUSTER_COMPOSITION_PROPERTY = "_clusterComposition";
+
+const clusterBadgeStyleCache = new Map<string, Style>();
+const clusterSymbolStyleCache = new Map<string, Style>();
+const clusterSummaryRingStyleCache = new Map<string, Style>();
+const clusterHoverOutlineStyle = new Style({
+  stroke: new Stroke({
+    color: "rgba(29,78,216,0.95)",
+    width: 3,
+    lineDash: [8, 6],
+  }),
+  fill: new Fill({ color: "rgba(29,78,216,0.08)" }),
+});
+
+function createClusterBadgeStyle(
+  mode: "naive" | "hierarchy",
+  count: number,
+  overlapOffset: Coordinate,
+) {
+  const cacheKey = `${mode}:${count}:${overlapOffset[0]}:${overlapOffset[1]}`;
+  const cached = clusterBadgeStyleCache.get(cacheKey);
+  if (cached) return cached;
+
+  const radius = Math.max(10, Math.min(18, 10 + Math.log2(count) * 2));
+  const fillColor =
+    mode === "hierarchy" ? "rgba(29,78,216,0.92)" : "rgba(71,85,105,0.92)";
+
+  const style = new Style({
+    geometry: (feature) => {
+      const point = feature.getGeometry();
+      if (!(point instanceof Point)) return point;
+      const coordinates = point.getCoordinates();
+      return new Point([
+        coordinates[0] + overlapOffset[0] + radius * 0.9,
+        coordinates[1] + overlapOffset[1] - radius * 0.9,
+      ]);
+    },
+    image: new CircleStyle({
+      radius,
+      fill: new Fill({ color: fillColor }),
+      stroke: new Stroke({ color: "rgba(255,255,255,0.95)", width: 2 }),
+    }),
+    text: new Text({
+      text: `${count}`,
+      font: `600 ${Math.max(11, Math.round(radius * 0.9))}px "Inter Variable"`,
+      fill: new Fill({ color: "white" }),
+      stroke: new Stroke({ color: "rgba(15,23,42,0.85)", width: 3 }),
+      textAlign: "center",
+      textBaseline: "middle",
+    }),
+  });
+
+  clusterBadgeStyleCache.set(cacheKey, style);
+  return style;
+}
+
+export function useUnitLayer({
+  activeScenario,
+  mapRef,
+}: {
+  activeScenario?: TScenario;
+  mapRef?: MaybeRef<OLMap | undefined>;
+} = {}) {
   const scenario = activeScenario || injectStrict(activeScenarioKey);
   const {
     store: { state, onUndoRedo },
@@ -123,9 +369,21 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     helpers: { getUnitById },
   } = scenario;
   const mapSettings = useMapSettingsStore();
+  const expandedClusterAncestorIds = new Set<EntityId>();
 
   const unitLayer = createUnitLayer();
   unitLayer.setStyle(unitStyleFunction);
+  const clusterLayer = new VectorLayer({
+    source: new VectorSource(),
+    updateWhileInteracting: true,
+    updateWhileAnimating: true,
+    properties: {
+      id: nanoid(),
+      title: "Unit clusters",
+      layerType: LayerTypes.units,
+    },
+    style: clusterStyleFunction,
+  });
 
   const labelLayer = new VectorLayer({
     declutter: true,
@@ -158,6 +416,125 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     { immediate: true },
   );
 
+  watch(
+    () => mapSettings.unitClusteringMode,
+    (mode) => {
+      if (mode !== "hierarchy") {
+        expandedClusterAncestorIds.clear();
+      }
+      clusterSymbolStyleCache.clear();
+      clusterSummaryRingStyleCache.clear();
+    },
+  );
+
+  watch(
+    () => mapSettings.unitClusterGroupingMode,
+    () => {
+      clusterSymbolStyleCache.clear();
+      clusterSummaryRingStyleCache.clear();
+      syncClusterFeatures();
+    },
+  );
+
+  function getClusteringSettings(): UnitClusteringSettings {
+    return {
+      unitClusteringMode: mapSettings.unitClusteringMode,
+      unitClusterGroupingMode: mapSettings.unitClusterGroupingMode,
+      unitClusteringDistancePx: Math.max(1, Number(mapSettings.unitClusteringDistancePx)),
+      unitClusteringMinSize: Math.max(2, Number(mapSettings.unitClusteringMinSize)),
+      unitClusteringMaxZoom: Math.max(0, Number(mapSettings.unitClusteringMaxZoom)),
+      unitClusteringHierarchyMinDepth: Math.max(
+        0,
+        Number(mapSettings.unitClusteringHierarchyMinDepth),
+      ),
+    };
+  }
+
+  function getUnitDepth(unitId: EntityId) {
+    let depth = 0;
+    let currentParentId = state.unitMap[unitId]?._pid;
+    while (currentParentId && currentParentId in state.unitMap) {
+      depth += 1;
+      currentParentId = state.unitMap[currentParentId]?._pid;
+    }
+    return depth;
+  }
+
+  function buildClusterCandidates(): ClusterableUnit[] {
+    return geo.everyVisibleUnit.value
+      .filter((unit) => !!unit._state?.location)
+      .map((unit) => {
+        return {
+          id: unit.id,
+          coordinate: fromLonLat(unit._state!.location!),
+          sideId: unit._sid,
+          domain: getClusterDomain(unit),
+          standardIdentity: getClusterStandardIdentity(unit),
+          parentId: unit._pid,
+          depth: getUnitDepth(unit.id),
+        };
+      });
+  }
+
+  function applyClusterVisibility(clusteredUnitIds: Set<EntityId>) {
+    unitLayer.getSource()
+      ?.getFeatures()
+      .forEach((feature) => {
+        const unitId = feature.getId() as EntityId;
+        feature.set(CLUSTER_HIDDEN_PROPERTY, clusteredUnitIds.has(unitId), true);
+      });
+  }
+
+  function syncClusterFeatures() {
+    const clusterSource = clusterLayer.getSource();
+    if (!clusterSource) return;
+
+    const map = unref(mapRef);
+    const settings = getClusteringSettings();
+    const view = map?.getView();
+    const result = clusterUnits(buildClusterCandidates(), settings, {
+      resolution: view?.getResolution(),
+      zoom: view?.getZoom(),
+      expandedAncestorIds: expandedClusterAncestorIds,
+    });
+
+    applyClusterVisibility(result.clusteredUnitIds);
+
+    clusterSource.clear();
+    if (!result.clusters.length) {
+      unitLayer.changed();
+      labelLayer.changed();
+      return;
+    }
+
+    clusterSource.addFeatures(
+      result.clusters.map((cluster) => {
+        const feature = new Feature<Point>({
+          geometry: new Point(cluster.coordinate),
+        });
+        feature.setId(cluster.id);
+        feature.set(CLUSTER_MEMBER_IDS_PROPERTY, cluster.memberIds, true);
+        feature.set(CLUSTER_MODE_PROPERTY, cluster.mode, true);
+        feature.set(CLUSTER_COUNT_PROPERTY, cluster.memberIds.length, true);
+        feature.set(CLUSTER_SIDE_ID_PROPERTY, cluster.sideId, true);
+        feature.set(CLUSTER_ANCESTOR_ID_PROPERTY, cluster.ancestorId, true);
+        feature.set(CLUSTER_REPRESENTATIVE_UNIT_ID_PROPERTY, cluster.representativeUnitId, true);
+        feature.set(CLUSTER_COMPOSITION_PROPERTY, cluster.composition, true);
+        feature.set(
+          CLUSTER_OFFSET_PROPERTY,
+          cluster.mode === "hierarchy" && state.unitMap[cluster.ancestorId]
+            ? [18, -18]
+            : [0, 0],
+          true,
+        );
+        return feature;
+      }),
+    );
+
+    unitLayer.changed();
+    labelLayer.changed();
+  }
+
   function getOrCreateCachedUnitStyle(
     unit: ReturnType<typeof getUnitById>,
     unitId: string,
@@ -178,6 +555,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
 
   function unitStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
+    if (feature.get(CLUSTER_HIDDEN_PROPERTY)) return;
 
     const unit = getUnitById(unitId);
     if (!unit) return;
@@ -209,6 +587,7 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
 
   function labelStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
+    if (feature.get(CLUSTER_HIDDEN_PROPERTY)) return;
 
     const unit = getUnitById(unitId);
     const { limitVisibility, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
@@ -242,17 +621,116 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     return unitLabelStyle;
   }
 
+  function clusterStyleFunction(feature: FeatureLike) {
+    const count = Number(feature.get(CLUSTER_COUNT_PROPERTY));
+    if (!Number.isFinite(count) || count < 2) return;
+    const mode = feature.get(CLUSTER_MODE_PROPERTY) as "naive" | "hierarchy";
+    const representativeUnitId = feature.get(
+      CLUSTER_REPRESENTATIVE_UNIT_ID_PROPERTY,
+    ) as EntityId | undefined;
+    const overlapOffset = (feature.get(CLUSTER_OFFSET_PROPERTY) as Coordinate | undefined) ?? [
+      0, 0,
+    ];
+    const composition =
+      (feature.get(CLUSTER_COMPOSITION_PROPERTY) as
+        | { key: string; standardIdentity: string; domain: string; count: number }[]
+        | undefined) ?? [];
+    const representativeUnit =
+      representativeUnitId && representativeUnitId in state.unitMap
+        ? state.unitMap[representativeUnitId]
+        : undefined;
+
+    const styles: Style[] = [];
+    if (
+      mapSettings.unitClusterGroupingMode === "summary" &&
+      composition.length > 0
+    ) {
+      styles.push(createClusterSummaryRingStyle(composition, overlapOffset));
+    }
+    if (representativeUnit) {
+      const clusterSymbolKey = [
+        representativeUnit.id,
+        representativeUnit._ikey ?? representativeUnit.sidc,
+        representativeUnit._state?.sidc ?? representativeUnit.sidc,
+        representativeUnit._state?.symbolRotation ?? 0,
+        count,
+        mode,
+        mapSettings.unitClusterGroupingMode,
+      ].join(":");
+
+      let baseStyle = clusterSymbolStyleCache.get(clusterSymbolKey);
+      if (!baseStyle) {
+        const useOriginalStyle = representativeUnit.sidc.startsWith(CUSTOM_SYMBOL_PREFIX);
+        if (useOriginalStyle) {
+          baseStyle = getOrCreateCachedUnitStyle(representativeUnit, representativeUnit.id);
+        } else {
+          const clusterOutlineColor =
+            mode === "hierarchy" ? "rgb(29,78,216)" : "rgb(71,85,105)";
+          const clusterUnit = {
+            ...representativeUnit,
+            style: {
+              ...(representativeUnit.style || {}),
+              mapSymbolSize:
+                (representativeUnit.style?.mapSymbolSize ?? mapSettings.mapIconSize) * 1.15,
+            },
+            textAmplifiers: {
+              ...(representativeUnit.textAmplifiers || {}),
+              additionalInformation: mode === "hierarchy" ? "HCL" : "CL",
+            },
+          };
+          const symbolOptions = {
+            ...getCombinedSymbolOptions(representativeUnit),
+            outlineColor: clusterOutlineColor,
+            outlineWidth: 12,
+            infoOutlineColor: clusterOutlineColor,
+            infoOutlineWidth: 10,
+          };
+          baseStyle = createUnitStyle(clusterUnit, symbolOptions, scenario).style;
+        }
+
+        if (baseStyle) {
+          clusterSymbolStyleCache.set(clusterSymbolKey, baseStyle);
+        }
+      }
+
+      if (baseStyle) {
+        const displacedStyle = new Style({
+          image: baseStyle.getImage() ?? undefined,
+          zIndex: baseStyle.getZIndex(),
+          geometry: (clusterFeature) => {
+            const point = clusterFeature.getGeometry();
+            if (!(point instanceof Point)) return point;
+            const coordinates = point.getCoordinates();
+            return new Point([
+              coordinates[0] + overlapOffset[0],
+              coordinates[1] + overlapOffset[1],
+            ]);
+          },
+        });
+        styles.push(displacedStyle);
+      }
+    }
+
+    styles.push(createClusterBadgeStyle(mode, count, overlapOffset));
+    return styles;
+  }
+
   onUndoRedo(() => {
     clearUnitStyleCache();
+    clusterSymbolStyleCache.clear();
+    clusterSummaryRingStyleCache.clear();
     state.unitStateCounter++;
   });
 
   const drawUnits = () => {
+    clusterSymbolStyleCache.clear();
+    clusterSummaryRingStyleCache.clear();
     unitLayer.getSource()?.clear();
     const units = geo.everyVisibleUnit.value.map((unit) => {
       return createUnitFeatureAt(unit._state!.location!, unit);
     });
     unitLayer.getSource()?.addFeatures(units);
+    syncClusterFeatures();
   };
 
   /**
@@ -297,20 +775,58 @@ export function useUnitLayer({ activeScenario }: { activeScenario?: TScenario } 
     if (toAdd.length) {
       source.addFeatures(toAdd);
     }
+
+    syncClusterFeatures();
   };
 
   const animateUnits = () => {
+    clusterSymbolStyleCache.clear();
+    clusterSummaryRingStyleCache.clear();
     unitLayer.getSource()?.clear();
     const units = geo.everyVisibleUnit.value.map((unit) => {
       return createUnitFeatureAt(unit._state!.location!, unit);
     });
     unitLayer.getSource()?.addFeatures(units);
+    syncClusterFeatures();
     // units.forEach((f) =>
     //   //@ts-ignore
     //   unitLayer.animateFeature(f, new Fade({ duration: 1000 }))
     // );
   };
-  return { unitLayer, labelLayer, drawUnits, updateUnitPositions, animateUnits };
+
+  function refreshClusters() {
+    syncClusterFeatures();
+  }
+
+  function toggleClusterExpansion(ancestorId: EntityId) {
+    if (expandedClusterAncestorIds.has(ancestorId)) {
+      expandedClusterAncestorIds.delete(ancestorId);
+      syncClusterFeatures();
+      return "collapsed" as const;
+    }
+
+    expandedClusterAncestorIds.add(ancestorId);
+    syncClusterFeatures();
+    return "expanded" as const;
+  }
+
+  function clearClusterExpansion() {
+    if (!expandedClusterAncestorIds.size) return;
+    expandedClusterAncestorIds.clear();
+    syncClusterFeatures();
+  }
+
+  return {
+    unitLayer,
+    clusterLayer,
+    labelLayer,
+    drawUnits,
+    updateUnitPositions,
+    animateUnits,
+    refreshClusters,
+    toggleClusterExpansion,
+    clearClusterExpansion,
+  };
 }
 
 export function useMapDrop(mapAdapter: MapAdapter, unitLayer: MaybeRef<VectorLayer>) {
@@ -338,6 +854,130 @@ export function useMapDrop(mapAdapter: MapAdapter, unitLayer: MaybeRef<VectorLay
       }
     },
   });
+}
+
+export function useUnitClusterInteraction(
+  olMap: OLMap,
+  clusterLayer: VectorLayer,
+  options: { toggleClusterExpansion?: (ancestorId: EntityId) => "expanded" | "collapsed" },
+) {
+  const geoStore = useGeoStore();
+  const {
+    helpers: { getUnitById },
+  } = injectStrict(activeScenarioKey);
+
+  useOlEvent(
+    olMap.on("singleclick", (event) => {
+      const clusterFeature = olMap.forEachFeatureAtPixel(
+        event.pixel,
+        (feature, layer) => {
+          if (layer !== clusterLayer) return undefined;
+          return feature as Feature<Point>;
+        },
+        { hitTolerance: 6 },
+      ) as Feature<Point> | undefined;
+
+      const memberIds = clusterFeature?.get(CLUSTER_MEMBER_IDS_PROPERTY) as
+        | EntityId[]
+        | undefined;
+      if (!memberIds?.length || !clusterFeature) return;
+
+      const mode = clusterFeature.get(CLUSTER_MODE_PROPERTY) as
+        | "naive"
+        | "hierarchy"
+        | undefined;
+      const ancestorId = clusterFeature.get(CLUSTER_ANCESTOR_ID_PROPERTY) as
+        | EntityId
+        | undefined;
+      if (mode === "hierarchy" && ancestorId && options.toggleClusterExpansion) {
+        options.toggleClusterExpansion(ancestorId);
+        return;
+      }
+
+      const units = memberIds
+        .map((unitId) => getUnitById(unitId))
+        .filter((unit) => !!unit?._state?.location);
+      if (!units.length) return;
+
+      geoStore.zoomToUnits(units, {
+        duration: 250,
+        maxZoom: 18,
+        padding: [80, 80, 80, 80],
+      });
+    }),
+  );
+}
+
+export function useClusterHoverOutline(olMap: OLMap, clusterLayer: VectorLayer, unitLayer: VectorLayer) {
+  const outlineSource = new VectorSource();
+  const outlineLayer = new VectorLayer({
+    source: outlineSource,
+    updateWhileInteracting: true,
+    updateWhileAnimating: true,
+    properties: {
+      id: nanoid(),
+      title: "Cluster hover outline",
+      layerType: LayerTypes.units,
+    },
+    style: clusterHoverOutlineStyle,
+  });
+
+  const clearOutline = () => outlineSource.clear();
+
+  function syncOutline(clusterFeature?: Feature<Point>) {
+    clearOutline();
+
+    const memberIds = clusterFeature?.get(CLUSTER_MEMBER_IDS_PROPERTY) as EntityId[] | undefined;
+    if (!memberIds?.length) return;
+
+    const coordinates = memberIds
+      .map((memberId) => unitLayer.getSource()?.getFeatureById(memberId) as Feature<Point> | null)
+      .map((feature) => feature?.getGeometry()?.getCoordinates())
+      .filter((coord): coord is Coordinate => !!coord);
+
+    const resolution = olMap.getView().getResolution() ?? 1;
+    const geometry = createClusterOutlineGeometry(coordinates, resolution);
+    if (!geometry) return;
+
+    outlineSource.addFeature(
+      new Feature({
+        geometry,
+      }),
+    );
+  }
+
+  useOlEvent(
+    olMap.on("pointermove", (event) => {
+      if (event.dragging) {
+        clearOutline();
+        return;
+      }
+
+      const clusterFeature = olMap.forEachFeatureAtPixel(
+        event.pixel,
+        (feature, layer) => {
+          if (layer !== clusterLayer) return undefined;
+          const memberIds = feature.get(CLUSTER_MEMBER_IDS_PROPERTY);
+          if (!Array.isArray(memberIds) || memberIds.length === 0) return undefined;
+          return feature as Feature<Point>;
+        },
+        { hitTolerance: 6 },
+      ) as Feature<Point> | undefined;
+
+      syncOutline(clusterFeature);
+    }),
+  );
+
+  const viewport = olMap.getViewport();
+  const clearOnPointerLeave = () => clearOutline();
+  viewport.addEventListener("pointerleave", clearOnPointerLeave);
+
+  onUnmounted(() => {
+    viewport.removeEventListener("pointerleave", clearOnPointerLeave);
+    clearOutline();
+  });
+
+  return { outlineLayer };
 }
 
 export function useMoveInteraction(
@@ -416,6 +1056,7 @@ export function useRotateInteraction(
       event.pixel,
       (feature, layer) => {
         if (layer !== unitLayer) return undefined;
+        if (feature.get(CLUSTER_HIDDEN_PROPERTY)) return undefined;
         return feature as Feature<Point>;
       },
       { hitTolerance: 4 },
@@ -575,6 +1216,7 @@ export function useUnitSelectInteraction(
 
   function selectedUnitStyleFunction(feature: FeatureLike, resolution: number) {
     const unitId = feature?.getId() as string;
+    if (feature.get(CLUSTER_HIDDEN_PROPERTY)) return;
 
     const unit = getUnitById(unitId);
     if (!unit) return;
@@ -686,6 +1328,7 @@ export function useUnitSelectInteraction(
             .getSource()
             ?.getFeaturesInExtent(extent)
             .filter((feature: Feature) =>
+              !feature.get(CLUSTER_HIDDEN_PROPERTY) &&
               feature.getGeometry()!.intersectsExtent(extent),
             ),
         )

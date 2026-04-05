@@ -44,10 +44,14 @@ vi.mock("@/composables/geoUnitLayers", () => ({
         isEmpty: () => true,
       }),
     },
+    clusterLayer: {},
     drawUnits: mocks.drawUnitsSpy,
     updateUnitPositions: mocks.updateUnitPositionsSpy,
     labelLayer: { changed: mocks.labelLayerChangedSpy },
+    refreshClusters: vi.fn(),
   }),
+  useClusterHoverOutline: () => ({ outlineLayer: {} }),
+  useUnitClusterInteraction: vi.fn(),
   useUnitSelectInteraction: () => ({
     unitSelectInteraction: {},
     boxSelectInteraction: {},
@@ -100,6 +104,12 @@ vi.mock("@/stores/mapSettingsStore", () => ({
     showLocation: ref(false),
     showScaleLine: ref(false),
     showFeatureTooltip: ref(true),
+    unitClusteringMode: ref("off"),
+    unitClusterGroupingMode: ref("strict"),
+    unitClusteringDistancePx: ref(48),
+    unitClusteringMinSize: ref(2),
+    unitClusteringMaxZoom: ref(14),
+    unitClusteringHierarchyMinDepth: ref(1),
   }),
 }));
 
@@ -285,7 +295,7 @@ describe("ScenarioMapLogic", () => {
     const olMap = {
       addLayer: vi.fn(),
       addInteraction: vi.fn(),
-      getView: () => ({ fit: vi.fn() }),
+      getView: () => ({ fit: vi.fn(), on: vi.fn(() => ({})) }),
     } as any;
 
     mount(ScenarioMapLogic, {
@@ -353,7 +363,7 @@ describe("ScenarioMapLogic", () => {
     const olMap = {
       addLayer: vi.fn(),
       addInteraction: vi.fn(),
-      getView: () => ({ fit: vi.fn() }),
+      getView: () => ({ fit: vi.fn(), on: vi.fn(() => ({})) }),
     } as any;
 
     mount(ScenarioMapLogic, {
@@ -429,7 +439,7 @@ describe("ScenarioMapLogic", () => {
     const olMap = {
       addLayer: vi.fn(),
       addInteraction: vi.fn(),
-      getView: () => ({ fit: vi.fn() }),
+      getView: () => ({ fit: vi.fn(), on: vi.fn(() => ({})) }),
     } as any;
 
     mount(ScenarioMapLogic, {
@@ -471,7 +481,7 @@ describe("ScenarioMapLogic", () => {
     const olMap = {
       addLayer: vi.fn(),
       addInteraction: vi.fn(),
-      getView: () => ({ fit: vi.fn() }),
+      getView: () => ({ fit: vi.fn(), on: vi.fn(() => ({})) }),
     } as any;
     const wrapper = mount(ScenarioMapLogic, {
       props: { olMap },
@@ -512,7 +522,7 @@ describe("ScenarioMapLogic", () => {
     const olMap = {
       addLayer: vi.fn(),
       addInteraction: vi.fn(),
-      getView: () => ({ fit: vi.fn() }),
+      getView: () => ({ fit: vi.fn(), on: vi.fn(() => ({})) }),
     } as any;
     const wrapper = mount(ScenarioMapLogic, {
       props: { olMap },
@@ -558,7 +568,7 @@ describe("ScenarioMapLogic", () => {
     const olMap = {
       addLayer: vi.fn(),
       addInteraction: vi.fn(),
-      getView: () => ({ fit: vi.fn() }),
+      getView: () => ({ fit: vi.fn(), on: vi.fn(() => ({})) }),
     } as any;
     const wrapper = mount(ScenarioMapLogic, {
       props: { olMap },
