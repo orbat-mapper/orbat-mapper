@@ -880,7 +880,7 @@ export function useUnitClusterInteraction(
       const memberIds = clusterFeature?.get(CLUSTER_MEMBER_IDS_PROPERTY) as
         | EntityId[]
         | undefined;
-      if (!memberIds?.length) return;
+      if (!memberIds?.length || !clusterFeature) return;
 
       const mode = clusterFeature.get(CLUSTER_MODE_PROPERTY) as
         | "naive"

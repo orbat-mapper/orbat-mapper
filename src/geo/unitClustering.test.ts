@@ -21,6 +21,7 @@ function makeUnit(
     coordinate,
     sideId: "side-1",
     domain: "land",
+    standardIdentity: "friend",
     parentId: "parent-1",
     depth: 1,
     ...overrides,
