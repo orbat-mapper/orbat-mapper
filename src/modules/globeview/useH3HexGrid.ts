@@ -29,9 +29,9 @@ function zoomToDefaultResolution(zoom: number): number {
  * which would cause hex edges to visibly clip at different positions.
  */
 function h3ResToTileZoom(res: number): number {
-  // Each H3 res roughly corresponds to a tile zoom where tiles are
-  // appropriately sized relative to the hex cells.
-  const mapping = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  // Tile zoom must be high enough that hex geometry doesn't extend too far
+  // beyond tile edges (which causes visible clipping when overzoomed).
+  const mapping = [2, 3, 4, 5, 7, 9, 10, 11, 12];
   return mapping[Math.min(res, mapping.length - 1)];
 }
 

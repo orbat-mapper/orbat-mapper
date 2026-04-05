@@ -167,52 +167,47 @@ function generateTile(z: number, x: number, y: number): ArrayBuffer {
   const bounds = tileBounds(z, x, y);
   const tilesPerSide = 1 << z;
 
-  // For ownership check: extend to ±90° at polar tile edges so cells
-  // beyond the mercator limit (~85.05°) are claimed by edge tiles.
-  const ownSouth = y === tilesPerSide - 1 ? -90 : bounds.south;
-  const ownNorth = y === 0 ? 90 : bounds.north;
+  // Pad the tile bounds to include cells that overlap tile edges.
+  // Since we only render lines (no fill), duplicate cells across tiles
+  // are fine — overlapping lines are visually identical.
+  const lngPad = (bounds.east - bounds.west) * 0.5;
+  const latPad = (bounds.north - bounds.south) * 0.5;
+  const padWest = bounds.west - lngPad;
+  const padEast = bounds.east + lngPad;
+  const padSouth = Math.max(bounds.south - latPad, -90);
+  const padNorth = Math.min(bounds.north + latPad, 90);
 
   let cells: string[];
   if (currentResolution <= GLOBAL_ENUM_MAX_RES) {
     // At low resolutions, cells are larger than tiles. polygonToCells fails
     // because no cell center falls within the small tile polygon.
-    // Use cached global cell list with pre-computed centers for fast filtering.
+    // Use cached global cell list and include any cell whose center is
+    // within the padded tile bounds.
     const global = getGlobalCells(currentResolution);
     cells = global
       .filter(
         ({ lat, lng }) =>
-          lng >= bounds.west && lng < bounds.east && lat >= ownSouth && lat < ownNorth,
+          lng >= padWest && lng < padEast && lat >= padSouth && lat < padNorth,
       )
       .map((c) => c.id);
   } else {
-    // At higher resolutions, use polygonToCells with padding to find cells
-    // that overlap this tile, then filter by center ownership.
-    // Use larger padding at high latitudes where mercator tiles are narrow.
+    // At higher resolutions, use polygonToCells with padded bounds.
+    // At high latitudes, increase longitude padding further since
+    // mercator tiles are narrower.
     const midLat = (bounds.north + bounds.south) / 2;
     const latFactor = 1 / Math.max(Math.cos((midLat * Math.PI) / 180), 0.1);
-    const lngPad = (bounds.east - bounds.west) * Math.max(0.5, latFactor);
-    const latPad = (bounds.north - bounds.south) * 0.5;
-    const padded = {
-      west: bounds.west - lngPad,
-      east: bounds.east + lngPad,
-      south: Math.max(bounds.south - latPad, -90),
-      north: Math.min(bounds.north + latPad, 90),
-    };
+    const highLatPadWest = bounds.west - (bounds.east - bounds.west) * Math.max(0.5, latFactor);
+    const highLatPadEast = bounds.east + (bounds.east - bounds.west) * Math.max(0.5, latFactor);
 
     const polygon = [
-      [padded.west, padded.south],
-      [padded.east, padded.south],
-      [padded.east, padded.north],
-      [padded.west, padded.north],
-      [padded.west, padded.south],
+      [highLatPadWest, padSouth],
+      [highLatPadEast, padSouth],
+      [highLatPadEast, padNorth],
+      [highLatPadWest, padNorth],
+      [highLatPadWest, padSouth],
     ];
 
-    cells = polygonToCells([polygon], currentResolution, true).filter((c) => {
-      const [lat, lng] = cellToLatLng(c);
-      return (
-        lng >= bounds.west && lng < bounds.east && lat >= ownSouth && lat < ownNorth
-      );
-    });
+    cells = polygonToCells([polygon], currentResolution, true);
   }
 
   const features: Array<{ geom: number[] }> = [];
