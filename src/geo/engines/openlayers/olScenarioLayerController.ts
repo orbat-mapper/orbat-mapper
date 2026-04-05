@@ -314,7 +314,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     const scenario = activeScenario;
     if (!scenario) return;
     const data = scenario.geo.getMapLayerById(layerId);
-    if (!isImageLayer(data)) return;
+    if (!(data && isImageLayer(data))) return;
     const imageCenter = data.imageCenter
       ? fromLonLat(data.imageCenter, olMap.getView().getProjection())
       : olMap.getView().getCenter();
@@ -381,7 +381,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     const scenario = activeScenario;
     if (!scenario) return;
     const data = scenario.geo.getMapLayerById(layerId);
-    if (!isKmlLayer(data)) return;
+    if (!(data && isKmlLayer(data))) return;
     if (!data.url) {
       console.warn("Missing url for tile layer");
       return;
@@ -426,20 +426,20 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
       undoable: false,
     });
     emitLayerEvent({ type: "map-layer-updated", layerId: data.id, data: statusUpdate });
-    return layer;
     layer.getSource()?.once("featuresloadend", () => {
       const extent = fixExtent(source.getExtent());
       if (extent && !isEmpty(extent)) {
         olMap.getView().fit(extent);
       }
     });
+    return layer;
   }
 
   function addTileJsonLayer(layerId: FeatureId) {
     const scenario = activeScenario;
     if (!scenario) return;
     const data = scenario.geo.getMapLayerById(layerId);
-    if (!isTileJsonLayer(data)) return;
+    if (!(data && isTileJsonLayer(data))) return;
     if (!data.url) {
       console.warn("Missing url for tile layer");
       return;
@@ -534,7 +534,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     const scenario = activeScenario;
     if (!scenario) return;
     const data = scenario.geo.getMapLayerById(layerId);
-    if (!isXyzLayer(data)) return;
+    if (!(data && isXyzLayer(data))) return;
     if (!data.url) {
       console.warn("Missing url for tile layer");
       return;
@@ -567,6 +567,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     const scenario = activeScenario;
     if (!scenario) return;
     const mapLayer = scenario.geo.getMapLayerById(layerId);
+    if (!mapLayer) return;
     if (mapLayer.type === "ImageLayer") return addImageLayer(layerId);
     if (mapLayer.type === "TileJSONLayer") return addTileJsonLayer(layerId);
     if (mapLayer.type === "XYZLayer") return addXyzLayer(layerId);
@@ -584,6 +585,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     const scenario = activeScenario;
     if (!scenario) return;
     const mapLayer = scenario.geo.getMapLayerById(layerId);
+    if (!mapLayer) return;
     const layer = getMapOlLayerById(layerId) as any;
     if (!layer) {
       refreshManagedLayers({ doClearCache: false, filterVisible: true });
@@ -856,6 +858,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
             }
           } else if (meta.label === "updateMapLayer") {
             const data = scenario.geo.getMapLayerById(layerId);
+            if (!data) return;
             updateMapLayer(layerId, data);
             if (imageTransformIsActive.value) {
               const olLayer = getMapOlLayerById(layerId);

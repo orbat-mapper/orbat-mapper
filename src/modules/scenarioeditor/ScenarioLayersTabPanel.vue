@@ -107,6 +107,8 @@ const mapLayerButtonItems: ButtonGroupItem[] = [
 
 const scenarioLayers = computed(() => geo.layerItemsLayers.value);
 const stackLayers = computed(() => {
+  // Compatibility fallback for tests and older injected geo mocks that still
+  // expose split overlay/reference collections instead of canonical stackLayers.
   if (geo.stackLayers?.value) return geo.stackLayers.value;
   const referenceLayers = (geo.mapLayers?.value ?? []).map((layer) => ({
     id: String(layer.id),
@@ -128,6 +130,10 @@ function isOverlayStackEntry(layer: unknown): layer is NScenarioOverlayLayer {
 
 function isReferenceStackEntry(layer: unknown): layer is NScenarioReferenceLayer {
   return isScenarioReferenceLayer(layer as any);
+}
+
+function getReferenceLayerSource(layer: NScenarioReferenceLayer) {
+  return layer.source;
 }
 
 const layerMenuItems = computed<MenuItemData<ScenarioLayerAction>[]>(() => [
@@ -499,29 +505,24 @@ onUnmounted(() => {
           <ul v-else-if="isReferenceStackEntry(layer)">
             <li
               class="group hover:bg-accent relative flex items-center justify-between border-l select-none"
-              @dblclick="
-                onImageLayerDoubleClick((layer as NScenarioReferenceLayer).source)
-              "
-              @click="
-                onImageLayerClick((layer as NScenarioReferenceLayer).source, $event)
-              "
+              @dblclick="onImageLayerDoubleClick(getReferenceLayerSource(layer))"
+              @click="onImageLayerClick(getReferenceLayerSource(layer), $event)"
               :class="
-                selectedMapLayerIds.has((layer as NScenarioReferenceLayer).source.id)
+                selectedMapLayerIds.has(getReferenceLayerSource(layer).id)
                   ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900'
                   : 'border-transparent'
               "
             >
               <button class="flex flex-auto items-center py-2.5 sm:py-2">
                 <component
-                  :is="getMapLayerIcon((layer as NScenarioReferenceLayer).source)"
+                  :is="getMapLayerIcon(getReferenceLayerSource(layer))"
                   class="text-muted-foreground size-5"
                 />
                 <span
                   class="group-hover:text-accent-foreground text-foreground ml-2 text-left text-sm"
                   :class="{
-                    'font-bold':
-                      activeMapLayerId === (layer as NScenarioReferenceLayer).source.id,
-                    'opacity-50': (layer as NScenarioReferenceLayer).source.isHidden,
+                    'font-bold': activeMapLayerId === getReferenceLayerSource(layer).id,
+                    'opacity-50': getReferenceLayerSource(layer).isHidden,
                   }"
                 >
                   {{ layer.name }}
@@ -529,31 +530,27 @@ onUnmounted(() => {
               </button>
               <div class="relative flex items-center">
                 <span
-                  v-if="(layer as NScenarioReferenceLayer).source._isTemporary"
+                  v-if="getReferenceLayerSource(layer)._isTemporary"
                   class="badge"
                   title="Temporary layer. Not saved"
                   >TEMP</span
                 >
                 <button
                   type="button"
-                  @click="
-                    toggleMapLayerVisibility((layer as NScenarioReferenceLayer).source)
-                  "
+                  @click="toggleMapLayerVisibility(getReferenceLayerSource(layer))"
                   @keydown.stop
                   class="text-muted-foreground hover:text-muted-foreground ml-1 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
                   title="Toggle layer visibility"
                 >
                   <IconEyeOff
-                    v-if="(layer as NScenarioReferenceLayer).source.isHidden"
+                    v-if="getReferenceLayerSource(layer).isHidden"
                     class="h-5 w-5"
                   />
                   <IconEye class="h-5 w-5" v-else />
                 </button>
                 <DotsMenu
                   :items="mapLayerMenuItems"
-                  @action="
-                    onMapLayerAction((layer as NScenarioReferenceLayer).source, $event)
-                  "
+                  @action="onMapLayerAction(getReferenceLayerSource(layer), $event)"
                   class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
                 />
               </div>

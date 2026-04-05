@@ -150,7 +150,6 @@ function canonicalizeReferenceLayer(layer: ScenarioMapLayer): ScenarioReferenceL
     isHidden: layer.isHidden,
     opacity: layer.opacity,
     _isNew: layer._isNew,
-    _hidden: undefined,
     source: { ...layer, id: String(layer.id) },
   };
 }

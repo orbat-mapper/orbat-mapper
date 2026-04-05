@@ -449,7 +449,6 @@ export function useGeo(store: NewScenarioStore) {
   ) {
     const undoable = options.undoable ?? true;
     const noEmit = options.noEmit ?? false;
-    const emitOnly = options.emitOnly ?? false;
 
     if (undoable) {
       update(
@@ -608,7 +607,6 @@ export function useGeo(store: NewScenarioStore) {
 
           if (state) feature.state = state;
           if (media) feature.media = media;
-          // if (data._hidden !== undefined) feature._hidden = data._hidden;
 
           const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
           const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
@@ -751,7 +749,7 @@ export function useGeo(store: NewScenarioStore) {
     deleteMapLayer,
     updateMapLayer,
     getMapLayerById: (id: FeatureId) =>
-      getReferenceLayerFromMap(state.layerStackMap, id)?.source as ScenarioMapLayer,
+      getReferenceLayerFromMap(state.layerStackMap, id)?.source,
     getMapLayerIndex: (id: FeatureId) => state.layerStack.indexOf(id),
     getStackLayerById,
     onMapLayerEvent: mapLayerEvent.on,
