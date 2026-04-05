@@ -46,6 +46,8 @@ import {
 import { useIndexedDb } from "@/scenariostore/localdb";
 import { klona } from "klona";
 import { saveBlobToLocalFile } from "@/utils/files";
+import { compare as compareVersions } from "compare-versions";
+import { useNotifications } from "@/composables/notifications";
 
 export interface CreateEmptyScenarioOptions {
   id?: string;
@@ -426,8 +428,24 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   }
 
   function loadFromObject(data: Scenario) {
-    store.value = useNewScenarioStore(data);
-    settingsStore.symbologyStandard = store.value.state.info.symbologyStandard || "2525";
+    const { send } = useNotifications();
+    if (compareVersions(data.version, SCENARIO_FILE_VERSION, ">")) {
+      send({
+        message: `This scenario was created with a newer version (${data.version}). The current supported version is ${SCENARIO_FILE_VERSION}. Some features may not work correctly.`,
+        type: "warning",
+      });
+    }
+    try {
+      store.value = useNewScenarioStore(data);
+      settingsStore.symbologyStandard =
+        store.value.state.info.symbologyStandard || "2525";
+    } catch (e) {
+      send({
+        message: `Failed to load scenario: ${e instanceof Error ? e.message : e}. The scenario version (${data.version}) may be incompatible.`,
+        type: "error",
+      });
+      console.error("Failed to load scenario", e);
+    }
   }
 
   async function loadFromUrl(url: string) {
