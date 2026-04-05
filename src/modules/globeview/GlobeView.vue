@@ -303,7 +303,7 @@ onUnmounted(() => {
         </UseDark>
       </div>
     </header>
-    <div class="relative flex flex-auto overflow-hidden">
+    <div class="relative flex min-h-0 flex-auto overflow-hidden">
       <GlobeOrbatPanel
         v-if="isReady && localReady"
         v-show="showOrbatPanel"
