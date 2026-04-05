@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import {
   type GeoJSONSource,
+  type MapMouseEvent,
   type MapStyleImageMissingEvent,
   type Map as MlMap,
+  type PointLike,
 } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
 import { onUnmounted, provide, watch } from "vue";
@@ -10,12 +12,17 @@ import type { Feature } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
 import { centerOfMass } from "@turf/turf";
-import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects.ts";
+import {
+  activeScenarioKey,
+  activeScenarioMapEngineKey,
+  searchActionsKey,
+} from "@/components/injects.ts";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import { usePlaybackStore } from "@/stores/playbackStore.ts";
 import { useGlobeMapDrop } from "@/modules/globeview/useGlobeMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
 import { hashObject, injectStrict } from "@/utils";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
@@ -31,6 +38,8 @@ const usedImageIds = new Set<string>();
 
 const playback = usePlaybackStore();
 const engineRef = injectStrict(activeScenarioMapEngineKey);
+const { onUnitSelectHook } = injectStrict(searchActionsKey);
+const { selectedUnitIds } = useSelectedItems();
 
 const { isDragging, formattedPosition } = useGlobeMapDrop(
   engineRef.value!.map,
@@ -104,6 +113,25 @@ function onStyleLoad() {
 
 mlMap.on("styleimagemissing", styleImageMissing);
 mlMap.on("style.load", onStyleLoad);
+
+function queryUnitFeatures(point: PointLike) {
+  if (!mlMap.getLayer("unitLayer")) return [];
+  return mlMap.queryRenderedFeatures(point, { layers: ["unitLayer"] });
+}
+
+function onMapClick(e: MapMouseEvent) {
+  const unitId = queryUnitFeatures(e.point)[0]?.properties?.id;
+  if (!unitId) return;
+  onUnitSelectHook.trigger({ unitId, options: { noZoom: true } });
+}
+
+function onMapMouseMove(e: MapMouseEvent) {
+  mlMap.getCanvas().style.cursor = queryUnitFeatures(e.point).length ? "pointer" : "";
+}
+
+mlMap.on("click", onMapClick);
+mlMap.on("mousemove", onMapMouseMove);
+
 onStyleLoad();
 if (activeScenario.store.state.id === "demo-falklands82") {
   // activeScenario.time.setCurrentTime(+new Date("1982-05-21T12:00:00-04:00"));
@@ -112,10 +140,12 @@ addUnits(true);
 
 watch(
   () => activeScenario.store.state.currentTime,
-  (time) => {
+  () => {
     addUnits();
   },
 );
+
+watch(selectedUnitIds, () => addUnits(), { deep: true });
 
 function addUnits(initial = false) {
   const source = mlMap.getSource("unitSource") as GeoJSONSource;
@@ -133,6 +163,7 @@ function addUnits(initial = false) {
       if (!symbolCache.has(symbolKey)) {
         symbolCache.set(symbolKey, symbolData);
       }
+      const isSelected = selectedUnitIds.value.has(unit.id);
       return {
         type: "Feature",
         geometry: {
@@ -141,7 +172,7 @@ function addUnits(initial = false) {
         },
         properties: {
           id: unit.id,
-          symbolKey,
+          symbolKey: isSelected ? `sel-${symbolKey}` : symbolKey,
           sidc: unit.sidc,
           label: unit.shortName || unit.name || "Unnamed Unit",
         },
@@ -159,6 +190,8 @@ onUnmounted(() => {
   if (!mlMap) return;
   mlMap.off("styleimagemissing", styleImageMissing);
   mlMap.off("style.load", onStyleLoad);
+  mlMap.off("click", onMapClick);
+  mlMap.off("mousemove", onMapMouseMove);
 });
 
 const { pause, resume, isActive } = useRafFn(
