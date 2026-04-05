@@ -76,6 +76,31 @@ export interface MoveLayerOptions {
   direction?: "up" | "down";
 }
 
+function assignReferenceLayerSharedFields(
+  layer: NScenarioReferenceLayer,
+  data: ScenarioMapLayerUpdate,
+) {
+  const {
+    name,
+    description,
+    attributions,
+    externalUrl,
+    visibleFromT,
+    visibleUntilT,
+    isHidden,
+    opacity,
+  } = data;
+
+  if (name !== undefined) layer.name = name;
+  if (description !== undefined) layer.description = description;
+  if (attributions !== undefined) layer.attributions = attributions;
+  if (externalUrl !== undefined) layer.externalUrl = externalUrl;
+  if (visibleFromT !== undefined) layer.visibleFromT = visibleFromT;
+  if (visibleUntilT !== undefined) layer.visibleUntilT = visibleUntilT;
+  if (isHidden !== undefined) layer.isHidden = isHidden;
+  if (opacity !== undefined) layer.opacity = opacity;
+}
+
 function getGeometryLayerItemFromMap(
   itemMap: Record<FeatureId, NScenarioLayerItem>,
   featureId: FeatureId,
@@ -458,7 +483,7 @@ export function useGeo(store: NewScenarioStore) {
           const layer = getReferenceLayerFromMap(s.layerStackMap, layerId);
           if (!layer) return;
           Object.assign(layer.source, data);
-          Object.assign(layer, data);
+          assignReferenceLayerSharedFields(layer, data);
         },
         { label: "updateMapLayer", value: layerId },
       );
@@ -466,7 +491,7 @@ export function useGeo(store: NewScenarioStore) {
       const layer = getReferenceLayerFromMap(state.layerStackMap, layerId);
       if (!layer) return;
       Object.assign(layer.source, data);
-      Object.assign(layer, data);
+      assignReferenceLayerSharedFields(layer, data);
     }
     if (noEmit) return;
     mapLayerEvent.trigger({ type: "update", id: layerId, data });
