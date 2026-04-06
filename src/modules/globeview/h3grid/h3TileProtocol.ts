@@ -168,7 +168,6 @@ function writeFeature(feature: { id: number; geom: number[] }, pbf: Pbf) {
 
 function generateTile(z: number, x: number, y: number): ArrayBuffer {
   const bounds = tileBounds(z, x, y);
-  const tilesPerSide = 1 << z;
 
   // Pad the tile bounds to include cells that overlap tile edges.
   // Since we only render lines (no fill), duplicate cells across tiles

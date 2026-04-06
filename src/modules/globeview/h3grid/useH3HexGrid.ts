@@ -1,5 +1,5 @@
 import { ref, watch, type ShallowRef } from "vue";
-import type { Map as MlMap } from "maplibre-gl";
+import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
 import { useDebounceFn } from "@vueuse/core";
 import { polygonToCells, cellToBoundary } from "h3-js";
 import type { Feature, FeatureCollection, Polygon } from "geojson";
@@ -113,9 +113,15 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
     protocolRegistered = true;
   }
 
-  function addSourceAndLayers(map: MlMap) {
+  function resolveTargetResolution(map: MlMap): number {
+    return autoResolution.value
+      ? zoomToDefaultResolution(map.getZoom())
+      : hexResolution.value;
+  }
+
+  function addH3SourceAndLayer(map: MlMap, res: number) {
     if (!map.getSource(H3_SOURCE)) {
-      const tileZoom = h3ResToTileZoom(hexResolution.value);
+      const tileZoom = h3ResToTileZoom(res);
       map.addSource(H3_SOURCE, {
         type: "vector",
         tiles: [`${H3_PROTOCOL}://{z}/{x}/{y}`],
@@ -123,16 +129,48 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
         maxzoom: tileZoom,
       });
     }
+    const beforeLayer = map.getLayer("unitLayer") ? "unitLayer" : undefined;
+    if (!map.getLayer(H3_LAYER_LINE)) {
+      map.addLayer(
+        {
+          id: H3_LAYER_LINE,
+          type: "line",
+          source: H3_SOURCE,
+          "source-layer": "h3",
+          paint: {
+            "line-color": "#3b82f6",
+            "line-opacity": 0.5,
+            "line-width": ["interpolate", ["linear"], ["zoom"], 1, 0.5, 5, 1.5, 10, 2],
+          },
+        },
+        beforeLayer,
+      );
+    }
+  }
+
+  function updateCountrySourceData(map: MlMap, res: number) {
+    const icelandSource = map.getSource(ICELAND_SOURCE) as GeoJSONSource | undefined;
+    if (icelandSource) {
+      icelandSource.setData(buildCountryCells(icelandGeo, res));
+    }
+
+    const greenlandSource = map.getSource(GREENLAND_SOURCE) as GeoJSONSource | undefined;
+    if (greenlandSource) {
+      greenlandSource.setData(buildCountryCells(greenlandGeo, res));
+    }
+  }
+
+  function addCountrySourcesAndLayers(map: MlMap, res: number) {
     if (!map.getSource(ICELAND_SOURCE)) {
       map.addSource(ICELAND_SOURCE, {
         type: "geojson",
-        data: buildCountryCells(icelandGeo, hexResolution.value),
+        data: buildCountryCells(icelandGeo, res),
       });
     }
     if (!map.getSource(GREENLAND_SOURCE)) {
       map.addSource(GREENLAND_SOURCE, {
         type: "geojson",
-        data: buildCountryCells(greenlandGeo, hexResolution.value),
+        data: buildCountryCells(greenlandGeo, res),
       });
     }
     const beforeLayer = map.getLayer("unitLayer") ? "unitLayer" : undefined;
@@ -164,66 +202,68 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
         beforeLayer,
       );
     }
-    if (!map.getLayer(H3_LAYER_LINE)) {
-      map.addLayer(
-        {
-          id: H3_LAYER_LINE,
-          type: "line",
-          source: H3_SOURCE,
-          "source-layer": "h3",
-          paint: {
-            "line-color": "#3b82f6",
-            "line-opacity": 0.5,
-            "line-width": ["interpolate", ["linear"], ["zoom"], 1, 0.5, 5, 1.5, 10, 2],
-          },
-        },
-        beforeLayer,
-      );
-    }
   }
 
-  function removeSourceAndLayers(map: MlMap) {
+  function addSourceAndLayers(map: MlMap, res: number) {
+    addH3SourceAndLayer(map, res);
+    addCountrySourcesAndLayers(map, res);
+  }
+
+  function removeH3SourceAndLayer(map: MlMap) {
     if (map.getLayer(H3_LAYER_LINE)) map.removeLayer(H3_LAYER_LINE);
+    if (map.getSource(H3_SOURCE)) map.removeSource(H3_SOURCE);
+  }
+
+  function removeCountrySourcesAndLayers(map: MlMap) {
     if (map.getLayer(GREENLAND_FILL_LAYER)) map.removeLayer(GREENLAND_FILL_LAYER);
     if (map.getLayer(ICELAND_FILL_LAYER)) map.removeLayer(ICELAND_FILL_LAYER);
-    if (map.getSource(H3_SOURCE)) map.removeSource(H3_SOURCE);
     if (map.getSource(GREENLAND_SOURCE)) map.removeSource(GREENLAND_SOURCE);
     if (map.getSource(ICELAND_SOURCE)) map.removeSource(ICELAND_SOURCE);
   }
 
-  /** Force MapLibre to re-fetch all tiles (after resolution change) */
-  function reloadTiles(map: MlMap) {
-    removeSourceAndLayers(map);
-    addSourceAndLayers(map);
+  function removeSourceAndLayers(map: MlMap) {
+    removeH3SourceAndLayer(map);
+    removeCountrySourcesAndLayers(map);
+  }
+
+  /** Force MapLibre to re-fetch H3 vector tiles without rebuilding country layers */
+  function reloadH3Tiles(map: MlMap, res: number) {
+    removeH3SourceAndLayer(map);
+    addH3SourceAndLayer(map, res);
+  }
+
+  function applyResolution(map: MlMap, res: number) {
+    hexResolution.value = res;
+    setH3Resolution(res);
+    updateCountrySourceData(map, res);
+    reloadH3Tiles(map, res);
   }
 
   function updateResolution() {
     const map = mlMap.value;
     if (!map || !showHexGrid.value) return;
 
-    const zoom = map.getZoom();
-    const res = autoResolution.value
-      ? zoomToDefaultResolution(zoom)
-      : hexResolution.value;
+    const res = resolveTargetResolution(map);
 
     if (res !== hexResolution.value || !map.getSource(H3_SOURCE)) {
-      hexResolution.value = res;
-      setH3Resolution(res);
-      reloadTiles(map);
+      applyResolution(map, res);
     }
   }
 
   const debouncedUpdateResolution = useDebounceFn(updateResolution, 200);
 
-  function onMoveEnd() {
+  function onZoomEnd() {
     if (!autoResolution.value) return;
     debouncedUpdateResolution();
   }
 
   function onStyleLoad() {
     if (showHexGrid.value) {
-      setH3Resolution(hexResolution.value);
-      addSourceAndLayers(mlMap.value!);
+      const map = mlMap.value!;
+      const res = resolveTargetResolution(map);
+      hexResolution.value = res;
+      setH3Resolution(res);
+      addSourceAndLayers(map, res);
     }
   }
 
@@ -231,15 +271,17 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
     mlMap,
     (map, oldMap) => {
       if (oldMap) {
-        oldMap.off("moveend", onMoveEnd);
+        oldMap.off("zoomend", onZoomEnd);
         oldMap.off("style.load", onStyleLoad);
       }
       if (map) {
-        map.on("moveend", onMoveEnd);
+        map.on("zoomend", onZoomEnd);
         map.on("style.load", onStyleLoad);
         if (showHexGrid.value) {
-          setH3Resolution(hexResolution.value);
-          addSourceAndLayers(map);
+          const res = resolveTargetResolution(map);
+          hexResolution.value = res;
+          setH3Resolution(res);
+          addSourceAndLayers(map, res);
         }
       }
     },
@@ -250,9 +292,10 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
     const map = mlMap.value;
     if (!map) return;
     if (val) {
-      setH3Resolution(hexResolution.value);
-      addSourceAndLayers(map);
-      if (autoResolution.value) updateResolution();
+      const res = resolveTargetResolution(map);
+      hexResolution.value = res;
+      setH3Resolution(res);
+      addSourceAndLayers(map, res);
     } else {
       removeSourceAndLayers(map);
     }
@@ -261,8 +304,7 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
   watch(hexResolution, (res) => {
     const map = mlMap.value;
     if (!map || !showHexGrid.value || autoResolution.value) return;
-    setH3Resolution(res);
-    reloadTiles(map);
+    applyResolution(map, res);
   });
 
   watch(autoResolution, () => {
