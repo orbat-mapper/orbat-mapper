@@ -81,7 +81,9 @@ const mlMap = shallowRef<MlMap>();
 const geoStore = useGeoStore();
 const scenarioMapEngineRef = shallowRef<ScenarioMapEngine>();
 const activeParentId = ref<EntityId | undefined | null>(null);
-const showOrbatPanel = ref(true);
+const showOrbatPanel = ref(
+  typeof window === "undefined" ? true : window.innerWidth >= 768,
+);
 provide(
   activeScenarioMapEngineKey,
   scenarioMapEngineRef as ShallowRef<ScenarioMapEngine | undefined>,
