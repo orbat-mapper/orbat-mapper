@@ -177,19 +177,29 @@ function generateTile(z: number, x: number, y: number): ArrayBuffer {
   const padSouth = Math.max(bounds.south - latPad, -90);
   const padNorth = Math.min(bounds.north + latPad, 90);
 
-  let cells: string[];
+  /**
+   * Return the longitude shift (-360, 0, or +360) that places `lng` within
+   * [padWest, padEast), or null if the cell should not be rendered in this tile.
+   * This lets a hex near the antimeridian be rendered in both tiles on either side.
+   */
+  function shiftForTile(lng: number): number | null {
+    for (const shift of [0, 360, -360]) {
+      const s = lng + shift;
+      if (s >= padWest && s < padEast) return shift;
+    }
+    return null;
+  }
+
+  const cellsForTile: Array<{ id: string; shift: number }> = [];
+
   if (currentResolution <= GLOBAL_ENUM_MAX_RES) {
-    // At low resolutions, cells are larger than tiles. polygonToCells fails
-    // because no cell center falls within the small tile polygon.
-    // Use cached global cell list and include any cell whose center is
-    // within the padded tile bounds.
+    // Use cached global cell list with pre-computed centers for fast filtering.
     const global = getGlobalCells(currentResolution);
-    cells = global
-      .filter(
-        ({ lat, lng }) =>
-          lng >= padWest && lng < padEast && lat >= padSouth && lat < padNorth,
-      )
-      .map((c) => c.id);
+    for (const { id, lat, lng } of global) {
+      if (lat < padSouth || lat >= padNorth) continue;
+      const shift = shiftForTile(lng);
+      if (shift !== null) cellsForTile.push({ id, shift });
+    }
   } else {
     // At higher resolutions, use polygonToCells with padded bounds.
     // At high latitudes, increase longitude padding further since
@@ -199,29 +209,47 @@ function generateTile(z: number, x: number, y: number): ArrayBuffer {
     const highLatPadWest = bounds.west - (bounds.east - bounds.west) * Math.max(0.5, latFactor);
     const highLatPadEast = bounds.east + (bounds.east - bounds.west) * Math.max(0.5, latFactor);
 
-    const polygon = [
-      [highLatPadWest, padSouth],
-      [highLatPadEast, padSouth],
-      [highLatPadEast, padNorth],
-      [highLatPadWest, padNorth],
-      [highLatPadWest, padSouth],
-    ];
+    // Clip polygon to ±180° and call polygonToCells for the primary range,
+    // plus a second call for any portion that wraps across the antimeridian.
+    const ranges: Array<[number, number]> = [];
+    const clippedWest = Math.max(highLatPadWest, -180);
+    const clippedEast = Math.min(highLatPadEast, 180);
+    if (clippedWest < clippedEast) ranges.push([clippedWest, clippedEast]);
+    if (highLatPadWest < -180) ranges.push([highLatPadWest + 360, 180]);
+    if (highLatPadEast > 180) ranges.push([-180, highLatPadEast - 360]);
 
-    cells = polygonToCells([polygon], currentResolution, true);
+    const seen = new Set<string>();
+    for (const [w, e] of ranges) {
+      const polygon = [
+        [w, padSouth],
+        [e, padSouth],
+        [e, padNorth],
+        [w, padNorth],
+        [w, padSouth],
+      ];
+      for (const id of polygonToCells([polygon], currentResolution, true)) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const [, lng] = cellToLatLng(id);
+        const shift = shiftForTile(lng);
+        if (shift !== null) cellsForTile.push({ id, shift });
+      }
+    }
   }
 
   const features: Array<{ geom: number[] }> = [];
-  for (const cell of cells) {
-    const [centerLat, centerLng] = cellToLatLng(cell);
+  for (const { id: cell, shift } of cellsForTile) {
+    const [, centerLng] = cellToLatLng(cell);
+    const shiftedCenter = centerLng + shift;
     const boundary = cellToBoundary(cell, true); // [lng, lat] order
     boundary.push(boundary[0]); // close ring
 
-    // Normalize longitudes relative to cell center to handle antimeridian.
-    // Without this, vertices jump from ~179° to ~-179° causing streaks.
+    // Apply the tile shift, then normalize relative to the shifted center
+    // to handle cells whose own boundary crosses the antimeridian.
     const normalized = boundary.map(([lng, lat]) => {
-      let nLng = lng;
-      while (nLng - centerLng > 180) nLng -= 360;
-      while (nLng - centerLng < -180) nLng += 360;
+      let nLng = lng + shift;
+      while (nLng - shiftedCenter > 180) nLng -= 360;
+      while (nLng - shiftedCenter < -180) nLng += 360;
       return [nLng, lat] as [number, number];
     });
 
