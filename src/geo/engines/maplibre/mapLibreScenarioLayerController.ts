@@ -10,12 +10,11 @@ import type {
 } from "@/geo/contracts/scenarioLayerController";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { TScenario } from "@/scenariostore";
-import type {
-  FeatureId,
-  ScenarioFeature,
-  ScenarioMapLayer,
-} from "@/types/scenarioGeoModels";
-import type { NScenarioFeature } from "@/types/internalModels";
+import type { FeatureId, ScenarioMapLayer } from "@/types/scenarioGeoModels";
+import {
+  isNGeometryLayerItem,
+  type NGeometryLayerItem,
+} from "@/types/scenarioLayerItems";
 import { fixExtent } from "@/utils/geoConvert";
 
 function normalizeMapLayerExtent(
@@ -39,7 +38,7 @@ function normalizeMapLayerExtent(
   ) as [number, number, number, number];
 }
 
-function toCurrentFeature(feature: ScenarioFeature): GeoJsonFeature | undefined {
+function toCurrentFeature(feature: NGeometryLayerItem): GeoJsonFeature | undefined {
   const geometry = feature._state?.geometry ?? feature.geometry;
   if (!geometry) return;
   if (feature.meta.radius && geometry.type === "Point") {
@@ -66,10 +65,10 @@ function getMapLayerCenter(mapLayer: ScenarioMapLayer): Position | undefined {
   return [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2];
 }
 
-function isScenarioFeature(
-  feature: NScenarioFeature | undefined,
-): feature is NScenarioFeature {
-  return Boolean(feature);
+function isGeometryLayerItem(
+  item: NGeometryLayerItem | undefined,
+): item is NGeometryLayerItem {
+  return Boolean(item);
 }
 
 export function createMapLibreScenarioLayerController(
@@ -84,13 +83,13 @@ export function createMapLibreScenarioLayerController(
   }
 
   function getFeature(featureId: FeatureId) {
-    return activeScenario?.geo.getFeatureById(featureId).feature;
+    return activeScenario?.geo.getGeometryLayerItemById(featureId).layerItem;
   }
 
   function getFeatureCollection(featureIds: FeatureId[]) {
     const features = featureIds
       .map((featureId) => getFeature(featureId))
-      .filter(isScenarioFeature)
+      .filter(isGeometryLayerItem)
       .map(toCurrentFeature)
       .filter((feature): feature is GeoJsonFeature => Boolean(feature));
     if (!features.length) return;
@@ -120,14 +119,12 @@ export function createMapLibreScenarioLayerController(
   }
 
   function zoomToScenarioLayer(layerId: FeatureId) {
-    const layer = activeScenario?.geo.getLayerById(layerId);
-    if (!layer) return;
-    const visibleFeatureIds = layer.features.filter((featureId) => {
-      const feature = activeScenario?.geo.getFeatureById(featureId).feature;
-      return feature && !feature._hidden;
-    });
-    const featureIds = visibleFeatureIds.length ? visibleFeatureIds : layer.features;
-    zoomToFeatures(featureIds);
+    const fullLayer = activeScenario?.geo.getFullLayerItemsLayer(layerId);
+    if (!fullLayer) return;
+    const items = fullLayer.items.filter(isNGeometryLayerItem);
+    const visible = items.filter((item) => !item._hidden);
+    const picked = (visible.length ? visible : items).map((item) => item.id);
+    zoomToFeatures(picked);
   }
 
   function zoomToMapLayer(layerId: FeatureId) {
