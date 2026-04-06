@@ -32,6 +32,7 @@ import {
   idle,
   isScenarioFeatureDragItem,
   isScenarioFeatureLayerDragItem,
+  isScenarioMapLayerDragItem,
   type ItemState,
 } from "@/types/draggables";
 import { useTimeoutFn } from "@vueuse/core";
@@ -132,7 +133,8 @@ onMounted(() => {
         (isScenarioFeatureDragItem(source.data) &&
           source.data.feature._pid !== props.layer.id) ||
         (isScenarioFeatureLayerDragItem(source.data) &&
-          source.data.layer.id !== props.layer.id),
+          source.data.layer.id !== props.layer.id) ||
+        isScenarioMapLayerDragItem(source.data),
       onDragEnter: ({ self }) => {
         isDragOver.value = true;
         const closestEdge = extractClosestEdge(self.data);
@@ -146,7 +148,10 @@ onMounted(() => {
         ) {
           startOpenTimeout();
         }
-        if (isScenarioFeatureLayerDragItem(self.data)) {
+        if (
+          isScenarioFeatureLayerDragItem(self.data) ||
+          isScenarioMapLayerDragItem(self.data)
+        ) {
           const closestEdge = extractClosestEdge(self.data);
           itemState.value = { type: "drag-over", closestEdge: closestEdge };
         }
@@ -158,7 +163,10 @@ onMounted(() => {
       },
       getData({ input, element, source }) {
         const data = getScenarioFeatureLayerDragItem({ layer: props.layer });
-        if (isScenarioFeatureLayerDragItem(source.data)) {
+        if (
+          isScenarioFeatureLayerDragItem(source.data) ||
+          isScenarioMapLayerDragItem(source.data)
+        ) {
           return attachClosestEdge(data, {
             input,
             element,

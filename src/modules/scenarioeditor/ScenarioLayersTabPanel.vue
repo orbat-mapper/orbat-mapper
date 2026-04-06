@@ -9,7 +9,6 @@ import {
   featureMenuItems,
   layerItemsToGeoJsonString,
 } from "@/modules/scenarioeditor/featureLayerUtils";
-import ChevronPanel from "@/components/ChevronPanel.vue";
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import type { NGeometryLayerItem, NScenarioLayer } from "@/types/internalModels";
 import type {
@@ -17,7 +16,7 @@ import type {
   ScenarioMapLayer,
   ScenarioMapLayerType,
 } from "@/types/scenarioGeoModels";
-import { IconEye, IconEyeOff } from "@iconify-prerendered/vue-mdi";
+import ScenarioReferenceLayerRow from "@/modules/scenarioeditor/ScenarioReferenceLayerRow.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { useUiStore } from "@/stores/uiStore";
 import type { ButtonGroupItem, DropTarget, MenuItemData } from "@/components/types";
@@ -35,6 +34,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import {
   isScenarioFeatureDragItem,
   isScenarioFeatureLayerDragItem,
+  isScenarioMapLayerDragItem,
 } from "@/types/draggables";
 import { useNotifications } from "@/composables/notifications";
 import {
@@ -406,7 +406,8 @@ onMounted(() => {
   dndCleanup = monitorForElements({
     canMonitor: ({ source }) =>
       isScenarioFeatureDragItem(source.data) ||
-      isScenarioFeatureLayerDragItem(source.data),
+      isScenarioFeatureLayerDragItem(source.data) ||
+      isScenarioMapLayerDragItem(source.data),
     onDrop: ({ source, location }) => {
       const destination = location.current.dropTargets[0];
       if (!destination) {
@@ -446,21 +447,36 @@ onMounted(() => {
           }
         });
       } else if (
-        isScenarioFeatureLayerDragItem(source.data) &&
-        isScenarioFeatureLayerDragItem(destination.data)
+        (isScenarioFeatureLayerDragItem(source.data) ||
+          isScenarioMapLayerDragItem(source.data)) &&
+        (isScenarioFeatureLayerDragItem(destination.data) ||
+          isScenarioMapLayerDragItem(destination.data))
       ) {
-        const fromIndex = geo.getLayerIndex(source.data.layer.id);
-        let toIndex = geo.getLayerIndex(destination.data.layer.id);
-        if (closestEdgeOfTarget === "bottom") toIndex++;
-        if (fromIndex < toIndex) toIndex--;
-        geo.moveLayer(source.data.layer.id, toIndex);
-        const layerId = source.data.layer.id;
-        nextTick(() => {
-          const el = document.querySelector(`[data-layer-id="${layerId}"]`);
-          if (el) {
-            triggerPostMoveFlash(el);
+        const sourceId = isScenarioFeatureLayerDragItem(source.data)
+          ? source.data.layer.id
+          : source.data.mapLayer.id;
+        const destinationId = isScenarioFeatureLayerDragItem(destination.data)
+          ? destination.data.layer.id
+          : destination.data.mapLayer.id;
+        if (sourceId !== destinationId) {
+          const fromIndex = geo.getLayerIndex(sourceId);
+          let toIndex = geo.getLayerIndex(destinationId);
+          if (closestEdgeOfTarget === "bottom") toIndex++;
+          if (fromIndex < toIndex) toIndex--;
+          if (isScenarioMapLayerDragItem(source.data)) {
+            geo.moveMapLayer(sourceId, { toIndex });
+          } else {
+            geo.moveLayer(sourceId, toIndex);
           }
-        });
+          nextTick(() => {
+            const el =
+              document.querySelector(`[data-layer-id="${sourceId}"]`) ??
+              document.querySelector(`[data-map-layer-id="${sourceId}"]`);
+            if (el) {
+              triggerPostMoveFlash(el);
+            }
+          });
+        }
       }
     },
   });
@@ -473,92 +489,38 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <ChevronPanel
-      label="Layers"
-      class="mb-4"
-      header-class="ml-4"
-      v-model:open="uiStore.mapLayersPanelOpen"
-    >
-      <template #right>
-        <div class="flex items-center">
-          <DotsMenu
-            class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-            :items="mapLayersMenuItems"
-          />
-        </div>
+    <div class="group flex items-center justify-end">
+      <DotsMenu :items="mapLayersMenuItems" />
+    </div>
+    <div>
+      <template v-for="layer in stackLayers" :key="layer.id">
+        <ScenarioFeatureLayer
+          v-if="isOverlayStackEntry(layer)"
+          :features="getOverlayFeatures(layer as NScenarioOverlayLayer)"
+          :layer="layer as unknown as NScenarioLayer"
+          :layer-menu-items="layerMenuItems"
+          :feature-menu-items="availableFeatureMenuItems"
+          v-model:activeLayerId="activeLayerId"
+          v-model:editedLayerId="editedLayerId"
+          @feature-click="onFeatureClick"
+          @feature-double-click="onFeatureDoubleClick"
+          @feature-action="onFeatureAction"
+          @layer-action="onLayerAction"
+        />
+        <ScenarioReferenceLayerRow
+          v-else-if="isReferenceStackEntry(layer)"
+          :map-layer="getReferenceLayerSource(layer)"
+          :label="layer.name"
+          :active-map-layer-id="activeMapLayerId"
+          :selected="selectedMapLayerIds.has(getReferenceLayerSource(layer).id)"
+          :menu-items="mapLayerMenuItems"
+          @click="onImageLayerClick(getReferenceLayerSource(layer), $event)"
+          @dblclick="onImageLayerDoubleClick(getReferenceLayerSource(layer))"
+          @toggle-visibility="toggleMapLayerVisibility(getReferenceLayerSource(layer))"
+          @action="onMapLayerAction(getReferenceLayerSource(layer), $event)"
+        />
       </template>
-      <div class="-mt-6">
-        <template v-for="layer in stackLayers" :key="layer.id">
-          <ScenarioFeatureLayer
-            v-if="isOverlayStackEntry(layer)"
-            :features="getOverlayFeatures(layer as NScenarioOverlayLayer)"
-            :layer="layer as unknown as NScenarioLayer"
-            :layer-menu-items="layerMenuItems"
-            :feature-menu-items="availableFeatureMenuItems"
-            v-model:activeLayerId="activeLayerId"
-            v-model:editedLayerId="editedLayerId"
-            @feature-click="onFeatureClick"
-            @feature-double-click="onFeatureDoubleClick"
-            @feature-action="onFeatureAction"
-            @layer-action="onLayerAction"
-          />
-          <ul v-else-if="isReferenceStackEntry(layer)">
-            <li
-              class="group hover:bg-accent relative flex items-center justify-between border-l select-none"
-              @dblclick="onImageLayerDoubleClick(getReferenceLayerSource(layer))"
-              @click="onImageLayerClick(getReferenceLayerSource(layer), $event)"
-              :class="
-                selectedMapLayerIds.has(getReferenceLayerSource(layer).id)
-                  ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900'
-                  : 'border-transparent'
-              "
-            >
-              <button class="flex flex-auto items-center py-2.5 sm:py-2">
-                <component
-                  :is="getMapLayerIcon(getReferenceLayerSource(layer))"
-                  class="text-muted-foreground size-5"
-                />
-                <span
-                  class="group-hover:text-accent-foreground text-foreground ml-2 text-left text-sm"
-                  :class="{
-                    'font-bold': activeMapLayerId === getReferenceLayerSource(layer).id,
-                    'opacity-50': getReferenceLayerSource(layer).isHidden,
-                  }"
-                >
-                  {{ layer.name }}
-                </span>
-              </button>
-              <div class="relative flex items-center">
-                <span
-                  v-if="getReferenceLayerSource(layer)._isTemporary"
-                  class="badge"
-                  title="Temporary layer. Not saved"
-                  >TEMP</span
-                >
-                <button
-                  type="button"
-                  @click="toggleMapLayerVisibility(getReferenceLayerSource(layer))"
-                  @keydown.stop
-                  class="text-muted-foreground hover:text-muted-foreground ml-1 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-                  title="Toggle layer visibility"
-                >
-                  <IconEyeOff
-                    v-if="getReferenceLayerSource(layer).isHidden"
-                    class="h-5 w-5"
-                  />
-                  <IconEye class="h-5 w-5" v-else />
-                </button>
-                <DotsMenu
-                  :items="mapLayerMenuItems"
-                  @action="onMapLayerAction(getReferenceLayerSource(layer), $event)"
-                  class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-                />
-              </div>
-            </li>
-          </ul>
-        </template>
-      </div>
-    </ChevronPanel>
+    </div>
 
     <footer class="my-8 text-right">
       <SplitButton :items="mapLayerButtonItems" />
