@@ -27,10 +27,20 @@ vi.mock("@/stores/selectedStore", () => ({
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
   monitorForElements: () => () => {},
+  draggable: () => () => {},
+  dropTargetForElements: () => () => {},
+}));
+
+vi.mock("@atlaskit/pragmatic-drag-and-drop/combine", () => ({
+  combine:
+    (...cleanups: Array<() => void>) =>
+    () =>
+      cleanups.forEach((fn) => fn && fn()),
 }));
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge", () => ({
   extractClosestEdge: () => null,
+  attachClosestEdge: (data: unknown) => data,
 }));
 
 describe("ScenarioLayersTabPanel", () => {
@@ -114,7 +124,7 @@ describe("ScenarioLayersTabPanel", () => {
   it("routes map-layer double click through the layer controller", async () => {
     const { wrapper, zoomToMapLayer } = mountComponent(true);
 
-    await wrapper.find("li").trigger("dblclick");
+    await wrapper.find("[data-map-layer-id] button").trigger("dblclick");
 
     expect(zoomToMapLayer).toHaveBeenCalledWith("map-layer-1");
   });
