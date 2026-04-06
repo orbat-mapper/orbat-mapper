@@ -209,9 +209,9 @@ const hexResolutionSlider = computed({
   },
 });
 
-const showHexEdge = ref(true);
+const showHexDiameter = ref(true);
 const showHexArea = ref(true);
-const hexUnitSystem = ref<"si" | "imperial">("si");
+const hexUnitSystem = ref<"si" | "imperial" | "nautical">("si");
 
 function formatLength(km: number): string {
   if (hexUnitSystem.value === "imperial") {
@@ -219,6 +219,12 @@ function formatLength(km: number): string {
     if (mi >= 1) return `${mi.toFixed(mi >= 100 ? 0 : 1)} mi`;
     const ft = mi * 5280;
     return `${ft < 100 ? ft.toFixed(0) : Math.round(ft).toLocaleString()} ft`;
+  }
+  if (hexUnitSystem.value === "nautical") {
+    const nmi = km * 0.539957;
+    if (nmi >= 1) return `${nmi.toFixed(nmi >= 100 ? 0 : 1)} nmi`;
+    const yd = km * 1093.61;
+    return `${yd < 100 ? yd.toFixed(0) : Math.round(yd).toLocaleString()} yd`;
   }
   if (km >= 1) return `${km.toFixed(km >= 100 ? 0 : 1)} km`;
   return `${(km * 1000).toFixed(0)} m`;
@@ -232,17 +238,23 @@ function formatArea(km2: number): string {
     const ft2 = mi2 * 27878400;
     return `${Math.round(ft2).toLocaleString()} ft²`;
   }
+  if (hexUnitSystem.value === "nautical") {
+    const nmi2 = km2 * 0.291553;
+    if (nmi2 >= 1)
+      return `${nmi2 < 10 ? nmi2.toFixed(1) : Math.round(nmi2).toLocaleString()} nmi²`;
+    return `${Math.round(nmi2 * 3_429_904).toLocaleString()} yd²`;
+  }
   if (km2 >= 1)
     return `${km2 < 10 ? km2.toFixed(1) : Math.round(km2).toLocaleString()} km²`;
   return `${(km2 * 1e6).toFixed(0)} m²`;
 }
 
 const hexSizeLabel = computed(() => {
-  if (!showHexEdge.value && !showHexArea.value) return "";
+  if (!showHexDiameter.value && !showHexArea.value) return "";
   const res = hexResolution.value;
   const parts: string[] = [];
-  if (showHexEdge.value) {
-    parts.push(`${formatLength(getHexagonEdgeLengthAvg(res, "km"))} edge`);
+  if (showHexDiameter.value) {
+    parts.push(`${formatLength(getHexagonEdgeLengthAvg(res, "km") * 2)} ⌀`);
   }
   if (showHexArea.value) {
     parts.push(formatArea(getHexagonAreaAvg(res, "km2")));
@@ -428,7 +440,7 @@ onUnmounted(() => {
                 </div>
                 <div class="space-y-2 border-t pt-3">
                   <Label class="text-xs">Size display</Label>
-                  <ToggleField v-model="showHexEdge">Show edge length</ToggleField>
+                  <ToggleField v-model="showHexDiameter">Show diameter</ToggleField>
                   <ToggleField v-model="showHexArea">Show area</ToggleField>
                   <div class="flex items-center justify-between pt-1">
                     <Label class="text-xs">Units</Label>
@@ -448,6 +460,14 @@ onUnmounted(() => {
                         class="h-7 px-2 text-xs"
                         @click="hexUnitSystem = 'imperial'"
                         >Imperial</Button
+                      >
+                      <Button
+                        type="button"
+                        size="sm"
+                        :variant="hexUnitSystem === 'nautical' ? 'default' : 'outline'"
+                        class="h-7 px-2 text-xs"
+                        @click="hexUnitSystem = 'nautical'"
+                        >Nautical</Button
                       >
                     </div>
                   </div>
