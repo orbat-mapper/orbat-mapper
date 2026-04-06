@@ -55,7 +55,9 @@ import GlobeTimeline from "@/modules/globeview/GlobeTimeline.vue";
 import { useSidcModal } from "@/composables/modals";
 import { useH3HexGrid } from "@/modules/globeview/h3grid";
 import { Slider } from "@/components/ui/slider";
-import { HexagonIcon } from "lucide-vue-next";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { HexagonIcon, SlidersHorizontalIcon } from "lucide-vue-next";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { EventSearchResult } from "@/components/types";
 import type { PhotonSearchResult } from "@/composables/geosearching";
@@ -196,12 +198,33 @@ watch(
   () => nextTick(() => mlMap.value?.resize()),
 );
 
-const { showHexGrid, hexResolution, autoResolution } = useH3HexGrid(mlMap);
+const {
+  showHexGrid,
+  hexResolution,
+  autoResolution,
+  lineColor,
+  lineOpacity,
+  lineWidth,
+} = useH3HexGrid(mlMap);
 
 const hexResolutionSlider = computed({
   get: () => [hexResolution.value],
   set: ([v]: number[]) => {
     hexResolution.value = v;
+  },
+});
+
+const lineOpacitySlider = computed({
+  get: () => [lineOpacity.value],
+  set: ([v]: number[]) => {
+    lineOpacity.value = v;
+  },
+});
+
+const lineWidthSlider = computed({
+  get: () => [lineWidth.value],
+  set: ([v]: number[]) => {
+    lineWidth.value = v;
   },
 });
 
@@ -327,6 +350,52 @@ onUnmounted(() => {
               />
               <span class="text-muted-foreground w-4 text-xs">{{ hexResolution }}</span>
             </template>
+            <Popover>
+              <PopoverTrigger as-child>
+                <Button variant="outline" size="icon" title="Hex grid style">
+                  <SlidersHorizontalIcon class="size-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent class="w-64 space-y-4">
+                <div class="space-y-2">
+                  <Label for="hex-line-color" class="text-xs">Line color</Label>
+                  <input
+                    id="hex-line-color"
+                    type="color"
+                    v-model="lineColor"
+                    class="h-8 w-full cursor-pointer rounded border"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <Label class="text-xs">Opacity</Label>
+                    <span class="text-muted-foreground text-xs">{{
+                      lineOpacity.toFixed(2)
+                    }}</span>
+                  </div>
+                  <Slider
+                    v-model="lineOpacitySlider"
+                    :min="0"
+                    :max="1"
+                    :step="0.05"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <Label class="text-xs">Line width</Label>
+                    <span class="text-muted-foreground text-xs">{{
+                      lineWidth.toFixed(1)
+                    }}</span>
+                  </div>
+                  <Slider
+                    v-model="lineWidthSlider"
+                    :min="0.5"
+                    :max="5"
+                    :step="0.1"
+                  />
+                </div>
+              </PopoverContent>
+            </Popover>
           </template>
         </div>
         <ToggleField v-model="showDebug">Debug</ToggleField>

@@ -108,6 +108,9 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
   const showHexGrid = ref(true);
   const hexResolution = ref(3);
   const autoResolution = ref(false);
+  const lineColor = ref("#3b82f6");
+  const lineOpacity = ref(0.5);
+  const lineWidth = ref(1.5);
 
   if (!protocolRegistered) {
     registerH3Protocol();
@@ -143,9 +146,9 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
           source: H3_SOURCE,
           "source-layer": "h3",
           paint: {
-            "line-color": "#3b82f6",
-            "line-opacity": 0.5,
-            "line-width": ["interpolate", ["linear"], ["zoom"], 1, 0.5, 5, 1.5, 10, 2],
+            "line-color": lineColor.value,
+            "line-opacity": lineOpacity.value,
+            "line-width": lineWidth.value,
           },
         },
         beforeLayer,
@@ -332,9 +335,20 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
     if (showHexGrid.value) updateResolution();
   });
 
+  watch([lineColor, lineOpacity, lineWidth], ([color, opacity, width]) => {
+    const map = mlMap.value;
+    if (!map || !map.getLayer(H3_LAYER_LINE)) return;
+    map.setPaintProperty(H3_LAYER_LINE, "line-color", color);
+    map.setPaintProperty(H3_LAYER_LINE, "line-opacity", opacity);
+    map.setPaintProperty(H3_LAYER_LINE, "line-width", width);
+  });
+
   return {
     showHexGrid,
     hexResolution,
     autoResolution,
+    lineColor,
+    lineOpacity,
+    lineWidth,
   };
 }
