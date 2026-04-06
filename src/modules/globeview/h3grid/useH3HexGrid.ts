@@ -3,11 +3,7 @@ import type { Map as MlMap } from "maplibre-gl";
 import { useDebounceFn } from "@vueuse/core";
 import { polygonToCells, cellToBoundary } from "h3-js";
 import type { Feature, FeatureCollection, Polygon } from "geojson";
-import {
-  registerH3Protocol,
-  setH3Resolution,
-  H3_PROTOCOL,
-} from "./h3TileProtocol";
+import { registerH3Protocol, setH3Resolution, H3_PROTOCOL } from "./h3TileProtocol";
 import icelandGeo from "./iceland.geo.json";
 import greenlandGeo from "./greenland.geo.json";
 
@@ -50,8 +46,7 @@ function buildCountryCells(
   const { type, coordinates } = feature.geometry;
 
   // polygonToCells only accepts a single polygon; iterate over MultiPolygon parts
-  const polygons: number[][][][] =
-    type === "MultiPolygon" ? coordinates : [coordinates];
+  const polygons: number[][][][] = type === "MultiPolygon" ? coordinates : [coordinates];
 
   const cellSet = new Set<string>();
   for (const poly of polygons) {
@@ -179,17 +174,7 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
           paint: {
             "line-color": "#3b82f6",
             "line-opacity": 0.5,
-            "line-width": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              1,
-              0.5,
-              5,
-              1.5,
-              10,
-              2,
-            ],
+            "line-width": ["interpolate", ["linear"], ["zoom"], 1, 0.5, 5, 1.5, 10, 2],
           },
         },
         beforeLayer,

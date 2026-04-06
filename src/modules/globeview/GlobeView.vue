@@ -53,7 +53,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useUiStore } from "@/stores/uiStore";
 import GlobeTimeline from "@/modules/globeview/GlobeTimeline.vue";
 import { useSidcModal } from "@/composables/modals";
-import { useH3HexGrid } from "@/modules/globeview/useH3HexGrid";
+import { useH3HexGrid } from "@/modules/globeview/h3grid";
 import { Slider } from "@/components/ui/slider";
 import { HexagonIcon } from "lucide-vue-next";
 import type { FeatureId } from "@/types/scenarioGeoModels";

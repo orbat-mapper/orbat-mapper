@@ -24,7 +24,10 @@ const GLOBAL_ENUM_MAX_RES = 4;
 let currentResolution = 2;
 
 /** Cached global cell list with pre-computed centers for fast per-tile filtering */
-let globalCellCache: { res: number; cells: Array<{ id: string; lat: number; lng: number }> } | null = null;
+let globalCellCache: {
+  res: number;
+  cells: Array<{ id: string; lat: number; lng: number }>;
+} | null = null;
 
 function getGlobalCells(res: number): Array<{ id: string; lat: number; lng: number }> {
   if (globalCellCache && globalCellCache.res === res) return globalCellCache.cells;
@@ -206,8 +209,10 @@ function generateTile(z: number, x: number, y: number): ArrayBuffer {
     // mercator tiles are narrower.
     const midLat = (bounds.north + bounds.south) / 2;
     const latFactor = 1 / Math.max(Math.cos((midLat * Math.PI) / 180), 0.1);
-    const highLatPadWest = bounds.west - (bounds.east - bounds.west) * Math.max(0.5, latFactor);
-    const highLatPadEast = bounds.east + (bounds.east - bounds.west) * Math.max(0.5, latFactor);
+    const highLatPadWest =
+      bounds.west - (bounds.east - bounds.west) * Math.max(0.5, latFactor);
+    const highLatPadEast =
+      bounds.east + (bounds.east - bounds.west) * Math.max(0.5, latFactor);
 
     // Clip polygon to ±180° and call polygonToCells for the primary range,
     // plus a second call for any portion that wraps across the antimeridian.
