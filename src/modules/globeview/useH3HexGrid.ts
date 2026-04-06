@@ -1,5 +1,6 @@
 import { ref, watch, type ShallowRef } from "vue";
 import type { Map as MlMap } from "maplibre-gl";
+import { useDebounceFn } from "@vueuse/core";
 import { polygonToCells, cellToBoundary } from "h3-js";
 import type { Feature, FeatureCollection, Polygon } from "geojson";
 import {
@@ -17,12 +18,24 @@ const ICELAND_FILL_LAYER = "h3IcelandFill";
 const GREENLAND_SOURCE = "h3GreenlandSource";
 const GREENLAND_FILL_LAYER = "h3GreenlandFill";
 
+/** Cache computed country cell FeatureCollections per geo object and resolution */
+const countryCellsCache = new WeakMap<object, Map<number, FeatureCollection<Polygon>>>();
+
 /** Build a GeoJSON FeatureCollection of H3 cells covering a country polygon */
 function buildCountryCells(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   geo: any,
   res: number,
 ): FeatureCollection<Polygon> {
+  let byRes = countryCellsCache.get(geo);
+  if (byRes) {
+    const cached = byRes.get(res);
+    if (cached) return cached;
+  } else {
+    byRes = new Map();
+    countryCellsCache.set(geo, byRes);
+  }
+
   const feature = geo.features[0];
   const { type, coordinates } = feature.geometry;
 
@@ -46,7 +59,9 @@ function buildCountryCells(
       geometry: { type: "Polygon", coordinates: [boundary] },
     };
   });
-  return { type: "FeatureCollection", features };
+  const fc: FeatureCollection<Polygon> = { type: "FeatureCollection", features };
+  byRes.set(res, fc);
+  return fc;
 }
 
 /** Approximate H3 resolution from map zoom level */
@@ -196,9 +211,11 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
     }
   }
 
+  const debouncedUpdateResolution = useDebounceFn(updateResolution, 200);
+
   function onMoveEnd() {
     if (!autoResolution.value) return;
-    updateResolution();
+    debouncedUpdateResolution();
   }
 
   function onStyleLoad() {
