@@ -16,12 +16,15 @@ import Pbf from "pbf";
 
 export const H3_PROTOCOL = "h3tile";
 const EXTENT = 4096;
+type LngLat = [number, number];
+type CellRef = { id: string; centerLng: number; shift: number };
 
 /** Max resolution that uses global enumeration instead of polygonToCells */
 const GLOBAL_ENUM_MAX_RES = 4;
 
 /** Shared mutable resolution — set by the composable before triggering reload */
 let currentResolution = 2;
+let boundaryCache = new Map<string, LngLat[]>();
 
 /** Cached global cell list with pre-computed centers for fast per-tile filtering */
 let globalCellCache: {
@@ -44,11 +47,23 @@ function getGlobalCells(res: number): Array<{ id: string; lat: number; lng: numb
 }
 
 export function setH3Resolution(res: number) {
+  if (res !== currentResolution) {
+    boundaryCache = new Map();
+  }
   currentResolution = res;
   // Pre-build cache for resolutions that use global enumeration
   if (res <= GLOBAL_ENUM_MAX_RES) {
     getGlobalCells(res);
   }
+}
+
+function getCellBoundary(cell: string): LngLat[] {
+  const cached = boundaryCache.get(cell);
+  if (cached) return cached;
+
+  const boundary = cellToBoundary(cell, true) as LngLat[];
+  boundaryCache.set(cell, boundary);
+  return boundary;
 }
 
 /** Latitude to mercator Y (in radians-based units) */
@@ -192,7 +207,7 @@ function generateTile(z: number, x: number, y: number): ArrayBuffer {
     return null;
   }
 
-  const cellsForTile: Array<{ id: string; shift: number }> = [];
+  const cellsForTile: CellRef[] = [];
 
   if (currentResolution <= GLOBAL_ENUM_MAX_RES) {
     // Use cached global cell list with pre-computed centers for fast filtering.
@@ -200,7 +215,7 @@ function generateTile(z: number, x: number, y: number): ArrayBuffer {
     for (const { id, lat, lng } of global) {
       if (lat < padSouth || lat >= padNorth) continue;
       const shift = shiftForTile(lng);
-      if (shift !== null) cellsForTile.push({ id, shift });
+      if (shift !== null) cellsForTile.push({ id, centerLng: lng, shift });
     }
   } else {
     // At higher resolutions, use polygonToCells with padded bounds.
@@ -236,31 +251,33 @@ function generateTile(z: number, x: number, y: number): ArrayBuffer {
         seen.add(id);
         const [, lng] = cellToLatLng(id);
         const shift = shiftForTile(lng);
-        if (shift !== null) cellsForTile.push({ id, shift });
+        if (shift !== null) cellsForTile.push({ id, centerLng: lng, shift });
       }
     }
   }
 
   const features: Array<{ geom: number[] }> = [];
-  for (const { id: cell, shift } of cellsForTile) {
-    const [, centerLng] = cellToLatLng(cell);
+  for (const { id: cell, centerLng, shift } of cellsForTile) {
     const shiftedCenter = centerLng + shift;
-    const boundary = cellToBoundary(cell, true); // [lng, lat] order
-    boundary.push(boundary[0]); // close ring
+    const boundary = getCellBoundary(cell);
+    const projected: LngLat[] = new Array(boundary.length + 1);
 
-    // Apply the tile shift, then normalize relative to the shifted center
-    // to handle cells whose own boundary crosses the antimeridian.
-    const normalized = boundary.map(([lng, lat]) => {
-      let nLng = lng + shift;
-      while (nLng - shiftedCenter > 180) nLng -= 360;
-      while (nLng - shiftedCenter < -180) nLng += 360;
-      return [nLng, lat] as [number, number];
-    });
-
-    // Project to tile pixel coordinates
-    const projected: Array<[number, number]> = normalized.map(([lng, lat]) =>
-      project(lng, lat, bounds.west, bounds.east, bounds.mercSouth, bounds.mercNorth),
-    );
+    // Normalize and project in one pass, then explicitly close the ring.
+    for (let i = 0; i < boundary.length; i++) {
+      const [lng, lat] = boundary[i];
+      let normalizedLng = lng + shift;
+      while (normalizedLng - shiftedCenter > 180) normalizedLng -= 360;
+      while (normalizedLng - shiftedCenter < -180) normalizedLng += 360;
+      projected[i] = project(
+        normalizedLng,
+        lat,
+        bounds.west,
+        bounds.east,
+        bounds.mercSouth,
+        bounds.mercNorth,
+      );
+    }
+    projected[boundary.length] = projected[0];
 
     features.push({ geom: encodePolygonGeometry(projected) });
   }
